@@ -81,6 +81,15 @@ target_dir = "%{root}/_build/%{platform}/%{config}"
 -- Path to kit sdk
 kit_sdk = "%{root}/_build/target-deps/kit_sdk_%{config}"
 
+function apply_pch()
+    filter { "system:linux" }
+        dependson { "omni.usdpch" }
+        buildoptions { "-pthread" }
+        rtti "On"
+        exceptionhandling "On"
+    filter {}
+end
+
 -- Common plugins settings
 function define_plugin()
     kind "SharedLib"
@@ -157,7 +166,7 @@ end
 
 
 -- Starting from here we define a structure of actual solution to be generated. Starting with solution name.
-workspace "kit-examples"
+workspace "omni-isaac-extensions"
     configurations { "debug", "release" }
 
     -- Project selected by default to run
@@ -247,4 +256,5 @@ include ("source/extensions/example.python_extension")
 -- Example of Mixed (both python and C++) extension:
 include ("source/extensions/example.mixed_extension")
 
-
+-- Example of Mixed (both python and C++) extension:
+include ("source/extensions/omni.isaac.decals")
