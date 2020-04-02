@@ -43,16 +43,16 @@ group ("extensions/"..ext_id)
 
         includedirs { 
             "%{root}/source/pch",
-            "%{root}/_build/target-deps/carb_gfx_plugins/include",
-            "%{root}/_build/target-deps/rtx_plugins/include",
-            "%{root}/_build/target-deps/python/include",
-            "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-            "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost" }
+            target_deps_dir.."/carb_gfx_plugins/include",
+            target_deps_dir.."/rtx_plugins/include",
+            target_deps_dir.."/python/include",
+            target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include",
+            target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include/boost" }
 
-        libdirs {   "%{root}/_build/target-deps/python/libs",
-                    "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
-                    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-                    "%{root}/_build/target-deps/nv_usd/release/lib",
+        libdirs {   target_deps_dir.."/python/libs",
+                    target_deps_dir.."/tbb/lib/intel64/vc14",
+                    target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
+                    target_deps_dir.."/nv_usd/release/lib",
                     "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins" 
                 }
 
@@ -63,7 +63,7 @@ group ("extensions/"..ext_id)
         filter { "system:linux" }
             exceptionhandling "On"
             removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
-            includedirs { "%{root}/_build/target-deps/python/include/python3.6m" }
+            includedirs { target_deps_dir.."/python/include/python3.6m" }
 
     -- Python Bindings for Carobnite Plugin
     project "omni.isaac.decals.python"

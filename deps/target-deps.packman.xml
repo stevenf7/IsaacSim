@@ -6,6 +6,7 @@
     <filter include="pybind11" />
     <filter include="fmt" />
     <filter include="physx" />
+    <filter include="pxshared" />
     <filter include="python" />
   </import>  
 
@@ -23,6 +24,7 @@
   <dependency name="pybind11" linkPath="../_build/target-deps/pybind11" />
   <dependency name="fmt" linkPath="../_build/target-deps/fmt" />
   <dependency name="physx" linkPath="../_build/target-deps/physx" />
+  <dependency name="pxshared" linkPath="../_build/target-deps/pxshared" />
   <dependency name="nv_usd_py36_release" linkPath="../_build/target-deps/nv_usd/release" />
   <dependency name="nv_usd_py36_debug" linkPath="../_build/target-deps/nv_usd/debug" />
   <dependency name="python" linkPath="../_build/target-deps/python" />

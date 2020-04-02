@@ -81,6 +81,12 @@ target_dir = "%{root}/_build/%{platform}/%{config}"
 -- Path to kit sdk
 kit_sdk = "%{root}/_build/target-deps/kit_sdk_%{config}"
 
+-- Path to dependencies
+target_deps_dir = "%{root}/_build/target-deps"
+
+-- Which physx library type to use
+physxLibs = "profile"
+
 function apply_pch()
     filter { "system:linux" }
         dependson { "omni.usdpch" }
@@ -246,14 +252,15 @@ group "apps"
     -- Application example. Only runs Kit with a config, doesn't build anything. Helper for debugging.
     define_experience("omniverse-kit")
 
--- Isaac Decals Extension
-include ("source/extensions/omni.isaac/decals")
+    -- Isaac Extensions
+    include ("source/extensions/omni.isaac/decals")
+    include ("source/extensions/omni.isaac/dynamic_control")
 
--- -- Example of C++ only extension:
--- include ("source/extensions/example.cpp_extension")
+    -- Example of C++ only extension:
+    -- include ("source/extensions/example.cpp_extension")
 
--- -- Example of Python only extension:
--- include ("source/extensions/example.python_extension")
+    -- Example of Python only extension:
+    -- include ("source/extensions/example.python_extension")
 
--- -- Example of Mixed (both python and C++) extension:
--- include ("source/extensions/example.mixed_extension")
+    -- Example of Mixed (both python and C++) extension:
+    -- include ("source/extensions/example.mixed_extension")
