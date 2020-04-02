@@ -1,0 +1,112 @@
+{
+    "log": {
+        "level": "Info",
+        "outputStreamLevel": "Warning",
+        "debugConsoleLevel": "Warning",
+        "fileLogLevel": "Info",
+        "file": "${data}/omniverse-kit.log",
+        "includeTimeStamp": true,
+        "setElapsedTimeUnits": "milliseconds"
+    },
+    "omni.kit.plugin": {
+        "usdWorkConcurrencyLimit": 0,
+        "usdMuteDiagnosticMessage": true,
+        "createXformForTypelessReference": true,
+        "createExplicitRefForNoneDefaultPrim": true
+    },
+    "app": {
+        "window": {
+            "width": 1440,
+            "height": 900,
+            "title": "Omniverse Kit",
+            "fullscreen": false,
+            "minimalPanelsOnStartup": false,
+            "toolBarHorizontal": false,
+            "displayModeLock": false,
+            "uiStyle": "NvidiaDark"
+        },
+        "settings": {
+            "persistent": true
+        },
+        "scriptFolders": ["${kit}/scripts", "${documents}/scripts"],
+        "newStage": {
+            "templatePath": [ "${kit}/extensions/extensions-bundled/omni/kit/builtin/new_stage", "${documents}/extensions/new_stage" ],
+            "defaultTemplate": "sunlight"
+        },
+        "extensions": {
+            "folders2": ["${kit}/exts", "${app}/../exts"],
+            "foldersBuiltin": ["${kit}/extensions/extensions-bundled", "${kit}/extensions/extensions-other", "${documents}/extensions"],
+            "pythonUserEnvPath": "${data}/pip3-envs/default",
+            "enabledBuiltin": [
+                "omni.renderer-rtx",
+                "omni.kit.editor-full",
+                "omni.kit.builtin.init",
+                "omni.kit.builtin.menu",
+                "omni.kit.builtin.file_menu",
+                "omni.kit.builtin.toolbar",
+                "omni.kit.builtin.extensions_manager_window",
+                "omni.kit.builtin.about_window",
+                "omni.kit.builtin.preferences_window",
+                "omni.kit.builtin.provide_feedback_window",
+                "omni.kit.builtin.profiler",
+                "omni.kit.builtin.details_window",
+                "omni.kit.builtin.render_settings_window",
+                "omni.kit.builtin.test_runner",
+                "omni.kit.builtin.material_library",
+                "omni.kit.window.stage",
+                "omni.kit.window.layers",
+                "omni.kit.window.viewport",
+                "omni.kit.window.script_editor",
+                "omni.kit.window.auth",
+                "omni.kit.window.console",
+                "utils.utilities_menu",
+                "utils.movie_capture",
+                "utils.usd_paths",
+                "utils.collect_tool",
+                "omni.assetimport",
+                "omni.kit.computegraph",
+                "omni.physx",
+                "omni.physxui"
+            ]
+        },
+        "omniverse": {
+            "defaultServer": "localhost:3009",
+            "showPwdField": false,
+            "showLoginOnStart": true,
+            "autoLoginOnStart": false
+        },
+        "file": {
+            "ignoreUnsavedOnExit": false,
+            "browserIconSize": 60,
+        },
+        "renderer": {
+            "resolution": {
+                "list": [2048, 1080, 1920, 1080, 1280, 720, 1024, 1024, 512, 512],
+                "multiplierList": [2.0, 1.0, 0.666666666666, 0.5, 0.333333333333, 0.25]
+            }
+        },
+        "tokens": {
+            "gfx_path": "plugins/carb_gfx",
+            "rtx_path": "plugins/rtx"
+        }
+    },
+    "crashreporter_disabled": {
+        "reportUrl": "https://submit.backtrace.io/omni/1aa931ba41db12026320df7ecbc2c40f9d7e7bde442738dbfa62a20b5e87f444/minidump",
+        "reportName": "omniverse-kit",
+        "reportVersion": "undefined",
+        "_comment": "Please remove '_disabled' if you need to enable crash reporting. This will be done for the full installer automatically"
+    },
+    "plugins": {
+        "carb.scripting-python.plugin": {
+            "pythonHome": "../../target-deps/python",
+            "pythonPath": "../../target-deps/python/python36.zip",
+            "logScriptErrors": true
+        }
+    },
+    "rtx": {
+        "shaderDb": {
+            "shaderCachePath": "${cache}/shadercache",
+            "appShaderCachePath": "${appcache}/shadercache"
+        }
+    }
+}

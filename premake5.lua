@@ -244,17 +244,16 @@ workspace "omni-isaac-extensions"
 
 group "apps"
     -- Application example. Only runs Kit with a config, doesn't build anything. Helper for debugging.
-    define_experience("example.app")
-    define_experience("example.app-mini")
+    define_experience("omniverse-kit")
 
--- Example of C++ only extension:
-include ("source/extensions/example.cpp_extension")
-
--- Example of Python only extension:
-include ("source/extensions/example.python_extension")
-
--- Example of Mixed (both python and C++) extension:
-include ("source/extensions/example.mixed_extension")
-
--- Example of Mixed (both python and C++) extension:
+-- Isaac Decals Extension
 include ("source/extensions/omni.isaac.decals")
+
+-- -- Example of C++ only extension:
+-- include ("source/extensions/example.cpp_extension")
+
+-- -- Example of Python only extension:
+-- include ("source/extensions/example.python_extension")
+
+-- -- Example of Mixed (both python and C++) extension:
+-- include ("source/extensions/example.mixed_extension")
