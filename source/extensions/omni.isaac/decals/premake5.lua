@@ -1,7 +1,8 @@
-local ext_name = "omni.isaac.decals"
+local ext_group = "omni.isaac"
+local ext_name = "decals"
 local ext_version = ""
-local ext_id = ext_name
-local ext_source = "source/extensions/"..ext_name
+local ext_id = "omni.isaac.decals"
+local ext_source = "source/extensions/"..ext_group.."/"..ext_name
 local ext_folder = "_build/$platform/$config/exts/"..ext_id
 local ext_bin_folder = ext_folder.."/bin/$platform/$config"
 
@@ -11,7 +12,7 @@ group ("extensions/"..ext_id)
     if os.target() == "windows" then
         project "omni.isaac.decals"
             kind "None"
-            add_impl_folder("source/extensions/omni.isaac.decals/python")
+            add_impl_folder("source/extensions/omni.isaac/decals/python")
     end
 
     repo_build.prebuild_link {

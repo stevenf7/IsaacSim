@@ -247,7 +247,7 @@ group "apps"
     define_experience("omniverse-kit")
 
 -- Isaac Decals Extension
-include ("source/extensions/omni.isaac.decals")
+include ("source/extensions/omni.isaac/decals")
 
 -- -- Example of C++ only extension:
 -- include ("source/extensions/example.cpp_extension")
