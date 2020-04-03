@@ -1,15 +1,15 @@
 @echo off
 
 :: Veify formatting
-call "%~dp0..\..\..\format_code.bat" --verify
+call "%~dp0..\..\..\..\format_code.bat" --verify
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Full rebuild
-call "%~dp0..\..\..\build.bat" -x
+call "%~dp0..\..\..\..\build.bat" -x
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Docs
-call "%~dp0..\..\build_docs.bat" -c release
+call "%~dp0..\..\..\build_docs.bat" -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Run python tests (TODO: fix or remove)
@@ -22,7 +22,7 @@ if %errorlevel% neq 0 ( exit /b %errorlevel% )
 ::if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Package
-call "%~dp0..\..\package.bat"
+call "%~dp0..\..\..\package.bat"
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: publish artifacts to teamcity
