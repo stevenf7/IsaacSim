@@ -12,6 +12,7 @@ from .. import _decals
 
 EXTENSION_NAME = "Decals"
 
+
 class Extension(omni.ext.IExt):
     def get_name(self):
         return EXTENSION_NAME
