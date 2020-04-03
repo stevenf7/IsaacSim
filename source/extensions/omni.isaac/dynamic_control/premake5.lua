@@ -1,9 +1,9 @@
 local ext_group = "omni.isaac"
 local ext_name = "dynamic_control"
 local ext_version = ""
-local ext_id = "omni.isaac.dynamic_control"
+local ext_id = "omni/isaac/dynamic_control"
 local ext_source = "source/extensions/"..ext_group.."/"..ext_name
-local ext_folder = "_build/$platform/$config/exts/"..ext_id
+local ext_folder = "_build/$platform/$config/extensions/"..ext_id
 local ext_bin_folder = ext_folder.."/bin/$platform/$config"
 
 group ("extensions/"..ext_id)
@@ -15,16 +15,16 @@ group ("extensions/"..ext_id)
             add_impl_folder("source/extensions/omni.isaac/dynamic_control/python")
     end
 
-    repo_build.prebuild_link {
-        { ext_source.."/config", ext_folder.."/config" },
-    }
+    -- repo_build.prebuild_link {
+    --     { ext_source.."/config", ext_folder.."/config" },
+    -- }
 
     repo_build.prebuild_link {
-        { ext_source.."/python/scripts", ext_folder.."/omni/isaac/dynamic_control/scripts" },
+        { ext_source.."/python/scripts", ext_folder.."/scripts" },
     }
 
     repo_build.prebuild_copy {
-        { ext_source.."/python/*.py", ext_folder.."/omni/isaac/dynamic_control" },
+        { ext_source.."/python/*.py", ext_folder.."" },
     }
 
     -- C++ Carbonite plugin
@@ -39,7 +39,7 @@ group ("extensions/"..ext_id)
         add_impl_folder("plugins")
         add_iface_folder("%{root}/include/omni/isaac/dynamic_control")
 
-        targetdir (target_dir.."/exts/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
+        targetdir (target_dir.."/extensions/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
 
         -- physx libs
         filter { "system:windows", "platforms:x86_64", "configurations:debug" }
@@ -98,4 +98,4 @@ group ("extensions/"..ext_id)
     project "omni.isaac.dynamic_control.python"
         define_bindings_python("_dynamic_control")
         add_impl_folder("bindings")
-        targetdir (target_dir.."/exts/"..ext_id.."/omni/isaac/dynamic_control")
+        targetdir (target_dir.."/extensions/"..ext_id.."/bindings")

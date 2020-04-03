@@ -1,7 +1,7 @@
 import carb
 import pickle
 
-from .. import _dynamic_control as dynamic_control
+from ..bindings import _dynamic_control as dynamic_control
 
 
 def test_pickles():

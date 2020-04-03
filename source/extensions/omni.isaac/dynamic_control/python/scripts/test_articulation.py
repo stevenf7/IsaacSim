@@ -1,6 +1,6 @@
 import carb
 
-from .. import _dynamic_control
+from ..bindings import _dynamic_control
 
 
 def _print_body_rec(dc, body, indent_level=0):

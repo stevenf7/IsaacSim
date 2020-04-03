@@ -35,7 +35,7 @@
         },
         "extensions": {
             "folders2": ["${kit}/exts", "${app}/../exts"],
-            "foldersBuiltin": ["${kit}/extensions/extensions-bundled", "${kit}/extensions/extensions-other", "${documents}/extensions"],
+            "foldersBuiltin": ["${kit}/extensions/extensions-bundled", "${kit}/extensions/extensions-other", "${documents}/extensions", "${app}/../extensions"],
             "pythonUserEnvPath": "${data}/pip3-envs/default",
             "enabledBuiltin": [
                 "omni.renderer-rtx",

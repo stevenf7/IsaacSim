@@ -2,6 +2,7 @@ name = ""
 
 [dependencies]
 "omni.kit.editor" = {}
+"omni.physx" = {}
 
 [python.modules]
 "omni.isaac.dynamic_control" = { public = true }

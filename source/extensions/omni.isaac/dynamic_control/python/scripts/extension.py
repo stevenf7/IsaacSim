@@ -1,6 +1,5 @@
 import os
 
-import omni.ext
 import omni.kit.commands
 import omni.kit.editor
 import omni.kit.extensions
@@ -8,7 +7,7 @@ import omni.kit.ui
 
 import omni.physx.bindings._physx as omni_physx
 
-from .. import _dynamic_control
+from ..bindings import _dynamic_control
 
 from .test_body import test_body
 from .test_pickles import test_pickles
@@ -22,9 +21,12 @@ EXTENSION_NAME = "Dynamic Control"
 EXTENSION_DESC = "Interface for interacting with physical actors"
 
 
-class Extension(omni.ext.IExt):
+class Extension:
     def on_startup(self):
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
+        ext_folder = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+        lib_path = omni.kit.extensions.build_plugin_path(ext_folder, "omni.isaac.dynamic_control.plugin")
+        print("Loading Dynamic Control plugin '%s'" % lib_path)
+        self._dc = _dynamic_control.acquire_dynamic_control_interface(library_path=lib_path)
 
         menu_path = f"Window/{EXTENSION_NAME}"
         self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, menu_path=menu_path)
