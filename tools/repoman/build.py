@@ -61,12 +61,15 @@ def clean():
 def pull_dependencies(repo_folders: Dict, platform_host: str, platform_target: str):
     import omni.repo.build
 
-    # Pull Kit SDK first, its deps xml files will be used (imported) in following files
+    # Pull Isaac Sim deps
+    packmanapi.pull(os.path.join(repo_folders["root"], "deps/isaac-sim.packman.xml"), platform=platform_target)
+
+    # Pull Kit SDK, its deps xml files will be used (imported) in following files
     packmanapi.pull(os.path.join(repo_folders["root"], "deps/kit-sdk.packman.xml"), platform=platform_target)
 
     # Then pull Rtx plugins from Kit sdk
     packmanapi.pull(os.path.join(repo_folders["root"], "deps/rtx-plugins.packman.xml"), platform=platform_target)
-
+    
     # Now pull everything else (default deps files, like target-deps and host-deps):
     omni.repo.build.pull_dependencies(repo_folders, platform_host, platform_target)
 

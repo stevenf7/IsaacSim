@@ -1,0 +1,11 @@
+<project toolsVersion="5.0">
+  <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
+    <package name="nv_ros" platforms="linux-x86_64" version="melodic.6575703-linux64_boost_1.68.0_release-master" />
+  </dependency>
+  <dependency name="lula" linkPath="../_build/target-deps/lula">
+    <package name="lula" version="linux_x64_linbuild_20200330_a36cb37" platforms="linux-x86_64"/>
+  </dependency>
+  <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
+    <package name="isaac_engine" version="linux_x64_f25c5315" platforms="linux-x86_64"/>
+  </dependency>
+</project>
