@@ -255,6 +255,7 @@ group "apps"
     -- Isaac Extensions
     include ("source/extensions/omni.isaac/decals")
     include ("source/extensions/omni.isaac/dynamic_control")
+    include ("source/extensions/omni.isaac/manip")
 
     -- Example of C++ only extension:
     -- include ("source/extensions/example.cpp_extension")
