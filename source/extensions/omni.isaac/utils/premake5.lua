@@ -63,3 +63,10 @@ group ("extensions/"..ext_id)
         filter { "system:linux", "platforms:x86_64" }
             links {"tbb", "boost_python36" }
         filter {}
+
+        filter { "configurations:debug" }
+            defines { "_DEBUG" }
+        filter { "configurations:release" }
+            defines { "NDEBUG" }
+        filter {}
+
