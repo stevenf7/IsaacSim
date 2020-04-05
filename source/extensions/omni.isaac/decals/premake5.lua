@@ -57,8 +57,7 @@ group ("extensions/"..ext_id)
                 }
 
         links {
-            "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd"
+            "omni.usd"
         }
         filter { "system:linux" }
             exceptionhandling "On"

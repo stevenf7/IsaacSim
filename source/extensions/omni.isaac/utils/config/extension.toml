@@ -1,0 +1,12 @@
+name = ""
+
+[dependencies]
+"omni.kit.editor" = {}
+
+[python.modules]
+"omni.isaac.utils" = { public = true }
+
+[[native.plugins]]
+search_path = "bin/${platform}/${config}/*.plugin"
+recursive = false
+

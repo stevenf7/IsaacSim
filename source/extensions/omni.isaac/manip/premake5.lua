@@ -50,8 +50,7 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_usd/release/lib"
         }
         links { 
-            "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils",
+            "usdUtils",
         }
 
         filter { "system:windows" }

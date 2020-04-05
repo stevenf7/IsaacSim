@@ -31,9 +31,7 @@ group ("extensions/"..ext_id)
     project "omni.isaac.dynamic_control.plugin"
         removeplatforms { "aarch64" }
         define_plugin()
-
-        dependson { "omni.usdpch" }
-        removeflags { "NoPCH" }
+        
         apply_pch()
 
         add_impl_folder("plugins")
@@ -72,10 +70,8 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/lib"
                 }
 
-        links {
-            "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils"
-        }
+        links {"gf", "sdf", "usd", "usdGeom","usdUtils"}
+        
         filter { "system:linux" }
             removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
             includedirs {
