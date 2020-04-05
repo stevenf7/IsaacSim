@@ -32,6 +32,9 @@ group ("extensions/"..ext_id)
         removeplatforms { "aarch64" }
         define_plugin()
 
+        staticruntime "Off"
+        exceptionhandling "On"
+
         apply_pch()
 
         add_impl_folder("plugins")
@@ -50,11 +53,13 @@ group ("extensions/"..ext_id)
         libdirs {
             target_deps_dir.."/python/libs", 
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
-            target_deps_dir.."/nv_usd/release/lib"                 
+            target_deps_dir.."/nv_usd/release/lib",
+            target_deps_dir.."/usd_audio_schema/%{cfg.buildcfg}/lib",
+            "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins"             
         }
 
         links {
-            "sdf", "usdGeom", "usdShade",
+            "arch", "gf", "pcp", "tf", "sdf", "usd", "usdGeom", "usdShade", "vt", "usdUtils", "audioSchema", "omni.usd"
         }
         filter { "system:linux" }
             exceptionhandling "On"
