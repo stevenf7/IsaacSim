@@ -1,9 +1,9 @@
 local ext_group = "omni.isaac"
 local ext_name = "manip"
 local ext_version = ""
-local ext_id = "omni/isaac/manip"
+local ext_id = "omni.isaac.manip"
 local ext_source = "source/extensions/"..ext_group.."/"..ext_name
-local ext_folder = "_build/$platform/$config/extensions/"..ext_id
+local ext_folder = "_build/$platform/$config/exts/"..ext_id
 local ext_bin_folder = ext_folder.."/bin/$platform/$config"
 
 group ("extensions/"..ext_id)
@@ -15,16 +15,16 @@ group ("extensions/"..ext_id)
             add_impl_folder("source/extensions/omni.isaac/manip/python")
     end
 
-    -- repo_build.prebuild_link {
-    --     { ext_source.."/config", ext_folder.."/config" },
-    -- }
+    repo_build.prebuild_link {
+        { ext_source.."/config", ext_folder.."/config" },
+    }
 
     repo_build.prebuild_link {
-        { ext_source.."/python/scripts", ext_folder.."/scripts" },
+        { ext_source.."/python/scripts", ext_folder.."/omni/isaac/manip/scripts" },
     }
 
     repo_build.prebuild_copy {
-        { ext_source.."/python/*.py", ext_folder.."" },
+        { ext_source.."/python/*.py", ext_folder.."/omni/isaac/manip" },
     }
 
     -- C++ Carbonite plugin
@@ -35,7 +35,7 @@ group ("extensions/"..ext_id)
 
         add_impl_folder("plugins")
         add_iface_folder("%{root}/include/omni/isaac/manip")
-        targetdir (target_dir.."/extensions/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
+        targetdir (target_dir.."/exts/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
 
         includedirs {
             "%{root}/source/pch",
@@ -53,16 +53,19 @@ group ("extensions/"..ext_id)
             "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
             "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils",
         }
+
         filter { "system:windows" }
             libdirs {target_deps_dir.."/tbb/lib/intel64/vc14"}
+        filter {}
 
         filter { "system:linux" }
             exceptionhandling "On"
             removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
             includedirs { target_deps_dir.."/python/include/python3.6m" }
+        filter {}
 
     -- Python Bindings for Carobnite Plugin
     project "omni.isaac.manip.python"
         define_bindings_python("_manip")
         add_impl_folder("bindings")
-        targetdir (target_dir.."/extensions/"..ext_id.."/bindings")
+        targetdir (target_dir.."/exts/"..ext_id.."/omni/isaac/manip")

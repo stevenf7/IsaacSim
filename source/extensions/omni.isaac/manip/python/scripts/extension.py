@@ -1,9 +1,10 @@
+import omni.ext
 import omni.kit.editor
 import omni.kit.ui
 import omni.kit.settings
 import carb.windowing
 import carb.settings
-from ..bindings import _manip
+from .. import _manip
 import carb.input
 from enum import IntEnum
 from functools import partial
@@ -70,7 +71,7 @@ class GamePadBinding:
         self.control.set_on_changed_fn(None)
 
 
-class Extension:
+class Extension(omni.ext.IExt):
     def __init__(self):
         self.manip = None
         self.editor = None
@@ -134,10 +135,8 @@ class Extension:
         return
 
     def on_startup(self):
-        ext_folder = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-        lib_path = omni.kit.extensions.build_plugin_path(ext_folder, "omni.isaac.manip.plugin")
-        print("Starting Manip from '%s'" % lib_path)
-        self.manip = _manip.acquire(library_path=lib_path)
+        print("Starting Manip Extension")
+        self.manip = _manip.acquire()
 
         self.editor = omni.kit.editor.get_editor_interface()
         self.usd_context = omni.usd.get_context()
