@@ -1,4 +1,13 @@
 <project toolsVersion="5.0">
+  <dependency name="usd_ext_isaac_release" linkPath="../_build/target-deps/usd_ext_isaac/release">
+    <package name="usd_ext_isaac" version="19.11.34.9f679b48-win64_py36_release-master" platforms="windows-x86_64"/>
+    <package name="usd_ext_isaac" version="19.11.34.9f679b48-linux-x86_64_py36_release-master" platforms="linux-x86_64"/>
+  </dependency>
+  <dependency name="usd_ext_isaac_debug" linkPath="../_build/target-deps/usd_ext_isaac/debug">
+    <package name="usd_ext_isaac" version="19.11.34.9f679b48-win64_py36_debug-master" platforms="windows-x86_64"/>
+    <package name="usd_ext_isaac" version="19.11.34.9f679b48-linux-x86_64_py36_debug-master" platforms="linux-x86_64"/>
+  </dependency>
+
   <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
     <package name="nv_ros" platforms="linux-x86_64" version="melodic.6575703-linux64_boost_1.68.0_release-master" />
   </dependency>

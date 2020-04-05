@@ -1,0 +1,7 @@
+name = "Isaac Sim Samples"
+
+[dependencies]
+"omni.kit.editor" = {}
+
+[python.modules]
+"omni.kit.samples" = { public = true }

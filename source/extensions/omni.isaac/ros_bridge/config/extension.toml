@@ -1,0 +1,13 @@
+name = ""
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.physx" = {}
+
+[python.modules]
+"omni.isaac.ros_bridge" = { public = true }
+
+[[native.plugins]]
+search_path = "bin/${platform}/${config}/*.plugin"
+recursive = false
+

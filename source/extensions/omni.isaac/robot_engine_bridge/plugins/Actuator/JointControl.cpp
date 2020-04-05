@@ -1,0 +1,182 @@
+// clang-format off
+#include <UsdPCH.h>
+// clang-format on
+
+#include <vector>
+#include <string>
+
+#include "../Core/IsaacComponent.h"
+#include <carb/logging/Log.h>
+#include <carb/profiler/Profile.h>
+
+#include "JointControl.h"
+
+namespace omni
+{
+namespace isaac
+{
+namespace robot_engine_bridge
+{
+
+using omni::isaac::dynamic_control::DcDofState;
+using omni::isaac::dynamic_control::DcDofType;
+using omni::isaac::dynamic_control::DcHandle;
+
+JointControl::JointControl(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
+    : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
+{
+}
+
+void JointControl::onStart()
+{
+    onComponentChange();
+}
+
+void JointControl::tick()
+{
+    if (!mArticulationHandle)
+    {
+        return;
+    }
+    CARB_PROFILE_ZONE(0, "REB JointControl Tick");
+
+    {
+        MessageHeader header;
+        IsaacMessage<isaac_message::Composite> commandsComposite;
+        auto commands = commandsComposite.initProto();
+        std::vector<std::vector<uint8_t>> buffers;
+        if (receive(mInputComponent, mJointControlChannelName, header, commands, buffers))
+        {
+
+
+            std::vector<double> elements(buffers[0].size() / sizeof(double));
+            std::memcpy(elements.data(), buffers[0].data(), elements.size() * sizeof(double));
+
+            auto quantities = commands.getQuantities();
+            if (elements.size() != quantities.size())
+            {
+                CARB_LOG_ERROR("Element size is not same as quantities size");
+                return;
+            }
+
+            mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
+
+            for (size_t i = 0; i < quantities.size(); i++)
+            {
+                auto entity = quantities[i].getEntity(); // name
+                // auto elementType = quantities[i].getElementType();
+                auto measure = quantities[i].getMeasure(); // control mode: position or velocity
+                // auto dimensions = quantities[i].getDimensions();
+                // CARB_LOG_ERROR("Data: %d %s %d %f", i, entity.cStr(), dimensions.size(), elements[i]);
+
+                auto handle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, entity.cStr());
+                if (handle)
+                {
+                    if (measure == isaac_message::Composite::Measure::POSITION)
+                    {
+                        mDynamicControlPtr->setDofPositionTarget(handle, static_cast<float>(elements[i]));
+                    }
+                    else if (measure == isaac_message::Composite::Measure::SPEED)
+                    {
+                        mDynamicControlPtr->setDofVelocityTarget(handle, static_cast<float>(elements[i]));
+                    }
+                }
+                else
+                {
+                    CARB_LOG_ERROR("Entity not found in articulation");
+                }
+            }
+        }
+    }
+    {
+        IsaacMessage<isaac_message::Composite> statusComposite;
+        std::vector<std::vector<uint8_t>> buffers(1);
+        auto statusProto = statusComposite.initProto();
+
+        int numDofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
+        // set quantities
+        auto quantities = statusProto.initQuantities(numDofs * 2);
+        std::vector<double> elements(numDofs * 2);
+
+        if (numDofs > 0)
+        {
+            DcDofState* states = mDynamicControlPtr->getArticulationDofStates(
+                mArticulationHandle, omni::isaac::dynamic_control::kDcStateAll);
+            if (states != nullptr)
+            {
+                for (int i = 0; i < numDofs; i++)
+                {
+                    DcHandle dof = mDynamicControlPtr->getArticulationDof(mArticulationHandle, i);
+                    quantities[i * 2 + 0].setEntity(mDynamicControlPtr->getDofName(dof));
+                    quantities[i * 2 + 1].setEntity(mDynamicControlPtr->getDofName(dof));
+                    quantities[i * 2 + 0].setMeasure(isaac_message::Composite::Measure::POSITION);
+                    quantities[i * 2 + 1].setMeasure(isaac_message::Composite::Measure::SPEED);
+                    elements[i * 2 + 0] = states[i].pos;
+                    elements[i * 2 + 1] = states[i].vel;
+                }
+            }
+        }
+        // set tensor proto to specify dimension of buffer
+        auto tensor = statusProto.initValues();
+        tensor.setElementType(ElementType::FLOAT64);
+        auto tensor_sizes = tensor.initSizes(1);
+        tensor_sizes.set(0, static_cast<int>(elements.size()));
+        tensor.setScanlineStride(0);
+        tensor.setDataBufferIndex(0);
+        // copy actual buffer data
+        buffers[0].resize(elements.size() * sizeof(double));
+        std::memcpy(buffers[0].data(), elements.data(), elements.size() * sizeof(double));
+
+        publish(mOutputComponent, mJointStateChannelName, statusProto, isaac_message::CompositeProtoId, buffers);
+    }
+}
+
+void JointControl::onComponentChange()
+{
+    IsaacComponent::onComponentChange();
+
+    if (auto attr = mPrim.GetAttribute(pxr::TfToken("inputComponent")))
+    {
+        attr.Get(&mInputComponent);
+    }
+    if (auto attr = mPrim.GetAttribute(pxr::TfToken("outputComponent")))
+    {
+        attr.Get(&mOutputComponent);
+    }
+    if (auto attr = mPrim.GetAttribute(pxr::TfToken("jointControlChannelName")))
+    {
+        attr.Get(&mJointControlChannelName);
+    }
+    if (auto attr = mPrim.GetAttribute(pxr::TfToken("jointStateChannelName")))
+    {
+        attr.Get(&mJointStateChannelName);
+    }
+    if (auto attr = mPrim.GetAttribute(pxr::TfToken("articulationPath")))
+    {
+        attr.Get(&mArticulationPath);
+    }
+
+    if (mArticulationPath.size() <= 1)
+    {
+        return;
+    }
+
+    if (mDynamicControlPtr->peekObjectType(mArticulationPath.c_str()) ==
+        omni::isaac::dynamic_control::eDcObjectArticulation)
+    {
+        mArticulationHandle = mDynamicControlPtr->getArticulation(mArticulationPath.c_str());
+    }
+    else
+    {
+        CARB_LOG_ERROR("Articulation %s is not valid art", mArticulationPath.c_str());
+        return;
+    }
+    if (!mArticulationHandle)
+    {
+        CARB_LOG_ERROR("Articulation %s not found", mArticulationPath.c_str());
+        return;
+    }
+}
+}
+}
+}
