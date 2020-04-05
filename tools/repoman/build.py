@@ -69,7 +69,7 @@ def pull_dependencies(repo_folders: Dict, platform_host: str, platform_target: s
 
     # Then pull Rtx plugins from Kit sdk
     packmanapi.pull(os.path.join(repo_folders["root"], "deps/rtx-plugins.packman.xml"), platform=platform_target)
-    
+
     # Now pull everything else (default deps files, like target-deps and host-deps):
     omni.repo.build.pull_dependencies(repo_folders, platform_host, platform_target)
 
