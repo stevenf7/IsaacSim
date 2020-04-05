@@ -255,11 +255,12 @@ group "apps"
     -- Isaac Extensions
     -- Windows and Linux
     include ("source/extensions/omni.isaac/decals")
+    include ("source/extensions/omni.isaac/dr")
     include ("source/extensions/omni.isaac/dynamic_control")
-    include ("source/extensions/omni.isaac/manip")
     -- include ("source/extensions/omni.isaac/lidar")
-    include ("source/extensions/omni.isaac/utils")
+    include ("source/extensions/omni.isaac/manip")
     include ("source/extensions/omni.isaac/shapenet")
+    include ("source/extensions/omni.isaac/utils")
 
 
     -- Linux Only

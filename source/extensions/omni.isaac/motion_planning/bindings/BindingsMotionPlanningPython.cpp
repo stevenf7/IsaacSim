@@ -25,13 +25,12 @@ py::class_<InterfaceType> defineInterfaceClass(py::module& m,
                                                const char* acquireFuncName,
                                                const char* releaseFuncName = nullptr)
 {
-    m.def(
-        acquireFuncName,
-        [](const char* pluginName, const char* libraryPath) {
-            return libraryPath ? acquireInterfaceFromLibraryForBindings<InterfaceType>(libraryPath) :
-                                 acquireInterfaceForBindings<InterfaceType>(pluginName);
-        },
-        py::arg("plugin_name") = nullptr, py::arg("library_path") = nullptr, py::return_value_policy::reference);
+    m.def(acquireFuncName,
+          [](const char* pluginName, const char* libraryPath) {
+              return libraryPath ? acquireInterfaceFromLibraryForBindings<InterfaceType>(libraryPath) :
+                                   acquireInterfaceForBindings<InterfaceType>(pluginName);
+          },
+          py::arg("plugin_name") = nullptr, py::arg("library_path") = nullptr, py::return_value_policy::reference);
 
     if (releaseFuncName)
     {

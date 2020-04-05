@@ -1,0 +1,9 @@
+{
+    "texture_component":[
+       {
+          "prim":["/Stage/S_NvidiaCube/S_NvidiaCube"],
+          "texture_list":["omni:/Projects/mwc_2019/Maps/Props/Materials/MI_006_mustard_bottle.mdl","omni:/Projects/mwc_2019/Maps/Props/Materials/MI_011_banana.mdl","omni:/Projects/mwc_2019/Maps/Props/Materials/MI_025_mug.mdl","omni:/Projects/mwc_2019/Maps/Props/Materials/MI_Apple_2.mdl"],
+          "duration":1
+       }
+    ]
+ }

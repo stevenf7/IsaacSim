@@ -9,6 +9,8 @@
     <filter include="pxshared" />
     <filter include="python" />
     <filter include="nvtx" />
+    <filter include="usd_audio_schema_release" />
+    <filter include="usd_audio_schema_debug" />
   </import>  
 
   <!-- Import Rtx plugins deps -->
@@ -30,4 +32,6 @@
   <dependency name="nv_usd_py36_debug" linkPath="../_build/target-deps/nv_usd/debug" />
   <dependency name="python" linkPath="../_build/target-deps/python" />
   <dependency name="nvtx" linkPath="../_build/target-deps/nvtx" />
+  <dependency name="usd_audio_schema_release" linkPath="../_build/target-deps/usd_audio_schema/release" />
+  <dependency name="usd_audio_schema_debug" linkPath="../_build/target-deps/usd_audio_schema/debug" />
 </project>
