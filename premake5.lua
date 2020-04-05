@@ -261,10 +261,10 @@ group "apps"
     include ("source/extensions/omni.isaac/utils")
 
     -- Linux Only
-    -- filter { "system:linux" }
-    --     include ("source/extensions/omni.isaac/robot_engine_bridge")
-    --     include ("source/extensions/omni.isaac/motion_planning")
-    -- filter {}
+    filter { "system:linux" }
+        -- include ("source/extensions/omni.isaac/robot_engine_bridge")
+        include ("source/extensions/omni.isaac/motion_planning")
+    filter {}
 
     -- Example of C++ only extension:
     -- include ("source/extensions/example.cpp_extension")
