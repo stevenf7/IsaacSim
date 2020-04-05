@@ -259,6 +259,8 @@ group "apps"
     include ("source/extensions/omni.isaac/manip")
     -- include ("source/extensions/omni.isaac/lidar")
     include ("source/extensions/omni.isaac/utils")
+    include ("source/extensions/omni.isaac/shapenet")
+
 
     -- Linux Only
     filter { "system:linux" }

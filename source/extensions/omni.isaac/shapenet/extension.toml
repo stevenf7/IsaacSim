@@ -1,0 +1,7 @@
+name = "Shapenet Extension"
+
+[dependencies]
+"omni.kit.editor" = {}
+
+[python.modules]
+"omni.kit.shapenet" = { public = true }
