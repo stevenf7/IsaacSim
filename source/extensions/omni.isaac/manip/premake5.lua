@@ -31,6 +31,10 @@ group ("extensions/"..ext_id)
     project "omni.isaac.manip.plugin"
         removeplatforms { "aarch64" }
         define_plugin()
+
+        staticruntime "Off"
+        exceptionhandling "On"
+
         apply_pch()
 
         add_impl_folder("plugins")
@@ -50,7 +54,7 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_usd/release/lib"
         }
         links { 
-            "usdUtils",
+            "sdf", "usdUtils",
         }
 
         filter { "system:windows" }

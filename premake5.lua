@@ -263,10 +263,10 @@ group "apps"
 
 
     -- Linux Only
-    filter { "system:linux" }
+    if os.target() == "linux" then
         -- include ("source/extensions/omni.isaac/robot_engine_bridge")
         include ("source/extensions/omni.isaac/motion_planning")
-    filter {}
+    end
 
     -- Example of C++ only extension:
     -- include ("source/extensions/example.cpp_extension")

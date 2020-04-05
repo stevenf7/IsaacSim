@@ -31,9 +31,10 @@ group ("extensions/"..ext_id)
     project "omni.isaac.decals.plugin"
         removeplatforms { "aarch64" }
         define_plugin()
+        
+        staticruntime "Off"
+        exceptionhandling "On"
 
-        dependson { "omni.usdpch" }
-        removeflags { "NoPCH" }
         apply_pch()
 
         add_impl_folder("plugins")
@@ -57,7 +58,7 @@ group ("extensions/"..ext_id)
                 }
 
         links {
-            "omni.usd"
+            "gf", "sdf", "tf", "usd", "usdGeom", "vt", "usdUtils", "omni.usd"
         }
         filter { "system:linux" }
             exceptionhandling "On"

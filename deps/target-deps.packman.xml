@@ -8,6 +8,7 @@
     <filter include="physx" />
     <filter include="pxshared" />
     <filter include="python" />
+    <filter include="nvtx" />
   </import>  
 
   <!-- Import Rtx plugins deps -->
@@ -28,4 +29,5 @@
   <dependency name="nv_usd_py36_release" linkPath="../_build/target-deps/nv_usd/release" />
   <dependency name="nv_usd_py36_debug" linkPath="../_build/target-deps/nv_usd/debug" />
   <dependency name="python" linkPath="../_build/target-deps/python" />
+  <dependency name="nvtx" linkPath="../_build/target-deps/nvtx" />
 </project>
