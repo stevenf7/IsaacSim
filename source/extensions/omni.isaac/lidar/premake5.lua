@@ -35,6 +35,11 @@ group ("extensions/"..ext_id)
     project "omni.isaac.lidar.plugin"
         removeplatforms { "aarch64" }
         define_plugin()
+
+        rtti "On"  -- fixes: 'dynamic_cast' used on polymorphic type
+        staticruntime "Off"
+        exceptionhandling "On"
+
         apply_pch()
 
         add_impl_folder("plugins")
@@ -85,7 +90,7 @@ group ("extensions/"..ext_id)
         filter { "system:windows" }
             libdirs {target_deps_dir.."/tbb/lib/intel64/vc14"}
         filter {}
-
+        removeflags { "FatalCompileWarnings"}
         filter { "system:linux" }
             exceptionhandling "On"
             removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
