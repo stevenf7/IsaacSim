@@ -7,9 +7,9 @@ import random
 import sys
 import os
 from pxr import Usd, UsdGeom, Sdf, Gf, Tf
-import LidarSchema
+from .. import LidarSchema
 
-from ..bindings import _lidar
+from .. import _lidar
 
 import numpy
 
@@ -25,11 +25,7 @@ class LidarMenu:
         self.menus = []
 
         editor_menu = omni.kit.ui.get_editor_menu()
-
-        ext_folder = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-        lib_path = omni.kit.extensions.build_plugin_path(ext_folder, "omni.isaac.lidar.plugin")
-
-        self._lidar = _lidar.acquire_lidar_interface(library_path=lib_path)
+        self._lidar = _lidar.acquire_lidar_interface()
 
         # add
         self.menus.append(editor_menu.add_item(ADD_LIDAR_SCENE_MENU_ITEM, self._on_scene_menu_click))

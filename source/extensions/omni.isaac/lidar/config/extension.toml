@@ -5,8 +5,11 @@ name = ""
 
 [python.modules]
 "omni.isaac.lidar" = { public = true }
+# "omni.isaac.lidar.LidarSchema" = { public = true }
 
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false
 
+[[libraries]]
+path = "bin/${platform}/${config}/${lib_prefix}lidarSchema${lib_ext}"

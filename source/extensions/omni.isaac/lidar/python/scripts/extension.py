@@ -1,10 +1,10 @@
 import os
 import sys
 
-print(sys.path)
+import omni.ext
 import omni.kit.extensions
 
-from ..bindings import _lidar
+from .. import _lidar
 
 from .menu import LidarMenu
 
@@ -16,13 +16,10 @@ EXTENSION_NAME = "Lidar"
 EXTENSION_DESC = "Extension providing Lidar functionality"
 
 
-class Extension:
+class Extension(omni.ext.IExt):
     def on_startup(self):
-        ext_folder = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-        lib_path = omni.kit.extensions.build_plugin_path(ext_folder, "omni.isaac.lidar.plugin")
-
-        print("Starting Lidar from '%s'" % lib_path)
-        self._lidar = _lidar.acquire_lidar_interface(library_path=lib_path)
+        print("Starting Lidar extension")
+        self._lidar = _lidar.acquire_lidar_interface()
 
         self._menu = LidarMenu()
 

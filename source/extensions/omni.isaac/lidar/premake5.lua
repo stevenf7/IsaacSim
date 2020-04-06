@@ -1,9 +1,9 @@
 local ext_group = "omni.isaac"
 local ext_name = "lidar"
 local ext_version = ""
-local ext_id = "omni/isaac/lidar"
+local ext_id = "omni.isaac.lidar"
 local ext_source = "source/extensions/"..ext_group.."/"..ext_name
-local ext_folder = "_build/$platform/$config/extensions/"..ext_id
+local ext_folder = "_build/$platform/$config/exts/"..ext_id
 local ext_bin_folder = ext_folder.."/bin/$platform/$config"
 
 group ("extensions/"..ext_id)
@@ -15,27 +15,28 @@ group ("extensions/"..ext_id)
             add_impl_folder("source/extensions/omni.isaac/lidar/python")
     end
 
-    -- repo_build.prebuild_link {
-    --     { ext_source.."/config", ext_folder.."/config" },
-    -- }
+    repo_build.prebuild_link {
+        { ext_source.."/config", ext_folder.."/config" },
+    }
 
     repo_build.prebuild_link {
-        { ext_source.."/python/scripts", ext_folder.."/scripts" },
+        { ext_source.."/python/scripts", ext_folder.."/omni/isaac/lidar/scripts" },
     }
 
     repo_build.prebuild_copy {
-        { ext_source.."/python/*.py", ext_folder.."" },
+        { ext_source.."/python/*.py", ext_folder.."/omni/isaac/lidar" },
     }
 
     repo_build.prebuild_copy {
-        { "_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}lidarSchema${lib_ext}", target_dir.."/extensions/"..ext_id.."/bindings" },
+        { "_build/target-deps/usd_ext_isaac/$config/lib/python/LidarSchema/**", ext_folder.."/omni/isaac/lidar/LidarSchema" },
+        { "_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}lidarSchema${lib_ext}", ext_folder.."/bin/$platform/$config"},
     }
 
     -- C++ Carbonite plugin
     project "omni.isaac.lidar.plugin"
         removeplatforms { "aarch64" }
         define_plugin()
-
+        
         rtti "On"  -- fixes: 'dynamic_cast' used on polymorphic type
         staticruntime "Off"
         exceptionhandling "On"
@@ -44,8 +45,8 @@ group ("extensions/"..ext_id)
 
         add_impl_folder("plugins")
         add_iface_folder("%{root}/include/omni/isaac/lidar")
-        targetdir (target_dir.."/extensions/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
-        
+
+        targetdir (target_dir.."/exts/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
         -- physx libs
         filter { "system:windows", "platforms:x86_64", "configurations:debug" }
         libdirs { 
@@ -64,8 +65,8 @@ group ("extensions/"..ext_id)
             libdirs { "_build/target-deps/nvtx/lib/x64" }
             links { "nvToolsExt64_1","PhysXExtensions_static_64", "PhysX_static_64", "PhysXPvdSDK_static_64","PhysXCooking_static_64","PhysXCommon_static_64", "PhysXFoundation_static_64"}
         filter {}
-
-        includedirs {
+        
+        includedirs { 
             "%{root}/source/pch",
             target_deps_dir.."/physx/include",
             target_deps_dir.."/pxshared/include",
@@ -77,13 +78,13 @@ group ("extensions/"..ext_id)
 
         }
 
-        libdirs {   
+        libdirs {               
             target_deps_dir.."/python/libs", 
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
             target_deps_dir.."/nv_usd/release/lib",
             target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/lib",
-        }
-        links { 
+                }
+        links {
             "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
             "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "lidarSchema"
         }
@@ -107,4 +108,4 @@ group ("extensions/"..ext_id)
     project "omni.isaac.lidar.python"
         define_bindings_python("_lidar")
         add_impl_folder("bindings")
-        targetdir (target_dir.."/extensions/"..ext_id.."/bindings")
+        targetdir (target_dir.."/exts/"..ext_id.."/omni/isaac/lidar")
