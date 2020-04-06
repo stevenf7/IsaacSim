@@ -55,6 +55,7 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/usd_audio_schema/%{cfg.buildcfg}/include",
             target_deps_dir.."/python/include/python3.6m",
             target_deps_dir.."/nv_ros/include",
+            target_deps_dir.."/omni_physics/include",
             "%{root}/source/extensions/omni.isaac/ros_bridge/msgs/melodic"
         }
 

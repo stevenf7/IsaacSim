@@ -68,6 +68,8 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/carb_gfx_plugins/include",
             target_deps_dir.."/rtx_plugins/include",
             target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/include",
+            target_deps_dir.."/omni_physics/include"
+
         }
 
         libdirs {   

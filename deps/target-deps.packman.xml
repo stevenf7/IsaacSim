@@ -5,8 +5,6 @@
     <filter include="rtx_plugins" />
     <filter include="pybind11" />
     <filter include="fmt" />
-    <filter include="physx" />
-    <filter include="pxshared" />
     <filter include="python" />
     <filter include="nvtx" />
     <filter include="usd_audio_schema_release" />
@@ -20,18 +18,34 @@
     <filter include="nv_usd_py36_debug" />
   </import>
 
+<!-- Import Physics plugins deps -->
+<import path="../_build/target-deps/omni_physics/deps/target-deps.packman.xml">
+    <filter include="pxshared" />
+    <filter include="physx" />
+    <filter include="vhacd" />
+    <filter include="physxdevice" />
+    <filter include="usd_ext_physics_release" />
+    <filter include="usd_ext_physics_debug" />
+  </import>
+
   <!-- Pull those deps of the same version as in Kit SDK. Override linkPath to point correctly, other properties can also be override, including version. -->
   <dependency name="carb_sdk_plugins" linkPath="../_build/target-deps/carb_sdk_plugins" />
+  <dependency name="nv_usd_py36_release" linkPath="../_build/target-deps/nv_usd/release" />
+  <dependency name="nv_usd_py36_debug" linkPath="../_build/target-deps/nv_usd/debug" />
+
   <dependency name="carb_gfx_plugins" linkPath="../_build/target-deps/carb_gfx_plugins" />
   <dependency name="rtx_plugins" linkPath="../_build/target-deps/rtx_plugins" />
   <dependency name="pybind11" linkPath="../_build/target-deps/pybind11" />
   <dependency name="fmt" linkPath="../_build/target-deps/fmt" />
-  <dependency name="physx" linkPath="../_build/target-deps/physx" />
-  <dependency name="pxshared" linkPath="../_build/target-deps/pxshared" />
-  <dependency name="nv_usd_py36_release" linkPath="../_build/target-deps/nv_usd/release" />
-  <dependency name="nv_usd_py36_debug" linkPath="../_build/target-deps/nv_usd/debug" />
   <dependency name="python" linkPath="../_build/target-deps/python" />
   <dependency name="nvtx" linkPath="../_build/target-deps/nvtx" />
   <dependency name="usd_audio_schema_release" linkPath="../_build/target-deps/usd_audio_schema/release" />
   <dependency name="usd_audio_schema_debug" linkPath="../_build/target-deps/usd_audio_schema/debug" />
+
+  <dependency name="pxshared" linkPath="../_build/target-deps/pxshared"/>
+  <dependency name="physx" linkPath="../_build/target-deps/physx" />
+  <dependency name="vhacd" linkPath="../_build/target-deps/vhacd" />
+  <dependency name="physxdevice" linkPath="../_build/target-deps/physxdevice" />
+  <dependency name="usd_ext_physics_release" linkPath="../_build/target-deps/usd_ext_physics/release" />
+  <dependency name="usd_ext_physics_debug" linkPath="../_build/target-deps/usd_ext_physics/debug" />
 </project>
