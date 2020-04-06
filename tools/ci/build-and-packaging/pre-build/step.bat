@@ -10,7 +10,7 @@ if %errorlevel% neq 0 (
     )
 
 echo Checking code formatting
-call format_code.bat verify
+call format_code.bat -v
 if %errorlevel% neq 0 (
     echo ##teamcity[buildStatus text='Error formatting code' status='ERROR']
     exit /b %errorlevel%
