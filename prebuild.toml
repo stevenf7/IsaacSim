@@ -59,8 +59,8 @@ link = [
 [windows-x86_64]
 copy = [
     # usd_ext_isaac
-    # ["_build/target-deps/usd_ext_isaac/$config/lib/urdfFileFormat.*", "_build/$platform/$config/plugins"],
-    # ["_build/target-deps/usd_ext_isaac/$config/lib/usd/urdfFileFormat/**", "_build/$platform/$config/plugins/usd/urdfFileFormat"],
+    ["_build/target-deps/usd_ext_isaac/$config/lib/urdfFileFormat.*", "_build/$platform/$config/plugins"],
+    ["_build/target-deps/usd_ext_isaac/$config/lib/usd/urdfFileFormat/**", "_build/$platform/$config/plugins/usd/urdfFileFormat"],
 ]
 link = []
 
@@ -72,7 +72,7 @@ link = []
 [linux-x86_64]
 copy = [
     # usd_ext_isaac
-    # ["_build/target-deps/usd_ext_isaac/$config/lib/liburdfFileFormat.*", "_build/$platform/$config/plugins"],
-    # ["_build/target-deps/usd_ext_isaac/$config/lib/usd/urdfFileFormat/**", "_build/$platform/$config/plugins/usd/urdfFileFormat"],
+    ["_build/target-deps/usd_ext_isaac/$config/lib/liburdfFileFormat.*", "_build/$platform/$config/plugins"],
+    ["_build/target-deps/usd_ext_isaac/$config/lib/usd/urdfFileFormat/**", "_build/$platform/$config/plugins/usd/urdfFileFormat"],
 ]
 link = []

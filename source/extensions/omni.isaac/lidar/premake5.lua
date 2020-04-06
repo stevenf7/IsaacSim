@@ -62,7 +62,7 @@ group ("extensions/"..ext_id)
             }
             defines {  "PX_PHYSX_STATIC_LIB", "NDEBUG" }
         filter { "system:windows", "platforms:x86_64" }
-            libdirs { "_build/target-deps/nvtx/lib/x64" }
+            libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
             links { "nvToolsExt64_1","PhysXExtensions_static_64", "PhysX_static_64", "PhysXPvdSDK_static_64","PhysXCooking_static_64","PhysXCommon_static_64", "PhysXFoundation_static_64"}
         filter {}
         
