@@ -23,6 +23,10 @@ group ("extensions/"..ext_id)
         { ext_source.."/python/scripts", ext_folder.."/omni/isaac/robot_engine_bridge/scripts" },
     }
 
+    repo_build.prebuild_link {
+        { "_build/target-deps/isaac_engine/data/", "_build/$platform/$config/resources/isaac_engine/" },
+    }
+
     repo_build.prebuild_copy {
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/robot_engine_bridge" },
     }
