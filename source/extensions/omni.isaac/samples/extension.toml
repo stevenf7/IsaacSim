@@ -3,5 +3,8 @@ name = "Isaac Sim Samples"
 [dependencies]
 "omni.kit.editor" = {}
 
-[python.modules]
-"omni.kit.samples" = { public = true }
+[[python.modules]]
+namme = "omni.isaac.samples.leonardo_preview"
+
+[[python.modules]]
+namme = "omni.isaac.samples.ur10_preview"

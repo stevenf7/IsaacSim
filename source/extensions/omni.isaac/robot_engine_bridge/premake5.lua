@@ -1,9 +1,9 @@
 local ext_group = "omni.isaac"
 local ext_name = "robot_engine_bridge"
 local ext_version = ""
-local ext_id = "omni/isaac/robot_engine_bridge"
+local ext_id = "omni.isaac.robot_engine_bridge"
 local ext_source = "source/extensions/"..ext_group.."/"..ext_name
-local ext_folder = "_build/$platform/$config/extensions/"..ext_id
+local ext_folder = "_build/$platform/$config/exts/"..ext_id
 local ext_bin_folder = ext_folder.."/bin/$platform/$config"
 
 group ("extensions/"..ext_id)
@@ -15,28 +15,33 @@ group ("extensions/"..ext_id)
             add_impl_folder("source/extensions/omni.isaac/robot_engine_bridge/python")
     end
 
-    -- repo_build.prebuild_link {
-    --     { ext_source.."/config", ext_folder.."/config" },
-    -- }
+    repo_build.prebuild_link {
+        { ext_source.."/config", ext_folder.."/config" },
+    }
 
     repo_build.prebuild_link {
-        { ext_source.."/python/scripts", ext_folder.."/scripts" },
+        { ext_source.."/python/scripts", ext_folder.."/omni/isaac/robot_engine_bridge/scripts" },
     }
 
     repo_build.prebuild_copy {
-        { ext_source.."/python/*.py", ext_folder.."" },
+        { ext_source.."/python/*.py", ext_folder.."/omni/isaac/robot_engine_bridge" },
+    }
+
+    repo_build.prebuild_copy {
+        { "_build/target-deps/isaac_engine/lib/**", ext_bin_folder },
     }
 
     -- C++ Carbonite plugin
     project "omni.isaac.robot_engine_bridge.plugin"
-        removeplatforms { "aarch64",  }
+        removeplatforms { "aarch64" }
         removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
         define_plugin()
         apply_pch()
 
         add_impl_folder("plugins")
         add_iface_folder("%{root}/include/omni/isaac/robot_engine_bridge")
-        targetdir (target_dir.."/extensions/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
+        targetdir (target_dir.."/exts/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
+
 
         includedirs {
             "%{root}/source/pch",
@@ -73,4 +78,4 @@ group ("extensions/"..ext_id)
     project "omni.isaac.robot_engine_bridge.python"
         define_bindings_python("_robot_engine_bridge")
         add_impl_folder("bindings")
-        targetdir (target_dir.."/extensions/"..ext_id.."/bindings")
+        targetdir (target_dir.."/exts/"..ext_id.."/omni/isaac/robot_engine_bridge")

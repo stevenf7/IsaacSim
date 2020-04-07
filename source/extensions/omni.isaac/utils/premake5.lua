@@ -41,7 +41,7 @@ group ("extensions/"..ext_id)
 
     -- Python Bindings for Carobnite Plugin
     project "omni.isaac.utils.python"
-        define_bindings_python("_utils")
+        define_bindings_python("_isaac_utils")
         add_impl_folder("bindings")
         targetdir (target_dir.."/exts/"..ext_id.."/omni/isaac/utils")
         includedirs {

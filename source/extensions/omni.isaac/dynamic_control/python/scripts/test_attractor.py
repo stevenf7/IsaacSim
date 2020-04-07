@@ -1,7 +1,7 @@
 import numpy as np
 import carb
 
-from ..bindings import _dynamic_control
+from .. import _dynamic_control
 
 
 class TestAttractor:

@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..bindings import _dynamic_control
+from .. import _dynamic_control
 
 # joint animation states
 ANIM_SEEK_LOWER = 1

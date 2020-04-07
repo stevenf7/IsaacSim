@@ -1,10 +1,11 @@
 import os
+import omni.ext
 import omni.kit.extensions
-from ..bindings import _ros_bridge
+from .. import _ros_bridge
 from .ros_menu import RosBridgeMenu
 
 
-class Extension:
+class Extension(omni.ext.IExt):
     def on_startup(self):
         print("Checking if ROS_MASTER_URI is set: ")
         if "ROS_MASTER_URI" in os.environ:
@@ -13,11 +14,8 @@ class Extension:
             os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
             print("ROS_MASTER_URI not set, using default, ROS_MASTER_URI=", os.environ["ROS_MASTER_URI"])
 
-        ext_folder = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-        lib_path = omni.kit.extensions.build_plugin_path(ext_folder, "omni.isaac.ros_bridge.plugin")
-
-        print("Loading RosBridge interface from ", lib_path)
-        self._rosbridge = _ros_bridge.acquire_rosbridge_interface(library_path=lib_path)
+        print("Loading RosBridge interface")
+        self._rosbridge = _ros_bridge.acquire_rosbridge_interface()
         self._ros_menu = RosBridgeMenu(self._rosbridge)
 
     def on_shutdown(self):

@@ -1,5 +1,5 @@
 import numpy as np
-from ..bindings import _dynamic_control
+from .. import _dynamic_control
 import omni.kit.settings
 
 

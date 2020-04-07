@@ -1,13 +1,12 @@
-name = ""
+display_name = "ROS Bridge"
 
 [dependencies]
 "omni.kit.editor" = {}
 "omni.physx" = {}
 
-[python.modules]
-"omni.isaac.ros_bridge" = { public = true }
+[[python.modules]]
+name = "omni.isaac.ros_bridge"
 
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false
-

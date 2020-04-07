@@ -1,9 +1,9 @@
 local ext_group = "omni.isaac"
 local ext_name = "dynamic_control"
 local ext_version = ""
-local ext_id = "omni/isaac/dynamic_control"
+local ext_id = "omni.isaac.dynamic_control"
 local ext_source = "source/extensions/"..ext_group.."/"..ext_name
-local ext_folder = "_build/$platform/$config/extensions/"..ext_id
+local ext_folder = "_build/$platform/$config/exts/"..ext_id
 local ext_bin_folder = ext_folder.."/bin/$platform/$config"
 
 group ("extensions/"..ext_id)
@@ -15,30 +15,33 @@ group ("extensions/"..ext_id)
             add_impl_folder("source/extensions/omni.isaac/dynamic_control/python")
     end
 
-    -- repo_build.prebuild_link {
-    --     { ext_source.."/config", ext_folder.."/config" },
-    -- }
+    repo_build.prebuild_link {
+        { ext_source.."/config", ext_folder.."/config" },
+    }
 
     repo_build.prebuild_link {
-        { ext_source.."/python/scripts", ext_folder.."/scripts" },
+        { ext_source.."/python/scripts", ext_folder.."/omni/isaac/dynamic_control/scripts" },
     }
 
     repo_build.prebuild_copy {
-        { ext_source.."/python/*.py", ext_folder.."" },
+        { ext_source.."/python/*.py", ext_folder.."/omni/isaac/dynamic_control" },
     }
 
     -- C++ Carbonite plugin
     project "omni.isaac.dynamic_control.plugin"
         removeplatforms { "aarch64" }
         define_plugin()
+
         staticruntime "Off"
         exceptionhandling "On"
+
         apply_pch()
 
         add_impl_folder("plugins")
         add_iface_folder("%{root}/include/omni/isaac/dynamic_control")
 
-        targetdir (target_dir.."/extensions/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
+        targetdir (target_dir.."/exts/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
+
 
         -- physx libs
         filter { "system:windows", "platforms:x86_64", "configurations:debug" }
@@ -58,23 +61,23 @@ group ("extensions/"..ext_id)
             links { "nvToolsExt64_1","PhysXExtensions_static_64", "PhysX_static_64", "PhysXPvdSDK_static_64","PhysXCooking_static_64","PhysXCommon_static_64", "PhysXFoundation_static_64"}
         filter {}
 
-        includedirs {
+        includedirs { 
             "%{root}/source/pch",
             target_deps_dir.."/physx/include",
             target_deps_dir.."/pxshared/include",
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/include",
             target_deps_dir.."/omni_physics/include"
-
+            
         }
 
         libdirs {   
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/lib"
-                }
+        }
 
         links {"gf", "sdf", "usd", "usdGeom","usdUtils"}
-        
+
         filter { "system:linux" }
             removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
             includedirs {
@@ -92,9 +95,8 @@ group ("extensions/"..ext_id)
         filter { "configurations:release" }
             defines { "NDEBUG" }
         filter {}
-
     -- Python Bindings for Carobnite Plugin
     project "omni.isaac.dynamic_control.python"
         define_bindings_python("_dynamic_control")
         add_impl_folder("bindings")
-        targetdir (target_dir.."/extensions/"..ext_id.."/bindings")
+        targetdir (target_dir.."/exts/"..ext_id.."/omni/isaac/dynamic_control")

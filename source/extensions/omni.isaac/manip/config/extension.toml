@@ -1,10 +1,10 @@
-name = ""
+display_name = "Joystick Manipulation"
 
 [dependencies]
 "omni.kit.editor" = {}
 
-[python.modules]
-"omni.isaac.manip" = { public = true }
+[[python.modules]]
+name = "omni.isaac.manip"
 
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"

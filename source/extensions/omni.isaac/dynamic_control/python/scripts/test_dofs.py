@@ -1,4 +1,4 @@
-from ..bindings import _dynamic_control
+from .. import _dynamic_control
 
 
 def test_dofs(dc):

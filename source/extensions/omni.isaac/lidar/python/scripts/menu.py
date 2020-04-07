@@ -7,11 +7,9 @@ import random
 import sys
 import os
 from pxr import Usd, UsdGeom, Sdf, Gf, Tf
-from .. import LidarSchema
+import omni.isaac.LidarSchema as LidarSchema
 
 from .. import _lidar
-
-import numpy
 
 ADD_LIDAR_SCENE_MENU_ITEM = "Create/Isaac/Sensors/Lidar"
 

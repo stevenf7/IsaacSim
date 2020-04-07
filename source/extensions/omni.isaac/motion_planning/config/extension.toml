@@ -1,10 +1,11 @@
-display_name = "Domain Randomization"
+display_name = "Motion Planning"
 
 [dependencies]
 "omni.kit.editor" = {}
+"omni.isaac.dynamic_control" = {}
 
 [[python.modules]]
-name = "omni.isaac.dr"
+name = "omni.isaac.motion_planning"
 
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"

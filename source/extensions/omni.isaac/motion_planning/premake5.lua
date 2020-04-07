@@ -1,9 +1,9 @@
 local ext_group = "omni.isaac"
 local ext_name = "motion_planning"
 local ext_version = ""
-local ext_id = "omni/isaac/motion_planning"
+local ext_id = "omni.isaac.motion_planning"
 local ext_source = "source/extensions/"..ext_group.."/"..ext_name
-local ext_folder = "_build/$platform/$config/extensions/"..ext_id
+local ext_folder = "_build/$platform/$config/exts/"..ext_id
 local ext_bin_folder = ext_folder.."/bin/$platform/$config"
 
 group ("extensions/"..ext_id)
@@ -15,18 +15,18 @@ group ("extensions/"..ext_id)
             add_impl_folder("source/extensions/omni.isaac/motion_planning/python")
     end
 
-    -- repo_build.prebuild_link {
-    --     { ext_source.."/config", ext_folder.."/config" },
-    -- }
+    repo_build.prebuild_link {
+        { ext_source.."/config", ext_folder.."/config" },
+    }
 
     repo_build.prebuild_link {
-        { ext_source.."/python/scripts", ext_folder.."/scripts" },
+        { ext_source.."/python/scripts", ext_folder.."/omni/isaac/motion_planning/scripts" },
     }
 
     repo_build.prebuild_copy {
-        { ext_source.."/python/*.py", ext_folder.."" },
+        { ext_source.."/python/*.py", ext_folder.."/omni/isaac/motion_planning" },
     }
-
+    
     repo_build.prebuild_copy {
         { "_build/target-deps/lula/lib/**", ext_bin_folder },
     }
@@ -41,7 +41,8 @@ group ("extensions/"..ext_id)
 
         add_impl_folder("plugins")
         add_iface_folder("%{root}/include/omni/isaac/motion_planning")
-        targetdir (target_dir.."/extensions/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
+
+        targetdir (target_dir.."/exts/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
 
         includedirs {
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include",
@@ -68,6 +69,7 @@ group ("extensions/"..ext_id)
     project "omni.isaac.motion_planning.python"
         define_bindings_python("_motion_planning")
         add_impl_folder("bindings")
-        targetdir (target_dir.."/extensions/"..ext_id.."/bindings")
+        targetdir (target_dir.."/exts/"..ext_id.."/omni/isaac/motion_planning")
         includedirs {target_deps_dir.."/lula/include"}
         cppdialect "C++17"
+        

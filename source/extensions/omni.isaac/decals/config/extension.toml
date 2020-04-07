@@ -1,10 +1,10 @@
-name = ""
+display_name = "Decals"
 
 [dependencies]
 "omni.kit.editor" = {}
 
-[python.modules]
-"omni.isaac.decals" = { public = true }
+[[python.modules]]
+name = "omni.isaac.decals"
 
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"

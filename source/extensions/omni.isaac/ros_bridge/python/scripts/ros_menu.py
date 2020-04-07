@@ -11,7 +11,7 @@ import sys
 import math
 
 from pxr import Usd, UsdGeom, Sdf, Gf, Tf
-from ..bindings import _ros_bridge
+from .. import _ros_bridge
 
 EXTENSION_NAME = "Isaac Ros Bridge"
 

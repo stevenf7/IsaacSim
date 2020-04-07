@@ -8,7 +8,6 @@ from .. import _lidar
 
 from .menu import LidarMenu
 
-
 # import pkgutil
 # import pxr
 

@@ -28,7 +28,7 @@ group ("extensions/"..ext_id)
     }
 
     repo_build.prebuild_copy {
-        { "_build/target-deps/usd_ext_isaac/$config/lib/python/LidarSchema/**", ext_folder.."/omni/isaac/lidar/LidarSchema" },
+        { "_build/target-deps/usd_ext_isaac/$config/lib/python/LidarSchema/**", ext_folder.."/omni/isaac/LidarSchema" },
         { "_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}lidarSchema${lib_ext}", ext_folder.."/bin/$platform/$config"},
     }
 

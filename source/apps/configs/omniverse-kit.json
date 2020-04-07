@@ -30,11 +30,11 @@
         },
         "scriptFolders": ["${kit}/scripts", "${documents}/scripts"],
         "newStage": {
-            "templatePath": [ "${kit}/extensions/extensions-bundled/omni/kit/builtin/new_stage", "${documents}/extensions/new_stage" ],
+            "templatePath": [ "${kit}/extensions/extensions-bundled/omni/kit/builtin/new_stage", "${documents}/extensions/new_stage", "${kit}/extsPhysics/omni.physx/newStage" ],
             "defaultTemplate": "sunlight"
         },
         "extensions": {
-            "folders2": ["${kit}/exts", "${app}/../exts"],
+            "folders2": ["${kit}/exts", "${kit}/extsPhysics", "${app}/../exts"],
             "foldersBuiltin": ["${kit}/extensions/extensions-bundled", "${kit}/extensions/extensions-other", "${documents}/extensions", "${app}/../extensions"],
             "pythonUserEnvPath": "${data}/pip3-envs/default",
             "enabledBuiltin": [

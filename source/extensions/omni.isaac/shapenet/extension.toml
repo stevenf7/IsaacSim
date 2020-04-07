@@ -1,7 +1,7 @@
-name = "Shapenet Extension"
+display_name = "Shapenet Extension"
 
 [dependencies]
 "omni.kit.editor" = {}
 
-[python.modules]
-"omni.kit.shapenet" = { public = true }
+[[python.modules]]
+name = "omni.isaac.shapenet"

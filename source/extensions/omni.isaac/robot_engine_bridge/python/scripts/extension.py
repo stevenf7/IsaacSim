@@ -1,12 +1,12 @@
 import os
-
+import omni.ext
 import omni.kit.commands
 import omni.kit.editor
 import omni.kit.extensions
 import omni.kit.ui
 import carb.tokens
 
-from ..bindings import _robot_engine_bridge
+from .. import _robot_engine_bridge
 from .menu import RobotEngineBridgeMenu
 
 
@@ -14,12 +14,10 @@ EXTENSION_NAME = "Robot Engine Bridge"
 EXTENSION_DESC = "Interface for interacting with Isaac Robot Engine"
 
 
-class Extension:
+class Extension(omni.ext.IExt):
     def on_startup(self):
-        ext_folder = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-        lib_path = omni.kit.extensions.build_plugin_path(ext_folder, "omni.isaac.robot_engine_bridge.plugin")
-        print("Starting Robot Engine Bridge from '%s'" % lib_path)
-        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface(library_path=lib_path)
+        print("Starting Robot Engine Bridge Extension")
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
 
         menu_path = f"Window/{EXTENSION_NAME}"
         self._editor = omni.kit.editor.get_editor_interface()
