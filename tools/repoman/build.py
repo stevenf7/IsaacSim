@@ -104,7 +104,7 @@ def main():
     settings.stage_files_error_if_missing = False
     settings.vscode_python = os.path.join(root, "_build/target-deps/kit_sdk_debug/_build/target-deps/python")
     settings.vscode_python_env = VSCODE_PYTHON_ENV
-    settings.sln_file = "omni-isaac-extensions.sln"
+    settings.sln_file = "omni_isaac_sim.sln"
     settings.vs_version = "vs2017"
     settings.stage_files_error_if_missing = True
     settings.stage_files_prebuild_files = [
