@@ -38,14 +38,14 @@ files = []
 # example_extensions package
 ########################################################################################################################
 
-[example_extensions]
+[omni_isaac_sim]
 files = [
     ["_build/$platform/$config/exts", "exts"],
 ]
 
-[example_extensions.windows-x86_64]
+[omni_isaac_sim.windows-x86_64]
 files = []
 
-[example_extensions.linux-x86_64]
+[omni_isaac_sim.linux-x86_64]
 files = []
 

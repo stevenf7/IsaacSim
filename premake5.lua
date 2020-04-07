@@ -172,7 +172,7 @@ end
 
 
 -- Starting from here we define a structure of actual solution to be generated. Starting with solution name.
-workspace "omni-isaac-extensions"
+workspace "omni_isaac_sim"
     configurations { "debug", "release" }
 
     -- Project selected by default to run

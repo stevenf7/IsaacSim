@@ -17,7 +17,7 @@ def package(pkg_desc, platform_target: str):
     omni.repo.package.package(pkg_desc)
 
 
-PACKAGES = {"example_extensions": ("example_extensions", package, ["debug", "release"])}
+PACKAGES = {"omni_isaac_sim": ("omni_isaac_sim", package, ["debug", "release"])}
 
 
 def run_command():
