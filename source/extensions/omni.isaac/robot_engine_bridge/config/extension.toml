@@ -4,6 +4,7 @@ display_name = "Robot Engine Bridge"
 "omni.kit.editor" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.lidar" = {}
+"omni.syntheticdata" = {}
 
 [[python.modules]]
 name = "omni.isaac.robot_engine_bridge"
