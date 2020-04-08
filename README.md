@@ -1,165 +1,131 @@
-# Kit Extensions & Apps Example :package:
-
-This repo is the gold standard for building Kit extensions and applications.
-
-It downloads Kit SDK via packman ([target-deps.packman.xml](deps/target-deps.packman.xml)) or you can use your local build. During build phase extensions are built (native), staged (copied and linked) into
-`_build/{platform}/{config}/extensions` folder. Then we just run Kit with custom config which sets to enable those extensions.
-
-The idea is that you fork it, trim down parts you don't need and use it to develop your extensions and applications. Which then can be packaged, shared, reused.
+# Omniverse Isaac Sim
+This is where isaac sim extensions for omniverse are getting developed
 
 
-## Getting started
+## Prerequisites
+#### Hardware
+- GPU supporting DirectX Raytracing or Vulkan Raytracing (This includes Pascal cards with 6 GB of RAM or more, Volta or Turing GPUs)
 
-1. run `build.bat`
-2. run `_build\windows-x86_64\debug\example.app.bat`
-3. notice enabled extensions in "Extension Manager Window" of Kit. Also notice that one of them brought its own test in "Test Runner" window.
+#### Linux/Windows
+- Install Ubuntu 18.04+ (linux-x86_64) / Windows 10 version 1809+ (windows-x86_64 and DXR)
+- Install NVIDIA driver 440.59+ (Linux) / NVIDIA driver 442.19+ (Windows)
+- Install VS Code (recommended) or VS2017 with [SDK 10.17763+](https://go.microsoft.com/fwlink/?LinkID=2023014)
+- (Optional) Install Vulkan SDK 1.1.106.0:
+    * Required for debug builds and validation layers only.
+    * [Windows] (https://sdk.lunarg.com/sdk/download/1.1.106.0/windows/VulkanSDK-1.1.106.0-Installer.exe)
+    * [Linux] (https://sdk.lunarg.com/sdk/download/1.1.106.0/linux/vulkansdk-linux-x86_64-1.1.106.0.tar.gz)
+- Install "git".
+- Install "git-lfs":
+    * Required for fetching data folder used in unit tests only.
+    * Reboot your machine after installation.
+    * Execute `git lfs install` once to enable LFS features after installation.
+        * If you cloned the repo before above steps, you have to fetch the data with `git lfs pull` in the repo.
+- [Fork omniverse isaac sim repository](https://gitlab-master.nvidia.com/isaac/omniverse_isaac_sim/forks/new)
+- Go to your newly created fork in GitLab, select
+    * go to "Settings->Repository->Mirroring repositories"
+        * set "Git repository URL" to https://gitlab-master.nvidia.com/isaac/omniverse_isaac_sim.git
+        * select "Pull" under "Mirror direction".
+        * clear out the text under "Password".
+        * check the "Overwrite diverged branches" checkbox.
+    * go to "Settings->General->Visibility, project features, permissions"
+        * ensure "Project Visibility" is set to "Public".
+- Clone your fork to a local hard drive, make sure to use a NTFS drive on Windows (Carbonite uses symbolic links)
+- Execute `./setup.sh` (Linux) which will install Docker. Logging out and back
+  in is required to update your account's group membership to include "docker".
 
-*. for running from python run `_build\windows-x86_64\debug\example.pythonapp.bat`
 
-## What's included
+## Building omniverse-kit
 
-### Extensions
+- Execute `./build.sh` (Linux) / `build.bat` (Windows)
+- Use `--help` to get more information. You can run only parts of build process, e.g:
+    * `build.bat -s` to only copy/link files
+    * `build.bat -d` to build only debug configuration
 
-```mermaid
-graph TD
+The build output will be found in the generated
+`_build` folder and the make/solution files will be found in the generated `_compiler` directory. Occasionally, when
+drastic project level changes are made, you may have to regenerate these files using `--rebuild` option with the build
+script.
 
-  subgraph "python"
-  A3(__init__.py + python code)
-  end
+The default setting is to target x86_64 CPU architecture when building on
+x86_64 hosts. If you want to target arm64 (aarch64) then run
+`./build.sh -p linux-aarch64`.
 
-  subgraph cpp
-  A1(__init__.py)
-  A1 -- carb::Framework --> B1(example.cpp_extension.plugin.dll)
-  end
+> NOTE: To build the project minimal configuration is needed. Any version of Windows 10 or Linux with Docker will do. Then
+run the setup and build scripts as described here above. That's it. The specific version of Windows, NVIDIA driver,
+and Vulkan are all runtime dependencies, not compile/link time dependencies. This allows omniverse-kit to build on stock
+virtual machines that require zero configuration. This is a beautiful thing, help us keep it that way.
 
-  subgraph "mixed"
-  A2(__init__.py + python code)
-  A2 --import _mixed_extension--> B2(example.mixed_extension.python)
-  B2 -- carb::Framework --> C2(example.mixed_extension.plugin.dll)
-  end
+## Linux Build Environment
+
+The linux-x86_64 build process uses a docker container to create a consistent
+build environment across all systems. `setup.sh` is intended to take care of
+installing Docker. We use docker-ce upstream from docker.com rather than the
+version which comes with your host linux system.  Should you wish to set up
+Docker manually, the process goes roughly as follows on Ubuntu systems:
+
+- sudo apt update
+- sudo apt install apt-transport-https ca-certificates curl software-properties-common
+- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+- sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+- sudo apt update
+- sudo apt install docker-ce
+- sudo usermod -aG docker ${USER} # Then log out and back in
+
+> NOTE: Docker on Windows System for Linux (WSL) is unsupported and likely will not work.
+
+## Running omniverse-kit
+
+- Go to debug or release folder under _build/xxx-x86_64 (x86_64 platforms only)
+- Execute `./omniverse-kit` (Linux) / `omniverse-kit.exe` (Windows)
+
+## Packaging
+
+- Use `./tools/package.sh` (Linux) / `tools/package.bat` (Windows):
+    * `tools/package.bat -c debug -m omniverse-kit` create a package in `_builtpackages`
+
+## Running Tests
+
+- Use `./tools/test_runner.sh` (Linux) / `tools/test_runner.bat` (Windows) to run different tests suites.
+- `--help` can give all the info on the arguments, for instance to run python tests on debug:
+    * `tools/test_runner.bat -c debug --suite pythontests`
+
+- Pass extra arguments to test with `-e`/`--extra-arg` command:
+    * `tools/test_runner.bat -c debug --suite unittests -e [graphics]`
+
+- Use `--from-pacakge`/`-p` to run tests against the package from `_builtpackages` folder. That is useful for mimicking TC setup:
+    * `tools/test_runner.bat ---suite unittests -p` -- unzips package in folder nearby (once) and runs tests in it.
 
 
-  
-  Kit[Kit] --> A1
-  Kit[Kit] --> A2
-  Kit[Kit] --> A3
+## Troubleshooting
+
+### Permission errors when on VPN on Windows
+You may see this error when using VPN on Windows:
+```
+Permission denied (publickey,gssapi-keyex,gssapi-with-mic,password).: exit status 255
+```
+As a workaround, use ssh key without a passphrase.
+
+Another possible ssh error:
 
 ```
-
-Each extension is a folder(or zip archive) in the end. You can write user code in python code only, or C++ only, or both. Ultimately extension archive could contain python code, python bindings (pyd/so files) and C++ plugins (dll/so). Each binary file is platform and configuration (debug/release, optionally) specific, one archive can contain binaries for multiple platforms, we put them in separate folders and follow proper naming of python bindings (https://stackoverflow.com/a/37028661).
-
-For more info refer to Kit documentation: http://omnidocs-internal.nvidia.com/py/index.html.
-
-#### example.python_extension
-
-Example of pure python extesion
-
-[source](source/extensions/example.python_extension)
-
-
-#### example.cpp_extension
-
-Example of native (C++ only) extension.
-
-[source](source/extensions/example.cpp_extension)
-
-
-#### example.mixed_extension
-
-Example of mixed extension which has both C++ and python code. They interact via python bindings built and included with this extension.
-
-[source](source/extensions/example.mixed_extension)
-
-
-### Tests
-
-We also provide examples of writing different tests. 
-
-Use `tools/test_runner.bat --help` to run any of them. There are:
-
-* (TBD) `unittests` - C++ test of particular interface/plugin
-* `pythontests` - python test of bindings (+plugin), which run without running Kit itself
-* `kittests` - python tests of extension inside of running Kit
-
-Example:
-
-> `tools/test_runner.bat --suite pythontests --config debug`
-
-
-### Docs
-
-Template to generate your documentation for extension with sphinx. Run `tools/build_docs.bat`, results will be in `_build/docs`. Sources are in [docs](docs) folder.
-
-Document your python code with [Google Docstring](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html), more info in: (https://gitlab-master.nvidia.com/carbon/Carbonite/blob/master/docs/Documenting.md)
-
-
-### Apps
-
-Example of an app which runs only those 3 extensions in Kit (and test_runner for tests). All files are in [source/apps](source/apps), they are copied and linked during build (stage phase).
-
-> `_build\windows-x86_64\debug\example.app.bat`
-
-It also includes example of running Kit from python, both default Kit and an app which runs only those 3 extensions in Kit. 
-
-> `_build\windows-x86_64\debug\example.pythonapp.bat`
-
-That runs default python example, to see list of examples:
-
-> `_build\windows-x86_64\debug\example.pythonapp.bat --help`
-
-Pass different one as first argument to run it.
-
-
-### RepoMan
-
-All repo tools are based on [RepoMan](https://omniverse.gitlab-master-pages.nvidia.com/repo/repo_man/).
-Each of command can be explored with `--help` flag.
-Commands:
-
-* `build.bat` - cleans repo, stage files, generates solutions, setups vscode env, builds binaries.
-* `format_code.bat` - format C++ and python code.
-* `tools/build_docs.bat` - build documentation
-* `tools/package.bat` - prepare final package (use [package.toml](package.toml) to configure)
-* `tools/test_runner.bat` - run different test suites
-
-Config files:
-
-* `premake5.lua` - all configuration for generating platform specific build solutions. [premake5 docs](https://github.com/premake/premake-core/wiki).
-* `prebuild.toml` - lists files to copy and folders to link before building.
-* `package.toml` - lists file patterns to package
-
-### CI
-
-[Teamcity Project](https://teamcity.nvidia.com/project/Omniverse_KitExtensions_Example?mode=builds) runs on every commit. Builds both platforms, docs, runs tests. Publishing is optional (click "Run" on "publish" configuration).
-
-It can also be easily copied in Teamcity along with forking this project on gitlab.
-
-According to [RepoMan Guidelines](https://omniverse.gitlab-master-pages.nvidia.com/repo/repo_man/manual/overview.html#core-principles) all Teamcity entry points are in [tools/ci](tools/ci) folder.
-
-
-### VsCode environment
-
-Install VsCode python extension, close VsCode, run `build.bat` first time (`-s` flag is enough), open project again. Python intellisense, linter, formatting should work (we bring our own python).
-
-
-## Using Custom Kit SDK
-
-To use your local build of Kit SDK create a file, deps/target-deps.packman.xml.user containing the following lines:
-
-```xml
-<project toolsVersion="5.6">
-  <dependency name="kit_sdk_debug" linkPath="../_build/target-deps/kit_sdk_debug">
-    <source path="C:/projects/Graphene" />
-  </dependency>
-  <dependency name="kit_sdk_release" linkPath="../_build/target-deps/kit_sdk_release">
-    <source path="C:/projects/Graphene" />
-  </dependency>
-</project>
+x509: certificate signed by unknown authority
+```
+The current solution is to disable SSL verification:
+```
+git config http.sslVerify false
 ```
 
-Where `C:/projects/Graphene` is path to your Kit SDK folder.
+### Docker fails with ``permission denied`` errors when building
+ * You need to log out and log back in for group changes to take effect.
+   If you haven't logged out since installing Docker with ``setup.sh`` or
+   adding yourself to the ``docker`` group, you need to log out and log back in.
+ * After you have logged out and logged back in, check that your user is in the
+   ``docker`` group with the ``groups`` command.
+ * Add yourself to the docker group with ``usermod -aG docker ${USER}`` if you
+   are not in the ``docker`` group.
 
-## TODO
+### Docker fails with ``docker: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?`` when building
+ * Start the daemon with ``systemctl start docker``
+ * Make the daemon always start on boot with ``systemctl enable docker``
+ * You can check if the daemon is running with ``systemctl list-units --state=active | grep docker``
 
-* C++ unit tests example
-* Finish Linux support (+CI)
