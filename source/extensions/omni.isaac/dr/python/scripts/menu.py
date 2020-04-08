@@ -2,12 +2,9 @@ from pxr import Gf, Usd, UsdGeom, Sdf
 import asyncio
 import json
 import omni.kit
-import omni.kit.extensions
 import omni.usd
 import os
 import random
-
-EXTENSION_NAME = "Domain Randomizer"
 
 ADD_COLOR_DR_MENU_ITEM = "Create/Isaac/DR/Color Component"
 ADD_MOVEMENT_DR_MENU_ITEM = "Create/Isaac/DR/Movement Component"
@@ -22,7 +19,7 @@ class DRMenu:
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._layers = self._usd_context.get_layers()
-        self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600)
+        self._window = omni.kit.ui.Window("Domain Randomizer", 960, 600)
         self._dr = domain_randomizer_interface
         self.texture_layer_index = -1
         self.texture_component_count = 0

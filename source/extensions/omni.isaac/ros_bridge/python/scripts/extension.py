@@ -1,6 +1,5 @@
 import os
 import omni.ext
-import omni.kit.extensions
 from .. import _ros_bridge
 from .ros_menu import RosBridgeMenu
 
@@ -22,10 +21,3 @@ class Extension(omni.ext.IExt):
         _ros_bridge.release_rosbridge_interface(self._rosbridge)
         self._ros_menu.shutdown()
         self._ros_menu = None
-
-    def get_deps(self):
-        return "omni.physx,omni.isaac.dynamic_control"
-
-
-def get_extension():
-    return Extension()

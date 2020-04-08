@@ -5,14 +5,11 @@ import omni.kit.settings
 import carb.windowing
 import carb.settings
 from .. import _manip
-import carb.input
 from enum import IntEnum
 from functools import partial
 from pxr import Sdf
-import os
 
 EXTENSION_NAME = "Gamepad Binding"
-EXTENSION_DESC = "Bind properties to the gamepad."
 
 control_slider_range = 200.0
 
@@ -80,12 +77,6 @@ class Extension(omni.ext.IExt):
         self.update_sub = None
         self.stage_sub = None
         self.bindings = []
-
-    def get_name(self):
-        return EXTENSION_NAME
-
-    def get_description(self):
-        return EXTENSION_DESC
 
     def update_binding(self, binding, input):
         if binding.attr == None:
@@ -375,7 +366,3 @@ class Extension(omni.ext.IExt):
         save_button = omni.kit.ui.Button("Save to Stage")
         save_button.set_clicked_fn(self.on_save_clicked_fn)
         self.window.layout.add_child(save_button)
-
-
-def get_extension():
-    return Extension()

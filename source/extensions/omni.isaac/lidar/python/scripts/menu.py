@@ -1,14 +1,9 @@
 import carb
-import carb.input
 import omni.kit.editor
 import omni.kit.commands
 import omni.kit.ui
-import random
-import sys
-import os
-from pxr import Usd, UsdGeom, Sdf, Gf, Tf
+from pxr import Sdf
 import omni.isaac.LidarSchema as LidarSchema
-
 from .. import _lidar
 
 ADD_LIDAR_SCENE_MENU_ITEM = "Create/Isaac/Sensors/Lidar"
@@ -50,10 +45,7 @@ class LidarMenu:
         return lidar
 
     def _on_scene_menu_click(self, menu, value):
-        stage = self._usd_context.get_stage()
         selectedPrims = self._usd_context.get_selection().get_selected_prim_paths()
-        # upAxis = UsdGeom.GetStageUpAxis(stage)
-        # scaleFactor = getUnitScaleFactor(stage)
 
         if menu == ADD_LIDAR_SCENE_MENU_ITEM:
             if len(selectedPrims) > 0:

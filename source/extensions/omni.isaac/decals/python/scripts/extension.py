@@ -1,6 +1,5 @@
 import os
 
-import omni.kit.extensions
 from pxr import Usd, UsdGeom, Sdf, Gf, Tf, PhysicsSchemaTools
 
 import carb
@@ -14,9 +13,6 @@ EXTENSION_NAME = "Decals"
 
 
 class Extension(omni.ext.IExt):
-    def get_name(self):
-        return EXTENSION_NAME
-
     def on_startup(self):
         self._decals = _decals.acquire()
 
@@ -92,7 +88,3 @@ class Extension(omni.ext.IExt):
 
     def _test_button_clicked_fn(self, widget):
         self._decals.run_tests()
-
-
-def get_extension():
-    return Extension()

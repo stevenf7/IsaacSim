@@ -2,7 +2,6 @@ import os
 import omni.ext
 import omni.kit.commands
 import omni.kit.editor
-import omni.kit.extensions
 import omni.kit.ui
 import carb.tokens
 
@@ -11,7 +10,6 @@ from .menu import RobotEngineBridgeMenu
 
 
 EXTENSION_NAME = "Robot Engine Bridge"
-EXTENSION_DESC = "Interface for interacting with Isaac Robot Engine"
 
 
 class Extension(omni.ext.IExt):
@@ -92,12 +90,6 @@ class Extension(omni.ext.IExt):
         print("Shutting down Robot Engine Bridge")
         _robot_engine_bridge.release_robot_engine_bridge_interface(self._re_bridge)
 
-    def get_name(self):
-        return EXTENSION_NAME
-
-    def get_description(self):
-        return EXTENSION_DESC
-
     def _on_init_stage_load_fn(self, widget):
         self._re_bridge.initializeStageLoader(
             self._inp_comp.value, self._req_channel.value, self._out_comp.value, self._rep_channel.value
@@ -117,10 +109,3 @@ class Extension(omni.ext.IExt):
 
     def _on_stop_fn(self, widget):
         self._re_bridge.stopApplication()
-
-    def get_deps(self):
-        return "omni.isaac.dynamic_control,omni.isaac.lidar,omni.syntheticdata"
-
-
-def get_extension():
-    return Extension()

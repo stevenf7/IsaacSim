@@ -7,7 +7,6 @@
     omniverse if there is a connection.
 """
 
-import omni.kit.extensions
 from omni.assetimport import assetconverter
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -75,10 +74,8 @@ def run_server(httpd):
     httpd.serve_forever()
 
 
-class Extension:
+class Extension(omni.ext.IExt):
     def on_startup(self):
-        ext_folder = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-        lib_path = omni.kit.extensions.build_plugin_path(ext_folder, "omni.isaac.shapenet.plugin")
         self._menu = ShapenetMenu()
         self._editor = omni.kit.editor.get_editor_interface()
         # Creat the TCPServer and run it in another thread, but keep handle to it so
@@ -131,10 +128,3 @@ class Extension:
             if DEBUG_PRINT_ON:
                 print("Call process_request_in_thread with request: ", request)
             process_request_in_thread("new", g_responses, self._menu, request)
-
-    def get_deps(self):
-        return "omni.assetimport"
-
-
-def get_extension():
-    return Extension()

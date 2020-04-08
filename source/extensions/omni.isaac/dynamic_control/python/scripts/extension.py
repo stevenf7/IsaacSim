@@ -3,7 +3,6 @@ import os
 import omni.ext
 import omni.kit.commands
 import omni.kit.editor
-import omni.kit.extensions
 import omni.kit.ui
 
 import omni.physx._physx as omni_physx
@@ -18,7 +17,6 @@ from .test_attractor import get_test_attractor
 from .test_cartpole import get_cart_pole
 
 EXTENSION_NAME = "Dynamic Control"
-EXTENSION_DESC = "Interface for interacting with physical actors"
 
 
 class Extension(omni.ext.IExt):
@@ -47,15 +45,6 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         print("Shutting down Dynamic Control")
         _dynamic_control.release_dynamic_control_interface(self._dc)
-
-    def get_name(self):
-        return EXTENSION_NAME
-
-    def get_description(self):
-        return EXTENSION_DESC
-
-    def get_deps(self):
-        return "omni.physx"
 
     def _build_window_ui(self):
 
@@ -180,7 +169,3 @@ class Extension(omni.ext.IExt):
 
     def _on_joint_monkey_clicked(self, button):
         self._set_active_script(get_joint_monkey())
-
-
-def get_extension():
-    return Extension()
