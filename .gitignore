@@ -84,7 +84,7 @@ data/cache
 symbols.txt
 /.vs
 
-# petert: temp file i create for debugging
-output.txt
+# crash dumps
+*.dmp
 
 PACKAGE-LICENSES/
