@@ -19,25 +19,9 @@ group ("extensions/"..ext_id)
         { ext_source.."/config", ext_folder.."/config" },
     }
 
-    -- repo_build.prebuild_link {
-    --     { ext_source.."/python/scripts", ext_folder.."/omni/isaac/utils/scripts" },
-    -- }
-
-    -- repo_build.prebuild_copy {
-    --     { ext_source.."/python/*.py", ext_folder.."/omni/isaac/utils" },
-    -- }
-
-    -- C++ Carbonite plugin
-    -- project "omni.isaac.utils.plugin"
-    --     removeplatforms { "aarch64" }
-    --     define_plugin()
-
-    --     apply_pch()
-
-    --     add_impl_folder("plugins")
-    --     add_iface_folder("%{root}/include/omni/isaac/utils")
-
-    --     targetdir (target_dir.."/exts/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
+    repo_build.prebuild_copy {
+        { ext_source.."/python/*.py", ext_folder.."/omni/isaac/utils" },
+    }
 
     -- Python Bindings for Carobnite Plugin
     project "omni.isaac.utils.python"

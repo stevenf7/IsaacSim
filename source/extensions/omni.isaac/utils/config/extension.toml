@@ -1,12 +1,5 @@
 display_name = "Isaac Utilities"
 
-[dependencies]
-"omni.kit.editor" = {}
-
 [[python.modules]]
 name = "omni.isaac.utils"
-
-[[native.plugins]]
-search_path = "bin/${platform}/${config}/*.plugin"
-recursive = false
 
