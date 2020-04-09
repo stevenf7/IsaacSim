@@ -20,10 +20,10 @@ This is where isaac sim extensions for omniverse are getting developed
     * Reboot your machine after installation.
     * Execute `git lfs install` once to enable LFS features after installation.
         * If you cloned the repo before above steps, you have to fetch the data with `git lfs pull` in the repo.
-- [Fork omniverse isaac sim repository](https://gitlab-master.nvidia.com/isaac/omniverse_isaac_sim/forks/new)
+- [Fork omniverse isaac sim repository](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/forks/new)
 - Go to your newly created fork in GitLab, select
     * go to "Settings->Repository->Mirroring repositories"
-        * set "Git repository URL" to https://gitlab-master.nvidia.com/isaac/omniverse_isaac_sim.git
+        * set "Git repository URL" to https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim.git
         * select "Pull" under "Mirror direction".
         * clear out the text under "Password".
         * check the "Overwrite diverged branches" checkbox.
