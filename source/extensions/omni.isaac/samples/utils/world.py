@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import numpy as np
-from omni.isaac.dynamic_control.bindings import _dynamic_control
+from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd, UsdGeom, Sdf, Gf, Tf
 from . import math_utils
 

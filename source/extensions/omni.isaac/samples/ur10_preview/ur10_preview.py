@@ -14,13 +14,13 @@ import omni.kit.extensions
 import omni.kit.ui
 import omni.kit.settings
 
-from omni.isaac.motion_planning.bindings import _motion_planning
-from omni.isaac.dynamic_control.bindings import _dynamic_control
-from omni.physx.bindings import _physx
+from omni.isaac.motion_planning import _motion_planning
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.physx import _physx
 
-from .ur10_scenarios.scenario import Scenario
-from .ur10_scenarios.attach_body import AttachBody
-from .ur10_scenarios.multiple_obstacle import MultipleObstacle
+from .scenarios.scenario import Scenario
+from .scenarios.attach_body import AttachBody
+from .scenarios.multiple_obstacle import MultipleObstacle
 
 EXTENSION_NAME = "UR10 Preview"
 EXTENSION_DESC = "UR10 Preview Block Stacking Demo"

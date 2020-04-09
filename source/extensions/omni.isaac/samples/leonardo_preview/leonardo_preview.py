@@ -15,9 +15,9 @@ import omni.appwindow
 import omni.kit.ui
 import omni.kit.settings
 
-from omni.isaac.motion_planning.bindings import _motion_planning
-from omni.isaac.dynamic_control.bindings import _dynamic_control
-from omni.physx.bindings import _physx
+from omni.isaac.motion_planning import _motion_planning
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.physx import _physx
 
 from .scenarios.scenario import Scenario
 from .scenarios.ghost_scenario import GhostScenario
@@ -25,7 +25,6 @@ from .scenarios.simple_stack import SimpleStack
 from .scenarios.multiple_obstacle import MultipleObstacle
 
 EXTENSION_NAME = "Leonardo Preview"
-EXTENSION_DESC = "Leonardo Preview Block Stacking Demo"
 
 
 class Extension:

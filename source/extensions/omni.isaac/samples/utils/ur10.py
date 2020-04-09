@@ -10,13 +10,13 @@ import time
 import numpy as np
 from pxr import Usd, UsdGeom, Gf
 import omni.kit.settings
-from omni.isaac.motion_planning.bindings import _motion_planning
-from omni.isaac.dynamic_control.bindings import _dynamic_control
+from omni.isaac.motion_planning import _motion_planning
+from omni.isaac.dynamic_control import _dynamic_control
 import carb.tokens
 
 from . import math_utils
 
-from omni.isaac.utils.bindings._isaac_utils.magic_joints import Magic_Joint, Magic_Joint_Properties
+from omni.isaac.utils._isaac_utils.magic_joints import Magic_Joint, Magic_Joint_Properties
 
 default_config = (-1.57, -1.57, -1.57, -1.57, 1.57, 0)
 
