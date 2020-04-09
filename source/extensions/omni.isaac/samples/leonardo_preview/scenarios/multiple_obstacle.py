@@ -13,9 +13,9 @@ import numpy as np
 from pxr import Sdf, Gf, PhysicsSchema
 import concurrent.futures
 
-from ..utils.franka import Franka, default_config
-from ..utils.world import World
-from ..utils.state_machine import *
+from omni.isaac.samples.utils.franka import Franka, default_config
+from omni.isaac.samples.utils.world import World
+from omni.isaac.samples.utils.state_machine import *
 from .scenario import *
 
 

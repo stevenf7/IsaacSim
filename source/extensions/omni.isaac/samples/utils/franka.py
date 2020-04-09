@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import time
+import os
 import numpy as np
 from pxr import Usd, UsdGeom, Gf
 import omni.kit.settings
@@ -219,12 +220,14 @@ class Franka:
 
         self.base = self.dc.get_articulation_root_body(self.ar)
 
-        exec_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
+        exec_folder = os.path.abspath(
+            carb.tokens.get_tokens_interface().resolve("${app}/../resources/lula/lula_franka")
+        )
 
         self.rmp_handle = self.mp.registerRmp(
-            exec_folder + "/resources/lula/lula_franka/urdf/lula_franka_gen.urdf",
-            exec_folder + "/resources/lula/lula_franka/config/robot_descriptor.yaml",
-            exec_folder + "/resources/lula/lula_franka/config/franka_rmpflow_common.yaml",
+            exec_folder + "/urdf/lula_franka_gen.urdf",
+            exec_folder + "/config/robot_descriptor.yaml",
+            exec_folder + "/config/franka_rmpflow_common.yaml",
             prim.GetPath().pathString,
             "right_gripper",
             True,

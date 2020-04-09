@@ -9,6 +9,7 @@
 
 from pxr import Usd, UsdGeom, Sdf, Gf, PhysicsSchema, PhysxSchema
 import omni.usd
+import omni.kit.connectionhub
 
 import numpy as np
 import gc

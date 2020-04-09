@@ -11,6 +11,8 @@
 
 #include <omni/isaac/motion_planning/MotionPlanning.h>
 #include <pybind11/pybind11/pybind11.h>
+#include <pybind11/pybind11/eigen.h>
+#include <pybind11/pybind11/numpy.h>
 
 CARB_BINDINGS("omni.isaac.motion_planning.python")
 

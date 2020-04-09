@@ -10,6 +10,7 @@
 from pxr import Usd, UsdGeom, Sdf, Gf, PhysicsSchema, PhysxSchema
 import omni.usd
 import gc
+import omni.kit.connectionhub
 
 # Wtility function to specify the stage with the z axis as "up"
 def setUpZAxis(stage):

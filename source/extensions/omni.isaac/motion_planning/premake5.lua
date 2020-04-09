@@ -31,6 +31,10 @@ group ("extensions/"..ext_id)
         { "_build/target-deps/lula/lib/**", ext_bin_folder },
     }
 
+    repo_build.prebuild_link {
+        { "_build/target-deps/lula/data/", "_build/$platform/$config/resources/lula/" },
+    }
+
     -- C++ Carbonite plugin
     project "omni.isaac.motion_planning.plugin"
         cppdialect "C++17"

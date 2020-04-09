@@ -10,7 +10,7 @@ import carb.input
 from pxr import Usd, UsdGeom
 import omni.kit.commands
 import omni.kit.editor
-import omni.kit.extensions
+import omni.ext
 import omni.appwindow
 import omni.kit.ui
 import omni.kit.settings
@@ -27,7 +27,7 @@ from .scenarios.multiple_obstacle import MultipleObstacle
 EXTENSION_NAME = "Leonardo Preview"
 
 
-class Extension:
+class Extension(omni.ext.IExt):
     def on_startup(self):
         """Initialize extension and UI elements
         """
@@ -224,16 +224,3 @@ class Extension:
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
         self._window.set_update_fn(None)
         print("Shutting down")
-
-    def get_name(self):
-        return EXTENSION_NAME
-
-    def get_description(self):
-        return EXTENSION_DESC
-
-    def get_deps(self):
-        return "omni.isaac.dynamic_control,omni.isaac.motion_planning"
-
-
-def get_extension():
-    return Extension()

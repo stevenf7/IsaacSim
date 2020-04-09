@@ -8,3 +8,4 @@ display_name = "Leonardo Preview Sample"
 
 [[python.modules]]
 name = "omni.isaac.samples.leonardo_preview"
+public = false
