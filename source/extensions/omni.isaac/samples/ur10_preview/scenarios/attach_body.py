@@ -17,10 +17,10 @@ from enum import Enum
 import omni
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils._isaac_utils import math as math_utils
-from ..utils.world import World
-from ..utils.state_machine import *
-from ..utils.ur10 import UR10, default_config
-from ..utils.math_utils import *
+from omni.isaac.samples.utils.world import World
+from omni.isaac.samples.utils.state_machine import *
+from omni.isaac.samples.utils.ur10 import UR10, default_config
+from omni.isaac.samples.utils.math_utils import *
 
 from .scenario import *
 from copy import copy

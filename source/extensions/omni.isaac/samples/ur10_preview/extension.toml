@@ -1,0 +1,11 @@
+display_name = "UR10 Preview Sample"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.motion_planning" = {}
+"omni.isaac.utils" = {}
+
+[[python.modules]]
+name = "omni.isaac.samples.ur10_preview"
+public = false

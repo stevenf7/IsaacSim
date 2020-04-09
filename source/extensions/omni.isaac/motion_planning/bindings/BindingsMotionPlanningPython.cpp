@@ -10,11 +10,25 @@
 #include <carb/BindingsUtils.h>
 
 #include <omni/isaac/motion_planning/MotionPlanning.h>
-#include <pybind11/pybind11/pybind11.h>
+#include <pybind11/pybind11/chrono.h>
 #include <pybind11/pybind11/eigen.h>
+#include <pybind11/pybind11/functional.h>
 #include <pybind11/pybind11/numpy.h>
+#include <pybind11/pybind11/pybind11.h>
+#include <pybind11/pybind11/stl.h>
 
 CARB_BINDINGS("omni.isaac.motion_planning.python")
+
+namespace omni
+{
+namespace isaac
+{
+namespace motion_planning
+{
+}
+}
+}
+
 
 namespace
 {
