@@ -261,6 +261,7 @@ group "apps"
     include ("source/extensions/omni.isaac/manip")
     include ("source/extensions/omni.isaac/shapenet")
     include ("source/extensions/omni.isaac/utils")
+    include ("source/extensions/omni.isaac/urdf")
 
     -- Linux Only
     if os.target() == "linux" then
