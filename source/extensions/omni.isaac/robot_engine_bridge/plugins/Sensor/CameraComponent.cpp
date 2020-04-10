@@ -150,7 +150,7 @@ void CameraComponent::tick()
     }
 
 
-    if (mDepthSensor && mDepthSensorData)
+    if (mDepthSensor)
     {
         mDepthSensorData = mSyntheticDataInterface->getSensorHostData(mDepthSensor);
 
@@ -206,7 +206,7 @@ void CameraComponent::tick()
         publish(mDepthOutputComponent, mDepthChannelName, cameraMessageProto, isaac_message::DepthCameraProtoId, buffers);
     }
 
-    if (mSegmentationSensor && mSegmentationSensorData)
+    if (mSegmentationSensor)
     {
         mSegmentationSensorData = mSyntheticDataInterface->getSensorHostData(mSegmentationSensor);
 
