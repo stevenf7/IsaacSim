@@ -76,13 +76,13 @@ void DRComponentLight::onComponentChange()
     mLbRange[0] = firstColor[2];
     mLbRange[1] = secondColor[2];
     update();
-    CARB_LOG_WARN("Light Update: %s", mCompName.c_str());
+    CARB_LOG_INFO("Light Update: %s", mCompName.c_str());
 }
 void DRComponentLight::stop()
 {
     CARB_LOG_INFO("DR Light Component Stopped");
 }
-void DRComponentLight::tick(const float dt)
+void DRComponentLight::tick()
 {
     for (auto& prim : mAllPrims)
     {

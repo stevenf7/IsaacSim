@@ -18,12 +18,8 @@ namespace isaac
 namespace dr
 {
 
-
-DRManager::DRManager(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* tokens)
+DRManager::DRManager()
 {
-    mStage = stage;
-    mTokens = tokens;
-    mRootLayerIdentifier = mStage->GetRootLayer()->GetIdentifier();
 }
 
 DRManager::~DRManager()
@@ -31,134 +27,15 @@ DRManager::~DRManager()
     deleteAllComponents();
 }
 
-void DRManager::loadComponentFromUsd()
+void DRManager::initialize(pxr::UsdStageRefPtr stage, carb::tokens::ITokens* tokens)
 {
-    pxr::UsdPrimRange range = mStage->Traverse();
-    for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
-    {
-        pxr::UsdPrim childPrim = *iter;
-        onComponentAdd(childPrim);
-        onComponentChange(childPrim);
-    }
+    utils::ComponentManager::initialize(stage);
+    mTokens = tokens;
+    mRootLayerIdentifier = mStage->GetRootLayer()->GetIdentifier();
+    mNoticeListener = pxr::TfNotice::Register(pxr::TfCreateWeakPtr(this), &DRManager::handlePrimChanged);
 }
 
-void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
-{
-    if (std::find(mSupportedComponents.begin(), mSupportedComponents.end(), prim.GetTypeName()) ==
-        mSupportedComponents.end())
-        return;
-
-    std::string compName;
-    std::unique_ptr<DRComponentBase> component;
-    if (mDRLayerName == "")
-    {
-        mLayer = omni::usd::UsdContext::getContext()->getLayers();
-        const std::string layerPath = "";
-        const std::string layerName = "DRLayer";
-        mDRLayerName = mLayer->addSublayer(mRootLayerIdentifier, 0, layerPath.c_str(), false, false, layerName.c_str());
-        pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
-        mStage->SetEditTarget(editTarget);
-    }
-    prim.GetAttribute(pxr::TfToken("compName")).Get(&compName);
-    if (mComponentMap.find(compName) != mComponentMap.end())
-        return;
-
-    if (prim.GetTypeName() == "ColorComponent")
-    {
-        component = std::make_unique<DRComponentColor>(mTokens);
-        component->initialize(prim, mStage);
-        component->onComponentChange();
-        component->onStart();
-        mAllComponents.push_back(std::move(component));
-        mComponentMap[compName] = (int)mAllComponents.size() - 1;
-        CARB_LOG_WARN("Component ID %d of type Color Created", (int)mAllComponents.size() - 1);
-    }
-    else if (prim.GetTypeName() == "TextureComponent")
-    {
-        component = std::make_unique<DRComponentTexture>();
-        component->initialize(prim, mStage);
-        component->onComponentChange();
-        component->onStart();
-        mAllComponents.push_back(std::move(component));
-        mComponentMap[compName] = (int)mAllComponents.size() - 1;
-        CARB_LOG_WARN("Component ID %d of type Texture Created", (int)mAllComponents.size() - 1);
-    }
-    else if (prim.GetTypeName() == "MovementComponent")
-    {
-        component = std::make_unique<DRComponentMovement>();
-        component->initialize(prim, mStage);
-        component->onComponentChange();
-        component->onStart();
-        mAllComponents.push_back(std::move(component));
-        mComponentMap[compName] = (int)mAllComponents.size() - 1;
-        CARB_LOG_WARN("Component ID %d of type Movement Created", (int)mAllComponents.size() - 1);
-    }
-    else if (prim.GetTypeName() == "ScaleComponent")
-    {
-        component = std::make_unique<DRComponentScale>();
-        component->initialize(prim, mStage);
-        component->onComponentChange();
-        component->onStart();
-        mAllComponents.push_back(std::move(component));
-        mComponentMap[compName] = (int)mAllComponents.size() - 1;
-        CARB_LOG_WARN("Component ID %d of type Scale Created", (int)mAllComponents.size() - 1);
-    }
-    else if (prim.GetTypeName() == "LightComponent")
-    {
-        component = std::make_unique<DRComponentLight>();
-        component->initialize(prim, mStage);
-        component->onComponentChange();
-        component->onStart();
-        mAllComponents.push_back(std::move(component));
-        mComponentMap[compName] = (int)mAllComponents.size() - 1;
-        CARB_LOG_WARN("Component ID %d of type Light Created", (int)mAllComponents.size() - 1);
-    }
-}
-
-void DRManager::onComponentChange(const pxr::UsdPrim& prim)
-{
-    if (std::find(mSupportedComponents.begin(), mSupportedComponents.end(), prim.GetTypeName()) ==
-        mSupportedComponents.end())
-        return;
-
-    std::string compName;
-    prim.GetAttribute(pxr::TfToken("compName")).Get(&compName);
-    if (prim.GetTypeName() == "ColorComponent")
-    {
-        mAllComponents[mComponentMap[compName]]->onComponentChange();
-    }
-    else if (prim.GetTypeName() == "TextureComponent")
-    {
-        mAllComponents[mComponentMap[compName]]->onComponentChange();
-    }
-    else if (prim.GetTypeName() == "MovementComponent")
-    {
-        mAllComponents[mComponentMap[compName]]->onComponentChange();
-    }
-    else if (prim.GetTypeName() == "ScaleComponent")
-    {
-        mAllComponents[mComponentMap[compName]]->onComponentChange();
-    }
-    else if (prim.GetTypeName() == "LightComponent")
-    {
-        mAllComponents[mComponentMap[compName]]->onComponentChange();
-    }
-}
-
-void DRManager::deleteAllComponents()
-{
-    for (auto& component : mAllComponents)
-    {
-        if (component)
-        {
-            component.reset();
-        }
-    }
-    mAllComponents.clear();
-    mDoOnce = false;
-}
-
-void DRManager::tick(const float dt)
+void DRManager::tick(double dt)
 {
     mTimeElapsed += dt;
     // CARB_LOG_WARN("Tick: %f - %f", mTimeElapsed, dt);
@@ -173,14 +50,168 @@ void DRManager::tick(const float dt)
 
     for (auto& component : mAllComponents)
     {
-        if (component && (component->mRandomizationDurationInterval == -1 ||
-                          ((mTimeElapsed - component->mLastTickTime) >= component->mRandomizationDurationInterval)))
+        if (component.second &&
+            (component.second->mRandomizationDurationInterval == -1 ||
+             ((mTimeElapsed - component.second->mLastTickTime) >= component.second->mRandomizationDurationInterval)))
         {
-            component->mLastTickTime = mTimeElapsed;
-            component->tick(dt);
+            component.second->mLastTickTime = mTimeElapsed;
+            component.second->tick();
         }
     }
 }
+
+void DRManager::initComponents()
+{
+    // Empty
+}
+
+void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
+{
+    if (std::find(mSupportedComponents.begin(), mSupportedComponents.end(), prim.GetTypeName()) ==
+        mSupportedComponents.end())
+        return;
+
+    std::string primPath = prim.GetPath().GetString();
+    std::unique_ptr<DRComponentBase> component;
+    if (mDRLayerName == "")
+    {
+        mLayer = omni::usd::UsdContext::getContext()->getLayers();
+        const std::string layerPath = "";
+        const std::string layerName = "DRLayer";
+        mDRLayerName = mLayer->addSublayer(mRootLayerIdentifier, 0, layerPath.c_str(), false, false, layerName.c_str());
+        pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
+        mStage->SetEditTarget(editTarget);
+    }
+    if (mAllComponents.find(primPath) != mAllComponents.end())
+        return;
+
+    if (prim.GetTypeName() == "ColorComponent")
+    {
+        component = std::make_unique<DRComponentColor>(mTokens);
+    }
+    else if (prim.GetTypeName() == "TextureComponent")
+    {
+        component = std::make_unique<DRComponentTexture>();
+    }
+    else if (prim.GetTypeName() == "MovementComponent")
+    {
+        component = std::make_unique<DRComponentMovement>();
+    }
+    else if (prim.GetTypeName() == "RotationComponent")
+    {
+        component = std::make_unique<DRComponentRotation>();
+    }
+    else if (prim.GetTypeName() == "ScaleComponent")
+    {
+        component = std::make_unique<DRComponentScale>();
+    }
+    else if (prim.GetTypeName() == "LightComponent")
+    {
+        component = std::make_unique<DRComponentLight>();
+    }
+    component->initialize(prim, mStage);
+    component->onComponentChange();
+    component->onStart();
+    mAllComponents[primPath] = std::move(component);
+    CARB_LOG_WARN("Create: Prim %s", prim.GetPath().GetString().c_str());
+}
+
+void DRManager::onComponentChange(const pxr::UsdPrim& prim)
+{
+    if (std::find(mSupportedComponents.begin(), mSupportedComponents.end(), prim.GetTypeName()) ==
+        mSupportedComponents.end())
+        return;
+
+    std::string primPath = prim.GetPath().GetString();
+    if (prim.GetTypeName() == "ColorComponent")
+    {
+        mAllComponents[primPath]->onComponentChange();
+    }
+    else if (prim.GetTypeName() == "TextureComponent")
+    {
+        mAllComponents[primPath]->onComponentChange();
+    }
+    else if (prim.GetTypeName() == "MovementComponent")
+    {
+        mAllComponents[primPath]->onComponentChange();
+    }
+    else if (prim.GetTypeName() == "RotationComponent")
+    {
+        mAllComponents[primPath]->onComponentChange();
+    }
+    else if (prim.GetTypeName() == "ScaleComponent")
+    {
+        mAllComponents[primPath]->onComponentChange();
+    }
+    else if (prim.GetTypeName() == "LightComponent")
+    {
+        mAllComponents[primPath]->onComponentChange();
+    }
+}
+
+void DRManager::onComponentRemove(const pxr::SdfPath& primPath)
+{
+    // delete component for this prim
+    if (mAllComponents.find(primPath.GetString()) != mAllComponents.end())
+    {
+        CARB_LOG_WARN("Delete: Prim %s", primPath.GetString().c_str());
+        mAllComponents[primPath.GetString()].reset();
+        mAllComponents.erase(primPath.GetString());
+    }
+}
+
+void DRManager::deleteAllComponents()
+{
+    for (auto& component : mAllComponents)
+    {
+        if (component.second)
+        {
+            component.second.reset();
+        }
+    }
+    mAllComponents.clear();
+    mDoOnce = false;
+}
+
+void DRManager::loadComponentFromUsd()
+{
+    pxr::UsdPrimRange range = mStage->Traverse();
+    for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
+    {
+        pxr::UsdPrim childPrim = *iter;
+        onComponentAdd(childPrim);
+        onComponentChange(childPrim);
+    }
+}
+
+void DRManager::handlePrimChanged(const class pxr::UsdNotice::ObjectsChanged& objectsChanged)
+{
+    if (mStage != objectsChanged.GetStage())
+    {
+        return;
+    }
+
+    for (auto& path : objectsChanged.GetResyncedPaths())
+    {
+        if (path.IsAbsoluteRootOrPrimPath())
+        {
+            // CARB_LOG_WARN("ResyncedPaths: %s", path.GetText());
+            auto primPath =
+                mStage->GetPseudoRoot().GetPath() == path ? mStage->GetPseudoRoot().GetPath() : path.GetPrimPath();
+
+            // If prim is removed, remove it and its descendants from selection.
+            pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
+
+            // CARB_LOG_WARN("Prim valid %d", prim.IsValid());
+            if (prim.IsValid() == false) // remove prim
+            {
+                // CARB_LOG_WARN("Removing: %s", primPath.GetString().c_str());
+                onComponentRemove(primPath);
+            }
+        }
+    }
+}
+
 }
 }
 }

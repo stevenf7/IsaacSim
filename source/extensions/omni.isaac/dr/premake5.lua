@@ -44,6 +44,7 @@ group ("extensions/"..ext_id)
 
         includedirs {
             "%{root}/source/pch",
+            "%{root}/source/extensions/omni.isaac/utils", 
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include",
             target_deps_dir.."/usd_audio_schema/%{cfg.buildcfg}/include",
             target_deps_dir.."/carb_gfx_plugins/include",

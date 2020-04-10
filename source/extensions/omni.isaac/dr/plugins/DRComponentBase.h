@@ -1,5 +1,6 @@
 #pragma once
 
+#include "plugins/core/Component.h"
 
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
@@ -15,14 +16,14 @@ namespace isaac
 namespace dr
 {
 
-class DRComponentBase
+class DRComponentBase : public utils::Component
 {
 public:
     DRComponentBase();
     virtual ~DRComponentBase() = 0;
-    void initialize(const pxr::UsdPrim& prim, pxr::UsdStageRefPtr stage);
+    virtual void initialize(const pxr::UsdPrim& prim, pxr::UsdStageRefPtr stage);
     virtual void onStart() = 0;
-    virtual void tick(const float dt = 0.0f) = 0;
+    virtual void tick() = 0;
     virtual void onComponentChange() = 0;
 
     float mRandomizationDurationInterval;
@@ -57,10 +58,6 @@ protected:
         }
         return false;
     }
-
-    // USD reference to prim that stores settings for this component
-    pxr::UsdPrim mPrim;
-    pxr::UsdStageWeakPtr mStage;
 };
 }
 }

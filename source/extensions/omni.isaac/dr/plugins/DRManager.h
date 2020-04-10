@@ -4,8 +4,10 @@
 #include "DRComponentColor.h"
 #include "DRComponentLight.h"
 #include "DRComponentMovement.h"
+#include "DRComponentRotation.h"
 #include "DRComponentScale.h"
 #include "DRComponentTexture.h"
+#include "plugins/core/ComponentManager.h"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
@@ -24,32 +26,34 @@ namespace isaac
 namespace dr
 {
 
-class DRManager
+class DRManager : public utils::ComponentManager, public pxr::TfWeakBase
 {
 
 public:
-    explicit DRManager(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* tokens);
-    DRManager(const DRManager&) = delete;
-    DRManager& operator=(const DRManager&) = delete;
+    DRManager();
     ~DRManager();
-    void tick(const float dt = 0.0f);
+    void initialize(pxr::UsdStageRefPtr stage, carb::tokens::ITokens* tokens);
+    void tick(double dt);
+    void initComponents();
     void onComponentAdd(const pxr::UsdPrim& prim);
     void onComponentChange(const pxr::UsdPrim& prim);
+    void onComponentRemove(const pxr::SdfPath& primPath);
     void deleteAllComponents();
     void loadComponentFromUsd();
 
 private:
-    std::vector<std::unique_ptr<DRComponentBase>> mAllComponents;
-    pxr::UsdStageWeakPtr mStage;
+    void handlePrimChanged(const class pxr::UsdNotice::ObjectsChanged& objectsChanged);
+
+    std::unordered_map<std::string, std::unique_ptr<DRComponentBase>> mAllComponents;
     carb::tokens::ITokens* mTokens;
-    std::unordered_map<std::string, int> mComponentMap;
+    pxr::TfNotice::Key mNoticeListener;
     omni::usd::Layers* mLayer = nullptr;
     std::string mDRLayerName = "";
-    float mTimeElapsed = 0.0f;
+    double mTimeElapsed = 0.0f;
     bool mDoOnce = false;
     std::string mRootLayerIdentifier = "";
-    std::vector<std::string> mSupportedComponents{ "ColorComponent", "MovementComponent", "ScaleComponent",
-                                                   "LightComponent", "TextureComponent" };
+    std::vector<std::string> mSupportedComponents{ "ColorComponent", "MovementComponent", "RotationComponent",
+                                                   "ScaleComponent", "LightComponent",    "TextureComponent" };
 };
 }
 }

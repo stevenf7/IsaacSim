@@ -2,7 +2,7 @@
 #include "UsdPCH.h"
 // clang-format on
 
-#include "DRComponentScale.h"
+#include "DRComponentRotation.h"
 
 #include <boost/algorithm/string.hpp>
 #include <carb/Framework.h>
@@ -18,18 +18,18 @@ namespace isaac
 namespace dr
 {
 
-DRComponentScale::DRComponentScale() : DRComponentBase()
+DRComponentRotation::DRComponentRotation() : DRComponentBase()
 {
 }
-DRComponentScale::~DRComponentScale()
+DRComponentRotation::~DRComponentRotation()
 {
     stop();
 }
-void DRComponentScale::onStart()
+void DRComponentRotation::onStart()
 {
-    CARB_LOG_INFO("DR Scale Component Started");
+    CARB_LOG_INFO("DR Rotation Component Started");
 }
-void DRComponentScale::update()
+void DRComponentRotation::update()
 {
     mAllPrims.clear();
     for (auto& path : mPaths)
@@ -49,7 +49,7 @@ void DRComponentScale::update()
         }
     }
 }
-void DRComponentScale::onComponentChange()
+void DRComponentRotation::onComponentChange()
 {
     std::string primPaths;
 
@@ -63,30 +63,34 @@ void DRComponentScale::onComponentChange()
 
     boost::split(mPaths, primPaths, [](char c) { return c == ','; });
     update();
-    CARB_LOG_INFO("Scale Update: %s", mCompName.c_str());
+    CARB_LOG_INFO("Rotation Update: %s", mCompName.c_str());
 }
-void DRComponentScale::stop()
+void DRComponentRotation::stop()
 {
-    CARB_LOG_INFO("DR Scale Component Stopped");
+    CARB_LOG_INFO("DR Rotation Component Stopped");
 }
-void DRComponentScale::tick()
+void DRComponentRotation::tick()
 {
     for (auto& prim : mAllPrims)
     {
         if (prim)
         {
-            // Randomized scale parameters
             float x = randomRange(mXRange[0], mXRange[1]);
             float y = randomRange(mYRange[0], mYRange[1]);
             float z = randomRange(mZRange[0], mZRange[1]);
-            pxr::GfVec3d doubleScale(x, y, z);
-            auto currentTransformMat = omni::usd::UsdUtils::getLocalTransformMatrix(prim);
-            pxr::GfVec3d currentTrans = currentTransformMat.ExtractTranslation();
-            pxr::GfRotation currentRot = currentTransformMat.ExtractRotation();
-            pxr::GfMatrix4d scaledMat, transformMat, scaledTransformMat;
-            transformMat.SetTransform(currentRot, currentTrans);
-            scaledMat.SetScale(doubleScale);
-            scaledTransformMat = scaledMat * transformMat;
+            // Set random rotation
+            pxr::GfTransform bodyPose;
+            pxr::GfRotation rowRot(pxr::GfVec3d(1, 0, 0), x), pitchRot(pxr::GfVec3d(0, 1, 0), y),
+                yawRot(pxr::GfVec3d(0, 0, 1), z);
+            bodyPose.SetRotation(rowRot * pitchRot * yawRot);
+            // Get current translation and scale
+            pxr::GfMatrix4d currentTransformMat, scaledTransformMat, scaleMat;
+            currentTransformMat = omni::usd::UsdUtils::getLocalTransformMatrix(prim);
+            pxr::GfTransform currentTr(currentTransformMat);
+            bodyPose.SetTranslation(currentTr.GetTranslation());
+            scaleMat.SetScale(currentTr.GetScale());
+            // Multiply current scale with random pose
+            scaledTransformMat = scaleMat * bodyPose.GetMatrix();
             omni::usd::UsdUtils::setLocalTransformMatrix(prim, scaledTransformMat);
         }
     }
