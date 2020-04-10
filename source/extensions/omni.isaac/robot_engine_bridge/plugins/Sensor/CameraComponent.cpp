@@ -45,17 +45,20 @@ CameraComponent::~CameraComponent()
 {
     if (mRgbSensor)
     {
-        mSyntheticDataInterface->unmapSensorData(mRgbSensor);
+        // mSyntheticDataInterface->destroySensor(mRgbSensor);
+        mRgbSensor = nullptr;
         mRgbSensorData = nullptr;
     }
     if (mDepthSensor)
     {
-        mSyntheticDataInterface->unmapSensorData(mDepthSensor);
+        // mSyntheticDataInterface->destroySensor(mDepthSensor);
+        mDepthSensor = nullptr;
         mDepthSensorData = nullptr;
     }
     if (mSegmentationSensor)
     {
-        mSyntheticDataInterface->unmapSensorData(mSegmentationSensor);
+        // mSyntheticDataInterface->destroySensor(mSegmentationSensor);
+        mSegmentationSensor = nullptr;
         mSegmentationSensorData = nullptr;
     }
 
@@ -90,8 +93,9 @@ void CameraComponent::tick()
     cameraPrim.GetVerticalApertureAttr().Get(&verticalAperture);
 
 
-    if (mRgbSensor && mRgbSensorData)
+    if (mRgbSensor)
     {
+        mRgbSensorData = mSyntheticDataInterface->getSensorHostData(mRgbSensor);
         const carb::sensors::SensorInfo& rgbInfo = mSensorsInterface->getSensorInfo(mRgbSensor);
 
         // Create the message
@@ -144,14 +148,12 @@ void CameraComponent::tick()
 
         publish(mOutputComponent, mChannelName, cameraMessageProto, isaac_message::ColorCameraProtoId, buffers);
     }
-    else if (mRgbSensor && !mRgbSensorData)
-    {
-        mRgbSensorData = mSyntheticDataInterface->mapSensorData(mRgbSensor);
-    }
 
 
     if (mDepthSensor && mDepthSensorData)
     {
+        mDepthSensorData = mSyntheticDataInterface->getSensorHostData(mDepthSensor);
+
         const carb::sensors::SensorInfo& depthInfo = mSensorsInterface->getSensorInfo(mDepthSensor);
 
         // Create the message
@@ -203,14 +205,11 @@ void CameraComponent::tick()
 
         publish(mDepthOutputComponent, mDepthChannelName, cameraMessageProto, isaac_message::DepthCameraProtoId, buffers);
     }
-    else if (mDepthSensor && !mDepthSensorData)
-    {
-        mDepthSensorData = mSyntheticDataInterface->mapSensorData(mDepthSensor);
-    }
-
 
     if (mSegmentationSensor && mSegmentationSensorData)
     {
+        mSegmentationSensorData = mSyntheticDataInterface->getSensorHostData(mSegmentationSensor);
+
         const carb::sensors::SensorInfo& segmentationInfo = mSensorsInterface->getSensorInfo(mSegmentationSensor);
 
         // Create the message
@@ -251,10 +250,6 @@ void CameraComponent::tick()
 
         publish(mSegmentationOutputComponent, mSegmentationChannelName, cameraMessageProto,
                 isaac_message::SegmentationCameraProtoId, buffers);
-    }
-    else if (mSegmentationSensor && !mSegmentationSensorData)
-    {
-        mSegmentationSensorData = mSyntheticDataInterface->mapSensorData(mSegmentationSensor);
     }
 }
 void CameraComponent::onStart()
@@ -314,11 +309,6 @@ void CameraComponent::onComponentChange()
     }
     else
     {
-        if (mRgbSensor && mRgbSensorData)
-        {
-            mSyntheticDataInterface->unmapSensorData(mRgbSensor);
-        }
-
         mRgbSensor = nullptr;
         mRgbSensorData = nullptr;
     }
@@ -330,11 +320,6 @@ void CameraComponent::onComponentChange()
     }
     else
     {
-        if (mDepthSensor && mDepthSensorData)
-        {
-            mSyntheticDataInterface->unmapSensorData(mDepthSensor);
-        }
-
         mDepthSensor = nullptr;
         mDepthSensorData = nullptr;
     }
@@ -347,13 +332,6 @@ void CameraComponent::onComponentChange()
     }
     else
     {
-
-        if (mSegmentationSensor && mSegmentationSensorData)
-        {
-
-            mSyntheticDataInterface->unmapSensorData(mSegmentationSensor);
-        }
-
         mSegmentationSensor = nullptr;
         mSegmentationSensorData = nullptr;
     }
