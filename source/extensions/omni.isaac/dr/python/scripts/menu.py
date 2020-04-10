@@ -2,6 +2,7 @@ from pxr import Gf, Usd, UsdGeom, Sdf
 import asyncio
 import json
 import omni.kit
+import omni.kit.ui
 import omni.usd
 import os
 import random
