@@ -114,7 +114,7 @@ void DRComponentColor::onComponentChange()
     mBRange[0] = firstColor[2];
     mBRange[1] = secondColor[2];
     update();
-    CARB_LOG_WARN("Color Update: %s", mCompName.c_str());
+    CARB_LOG_INFO("Color Update: %s", mCompName.c_str());
 }
 void DRComponentColor::stop()
 {
@@ -131,7 +131,7 @@ void DRComponentColor::stop()
                 omni::usd::UsdUtils::removePrim(colorPrim);
     }
 }
-void DRComponentColor::tick(const float dt)
+void DRComponentColor::tick()
 {
     for (auto& prim : mAllPrims)
     {

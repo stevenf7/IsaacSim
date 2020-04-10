@@ -63,13 +63,13 @@ void DRComponentMovement::onComponentChange()
 
     boost::split(mPaths, primPaths, [](char c) { return c == ','; });
     update();
-    CARB_LOG_WARN("Movement Update: %s", mCompName.c_str());
+    CARB_LOG_INFO("Movement Update: %s", mCompName.c_str());
 }
 void DRComponentMovement::stop()
 {
     CARB_LOG_INFO("DR Movement Component Stopped");
 }
-void DRComponentMovement::tick(const float dt)
+void DRComponentMovement::tick()
 {
     for (auto& prim : mAllPrims)
     {
@@ -78,14 +78,14 @@ void DRComponentMovement::tick(const float dt)
             float x = randomRange(mXRange[0], mXRange[1]);
             float y = randomRange(mYRange[0], mYRange[1]);
             float z = randomRange(mZRange[0], mZRange[1]);
-            // Set random pose
+            // Set random translation
             pxr::GfTransform bodyPose;
             bodyPose.SetTranslation(pxr::GfVec3f(x, y, z));
-            bodyPose.SetRotation(pxr::GfRotation(pxr::GfQuatf(1, 0, 0, 0)));
-            // Get current scale
+            // Get current rotation and scale
             pxr::GfMatrix4d currentTransformMat, scaledTransformMat, scaleMat;
             currentTransformMat = omni::usd::UsdUtils::getLocalTransformMatrix(prim);
             pxr::GfTransform currentTr(currentTransformMat);
+            bodyPose.SetRotation(currentTr.GetRotation());
             scaleMat.SetScale(currentTr.GetScale());
             // Multiply current scale with random pose
             scaledTransformMat = scaleMat * bodyPose.GetMatrix();

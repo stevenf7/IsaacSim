@@ -69,7 +69,11 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
         CARB_LOG_ERROR("Failed to acquire carb::tokens::ITokens interface");
         return;
     }
-    Manager = std::make_unique<omni::isaac::dr::DRManager>(g_stage, g_tokens);
+    Manager = std::make_unique<omni::isaac::dr::DRManager>();
+    if (Manager)
+    {
+        Manager->initialize(g_stage, g_tokens);
+    }
 }
 
 void onDetach(void* userData)
@@ -115,6 +119,14 @@ void onPrimChange(const char* primPath, const omni::kit::PrimDirtyBits*, void* u
     }
 }
 
+void onPrimRemove(const char* primPath, void* userData)
+{
+    if (Manager && g_stage)
+    {
+        Manager->onComponentRemove(pxr::SdfPath(primPath));
+    }
+}
+
 } // anonymous namespace
 
 using namespace omni::isaac::dr;
@@ -132,6 +144,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onUpdate = onUpdate;
     desc.onPrimAdd = onPrimAdd;
     desc.onPrimChange = onPrimChange;
+    desc.onPrimRemove = onPrimRemove;
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
 }
 

@@ -9,6 +9,7 @@ import random
 
 ADD_COLOR_DR_MENU_ITEM = "Create/Isaac/DR/Color Component"
 ADD_MOVEMENT_DR_MENU_ITEM = "Create/Isaac/DR/Movement Component"
+ADD_ROTATION_DR_MENU_ITEM = "Create/Isaac/DR/Rotation Component"
 ADD_SCALE_DR_MENU_ITEM = "Create/Isaac/DR/Scale Component"
 ADD_LIGHT_DR_MENU_ITEM = "Create/Isaac/DR/Light Component"
 ADD_TEXTURE_DR_MENU_ITEM = "Create/Isaac/DR/Texture Component"
@@ -24,12 +25,13 @@ class DRMenu:
         self._dr = domain_randomizer_interface
         self.texture_layer_index = -1
         self.texture_component_count = 0
-        self.num_components = 5
+        self.num_components = 6
 
         self._menus = []
         editor_menu = omni.kit.ui.get_editor_menu()
         self._menus.append(editor_menu.add_item(ADD_COLOR_DR_MENU_ITEM, self._on_dr_menu_click))
         self._menus.append(editor_menu.add_item(ADD_MOVEMENT_DR_MENU_ITEM, self._on_dr_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_ROTATION_DR_MENU_ITEM, self._on_dr_menu_click))
         self._menus.append(editor_menu.add_item(ADD_SCALE_DR_MENU_ITEM, self._on_dr_menu_click))
         self._menus.append(editor_menu.add_item(ADD_LIGHT_DR_MENU_ITEM, self._on_dr_menu_click))
         self._menus.append(editor_menu.add_item(ADD_TEXTURE_DR_MENU_ITEM, self._on_dr_menu_click))
@@ -70,6 +72,29 @@ class DRMenu:
 
         prim.CreateAttribute("compName", Sdf.ValueTypeNames.String).Set(
             str("movement_component_" + str(self.component_count[1]))
+        )
+        prim.CreateAttribute("primPaths", Sdf.ValueTypeNames.String).Set(str(""))
+        prim.CreateAttribute("xRange", Sdf.ValueTypeNames.Float2).Set((float(0.0), float(0.0)))
+        prim.CreateAttribute("yRange", Sdf.ValueTypeNames.Float2).Set((float(0.0), float(0.0)))
+        prim.CreateAttribute("zRange", Sdf.ValueTypeNames.Float2).Set((float(0.0), float(0.0)))
+        prim.CreateAttribute("duration", Sdf.ValueTypeNames.Float).Set(float(1.0))
+        prim.CreateAttribute("includeChildren", Sdf.ValueTypeNames.Bool).Set(bool(False))
+        pass
+
+    def add_rotation_menu(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, parent + "/rotation_component_" + str(self.component_count[5]), False
+            )
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, "/rotation_component_" + str(self.component_count[5]), True
+            )
+
+        prim = self._stage.DefinePrim(path, "RotationComponent")
+
+        prim.CreateAttribute("compName", Sdf.ValueTypeNames.String).Set(
+            str("rotation_component_" + str(self.component_count[5]))
         )
         prim.CreateAttribute("primPaths", Sdf.ValueTypeNames.String).Set(str(""))
         prim.CreateAttribute("xRange", Sdf.ValueTypeNames.Float2).Set((float(0.0), float(0.0)))
@@ -164,6 +189,8 @@ class DRMenu:
                 self.component_count[3] = self.component_count[3] + 1
             if child_prim.GetTypeName() == "TextureComponent":
                 self.component_count[4] = self.component_count[4] + 1
+            if child_prim.GetTypeName() == "RotationComponent":
+                self.component_count[5] = self.component_count[5] + 1
 
         selectedPrims = self._usd_context.get_selection().get_selected_prim_paths()
         if len(selectedPrims) > 0:
@@ -175,6 +202,8 @@ class DRMenu:
             self.add_color_menu(curr_prim)
         if menu == ADD_MOVEMENT_DR_MENU_ITEM:
             self.add_movement_menu(curr_prim)
+        if menu == ADD_ROTATION_DR_MENU_ITEM:
+            self.add_rotation_menu(curr_prim)
         if menu == ADD_SCALE_DR_MENU_ITEM:
             self.add_scale_menu(curr_prim)
         if menu == ADD_LIGHT_DR_MENU_ITEM:
