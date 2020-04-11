@@ -23,7 +23,7 @@ using std::vector;
 
 /// FIXME
 #if defined(DEBUG) || defined(ERROR)
-//int oldDEBUG = DEBUG;
+// int oldDEBUG = DEBUG;
 #    undef ERROR
 #    undef DEBUG
 #    include <NvIsaacFramework.h>

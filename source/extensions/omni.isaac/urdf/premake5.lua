@@ -69,15 +69,15 @@ group ("extensions/"..ext_id)
             includedirs {
                 target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include/boost",
                 target_deps_dir.."/python/include/python3.6m",
-                target_deps_dir.."/robotimpsdk/lib/linux-x86_64",
             }
-            links { "robotimp"}
+            libdirs {target_deps_dir.."/robotimpsdk/lib/linux-x86_64"}
+            links { "robotimp" }
         filter { "system:windows" }
             libdirs {
                 target_deps_dir.."/tbb/lib/intel64/vc14",
                 target_deps_dir.."/robotimpsdk/lib/windows-x86_64",
             }
-            links { "librobotimp"}
+            links { "librobotimp" }
         filter {}
         
     -- Python Bindings for Carobnite Plugin
