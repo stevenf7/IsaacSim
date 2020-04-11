@@ -28,8 +28,7 @@ DRComponentBase::~DRComponentBase()
 
 void DRComponentBase::initialize(const pxr::UsdPrim& prim, pxr::UsdStageRefPtr stage)
 {
-    mPrim = prim;
-    mStage = stage;
+    utils::Component::initialize(prim, stage);
 }
 
 }

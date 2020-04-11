@@ -139,7 +139,7 @@ void DRComponentTexture::onComponentChange()
     if (groupedClass != "")
         boost::split(mGroupClassList, groupedClass, [](char c) { return c == ','; });
     update();
-    CARB_LOG_WARN("Texture Update: %s", mCompName.c_str());
+    CARB_LOG_INFO("Texture Update: %s", mCompName.c_str());
 }
 void DRComponentTexture::stop()
 {
@@ -166,7 +166,7 @@ void DRComponentTexture::stop()
         mAllPrims.clear();
     }
 }
-void DRComponentTexture::tick(const float dt)
+void DRComponentTexture::tick()
 {
     for (auto& primMaterialBinding : mPrimMaterialBindingsMap)
     {

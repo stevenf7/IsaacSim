@@ -40,6 +40,8 @@ This is where isaac sim extensions for omniverse are getting developed
 - Use `--help` to get more information. You can run only parts of build process, e.g:
     * `build.bat -s` to only copy/link files
     * `build.bat -d` to build only debug configuration
+    * `build.bat -r` to build only release configuration
+    * `build.bat -x` to do a clean and rebuild
 
 The build output will be found in the generated
 `_build` folder and the make/solution files will be found in the generated `_compiler` directory. Occasionally, when
@@ -76,7 +78,7 @@ Docker manually, the process goes roughly as follows on Ubuntu systems:
 ## Running omniverse-kit
 
 - Go to debug or release folder under _build/xxx-x86_64 (x86_64 platforms only)
-- Execute `./omniverse-kit` (Linux) / `omniverse-kit.exe` (Windows)
+- Execute `./omniverse-kit.sh` (Linux) / `omniverse-kit.exe` (Windows)
 
 ## Packaging
 

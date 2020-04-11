@@ -1,0 +1,12 @@
+display_name = "URDF Import and Utils"
+
+[dependencies]
+"omni.kit.editor" = {}
+
+[[python.modules]]
+name = "omni.isaac.urdf"
+
+[[native.plugins]]
+search_path = "bin/${platform}/${config}/*.plugin"
+recursive = false
+

@@ -16,11 +16,11 @@ namespace isaac
 namespace dr
 {
 
-class DRComponentScale : public DRComponentBase
+class DRComponentRotation : public DRComponentBase
 {
 public:
-    DRComponentScale();
-    ~DRComponentScale();
+    DRComponentRotation();
+    ~DRComponentRotation();
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();

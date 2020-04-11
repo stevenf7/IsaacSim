@@ -22,7 +22,7 @@ public:
     DRComponentMovement();
     ~DRComponentMovement();
     virtual void onStart();
-    virtual void tick(const float dt = 0.0f);
+    virtual void tick();
     virtual void onComponentChange();
 
 private:
