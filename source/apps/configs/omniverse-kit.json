@@ -81,7 +81,7 @@
                 "omni.utils.usd_paths",
                 "omni.utils.collect_tool",
                 "omni.assetimport",
-                "omni.kit.computegraph",
+                "omni.computegraph",
                 "omni.physx",
                 "omni.physx.ui"
             ]
