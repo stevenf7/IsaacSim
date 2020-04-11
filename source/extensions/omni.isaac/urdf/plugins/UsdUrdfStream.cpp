@@ -22,12 +22,14 @@ using std::vector;
 // #include <boost/lexical_cast.hpp>
 
 /// FIXME
-#ifdef DEBUG
-int oldDEBUG = DEBUG;
+#if defined(DEBUG) || defined(ERROR)
+//int oldDEBUG = DEBUG;
+#    undef ERROR
 #    undef DEBUG
 #    include <NvIsaacFramework.h>
 #    include <NvIsaacRobotModel.h>
-#    define DEBUG 0
+//#define ERROR 0
+//#define DEBUG 0
 #else
 #    include <NvIsaacFramework.h>
 #    include <NvIsaacRobotModel.h>

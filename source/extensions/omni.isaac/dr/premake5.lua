@@ -34,7 +34,7 @@ group ("extensions/"..ext_id)
 
         staticruntime "Off"
         exceptionhandling "On"
-
+        removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
         apply_pch()
 
         add_impl_folder("plugins")
@@ -64,7 +64,6 @@ group ("extensions/"..ext_id)
         }
         filter { "system:linux" }
             exceptionhandling "On"
-            removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
             includedirs { target_deps_dir.."/python/include/python3.6m" }
         filter {}
 

@@ -40,6 +40,7 @@ group ("extensions/"..ext_id)
         removeplatforms { "aarch64" }
         removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
         define_plugin()
+        staticruntime "Off"
         apply_pch()
         add_impl_folder("plugins")
         add_iface_folder("%{root}/include/omni/isaac/urdf")
@@ -57,31 +58,26 @@ group ("extensions/"..ext_id)
 
         libdirs {   
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
-            target_deps_dir.."/robotimpsdk/lib/%{platform}",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/lib",
         }
+
         links { 
-            "gf", "sdf", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools"
+            "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools"
         }
         
         filter { "system:linux" }
-            removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
             includedirs {
                 target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include/boost",
-                target_deps_dir.."/python/include/python3.6m"
+                target_deps_dir.."/python/include/python3.6m",
+                target_deps_dir.."/robotimpsdk/lib/linux-x86_64",
             }
+            links { "robotimp"}
         filter { "system:windows" }
             libdirs {
-                target_deps_dir.."/tbb/lib/intel64/vc14"
+                target_deps_dir.."/tbb/lib/intel64/vc14",
+                target_deps_dir.."/robotimpsdk/lib/windows-x86_64",
             }
-        filter {}
-
-        filter { "configurations:debug" }
-            links { "robotimpdebug"}
-        --     defines { "_DEBUG" }
-        filter { "configurations:release" }
-        --     defines { "NDEBUG" }
-            links { "robotimp"}
+            links { "librobotimp"}
         filter {}
         
     -- Python Bindings for Carobnite Plugin

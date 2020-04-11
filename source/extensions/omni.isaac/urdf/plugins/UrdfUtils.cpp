@@ -24,7 +24,7 @@
 #include <omni/kit/IApp.h>
 
 #include <memory>
-
+#include <fstream>
 
 #define EXTENSION_NAME "omni.isaac.urdf"
 
