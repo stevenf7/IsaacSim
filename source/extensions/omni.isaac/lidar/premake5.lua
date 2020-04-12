@@ -83,10 +83,11 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
             target_deps_dir.."/nv_usd/release/lib",
             target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/lib",
-                }
+            "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins" 
+        }
         links {
             "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "lidarSchema"
+            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "lidarSchema", "omni.usd"
         }
         filter { "system:windows" }
             libdirs {target_deps_dir.."/tbb/lib/intel64/vc14"}
