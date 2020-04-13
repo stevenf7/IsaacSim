@@ -144,6 +144,7 @@ class Extension(omni.ext.IExt):
                 self._on_pause_tasks()
             if event.input == carb.input.KeyboardInput.KEY_3:
                 self._on_add_tray()
+        return True
 
     def _on_editor_step(self, step):
         if self._editor.is_playing():

@@ -141,6 +141,7 @@ class Extension(omni.ext.IExt):
                 self._on_stop_tasks()
             if event.input == carb.input.KeyboardInput.KEY_3:
                 self._on_toggle_obstacle()
+        return True
 
     def _on_editor_step(self, step):
         """This function is called every timestep in the editor
