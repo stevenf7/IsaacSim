@@ -10,6 +10,7 @@
 
 
 #include <carb/physx/physx.h>
+#include <carb/renderer/Renderer.h>
 
 #include <LidarSchema/lidar.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
@@ -39,10 +40,13 @@ struct Lidar
 {
 
 public:
+    Lidar(carb::physics::PhysX* physx_ptr,
+          omni::isaac::dynamic_control::DynamicControl* dc_ptr,
+          const pxr::LidarSchemaLidar& prim,
+          float metersPerUnit);
     Lidar()
     {
     }
-    Lidar(const pxr::LidarSchemaLidar& prim);
     ~Lidar();
 
 
@@ -50,52 +54,52 @@ public:
 
     SdfPath getPath() const
     {
-        return prim.GetPath();
+        return mPrim.GetPath();
     }
 
     float getHorizontalFov() const
     {
-        return horizontalFov;
+        return mHorizontalFov;
     }
 
     float getVerticalFov() const
     {
-        return verticalFov;
+        return mVerticalFov;
     }
 
     float getRotationRate() const
     {
-        return rotationRate;
+        return mRotationRate;
     }
 
     float getHorizontalResolution() const
     {
-        return horizontalResolution;
+        return mHorizontalResolution;
     }
 
     float getVerticalResolution() const
     {
-        return verticalResolution;
+        return mVerticalResolution;
     }
 
     float getMinRange() const
     {
-        return minRange;
+        return mMinRange;
     }
 
     float getMaxRange() const
     {
-        return maxRange;
+        return mMaxRange;
     }
 
     bool getHighLod() const
     {
-        return highLod;
+        return mHighLod;
     }
 
     bool getDrawLidarPoints() const
     {
-        return drawLidarPoints;
+        return mDrawLidarPoints;
     }
 
 
@@ -104,99 +108,104 @@ public:
 
     int getNumCols() const
     {
-        return cols;
+        return mCols;
     }
 
     int getNumRows() const
     {
-        return rows;
+        return mRows;
     }
 
     int getLastNumColsTicked() const
     {
-        return lastNumColsTicked;
+        return mLastNumColsTicked;
     }
 
     std::vector<uint16_t>& getLastDepthData()
     {
-        return lastDepth;
+        return mLastDepth;
     }
 
     std::vector<uint8_t>& getLastIntensityData()
     {
-        return lastIntensity;
+        return mLastIntensity;
     }
 
     std::vector<float>& getLastZenithData()
     {
-        return zenith;
+        return mZenith;
     }
 
     std::vector<float>& getLastAzimuthData()
     {
-        return lastAzimuth;
+        return mLastAzimuth;
+    }
+
+    std::vector<carb::renderer::Line>& getDebugLines()
+    {
+        return mDebugLines;
+    }
+
+    pxr::LidarSchemaLidar& getPrim()
+    {
+        return mPrim;
     }
 
 
 private:
-    void addDebugLine(const pxr::GfVec3f& pointA, const pxr::GfVec3f& pointB, const pxr::GfVec3f& color, const int index);
-    void clearDebugLines();
-
     void scan(int start, int stop);
     void dumpData(int start, int stop, float elapsedTime);
 
 
-    pxr::LidarSchemaLidar prim;
+    pxr::LidarSchemaLidar mPrim;
 
-    bool valid;
+    bool mValid;
 
     // From the prim
-    float horizontalFov;
-    float verticalFov;
-    float rotationRate;
-    float horizontalResolution;
-    float verticalResolution;
-    float minRange;
-    float maxRange;
-    bool highLod;
-    bool drawLidarPoints;
+    float mHorizontalFov;
+    float mVerticalFov;
+    float mRotationRate;
+    float mHorizontalResolution;
+    float mVerticalResolution;
+    float mMinRange;
+    float mMaxRange;
+    bool mHighLod;
+    bool mDrawLidarPoints;
 
     // Ranges converted to proper units
-    float minDepth;
-    float maxDepth;
+    float mMinDepth;
+    float mMaxDepth;
 
-    float maxStepSize;
+    float mMaxStepSize;
 
-    int rows, cols;
-    int maxColsPerTick;
+    int mRows, mCols;
+    int mMaxColsPerTick;
 
-    int lastCol;
-    int lastNumColsTicked;
-    float colScanSpeed;
+    int mLastCol;
+    int mLastNumColsTicked;
+    float mColScanSpeed;
 
-    float remainingTime;
+    float mRemainingTime;
 
-    std::vector<uint16_t> depth;
-    std::vector<uint8_t> intensity;
+    std::vector<uint16_t> mDepth;
+    std::vector<uint8_t> mIntensity;
 
-    std::vector<float> zenith;
-    std::vector<float> azimuth;
+    std::vector<float> mZenith;
+    std::vector<float> mAzimuth;
 
-    std::vector<uint16_t> lastDepth;
-    std::vector<uint8_t> lastIntensity;
-    std::vector<float> lastAzimuth;
+    std::vector<uint16_t> mLastDepth;
+    std::vector<uint8_t> mLastIntensity;
+    std::vector<float> mLastAzimuth;
 
-    std::set<int> activeDebugLines;
-    carb::Framework* framework = nullptr;
+    std::set<int> mActiveDebugLines;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     omni::isaac::dynamic_control::DcHandle mRigidBodyHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
 
-    // Gross
-    // Did this because of linking issues with global variables in LidarInterface.cpp, being used as extern in Lidar.cpp
-public:
-    static carb::physics::PhysX* physx;
-    static UsdStageRefPtr stage;
-    static float metersPerUnit;
+    std::vector<carb::renderer::Line> mDebugLines;
+
+    carb::physics::PhysX* mPhysx = nullptr;
+    UsdStageRefPtr mStage;
+    float mMetersPerUnit;
 };
 
 

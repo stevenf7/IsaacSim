@@ -20,6 +20,8 @@
 #include "Lidar.h"
 #include <LidarSchema/lidar.h>
 
+#include <carb/imgui/ImGui.h>
+
 #include <carb/physx/physx.h>
 
 #include <carb/Framework.h>
@@ -28,19 +30,29 @@
 #include <carb/settings/ISettings.h>
 #include <carb/fastcache/FastCache.h>
 
+#include <omni/kit/IEditor.h>
+#include <omni/kit/IViewport.h>
+#include <omni/kit/KitUtils.h>
+#include <omni/usd/UsdUtils.h>
+#include <omni/usd/UsdContext.h>
+
 #include <map>
+#include <vector>
 
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.lidar.plugin", "Isaac Lidar", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::lidar::LidarInterface)
 CARB_PLUGIN_IMPL_DEPS(carb::physics::PhysX,
+                      carb::imgui::ImGui,
+                      omni::kit::IEditor,
                       omni::kit::IStageUpdate,
                       carb::fastcache::FastCache,
                       omni::isaac::dynamic_control::DynamicControl)
 
 using namespace physx;
 using namespace pxr;
+using namespace carb::renderer;
 
 namespace omni
 {
@@ -54,12 +66,18 @@ namespace
 
 
 // Eek global state
+omni::kit::IEditor* g_editor = nullptr;
 omni::kit::IStageUpdate* g_su = nullptr;
 omni::kit::StageUpdateNode* g_suNode = nullptr;
 
+carb::events::ISubscriptionPtr g_viewportUiEvtSub;
+
+
+carb::imgui::ImGui* g_imGuiInterface = nullptr;
 carb::fastcache::FastCache* g_FastCache = nullptr;
 
 carb::physics::PhysX* g_physx = nullptr;
+omni::isaac::dynamic_control::DynamicControl* g_DynamicControl = nullptr;
 
 UsdStageRefPtr g_stage = nullptr;
 float g_metersPerUnit = 1.0f;
@@ -68,6 +86,11 @@ std::map<LidarHandle, Lidar> g_lidars;
 std::map<SdfPath, LidarHandle> g_lidarMap;
 
 LidarHandle g_nextLidarHandle = 0;
+
+
+carb::renderer::LineList* mDebugLineList = nullptr;
+std::vector<carb::renderer::Line> mDebugLineVector;
+
 
 } // end of anonymous namespace
 
@@ -97,7 +120,7 @@ void addLidar(const LidarSchemaLidar& prim)
 
     LidarHandle handle = ++g_nextLidarHandle;
     g_lidarMap[path] = handle;
-    g_lidars[handle] = Lidar(prim);
+    g_lidars[handle] = Lidar(g_physx, g_DynamicControl, prim, UsdGeomGetStageMetersPerUnit(g_stage));
 }
 
 
@@ -410,6 +433,32 @@ float* CARB_ABI getAzimuthData(LidarHandle handle)
 }
 
 
+void createDebugLineList()
+{
+    if (!mDebugLineList)
+    {
+        SceneId id = omni::usd::UsdContext::getContext()->getRendererScene();
+        LineSettings lineSettings;
+        lineSettings.enableDepthTest = true;
+        lineSettings.width = 0.01f / (float)UsdGeomGetStageMetersPerUnit(omni::usd::UsdContext::getContext()->getStage());
+        mDebugLineList = g_editor->getRenderer()->createLineList(g_editor->getRenderContext(), id, lineSettings);
+
+        mDebugLineVector.reserve(65535);
+    }
+}
+
+void releaseDebugLineList()
+{
+    if (mDebugLineList)
+    {
+        g_editor->getRenderer()->destroyLineList(g_editor->getRenderContext(), mDebugLineList);
+        mDebugLineList = nullptr;
+
+        mDebugLineVector.resize(0);
+        mDebugLineVector.shrink_to_fit();
+    }
+}
+
 // stage update
 void SuAttach(long stageId, double metersPerUnit, void* data)
 {
@@ -421,10 +470,8 @@ void SuAttach(long stageId, double metersPerUnit, void* data)
     }
 
     g_stage = stage;
-    Lidar::stage = stage;
 
     g_metersPerUnit = float(metersPerUnit);
-    Lidar::metersPerUnit = float(metersPerUnit);
 
 
     UsdPrimRange range = g_stage->Traverse();
@@ -448,8 +495,9 @@ void SuAttach(long stageId, double metersPerUnit, void* data)
 
 void SuDetach(void* data)
 {
+    releaseDebugLineList();
+
     g_stage = nullptr;
-    Lidar::stage = nullptr;
 
     for (const auto& path : g_lidarMap)
     {
@@ -487,6 +535,41 @@ void SuUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
 }
 
 
+void onUIDraw(carb::events::IEvent* e, carb::imgui::ImGui* imGui)
+{
+    mDebugLineVector.clear();
+
+    for (auto it = g_lidars.begin(); it != g_lidars.end(); it++)
+    {
+        auto lidar = it->second;
+        if (lidar.getDrawLidarPoints())
+        {
+            GfMatrix4d worldTransform = omni::usd::UsdUtils::getWorldTransformMatrix(lidar.getPrim().GetPrim());
+
+            auto& debugLines = lidar.getDebugLines();
+
+            // GfVec3f v0 = worldTransform.Transform(GfVec3f(0, 0, 0));
+
+            for (const auto& line : debugLines)
+            {
+                mDebugLineVector.push_back(line);
+            }
+        }
+    }
+
+    if (!mDebugLineVector.empty())
+    {
+        createDebugLineList();
+
+        g_editor->getRenderer()->updateLineList(
+            g_editor->getRenderContext(), mDebugLineList, mDebugLineVector.data(), mDebugLineVector.size(), nullptr, 0);
+    }
+    else
+    {
+        releaseDebugLineList();
+    }
+}
+
 }
 }
 }
@@ -499,6 +582,25 @@ CARB_EXPORT void carbOnPluginStartup()
     if (!framework)
     {
         CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
+        return;
+    }
+
+    g_editor = framework->acquireInterface<omni::kit::IEditor>();
+    if (!g_editor)
+    {
+        CARB_LOG_ERROR("*** Failed to acquire editor interface\n");
+        return;
+    }
+
+    g_viewportUiEvtSub = carb::events::createSubscriptionToPop(
+        carb::getCachedInterface<omni::kit::IViewport>()->getViewportWindow(nullptr)->getUiDrawEventStream().get(),
+        [](carb::events::IEvent* e) { onUIDraw(e, omni::kit::getImGui()); }, 0, "Lidar viewport ui update");
+
+
+    g_imGuiInterface = framework->acquireInterface<carb::imgui::ImGui>();
+    if (!g_imGuiInterface)
+    {
+        CARB_LOG_ERROR("*** Failed to acquire ImGui interface\n");
         return;
     }
 
@@ -515,6 +617,12 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("*** Failed to acquire FastCache interface\n");
         return;
     }
+    g_DynamicControl = framework->acquireInterface<omni::isaac::dynamic_control::DynamicControl>();
+    if (!g_DynamicControl)
+    {
+        CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
+        return;
+    }
 
 
     omni::isaac::lidar::g_usdNoticeListener = new omni::isaac::lidar::UsdNoticeListener();
@@ -528,8 +636,6 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
         return;
     }
-    Lidar::physx = g_physx;
-
     omni::kit::StageUpdateNodeDesc suDesc = { 0 };
     suDesc.displayName = "Lidar Interface";
     suDesc.onAttach = SuAttach;
@@ -551,6 +657,11 @@ CARB_EXPORT void carbOnPluginShutdown()
 {
     using namespace omni::isaac::lidar;
 
+
+    g_viewportUiEvtSub = nullptr;
+    g_editor = nullptr;
+    g_imGuiInterface = nullptr;
+
     if (g_suNode)
     {
         g_su->destroyStageUpdateNode(g_suNode);
@@ -558,9 +669,7 @@ CARB_EXPORT void carbOnPluginShutdown()
     }
 
     g_physx = nullptr;
-    Lidar::physx = nullptr;
     g_stage = nullptr;
-    Lidar::stage = nullptr;
 
     g_FastCache = nullptr;
 
