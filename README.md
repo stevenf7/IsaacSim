@@ -50,7 +50,9 @@ script.
 
 The default setting is to target x86_64 CPU architecture when building on
 x86_64 hosts. If you want to target arm64 (aarch64) then run
-`./build.sh -p linux-aarch64`.
+```bash
+./build.sh -p linux-aarch64.
+```
 
 > NOTE: To build the project minimal configuration is needed. Any version of Windows 10 or Linux with Docker will do. Then
 run the setup and build scripts as described here above. That's it. The specific version of Windows, NVIDIA driver,
@@ -80,10 +82,14 @@ Docker manually, the process goes roughly as follows on Ubuntu systems:
 - Go to debug or release folder under _build/xxx-x86_64 (x86_64 platforms only)
 - Execute `./omniverse-kit.sh` (Linux) / `omniverse-kit.exe` (Windows)
 
+---
+
 ## Packaging
 
 - Use `./tools/package.sh` (Linux) / `tools/package.bat` (Windows):
     * `tools/package.bat -c debug -m omniverse-kit` create a package in `_builtpackages`
+
+---
 
 ## Running Tests
 
@@ -97,23 +103,25 @@ Docker manually, the process goes roughly as follows on Ubuntu systems:
 - Use `--from-pacakge`/`-p` to run tests against the package from `_builtpackages` folder. That is useful for mimicking TC setup:
     * `tools/test_runner.bat ---suite unittests -p` -- unzips package in folder nearby (once) and runs tests in it.
 
+---
 
 ## Troubleshooting
 
 ### Permission errors when on VPN on Windows
 You may see this error when using VPN on Windows:
-```
+```bash
 Permission denied (publickey,gssapi-keyex,gssapi-with-mic,password).: exit status 255
 ```
 As a workaround, use ssh key without a passphrase.
 
 Another possible ssh error:
 
-```
+```bash
 x509: certificate signed by unknown authority
 ```
 The current solution is to disable SSL verification:
-```
+
+```bash
 git config http.sslVerify false
 ```
 
@@ -131,3 +139,32 @@ git config http.sslVerify false
  * Make the daemon always start on boot with ``systemctl enable docker``
  * You can check if the daemon is running with ``systemctl list-units --state=active | grep docker``
 
+---
+
+## FAQ
+
+### Adding new default resolutions to Kit
+edit the following file:
+``source/apps/configs/omniverse-kit.json``
+And in this section:
+
+```json
+"renderer": {
+    "resolution": {
+        "list": [2048, 1080, 1920, 1080, 1280, 720, 1024, 1024, 512, 512],
+        "multiplierList": [2.0, 1.0, 0.666666666666, 0.5, 0.333333333333, 0.25]
+    }
+},
+```
+Modify ``list`` and add your resolutions pair.
+Ex: Adding a new resolution of 1024x768:
+
+```json
+"renderer": {
+    "resolution": {
+        "list": [2048, 1080, 1920, 1080, 1280, 720, 1024, 1024, 512, 512, 1024, 768],
+        "multiplierList": [2.0, 1.0, 0.666666666666, 0.5, 0.333333333333, 0.25]
+    }
+},
+```
+Run ``./build.sh`` to update the application config so that it gets executed the next time you run ./omniverse-kit.sh
