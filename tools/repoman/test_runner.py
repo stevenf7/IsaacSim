@@ -98,7 +98,6 @@ def run_startuptest(root: str, platform_host: str, config: str, extra_args: List
 
     print(f"Found those executable files to run startup tests on: {executable_files}")
 
-    # exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
     args = ["--exec", "quit"]
     args.extend(extra_args)
 
