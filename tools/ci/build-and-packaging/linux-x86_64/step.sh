@@ -17,8 +17,8 @@ echo "##teamcity[progressMessage 'Docs...']"
 "$SCRIPT_DIR/../../../build_docs.sh" -c release
 
 # Run python tests
-echo "##teamcity[progressMessage 'Python tests...']"
-"$SCRIPT_DIR/../../../test_runner.sh" --suite pythontests --config release
+#echo "##teamcity[progressMessage 'Python tests...']"
+#"$SCRIPT_DIR/../../../test_runner.sh" --suite pythontests --config release
 
 # Package
 echo "##teamcity[progressMessage 'Packaging...']"

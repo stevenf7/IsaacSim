@@ -16,9 +16,9 @@ call "%~dp0..\..\..\build_docs.bat" -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Run python tests
-echo ##teamcity[progressMessage 'Python tests...']
-call "%~dp0..\..\..\test_runner.bat" --suite pythontests --config release
-if %errorlevel% neq 0 ( exit /b %errorlevel% )
+::echo ##teamcity[progressMessage 'Python tests...']
+::call "%~dp0..\..\..\test_runner.bat" --suite pythontests --config release
+::if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Run kit tests 
 ::echo ##teamcity[progressMessage 'Kit tests...']
