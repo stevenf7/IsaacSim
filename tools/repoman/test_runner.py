@@ -58,7 +58,7 @@ def run_pythontests(root: str, platform_host: str, config: str, extra_args: List
     omni.repo.man.pip_install("teamcity-messages", paths["pip_packages"], module="teamcity")
     import teamcity
 
-    unittest_module = "teamcity.unittestpy" if is_running_under_teamcity() else "unittest"
+    unittest_module = "unittest" if is_running_under_teamcity() else "unittest"
 
     path_to_extensions = f"{root}/_build/{platform_host}/{config}/extensions"
     os.environ["PYTHONPATH"] += os.pathsep.join([paths["pip_packages"], path_to_extensions])
