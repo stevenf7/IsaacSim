@@ -36,13 +36,17 @@ def get_shell_ext(platform: str) -> str:
 
 def run_unittests(root: str, platform_host: str, config: str, extra_args: List = []):
     executable = f"test.unit{get_exe_ext(platform_host)}"
+    path_to_executable = (
+        f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}/plugins/{executable}"
+    )
 
     args = []
     if is_running_under_teamcity():
         args.append("-r teamcity")
+        path_to_executable = f"{root}/_build/{platform_host}/{config}/plugins/{executable}"
     args.extend(extra_args)
 
-    omni.repo.man.run_process([f"{root}/_build/{platform_host}/{config}/{executable}"] + args, exit_on_error=True)
+    omni.repo.man.run_process([path_to_executable] + args, exit_on_error=True)
 
 
 def run_pythontests(root: str, platform_host: str, config: str, extra_args: List = []):
@@ -52,7 +56,7 @@ def run_pythontests(root: str, platform_host: str, config: str, extra_args: List
     omni.repo.man.pip_install("teamcity-messages", paths["pip_packages"], module="teamcity")
     import teamcity
 
-    unittest_module = "teamcity.unittestpy" if teamcity.is_running_under_teamcity() else "unittest"
+    unittest_module = "teamcity.unittestpy" if is_running_under_teamcity() else "unittest"
 
     path_to_extensions = f"{root}/_build/{platform_host}/{config}/extensions"
     os.environ["PYTHONPATH"] += os.pathsep.join([paths["pip_packages"], path_to_extensions])
