@@ -80,6 +80,7 @@ def run_kittests(root: str, platform_host: str, config: str, extra_args: List = 
     args.extend(extra_args)
     omni.repo.man.run_process([f"{root}/_build/{platform_host}/{config}/{executable}"] + args, exit_on_error=True)
 
+
 def run_startuptest(root: str, platform_host: str, config: str, extra_args: List = []):
     """Start and quit Kit"""
 
@@ -97,7 +98,7 @@ def run_startuptest(root: str, platform_host: str, config: str, extra_args: List
 
     print(f"Found those executable files to run startup tests on: {executable_files}")
 
-    #exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
+    # exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
     args = ["--exec", "quit"]
     args.extend(extra_args)
 
@@ -108,7 +109,12 @@ def run_startuptest(root: str, platform_host: str, config: str, extra_args: List
         omni.repo.man.run_process(executable_path, exit_on_error=True)
 
 
-TEST_SUITES = {"unittests": run_unittests, "pythontests": run_pythontests, "kittests": run_kittests, "startuptest": run_startuptest}
+TEST_SUITES = {
+    "unittests": run_unittests,
+    "pythontests": run_pythontests,
+    "kittests": run_kittests,
+    "startuptest": run_startuptest,
+}
 
 
 def main():
