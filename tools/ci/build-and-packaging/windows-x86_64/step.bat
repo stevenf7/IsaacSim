@@ -21,7 +21,7 @@ call "%~dp0..\..\..\test_runner.bat" --suite pythontests --config release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Run kit tests 
-echo ##teamcity[progressMessage 'Kit tests...']
+::echo ##teamcity[progressMessage 'Kit tests...']
 :: SKIP THEM for now, that puts a hard requirement on TC agent (to have RTX, driver version, etc.)
 ::call "%~dp0..\..\test_runner.bat" --suite kittests --config release
 ::if %errorlevel% neq 0 ( exit /b %errorlevel% )
