@@ -64,6 +64,8 @@ def run_pythontests(root: str, platform_host: str, config: str, extra_args: List
     os.environ["PYTHONPATH"] += os.pathsep.join([paths["pip_packages"], path_to_extensions])
 
     kit_bin = f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}"
+    if is_running_under_teamcity():
+        kit_bin = f"{root}/_build/{platform_host}/{config}"
 
     tests_folder = os.path.join(paths["root"], "source/tests/python")
     args = ["-m", unittest_module, "discover", "-s", tests_folder] + extra_args
@@ -85,6 +87,8 @@ def run_startuptest(root: str, platform_host: str, config: str, extra_args: List
     """Start and quit Kit"""
 
     bin_folder = f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}"
+    if is_running_under_teamcity():
+        bin_folder = f"{root}/_build/{platform_host}/{config}"
 
     # Search for all .bat/.sh files
     executable_files = [os.path.basename(f) for f in glob.glob(bin_folder + "/*" + get_shell_ext(platform_host))]
