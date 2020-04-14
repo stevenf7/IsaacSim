@@ -10,7 +10,9 @@ Attributes:
 """
 
 import os
+import glob
 import logging
+import fnmatch
 import argparse
 from typing import List
 
@@ -78,8 +80,35 @@ def run_kittests(root: str, platform_host: str, config: str, extra_args: List = 
     args.extend(extra_args)
     omni.repo.man.run_process([f"{root}/_build/{platform_host}/{config}/{executable}"] + args, exit_on_error=True)
 
+def run_startuptest(root: str, platform_host: str, config: str, extra_args: List = []):
+    """Start and quit Kit"""
 
-TEST_SUITES = {"unittests": run_unittests, "pythontests": run_pythontests, "kittests": run_kittests}
+    bin_folder = f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}"
+
+    # Search for all .bat/.sh files
+    executable_files = [os.path.basename(f) for f in glob.glob(bin_folder + "/*" + get_shell_ext(platform_host))]
+
+    # Explicitly add default kit:
+    executable_files.insert(0, f"omniverse-kit{get_exe_ext(platform_host)}")
+
+    # Ignore most of runners until we implement quitting mechanism:
+    IGNORE_LIST = ["python*", "mpirun*", "example.*", "*-kit-mini*"]
+    executable_files = [f for f in executable_files if not any(fnmatch.fnmatch(f, p) for p in IGNORE_LIST)]
+
+    print(f"Found those executable files to run startup tests on: {executable_files}")
+
+    #exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
+    args = ["--exec", "quit"]
+    args.extend(extra_args)
+
+    os.environ["PYTHONPATH"] = ""  # Don't propagagate current ENV into the test (e.g. packman path is set there)
+
+    for executable_file in executable_files:
+        executable_path = [f"{bin_folder}/{executable_file}"] + args
+        omni.repo.man.run_process(executable_path, exit_on_error=True)
+
+
+TEST_SUITES = {"unittests": run_unittests, "pythontests": run_pythontests, "kittests": run_kittests, "startuptest": run_startuptest}
 
 
 def main():
