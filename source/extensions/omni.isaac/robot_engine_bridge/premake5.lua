@@ -56,8 +56,9 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/physx/include",
             target_deps_dir.."/pxshared/include",
             target_deps_dir.."/isaac_engine/include",
-            -- target_deps_dir.."/carb_gfx_plugins/include",
-            target_deps_dir.."/rtx_plugins/include"
+            target_deps_dir.."/rtx_plugins/include",
+            target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/include",
+
         }
 
         libdirs {   
@@ -65,11 +66,12 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
             target_deps_dir.."/nv_usd/release/lib",
             target_deps_dir.."/isaac_engine/lib",
+            target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/lib",
             "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins" 
         }
         links { 
             "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "kj", "capnp", "omni.usd"
+            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "kj", "capnp", "omni.usd", "lidarSchema"
         }
 
         filter { "configurations:debug" }

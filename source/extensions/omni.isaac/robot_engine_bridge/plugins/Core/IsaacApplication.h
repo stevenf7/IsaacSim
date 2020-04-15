@@ -23,7 +23,7 @@ namespace isaac
 {
 namespace robot_engine_bridge
 {
-class IsaacApplication : public utils::BridgeApplication
+class IsaacApplication : public utils::BridgeApplicationBase<IsaacComponent>
 {
 public:
     /**

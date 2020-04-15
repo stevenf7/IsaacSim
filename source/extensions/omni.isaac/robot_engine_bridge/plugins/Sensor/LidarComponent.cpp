@@ -7,6 +7,7 @@
 #include <carb/Types.h>
 #include <vector>
 #include <string>
+#include <LidarSchema/lidar.h>
 
 #include "../Core/IsaacComponent.h"
 #include "LidarComponent.h"
@@ -53,11 +54,16 @@ void LidarComponent::tick()
 {
     CARB_PROFILE_ZONE(0, "REB LidarComponent Tick");
 
-    mLidarHandle = mLidarInterface->getLidarHandle(mLidarPath.c_str());
-
-    if (mLidarHandle == omni::isaac::lidar::kLidarInvalidHandle)
+    pxr::UsdPrim prim = mStage->GetPrimAtPath(pxr::SdfPath(mLidarPath.c_str()));
+    if (!prim.IsA<pxr::LidarSchemaLidar>())
     {
-        CARB_LOG_ERROR("Prim is not a LIDAR");
+        CARB_LOG_ERROR("Prim is not a Lidar Prim");
+        return;
+    }
+    pxr::LidarSchemaLidar lidarPrim = pxr::LidarSchemaLidar(prim);
+    if (!mLidarInterface->isLidar(mLidarPath.c_str()))
+    {
+        CARB_LOG_ERROR("Prim is not registered with Lidar extension");
         return;
     }
 
@@ -66,8 +72,8 @@ void LidarComponent::tick()
 
     auto scanMessageProto = scanMessage.initProto();
 
-    int numColsTicked = mLidarInterface->getNumColsTicked(mLidarHandle);
-    int numRows = mLidarInterface->getNumRows(mLidarHandle);
+    int numColsTicked = mLidarInterface->getNumColsTicked(mLidarPath.c_str());
+    int numRows = mLidarInterface->getNumRows(mLidarPath.c_str());
     int numBeams = numColsTicked * numRows;
 
     // Initialize the ranges tensor
@@ -86,11 +92,15 @@ void LidarComponent::tick()
     intensities.setScanlineStride(0);
     intensities.setDataBufferIndex(1);
 
-    float* theta = mLidarInterface->getAzimuthData(mLidarHandle);
-    float* phi = mLidarInterface->getZenithData(mLidarHandle);
-    uint16_t* ranges = mLidarInterface->getDepthData(mLidarHandle);
+    float* theta = mLidarInterface->getAzimuthData(mLidarPath.c_str());
+    float* phi = mLidarInterface->getZenithData(mLidarPath.c_str());
+    uint16_t* ranges = mLidarInterface->getDepthData(mLidarPath.c_str());
 
-    float maxRange = mLidarInterface->getMaxRange(mLidarHandle);
+    float maxRange = 100;
+    if (lidarPrim.GetMaxRangeAttr().HasValue())
+    {
+        lidarPrim.GetMaxRangeAttr().Get(&maxRange);
+    }
 
     scanMessageProto.setTheta(kj::ArrayPtr<const float>(theta, theta + numColsTicked));
     scanMessageProto.setPhi(kj::ArrayPtr<const float>(phi, phi + numRows));

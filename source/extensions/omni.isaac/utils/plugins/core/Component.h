@@ -12,7 +12,8 @@ namespace utils
 /**
  * @brief Base class which defines a component in an Application that is attached to a USD prim
  */
-class Component
+template <class PrimType>
+class ComponentBase
 {
 public:
     /**
@@ -21,7 +22,7 @@ public:
      * @param prim
      * @param stage
      */
-    virtual void initialize(const pxr::UsdPrim& prim, pxr::UsdStageRefPtr stage)
+    virtual void initialize(const PrimType& prim, pxr::UsdStageRefPtr stage)
     {
         mPrim = prim;
         mStage = stage;
@@ -47,7 +48,7 @@ public:
 
 protected:
     // USD reference to prim that stores settings for this component
-    pxr::UsdPrim mPrim;
+    PrimType mPrim;
     // USD stage that the prim is in
     pxr::UsdStageRefPtr mStage = nullptr;
 
@@ -55,6 +56,10 @@ protected:
     int64_t mTimeNanoSeconds = 0; // current time in nano seconds
     double mTimeDelta = 0; // delta time for current tick
 };
+
+typedef ComponentBase<pxr::UsdPrim> Component;
+
+
 }
 }
 }
