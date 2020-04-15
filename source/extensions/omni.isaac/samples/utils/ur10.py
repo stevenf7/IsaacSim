@@ -174,7 +174,19 @@ class EndEffector:
 
 # UR10 objects that contains implementation details for robot control
 class UR10:
-    def __init__(self, stage, prim, dc, mp, world=None, group_path="", default_config=None, is_ghost=False):
+    def __init__(
+        self,
+        stage,
+        prim,
+        dc,
+        mp,
+        world=None,
+        group_path="",
+        default_config=None,
+        is_ghost=False,
+        urdf="/urdf/ur10_robot_no_mat.urdf",
+        ee_offset=22.15,
+    ):
         self.dc = dc
         self.mp = mp
         self.prim = prim
@@ -188,7 +200,7 @@ class UR10:
         exec_folder = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../resources/lula/lula_ur10"))
 
         self.rmp_handle = self.mp.registerRmp(
-            exec_folder + "/urdf/ur10_robot_no_mat.urdf",
+            exec_folder + urdf,
             exec_folder + "/config/robot_descriptor.yaml",
             exec_folder + "/config/ur10_rmpflow_common.yaml",
             prim.GetPath().pathString,
@@ -210,7 +222,7 @@ class UR10:
         mjp.gripThreshold = 1
         mjp.forceLimit = 1.0e8
         tr = _dynamic_control.Transform()
-        tr.p.x = 22.15
+        tr.p.x = ee_offset
         mjp.offset = tr
 
         self.end_effector.gripper = Magic_Joint(self.dc)
