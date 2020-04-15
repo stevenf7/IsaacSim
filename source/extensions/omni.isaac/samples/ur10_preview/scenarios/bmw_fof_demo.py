@@ -99,20 +99,14 @@ class PickAndPlaceStateMachine(object):
         self.upside_offset = _dynamic_control.Transform()
         self.upside_flip = _dynamic_control.Transform()
 
-        # 69.05258297920227 67.0586109161377 -3.1120089814066887
-        self.upside_goal.p = (0.6905, 0.6705, -0.011415)
-        self.upside_goal.r = (0.12380744620354063, -0.510572739737588, -0.1093972128961598, 0.8438124456962951)
-
-        # (-0.225195, 0.435623, 0.0179048, -0.871321)
+        self.upside_goal.p = (0.7498, 0.61, 0.085)
+        self.upside_goal.r = (-0.225195, 0.435623, 0.0179048, -0.871321)
         # self.upside_goal.r = (-0.85594,-0.0295757,-0.469593,-0.214414) # two possible orientations, need to figure out which is better
 
-        # 51.85513496398926 92.21376180648804 13.704390823841095
-        self.upside_offset.p = [0.51855, 0.9221, 0.1370]
-        self.upside_offset.r = (0.12380744620354063, -0.510572739737588, -0.1093972128961598, 0.8438124456962951)
+        self.upside_offset.p = [-0.30, -0.1, 0.40]
 
-        self.upside_flip.p = [0.51855, 0.9221, 0.1370]  # [0.15, 0.57159, 0.35]
-        self.upside_flip.r = (0.12380744620354063, -0.510572739737588, -0.1093972128961598, 0.8438124456962951)
-        # flip 180 degrees along y axis
+        self.upside_flip.p = [0.15, 0.57159, 0.35]
+        self.upside_flip.r = (-0.225195, 0.435623, 0.0179048, -0.871321)  # flip 180 degrees along y axis
 
         self.pick_count = 0
         # Define the state machine handling functions
@@ -412,10 +406,8 @@ class PickAndPlaceStateMachine(object):
             # Tell motion planner controller to ignore current object as an obstacle
             self.target_bodies[self.current].suppress()
             self.pick_count = 0
-            self.lerp_to_pose(self.default_position, 1)
-            self.lerp_to_pose(self.default_position, 60)
             # set target above the current tray with offset of 20 cm
-            self.set_target_to_object(12, 20, clear_waypoints=False)
+            self.set_target_to_object(12, 20)
             # start arm movement
             self.move_to_target()
             # Move to next state
@@ -439,7 +431,7 @@ class PickAndPlaceStateMachine(object):
         """
 
         self.lerp_to_pose(self.upside_flip, n_waypoints=1)
-        target_position = self.upside_offset
+        target_position = math_utils.mul(self.upside_offset, self.upside_goal)
         self.lerp_to_pose(target_position, 1)
         self.lerp_to_pose(self.upside_goal, 80)
         self.lerp_to_pose(self.upside_goal, 30)
@@ -455,7 +447,6 @@ class PickAndPlaceStateMachine(object):
         Handles a state machine step when the target goal is reached, and the machine is on attach state
         """
         self.robot.end_effector.gripper.close()
-        self.lerp_to_pose(self.target_position, 60)  # Wait 1 second in place for attachment
         if self.robot.end_effector.gripper.is_closed():
             self._attached = True
         else:  # Failed to attach so return grasp to try again
@@ -491,7 +482,7 @@ class PickAndPlaceStateMachine(object):
         else:
             target = _dynamic_control.Transform()
             x, y = self.get_current_place_pose()
-            target.r = [0, 0.35836791862248063, 0, 0.9335804383673595]
+            target.r = [0, 0.7071, 0, 0.7071]
             target.p.x = x / 100.0
             target.p.y = y / 100.0
             target.p.z = 0.15
@@ -507,12 +498,8 @@ class PickAndPlaceStateMachine(object):
                 target.p.y = y / 100.0
                 if self.add_tray is not None:
                     self.add_tray()
-
             self.lerp_to_pose(target, 50)
-            self.lerp_to_pose(target, 60)
-            target.r = [0, 0.7071, 0, 0.7071]
-            self.lerp_to_pose(target, 1)
-            self.lerp_to_pose(target, 30)
+            self.lerp_to_pose(target, 45)
             self.change_state(SM_states.PLACING)
 
     def _detach_goal_reached(self, *args):
@@ -532,17 +519,14 @@ class PickAndPlaceStateMachine(object):
             if self._upright:
                 self.tray_holder_object.unsuppress()
                 offset = _dynamic_control.Transform()
-                offset.p = (0.5, 0.517, 0.10)
-                offset.r = (0.14102078714018185, 0.6810133229625428, 0.059975620045362985, 0.7160565037356013)
+                offset.p = (0.1, 0.8, 0.20)
+                offset.r = (0, 0.7071, 0, 0.7071)
                 self.lerp_to_pose(copy(offset), 10)
-                offset.p = [0.9912, 0.517, 0.2900]
-                self.lerp_to_pose(offset, 20)
-                self.lerp_to_pose(offset, 60)  # wait in place for 1 second
                 self.target_position = self.waypoints.popleft()
                 self.move_to_target()
                 target_to_obj = self.get_target_to_object(18, 20)
                 offset2 = _dynamic_control.Transform()
-                offset2.p = (0.0, 0.0, 0.20)
+                offset2.p = (0.0, 0.0, 0.25)
                 offset2.r = (0, 0, 0, 1)
                 pre_target = math_utils.mul(offset2, target_to_obj)
                 self.lerp_to_pose(copy(pre_target), 20)
@@ -559,7 +543,6 @@ class PickAndPlaceStateMachine(object):
                 self.target_position = self.waypoints.popleft()
                 self.move_to_target()
                 self.lerp_to_pose(self.default_position, n_waypoints=1)
-                self.lerp_to_pose(self.default_position, n_waypoints=60)
                 self.start = False
                 self.total_trays += 1
                 self.stack_size[self.current_stack_list[self.current_stack]] += 1
@@ -577,10 +560,10 @@ class PickAndPlaceStateMachine(object):
             # Quickly push the arm down 25 cm to clear the tray and let it fall on the platform
             self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=1)
             # Wait in place for a while
-            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=5)
+            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=30)
             # Then move to the side and slightly more down
-            offset.p = (-0.15, 0.30, 0)
-            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=60)
+            offset.p = (-0.30, 0.30, 0)
+            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=1)
         else:
 
             offset.p = (-0.10, 0.0, 0.0)
@@ -609,8 +592,8 @@ class PickAndPlaceStateMachine(object):
             # Set target towards surface of the tray
             tr = self.get_current_state_tr()
             offset = _dynamic_control.Transform()
-            offset.p = (distance + 0.15, 0, 0)
-
+            # Subtract a 1.5mm offset for simulation stability
+            offset.p = (distance - 0.25, 0, 0)
             target = math_utils.mul(tr, offset)
             target.p = math_utils.mul(target.p, 0.01)
             offset.p.x = -0.05
@@ -670,7 +653,7 @@ class PickAndPlaceStateMachine(object):
                     target.p.z -= ((distance + x_off) / 100.0) - 0.16
                 else:
                     target.r = [0, 0.7071, 0, 0.7071]
-                    target.p.z -= ((distance + x_off) / 100.0) - 0.20
+                    target.p.z -= ((distance + x_off) / 100.0) - 0.17
 
             else:
                 self.move_to_target()  # trigger the  goal_reached event so it tries again
@@ -775,7 +758,6 @@ class AttachBody(Scenario):
                 )
 
     def create_UR10(self, *args):
-        self.ur10_table_usd = self.asset_path + "/Stage/StageD6robotiq.usd"
         super().create_UR10()
         use_background = True
         if len(args) > 0:
@@ -850,8 +832,6 @@ class AttachBody(Scenario):
             self.world,
             "/physics/scene/solid",
             default_config,
-            urdf="/urdf/ur10_robot_robotiq.urdf",
-            ee_offset=16.1709,  # 19.774,
         )
 
         body_count = self._dc.get_articulation_body_count(self.ur10_solid.ar)
@@ -886,10 +866,10 @@ class AttachBody(Scenario):
         i = 0
 
         # # Set robot end effector
-        orig = [-0.0645, 0.7214, 0.495]  # [0, 0.75, 0.42]
+        orig = [0, 0.75, 0.42]
         default_position = _dynamic_control.Transform()
         default_position.p = orig
-        default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
+        default_position.r = math_utils.mul([0, 0.7071, 0, 0.7071], [0.7071, 0, 0, -0.7071])
         # tr = _dynamic_control.Transform()
         # tr.r = (0,0,-0.383,-0.924)
         # default_position = math_utils.mul(default_position,tr)
@@ -933,3 +913,12 @@ class AttachBody(Scenario):
             self.ur10_solid.end_effector.gripper.open()
         else:
             self.ur10_solid.end_effector.gripper.close()
+        state = self.ur10_solid.end_effector.status.current_target
+        state_1 = self.pick_and_place.target_position
+        tr = state["orig"] * 100.0
+        print(tr[0], tr[1], tr[2])
+
+        mat = Gf.Matrix3f(
+            *state["axis_x"].astype(float), *state["axis_y"].astype(float), *state["axis_z"].astype(float)
+        )
+        print(mat.ExtractRotation().GetQuaternion())
