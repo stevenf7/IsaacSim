@@ -15,15 +15,15 @@ namespace isaac
 namespace utils
 {
 
-
-class BridgeApplication : public ComponentManager, public pxr::TfWeakBase
+template <class ComponentType>
+class BridgeApplicationBase : public ComponentManager, public pxr::TfWeakBase
 {
 public:
     /**
      * @brief Construct a new Application object
      *
      */
-    BridgeApplication()
+    BridgeApplicationBase()
     {
     }
 
@@ -32,9 +32,10 @@ public:
      *
      */
 
-    ~BridgeApplication()
+    ~BridgeApplicationBase()
     {
         deleteAllComponents();
+        pxr::TfNotice::Revoke(mNoticeListener);
     }
 
     /**
@@ -45,7 +46,7 @@ public:
     virtual void initialize(pxr::UsdStageRefPtr stage)
     {
         mStage = stage;
-        mNoticeListener = pxr::TfNotice::Register(pxr::TfCreateWeakPtr(this), &BridgeApplication::HandlePrimChanged);
+        mNoticeListener = pxr::TfNotice::Register(pxr::TfCreateWeakPtr(this), &BridgeApplicationBase::HandlePrimChanged);
     }
 
     /**
@@ -122,7 +123,7 @@ public:
     }
 
 protected:
-    std::unordered_map<std::string, std::unique_ptr<Component>> mComponents;
+    std::unordered_map<std::string, std::unique_ptr<ComponentType>> mComponents;
     pxr::TfNotice::Key mNoticeListener;
     virtual void HandlePrimChanged(const class pxr::UsdNotice::ObjectsChanged& objectsChanged)
     {
@@ -151,6 +152,10 @@ protected:
         }
     }
 };
+
+typedef BridgeApplicationBase<Component> BridgeApplication;
+
+
 }
 }
 }
