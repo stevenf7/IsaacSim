@@ -14,7 +14,7 @@
 #include <pxr/usd/usd/inherits.h>
 // clang-format on
 
-#include "Lidar.h"
+#include "LidarSensor.h"
 
 #include <carb/physx/physx.h>
 #include <carb/InterfaceUtils.h>
@@ -33,52 +33,84 @@ namespace lidar
 {
 
 
-Lidar::~Lidar()
+LidarSensor::LidarSensor()
+{
+}
+
+LidarSensor::~LidarSensor()
 {
     mDebugLines.clear();
 }
 
-Lidar::Lidar(carb::physics::PhysX* physx_ptr,
-             omni::isaac::dynamic_control::DynamicControl* dc_ptr,
-             const pxr::LidarSchemaLidar& prim,
-             float metersPerUnit)
+void LidarSensor::initialize(carb::physics::PhysX* physxPtr,
+                             omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
+                             carb::fastcache::FastCache* fastCachePtr,
+                             const pxr::LidarSchemaLidar& prim,
+                             pxr::UsdStageRefPtr stage)
 {
-
-    mPhysx = physx_ptr;
-    mMetersPerUnit = metersPerUnit;
-
-    mDynamicControlPtr = dc_ptr;
-
-    init(prim);
+    SensorComponent::initialize(prim, stage);
+    mPhysx = physxPtr;
+    mDynamicControlPtr = dynamicControlPtr;
+    mFastCachePtr = fastCachePtr;
+    CARB_LOG_WARN("LidarSensor::initialize");
 }
 
 
-void Lidar::init(const pxr::LidarSchemaLidar& prim)
+void LidarSensor::onStart()
 {
-    this->mPrim = prim;
+    onComponentChange();
+}
 
-    // NOTE : Gross
-    // TODO : Not this
-    mValid = mPrim.GetHorizontalFovAttr().HasValue() && mPrim.GetVerticalFovAttr().HasValue() &&
-             mPrim.GetRotationRateAttr().HasValue() && mPrim.GetHorizontalResolutionAttr().HasValue() &&
-             mPrim.GetVerticalResolutionAttr().HasValue() && mPrim.GetMinRangeAttr().HasValue() &&
-             mPrim.GetMaxRangeAttr().HasValue() && mPrim.GetHighLodAttr().HasValue() &&
-             mPrim.GetDrawLidarPointsAttr().HasValue();
+void LidarSensor::onComponentChange()
+{
+    SensorComponent::onComponentChange();
+    mMetersPerUnit = UsdGeomGetStageMetersPerUnit(mStage);
 
-    if (!mValid)
-        return;
+    if (mPrim.GetHorizontalFovAttr().HasValue())
+    {
+        mPrim.GetHorizontalFovAttr().Get(&mHorizontalFov);
+    }
 
+    if (mPrim.GetVerticalFovAttr().HasValue())
+    {
+        mPrim.GetVerticalFovAttr().Get(&mVerticalFov);
+    }
 
-    // Copy over the stuff from the mPrim
-    mPrim.GetHorizontalFovAttr().Get(&mHorizontalFov);
-    mPrim.GetVerticalFovAttr().Get(&mVerticalFov);
-    mPrim.GetRotationRateAttr().Get(&mRotationRate);
-    mPrim.GetHorizontalResolutionAttr().Get(&mHorizontalResolution);
-    mPrim.GetVerticalResolutionAttr().Get(&mVerticalResolution);
-    mPrim.GetMinRangeAttr().Get(&mMinRange);
-    mPrim.GetMaxRangeAttr().Get(&mMaxRange);
-    mPrim.GetHighLodAttr().Get(&mHighLod);
-    mPrim.GetDrawLidarPointsAttr().Get(&mDrawLidarPoints);
+    if (mPrim.GetRotationRateAttr().HasValue())
+    {
+        mPrim.GetRotationRateAttr().Get(&mRotationRate);
+    }
+
+    if (mPrim.GetHorizontalResolutionAttr().HasValue())
+    {
+        mPrim.GetHorizontalResolutionAttr().Get(&mHorizontalResolution);
+    }
+
+    if (mPrim.GetVerticalResolutionAttr().HasValue())
+    {
+        mPrim.GetVerticalResolutionAttr().Get(&mVerticalResolution);
+    }
+
+    if (mPrim.GetMinRangeAttr().HasValue())
+    {
+        mPrim.GetMinRangeAttr().Get(&mMinRange);
+    }
+
+    if (mPrim.GetMaxRangeAttr().HasValue())
+    {
+        mPrim.GetMaxRangeAttr().Get(&mMaxRange);
+    }
+
+    if (mPrim.GetHighLodAttr().HasValue())
+    {
+        mPrim.GetHighLodAttr().Get(&mHighLod);
+    }
+
+    if (mPrim.GetDrawLidarPointsAttr().HasValue())
+    {
+        mPrim.GetDrawLidarPointsAttr().Get(&mDrawLidarPoints);
+    }
+
 
     // printf("%f %f %f %f %f %f %f %d %d\n",
     //        mHorizontalFov,
@@ -154,7 +186,7 @@ void Lidar::init(const pxr::LidarSchemaLidar& prim)
     }
 }
 
-void Lidar::scan(int start, int stop)
+void LidarSensor::scan(int start, int stop)
 {
     // printf("%f %f %f %f %f %f %f %d %d\n",
     //        mHorizontalFov,
@@ -168,14 +200,18 @@ void Lidar::scan(int start, int stop)
     //        mDrawLidarPoints);
 
     GfMatrix4d worldTransform;
-    if (mRigidBodyHandle)
-    {
-        worldTransform = utils::conversions::asGfMatrix4d(mDynamicControlPtr->getRigidBodyPose(mRigidBodyHandle));
-    }
-    else
-    {
-        worldTransform = omni::usd::UsdUtils::getWorldTransformMatrix(mPrim.GetPrim());
-    }
+    // if (mRigidBodyHandle)
+    // {
+    //     worldTransform = utils::conversions::asGfMatrix4d(mDynamicControlPtr->getRigidBodyPose(mRigidBodyHandle));
+    // }
+    // else
+    // {
+    //     worldTransform = omni::usd::UsdUtils::getWorldTransformMatrix(mPrim.GetPrim());
+    // }
+
+    carb::fastcache::Transform trans;
+    mFastCachePtr->getTransform(mPrim.GetPath(), trans);
+    worldTransform = utils::conversions::asGfMatrix4d(trans);
 
     // GfRotation startingRotation(GfVec3f(1.0f, 0.0f, 0.0f), 180.0f);
     // startingRotation *= worldTransform.ExtractRotation();
@@ -253,7 +289,7 @@ void Lidar::scan(int start, int stop)
     }
 }
 
-void Lidar::dumpData(int start, int stop, float dt)
+void LidarSensor::dumpData(int start, int stop, float dt)
 {
 
     // Size of mLastDepth and mLastIntensity == mRows * mLastNumColsTicked
@@ -286,14 +322,9 @@ void Lidar::dumpData(int start, int stop, float dt)
 }
 
 
-void Lidar::update(float elapsedTime)
+void LidarSensor::tick()
 {
-
-    if (!mValid)
-    {
-        CARB_LOG_ERROR("Attempted to use an invalid Lidar, please specify all attributes on prim");
-        return;
-    }
+    float elapsedTime = mTimeDelta;
 
     mDebugLines.clear();
 

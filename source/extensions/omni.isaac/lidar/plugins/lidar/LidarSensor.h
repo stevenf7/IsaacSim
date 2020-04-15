@@ -9,6 +9,9 @@
 #pragma once
 
 
+#include "../core/SensorComponent.h"
+
+#include <carb/fastcache/FastCache.h>
 #include <carb/physx/physx.h>
 #include <carb/renderer/Renderer.h>
 
@@ -25,10 +28,6 @@
 #include <PxScene.h>
 #include <vector>
 
-
-using namespace pxr;
-
-
 namespace omni
 {
 namespace isaac
@@ -36,109 +35,24 @@ namespace isaac
 namespace lidar
 {
 
-struct Lidar
+class LidarSensor : public SensorComponent<pxr::LidarSchemaLidar>
 {
 
 public:
-    Lidar(carb::physics::PhysX* physx_ptr,
-          omni::isaac::dynamic_control::DynamicControl* dc_ptr,
-          const pxr::LidarSchemaLidar& prim,
-          float metersPerUnit);
-    Lidar()
-    {
-    }
-    ~Lidar();
+    LidarSensor();
+    ~LidarSensor();
+    virtual void initialize(carb::physics::PhysX* physxPtr,
+                            omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
+                            carb::fastcache::FastCache* fastCachePtr,
+                            const pxr::LidarSchemaLidar& prim,
+                            pxr::UsdStageRefPtr stage);
+    virtual void onStart();
+    virtual void tick();
+    virtual void onComponentChange();
 
-
-    void init(const pxr::LidarSchemaLidar& prim);
-
-    SdfPath getPath() const
-    {
-        return mPrim.GetPath();
-    }
-
-    float getHorizontalFov() const
-    {
-        return mHorizontalFov;
-    }
-
-    float getVerticalFov() const
-    {
-        return mVerticalFov;
-    }
-
-    float getRotationRate() const
-    {
-        return mRotationRate;
-    }
-
-    float getHorizontalResolution() const
-    {
-        return mHorizontalResolution;
-    }
-
-    float getVerticalResolution() const
-    {
-        return mVerticalResolution;
-    }
-
-    float getMinRange() const
-    {
-        return mMinRange;
-    }
-
-    float getMaxRange() const
-    {
-        return mMaxRange;
-    }
-
-    bool getHighLod() const
-    {
-        return mHighLod;
-    }
-
-    bool getDrawLidarPoints() const
+    bool getDrawLidarPoints()
     {
         return mDrawLidarPoints;
-    }
-
-
-    void update(float elapsedTime);
-
-
-    int getNumCols() const
-    {
-        return mCols;
-    }
-
-    int getNumRows() const
-    {
-        return mRows;
-    }
-
-    int getLastNumColsTicked() const
-    {
-        return mLastNumColsTicked;
-    }
-
-    std::vector<uint16_t>& getLastDepthData()
-    {
-        return mLastDepth;
-    }
-
-    std::vector<uint8_t>& getLastIntensityData()
-    {
-        return mLastIntensity;
-    }
-
-    std::vector<float>& getLastZenithData()
-    {
-        return mZenith;
-    }
-
-    std::vector<float>& getLastAzimuthData()
-    {
-        return mLastAzimuth;
     }
 
     std::vector<carb::renderer::Line>& getDebugLines()
@@ -151,15 +65,45 @@ public:
         return mPrim;
     }
 
+    int getNumCols() const
+    {
+        return mCols;
+    }
+
+    int getNumRows() const
+    {
+        return mRows;
+    }
+
+    int getNumColsTicked() const
+    {
+        return mLastNumColsTicked;
+    }
+
+    std::vector<uint16_t>& getDepthData()
+    {
+        return mLastDepth;
+    }
+
+    std::vector<uint8_t>& getIntensityData()
+    {
+        return mLastIntensity;
+    }
+
+    std::vector<float>& getZenithData()
+    {
+        return mZenith;
+    }
+
+    std::vector<float>& getAzimuthData()
+    {
+        return mLastAzimuth;
+    }
+
 
 private:
     void scan(int start, int stop);
     void dumpData(int start, int stop, float elapsedTime);
-
-
-    pxr::LidarSchemaLidar mPrim;
-
-    bool mValid;
 
     // From the prim
     float mHorizontalFov;
@@ -200,11 +144,11 @@ private:
     std::set<int> mActiveDebugLines;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     omni::isaac::dynamic_control::DcHandle mRigidBodyHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
+    carb::fastcache::FastCache* mFastCachePtr = nullptr;
 
     std::vector<carb::renderer::Line> mDebugLines;
 
     carb::physics::PhysX* mPhysx = nullptr;
-    UsdStageRefPtr mStage;
     float mMetersPerUnit;
 };
 

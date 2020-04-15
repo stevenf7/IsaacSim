@@ -68,7 +68,7 @@ isaac_error_t IsaacApplication::create(std::string assetPath,
     }
     for (auto& component : mComponents)
     {
-        static_cast<IsaacComponent*>(component.second.get())->setAppHandle(mAppHandle);
+        component.second.get()->setAppHandle(mAppHandle);
     }
     mSceneLoaderComponent->setAppHandle(mAppHandle);
     return isaac_error_t::isaac_error_success;
@@ -126,7 +126,7 @@ isaac_error_t IsaacApplication::destroy()
     mAppHandle = 0;
     for (auto& component : mComponents)
     {
-        static_cast<IsaacComponent*>(component.second.get())->setAppHandle(mAppHandle);
+        component.second.get()->setAppHandle(mAppHandle);
     }
     mSceneLoaderComponent->setAppHandle(mAppHandle);
     return isaac_error_t::isaac_error_success;
@@ -159,8 +159,7 @@ void IsaacApplication::tick(double dt)
         {
             for (auto& component : mComponents)
             {
-                static_cast<IsaacComponent*>(component.second.get())
-                    ->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
+                component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
                 component.second->tick();
             }
             mSceneLoaderComponent->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);

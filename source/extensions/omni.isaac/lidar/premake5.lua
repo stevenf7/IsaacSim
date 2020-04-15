@@ -68,6 +68,8 @@ group ("extensions/"..ext_id)
         
         includedirs { 
             "%{root}/source/pch",
+            "%{root}/source/extensions/omni.isaac/utils",
+            ext_source.."/plugins/",
             target_deps_dir.."/physx/include",
             target_deps_dir.."/pxshared/include",
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include",

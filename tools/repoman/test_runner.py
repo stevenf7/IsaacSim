@@ -10,7 +10,9 @@ Attributes:
 """
 
 import os
+import glob
 import logging
+import fnmatch
 import argparse
 from typing import List
 
@@ -36,13 +38,17 @@ def get_shell_ext(platform: str) -> str:
 
 def run_unittests(root: str, platform_host: str, config: str, extra_args: List = []):
     executable = f"test.unit{get_exe_ext(platform_host)}"
+    path_to_executable = (
+        f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}/plugins/{executable}"
+    )
 
     args = []
     if is_running_under_teamcity():
         args.append("-r teamcity")
+        path_to_executable = f"{root}/_build/{platform_host}/{config}/plugins/{executable}"
     args.extend(extra_args)
 
-    omni.repo.man.run_process([f"{root}/_build/{platform_host}/{config}/{executable}"] + args, exit_on_error=True)
+    omni.repo.man.run_process([path_to_executable] + args, exit_on_error=True)
 
 
 def run_pythontests(root: str, platform_host: str, config: str, extra_args: List = []):
@@ -52,12 +58,14 @@ def run_pythontests(root: str, platform_host: str, config: str, extra_args: List
     omni.repo.man.pip_install("teamcity-messages", paths["pip_packages"], module="teamcity")
     import teamcity
 
-    unittest_module = "teamcity.unittestpy" if teamcity.is_running_under_teamcity() else "unittest"
+    unittest_module = "unittest" if is_running_under_teamcity() else "unittest"
 
     path_to_extensions = f"{root}/_build/{platform_host}/{config}/extensions"
     os.environ["PYTHONPATH"] += os.pathsep.join([paths["pip_packages"], path_to_extensions])
 
     kit_bin = f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}"
+    if is_running_under_teamcity():
+        kit_bin = f"{root}/_build/{platform_host}/{config}"
 
     tests_folder = os.path.join(paths["root"], "source/tests/python")
     args = ["-m", unittest_module, "discover", "-s", tests_folder] + extra_args
@@ -75,7 +83,41 @@ def run_kittests(root: str, platform_host: str, config: str, extra_args: List = 
     omni.repo.man.run_process([f"{root}/_build/{platform_host}/{config}/{executable}"] + args, exit_on_error=True)
 
 
-TEST_SUITES = {"unittests": run_unittests, "pythontests": run_pythontests, "kittests": run_kittests}
+def run_startuptest(root: str, platform_host: str, config: str, extra_args: List = []):
+    """Start and quit Kit"""
+
+    bin_folder = f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}"
+    if is_running_under_teamcity():
+        bin_folder = f"{root}/_build/{platform_host}/{config}"
+
+    # Search for all .bat/.sh files
+    executable_files = [os.path.basename(f) for f in glob.glob(bin_folder + "/*" + get_shell_ext(platform_host))]
+
+    # Explicitly add default kit:
+    executable_files.insert(0, f"omniverse-kit{get_exe_ext(platform_host)}")
+
+    # Ignore most of runners until we implement quitting mechanism:
+    IGNORE_LIST = ["python*", "mpirun*", "example.*", "*-kit-mini*"]
+    executable_files = [f for f in executable_files if not any(fnmatch.fnmatch(f, p) for p in IGNORE_LIST)]
+
+    print(f"Found those executable files to run startup tests on: {executable_files}")
+
+    args = ["--exec", "quit"]
+    args.extend(extra_args)
+
+    os.environ["PYTHONPATH"] = ""  # Don't propagagate current ENV into the test (e.g. packman path is set there)
+
+    for executable_file in executable_files:
+        executable_path = [f"{bin_folder}/{executable_file}"] + args
+        omni.repo.man.run_process(executable_path, exit_on_error=True)
+
+
+TEST_SUITES = {
+    "unittests": run_unittests,
+    "pythontests": run_pythontests,
+    "kittests": run_kittests,
+    "startuptest": run_startuptest,
+}
 
 
 def main():
