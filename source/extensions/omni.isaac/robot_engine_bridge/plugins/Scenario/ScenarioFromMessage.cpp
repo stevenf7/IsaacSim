@@ -8,6 +8,7 @@
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <carb/profiler/Profile.h>
 #include <carb/InterfaceUtils.h>
+#include <carb/filesystem/IFileSystem.h>
 
 #include <omni/usd/UsdUtils.h>
 

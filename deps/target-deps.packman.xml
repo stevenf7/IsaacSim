@@ -2,7 +2,6 @@
   <!-- Import Kit SDk target-deps xml file to steal some deps from it: -->
   <import path="../_build/target-deps/kit_sdk_release/deps/target-deps.packman.xml">
     <filter include="carb_gfx_plugins" />
-    <filter include="rtx_plugins" />
     <filter include="pybind11" />
     <filter include="fmt" />
     <filter include="python" />
@@ -34,7 +33,6 @@
   <dependency name="nv_usd_py36_debug" linkPath="../_build/target-deps/nv_usd/debug" />
 
   <dependency name="carb_gfx_plugins" linkPath="../_build/target-deps/carb_gfx_plugins" />
-  <dependency name="rtx_plugins" linkPath="../_build/target-deps/rtx_plugins" />
   <dependency name="pybind11" linkPath="../_build/target-deps/pybind11" />
   <dependency name="fmt" linkPath="../_build/target-deps/fmt" />
   <dependency name="python" linkPath="../_build/target-deps/python" />
