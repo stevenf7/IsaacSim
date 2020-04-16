@@ -1,5 +1,6 @@
 #include "CameraComponent.h"
-
+#include <carb/cuda/CudaRuntime.h>
+#include <cuda.h>
 namespace omni
 {
 namespace isaac
