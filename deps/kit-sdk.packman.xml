@@ -1,11 +1,11 @@
 <project toolsVersion="5.6">
   <dependency name="kit_sdk_debug" linkPath="../_build/target-deps/kit_sdk_debug">
-    <package name="omniverse-kit" version="2020.1.3054-b053a295-${platform}-debug"/>
+    <package name="omniverse-kit" version="2020.1.2835-38d92ddd-${platform}-debug"/>
   </dependency>
   <dependency name="kit_sdk_release" linkPath="../_build/target-deps/kit_sdk_release">
-    <package name="omniverse-kit" version="2020.1.3054-b053a295-${platform}-release"/>
+    <package name="omniverse-kit" version="2020.1.2835-38d92ddd-${platform}-release"/>
   </dependency>
   <dependency name="rtx_plugins" linkPath="../_build/target-deps/rtx_plugins">
-    <package name="rtx_plugins" version="2020.1.2153.accd9d41-${platform}"/>
+    <package name="rtx_plugins" version="2020.1.2065.38d92ddd-${platform}"/>
   </dependency>
 </project>
