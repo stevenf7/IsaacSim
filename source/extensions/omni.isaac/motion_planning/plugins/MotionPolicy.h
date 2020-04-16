@@ -13,6 +13,7 @@
 #include "MotionPolicySuppressionToken.h"
 
 #include <carb/Framework.h>
+#include <carb/filesystem/IFileSystem.h>
 #include <carb/settings/ISettings.h>
 
 #include <Eigen/Geometry>

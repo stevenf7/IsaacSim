@@ -1,4 +1,4 @@
-<project toolsVersion="5.0">
+<project toolsVersion="5.6">
   <dependency name="premake" linkPath="../_build/host-deps/premake">
     <package name="premake" version="5.0.0.10-900e4b0d-windows-x86_64" platforms="windows-x86_64" />
     <package name="premake" version="5.0.0.10-900e4b0d-linux-x86_64" platforms="linux-x86_64" />
