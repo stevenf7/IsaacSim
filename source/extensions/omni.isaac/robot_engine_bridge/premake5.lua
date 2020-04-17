@@ -46,6 +46,11 @@ group ("extensions/"..ext_id)
         add_iface_folder("%{root}/include/omni/isaac/robot_engine_bridge")
         targetdir (target_dir.."/exts/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
 
+        filter { "files:**.cu", "system:linux", "configurations:debug"}
+            make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC -g", "-g")
+        filter { "files:**.cu", "system:linux", "configurations:release" }
+            make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC", "")
+        filter {}
 
         includedirs {
             "%{root}/source/pch",
