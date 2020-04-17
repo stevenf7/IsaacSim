@@ -88,8 +88,16 @@ target_deps_dir = "%{root}/_build/target-deps"
 physxLibs = "profile"
 
 -- nvcc host compiler
-nvccPath = path.getabsolute("%{root}/_build/target-deps/cuda/bin/nvcc");
-nvccHostCompilerVS =  path.getabsolute("%{root}/_build/host-deps/msvc/VC");
+nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc");
+nvccHostCompilerVS =  path.getabsolute("_build/host-deps/msvc/VC");
+
+function get_include_string(includes)
+    cmdString =" ";
+    for k, v in ipairs(includes) do
+        cmdString = cmdString.." -I "..tostring(v);
+    end
+    return cmdString
+end
 
 function commaficate(options)
     local result = "";
