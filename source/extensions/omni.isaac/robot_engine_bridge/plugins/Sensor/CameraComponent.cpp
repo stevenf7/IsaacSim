@@ -1,4 +1,5 @@
 #include "CameraComponent.h"
+
 #include <carb/cuda/CudaRuntime.h>
 #include <cuda.h>
 namespace omni
@@ -153,7 +154,6 @@ void CameraComponent::tick()
 
     if (mDepthSensor)
     {
-        mDepthSensorData = mSyntheticDataInterface->getSensorHostData(mDepthSensor);
 
         const carb::sensors::SensorInfo& depthInfo = mSensorsInterface->getSensorInfo(mDepthSensor);
 
@@ -183,26 +183,9 @@ void CameraComponent::tick()
 
         std::vector<std::vector<uint8_t>> buffers(1);
         buffers[0] = std::vector<uint8_t>(depthInfo.width * depthInfo.height * sizeof(float));
-        if (depthInfo.rowSize == depthInfo.width * sizeof(float))
-        {
-            std::memcpy(buffers[0].data(), mDepthSensorData, depthInfo.rowSize * depthInfo.height);
-        }
-        else
-        {
-            for (int i = 0; i < depthInfo.height; i++)
-            {
-                std::memcpy(buffers[0].data() + i * depthInfo.width * sizeof(float),
-                            (uint8_t*)mDepthSensorData + i * depthInfo.rowSize, depthInfo.width * sizeof(float));
-            }
-        }
-
-        // Compute depth from inverse depth and scale
-        float* depth = reinterpret_cast<float*>(buffers[0].data());
-        for (size_t depthIndex = 0; depthIndex < depthInfo.width * depthInfo.height; depthIndex++)
-        {
-            float transformedDepth = (1.0f / depth[depthIndex]) * mUnitScale;
-            depth[depthIndex] = transformedDepth;
-        }
+        mDepthSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthSensor);
+        CUDA_CHECK(cudaMemcpy(
+            buffers[0].data(), mDepthSensorData, depthInfo.rowSize * depthInfo.height, cudaMemcpyDeviceToHost));
 
         publish(mDepthOutputComponent, mDepthChannelName, cameraMessageProto, isaac_message::DepthCameraProtoId, buffers);
     }
@@ -317,7 +300,7 @@ void CameraComponent::onComponentChange()
     if (mEnableDepth)
     {
 
-        mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepth);
+        mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear);
     }
     else
     {
