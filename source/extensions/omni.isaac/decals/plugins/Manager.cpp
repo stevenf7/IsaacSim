@@ -18,6 +18,7 @@
 
 #include <carb/PluginUtils.h>
 #include <carb/logging/Log.h>
+#include <carb/filesystem/IFileSystem.h>
 
 #include <omni/kit/IEditor.h>
 #include <omni/usd/UsdUtils.h>

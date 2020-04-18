@@ -8,6 +8,8 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 #include <carb/InterfaceUtils.h>
+#include <carb/filesystem/IFileSystem.h>
+#include <DrSchema/scaleComponent.h>
 
 #include <omni/usd/UsdUtils.h>
 
@@ -24,6 +26,10 @@ DRComponentScale::DRComponentScale() : DRComponentBase()
 DRComponentScale::~DRComponentScale()
 {
     stop();
+}
+void DRComponentScale::initialize(const pxr::DrSchemaScaleComponent& prim, pxr::UsdStageRefPtr stage)
+{
+    DRComponentBase::initialize(prim, stage);
 }
 void DRComponentScale::onStart()
 {
@@ -53,13 +59,14 @@ void DRComponentScale::onComponentChange()
 {
     std::string primPaths;
 
-    mPrim.GetAttribute(pxr::TfToken("compName")).Get(&mCompName);
-    mPrim.GetAttribute(pxr::TfToken("primPaths")).Get(&primPaths);
-    mPrim.GetAttribute(pxr::TfToken("xRange")).Get(&mXRange);
-    mPrim.GetAttribute(pxr::TfToken("yRange")).Get(&mYRange);
-    mPrim.GetAttribute(pxr::TfToken("zRange")).Get(&mZRange);
-    mPrim.GetAttribute(pxr::TfToken("duration")).Get(&mRandomizationDurationInterval);
-    mPrim.GetAttribute(pxr::TfToken("includeChildren")).Get(&mIncludeChild);
+    const pxr::DrSchemaScaleComponent& scalePrim = (pxr::DrSchemaScaleComponent)mPrim;
+    scalePrim.GetCompNameAttr().Get(&mCompName);
+    scalePrim.GetPrimPathsAttr().Get(&primPaths);
+    scalePrim.GetXRangeAttr().Get(&mXRange);
+    scalePrim.GetYRangeAttr().Get(&mYRange);
+    scalePrim.GetZRangeAttr().Get(&mZRange);
+    scalePrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
+    scalePrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
     boost::split(mPaths, primPaths, [](char c) { return c == ','; });
     update();

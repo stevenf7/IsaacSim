@@ -8,6 +8,8 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 #include <carb/InterfaceUtils.h>
+#include <carb/filesystem/IFileSystem.h>
+#include <DrSchema/rotationComponent.h>
 
 #include <omni/usd/UsdUtils.h>
 
@@ -24,6 +26,10 @@ DRComponentRotation::DRComponentRotation() : DRComponentBase()
 DRComponentRotation::~DRComponentRotation()
 {
     stop();
+}
+void DRComponentRotation::initialize(const pxr::DrSchemaRotationComponent& prim, pxr::UsdStageRefPtr stage)
+{
+    DRComponentBase::initialize(prim, stage);
 }
 void DRComponentRotation::onStart()
 {
@@ -53,13 +59,14 @@ void DRComponentRotation::onComponentChange()
 {
     std::string primPaths;
 
-    mPrim.GetAttribute(pxr::TfToken("compName")).Get(&mCompName);
-    mPrim.GetAttribute(pxr::TfToken("primPaths")).Get(&primPaths);
-    mPrim.GetAttribute(pxr::TfToken("xRange")).Get(&mXRange);
-    mPrim.GetAttribute(pxr::TfToken("yRange")).Get(&mYRange);
-    mPrim.GetAttribute(pxr::TfToken("zRange")).Get(&mZRange);
-    mPrim.GetAttribute(pxr::TfToken("duration")).Get(&mRandomizationDurationInterval);
-    mPrim.GetAttribute(pxr::TfToken("includeChildren")).Get(&mIncludeChild);
+    const pxr::DrSchemaRotationComponent& rotPrim = (pxr::DrSchemaRotationComponent)mPrim;
+    rotPrim.GetCompNameAttr().Get(&mCompName);
+    rotPrim.GetPrimPathsAttr().Get(&primPaths);
+    rotPrim.GetXRangeAttr().Get(&mXRange);
+    rotPrim.GetYRangeAttr().Get(&mYRange);
+    rotPrim.GetZRangeAttr().Get(&mZRange);
+    rotPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
+    rotPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
     boost::split(mPaths, primPaths, [](char c) { return c == ','; });
     update();

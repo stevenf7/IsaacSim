@@ -10,6 +10,13 @@
 #include <carb/tokens/TokensUtils.h>
 #include <omni/usd/Layers.h>
 #include <omni/usd/UsdContext.h>
+#include <DrSchema/baseComponent.h>
+#include <DrSchema/colorComponent.h>
+#include <DrSchema/lightComponent.h>
+#include <DrSchema/movementComponent.h>
+#include <DrSchema/rotationComponent.h>
+#include <DrSchema/scaleComponent.h>
+#include <DrSchema/textureComponent.h>
 
 namespace omni
 {
@@ -72,7 +79,7 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
         return;
 
     std::string primPath = prim.GetPath().GetString();
-    std::unique_ptr<DRComponentBase> component;
+    std::unique_ptr<DRComponentBase<pxr::DrSchemaBaseComponent>> component;
     if (mDRLayerName == "")
     {
         mLayer = omni::usd::UsdContext::getContext()->getLayers();
@@ -85,31 +92,36 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
     if (mAllComponents.find(primPath) != mAllComponents.end())
         return;
 
-    if (prim.GetTypeName() == "ColorComponent")
+    if (prim.IsA<pxr::DrSchemaColorComponent>())
     {
         component = std::make_unique<DRComponentColor>(mTokens);
+        component->initialize(pxr::DrSchemaColorComponent(prim), mStage);
     }
-    else if (prim.GetTypeName() == "TextureComponent")
+    else if (prim.IsA<pxr::DrSchemaTextureComponent>())
     {
         component = std::make_unique<DRComponentTexture>();
+        component->initialize(pxr::DrSchemaTextureComponent(prim), mStage);
     }
-    else if (prim.GetTypeName() == "MovementComponent")
+    else if (prim.IsA<pxr::DrSchemaMovementComponent>())
     {
         component = std::make_unique<DRComponentMovement>();
+        component->initialize(pxr::DrSchemaMovementComponent(prim), mStage);
     }
-    else if (prim.GetTypeName() == "RotationComponent")
+    else if (prim.IsA<pxr::DrSchemaRotationComponent>())
     {
         component = std::make_unique<DRComponentRotation>();
+        component->initialize(pxr::DrSchemaRotationComponent(prim), mStage);
     }
-    else if (prim.GetTypeName() == "ScaleComponent")
+    else if (prim.IsA<pxr::DrSchemaScaleComponent>())
     {
         component = std::make_unique<DRComponentScale>();
+        component->initialize(pxr::DrSchemaScaleComponent(prim), mStage);
     }
-    else if (prim.GetTypeName() == "LightComponent")
+    else if (prim.IsA<pxr::DrSchemaLightComponent>())
     {
         component = std::make_unique<DRComponentLight>();
+        component->initialize(pxr::DrSchemaLightComponent(prim), mStage);
     }
-    component->initialize(prim, mStage);
     component->onComponentChange();
     component->onStart();
     mAllComponents[primPath] = std::move(component);
@@ -123,27 +135,27 @@ void DRManager::onComponentChange(const pxr::UsdPrim& prim)
         return;
 
     std::string primPath = prim.GetPath().GetString();
-    if (prim.GetTypeName() == "ColorComponent")
+    if (prim.IsA<pxr::DrSchemaColorComponent>())
     {
         mAllComponents[primPath]->onComponentChange();
     }
-    else if (prim.GetTypeName() == "TextureComponent")
+    else if (prim.IsA<pxr::DrSchemaTextureComponent>())
     {
         mAllComponents[primPath]->onComponentChange();
     }
-    else if (prim.GetTypeName() == "MovementComponent")
+    else if (prim.IsA<pxr::DrSchemaMovementComponent>())
     {
         mAllComponents[primPath]->onComponentChange();
     }
-    else if (prim.GetTypeName() == "RotationComponent")
+    else if (prim.IsA<pxr::DrSchemaRotationComponent>())
     {
         mAllComponents[primPath]->onComponentChange();
     }
-    else if (prim.GetTypeName() == "ScaleComponent")
+    else if (prim.IsA<pxr::DrSchemaScaleComponent>())
     {
         mAllComponents[primPath]->onComponentChange();
     }
-    else if (prim.GetTypeName() == "LightComponent")
+    else if (prim.IsA<pxr::DrSchemaLightComponent>())
     {
         mAllComponents[primPath]->onComponentChange();
     }

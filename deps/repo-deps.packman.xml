@@ -1,4 +1,4 @@
-<project toolsVersion="5.0">
+<project toolsVersion="5.6">
   <dependency name="repo_man" linkPath="../_build/repo-deps/repo_man">
     <package name="repo_man" version="0.1.15" />
   </dependency>

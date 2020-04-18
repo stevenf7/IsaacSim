@@ -5,6 +5,9 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
+#include <DrSchema/baseComponent.h>
+#include <DrSchema/scaleComponent.h>
+
 #include <functional>
 #include <random>
 
@@ -16,11 +19,12 @@ namespace isaac
 namespace dr
 {
 
-class DRComponentScale : public DRComponentBase
+class DRComponentScale : public DRComponentBase<pxr::DrSchemaBaseComponent>
 {
 public:
     DRComponentScale();
     ~DRComponentScale();
+    virtual void initialize(const pxr::DrSchemaScaleComponent& prim, pxr::UsdStageRefPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();

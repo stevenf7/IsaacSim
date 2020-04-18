@@ -18,8 +18,9 @@
 
 #include <carb/physx/physx.h>
 #include <carb/InterfaceUtils.h>
+// #include <carb/filesystem/IFileSystem.h>
 
-#include <omni/usd/UsdUtils.h>
+// #include <omni/usd/UsdUtils.h>
 #include <omni/isaac/utils/Conversions.h>
 
 using namespace physx;

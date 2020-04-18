@@ -9,6 +9,8 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 #include <carb/InterfaceUtils.h>
+#include <carb/filesystem/IFileSystem.h>
+#include <DrSchema/textureComponent.h>
 
 #include <omni/usd/AssetUtils.h>
 #include <omni/usd/UsdUtils.h>
@@ -28,6 +30,10 @@ DRComponentTexture::DRComponentTexture() : DRComponentBase()
 DRComponentTexture::~DRComponentTexture()
 {
     stop();
+}
+void DRComponentTexture::initialize(const pxr::DrSchemaTextureComponent& prim, pxr::UsdStageRefPtr stage)
+{
+    DRComponentBase::initialize(prim, stage);
 }
 void DRComponentTexture::onStart()
 {
@@ -123,13 +129,14 @@ void DRComponentTexture::onComponentChange()
 {
     std::string primPaths, textureList, ignoredClass, groupedClass;
 
-    mPrim.GetAttribute(pxr::TfToken("compName")).Get(&mCompName);
-    mPrim.GetAttribute(pxr::TfToken("primPaths")).Get(&primPaths);
-    mPrim.GetAttribute(pxr::TfToken("textureList")).Get(&textureList);
-    mPrim.GetAttribute(pxr::TfToken("ignoredClass")).Get(&ignoredClass);
-    mPrim.GetAttribute(pxr::TfToken("groupedClass")).Get(&groupedClass);
-    mPrim.GetAttribute(pxr::TfToken("duration")).Get(&mRandomizationDurationInterval);
-    mPrim.GetAttribute(pxr::TfToken("includeChildren")).Get(&mIncludeChild);
+    const pxr::DrSchemaTextureComponent& texturePrim = (pxr::DrSchemaTextureComponent)mPrim;
+    texturePrim.GetCompNameAttr().Get(&mCompName);
+    texturePrim.GetPrimPathsAttr().Get(&primPaths);
+    texturePrim.GetTextureListAttr().Get(&textureList);
+    texturePrim.GetIgnoredClassAttr().Get(&ignoredClass);
+    texturePrim.GetGroupedClassAttr().Get(&groupedClass);
+    texturePrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
+    texturePrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
     boost::split(mPaths, primPaths, [](char c) { return c == ','; });
     if (textureList != "")

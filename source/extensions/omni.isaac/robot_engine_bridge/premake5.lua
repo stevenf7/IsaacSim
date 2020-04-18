@@ -46,6 +46,11 @@ group ("extensions/"..ext_id)
         add_iface_folder("%{root}/include/omni/isaac/robot_engine_bridge")
         targetdir (target_dir.."/exts/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
 
+        filter { "files:**.cu", "system:linux", "configurations:debug"}
+            make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC -g", "-g")
+        filter { "files:**.cu", "system:linux", "configurations:release" }
+            make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC", "")
+        filter {}
 
         includedirs {
             "%{root}/source/pch",
@@ -58,7 +63,8 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/isaac_engine/include",
             target_deps_dir.."/rtx_plugins/include",
             target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/include",
-
+            target_deps_dir.."/omni_physics/include",
+            target_deps_dir.."/cuda/include"
         }
 
         libdirs {   
@@ -73,6 +79,14 @@ group ("extensions/"..ext_id)
             "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
             "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "kj", "capnp", "omni.usd", "lidarSchema"
         }
+
+        filter  { "system:windows", "platforms:x86_64" }
+            libdirs { target_deps_dir.."/cuda/lib/x64"}
+            links { "cudart_static" }
+        filter { "system:linux", "platforms:x86_64" }
+            libdirs { target_deps_dir.."/cuda/lib64" }
+            links { "cudart_static" }
+        filter {}
 
         filter { "configurations:debug" }
             defines { "_DEBUG" }

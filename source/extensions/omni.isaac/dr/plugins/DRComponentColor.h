@@ -7,6 +7,9 @@
 #include <carb/settings/ISettings.h>
 #include <carb/tokens/ITokens.h>
 
+#include <DrSchema/baseComponent.h>
+#include <DrSchema/colorComponent.h>
+
 #include <functional>
 #include <random>
 
@@ -18,11 +21,12 @@ namespace isaac
 namespace dr
 {
 
-class DRComponentColor : public DRComponentBase
+class DRComponentColor : public DRComponentBase<pxr::DrSchemaBaseComponent>
 {
 public:
     DRComponentColor(carb::tokens::ITokens* tokens);
     ~DRComponentColor();
+    virtual void initialize(const pxr::DrSchemaColorComponent& prim, pxr::UsdStageRefPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();

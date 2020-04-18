@@ -9,6 +9,7 @@
 #include <boost/algorithm/string.hpp>
 #include <carb/logging/Log.h>
 #include <carb/InterfaceUtils.h>
+#include <carb/filesystem/IFileSystem.h>
 
 #include <omni/usd/UsdUtils.h>
 

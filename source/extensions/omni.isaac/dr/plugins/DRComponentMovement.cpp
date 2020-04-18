@@ -8,6 +8,8 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 #include <carb/InterfaceUtils.h>
+#include <carb/filesystem/IFileSystem.h>
+#include <DrSchema/movementComponent.h>
 
 #include <omni/usd/UsdUtils.h>
 
@@ -24,6 +26,10 @@ DRComponentMovement::DRComponentMovement() : DRComponentBase()
 DRComponentMovement::~DRComponentMovement()
 {
     stop();
+}
+void DRComponentMovement::initialize(const pxr::DrSchemaMovementComponent& prim, pxr::UsdStageRefPtr stage)
+{
+    DRComponentBase::initialize(prim, stage);
 }
 void DRComponentMovement::onStart()
 {
@@ -53,13 +59,14 @@ void DRComponentMovement::onComponentChange()
 {
     std::string primPaths;
 
-    mPrim.GetAttribute(pxr::TfToken("compName")).Get(&mCompName);
-    mPrim.GetAttribute(pxr::TfToken("primPaths")).Get(&primPaths);
-    mPrim.GetAttribute(pxr::TfToken("xRange")).Get(&mXRange);
-    mPrim.GetAttribute(pxr::TfToken("yRange")).Get(&mYRange);
-    mPrim.GetAttribute(pxr::TfToken("zRange")).Get(&mZRange);
-    mPrim.GetAttribute(pxr::TfToken("duration")).Get(&mRandomizationDurationInterval);
-    mPrim.GetAttribute(pxr::TfToken("includeChildren")).Get(&mIncludeChild);
+    const pxr::DrSchemaMovementComponent& movPrim = (pxr::DrSchemaMovementComponent)mPrim;
+    movPrim.GetCompNameAttr().Get(&mCompName);
+    movPrim.GetPrimPathsAttr().Get(&primPaths);
+    movPrim.GetXRangeAttr().Get(&mXRange);
+    movPrim.GetYRangeAttr().Get(&mYRange);
+    movPrim.GetZRangeAttr().Get(&mZRange);
+    movPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
+    movPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
     boost::split(mPaths, primPaths, [](char c) { return c == ','; });
     update();

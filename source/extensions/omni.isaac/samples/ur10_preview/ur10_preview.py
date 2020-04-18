@@ -19,7 +19,8 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.physx import _physx
 
 from .scenarios.scenario import Scenario
-from .scenarios.attach_body import AttachBody
+from .scenarios import attach_body
+from .scenarios import bmw_fof_demo
 from .scenarios.multiple_obstacle import MultipleObstacle
 
 EXTENSION_NAME = "UR10 Preview"
@@ -44,6 +45,7 @@ class Extension(omni.ext.IExt):
 
         self._selected_scenario = self._window.layout.add_child(omni.kit.ui.ComboBox())
         self._selected_scenario.add_item("Attach Body")
+        self._selected_scenario.add_item("BMW FoF Demo")
         self._selected_scenario.add_item("Multiple Obstacles")
         self._selected_scenario.selected_index = 0
 
@@ -95,8 +97,10 @@ class Extension(omni.ext.IExt):
 
     def _on_create_UR10(self, *args):
         if self._selected_scenario.selected_index == 0:
-            self._scenario = AttachBody(self._editor, self._dc, self._mp)
+            self._scenario = attach_body.AttachBody(self._editor, self._dc, self._mp)
         if self._selected_scenario.selected_index == 1:
+            self._scenario = bmw_fof_demo.AttachBody(self._editor, self._dc, self._mp)
+        if self._selected_scenario.selected_index == 2:
             self._scenario = MultipleObstacle(self._editor, self._dc, self._mp)
 
         self._create_UR10_btn.enabled = False

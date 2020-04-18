@@ -44,7 +44,7 @@ public:
 private:
     void handlePrimChanged(const class pxr::UsdNotice::ObjectsChanged& objectsChanged);
 
-    std::unordered_map<std::string, std::unique_ptr<DRComponentBase>> mAllComponents;
+    std::unordered_map<std::string, std::unique_ptr<DRComponentBase<pxr::DrSchemaBaseComponent>>> mAllComponents;
     carb::tokens::ITokens* mTokens;
     pxr::TfNotice::Key mNoticeListener;
     omni::usd::Layers* mLayer = nullptr;

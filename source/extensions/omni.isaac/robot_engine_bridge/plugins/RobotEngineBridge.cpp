@@ -31,6 +31,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <engine/alice/c_api/isaac_c_api.h>
 
