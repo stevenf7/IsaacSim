@@ -27,6 +27,11 @@ group ("extensions/"..ext_id)
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/dr" },
     }
 
+    repo_build.prebuild_copy {
+        { "_build/target-deps/usd_ext_isaac/$config/lib/python/DrSchema/**", ext_folder.."/omni/isaac/DrSchema" },
+        { "_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}drSchema${lib_ext}", ext_folder.."/bin/$platform/$config"},
+    }
+
     -- C++ Carbonite plugin
     project "omni.isaac.dr.plugin"
         removeplatforms { "aarch64" }
@@ -48,7 +53,8 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include",
             target_deps_dir.."/usd_audio_schema/%{cfg.buildcfg}/include",
             target_deps_dir.."/carb_gfx_plugins/include",
-            target_deps_dir.."/rtx_plugins/include"
+            target_deps_dir.."/rtx_plugins/include",
+            target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/include",
          }
 
         libdirs {
@@ -56,11 +62,12 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
             target_deps_dir.."/nv_usd/release/lib",
             target_deps_dir.."/usd_audio_schema/%{cfg.buildcfg}/lib",
+            target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/lib",
             "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins"             
         }
 
         links {
-            "arch", "gf", "pcp", "tf", "sdf", "usd", "usdGeom", "usdShade", "vt", "usdUtils", "audioSchema", "omni.usd"
+            "arch", "gf", "pcp", "tf", "sdf", "usd", "usdGeom", "usdShade", "vt", "usdUtils", "audioSchema", "omni.usd", "drSchema"
         }
         filter { "system:linux" }
             exceptionhandling "On"

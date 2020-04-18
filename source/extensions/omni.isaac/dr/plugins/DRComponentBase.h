@@ -16,12 +16,25 @@ namespace isaac
 namespace dr
 {
 
-class DRComponentBase : public utils::Component
+template <class PrimType>
+class DRComponentBase : public utils::ComponentBase<PrimType>
 {
 public:
-    DRComponentBase();
-    virtual ~DRComponentBase() = 0;
-    virtual void initialize(const pxr::UsdPrim& prim, pxr::UsdStageRefPtr stage);
+    DRComponentBase()
+    {
+        mRandomizationDurationInterval = -1;
+        mIncludeChild = false;
+        mDRLayerName = "";
+        mCompName = "";
+    }
+    virtual ~DRComponentBase()
+    {
+        // Empty
+    }
+    virtual void initialize(const PrimType& prim, pxr::UsdStageRefPtr stage)
+    {
+        utils::ComponentBase<PrimType>::initialize(prim, stage);
+    }
     virtual void onStart() = 0;
     virtual void tick() = 0;
     virtual void onComponentChange() = 0;

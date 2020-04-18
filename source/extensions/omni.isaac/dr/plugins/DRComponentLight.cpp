@@ -7,6 +7,7 @@
 #include <boost/algorithm/string.hpp>
 #include <carb/Framework.h>
 #include <carb/Types.h>
+#include <DrSchema/lightComponent.h>
 
 namespace omni
 {
@@ -28,6 +29,10 @@ DRComponentLight::DRComponentLight() : DRComponentBase()
 DRComponentLight::~DRComponentLight()
 {
     stop();
+}
+void DRComponentLight::initialize(const pxr::DrSchemaLightComponent& prim, pxr::UsdStageRefPtr stage)
+{
+    DRComponentBase::initialize(prim, stage);
 }
 void DRComponentLight::onStart()
 {
@@ -58,15 +63,16 @@ void DRComponentLight::onComponentChange()
     std::string primPaths;
     pxr::GfVec3f firstColor, secondColor;
 
-    mPrim.GetAttribute(pxr::TfToken("compName")).Get(&mCompName);
-    mPrim.GetAttribute(pxr::TfToken("primPaths")).Get(&primPaths);
-    mPrim.GetAttribute(pxr::TfToken("firstColor")).Get(&firstColor);
-    mPrim.GetAttribute(pxr::TfToken("secondColor")).Get(&secondColor);
-    mPrim.GetAttribute(pxr::TfToken("intensityRange")).Get(&mLiRange);
-    mPrim.GetAttribute(pxr::TfToken("temperatureRange")).Get(&mLtRange);
-    mPrim.GetAttribute(pxr::TfToken("enableTemperature")).Get(&mEnableColorTemperature);
-    mPrim.GetAttribute(pxr::TfToken("duration")).Get(&mRandomizationDurationInterval);
-    mPrim.GetAttribute(pxr::TfToken("includeChildren")).Get(&mIncludeChild);
+    const pxr::DrSchemaLightComponent& lightPrim = (pxr::DrSchemaLightComponent)mPrim;
+    lightPrim.GetCompNameAttr().Get(&mCompName);
+    lightPrim.GetPrimPathsAttr().Get(&primPaths);
+    lightPrim.GetFirstColorAttr().Get(&firstColor);
+    lightPrim.GetSecondColorAttr().Get(&secondColor);
+    lightPrim.GetIntensityRangeAttr().Get(&mLiRange);
+    lightPrim.GetTemperatureRangeAttr().Get(&mLtRange);
+    lightPrim.GetEnableTemperatureAttr().Get(&mEnableColorTemperature);
+    lightPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
+    lightPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
     boost::split(mPaths, primPaths, [](char c) { return c == ','; });
     mLrRange[0] = firstColor[0];
