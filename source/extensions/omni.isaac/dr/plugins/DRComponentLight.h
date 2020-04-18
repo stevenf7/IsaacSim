@@ -5,6 +5,9 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
+#include <DrSchema/baseComponent.h>
+#include <DrSchema/lightComponent.h>
+
 #include <functional>
 #include <random>
 
@@ -16,11 +19,12 @@ namespace isaac
 namespace dr
 {
 
-class DRComponentLight : public DRComponentBase
+class DRComponentLight : public DRComponentBase<pxr::DrSchemaBaseComponent>
 {
 public:
     DRComponentLight();
     ~DRComponentLight();
+    virtual void initialize(const pxr::DrSchemaLightComponent& prim, pxr::UsdStageRefPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();

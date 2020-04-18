@@ -5,6 +5,9 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
+#include <DrSchema/baseComponent.h>
+#include <DrSchema/movementComponent.h>
+
 #include <functional>
 #include <random>
 
@@ -16,11 +19,12 @@ namespace isaac
 namespace dr
 {
 
-class DRComponentMovement : public DRComponentBase
+class DRComponentMovement : public DRComponentBase<pxr::DrSchemaBaseComponent>
 {
 public:
     DRComponentMovement();
     ~DRComponentMovement();
+    virtual void initialize(const pxr::DrSchemaMovementComponent& prim, pxr::UsdStageRefPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();

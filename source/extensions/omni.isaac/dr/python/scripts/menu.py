@@ -1,6 +1,7 @@
 from pxr import Gf, Usd, UsdGeom, Sdf
 import asyncio
 import json
+import omni.isaac.DrSchema as DrSchema
 import omni.kit
 import omni.kit.ui
 import omni.usd
@@ -46,16 +47,14 @@ class DRMenu:
                 self._stage, "/color_component_" + str(self.component_count[0]), True
             )
 
-        prim = self._stage.DefinePrim(path, "ColorComponent")
+        prim = DrSchema.ColorComponent.Define(self._stage, Sdf.Path(path))
 
-        prim.CreateAttribute("compName", Sdf.ValueTypeNames.String).Set(
-            str("color_component_" + str(self.component_count[0]))
-        )
-        prim.CreateAttribute("primPaths", Sdf.ValueTypeNames.String).Set(str(""))
-        prim.CreateAttribute("firstColor", Sdf.ValueTypeNames.Float3).Set((float(0.0), float(0.0), float(0.0)))
-        prim.CreateAttribute("secondColor", Sdf.ValueTypeNames.Float3).Set((float(1.0), float(1.0), float(1.0)))
-        prim.CreateAttribute("duration", Sdf.ValueTypeNames.Float).Set(float(1.0))
-        prim.CreateAttribute("includeChildren", Sdf.ValueTypeNames.Bool).Set(bool(False))
+        prim.CreateCompNameAttr().Set(str("color_component_" + str(self.component_count[0])))
+        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
+        prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
+        prim.CreateDurationAttr().Set(float(1.0))
+        prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
 
     def add_movement_menu(self, parent=None):
@@ -68,17 +67,15 @@ class DRMenu:
                 self._stage, "/movement_component_" + str(self.component_count[1]), True
             )
 
-        prim = self._stage.DefinePrim(path, "MovementComponent")
+        prim = DrSchema.MovementComponent.Define(self._stage, Sdf.Path(path))
 
-        prim.CreateAttribute("compName", Sdf.ValueTypeNames.String).Set(
-            str("movement_component_" + str(self.component_count[1]))
-        )
-        prim.CreateAttribute("primPaths", Sdf.ValueTypeNames.String).Set(str(""))
-        prim.CreateAttribute("xRange", Sdf.ValueTypeNames.Float2).Set((float(0.0), float(0.0)))
-        prim.CreateAttribute("yRange", Sdf.ValueTypeNames.Float2).Set((float(0.0), float(0.0)))
-        prim.CreateAttribute("zRange", Sdf.ValueTypeNames.Float2).Set((float(0.0), float(0.0)))
-        prim.CreateAttribute("duration", Sdf.ValueTypeNames.Float).Set(float(1.0))
-        prim.CreateAttribute("includeChildren", Sdf.ValueTypeNames.Bool).Set(bool(False))
+        prim.CreateCompNameAttr().Set(str("movement_component_" + str(self.component_count[1])))
+        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreateXRangeAttr().Set((float(0.0), float(0.0)))
+        prim.CreateYRangeAttr().Set((float(0.0), float(0.0)))
+        prim.CreateZRangeAttr().Set((float(0.0), float(0.0)))
+        prim.CreateDurationAttr().Set(float(1.0))
+        prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
 
     def add_rotation_menu(self, parent=None):
@@ -91,17 +88,15 @@ class DRMenu:
                 self._stage, "/rotation_component_" + str(self.component_count[5]), True
             )
 
-        prim = self._stage.DefinePrim(path, "RotationComponent")
+        prim = DrSchema.RotationComponent.Define(self._stage, Sdf.Path(path))
 
-        prim.CreateAttribute("compName", Sdf.ValueTypeNames.String).Set(
-            str("rotation_component_" + str(self.component_count[5]))
-        )
-        prim.CreateAttribute("primPaths", Sdf.ValueTypeNames.String).Set(str(""))
-        prim.CreateAttribute("xRange", Sdf.ValueTypeNames.Float2).Set((float(0.0), float(0.0)))
-        prim.CreateAttribute("yRange", Sdf.ValueTypeNames.Float2).Set((float(0.0), float(0.0)))
-        prim.CreateAttribute("zRange", Sdf.ValueTypeNames.Float2).Set((float(0.0), float(0.0)))
-        prim.CreateAttribute("duration", Sdf.ValueTypeNames.Float).Set(float(1.0))
-        prim.CreateAttribute("includeChildren", Sdf.ValueTypeNames.Bool).Set(bool(False))
+        prim.CreateCompNameAttr().Set(str("rotation_component_" + str(self.component_count[5])))
+        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreateXRangeAttr().Set((float(0.0), float(0.0)))
+        prim.CreateYRangeAttr().Set((float(0.0), float(0.0)))
+        prim.CreateZRangeAttr().Set((float(0.0), float(0.0)))
+        prim.CreateDurationAttr().Set(float(1.0))
+        prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
 
     def add_scale_menu(self, parent=None):
@@ -114,17 +109,15 @@ class DRMenu:
                 self._stage, "/scale_component_" + str(self.component_count[2]), True
             )
 
-        prim = self._stage.DefinePrim(path, "ScaleComponent")
+        prim = DrSchema.ScaleComponent.Define(self._stage, Sdf.Path(path))
 
-        prim.CreateAttribute("compName", Sdf.ValueTypeNames.String).Set(
-            str("scale_component_" + str(self.component_count[2]))
-        )
-        prim.CreateAttribute("primPaths", Sdf.ValueTypeNames.String).Set(str(""))
-        prim.CreateAttribute("xRange", Sdf.ValueTypeNames.Float2).Set((float(1.0), float(1.0)))
-        prim.CreateAttribute("yRange", Sdf.ValueTypeNames.Float2).Set((float(1.0), float(1.0)))
-        prim.CreateAttribute("zRange", Sdf.ValueTypeNames.Float2).Set((float(1.0), float(1.0)))
-        prim.CreateAttribute("duration", Sdf.ValueTypeNames.Float).Set(float(1.0))
-        prim.CreateAttribute("includeChildren", Sdf.ValueTypeNames.Bool).Set(bool(False))
+        prim.CreateCompNameAttr().Set(str("scale_component_" + str(self.component_count[2])))
+        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreateXRangeAttr().Set((float(1.0), float(1.0)))
+        prim.CreateYRangeAttr().Set((float(1.0), float(1.0)))
+        prim.CreateZRangeAttr().Set((float(1.0), float(1.0)))
+        prim.CreateDurationAttr().Set(float(1.0))
+        prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
 
     def add_light_menu(self, parent=None):
@@ -137,19 +130,17 @@ class DRMenu:
                 self._stage, "/light_component_" + str(self.component_count[3]), True
             )
 
-        prim = self._stage.DefinePrim(path, "LightComponent")
+        prim = DrSchema.LightComponent.Define(self._stage, Sdf.Path(path))
 
-        prim.CreateAttribute("compName", Sdf.ValueTypeNames.String).Set(
-            str("light_component_" + str(self.component_count[3]))
-        )
-        prim.CreateAttribute("primPaths", Sdf.ValueTypeNames.String).Set(str(""))
-        prim.CreateAttribute("firstColor", Sdf.ValueTypeNames.Float3).Set((float(0.0), float(0.0), float(0.0)))
-        prim.CreateAttribute("secondColor", Sdf.ValueTypeNames.Float3).Set((float(1.0), float(1.0), float(1.0)))
-        prim.CreateAttribute("intensityRange", Sdf.ValueTypeNames.Float2).Set((float(40000.0), float(70000.0)))
-        prim.CreateAttribute("temperatureRange", Sdf.ValueTypeNames.Float2).Set((float(6500.0), float(6500.0)))
-        prim.CreateAttribute("enableTemperature", Sdf.ValueTypeNames.Bool).Set(bool(False))
-        prim.CreateAttribute("duration", Sdf.ValueTypeNames.Float).Set(float(1.0))
-        prim.CreateAttribute("includeChildren", Sdf.ValueTypeNames.Bool).Set(bool(False))
+        prim.CreateCompNameAttr().Set(str("light_component_" + str(self.component_count[3])))
+        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
+        prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
+        prim.CreateIntensityRangeAttr().Set((float(40000.0), float(70000.0)))
+        prim.CreateTemperatureRangeAttr().Set((float(6500.0), float(6500.0)))
+        prim.CreateEnableTemperatureAttr().Set(bool(False))
+        prim.CreateDurationAttr().Set(float(1.0))
+        prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
 
     def add_texture_menu(self, parent=None):
@@ -162,17 +153,15 @@ class DRMenu:
                 self._stage, "/texture_component_" + str(self.component_count[4]), True
             )
 
-        prim = self._stage.DefinePrim(path, "TextureComponent")
+        prim = DrSchema.TextureComponent.Define(self._stage, Sdf.Path(path))
 
-        prim.CreateAttribute("compName", Sdf.ValueTypeNames.String).Set(
-            str("texture_component_" + str(self.component_count[4]))
-        )
-        prim.CreateAttribute("primPaths", Sdf.ValueTypeNames.String).Set(str(""))
-        prim.CreateAttribute("textureList", Sdf.ValueTypeNames.String).Set(str(""))
-        prim.CreateAttribute("ignoredClass", Sdf.ValueTypeNames.String).Set(str(""))
-        prim.CreateAttribute("groupedClass", Sdf.ValueTypeNames.String).Set(str(""))
-        prim.CreateAttribute("duration", Sdf.ValueTypeNames.Float).Set(float(1.0))
-        prim.CreateAttribute("includeChildren", Sdf.ValueTypeNames.Bool).Set(bool(False))
+        prim.CreateCompNameAttr().Set(str("texture_component_" + str(self.component_count[4])))
+        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreateTextureListAttr().Set(str(""))
+        prim.CreateIgnoredClassAttr().Set(str(""))
+        prim.CreateGroupedClassAttr().Set(str(""))
+        prim.CreateDurationAttr().Set(float(1.0))
+        prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
 
     def _on_dr_menu_click(self, menu, value):

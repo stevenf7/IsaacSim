@@ -6,7 +6,13 @@ display_name = "Domain Randomization"
 [[python.modules]]
 name = "omni.isaac.dr"
 
+[[python.modules]]
+name = "omni.isaac.DrSchema"
+public = false
+
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false
 
+[[libraries]]
+path = "bin/${platform}/${config}/${lib_prefix}drSchema${lib_ext}"

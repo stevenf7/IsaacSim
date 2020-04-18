@@ -37,6 +37,10 @@ DRComponentColor::~DRComponentColor()
 {
     stop();
 }
+void DRComponentColor::initialize(const pxr::DrSchemaColorComponent& prim, pxr::UsdStageRefPtr stage)
+{
+    DRComponentBase::initialize(prim, stage);
+}
 void DRComponentColor::onStart()
 {
     CARB_LOG_INFO("DR Color Component Started");
@@ -100,12 +104,13 @@ void DRComponentColor::onComponentChange()
     pxr::GfVec3f firstColor, secondColor;
     mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
 
-    mPrim.GetAttribute(pxr::TfToken("compName")).Get(&mCompName);
-    mPrim.GetAttribute(pxr::TfToken("primPaths")).Get(&primPaths);
-    mPrim.GetAttribute(pxr::TfToken("firstColor")).Get(&firstColor);
-    mPrim.GetAttribute(pxr::TfToken("secondColor")).Get(&secondColor);
-    mPrim.GetAttribute(pxr::TfToken("duration")).Get(&mRandomizationDurationInterval);
-    mPrim.GetAttribute(pxr::TfToken("includeChildren")).Get(&mIncludeChild);
+    const pxr::DrSchemaColorComponent& colorPrim = (pxr::DrSchemaColorComponent)mPrim;
+    colorPrim.GetCompNameAttr().Get(&mCompName);
+    colorPrim.GetPrimPathsAttr().Get(&primPaths);
+    colorPrim.GetFirstColorAttr().Get(&firstColor);
+    colorPrim.GetSecondColorAttr().Get(&secondColor);
+    colorPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
+    colorPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
     boost::split(mPaths, primPaths, [](char c) { return c == ','; });
     mRRange[0] = firstColor[0];
