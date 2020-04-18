@@ -1,6 +1,7 @@
 #include "CameraComponent.h"
 
 #include <carb/cuda/CudaRuntime.h>
+
 #include <cuda.h>
 namespace omni
 {
@@ -8,6 +9,8 @@ namespace isaac
 {
 namespace robot_engine_bridge
 {
+
+extern "C" void rgbaToRgb(unsigned char* dest, const unsigned char* src, int width, int height, int srcStride);
 
 CameraComponent::CameraComponent() : IsaacComponent()
 {
@@ -97,7 +100,7 @@ void CameraComponent::tick()
 
     if (mRgbSensor)
     {
-        mRgbSensorData = mSyntheticDataInterface->getSensorHostData(mRgbSensor);
+        mRgbSensorData = mSyntheticDataInterface->getSensorDeviceData(mRgbSensor);
         const carb::sensors::SensorInfo& rgbInfo = mSensorsInterface->getSensorInfo(mRgbSensor);
 
         // Create the message
@@ -110,7 +113,7 @@ void CameraComponent::tick()
         imageProto.setElementType(ElementType::UINT8);
         imageProto.setRows(rgbInfo.height);
         imageProto.setCols(rgbInfo.width);
-        imageProto.setChannels(4);
+        imageProto.setChannels(3);
         imageProto.setDataBufferIndex(0);
 
         // Pinhole info
@@ -134,19 +137,15 @@ void CameraComponent::tick()
 
 
         std::vector<std::vector<uint8_t>> buffers(1);
-        buffers[0] = std::vector<uint8_t>(rgbInfo.width * rgbInfo.height * 4);
-        if (rgbInfo.rowSize == rgbInfo.width * 4)
-        {
-            std::memcpy(buffers[0].data(), mRgbSensorData, rgbInfo.rowSize * rgbInfo.height);
-        }
-        else
-        {
-            for (int i = 0; i < rgbInfo.height; i++)
-            {
-                std::memcpy(buffers[0].data() + i * rgbInfo.width * 4, (uint8_t*)mRgbSensorData + i * rgbInfo.rowSize,
-                            rgbInfo.width * 4);
-            }
-        }
+        buffers[0] = std::vector<uint8_t>(rgbInfo.width * rgbInfo.height * 3);
+
+        uint8_t* rgbDevice;
+        CUDA_CHECK(cudaMalloc(&rgbDevice, rgbInfo.width * rgbInfo.height * 3));
+
+        rgbaToRgb(rgbDevice, (uint8_t*)mRgbSensorData, rgbInfo.width, rgbInfo.height, rgbInfo.rowSize);
+        CUDA_CHECK(cudaMemcpy(buffers[0].data(), rgbDevice, rgbInfo.width * rgbInfo.height * 3, cudaMemcpyDeviceToHost));
+
+        CUDA_CHECK(cudaFree(rgbDevice));
 
         publish(mOutputComponent, mChannelName, cameraMessageProto, isaac_message::ColorCameraProtoId, buffers);
     }

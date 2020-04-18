@@ -7,17 +7,29 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-// THIS IS JUST A STUB FOR TESTING BUILD, REPLACE WITH ACTUAL CODE
-__global__ void applyOffset(size_t numPoints)
+__global__ void rgbaToRgbKernel(unsigned char *dest, const unsigned char *src, int width, int height, int srcStride)
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (numPoints <= i)
+
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= width*height)
         return;
+
+	int row = idx / width;
+	int col = idx % width;
+
+	dest[idx*3] = src[row*srcStride + col*4];
+	dest[idx*3+1] = src[row*srcStride + col*4+1];
+	dest[idx*3+2] = src[row*srcStride + col*4+2];
+
 };
 
-extern "C" void applyOffsetsW(size_t numPoints)
+extern "C" void rgbaToRgb(unsigned char *dest, const unsigned char *src, int width, int height, int srcStride)
 {
+
+	const int num = width*height;
     const int nt = 256;
-    const int nb = (numPoints + nt - 1) / nt;
-    applyOffset<<<nb, nt>>>(numPoints);
+    const int nb = (num + nt - 1) / nt;
+
+    rgbaToRgbKernel<<<nb, nt>>>(dest, src, width, height, srcStride);
+
 }
