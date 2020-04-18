@@ -106,7 +106,7 @@ void CameraComponent::tick()
         // Create the message
         IsaacMessage<isaac_message::ColorCamera> cameraMessage;
         auto cameraMessageProto = cameraMessage.initProto();
-        cameraMessageProto.setColorSpace(ColorCameraProto::ColorSpace::RGBA);
+        cameraMessageProto.setColorSpace(ColorCameraProto::ColorSpace::RGB);
 
         // Create the image
         auto imageProto = cameraMessageProto.initImage();
