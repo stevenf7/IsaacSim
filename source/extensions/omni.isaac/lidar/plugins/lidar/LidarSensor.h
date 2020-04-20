@@ -16,7 +16,6 @@
 #include <carb/renderer/Renderer.h>
 
 #include <LidarSchema/lidar.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
 
@@ -24,6 +23,7 @@
 #include <PxArticulationJointReducedCoordinate.h>
 #include <PxArticulationLink.h>
 #include <PxArticulationReducedCoordinate.h>
+#include <PxPhysicsAPI.h>
 #include <PxRigidDynamic.h>
 #include <PxScene.h>
 #include <vector>
@@ -42,7 +42,6 @@ public:
     LidarSensor();
     ~LidarSensor();
     virtual void initialize(carb::physics::PhysX* physxPtr,
-                            omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
                             carb::fastcache::FastCache* fastCachePtr,
                             const pxr::LidarSchemaLidar& prim,
                             pxr::UsdStageRefPtr stage);
@@ -102,7 +101,6 @@ public:
 
 
 private:
-    void scan(int start, int stop);
     void dumpData(int start, int stop, float elapsedTime);
 
     // From the prim
@@ -142,13 +140,12 @@ private:
     std::vector<float> mLastAzimuth;
 
     std::set<int> mActiveDebugLines;
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
-    omni::isaac::dynamic_control::DcHandle mRigidBodyHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
 
     std::vector<carb::renderer::Line> mDebugLines;
 
     carb::physics::PhysX* mPhysx = nullptr;
+    physx::PxScene* mPxScene = nullptr;
     float mMetersPerUnit;
 };
 

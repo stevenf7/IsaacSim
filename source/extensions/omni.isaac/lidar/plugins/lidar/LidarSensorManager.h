@@ -3,6 +3,7 @@
 #include "../core/SensorComponent.h"
 #include "LidarSensor.h"
 #include "plugins/bridge/BridgeApplication.h"
+#include "plugins/core/ScopedTimer.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -31,6 +32,22 @@ namespace isaac
 {
 namespace lidar
 {
+
+
+struct LidarTaskData
+{
+    double timeSeconds;
+    double timeNanoSeconds;
+    double dt;
+    LidarSensor* lidar;
+};
+
+auto lidarTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
+    LidarTaskData* taskData = reinterpret_cast<LidarTaskData*>(taskArg);
+    taskData->lidar->updateTimestamp(taskData->timeSeconds, taskData->dt, taskData->timeNanoSeconds);
+    taskData->lidar->tick();
+};
+
 class LidarSensorManager : public utils::BridgeApplicationBase<LidarSensor>
 {
 public:
@@ -43,12 +60,16 @@ public:
     LidarSensorManager(omni::kit::IEditor* editor,
                        carb::physics::PhysX* physxPtr,
                        omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
-                       carb::fastcache::FastCache* fastCache)
+                       carb::fastcache::FastCache* fastCachePtr,
+                       carb::tasking::ITasking* taskingPtr)
     {
         mEditor = editor;
         mPhysxPtr = physxPtr;
         mDynamicControlPtr = dynamicControlPtr;
-        mFastCachePtr = fastCache;
+        mFastCachePtr = fastCachePtr;
+        mTasking = taskingPtr;
+        mTaskCounter = mTasking->createCounter();
+
 
         mViewportUiEventSub = carb::events::createSubscriptionToPop(
             carb::getCachedInterface<omni::kit::IViewport>()->getViewportWindow(nullptr)->getUiDrawEventStream().get(),
@@ -61,7 +82,9 @@ public:
      */
     ~LidarSensorManager()
     {
+        mTasking->yieldUntilCounter(mTaskCounter);
         releaseDebugLineList();
+        mTasking->destroyCounter(mTaskCounter);
     }
     /**
      * @brief Tick the application and all components
@@ -70,6 +93,8 @@ public:
      */
     void tick(double dt)
     {
+        // omni::isaac::utils::ScopedTimer T("LIDAR");
+
         if (mDoOnce == false)
         {
             for (auto& component : mComponents)
@@ -80,14 +105,42 @@ public:
         }
         else
         {
+#if 1
+            LidarTaskData* taskArray = new LidarTaskData[mComponents.size()];
+            int index = 0;
+            for (auto& component : mComponents)
+            {
+                taskArray[index].timeSeconds = this->mTimeSeconds;
+                taskArray[index].timeNanoSeconds = this->mTimeNanoSeconds;
+                taskArray[index].dt = dt;
+                taskArray[index].lidar = component.second.get();
+
+                carb::tasking::TaskDesc bigTask{};
+                bigTask.priority = carb::tasking::Priority::eHigh;
+                bigTask.task = lidarTaskFunction;
+                bigTask.taskArg = (void*)(taskArray + index);
+                mTasking->addTask(bigTask, mTaskCounter);
+                index++;
+                // component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
+                // component.second->tick();
+            }
+            delete[] taskArray;
+            mTasking->yieldUntilCounter(mTaskCounter);
+#else
             for (auto& component : mComponents)
             {
                 component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
                 component.second->tick();
             }
+#endif
         }
         this->mTimeSeconds += dt;
         this->mTimeNanoSeconds = mTimeSeconds * 1e9;
+    }
+
+    void stop()
+    {
+        mDoOnce = false;
     }
     /**
      * @brief Create a supported component in this manager
@@ -101,18 +154,20 @@ public:
             if (child.IsA<pxr::LidarSchemaLidar>())
             {
                 std::unique_ptr<LidarSensor> component = std::make_unique<LidarSensor>();
-                CARB_LOG_WARN("Create: Prim %s", child.GetPath().GetString().c_str());
-                component->initialize(mPhysxPtr, mDynamicControlPtr, mFastCachePtr, pxr::LidarSchemaLidar(child), mStage);
+                CARB_LOG_INFO("Create Lidar at %s", child.GetPath().GetString().c_str());
+                component->initialize(mPhysxPtr, mFastCachePtr, pxr::LidarSchemaLidar(child), mStage);
                 mComponents[child.GetPath().GetString()] = std::move(component);
+                mDoOnce = false;
             }
         }
 
         if (prim.IsA<pxr::LidarSchemaLidar>())
         {
             std::unique_ptr<LidarSensor> component = std::make_unique<LidarSensor>();
-            CARB_LOG_WARN("Create: Prim %s", prim.GetPath().GetString().c_str());
-            component->initialize(mPhysxPtr, mDynamicControlPtr, mFastCachePtr, pxr::LidarSchemaLidar(prim), mStage);
+            CARB_LOG_INFO("Create Lidar at %s", prim.GetPath().GetString().c_str());
+            component->initialize(mPhysxPtr, mFastCachePtr, pxr::LidarSchemaLidar(prim), mStage);
             mComponents[prim.GetPath().GetString()] = std::move(component);
+            mDoOnce = false;
         }
     }
     LidarSensor* getSensor(const pxr::UsdPrim& prim)
@@ -194,6 +249,8 @@ private:
     carb::renderer::LineList* mDebugLineList = nullptr;
     std::vector<carb::renderer::Line> mDebugLineVector;
     carb::events::ISubscriptionPtr mViewportUiEventSub;
+    carb::tasking::ITasking* mTasking = nullptr;
+    carb::tasking::Counter* mTaskCounter = nullptr;
 };
 }
 }

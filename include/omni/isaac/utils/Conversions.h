@@ -11,6 +11,8 @@
 #include <carb/Types.h>
 #include <carb/fastcache/FastCache.h>
 
+#include <omni/isaac/dynamic_control/DynamicControl.h>
+
 #include <PxActor.h>
 
 namespace omni

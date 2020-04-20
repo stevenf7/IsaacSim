@@ -20,6 +20,8 @@
 #include <carb/InterfaceUtils.h>
 // #include <carb/filesystem/IFileSystem.h>
 
+#include <PhysicsSchema/physicsScene.h>
+
 // #include <omni/usd/UsdUtils.h>
 #include <omni/isaac/utils/Conversions.h>
 
@@ -44,22 +46,37 @@ LidarSensor::~LidarSensor()
 }
 
 void LidarSensor::initialize(carb::physics::PhysX* physxPtr,
-                             omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
                              carb::fastcache::FastCache* fastCachePtr,
                              const pxr::LidarSchemaLidar& prim,
                              pxr::UsdStageRefPtr stage)
 {
     SensorComponent::initialize(prim, stage);
     mPhysx = physxPtr;
-    mDynamicControlPtr = dynamicControlPtr;
     mFastCachePtr = fastCachePtr;
-    CARB_LOG_WARN("LidarSensor::initialize");
 }
 
 
 void LidarSensor::onStart()
 {
     onComponentChange();
+
+    pxr::UsdPrimRange range = mStage->Traverse();
+
+    for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
+    {
+        pxr::UsdPrim prim = *iter;
+
+        if (prim.IsA<pxr::PhysicsSchemaPhysicsScene>())
+        {
+
+            mPxScene = static_cast<physx::PxScene*>(mPhysx->getPhysXPtr(prim.GetPrimPath(), carb::physics::ePTScene));
+
+            if (mPxScene)
+            {
+                break;
+            }
+        }
+    }
 }
 
 void LidarSensor::onComponentChange()
@@ -168,124 +185,117 @@ void LidarSensor::onComponentChange()
     mRemainingTime = 0.0f;
 
     mDebugLines.clear();
-
-    omni::isaac::dynamic_control::DcObjectType primType =
-        mDynamicControlPtr->peekObjectType(mPrim.GetPath().GetString().c_str());
-    if (primType == omni::isaac::dynamic_control::eDcObjectArticulation)
-    {
-        omni::isaac::dynamic_control::DcHandle artculationHandle =
-            mDynamicControlPtr->getArticulation(mPrim.GetPath().GetString().c_str());
-        mRigidBodyHandle = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
-    }
-    else if (primType == omni::isaac::dynamic_control::eDcObjectRigidBody)
-    {
-        mRigidBodyHandle = mDynamicControlPtr->getRigidBody(mPrim.GetPath().GetString().c_str());
-    }
-    else
-    {
-        mRigidBodyHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
-    }
 }
 
-void LidarSensor::scan(int start, int stop)
+
+bool raycastClosest(
+    const physx::PxVec3& pos, const physx::PxVec3& dir, float distance, physx::PxRaycastHit& hit, physx::PxScene* gScene)
 {
-    // printf("%f %f %f %f %f %f %f %d %d\n",
-    //        mHorizontalFov,
-    //        mVerticalFov,
-    //        mRotationRate,
-    //        mHorizontalResolution,
-    //        mVerticalResolution,
-    //        mMinRange,
-    //        mMaxRange,
-    //        mHighLod,
-    //        mDrawLidarPoints);
 
-    GfMatrix4d worldTransform;
-    // if (mRigidBodyHandle)
-    // {
-    //     worldTransform = utils::conversions::asGfMatrix4d(mDynamicControlPtr->getRigidBodyPose(mRigidBodyHandle));
-    // }
-    // else
-    // {
-    //     worldTransform = omni::usd::UsdUtils::getWorldTransformMatrix(mPrim.GetPrim());
-    // }
+    if (!gScene)
+    {
+        printf("INVALID SCENE");
+        return false;
+    }
+    // physx::PxRaycastHit hit;
+    physx::PxHitFlags hitFlags = PxHitFlag::eDEFAULT | PxHitFlag::eMESH_BOTH_SIDES;
 
+    const bool ret = physx::PxSceneQueryExt::raycastSingle(*gScene, pos, dir, distance, hitFlags, hit);
+    // if (ret)
+    // {
+    //     outHit.distance = hit.distance;
+    //     outHit.normal = (const Float3&)hit.normal;
+    //     outHit.position = (const Float3&)hit.position;
+    //     outHit.faceIndex = hit.faceIndex;
+    //     const InternalHandle shapeIndex = (InternalHandle)hit.shape->userData;
+    //     const InternalHandle bodyIndex = (InternalHandle)hit.actor->userData;
+    //     outHit.collision = shapeIndex < gInternalScene->getRecords().size() ?
+    //                            gInternalScene->getRecords()[shapeIndex].mPrim.GetPath().GetText() :
+    //                            nullptr;
+    //     outHit.rigidBody = bodyIndex < gInternalScene->getRecords().size() ?
+    //                            gInternalScene->getRecords()[bodyIndex].mPrim.GetPath().GetText() :
+    //                            nullptr;
+    // }
+    return ret;
+}
+template <bool drawLidarPoints>
+void scan(int start,
+          int stop,
+          int rows,
+          int cols,
+          carb::fastcache::FastCache* fastCachePtr,
+          carb::physics::PhysX* physxPtr,
+          physx::PxScene* physxScenePtr,
+          pxr::LidarSchemaLidar& prim,
+          std::vector<carb::renderer::Line>& debugLines,
+          std::vector<uint16_t>& depth,
+          std::vector<uint8_t>& intensity,
+          std::vector<float>& zenith,
+          std::vector<float>& azimuth,
+          float maxDepth)
+{
     carb::fastcache::Transform trans;
-    mFastCachePtr->getTransform(mPrim.GetPath(), trans);
-    worldTransform = utils::conversions::asGfMatrix4d(trans);
+    fastCachePtr->getTransform(prim.GetPath(), trans);
 
-    // GfRotation startingRotation(GfVec3f(1.0f, 0.0f, 0.0f), 180.0f);
-    // startingRotation *= worldTransform.ExtractRotation();
-    GfRotation worldRotation = worldTransform.RemoveScaleShear().ExtractRotation();
+    physx::PxVec3 origin = utils::conversions::asPxVec3(trans.position);
+    physx::PxQuat worldRotation = utils::conversions::asPxQuat(trans.orientation);
 
-    GfVec3f origin = worldTransform.Transform(GfVec3f(0.0f, 0.0f, 0.0f));
-
-
-    int i = start * mRows;
+    int i = start * rows;
     int j = start;
-
+    float invMaxDepth = 1.0f / maxDepth;
     for (int colPreMod = start; colPreMod < stop; colPreMod++)
     {
-        for (int row = 0; row < mRows; row++)
+        int col = colPreMod % cols;
+        physx::PxQuat rot = worldRotation * physx::PxQuat(azimuth[col], physx::PxVec3(0.0f, 1.0f, 0.0f));
+
+        for (int row = 0; row < rows; row++)
         {
-            int col = colPreMod % mCols;
-
             // Pitch then yaw
-            GfRotation pitchYaw(GfVec3f(0.0f, 0.0f, 1.0f), mZenith[row] * 180.0f / M_PI);
-            pitchYaw *= GfRotation(GfVec3f(0.0f, 1.0f, 0.0f), mAzimuth[col] * 180.0f / M_PI);
+            rot *= physx::PxQuat(zenith[row], physx::PxVec3(0.0f, 0.0f, 1.0f));
+            physx::PxVec3 unitDir = rot.rotate(physx::PxVec3(1.0f, 0.0f, 0.0f)); // this is normalized already
+            physx::PxRaycastHit raycastHit;
 
-
-            GfRotation rot = pitchYaw;
-            // rot *= startingRotation;
-            rot *= worldRotation;
-
-            GfVec3f unitDir = rot.TransformDir(GfVec3f(1.0f, 0.0f, 0.0f));
-
-            carb::Float3 carbOrigin = { origin[0], origin[1], origin[2] };
-            carb::Float3 carbUnitDir = { unitDir[0], unitDir[1], unitDir[2] };
-            carb::physics::RaycastHit raycastHit;
-
-            bool hit = mPhysx->raycastClosest(carbOrigin, carbUnitDir, mMaxDepth, raycastHit, true);
+            bool hit = raycastClosest(origin, unitDir, maxDepth, raycastHit, physxScenePtr);
 
             if (hit)
             {
-                mDepth[i] = uint16_t(raycastHit.distance / mMaxDepth * 65535.0f);
-                mIntensity[i] = 255;
+                depth[i] = static_cast<uint16_t>(raycastHit.distance * invMaxDepth * 65535.0f);
+                intensity[i] = 255;
 
-                if (mDrawLidarPoints)
+                if (drawLidarPoints)
                 {
-                    GfVec3f hitPos(raycastHit.position.x, raycastHit.position.y, raycastHit.position.z);
+                    carb::Float3 hitPos = (const carb::Float3&)raycastHit.position;
                     carb::renderer::Line line;
 
-                    line.startPosition = { origin[0], origin[1], origin[2] };
-                    line.endPosition = { hitPos[0], hitPos[1], hitPos[2] };
+                    line.startPosition = (const carb::Float3&)origin;
+                    line.endPosition = hitPos;
                     line.startColor = { 0.4f, 1.0f, 1.0f, 0.5f };
                     line.endColor = { 0.4f, 1.0f, 1.0f, 0.2f };
 
-                    mDebugLines.push_back(line);
+                    debugLines.push_back(line);
                 }
             }
             else
             {
-                mDepth[i] = 65535;
-                mIntensity[i] = 0;
-                if (mDrawLidarPoints)
+                depth[i] = 65535;
+                intensity[i] = 0;
+                if (drawLidarPoints)
                 {
-                    GfVec3f hitPos = origin + unitDir * mMaxDepth;
+                    physx::PxVec3 hitPos = origin + unitDir * maxDepth;
                     carb::renderer::Line line;
 
-                    line.startPosition = { origin[0], origin[1], origin[2] };
-                    line.endPosition = { hitPos[0], hitPos[1], hitPos[2] };
+                    line.startPosition = (const carb::Float3&)origin;
+                    line.endPosition = (const carb::Float3&)hitPos;
                     line.startColor = { 0.0f, 0.4f, 0.4f, 1.0f };
                     line.endColor = { 0.0f, 0.4f, 0.4f, 1.0f };
 
-                    mDebugLines.push_back(line);
+                    debugLines.push_back(line);
                 }
             }
 
-            if (mZenith[row] == 0.0f)
-                ++j %= mCols;
-            ++i %= (mCols * mRows);
+            if (zenith[row] == 0.0f)
+                ++j %= cols;
+            ++i %= (cols * rows);
         }
     }
 }
@@ -299,7 +309,6 @@ void LidarSensor::dumpData(int start, int stop, float dt)
     // Size of mLastAzimuth == mLastNumColsTicked
 
     int colsToTick = stop - start;
-
     int unwrappedSize = std::min(stop, mCols) - start;
     int wrappedSize = std::max(0, stop - mCols);
 
@@ -326,25 +335,30 @@ void LidarSensor::dumpData(int start, int stop, float dt)
 void LidarSensor::tick()
 {
     float elapsedTime = mTimeDelta;
-
     mDebugLines.clear();
-
 
     // Every tick does a full scan
     if (mRotationRate == 0.0f)
     {
         mLastNumColsTicked = mCols;
-
-        scan(0, mCols);
+        if (mDrawLidarPoints)
+        {
+            scan<true>(0, mCols, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mIntensity,
+                       mZenith, mAzimuth, mMaxDepth);
+        }
+        else
+        {
+            scan<false>(0, mCols, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mIntensity,
+                        mZenith, mAzimuth, mMaxDepth);
+        }
         dumpData(0, mCols, elapsedTime);
+
 
         mLastCol = 0;
     }
     else
     {
         mRemainingTime += elapsedTime;
-
-
         mLastNumColsTicked = int(mColScanSpeed * mRemainingTime);
 
         // If too much time is remaining, cap the number of columns
@@ -362,7 +376,16 @@ void LidarSensor::tick()
         mRemainingTime = std::fmod(mRemainingTime, mMaxStepSize);
 
         // Now scan the columns and dump the data
-        scan(mLastCol, mLastCol + mLastNumColsTicked);
+        if (mDrawLidarPoints)
+        {
+            scan<true>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim,
+                       mDebugLines, mDepth, mIntensity, mZenith, mAzimuth, mMaxDepth);
+        }
+        else
+        {
+            scan<false>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim,
+                        mDebugLines, mDepth, mIntensity, mZenith, mAzimuth, mMaxDepth);
+        }
         dumpData(mLastCol, mLastCol + mLastNumColsTicked, simulateTime);
 
         mLastCol = (mLastCol + mLastNumColsTicked) % mCols;
