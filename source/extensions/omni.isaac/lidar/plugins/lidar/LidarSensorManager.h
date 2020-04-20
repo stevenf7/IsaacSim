@@ -33,7 +33,10 @@ namespace isaac
 namespace lidar
 {
 
-
+/**
+ * @brief Data used by a lidar task thread
+ *
+ */
 struct LidarTaskData
 {
     double timeSeconds;
@@ -42,6 +45,10 @@ struct LidarTaskData
     LidarSensor* lidar;
 };
 
+/**
+ * @brief Function called by each lidar task thread
+ *
+ */
 auto lidarTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
     LidarTaskData* taskData = reinterpret_cast<LidarTaskData*>(taskArg);
     taskData->lidar->updateTimestamp(taskData->timeSeconds, taskData->dt, taskData->timeNanoSeconds);
@@ -121,11 +128,10 @@ public:
                 bigTask.taskArg = (void*)(taskArray + index);
                 mTasking->addTask(bigTask, mTaskCounter);
                 index++;
-                // component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
-                // component.second->tick();
             }
-            delete[] taskArray;
             mTasking->yieldUntilCounter(mTaskCounter);
+            delete[] taskArray;
+
 #else
             for (auto& component : mComponents)
             {
@@ -137,9 +143,13 @@ public:
         this->mTimeSeconds += dt;
         this->mTimeNanoSeconds = mTimeSeconds * 1e9;
     }
-
+    /**
+     * @brief Run once the scene is stopped
+     *
+     */
     void stop()
     {
+        // PxScene can change after stop is pressed so reset DoOnce bool to force OnStart to run
         mDoOnce = false;
     }
     /**
