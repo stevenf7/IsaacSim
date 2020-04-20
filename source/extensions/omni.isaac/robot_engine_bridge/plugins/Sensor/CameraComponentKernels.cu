@@ -7,7 +7,10 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-__global__ void rgbaToRgbKernel(unsigned char *dest, const unsigned char *src, int width, int height, int srcStride)
+#include <cuda.h>
+
+
+__global__ void rgbaToRgbKernel(uint8_t *dest, const uint8_t *src, int width, int height, int srcStride)
 {
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -21,9 +24,9 @@ __global__ void rgbaToRgbKernel(unsigned char *dest, const unsigned char *src, i
 	dest[idx*3+1] = src[row*srcStride + col*4+1];
 	dest[idx*3+2] = src[row*srcStride + col*4+2];
 
-};
+}
 
-extern "C" void rgbaToRgb(unsigned char *dest, const unsigned char *src, int width, int height, int srcStride)
+extern "C" void rgbaToRgb(uint8_t *dest, const uint8_t *src, int width, int height, int srcStride)
 {
 
 	const int num = width*height;
@@ -31,5 +34,34 @@ extern "C" void rgbaToRgb(unsigned char *dest, const unsigned char *src, int wid
     const int nb = (num + nt - 1) / nt;
 
     rgbaToRgbKernel<<<nb, nt>>>(dest, src, width, height, srcStride);
+
+}
+
+
+
+__global__ void uint32ToUint16Kernel(uint16_t *dest, const uint32_t *src, int width, int height, int srcStride)
+{
+
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= width*height)
+        return;
+
+	int row = idx / width;
+	int col = idx % width;
+
+	uint32_t *srcRow = (uint32_t*)((uint8_t*)src + row * srcStride);
+
+	dest[idx] = srcRow[col];
+
+}
+
+extern "C" void uint32ToUint16(uint16_t *dest, const uint32_t *src, int width, int height, int srcStride)
+{
+
+	const int num = width*height;
+    const int nt = 256;
+    const int nb = (num + nt - 1) / nt;
+
+    uint32ToUint16Kernel<<<nb, nt>>>(dest, src, width, height, srcStride);
 
 }
