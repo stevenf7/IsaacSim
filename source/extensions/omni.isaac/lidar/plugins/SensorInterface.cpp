@@ -31,6 +31,7 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 #include <carb/fastcache/FastCache.h>
+#include <carb/tasking/ITasking.h>
 
 #include <omni/kit/IEditor.h>
 #include <omni/kit/IViewport.h>
@@ -50,7 +51,8 @@ CARB_PLUGIN_IMPL_DEPS(carb::physics::PhysX,
                       omni::kit::IEditor,
                       omni::kit::IStageUpdate,
                       carb::fastcache::FastCache,
-                      omni::isaac::dynamic_control::DynamicControl)
+                      omni::isaac::dynamic_control::DynamicControl,
+                      carb::tasking::ITasking)
 
 // private stuff
 namespace
@@ -65,6 +67,8 @@ carb::fastcache::FastCache* g_FastCache = nullptr;
 carb::physics::PhysX* g_physx = nullptr;
 omni::isaac::dynamic_control::DynamicControl* g_DynamicControl = nullptr;
 pxr::UsdStageRefPtr g_stage = nullptr;
+carb::tasking::ITasking* gTasking = nullptr;
+
 
 std::unique_ptr<omni::isaac::lidar::LidarSensorManager> gLidarSensorManager;
 
@@ -301,6 +305,13 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
         gLidarSensorManager->tick(elapsedSecs);
     }
 }
+void onStop(void* userData)
+{
+    if (gLidarSensorManager)
+    {
+        gLidarSensorManager->stop();
+    }
+}
 
 void onPrimAdd(const char* primPath, void* userData)
 {
@@ -323,7 +334,7 @@ void onComponentChange(const char* primPath, const omni::kit::PrimDirtyBits*, vo
 
 void onPrimRemove(const char* primPath, void* userData)
 {
-    printf("++ Lidar: Prim Remove: %s\n", primPath);
+    // printf("++ Lidar: Prim Remove: %s\n", primPath);
     if (gLidarSensorManager)
     {
         gLidarSensorManager->onComponentRemove(pxr::SdfPath(primPath));
@@ -381,16 +392,18 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
         return;
     }
+    gTasking = framework->acquireInterface<carb::tasking::ITasking>();
 
 
-    gLidarSensorManager =
-        std::make_unique<omni::isaac::lidar::LidarSensorManager>(g_editor, g_physx, g_DynamicControl, g_FastCache);
+    gLidarSensorManager = std::make_unique<omni::isaac::lidar::LidarSensorManager>(
+        g_editor, g_physx, g_DynamicControl, g_FastCache, gTasking);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Lidar Interface";
     desc.onAttach = onAttach;
     desc.onDetach = onDetach;
     desc.onUpdate = onUpdate;
+    desc.onStop = onStop;
     desc.onPrimAdd = onPrimAdd;
     desc.onPrimChange = onComponentChange;
     desc.onPrimRemove = onPrimRemove;
