@@ -14,7 +14,10 @@
 #include <carb/logging/Log.h>
 #include <carb/tokens/ITokens.h>
 
+// clang-format off
+#include <omni/usd/UsdContextIncludes.h>
 #include <omni/usd/Layers.h>
+// clang-format on
 
 #include <functional>
 #include <string>

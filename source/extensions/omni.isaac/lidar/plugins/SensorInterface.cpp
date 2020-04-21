@@ -12,6 +12,8 @@
 // clang-format off
 #include "UsdPCH.h"
 #include <pxr/usd/usd/inherits.h>
+#include <omni/usd/UtilsIncludes.h>
+#include <omni/usd/UsdContextIncludes.h>
 // clang-format on
 
 #include <omni/kit/IStageUpdate.h>

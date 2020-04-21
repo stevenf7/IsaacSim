@@ -23,6 +23,7 @@
 #include <carb/input/IInput.h>
 #include <omni/kit/IEditor.h>
 #include <omni/kit/IStageUpdate.h>
+#include <omni/usd/UsdContextIncludes.h>
 #include <omni/usd/UsdContext.h>
 #include <carb/dictionary/IDictionary.h>
 #include <omni/isaac/decals/Decals.h>
