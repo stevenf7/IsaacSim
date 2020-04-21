@@ -10,6 +10,7 @@
 #include <carb/profiler/Profile.h>
 #include <carb/filesystem/IFileSystem.h>
 
+#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
 
 #include "../Core/IsaacComponent.h"

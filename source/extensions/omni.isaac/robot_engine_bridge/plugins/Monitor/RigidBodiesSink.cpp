@@ -11,6 +11,7 @@
 #include <carb/InterfaceUtils.h>
 #include <carb/filesystem/IFileSystem.h>
 
+#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
 
 namespace omni
