@@ -7,10 +7,12 @@
 
 #include <carb/dictionary/DictionaryUtils.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/usd/UsdContextIncludes.h>
 #include <omni/usd/UsdContext.h>
 #include <carb/profiler/Profile.h>
 #include <carb/InterfaceUtils.h>
 
+#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
 
 #include "../Core/IsaacComponent.h"

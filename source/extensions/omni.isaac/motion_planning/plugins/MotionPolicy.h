@@ -25,6 +25,8 @@
 #include <lula/rmpflow/rmpflow_robot_policy_factory.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/motion_planning/MotionPlanning.h>
+
+#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
 /**
  * Defines a single RMP object and interfaces to configure, query and interact with that RMP

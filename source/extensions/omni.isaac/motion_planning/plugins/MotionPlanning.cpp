@@ -24,6 +24,8 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 #include <carb/tasking/ITasking.h>
+
+#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
 
 #include "MotionPolicy.h"
