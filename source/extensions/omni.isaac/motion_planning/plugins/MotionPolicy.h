@@ -26,8 +26,11 @@
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/motion_planning/MotionPlanning.h>
 
+// clang-format off
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
+// clang-format on
+
 /**
  * Defines a single RMP object and interfaces to configure, query and interact with that RMP
  */
