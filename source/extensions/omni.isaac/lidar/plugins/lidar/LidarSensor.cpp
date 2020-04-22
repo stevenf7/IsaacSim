@@ -129,6 +129,11 @@ void LidarSensor::onComponentChange()
         mPrim.GetDrawLidarPointsAttr().Get(&mDrawLidarPoints);
     }
 
+    if (mPrim.GetYawOffsetAttr().HasValue())
+    {
+        mPrim.GetYawOffsetAttr().Get(&mYawOffset);
+    }
+
 
     // printf("%f %f %f %f %f %f %f %d %d\n",
     //        mHorizontalFov,
@@ -165,7 +170,7 @@ void LidarSensor::onComponentChange()
     mZenith.assign(mRows, 0.0f);
     mAzimuth.assign(mCols, 0.0f);
 
-    float startAzimuth = -0.5f * mHorizontalFov;
+    float startAzimuth = -0.5f * mHorizontalFov + mYawOffset;
     float startZenith = -0.5f * mVerticalFov;
 
     for (int col = 0; col < mCols; col++)
