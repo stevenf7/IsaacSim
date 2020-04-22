@@ -232,7 +232,8 @@ void scan(int start,
           std::vector<uint8_t>& intensity,
           std::vector<float>& zenith,
           std::vector<float>& azimuth,
-          float maxDepth)
+          float maxDepth,
+          bool zUp)
 {
     carb::fastcache::Transform trans;
     fastCachePtr->getTransform(prim.GetPath(), trans);
@@ -243,15 +244,17 @@ void scan(int start,
     int i = start * rows;
     int j = start;
     float invMaxDepth = 1.0f / maxDepth;
+    physx::PxVec3 azimuthDir = zUp ? physx::PxVec3(0.0f, 0.0f, 1.0f) : physx::PxVec3(0.0f, 1.0f, 0.0f);
+    physx::PxVec3 zenithDir = zUp ? physx::PxVec3(0.0f, 1.0f, 0.0f) : physx::PxVec3(0.0f, 0.0f, 1.0f);
     for (int colPreMod = start; colPreMod < stop; colPreMod++)
     {
         int col = colPreMod % cols;
-        physx::PxQuat rot = worldRotation * physx::PxQuat(azimuth[col], physx::PxVec3(0.0f, 1.0f, 0.0f));
+        physx::PxQuat rot = worldRotation * physx::PxQuat(azimuth[col], azimuthDir);
 
         for (int row = 0; row < rows; row++)
         {
             // Pitch then yaw
-            rot *= physx::PxQuat(zenith[row], physx::PxVec3(0.0f, 0.0f, 1.0f));
+            rot *= physx::PxQuat(zenith[row], zenithDir);
             physx::PxVec3 unitDir = rot.rotate(physx::PxVec3(1.0f, 0.0f, 0.0f)); // this is normalized already
             physx::PxRaycastHit raycastHit;
 
@@ -336,6 +339,7 @@ void LidarSensor::tick()
 {
     float elapsedTime = mTimeDelta;
     mDebugLines.clear();
+    bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
 
     // Every tick does a full scan
     if (mRotationRate == 0.0f)
@@ -344,12 +348,12 @@ void LidarSensor::tick()
         if (mDrawLidarPoints)
         {
             scan<true>(0, mCols, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mIntensity,
-                       mZenith, mAzimuth, mMaxDepth);
+                       mZenith, mAzimuth, mMaxDepth, zUp);
         }
         else
         {
             scan<false>(0, mCols, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mIntensity,
-                        mZenith, mAzimuth, mMaxDepth);
+                        mZenith, mAzimuth, mMaxDepth, zUp);
         }
         dumpData(0, mCols, elapsedTime);
 
@@ -379,12 +383,12 @@ void LidarSensor::tick()
         if (mDrawLidarPoints)
         {
             scan<true>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim,
-                       mDebugLines, mDepth, mIntensity, mZenith, mAzimuth, mMaxDepth);
+                       mDebugLines, mDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, zUp);
         }
         else
         {
             scan<false>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim,
-                        mDebugLines, mDepth, mIntensity, mZenith, mAzimuth, mMaxDepth);
+                        mDebugLines, mDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, zUp);
         }
         dumpData(mLastCol, mLastCol + mLastNumColsTicked, simulateTime);
 
