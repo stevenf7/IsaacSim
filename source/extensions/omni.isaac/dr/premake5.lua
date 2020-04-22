@@ -2,8 +2,8 @@ local ext_group = "omni.isaac"
 local ext_name = "dr"
 local ext_version = ""
 local ext_id = "omni.isaac.dr"
-local ext_source = "source/extensions/"..ext_group.."/"..ext_name
-local ext_folder = "_build/$platform/$config/exts/"..ext_id
+local ext_source = "%{root}/source/extensions/"..ext_group.."/"..ext_name
+local ext_folder = "%{root}/_build/$platform/$config/exts/"..ext_id
 local ext_bin_folder = ext_folder.."/bin/$platform/$config"
 
 group ("extensions/"..ext_id)
@@ -17,19 +17,14 @@ group ("extensions/"..ext_id)
 
     repo_build.prebuild_link {
         { ext_source.."/config", ext_folder.."/config" },
-    }
-
-    repo_build.prebuild_link {
         { ext_source.."/python/scripts", ext_folder.."/omni/isaac/dr/scripts" },
     }
 
-    repo_build.prebuild_copy {
-        { ext_source.."/python/*.py", ext_folder.."/omni/isaac/dr" },
-    }
 
     repo_build.prebuild_copy {
-        { "_build/target-deps/usd_ext_isaac/$config/lib/python/DrSchema/**", ext_folder.."/omni/isaac/DrSchema" },
-        { "_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}drSchema${lib_ext}", ext_folder.."/bin/$platform/$config"},
+        { ext_source.."/python/*.py", ext_folder.."/omni/isaac/dr" },
+        { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/DrSchema/**", ext_folder.."/omni/isaac/DrSchema" },
+        { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}drSchema${lib_ext}", ext_folder.."/bin/$platform/$config"},
     }
 
     -- C++ Carbonite plugin

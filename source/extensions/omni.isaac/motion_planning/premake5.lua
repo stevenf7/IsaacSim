@@ -2,8 +2,8 @@ local ext_group = "omni.isaac"
 local ext_name = "motion_planning"
 local ext_version = ""
 local ext_id = "omni.isaac.motion_planning"
-local ext_source = "source/extensions/"..ext_group.."/"..ext_name
-local ext_folder = "_build/$platform/$config/exts/"..ext_id
+local ext_source = "%{root}/source/extensions/"..ext_group.."/"..ext_name
+local ext_folder = "%{root}/_build/$platform/$config/exts/"..ext_id
 local ext_bin_folder = ext_folder.."/bin/$platform/$config"
 
 group ("extensions/"..ext_id)
@@ -17,22 +17,13 @@ group ("extensions/"..ext_id)
 
     repo_build.prebuild_link {
         { ext_source.."/config", ext_folder.."/config" },
-    }
-
-    repo_build.prebuild_link {
         { ext_source.."/python/scripts", ext_folder.."/omni/isaac/motion_planning/scripts" },
+        { "%{root}/_build/target-deps/lula/data/", "_build/$platform/$config/resources/lula/" },
     }
 
     repo_build.prebuild_copy {
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/motion_planning" },
-    }
-    
-    repo_build.prebuild_copy {
-        { "_build/target-deps/lula/lib/**", ext_bin_folder },
-    }
-
-    repo_build.prebuild_link {
-        { "_build/target-deps/lula/data/", "_build/$platform/$config/resources/lula/" },
+        { "%{root}/_build/target-deps/lula/lib/**", ext_bin_folder },
     }
 
     -- C++ Carbonite plugin
