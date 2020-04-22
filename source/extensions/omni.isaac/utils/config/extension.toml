@@ -1,5 +1,8 @@
 display_name = "Isaac Utilities"
 
+[dependencies]
+"omni.kit.editor" = {}
+
 [[python.modules]]
 name = "omni.isaac.utils"
 
