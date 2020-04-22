@@ -10,7 +10,8 @@ namespace isaac
 namespace robot_engine_bridge
 {
 
-extern "C" void rgbaToRgb(unsigned char* dest, const unsigned char* src, int width, int height, int srcStride);
+extern "C" void rgbaToRgb(uint8_t* dest, const uint8_t* src, int width, int height, int srcStride);
+extern "C" void uint32ToUint16(uint16_t* dest, const uint32_t* src, int width, int height, int srcStride);
 
 CameraComponent::CameraComponent() : IsaacComponent()
 {
@@ -136,14 +137,15 @@ void CameraComponent::tick()
             coeff.set(i, 0.0f);
 
 
+        const size_t bufferSize = rgbInfo.width * rgbInfo.height * 3;
         std::vector<std::vector<uint8_t>> buffers(1);
-        buffers[0] = std::vector<uint8_t>(rgbInfo.width * rgbInfo.height * 3);
+        buffers[0] = std::vector<uint8_t>(bufferSize);
 
         uint8_t* rgbDevice;
-        CUDA_CHECK(cudaMalloc(&rgbDevice, rgbInfo.width * rgbInfo.height * 3));
+        CUDA_CHECK(cudaMalloc(&rgbDevice, bufferSize));
 
         rgbaToRgb(rgbDevice, (uint8_t*)mRgbSensorData, rgbInfo.width, rgbInfo.height, rgbInfo.rowSize);
-        CUDA_CHECK(cudaMemcpy(buffers[0].data(), rgbDevice, rgbInfo.width * rgbInfo.height * 3, cudaMemcpyDeviceToHost));
+        CUDA_CHECK(cudaMemcpy(buffers[0].data(), rgbDevice, bufferSize, cudaMemcpyDeviceToHost));
 
         CUDA_CHECK(cudaFree(rgbDevice));
 
@@ -191,7 +193,7 @@ void CameraComponent::tick()
 
     if (mSegmentationSensor)
     {
-        mSegmentationSensorData = mSyntheticDataInterface->getSensorHostData(mSegmentationSensor);
+        mSegmentationSensorData = mSyntheticDataInterface->getSensorDeviceData(mSegmentationSensor);
 
         const carb::sensors::SensorInfo& segmentationInfo = mSensorsInterface->getSensorInfo(mSegmentationSensor);
 
@@ -219,17 +221,19 @@ void CameraComponent::tick()
         center.setX(segmentationInfo.width * 0.5f);
         center.setY(segmentationInfo.height * 0.5f);
 
-        std::vector<std::vector<uint8_t>> buffers(1);
-        buffers[0] = std::vector<uint8_t>(segmentationInfo.width * segmentationInfo.height * sizeof(uint16_t));
 
-        uint16_t* dest = reinterpret_cast<uint16_t*>(buffers[0].data());
-        uint8_t* src = reinterpret_cast<uint8_t*>(mSegmentationSensorData);
-        for (int i = 0; i < segmentationInfo.height; i++)
-        {
-            for (int j = 0; j < segmentationInfo.width; j++)
-                dest[i * segmentationInfo.width + j] =
-                    (uint16_t) * ((uint32_t*)(src + i * segmentationInfo.rowSize + j * 4));
-        }
+        const size_t bufferSize = segmentationInfo.width * segmentationInfo.height * sizeof(uint16_t);
+        std::vector<std::vector<uint8_t>> buffers(1);
+        buffers[0] = std::vector<uint8_t>(bufferSize);
+
+        uint16_t* segmentationDevice;
+        CUDA_CHECK(cudaMalloc(&segmentationDevice, bufferSize));
+
+        uint32ToUint16(segmentationDevice, (uint32_t*)mSegmentationSensorData, segmentationInfo.width,
+                       segmentationInfo.height, segmentationInfo.rowSize);
+        CUDA_CHECK(cudaMemcpy(buffers[0].data(), segmentationDevice, bufferSize, cudaMemcpyDeviceToHost));
+
+        CUDA_CHECK(cudaFree(segmentationDevice));
 
         publish(mSegmentationOutputComponent, mSegmentationChannelName, cameraMessageProto,
                 isaac_message::SegmentationCameraProtoId, buffers);

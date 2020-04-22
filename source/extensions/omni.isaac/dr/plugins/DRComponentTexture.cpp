@@ -12,6 +12,7 @@
 #include <carb/filesystem/IFileSystem.h>
 #include <DrSchema/textureComponent.h>
 
+#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/AssetUtils.h>
 #include <omni/usd/UsdUtils.h>
 

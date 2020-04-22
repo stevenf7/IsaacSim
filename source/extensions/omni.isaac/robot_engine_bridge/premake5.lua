@@ -2,8 +2,8 @@ local ext_group = "omni.isaac"
 local ext_name = "robot_engine_bridge"
 local ext_version = ""
 local ext_id = "omni.isaac.robot_engine_bridge"
-local ext_source = "source/extensions/"..ext_group.."/"..ext_name
-local ext_folder = "_build/$platform/$config/exts/"..ext_id
+local ext_source = "%{root}/source/extensions/"..ext_group.."/"..ext_name
+local ext_folder = "%{root}/_build/$platform/$config/exts/"..ext_id
 local ext_bin_folder = ext_folder.."/bin/$platform/$config"
 
 group ("extensions/"..ext_id)
@@ -17,22 +17,13 @@ group ("extensions/"..ext_id)
 
     repo_build.prebuild_link {
         { ext_source.."/config", ext_folder.."/config" },
-    }
-
-    repo_build.prebuild_link {
         { ext_source.."/python/scripts", ext_folder.."/omni/isaac/robot_engine_bridge/scripts" },
-    }
-
-    repo_build.prebuild_link {
-        { "_build/target-deps/isaac_engine/data/", "_build/$platform/$config/resources/isaac_engine/" },
+        { "%{root}/_build/target-deps/isaac_engine/data/", "_build/$platform/$config/resources/isaac_engine/" },
     }
 
     repo_build.prebuild_copy {
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/robot_engine_bridge" },
-    }
-
-    repo_build.prebuild_copy {
-        { "_build/target-deps/isaac_engine/lib/**", ext_bin_folder },
+        { "%{root}/_build/target-deps/isaac_engine/lib/**", ext_bin_folder },
     }
 
     -- C++ Carbonite plugin

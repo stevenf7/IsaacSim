@@ -4,6 +4,8 @@
 #include <UsdPCH.h>
 // clang-format on
 #include <omni/kit/IEditor.h>
+
+#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
 #include <carb/syntheticdata/SyntheticData.h>
 #include <carb/sensors/Sensors.h>
