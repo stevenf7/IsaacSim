@@ -25,7 +25,10 @@ echo "##teamcity[progressMessage 'Packaging...']"
 "$SCRIPT_DIR/../../../package.sh" -m test_runner
 "$SCRIPT_DIR/../../../package.sh" -m docs
 "$SCRIPT_DIR/../../../package.sh" -m omniverse-kit -c release
+"$SCRIPT_DIR/../../../package.sh" -m omni_isaac_sim -c debug
 "$SCRIPT_DIR/../../../package.sh" -m omni_isaac_sim -c release
+"$SCRIPT_DIR/../../../package.sh" -m omni_domain_randomization -c debug
+"$SCRIPT_DIR/../../../package.sh" -m omni_domain_randomization -c release
 
 # publish artifacts to teamcity
 echo "##teamcity[publishArtifacts '_build/packages']"

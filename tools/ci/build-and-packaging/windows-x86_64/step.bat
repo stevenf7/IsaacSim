@@ -37,7 +37,16 @@ if %errorlevel% neq 0 ( exit /b %errorlevel% )
 call "%~dp0..\..\..\package.bat" -m omniverse-kit -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
+call "%~dp0..\..\..\package.bat" -m omni_isaac_sim -c debug
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
+
 call "%~dp0..\..\..\package.bat" -m omni_isaac_sim -c release
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
+
+call "%~dp0..\..\..\package.bat" -m omni_domain_randomization -c debug
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
+
+call "%~dp0..\..\..\package.bat" -m omni_domain_randomization -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: publish artifacts to teamcity
