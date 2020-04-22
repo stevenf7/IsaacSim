@@ -17,6 +17,7 @@ group ("extensions/"..ext_id)
 
     repo_build.prebuild_link {
         { ext_source.."/config", ext_folder.."/config" },
+        { ext_source.."/python/scripts", ext_folder.."/omni/isaac/utils/scripts" },
     }
 
     repo_build.prebuild_copy {
