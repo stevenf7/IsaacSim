@@ -5,9 +5,10 @@
 #include <carb/filesystem/IFileSystem.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+// clang-format off
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
-
+// clang-format on
 namespace omni
 {
 namespace isaac
