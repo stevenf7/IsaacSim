@@ -113,6 +113,7 @@ private:
     float mMaxRange;
     bool mHighLod;
     bool mDrawLidarPoints;
+    float mYawOffset;
 
     // Ranges converted to proper units
     float mMinDepth;
