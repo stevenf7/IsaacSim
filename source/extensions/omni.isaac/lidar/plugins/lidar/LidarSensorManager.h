@@ -245,10 +245,6 @@ private:
             mEditor->getRenderer()->updateLineList(mEditor->getRenderContext(), mDebugLineList, mDebugLineVector.data(),
                                                    mDebugLineVector.size(), nullptr, 0);
         }
-        else
-        {
-            releaseDebugLineList();
-        }
     }
 
     carb::physics::PhysX* mPhysxPtr = nullptr;
