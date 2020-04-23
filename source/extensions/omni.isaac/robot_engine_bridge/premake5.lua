@@ -18,7 +18,7 @@ group ("extensions/"..ext_id)
     repo_build.prebuild_link {
         { ext_source.."/config", ext_folder.."/config" },
         { ext_source.."/python/scripts", ext_folder.."/omni/isaac/robot_engine_bridge/scripts" },
-        { "%{root}/_build/target-deps/isaac_engine/data/", "_build/$platform/$config/resources/isaac_engine/" },
+        { "%{root}/_build/target-deps/isaac_engine/data/", "%{root}/_build/$platform/$config/resources/isaac_engine/" },
     }
 
     repo_build.prebuild_copy {
