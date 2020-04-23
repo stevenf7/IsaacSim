@@ -109,7 +109,7 @@ private:
     float mRotationRate = 20.0f;
     float mHorizontalResolution = 0.4f;
     float mVerticalResolution = 4.0f;
-    float mMinRange =  0.4f;
+    float mMinRange = 0.4f;
     float mMaxRange = 100.0f;
     bool mHighLod = true;
     bool mDrawLidarPoints = false;
