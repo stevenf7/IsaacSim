@@ -99,6 +99,7 @@ def create_omniverse_kit_package_desc(platform_target: str, config: str) -> omni
     package.append_git_hash = False
     return package
 
+
 def create_omni_domain_randomization_package_desc(platform_target: str, config: str) -> omni.repo.package.PackageDesc:
     package = create_package_desc(platform_target, config)
     package.name = "omni_domain_randomization"
@@ -106,8 +107,6 @@ def create_omni_domain_randomization_package_desc(platform_target: str, config: 
     package.ziponly = False
     package.append_git_hash = False
     package.build_type = config
-#follow_symlinks
-#build_type
 
     package.version = os.getenv("BUILD_NUMBER")
     if not package.version:
