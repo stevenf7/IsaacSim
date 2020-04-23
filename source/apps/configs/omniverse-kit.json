@@ -10,7 +10,7 @@
     },
     "pluginsLoaded": [
         "carb.livestream.plugin",
-	    "carb.livestream-rtc.plugin"
+	"carb.livestream-rtc.plugin"
     ],
     "pluginsExcluded": [
         "carb.livestream-rtc.plugin"
@@ -67,23 +67,25 @@
                 "omni.kit.builtin.profiler",
                 "omni.kit.builtin.details_window",
                 "omni.kit.builtin.tags_window",
+                "omni.kit.builtin.audio_settings_window",
                 "omni.kit.builtin.render_settings_window",
                 "omni.kit.builtin.test_runner",
                 "omni.kit.builtin.material_library",
                 "omni.kit.window.content",
                 "omni.kit.window.stage",
                 "omni.kit.window.layers",
-                "omni.kit.window.tagging",
                 "omni.kit.window.viewport",
                 "omni.kit.window.script_editor",
                 "omni.kit.window.auth",
                 "omni.kit.window.console",
+                "omni.kit.window.details",
                 "omni.utils.utilities_menu",
                 "omni.utils.movie_capture",
                 "omni.utils.usd_paths",
                 "omni.utils.collect_tool",
                 "omni.assetimport",
                 "omni.computegraph",
+                "omni.kit.context_menu",
                 "omni.physx",
                 "omni.physx.ui"
             ]

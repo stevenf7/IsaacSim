@@ -109,6 +109,7 @@ public:
                 component.second->onStart();
             }
             mDoOnce = true;
+            releaseDebugLineList();
         }
         else
         {
@@ -151,6 +152,7 @@ public:
     {
         // PxScene can change after stop is pressed so reset DoOnce bool to force OnStart to run
         mDoOnce = false;
+        releaseDebugLineList();
     }
     /**
      * @brief Create a supported component in this manager
@@ -224,6 +226,7 @@ private:
 
     void onUIDraw(carb::events::IEvent* e, carb::imgui::ImGui* imGui)
     {
+        mTasking->yieldUntilCounter(mTaskCounter);
         mDebugLineVector.clear();
 
         for (auto& component : mComponents)
