@@ -61,7 +61,8 @@ void LidarSensor::onStart()
     onComponentChange();
 
     pxr::UsdPrimRange range = mStage->Traverse();
-
+    
+    mPxScene = nullptr;
     for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
     {
         pxr::UsdPrim prim = *iter;
@@ -135,7 +136,7 @@ void LidarSensor::onComponentChange()
     }
 
 
-    // printf("%f %f %f %f %f %f %f %d %d\n",
+    // CARB_LOG_INFO("%f %f %f %f %f %f %f %d %d\n",
     //        mHorizontalFov,
     //        mVerticalFov,
     //        mRotationRate,
@@ -193,19 +194,21 @@ void LidarSensor::onComponentChange()
 }
 
 
-bool raycastClosest(
-    const physx::PxVec3& pos, const physx::PxVec3& dir, float distance, physx::PxRaycastHit& hit, physx::PxScene* gScene)
+bool raycastClosest(const physx::PxVec3& pos,
+                    const physx::PxVec3& dir,
+                    float distance,
+                    physx::PxRaycastHit& hit,
+                    physx::PxScene* physxScene)
 {
 
-    if (!gScene)
+    if (!physxScene)
     {
-        printf("INVALID SCENE");
         return false;
     }
     // physx::PxRaycastHit hit;
     physx::PxHitFlags hitFlags = PxHitFlag::eDEFAULT | PxHitFlag::eMESH_BOTH_SIDES;
 
-    const bool ret = physx::PxSceneQueryExt::raycastSingle(*gScene, pos, dir, distance, hitFlags, hit);
+    const bool ret = physx::PxSceneQueryExt::raycastSingle(*physxScene, pos, dir, distance, hitFlags, hit);
     // if (ret)
     // {
     //     outHit.distance = hit.distance;
@@ -277,8 +280,8 @@ void scan(int start,
 
                     line.startPosition = (const carb::Float3&)origin;
                     line.endPosition = hitPos;
-                    line.startColor = { 0.4f, 1.0f, 1.0f, 0.5f };
-                    line.endColor = { 0.4f, 1.0f, 1.0f, 0.2f };
+                    line.startColor = { 199.0f/255.0f, 244.0f/255.0f, 100.0f/255.0f, 1.0f };
+                    line.endColor = { 199.0f/255.0f, 244.0f/255.0f, 100.0f/255.0f, 1.0f };
 
                     debugLines.push_back(line);
                 }
@@ -294,8 +297,8 @@ void scan(int start,
 
                     line.startPosition = (const carb::Float3&)origin;
                     line.endPosition = (const carb::Float3&)hitPos;
-                    line.startColor = { 0.0f, 0.4f, 0.4f, 1.0f };
-                    line.endColor = { 0.0f, 0.4f, 0.4f, 1.0f };
+                    line.startColor = { 85.0f/255.0f, 98.0f/255.0f, 112.0f/255.0f, 1.0f };
+                    line.endColor = { 85.0f/255.0f, 98.0f/255.0f, 112.0f/255.0f, 1.0f };
 
                     debugLines.push_back(line);
                 }
@@ -342,6 +345,12 @@ void LidarSensor::dumpData(int start, int stop, float dt)
 
 void LidarSensor::tick()
 {
+    if (!mPxScene)
+    {
+        CARB_LOG_ERROR("Physics Scene does not exist");
+        return;
+    }
+
     float elapsedTime = mTimeDelta;
     mDebugLines.clear();
     bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
