@@ -168,3 +168,14 @@ Ex: Adding a new resolution of 1024x768:
 },
 ```
 Run ``./build.sh`` to update the application config so that it gets executed the next time you run ./omniverse-kit.sh
+
+### Running headless and connecting via a remote client
+
+On the client machine, download the Client Application from the following page for your platform:
+https://developer.nvidia.com/isaac-sim/download
+
+Run the client:
+``./omniverse-kit-remote.app -s server_ip``
+
+On the server machine Launch kit via:
+``./_build/linux-x86_64/release/omniverse-kit.sh --no-window --carb/app/livestream/enabled=true``

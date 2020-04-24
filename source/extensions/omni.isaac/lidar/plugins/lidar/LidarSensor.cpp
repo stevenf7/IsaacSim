@@ -260,7 +260,7 @@ void scan(int start,
         {
             // Pitch then yaw
             rot *= physx::PxQuat(zenith[row], zenithDir);
-            physx::PxVec3 unitDir = rot.rotate(physx::PxVec3(1.0f, 0.0f, 0.0f)); // this is normalized already
+            physx::PxVec3 unitDir = rot.rotate(physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized();
             physx::PxRaycastHit raycastHit;
 
             bool hit = raycastClosest(origin, unitDir, maxDepth, raycastHit, physxScenePtr);

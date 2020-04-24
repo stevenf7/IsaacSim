@@ -104,16 +104,16 @@ private:
     void dumpData(int start, int stop, float elapsedTime);
 
     // From the prim
-    float mHorizontalFov;
-    float mVerticalFov;
-    float mRotationRate;
-    float mHorizontalResolution;
-    float mVerticalResolution;
-    float mMinRange;
-    float mMaxRange;
-    bool mHighLod;
-    bool mDrawLidarPoints;
-    float mYawOffset;
+    float mHorizontalFov = 360.0f;
+    float mVerticalFov = 30.0f;
+    float mRotationRate = 20.0f;
+    float mHorizontalResolution = 0.4f;
+    float mVerticalResolution = 4.0f;
+    float mMinRange = 0.4f;
+    float mMaxRange = 100.0f;
+    bool mHighLod = true;
+    bool mDrawLidarPoints = false;
+    float mYawOffset = 0.0f;
 
     // Ranges converted to proper units
     float mMinDepth;

@@ -2,7 +2,6 @@
 
 #include <capnp/compat/json.h>
 #include <messages/actor_group.capnp.h>
-#include <messages/actuator_group.capnp.h>
 #include <messages/alice.capnp.h>
 #include <messages/camera.capnp.h>
 #include <messages/collision.capnp.h>

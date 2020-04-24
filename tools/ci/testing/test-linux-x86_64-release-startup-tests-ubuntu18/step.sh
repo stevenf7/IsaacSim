@@ -5,7 +5,7 @@ set -e
 SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 
 # Startup Test
-"$SCRIPT_DIR/../../../test_runner.sh" --suite startuptest --config release -e="--carb/rtx/shaderDb/obfuscateCode=true" -e="--carb/rtx/materialDb/compileMdlAsLibrary=true" $*
+#"$SCRIPT_DIR/../../../test_runner.sh" --suite startuptest --config release -e="--carb/rtx/shaderDb/obfuscateCode=true" -e="--carb/rtx/materialDb/compileMdlAsLibrary=true" $*
 
 # Package shader cache
 #if [ ! -z "$TEAMCITY_VERSION" ]

@@ -86,3 +86,6 @@ symbols.txt
 
 # crash dumps
 *.dmp
+
+# tests
+slang-dump-*
