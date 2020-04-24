@@ -60,6 +60,7 @@ files = [
     ["_build/$platform/$config/exts/omni.isaac.dr/omni/isaac/DrSchema", "omni/isaac/DrSchema"],
     ["_build/$platform/$config/exts/omni.isaac.dr/omni/isaac/dr/scripts", "omni/isaac/dr/scripts"],
     ["_build/$platform/$config/exts/omni.isaac.dr/omni/isaac/dr/*.py", "omni/isaac/dr"],
+    ["_build/$platform/$config/exts/omni.isaac.dr/omni/isaac/dr/*$bindings_ext", "omni/isaac/dr"],
     ["source/extensions/omni.isaac/dr/PACKAGE-LICENSES", "PACKAGE-LICENSES"],
 ]
 
@@ -67,7 +68,7 @@ files = [
 files = [
     ["_build/$platform/$config/exts/omni.isaac.dr/bin/$platform/$config/*$exe_ext", "bin/$platform/$config"],
     ["_build/$platform/$config/exts/omni.isaac.dr/bin/$platform/$config/*$lib_ext", "bin/$platform/$config"],
-    ["_build/$platform/$config/exts/omni.isaac.dr/omni/isaac/dr/*$exe_ext", "omni/isaac/dr"],
+    ["_build/$platform/$config/exts/omni.isaac.dr/omni/isaac/dr/*$lib_ext", "omni/isaac/dr"],
 ]
 
 [omni_domain_randomization.linux-x86_64]
