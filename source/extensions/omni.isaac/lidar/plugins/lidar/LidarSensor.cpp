@@ -61,7 +61,7 @@ void LidarSensor::onStart()
     onComponentChange();
 
     pxr::UsdPrimRange range = mStage->Traverse();
-    
+
     mPxScene = nullptr;
     for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
     {
@@ -280,8 +280,8 @@ void scan(int start,
 
                     line.startPosition = (const carb::Float3&)origin;
                     line.endPosition = hitPos;
-                    line.startColor = { 199.0f/255.0f, 244.0f/255.0f, 100.0f/255.0f, 1.0f };
-                    line.endColor = { 199.0f/255.0f, 244.0f/255.0f, 100.0f/255.0f, 1.0f };
+                    line.startColor = { 199.0f / 255.0f, 244.0f / 255.0f, 100.0f / 255.0f, 1.0f };
+                    line.endColor = { 199.0f / 255.0f, 244.0f / 255.0f, 100.0f / 255.0f, 1.0f };
 
                     debugLines.push_back(line);
                 }
@@ -297,8 +297,8 @@ void scan(int start,
 
                     line.startPosition = (const carb::Float3&)origin;
                     line.endPosition = (const carb::Float3&)hitPos;
-                    line.startColor = { 85.0f/255.0f, 98.0f/255.0f, 112.0f/255.0f, 1.0f };
-                    line.endColor = { 85.0f/255.0f, 98.0f/255.0f, 112.0f/255.0f, 1.0f };
+                    line.startColor = { 85.0f / 255.0f, 98.0f / 255.0f, 112.0f / 255.0f, 1.0f };
+                    line.endColor = { 85.0f / 255.0f, 98.0f / 255.0f, 112.0f / 255.0f, 1.0f };
 
                     debugLines.push_back(line);
                 }
