@@ -1,6 +1,10 @@
 # Omniverse Isaac Sim
 This is where isaac sim extensions for omniverse are getting developed
 
+### TeamCity Pipelines
+Master: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation&tab=buildTypeHistoryList&Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation=%3Cdefault%3E&branch_Carbon_Isaac_OmniIsaacSim_Master=%3Cdefault%3E)
+
+Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Carbon_Isaac_OmniIsaacSim_Develop_BuildAndPackagingValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Carbon_Isaac_OmniIsaacSim_Develop_BuildAndPackagingValidation&tab=buildTypeHistoryList&Carbon_Isaac_OmniIsaacSim_Develop_BuildAndPackagingValidation=%3Cdefault%3E&branch_Carbon_Isaac_OmniIsaacSim_Develop=%3Cdefault%3E)
 
 ## Prerequisites
 #### Hardware
@@ -179,3 +183,15 @@ Run the client:
 
 On the server machine Launch kit via:
 ``./_build/linux-x86_64/release/omniverse-kit.sh --no-window --carb/app/livestream/enabled=true``
+
+### Running TeamCity builds and tests locally
+ 
+Linux Builds ``./tools/ci/build-and-packaging/linux-x86_64/step.sh``
+
+Linux Tests  ``./tools/ci/testing/test-linux-x86_64-release/step.sh``
+
+Linux Startup Tests  ``tools/ci/testing/test-linux-x86_64-release-startup-tests-ubuntu18/step.sh``
+
+Windows Builds ``tools\ci\build-and-packaging\windows-x86_64\step.bat``
+
+Windows Tests ``tools\ci\testing\test-windows-x86_64\step.bat``
