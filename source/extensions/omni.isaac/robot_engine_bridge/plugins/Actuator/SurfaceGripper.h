@@ -54,6 +54,7 @@ private:
     std::string mOutputComponent = "output";
     std::string mGripperControlChannelName = "gripper_command";
     std::string mGripperStateChannelName = "gripper_state";
+    std::string mGripperEntityName = "gripper";
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     std::unique_ptr<omni::isaac::utils::MagicJoint> mGripperJoint;
     omni::isaac::utils::MagicJointProperties mProps;
