@@ -1,8 +1,8 @@
 <project toolsVersion="5.6">
   <dependency name="kit_sdk_debug" linkPath="../_build/target-deps/kit_sdk_debug">
-    <package name="omniverse-kit" version="2020.1.4005-29c1711b-${platform}-debug"/>
+    <package name="omniverse-kit" version="2020.1.4247-8c11fe11-mr4121-${platform}-debug"/>
   </dependency>
   <dependency name="kit_sdk_release" linkPath="../_build/target-deps/kit_sdk_release">
-    <package name="omniverse-kit" version="2020.1.4005-29c1711b-${platform}-release"/>
+    <package name="omniverse-kit" version="2020.1.4247-8c11fe11-mr4121-${platform}-release"/>
   </dependency>
 </project>
