@@ -18,7 +18,7 @@ group ("extensions/"..ext_id)
     repo_build.prebuild_link {
         { ext_source.."/config", ext_folder.."/config" },
         { ext_source.."/python/scripts", ext_folder.."/omni/isaac/motion_planning/scripts" },
-        { "%{root}/_build/target-deps/lula/data/", "_build/$platform/$config/resources/lula/" },
+        { "%{root}/_build/target-deps/lula/data/", "%{root}/_build/$platform/$config/resources/lula/" },
     }
 
     repo_build.prebuild_copy {
