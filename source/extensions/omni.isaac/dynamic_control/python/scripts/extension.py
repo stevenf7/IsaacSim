@@ -25,7 +25,8 @@ class Extension(omni.ext.IExt):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
         menu_path = f"Window/{EXTENSION_NAME}"
-        self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, menu_path=menu_path)
+        self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, menu_path=menu_path, add_to_menu=True)
+        self._window.hide()
         self._build_window_ui()
         self._window.set_update_fn(self._on_window_update)
 
