@@ -87,7 +87,8 @@
                 "omni.computegraph",
                 "omni.kit.context_menu",
                 "omni.physx",
-                "omni.physx.ui"
+                "omni.physx.ui",
+                "omni.isaac.urdf"
             ]
         },
         "omniverse": {
