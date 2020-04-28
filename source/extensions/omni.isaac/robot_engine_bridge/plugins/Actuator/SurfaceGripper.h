@@ -2,6 +2,7 @@
 
 #include "../Core/IsaacComponent.h"
 
+#include <RobotEngineBridgeSchema/robotEngineSurfaceGripper.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/MagicJoint.h>
 

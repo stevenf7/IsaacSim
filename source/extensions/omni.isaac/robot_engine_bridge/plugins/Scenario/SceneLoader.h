@@ -4,6 +4,7 @@
 
 #include <carb/dictionary/DictionaryUtils.h>
 
+#include <RobotEngineBridgeSchema/robotEngineSceneLoader.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 
 #include <memory>
@@ -40,18 +41,6 @@ public:
      * @param appHandle
      */
     virtual void setAppHandle(isaac_handle_t appHandle);
-    /**
-     * @brief
-     *
-     * @param isaacCApiPtr
-     * @param appHandle
-     * @param prim
-     * @param stage
-     */
-    virtual void initialize(IsaacCApi* isaacCApiPtr,
-                            const isaac_handle_t& appHandle,
-                            const pxr::UsdPrim& prim,
-                            pxr::UsdStageRefPtr stage);
 
     /**
      * @brief Update timestamps for component

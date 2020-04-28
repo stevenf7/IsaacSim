@@ -21,7 +21,6 @@ namespace robot_engine_bridge
 Teleport::Teleport(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
-    onComponentChange();
 }
 
 void Teleport::tick()
@@ -75,23 +74,39 @@ void Teleport::onComponentChange()
 {
     IsaacComponent::onComponentChange();
 
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("teleportInputComponent")))
+    const pxr::RobotEngineBridgeSchemaRobotEngineTeleport& typedPrim =
+        (pxr::RobotEngineBridgeSchemaRobotEngineTeleport)mPrim;
+
+    isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mTeleportChannelName);
+
+    pxr::SdfPathVector targets;
+    typedPrim.GetTeleportPrimsRel().GetTargets(&targets);
+    if (targets.size() == 0)
     {
-        attr.Get(&mInputComponent);
+        return;
     }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("teleportChannelName")))
+    for (pxr::SdfPath eachRigidBodyPath : targets)
     {
-        attr.Get(&mTeleportChannelName);
+        pxr::UsdPrim rigidBodyPrim = mStage->GetPrimAtPath(eachRigidBodyPath);
+        const std::string actorName = eachRigidBodyPath.GetString();
+        if (rigidBodyPrim)
+        {
+            if (mObjects.find(actorName) != mObjects.end())
+                eraseObject(actorName);
+            addObject(actorName, rigidBodyPrim);
+        }
     }
+
     mUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(mStage);
 }
 
-void Teleport::addObject(std::string& actorName, pxr::UsdPrim& prim)
+void Teleport::addObject(const std::string& actorName, pxr::UsdPrim& prim)
 {
     mObjects[actorName] = prim;
 }
 
-void Teleport::eraseObject(std::string& actorName)
+void Teleport::eraseObject(const std::string& actorName)
 {
     mObjects.erase(actorName);
 }

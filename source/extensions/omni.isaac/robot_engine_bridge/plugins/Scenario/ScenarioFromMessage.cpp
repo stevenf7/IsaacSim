@@ -18,6 +18,9 @@
 #include "../Actuator/Teleport.h"
 #include "../Utils/IsaacUtilities.h"
 
+#include <RobotEngineBridgeSchema/robotEngineTeleport.h>
+#include <RobotEngineBridgeSchema/robotEngineRigidBodySink.h>
+
 #include "ScenarioFromMessage.h"
 
 namespace omni
@@ -35,7 +38,7 @@ ScenarioFromMessage::ScenarioFromMessage(omni::isaac::dynamic_control::DynamicCo
 
 void ScenarioFromMessage::initialize(IsaacCApi* isaacCApiPtr,
                                      const isaac_handle_t& appHandle,
-                                     const pxr::UsdPrim& prim,
+                                     const pxr::RobotEngineBridgeSchemaRobotEngineBridgeComponent& prim,
                                      pxr::UsdStageRefPtr stage)
 {
     IsaacComponent::initialize(isaacCApiPtr, appHandle, prim, stage);
@@ -69,13 +72,36 @@ void ScenarioFromMessage::onComponentChange()
 {
 
     IsaacComponent::onComponentChange();
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("inputComponent")))
+    const pxr::RobotEngineBridgeSchemaRobotEngineScenarioFromMessage& typedPrim =
+        (pxr::RobotEngineBridgeSchemaRobotEngineScenarioFromMessage)mPrim;
+
+    isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mRequestChannelName);
+
+    std::string teleportInputComponent;
+    std::string teleportInputChannel;
+
+    std::string rigidBodySinkOutputComponent;
+    std::string rigidBodySinkOutputChannel;
+
+    isaac::utils::safeGetAttribute(typedPrim.GetTeleportInputComponentAttr(), teleportInputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetTeleportInputChannelAttr(), teleportInputChannel);
+
+    isaac::utils::safeGetAttribute(typedPrim.GetRigidBodySinkOutputComponentAttr(), rigidBodySinkOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetRigidBodySinkOutputChannelAttr(), rigidBodySinkOutputChannel);
     {
-        attr.Get(&mInputComponent);
+        const pxr::RobotEngineBridgeSchemaRobotEngineTeleport& typedPrim =
+            (pxr::RobotEngineBridgeSchemaRobotEngineTeleport)(mTeleport->getPrim());
+
+        typedPrim.CreateInputComponentAttr().Set(teleportInputComponent);
+        typedPrim.CreateInputChannelAttr().Set(teleportInputChannel);
     }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("requestChannelName")))
+
     {
-        attr.Get(&mRequestChannelName);
+        const pxr::RobotEngineBridgeSchemaRobotEngineRigidBodySink& typedPrim =
+            (pxr::RobotEngineBridgeSchemaRobotEngineRigidBodySink)(mRigidBodiesSink->getPrim());
+        typedPrim.CreateOutputComponentAttr().Set(rigidBodySinkOutputComponent);
+        typedPrim.CreateOutputChannelAttr().Set(rigidBodySinkOutputChannel);
     }
 
     mTeleport->onComponentChange();

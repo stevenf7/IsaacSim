@@ -37,8 +37,6 @@ LidarComponent::LidarComponent() : IsaacComponent()
         CARB_LOG_ERROR("Failed to acquire omni::isaac::lidar interface");
         return;
     }
-
-    onComponentChange();
 }
 
 LidarComponent::~LidarComponent()
@@ -54,14 +52,14 @@ void LidarComponent::tick()
 {
     CARB_PROFILE_ZONE(0, "REB LidarComponent Tick");
 
-    pxr::UsdPrim prim = mStage->GetPrimAtPath(pxr::SdfPath(mLidarPath.c_str()));
+    pxr::UsdPrim prim = mStage->GetPrimAtPath(mLidarPath);
     if (!prim.IsA<pxr::LidarSchemaLidar>())
     {
         CARB_LOG_ERROR("Prim is not a Lidar Prim");
         return;
     }
     pxr::LidarSchemaLidar lidarPrim = pxr::LidarSchemaLidar(prim);
-    if (!mLidarInterface->isLidar(mLidarPath.c_str()))
+    if (!mLidarInterface->isLidar(mLidarPath.GetString().c_str()))
     {
         CARB_LOG_ERROR("Prim is not registered with Lidar extension");
         return;
@@ -72,8 +70,8 @@ void LidarComponent::tick()
 
     auto scanMessageProto = scanMessage.initProto();
 
-    int numColsTicked = mLidarInterface->getNumColsTicked(mLidarPath.c_str());
-    int numRows = mLidarInterface->getNumRows(mLidarPath.c_str());
+    int numColsTicked = mLidarInterface->getNumColsTicked(mLidarPath.GetString().c_str());
+    int numRows = mLidarInterface->getNumRows(mLidarPath.GetString().c_str());
     int numBeams = numColsTicked * numRows;
 
     // Initialize the ranges tensor
@@ -92,9 +90,9 @@ void LidarComponent::tick()
     intensities.setScanlineStride(0);
     intensities.setDataBufferIndex(1);
 
-    float* theta = mLidarInterface->getAzimuthData(mLidarPath.c_str());
-    float* phi = mLidarInterface->getZenithData(mLidarPath.c_str());
-    uint16_t* ranges = mLidarInterface->getDepthData(mLidarPath.c_str());
+    float* theta = mLidarInterface->getAzimuthData(mLidarPath.GetString().c_str());
+    float* phi = mLidarInterface->getZenithData(mLidarPath.GetString().c_str());
+    uint16_t* ranges = mLidarInterface->getDepthData(mLidarPath.GetString().c_str());
 
     float maxRange = 100;
     if (lidarPrim.GetMaxRangeAttr().HasValue())
@@ -121,18 +119,18 @@ void LidarComponent::onComponentChange()
     // CARB_LOG_ERROR("LidarComponent Update");
     IsaacComponent::onComponentChange();
 
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("outputComponent")))
+    const pxr::RobotEngineBridgeSchemaRobotEngineLidar& typedPrim = (pxr::RobotEngineBridgeSchemaRobotEngineLidar)mPrim;
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputComponentAttr(), mOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputChannelAttr(), mScanChannelName);
+
+    pxr::SdfPathVector targets;
+    typedPrim.GetLidarPrimRel().GetTargets(&targets);
+
+    if (targets.size() == 0)
     {
-        attr.Get(&mOutputComponent);
+        return;
     }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("scanChannelName")))
-    {
-        attr.Get(&mScanChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("lidarPath")))
-    {
-        attr.Get(&mLidarPath);
-    }
+    mLidarPath = targets[0];
 }
 }
 }

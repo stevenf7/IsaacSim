@@ -135,45 +135,37 @@ void JointControl::onComponentChange()
 {
     IsaacComponent::onComponentChange();
 
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("inputComponent")))
-    {
-        attr.Get(&mInputComponent);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("outputComponent")))
-    {
-        attr.Get(&mOutputComponent);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("jointControlChannelName")))
-    {
-        attr.Get(&mJointControlChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("jointStateChannelName")))
-    {
-        attr.Get(&mJointStateChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("articulationPath")))
-    {
-        attr.Get(&mArticulationPath);
-    }
+    const pxr::RobotEngineBridgeSchemaRobotEngineJointControl& typedPrim =
+        (pxr::RobotEngineBridgeSchemaRobotEngineJointControl)mPrim;
 
-    if (mArticulationPath.size() <= 1)
+    isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mJointControlChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputComponentAttr(), mOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputChannelAttr(), mJointStateChannelName);
+
+
+    pxr::SdfPathVector targets;
+    typedPrim.GetArticulationPrimRel().GetTargets(&targets);
+
+    if (targets.size() == 0)
     {
         return;
     }
+    pxr::SdfPath articulationPath = targets[0];
 
-    if (mDynamicControlPtr->peekObjectType(mArticulationPath.c_str()) ==
+    if (mDynamicControlPtr->peekObjectType(articulationPath.GetString().c_str()) ==
         omni::isaac::dynamic_control::eDcObjectArticulation)
     {
-        mArticulationHandle = mDynamicControlPtr->getArticulation(mArticulationPath.c_str());
+        mArticulationHandle = mDynamicControlPtr->getArticulation(articulationPath.GetString().c_str());
     }
     else
     {
-        CARB_LOG_ERROR("Articulation %s is not valid art", mArticulationPath.c_str());
+        CARB_LOG_ERROR("Articulation %s is not valid art", articulationPath.GetString().c_str());
         return;
     }
     if (!mArticulationHandle)
     {
-        CARB_LOG_ERROR("Articulation %s not found", mArticulationPath.c_str());
+        CARB_LOG_ERROR("Articulation %s not found", articulationPath.GetString().c_str());
         return;
     }
 }
