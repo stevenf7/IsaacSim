@@ -79,6 +79,8 @@ void SurfaceGripper::tick()
 
         // set quantities
         auto quantities = statusProto.initQuantities(1);
+        quantities[0].setEntity(mGripperEntityName);
+        quantities[0].setMeasure(isaac_message::Composite::Measure::NONE);
         std::vector<double> elements(1);
         elements[0] = mGripperJoint->isClosed();
 
@@ -116,6 +118,10 @@ void SurfaceGripper::onComponentChange()
     if (auto attr = mPrim.GetAttribute(pxr::TfToken("gripperStateChannelName")))
     {
         attr.Get(&mGripperStateChannelName);
+    }
+    if (auto attr = mPrim.GetAttribute(pxr::TfToken("gripperEntityName")))
+    {
+        attr.Get(&mGripperEntityName);
     }
     if (auto attr = mPrim.GetAttribute(pxr::TfToken("d6JointPath")))
     {

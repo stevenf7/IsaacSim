@@ -694,6 +694,15 @@ class AttachBody(Scenario):
 
     def __init__(self, editor, dc, mp):
         super().__init__(editor, dc, mp)
+
+        self.asset_path = "omni:/Projects/gtc_sj_2020"
+        # use local content if not connected to omni server
+        if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
+            print("Use local content")
+            self.asset_path = "art_assets/gtc_sj_2020"
+        else:
+            print("Use server content")
+
         self._paused = True
         self._start = False
         self._reset = False

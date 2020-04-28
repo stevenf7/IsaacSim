@@ -106,6 +106,7 @@ class RobotEngineBridgeMenu:
 
         prim.CreateAttribute("gripperControlChannelName", Sdf.ValueTypeNames.String).Set(str("io_command"))
         prim.CreateAttribute("gripperStateChannelName", Sdf.ValueTypeNames.String).Set(str("io_state"))
+        prim.CreateAttribute("gripperEntityName", Sdf.ValueTypeNames.String).Set(str("gripper"))
         prim.CreateAttribute("d6JointPath", Sdf.ValueTypeNames.String).Set(str("/"))
         prim.CreateAttribute("parentPath", Sdf.ValueTypeNames.String).Set(str("/"))
         prim.CreateAttribute("gripThreshold", Sdf.ValueTypeNames.Float).Set(float(1))

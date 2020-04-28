@@ -100,6 +100,8 @@ void onDetach(void* userData)
 
 CARB_EXPORT void carbOnPluginStartup()
 {
+    CARB_LOG_INFO("Startup URDF Extension");
+
     // Get app interface using Carbonite Framework
     g_framework = carb::getFramework();
     g_stageUpdate = g_framework->acquireInterface<omni::kit::IStageUpdate>();
@@ -110,8 +112,6 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onAttach = onAttach;
     desc.onDetach = onDetach;
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
-
-    CARB_LOG_ERROR("URDF EXTENSION");
 }
 
 

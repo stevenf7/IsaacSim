@@ -281,7 +281,7 @@ void onAttach(long stageId, double metersPerUnit, void* data)
         gLidarSensorManager->initComponents();
     }
 
-    // printf("++ LidarInterface: Stage Attach: stageId %ld\n", stageId);
+    // CARB_LOG_INFO("++ LidarInterface: Stage Attach: stageId %ld\n", stageId);
 }
 
 void onDetach(void* data)
@@ -290,7 +290,7 @@ void onDetach(void* data)
     {
         gLidarSensorManager->deleteAllComponents();
     }
-    // printf("++ LidarInterface: Stage Detach\n");
+    // CARB_LOG_INFO("++ LidarInterface: Stage Detach\n");
 }
 
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
@@ -300,7 +300,7 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
     {
         return;
     }
-    // printf("++ LidarInterface: Stage Update %f\n", elapsedSecs);
+    // CARB_LOG_INFO("++ LidarInterface: Stage Update %f\n", elapsedSecs);
 
     if (gLidarSensorManager)
     {
@@ -317,7 +317,7 @@ void onStop(void* userData)
 
 void onPrimAdd(const char* primPath, void* userData)
 {
-    // printf("++ Lidar: Prim Add: %s of type %s\n", primPath,
+    // CARB_LOG_INFO("++ Lidar: Prim Add: %s of type %s\n", primPath,
     //    g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
     if (gLidarSensorManager)
     {
@@ -326,7 +326,7 @@ void onPrimAdd(const char* primPath, void* userData)
 }
 void onComponentChange(const char* primPath, const omni::kit::PrimDirtyBits*, void* userData)
 {
-    // printf("++ Lidar: Prim Change: %s of type %s\n", primPath,
+    // CARB_LOG_INFO("++ Lidar: Prim Change: %s of type %s\n", primPath,
     //    g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
     if (gLidarSensorManager)
     {
@@ -336,7 +336,7 @@ void onComponentChange(const char* primPath, const omni::kit::PrimDirtyBits*, vo
 
 void onPrimRemove(const char* primPath, void* userData)
 {
-    // printf("++ Lidar: Prim Remove: %s\n", primPath);
+    // CARB_LOG_INFO("++ Lidar: Prim Remove: %s\n", primPath);
     if (gLidarSensorManager)
     {
         gLidarSensorManager->onComponentRemove(pxr::SdfPath(primPath));

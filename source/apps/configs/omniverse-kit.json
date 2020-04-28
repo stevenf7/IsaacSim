@@ -34,7 +34,7 @@
         "window": {
             "width": 1440,
             "height": 900,
-            "title": "Omniverse Kit",
+            "title": "Omniverse Kit: Isaac Sim",
             "fullscreen": false,
             "minimalPanelsOnStartup": false,
             "toolBarHorizontal": false,
@@ -87,7 +87,8 @@
                 "omni.computegraph",
                 "omni.kit.context_menu",
                 "omni.physx",
-                "omni.physx.ui"
+                "omni.physx.ui",
+                "omni.isaac.urdf"
             ]
         },
         "omniverse": {
