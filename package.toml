@@ -42,7 +42,6 @@ files = []
 files = [
     ["_build/$platform/$config/apps"],
     ["_build/$platform/$config/exts"],
-    ["_build/$platform/$config/pythonapps"],
     ["PACKAGE-LICENSES", "PACKAGE-LICENSES"],
     ["_build/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
     ["source/extensions/omni.isaac/dr/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
