@@ -3,18 +3,38 @@
 set -e
 
 SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
+ROOT_DIR="$SCRIPT_DIR/../../../.."
 
 # Verify formatting
 echo "##teamcity[progressMessage 'Verify formatting...']"
-"$SCRIPT_DIR/../../../../format_code.sh" --verify
+"$ROOT_DIR/format_code.sh" --verify
 
 # Full rebuild
 echo "##teamcity[progressMessage 'Full rebuild...']"
-"$SCRIPT_DIR/../../../../build.sh" -x
+"$ROOT_DIR/build.sh" -x
 
 # Docs
 echo "##teamcity[progressMessage 'Docs...']"
-"$SCRIPT_DIR/../../../build_docs.sh" -c release
+"$ROOT_DIR/tools/build_docs.sh" -c release
+
+# Gathering licenses
+echo "##teamcity[progressMessage 'Gathering licenses...']"
+"$ROOT_DIR/tools/licensing.sh" gather \
+    -p $ROOT_DIR/deps/isaac-sim.packman.xml \
+    $ROOT_DIR/deps/kit-sdk.packman.xml \
+    $ROOT_DIR/deps/rtx-plugins.packman.xml \
+    $ROOT_DIR/deps/omni-physics.packman.xml \
+    -d $ROOT_DIR/_build
+
+# Validating licenses
+#echo "##teamcity[progressMessage 'Validating licenses...']"
+#"$ROOT_DIR/tools/licensing.sh" validate \
+#    -p $ROOT_DIR/deps/isaac-sim.packman.xml \
+#    $ROOT_DIR/deps/kit-sdk.packman.xml \
+#    $ROOT_DIR/deps/rtx-plugins.packman.xml \
+#    $ROOT_DIR/deps/omni-physics.packman.xml \
+#    -d $ROOT_DIR/_build \
+#    -b linux-x86_64/release
 
 # Run python tests
 #echo "##teamcity[progressMessage 'Python tests...']"
@@ -22,13 +42,12 @@ echo "##teamcity[progressMessage 'Docs...']"
 
 # Package
 echo "##teamcity[progressMessage 'Packaging...']"
-"$SCRIPT_DIR/../../../package.sh" -m test_runner
-"$SCRIPT_DIR/../../../package.sh" -m docs
-"$SCRIPT_DIR/../../../package.sh" -m omniverse-kit -c release
-"$SCRIPT_DIR/../../../package.sh" -m omni_isaac_sim -c debug
-"$SCRIPT_DIR/../../../package.sh" -m omni_isaac_sim -c release
-"$SCRIPT_DIR/../../../package.sh" -m omni_domain_randomization -c debug
-"$SCRIPT_DIR/../../../package.sh" -m omni_domain_randomization -c release
+"$ROOT_DIR/tools/package.sh" -m test_runner
+"$ROOT_DIR/tools/package.sh" -m docs
+"$ROOT_DIR/tools/package.sh" -m omni_isaac_sim -c debug
+"$ROOT_DIR/tools/package.sh" -m omni_isaac_sim -c release
+"$ROOT_DIR/tools/package.sh" -m omni_domain_randomization -c debug
+"$ROOT_DIR/tools/package.sh" -m omni_domain_randomization -c release
 
 # publish artifacts to teamcity
 echo "##teamcity[publishArtifacts '_build/packages']"
