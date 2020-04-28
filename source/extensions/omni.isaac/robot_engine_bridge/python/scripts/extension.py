@@ -29,7 +29,9 @@ class Extension(omni.ext.IExt):
         # The default app json is copied to the resources folder as part of the build process
         # exec_folder resolves automatically to the folder containing the kit binary
         json_path = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve("${app}/../resources/isaac_engine/json/isaacsim.app.json")
+            carb.tokens.get_tokens_interface().resolve(
+                "${app}/../exts/omni.isaac.robot_engine_bridge/resources/isaac_engine/json/isaacsim.app.json"
+            )
         )
 
         if json_path_input is not None:

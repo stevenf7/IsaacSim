@@ -197,7 +197,11 @@ class UR10:
 
         self.base = self.dc.get_articulation_root_body(self.ar)
 
-        exec_folder = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../resources/lula/lula_ur10"))
+        exec_folder = os.path.abspath(
+            carb.tokens.get_tokens_interface().resolve(
+                "${app}/../exts/omni.isaac.motion_planning/resources/lula/lula_ur10"
+            )
+        )
 
         self.rmp_handle = self.mp.registerRmp(
             exec_folder + urdf,
