@@ -4,6 +4,7 @@
 #include "../Core/IsaacComponent.h"
 #include "../Monitor/RigidBodiesSink.h"
 
+#include <RobotEngineBridgeSchema/robotEngineScenarioFromMessage.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 
 #include <memory>
@@ -42,7 +43,7 @@ public:
      */
     virtual void initialize(IsaacCApi* isaacCApiPtr,
                             const isaac_handle_t& appHandle,
-                            const pxr::UsdPrim& prim,
+                            const pxr::RobotEngineBridgeSchemaRobotEngineBridgeComponent& prim,
                             pxr::UsdStageRefPtr stage);
 
     /**

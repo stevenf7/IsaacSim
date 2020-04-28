@@ -1,5 +1,7 @@
 #include "CameraComponent.h"
 
+#include "plugins/core/UsdUtilities.h"
+
 #include <carb/cuda/CudaRuntime.h>
 
 #include <cuda.h>
@@ -149,7 +151,7 @@ void CameraComponent::tick()
 
         CUDA_CHECK(cudaFree(rgbDevice));
 
-        publish(mOutputComponent, mChannelName, cameraMessageProto, isaac_message::ColorCameraProtoId, buffers);
+        publish(mRgbOutputComponent, mRgbChannelName, cameraMessageProto, isaac_message::ColorCameraProtoId, buffers);
     }
 
 
@@ -248,47 +250,24 @@ void CameraComponent::onComponentChange()
 {
     // CARB_LOG_ERROR("CameraComponent Update");
     IsaacComponent::onComponentChange();
+
+    const pxr::RobotEngineBridgeSchemaRobotEngineCamera& typedPrim = (pxr::RobotEngineBridgeSchemaRobotEngineCamera)mPrim;
+
     // RGB attributes
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("outputComponent")))
-    {
-        attr.Get(&mOutputComponent);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("channelName")))
-    {
-        attr.Get(&mChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("enableRgb")))
-    {
-        attr.Get(&mEnableRgb);
-    }
+    isaac::utils::safeGetAttribute(typedPrim.GetRgbOutputComponentAttr(), mRgbOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetRgbOutputChannelAttr(), mRgbChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetRgbEnabledAttr(), mEnableRgb);
 
     // Depth attributes
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("depthOutputComponent")))
-    {
-        attr.Get(&mDepthOutputComponent);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("depthChannelName")))
-    {
-        attr.Get(&mDepthChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("enableDepth")))
-    {
-        attr.Get(&mEnableDepth);
-    }
+    isaac::utils::safeGetAttribute(typedPrim.GetDepthOutputComponentAttr(), mDepthOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetDepthOutputChannelAttr(), mDepthChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetDepthEnabledAttr(), mEnableDepth);
 
     // Segmentation attributes
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("segmentationOutputComponent")))
-    {
-        attr.Get(&mSegmentationOutputComponent);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("segmentationChannelName")))
-    {
-        attr.Get(&mSegmentationChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("enableSegmentation")))
-    {
-        attr.Get(&mEnableSegmentation);
-    }
+    isaac::utils::safeGetAttribute(typedPrim.GetSegmentationOutputComponentAttr(), mSegmentationOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetSegmentationOutputChannelAttr(), mSegmentationChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetSegmentationEnabledAttr(), mEnableSegmentation);
+
 
     if (mEnableRgb)
     {

@@ -2,6 +2,7 @@
 
 #include "../Core/IsaacComponent.h"
 
+#include <RobotEngineBridgeSchema/robotEngineScissorLift.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 
 #include <string>
@@ -54,7 +55,7 @@ private:
     std::string mCommandChannelName = "lift_command";
     std::string mStateChannelName = "lift_state";
     std::string mLiftJointName = "lift_joint";
-    std::string mArticulationPath;
+    pxr::SdfPath mArticulationPath;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
 

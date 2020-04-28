@@ -9,7 +9,13 @@ display_name = "Robot Engine Bridge"
 [[python.modules]]
 name = "omni.isaac.robot_engine_bridge"
 
+[[python.modules]]
+name = "omni.isaac.RobotEngineBridgeSchema"
+public = false
+
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false
 
+[[libraries]]
+path = "bin/${platform}/${config}/${lib_prefix}robotEngineBridgeSchema${lib_ext}"

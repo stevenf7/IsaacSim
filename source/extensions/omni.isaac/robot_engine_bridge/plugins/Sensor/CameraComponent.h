@@ -10,6 +10,7 @@
 #include <carb/syntheticdata/SyntheticData.h>
 #include <carb/sensors/Sensors.h>
 #include <carb/profiler/Profile.h>
+#include <RobotEngineBridgeSchema/robotEngineCamera.h>
 
 #include <carb/Types.h>
 #include <vector>
@@ -78,8 +79,8 @@ private:
     /// <summary>
     /// The name of the channel where captured color images will be published
     /// </summary>
-    std::string mOutputComponent = "output";
-    std::string mChannelName = "color";
+    std::string mRgbOutputComponent = "output";
+    std::string mRgbChannelName = "color";
     bool mEnableRgb = false;
 
     /// <summary>

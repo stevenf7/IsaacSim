@@ -103,55 +103,42 @@ void SurfaceGripper::onComponentChange()
 {
     IsaacComponent::onComponentChange();
 
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("inputComponent")))
+
+    const pxr::RobotEngineBridgeSchemaRobotEngineSurfaceGripper& typedPrim =
+        (pxr::RobotEngineBridgeSchemaRobotEngineSurfaceGripper)mPrim;
+
+
+    isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mGripperControlChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputComponentAttr(), mOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputChannelAttr(), mGripperStateChannelName);
+
+    isaac::utils::safeGetAttribute(typedPrim.GetGripperEntityAttr(), mGripperEntityName);
+
+    pxr::SdfPathVector targets;
+    typedPrim.GetD6JointPrimRel().GetTargets(&targets);
+
+    if (targets.size() == 0)
     {
-        attr.Get(&mInputComponent);
+        return;
     }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("outputComponent")))
+    mProps.d6JointPath = targets[0].GetString();
+
+    typedPrim.GetParentPrimRel().GetTargets(&targets);
+
+    if (targets.size() == 0)
     {
-        attr.Get(&mOutputComponent);
+        return;
     }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("gripperControlChannelName")))
-    {
-        attr.Get(&mGripperControlChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("gripperStateChannelName")))
-    {
-        attr.Get(&mGripperStateChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("gripperEntityName")))
-    {
-        attr.Get(&mGripperEntityName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("d6JointPath")))
-    {
-        attr.Get(&mProps.d6JointPath);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("parentPath")))
-    {
-        attr.Get(&mProps.parentPath);
-    }
+    mProps.parentPath = targets[0].GetString();
+
     pxr::GfVec3f offsetPosition;
     pxr::GfQuatf offsetRotation;
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("offsetPosition")))
-    {
-        attr.Get(&offsetPosition);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("offsetRotation")))
-    {
-        attr.Get(&offsetRotation);
-    }
+    isaac::utils::safeGetAttribute(typedPrim.GetOffsetPositionAttr(), offsetPosition);
+    isaac::utils::safeGetAttribute(typedPrim.GetOffsetRotationAttr(), offsetRotation);
+    isaac::utils::safeGetAttribute(typedPrim.GetGripThresholdAttr(), mProps.gripThreshold);
+    isaac::utils::safeGetAttribute(typedPrim.GetForceLimitAttr(), mProps.forceLimit);
     mProps.offset = omni::isaac::utils::conversions::asDcTransform(offsetPosition, offsetRotation);
-
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("gripThreshold")))
-    {
-        attr.Get(&mProps.gripThreshold);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("forceLimit")))
-    {
-        attr.Get(&mProps.forceLimit);
-    }
-
     mGripperJoint->initialize(mProps);
 }
 }

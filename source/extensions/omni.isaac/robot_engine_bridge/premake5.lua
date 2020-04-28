@@ -24,6 +24,8 @@ group ("extensions/"..ext_id)
     repo_build.prebuild_copy {
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/robot_engine_bridge" },
         { "%{root}/_build/target-deps/isaac_engine/lib/**", ext_bin_folder },
+        { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RobotEngineBridgeSchema/**", ext_folder.."/omni/isaac/RobotEngineBridgeSchema" },
+        { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}robotEngineBridgeSchema${lib_ext}", ext_folder.."/bin/$platform/$config"},
     }
 
     -- C++ Carbonite plugin
@@ -68,7 +70,7 @@ group ("extensions/"..ext_id)
         }
         links { 
             "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "kj", "capnp", "omni.usd", "lidarSchema"
+            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "kj", "capnp", "omni.usd", "lidarSchema", "robotEngineBridgeSchema"
         }
 
         filter  { "system:windows", "platforms:x86_64" }

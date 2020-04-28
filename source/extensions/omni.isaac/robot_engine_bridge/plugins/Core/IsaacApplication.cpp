@@ -29,10 +29,6 @@ IsaacApplication::IsaacApplication(IsaacCApi* isaacCApiPtr,
     mDynamicControlPtr = dynamicControlPtr;
     mJsonSerializer = jsonSerializer;
     mIDict = iDict;
-
-    mSceneLoaderComponent = std::make_unique<SceneLoader>(mDynamicControlPtr, mJsonSerializer, mIDict);
-    pxr::UsdPrim prim;
-    mSceneLoaderComponent->initialize(mIsaacCApiPtr, mAppHandle, prim, mStage);
 }
 
 
@@ -43,6 +39,15 @@ IsaacApplication::~IsaacApplication()
     destroy();
     mIsaacCApiPtr = nullptr;
     mSceneLoaderComponent = nullptr;
+}
+
+void IsaacApplication::initialize(pxr::UsdStageRefPtr stage)
+{
+    utils::BridgeApplicationBase<IsaacComponent>::initialize(stage);
+
+    mSceneLoaderComponent = std::make_unique<SceneLoader>(mDynamicControlPtr, mJsonSerializer, mIDict);
+    pxr::RobotEngineBridgeSchemaRobotEngineBridgeComponent prim;
+    mSceneLoaderComponent->initialize(mIsaacCApiPtr, mAppHandle, prim, mStage);
 }
 
 isaac_error_t IsaacApplication::create(std::string assetPath,
@@ -137,6 +142,8 @@ void IsaacApplication::initializeStageLoader(std::string inputComponent,
                                              std::string outputComponent,
                                              std::string replyChannelName)
 {
+    CARB_LOG_INFO("Initialize Stage Loader");
+
     mSceneLoaderComponent->initializeParams(inputComponent, requestChannelName, outputComponent, replyChannelName);
 }
 
@@ -175,42 +182,61 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
 {
     std::unique_ptr<IsaacComponent> component;
 
-    if (prim.GetTypeName() == "RobotEngine_DifferentialBaseSimulator")
+    if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineDifferentialBase>())
     {
         component = std::make_unique<DifferentialBaseSimulator>(mDynamicControlPtr);
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineDifferentialBase(prim), mStage);
     }
-    else if (prim.GetTypeName() == "RobotEngine_Lidar")
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineLidar>())
     {
         component = std::make_unique<LidarComponent>();
+        component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineLidar(prim), mStage);
     }
-    else if (prim.GetTypeName() == "RobotEngine_ScenarioFromMessage")
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineScenarioFromMessage>())
     {
         component = std::make_unique<ScenarioFromMessage>(mDynamicControlPtr);
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineScenarioFromMessage(prim), mStage);
     }
-    else if (prim.GetTypeName() == "RobotEngine_RigidBodiesSink")
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineRigidBodySink>())
     {
         component = std::make_unique<RigidBodiesSink>(mDynamicControlPtr);
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineRigidBodySink(prim), mStage);
     }
-    else if (prim.GetTypeName() == "RobotEngine_JointControl")
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineTeleport>())
+    {
+        component = std::make_unique<Teleport>(mDynamicControlPtr);
+        component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineTeleport(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineJointControl>())
     {
         component = std::make_unique<JointControl>(mDynamicControlPtr);
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineJointControl(prim), mStage);
     }
-    else if (prim.GetTypeName() == "RobotEngine_ScissorLiftSimulator")
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineScissorLift>())
     {
         component = std::make_unique<ScissorLiftSimulator>(mDynamicControlPtr);
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineScissorLift(prim), mStage);
     }
-    else if (prim.GetTypeName() == "RobotEngine_SurfaceGripper")
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineSurfaceGripper>())
     {
         component = std::make_unique<SurfaceGripper>(mDynamicControlPtr);
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineSurfaceGripper(prim), mStage);
     }
-    else if (prim.GetTypeName() == "RobotEngine_Camera")
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineCamera>())
     {
         component = std::make_unique<CameraComponent>();
+        component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineCamera(prim), mStage);
     }
     if (component)
     {
-        CARB_LOG_WARN("Create: Prim %s", prim.GetPath().GetString().c_str());
-        component->initialize(mIsaacCApiPtr, mAppHandle, prim, mStage);
+        CARB_LOG_INFO("Create: Prim %s with type: %s", prim.GetPath().GetString().c_str(),
+                      component->getPrim().GetPrim().GetTypeName().GetString().c_str());
         mComponents[prim.GetPath().GetString()] = std::move(component);
     }
 }

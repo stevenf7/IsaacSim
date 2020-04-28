@@ -2,6 +2,7 @@
 
 #include "../Core/IsaacComponent.h"
 
+#include <RobotEngineBridgeSchema/robotEngineRigidBodySink.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 
 #include <string>
@@ -52,14 +53,14 @@ public:
      * @param actorName
      * @param prim
      */
-    void addObject(std::string& actorName, pxr::UsdPrim& prim);
+    void addObject(const std::string& actorName, pxr::UsdPrim& prim);
 
     /**
      * @brief Remove a prim from this component
      *
      * @param actorName
      */
-    void eraseObject(std::string& actorName);
+    void eraseObject(const std::string& actorName);
 
 private:
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;

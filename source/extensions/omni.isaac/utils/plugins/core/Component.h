@@ -46,6 +46,16 @@ public:
      */
     virtual void onComponentChange() = 0;
 
+    /**
+     * @brief Get the USD Prim object
+     *
+     * @return PrimType&
+     */
+    PrimType& getPrim()
+    {
+        return mPrim;
+    }
+
 protected:
     // USD reference to prim that stores settings for this component
     PrimType mPrim;
@@ -55,6 +65,8 @@ protected:
     double mTimeSeconds = 0; // current time in seconds
     int64_t mTimeNanoSeconds = 0; // current time in nano seconds
     double mTimeDelta = 0; // delta time for current tick
+
+    bool mEnabled = true; // whether this component is enabled or not.
 };
 
 typedef ComponentBase<pxr::UsdPrim> Component;

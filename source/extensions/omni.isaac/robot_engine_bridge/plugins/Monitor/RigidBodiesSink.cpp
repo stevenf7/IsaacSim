@@ -26,9 +26,9 @@ namespace robot_engine_bridge
 {
 
 
-RigidBodiesSink::RigidBodiesSink(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr) : IsaacComponent()
+RigidBodiesSink::RigidBodiesSink(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
+    : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
-    mDynamicControlPtr = dynamicControlPtr;
 }
 
 void RigidBodiesSink::tick()
@@ -167,45 +167,41 @@ void RigidBodiesSink::onComponentChange()
 {
     IsaacComponent::onComponentChange();
 
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("rigidBodyOutputComponent")))
+    const pxr::RobotEngineBridgeSchemaRobotEngineRigidBodySink& typedPrim =
+        (pxr::RobotEngineBridgeSchemaRobotEngineRigidBodySink)mPrim;
+
+
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputComponentAttr(), mOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputChannelAttr(), mRigidBodyChannelName);
+
+    pxr::SdfPathVector targets;
+    typedPrim.GetRigidBodyPrimsRel().GetTargets(&targets);
+    if (targets.size() == 0)
     {
-        attr.Get(&mOutputComponent);
+        return;
     }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("rigidBodyChannelName")))
+    for (pxr::SdfPath eachRigidBodyPath : targets)
     {
-        attr.Get(&mRigidBodyChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("rigidBodyPrimPaths")))
-    {
-        attr.Get(&mRigidBodyPrimPaths);
-        if (mRigidBodyPrimPaths != "")
+        pxr::UsdPrim rigidBodyPrim = mStage->GetPrimAtPath(eachRigidBodyPath);
+        const std::string actorName = eachRigidBodyPath.GetString();
+        if (rigidBodyPrim)
         {
-            std::vector<std::string> allRigidBodyPaths;
-            boost::split(allRigidBodyPaths, mRigidBodyPrimPaths, [](char c) { return c == ','; });
-            for (std::string eachRigidBodyPath : allRigidBodyPaths)
-            {
-                std::vector<std::string> splitPath;
-                boost::split(splitPath, eachRigidBodyPath, [](char c) { return c == '/'; });
-                std::string actorName = splitPath[splitPath.size() - 1];
-                pxr::UsdPrim rigidBodyPrim = mStage->GetPrimAtPath(pxr::SdfPath(eachRigidBodyPath.c_str()));
-                if (rigidBodyPrim)
-                {
-                    if (mObjects.find(actorName) != mObjects.end())
-                        eraseObject(actorName);
-                    addObject(actorName, rigidBodyPrim);
-                }
-            }
+            if (mObjects.find(actorName) != mObjects.end())
+                eraseObject(actorName);
+            addObject(actorName, rigidBodyPrim);
         }
     }
+
+
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
 }
 
-void RigidBodiesSink::addObject(std::string& actorName, pxr::UsdPrim& prim)
+void RigidBodiesSink::addObject(const std::string& actorName, pxr::UsdPrim& prim)
 {
     mObjects[actorName] = prim;
 }
 
-void RigidBodiesSink::eraseObject(std::string& actorName)
+void RigidBodiesSink::eraseObject(const std::string& actorName)
 {
     mObjects.erase(actorName);
 }

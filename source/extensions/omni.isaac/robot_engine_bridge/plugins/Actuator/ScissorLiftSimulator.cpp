@@ -157,49 +157,38 @@ void ScissorLiftSimulator::onComponentChange()
 {
     IsaacComponent::onComponentChange();
 
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("inputComponent")))
-    {
-        attr.Get(&mInputComponent);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("outputComponent")))
-    {
-        attr.Get(&mOutputComponent);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("commandChannelName")))
-    {
-        attr.Get(&mCommandChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("stateChannelName")))
-    {
-        attr.Get(&mStateChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("liftJointName")))
-    {
-        attr.Get(&mLiftJointName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("articulationPath")))
-    {
-        attr.Get(&mArticulationPath);
-    }
+    const pxr::RobotEngineBridgeSchemaRobotEngineScissorLift& typedPrim =
+        (pxr::RobotEngineBridgeSchemaRobotEngineScissorLift)mPrim;
 
-    if (mArticulationPath.size() <= 1)
+    isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mCommandChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputComponentAttr(), mOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputChannelAttr(), mStateChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetLiftJointNameAttr(), mLiftJointName);
+
+    pxr::SdfPathVector targets;
+    typedPrim.GetArticulationPrimRel().GetTargets(&targets);
+
+    if (targets.size() == 0)
     {
         return;
     }
+    mArticulationPath = targets[0];
 
-    if (mDynamicControlPtr->peekObjectType(mArticulationPath.c_str()) ==
+
+    if (mDynamicControlPtr->peekObjectType(mArticulationPath.GetString().c_str()) ==
         omni::isaac::dynamic_control::eDcObjectArticulation)
     {
-        mArticulationHandle = mDynamicControlPtr->getArticulation(mArticulationPath.c_str());
+        mArticulationHandle = mDynamicControlPtr->getArticulation(mArticulationPath.GetString().c_str());
     }
     else
     {
-        CARB_LOG_ERROR("Articulation %s is not valid art", mArticulationPath.c_str());
+        CARB_LOG_ERROR("Articulation %s is not valid art", mArticulationPath.GetString().c_str());
         return;
     }
     if (!mArticulationHandle)
     {
-        CARB_LOG_ERROR("Articulation %s not found", mArticulationPath.c_str());
+        CARB_LOG_ERROR("Articulation %s not found", mArticulationPath.GetString().c_str());
         return;
     }
     mUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(mStage);

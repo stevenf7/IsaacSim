@@ -8,6 +8,7 @@
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>
 
+#include <RobotEngineBridgeSchema/robotEngineBridgeComponent.h>
 #include <engine/alice/c_api/isaac_c_api.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 
@@ -42,6 +43,13 @@ public:
      *
      */
     ~IsaacApplication();
+
+    /**
+     * @brief Initialize this application
+     *
+     * @param stage
+     */
+    virtual void initialize(pxr::UsdStageRefPtr stage);
 
     /**
      * @brief Create the application from JSON

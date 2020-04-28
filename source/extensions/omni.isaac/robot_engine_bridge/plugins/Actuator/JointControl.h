@@ -2,6 +2,7 @@
 
 #include "../Core/IsaacComponent.h"
 
+#include <RobotEngineBridgeSchema/robotEngineJointControl.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 
 #include <string>
@@ -53,7 +54,6 @@ private:
     std::string mOutputComponent = "output";
     std::string mJointControlChannelName = "joint_position";
     std::string mJointStateChannelName = "joint_state";
-    std::string mArticulationPath;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
 };
