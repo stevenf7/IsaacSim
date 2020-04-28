@@ -22,6 +22,7 @@ group ("extensions/"..ext_id)
 
     repo_build.prebuild_copy {
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/urdf" },
+        { "%{root}/_build/target-deps/robotimpsdk/lib/%{platform}/**", ext_bin_folder },
     }
 
     -- C++ Carbonite plugin

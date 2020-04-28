@@ -10,3 +10,5 @@ name = "omni.isaac.urdf"
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false
 
+[[libraries]]
+path = "bin/${platform}/${config}/${lib_prefix}robotimp${lib_ext}"
