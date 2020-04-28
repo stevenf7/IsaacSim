@@ -45,6 +45,9 @@
                 "omni.isaac.urdf",
                 "omni.isaac.utils"
             ]
+        },
+        "livestream":{
+            "enabled": true
         }
     }
 }
