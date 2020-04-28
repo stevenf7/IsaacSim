@@ -4,12 +4,16 @@ import omni.kit.commands
 import omni.kit.ui
 from pxr import Usd, UsdGeom, Sdf, Gf, Tf
 
+import omni.isaac.RobotEngineBridgeSchema as REBSchema
+
+
 ADD_DIFFERENTIALBASE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Differential Base"
 ADD_JOINTCONTROL_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Joint Control"
 ADD_SCISSORLIFT_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Scissor Lift"
 ADD_SURFACEGRIPPER_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Surface Gripper"
-ADD_SCENARIOFROMMESSAGE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Scenario From Message"
 ADD_RIGIDBODYSINK_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Rigid Body Sink"
+ADD_TELEPORT_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Teleport"
+ADD_SCENARIOFROMMESSAGE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Scenario From Message"
 ADD_LIDAR_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Lidar"
 ADD_CAMERA_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Camera"
 
@@ -27,158 +31,192 @@ class RobotEngineBridgeMenu:
         self._menus.append(editor_menu.add_item(ADD_JOINTCONTROL_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_SCISSORLIFT_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_SURFACEGRIPPER_SCENE_MENU_ITEM, self._on_scene_menu_click))
-        self._menus.append(editor_menu.add_item(ADD_SCENARIOFROMMESSAGE_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_RIGIDBODYSINK_SCENE_MENU_ITEM, self._on_scene_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_TELEPORT_SCENE_MENU_ITEM, self._on_scene_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_SCENARIOFROMMESSAGE_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_LIDAR_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_CAMERA_SCENE_MENU_ITEM, self._on_scene_menu_click))
 
+    def setup_base_prim(self, prim):
+        prim.CreateNodeNameAttr("interface")
+        prim.CreateEnabledAttr(True)
+
     def add_differential_base(self, parent=None):
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/DifferentialBaseSimulator", False)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_DifferentialBase", False)
         else:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/DifferentialBaseSimulator", True)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_DifferentialBase", True)
 
-        prim = self._stage.DefinePrim(path, "RobotEngine_DifferentialBaseSimulator")
-        prim.CreateAttribute("nodeName", Sdf.ValueTypeNames.String).Set(str("interface"))
+        prim = REBSchema.RobotEngineDifferentialBase.Define(self._stage, path)
+        self.setup_base_prim(prim)
 
-        prim.CreateAttribute("inputComponent", Sdf.ValueTypeNames.String).Set(str("input"))
-        prim.CreateAttribute("commandChannelName", Sdf.ValueTypeNames.String).Set(str("base_command"))
-        prim.CreateAttribute("outputComponent", Sdf.ValueTypeNames.String).Set(str("output"))
-        prim.CreateAttribute("stateChannelName", Sdf.ValueTypeNames.String).Set(str("base_state"))
+        prim.CreateInputComponentAttr("input")
+        prim.CreateInputChannelAttr("base_command")
 
-        prim.CreateAttribute("chassisPath", Sdf.ValueTypeNames.String)
-        prim.CreateAttribute("leftWheelName", Sdf.ValueTypeNames.String)
-        prim.CreateAttribute("rightWheelName", Sdf.ValueTypeNames.String)
+        prim.CreateOutputComponentAttr("output")
+        prim.CreateOutputChannelAttr("base_state")
 
-        prim.CreateAttribute("robotFront", Sdf.ValueTypeNames.Double3).Set((1, 0, 0))
-        prim.CreateAttribute("maxSpeed", Sdf.ValueTypeNames.Double2).Set((1.5, 1.0))
-        prim.CreateAttribute("maxMotorTorque", Sdf.ValueTypeNames.Float).Set(float(10.0))
-        prim.CreateAttribute("proportionalGain", Sdf.ValueTypeNames.Float).Set(float(100.0))
-        prim.CreateAttribute("brakeTorque", Sdf.ValueTypeNames.Float).Set(float(100.0))
-        prim.CreateAttribute("accelerationSmoothing", Sdf.ValueTypeNames.Float).Set(float(1.0))
-        prim.CreateAttribute("useProprotionalDriver", Sdf.ValueTypeNames.Bool).Set(bool(True))
+        prim.CreateChassisPrimRel()
+        prim.CreateLeftWheelJointNameAttr("")
+        prim.CreateRightWheelJointNameAttr("")
+
+        prim.CreateRobotFrontAttr((1, 0, 0))
+        prim.CreateMaxSpeedAttr((1.5, 1.0))
+        prim.CreateMaxTimeWithoutCommandAttr(0.2)
+        prim.CreateMaxMotorTorqueAttr(10)
+        prim.CreateUseProportionalDriverAttr(True)
+
+        prim.CreateProportionalGainAttr(100)
+        prim.CreateBrakeTorqueAttr(100)
+        prim.CreateAccelerationSmoothingAttr(1.0)
         pass
 
     def add_joint_control(self, parent=None):
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/JointControl", False)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_JointControl", False)
         else:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/JointControl", True)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_JointControl", True)
 
-        prim = self._stage.DefinePrim(path, "RobotEngine_JointControl")
-        prim.CreateAttribute("nodeName", Sdf.ValueTypeNames.String).Set(str("interface"))
+        prim = REBSchema.RobotEngineJointControl.Define(self._stage, path)
+        self.setup_base_prim(prim)
 
-        prim.CreateAttribute("inputComponent", Sdf.ValueTypeNames.String).Set(str("input"))
-        prim.CreateAttribute("outputComponent", Sdf.ValueTypeNames.String).Set(str("output"))
-        prim.CreateAttribute("jointControlChannelName", Sdf.ValueTypeNames.String).Set(str("joint_position"))
-        prim.CreateAttribute("jointStateChannelName", Sdf.ValueTypeNames.String).Set(str("joint_state"))
-        prim.CreateAttribute("articulationPath", Sdf.ValueTypeNames.String).Set(str("/"))
+        prim.CreateInputComponentAttr("input")
+        prim.CreateInputChannelAttr("joint_position")
+
+        prim.CreateOutputComponentAttr("output")
+        prim.CreateOutputChannelAttr("joint_state")
+
+        prim.CreateArticulationPrimRel()
         pass
 
     def add_scissor_lift_simulator(self, parent=None):
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/ScissorLiftSimulator", False)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_ScissorLiftSimulator", False)
         else:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/ScissorLiftSimulator", True)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_ScissorLiftSimulator", True)
 
-        prim = self._stage.DefinePrim(path, "RobotEngine_ScissorLiftSimulator")
-        prim.CreateAttribute("nodeName", Sdf.ValueTypeNames.String).Set(str("interface"))
+        prim = REBSchema.RobotEngineScissorLift.Define(self._stage, path)
+        self.setup_base_prim(prim)
 
-        prim.CreateAttribute("inputComponent", Sdf.ValueTypeNames.String).Set(str("input"))
-        prim.CreateAttribute("outputComponent", Sdf.ValueTypeNames.String).Set(str("output"))
-        prim.CreateAttribute("commandChannelName", Sdf.ValueTypeNames.String).Set(str("lift_command"))
-        prim.CreateAttribute("stateChannelName", Sdf.ValueTypeNames.String).Set(str("lift_state"))
-        prim.CreateAttribute("liftJointName", Sdf.ValueTypeNames.String).Set(str("lift_joint"))
-        prim.CreateAttribute("articulationPath", Sdf.ValueTypeNames.String).Set(str("/"))
+        prim.CreateInputComponentAttr("input")
+        prim.CreateInputChannelAttr("lift_command")
+
+        prim.CreateOutputComponentAttr("output")
+        prim.CreateOutputChannelAttr("lift_state")
+
+        prim.CreateArticulationPrimRel()
+        prim.CreateLiftJointNameAttr("lift_joint")
+
         pass
 
     def add_surface_gripper(self, parent=None):
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/SurfaceGripper", False)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_SurfaceGripper", False)
         else:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/SurfaceGripper", True)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_SurfaceGripper", True)
 
-        prim = self._stage.DefinePrim(path, "RobotEngine_SurfaceGripper")
+        prim = REBSchema.RobotEngineSurfaceGripper.Define(self._stage, path)
+        self.setup_base_prim(prim)
 
-        prim.CreateAttribute("nodeName", Sdf.ValueTypeNames.String).Set(str("interface"))
-        prim.CreateAttribute("inputComponent", Sdf.ValueTypeNames.String).Set(str("input"))
-        prim.CreateAttribute("outputComponent", Sdf.ValueTypeNames.String).Set(str("output"))
+        prim.CreateInputComponentAttr("input")
+        prim.CreateInputChannelAttr("io_command")
 
-        prim.CreateAttribute("gripperControlChannelName", Sdf.ValueTypeNames.String).Set(str("io_command"))
-        prim.CreateAttribute("gripperStateChannelName", Sdf.ValueTypeNames.String).Set(str("io_state"))
-        prim.CreateAttribute("gripperEntityName", Sdf.ValueTypeNames.String).Set(str("gripper"))
-        prim.CreateAttribute("d6JointPath", Sdf.ValueTypeNames.String).Set(str("/"))
-        prim.CreateAttribute("parentPath", Sdf.ValueTypeNames.String).Set(str("/"))
-        prim.CreateAttribute("gripThreshold", Sdf.ValueTypeNames.Float).Set(float(1))
-        prim.CreateAttribute("forceLimit", Sdf.ValueTypeNames.Float).Set(float(1e7))
-        prim.CreateAttribute("offsetPosition", Sdf.ValueTypeNames.Float3).Set(Gf.Vec3f(0, 0, 0))
-        prim.CreateAttribute("offsetRotation", Sdf.ValueTypeNames.Quatf).Set(Gf.Quatf(1.0))
-        pass
+        prim.CreateOutputComponentAttr("output")
+        prim.CreateOutputChannelAttr("io_state")
 
-    def add_scenario_from_message(self, parent=None):
-        if parent:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/ScenarioFromMessage", False)
-        else:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/ScenarioFromMessage", True)
+        prim.CreateD6JointPrimRel()
+        prim.CreateParentPrimRel()
 
-        prim = self._stage.DefinePrim(path, "RobotEngine_ScenarioFromMessage")
-        prim.CreateAttribute("nodeName", Sdf.ValueTypeNames.String).Set(str("interface"))
+        prim.CreateGripperEntityAttr("gripper")
 
-        prim.CreateAttribute("inputComponent", Sdf.ValueTypeNames.String).Set(str("input"))
-        prim.CreateAttribute("requestChannelName", Sdf.ValueTypeNames.String).Set(str("scenario_actors"))
+        prim.CreateGripThresholdAttr(1)
+        prim.CreateForceLimitAttr(1e7)
+        prim.CreateOffsetPositionAttr(Gf.Vec3f(0, 0, 0))
+        prim.CreateOffsetRotationAttr(Gf.Quatf(1.0))
 
-        prim.CreateAttribute("teleportInputComponent", Sdf.ValueTypeNames.String).Set(str("input"))
-        prim.CreateAttribute("teleportChannelName", Sdf.ValueTypeNames.String).Set(str("teleport"))
-
-        prim.CreateAttribute("rigidBodyOutputComponent", Sdf.ValueTypeNames.String).Set(str("output"))
-        prim.CreateAttribute("rigidBodyChannelName", Sdf.ValueTypeNames.String).Set(str("bodies"))
         pass
 
     def add_rigid_body_sink(self, parent=None):
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/RigidBodiesSink", False)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_RigidBodiesSink", False)
         else:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/RigidBodiesSink", True)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_RigidBodiesSink", True)
 
-        prim = self._stage.DefinePrim(path, "RobotEngine_RigidBodiesSink")
-        prim.CreateAttribute("nodeName", Sdf.ValueTypeNames.String).Set(str("interface"))
+        prim = REBSchema.RobotEngineRigidBodySink.Define(self._stage, path)
+        self.setup_base_prim(prim)
+        prim.CreateOutputComponentAttr("output")
+        prim.CreateOutputChannelAttr("bodies")
+        prim.CreateRigidBodyPrimsRel()
 
-        prim.CreateAttribute("rigidBodyOutputComponent", Sdf.ValueTypeNames.String).Set(str("output"))
-        prim.CreateAttribute("rigidBodyChannelName", Sdf.ValueTypeNames.String).Set(str("bodies"))
-        prim.CreateAttribute("rigidBodyPrimPaths", Sdf.ValueTypeNames.String).Set(str(""))
         pass
 
-    def add_lidar(self, parent=None):
+    def add_teleport(self, parent=None):
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/Lidar", False)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_Teleport", False)
         else:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/Lidar", True)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Teleport", True)
 
-        prim = self._stage.DefinePrim(path, "RobotEngine_Lidar")
-        prim.CreateAttribute("nodeName", Sdf.ValueTypeNames.String).Set(str("interface"))
+        prim = REBSchema.RobotEngineTeleport.Define(self._stage, path)
+        self.setup_base_prim(prim)
+        prim.CreateInputComponentAttr("input")
+        prim.CreateInputChannelAttr("teleport")
+        prim.CreateTeleportPrimsRel()
 
-        prim.CreateAttribute("outputComponent", Sdf.ValueTypeNames.String).Set(str("output"))
-        prim.CreateAttribute("scanChannelName", Sdf.ValueTypeNames.String).Set(str("rangescan"))
-        prim.CreateAttribute("lidarPath", Sdf.ValueTypeNames.String).Set(str("/"))
+        pass
+
+    def add_scenario_from_message(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_ScenarioFromMessage", False)
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_ScenarioFromMessage", True)
+
+        prim = REBSchema.RobotEngineScenarioFromMessage.Define(self._stage, path)
+        self.setup_base_prim(prim)
+        prim.CreateInputComponentAttr("input")
+        prim.CreateInputChannelAttr("scenario_actors")
+
+        prim.CreateTeleportInputComponentAttr("input")
+        prim.CreateTeleportInputChannelAttr("teleport")
+
+        prim.CreateRigidBodySinkOutputComponentAttr("output")
+        prim.CreateRigidBodySinkOutputChannelAttr("bodies")
+
         pass
 
     def add_camera(self, parent=None):
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/Camera", False)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_Camera", False)
         else:
-            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/Camera", True)
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Camera", True)
 
-        prim = self._stage.DefinePrim(path, "RobotEngine_Camera")
-        prim.CreateAttribute("nodeName", Sdf.ValueTypeNames.String).Set(str("interface"))
+        prim = REBSchema.RobotEngineCamera.Define(self._stage, path)
+        self.setup_base_prim(prim)
+        prim.CreateRgbOutputComponentAttr("output")
+        prim.CreateRgbOutputChannelAttr("color")
 
-        prim.CreateAttribute("outputComponent", Sdf.ValueTypeNames.String).Set(str("output"))
-        prim.CreateAttribute("channelName", Sdf.ValueTypeNames.String).Set(str("color"))
-        prim.CreateAttribute("depthOutputComponent", Sdf.ValueTypeNames.String).Set(str("output"))
-        prim.CreateAttribute("depthChannelName", Sdf.ValueTypeNames.String).Set(str("depth"))
+        prim.CreateDepthOutputComponentAttr("output")
+        prim.CreateDepthOutputChannelAttr("depth")
 
-        prim.CreateAttribute("enableRgb", Sdf.ValueTypeNames.Bool).Set(bool(False))
-        prim.CreateAttribute("enableDepth", Sdf.ValueTypeNames.Bool).Set(bool(False))
-        prim.CreateAttribute("enableSegmentation", Sdf.ValueTypeNames.Bool).Set(bool(False))
+        prim.CreateSegmentationOutputComponentAttr("output")
+        prim.CreateSegmentationOutputChannelAttr("segmentation")
+
+        prim.CreateRgbEnabledAttr(True)
+        prim.CreateDepthEnabledAttr(False)
+        prim.CreateSegmentationEnabledAttr(False)
+
+        pass
+
+    def add_lidar(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_Lidar", False)
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Lidar", True)
+
+        prim = REBSchema.RobotEngineLidar.Define(self._stage, path)
+        self.setup_base_prim(prim)
+        prim.CreateOutputComponentAttr("output")
+        prim.CreateOutputChannelAttr("rangescan")
+        prim.CreateLidarPrimRel()
         pass
 
     def _on_scene_menu_click(self, menu, value):
@@ -199,10 +237,12 @@ class RobotEngineBridgeMenu:
             self.add_scissor_lift_simulator(curr_prim)
         elif menu == ADD_SURFACEGRIPPER_SCENE_MENU_ITEM:
             self.add_surface_gripper(curr_prim)
-        elif menu == ADD_SCENARIOFROMMESSAGE_SCENE_MENU_ITEM:
-            self.add_scenario_from_message(curr_prim)
         elif menu == ADD_RIGIDBODYSINK_SCENE_MENU_ITEM:
             self.add_rigid_body_sink(curr_prim)
+        elif menu == ADD_TELEPORT_SCENE_MENU_ITEM:
+            self.add_teleport(curr_prim)
+        elif menu == ADD_SCENARIOFROMMESSAGE_SCENE_MENU_ITEM:
+            self.add_scenario_from_message(curr_prim)
         elif menu == ADD_LIDAR_SCENE_MENU_ITEM:
             self.add_lidar(curr_prim)
         elif menu == ADD_CAMERA_SCENE_MENU_ITEM:

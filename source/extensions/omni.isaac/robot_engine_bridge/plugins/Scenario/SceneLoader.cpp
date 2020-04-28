@@ -40,14 +40,6 @@ void SceneLoader::setAppHandle(isaac_handle_t appHandle)
     IsaacComponent::setAppHandle(appHandle);
 }
 
-void SceneLoader::initialize(IsaacCApi* isaacCApiPtr,
-                             const isaac_handle_t& appHandle,
-                             const pxr::UsdPrim& prim,
-                             pxr::UsdStageRefPtr stage)
-{
-    IsaacComponent::initialize(isaacCApiPtr, appHandle, prim, stage);
-}
-
 void SceneLoader::updateTimestamp(double timeSeconds, double dt, int64_t timeNano, int64_t timeDifferenceNano)
 {
     IsaacComponent::updateTimestamp(timeSeconds, dt, timeNano, timeDifferenceNano);
@@ -65,6 +57,7 @@ void SceneLoader::tick()
         MessageHeader header;
         if (receive(mInputComponent, mRequestChannelName, header, jsonProto, buffers))
         {
+            CARB_LOG_INFO("SceneLoader got message");
             std::string jsonConfig = jsonProto.getSerialized().asString();
             carb::dictionary::Item* jsonBase = mJsonSerializer->createDictionaryFromStringBuffer(jsonConfig.c_str());
 

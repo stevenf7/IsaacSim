@@ -31,10 +31,10 @@ class PrimRelModel(omni.kit.ui.Model):
     def set_value(self, path, meta, value, index, is_time_sampled, time, info):
         prim = self._usd_context.get_stage().GetPrimAtPath(value)
         if prim:
-            self._labels[path].text = "  Valid Path"
+            self._labels[path].text = "  Valid"
             self._labels[path].set_text_color((0, 1, 0, 1))
         else:
-            self._labels[path].text = "Invalid Path"
+            self._labels[path].text = "Invalid"
             self._labels[path].set_text_color((1, 0, 0, 1))
 
     def get_key_count(self, path, meta):
@@ -82,10 +82,10 @@ class Extension(omni.ext.IExt):
         self._rel_editor_window = omni.kit.ui.Window(
             "Relationship Editor",
             100,
-            100,
+            200,
             menu_path=f"Utilities/Relationship Editor",
             dock=omni.kit.ui.DockPreference.RIGHT_BOTTOM,
-            flags=omni.kit.ui.WINDOW_FLAGS_NO_SAVED_SETTINGS | omni.kit.ui.WINDOW_FLAGS_NO_FOCUS_ON_APPEARING,
+            flags=omni.kit.ui.WINDOW_FLAGS_NO_FOCUS_ON_APPEARING,
             add_to_menu=True,
         )
         # self._rel_editor_window.hide()
@@ -109,7 +109,14 @@ class Extension(omni.ext.IExt):
             tree_node_widget.text = os.path.basename(model_path)
             return omni.kit.ui.DelegateResult(tree_node_widget)
         else:
-            layout = omni.kit.ui.RowLayout()
+            layout = omni.kit.ui.RowColumnLayout(5)
+            layout.width = -1
+            layout.set_column_width(0, 30)
+            layout.set_column_width(1, omni.kit.ui.Percent(100))
+            layout.set_column_width(2, 60)
+            layout.set_column_width(3, 60)
+            layout.set_column_width(4, 80)
+
             path = model_path[1:]
             paths = path.split("/")
 
@@ -118,6 +125,7 @@ class Extension(omni.ext.IExt):
             name = model.get_key(model_path, "", index)
             tbox = layout.add_child(omni.kit.ui.TextBox(name))
             tbox.set_model(model, model_path)
+            tbox.width = -1
             valid_label = layout.add_child(omni.kit.ui.Label("---"))
             model._labels.update({model_path: valid_label})
             btn_text = "Modify"

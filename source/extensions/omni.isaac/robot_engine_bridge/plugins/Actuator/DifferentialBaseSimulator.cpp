@@ -29,13 +29,7 @@ namespace robot_engine_bridge
 DifferentialBaseSimulator::DifferentialBaseSimulator(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
-    mCommandedSpeed = pxr::GfVec2d(0);
-    mLastSpeed = pxr::GfVec2d(0);
-    mBrakeRequested = false;
-    mLastAcceleration = pxr::GfVec2d(0);
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
-
-    onComponentChange();
 }
 
 
@@ -160,106 +154,77 @@ void DifferentialBaseSimulator::onComponentChange()
     IsaacComponent::onComponentChange();
     double stageUnits = UsdGeomGetStageMetersPerUnit(mStage);
 
-    std::string chassisPath;
+    const pxr::RobotEngineBridgeSchemaRobotEngineDifferentialBase& typedPrim =
+        (pxr::RobotEngineBridgeSchemaRobotEngineDifferentialBase)mPrim;
+
+    pxr::SdfPath chassisPath;
     std::string wheelFLName;
     std::string wheelFRName;
 
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("chassisPath")))
-    {
-        attr.Get(&chassisPath);
-    }
-    // names for the left/right joints
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("leftWheelName")))
-    {
-        attr.Get(&wheelFLName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("rightWheelName")))
-    {
-        attr.Get(&wheelFRName);
-    }
-    // Parse component and channel
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("inputComponent")))
-    {
-        attr.Get(&mInputComponent);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("commandChannelName")))
-    {
-        attr.Get(&mCommandChannelName);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("outputComponent")))
-    {
-        attr.Get(&mOutputComponent);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("stateChannelName")))
-    {
-        attr.Get(&mStateChannelName);
-    }
-
-
-    // Parse parameters
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("robotFront")))
-    {
-        attr.Get(&mRobotFront);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("maxSpeed")))
-    {
-        attr.Get(&mMaximumSpeed);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("maxMotorTorque")))
-    {
-        attr.Get(&mMaxMotorTorque);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("proportionalGain")))
-    {
-        attr.Get(&mProportionalGain);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("brakeTorque")))
-    {
-        attr.Get(&mBrakeTorque);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("accelerationSmoothing")))
-    {
-        attr.Get(&mAccelerationSmoothing);
-    }
-    if (auto attr = mPrim.GetAttribute(pxr::TfToken("useProprotionalDriver")))
-    {
-        attr.Get(&mUseProprotionalDriver);
-    }
-    if (chassisPath.size() <= 1)
+    pxr::SdfPathVector targets;
+    typedPrim.GetChassisPrimRel().GetTargets(&targets);
+    if (targets.size() == 0)
     {
         return;
     }
 
-    if (mDynamicControlPtr->peekObjectType(chassisPath.c_str()) == omni::isaac::dynamic_control::eDcObjectArticulation)
+    chassisPath = targets[0];
+
+    if (mDynamicControlPtr->peekObjectType(chassisPath.GetString().c_str()) ==
+        omni::isaac::dynamic_control::eDcObjectArticulation)
     {
-        mArticulationHandle = mDynamicControlPtr->getArticulation(chassisPath.c_str());
+        mArticulationHandle = mDynamicControlPtr->getArticulation(chassisPath.GetString().c_str());
     }
     else
     {
-        CARB_LOG_ERROR("Chassis is not valid art");
+        CARB_LOG_ERROR("chassisPrim is not a valid articulation");
         return;
     }
     if (!mArticulationHandle)
     {
-        CARB_LOG_ERROR("Articulation not found for chassis");
+        CARB_LOG_ERROR("Articulation not found for chassisPrim");
         return;
     }
     mChassisHandle = mDynamicControlPtr->getArticulationRootBody(mArticulationHandle);
 
-    mWheelFLHandle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, wheelFLName.c_str());
-    mWheelFRHandle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, wheelFRName.c_str());
 
+    isaac::utils::safeGetAttribute(typedPrim.GetLeftWheelJointNameAttr(), wheelFLName);
+
+    mWheelFLHandle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, wheelFLName.c_str());
     // Get the wheel prim from the joint
     if (!mWheelFLHandle)
     {
-        CARB_LOG_ERROR("mWheelFLJoint %s not valid", wheelFLName.c_str());
+        CARB_LOG_ERROR("leftWheelJointPrim %s not valid", wheelFLName.c_str());
         return;
     }
+    isaac::utils::safeGetAttribute(typedPrim.GetRightWheelJointNameAttr(), wheelFRName);
+
+
+    mWheelFRHandle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, wheelFRName.c_str());
+
     if (!mWheelFRHandle)
     {
-        CARB_LOG_ERROR("mWheelFRJoint %s not valid", wheelFRName.c_str());
+        CARB_LOG_ERROR("rightWheelJointPrim %s not valid", wheelFRName.c_str());
         return;
     }
+
+    // Parse component and channel
+    isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mCommandChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputComponentAttr(), mOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputChannelAttr(), mStateChannelName);
+
+    // Parse parameters
+
+    isaac::utils::safeGetAttribute(typedPrim.GetRobotFrontAttr(), mRobotFront);
+    isaac::utils::safeGetAttribute(typedPrim.GetMaxSpeedAttr(), mMaximumSpeed);
+    isaac::utils::safeGetAttribute(typedPrim.GetMaxTimeWithoutCommandAttr(), mMaximumTimeWithoutCommand);
+    isaac::utils::safeGetAttribute(typedPrim.GetMaxMotorTorqueAttr(), mMaxMotorTorque);
+    isaac::utils::safeGetAttribute(typedPrim.GetUseProportionalDriverAttr(), mUseProprotionalDriver);
+    isaac::utils::safeGetAttribute(typedPrim.GetProportionalGainAttr(), mProportionalGain);
+    isaac::utils::safeGetAttribute(typedPrim.GetBrakeTorqueAttr(), mBrakeTorque);
+    isaac::utils::safeGetAttribute(typedPrim.GetAccelerationSmoothingAttr(), mAccelerationSmoothing);
+
 
     auto leftWheel = mDynamicControlPtr->getDofChildBody(mWheelFLHandle);
     auto rightWheel = mDynamicControlPtr->getDofChildBody(mWheelFRHandle);

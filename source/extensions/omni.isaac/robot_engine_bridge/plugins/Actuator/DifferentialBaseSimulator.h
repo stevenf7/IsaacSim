@@ -1,6 +1,7 @@
 #pragma once
 #include "../Core/IsaacComponent.h"
 
+#include <RobotEngineBridgeSchema/robotEngineDifferentialBase.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 
 #include <string>
@@ -64,10 +65,10 @@ private:
     float timedSmoothingFactor(float dt, float lambda);
 
     // The last acceleration used for acceleration smoothing.
-    pxr::GfVec2d mLastAcceleration;
+    pxr::GfVec2d mLastAcceleration = pxr::GfVec2d(0);
     // stored latest measured speed for calculating acceleration
-    pxr::GfVec2d mLastSpeed;
-    pxr::GfVec2d mCommandedSpeed;
+    pxr::GfVec2d mLastSpeed = pxr::GfVec2d(0);
+    pxr::GfVec2d mCommandedSpeed = pxr::GfVec2d(0);
     pxr::GfVec2d mWheelCurrentSpeed = pxr::GfVec2d(0, 0);
     pxr::GfVec2d mWheelDesiredSpeed = pxr::GfVec2d(0, 0);
 
@@ -84,7 +85,7 @@ private:
     float mWheelBase;
     bool mZUp = true;
     float mLastCommandTime;
-    bool mBrakeRequested;
+    bool mBrakeRequested = false;
     double mUnitScale;
 
     /// The two driving wheels of carter.

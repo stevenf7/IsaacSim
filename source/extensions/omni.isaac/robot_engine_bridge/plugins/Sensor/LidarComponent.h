@@ -4,6 +4,7 @@
 
 #include <carb/Types.h>
 
+#include <RobotEngineBridgeSchema/robotEngineLidar.h>
 #include <omni/isaac/lidar/LidarInterface.h>
 
 #include <string>
@@ -59,7 +60,7 @@ private:
     /// The name of the channel on which state informations is published
     std::string mOutputComponent = "output";
     std::string mScanChannelName = "rangescan";
-    std::string mLidarPath = "/";
+    pxr::SdfPath mLidarPath = pxr::SdfPath("/");
 
     omni::isaac::lidar::LidarHandle mLidarHandle = omni::isaac::lidar::kLidarInvalidHandle;
 };
