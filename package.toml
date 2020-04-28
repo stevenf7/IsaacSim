@@ -49,6 +49,7 @@ files = [
 
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/extensions/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/extensions"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/extsPhysics/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/extsPhysics"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit.portable", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit.portable"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/resources/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/resources"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/scripts/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/scripts"],
