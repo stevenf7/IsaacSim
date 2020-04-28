@@ -185,9 +185,9 @@ end
 
 
 -- Define Kit experience. Different ways to run kit with particular config
-function define_experience(name)
+function define_experience(name, cmdExtraArgs)
     local config_path = "/apps/"..name..".json"
-    local extra_args = "--vulkan"
+    local extra_args = cmdExtraArgs or ""
 
     -- Create a VS project on windows to make debugging and running from VS easier:
     if os.target() == "windows" then
@@ -287,10 +287,13 @@ workspace "omni_isaac_sim"
     filter {}
 
 
-group "apps"
-    -- Application example. Only runs Kit with a config, doesn't build anything. Helper for debugging.
+group "experiences"
+    -- Default Kit Experience
     define_experience("omniverse-kit")
+    -- Isaac sim headless experience
+    define_experience("isaac_sim-headless", "--no-window")
 
+group "exts"
     -- Isaac Extensions
     -- Windows and Linux
     include ("source/extensions/omni.isaac/decals")
