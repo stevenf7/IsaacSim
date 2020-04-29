@@ -128,18 +128,22 @@ void DRComponentTexture::update()
 }
 void DRComponentTexture::onComponentChange()
 {
-    std::string primPaths, textureList, ignoredClass, groupedClass;
+    std::string textureList, ignoredClass, groupedClass;
 
     const pxr::DrSchemaTextureComponent& texturePrim = (pxr::DrSchemaTextureComponent)mPrim;
     texturePrim.GetCompNameAttr().Get(&mCompName);
-    texturePrim.GetPrimPathsAttr().Get(&primPaths);
     texturePrim.GetTextureListAttr().Get(&textureList);
     texturePrim.GetIgnoredClassAttr().Get(&ignoredClass);
     texturePrim.GetGroupedClassAttr().Get(&groupedClass);
     texturePrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     texturePrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
-    boost::split(mPaths, primPaths, [](char c) { return c == ','; });
+    mPaths.clear();
+    pxr::UsdRelationship primPaths = texturePrim.GetPrimPathsRel();
+    pxr::SdfPathVector targets;
+    primPaths.GetTargets(&targets);
+    for (auto target : targets)
+        mPaths.push_back(target.GetString());
     if (textureList != "")
         boost::split(mTextureList, textureList, [](char c) { return c == ','; });
     if (ignoredClass != "")

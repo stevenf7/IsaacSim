@@ -50,7 +50,7 @@ class DRMenu:
         prim = DrSchema.ColorComponent.Define(self._stage, Sdf.Path(path))
 
         prim.CreateCompNameAttr().Set(str("color_component_" + str(self.component_count[0])))
-        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreatePrimPathsRel()
         prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
         prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
         prim.CreateDurationAttr().Set(float(1.0))
@@ -70,7 +70,7 @@ class DRMenu:
         prim = DrSchema.MovementComponent.Define(self._stage, Sdf.Path(path))
 
         prim.CreateCompNameAttr().Set(str("movement_component_" + str(self.component_count[1])))
-        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreatePrimPathsRel()
         prim.CreateXRangeAttr().Set((float(0.0), float(0.0)))
         prim.CreateYRangeAttr().Set((float(0.0), float(0.0)))
         prim.CreateZRangeAttr().Set((float(0.0), float(0.0)))
@@ -91,7 +91,7 @@ class DRMenu:
         prim = DrSchema.RotationComponent.Define(self._stage, Sdf.Path(path))
 
         prim.CreateCompNameAttr().Set(str("rotation_component_" + str(self.component_count[5])))
-        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreatePrimPathsRel()
         prim.CreateXRangeAttr().Set((float(0.0), float(0.0)))
         prim.CreateYRangeAttr().Set((float(0.0), float(0.0)))
         prim.CreateZRangeAttr().Set((float(0.0), float(0.0)))
@@ -112,7 +112,7 @@ class DRMenu:
         prim = DrSchema.ScaleComponent.Define(self._stage, Sdf.Path(path))
 
         prim.CreateCompNameAttr().Set(str("scale_component_" + str(self.component_count[2])))
-        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreatePrimPathsRel()
         prim.CreateXRangeAttr().Set((float(1.0), float(1.0)))
         prim.CreateYRangeAttr().Set((float(1.0), float(1.0)))
         prim.CreateZRangeAttr().Set((float(1.0), float(1.0)))
@@ -133,7 +133,7 @@ class DRMenu:
         prim = DrSchema.LightComponent.Define(self._stage, Sdf.Path(path))
 
         prim.CreateCompNameAttr().Set(str("light_component_" + str(self.component_count[3])))
-        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreatePrimPathsRel()
         prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
         prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
         prim.CreateIntensityRangeAttr().Set((float(40000.0), float(70000.0)))
@@ -156,7 +156,7 @@ class DRMenu:
         prim = DrSchema.TextureComponent.Define(self._stage, Sdf.Path(path))
 
         prim.CreateCompNameAttr().Set(str("texture_component_" + str(self.component_count[4])))
-        prim.CreatePrimPathsAttr().Set(str(""))
+        prim.CreatePrimPathsRel()
         prim.CreateTextureListAttr().Set(str(""))
         prim.CreateIgnoredClassAttr().Set(str(""))
         prim.CreateGroupedClassAttr().Set(str(""))
