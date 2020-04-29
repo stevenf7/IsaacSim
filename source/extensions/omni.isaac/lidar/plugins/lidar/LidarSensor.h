@@ -54,7 +54,7 @@ public:
         return mDrawLidarPoints;
     }
 
-    std::vector<carb::renderer::Line>& getDebugLines()
+    std::vector<carb::renderer::PrimitiveVertex>& getDebugLines()
     {
         return mDebugLines;
     }
@@ -143,7 +143,7 @@ private:
     std::set<int> mActiveDebugLines;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
 
-    std::vector<carb::renderer::Line> mDebugLines;
+    std::vector<carb::renderer::PrimitiveVertex> mDebugLines;
 
     carb::physics::PhysX* mPhysx = nullptr;
     physx::PxScene* mPxScene = nullptr;

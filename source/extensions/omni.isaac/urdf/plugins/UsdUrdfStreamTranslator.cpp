@@ -16,16 +16,15 @@
 #include <PhysicsSchema/articulationAPI.h>
 #include <PhysicsSchema/articulationJointAPI.h>
 #include <PhysicsSchema/collisionAPI.h>
-#include <PhysicsSchema/convexMesh.h>
-#include <PhysicsSchema/distanceJointAPI.h>
 #include <PhysicsSchema/driveAPI.h>
-#include <PhysicsSchema/joint.h>
+#include <PhysicsSchema/physicsJoint.h>
 #include <PhysicsSchema/limitAPI.h>
 #include <PhysicsSchema/massAPI.h>
 #include <PhysicsSchema/physicsScene.h>
-#include <PhysicsSchema/prismaticJointAPI.h>
-#include <PhysicsSchema/revoluteJointAPI.h>
-#include <PhysicsSchema/sphericalJointAPI.h>
+#include <PhysicsSchema/fixedPhysicsJoint.h>
+#include <PhysicsSchema/prismaticPhysicsJoint.h>
+#include <PhysicsSchema/revolutePhysicsJoint.h>
+#include <PhysicsSchema/sphericalPhysicsJoint.h>
 #include <PhysicsSchemaTools/UsdTools.h>
 
 // #include <PxPhysicsAPI.h>
@@ -372,9 +371,10 @@ void AddCollisionMeshesToStage(UsdStageRefPtr stage,
                                                    ));
     for (int sm = 0; sm < subMeshCount; sm++)
     {
-        PhysicsSchemaConvexMesh convexMesh =
-            PhysicsSchemaConvexMesh::Define(stage, SdfPath(meshPath.GetString() //+ "_" + std::to_string(sm)
-                                                           ));
+        pxr::UsdGeomPoints convexMesh =
+            pxr::UsdGeomPoints::Define(stage, SdfPath(meshPath.GetString() //+ "_" +
+                                                                           // std::to_string(sm)
+                                                      ));
 
         convexMesh.GetPrim().GetReferences().AddInternalReference(SdfPath(
             robotPath.GetString() + COLLISION_MESH_NAME + std::to_string(meshIndex) + "/_" + std::to_string(sm)));
@@ -440,7 +440,7 @@ int AddInstanceMeshesToStage(
         SdfPath smPath = SdfPath(meshPath.GetString() + "/_" + std::to_string(k));
         if (isCollision)
         {
-            PhysicsSchemaConvexMesh convexMesh = PhysicsSchemaConvexMesh::Define(stage, smPath);
+            pxr::UsdGeomPoints convexMesh = pxr::UsdGeomPoints::Define(stage, smPath);
             convexMesh.CreatePointsAttr().Set(usdPoints);
             convexMesh.CreateExtentAttr().Set(extentArray);
             PhysicsSchemaCollisionAPI::Apply(convexMesh.GetPrim());
@@ -828,7 +828,7 @@ void SetLimit(T& jointAPI, const NvIsaac::IRobotSkeleton::DOF* dn)
     jointAPI.CreateUpperLimitAttr().Set(dn->limitHigh);
 }
 template <>
-void SetLimit(PhysicsSchemaSphericalJointAPI& sphericalJointAPI, const NvIsaac::IRobotSkeleton::DOF* dn)
+void SetLimit(PhysicsSchemaSphericalPhysicsJoint& sphericalJointAPI, const NvIsaac::IRobotSkeleton::DOF* dn)
 {
     sphericalJointAPI.CreateConeAngle0LimitAttr().Set(dn->limitLow);
     sphericalJointAPI.CreateConeAngle1LimitAttr().Set(dn->limitHigh);
@@ -836,20 +836,23 @@ void SetLimit(PhysicsSchemaSphericalJointAPI& sphericalJointAPI, const NvIsaac::
 
 template <class T>
 void AddSingleJoint(const NvIsaac::IRobotSkeleton::JointNode* jn,
-                    PhysicsSchemaJoint& jointPrim,
+                    UsdStageRefPtr stage,
+                    const SdfPath& jointPath,
+                    PhysicsSchemaPhysicsJoint& jointPrimBase,
                     const NvIsaac::IRobotSkeleton* skel)
 {
+    T jointPrim = T::Define(stage, SdfPath(jointPath));
+    jointPrimBase = jointPrim;
     const int DOFIndex = jn->getDOFIndex();
     const int DOFCount = jn->getDOFIndexCount();
-    T jointAPI = T::Apply(jointPrim.GetPrim());
     for (int di = DOFIndex; di < DOFIndex + DOFCount; ++di)
     {
         const NvIsaac::IRobotSkeleton::DOF* dn = skel->getDOF(di);
-        jointAPI.CreateAxisAttr().Set(getAxisXYZ(dn->axis));
+        jointPrim.CreateAxisAttr().Set(getAxisXYZ(dn->axis));
 
         if (dn->limitsEnabled)
         {
-            SetLimit(jointAPI, dn);
+            SetLimit(jointPrim, dn);
         }
 
         if (jn->getType() == NvIsaac::RobotJointType::kPrismatic)
@@ -883,7 +886,7 @@ void AddJointsToStage(UsdStageRefPtr stage,
 
     // Create the root joint
     std::string rootJointPath = path.GetString() + "/rootJoint";
-    PhysicsSchemaJoint rootJoint = PhysicsSchemaJoint::Define(stage, SdfPath(rootJointPath));
+    PhysicsSchemaPhysicsJoint rootJoint = PhysicsSchemaPhysicsJoint::Define(stage, SdfPath(rootJointPath));
     auto linkAPI = PhysicsSchemaArticulationJointAPI::Apply(stage->GetPrimAtPath(SdfPath(rootJointPath)));
     linkAPI.CreateArticulationTypeAttr().Set(TfToken("articulatedRoot"));
     const NvIsaac::IRobotSkeleton::JointNode* jn = skel->getJoint(int16_t(0));
@@ -907,30 +910,23 @@ void AddJointsToStage(UsdStageRefPtr stage,
         }
 
         jointNames[ji] = jointPath;
-        PhysicsSchemaJoint jointPrim = PhysicsSchemaJoint::Define(stage, SdfPath(jointPath));
+        PhysicsSchemaPhysicsJoint jointPrim;
         // defining the joint type
         if (jn->getType() == NvIsaac::RobotJointType::kFixed)
         {
-            // need to lock all axis
-            std::vector<std::string> allAxis = { "g_rotX", "g_rotY", "g_rotZ", "g_transX", "g_transY", "g_transZ" };
-            for (size_t i = 0; i < allAxis.size(); i++)
-            {
-                PhysicsSchemaLimitAPI limitAPI = PhysicsSchemaLimitAPI::Apply(jointPrim.GetPrim(), TfToken(allAxis[i]));
-                limitAPI.CreateLowAttr().Set(1.0f);
-                limitAPI.CreateHighAttr().Set(-1.0f);
-            }
+            jointPrim = PhysicsSchemaFixedPhysicsJoint::Define(stage, SdfPath(jointPath));
         }
         else if (jn->getType() == NvIsaac::RobotJointType::kPrismatic)
         {
-            AddSingleJoint<PhysicsSchemaPrismaticJointAPI>(jn, jointPrim, skel);
+            AddSingleJoint<PhysicsSchemaPrismaticPhysicsJoint>(jn, stage, SdfPath(jointPath), jointPrim, skel);
         }
         else if (jn->getType() == NvIsaac::RobotJointType::kSpherical)
         {
-            AddSingleJoint<PhysicsSchemaSphericalJointAPI>(jn, jointPrim, skel);
+            AddSingleJoint<PhysicsSchemaSphericalPhysicsJoint>(jn, stage, SdfPath(jointPath), jointPrim, skel);
         }
         else // default if (jn->getType() == NvIsaac::RobotJointType::kRevolute)
         {
-            AddSingleJoint<PhysicsSchemaRevoluteJointAPI>(jn, jointPrim, skel);
+            AddSingleJoint<PhysicsSchemaRevolutePhysicsJoint>(jn, stage, SdfPath(jointPath), jointPrim, skel);
         }
 
         SdfPathVector val0{ SdfPath(actor0) };

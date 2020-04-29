@@ -1,0 +1,53 @@
+{
+    "app": {
+        "window": {
+            "title": "Omniverse Isaac Sim"
+        },
+        "settings": {
+            "persistent": true,
+        },
+        "extensions": {
+            "folders2": ["${kit}/exts","${kit}/extsPhysics","${app}/../exts"],
+            "foldersBuiltin": ["${kit}/extensions/extensions-bundled", "${kit}/extensions/extensions-other", "${documents}/extensions","${app}/../extensions"],
+            "enabledBuiltin": [
+                "omni.renderer-rtx",
+                "omni.kit.editor-full",
+                "omni.kit.builtin.init",
+                "omni.kit.builtin.menu",
+                "omni.kit.builtin.file_menu",
+                "omni.kit.builtin.toolbar",
+                "omni.kit.builtin.extensions_manager_window",
+                "omni.kit.builtin.about_window",
+                "omni.kit.builtin.preferences_window",
+                "omni.kit.builtin.provide_feedback_window",
+                "omni.kit.builtin.profiler",
+                "omni.kit.builtin.details_window",
+                "omni.kit.builtin.tags_window",
+                "omni.kit.builtin.audio_settings_window",
+                "omni.kit.builtin.audio_player_window",
+                "omni.kit.builtin.render_settings_window",
+                "omni.kit.builtin.test_runner",
+                "omni.kit.builtin.material_library",
+                "omni.kit.window.content",
+                "omni.kit.window.stage",
+                "omni.kit.window.layers",
+                "omni.kit.window.viewport",
+                "omni.kit.window.script_editor",
+                "omni.kit.window.auth",
+                "omni.kit.window.console",
+                "omni.kit.window.details",
+                "omni.utils.utilities_menu",
+                "omni.utils.movie_capture",
+                "omni.utils.usd_paths",
+                "omni.utils.collect_tool",
+                "omni.assetimport",
+                "omni.computegraph",
+                "omni.kit.context_menu",
+                "omni.physx",
+                "omni.physx.ui",
+                "omni.isaac.urdf",
+                "omni.isaac.utils"
+            ]
+        }
+    }
+}

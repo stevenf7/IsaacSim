@@ -1,7 +1,10 @@
 {
     "app": {
         "window": {
-            "title": "Omniverse Kit: Isaac Sim"
+            "title": "Omniverse Kit For Robotics"
+        },
+        "settings": {
+            "persistent": true,
         },
         "extensions": {
             "folders2": ["${kit}/exts","${kit}/extsPhysics","${app}/../exts"],
@@ -45,9 +48,6 @@
                 "omni.isaac.urdf",
                 "omni.isaac.utils"
             ]
-        },
-        "livestream":{
-            "enabled": true
         }
     }
 }

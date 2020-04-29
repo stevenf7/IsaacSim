@@ -186,12 +186,12 @@ end
 
 -- Define Kit experience. Different ways to run kit with particular config
 function define_experience(name, cmdExtraArgs)
-    local config_path = "/apps/"..name..".json"
+    local config_path = "/experiences/"..name..".json"
     local extra_args = cmdExtraArgs or ""
 
     -- Create a VS project on windows to make debugging and running from VS easier:
     if os.target() == "windows" then
-        group "apps"
+        group "experiences"
         project(name)
             kind "Utility"
             location ("%{root}/_compiler/".._ACTION.."/%{prj.name}")
@@ -288,10 +288,14 @@ workspace "omni_isaac_sim"
 
 
 group "experiences"
-    -- Default Kit Experience
-    define_experience("omniverse-kit")
+    -- Robotics default experience
+    define_experience("omniverse-kit-robotics")
+    -- Robotics headless experience
+    define_experience("omniverse-kit-robotics-headless", "--no-window")
+    -- Isaac sim default experience
+    define_experience("isaac-sim")
     -- Isaac sim headless experience
-    define_experience("isaac_sim-headless", "--no-window")
+    define_experience("isaac-sim-headless", "--no-window")
 
 group "exts"
     -- Isaac Extensions

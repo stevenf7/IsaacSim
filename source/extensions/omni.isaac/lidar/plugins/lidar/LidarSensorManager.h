@@ -12,6 +12,7 @@
 #include <carb/imgui/ImGui.h>
 #include <carb/logging/Log.h>
 #include <carb/physx/physx.h>
+#include <carb/renderer/Renderer.h>
 #include <carb/settings/ISettings.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
@@ -201,11 +202,9 @@ private:
         if (!mDebugLineList)
         {
             carb::renderer::SceneId id = omni::usd::UsdContext::getContext()->getRendererScene();
-            carb::renderer::LineSettings lineSettings;
-            lineSettings.enableDepthTest = true;
-            lineSettings.width =
-                0.01f / (float)UsdGeomGetStageMetersPerUnit(omni::usd::UsdContext::getContext()->getStage());
-            mDebugLineList = mEditor->getRenderer()->createLineList(mEditor->getRenderContext(), id, lineSettings);
+            mDebugLineList = mEditor->getRenderer()->createPrimitiveList(
+                mEditor->getRenderContext(), id, carb::renderer::PrimitiveKind::eLine,
+                carb::renderer::kPrimitiveListFlagDepthTest | carb::renderer::kPrimitiveListFlagDepthTestWrite);
 
             mDebugLineVector.reserve(65535);
         }
@@ -215,7 +214,7 @@ private:
     {
         if (mDebugLineList)
         {
-            mEditor->getRenderer()->destroyLineList(mEditor->getRenderContext(), mDebugLineList);
+            mEditor->getRenderer()->destroyPrimitiveList(mEditor->getRenderContext(), mDebugLineList);
             mDebugLineList = nullptr;
 
             mDebugLineVector.resize(0);
@@ -245,8 +244,23 @@ private:
         {
             createDebugLineList();
 
-            mEditor->getRenderer()->updateLineList(mEditor->getRenderContext(), mDebugLineList, mDebugLineVector.data(),
-                                                   mDebugLineVector.size(), nullptr, 0);
+            carb::renderer::PrimitiveListSettings settings;
+            settings.width = 0.01f / (float)UsdGeomGetStageMetersPerUnit(omni::usd::UsdContext::getContext()->getStage());
+            settings.antialiasingWidth = -1;
+            settings.fadeOutStartDistance = 1e5f;
+            settings.fadeOutEndDistance = 1e9f;
+
+            carb::renderer::PrimitiveListInstance inst = {};
+            inst.transform.m[0] = 1.f;
+            inst.transform.m[1 + 4] = 1.f;
+            inst.transform.m[2 + 8] = 1.f;
+            inst.transform.m[3 + 12] = 1.f;
+
+            mEditor->getRenderer()->updatePrimitiveListSettings(mEditor->getRenderContext(), mDebugLineList, settings);
+            mEditor->getRenderer()->updatePrimitiveListInstances(
+                mEditor->getRenderContext(), mDebugLineList, &inst, 0, 1);
+            mEditor->getRenderer()->updatePrimitiveListVertices(
+                mEditor->getRenderContext(), mDebugLineList, mDebugLineVector.data(), 0, mDebugLineVector.size());
         }
     }
 
@@ -255,8 +269,8 @@ private:
     omni::kit::IEditor* mEditor = nullptr;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
 
-    carb::renderer::LineList* mDebugLineList = nullptr;
-    std::vector<carb::renderer::Line> mDebugLineVector;
+    carb::renderer::PrimitiveList* mDebugLineList = nullptr;
+    std::vector<carb::renderer::PrimitiveVertex> mDebugLineVector;
     carb::events::ISubscriptionPtr mViewportUiEventSub;
     carb::tasking::ITasking* mTasking = nullptr;
     carb::tasking::Counter* mTaskCounter = nullptr;
