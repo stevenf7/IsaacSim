@@ -58,18 +58,21 @@ void DRComponentScale::update()
 }
 void DRComponentScale::onComponentChange()
 {
-    std::string primPaths;
-
     const pxr::DrSchemaScaleComponent& scalePrim = (pxr::DrSchemaScaleComponent)mPrim;
     scalePrim.GetCompNameAttr().Get(&mCompName);
-    scalePrim.GetPrimPathsAttr().Get(&primPaths);
     scalePrim.GetXRangeAttr().Get(&mXRange);
     scalePrim.GetYRangeAttr().Get(&mYRange);
     scalePrim.GetZRangeAttr().Get(&mZRange);
     scalePrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     scalePrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
-    boost::split(mPaths, primPaths, [](char c) { return c == ','; });
+    mPaths.clear();
+    pxr::UsdRelationship primPaths = scalePrim.GetPrimPathsRel();
+    pxr::SdfPathVector targets;
+    primPaths.GetTargets(&targets);
+    for (auto target : targets)
+        mPaths.push_back(target.GetString());
+
     update();
     CARB_LOG_INFO("Scale Update: %s", mCompName.c_str());
 }

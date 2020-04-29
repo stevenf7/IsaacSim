@@ -101,19 +101,23 @@ void DRComponentColor::update()
 }
 void DRComponentColor::onComponentChange()
 {
-    std::string primPaths;
     pxr::GfVec3f firstColor, secondColor;
     mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
 
     const pxr::DrSchemaColorComponent& colorPrim = (pxr::DrSchemaColorComponent)mPrim;
     colorPrim.GetCompNameAttr().Get(&mCompName);
-    colorPrim.GetPrimPathsAttr().Get(&primPaths);
     colorPrim.GetFirstColorAttr().Get(&firstColor);
     colorPrim.GetSecondColorAttr().Get(&secondColor);
     colorPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     colorPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
-    boost::split(mPaths, primPaths, [](char c) { return c == ','; });
+    mPaths.clear();
+    pxr::UsdRelationship primPaths = colorPrim.GetPrimPathsRel();
+    pxr::SdfPathVector targets;
+    primPaths.GetTargets(&targets);
+    for (auto target : targets)
+        mPaths.push_back(target.GetString());
+
     mRRange[0] = firstColor[0];
     mRRange[1] = secondColor[0];
     mGRange[0] = firstColor[1];

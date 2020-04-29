@@ -58,18 +58,21 @@ void DRComponentMovement::update()
 }
 void DRComponentMovement::onComponentChange()
 {
-    std::string primPaths;
-
     const pxr::DrSchemaMovementComponent& movPrim = (pxr::DrSchemaMovementComponent)mPrim;
     movPrim.GetCompNameAttr().Get(&mCompName);
-    movPrim.GetPrimPathsAttr().Get(&primPaths);
     movPrim.GetXRangeAttr().Get(&mXRange);
     movPrim.GetYRangeAttr().Get(&mYRange);
     movPrim.GetZRangeAttr().Get(&mZRange);
     movPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     movPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
-    boost::split(mPaths, primPaths, [](char c) { return c == ','; });
+    mPaths.clear();
+    pxr::UsdRelationship primPaths = movPrim.GetPrimPathsRel();
+    pxr::SdfPathVector targets;
+    primPaths.GetTargets(&targets);
+    for (auto target : targets)
+        mPaths.push_back(target.GetString());
+
     update();
     CARB_LOG_INFO("Movement Update: %s", mCompName.c_str());
 }

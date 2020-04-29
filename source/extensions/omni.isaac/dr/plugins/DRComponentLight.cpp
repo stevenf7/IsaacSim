@@ -60,12 +60,10 @@ void DRComponentLight::update()
 }
 void DRComponentLight::onComponentChange()
 {
-    std::string primPaths;
     pxr::GfVec3f firstColor, secondColor;
 
     const pxr::DrSchemaLightComponent& lightPrim = (pxr::DrSchemaLightComponent)mPrim;
     lightPrim.GetCompNameAttr().Get(&mCompName);
-    lightPrim.GetPrimPathsAttr().Get(&primPaths);
     lightPrim.GetFirstColorAttr().Get(&firstColor);
     lightPrim.GetSecondColorAttr().Get(&secondColor);
     lightPrim.GetIntensityRangeAttr().Get(&mLiRange);
@@ -74,7 +72,12 @@ void DRComponentLight::onComponentChange()
     lightPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     lightPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
-    boost::split(mPaths, primPaths, [](char c) { return c == ','; });
+    mPaths.clear();
+    pxr::UsdRelationship primPaths = lightPrim.GetPrimPathsRel();
+    pxr::SdfPathVector targets;
+    primPaths.GetTargets(&targets);
+    for (auto target : targets)
+        mPaths.push_back(target.GetString());
     mLrRange[0] = firstColor[0];
     mLrRange[1] = secondColor[0];
     mLgRange[0] = firstColor[1];
