@@ -58,18 +58,21 @@ void DRComponentRotation::update()
 }
 void DRComponentRotation::onComponentChange()
 {
-    std::string primPaths;
-
     const pxr::DrSchemaRotationComponent& rotPrim = (pxr::DrSchemaRotationComponent)mPrim;
     rotPrim.GetCompNameAttr().Get(&mCompName);
-    rotPrim.GetPrimPathsAttr().Get(&primPaths);
     rotPrim.GetXRangeAttr().Get(&mXRange);
     rotPrim.GetYRangeAttr().Get(&mYRange);
     rotPrim.GetZRangeAttr().Get(&mZRange);
     rotPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     rotPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
-    boost::split(mPaths, primPaths, [](char c) { return c == ','; });
+    mPaths.clear();
+    pxr::UsdRelationship primPaths = rotPrim.GetPrimPathsRel();
+    pxr::SdfPathVector targets;
+    primPaths.GetTargets(&targets);
+    for (auto target : targets)
+        mPaths.push_back(target.GetString());
+
     update();
     CARB_LOG_INFO("Rotation Update: %s", mCompName.c_str());
 }

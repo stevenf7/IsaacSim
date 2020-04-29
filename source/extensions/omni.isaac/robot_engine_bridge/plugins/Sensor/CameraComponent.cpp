@@ -124,11 +124,11 @@ void CameraComponent::tick()
         pinhole.setRows(rgbInfo.height);
         pinhole.setCols(rgbInfo.width);
         auto focal = pinhole.initFocal();
-        focal.setX(rgbInfo.width * focalLength / horizontalAperture);
-        focal.setY(rgbInfo.height * focalLength / verticalAperture);
+        focal.setX(rgbInfo.height * focalLength / verticalAperture);
+        focal.setY(rgbInfo.width * focalLength / horizontalAperture);
         auto center = pinhole.initCenter();
-        center.setX(rgbInfo.width * 0.5f);
-        center.setY(rgbInfo.height * 0.5f);
+        center.setX(rgbInfo.height * 0.5f);
+        center.setY(rgbInfo.width * 0.5f);
 
         // Distortion info
         auto distortion = cameraMessageProto.initDistortion();
@@ -178,11 +178,11 @@ void CameraComponent::tick()
         pinhole.setRows(depthInfo.height);
         pinhole.setCols(depthInfo.width);
         auto focal = pinhole.initFocal();
-        focal.setX(depthInfo.width * focalLength / horizontalAperture);
-        focal.setY(depthInfo.height * focalLength / verticalAperture);
+        focal.setX(depthInfo.height * focalLength / verticalAperture);
+        focal.setY(depthInfo.width * focalLength / horizontalAperture);
         auto center = pinhole.initCenter();
-        center.setX(depthInfo.width * 0.5f);
-        center.setY(depthInfo.height * 0.5f);
+        center.setX(depthInfo.height * 0.5f);
+        center.setY(depthInfo.width * 0.5f);
 
         std::vector<std::vector<uint8_t>> buffers(1);
         buffers[0] = std::vector<uint8_t>(depthInfo.width * depthInfo.height * sizeof(float));
@@ -217,11 +217,11 @@ void CameraComponent::tick()
         pinhole.setRows(segmentationInfo.height);
         pinhole.setCols(segmentationInfo.width);
         auto focal = pinhole.initFocal();
-        focal.setX(segmentationInfo.width * focalLength / horizontalAperture);
-        focal.setY(segmentationInfo.height * focalLength / verticalAperture);
+        focal.setX(segmentationInfo.height * focalLength / verticalAperture);
+        focal.setY(segmentationInfo.width * focalLength / horizontalAperture);
         auto center = pinhole.initCenter();
-        center.setX(segmentationInfo.width * 0.5f);
-        center.setY(segmentationInfo.height * 0.5f);
+        center.setX(segmentationInfo.height * 0.5f);
+        center.setY(segmentationInfo.width * 0.5f);
 
 
         const size_t bufferSize = segmentationInfo.width * segmentationInfo.height * sizeof(uint16_t);

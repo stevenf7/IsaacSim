@@ -1,5 +1,7 @@
 import os
+import sys
 import argparse
+import packmanapi
 
 import repoman
 
@@ -30,7 +32,11 @@ def run_command():
     if "master" not in gitbranch.lower() and "/release/" not in gitbranch.lower():
         if len(gitbranch.split("/")) > 1:
             merge_request_number = gitbranch.split("/")[1]
-            final_build_number = f"{final_build_number}-mr{merge_request_number}"
+            if merge_request_number == "heads":
+                branch_name = gitbranch.split("/")[2]
+                final_build_number = f"{final_build_number}-{branch_name}"
+            else:
+                final_build_number = f"{final_build_number}-mr{merge_request_number}"
         else:
             final_build_number = f"{final_build_number}-{gitbranch}"
 
@@ -40,8 +46,13 @@ def run_command():
         print(f"##teamcity[buildNumber '{final_build_number}']")
 
     if options.buildnumber:
-        print(final_build_number)
+        print(f"Version: {final_build_number}")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
-    run_command()
+    try:  # need to clean this up a little, but a job for another day
+        run_command()
+    except Exception:
+        print("##teamcity[buildStatus text='Error generating changelog' status='ERROR']")
+        sys.exit(1)
