@@ -288,7 +288,11 @@ workspace "omni_isaac_sim"
 
 
 group "experiences"
-    -- Default Kit Experience
+    -- Robotics default experience
+    define_experience("omniverse-kit-robotics")
+    -- Robotics headless experience
+    define_experience("omniverse-kit-robotics-headless", "--no-window")
+    -- Isaac sim default experience
     define_experience("isaac-sim")
     -- Isaac sim headless experience
     define_experience("isaac-sim-headless", "--no-window")
