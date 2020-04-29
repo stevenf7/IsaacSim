@@ -124,11 +124,11 @@ void CameraComponent::tick()
         pinhole.setRows(rgbInfo.height);
         pinhole.setCols(rgbInfo.width);
         auto focal = pinhole.initFocal();
-        focal.setX(rgbInfo.width * focalLength / horizontalAperture);
-        focal.setY(rgbInfo.height * focalLength / verticalAperture);
+        focal.setX(rgbInfo.height * focalLength / verticalAperture);
+        focal.setY(rgbInfo.width * focalLength / horizontalAperture);
         auto center = pinhole.initCenter();
-        center.setX(rgbInfo.width * 0.5f);
-        center.setY(rgbInfo.height * 0.5f);
+        center.setX(rgbInfo.height * 0.5f);
+        center.setY(rgbInfo.width * 0.5f);
 
         // Distortion info
         auto distortion = cameraMessageProto.initDistortion();
