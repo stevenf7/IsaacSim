@@ -235,7 +235,7 @@ void scan(int start,
           carb::physics::PhysX* physxPtr,
           physx::PxScene* physxScenePtr,
           pxr::LidarSchemaLidar& prim,
-          std::vector<carb::renderer::Line>& debugLines,
+          std::vector<carb::renderer::PrimitiveVertex>& debugLines,
           std::vector<uint16_t>& depth,
           std::vector<uint8_t>& intensity,
           std::vector<float>& zenith,
@@ -276,14 +276,17 @@ void scan(int start,
                 if (drawLidarPoints)
                 {
                     carb::Float3 hitPos = (const carb::Float3&)raycastHit.position;
-                    carb::renderer::Line line;
+                    carb::renderer::PrimitiveVertex startPosition, endPosition;
 
-                    line.startPosition = (const carb::Float3&)origin;
-                    line.endPosition = hitPos;
-                    line.startColor = { 199.0f / 255.0f, 244.0f / 255.0f, 100.0f / 255.0f, 1.0f };
-                    line.endColor = { 199.0f / 255.0f, 244.0f / 255.0f, 100.0f / 255.0f, 1.0f };
+                    startPosition.position = (const carb::Float3&)origin;
+                    endPosition.position = hitPos;
+                    startPosition.color = { 199.0f / 255.0f, 244.0f / 255.0f, 100.0f / 255.0f, 1.0f };
+                    endPosition.color = { 199.0f / 255.0f, 244.0f / 255.0f, 100.0f / 255.0f, 1.0f };
 
-                    debugLines.push_back(line);
+                    startPosition.width = endPosition.width = 1;
+
+                    debugLines.push_back(startPosition);
+                    debugLines.push_back(endPosition);
                 }
             }
             else
@@ -293,14 +296,16 @@ void scan(int start,
                 if (drawLidarPoints)
                 {
                     physx::PxVec3 hitPos = origin + unitDir * maxDepth;
-                    carb::renderer::Line line;
+                    carb::renderer::PrimitiveVertex startPosition, endPosition;
 
-                    line.startPosition = (const carb::Float3&)origin;
-                    line.endPosition = (const carb::Float3&)hitPos;
-                    line.startColor = { 85.0f / 255.0f, 98.0f / 255.0f, 112.0f / 255.0f, 1.0f };
-                    line.endColor = { 85.0f / 255.0f, 98.0f / 255.0f, 112.0f / 255.0f, 1.0f };
+                    startPosition.position = (const carb::Float3&)origin;
+                    endPosition.position = (const carb::Float3&)hitPos;
+                    startPosition.color = { 85.0f / 255.0f, 98.0f / 255.0f, 112.0f / 255.0f, 1.0f };
+                    endPosition.color = { 85.0f / 255.0f, 98.0f / 255.0f, 112.0f / 255.0f, 1.0f };
+                    startPosition.width = endPosition.width = 1;
 
-                    debugLines.push_back(line);
+                    debugLines.push_back(startPosition);
+                    debugLines.push_back(endPosition);
                 }
             }
 

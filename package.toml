@@ -40,21 +40,24 @@ files = []
 
 [omni_isaac_sim]
 files = [
-    ["_build/$platform/$config/apps"],
+    ["_build/$platform/$config/experiences"],
     ["_build/$platform/$config/exts"],
     ["PACKAGE-LICENSES", "PACKAGE-LICENSES"],
     ["_build/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
     ["source/extensions/omni.isaac/dr/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
 
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/config", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/config"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/experiences", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/experiences"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/extensions/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/extensions"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/extsPhysics/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/extsPhysics"],
-    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit.portable", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit.portable"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/pythonapps", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/pythonapps"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/resources/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/resources"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/scripts/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/scripts"],
+
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit.portable", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit.portable"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*$shell_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
-    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/pythonapps", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/pythonapps"],
-    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/apps", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/apps"],
+    
 
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/**/*$lib_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl/**/*$lib_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl"],
@@ -62,12 +65,11 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/assets/**", "_build/target-deps/kit_sdk_$config/_build/assets"],
     ["_build/target-deps/kit_sdk_$config/_build/library/**", "_build/target-deps/kit_sdk_$config/_build/library"],
     ["_build/target-deps/kit_sdk_$config/_build/manuals", "_build/target-deps/kit_sdk_$config/_build/manuals"],
-    ["_build/target-deps/kit_sdk_$config/_build/target-deps/python/**", "_build/target-deps/kit_sdk_$config/_build/target-deps/python"],
-    ["_build/target-deps/kit_sdk_$config/_build/shaders", "_build/target-deps/kit_sdk_$config/_build/shaders"],
     ["_build/target-deps/kit_sdk_$config/_build/mdl", "_build/target-deps/kit_sdk_$config/_build/mdl"],
+    ["_build/target-deps/kit_sdk_$config/_build/shaders", "_build/target-deps/kit_sdk_$config/_build/shaders"],
+    ["_build/target-deps/kit_sdk_$config/_build/target-deps/python/**", "_build/target-deps/kit_sdk_$config/_build/target-deps/python"],
     ["_build/target-deps/kit_sdk_$config/data/**", "_build/target-deps/kit_sdk_$config/data"],    
     ["_build/target-deps/kit_sdk_$config/deps/**", "_build/target-deps/kit_sdk_$config/deps"],
-    ["_build/target-deps/kit_sdk_$config/examples/**", "_build/target-deps/kit_sdk_$config/examples"],
     ["_build/target-deps/kit_sdk_$config/include", "_build/target-deps/kit_sdk_$config/include"],
     ["_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES", "_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES"],
     #["_build/target-deps/kit_sdk_$config/tools/packman/**", "_build/target-deps/kit_sdk_$config/tools/packman"] 
@@ -76,7 +78,7 @@ files = [
 
 [omni_isaac_sim.windows-x86_64]
 files = [
-    ["_build/$platform/$config/omniverse-kit.bat"],
+    ["_build/$platform/$config/*.bat", "_build/$platform/$config"],
 
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*.exe", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/assimp-vc141-mt.dll"],
@@ -113,7 +115,7 @@ files = [
 
 [omni_isaac_sim.linux]
 files = [
-    ["_build/$platform/$config/omniverse-kit.sh"],
+    ["_build/$platform/$config/*.sh", "_build/$platform/$config"],
 
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*.so*", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/example.rtx"],
