@@ -150,11 +150,11 @@ def SetupPhysics(stage):
 
     PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physics/scene"))
     physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/physics/scene")
-    physxSceneAPI.CreateEnableCCDAttr(True)
-    physxSceneAPI.CreateEnableStabilizationAttr(True)
-    physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
-    physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
-    physxSceneAPI.CreateSolverTypeAttr("TGS")
+    physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
+    physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
+    physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
+    physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
+    physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
 
 
 class Scenario:

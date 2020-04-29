@@ -1,7 +1,10 @@
 {
     "app": {
         "window": {
-            "title": "Omniverse Kit: Isaac Sim"
+            "title": "Omniverse Isaac Sim Headless"
+        },
+        "settings": {
+            "persistent": true,
         },
         "extensions": {
             "folders2": ["${kit}/exts","${kit}/extsPhysics","${app}/../exts"],

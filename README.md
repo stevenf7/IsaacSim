@@ -84,7 +84,7 @@ Docker manually, the process goes roughly as follows on Ubuntu systems:
 ## Running omniverse-kit
 
 - Go to debug or release folder under _build/xxx-x86_64 (x86_64 platforms only)
-- Execute `./omniverse-kit.sh` (Linux) / `omniverse-kit.exe` (Windows)
+- Execute `./isaac-sim.sh` (Linux) / `isaac-sim.bat` (Windows)
 
 ---
 
@@ -171,7 +171,7 @@ Ex: Adding a new resolution of 1024x768:
     }
 },
 ```
-Run ``./build.sh`` to update the application config so that it gets executed the next time you run ./omniverse-kit.sh
+Run ``./build.sh`` to update the application config so that it gets executed the next time you run ./isaac-sim.sh
 
 ### Running headless and connecting via a remote client
 
@@ -182,7 +182,7 @@ Run the client:
 ``./omniverse-kit-remote.app -s server_ip``
 
 On the server machine Launch kit via:
-``./_build/linux-x86_64/release/omniverse-kit.sh --no-window --carb/app/livestream/enabled=true``
+``./_build/linux-x86_64/release/isaac-sim-headless.sh``
 
 ### Running TeamCity builds and tests locally
  
