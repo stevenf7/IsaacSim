@@ -58,10 +58,10 @@ if %errorlevel% neq 0 ( exit /b %errorlevel% )
 call "%~dp0..\..\..\package.bat" -m docs
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
-call "%~dp0..\..\..\package.bat" -m omni_isaac_sim -c debug
+call "%~dp0..\..\..\package.bat" -m isaac-sim -c debug
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
-call "%~dp0..\..\..\package.bat" -m omni_isaac_sim -c release
+call "%~dp0..\..\..\package.bat" -m isaac-sim -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 call "%~dp0..\..\..\package.bat" -m omni_domain_randomization -c debug
