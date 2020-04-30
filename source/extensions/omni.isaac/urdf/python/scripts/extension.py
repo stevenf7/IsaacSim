@@ -17,6 +17,9 @@ class Extension(omni.ext.IExt):
         self._urdf_interface = _urdf.acquire_urdf_interface()
         menu_path = f"Window/{EXTENSION_NAME}"
         self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, menu_path=menu_path)
+        merge_fixed_joints_checkbox = omni.kit.ui.CheckBox("Merge Fixed Joints")
+        merge_fixed_joints_checkbox.set_on_changed_fn(self._on_merge_fixed_joints_fn)
+        self._window.layout.add_child(merge_fixed_joints_checkbox)
         self._btn_load = self._window.layout.add_child(omni.kit.ui.Button("Load URDF"))
         self._btn_load.set_clicked_fn(self._select_file)
 
@@ -26,6 +29,9 @@ class Extension(omni.ext.IExt):
             self._urdf_interface.importUrdf(path)
         else:
             print("Only local paths supported currently")
+
+    def _on_merge_fixed_joints_fn(self, value):
+        self._urdf_interface.merge_fixed_joints(value)
 
     def _select_file(self, btn_widget):
         self._filepicker = omni.kit.ui.FilePicker("Select URDF File", file_type=omni.kit.ui.FileDialogSelectType.FILE)

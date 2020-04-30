@@ -26,6 +26,11 @@ public:
     /// Construct with an optional epsilon value.
     explicit UsdUrdfStream();
 
+    void SetDoMergeJoints(bool doMergeJoints)
+    {
+        _doMergeJoints = doMergeJoints;
+    }
+
     void SetRobotModel(NvIsaac::IRobotModel* model)
     {
         _robotModel = model;
@@ -60,6 +65,8 @@ public:
 
 
 private:
+    bool _doMergeJoints = false;
+
     // The "stream" is really just a pointer to a DOM and graphics loaded with RobotImpSDK
     NvIsaac::IRobotModel* _robotModel;
 

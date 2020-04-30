@@ -44,6 +44,7 @@ omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 pxr::UsdStageRefPtr g_stage = nullptr;
 
+std::unique_ptr<UsdUrdfStream> g_urdfStream = nullptr;
 
 void importUrdf(std::string filename)
 {
@@ -59,16 +60,15 @@ void importUrdf(std::string filename)
 
         std::string error;
 
-        UsdUrdfStream urdfStream;
-        urdfStream.SetFileName(filename);
-        if (!urdfStream.UsdUrdfReadDataFromStream(fin, &error))
+        g_urdfStream->SetFileName(filename);
+        if (!g_urdfStream->UsdUrdfReadDataFromStream(fin, &error))
         {
             CARB_LOG_ERROR("Failed to READ \"%s\"", filename.c_str());
         }
         else
         {
 
-            pxr::SdfLayerRefPtr urdfAsUsd = urdfStream.UsdUrdfTranslateUrdfToUsd();
+            pxr::SdfLayerRefPtr urdfAsUsd = g_urdfStream->UsdUrdfTranslateUrdfToUsd();
             if (!urdfAsUsd)
             {
                 CARB_LOG_ERROR("Failed to CONVERT \"%s\"", filename.c_str());
@@ -81,6 +81,10 @@ void importUrdf(std::string filename)
     }
 }
 
+void mergeFixedJoints(bool merge)
+{
+    g_urdfStream->SetDoMergeJoints(merge);
+}
 
 void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
@@ -105,7 +109,7 @@ CARB_EXPORT void carbOnPluginStartup()
     // Get app interface using Carbonite Framework
     g_framework = carb::getFramework();
     g_stageUpdate = g_framework->acquireInterface<omni::kit::IStageUpdate>();
-
+    g_urdfStream = std::make_unique<UsdUrdfStream>();
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "IsaacUrdfUtils";
@@ -117,6 +121,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
+    g_urdfStream = nullptr;
 }
 
 
@@ -124,4 +129,5 @@ void fillInterface(omni::isaac::urdf::Urdf& iface)
 {
     memset(&iface, 0, sizeof(iface));
     iface.importUrdf = importUrdf;
+    iface.mergeFixedJoints = mergeFixedJoints;
 }
