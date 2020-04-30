@@ -21,18 +21,14 @@ EXTENSION_DESC = "A UI for viewing and applying semantics to the semantics USD l
 
 
 class Extension(omni.ext.IExt):
-    lbl_no_selection = ui.Label("Select an object to display the semantic data")
-
-    display_paths = []
-    prims_to_update = {}
-
-    def __init__(self):
+    def on_startup(self):
+        """Caled to load the extension"""
         self._window = None
         self._editor = omni.kit.editor.get_editor_interface()
         self._stage = omni.usd.get_context()
-
-    def on_startup(self):
-        """Caled to load the extension"""
+        self.display_paths = []
+        self.prims_to_update = {}
+        self.lbl_no_selection = ui.Label("Select an object to display the semantic data")
         self._window = ui.Window(
             EXTENSION_NAME,
             600,
