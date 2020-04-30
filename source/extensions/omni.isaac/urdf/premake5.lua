@@ -52,7 +52,7 @@ group ("extensions/"..ext_id)
         }
 
         links { 
-            "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools"
+            "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools", "physxSchema"
         }
         
         filter { "system:linux" }

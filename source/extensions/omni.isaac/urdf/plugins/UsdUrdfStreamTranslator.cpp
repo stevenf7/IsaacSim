@@ -27,6 +27,8 @@
 #include <PhysicsSchema/sphericalPhysicsJoint.h>
 #include <PhysicsSchemaTools/UsdTools.h>
 
+#include <PhysxSchema/physxMeshCollisionAPI.h>
+
 // #include <PxPhysicsAPI.h>
 
 #include <NvIsaacRobotModel.h>
@@ -371,10 +373,9 @@ void AddCollisionMeshesToStage(UsdStageRefPtr stage,
                                                    ));
     for (int sm = 0; sm < subMeshCount; sm++)
     {
-        pxr::UsdGeomPoints convexMesh =
-            pxr::UsdGeomPoints::Define(stage, SdfPath(meshPath.GetString() //+ "_" +
-                                                                           // std::to_string(sm)
-                                                      ));
+        pxr::UsdGeomMesh convexMesh = pxr::UsdGeomMesh::Define(stage, SdfPath(meshPath.GetString() //+ "_" +
+                                                                                                   // std::to_string(sm)
+                                                                              ));
 
         convexMesh.GetPrim().GetReferences().AddInternalReference(SdfPath(
             robotPath.GetString() + COLLISION_MESH_NAME + std::to_string(meshIndex) + "/_" + std::to_string(sm)));
@@ -440,10 +441,12 @@ int AddInstanceMeshesToStage(
         SdfPath smPath = SdfPath(meshPath.GetString() + "/_" + std::to_string(k));
         if (isCollision)
         {
-            pxr::UsdGeomPoints convexMesh = pxr::UsdGeomPoints::Define(stage, smPath);
+            pxr::UsdGeomMesh convexMesh = pxr::UsdGeomMesh::Define(stage, smPath);
             convexMesh.CreatePointsAttr().Set(usdPoints);
             convexMesh.CreateExtentAttr().Set(extentArray);
             PhysicsSchemaCollisionAPI::Apply(convexMesh.GetPrim());
+            PhysxSchemaPhysxMeshCollisionAPI physxMeshAPI = PhysxSchemaPhysxMeshCollisionAPI::Apply(convexMesh.GetPrim());
+            physxMeshAPI.CreatePhysxMeshCollisionApproximationAttr().Set(PhysxSchemaTokens.Get()->convexHull);
         }
         else
         {
