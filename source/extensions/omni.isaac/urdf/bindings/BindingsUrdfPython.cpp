@@ -33,6 +33,7 @@ PYBIND11_MODULE(_urdf, m)
     m.doc() = "Isaac URDF Utils bindings";
 
     defineInterfaceClass<Urdf>(m, "Urdf", "acquire_urdf_interface", "release_urdf_interface")
-        .def("importUrdf", wrapInterfaceFunction(&Urdf::importUrdf));
+        .def("importUrdf", wrapInterfaceFunction(&Urdf::importUrdf))
+        .def("merge_fixed_joints", wrapInterfaceFunction(&Urdf::mergeFixedJoints));
 }
 }

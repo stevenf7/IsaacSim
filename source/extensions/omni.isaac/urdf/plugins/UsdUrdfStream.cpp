@@ -89,7 +89,7 @@ bool UsdUrdfStream::UsdUrdfReadDataFromStream(std::istream& input, std::string* 
     }
 
     NvIsaac::RobotModelImportSettings settings;
-    settings.mergeBodiesConnectedByFixedJoints = 0;
+    settings.mergeBodiesConnectedByFixedJoints = _doMergeJoints;
 
     NvIsaac::IRobotModel* model =
         modelMgr->importModel(GetFileName().c_str(), settings, inputAsVec.data(), inputAsVec.size());
