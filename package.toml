@@ -66,7 +66,7 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/library/**", "_build/target-deps/kit_sdk_$config/_build/library"],
     ["_build/target-deps/kit_sdk_$config/_build/manuals", "_build/target-deps/kit_sdk_$config/_build/manuals"],
     ["_build/target-deps/kit_sdk_$config/_build/mdl", "_build/target-deps/kit_sdk_$config/_build/mdl"],
-    ["_build/target-deps/kit_sdk_$config/_build/shaders", "_build/target-deps/kit_sdk_$config/_build/shaders"],
+    #["_build/target-deps/kit_sdk_$config/_build/shaders", "_build/target-deps/kit_sdk_$config/_build/shaders"],
     ["_build/target-deps/kit_sdk_$config/_build/target-deps/python/**", "_build/target-deps/kit_sdk_$config/_build/target-deps/python"],
     ["_build/target-deps/kit_sdk_$config/data/**", "_build/target-deps/kit_sdk_$config/data"],    
     ["_build/target-deps/kit_sdk_$config/deps/**", "_build/target-deps/kit_sdk_$config/deps"],
