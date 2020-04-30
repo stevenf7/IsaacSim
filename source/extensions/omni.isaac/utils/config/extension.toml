@@ -6,3 +6,10 @@ display_name = "Isaac Utilities"
 [[python.modules]]
 name = "omni.isaac.utils"
 
+[[python.modules]]
+name = "omni.isaac.utils.scripts.prim_rel_editor"
+public = false
+
+[[python.modules]]
+name = "omni.isaac.utils.scripts.semantics_ui"
+public = false
