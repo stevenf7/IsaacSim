@@ -173,20 +173,18 @@ class Scenario:
         self._executor = None
         self._created = False
 
-        self.asset_path = "omni:/Projects/fof_bmw"
+        self.asset_path = "omni:/Projects/gtc_sj_2020"
         # use local content if not connected to omni server
         if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
             print("Use local content")
-            self.asset_path = "art_assets/fof_bmw"
+            self.asset_path = "art_assets/gtc_sj_2020"
         else:
             print("Use server content")
 
-        # self.ur10_table_usd = self.asset_path + "/Stage/StageD6.usd"
         self.ur10_table_usd = self.asset_path + "/Stage/StageD6SRT.usd"
         self.normal_klt_usd = self.asset_path + "/props/NormalKLT.usd"
         self.small_klt_usd = self.asset_path + "/props/SmallKLT.usd"
         self.small_tray_scale = np.array([0.19, 0.296, 0.08])
-        # self.UR10_ghost_usd = self.asset_path + "/Stage/UR10_Ghost.usd"
         self.background_usd = self.asset_path + "/Backgrounds/Warehouse/Warehouse_Empty_small.usd"
         self.rubiks_cube_usd = self.asset_path + "/props/Rubiks_Cube/Rubiks_Cube.usd"
 
