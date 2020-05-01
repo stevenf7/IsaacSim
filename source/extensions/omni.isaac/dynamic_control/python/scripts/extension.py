@@ -24,24 +24,24 @@ class Extension(omni.ext.IExt):
         print("Loading Dynamic Control Extension")
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
-        menu_path = f"Window/{EXTENSION_NAME}"
-        self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, menu_path=menu_path, add_to_menu=True)
-        self._window.hide()
-        self._build_window_ui()
-        self._window.set_update_fn(self._on_window_update)
+        # menu_path = f"Window/{EXTENSION_NAME}"
+        # self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, menu_path=menu_path, add_to_menu=True)
+        # self._window.hide()
+        # self._build_window_ui()
+        # self._window.set_update_fn(self._on_window_update)
 
-        self._editor = omni.kit.editor.get_editor_interface()
+        # self._editor = omni.kit.editor.get_editor_interface()
 
-        self._physx = omni_physx.acquire_physx_interface()
-        self._physics_subscription = self._physx.subscribe_physics_step_events(self._on_physics_step)
+        # self._physx = omni_physx.acquire_physx_interface()
+        # self._physics_subscription = self._physx.subscribe_physics_step_events(self._on_physics_step)
 
-        # active script
-        self._script = None
+        # # active script
+        # self._script = None
 
-        self._is_playing = self._editor.is_playing()
+        # self._is_playing = self._editor.is_playing()
 
-        for b in self._dynamic_buttons:
-            b.enabled = self._is_playing
+        # for b in self._dynamic_buttons:
+        #     b.enabled = self._is_playing
 
     def on_shutdown(self):
         print("Shutting down Dynamic Control")
