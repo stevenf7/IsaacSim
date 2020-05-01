@@ -196,6 +196,22 @@ void DRManager::loadComponentFromUsd()
     }
 }
 
+void DRManager::tickManual()
+{
+    if (mLayer && mRootLayerIdentifier.compare(mLayer->getAuthoringLayerIdentifier()) == 0)
+        mLayer->setAuthoringLayerByIdentifier(mRootLayerIdentifier);
+
+    if (mDoOnce == false)
+    {
+        loadComponentFromUsd();
+        mDoOnce = true;
+    }
+
+    for (auto& component : mAllComponents)
+        if (component.second)
+            component.second->tick();
+}
+
 void DRManager::handlePrimChanged(const class pxr::UsdNotice::ObjectsChanged& objectsChanged)
 {
     if (mStage != objectsChanged.GetStage())

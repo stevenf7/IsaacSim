@@ -47,6 +47,7 @@ carb::tokens::ITokens* g_tokens = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 static pxr::UsdStageWeakPtr g_stage = nullptr;
 std::unique_ptr<omni::isaac::dr::DRManager> Manager;
+bool manualMode = false;
 
 static void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
@@ -92,7 +93,7 @@ bool HasAttribute(const pxr::UsdPrim& prim, const pxr::TfToken& name)
 
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
 {
-    if (!settings->isPlaying)
+    if (!settings->isPlaying || manualMode)
     {
         return;
     }
@@ -161,7 +162,22 @@ void loadComponentFromUsd()
     }
 }
 
+void randomizeOnce()
+{
+    if (Manager && manualMode)
+    {
+        Manager->tickManual();
+    }
+}
+
+void toggleManualMode()
+{
+    manualMode = !manualMode;
+}
+
 void fillInterface(omni::isaac::dr::DomainRandomizer& iface)
 {
     iface.loadComponentFromUsd = loadComponentFromUsd;
+    iface.randomizeOnce = randomizeOnce;
+    iface.toggleManualMode = toggleManualMode;
 }

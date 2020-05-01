@@ -43,6 +43,7 @@ public:
     void onComponentRemove(const pxr::SdfPath& primPath);
     void deleteAllComponents();
     void loadComponentFromUsd();
+    void tickManual();
 
 private:
     void handlePrimChanged(const class pxr::UsdNotice::ObjectsChanged& objectsChanged);
