@@ -221,7 +221,7 @@ class DRMenu:
         self.btn_randomize_once = omni.kit.ui.Button("Randomize Once")
         self.btn_randomize_once.set_clicked_fn(self._randomize_once)
         manual_layout.add_child(self.btn_randomize_once)
-        
+
         usd_layout = omni.kit.ui.RowColumnLayout(3, True)
         layout_collapsing.add_child(usd_layout)
         usd_layout.set_column_width(0, 150)
