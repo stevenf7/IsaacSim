@@ -258,9 +258,10 @@ private:
 
             mEditor->getRenderer()->updatePrimitiveListSettings(mEditor->getRenderContext(), mDebugLineList, settings);
             mEditor->getRenderer()->updatePrimitiveListInstances(
-                mEditor->getRenderContext(), mDebugLineList, &inst, 0, 1);
-            mEditor->getRenderer()->updatePrimitiveListVertices(
-                mEditor->getRenderContext(), mDebugLineList, mDebugLineVector.data(), 0, mDebugLineVector.size());
+                mEditor->getRenderContext(), mDebugLineList, &inst, 0, 1, 1);
+            mEditor->getRenderer()->updatePrimitiveListVertices(mEditor->getRenderContext(), mDebugLineList,
+                                                                mDebugLineVector.data(), 0, mDebugLineVector.size(),
+                                                                mDebugLineVector.size());
         }
     }
 
