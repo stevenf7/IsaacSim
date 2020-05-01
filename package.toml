@@ -46,6 +46,7 @@ files = [
     ["_build/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
     ["source/extensions/omni.isaac/dr/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
 
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/cache/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/cache"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/config", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/config"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/experiences", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/experiences"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/extensions/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/extensions"],
