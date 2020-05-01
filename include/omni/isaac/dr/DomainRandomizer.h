@@ -28,6 +28,8 @@ struct DomainRandomizer
     CARB_PLUGIN_INTERFACE("omni::isaac::dr::DomainRandomizer", 0, 1);
 
     void(CARB_ABI* loadComponentFromUsd)();
+    void(CARB_ABI* randomizeOnce)();
+    void(CARB_ABI* toggleManualMode)();
 };
 }
 }

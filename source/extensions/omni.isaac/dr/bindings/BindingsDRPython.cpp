@@ -41,6 +41,12 @@ PYBIND11_MODULE(_dr, m)
     defineInterfaceClass<DomainRandomizer>(m, "DomainRandomizer", "acquire_dr_interface", "release_dr_interface")
         .def("load_component_from_usd", wrapInterfaceFunction(&DomainRandomizer::loadComponentFromUsd), R"pbdoc(
                  Loads DR components from USD file.
+             )pbdoc")
+        .def("randomize_once", wrapInterfaceFunction(&DomainRandomizer::randomizeOnce), R"pbdoc(
+                 Randomizes the scene once.
+             )pbdoc")
+        .def("toggle_manual_mode", wrapInterfaceFunction(&DomainRandomizer::toggleManualMode), R"pbdoc(
+                 Toggles mode between manual and non-manual.
              )pbdoc");
 }
 }
