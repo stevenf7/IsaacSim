@@ -44,7 +44,7 @@ def main():
 
     # To help find any shared libs that the extensions load:
     all_bindir = list(glob.glob(f"{path_to_extensions}/*/bin/{platform_host}/{options.config}/"))
-    if 'LD_LIBRARY_PATH' in os.environ:
+    if "LD_LIBRARY_PATH" in os.environ:
         os.environ["LD_LIBRARY_PATH"] += os.pathsep.join([sphinx_path] + all_bindir)
     else:
         os.environ["LD_LIBRARY_PATH"] = os.pathsep.join([sphinx_path] + all_bindir)
