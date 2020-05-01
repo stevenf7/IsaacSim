@@ -3,7 +3,7 @@ omni.isaac.dr
 
 Example of Python only extension
 
-.. automodule:: omni.isaac.dr
+.. automodule:: omni.isaac.dr._dr
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:

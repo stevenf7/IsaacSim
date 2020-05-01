@@ -1,9 +1,9 @@
-omni.isaac.lidar
+omni.isaac.urdf
 ###########################
 
 Example of Python only extension
 
-.. automodule:: omni.isaac.lidar._lidar
+.. automodule:: omni.isaac.urdf._urdf
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
