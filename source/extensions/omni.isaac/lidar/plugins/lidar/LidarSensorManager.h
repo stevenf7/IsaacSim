@@ -90,9 +90,11 @@ public:
      */
     ~LidarSensorManager()
     {
+        mViewportUiEventSub = nullptr;
         mTasking->yieldUntilCounter(mTaskCounter);
-        releaseDebugLineList();
+        // releaseDebugLineList();
         mTasking->destroyCounter(mTaskCounter);
+        mComponents.clear();
     }
     /**
      * @brief Tick the application and all components
@@ -214,8 +216,11 @@ private:
     {
         if (mDebugLineList)
         {
-            mEditor->getRenderer()->destroyPrimitiveList(mEditor->getRenderContext(), mDebugLineList);
-            mDebugLineList = nullptr;
+            if (mEditor->getRenderer())
+            {
+                mEditor->getRenderer()->destroyPrimitiveList(mEditor->getRenderContext(), mDebugLineList);
+                mDebugLineList = nullptr;
+            }
 
             mDebugLineVector.resize(0);
             mDebugLineVector.shrink_to_fit();
