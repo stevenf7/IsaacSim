@@ -1,7 +1,0 @@
-name = "Python Extension Example"
-
-[dependencies]
-"omni.kit.editor" = {}
-
-[python.modules]
-"example.python_extension" = { public = true }
