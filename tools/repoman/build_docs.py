@@ -38,9 +38,9 @@ def main():
         f"{ROOT_DIR}/_build/target-deps/kit_sdk_{options.config}/_build/{platform_host}/{options.config}/extsPhysics/"
     )
     all_exts = list(glob.glob(f"{path_to_extensions}/*/"))
-    all_kit_exts = list(glob.glob(f"{path_to_physics_extensions}/*/"))
+    all_physics_exts = list(glob.glob(f"{path_to_physics_extensions}/*/"))
     os.environ["PYTHONPATH"] += os.pathsep.join([sphinx_path] + all_exts)
-    os.environ["PYTHONPATH"] += os.pathsep.join([sphinx_path] + all_kit_exts)
+    os.environ["PYTHONPATH"] += os.pathsep.join([sphinx_path] + all_physics_exts)
 
     # To help find any shared libs that the extensions load:
     all_bindir = list(glob.glob(f"{path_to_extensions}/*/bin/{platform_host}/{options.config}/"))
