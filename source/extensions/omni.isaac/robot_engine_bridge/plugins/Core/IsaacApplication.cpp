@@ -13,6 +13,7 @@
 #include "../Scenario/SceneLoader.h"
 #include "../Sensor/LidarComponent.h"
 #include "../Sensor/CameraComponent.h"
+#include "../Monitor/ContactMonitor.h"
 
 namespace omni
 {
@@ -232,6 +233,12 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     {
         component = std::make_unique<CameraComponent>();
         component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineCamera(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineContactMonitor>())
+    {
+        component = std::make_unique<ContactMonitor>(mDynamicControlPtr);
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineContactMonitor(prim), mStage);
     }
     if (component)
     {
