@@ -175,8 +175,7 @@ void ContactMonitor::processContact(carb::events::IEvent* e)
         }
         std::vector<std::vector<uint8_t>> buffers;
 
-        kj::String json_message = isaac_message::gJsonCodec.encode(collisionProto);
-        // printf("JSON: %s\n",json_message.cStr());
+        // printf("JSON: %s\n", isaac_message::gJsonCodec.encode(collisionProto).cStr());
         publish(mOutputComponent, mOutputChannel, collisionProto, isaac_message::RigidBody3GroupProtoId, buffers);
     }
 }
