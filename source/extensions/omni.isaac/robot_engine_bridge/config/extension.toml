@@ -13,6 +13,10 @@ name = "omni.isaac.robot_engine_bridge"
 name = "omni.isaac.RobotEngineBridgeSchema"
 public = false
 
+[[python.modules]]
+name = "omni.isaac.robot_engine_bridge.scripts.setup_environment_grid"
+public = false
+
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false
