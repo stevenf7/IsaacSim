@@ -16,8 +16,7 @@ import omni.kit.editor
 
 from pxr import Usd, UsdGeom, Semantics
 
-EXTENSION_NAME = "Semantics Schema UI"
-EXTENSION_DESC = "A UI for viewing and applying semantics to the semantics USD layer"
+EXTENSION_NAME = "Semantics Schema Editor"
 
 
 class Extension(omni.ext.IExt):
@@ -33,9 +32,11 @@ class Extension(omni.ext.IExt):
             EXTENSION_NAME,
             600,
             400,
+            menu_path=f"Window/Isaac/{EXTENSION_NAME}",
             dock=omni.kit.ui.DockPreference.RIGHT_BOTTOM,
-            flags=omni.kit.ui.WINDOW_FLAGS_NO_FOCUS_ON_APPEARING,
-            add_to_menu=False,
+            # flags=omni.kit.ui.WINDOW_FLAGS_NO_FOCUS_ON_APPEARING,
+            add_to_menu=True,
+            open=False,
         )
         self._build_window_ui()
         self._selection_sub = self._stage.get_stage_event_stream().create_subscription_to_pop(

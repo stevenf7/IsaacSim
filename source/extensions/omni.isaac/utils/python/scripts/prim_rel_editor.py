@@ -83,10 +83,11 @@ class Extension(omni.ext.IExt):
             "Relationship Editor",
             100,
             200,
-            menu_path=f"Utilities/Relationship Editor",
+            menu_path=f"Window/Isaac/Relationship Editor",
             dock=omni.kit.ui.DockPreference.RIGHT_BOTTOM,
-            flags=omni.kit.ui.WINDOW_FLAGS_NO_FOCUS_ON_APPEARING,
+            # flags=omni.kit.ui.WINDOW_FLAGS_NO_FOCUS_ON_APPEARING,
             add_to_menu=True,
+            open=False,
         )
         # self._rel_editor_window.hide()
         self._layout = self._rel_editor_window.layout

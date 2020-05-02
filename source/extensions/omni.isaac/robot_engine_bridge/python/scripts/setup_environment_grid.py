@@ -10,6 +10,7 @@
 from pxr import Usd, UsdGeom, Sdf, Gf
 import omni.kit.editor
 import omni.usd
+import omni.ext
 
 
 # Utility function to specify the stage with the z axis as "up"
@@ -45,7 +46,11 @@ class Extension(omni.ext.IExt):
         self._editor = omni.kit.editor.get_editor_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._window = omni.kit.ui.Window("Setup Environment Grid", 960, 600)
+        extension_name = "Setup Environment Grid"
+        menu_path = f"Window/Isaac/{extension_name}"
+        self._window = omni.kit.ui.Window(
+            "Setup Environment Grid", 960, 300, menu_path=menu_path, dock=omni.kit.ui.DockPreference.LEFT_BOTTOM
+        )
         self._create_ui()
         pass
 

@@ -17,11 +17,13 @@ class Extension(omni.ext.IExt):
         print("Starting Robot Engine Bridge Extension")
         self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
 
-        menu_path = f"Window/{EXTENSION_NAME}"
+        menu_path = f"Window/Isaac/{EXTENSION_NAME}"
         self._editor = omni.kit.editor.get_editor_interface()
         # active script
         self._script = None
-        self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, menu_path=menu_path)
+        self._window = omni.kit.ui.Window(
+            EXTENSION_NAME, 960, 300, menu_path=menu_path, dock=omni.kit.ui.DockPreference.LEFT_BOTTOM
+        )
 
         self._settings = omni.kit.settings.get_settings_interface()
         json_path_input = self._settings.get("/isaac/robot_engine_bridge/json")
