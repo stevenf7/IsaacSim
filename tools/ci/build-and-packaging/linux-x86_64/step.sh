@@ -5,9 +5,12 @@ set -e
 SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 ROOT_DIR="$SCRIPT_DIR/../../../.."
 
+if [ -z "$TEAMCITY_VERSION" ]
+then
 # Verify formatting
 echo "##teamcity[progressMessage 'Verify formatting...']"
 "$ROOT_DIR/format_code.sh" --verify
+fi
 
 # Full rebuild
 echo "##teamcity[progressMessage 'Full rebuild...']"

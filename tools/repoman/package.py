@@ -63,6 +63,7 @@ def create_docs_package_desc(platform_target: str, config) -> omni.repo.package.
     package = create_package_desc(platform_target, config)
     package.name = "docs"
     package.ziponly = True
+    package.custom_platform = False
     return package
 
 
@@ -70,6 +71,7 @@ def create_testrunner_package_desc(platform_target: str, config) -> omni.repo.pa
     package = create_package_desc(platform_target, config)
     package.name = "test_runner"
     package.ziponly = True
+    package.custom_platform = False
     return package
 
 
