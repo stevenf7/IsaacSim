@@ -27,6 +27,7 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 #include <carb/dictionary/DictionaryUtils.h>
+#include <carb/physx/physx.h>
 
 #include <unordered_map>
 #include <string>
@@ -52,7 +53,8 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::isaac::dynamic_control::DynamicControl,
                       omni::kit::IStageUpdate,
                       omni::isaac::lidar::LidarInterface,
-                      carb::syntheticdata::SyntheticData)
+                      carb::syntheticdata::SyntheticData,
+                      carb::physics::PhysX)
 
 // private stuff
 namespace
@@ -64,6 +66,7 @@ carb::dictionary::ISerializer* g_jsonSerializer = nullptr;
 omni::isaac::dynamic_control::DynamicControl* g_dynamicControl = nullptr;
 carb::dictionary::IDictionary* g_iDict = nullptr;
 pxr::UsdStageRefPtr g_stage = nullptr;
+carb::physics::PhysX* g_physx = nullptr;
 
 std::unique_ptr<omni::isaac::robot_engine_bridge::IsaacCApi> g_c_api;
 std::unique_ptr<omni::isaac::robot_engine_bridge::IsaacApplication> g_application_handle;
@@ -201,7 +204,12 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("Failed to acquire carb::dictionary::IDictionary interface");
         return;
     }
-
+    g_physx = g_framework->acquireInterface<carb::physics::PhysX>();
+    if (!g_physx)
+    {
+        CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
+        return;
+    }
     g_c_api = std::make_unique<omni::isaac::robot_engine_bridge::IsaacCApi>();
 
     g_application_handle = std::make_unique<omni::isaac::robot_engine_bridge::IsaacApplication>(

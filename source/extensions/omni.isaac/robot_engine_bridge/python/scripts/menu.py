@@ -16,6 +16,7 @@ ADD_TELEPORT_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Teleport"
 ADD_SCENARIOFROMMESSAGE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Scenario From Message"
 ADD_LIDAR_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Lidar"
 ADD_CAMERA_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Camera"
+ADD_CONTACTMONITOR_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Contact Monitor"
 
 
 class RobotEngineBridgeMenu:
@@ -36,6 +37,7 @@ class RobotEngineBridgeMenu:
         self._menus.append(editor_menu.add_item(ADD_SCENARIOFROMMESSAGE_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_LIDAR_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_CAMERA_SCENE_MENU_ITEM, self._on_scene_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_CONTACTMONITOR_SCENE_MENU_ITEM, self._on_scene_menu_click))
 
     def setup_base_prim(self, prim):
         prim.CreateNodeNameAttr("interface")
@@ -219,6 +221,21 @@ class RobotEngineBridgeMenu:
         prim.CreateLidarPrimRel()
         pass
 
+    def add_contact_monitor(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_ContactMonitor", False)
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_ContactMonitor", True)
+
+        prim = REBSchema.RobotEngineContactMonitor.Define(self._stage, path)
+        self.setup_base_prim(prim)
+        prim.CreateOutputComponentAttr("output")
+        prim.CreateOutputChannelAttr("collision")
+        prim.CreateTargetPrimRel()
+        prim.CreateIgnoredPrimsRel()
+        prim.CreateForceThresholdAttr(1000.0)
+        pass
+
     def _on_scene_menu_click(self, menu, value):
         self._stage = self._usd_context.get_stage()
         selectedPrims = self._usd_context.get_selection().get_selected_prim_paths()
@@ -247,6 +264,8 @@ class RobotEngineBridgeMenu:
             self.add_lidar(curr_prim)
         elif menu == ADD_CAMERA_SCENE_MENU_ITEM:
             self.add_camera(curr_prim)
+        elif menu == ADD_CONTACTMONITOR_SCENE_MENU_ITEM:
+            self.add_contact_monitor(curr_prim)
 
     def shutdown(self):
         self._menus = None

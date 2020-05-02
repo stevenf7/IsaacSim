@@ -15,7 +15,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         print("Starting URDF Extension")
         self._urdf_interface = _urdf.acquire_urdf_interface()
-        menu_path = f"Window/{EXTENSION_NAME}"
+        menu_path = f"Window/Isaac/{EXTENSION_NAME}"
         self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, menu_path=menu_path)
         merge_fixed_joints_checkbox = omni.kit.ui.CheckBox("Merge Fixed Joints")
         merge_fixed_joints_checkbox.set_on_changed_fn(self._on_merge_fixed_joints_fn)

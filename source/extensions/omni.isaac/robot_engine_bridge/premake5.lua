@@ -56,6 +56,7 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/isaac_engine/include",
             target_deps_dir.."/rtx_plugins/include",
             target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/include",
+            target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/include",
             target_deps_dir.."/omni_physics/include",
             target_deps_dir.."/cuda/include"
         }
@@ -66,11 +67,12 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_usd/release/lib",
             target_deps_dir.."/isaac_engine/lib",
             target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/lib",
+            target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/lib",
             "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins" 
         }
         links { 
             "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "kj", "capnp", "omni.usd", "lidarSchema", "robotEngineBridgeSchema"
+            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "kj", "capnp", "omni.usd", "lidarSchema", "robotEngineBridgeSchema", "physxSchema"
         }
 
         filter  { "system:windows", "platforms:x86_64" }

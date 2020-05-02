@@ -34,8 +34,20 @@ def main():
 
     # Add extensions folder and sphinx folder (with sphinx) into PYTHONPATH
     path_to_extensions = f"{ROOT_DIR}/_build/{platform_host}/{options.config}/exts/"
+    path_to_physics_extensions = (
+        f"{ROOT_DIR}/_build/target-deps/kit_sdk_{options.config}/_build/{platform_host}/{options.config}/extsPhysics/"
+    )
     all_exts = list(glob.glob(f"{path_to_extensions}/*/"))
+    all_physics_exts = list(glob.glob(f"{path_to_physics_extensions}/*/"))
     os.environ["PYTHONPATH"] += os.pathsep.join([sphinx_path] + all_exts)
+    os.environ["PYTHONPATH"] += os.pathsep.join([sphinx_path] + all_physics_exts)
+
+    # To help find any shared libs that the extensions load:
+    all_bindir = list(glob.glob(f"{path_to_extensions}/*/bin/{platform_host}/{options.config}/"))
+    if "LD_LIBRARY_PATH" in os.environ:
+        os.environ["LD_LIBRARY_PATH"] += os.pathsep.join([sphinx_path] + all_bindir)
+    else:
+        os.environ["LD_LIBRARY_PATH"] = os.pathsep.join([sphinx_path] + all_bindir)
 
     # Run sphinx module. Use kit_sdk python runner, it already has properly PATH and PYTHONPATH set to enable importing of Kit SDK modules
     config_dir = paths["docs_src"]

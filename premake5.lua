@@ -317,12 +317,3 @@ group "exts"
         include ("source/extensions/omni.isaac/ros_bridge")
         include ("source/extensions/omni.isaac/samples")
     end
-
-    -- Example of C++ only extension:
-    -- include ("source/extensions/example.cpp_extension")
-
-    -- Example of Python only extension:
-    -- include ("source/extensions/example.python_extension")
-
-    -- Example of Mixed (both python and C++) extension:
-    -- include ("source/extensions/example.mixed_extension")

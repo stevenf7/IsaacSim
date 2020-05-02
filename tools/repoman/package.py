@@ -46,9 +46,9 @@ def create_package_desc(platform_target: str, config: str) -> omni.repo.package.
     return package
 
 
-def create_omni_isaac_sim_package_desc(platform_target: str, config: str) -> omni.repo.package.PackageDesc:
+def create_isaac_sim_package_desc(platform_target: str, config: str) -> omni.repo.package.PackageDesc:
     package = create_package_desc(platform_target, config)
-    package.name = "omni_isaac_sim"
+    package.name = "isaac-sim"
 
     if package.version is not None:
         package.label_name = "%s@%s-%s.latest.txt" % (
@@ -80,7 +80,7 @@ def create_omni_domain_randomization_package_desc(platform_target: str, config: 
 
 
 PACKAGES = {
-    "omni_isaac_sim": create_omni_isaac_sim_package_desc,
+    "isaac-sim": create_isaac_sim_package_desc,
     "omni_domain_randomization": create_omni_domain_randomization_package_desc,
     "docs": create_docs_package_desc,
     "test_runner": create_testrunner_package_desc,

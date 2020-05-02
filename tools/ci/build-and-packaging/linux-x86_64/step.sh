@@ -44,8 +44,8 @@ echo "##teamcity[progressMessage 'Gathering licenses...']"
 echo "##teamcity[progressMessage 'Packaging...']"
 "$ROOT_DIR/tools/package.sh" -m test_runner
 "$ROOT_DIR/tools/package.sh" -m docs
-"$ROOT_DIR/tools/package.sh" -m omni_isaac_sim -c debug
-"$ROOT_DIR/tools/package.sh" -m omni_isaac_sim -c release
+"$ROOT_DIR/tools/package.sh" -m isaac-sim -c debug
+"$ROOT_DIR/tools/package.sh" -m isaac-sim -c release
 "$ROOT_DIR/tools/package.sh" -m omni_domain_randomization -c debug
 "$ROOT_DIR/tools/package.sh" -m omni_domain_randomization -c release
 

@@ -205,6 +205,23 @@ class DRMenu:
         layout_collapsing = omni.kit.ui.CollapsingFrame(title, True)
         self._window.layout.add_child(layout_collapsing)
 
+        manual_layout = omni.kit.ui.RowColumnLayout(3, True)
+        layout_collapsing.add_child(manual_layout)
+        manual_layout.set_column_width(0, 150)
+        manual_layout.set_column_width(1, 150)
+        manual_layout.set_column_width(2, 150)
+
+        manual_label = omni.kit.ui.Label("Manual Mode")
+        manual_layout.add_child(manual_label)
+
+        self.btn_manual_comp = omni.kit.ui.Button("Enable Manual Mode")
+        self.btn_manual_comp.set_clicked_fn(self._toggle_manual_mode)
+        manual_layout.add_child(self.btn_manual_comp)
+
+        self.btn_randomize_once = omni.kit.ui.Button("Randomize Once")
+        self.btn_randomize_once.set_clicked_fn(self._randomize_once)
+        manual_layout.add_child(self.btn_randomize_once)
+
         usd_layout = omni.kit.ui.RowColumnLayout(3, True)
         layout_collapsing.add_child(usd_layout)
         usd_layout.set_column_width(0, 150)
@@ -289,6 +306,16 @@ class DRMenu:
                 self.texture_component_count = self.texture_component_count + 1
 
         self._dr.load_component_from_usd()
+
+    def _toggle_manual_mode(self, value):
+        if str(self.btn_manual_comp.text) == "Enable Manual Mode":
+            self.btn_manual_comp.text = "Disable Manual Mode"
+        else:
+            self.btn_manual_comp.text = "Enable Manual Mode"
+        self._dr.toggle_manual_mode()
+
+    def _randomize_once(self, value):
+        self._dr.randomize_once()
 
     def _load_color_json(self, value):
         for each_value in value:
