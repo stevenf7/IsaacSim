@@ -38,7 +38,7 @@ private:
     std::string mOmniPBRMatPath;
     std::vector<std::string> mPaths;
     std::vector<float> mRRange, mGRange, mBRange;
-    std::vector<pxr::UsdPrim> mAllPrims;
+    std::vector<pxr::UsdPrim> mAllPrims, mAllMaterialPrims;
     pxr::SdfLayerHandle mColorLayer;
     pxr::UsdShadeMaterial mColorMaterialShade;
     pxr::UsdPrim mColorMaterialPrim;

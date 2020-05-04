@@ -56,15 +56,23 @@ void DRComponentColor::onStart()
     {
         pxr::UsdEditContext context(mStage, mColorLayer);
         carb::extras::Path urlPath(mOmniPBRMatPath.c_str());
+        // Check for /Colors prim and if base OmniPBR material is loaded
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Colors"))
         {
             omni::usd::UsdUtils::createPrim(mStage, "/Colors", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
                 return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
             });
         }
+        std::string colorCompMaterialPath = "/Colors/" + mCompName;
+        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, colorCompMaterialPath))
+        {
+            omni::usd::UsdUtils::createPrim(
+                mStage, colorCompMaterialPath.c_str(), [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
+                    return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
+                });
+        }
         mColorMaterialPrim = omni::usd::AssetUtils::createPrimFromAssetPath(
-            mStage, mOmniPBRMatPath.c_str(), ("/Colors/" + urlPath.getStem()).getStringBuffer());
-
+            mStage, mOmniPBRMatPath.c_str(), ("/Colors/" + mCompName + "/" + urlPath.getStem()).getStringBuffer());
         pxr::UsdShadeMaterial materialShade(mColorMaterialPrim);
         mColorMaterialShade = materialShade;
     }
@@ -83,6 +91,11 @@ void DRComponentColor::update()
 
         if (mIncludeChild && prim)
         {
+            // Unbinding material for parent since strongerThanDescendants is used that will disable child material
+            // binding
+            mAllPrims.pop_back();
+            pxr::UsdShadeMaterialBindingAPI materialBinding(prim);
+            materialBinding.UnbindAllBindings();
             pxr::UsdPrimSubtreeRange range = prim.GetDescendants();
             for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
             {
@@ -93,10 +106,26 @@ void DRComponentColor::update()
         }
     }
 
+    mAllMaterialPrims.clear();
+    unsigned int primIndex = 1;
+    // Create material instances and binding it to each prim
     for (auto& prim : mAllPrims)
     {
+        primIndex++;
+        std::string mColorCompPathName = mStage->GetDefaultPrim().GetPath().GetString() + "/Colors/" + mCompName;
+        std::string mCopyColorMaterialPrimName = mColorCompPathName + "/OmniPBR_" + std::to_string(primIndex);
+        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, mCopyColorMaterialPrimName, false))
+        {
+            pxr::UsdEditContext context(mStage, mColorLayer);
+            omni::usd::UsdUtils::copyPrim(mColorMaterialPrim, nullptr, false, false);
+            pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
+            mStage->SetEditTarget(editTarget);
+        }
+        auto mCopyColorMaterialPrim = mStage->GetPrimAtPath(pxr::SdfPath(mCopyColorMaterialPrimName.c_str()));
+        mAllMaterialPrims.push_back(mCopyColorMaterialPrim);
+        pxr::UsdShadeMaterial materialShade(mCopyColorMaterialPrim);
         pxr::UsdShadeMaterialBindingAPI materialBinding(prim);
-        materialBinding.Bind(mColorMaterialShade, pxr::UsdShadeTokens->strongerThanDescendants);
+        materialBinding.Bind(materialShade, pxr::UsdShadeTokens->strongerThanDescendants);
     }
 }
 void DRComponentColor::onComponentChange()
@@ -133,24 +162,38 @@ void DRComponentColor::stop()
     if (mStage && mColorLayer)
     {
         pxr::UsdEditContext context(mStage, mColorLayer);
+        // Remove color material instances
+        for (auto materialPrim : mAllMaterialPrims)
+        {
+            if (materialPrim)
+                omni::usd::UsdUtils::removePrim(materialPrim);
+        }
+        // Remove base color material
         if (mColorMaterialPrim)
             omni::usd::UsdUtils::removePrim(mColorMaterialPrim);
+        // Remove component level Color prim
+        pxr::UsdPrim colorCompPrim =
+            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/Colors/" + mCompName));
+        if (colorCompPrim)
+            omni::usd::UsdUtils::removePrim(colorCompPrim);
+        // Remove top-level Color prim
         pxr::UsdPrim colorPrim =
             mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/Colors"));
-        if (colorPrim)
-            if (colorPrim.GetChildren().empty())
-                omni::usd::UsdUtils::removePrim(colorPrim);
+        if (colorPrim && colorPrim.GetChildren().empty())
+            omni::usd::UsdUtils::removePrim(colorPrim);
     }
 }
 void DRComponentColor::tick()
 {
+    unsigned int primIndex = 0;
     for (auto& prim : mAllPrims)
     {
-        if (mColorMaterialPrim.HasAttribute(pxr::TfToken("inputs:diffuse_color_constant")))
+        if (mAllMaterialPrims[primIndex].HasAttribute(pxr::TfToken("inputs:diffuse_color_constant")))
         {
             pxr::VtValue value;
             // CARB_LOG_WARN("prim with color: %s", prim.GetPrimPath().GetString().c_str());
-            pxr::UsdAttribute primColor = mColorMaterialPrim.GetAttribute(pxr::TfToken("inputs:diffuse_color_constant"));
+            pxr::UsdAttribute primColor =
+                mAllMaterialPrims[primIndex].GetAttribute(pxr::TfToken("inputs:diffuse_color_constant"));
             if (primColor)
             {
                 // CARB_LOG_WARN("prim set color");
@@ -161,6 +204,7 @@ void DRComponentColor::tick()
                 primColor.Set(usdColor);
             }
         }
+        primIndex++;
     }
 }
 
