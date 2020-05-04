@@ -55,6 +55,16 @@ public:
     {
         return mPrim;
     }
+    /**
+     * @brief Return value of enabled flag
+     *
+     * @return true
+     * @return false
+     */
+    bool getEnabled()
+    {
+        return mEnabled;
+    }
 
 protected:
     // USD reference to prim that stores settings for this component

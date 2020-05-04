@@ -168,7 +168,10 @@ void IsaacApplication::tick(double dt)
             for (auto& component : mComponents)
             {
                 component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
-                component.second->tick();
+                if (component.second->getEnabled())
+                {
+                    component.second->tick();
+                }
             }
             mSceneLoaderComponent->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
             mSceneLoaderComponent->tick();
