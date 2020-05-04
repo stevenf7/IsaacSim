@@ -1,6 +1,9 @@
 import omni.ext
 from .. import _motion_planning
 
+# any unit tests for the extension should be imported here
+from .tests.test_motion_planning import *
+
 
 class Extension(omni.ext.IExt):
     def on_startup(self):

@@ -42,6 +42,7 @@ files = []
 files = [
     ["_build/$platform/$config/experiences"],
     ["_build/$platform/$config/exts"],
+    ["_build/$platform/$config/data", "_build/$platform/$config/data"],
     ["PACKAGE-LICENSES", "PACKAGE-LICENSES"],
     ["_build/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
     ["source/extensions/omni.isaac/dr/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
