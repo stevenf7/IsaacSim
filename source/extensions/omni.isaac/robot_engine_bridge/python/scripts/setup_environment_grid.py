@@ -99,19 +99,17 @@ class Extension(omni.ext.IExt):
                 setTranslate(envPrim, Gf.Vec3d(row_idx * self._row_width, col_idx * self._row_width, 0))
 
         # SceneIndexer
+        supported_channels = ["inputChannel", "outputChannel", "teleportInputChannel", "teleportOutputChannel"]
         for row_idx in range(self._num_rows):
             for col_idx in range(self._num_cols):
-                i = row_idx * self._num_cols + col_idx
+                i = row_idx * self._num_cols + col_idx + 1
                 path = env_path + "/env_" + str(row_idx) + "_" + str(col_idx)
-                env_prim = self._stage.GetPrimAtPath(path)
-                for child_prim in env_prim.GetChildren():
-                    if "RobotEngine" in str(child_prim.GetTypeName()):
-                        if child_prim.HasAttribute("inputChannel"):
-                            inputChannelAttr = child_prim.GetAttribute("inputChannel")
-                            inputChannelAttr.Set(inputChannelAttr.Get() + str(i))
-                        if child_prim.HasAttribute("outputChannel"):
-                            outputChannelAttr = child_prim.GetAttribute("outputChannel")
-                            outputChannelAttr.Set(outputChannelAttr.Get() + str(i))
+                for child_prim in self._stage.Traverse():
+                    if str(path) in str(child_prim.GetPath()) and "RobotEngine" in str(child_prim.GetTypeName()):
+                        for channel_name in supported_channels:
+                            if child_prim.HasAttribute(channel_name):
+                                channelAttr = child_prim.GetAttribute(channel_name)
+                                channelAttr.Set(channelAttr.Get() + "_" + str(i))
 
     def on_shutdown(self):
         print("Shutting down environment grid setup")
