@@ -75,6 +75,14 @@ class Extension(omni.ext.IExt):
         self._width_env_txt = omni.kit.ui.TextBox("1700")
         self._width_env_txt.width = -1
         ui_layout.add_child(self._width_env_txt)
+        ui_layout.add_child(omni.kit.ui.Label("Contact Publisher Path in Environment USD"))
+        self._reb_contact_monitor = omni.kit.ui.TextBox("/REB_ContactMonitor")
+        self._reb_contact_monitor.width = -1
+        ui_layout.add_child(self._reb_contact_monitor)
+        ui_layout.add_child(omni.kit.ui.Label("Prim To Ignore Contact With"))
+        self._ignored_contacts = omni.kit.ui.TextBox("/World/staticPlaneActor/collisionPlane")
+        self._ignored_contacts.width = -1
+        ui_layout.add_child(self._ignored_contacts)
         self._capture_btn = ui_layout.add_child(omni.kit.ui.Button("Setup Environment"))
         self._capture_btn.set_clicked_fn(self._on_setup_fn)
 
@@ -99,19 +107,20 @@ class Extension(omni.ext.IExt):
                 setTranslate(envPrim, Gf.Vec3d(row_idx * self._row_width, col_idx * self._row_width, 0))
 
         # SceneIndexer
+        supported_channels = ["inputChannel", "outputChannel", "teleportInputChannel", "teleportOutputChannel"]
         for row_idx in range(self._num_rows):
             for col_idx in range(self._num_cols):
-                i = row_idx * self._num_cols + col_idx
+                i = row_idx * self._num_cols + col_idx + 1
                 path = env_path + "/env_" + str(row_idx) + "_" + str(col_idx)
-                env_prim = self._stage.GetPrimAtPath(path)
-                for child_prim in env_prim.GetChildren():
-                    if "RobotEngine" in str(child_prim.GetTypeName()):
-                        if child_prim.HasAttribute("inputChannel"):
-                            inputChannelAttr = child_prim.GetAttribute("inputChannel")
-                            inputChannelAttr.Set(inputChannelAttr.Get() + str(i))
-                        if child_prim.HasAttribute("outputChannel"):
-                            outputChannelAttr = child_prim.GetAttribute("outputChannel")
-                            outputChannelAttr.Set(outputChannelAttr.Get() + str(i))
+                for child_prim in self._stage.Traverse():
+                    if str(path) in str(child_prim.GetPath()) and "RobotEngine" in str(child_prim.GetTypeName()):
+                        for channel_name in supported_channels:
+                            if child_prim.HasAttribute(channel_name):
+                                channelAttr = child_prim.GetAttribute(channel_name)
+                                channelAttr.Set(channelAttr.Get() + "_" + str(i))
+                contact_pub = self._stage.GetPrimAtPath(path + self._reb_contact_monitor.value)
+                if contact_pub and contact_pub.GetTypeName() == "RobotEngineContactMonitor":
+                    contact_pub.GetRelationship("ignoredPrims").AddTarget(self._ignored_contacts.value)
 
     def on_shutdown(self):
         print("Shutting down environment grid setup")

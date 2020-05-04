@@ -317,3 +317,9 @@ group "exts"
         include ("source/extensions/omni.isaac/ros_bridge")
         include ("source/extensions/omni.isaac/samples")
     end
+
+-- Create a symlink for any data we need for tests
+group "tests"
+    -- Automated Testing
+    define_experience("test-isaac-sim")
+    repo_build.prebuild_link {{"data", "%{root}/_build/$platform/$config/data" }}

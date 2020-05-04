@@ -1,0 +1,24 @@
+{
+    "app": {
+        "window": {
+            "title": "Omniverse Isaac Sim Tests"
+        },
+        "extensions": {
+            "folders2": ["${kit}/exts","${kit}/extsPhysics","${app}/../exts"],
+            "foldersBuiltin": ["${kit}/extensions/extensions-bundled", "${kit}/extensions/extensions-other", "${documents}/extensions","${app}/../extensions"],
+            "enabledBuiltin": [
+                "omni.kit.editor-full",
+                "omni.physx",
+                "omni.isaac.dynamic_control",
+                "omni.isaac.motion_planning",
+                "omni.isaac.utils"
+            ]
+        }
+    },
+    "exts": {
+        "omni.kit.test" : {
+            "printTests": true,
+            "runTestsAndQuit": true
+        },
+    }
+}

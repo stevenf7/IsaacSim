@@ -1,8 +1,10 @@
 @echo off
 
-:: Verify formatting
-echo ##teamcity[progressMessage 'Verify formatting...']
-call "%~dp0..\..\..\..\format_code.bat" --verify
+if not defined TEAMCITY_VERSION (
+    :: Verify formatting
+    echo ##teamcity[progressMessage 'Verify formatting...']
+    call "%~dp0..\..\..\..\format_code.bat" --verify
+)
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Full rebuild
