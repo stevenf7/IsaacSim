@@ -173,6 +173,7 @@ Ex: Adding a new resolution of 1024x768:
 ```
 Run ``./build.sh`` to update the application config so that it gets executed the next time you run ./isaac-sim.sh
 
+---
 ### Running headless and connecting via a remote client
 
 On the client machine, download the Client Application from the following page for your platform:
@@ -184,6 +185,7 @@ Run the client:
 On the server machine Launch kit via:
 ``./_build/linux-x86_64/release/isaac-sim-headless.sh``
 
+---
 ### Running TeamCity builds and tests locally
  
 Linux Builds ``./tools/ci/build-and-packaging/linux-x86_64/step.sh``
@@ -195,3 +197,11 @@ Linux Startup Tests  ``tools/ci/testing/test-linux-x86_64-release-startup-tests-
 Windows Builds ``tools\ci\build-and-packaging\windows-x86_64\step.bat``
 
 Windows Tests ``tools\ci\testing\test-windows-x86_64\step.bat``
+
+---
+### Debuggin in vscode on linux
+
+press Ctrl-Shift-D and then select the configuration you would like to run:
+
+- (linux) isaac-sim \[release\]
+- (linux) isaac-sim \[debug\]
