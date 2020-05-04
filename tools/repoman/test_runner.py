@@ -129,7 +129,7 @@ def run_unittests(root: str, platform_host: str, config: str, linbuild_profile: 
 def run_pythontests(root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []):
     """Run python tests suite inside of Kit"""
 
-    executable = f"omniverse-kit{get_exe_ext(platform_host)}"
+    executable = f"test-isaac-sim{get_shell_ext(platform_host)}"
     exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
     args = ["--exec", '"run_tests.py"']
     args.extend(extra_args)
@@ -161,6 +161,7 @@ def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile
         "kit-default*",
         "kit-profile*",
         "kit-nonrtx*",
+        "test-isaac-sim*",
     ]
     executable_files = [f for f in executable_files if not any(fnmatch.fnmatch(f, p) for p in IGNORE_LIST)]
 
