@@ -107,7 +107,7 @@ class Extension(omni.ext.IExt):
                 setTranslate(envPrim, Gf.Vec3d(row_idx * self._row_width, col_idx * self._row_width, 0))
 
         # SceneIndexer
-        supported_channels = ["inputChannel", "outputChannel", "teleportInputChannel", "teleportOutputChannel"]
+        supported_channels = ["inputChannel", "outputChannel", "teleportInputChannel", "rigidBodySinkOutputChannel"]
         for row_idx in range(self._num_rows):
             for col_idx in range(self._num_cols):
                 i = row_idx * self._num_cols + col_idx + 1
