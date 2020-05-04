@@ -20,7 +20,7 @@
             "name": "(Linux) test.unit",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/_build/linux-x86_64/debug/test.unit",
+            "program": "${workspaceFolder}/_build/linux-x86_64/debug/test.unit",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -43,11 +43,12 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "(Windows) example.helloworld",
+            "name": "(Windows) isaac-sim [debug]",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/_build/windows-x86_64/debug/example.helloworld.exe",
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_debug/_build/windows-x86_64/debug/omniverse-kit.exe",
             "args": [
+                "--config-path","_build/linux-x86_64/debug/experiences/isaac-sim.json",
                 "--carb/app/window/fullscreen=false",
                 "--carb/log/level='warn'",
                 "--carb/log/file='log.txt'",
@@ -63,11 +64,11 @@
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
-            "name": "(Linux) example.helloworld",
+            "name": "(Linux) isaac-sim [release]",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/_build/linux-x86_64/debug/example.helloworld",
-            "args": [],
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_release/_build/linux-x86_64/release/omniverse-kit",
+            "args": ["--config-path","_build/linux-x86_64/release/experiences/isaac-sim.json"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -82,11 +83,11 @@
             ]
         },
         {
-            "name": "(Linux) example.graphics",
+            "name": "(Linux) isaac-sim [debug]",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/_build/linux-x86_64/debug/example.graphics",
-            "args": [],
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_debug/_build/linux-x86_64/debug/omniverse-kit",
+            "args": ["--config-path","_build/linux-x86_64/debug/experiences/isaac-sim.json"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -100,95 +101,5 @@
                 }
             ]
         },
-        {
-            "name": "(Linux) example.simpleaudio",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}/_build/linux-x86_64/debug/example.simpleaudio",
-            "args": [
-                "--carb/log/level='info'",
-                "--carb/log/file='log.txt'",
-                "--carb/log/enableDebugConsoleOutput=true",
-                "--carb/log/includeFilename=true",
-                "--carb/log/includeLineNumber=true"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
-            "internalConsoleOptions": "openOnSessionStart",
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
-        },
-        {
-            "name": "(Windows) example.simpleaudio",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/_build/windows-x86_64/debug/example.simpleaudio.exe",
-            "args": [
-                "--carb/log/level='info'",
-                "--carb/log/file='log.txt'",
-                "--carb/log/enableStandardStreamOutput=false",
-                "--carb/log/enableDebugConsoleOutput=true",
-                "--carb/log/includeFilename=true",
-                "--carb/log/includeLineNumber=true"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
-            "internalConsoleOptions": "openOnSessionStart"
-        },
-        {
-            "name": "(Linux) example.audiocapture",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}/_build/linux-x86_64/debug/example.audiocapture",
-            "args": [
-                "--carb/log/level='info'",
-                "--carb/log/file='log.txt'",
-                "--carb/log/enableDebugConsoleOutput=true",
-                "--carb/log/includeFilename=true",
-                "--carb/log/includeLineNumber=true"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
-            "internalConsoleOptions": "openOnSessionStart",
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
-        },
-        {
-            "name": "(Windows) example.audiocapture",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/_build/windows-x86_64/debug/example.audiocapture.exe",
-            "args": [
-                "--carb/log/level='info'",
-                "--carb/log/file='log.txt'",
-                "--carb/log/enableStandardStreamOutput=false",
-                "--carb/log/enableDebugConsoleOutput=true",
-                "--carb/log/includeFilename=true",
-                "--carb/log/includeLineNumber=true"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
-            "internalConsoleOptions": "openOnSessionStart"
-        }
     ]
 }
