@@ -107,20 +107,23 @@ class Extension(omni.ext.IExt):
                 setTranslate(envPrim, Gf.Vec3d(row_idx * self._row_width, col_idx * self._row_width, 0))
 
         # SceneIndexer
-        supported_channels = ["inputChannel", "outputChannel", "teleportInputChannel", "teleportOutputChannel"]
+        supported_channels = ["inputChannel", "outputChannel", "teleportInputChannel", "rigidBodySinkOutputChannel"]
         for row_idx in range(self._num_rows):
             for col_idx in range(self._num_cols):
                 i = row_idx * self._num_cols + col_idx + 1
                 path = env_path + "/env_" + str(row_idx) + "_" + str(col_idx)
-                for child_prim in self._stage.Traverse():
-                    if str(path) in str(child_prim.GetPath()) and "RobotEngine" in str(child_prim.GetTypeName()):
+                envPrim = self._stage.GetPrimAtPath(path)
+                for child_prim in Usd.PrimRange(envPrim):
+                    if "RobotEngine" in str(child_prim.GetTypeName()):
                         for channel_name in supported_channels:
                             if child_prim.HasAttribute(channel_name):
                                 channelAttr = child_prim.GetAttribute(channel_name)
                                 channelAttr.Set(channelAttr.Get() + "_" + str(i))
                 contact_pub = self._stage.GetPrimAtPath(path + self._reb_contact_monitor.value)
+                ignored_contacts = str(self._ignored_contacts.value).split(",")
                 if contact_pub and contact_pub.GetTypeName() == "RobotEngineContactMonitor":
-                    contact_pub.GetRelationship("ignoredPrims").AddTarget(self._ignored_contacts.value)
+                    for ignored_contact in ignored_contacts:
+                        contact_pub.GetRelationship("ignoredPrims").AddTarget(ignored_contact)
 
     def on_shutdown(self):
         print("Shutting down environment grid setup")
