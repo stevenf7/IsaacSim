@@ -52,7 +52,8 @@ void RigidBodiesSink::tick()
     for (auto& object : mObjects)
     {
         // For each rigid body
-        pxr::UsdPrim prim = object.second;
+        bodyIndex = object.second.first;
+        pxr::UsdPrim prim = object.second.second;
         // Set actor name
         std::string actorName = object.first;
         rigidBodyNames.set(bodyIndex, actorName);
@@ -198,12 +199,22 @@ void RigidBodiesSink::onComponentChange()
 
 void RigidBodiesSink::addObject(const std::string& actorName, pxr::UsdPrim& prim)
 {
-    mObjects[actorName] = prim;
+    mObjects[actorName] = std::pair<size_t, pxr::UsdPrim>(mObjects.size(), prim);
 }
 
 void RigidBodiesSink::eraseObject(const std::string& actorName)
 {
+    const size_t removed_index = mObjects[actorName].first;
     mObjects.erase(actorName);
+
+    for (auto& object : mObjects)
+    {
+        // Once the index is removed, all items "higher" should be decremented by one
+        if (object.second.first > removed_index)
+        {
+            object.second.first -= 1;
+        }
+    }
 }
 }
 }
