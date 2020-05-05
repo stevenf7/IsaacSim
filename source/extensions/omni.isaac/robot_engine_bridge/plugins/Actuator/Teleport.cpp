@@ -69,6 +69,10 @@ void Teleport::tick()
     }
 }
 
+void Teleport::onStart()
+{
+    onComponentChange();
+}
 
 void Teleport::onComponentChange()
 {
