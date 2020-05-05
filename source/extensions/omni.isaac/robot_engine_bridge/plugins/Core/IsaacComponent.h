@@ -35,7 +35,10 @@ public:
      * @param stage
      */
 
-    void initialize(IsaacCApi* isaacCApiPtr, const isaac_handle_t& appHandle, const PrimType& prim, pxr::UsdStageRefPtr stage)
+    virtual void initialize(IsaacCApi* isaacCApiPtr,
+                            const isaac_handle_t& appHandle,
+                            const PrimType& prim,
+                            pxr::UsdStageRefPtr stage)
     {
         utils::ComponentBase<PrimType>::initialize(prim, stage);
 
