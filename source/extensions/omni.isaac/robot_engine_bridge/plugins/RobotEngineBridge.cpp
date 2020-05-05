@@ -154,7 +154,17 @@ void onPrimAdd(const char* primPath, void* userData)
     //        g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
     if (g_application_handle)
     {
-        g_application_handle->onComponentAdd(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        pxr::UsdPrim addedPrim = g_stage->GetPrimAtPath(pxr::SdfPath(primPath));
+        if (!addedPrim)
+        {
+            return;
+        }
+        pxr::UsdPrimSubtreeRange range = addedPrim.GetDescendants();
+        for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
+        {
+            pxr::UsdPrim prim = *iter;
+            g_application_handle->onComponentAdd(prim);
+        }
     }
 }
 void onComponentChange(const char* primPath, const omni::kit::PrimDirtyBits*, void* userData)
