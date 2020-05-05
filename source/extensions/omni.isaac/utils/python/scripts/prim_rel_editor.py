@@ -1,10 +1,7 @@
 import os
 import omni.ext
-import omni.kit.commands
-import omni.kit.editor
 import omni.kit.ui
-import carb.tokens
-from pxr import Usd, UsdGeom, Sdf, Gf, Tf, PhysicsSchemaTools
+from pxr import Usd, Sdf
 import gc
 
 
