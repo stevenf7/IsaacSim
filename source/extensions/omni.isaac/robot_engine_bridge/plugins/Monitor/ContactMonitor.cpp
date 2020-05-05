@@ -36,10 +36,6 @@ namespace robot_engine_bridge
 ContactMonitor::ContactMonitor(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
-
-    mContactCallback = carb::events::createSubscriptionToPop(
-        carb::getCachedInterface<carb::physics::PhysX>()->getSimulationEventStream().get(),
-        [this](carb::events::IEvent* e) { processContact(e); }, 0, "Robot Engine ContactMonitor");
 }
 
 ContactMonitor::~ContactMonitor()
@@ -247,6 +243,17 @@ void ContactMonitor::onComponentChange()
     // }
 
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
+
+    if (this->mEnabled)
+    {
+        mContactCallback = carb::events::createSubscriptionToPop(
+            carb::getCachedInterface<carb::physics::PhysX>()->getSimulationEventStream().get(),
+            [this](carb::events::IEvent* e) { processContact(e); }, 0, "Robot Engine ContactMonitor");
+    }
+    else
+    {
+        mContactCallback = nullptr;
+    }
 }
 
 }
