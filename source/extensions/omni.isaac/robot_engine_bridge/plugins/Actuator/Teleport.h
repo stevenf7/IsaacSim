@@ -31,13 +31,16 @@ public:
      */
     Teleport(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr);
 
-
     /**
      * @brief
      *
      */
     virtual void tick();
-
+    /**
+     * @brief
+     *
+     */
+    virtual void onStart();
     /**
      * @brief
      *
