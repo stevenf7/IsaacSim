@@ -21,6 +21,7 @@
 #include <carb/syntheticdata/SyntheticData.h>
 
 #include <omni/kit/IStageUpdate.h>
+#include <omni/kit/IEditor.h>
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -52,9 +53,11 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
                       omni::isaac::dynamic_control::DynamicControl,
                       omni::kit::IStageUpdate,
+                      omni::kit::IEditor,
                       omni::isaac::lidar::LidarInterface,
                       carb::syntheticdata::SyntheticData,
-                      carb::physics::PhysX)
+                      carb::physics::PhysX,
+                      carb::sensors::Sensors)
 
 // private stuff
 namespace
