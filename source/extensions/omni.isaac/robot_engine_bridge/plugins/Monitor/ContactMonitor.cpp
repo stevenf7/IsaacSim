@@ -235,15 +235,16 @@ void ContactMonitor::onComponentChange()
     }
 
     contactReportAPI.GetPhysxContactReportThresholdAttr().Set(mForceThreshold);
-    const pxr::UsdRelationship rel = contactReportAPI.GetPhysxContactReportReportPairsRel();
-    if (rel)
-    {
-        typedPrim.GetIgnoredPrimsRel().GetTargets(&mIgnoredTargets);
-        if (mIgnoredTargets.size() > 0)
-        {
-            rel.SetTargets(mIgnoredTargets);
-        }
-    }
+
+    // const pxr::UsdRelationship rel = contactReportAPI.GetPhysxContactReportReportPairsRel();
+    // if (rel)
+    // {
+    //     typedPrim.GetIgnoredPrimsRel().GetTargets(&mIgnoredTargets);
+    //     if (mIgnoredTargets.size() > 0)
+    //     {
+    //         rel.SetTargets(mIgnoredTargets);
+    //     }
+    // }
 
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
 }
