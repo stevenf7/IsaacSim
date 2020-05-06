@@ -114,7 +114,7 @@ void DRComponentColor::update()
         primIndex++;
         std::string mColorCompPathName = mStage->GetDefaultPrim().GetPath().GetString() + "/Colors/" + mCompName;
         std::string mCopyColorMaterialPrimName = mColorCompPathName + "/OmniPBR_" + std::to_string(primIndex);
-        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, mCopyColorMaterialPrimName, false))
+        if (mColorMaterialPrim && !omni::usd::UsdUtils::hasPrimAtPath(mStage, mCopyColorMaterialPrimName, false))
         {
             pxr::UsdEditContext context(mStage, mColorLayer);
             omni::usd::UsdUtils::copyPrim(mColorMaterialPrim, nullptr, false, false);

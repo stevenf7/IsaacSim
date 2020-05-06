@@ -25,6 +25,9 @@ using utils::conversions::asGfVec3d;
 namespace robot_engine_bridge
 {
 
+using omni::isaac::dynamic_control::DcHandle;
+using omni::isaac::dynamic_control::DcObjectType;
+using omni::isaac::dynamic_control::DcTransform;
 
 RigidBodiesSink::RigidBodiesSink(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
@@ -32,6 +35,10 @@ RigidBodiesSink::RigidBodiesSink(omni::isaac::dynamic_control::DynamicControl* d
 }
 
 void RigidBodiesSink::tick()
+{
+}
+
+void RigidBodiesSink::publishAllMessages()
 {
 
     if (mObjects.size() <= 0)
@@ -52,7 +59,8 @@ void RigidBodiesSink::tick()
     for (auto& object : mObjects)
     {
         // For each rigid body
-        pxr::UsdPrim prim = object.second;
+        bodyIndex = object.second.first;
+        pxr::UsdPrim prim = object.second.second;
         // Set actor name
         std::string actorName = object.first;
         rigidBodyNames.set(bodyIndex, actorName);
@@ -69,44 +77,36 @@ void RigidBodiesSink::tick()
             mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
         if (prim_type == omni::isaac::dynamic_control::eDcObjectArticulation)
         {
-            omni::isaac::dynamic_control::DcHandle artculationHandle =
-                mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
-            omni::isaac::dynamic_control::DcHandle artculationRootBody =
-                mDynamicControlPtr->getArticulationRootBody(artculationHandle);
+            DcHandle artculationHandle = mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
+            DcHandle artRootBody = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
             // Calculate pose
-            omni::isaac::dynamic_control::DcTransform articulationPose =
-                mDynamicControlPtr->getRigidBodyPose(artculationRootBody);
-            pxr::GfVec3d articulationTranslation = asGfVec3d(articulationPose.p);
-            pxr::GfQuatd articulationRotation = asGfQuatd(articulationPose.r);
+            DcTransform articulationPose = mDynamicControlPtr->getRigidBodyPose(artRootBody);
+            pxr::GfVec3d artTranslation = asGfVec3d(articulationPose.p);
+            pxr::GfQuatd artRotation = asGfQuatd(articulationPose.r);
             // Calculate linear velocity
-            pxr::GfVec3d articulationLinearVelocity =
-                asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(artculationRootBody));
+            pxr::GfVec3d artLinVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(artRootBody));
             // Calculate angular velocity
-            pxr::GfVec3d articulationAngularVelocity =
-                asGfVec3d(mDynamicControlPtr->getRigidBodyAngularVelocity(artculationRootBody));
+            pxr::GfVec3d artAngVel = asGfVec3d(mDynamicControlPtr->getRigidBodyAngularVelocity(artRootBody));
             // Calculate linear acceleration
-            pxr::GfVec3d articulationLinearAcceleration =
-                (articulationLinearVelocity - mLastLinearVelocity[bodyIndex]) / mTimeDelta;
+            pxr::GfVec3d artLinAcc = (artLinVel - mLastLinearVelocity[bodyIndex]) / mTimeDelta;
             // Calculate angular acceleration
-            pxr::GfVec3d articulationAngularAcceleration =
-                (articulationAngularVelocity - mLastAngularVelocity[bodyIndex]) / mTimeDelta;
-            mLastLinearVelocity[bodyIndex] = articulationLinearVelocity;
-            mLastAngularVelocity[bodyIndex] = articulationAngularVelocity;
+            pxr::GfVec3d artAngAcc = (artAngVel - mLastAngularVelocity[bodyIndex]) / mTimeDelta;
+            mLastLinearVelocity[bodyIndex] = artLinVel;
+            mLastAngularVelocity[bodyIndex] = artAngVel;
             // Converts to robot engine proto message
-            toVector3dProto(articulationTranslation * mUnitScale, isaacTranslationProto);
-            toSO3dProto(articulationRotation, isaacRotationProto);
-            toVector3dProto(articulationLinearVelocity * mUnitScale, isaacLinearVelocityProto);
-            toVector3dProto(articulationAngularVelocity, isaacAngularVelocityProto);
-            toVector3dProto(articulationLinearAcceleration * mUnitScale, isaacLinearAccelerationProto);
-            toVector3dProto(articulationAngularAcceleration, isaacAngularAccelerationProto);
+            toVector3dProto(artTranslation * mUnitScale, isaacTranslationProto);
+            toSO3dProto(artRotation, isaacRotationProto);
+            toVector3dProto(artLinVel * mUnitScale, isaacLinearVelocityProto);
+            toVector3dProto(artAngVel, isaacAngularVelocityProto);
+            toVector3dProto(artLinAcc * mUnitScale, isaacLinearAccelerationProto);
+            toVector3dProto(artAngAcc, isaacAngularAccelerationProto);
         }
         else if (prim_type == omni::isaac::dynamic_control::eDcObjectRigidBody)
         {
-            omni::isaac::dynamic_control::DcHandle rigidBodyHandle =
-                mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
+
+            DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
             // Calculate pose
-            omni::isaac::dynamic_control::DcTransform rigidBodyPose =
-                mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
+            DcTransform rigidBodyPose = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
             pxr::GfVec3d rigidBodyTranslation = asGfVec3d(rigidBodyPose.p);
             pxr::GfQuatd rigidBodyRotation = asGfQuatd(rigidBodyPose.r);
             // Calculate linear velocity
@@ -198,12 +198,22 @@ void RigidBodiesSink::onComponentChange()
 
 void RigidBodiesSink::addObject(const std::string& actorName, pxr::UsdPrim& prim)
 {
-    mObjects[actorName] = prim;
+    mObjects[actorName] = std::pair<size_t, pxr::UsdPrim>(mObjects.size(), prim);
 }
 
 void RigidBodiesSink::eraseObject(const std::string& actorName)
 {
+    const size_t removed_index = mObjects[actorName].first;
     mObjects.erase(actorName);
+
+    for (auto& object : mObjects)
+    {
+        // Once the index is removed, all items "higher" should be decremented by one
+        if (object.second.first > removed_index)
+        {
+            object.second.first -= 1;
+        }
+    }
 }
 }
 }

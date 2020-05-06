@@ -72,8 +72,8 @@ private:
     // List of actors that can be teleported
     std::unordered_map<std::string, pxr::UsdPrim> mObjects;
 
-    // Scale of stage
-    double mUnitScale;
+    // Inv scale of stage
+    double mInvUnitScale;
 };
 }
 }

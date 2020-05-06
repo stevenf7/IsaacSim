@@ -38,6 +38,11 @@ public:
      */
     virtual void tick();
     /**
+     * @brief
+     *
+     */
+    virtual void publishAllMessages();
+    /**
      * @brief The rigid bodies might not be valid, so force update on start
      *
      */
@@ -72,7 +77,7 @@ private:
     std::string mRigidBodyPrimPaths = "";
 
     // List of actors to send rigid body data
-    std::unordered_map<std::string, pxr::UsdPrim> mObjects;
+    std::unordered_map<std::string, std::pair<size_t, pxr::UsdPrim>> mObjects;
 
     // Scale of stage
     double mUnitScale;

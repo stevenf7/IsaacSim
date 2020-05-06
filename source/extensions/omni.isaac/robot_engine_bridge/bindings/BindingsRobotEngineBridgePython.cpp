@@ -38,8 +38,6 @@ PYBIND11_MODULE(_robot_engine_bridge, m)
 
         .def("createApplication", wrapInterfaceFunction(&RobotEngineBridge::createApplication))
         .def("destroyApplication", wrapInterfaceFunction(&RobotEngineBridge::destroyApplication))
-        .def("startApplication", wrapInterfaceFunction(&RobotEngineBridge::startApplication))
-        .def("stopApplication", wrapInterfaceFunction(&RobotEngineBridge::stopApplication))
         .def("getLastError", wrapInterfaceFunction(&RobotEngineBridge::getLastError))
         .def("initializeStageLoader", wrapInterfaceFunction(&RobotEngineBridge::initializeStageLoader));
 }

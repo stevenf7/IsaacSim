@@ -8,13 +8,16 @@ import omni.kit.ui
 import omni.physx._physx as omni_physx
 from .. import _dynamic_control
 
-from .test_body import test_body
-from .test_pickles import test_pickles
-from .test_articulation import test_articulation
-from .test_dofs import test_dofs
-from .joint_monkey import get_joint_monkey
-from .test_attractor import get_test_attractor
-from .test_cartpole import get_cart_pole
+# from .test_body import test_body
+# from .test_pickles import test_pickles
+# from .test_articulation import test_articulation
+# from .test_dofs import test_dofs
+# from .joint_monkey import get_joint_monkey
+# from .test_attractor import get_test_attractor
+# from .test_cartpole import get_cart_pole
+
+# any unit tests for the extension should be imported here
+from .tests.test_articulation import *
 
 EXTENSION_NAME = "Dynamic Control"
 

@@ -50,6 +50,12 @@ public:
      * @brief
      *
      */
+    virtual void publishAllMessages();
+
+    /**
+     * @brief
+     *
+     */
     virtual void onComponentChange();
 
 private:

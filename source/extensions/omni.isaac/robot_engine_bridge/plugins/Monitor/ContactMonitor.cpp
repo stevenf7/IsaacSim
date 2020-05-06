@@ -201,6 +201,7 @@ void ContactMonitor::onComponentChange()
 
     pxr::SdfPathVector targets;
     typedPrim.GetTargetPrimRel().GetTargets(&targets);
+    typedPrim.GetIgnoredPrimsRel().GetTargets(&mIgnoredTargets);
     if (targets.size() == 0)
     {
         CARB_LOG_ERROR("No Target Prim Specified");
