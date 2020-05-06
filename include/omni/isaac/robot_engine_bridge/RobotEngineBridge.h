@@ -29,8 +29,6 @@ struct RobotEngineBridge
                                       std::vector<const char*> module_paths,
                                       std::vector<const char*> json_files);
     void(CARB_ABI* destroyApplication)();
-    void(CARB_ABI* startApplication)();
-    void(CARB_ABI* stopApplication)();
     std::string const(CARB_ABI* getLastError)();
     void(CARB_ABI* initializeStageLoader)(std::string inputComponent,
                                           std::string requestChannelName,
