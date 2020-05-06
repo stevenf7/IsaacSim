@@ -48,11 +48,15 @@ static void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicC
         DcHandle artculationHandle = mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
         DcHandle rigidBodyHandle = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
         mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
+        mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
+        mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
     }
     else if (primType == omni::isaac::dynamic_control::eDcObjectRigidBody)
     {
         DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
         mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
+        mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
+        mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
     }
     else
     {
