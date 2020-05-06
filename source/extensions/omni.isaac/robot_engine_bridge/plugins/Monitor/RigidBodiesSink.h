@@ -38,6 +38,11 @@ public:
      */
     virtual void tick();
     /**
+     * @brief
+     *
+     */
+    virtual void publishAllMessages();
+    /**
      * @brief The rigid bodies might not be valid, so force update on start
      *
      */

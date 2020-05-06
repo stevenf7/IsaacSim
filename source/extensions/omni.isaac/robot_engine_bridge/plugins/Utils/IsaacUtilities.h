@@ -32,7 +32,7 @@ static void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicC
                          pxr::GfVec3f pxBodyTranslation,
                          pxr::GfVec4f pxBodyRotation)
 {
-    //TODO: Handle world rotation as well
+    // TODO: Handle world rotation as well
     DcTransform t;
     pxr::GfMatrix4d parentToWorldMat =
         pxr::UsdGeomXformable(prim).ComputeParentToWorldTransform(pxr::UsdTimeCode::Default());
@@ -47,16 +47,20 @@ static void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicC
 
         DcHandle artculationHandle = mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
         DcHandle rigidBodyHandle = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
+        mDynamicControlPtr->setRigidBodyDisableSimulation(rigidBodyHandle, true);
         mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
         mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
         mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
+        mDynamicControlPtr->setRigidBodyDisableSimulation(rigidBodyHandle, false);
     }
     else if (primType == omni::isaac::dynamic_control::eDcObjectRigidBody)
     {
         DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
+        mDynamicControlPtr->setRigidBodyDisableSimulation(rigidBodyHandle, true);
         mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
         mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
         mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
+        mDynamicControlPtr->setRigidBodyDisableSimulation(rigidBodyHandle, false);
     }
     else
     {

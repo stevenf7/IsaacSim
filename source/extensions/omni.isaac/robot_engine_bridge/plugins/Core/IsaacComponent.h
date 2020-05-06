@@ -60,6 +60,12 @@ public:
     virtual void tick(){};
 
     /**
+     * @brief Publish any Messages
+     *
+     */
+    virtual void publishAllMessages(){};
+
+    /**
      * @brief Called every time the Prim is changed
      *
      */
