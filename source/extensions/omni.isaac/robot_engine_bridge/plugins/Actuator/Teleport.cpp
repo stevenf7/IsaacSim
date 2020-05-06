@@ -61,7 +61,7 @@ void Teleport::tick()
                 std::string actorName = object.first;
                 if (strcmp(actorName.c_str(), names[i].asString().cStr()) == 0)
                 {
-                    setTransform(mDynamicControlPtr, prim, pxBodyTranslation * mUnitScale, pxBodyRotation);
+                    setTransform(mDynamicControlPtr, prim, pxBodyTranslation * mInvUnitScale, pxBodyRotation);
                     setScale(prim, pxBodyScale);
                 }
             }
@@ -102,7 +102,7 @@ void Teleport::onComponentChange()
         }
     }
 
-    mUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(mStage);
+    mInvUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(mStage);
 }
 
 void Teleport::addObject(const std::string& actorName, pxr::UsdPrim& prim)
