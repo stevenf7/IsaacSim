@@ -62,7 +62,7 @@ void Teleport::tick()
                 if (strcmp(actorName.c_str(), names[i].asString().cStr()) == 0)
                 {
                     setTransform(mDynamicControlPtr, prim, pxBodyTranslation * mInvUnitScale, pxBodyRotation);
-                    setScale(prim, pxBodyScale);
+                    setScale(mDynamicControlPtr, prim, pxBodyScale);
                 }
             }
         }
