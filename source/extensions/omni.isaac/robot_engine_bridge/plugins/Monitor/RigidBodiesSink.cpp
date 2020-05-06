@@ -36,6 +36,10 @@ RigidBodiesSink::RigidBodiesSink(omni::isaac::dynamic_control::DynamicControl* d
 
 void RigidBodiesSink::tick()
 {
+}
+
+void RigidBodiesSink::publishAllMessages()
+{
 
     if (mObjects.size() <= 0)
         return;

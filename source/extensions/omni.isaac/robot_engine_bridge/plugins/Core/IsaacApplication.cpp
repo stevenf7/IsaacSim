@@ -30,11 +30,17 @@ IsaacApplication::IsaacApplication(IsaacCApi* isaacCApiPtr,
     mDynamicControlPtr = dynamicControlPtr;
     mJsonSerializer = jsonSerializer;
     mIDict = iDict;
+    carb::Framework* framework = carb::getFramework();
+    mTasking = framework->acquireInterface<carb::tasking::ITasking>();
+    mTaskCounter = mTasking->createCounter();
 }
 
 
 IsaacApplication::~IsaacApplication()
 {
+    mTasking->yieldUntilCounter(mTaskCounter);
+    mTasking->destroyCounter(mTaskCounter);
+
     deleteAllComponents();
     stop();
     destroy();
@@ -148,6 +154,26 @@ void IsaacApplication::initializeStageLoader(std::string inputComponent,
     mSceneLoaderComponent->initializeParams(inputComponent, requestChannelName, outputComponent, replyChannelName);
 }
 
+/**
+ * @brief Data used by a task thread
+ *
+ */
+struct TaskData
+{
+    IsaacComponent* component;
+};
+/**
+ * @brief Function called by each task thread
+ *
+ */
+auto TaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
+    TaskData* taskData = reinterpret_cast<TaskData*>(taskArg);
+    if (taskData->component->getEnabled())
+    {
+        taskData->component->publishAllMessages();
+    }
+};
+
 void IsaacApplication::tick(double dt)
 {
     CARB_PROFILE_ZONE(0, "REB IsaacApplication Tick");
@@ -173,6 +199,26 @@ void IsaacApplication::tick(double dt)
                     component.second->tick();
                 }
             }
+
+#if 1
+            TaskData* taskArray = new TaskData[mComponents.size()];
+            int index = 0;
+            for (auto& component : mComponents)
+            {
+                taskArray[index].component = component.second.get();
+
+                carb::tasking::TaskDesc bigTask{};
+                bigTask.priority = carb::tasking::Priority::eHigh;
+                bigTask.task = TaskFunction;
+                bigTask.taskArg = (void*)(taskArray + index);
+                mTasking->addTask(bigTask, mTaskCounter);
+                index++;
+            }
+            mTasking->yieldUntilCounter(mTaskCounter);
+            delete[] taskArray;
+
+#endif
+
             mSceneLoaderComponent->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
             mSceneLoaderComponent->tick();
         }

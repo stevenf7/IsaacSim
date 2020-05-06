@@ -7,6 +7,7 @@
 
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>
+#include <carb/tasking/ITasking.h>
 
 #include <RobotEngineBridgeSchema/robotEngineBridgeComponent.h>
 #include <engine/alice/c_api/isaac_c_api.h>
@@ -136,6 +137,8 @@ private:
     carb::dictionary::ISerializer* mJsonSerializer;
     carb::dictionary::IDictionary* mIDict;
     std::unique_ptr<SceneLoader> mSceneLoaderComponent = nullptr;
+    carb::tasking::ITasking* mTasking = nullptr;
+    carb::tasking::Counter* mTaskCounter = nullptr;
 
     int64_t mTimeDifferenceNanoSeconds = 0;
     bool mRunning = false;

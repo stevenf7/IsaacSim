@@ -50,6 +50,10 @@ void LidarComponent::onStart()
 }
 void LidarComponent::tick()
 {
+}
+
+void LidarComponent::publishAllMessages()
+{
     CARB_PROFILE_ZONE(0, "REB LidarComponent Tick");
 
     pxr::UsdPrim prim = mStage->GetPrimAtPath(mLidarPath);
