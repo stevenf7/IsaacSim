@@ -64,17 +64,21 @@ class Extension(omni.ext.IExt):
         self._usd_env_txt.width = -1
         ui_layout.add_child(self._usd_env_txt)
         ui_layout.add_child(omni.kit.ui.Label("Number of rows"))
-        self._num_env_rows_txt = omni.kit.ui.TextBox("3")
-        self._num_env_rows_txt.width = -1
-        ui_layout.add_child(self._num_env_rows_txt)
+        self._num_env_rows_int = omni.kit.ui.FieldInt("", 3)
+        self._num_env_rows_int.width = -1
+        ui_layout.add_child(self._num_env_rows_int)
         ui_layout.add_child(omni.kit.ui.Label("Number of columns"))
-        self._num_env_cols_txt = omni.kit.ui.TextBox("3")
-        self._num_env_cols_txt.width = -1
-        ui_layout.add_child(self._num_env_cols_txt)
+        self._num_env_cols_int = omni.kit.ui.FieldInt("", 3)
+        self._num_env_cols_int.width = -1
+        ui_layout.add_child(self._num_env_cols_int)
         ui_layout.add_child(omni.kit.ui.Label("Width between environments"))
-        self._width_env_txt = omni.kit.ui.TextBox("1700")
-        self._width_env_txt.width = -1
-        ui_layout.add_child(self._width_env_txt)
+        self._width_env_dbl = omni.kit.ui.FieldDouble("", 1700)
+        self._width_env_dbl.width = -1
+        ui_layout.add_child(self._width_env_dbl)
+        ui_layout.add_child(omni.kit.ui.Label("Height Offset"))
+        self._height_offset_dbl = omni.kit.ui.FieldDouble("", 40)
+        self._height_offset_dbl.width = -1
+        ui_layout.add_child(self._height_offset_dbl)
         ui_layout.add_child(omni.kit.ui.Label("Contact Publisher Path in Environment USD"))
         self._reb_contact_monitor = omni.kit.ui.TextBox("/REB_ContactMonitor")
         self._reb_contact_monitor.width = -1
@@ -91,10 +95,10 @@ class Extension(omni.ext.IExt):
         self._stage = self._usd_context.get_stage()
         setUpZAxis(self._stage)
 
-        self._num_rows = int(self._num_env_rows_txt.value)
-        self._num_cols = int(self._num_env_cols_txt.value)
+        self._num_rows = int(self._num_env_rows_int.value)
+        self._num_cols = int(self._num_env_cols_int.value)
         self._num_envs = self._num_rows * self._num_cols
-        self._row_width = float(self._width_env_txt.value)
+        self._row_width = float(self._width_env_dbl.value)
         self._usd_path = str(self._usd_env_txt.value)
         env_path = "/World/environments"
         self._stage.DefinePrim(env_path, "Xform")
@@ -104,7 +108,10 @@ class Extension(omni.ext.IExt):
                 path = env_path + "/env_" + str(row_idx) + "_" + str(col_idx)
                 envPrim = self._stage.DefinePrim(path, "Xform")
                 envPrim.GetReferences().AddReference(self._usd_path)
-                setTranslate(envPrim, Gf.Vec3d(row_idx * self._row_width, col_idx * self._row_width, 0))
+                setTranslate(
+                    envPrim,
+                    Gf.Vec3d(row_idx * self._row_width, col_idx * self._row_width, self._height_offset_dbl.value),
+                )
 
         # SceneIndexer
         supported_channels = ["inputChannel", "outputChannel", "teleportInputChannel", "rigidBodySinkOutputChannel"]
