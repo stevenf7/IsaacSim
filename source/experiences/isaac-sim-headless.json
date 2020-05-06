@@ -47,7 +47,10 @@
                 "omni.physx",
                 "omni.physx.ui",
                 "omni.isaac.urdf",
-                "omni.isaac.utils"
+                "omni.isaac.utils",
+                "omni.isaac.lidar",
+                "omni.isaac.dynamic_control",
+                "omni.isaac.robot_engine_bridge"
             ]
         },
         "livestream":{
