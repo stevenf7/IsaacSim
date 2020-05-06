@@ -92,6 +92,16 @@ PYBIND11_MODULE(_dynamic_control, m)
         //.value("DRIVE_EFFORT", DcDriveMode::eEffort, "Effort drive")
         .export_values();
 
+    py::enum_<DcObjectType>(m, "ObjectType", py::arithmetic(), "Types of Object")
+        .value("OBJECT_NONE", DcObjectType::eDcObjectNone, "invalid/unknown/uninitialized object type")
+        .value("OBJECT_RIGIDBODY", DcObjectType::eDcObjectRigidBody)
+        .value("OBJECT_JOINT", DcObjectType::eDcObjectJoint)
+        .value("OBJECT_DOF", DcObjectType::eDcObjectDof)
+        .value("OBJECT_ARTICULATION", DcObjectType::eDcObjectArticulation)
+        .value("OBJECT_ATTRACTOR", DcObjectType::eDcObjectAttractor)
+        .value("OBJECT_D6JOINT", DcObjectType::eDcObjectD6Joint)
+        .export_values();
+
     // opaque types
     /*
     py::class_<DcContext>(m, "Context");
