@@ -80,12 +80,6 @@ class Extension(omni.ext.IExt):
         self._destroy_btn = self._window.layout.add_child(omni.kit.ui.Button("Destroy Application"))
         self._destroy_btn.set_clicked_fn(self._on_destroy_fn)
 
-        self._start_btn = self._window.layout.add_child(omni.kit.ui.Button("Start Application"))
-        self._start_btn.set_clicked_fn(self._on_start_fn)
-
-        self._stop_btn = self._window.layout.add_child(omni.kit.ui.Button("Stop Application"))
-        self._stop_btn.set_clicked_fn(self._on_stop_fn)
-
         self._menu = RobotEngineBridgeMenu()
 
     def on_shutdown(self):
@@ -107,9 +101,3 @@ class Extension(omni.ext.IExt):
 
     def _on_destroy_fn(self, widget):
         self._re_bridge.destroyApplication()
-
-    def _on_start_fn(self, widget):
-        self._re_bridge.startApplication()
-
-    def _on_stop_fn(self, widget):
-        self._re_bridge.stopApplication()

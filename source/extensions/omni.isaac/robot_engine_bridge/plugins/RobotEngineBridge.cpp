@@ -83,18 +83,12 @@ void CARB_ABI createApplication(std::string asset_path,
 
 
     g_application_handle->create(asset_path, app_file, module_paths, json_files);
+    g_application_handle->start();
 }
 void CARB_ABI destroyApplication()
 {
-    g_application_handle->destroy();
-}
-void CARB_ABI startApplication()
-{
-    g_application_handle->start();
-}
-void CARB_ABI stopApplication()
-{
     g_application_handle->stop();
+    g_application_handle->destroy();
 }
 std::string const CARB_ABI getLastError()
 {
@@ -257,8 +251,6 @@ void fillInterface(omni::isaac::robot_engine_bridge::RobotEngineBridge& iface)
 
     iface.createApplication = createApplication;
     iface.destroyApplication = destroyApplication;
-    iface.startApplication = startApplication;
-    iface.stopApplication = stopApplication;
     iface.getLastError = getLastError;
     iface.initializeStageLoader = initializeStageLoader;
 }
