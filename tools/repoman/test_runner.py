@@ -18,8 +18,6 @@ import omni.repo.man
 
 logger = logging.getLogger(os.path.basename(__file__))
 
-ARCHIVE_PATTERN = "_builtpackages/isaac-sim*-{config}.7z"
-
 
 def is_running_under_teamcity():
     return bool(os.getenv("TEAMCITY_VERSION"))
@@ -85,7 +83,11 @@ def teamcity_stop_test(test_id):
 def prepare_package(root: str, config: str, clean: bool) -> str:
     """Find and extract a package, return path to a folder"""
 
-    candidates = list(glob.glob(os.path.join(root, ARCHIVE_PATTERN.format(config=config))))
+    archive_pattern = os.getenv("ARCHIVE_PATTERN")
+    if not archive_pattern:
+        archive_pattern = "_builtpackages/isaac-sim*-{config}.7z"
+
+    candidates = list(glob.glob(os.path.join(root, archive_pattern.format(config=config))))
     if len(candidates) == 0:
         logger.error(f"No archive files found.")
         sys.exit(-1)
@@ -173,7 +175,6 @@ def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile
         f"open {kit_folder}/../../../data/scenes/BuiltInMaterials.usda",
         "--carb/rtx/materialDb/syncLoads=true",
         "--carb/omni.kit.plugin/syncUsdLoads=true",
-        "--carb/rtx/flow/enabled=true",
         "--carb/app/quitAfter=10",  # Quit after 10 updates
     ]
     args.extend(extra_args)
@@ -253,7 +254,7 @@ def main():
         dest="from_package",
         default=False,
         action="store_true",
-        help=f"Use package from '{ARCHIVE_PATTERN}' instead of a root folder.",
+        help=f"Use package instead of a root folder.",
     )
     parser.add_argument(
         "-x",
