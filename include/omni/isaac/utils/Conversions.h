@@ -172,6 +172,18 @@ inline carb::Float3 asCarbFloat3(const pxr::GfVec3f& v)
 }
 
 /**
+ * @brief convert pxr::GfVec3d to carb::Float3
+ *
+ * @param v
+ * @return carb::Float3
+ */
+inline carb::Float3 asCarbFloat3(const pxr::GfVec3d& v)
+{
+    return carb::Float3{ static_cast<float>(v[0]), static_cast<float>(v[1]), static_cast<float>(v[2]) };
+}
+
+
+/**
  * @brief convert pxr::GfVec4f to carb::Float4
  *
  * @param v
@@ -179,8 +191,22 @@ inline carb::Float3 asCarbFloat3(const pxr::GfVec3f& v)
  */
 inline carb::Float4 asCarbFloat4(const pxr::GfQuatf& v)
 {
-    pxr::GfVec3f imag = v.GetImaginary();
+    const pxr::GfVec3f& imag = v.GetImaginary();
     return carb::Float4{ imag[0], imag[1], imag[2], v.GetReal() };
+}
+
+
+/**
+ * @brief convert pxr::GfVec4f to carb::Float4
+ *
+ * @param v
+ * @return carb::Float4
+ */
+inline carb::Float4 asCarbFloat4(const pxr::GfQuatd& v)
+{
+    const pxr::GfVec3d& imag = v.GetImaginary();
+    return carb::Float4{ static_cast<float>(imag[0]), static_cast<float>(imag[1]), static_cast<float>(imag[2]),
+                         static_cast<float>(v.GetReal()) };
 }
 
 /**
@@ -225,8 +251,8 @@ inline physx::PxTransform asPxTransform(const omni::isaac::dynamic_control::DcTr
 inline physx::PxTransform asPxTransform(const pxr::GfTransform& trans)
 {
     physx::PxTransform p;
-    const pxr::GfVec3d pos = trans.GetTranslation();
-    const pxr::GfQuatd rot = trans.GetRotation().GetQuat();
+    const pxr::GfVec3d& pos = trans.GetTranslation();
+    const pxr::GfQuatd& rot = trans.GetRotation().GetQuat();
 
     p.p.x = static_cast<float>(pos[0]);
     p.p.y = static_cast<float>(pos[1]);
@@ -246,6 +272,21 @@ inline physx::PxTransform asPxTransform(const pxr::GfTransform& trans)
  * @return omni::isaac::dynamic_control::DcTransform
  */
 inline omni::isaac::dynamic_control::DcTransform asDcTransform(const pxr::GfVec3f& p, const pxr::GfQuatf& q)
+{
+    omni::isaac::dynamic_control::DcTransform t;
+    t.p = asCarbFloat3(p);
+    t.r = asCarbFloat4(q);
+    return t;
+}
+
+/**
+ * @brief Create a DcTransform from a GfVec3d and a GfQuatd
+ *
+ * @param p
+ * @param q
+ * @return omni::isaac::dynamic_control::DcTransform
+ */
+inline omni::isaac::dynamic_control::DcTransform asDcTransform(const pxr::GfVec3d& p, const pxr::GfQuatd& q)
 {
     omni::isaac::dynamic_control::DcTransform t;
     t.p = asCarbFloat3(p);

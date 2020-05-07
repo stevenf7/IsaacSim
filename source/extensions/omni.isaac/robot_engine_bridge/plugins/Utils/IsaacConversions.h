@@ -25,6 +25,19 @@ static void toVector3dProto(const pxr::GfVec3d& usdVec3d, isaac_message::Vector3
 }
 
 /**
+ * @brief Converts sim Float3 to robot engine Vector3d proto
+ *
+ * @param carbFloat3
+ * @param isaacVector3dProto
+ */
+static void toVector3dProto(const carb::Float3& carbFloat3, isaac_message::Vector3d::Builder& isaacVector3dProto)
+{
+    isaacVector3dProto.setX(carbFloat3.x);
+    isaacVector3dProto.setY(carbFloat3.y);
+    isaacVector3dProto.setZ(carbFloat3.z);
+}
+
+/**
  * @brief Converts sim quat to robot engine SO3d proto
  *
  * @param usdQuat
