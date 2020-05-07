@@ -26,6 +26,7 @@ namespace isaac
 using omni::isaac::dynamic_control::DcHandle;
 using omni::isaac::dynamic_control::DcObjectType;
 using omni::isaac::dynamic_control::DcTransform;
+using utils::conversions::asDcTransform;
 using utils::conversions::asGfQuatd;
 using utils::conversions::asGfVec3d;
 
@@ -76,13 +77,11 @@ void ContactMonitor::processContact(carb::events::IEvent* e)
                 return;
             }
         }
-        collisionProto.setThisName(thisPath.GetString());
-        collisionProto.setOtherName(otherPath.GetString());
-        auto velProto = collisionProto.initVelocity();
+        ContactData contact;
 
-        auto thisPoseProto = collisionProto.initThisPose();
-        auto thisTranslationProto = thisPoseProto.initTranslation();
-        auto thisRotationProto = thisPoseProto.initRotation();
+
+        contact.thisName = thisPath.GetString();
+        contact.otherName = otherPath.GetString();
         pxr::GfVec3d thisVel(0, 0, 0);
 
         DcObjectType prim_type = mDynamicControlPtr->peekObjectType(thisPath.GetString().c_str());
@@ -92,17 +91,15 @@ void ContactMonitor::processContact(carb::events::IEvent* e)
             DcHandle artRootBody = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
             DcTransform artPose = mDynamicControlPtr->getRigidBodyPose(artRootBody);
             thisVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(artRootBody)) * mUnitScale;
-
-            toVector3dProto(asGfVec3d(artPose.p) * mUnitScale, thisTranslationProto);
-            toSO3dProto(asGfQuatd(artPose.r), thisRotationProto);
+            contact.thisPose = artPose;
         }
         else if (prim_type == omni::isaac::dynamic_control::eDcObjectRigidBody)
         {
             DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(thisPath.GetString().c_str());
             DcTransform rigidBodyPose = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
 
-            toVector3dProto(asGfVec3d(rigidBodyPose.p) * mUnitScale, thisTranslationProto);
-            toSO3dProto(asGfQuatd(rigidBodyPose.r), thisRotationProto);
+            contact.thisPose = rigidBodyPose;
+
             thisVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(rigidBodyHandle)) * mUnitScale;
         }
         else if (prim_type == omni::isaac::dynamic_control::eDcObjectNone)
@@ -111,15 +108,10 @@ void ContactMonitor::processContact(carb::events::IEvent* e)
             const pxr::GfTransform usdBodyPose(omni::usd::UsdUtils::getWorldTransformMatrix(mTargetPrim));
             pxr::GfVec3d usdBodyTranslation = usdBodyPose.GetTranslation();
             pxr::GfQuatd usdBodyRotation = usdBodyPose.GetRotation().GetQuat();
-            // Set linear, angular velocity and acceleration to 0
-            toVector3dProto(usdBodyTranslation * mUnitScale, thisTranslationProto);
-            toSO3dProto(usdBodyRotation, thisRotationProto);
+
+            contact.thisPose = asDcTransform(usdBodyTranslation, usdBodyRotation);
         }
 
-
-        auto otherPoseProto = collisionProto.initOtherPose();
-        auto otherTranslationProto = otherPoseProto.initTranslation();
-        auto otherRotationProto = otherPoseProto.initRotation();
         pxr::GfVec3d otherVel(0, 0, 0);
 
         prim_type = mDynamicControlPtr->peekObjectType(otherPath.GetString().c_str());
@@ -130,16 +122,13 @@ void ContactMonitor::processContact(carb::events::IEvent* e)
             DcTransform artPose = mDynamicControlPtr->getRigidBodyPose(artRootBody);
             otherVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(artRootBody)) * mUnitScale;
 
-            toVector3dProto(asGfVec3d(artPose.p) * mUnitScale, otherTranslationProto);
-            toSO3dProto(asGfQuatd(artPose.r), otherRotationProto);
+            contact.otherPose = artPose;
         }
         else if (prim_type == omni::isaac::dynamic_control::eDcObjectRigidBody)
         {
             DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(otherPath.GetString().c_str());
             DcTransform rigidBodyPose = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
-
-            toVector3dProto(asGfVec3d(rigidBodyPose.p) * mUnitScale, otherTranslationProto);
-            toSO3dProto(asGfQuatd(rigidBodyPose.r), otherRotationProto);
+            contact.otherPose = rigidBodyPose;
             otherVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(rigidBodyHandle)) * mUnitScale;
         }
         else if (prim_type == omni::isaac::dynamic_control::eDcObjectNone)
@@ -149,36 +138,76 @@ void ContactMonitor::processContact(carb::events::IEvent* e)
                 omni::usd::UsdUtils::getWorldTransformMatrix(mStage->GetPrimAtPath(otherPath)));
             pxr::GfVec3d usdBodyTranslation = usdBodyPose.GetTranslation();
             pxr::GfQuatd usdBodyRotation = usdBodyPose.GetRotation().GetQuat();
-            // Set linear, angular velocity and acceleration to 0
-            toVector3dProto(usdBodyTranslation * mUnitScale, otherTranslationProto);
-            toSO3dProto(usdBodyRotation, otherRotationProto);
+            contact.otherPose = asDcTransform(usdBodyTranslation, usdBodyRotation);
         }
-        // TODO: check which body we want velociy relative to
-        toVector3dProto((thisVel - otherVel) * mUnitScale, velProto);
+        contact.velocity = utils::conversions::asCarbFloat3((thisVel - otherVel) * mUnitScale);
+
 
         // if we have contact data, also publish it
         if (e->type == carb::physics::eContactData)
         {
-            auto normalProto = collisionProto.initContactNormal();
-            normalProto.setX(dict->get<float>(e->payload, "normalX"));
-            normalProto.setY(dict->get<float>(e->payload, "normalY"));
-            normalProto.setZ(dict->get<float>(e->payload, "normalZ"));
 
-            auto pointProto = collisionProto.initContactPoint();
-            pointProto.setX(dict->get<float>(e->payload, "positionX") * mUnitScale);
-            pointProto.setY(dict->get<float>(e->payload, "positionY") * mUnitScale);
-            pointProto.setZ(dict->get<float>(e->payload, "positionZ") * mUnitScale);
+            contact.normal.x = dict->get<float>(e->payload, "normalX");
+            contact.normal.y = dict->get<float>(e->payload, "normalY");
+            contact.normal.z = dict->get<float>(e->payload, "normalZ");
+
+            contact.position.x = dict->get<float>(e->payload, "positionX") * mUnitScale;
+            contact.position.y = dict->get<float>(e->payload, "positionY") * mUnitScale;
+            contact.position.z = dict->get<float>(e->payload, "positionZ") * mUnitScale;
         }
-        std::vector<std::vector<uint8_t>> buffers;
-
-        // printf("JSON: %s\n", isaac_message::gJsonCodec.encode(collisionProto).cStr());
-        publish(mOutputComponent, mOutputChannel, collisionProto, isaac_message::RigidBody3GroupProtoId, buffers);
+        mContactData.push_back(contact);
     }
 }
 
 
 void ContactMonitor::tick()
 {
+}
+
+void ContactMonitor::publishAllMessages()
+{
+    for (auto& contact : mContactData)
+    {
+        IsaacMessage<isaac_message::Collision> collisionMessage;
+        auto collisionProto = collisionMessage.initProto();
+
+        collisionProto.setThisName(contact.thisName);
+        collisionProto.setOtherName(contact.otherName);
+        auto velProto = collisionProto.initVelocity();
+
+        auto thisPoseProto = collisionProto.initThisPose();
+        auto thisTranslationProto = thisPoseProto.initTranslation();
+        auto thisRotationProto = thisPoseProto.initRotation();
+        pxr::GfVec3d thisVel(0, 0, 0);
+
+
+        toVector3dProto(asGfVec3d(contact.thisPose.p) * mUnitScale, thisTranslationProto);
+        toSO3dProto(asGfQuatd(contact.thisPose.r), thisRotationProto);
+
+
+        auto otherPoseProto = collisionProto.initOtherPose();
+        auto otherTranslationProto = otherPoseProto.initTranslation();
+        auto otherRotationProto = otherPoseProto.initRotation();
+        pxr::GfVec3d otherVel(0, 0, 0);
+
+
+        toVector3dProto(asGfVec3d(contact.otherPose.p) * mUnitScale, otherTranslationProto);
+        toSO3dProto(asGfQuatd(contact.otherPose.r), otherRotationProto);
+
+        // TODO: check which body we want velociy relative to
+        toVector3dProto(contact.velocity, velProto);
+
+        // auto normalProto = collisionProto.initContactNormal();
+        // toVector3dProto(contact.normal, normalProto);
+        // auto pointProto = collisionProto.initContactPoint();
+        // toVector3dProto(contact.velocity, pointProto);
+
+        std::vector<std::vector<uint8_t>> buffers;
+
+        // printf("JSON: %s\n", isaac_message::gJsonCodec.encode(collisionProto).cStr());
+        publish(mOutputComponent, mOutputChannel, collisionProto, isaac_message::RigidBody3GroupProtoId, buffers);
+    }
+    mContactData.clear();
 }
 
 void ContactMonitor::onStart()

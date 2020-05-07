@@ -16,6 +16,17 @@ namespace isaac
 namespace robot_engine_bridge
 {
 
+struct ContactData
+{
+    std::string thisName;
+    std::string otherName;
+    omni::isaac::dynamic_control::DcTransform thisPose;
+    omni::isaac::dynamic_control::DcTransform otherPose;
+    carb::Float3 velocity;
+    carb::Float3 normal;
+    carb::Float3 position;
+};
+
 /**
  * @brief
  *
@@ -37,6 +48,11 @@ public:
      * @brief Tick the component
      */
     virtual void tick();
+    /**
+     * @brief
+     *
+     */
+    virtual void publishAllMessages();
     /**
      * @brief The rigid bodies might not be valid, so force update on start
      *
@@ -61,6 +77,8 @@ private:
     pxr::SdfPathVector mIgnoredTargets;
     // Scale of stage
     double mUnitScale;
+
+    std::vector<ContactData> mContactData;
 };
 }
 }
