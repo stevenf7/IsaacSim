@@ -13,8 +13,8 @@ These tests are run using the following script:
 ### Unit Tests
 This set of tests run per extension and are user defined. Any extension specified in the config file will be loaded and its tests executed.
 
-See the 
-``source/experiences`` folder for all test app configuration files
+These tests are run using the following script:
+``./tools/ci/testing/test-linux-x86_64-release/step.sh``
 
 ## Writing Unit Tests
 Writing unit tests involves three steps
