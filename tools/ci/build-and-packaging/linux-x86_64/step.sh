@@ -45,8 +45,8 @@ echo "##teamcity[progressMessage 'Gathering licenses...']"
 
 # Package
 echo "##teamcity[progressMessage 'Packaging...']"
-"$ROOT_DIR/tools/package.sh" -m test_runner
-"$ROOT_DIR/tools/package.sh" -m docs
+"$ROOT_DIR/tools/package.sh" -m test_runner -c release
+"$ROOT_DIR/tools/package.sh" -m docs -c release
 "$ROOT_DIR/tools/package.sh" -m isaac-sim -c debug
 "$ROOT_DIR/tools/package.sh" -m isaac-sim -c release
 "$ROOT_DIR/tools/package.sh" -m omniverse-kit-robotics -c debug
