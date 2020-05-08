@@ -15,10 +15,9 @@ import repoman
 
 repoman.bootstrap()
 import omni.repo.man
+import omni.repo.package
 
 logger = logging.getLogger(os.path.basename(__file__))
-
-ARCHIVE_PATTERN = "_builtpackages/isaac-sim*-{config}.7z"
 
 
 def is_running_under_teamcity():
@@ -82,10 +81,14 @@ def teamcity_stop_test(test_id):
     teamcity_message("testFinished", name=test_id)
 
 
-def prepare_package(root: str, config: str, clean: bool) -> str:
+def prepare_package(root: str, config: str, clean: bool, copy_test_data: bool) -> str:
     """Find and extract a package, return path to a folder"""
 
-    candidates = list(glob.glob(os.path.join(root, ARCHIVE_PATTERN.format(config=config))))
+    archive_pattern = os.getenv("ARCHIVE_PATTERN")
+    if not archive_pattern:
+        archive_pattern = "_builtpackages/isaac-sim*-{config}.7z"
+
+    candidates = list(glob.glob(os.path.join(root, archive_pattern.format(config=config))))
     if len(candidates) == 0:
         logger.error(f"No archive files found.")
         sys.exit(-1)
@@ -109,6 +112,12 @@ def prepare_package(root: str, config: str, clean: bool) -> str:
 
     if not os.path.exists(folder_to_extract):
         packmanapi.extract_archive7z_to_folder(archive_path, folder_to_extract)
+
+    # Copy test files from test_runner package
+    if copy_test_data:
+        src = f"{root}/_build"
+        dst = f"{folder_to_extract}/_build"
+        omni.repo.package.repo_fileutils.copy_files(src, dst)
 
     return folder_to_extract, archive_path
 
@@ -173,7 +182,6 @@ def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile
         f"open {kit_folder}/../../../data/scenes/BuiltInMaterials.usda",
         "--carb/rtx/materialDb/syncLoads=true",
         "--carb/omni.kit.plugin/syncUsdLoads=true",
-        "--carb/rtx/flow/enabled=true",
         "--carb/app/quitAfter=10",  # Quit after 10 updates
     ]
     args.extend(extra_args)
@@ -253,7 +261,7 @@ def main():
         dest="from_package",
         default=False,
         action="store_true",
-        help=f"Use package from '{ARCHIVE_PATTERN}' instead of a root folder.",
+        help=f"Use package instead of a root folder.",
     )
     parser.add_argument(
         "-x",
@@ -293,8 +301,12 @@ def main():
     options = parser.parse_args()
 
     root_folder = repo_folders["root"]
+
+    copy_test_data = False
+    if options.suite != "startuptest":
+        copy_test_data = True
     if options.from_package:
-        root_folder, _ = prepare_package(root_folder, options.config, options.clean)
+        root_folder, _ = prepare_package(root_folder, options.config, options.clean, copy_test_data)
 
     if options.linbuild_profile is not None:
         packmanapi.pull(os.path.join(repo_folders["deps_xml_folder"], "linbuild.packman.xml"), platform=platform_host)

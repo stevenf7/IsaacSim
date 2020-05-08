@@ -14,6 +14,7 @@
 #include "../Sensor/LidarComponent.h"
 #include "../Sensor/CameraComponent.h"
 #include "../Monitor/ContactMonitor.h"
+#include "plugins/core/ScopedTimer.h"
 
 namespace omni
 {
@@ -177,7 +178,7 @@ auto TaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
 void IsaacApplication::tick(double dt)
 {
     CARB_PROFILE_ZONE(0, "REB IsaacApplication Tick");
-
+    // omni::isaac::utils::ScopedTimer TimerApp("IsaacApplication");
     mError = (mIsaacCApiPtr->isaac_get_external_time_difference)(mAppHandle, mTimeSeconds, &mTimeDifferenceNanoSeconds);
     if (mRunning)
     {
@@ -194,13 +195,10 @@ void IsaacApplication::tick(double dt)
             for (auto& component : mComponents)
             {
                 component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
-                if (component.second->getEnabled())
-                {
-                    component.second->tick();
-                }
             }
 
-#if 1
+
+            // omni::isaac::utils::ScopedTimer TimerApp("  Publish");
             TaskData* taskArray = new TaskData[mComponents.size()];
             int index = 0;
             for (auto& component : mComponents)
@@ -214,10 +212,18 @@ void IsaacApplication::tick(double dt)
                 mTasking->addTask(bigTask, mTaskCounter);
                 index++;
             }
+
+            for (auto& component : mComponents)
+            {
+                if (component.second->getEnabled())
+                {
+                    component.second->tick();
+                }
+            }
+
             mTasking->yieldUntilCounter(mTaskCounter);
             delete[] taskArray;
 
-#endif
 
             mSceneLoaderComponent->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
             mSceneLoaderComponent->tick();

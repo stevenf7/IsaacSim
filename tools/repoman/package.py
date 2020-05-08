@@ -59,7 +59,20 @@ def create_isaac_sim_package_desc(platform_target: str, config: str) -> omni.rep
     return package
 
 
-def create_docs_package_desc(platform_target: str, config) -> omni.repo.package.PackageDesc:
+def create_ov_kit_robotics_package_desc(platform_target: str, config: str) -> omni.repo.package.PackageDesc:
+    package = create_package_desc(platform_target, config)
+    package.name = "omniverse-kit-robotics"
+
+    if package.version is not None:
+        package.label_name = "%s@%s-%s.latest.txt" % (
+            package.name,
+            package.version[: package.version.find(".")],
+            platform_target,
+        )
+    return package
+
+
+def create_docs_package_desc(platform_target: str, config: str) -> omni.repo.package.PackageDesc:
     package = create_package_desc(platform_target, config)
     package.name = "docs"
     package.ziponly = True
@@ -67,7 +80,7 @@ def create_docs_package_desc(platform_target: str, config) -> omni.repo.package.
     return package
 
 
-def create_testrunner_package_desc(platform_target: str, config) -> omni.repo.package.PackageDesc:
+def create_testrunner_package_desc(platform_target: str, config: str) -> omni.repo.package.PackageDesc:
     package = create_package_desc(platform_target, config)
     package.name = "test_runner"
     package.ziponly = True
@@ -83,6 +96,7 @@ def create_omni_domain_randomization_package_desc(platform_target: str, config: 
 
 PACKAGES = {
     "isaac-sim": create_isaac_sim_package_desc,
+    "omniverse-kit-robotics": create_ov_kit_robotics_package_desc,
     "omni_domain_randomization": create_omni_domain_randomization_package_desc,
     "docs": create_docs_package_desc,
     "test_runner": create_testrunner_package_desc,

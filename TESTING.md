@@ -13,8 +13,8 @@ These tests are run using the following script:
 ### Unit Tests
 This set of tests run per extension and are user defined. Any extension specified in the config file will be loaded and its tests executed.
 
-See the 
-``source/experiences`` folder for all test app configuration files
+These tests are run using the following script:
+``./tools/ci/testing/test-linux-x86_64-release/step.sh``
 
 ## Writing Unit Tests
 Writing unit tests involves three steps
@@ -59,6 +59,8 @@ class TestFoo(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 ```
 
+### 2. Loading the test into the extension
+
 ``extension.py`` generally has the following format, the important part is to import any tests from that extensions scripts/tests folder. 
 
 ```
@@ -79,3 +81,7 @@ class Extension(omni.ext.IExt):
 
 Tests can be structured into multiple python files as it makes sense. 
 For an example of how to set up a test see the motion_planning extension
+
+### 3. Add test to app config json
+
+modify ``source/experiences/test-isaac-sim.json`` and add the extension to the list of extensions loaded on startup, the test will automatically get picked up by the test-runner extension and run. 

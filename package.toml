@@ -40,7 +40,7 @@ files = []
 
 [isaac-sim]
 files = [
-    ["_build/$platform/$config/experiences"],
+    ["_build/$platform/$config/experiences/isaac-sim*", "_build/$platform/$config/experiences"],
     ["_build/$platform/$config/exts"],
     ["_build/$platform/$config/data", "_build/$platform/$config/data"],
     ["PACKAGE-LICENSES", "PACKAGE-LICENSES"],
@@ -80,7 +80,7 @@ files = [
 
 [isaac-sim.windows-x86_64]
 files = [
-    ["_build/$platform/$config/*.bat", "_build/$platform/$config"],
+    ["_build/$platform/$config/isaac-sim*.bat", "_build/$platform/$config"],
 
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*.exe", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/assimp-vc141-mt.dll"],
@@ -117,7 +117,102 @@ files = [
 
 [isaac-sim.linux]
 files = [
-    ["_build/$platform/$config/*.sh", "_build/$platform/$config"],
+    ["_build/$platform/$config/isaac-sim*.sh", "_build/$platform/$config"],
+    ["_build/$platform/$config/setup_python_env.sh", "_build/$platform/$config"],
+
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*.so*", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/example.rtx"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins"],
+    ["_build/target-deps/kit_sdk_$config/omniverse-kit.sh", "_build/target-deps/kit_sdk_$config/omniverse-kit.sh"],
+]
+
+########################################################################################################################
+# omniverse-kit-robotics package
+########################################################################################################################
+
+[omniverse-kit-robotics]
+files = [
+    ["_build/$platform/$config/experiences/omniverse-kit-robotics*", "_build/$platform/$config/experiences"],
+    ["_build/$platform/$config/experiences/test*", "_build/$platform/$config/experiences"],
+    ["_build/$platform/$config/exts"],
+    ["_build/$platform/$config/data", "_build/$platform/$config/data"],
+    ["PACKAGE-LICENSES", "PACKAGE-LICENSES"],
+    ["_build/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
+    ["source/extensions/omni.isaac/dr/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
+
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/cache/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/cache"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/config", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/config"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/experiences", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/experiences"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/extensions/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/extensions"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/extsPhysics/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/extsPhysics"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/pythonapps", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/pythonapps"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/resources/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/resources"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/scripts/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/scripts"],
+
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit.portable", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit.portable"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*$shell_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
+    
+
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/**/*$lib_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl/**/*$lib_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl"],
+
+    ["_build/target-deps/kit_sdk_$config/_build/assets/**", "_build/target-deps/kit_sdk_$config/_build/assets"],
+    ["_build/target-deps/kit_sdk_$config/_build/library/**", "_build/target-deps/kit_sdk_$config/_build/library"],
+    ["_build/target-deps/kit_sdk_$config/_build/manuals", "_build/target-deps/kit_sdk_$config/_build/manuals"],
+    ["_build/target-deps/kit_sdk_$config/_build/mdl", "_build/target-deps/kit_sdk_$config/_build/mdl"],
+    #["_build/target-deps/kit_sdk_$config/_build/shaders", "_build/target-deps/kit_sdk_$config/_build/shaders"],
+    ["_build/target-deps/kit_sdk_$config/_build/target-deps/python/**", "_build/target-deps/kit_sdk_$config/_build/target-deps/python"],
+    ["_build/target-deps/kit_sdk_$config/data/**", "_build/target-deps/kit_sdk_$config/data"],    
+    ["_build/target-deps/kit_sdk_$config/deps/**", "_build/target-deps/kit_sdk_$config/deps"],
+    ["_build/target-deps/kit_sdk_$config/include", "_build/target-deps/kit_sdk_$config/include"],
+    ["_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES", "_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES"],
+    #["_build/target-deps/kit_sdk_$config/tools/packman/**", "_build/target-deps/kit_sdk_$config/tools/packman"] 
+]
+
+
+[omniverse-kit-robotics.windows-x86_64]
+files = [
+    ["_build/$platform/$config/omniverse-kit-robotics*.bat", "_build/$platform/$config"],
+
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*.exe", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/assimp-vc141-mt.dll"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/bindings-lua/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/bindings-lua"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/bindings-python/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/bindings-python"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/carb.*.plugin.dll", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/carb.dll", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse_asset_converter.dll"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/*.dll", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/*.exe", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/bindings-python/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/bindings-python"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/omni.kit.ui.lib"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/omni.usd.lib"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/share/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/share"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/carb_gfx/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/carb_gfx"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd"],
+    ["_build/target-deps/kit_sdk_$config/omniverse-kit.bat", "_build/target-deps/kit_sdk_$config/omniverse-kit.bat"],
+]
+
+[omniverse-kit-robotics.windows-x86_64.debug]
+files = [
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/msvcp140d.dll"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/ucrtbased.dll"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/vcruntime140d.dll"],
+]
+
+[omniverse-kit-robotics.windows-x86_64.release]
+files = [
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/msvcp140.dll"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/ucrtbase.dll"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/vcruntime140.dll"],
+]
+
+[omniverse-kit-robotics.linux]
+files = [
+    ["_build/$platform/$config/omniverse-kit-robotics*.sh", "_build/$platform/$config"],
+    ["_build/$platform/$config/setup_python_env.sh", "_build/$platform/$config"],
 
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*.so*", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/example.rtx"],
@@ -170,4 +265,6 @@ files = [
 files = [
     ["deps"],
     ["tools"],
+    ["_build/$platform/$config/experiences/test*", "_build/$platform/$config/experiences"],
+    ["_build/$platform/$config/test*.sh", "_build/$platform/$config"],
 ]

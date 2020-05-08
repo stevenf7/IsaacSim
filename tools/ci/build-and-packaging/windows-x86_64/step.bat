@@ -54,16 +54,22 @@ REM )
 
 :: Package
 echo ##teamcity[progressMessage 'Packaging...']
-call "%~dp0..\..\..\package.bat" -m test_runner
+call "%~dp0..\..\..\package.bat" -m test_runner -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
-call "%~dp0..\..\..\package.bat" -m docs
+call "%~dp0..\..\..\package.bat" -m docs -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 call "%~dp0..\..\..\package.bat" -m isaac-sim -c debug
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 call "%~dp0..\..\..\package.bat" -m isaac-sim -c release
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
+
+call "%~dp0..\..\..\package.bat" -m omniverse-kit-robotics -c debug
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
+
+call "%~dp0..\..\..\package.bat" -m omniverse-kit-robotics -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 call "%~dp0..\..\..\package.bat" -m omni_domain_randomization -c debug
