@@ -15,6 +15,7 @@ import repoman
 
 repoman.bootstrap()
 import omni.repo.man
+import omni.repo.package
 
 logger = logging.getLogger(os.path.basename(__file__))
 
@@ -80,7 +81,7 @@ def teamcity_stop_test(test_id):
     teamcity_message("testFinished", name=test_id)
 
 
-def prepare_package(root: str, config: str, clean: bool) -> str:
+def prepare_package(root: str, config: str, clean: bool, copy_test_data: bool) -> str:
     """Find and extract a package, return path to a folder"""
 
     archive_pattern = os.getenv("ARCHIVE_PATTERN")
@@ -111,6 +112,12 @@ def prepare_package(root: str, config: str, clean: bool) -> str:
 
     if not os.path.exists(folder_to_extract):
         packmanapi.extract_archive7z_to_folder(archive_path, folder_to_extract)
+
+    # Copy test files from test_runner package
+    if copy_test_data:
+        src = f"{root}/_build"
+        dst = f"{folder_to_extract}/_build"
+        omni.repo.package.repo_fileutils.copy_files(src, dst)
 
     return folder_to_extract, archive_path
 
@@ -294,8 +301,12 @@ def main():
     options = parser.parse_args()
 
     root_folder = repo_folders["root"]
+
+    copy_test_data = False
+    if options.suite != "startuptest":
+        copy_test_data = True
     if options.from_package:
-        root_folder, _ = prepare_package(root_folder, options.config, options.clean)
+        root_folder, _ = prepare_package(root_folder, options.config, options.clean, copy_test_data)
 
     if options.linbuild_profile is not None:
         packmanapi.pull(os.path.join(repo_folders["deps_xml_folder"], "linbuild.packman.xml"), platform=platform_host)

@@ -72,7 +72,7 @@ def create_ov_kit_robotics_package_desc(platform_target: str, config: str) -> om
     return package
 
 
-def create_docs_package_desc(platform_target: str, config) -> omni.repo.package.PackageDesc:
+def create_docs_package_desc(platform_target: str, config: str) -> omni.repo.package.PackageDesc:
     package = create_package_desc(platform_target, config)
     package.name = "docs"
     package.ziponly = True
@@ -80,7 +80,7 @@ def create_docs_package_desc(platform_target: str, config) -> omni.repo.package.
     return package
 
 
-def create_testrunner_package_desc(platform_target: str, config) -> omni.repo.package.PackageDesc:
+def create_testrunner_package_desc(platform_target: str, config: str) -> omni.repo.package.PackageDesc:
     package = create_package_desc(platform_target, config)
     package.name = "test_runner"
     package.ziponly = True

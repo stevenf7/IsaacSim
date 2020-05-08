@@ -120,9 +120,6 @@ files = [
     ["_build/$platform/$config/isaac-sim*.sh", "_build/$platform/$config"],
     ["_build/$platform/$config/setup_python_env.sh", "_build/$platform/$config"],
 
-    ["_build/$platform/$config/experiences/test*", "_build/$platform/$config/experiences"],
-    ["_build/$platform/$config/test*.sh", "_build/$platform/$config"],
-
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*.so*", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/example.rtx"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit"],
@@ -178,7 +175,6 @@ files = [
 [omniverse-kit-robotics.windows-x86_64]
 files = [
     ["_build/$platform/$config/omniverse-kit-robotics*.bat", "_build/$platform/$config"],
-    ["_build/$platform/$config/test*.bat", "_build/$platform/$config"],
 
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*.exe", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/assimp-vc141-mt.dll"],
@@ -216,7 +212,6 @@ files = [
 [omniverse-kit-robotics.linux]
 files = [
     ["_build/$platform/$config/omniverse-kit-robotics*.sh", "_build/$platform/$config"],
-    ["_build/$platform/$config/test*.sh", "_build/$platform/$config"],
     ["_build/$platform/$config/setup_python_env.sh", "_build/$platform/$config"],
 
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*.so*", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
@@ -270,4 +265,6 @@ files = [
 files = [
     ["deps"],
     ["tools"],
+    ["_build/$platform/$config/experiences/test*", "_build/$platform/$config/experiences"],
+    ["_build/$platform/$config/test*.sh", "_build/$platform/$config"],
 ]
