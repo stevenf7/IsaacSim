@@ -46,9 +46,6 @@ ContactMonitor::~ContactMonitor()
 
 void ContactMonitor::processContact(carb::events::IEvent* e)
 {
-    IsaacMessage<isaac_message::Collision> collisionMessage;
-    auto collisionProto = collisionMessage.initProto();
-
     carb::dictionary::IDictionary* dict = carb::dictionary::getCachedDictionaryInterface();
 
     if (e->type == carb::physics::eContactFound)
@@ -57,21 +54,22 @@ void ContactMonitor::processContact(carb::events::IEvent* e)
         //        dict->get<const char*>(e->payload, "actor1"));
 
         pxr::SdfPath thisPath(dict->get<const char*>(e->payload, "actor0"));
+        pxr::SdfPath otherPath(dict->get<const char*>(e->payload, "actor1"));
 
         // This report is for some other prim, skip
-        if (thisPath != mTargetPrim.GetPath())
+        if (thisPath != mTargetPrim.GetPath() && otherPath != mTargetPrim.GetPath())
         {
             // printf("%s != %s\n", dict->get<const char*>(e->payload, "actor0"),
             // mTargetPrim.GetPath().GetString().c_str());
             return;
         }
-        pxr::SdfPath otherPath(dict->get<const char*>(e->payload, "actor1"));
+
 
         // check if otherPath is in Ignored list
         for (pxr::SdfPath ignoredPath : mIgnoredTargets)
         {
             // this path matches an ignored once, skip contact event
-            if (otherPath == ignoredPath)
+            if (otherPath == ignoredPath || thisPath == ignoredPath)
             {
                 // printf("otherPath == ignoredPath\n");
                 return;
