@@ -132,8 +132,13 @@ void SurfaceGripper::onComponentChange()
     }
     mProps.parentPath = targets[0].GetString();
 
-    pxr::GfVec3f offsetPosition;
-    pxr::GfQuatf offsetRotation;
+    pxr::GfVec3f offsetPosition(0, 0, 0);
+    pxr::GfQuatf offsetRotation(1, 0, 0, 0);
+
+    mProps.gripThreshold = 1;
+    mProps.forceLimit = 1e7;
+    mProps.torqueLimit = 1e5;
+
     isaac::utils::safeGetAttribute(typedPrim.GetOffsetPositionAttr(), offsetPosition);
     isaac::utils::safeGetAttribute(typedPrim.GetOffsetRotationAttr(), offsetRotation);
     isaac::utils::safeGetAttribute(typedPrim.GetGripThresholdAttr(), mProps.gripThreshold);
