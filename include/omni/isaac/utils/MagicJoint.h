@@ -35,7 +35,8 @@ struct MagicJointProperties
     std::string parentPath; //! parent body that  contains the joint
     DcTransform offset; //! offset from parent body to joint point of contact
     float gripThreshold; //!  How far from an object it allows the gripper to lock in
-    float forceLimit; //! Maximum force applied by gripper before it releases
+    float forceLimit; //! gripper breaking force
+    float torqueLimit; //! torque breaking force
 };
 
 /**
@@ -61,6 +62,7 @@ public:
         mJointProperties.stiffness = 0;
         mJointProperties.damping = 1.0e5f;
         mJointProperties.forceLimit = 0;
+        mJointProperties.torqueLimit = 0;
 
         mIsClosed = false;
         mIsInitialized = false;
@@ -89,6 +91,7 @@ public:
     {
         mProps = props;
 
+        // CARB_LOG_WARN("Break Force/torque: %f %f", mProps.forceLimit, mProps.torqueLimit);
         if (mJointHandle)
         {
             mDc->destroyD6Joint(mJointHandle);
@@ -111,6 +114,18 @@ public:
     inline bool isClosed()
     {
         return mIsClosed;
+    }
+
+    void update()
+    {
+        if (isClosed())
+        {
+            if (mDc->getD6JointConstraintIsBroken(mJointHandle))
+            {
+                CARB_LOG_WARN("Gripper Constraint is Broken");
+                open();
+            }
+        }
     }
 
     /**
@@ -151,6 +166,7 @@ public:
                 mJointProperties.stiffness = 1.e8f;
                 mJointProperties.damping = 1.e6f;
                 mJointProperties.forceLimit = mProps.forceLimit;
+                mJointProperties.torqueLimit = mProps.torqueLimit;
                 mDc->setD6JointProperties(mJointHandle, &mJointProperties);
                 mIsClosed = true;
             }
@@ -179,6 +195,7 @@ public:
             mDc->setRigidBodyDisableGravity(mJointProperties.body1, false);
             mJointProperties.body1 = 0;
             mJointProperties.forceLimit = 0;
+            mJointProperties.torqueLimit = 0;
             mDc->setD6JointProperties(mJointHandle, &mJointProperties);
             mIsClosed = false;
             return true;

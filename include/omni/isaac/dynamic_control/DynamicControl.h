@@ -342,6 +342,13 @@ struct DynamicControl
      */
     bool(CARB_ABI* getD6JointProperties)(DcHandle jointHandle, DcD6JointProperties* props);
 
+    //! Get whether the joint constraint is broken
+    /*!
+     *  \param joint The joint.
+     *  \return true if joint constraint is broken
+     */
+    bool(CARB_ABI* getD6JointConstraintIsBroken)(DcHandle jointHandle);
+
     //! Modifies properties of the selected joint.
     /*!
      *  Modifies the properties of an joint given by its handle and the environment selected.

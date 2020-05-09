@@ -215,7 +215,8 @@ struct DcD6JointProperties
     DcTransform pose1{ kTransformIdentity }; //!< Offset from Rigid Body 1 to Joint.
     float stiffness = 1e5f; //!< Joint Stiffness
     float damping = 1e3f; //!< Joint Damping
-    float forceLimit = std::numeric_limits<float>::max(); //!< Maximum force to be applied by joint
+    float forceLimit = std::numeric_limits<float>::max(); //!< Joint Breaking Force
+    float torqueLimit = std::numeric_limits<float>::max(); //!< Joint Breaking torque
 };
 
 

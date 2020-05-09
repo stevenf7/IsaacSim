@@ -138,6 +138,7 @@ void SurfaceGripper::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetOffsetRotationAttr(), offsetRotation);
     isaac::utils::safeGetAttribute(typedPrim.GetGripThresholdAttr(), mProps.gripThreshold);
     isaac::utils::safeGetAttribute(typedPrim.GetForceLimitAttr(), mProps.forceLimit);
+    isaac::utils::safeGetAttribute(typedPrim.GetTorqueLimitAttr(), mProps.torqueLimit);
     mProps.offset = omni::isaac::utils::conversions::asDcTransform(offsetPosition, offsetRotation);
     mGripperJoint->initialize(mProps);
 }

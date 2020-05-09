@@ -133,6 +133,7 @@ class RobotEngineBridgeMenu:
 
         prim.CreateGripThresholdAttr(1)
         prim.CreateForceLimitAttr(1e7)
+        prim.CreateTorqueLimitAttr(1e5)
         prim.CreateOffsetPositionAttr(Gf.Vec3f(0, 0, 0))
         prim.CreateOffsetRotationAttr(Gf.Quatf(1.0))
 

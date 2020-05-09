@@ -2873,31 +2873,14 @@ void CARB_ABI DcDestroyRigidBodyAttractor(DcHandle attHandle)
     ctx->removeAttractor(attHandle);
 }
 
+
+//
+// D6 Joints
+//
+
 bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props);
+bool getD6JointConstraintIsBroken(DcD6Joint* dcJoint);
 
-DcRayCastResult CARB_ABI DcRayCast(const carb::Float3& origin, const carb::Float3& direction, float max_distance)
-{
-
-    (void)DC_CHECK_SIMULATING();
-    DcRayCastResult out;
-    out.hit = false;
-
-    DcContext* ctx = g_dcCtx;
-    if (!ctx)
-    {
-        return out;
-    }
-
-    carb::physics::RaycastHit result;
-    out.hit = ctx->physx->raycastClosest(origin, direction, max_distance, result, false);
-
-    if (out.hit)
-    {
-        out.rigidBody = ctx->getRigidBodyHandle(SdfPath(result.rigidBody));
-        out.distance = result.distance;
-    }
-    return out;
-}
 
 DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
 {
@@ -2990,6 +2973,49 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
     return j_handle;
 }
 
+void CARB_ABI DcDestroyD6Joint(DcHandle jointHandle)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcContext* ctx = g_dcCtx;
+    if (!ctx)
+    {
+        return;
+    }
+
+    DcD6Joint* joint = DC_LOOKUP_D6JOINT(jointHandle);
+    if (!joint || !joint->pxJoint)
+    {
+        return;
+    }
+
+    ctx->physx->releaseD6Joint(joint->pxJoint);
+
+    ctx->removeD6Joint(jointHandle);
+}
+
+bool CARB_ABI DcGetD6JointProperties(DcHandle jointHandle, DcD6JointProperties* props)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcD6Joint* joint = DC_LOOKUP_D6JOINT(jointHandle);
+    if (!joint || !props)
+    {
+        return false;
+    }
+
+    *props = joint->props;
+
+    return true;
+}
+
+bool CARB_ABI DcGetD6JointConstraintIsBroken(DcHandle jointHandle)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    return getD6JointConstraintIsBroken(DC_LOOKUP_D6JOINT(jointHandle));
+}
+
 bool CARB_ABI DcSetD6JointProperties(DcHandle jointHandle, const DcD6JointProperties* props)
 {
     (void)DC_CHECK_SIMULATING();
@@ -2997,6 +3023,35 @@ bool CARB_ABI DcSetD6JointProperties(DcHandle jointHandle, const DcD6JointProper
     return setD6JointProperties(DC_LOOKUP_D6JOINT(jointHandle), props);
 }
 
+bool CARB_ABI DcSetOriginOffset(DcHandle handle, const carb::Float3& origin)
+{
+    DcContext* ctx = g_dcCtx;
+    if (!ctx)
+    {
+        return false;
+    }
+
+    DcArticulation* art = ctx->getArticulation(handle);
+    if (art)
+    {
+        for (int i = 0; i < art->numRigidBodies(); i++)
+        {
+            art->rigidBodies[i]->origin = origin;
+        }
+        return true;
+    }
+
+    DcRigidBody* body = ctx->getRigidBody(handle);
+    if (body)
+    {
+        body->origin = origin;
+        return true;
+    }
+
+    // TODO: attractors
+
+    return false;
+}
 
 bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
 {
@@ -3067,6 +3122,9 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
     joint->setLocalPose(PxJointActorIndex::eACTOR0, pose0);
     joint->setLocalPose(PxJointActorIndex::eACTOR1, pose1);
 
+    joint->setBreakForce(props->forceLimit, props->torqueLimit);
+    joint->setConstraintFlag(PxConstraintFlag::eBROKEN, false);
+
     PxD6JointDrive drive(props->stiffness, props->damping, props->forceLimit, false);
     PxD6JointDrive defaultDrive;
 
@@ -3128,71 +3186,46 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
     return true;
 }
 
-bool CARB_ABI DcGetD6JointProperties(DcHandle jointHandle, DcD6JointProperties* props)
+bool getD6JointConstraintIsBroken(DcD6Joint* dcJoint)
 {
     (void)DC_CHECK_SIMULATING();
 
-    DcD6Joint* joint = DC_LOOKUP_D6JOINT(jointHandle);
-    if (!joint || !props)
+    if (!dcJoint)
     {
         return false;
     }
 
-    *props = joint->props;
+    PxD6Joint* joint = dcJoint->pxJoint;
 
-    return true;
+    return joint->getConstraintFlags() & PxConstraintFlag::eBROKEN;
 }
 
-void CARB_ABI DcDestroyD6Joint(DcHandle jointHandle)
+//
+// RayCast
+//
+
+DcRayCastResult CARB_ABI DcRayCast(const carb::Float3& origin, const carb::Float3& direction, float max_distance)
 {
+
     (void)DC_CHECK_SIMULATING();
+    DcRayCastResult out;
+    out.hit = false;
 
     DcContext* ctx = g_dcCtx;
     if (!ctx)
     {
-        return;
+        return out;
     }
 
-    DcD6Joint* joint = DC_LOOKUP_D6JOINT(jointHandle);
-    if (!joint || !joint->pxJoint)
+    carb::physics::RaycastHit result;
+    out.hit = ctx->physx->raycastClosest(origin, direction, max_distance, result, false);
+
+    if (out.hit)
     {
-        return;
+        out.rigidBody = ctx->getRigidBodyHandle(SdfPath(result.rigidBody));
+        out.distance = result.distance;
     }
-
-    ctx->physx->releaseD6Joint(joint->pxJoint);
-
-    ctx->removeD6Joint(jointHandle);
-}
-
-
-bool CARB_ABI DcSetOriginOffset(DcHandle handle, const carb::Float3& origin)
-{
-    DcContext* ctx = g_dcCtx;
-    if (!ctx)
-    {
-        return false;
-    }
-
-    DcArticulation* art = ctx->getArticulation(handle);
-    if (art)
-    {
-        for (int i = 0; i < art->numRigidBodies(); i++)
-        {
-            art->rigidBodies[i]->origin = origin;
-        }
-        return true;
-    }
-
-    DcRigidBody* body = ctx->getRigidBody(handle);
-    if (body)
-    {
-        body->origin = origin;
-        return true;
-    }
-
-    // TODO: attractors
-
-    return false;
+    return out;
 }
 
 //
@@ -3306,7 +3339,6 @@ void CARB_ABI SuPrimRemove(const char* primPath, void* userData)
 
     ctx->removeUsdPath(SdfPath(primPath));
 }
-
 }
 }
 }
@@ -3469,6 +3501,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.destroyD6Joint = DcDestroyD6Joint;
     iface.getD6JointProperties = DcGetD6JointProperties;
     iface.setD6JointProperties = DcSetD6JointProperties;
+    iface.getD6JointConstraintIsBroken = DcGetD6JointConstraintIsBroken;
 
     iface.setOriginOffset = DcSetOriginOffset;
 

@@ -50,13 +50,13 @@ PYBIND11_MODULE(_isaac_utils, m)
         .def_readwrite("offset", &omni::isaac::utils::MagicJointProperties::offset, "Transform from body to joint")
         .def_readwrite("gripThreshold", &omni::isaac::utils::MagicJointProperties::gripThreshold,
                        "Threshold in which the gripper will respond to closing")
-        .def_readwrite("forceLimit", &omni::isaac::utils::MagicJointProperties::forceLimit,
-                       "Maximum force applied by gripper before it breaks")
+        .def_readwrite("forceLimit", &omni::isaac::utils::MagicJointProperties::forceLimit, "Force Breaking limit")
+        .def_readwrite("torqueLimit", &omni::isaac::utils::MagicJointProperties::torqueLimit, "Torque Breaking limit")
         .def(py::pickle(
             [](const omni::isaac::utils::MagicJointProperties& props) {
                 return py::make_tuple(props.d6JointPath, props.parentPath, props.offset.p.x, props.offset.p.y,
                                       props.offset.p.z, props.offset.r.x, props.offset.r.y, props.offset.r.z,
-                                      props.offset.r.w, props.gripThreshold, props.forceLimit);
+                                      props.offset.r.w, props.gripThreshold, props.forceLimit, props.torqueLimit);
             },
             [](py::tuple t) {
                 omni::isaac::utils::MagicJointProperties props;
@@ -70,6 +70,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                 props.offset.r = { t[5].cast<float>(), t[6].cast<float>(), t[7].cast<float>(), t[8].cast<float>() };
                 props.gripThreshold = t[9].cast<float>();
                 props.forceLimit = t[10].cast<float>();
+                props.torqueLimit = t[11].cast<float>();
 
                 return props;
             }));
@@ -79,6 +80,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                            .def("initialize", &MagicJoint::initialize)
                            .def("close", &MagicJoint::close)
                            .def("open", &MagicJoint::open)
+                           .def("update", &MagicJoint::update)
                            .def("is_closed", &MagicJoint::isClosed);
 
 

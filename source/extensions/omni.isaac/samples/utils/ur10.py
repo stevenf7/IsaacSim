@@ -224,7 +224,8 @@ class UR10:
         mjp.parentPath = self.prim.GetPath().pathString + "/ee_link"
         mjp.d6JointPath = mjp.parentPath + "/d6FixedJoint"
         mjp.gripThreshold = 1
-        mjp.forceLimit = 1.0e8
+        mjp.forceLimit = 1.0e4
+        mjp.torqueLimit = 1.0e5
         tr = _dynamic_control.Transform()
         tr.p.x = ee_offset
         mjp.offset = tr
@@ -253,6 +254,9 @@ class UR10:
         pass
 
     def update(self):
+        if self.end_effector.gripper is not None:
+            if self.end_effector.gripper.update is not None:
+                self.end_effector.gripper.update()
         self.end_effector.status.update()
         if self.imageable:
             if self.target_visibility is not self.imageable.ComputeVisibility(Usd.TimeCode.Default()):
