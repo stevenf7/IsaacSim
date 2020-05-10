@@ -53,8 +53,11 @@ CARB_EXPORT void carbOnPluginStartup()
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
-    delete s_gamePadBinding;
-    s_gamePadBinding = nullptr;
+    if (s_gamePadBinding)
+    {
+        delete s_gamePadBinding;
+        s_gamePadBinding = nullptr;
+    }
 }
 
 // Input interface

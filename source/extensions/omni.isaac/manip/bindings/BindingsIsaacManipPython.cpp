@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019, NVIDIA CORPORATION.  All rights reserved.
+// Copyright (c) 2018-2020, NVIDIA CORPORATION.  All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -36,7 +36,10 @@ PYBIND11_MODULE(_manip, m)
     defineInterfaceClass<Input>(m, "ManipInput", "acquire")
         .def("bind_gamepad",
              [](Input* iface, std::function<void(int axis, float value)> eventFn) {
-                 delete s_gamepad_binding_fn;
+                 if (s_gamepad_binding_fn)
+                 {
+                     delete s_gamepad_binding_fn;
+                 }
                  s_gamepad_binding_fn = new decltype(std::function<void(int axis, float value)>())(eventFn);
                  iface->bind_gamepad(
                      [](int axis, float value, void* userData) {
@@ -48,8 +51,11 @@ PYBIND11_MODULE(_manip, m)
                      s_gamepad_binding_fn);
              })
         .def("unbind_gamepad", [](Input* iface) {
-            delete s_gamepad_binding_fn;
-            s_gamepad_binding_fn = nullptr;
+            if (s_gamepad_binding_fn)
+            {
+                delete s_gamepad_binding_fn;
+                s_gamepad_binding_fn = nullptr;
+            }
             iface->unbind_gamepad();
         });
 }
