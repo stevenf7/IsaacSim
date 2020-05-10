@@ -45,6 +45,7 @@ class Extension(omni.ext.IExt):
 
         self._gamepad_setup_btn = self._window.layout.add_child(omni.kit.ui.Button("Connect Gamepad"))
         self._gamepad_setup_btn.set_clicked_fn(self._on_gamepad_setup)
+        self._create_background_chk = self._window.layout.add_child(omni.kit.ui.CheckBox("Load Background", True))
         self.gamepad = None
         self.kaya = None
 
@@ -77,7 +78,13 @@ class Extension(omni.ext.IExt):
         SetupPhysics(self._stage)
 
         self.kaya = Kaya(stage=self._stage, dc=self._dc, usd_path=kaya_usd, prim_path="/kaya", speed_gain=speed_gain)
-        CreateBackground(self._stage, "omni:/Library/Environments/GridRoom/gridroom_curved.usd")
+        if self._create_background_chk.value:
+            CreateBackground(
+                self._stage,
+                "omni:/Library/Environments/GridRoom/gridroom_curved.usd",
+                background_path="/background",
+                offset=Gf.Vec3d(0, 0, -9),
+            )
 
     def _on_editor_step(self, step):
         """This function is called every timestep in the editor
