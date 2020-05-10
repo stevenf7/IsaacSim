@@ -29,12 +29,24 @@ class Gamepad(Device):
         self._reset_state()
         self._enabled = True
 
+    def stop_control(self):
+        """
+        """
+        self._reset_state()
+        self._enabled = False
+
     def bind_object(self, kaya):
         self.bound_fn = kaya.move
+
+    def unbind_object(self):
+        self.bound_fn = None
 
     def _on_event_fn(self, axis, signal):
         """
         """
+        if not self._enabled:
+            return
+
         if abs(signal) < self.joystick_deadzone:
             signal = 0
 
