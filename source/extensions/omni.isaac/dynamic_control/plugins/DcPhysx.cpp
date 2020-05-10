@@ -1027,6 +1027,15 @@ void CARB_ABI DcHello()
     printf("Hello from Dynamic Control\n");
 }
 
+bool CARB_ABI DcIsSimulating()
+{
+#if DC_TRACK_EDITOR_SIMULATION_STATE
+    return g_dcCtx->isSimulating;
+#else
+    return false;
+#endif
+}
+
 DcHandle CARB_ABI DcGetRigidBody(const char* usdPath)
 {
     (void)DC_CHECK_SIMULATING();
@@ -3406,7 +3415,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     // iface.createContext = DcCreateContext;
     // iface.destroyContext = DcDestroyContext;
     // iface.updateContext = DcUpdateContext;
-
+    iface.isSimulating = DcIsSimulating;
     iface.getRigidBody = DcGetRigidBody;
     iface.getJoint = DcGetJoint;
     iface.getDof = DcGetDof;
