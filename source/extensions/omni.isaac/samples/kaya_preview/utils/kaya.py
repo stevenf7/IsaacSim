@@ -5,47 +5,18 @@ from omni.isaac.dynamic_control import _dynamic_control
 import omni.kit.editor
 
 
-def setUpZAxis(stage):
-    rootLayer = stage.GetRootLayer()
-    rootLayer.SetPermissionToEdit(True)
-    with Usd.EditContext(stage, rootLayer):
-        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
-
-
-# Set default physics parameters
-def SetupPhysics(stage):
-    # Specify gravity
-    metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
-    gravityScale = 9.81 / metersPerUnit
-    gravity = Gf.Vec3f(0.0, 0.0, -gravityScale)
-    scene = PhysicsSchema.PhysicsScene.Define(stage, "/physics/scene")
-    scene.CreateGravityAttr().Set(gravity)
-
-    PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physics/scene"))
-    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/physics/scene")
-    physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
-    physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
-    physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
-
-
 class Kaya:
-    def __init__(self, stage, dc, usd_path, prim_path, prim_type, speed_gain):
+    def __init__(self, stage, dc, usd_path, prim_path, speed_gain):
         self._stage = stage
         self._dc = dc
         self.usd_path = usd_path
         self.prim_path = prim_path
-        self.prim_type = prim_type
         self.speed_gain = speed_gain
         self._editor = omni.kit.editor.get_editor_interface()
 
         # setup high-level kaya prim
-        self.prim = self._stage.DefinePrim(prim_path, prim_type)
+        self.prim = self._stage.DefinePrim(prim_path, "Xform")
         self.prim.GetReferences().AddReference(usd_path)
-
-        setUpZAxis(self._stage)
-        SetupPhysics(self._stage)
 
         self.wheel_check = None
 
