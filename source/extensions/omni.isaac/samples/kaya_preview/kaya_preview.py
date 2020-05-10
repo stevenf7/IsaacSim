@@ -1,0 +1,108 @@
+# Copyright (c) 2020, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+import omni.kit.commands
+import omni.kit.editor
+import omni.ext
+import omni.appwindow
+import omni.kit.ui
+import omni.kit.settings
+
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.manip import _manip
+from omni.physx import _physx
+from omni.physx.scripts.physicsUtils import add_ground_plane
+
+from pxr import Sdf, Gf, PhysicsSchema
+
+from .utils.kaya import Kaya
+from .utils.gamepad import Gamepad
+
+EXTENSION_NAME = "Kaya Preview"
+
+
+class Extension(omni.ext.IExt):
+    def on_startup(self):
+        """Initialize extension and UI elements
+        """
+        self._editor = omni.kit.editor.get_editor_interface()
+        self._usd_context = omni.usd.get_context()
+        self._stage = self._usd_context.get_stage()
+        self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, dock=omni.kit.ui.DockPreference.LEFT_BOTTOM)
+        self._window.set_update_fn(self._on_update_ui)
+
+        self._dc = _dynamic_control.acquire_dynamic_control_interface()
+
+        self._load_kaya_btn = self._window.layout.add_child(omni.kit.ui.Button("Load Kaya"))
+        self._load_kaya_btn.set_clicked_fn(self._on_environment_setup)
+
+        self._gamepad_setup_btn = self._window.layout.add_child(omni.kit.ui.Button("Connect Gamepad"))
+        self._gamepad_setup_btn.set_clicked_fn(self._on_gamepad_setup)
+
+        print("Kaya Extension setup ready")
+
+    def _on_gamepad_setup(self, widget):
+        # must start editor before setting up gamepad to move
+        self._editor.play()
+
+        self.gamepad = Gamepad()
+        self.gamepad.bind_object(self.kaya)
+        self.gamepad.start_control()
+
+    def _on_environment_setup(self, widget):
+
+        print("loading enviornment")
+        asset_path = "omni:/Library/Robots/Kaya"
+        kaya_usd = asset_path + "/kaya_noelectronics.usd"
+        speed_gain = 10.0
+
+        self.kaya = Kaya(
+            stage=self._stage,
+            dc=self._dc,
+            usd_path=kaya_usd,
+            prim_path="/kaya",
+            prim_type="Xform",
+            speed_gain=speed_gain,
+        )
+
+        # add ground
+        add_ground_plane(self._stage, "/groundPlane", "Z", 750.0, Gf.Vec3f(0.0, 0.0, -200.0), Gf.Vec3f(0.5))
+
+    def _on_editor_step(self, step):
+        """This function is called every timestep in the editor
+        
+        Arguments:
+            step (float): elapsed time between steps
+        """
+        print("Editor Step")
+
+    def _on_stage_event(self, event):
+        """This function is called when stage events occur.
+        Enables UI elements when stage is opened.
+        Prevents tasks from being started until all assets are loaded
+        
+        Arguments:
+            event (int): event type
+        """
+        self.stage = self._usd_context.get_stage()
+        if event.type == int(omni.usd.StageEventType.OPENED):
+            print("Stage")
+
+    def _on_update_ui(self, widget):
+        """Callback that updates UI elements every frame
+        """
+        # print('UI update')
+        pass
+
+    def on_shutdown(self):
+        """Cleanup objects on extension shutdown
+        """
+        self._editor.stop()
+        self.gamepad.unbind_gamepad()
+        self._window.set_update_fn(None)
+        print("Shutting down Kaya Preview")

@@ -17,6 +17,12 @@ group ("extensions/"..ext_id)
         { ext_source.."/utils", ext_folder..".ur10_preview".."/omni/isaac/samples/utils" },
     }
 
+    repo_build.prebuild_link {
+        { ext_source.."/kaya_preview", ext_folder..".kaya_preview".."/omni/isaac/samples/kaya_preview" },
+        { ext_source.."/utils", ext_folder..".kaya_preview".."/omni/isaac/samples/utils" },
+    }
+    
+
     -- Example of python extension. Contains python sources, doesn't build or run, only for MSVS.
     -- if os.target() == "windows" then
     --     project "omni.isaac.samples"
