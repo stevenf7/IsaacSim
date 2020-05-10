@@ -47,9 +47,9 @@ def setTranslate(prim, new_loc):
 
 
 # Create background stage
-def CreateBackground(stage, background_stage, background_path="/background"):
+def CreateBackground(stage, background_stage, background_path="/background", offset=Gf.Vec3d(0, 0, -104)):
     if not stage.GetPrimAtPath(background_path):
         backPrim = stage.DefinePrim(background_path, "Xform")
         backPrim.GetReferences().AddReference(background_stage)
         # Move the stage down -104cm so that the floor is below the table wheels
-        setTranslate(backPrim, Gf.Vec3d(0, 0, -104))
+        setTranslate(backPrim, offset)
