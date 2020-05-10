@@ -67,7 +67,7 @@ class Extension(omni.ext.IExt):
         self.gamepad.start_control()
 
     def _on_environment_setup(self, widget):
-
+        self._stage = self._usd_context.get_stage()
         print("loading enviornment")
         asset_path = "omni:/Library/Robots/Kaya"
         kaya_usd = asset_path + "/kaya.usd"
