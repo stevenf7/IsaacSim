@@ -2,6 +2,7 @@ display_name = "Kaya Preview Sample"
 
 [dependencies]
 "omni.kit.editor" = {}
+"omni.physx" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.utils" = {}
 "omni.isaac.manip" = {}

@@ -7,16 +7,18 @@ local ext_folder = "%{root}/_build/$platform/$config/exts/"..ext_id
 
 group ("extensions/"..ext_id)
 
-    repo_build.prebuild_link {
-        { ext_source.."/leonardo_preview", ext_folder..".leonardo_preview".."/omni/isaac/samples/leonardo_preview" },
-        { ext_source.."/utils", ext_folder..".leonardo_preview".."/omni/isaac/samples/utils" },
-    }
+    if os.target() == "linux" then
+        repo_build.prebuild_link {
+            { ext_source.."/leonardo_preview", ext_folder..".leonardo_preview".."/omni/isaac/samples/leonardo_preview" },
+            { ext_source.."/utils", ext_folder..".leonardo_preview".."/omni/isaac/samples/utils" },
+        }
 
-    repo_build.prebuild_link {
-        { ext_source.."/ur10_preview", ext_folder..".ur10_preview".."/omni/isaac/samples/ur10_preview" },
-        { ext_source.."/utils", ext_folder..".ur10_preview".."/omni/isaac/samples/utils" },
-    }
-
+        repo_build.prebuild_link {
+            { ext_source.."/ur10_preview", ext_folder..".ur10_preview".."/omni/isaac/samples/ur10_preview" },
+            { ext_source.."/utils", ext_folder..".ur10_preview".."/omni/isaac/samples/utils" },
+        }
+    end
+    
     repo_build.prebuild_link {
         { ext_source.."/kaya_preview", ext_folder..".kaya_preview".."/omni/isaac/samples/kaya_preview" },
         { ext_source.."/utils", ext_folder..".kaya_preview".."/omni/isaac/samples/utils" },
