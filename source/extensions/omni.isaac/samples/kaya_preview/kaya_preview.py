@@ -23,6 +23,7 @@ from pxr import Sdf, Gf, PhysicsSchema
 
 from .utils.kaya import Kaya
 from .utils.gamepad import Gamepad
+from omni.isaac.utils.scripts.scene_utils import setUpZAxis, SetupPhysics, CreateBackground
 
 EXTENSION_NAME = "Kaya Preview"
 
@@ -47,6 +48,11 @@ class Extension(omni.ext.IExt):
         self.gamepad = None
         self.kaya = None
 
+        self._settings = omni.kit.settings.get_settings_interface()
+        self._settings.set("/persistent/physics/updateToUsd", False)
+        self._settings.set("/persistent/physics/useFastCache", True)
+        self._settings.set("/persistent/physics/numThreads", 8)
+
         print("Kaya Extension setup ready")
 
     def _on_gamepad_setup(self, widget):
@@ -64,20 +70,14 @@ class Extension(omni.ext.IExt):
 
         print("loading enviornment")
         asset_path = "omni:/Library/Robots/Kaya"
-        kaya_usd = asset_path + "/kaya_noelectronics.usd"
+        kaya_usd = asset_path + "/kaya.usd"
         speed_gain = 10.0
 
-        self.kaya = Kaya(
-            stage=self._stage,
-            dc=self._dc,
-            usd_path=kaya_usd,
-            prim_path="/kaya",
-            prim_type="Xform",
-            speed_gain=speed_gain,
-        )
+        setUpZAxis(self._stage)
+        SetupPhysics(self._stage)
 
-        # add ground
-        add_ground_plane(self._stage, "/groundPlane", "Z", 750.0, Gf.Vec3f(0.0, 0.0, -200.0), Gf.Vec3f(0.5))
+        self.kaya = Kaya(stage=self._stage, dc=self._dc, usd_path=kaya_usd, prim_path="/kaya", speed_gain=speed_gain)
+        CreateBackground(self._stage, "omni:/Library/Environments/GridRoom/gridroom_curved.usd")
 
     def _on_editor_step(self, step):
         """This function is called every timestep in the editor
