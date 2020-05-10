@@ -69,15 +69,6 @@ class GamePadBinding:
 
 
 class Extension(omni.ext.IExt):
-    def __init__(self):
-        self.manip = None
-        self.editor = None
-        self.usd_context = None
-        self.window = None
-        self.update_sub = None
-        self.stage_sub = None
-        self.bindings = []
-
     def update_binding(self, binding, input):
         if binding.attr == None:
             return
@@ -127,6 +118,14 @@ class Extension(omni.ext.IExt):
 
     def on_startup(self):
         print("Starting Manip Extension")
+
+        self.manip = None
+        self.editor = None
+        self.usd_context = None
+        self.window = None
+        self.update_sub = None
+        self.stage_sub = None
+        self.bindings = []
         self.manip = _manip.acquire()
 
         self.editor = omni.kit.editor.get_editor_interface()
@@ -138,11 +137,16 @@ class Extension(omni.ext.IExt):
         self.load_bindings()
         self.stage_sub = self.usd_context.get_stage_event_stream().create_subscription_to_pop(self.stage_event_fn)
 
+        self._settings = omni.kit.settings.get_settings_interface()
+        self._settings.set("/persistent/app/omniverse/gamepadCameraControl", False)
+
     def on_shutdown(self):
         self.stage_sub = None
         self.update_sub = None
         if self.manip != None:
             self.manip.unbind_gamepad()
+            _manip.release(self.manip)
+            self.manip = None
         for binding in self.bindings:
             del binding
         self.bindings = []

@@ -33,7 +33,7 @@ PYBIND11_MODULE(_manip, m)
 
     m.doc() = "pybind11 omni.isaac.manip bindings";
 
-    defineInterfaceClass<Input>(m, "ManipInput", "acquire")
+    defineInterfaceClass<Input>(m, "ManipInput", "acquire", "release")
         .def("bind_gamepad",
              [](Input* iface, std::function<void(int axis, float value)> eventFn) {
                  if (s_gamepad_binding_fn)
