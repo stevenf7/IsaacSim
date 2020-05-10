@@ -6,7 +6,7 @@ from omni.isaac.manip import _manip
 
 
 class Gamepad(Device):
-    def __init__(self, joystick_deadzone=0.4):
+    def __init__(self, joystick_deadzone=0.2, gains=(4, 4, 0.5)):
         """
         """
         self._manip = _manip.acquire()
@@ -16,6 +16,7 @@ class Gamepad(Device):
 
         self._enabled = False
         self._reset_state()
+        self._gains = gains
 
     def _reset_state(self):
         """
@@ -51,11 +52,11 @@ class Gamepad(Device):
             signal = 0
 
         if axis == 1:
-            self.vel_target[0] = signal
+            self.vel_target[0] = signal * self._gains[0]
         elif axis == 0:
-            self.vel_target[1] = -signal
+            self.vel_target[1] = -signal * self._gains[1]
         elif axis == 2:
-            self.vel_target[2] = -signal
+            self.vel_target[2] = -signal * self._gains[2]
         else:
             pass
 
