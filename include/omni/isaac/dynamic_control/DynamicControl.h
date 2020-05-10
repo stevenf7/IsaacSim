@@ -30,6 +30,9 @@ struct DynamicControl
     // call at end of frame
     // void(CARB_ABI* updateContext)(DcContext* ctx);
 
+    // Return true if simulating
+    bool(CARB_ABI* isSimulating)();
+
     //===== Actors =====//
 
     DcHandle(CARB_ABI* getRigidBody)(const char* usdPath);

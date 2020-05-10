@@ -17,6 +17,7 @@ from .. import _dynamic_control
 # from .test_cartpole import get_cart_pole
 
 # any unit tests for the extension should be imported here
+from .tests.test_core import *
 from .tests.test_articulation import *
 
 EXTENSION_NAME = "Dynamic Control"

@@ -2,6 +2,7 @@ from pxr import Usd, UsdGeom, Gf, PhysxSchema, PhysicsSchema
 import math
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
+import omni.kit.editor
 
 
 def setUpZAxis(stage):
@@ -37,6 +38,7 @@ class Kaya:
         self.prim_path = prim_path
         self.prim_type = prim_type
         self.speed_gain = speed_gain
+        self._editor = omni.kit.editor.get_editor_interface()
 
         # setup high-level kaya prim
         self.prim = self._stage.DefinePrim(prim_path, prim_type)
@@ -89,6 +91,10 @@ class Kaya:
         return wheel_speed
 
     def move(self, vel_target):
+        if not self._editor.is_playing():
+            return
+        if not self._dc.is_simulating():
+            return
         if not self.wheel_check:
             self.control_setup()
         wheel_speed = self.compute_wheel_speed(vel_target)

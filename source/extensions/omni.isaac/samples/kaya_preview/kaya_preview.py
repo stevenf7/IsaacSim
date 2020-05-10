@@ -12,6 +12,7 @@ import omni.ext
 import omni.appwindow
 import omni.kit.ui
 import omni.kit.settings
+import gc
 
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.manip import _manip
@@ -43,10 +44,15 @@ class Extension(omni.ext.IExt):
 
         self._gamepad_setup_btn = self._window.layout.add_child(omni.kit.ui.Button("Connect Gamepad"))
         self._gamepad_setup_btn.set_clicked_fn(self._on_gamepad_setup)
+        self.gamepad = None
+        self.kaya = None
 
         print("Kaya Extension setup ready")
 
     def _on_gamepad_setup(self, widget):
+        if self.kaya is None:
+            print("Cannot start gamepad, kaya not valid")
+            return
         # must start editor before setting up gamepad to move
         self._editor.play()
 
@@ -102,7 +108,13 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         """Cleanup objects on extension shutdown
         """
-        self._editor.stop()
-        self.gamepad.unbind_gamepad()
-        self._window.set_update_fn(None)
         print("Shutting down Kaya Preview")
+
+        if self.gamepad:
+            self.gamepad.stop_control()
+            self.gamepad.unbind_object()
+        self.gamepad = None
+        self._editor.stop()
+        self.kaya = None
+        self._window = None
+        gc.collect()
