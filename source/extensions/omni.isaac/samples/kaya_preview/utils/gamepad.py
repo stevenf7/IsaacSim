@@ -50,12 +50,12 @@ class Gamepad(Device):
         if abs(signal) < self.joystick_deadzone:
             signal = 0
 
-        if axis == 0:
+        if axis == 1:
             self.vel_target[0] = signal
-        elif axis == 1:
-            self.vel_target[1] = signal
-        elif axis == 3:
-            self.vel_target[2] = signal
+        elif axis == 0:
+            self.vel_target[1] = -signal
+        elif axis == 2:
+            self.vel_target[2] = -signal
         else:
             pass
 
