@@ -53,7 +53,6 @@ CARB_PLUGIN_IMPL_DEPS(carb::physics::PhysX,
                       omni::kit::IEditor,
                       omni::kit::IStageUpdate,
                       carb::fastcache::FastCache,
-                      omni::isaac::dynamic_control::DynamicControl,
                       carb::tasking::ITasking)
 
 // private stuff
@@ -67,7 +66,6 @@ omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 carb::imgui::ImGui* g_imGuiInterface = nullptr;
 carb::fastcache::FastCache* g_FastCache = nullptr;
 carb::physics::PhysX* g_physx = nullptr;
-omni::isaac::dynamic_control::DynamicControl* g_DynamicControl = nullptr;
 pxr::UsdStageRefPtr g_stage = nullptr;
 carb::tasking::ITasking* gTasking = nullptr;
 
@@ -381,12 +379,6 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("*** Failed to acquire FastCache interface\n");
         return;
     }
-    g_DynamicControl = framework->acquireInterface<omni::isaac::dynamic_control::DynamicControl>();
-    if (!g_DynamicControl)
-    {
-        CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
-        return;
-    }
 
     g_physx = framework->acquireInterface<carb::physics::PhysX>();
     if (!g_physx)
@@ -397,8 +389,8 @@ CARB_EXPORT void carbOnPluginStartup()
     gTasking = framework->acquireInterface<carb::tasking::ITasking>();
 
 
-    gLidarSensorManager = std::make_unique<omni::isaac::lidar::LidarSensorManager>(
-        g_editor, g_physx, g_DynamicControl, g_FastCache, gTasking);
+    gLidarSensorManager =
+        std::make_unique<omni::isaac::lidar::LidarSensorManager>(g_editor, g_physx, g_FastCache, gTasking);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Lidar Interface";

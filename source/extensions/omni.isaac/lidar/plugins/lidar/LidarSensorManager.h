@@ -15,7 +15,6 @@
 #include <carb/renderer/Renderer.h>
 #include <carb/settings/ISettings.h>
 
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/kit/IEditor.h>
 #include <omni/kit/IViewport.h>
 #include <omni/kit/KitUtils.h>
@@ -63,17 +62,14 @@ public:
      * @brief Construct a new Sensor Manager object
      *
      * @param physxPtr
-     * @param dynamicControlPtr
      */
     LidarSensorManager(omni::kit::IEditor* editor,
                        carb::physics::PhysX* physxPtr,
-                       omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
                        carb::fastcache::FastCache* fastCachePtr,
                        carb::tasking::ITasking* taskingPtr)
     {
         mEditor = editor;
         mPhysxPtr = physxPtr;
-        mDynamicControlPtr = dynamicControlPtr;
         mFastCachePtr = fastCachePtr;
         mTasking = taskingPtr;
         mTaskCounter = mTasking->createCounter();
@@ -271,7 +267,6 @@ private:
     }
 
     carb::physics::PhysX* mPhysxPtr = nullptr;
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     omni::kit::IEditor* mEditor = nullptr;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
 
