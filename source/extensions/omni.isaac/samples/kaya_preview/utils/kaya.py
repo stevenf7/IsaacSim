@@ -69,6 +69,8 @@ class Kaya:
         if not self.wheel_check:
             self.control_setup()
         wheel_speed = self.compute_wheel_speed(vel_target)
+        # enable articulation in case it went to sleep
+        self._dc.wake_up_articulation(self.ar)
         self._dc.set_dof_velocity_target(
             self.wheel_right, np.clip(self.speed_gain * wheel_speed[1], -self.speed_gain, self.speed_gain)
         )
