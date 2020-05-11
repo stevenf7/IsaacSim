@@ -4,7 +4,7 @@
 
 #include <RobotEngineBridgeSchema/robotEngineSurfaceGripper.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/utils/MagicJoint.h>
+#include <omni/isaac/utils/SurfaceGripper.h>
 
 #include <string>
 
@@ -57,8 +57,8 @@ private:
     std::string mGripperStateChannelName = "gripper_state";
     std::string mGripperEntityName = "gripper";
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
-    std::unique_ptr<omni::isaac::utils::MagicJoint> mGripperJoint;
-    omni::isaac::utils::MagicJointProperties mProps;
+    std::unique_ptr<omni::isaac::utils::SurfaceGripper> mGripperJoint;
+    omni::isaac::utils::SurfaceGripperProperties mProps;
 };
 }
 }
