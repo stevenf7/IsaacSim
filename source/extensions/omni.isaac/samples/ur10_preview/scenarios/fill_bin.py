@@ -436,7 +436,8 @@ class PickAndPlaceStateMachine(object):
         self.start = False
         self._upright = False
         self.waypoints.clear()
-        self.target_position = self.default_position
+        self.lerp_to_pose(self.target_position, 60)
+        self.lerp_to_pose(self.default_position, 10)
         self.move_to_target()
 
 

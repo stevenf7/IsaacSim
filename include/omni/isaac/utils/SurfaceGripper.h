@@ -158,7 +158,7 @@ public:
             threshOffset.p.x = mProps.gripThreshold;
             DcTransform _t_0 = (t_0 * mProps.offset);
             carb::Float3 p = _t_0.p;
-            _t_0 = _t_0 * threshOffset;
+            // _t_0 = _t_0 * threshOffset;//Disabling until we get soft meshes for grippers
             carb::Float3 dir = getBasisVectorX(t_0.r);
             DcRayCastResult hit = mDc->rayCast(p, dir, mProps.gripThreshold);
 
