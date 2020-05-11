@@ -343,7 +343,7 @@ class PickAndPlaceStateMachine(object):
         # Tell motion planner controller to ignore current object as an obstacle
         self.pick_count = 0
         self.lerp_to_pose(self.default_position, 1)
-        self.lerp_to_pose(self.default_position, 60)
+        self.lerp_to_pose(self.default_position, 20)
         # set target above the current tray with offset of 20 cm
         self.set_target_to_object(25, 25, 6, clear_waypoints=False)
         # start arm movement
@@ -422,7 +422,7 @@ class PickAndPlaceStateMachine(object):
         ensures the tray obstacle is suppressed for the planner, Updates the target position
         to where the tray is, and send the robot to move towards it. No change of state happens
         """
-        self.set_target_to_object(25, 25, 3, True)
+        self.set_target_to_object(25, 25, 1, True)
         self.move_to_target()
 
     def _holding_goal_reached(self, *args):
