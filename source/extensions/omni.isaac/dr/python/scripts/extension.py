@@ -2,6 +2,7 @@ import os
 import omni.ext
 from .. import _dr
 from .menu import DRMenu
+from .tests.test_domain_randomizer import *
 
 
 class Extension(omni.ext.IExt):
