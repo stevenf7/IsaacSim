@@ -343,7 +343,7 @@ class PickAndPlaceStateMachine(object):
         # Tell motion planner controller to ignore current object as an obstacle
         self.pick_count = 0
         self.lerp_to_pose(self.default_position, 1)
-        self.lerp_to_pose(self.default_position, 20)
+        self.lerp_to_pose(self.default_position, 90)
         # set target above the current tray with offset of 20 cm
         self.set_target_to_object(25, 25, 6, clear_waypoints=False)
         # start arm movement
@@ -381,10 +381,10 @@ class PickAndPlaceStateMachine(object):
         """
         self.waypoints.clear()
         target_position = _dynamic_control.Transform()
-        target_position.p = [0.1, 0.81, 0.08]
+        target_position.p = [0.1, 0.81, 0.58]
         target_position.r = [0, -1, 0, 0]
         print(target_position.r)
-        self.lerp_to_pose(target_position, 120)
+        self.lerp_to_pose(target_position, 360)
         self.target_position = self.waypoints.popleft()
         self.move_to_target()
         self.change_state(SM_states.HOLDING)
@@ -426,6 +426,7 @@ class PickAndPlaceStateMachine(object):
         self.move_to_target()
 
     def _holding_goal_reached(self, *args):
+
         if self.add_tray is not None:
             self.add_tray()
         self.lerp_to_pose(self.target_position, 20)
@@ -438,6 +439,7 @@ class PickAndPlaceStateMachine(object):
         self.waypoints.clear()
         self.lerp_to_pose(self.target_position, 60)
         self.lerp_to_pose(self.default_position, 10)
+        self.lerp_to_pose(self.default_position, 60)
         self.move_to_target()
 
 
@@ -571,7 +573,7 @@ class FillBin(Scenario):
         num_objs = 3
         a = [self.objects[random.randint(0, len(self.objects) - 1)] for i in range(num_objs)]
         b = [self.env_path + "/objects/object_{}".format(self.current_obj + i) for i in range(num_objs)]
-        c = [Gf.Vec3d(random.randint(-5, 5), random.randint(-3, 3) + 81, 50 + 5 * i) for i in range(num_objs)]
+        c = [Gf.Vec3d(random.randint(-5, 5), random.randint(-3, 3) + 81, 110 + 5 * i) for i in range(num_objs)]
         d = [
             Gf.Matrix3d(
                 Gf.Quatd(

@@ -224,11 +224,11 @@ class UR10:
         mjp.parentPath = self.prim.GetPath().pathString + "/ee_link"
         mjp.d6JointPath = mjp.parentPath + "/d6FixedJoint"
         mjp.gripThreshold = 1
-        mjp.forceLimit = 8.0e3
-        mjp.torqueLimit = 8.0e4
-        mjp.bendAngle = np.pi / 12  # 15 degrees
-        mjp.stiffness = 1.0e5
-        mjp.damping = 1.0e3
+        mjp.forceLimit = 4.0e3
+        mjp.torqueLimit = 2.0e5
+        mjp.bendAngle = np.pi / 16
+        mjp.stiffness = 8.0e4
+        mjp.damping = 5.0e2
         tr = _dynamic_control.Transform()
         tr.p.x = ee_offset
         mjp.offset = tr
