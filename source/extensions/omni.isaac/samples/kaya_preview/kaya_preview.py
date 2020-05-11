@@ -13,6 +13,7 @@ import omni.appwindow
 import omni.kit.ui
 import omni.kit.settings
 import gc
+import numpy as np
 
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.manip import _manip
@@ -22,7 +23,6 @@ from omni.physx.scripts.physicsUtils import add_ground_plane
 from pxr import Sdf, Gf, PhysicsSchema
 
 from .utils.kaya import Kaya
-from .utils.gamepad import Gamepad
 from omni.isaac.utils.scripts.scene_utils import setUpZAxis, SetupPhysics, CreateBackground
 
 EXTENSION_NAME = "Kaya Preview"
@@ -46,13 +46,17 @@ class Extension(omni.ext.IExt):
         self._gamepad_setup_btn = self._window.layout.add_child(omni.kit.ui.Button("Connect Gamepad"))
         self._gamepad_setup_btn.set_clicked_fn(self._on_gamepad_setup)
         self._create_background_chk = self._window.layout.add_child(omni.kit.ui.CheckBox("Load Background", True))
-        self.gamepad = None
         self.kaya = None
 
         self._settings = omni.kit.settings.get_settings_interface()
         self._settings.set("/persistent/physics/updateToUsd", False)
         self._settings.set("/persistent/physics/useFastCache", True)
         self._settings.set("/persistent/physics/numThreads", 8)
+
+        self._manip = _manip.acquire()
+        self._joystick_deadzone = 0.2
+        self._gains = (4, 4, 0.5)
+        self._vel_target = np.zeros(3)
 
         print("Kaya Extension setup ready")
 
@@ -62,10 +66,7 @@ class Extension(omni.ext.IExt):
             return
         # must start editor before setting up gamepad to move
         self._editor.play()
-
-        self.gamepad = Gamepad()
-        self.gamepad.bind_object(self.kaya)
-        self.gamepad.start_control()
+        self._manip.bind_gamepad(self._on_event_fn)
 
     def _on_environment_setup(self, widget):
         self._stage = self._usd_context.get_stage()
@@ -112,15 +113,26 @@ class Extension(omni.ext.IExt):
         # print('UI update')
         pass
 
+    def _on_event_fn(self, axis, signal):
+        if abs(signal) < self._joystick_deadzone:
+            signal = 0
+
+        if axis == 1:
+            self._vel_target[0] = signal * self._gains[0]
+        elif axis == 0:
+            self._vel_target[1] = -signal * self._gains[1]
+        elif axis == 2:
+            self._vel_target[2] = -signal * self._gains[2]
+        else:
+            pass
+        self.kaya.move(self._vel_target)
+
     def on_shutdown(self):
         """Cleanup objects on extension shutdown
         """
         print("Shutting down Kaya Preview")
 
-        if self.gamepad:
-            self.gamepad.stop_control()
-            self.gamepad.unbind_object()
-        self.gamepad = None
+        self._manip.unbind_gamepad()
         self._editor.stop()
         self.kaya = None
         self._window = None
