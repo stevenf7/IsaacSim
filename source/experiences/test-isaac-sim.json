@@ -10,6 +10,7 @@
                 "omni.kit.editor-full",
                 "omni.physx",
                 "omni.isaac.dynamic_control",
+                "omni.isaac.dr",
                 "omni.isaac.motion_planning",
                 "omni.isaac.utils"
             ]
