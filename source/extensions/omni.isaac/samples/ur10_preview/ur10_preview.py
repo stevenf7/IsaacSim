@@ -22,6 +22,7 @@ from .scenarios.scenario import Scenario
 from .scenarios import attach_body
 from .scenarios import bmw_fof_demo
 from .scenarios.multiple_obstacle import MultipleObstacle
+from .scenarios.fill_bin import FillBin
 
 EXTENSION_NAME = "UR10 Preview"
 
@@ -47,6 +48,7 @@ class Extension(omni.ext.IExt):
         self._selected_scenario.add_item("Attach Body")
         self._selected_scenario.add_item("BMW FoF Demo")
         self._selected_scenario.add_item("Multiple Obstacles")
+        self._selected_scenario.add_item("Fill Bin")
         self._selected_scenario.selected_index = 0
 
         self._create_background_chk = self._window.layout.add_child(omni.kit.ui.CheckBox("Load Background", False))
@@ -102,6 +104,8 @@ class Extension(omni.ext.IExt):
             self._scenario = bmw_fof_demo.AttachBody(self._editor, self._dc, self._mp)
         if self._selected_scenario.selected_index == 2:
             self._scenario = MultipleObstacle(self._editor, self._dc, self._mp)
+        if self._selected_scenario.selected_index == 3:
+            self._scenario = FillBin(self._editor, self._dc, self._mp)
 
         self._create_UR10_btn.enabled = False
         self._selected_scenario.enabled = False

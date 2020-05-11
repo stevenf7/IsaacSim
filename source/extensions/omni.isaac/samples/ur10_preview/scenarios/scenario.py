@@ -126,6 +126,18 @@ def CreateObjects(stage, asset_paths, env_paths, poses):
         print(prim.GetPath().pathString)
 
 
+def CreateObjects(stage, asset_paths, env_paths, translations, rotations):
+    if (len(asset_paths) != len(env_paths)) and len(asset_paths) != len(translations) != len(rotations):
+        print("Error: asset paths, env paths and poses must be same length")
+        return
+    for (asset, path, translation, rotation) in zip(*[asset_paths, env_paths, translations, rotations]):
+        prim = stage.DefinePrim(path, "Xform")
+        prim.GetReferences().AddReference(asset)
+        setTranslate(prim, translation)
+        setRotate(prim, rotation)
+        print(prim.GetPath().pathString)
+
+
 def CreateRubiksCube(stage, asset_path, prim_path, location):
     obstaclePrim = stage.DefinePrim(prim_path, "Xform")
     obstaclePrim.GetReferences().AddReference(asset_path)

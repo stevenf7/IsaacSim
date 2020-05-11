@@ -3137,16 +3137,98 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
     PxD6JointDrive drive(props->stiffness, props->damping, props->forceLimit, false);
     PxD6JointDrive defaultDrive;
 
+    bool anyLimit = false;
     // Set axis motion
     for (int i = 0; i < 6; ++i)
     {
         if ((props->axes >> i) & 1)
         {
-            joint->setMotion(g_dcToPxAxis[i], PxD6Motion::eLOCKED);
+            if (props->hasLimits[i])
+            {
+                joint->setMotion(g_dcToPxAxis[i], PxD6Motion::eLIMITED);
+                anyLimit = true;
+            }
+            else
+            {
+                joint->setMotion(g_dcToPxAxis[i], PxD6Motion::eLOCKED);
+            }
         }
         else
         {
             joint->setMotion(g_dcToPxAxis[i], PxD6Motion::eFREE);
+        }
+    }
+
+    if (anyLimit)
+    {
+        PxSpring spring(props->limitStiffness, props->limitDamping);
+        switch (props->jointType)
+        {
+        case DcJointType::eSpherical:
+        {
+            if (props->softLimit)
+            {
+                joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit, spring));
+            }
+            else
+            {
+                joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit, 0.01f));
+            }
+            break;
+        }
+        case DcJointType::ePrismatic:
+        {
+            for (int i = 0; i < 3; ++i)
+            {
+                if (((props->axes >> i) & 1) && props->hasLimits[i])
+                {
+                    if (props->softLimit)
+                    {
+                        joint->setLinearLimit(
+                            g_dcToPxAxis[i], PxJointLinearLimitPair(props->lowerLimit, props->upperLimit, spring));
+                    }
+                    else
+                    {
+                        joint->setLinearLimit(
+                            g_dcToPxAxis[i],
+                            PxJointLinearLimitPair(props->lowerLimit, props->upperLimit, PxSpring(1e6, 0)));
+                    }
+                }
+            }
+            break;
+        }
+        case DcJointType::eRevolute:
+        {
+            if (((props->axes >> 3) & 1) && props->hasLimits[3])
+            {
+                if (props->softLimit)
+                {
+                    joint->setTwistLimit(PxJointAngularLimitPair(props->lowerLimit, props->upperLimit, spring));
+                }
+                else
+                {
+                    joint->setTwistLimit(PxJointAngularLimitPair(props->lowerLimit, props->upperLimit, 0.01f));
+                }
+            }
+            if ((((props->axes >> 4) & 1) && props->hasLimits[4]) || (((props->axes >> 5) & 1) && props->hasLimits[5]))
+            {
+                if (props->softLimit)
+                {
+                    joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit, spring));
+                }
+                else
+                {
+                    joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit, 0.01f));
+                }
+            }
+        }
+        case DcJointType::eNone:
+        case DcJointType::eFixed:
+        default:
+        {
+            CARB_LOG_ERROR("Attempting to set limits to fixed D6 joint");
+            break;
+        }
         }
     }
 

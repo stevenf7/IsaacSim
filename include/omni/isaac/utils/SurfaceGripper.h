@@ -26,39 +26,44 @@ using namespace omni::isaac::utils::math;
 
 
 /**
- * @brief Properties for Magic joint (suction-style gripper)
+ * @brief Properties for Surface Gripper (suction-style gripper)
  *
  */
-struct MagicJointProperties
+struct SurfaceGripperProperties
 {
     std::string d6JointPath; //! USD path of the joint
     std::string parentPath; //! parent body that  contains the joint
-    DcTransform offset; //! offset from parent body to joint point of contact
-    float gripThreshold; //!  How far from an object it allows the gripper to lock in
+    DcTransform offset; //! offset from parent body to joint point of contact in vacuum pressure
+    float gripThreshold; //!  How far from an object it allows the gripper to lock in. Object will be pulled in this
+                         //!  distance when gripper is closed
     float forceLimit; //! gripper breaking force
     float torqueLimit; //! torque breaking force
+    float bendAngle; //! maximum bend angle for the gripper
+    float stiffness; //! Gripper Stiffness
+    float damping; //! Gripper damping
 };
 
 /**
- * @brief Magic Joint (suction-cup style gripper)
+ * @brief Surface Gripper (suction-cup style gripper)
  *
  */
-class MagicJoint
+class SurfaceGripper
 {
 
 public:
     /**
-     * @brief Creates a magic joint
+     * @brief Creates a Surface Gripper
      *
      * @param[in] dc.
      * @param[in] props.
      */
-    MagicJoint(DynamicControl* dc)
+    SurfaceGripper(DynamicControl* dc)
     {
         mDc = dc;
 
         mJointProperties.body0 = 0;
         mJointProperties.axes = kDcAxisNone;
+        mJointProperties.jointType = DcJointType::eSpherical;
         mJointProperties.stiffness = 0;
         mJointProperties.damping = 1.0e5f;
         mJointProperties.forceLimit = 0;
@@ -69,10 +74,10 @@ public:
     }
 
     /**
-     * @brief Destroy the Magic Joint object
+     * @brief Destroy the Surface Gripper object
      *
      */
-    ~MagicJoint()
+    ~SurfaceGripper()
     {
         if (mJointHandle)
         {
@@ -87,11 +92,10 @@ public:
      * @return true
      * @return false
      */
-    bool initialize(const MagicJointProperties& props)
+    bool initialize(const SurfaceGripperProperties& props)
     {
         mProps = props;
 
-        // CARB_LOG_WARN("Break Force/torque: %f %f", mProps.forceLimit, mProps.torqueLimit);
         if (mJointHandle)
         {
             mDc->destroyD6Joint(mJointHandle);
@@ -129,7 +133,7 @@ public:
     }
 
     /**
-     * @brief closes the magic joint, if any object is closer than the lock threshold
+     * @brief closes the Surface Gripper, if any object is closer than the lock threshold
      *
      * @return true when an object is close and joint is effectively closed
      * @return false when no object is near the gripper. joint is not closed.
@@ -150,21 +154,34 @@ public:
                 return false;
             }
             DcTransform t_0 = mDc->getRigidBodyPose(rb_0);
-            carb::Float3 p = (t_0 * mProps.offset).p;
+            DcTransform threshOffset;
+            threshOffset.p.x = mProps.gripThreshold;
+            DcTransform _t_0 = (t_0 * mProps.offset);
+            carb::Float3 p = _t_0.p;
+            _t_0 = _t_0 * threshOffset;
             carb::Float3 dir = getBasisVectorX(t_0.r);
             DcRayCastResult hit = mDc->rayCast(p, dir, mProps.gripThreshold);
 
             if (hit.hit)
             {
-                DcTransform t_1 = inverse(mDc->getRigidBodyPose(hit.rigidBody)) * t_0;
+                DcTransform t_1 = inverse(mDc->getRigidBodyPose(hit.rigidBody)) * _t_0;
 
                 mJointProperties.body0 = rb_0;
                 mJointProperties.body1 = hit.rigidBody;
                 mDc->setRigidBodyDisableGravity(mJointProperties.body1, true);
+                mJointProperties.pose0 = mProps.offset;
                 mJointProperties.pose1 = t_1;
                 mJointProperties.axes = kDcAxisAll;
-                mJointProperties.stiffness = 1.e8f;
-                mJointProperties.damping = 1.e6f;
+                memset(mJointProperties.hasLimits, 0, sizeof(bool) * 6);
+                mJointProperties.hasLimits[4] = true;
+                mJointProperties.hasLimits[5] = true;
+                mJointProperties.stiffness = mProps.stiffness; // 1e5f;
+                mJointProperties.damping = mProps.damping;
+                mJointProperties.limitStiffness = mProps.stiffness; // 1.e7;
+                mJointProperties.limitDamping = mProps.damping; // 1.e3f;
+                mJointProperties.softLimit = true;
+                mJointProperties.lowerLimit = mProps.bendAngle;
+                mJointProperties.upperLimit = mProps.bendAngle;
                 mJointProperties.forceLimit = mProps.forceLimit;
                 mJointProperties.torqueLimit = mProps.torqueLimit;
                 mDc->setD6JointProperties(mJointHandle, &mJointProperties);
@@ -177,7 +194,7 @@ public:
 
 
     /**
-     * @brief opens the magic joint, releasing the object
+     * @brief opens the Surface Gripper, releasing the object
      *
      * @return true
      */
@@ -208,7 +225,7 @@ private:
     DcHandle mJointHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
 
     DcD6JointProperties mJointProperties;
-    MagicJointProperties mProps;
+    SurfaceGripperProperties mProps;
 
     bool mIsClosed;
     bool mIsInitialized;

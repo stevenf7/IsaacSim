@@ -13,7 +13,7 @@
 
 #include <carb/BindingsPythonUtils.h>
 
-#include <omni/isaac/utils/MagicJoint.h>
+#include <omni/isaac/utils/SurfaceGripper.h>
 #include <omni/isaac/utils/Math.h>
 #include <omni/isaac/utils/Conversions.h>
 
@@ -39,27 +39,33 @@ PYBIND11_MODULE(_isaac_utils, m)
 
     m.doc() = "Isaac utils bindings";
 
-    auto magic_joints = m.def_submodule("magic_joints");
+    auto surface_grippers = m.def_submodule("surface_grippers");
 
-    py::class_<omni::isaac::utils::MagicJointProperties>(
-        magic_joints, "Magic_Joint_Properties",
-        "Creates a magic joint to connect two rigid bodies when it's actuated in close proximity")
+    py::class_<omni::isaac::utils::SurfaceGripperProperties>(
+        surface_grippers, "Surface_Gripper_Properties",
+        "Creates a surface gripper to connect two rigid bodies when it's actuated in close proximity")
         .def(py::init<>())
-        .def_readwrite("d6JointPath", &omni::isaac::utils::MagicJointProperties::d6JointPath, "USD path to joint")
-        .def_readwrite("parentPath", &omni::isaac::utils::MagicJointProperties::parentPath, "DC handle to parent body")
-        .def_readwrite("offset", &omni::isaac::utils::MagicJointProperties::offset, "Transform from body to joint")
-        .def_readwrite("gripThreshold", &omni::isaac::utils::MagicJointProperties::gripThreshold,
+        .def_readwrite("d6JointPath", &omni::isaac::utils::SurfaceGripperProperties::d6JointPath, "USD path to joint")
+        .def_readwrite("parentPath", &omni::isaac::utils::SurfaceGripperProperties::parentPath, "DC handle to parent body")
+        .def_readwrite("offset", &omni::isaac::utils::SurfaceGripperProperties::offset, "Transform from body to joint")
+        .def_readwrite("gripThreshold", &omni::isaac::utils::SurfaceGripperProperties::gripThreshold,
                        "Threshold in which the gripper will respond to closing")
-        .def_readwrite("forceLimit", &omni::isaac::utils::MagicJointProperties::forceLimit, "Force Breaking limit")
-        .def_readwrite("torqueLimit", &omni::isaac::utils::MagicJointProperties::torqueLimit, "Torque Breaking limit")
+        .def_readwrite("forceLimit", &omni::isaac::utils::SurfaceGripperProperties::forceLimit, "Force Breaking limit")
+        .def_readwrite("torqueLimit", &omni::isaac::utils::SurfaceGripperProperties::torqueLimit, "Torque Breaking limit")
+        .def_readwrite(
+            "bendAngle", &omni::isaac::utils::SurfaceGripperProperties::bendAngle, "maximum bend angle for the gripper")
+        .def_readwrite("stiffness", &omni::isaac::utils::SurfaceGripperProperties::stiffness, "Griper Stiffness")
+        .def_readwrite("damping", &omni::isaac::utils::SurfaceGripperProperties::damping, "Griper Damping")
+
         .def(py::pickle(
-            [](const omni::isaac::utils::MagicJointProperties& props) {
+            [](const omni::isaac::utils::SurfaceGripperProperties& props) {
                 return py::make_tuple(props.d6JointPath, props.parentPath, props.offset.p.x, props.offset.p.y,
                                       props.offset.p.z, props.offset.r.x, props.offset.r.y, props.offset.r.z,
-                                      props.offset.r.w, props.gripThreshold, props.forceLimit, props.torqueLimit);
+                                      props.offset.r.w, props.gripThreshold, props.forceLimit, props.torqueLimit,
+                                      props.bendAngle, props.stiffness, props.damping);
             },
             [](py::tuple t) {
-                omni::isaac::utils::MagicJointProperties props;
+                omni::isaac::utils::SurfaceGripperProperties props;
                 std::string str = t[0].cast<std::string>();
                 std::vector<char> cstr(str.c_str(), str.c_str() + str.size() + 1);
                 props.d6JointPath = cstr.data();
@@ -71,17 +77,20 @@ PYBIND11_MODULE(_isaac_utils, m)
                 props.gripThreshold = t[9].cast<float>();
                 props.forceLimit = t[10].cast<float>();
                 props.torqueLimit = t[11].cast<float>();
+                props.bendAngle = t[12].cast<float>();
+                props.stiffness = t[13].cast<float>();
+                props.damping = t[14].cast<float>();
 
                 return props;
             }));
 
-    auto magic_joint = py::class_<MagicJoint>(magic_joints, "Magic_Joint")
-                           .def(py::init([](DynamicControl* dc) { return new MagicJoint(dc); }))
-                           .def("initialize", &MagicJoint::initialize)
-                           .def("close", &MagicJoint::close)
-                           .def("open", &MagicJoint::open)
-                           .def("update", &MagicJoint::update)
-                           .def("is_closed", &MagicJoint::isClosed);
+    auto surface_gripper = py::class_<SurfaceGripper>(surface_grippers, "Surface_Gripper")
+                               .def(py::init([](DynamicControl* dc) { return new SurfaceGripper(dc); }))
+                               .def("initialize", &SurfaceGripper::initialize)
+                               .def("close", &SurfaceGripper::close)
+                               .def("open", &SurfaceGripper::open)
+                               .def("update", &SurfaceGripper::update)
+                               .def("is_closed", &SurfaceGripper::isClosed);
 
 
     auto math = m.def_submodule("math");

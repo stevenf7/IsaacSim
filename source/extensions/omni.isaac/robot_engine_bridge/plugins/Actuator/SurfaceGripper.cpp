@@ -28,7 +28,7 @@ SurfaceGripper::SurfaceGripper(omni::isaac::dynamic_control::DynamicControl* dyn
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
 
-    mGripperJoint = std::make_unique<omni::isaac::utils::MagicJoint>(dynamicControlPtr);
+    mGripperJoint = std::make_unique<omni::isaac::utils::SurfaceGripper>(dynamicControlPtr);
 }
 
 void SurfaceGripper::onStart()

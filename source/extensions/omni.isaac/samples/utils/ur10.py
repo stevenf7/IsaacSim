@@ -17,7 +17,7 @@ import carb.tokens
 
 from . import math_utils
 
-from omni.isaac.utils._isaac_utils.magic_joints import Magic_Joint, Magic_Joint_Properties
+from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper, Surface_Gripper_Properties
 
 default_config = (-1.57, -1.57, -1.57, -1.57, 1.57, 0)
 
@@ -220,17 +220,20 @@ class UR10:
             self.world.register_parent(self.base, self.prim, "base_link")
 
         self.end_effector = EndEffector(self.dc, self.mp, self.ar, self.rmp_handle)
-        mjp = Magic_Joint_Properties()
+        mjp = Surface_Gripper_Properties()
         mjp.parentPath = self.prim.GetPath().pathString + "/ee_link"
         mjp.d6JointPath = mjp.parentPath + "/d6FixedJoint"
         mjp.gripThreshold = 1
-        mjp.forceLimit = 1.0e4
-        mjp.torqueLimit = 1.0e5
+        mjp.forceLimit = 8.0e3
+        mjp.torqueLimit = 8.0e4
+        mjp.bendAngle = np.pi / 12  # 15 degrees
+        mjp.stiffness = 1.0e5
+        mjp.damping = 1.0e3
         tr = _dynamic_control.Transform()
         tr.p.x = ee_offset
         mjp.offset = tr
 
-        self.end_effector.gripper = Magic_Joint(self.dc)
+        self.end_effector.gripper = Surface_Gripper(self.dc)
         self.end_effector.gripper.initialize(mjp)
 
         if default_config:
