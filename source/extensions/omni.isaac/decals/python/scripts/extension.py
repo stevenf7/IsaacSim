@@ -9,7 +9,7 @@ import omni.kit.ui
 import omni.kit.editor
 from .. import _decals
 
-from .tests.test_decals import *
+# from .tests.test_decals import *
 
 EXTENSION_NAME = "Decals"
 
