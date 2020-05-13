@@ -15,16 +15,24 @@ from pxr import Sdf, Gf, PhysicsSchema, UsdGeom
 import concurrent.futures
 from enum import Enum
 import omni
+import carb
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils._isaac_utils import math as math_utils
 from omni.isaac.samples.scripts.utils.world import World
-from omni.isaac.samples.scripts.utils.state_machine import *
 from omni.isaac.samples.scripts.utils.ur10 import UR10, default_config
-from omni.isaac.samples.scripts.utils.math_utils import *
-
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
 
-from .scenario import *
+from .scenario import (
+    setTranslate,
+    setRotate,
+    CreateSolidUR10,
+    Scenario,
+    CreateBackground,
+    CreateObjects,
+    SetupPhysics,
+    setCollisionGroup,
+    setCollisionGroupUR10,
+)
 from copy import copy
 
 from omni.physx import _physx
@@ -183,7 +191,7 @@ class PickAndPlaceStateMachine(object):
 
     def advance_stack(self):
         """
-        Moves to next stack, prioritizing filling the left-bottom-most stack, but maintaining 
+        Moves to next stack, prioritizing filling the left-bottom-most stack, but maintaining
         a single bin ahead of the other stacks
         """
         self.current_stack_list[self.current_stack] = (self.current_stack_list[self.current_stack] + 1) % 9
@@ -332,8 +340,8 @@ class PickAndPlaceStateMachine(object):
 
     def get_target_to_object(self, offset_up=25, offset_down=25):
         """
-        Gets target pose to end effector on a given target, with an offset on the end effector actuator direction given 
-        by [offset_up, offset_down] 
+        Gets target pose to end effector on a given target, with an offset on the end effector actuator direction given
+        by [offset_up, offset_down]
         """
         offset = _dynamic_control.Transform()
         offset.p.z = offset_up
@@ -574,7 +582,6 @@ class PickAndPlaceStateMachine(object):
         """
         offset = _dynamic_control.Transform()
         if self._upright:
-            n_waypoints = 1
             offset.p = (-0.25, 0.0, 0)
             # Quickly push the arm down 25 cm to clear the tray and let it fall on the platform
             self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=1)
@@ -691,7 +698,7 @@ class PickAndPlaceStateMachine(object):
 class AttachBody(Scenario):
     """ Defines an obstacle avoidance scenario
 
-    Scenarios define the life cycle within kit and handle init, startup, shutdown etc. 
+    Scenarios define the life cycle within kit and handle init, startup, shutdown etc.
     """
 
     def __init__(self, editor, dc, mp):
@@ -742,10 +749,6 @@ class AttachBody(Scenario):
                     state_1 = self.pick_and_place.target_position
                     tr = state["orig"] * 100.0
                     setTranslate(target, Gf.Vec3d(tr[0], tr[1], tr[2]))
-
-                    mat = Gf.Matrix3f(
-                        *state["axis_x"].astype(float), *state["axis_y"].astype(float), *state["axis_z"].astype(float)
-                    )
                     setRotate(target, Gf.Matrix3d(Gf.Quatd(state_1.r.w, state_1.r.x, state_1.r.y, state_1.r.z)))
                 self._start = False
                 self._reset = False
@@ -799,9 +802,6 @@ class AttachBody(Scenario):
             CreateBackground(
                 self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
             )
-            # prim = self._stage.GetPrimAtPath("/World")
-            # imageable = UsdGeom.Imageable(prim)
-            # imageable.MakeInvisible()
         else:
             CreateBackground(
                 self._stage,
@@ -893,9 +893,7 @@ class AttachBody(Scenario):
         i = 0
         for p in self._stage.GetPrimAtPath(str(prim.GetPath()) + "/pallet_holder/RMPObstacle").GetChildren():
             self.world.register_object(0, p.GetPath().pathString, "holder_" + str(i))
-            # print(p.GetPath().pathString)
             self.world.make_obstacle("holder_" + str(i), 3, p.GetAttribute("xformOp:scale").Get())
-            # self._obstacles.append(self.world.get_object_from_name("holder_" + str(i)))
             self.world.get_object_from_name("holder_" + str(i)).suppress()
             i += 1
         self._tray_holder_obstacle = self.world.get_object_from_name("holder_0")
@@ -911,14 +909,11 @@ class AttachBody(Scenario):
             self._obstacles.append(obj)
         i = 0
 
-        # # Set robot end effector
+        # Set robot end effector
         orig = [0, 0.75, 0.42]
         default_position = _dynamic_control.Transform()
         default_position.p = orig
         default_position.r = math_utils.mul([0, 0.7071, 0, 0.7071], [0.7071, 0, 0, -0.7071])
-        # tr = _dynamic_control.Transform()
-        # tr.r = (0,0,-0.383,-0.924)
-        # default_position = math_utils.mul(default_position,tr)
 
         self.pick_and_place = PickAndPlaceStateMachine(
             self._stage,
