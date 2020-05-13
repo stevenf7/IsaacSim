@@ -57,6 +57,11 @@ statedic = {0: "orig", 1: "axis_x", 2: "axis_y", 3: "axis_z"}
 
 
 class PickAndPlaceStateMachine(object):
+    """
+    Self-contained state machine class for Robot Behavior. Each machine state may react to different events,
+    and the handlers are defined as in-class functions
+    """
+
     def __init__(self, stage, robot, ee_prim, target_bodies, default_position, tray_holder_object):
         self.robot = robot
         self.dc = robot.dc
@@ -103,12 +108,11 @@ class PickAndPlaceStateMachine(object):
 
         self.upside_goal.p = (0.76652, 0.61294, 0.1055)
         self.upside_goal.r = (-0.225195, 0.435623, 0.0179048, -0.871321)
-        # self.upside_goal.r = (-0.85594,-0.0295757,-0.469593,-0.214414) # two possible orientations, need to figure out which is better
 
         self.upside_offset.p = [-0.30, -0.1, 0.40]
 
         self.upside_flip.p = [0.15, 0.57159, 0.35]
-        self.upside_flip.r = (-0.225195, 0.435623, 0.0179048, -0.871321)  # flip 180 degrees along y axis
+        self.upside_flip.r = self.upside_goal.r
 
         self.pick_count = 0
         # Define the state machine handling functions
@@ -167,17 +171,24 @@ class PickAndPlaceStateMachine(object):
 
         self.total_trays = 0
 
+    # Auxiliary functions
+
     def get_current_place_pose(self):
+        """
+        Gets the (x,y) coordinates for the current stack placement
+        """
         while self.stack_size[self.current_stack_list[self.current_stack]] > 3:
             self.advance_stack()
         return self.stack_coordinates[self.current_stack_list[self.current_stack]]
 
     def advance_stack(self):
+        """
+        Moves to next stack, prioritizing filling the left-bottom-most stack, but maintaining 
+        a single bin ahead of the other stacks
+        """
         self.current_stack_list[self.current_stack] = (self.current_stack_list[self.current_stack] + 1) % 9
         if self.current_stack_list[self.current_stack] in self.stack_transition[self.current_stack]:
             self.current_stack = (self.current_stack + 1) % 2
-
-    # Auxiliary functions
 
     def _empty(self, *args):
         """
@@ -288,12 +299,18 @@ class PickAndPlaceStateMachine(object):
             self.waypoints.append(pose)
 
     def move_to_zero(self):
+        """
+        clears the robot target, so it returns to its rest pose
+        """
         self._is_moving = False
         self.robot.end_effector.go_local(
             orig=[], axis_x=[], axis_y=[], axis_z=[], use_default_config=True, wait_for_target=False, wait_time=5.0
         )
 
     def move_to_target(self):
+        """
+        moves the end effector to the current target pose
+        """
         xform_attr = self.target_position
         self._is_moving = True
 
@@ -779,10 +796,22 @@ class AttachBody(Scenario):
         setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.5, -0.5, 0.5, 0.5)))
         # Load background
         if use_background:
-            CreateBackground(self._stage, self.background_usd)
-            prim = self._stage.GetPrimAtPath("/World")
-            imageable = UsdGeom.Imageable(prim)
-            imageable.MakeInvisible()
+            CreateBackground(
+                self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
+            )
+            # prim = self._stage.GetPrimAtPath("/World")
+            # imageable = UsdGeom.Imageable(prim)
+            # imageable.MakeInvisible()
+        else:
+            CreateBackground(
+                self._stage,
+                self.asset_path + "/Backgrounds/Holodeck_curved.usd",
+                [-315.419, 127.124, -10.480],
+                Gf.Quatd(-0.7071, 0, 0, 0.7071),
+            )
+        prim = self._stage.GetPrimAtPath("/World")
+        imageable = UsdGeom.Imageable(prim)
+        imageable.MakeInvisible()
 
         # Setup physics simulation
         SetupPhysics(self._stage)
