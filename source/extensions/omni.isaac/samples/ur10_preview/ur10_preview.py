@@ -19,7 +19,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.physx import _physx
 
 from .scenarios.scenario import Scenario
-from .scenarios import attach_body
+from .scenarios import bin_stack
 from .scenarios import bmw_fof_demo
 from .scenarios.multiple_obstacle import MultipleObstacle
 from .scenarios.fill_bin import FillBin
@@ -45,7 +45,7 @@ class Extension(omni.ext.IExt):
         self._physxIFace.force_load_physics_from_usd()
 
         self._selected_scenario = self._window.layout.add_child(omni.kit.ui.ComboBox())
-        self._selected_scenario.add_item("Attach Body")
+        self._selected_scenario.add_item("Stack Bins")
         self._selected_scenario.add_item("BMW FoF Demo")
         self._selected_scenario.add_item("Multiple Obstacles")
         self._selected_scenario.add_item("Fill Bin")
@@ -99,7 +99,7 @@ class Extension(omni.ext.IExt):
 
     def _on_create_UR10(self, *args):
         if self._selected_scenario.selected_index == 0:
-            self._scenario = attach_body.AttachBody(self._editor, self._dc, self._mp)
+            self._scenario = bin_stack.BinStack(self._editor, self._dc, self._mp)
         if self._selected_scenario.selected_index == 1:
             self._scenario = bmw_fof_demo.AttachBody(self._editor, self._dc, self._mp)
         if self._selected_scenario.selected_index == 2:
