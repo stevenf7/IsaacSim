@@ -397,13 +397,13 @@ DcHandle DcContext::registerRigidBody(const pxr::SdfPath& usdPath)
     PxActor* pxActor = (PxActor*)physx->getPhysXPtr(usdPath, carb::physics::ePTActor);
     if (pxActor)
     {
-        printf("Got %s at %p\n", pxActor->getConcreteTypeName(), (void*)pxActor);
+        DC_LOG_INFO("Got %s at %p\n", pxActor->getConcreteTypeName(), (void*)pxActor);
         if (pxActor->getType() == PxActorType::eRIGID_DYNAMIC)
         {
             PxRigidDynamic* rd = (PxRigidDynamic*)pxActor;
             PxTransform pose = rd->getGlobalPose();
-            printf("  Pos: (%f, %f, %f)\n", pose.p.x, pose.p.y, pose.p.z);
-            printf("  Rot: (%f, %f, %f, %f)\n", pose.q.x, pose.q.y, pose.q.z, pose.q.w);
+            DC_LOG_INFO("  Pos: (%f, %f, %f)\n", pose.p.x, pose.p.y, pose.p.z);
+            DC_LOG_INFO("  Rot: (%f, %f, %f, %f)\n", pose.q.x, pose.q.y, pose.q.z, pose.q.w);
 
             std::unique_ptr<DcRigidBody> body(new DcRigidBody);
             body->ctx = this;
@@ -455,7 +455,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     PxArticulationBase* abase = (PxArticulationBase*)physx->getPhysXPtr(usdPath, carb::physics::ePTArticulation);
     if (abase)
     {
-        printf("Got %s at %p\n", abase->getConcreteTypeName(), (void*)abase);
+        DC_LOG_INFO("Got %s at %p\n", abase->getConcreteTypeName(), (void*)abase);
     }
     else
     {
@@ -463,7 +463,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         PxArticulationLink* link = (PxArticulationLink*)physx->getPhysXPtr(usdPath, carb::physics::ePTLink);
         if (link)
         {
-            printf("Got %s at %p\n", link->getConcreteTypeName(), (void*)link);
+            DC_LOG_INFO("Got %s at %p\n", link->getConcreteTypeName(), (void*)link);
             abase = &link->getArticulation();
         }
         else
@@ -473,7 +473,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 (PxArticulationJointReducedCoordinate*)physx->getPhysXPtr(usdPath, carb::physics::ePTLinkJoint);
             if (joint)
             {
-                printf("Got %s at %p\n", joint->getConcreteTypeName(), (void*)joint);
+                DC_LOG_INFO("Got %s at %p\n", joint->getConcreteTypeName(), (void*)joint);
                 abase = &joint->getChildArticulationLink().getArticulation();
             }
         }
@@ -518,11 +518,11 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         // register link
         //
 
-        printf("Link %u\n", i);
+        DC_LOG_INFO("Link %u\n", i);
         PxArticulationLink* link = links[i];
 
         size_t linkId = (size_t)link->userData;
-        printf("  Link id: %llu\n", (unsigned long long)linkId);
+        DC_LOG_INFO("  Link id: %llu\n", (unsigned long long)linkId);
 
         std::unique_ptr<DcRigidBody> body(new DcRigidBody);
         body->ctx = this;
@@ -530,7 +530,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         body->art = art.get();
 
         SdfPath linkPath = physx->getPhysXObjectUsdPath(linkId);
-        printf("  Link path: %s\n", linkPath.GetString().c_str());
+        DC_LOG_INFO("  Link path: %s\n", linkPath.GetString().c_str());
         body->path = linkPath;
         body->name = linkPath.GetName();
 
@@ -550,10 +550,10 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         if (pxJoint)
         {
             size_t jointId = (size_t)pxJoint->userData;
-            printf("  Joint id: %llu\n", (unsigned long long)jointId);
+            DC_LOG_INFO("  Joint id: %llu\n", (unsigned long long)jointId);
 
             SdfPath jointPath = physx->getPhysXObjectUsdPath(jointId);
-            printf("  Joint path: %s\n", jointPath.GetString().c_str());
+            DC_LOG_INFO("  Joint path: %s\n", jointPath.GetString().c_str());
 
             std::unique_ptr<DcJoint> joint(new DcJoint);
             joint->ctx = this;
@@ -561,7 +561,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
             joint->art = art.get();
             joint->path = jointPath;
             joint->name = jointPath.GetName();
-            printf("  Joint name: %s\n", joint->name.c_str());
+            DC_LOG_INFO("  Joint name: %s\n", joint->name.c_str());
 
             art->componentPaths.insert(joint->path);
 
@@ -619,18 +619,18 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 }
 
                 dof->cacheIdx = dofCount;
-                printf("  DOF cache index: %u\n", dof->cacheIdx);
+                DC_LOG_INFO("  DOF cache index: %u\n", dof->cacheIdx);
 
                 PxArticulationDriveType::Enum driveType;
                 float stiffness;
                 float damping;
                 float maxForce;
                 pxJoint->getDrive(dof->pxAxis, stiffness, damping, maxForce, driveType);
-                printf("  Drive axis: %d\n", int(dof->pxAxis));
-                printf("  Drive type: %d\n", int(driveType));
-                printf("  Drive stiffness: %f\n", stiffness);
-                printf("  Drive damping: %f\n", damping);
-                printf("  Drive maxForce: %f\n", maxForce);
+                DC_LOG_INFO("  Drive axis: %d\n", int(dof->pxAxis));
+                DC_LOG_INFO("  Drive type: %d\n", int(driveType));
+                DC_LOG_INFO("  Drive stiffness: %f\n", stiffness);
+                DC_LOG_INFO("  Drive damping: %f\n", damping);
+                DC_LOG_INFO("  Drive maxForce: %f\n", maxForce);
 
                 // guess drive mode
                 switch (driveType)
@@ -733,7 +733,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     // figure out which path this articulation is mapped to in omni.physx
     size_t artId = (size_t)arc->userData;
     SdfPath artPath = physx->getPhysXObjectUsdPath(artId);
-    printf("Articulation path is '%s'\n", artPath.GetString().c_str());
+    DC_LOG_INFO("Articulation path is '%s'\n", artPath.GetString().c_str());
     art->path = artPath;
 
     DcArticulation* artPtr = art.get();
