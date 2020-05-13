@@ -49,8 +49,10 @@
                 "omni.isaac.urdf",
                 "omni.isaac.utils",
                 "omni.isaac.lidar",
+                "omni.isaac.manip",
                 "omni.isaac.dynamic_control",
-                "omni.isaac.motion_planning"
+                "omni.isaac.motion_planning",
+                "omni.isaac.samples"
             ]
         },
         "livestream":{
