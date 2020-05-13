@@ -15,16 +15,24 @@ from pxr import Sdf, Gf, PhysicsSchema, UsdGeom
 import concurrent.futures
 from enum import Enum
 import omni
+import carb
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils._isaac_utils import math as math_utils
 from omni.isaac.samples.scripts.utils.world import World
-from omni.isaac.samples.scripts.utils.state_machine import *
 from omni.isaac.samples.scripts.utils.ur10 import UR10, default_config
-from omni.isaac.samples.scripts.utils.math_utils import *
-
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
 
-from .scenario import *
+from .scenario import (
+    setTranslate,
+    setRotate,
+    CreateSolidUR10,
+    Scenario,
+    CreateBackground,
+    CreateObjects,
+    SetupPhysics,
+    setCollisionGroup,
+    setCollisionGroupUR10,
+)
 from copy import copy
 
 from omni.physx import _physx
@@ -126,7 +134,7 @@ class PickAndPlaceStateMachine(object):
         self.sm[SM_states.ATTACH][SM_events.ATTACHED] = self._attach_attached
 
         self.sm[SM_states.HOLDING][SM_events.GOAL_REACHED] = self._holding_goal_reached
-        self.thresh[SM_states.PICKING] = 1
+        self.thresh[SM_states.HOLDING] = 3
         for s in SM_states:
             self.sm[s][SM_events.DETACHED] = self._all_detached
 
@@ -241,9 +249,6 @@ class PickAndPlaceStateMachine(object):
         self._is_moving = True
 
         orig = np.array([xform_attr.p.x, xform_attr.p.y, xform_attr.p.z])
-        # tr = _dynamic_control.Transform()
-        # tr.r = (0,0,-0.383,-0.924)
-        # xform_attr   = math_utils.mul(xform_attr,tr)
         axis_y = np.array(math_utils.get_basis_vector_y(xform_attr.r))
         axis_z = np.array(math_utils.get_basis_vector_z(xform_attr.r))
         self.robot.end_effector.go_local(
@@ -258,18 +263,18 @@ class PickAndPlaceStateMachine(object):
 
     def get_target_to_object(self, offset_up=25, offset_down=25):
         """
-        Gets target pose to end effector on a given target, with an offset on the end effector actuator direction given 
-        by [offset_up, offset_down] 
+        Gets target pose to end effector on a given target, with an offset on the end effector actuator direction given
+        by [offset_up, offset_down]
         """
         offset = _dynamic_control.Transform()
         offset.p.x = -offset_up
+
         offset.p.z = 3
         offset.r = (0, 0, 0, 1)
         body_handle = self.dc.get_rigid_body(self.current)
         obj_pose = self.dc.get_rigid_body_pose(body_handle)
         offset_1 = _dynamic_control.Transform()
-        tr = self.get_current_state_tr()
-        rx = math_utils.dot(math_utils.get_basis_vector_y(obj_pose.r), math_utils.get_basis_vector_y(tr.r))
+        # tr = self.get_current_state_tr()
         if math_utils.get_basis_vector_z(obj_pose.r).z > 0:
             self._upright = True
             offset_1.r = (0, -1, 0, 0)
@@ -278,10 +283,8 @@ class PickAndPlaceStateMachine(object):
             offset_1.r = (1, 0, 0, 0)
             self._upright = False
         target_position = math_utils.mul(math_utils.mul(obj_pose, offset_1), offset)
-        # offset_1.r = (0, 0, -1, 0)
-        # target_position = math_utils.mul(target_position, offset_1)
         target_position.p = math_utils.mul(target_position.p, 0.01)
-        # target_position.r = math_utils.mul([0.999, 0, 0, 0.05], target_position.r)  # , [1, 0, 0, 0])
+
         return target_position
 
     def set_target_to_object(self, offset_up=25, offset_down=25, n_waypoints=1, clear_waypoints=True):
@@ -388,7 +391,7 @@ class PickAndPlaceStateMachine(object):
         """
         self.waypoints.clear()
         target_position = _dynamic_control.Transform()
-        target_position.p = [0.1, 0.81, 0.58]
+        target_position.p = [0.0, 0.81, 0.58]
         target_position.r = [0, -1, 0, 0]
         print(target_position.r)
         self.lerp_to_pose(target_position, 360)
@@ -412,8 +415,6 @@ class PickAndPlaceStateMachine(object):
             target = math_utils.mul(tr, offset)
             target.p = math_utils.mul(target.p, 0.01)
             offset.p.x = -0.05
-
-            # if self._upright:
 
             pre_target = math_utils.mul(target, offset)
             self.lerp_to_pose(pre_target, n_waypoints=40)
@@ -453,7 +454,7 @@ class PickAndPlaceStateMachine(object):
 class FillBin(Scenario):
     """ Defines an obstacle avoidance scenario
 
-    Scenarios define the life cycle within kit and handle init, startup, shutdown etc. 
+    Scenarios define the life cycle within kit and handle init, startup, shutdown etc.
     """
 
     def __init__(self, editor, dc, mp):
@@ -477,6 +478,8 @@ class FillBin(Scenario):
         self.max_trays = 36
 
         self.current_obj = 0
+        self.max_objs = 100
+        self.num_objs = 3
 
         self._trays = {}
 
@@ -506,7 +509,7 @@ class FillBin(Scenario):
                 self._time += 1.0 / 60.0
                 self.pick_and_place.step(self._time, self._start, self._reset)
                 if self._reset:
-                    self._paused = True
+                    self.stop_tasks
                     self._time = 0
                     setTranslate(target, Gf.Vec3d(0, 75, 42))
                     setRotate(target, Gf.Matrix3d(Gf.Quatd(0, 0.7071, 0, -0.7071)))
@@ -515,10 +518,6 @@ class FillBin(Scenario):
                     state_1 = self.pick_and_place.target_position
                     tr = state["orig"] * 100.0
                     setTranslate(target, Gf.Vec3d(tr[0], tr[1], tr[2]))
-
-                    mat = Gf.Matrix3f(
-                        *state["axis_x"].astype(float), *state["axis_y"].astype(float), *state["axis_z"].astype(float)
-                    )
                     setRotate(target, Gf.Matrix3d(Gf.Quatd(state_1.r.w, state_1.r.x, state_1.r.y, state_1.r.z)))
                 self._start = False
                 self._reset = False
@@ -530,7 +529,6 @@ class FillBin(Scenario):
             else:
                 self.pick_and_place.waypoints.clear()
                 translate_attr = xform_attr.Get().GetRow3(3)
-                # print(translate_attr.Get())
                 rotate_x = xform_attr.Get().GetRow3(0)
                 rotate_y = xform_attr.Get().GetRow3(1)
                 rotate_z = xform_attr.Get().GetRow3(2)
@@ -552,9 +550,6 @@ class FillBin(Scenario):
     def create_UR10(self, *args):
         self.ur10_table_usd = self.asset_path + "/Stage/StageD6Fill_bin.usd"
         super().create_UR10()
-        use_background = True
-        if len(args) > 0:
-            use_background = args[0]
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"
         self.env_path = "/environments/env"
@@ -563,13 +558,17 @@ class FillBin(Scenario):
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
         setTranslate(GoalPrim, Gf.Vec3d(0, 75, 42))
         setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.5, -0.5, 0.5, 0.5)))
-        # Load background
-        if use_background:
-            CreateBackground(self._stage, self.background_usd)
-            prim = self._stage.GetPrimAtPath("/World")
-            imageable = UsdGeom.Imageable(prim)
-            imageable.MakeInvisible()
 
+        prim = self._stage.GetPrimAtPath("/World")
+        imageable = UsdGeom.Imageable(prim)
+        imageable.MakeInvisible()
+
+        num_objs = self.max_objs
+        a = [self.objects[random.randint(0, len(self.objects) - 1)] for i in range(num_objs)]
+        b = [self.env_path + "/objects/object_{}".format(self.current_obj + i) for i in range(num_objs)]
+        c = [Gf.Vec3d(-50000, 0, -50000 + 5 * i) for i in range(num_objs)]
+        CreateObjects(self._stage, a, b, c)
+        self.current_obj = 0
         # Setup physics simulation
         SetupPhysics(self._stage)
 
@@ -577,31 +576,23 @@ class FillBin(Scenario):
         self.create_new_objects(args)
 
     def create_new_objects(self, *args):
-        num_objs = 3
-        a = [self.objects[random.randint(0, len(self.objects) - 1)] for i in range(num_objs)]
-        b = [self.env_path + "/objects/object_{}".format(self.current_obj + i) for i in range(num_objs)]
-        c = [Gf.Vec3d(random.randint(-5, 5), random.randint(-3, 3) + 81, 110 + 5 * i) for i in range(num_objs)]
-        d = [
-            Gf.Matrix3d(
-                Gf.Quatd(
-                    *normalize(
-                        [
-                            random.random() * 2 - 1,
-                            random.random() * 2 - 1,
-                            random.random() * 2 - 1,
-                            random.random() * 2 - 1,
-                        ]
-                    )
-                )
+        for i in range(self.current_obj, min(self.current_obj + self.num_objs, self.max_objs)):
+            self._dc.set_rigid_body_disable_simulation(self.objects_handles[i], False)
+            tf = _dynamic_control.Transform()
+            tf.p = [random.randint(-15, -5), random.randint(-3, 3) + 81, 110 + 5 * (i - self.current_obj)]
+            tf.r = normalize(
+                [random.random() * 2 - 1, random.random() * 2 - 1, random.random() * 2 - 1, random.random() * 2 - 1]
             )
-            for i in range(num_objs)
-        ]
-        CreateObjects(self._stage, a, b, c, d)
-        self.current_obj += num_objs
+            self._dc.set_rigid_body_pose(self.objects_handles[i], tf)
+            self._dc.set_rigid_body_linear_velocity(self.objects_handles[i], [0, 0.0, 0])
+            self._dc.set_rigid_body_angular_velocity(
+                self.objects_handles[i], [random.random(), random.random(), random.random()]
+            )
+        self.current_obj = (self.current_obj + self.num_objs) % self.max_objs
 
     def disable_trays(self, *args):
-        # for i in range(self.max_trays):
-        #     self._dc.set_rigid_body_disable_simulation(self.tray_handles[i], True)
+        for i in range(self.max_objs):
+            self._dc.set_rigid_body_disable_simulation(self.objects_handles[i], True)
         self._pending_disable = False
 
     def add_new_objects(self):
@@ -642,20 +633,19 @@ class FillBin(Scenario):
             urdf="/urdf/ur10_robot_robotiq.urdf",
         )
 
-        self._dc
+        self.world.register_object(0, self.env_path + "/staticPlaneActor", "ground")
+        self.world.make_obstacle("ground", 3, (10, 10, 0.1))
+
         body_count = self._dc.get_articulation_body_count(self.ur10_solid.ar)
         for bodyIdx in range(body_count):
             body = self._dc.get_articulation_body(self.ur10_solid.ar, bodyIdx)
             self._dc.set_rigid_body_disable_gravity(body, True)
 
-        # # Set robot end effector
-        orig = [-0.0645, 0.7214, 0.495]  # [0, 0.75, 0.42]
+        # Set robot end effector
+        orig = [-0.0645, 0.7214, 0.495]
         default_position = _dynamic_control.Transform()
         default_position.p = orig
         default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
-        # tr = _dynamic_control.Transform()
-        # tr.r = (0,0,-0.383,-0.924)
-        # default_position = math_utils.mul(default_position,tr)
 
         self.pick_and_place = PickAndPlaceStateMachine(
             self._stage,
@@ -665,6 +655,17 @@ class FillBin(Scenario):
             default_position,
         )
         self.pick_and_place.add_tray = self.add_new_objects
+
+        self.objects_handles = []
+        for prim in self._stage.GetPrimAtPath(self.env_path + "/objects").GetChildren():
+            for o in prim.GetChildren():
+                if "Looks" not in o.GetPath().pathString:
+                    obj = self._dc.get_rigid_body(o.GetPath().pathString)
+                    print(obj, o.GetPath().pathString)
+                    self.objects_handles.append(obj)
+                    self._dc.set_rigid_body_disable_simulation(obj, True)
+                    break
+        print(self.objects_handles)
 
     def perform_tasks(self, *args):
         self._start = True
@@ -676,12 +677,18 @@ class FillBin(Scenario):
             self._reset = True
             self.current_tray = 0
             self._pending_disable = True
-            for i in range(self.max_trays):
+            if self._editor.is_playing():
+                self.ur10_solid.end_effector.gripper.open()
+            for i in range(self.max_objs):
                 tf = _dynamic_control.Transform()
-                tf.p = [-50000 - 50 * i, 150, 0]
-                # self._dc.set_rigid_body_pose(self.tray_handles[i], tf)
-                # self._dc.set_rigid_body_linear_velocity(self.tray_handles[i], [0, 0, 0])
-                # self._dc.set_rigid_body_angular_velocity(self.tray_handles[i], [0, 0, 0])
+                tf.p = [-500000 - 50 * i, 150, 0]
+                self._dc.set_rigid_body_pose(self.objects_handles[i], tf)
+                self._dc.set_rigid_body_linear_velocity(self.objects_handles[i], [0, 0, 0])
+                self._dc.set_rigid_body_angular_velocity(self.objects_handles[i], [0, 0, 0])
+            tray = self._dc.get_rigid_body(self.env_path + "/SmallKLT/SmallKLT")
+            tf = _dynamic_control.Transform()
+            tf.p = [0, 81, -43.0]
+            self._dc.set_rigid_body_pose(tray, tf)
 
     def pause_tasks(self, *args):
         self._paused = not self._paused

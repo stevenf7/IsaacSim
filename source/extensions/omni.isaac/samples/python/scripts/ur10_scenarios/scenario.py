@@ -72,21 +72,6 @@ def setCollisionGroupUR10(stage, prim_path, group_path, is_ghost):
     setCollisionGroup(stage.GetPrimAtPath(prim_path + "/wrist_3_link/Cylinder"), group_path)
     for p in stage.GetPrimAtPath(prim_path + "/ee_link/collision").GetChildren():
         setCollisionGroup(p, group_path)
-    # setCollisionGroup(stage.GetPrimAtPath(prim_path + "/ee_link/box"), group_path)
-
-
-# def setCollisionGroupUR10(stage, prim_path, group_path, is_ghost):
-#     print(prim_path)
-#     setCollisionGroup(stage.GetPrimAtPath(prim_path + "/base_link/base_stl"), group_path)
-#     setCollisionGroup(stage.GetPrimAtPath(prim_path + "/shoulder_link/shoulder_stl"), group_path)
-#     setCollisionGroup(stage.GetPrimAtPath(prim_path + "/upper_arm_link/upper_arm_stl"), group_path)
-#     setCollisionGroup(stage.GetPrimAtPath(prim_path + "/forearm_link/forearm_stl"), group_path)
-#     setCollisionGroup(stage.GetPrimAtPath(prim_path + "/wrist_1_link/wrist_1_stl"), group_path)
-#     setCollisionGroup(stage.GetPrimAtPath(prim_path + "/wrist_2_link/wrist_2_stl"), group_path)
-#     setCollisionGroup(stage.GetPrimAtPath(prim_path + "/wrist_3_link/wrist_3_stl"), group_path)
-#     for p in stage.GetPrimAtPath(prim_path + "/ee_link/suction_cup").GetChildren():
-#         setCollisionGroup(p, group_path)
-#     # setCollisionGroup(stage.GetPrimAtPath(prim_path + "/ee_link/box"), group_path)
 
 
 def setUpZAxis(stage):
@@ -126,12 +111,13 @@ def CreateObjects(stage, asset_paths, env_paths, translations, rotations=None):
         print("Error: asset paths, env paths and poses must be same length")
         return
     for (asset, path, translation, rotation) in zip(*[asset_paths, env_paths, translations, rotations]):
-        prim = stage.DefinePrim(path, "Xform")
+        prim = stage.GetPrimAtPath(path)
+        if not prim:
+            prim = stage.DefinePrim(path, "Xform")
         prim.GetReferences().AddReference(asset)
         setTranslate(prim, translation)
         if rotation is not None:
             setRotate(prim, rotation)
-        print(prim.GetPath().pathString)
 
 
 def CreateRubiksCube(stage, asset_path, prim_path, location):

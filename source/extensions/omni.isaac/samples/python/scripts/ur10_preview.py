@@ -21,7 +21,6 @@ from omni.physx import _physx
 from .ur10_scenarios.scenario import Scenario
 from .ur10_scenarios import bin_stack
 from .ur10_scenarios import bmw_fof_demo
-from .ur10_scenarios.multiple_obstacle import MultipleObstacle
 from .ur10_scenarios.fill_bin import FillBin
 
 EXTENSION_NAME = "UR10 Preview"
@@ -54,7 +53,6 @@ class Extension(omni.ext.IExt):
         self._selected_scenario = self._window.layout.add_child(omni.kit.ui.ComboBox())
         self._selected_scenario.add_item("Stack Bins")
         self._selected_scenario.add_item("BMW FoF Demo")
-        self._selected_scenario.add_item("Multiple Obstacles")
         self._selected_scenario.add_item("Fill Bin")
         self._selected_scenario.selected_index = 0
 
@@ -110,10 +108,10 @@ class Extension(omni.ext.IExt):
         if self._selected_scenario.selected_index == 1:
             self._scenario = bmw_fof_demo.AttachBody(self._editor, self._dc, self._mp)
         if self._selected_scenario.selected_index == 2:
-            self._scenario = MultipleObstacle(self._editor, self._dc, self._mp)
-        if self._selected_scenario.selected_index == 3:
             self._scenario = FillBin(self._editor, self._dc, self._mp)
+            self._add_new_trays_btn.text = "Drop Parts"
 
+        self._first_step = True
         self._create_UR10_btn.enabled = False
         self._selected_scenario.enabled = False
 
