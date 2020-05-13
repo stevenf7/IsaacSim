@@ -22,6 +22,8 @@ from omni.isaac.samples.utils.state_machine import *
 from omni.isaac.samples.utils.ur10 import UR10, default_config
 from omni.isaac.samples.utils.math_utils import *
 
+from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
+
 from .scenario import *
 from copy import copy
 
@@ -58,6 +60,11 @@ statedic = {0: "orig", 1: "axis_x", 2: "axis_y", 3: "axis_z"}
 
 
 class PickAndPlaceStateMachine(object):
+    """
+    Self-contained state machine class for Robot Behavior. Each machine state may react to different events,
+    and the handlers are defined as in-class functions
+    """
+
     def __init__(self, stage, robot, ee_prim, target_body, default_position):
         self.robot = robot
         self.dc = robot.dc
@@ -608,17 +615,31 @@ class FillBin(Scenario):
         self.tray_handles = [self._dc.get_rigid_body(i) for i in self.tray_paths]
 
         # Create world and robot object
+        ur10_path = str(prim.GetPath()) + "/ur10"
         self.world = World(self._dc, self._mp)
+        mjp = Surface_Gripper_Properties()
+        mjp.parentPath = ur10_path + "/ee_link"
+        mjp.d6JointPath = mjp.parentPath + "/d6FixedJoint"
+        mjp.gripThreshold = 1
+        mjp.forceLimit = 5.0e3
+        mjp.torqueLimit = 5.0e4
+        mjp.bendAngle = np.pi / 24  # 7.5 degrees
+        mjp.stiffness = 1.0e5
+        mjp.damping = 1.0e4
+        tr = _dynamic_control.Transform()
+        tr.p.x = 15.509
+        mjp.offset = tr
+
         self.ur10_solid = UR10(
             self._stage,
-            self._stage.GetPrimAtPath(str(prim.GetPath()) + "/ur10"),
+            self._stage.GetPrimAtPath(ur10_path),
             self._dc,
             self._mp,
+            mjp,
             self.world,
             "/physics/scene/solid",
             default_config,
             urdf="/urdf/ur10_robot_robotiq.urdf",
-            ee_offset=16.1709,  # 19.774,
         )
 
         self._dc

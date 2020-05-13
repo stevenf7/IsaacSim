@@ -115,26 +115,22 @@ def CreateGhostUR10(stage, env_path, UR10_ghost_usd, ghost_robot, ghost_index):
     setCollisionGroupUR10(stage, ghost_path + "/ur10", ghost_robot, True)
 
 
-def CreateObjects(stage, asset_paths, env_paths, poses):
-    if (len(asset_paths) != len(env_paths)) and len(asset_paths) != len(poses):
-        print("Error: asset paths, env paths and poses must be same length")
-        return
-    for (asset, path, pose) in zip(*[asset_paths, env_paths, poses]):
-        prim = stage.DefinePrim(path, "Xform")
-        prim.GetReferences().AddReference(asset)
-        setTranslate(prim, pose)
-        print(prim.GetPath().pathString)
-
-
-def CreateObjects(stage, asset_paths, env_paths, translations, rotations):
-    if (len(asset_paths) != len(env_paths)) and len(asset_paths) != len(translations) != len(rotations):
+def CreateObjects(stage, asset_paths, env_paths, translations, rotations=None):
+    if rotations is None:
+        rotations = [None for i in range(len(asset_paths))]
+    if (
+        (len(asset_paths) != len(env_paths))
+        and len(asset_paths) != len(translations)
+        and (len(asset_paths) != len(rotations))
+    ):
         print("Error: asset paths, env paths and poses must be same length")
         return
     for (asset, path, translation, rotation) in zip(*[asset_paths, env_paths, translations, rotations]):
         prim = stage.DefinePrim(path, "Xform")
         prim.GetReferences().AddReference(asset)
         setTranslate(prim, translation)
-        setRotate(prim, rotation)
+        if rotation is not None:
+            setRotate(prim, rotation)
         print(prim.GetPath().pathString)
 
 
@@ -144,13 +140,13 @@ def CreateRubiksCube(stage, asset_path, prim_path, location):
     setTranslate(obstaclePrim, location)
 
 
-def CreateBackground(stage, background_stage):
+def CreateBackground(stage, background_stage, pos, rot):
     background_path = "/background"
     if not stage.GetPrimAtPath(background_path):
         backPrim = stage.DefinePrim(background_path, "Xform")
         backPrim.GetReferences().AddReference(background_stage)
-        setTranslate(backPrim, Gf.Vec3d(5747.25, 1826.020, -117.200))
-        setRotate(backPrim, Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0, 0, 1), 90)))
+        setTranslate(backPrim, Gf.Vec3d(pos[0], pos[1], pos[2]))
+        setRotate(backPrim, Gf.Matrix3d(rot))
 
 
 def SetupPhysics(stage):

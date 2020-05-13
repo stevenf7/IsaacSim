@@ -180,12 +180,12 @@ class UR10:
         prim,
         dc,
         mp,
+        mjp,
         world=None,
         group_path="",
         default_config=None,
         is_ghost=False,
         urdf="/urdf/ur10_robot_no_mat.urdf",
-        ee_offset=22.15,
     ):
         self.dc = dc
         self.mp = mp
@@ -220,18 +220,6 @@ class UR10:
             self.world.register_parent(self.base, self.prim, "base_link")
 
         self.end_effector = EndEffector(self.dc, self.mp, self.ar, self.rmp_handle)
-        mjp = Surface_Gripper_Properties()
-        mjp.parentPath = self.prim.GetPath().pathString + "/ee_link"
-        mjp.d6JointPath = mjp.parentPath + "/d6FixedJoint"
-        mjp.gripThreshold = 1
-        mjp.forceLimit = 4.0e3
-        mjp.torqueLimit = 2.0e5
-        mjp.bendAngle = np.pi / 16
-        mjp.stiffness = 8.0e4
-        mjp.damping = 5.0e2
-        tr = _dynamic_control.Transform()
-        tr.p.x = ee_offset
-        mjp.offset = tr
 
         self.end_effector.gripper = Surface_Gripper(self.dc)
         self.end_effector.gripper.initialize(mjp)

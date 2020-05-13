@@ -175,10 +175,10 @@ public:
                 memset(mJointProperties.hasLimits, 0, sizeof(bool) * 6);
                 mJointProperties.hasLimits[4] = true;
                 mJointProperties.hasLimits[5] = true;
-                mJointProperties.stiffness = mProps.stiffness; // 1e5f;
+                mJointProperties.stiffness = mProps.stiffness;
                 mJointProperties.damping = mProps.damping;
-                mJointProperties.limitStiffness = mProps.stiffness; // 1.e7;
-                mJointProperties.limitDamping = mProps.damping; // 1.e3f;
+                mJointProperties.limitStiffness = mProps.stiffness;
+                mJointProperties.limitDamping = mProps.damping;
                 mJointProperties.softLimit = true;
                 mJointProperties.lowerLimit = mProps.bendAngle;
                 mJointProperties.upperLimit = mProps.bendAngle;

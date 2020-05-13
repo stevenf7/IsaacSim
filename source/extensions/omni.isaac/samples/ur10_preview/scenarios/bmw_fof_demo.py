@@ -22,6 +22,8 @@ from omni.isaac.samples.utils.state_machine import *
 from omni.isaac.samples.utils.ur10 import UR10, default_config
 from omni.isaac.samples.utils.math_utils import *
 
+from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
+
 from .scenario import *
 from copy import copy
 
@@ -99,7 +101,7 @@ class PickAndPlaceStateMachine(object):
         self.upside_offset = _dynamic_control.Transform()
         self.upside_flip = _dynamic_control.Transform()
 
-        self.upside_goal.p = (0.7498, 0.61, 0.085)
+        self.upside_goal.p = (0.76652, 0.61294, 0.1055)
         self.upside_goal.r = (-0.225195, 0.435623, 0.0179048, -0.871321)
         # self.upside_goal.r = (-0.85594,-0.0295757,-0.469593,-0.214414) # two possible orientations, need to figure out which is better
 
@@ -143,7 +145,7 @@ class PickAndPlaceStateMachine(object):
         self.previous_state = -1
         self._physxIFace = _physx.acquire_physx_interface()
 
-        x = [100, 79, 58]
+        x = [102, 81, 60]
         y = [-66, -35, -4]
         self.stack_coordinates = np.array(
             [
@@ -598,8 +600,8 @@ class PickAndPlaceStateMachine(object):
             target.p = math_utils.mul(target.p, 0.01)
             offset.p.x = -0.05
             pre_target = math_utils.mul(target, offset)
-            self.lerp_to_pose(pre_target, n_waypoints=40)
-            self.lerp_to_pose(target, n_waypoints=30)
+            self.lerp_to_pose(pre_target, n_waypoints=90)
+            self.lerp_to_pose(target, n_waypoints=60)
             self.lerp_to_pose(target, n_waypoints=30)
             self.target_position = self.waypoints.popleft()
             self.move_to_target()
@@ -636,7 +638,7 @@ class PickAndPlaceStateMachine(object):
             self.target_position = self.upside_goal
             self.move_to_target()
         else:
-            x_off = 5.0  # Offset to clear the tray it's currently holding
+            x_off = 25.0  # Offset to clear the tray it's currently holding
             target = copy(self.target_position)
             obj, distance = self.ray_cast(x_off)
             if obj is not None:
@@ -823,12 +825,27 @@ class AttachBody(Scenario):
         self.tray_handles = [self._dc.get_rigid_body(i) for i in self.tray_paths]
 
         # Create world and robot object
+
+        ur10_path = str(prim.GetPath()) + "/ur10"
         self.world = World(self._dc, self._mp)
+        mjp = Surface_Gripper_Properties()
+        mjp.parentPath = ur10_path + "/ee_link"
+        mjp.d6JointPath = mjp.parentPath + "/d6FixedJoint"
+        mjp.gripThreshold = 2
+        mjp.forceLimit = 5.0e4
+        mjp.torqueLimit = 5.0e5
+        mjp.bendAngle = np.pi / 24  # 7.5 degrees
+        mjp.stiffness = 1.0e5
+        mjp.damping = 1.0e4
+        tr = _dynamic_control.Transform()
+        tr.p.x = 22.15
+        mjp.offset = tr
         self.ur10_solid = UR10(
             self._stage,
-            self._stage.GetPrimAtPath(str(prim.GetPath()) + "/ur10"),
+            self._stage.GetPrimAtPath(ur10_path),
             self._dc,
             self._mp,
+            mjp,
             self.world,
             "/physics/scene/solid",
             default_config,
