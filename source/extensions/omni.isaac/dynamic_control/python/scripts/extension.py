@@ -20,6 +20,8 @@ from .samples.articulation import articulation_info
 # any unit tests for the extension should be imported here
 from .tests.test_core import *
 from .tests.test_articulation import *
+from .tests.test_pickles import *
+from .tests.test_attractor import *
 
 EXTENSION_NAME = "Dynamic Control"
 
