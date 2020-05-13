@@ -41,7 +41,16 @@ class articulation_info:
         get_info_btn.set_clicked_fn(self._on_print_info)
         sublayout.add_child(omni.kit.ui.Separator())
         scrolling_frame = sublayout.add_child(omni.kit.ui.ScrollingFrame("", -1, -1))
-        self.json_out_widget = scrolling_frame.add_child(
+        self.hierarchy_label = scrolling_frame.add_child(
+            omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
+        )
+        self.body_states_label = scrolling_frame.add_child(
+            omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
+        )
+        self.dof_states_label = scrolling_frame.add_child(
+            omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
+        )
+        self.dof_props_label = scrolling_frame.add_child(
             omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
         )
         self._physxIFace = _physx.acquire_physx_interface()
@@ -57,24 +66,18 @@ class articulation_info:
             print("*** '%s' is not an articulation" % "/panda")
             return
 
-        info = str("Got articulation handle %d \n" % ar)
-
-        info = info + str("--- Hierarchy\n")
         root = self._dc.get_articulation_root_body(ar)
-        info = info + _print_body_rec(self._dc, root) + "\n"
+        self.hierarchy_label.text = (
+            str("Got articulation handle %d \n" % ar) + str("--- Hierarchy\n") + _print_body_rec(self._dc, root)
+        )
 
-        info = info + str("--- Body states:\n")
         body_states = self._dc.get_articulation_body_states(ar, _dynamic_control.STATE_ALL)
-        info = info + str(body_states) + "\n"
+        self.body_states_label.text = str("--- Body states:\n") + str(body_states) + "\n"
 
-        info = info + str("--- DOF states:\n")
         dof_states = self._dc.get_articulation_dof_states(ar, _dynamic_control.STATE_ALL)
-        info = info + str(dof_states) + "\n"
+        self.dof_states_label.text = str("--- DOF states:\n") + str(dof_states) + "\n"
 
-        info = info + str("--- DOF properties:\n")
         dof_props = self._dc.get_articulation_dof_properties(ar)
-        info = info + str(dof_props) + "\n"
+        self.dof_props_label.text = str("--- DOF properties:\n") + str(dof_props) + "\n"
 
-        info = info + str("Done")
-        self.json_out_widget.text = info
         return
