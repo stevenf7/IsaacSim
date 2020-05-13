@@ -294,7 +294,7 @@ void CameraComponent::onComponentChange()
     if (mEnableSegmentation)
     {
 
-        mSegmentationSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSegmentation);
+        mSegmentationSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation);
     }
     else
     {

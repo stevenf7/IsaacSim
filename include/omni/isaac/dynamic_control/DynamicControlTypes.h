@@ -213,11 +213,18 @@ struct DcD6JointProperties
                                     //!< joint will be disabled and won't impact in solver computational complexity.
     DcTransform pose0{ kTransformIdentity }; //!< Offset from Rigid Body 0 to Joint.
     DcTransform pose1{ kTransformIdentity }; //!< Offset from Rigid Body 1 to Joint.
-    float stiffness = 1e5f; //!< Joint Stiffness
-    float damping = 1e3f; //!< Joint Damping
-    float forceLimit = std::numeric_limits<float>::max(); //!< Maximum force to be applied by joint
+    DcJointType jointType; //!< Joint type being defined
+    bool hasLimits[6]; //!< Flag for determining if joint has limits or is locked
+    bool softLimit{ true }; ///!< whether joint limits are progressively harder
+    float lowerLimit; //!< lower joint limit, same for all axes
+    float upperLimit; //!< upper joint limit, same for all axes
+    float limitStiffness{ 1e5f }; //!< Joint Stiffness
+    float limitDamping = { 1e3f }; //!< Joint Damping
+    float stiffness = { 1e5f }; //!< Joint Stiffness
+    float damping = { 1e3f }; //!< Joint Damping
+    float forceLimit = std::numeric_limits<float>::max(); //!< Joint Breaking Force
+    float torqueLimit = std::numeric_limits<float>::max(); //!< Joint Breaking torque
 };
-
 
 /////////////////////////////
 

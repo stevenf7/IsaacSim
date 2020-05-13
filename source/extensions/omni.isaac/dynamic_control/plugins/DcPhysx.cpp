@@ -397,13 +397,13 @@ DcHandle DcContext::registerRigidBody(const pxr::SdfPath& usdPath)
     PxActor* pxActor = (PxActor*)physx->getPhysXPtr(usdPath, carb::physics::ePTActor);
     if (pxActor)
     {
-        printf("Got %s at %p\n", pxActor->getConcreteTypeName(), (void*)pxActor);
+        DC_LOG_INFO("Got %s at %p\n", pxActor->getConcreteTypeName(), (void*)pxActor);
         if (pxActor->getType() == PxActorType::eRIGID_DYNAMIC)
         {
             PxRigidDynamic* rd = (PxRigidDynamic*)pxActor;
             PxTransform pose = rd->getGlobalPose();
-            printf("  Pos: (%f, %f, %f)\n", pose.p.x, pose.p.y, pose.p.z);
-            printf("  Rot: (%f, %f, %f, %f)\n", pose.q.x, pose.q.y, pose.q.z, pose.q.w);
+            DC_LOG_INFO("  Pos: (%f, %f, %f)\n", pose.p.x, pose.p.y, pose.p.z);
+            DC_LOG_INFO("  Rot: (%f, %f, %f, %f)\n", pose.q.x, pose.q.y, pose.q.z, pose.q.w);
 
             std::unique_ptr<DcRigidBody> body(new DcRigidBody);
             body->ctx = this;
@@ -455,7 +455,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     PxArticulationBase* abase = (PxArticulationBase*)physx->getPhysXPtr(usdPath, carb::physics::ePTArticulation);
     if (abase)
     {
-        printf("Got %s at %p\n", abase->getConcreteTypeName(), (void*)abase);
+        DC_LOG_INFO("Got %s at %p\n", abase->getConcreteTypeName(), (void*)abase);
     }
     else
     {
@@ -463,7 +463,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         PxArticulationLink* link = (PxArticulationLink*)physx->getPhysXPtr(usdPath, carb::physics::ePTLink);
         if (link)
         {
-            printf("Got %s at %p\n", link->getConcreteTypeName(), (void*)link);
+            DC_LOG_INFO("Got %s at %p\n", link->getConcreteTypeName(), (void*)link);
             abase = &link->getArticulation();
         }
         else
@@ -473,7 +473,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 (PxArticulationJointReducedCoordinate*)physx->getPhysXPtr(usdPath, carb::physics::ePTLinkJoint);
             if (joint)
             {
-                printf("Got %s at %p\n", joint->getConcreteTypeName(), (void*)joint);
+                DC_LOG_INFO("Got %s at %p\n", joint->getConcreteTypeName(), (void*)joint);
                 abase = &joint->getChildArticulationLink().getArticulation();
             }
         }
@@ -518,11 +518,11 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         // register link
         //
 
-        printf("Link %u\n", i);
+        DC_LOG_INFO("Link %u\n", i);
         PxArticulationLink* link = links[i];
 
         size_t linkId = (size_t)link->userData;
-        printf("  Link id: %llu\n", (unsigned long long)linkId);
+        DC_LOG_INFO("  Link id: %llu\n", (unsigned long long)linkId);
 
         std::unique_ptr<DcRigidBody> body(new DcRigidBody);
         body->ctx = this;
@@ -530,7 +530,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         body->art = art.get();
 
         SdfPath linkPath = physx->getPhysXObjectUsdPath(linkId);
-        printf("  Link path: %s\n", linkPath.GetString().c_str());
+        DC_LOG_INFO("  Link path: %s\n", linkPath.GetString().c_str());
         body->path = linkPath;
         body->name = linkPath.GetName();
 
@@ -550,10 +550,10 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         if (pxJoint)
         {
             size_t jointId = (size_t)pxJoint->userData;
-            printf("  Joint id: %llu\n", (unsigned long long)jointId);
+            DC_LOG_INFO("  Joint id: %llu\n", (unsigned long long)jointId);
 
             SdfPath jointPath = physx->getPhysXObjectUsdPath(jointId);
-            printf("  Joint path: %s\n", jointPath.GetString().c_str());
+            DC_LOG_INFO("  Joint path: %s\n", jointPath.GetString().c_str());
 
             std::unique_ptr<DcJoint> joint(new DcJoint);
             joint->ctx = this;
@@ -561,7 +561,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
             joint->art = art.get();
             joint->path = jointPath;
             joint->name = jointPath.GetName();
-            printf("  Joint name: %s\n", joint->name.c_str());
+            DC_LOG_INFO("  Joint name: %s\n", joint->name.c_str());
 
             art->componentPaths.insert(joint->path);
 
@@ -619,18 +619,18 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 }
 
                 dof->cacheIdx = dofCount;
-                printf("  DOF cache index: %u\n", dof->cacheIdx);
+                DC_LOG_INFO("  DOF cache index: %u\n", dof->cacheIdx);
 
                 PxArticulationDriveType::Enum driveType;
                 float stiffness;
                 float damping;
                 float maxForce;
                 pxJoint->getDrive(dof->pxAxis, stiffness, damping, maxForce, driveType);
-                printf("  Drive axis: %d\n", int(dof->pxAxis));
-                printf("  Drive type: %d\n", int(driveType));
-                printf("  Drive stiffness: %f\n", stiffness);
-                printf("  Drive damping: %f\n", damping);
-                printf("  Drive maxForce: %f\n", maxForce);
+                DC_LOG_INFO("  Drive axis: %d\n", int(dof->pxAxis));
+                DC_LOG_INFO("  Drive type: %d\n", int(driveType));
+                DC_LOG_INFO("  Drive stiffness: %f\n", stiffness);
+                DC_LOG_INFO("  Drive damping: %f\n", damping);
+                DC_LOG_INFO("  Drive maxForce: %f\n", maxForce);
 
                 // guess drive mode
                 switch (driveType)
@@ -733,7 +733,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     // figure out which path this articulation is mapped to in omni.physx
     size_t artId = (size_t)arc->userData;
     SdfPath artPath = physx->getPhysXObjectUsdPath(artId);
-    printf("Articulation path is '%s'\n", artPath.GetString().c_str());
+    DC_LOG_INFO("Articulation path is '%s'\n", artPath.GetString().c_str());
     art->path = artPath;
 
     DcArticulation* artPtr = art.get();
@@ -1025,6 +1025,15 @@ void DcContext::refreshPhysicsPointers(bool verbose)
 void CARB_ABI DcHello()
 {
     printf("Hello from Dynamic Control\n");
+}
+
+bool CARB_ABI DcIsSimulating()
+{
+#if DC_TRACK_EDITOR_SIMULATION_STATE
+    return g_dcCtx->isSimulating;
+#else
+    return false;
+#endif
 }
 
 DcHandle CARB_ABI DcGetRigidBody(const char* usdPath)
@@ -2873,31 +2882,14 @@ void CARB_ABI DcDestroyRigidBodyAttractor(DcHandle attHandle)
     ctx->removeAttractor(attHandle);
 }
 
+
+//
+// D6 Joints
+//
+
 bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props);
+bool getD6JointConstraintIsBroken(DcD6Joint* dcJoint);
 
-DcRayCastResult CARB_ABI DcRayCast(const carb::Float3& origin, const carb::Float3& direction, float max_distance)
-{
-
-    (void)DC_CHECK_SIMULATING();
-    DcRayCastResult out;
-    out.hit = false;
-
-    DcContext* ctx = g_dcCtx;
-    if (!ctx)
-    {
-        return out;
-    }
-
-    carb::physics::RaycastHit result;
-    out.hit = ctx->physx->raycastClosest(origin, direction, max_distance, result, false);
-
-    if (out.hit)
-    {
-        out.rigidBody = ctx->getRigidBodyHandle(SdfPath(result.rigidBody));
-        out.distance = result.distance;
-    }
-    return out;
-}
 
 DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
 {
@@ -2990,6 +2982,49 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
     return j_handle;
 }
 
+void CARB_ABI DcDestroyD6Joint(DcHandle jointHandle)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcContext* ctx = g_dcCtx;
+    if (!ctx)
+    {
+        return;
+    }
+
+    DcD6Joint* joint = DC_LOOKUP_D6JOINT(jointHandle);
+    if (!joint || !joint->pxJoint)
+    {
+        return;
+    }
+
+    ctx->physx->releaseD6Joint(joint->pxJoint);
+
+    ctx->removeD6Joint(jointHandle);
+}
+
+bool CARB_ABI DcGetD6JointProperties(DcHandle jointHandle, DcD6JointProperties* props)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcD6Joint* joint = DC_LOOKUP_D6JOINT(jointHandle);
+    if (!joint || !props)
+    {
+        return false;
+    }
+
+    *props = joint->props;
+
+    return true;
+}
+
+bool CARB_ABI DcGetD6JointConstraintIsBroken(DcHandle jointHandle)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    return getD6JointConstraintIsBroken(DC_LOOKUP_D6JOINT(jointHandle));
+}
+
 bool CARB_ABI DcSetD6JointProperties(DcHandle jointHandle, const DcD6JointProperties* props)
 {
     (void)DC_CHECK_SIMULATING();
@@ -2997,6 +3032,35 @@ bool CARB_ABI DcSetD6JointProperties(DcHandle jointHandle, const DcD6JointProper
     return setD6JointProperties(DC_LOOKUP_D6JOINT(jointHandle), props);
 }
 
+bool CARB_ABI DcSetOriginOffset(DcHandle handle, const carb::Float3& origin)
+{
+    DcContext* ctx = g_dcCtx;
+    if (!ctx)
+    {
+        return false;
+    }
+
+    DcArticulation* art = ctx->getArticulation(handle);
+    if (art)
+    {
+        for (int i = 0; i < art->numRigidBodies(); i++)
+        {
+            art->rigidBodies[i]->origin = origin;
+        }
+        return true;
+    }
+
+    DcRigidBody* body = ctx->getRigidBody(handle);
+    if (body)
+    {
+        body->origin = origin;
+        return true;
+    }
+
+    // TODO: attractors
+
+    return false;
+}
 
 bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
 {
@@ -3067,19 +3131,104 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
     joint->setLocalPose(PxJointActorIndex::eACTOR0, pose0);
     joint->setLocalPose(PxJointActorIndex::eACTOR1, pose1);
 
+    joint->setBreakForce(props->forceLimit, props->torqueLimit);
+    joint->setConstraintFlag(PxConstraintFlag::eBROKEN, false);
+
     PxD6JointDrive drive(props->stiffness, props->damping, props->forceLimit, false);
     PxD6JointDrive defaultDrive;
 
+    bool anyLimit = false;
     // Set axis motion
     for (int i = 0; i < 6; ++i)
     {
         if ((props->axes >> i) & 1)
         {
-            joint->setMotion(g_dcToPxAxis[i], PxD6Motion::eLOCKED);
+            if (props->hasLimits[i])
+            {
+                joint->setMotion(g_dcToPxAxis[i], PxD6Motion::eLIMITED);
+                anyLimit = true;
+            }
+            else
+            {
+                joint->setMotion(g_dcToPxAxis[i], PxD6Motion::eLOCKED);
+            }
         }
         else
         {
             joint->setMotion(g_dcToPxAxis[i], PxD6Motion::eFREE);
+        }
+    }
+
+    if (anyLimit)
+    {
+        PxSpring spring(props->limitStiffness, props->limitDamping);
+        switch (props->jointType)
+        {
+        case DcJointType::eSpherical:
+        {
+            if (props->softLimit)
+            {
+                joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit, spring));
+            }
+            else
+            {
+                joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit, 0.01f));
+            }
+            break;
+        }
+        case DcJointType::ePrismatic:
+        {
+            for (int i = 0; i < 3; ++i)
+            {
+                if (((props->axes >> i) & 1) && props->hasLimits[i])
+                {
+                    if (props->softLimit)
+                    {
+                        joint->setLinearLimit(
+                            g_dcToPxAxis[i], PxJointLinearLimitPair(props->lowerLimit, props->upperLimit, spring));
+                    }
+                    else
+                    {
+                        joint->setLinearLimit(
+                            g_dcToPxAxis[i],
+                            PxJointLinearLimitPair(props->lowerLimit, props->upperLimit, PxSpring(1e6, 0)));
+                    }
+                }
+            }
+            break;
+        }
+        case DcJointType::eRevolute:
+        {
+            if (((props->axes >> 3) & 1) && props->hasLimits[3])
+            {
+                if (props->softLimit)
+                {
+                    joint->setTwistLimit(PxJointAngularLimitPair(props->lowerLimit, props->upperLimit, spring));
+                }
+                else
+                {
+                    joint->setTwistLimit(PxJointAngularLimitPair(props->lowerLimit, props->upperLimit, 0.01f));
+                }
+            }
+            if ((((props->axes >> 4) & 1) && props->hasLimits[4]) || (((props->axes >> 5) & 1) && props->hasLimits[5]))
+            {
+                if (props->softLimit)
+                {
+                    joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit, spring));
+                }
+                else
+                {
+                    joint->setSwingLimit(PxJointLimitCone(props->lowerLimit, props->upperLimit, 0.01f));
+                }
+            }
+        }
+        case DcJointType::eNone:
+        case DcJointType::eFixed:
+        default:
+        {
+            CARB_LOG_ERROR("Attempting to set limits to fixed D6 joint");
+            break;
+        }
         }
     }
 
@@ -3128,71 +3277,46 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
     return true;
 }
 
-bool CARB_ABI DcGetD6JointProperties(DcHandle jointHandle, DcD6JointProperties* props)
+bool getD6JointConstraintIsBroken(DcD6Joint* dcJoint)
 {
     (void)DC_CHECK_SIMULATING();
 
-    DcD6Joint* joint = DC_LOOKUP_D6JOINT(jointHandle);
-    if (!joint || !props)
+    if (!dcJoint)
     {
         return false;
     }
 
-    *props = joint->props;
+    PxD6Joint* joint = dcJoint->pxJoint;
 
-    return true;
+    return joint->getConstraintFlags() & PxConstraintFlag::eBROKEN;
 }
 
-void CARB_ABI DcDestroyD6Joint(DcHandle jointHandle)
+//
+// RayCast
+//
+
+DcRayCastResult CARB_ABI DcRayCast(const carb::Float3& origin, const carb::Float3& direction, float max_distance)
 {
+
     (void)DC_CHECK_SIMULATING();
+    DcRayCastResult out;
+    out.hit = false;
 
     DcContext* ctx = g_dcCtx;
     if (!ctx)
     {
-        return;
+        return out;
     }
 
-    DcD6Joint* joint = DC_LOOKUP_D6JOINT(jointHandle);
-    if (!joint || !joint->pxJoint)
+    carb::physics::RaycastHit result;
+    out.hit = ctx->physx->raycastClosest(origin, direction, max_distance, result, false);
+
+    if (out.hit)
     {
-        return;
+        out.rigidBody = ctx->getRigidBodyHandle(SdfPath(result.rigidBody));
+        out.distance = result.distance;
     }
-
-    ctx->physx->releaseD6Joint(joint->pxJoint);
-
-    ctx->removeD6Joint(jointHandle);
-}
-
-
-bool CARB_ABI DcSetOriginOffset(DcHandle handle, const carb::Float3& origin)
-{
-    DcContext* ctx = g_dcCtx;
-    if (!ctx)
-    {
-        return false;
-    }
-
-    DcArticulation* art = ctx->getArticulation(handle);
-    if (art)
-    {
-        for (int i = 0; i < art->numRigidBodies(); i++)
-        {
-            art->rigidBodies[i]->origin = origin;
-        }
-        return true;
-    }
-
-    DcRigidBody* body = ctx->getRigidBody(handle);
-    if (body)
-    {
-        body->origin = origin;
-        return true;
-    }
-
-    // TODO: attractors
-
-    return false;
+    return out;
 }
 
 //
@@ -3306,7 +3430,6 @@ void CARB_ABI SuPrimRemove(const char* primPath, void* userData)
 
     ctx->removeUsdPath(SdfPath(primPath));
 }
-
 }
 }
 }
@@ -3374,7 +3497,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     // iface.createContext = DcCreateContext;
     // iface.destroyContext = DcDestroyContext;
     // iface.updateContext = DcUpdateContext;
-
+    iface.isSimulating = DcIsSimulating;
     iface.getRigidBody = DcGetRigidBody;
     iface.getJoint = DcGetJoint;
     iface.getDof = DcGetDof;
@@ -3469,6 +3592,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.destroyD6Joint = DcDestroyD6Joint;
     iface.getD6JointProperties = DcGetD6JointProperties;
     iface.setD6JointProperties = DcSetD6JointProperties;
+    iface.getD6JointConstraintIsBroken = DcGetD6JointConstraintIsBroken;
 
     iface.setOriginOffset = DcSetOriginOffset;
 

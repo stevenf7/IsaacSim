@@ -588,7 +588,7 @@ PYBIND11_MODULE(_dynamic_control, m)
         // py::return_value_policy::reference) .def("destroy_context",
         // wrapInterfaceFunction(&DynamicControl::destroyContext)) .def("update_context",
         // wrapInterfaceFunction(&DynamicControl::updateContext))
-
+        .def("is_simulating", wrapInterfaceFunction(&DynamicControl::isSimulating))
         .def("get_rigid_body", wrapInterfaceFunction(&DynamicControl::getRigidBody))
         .def("get_joint", wrapInterfaceFunction(&DynamicControl::getJoint))
         .def("get_dof", wrapInterfaceFunction(&DynamicControl::getDof))

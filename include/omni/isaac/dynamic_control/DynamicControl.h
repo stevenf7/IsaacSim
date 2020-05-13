@@ -30,6 +30,9 @@ struct DynamicControl
     // call at end of frame
     // void(CARB_ABI* updateContext)(DcContext* ctx);
 
+    // Return true if simulating
+    bool(CARB_ABI* isSimulating)();
+
     //===== Actors =====//
 
     DcHandle(CARB_ABI* getRigidBody)(const char* usdPath);
@@ -341,6 +344,13 @@ struct DynamicControl
      *  \return true if succesful in obtaining properties, false if attractor handle is invalid.
      */
     bool(CARB_ABI* getD6JointProperties)(DcHandle jointHandle, DcD6JointProperties* props);
+
+    //! Get whether the joint constraint is broken
+    /*!
+     *  \param joint The joint.
+     *  \return true if joint constraint is broken
+     */
+    bool(CARB_ABI* getD6JointConstraintIsBroken)(DcHandle jointHandle);
 
     //! Modifies properties of the selected joint.
     /*!

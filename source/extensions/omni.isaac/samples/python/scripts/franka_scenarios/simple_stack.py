@@ -12,11 +12,11 @@ import time, sys, os
 from pxr import Sdf, Gf, PhysicsSchema
 import concurrent.futures
 
-from omni.isaac.samples.utils.franka import Franka, default_config
-from omni.isaac.samples.utils.world import World
-from omni.isaac.samples.utils.state_machine import *
-from omni.isaac.samples.utils.behavior_states import *
-from omni.isaac.samples.utils.behavior_helpers import *
+from omni.isaac.samples.scripts.utils.franka import Franka, default_config
+from omni.isaac.samples.scripts.utils.world import World
+from omni.isaac.samples.scripts.utils.state_machine import *
+from omni.isaac.samples.scripts.utils.behavior_states import *
+from omni.isaac.samples.scripts.utils.behavior_helpers import *
 from .scenario import *
 
 

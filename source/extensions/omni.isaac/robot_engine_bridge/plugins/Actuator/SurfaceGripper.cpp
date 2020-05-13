@@ -28,7 +28,7 @@ SurfaceGripper::SurfaceGripper(omni::isaac::dynamic_control::DynamicControl* dyn
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
 
-    mGripperJoint = std::make_unique<omni::isaac::utils::MagicJoint>(dynamicControlPtr);
+    mGripperJoint = std::make_unique<omni::isaac::utils::SurfaceGripper>(dynamicControlPtr);
 }
 
 void SurfaceGripper::onStart()
@@ -132,12 +132,24 @@ void SurfaceGripper::onComponentChange()
     }
     mProps.parentPath = targets[0].GetString();
 
-    pxr::GfVec3f offsetPosition;
-    pxr::GfQuatf offsetRotation;
+    pxr::GfVec3f offsetPosition(0, 0, 0);
+    pxr::GfQuatf offsetRotation(1, 0, 0, 0);
+
+    mProps.gripThreshold = 1;
+    mProps.forceLimit = 1e7;
+    mProps.torqueLimit = 1e5;
+    mProps.bendAngle = 0.2618; // 15 degrees
+    mProps.stiffness = 1e5;
+    mProps.damping = 1e3;
+
     isaac::utils::safeGetAttribute(typedPrim.GetOffsetPositionAttr(), offsetPosition);
     isaac::utils::safeGetAttribute(typedPrim.GetOffsetRotationAttr(), offsetRotation);
     isaac::utils::safeGetAttribute(typedPrim.GetGripThresholdAttr(), mProps.gripThreshold);
     isaac::utils::safeGetAttribute(typedPrim.GetForceLimitAttr(), mProps.forceLimit);
+    isaac::utils::safeGetAttribute(typedPrim.GetTorqueLimitAttr(), mProps.torqueLimit);
+    isaac::utils::safeGetAttribute(typedPrim.GetBendAngleAttr(), mProps.bendAngle);
+    isaac::utils::safeGetAttribute(typedPrim.GetStiffnessAttr(), mProps.stiffness);
+    isaac::utils::safeGetAttribute(typedPrim.GetDampingAttr(), mProps.damping);
     mProps.offset = omni::isaac::utils::conversions::asDcTransform(offsetPosition, offsetRotation);
     mGripperJoint->initialize(mProps);
 }

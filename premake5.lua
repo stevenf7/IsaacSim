@@ -309,13 +309,13 @@ group "exts"
     -- include ("source/extensions/omni.isaac/shapenet")
     include ("source/extensions/omni.isaac/utils")
     include ("source/extensions/omni.isaac/urdf")
+    include ("source/extensions/omni.isaac/samples")
 
     -- Linux Only
     if os.target() == "linux" then
         include ("source/extensions/omni.isaac/motion_planning")
         include ("source/extensions/omni.isaac/robot_engine_bridge")
         include ("source/extensions/omni.isaac/ros_bridge")
-        include ("source/extensions/omni.isaac/samples")
     end
 
 -- Create a symlink for any data we need for tests
