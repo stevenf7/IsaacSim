@@ -1,8 +1,9 @@
-:: Reset errorlevel status so we are not inheriting this state from the calling process:
+:: Reset errorlevel status (don't inherit from caller) [xxxxxxxxxx]
 @call :RESET_ERROR
 :: You can remove the call below if you do your own manual configuration of the dev machines
 @call "%~dp0\bootstrap\configure.bat"
-@if errorlevel 1 exit /b 1
+
+@if %errorlevel% neq 0 ( exit /b %errorlevel% )
 :: Everything below is mandatory
 @if not defined PM_PYTHON goto :PYTHON_ENV_ERROR
 @if not defined PM_MODULE goto :MODULE_ENV_ERROR
@@ -18,14 +19,19 @@
 )
 
 @"%PM_PYTHON%" -S -s -u -E "%PM_MODULE%" %* %PM_VAR_PATH_ARG%
-@if errorlevel 1 exit /b %errorlevel%
+@if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Marshall environment variables into the current environment if they have been generated and remove temporary file
 @if exist "%PM_VAR_PATH%" (
 	@for /F "usebackq tokens=*" %%A in ("%PM_VAR_PATH%") do @set "%%A"
-	@if errorlevel 1 goto :VAR_ERROR
+)
+@if %errorlevel% neq 0 ( goto :VAR_ERROR )
+
+@if exist "%PM_VAR_PATH%" (
 	@del /F "%PM_VAR_PATH%"
 )
+@if %errorlevel% neq 0 ( goto :VAR_ERROR )
+
 @set PM_VAR_PATH=
 @goto :eof
 
