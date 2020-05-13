@@ -21,7 +21,6 @@ from .samples.articulation import articulation_info
 from .tests.test_core import *
 from .tests.test_articulation import *
 from .tests.test_pickles import *
-from .tests.test_attractor import *
 
 EXTENSION_NAME = "Dynamic Control"
 
