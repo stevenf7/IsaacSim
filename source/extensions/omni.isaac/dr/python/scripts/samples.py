@@ -169,7 +169,27 @@ class DRSamples:
         prim.CreateIncludeChildrenAttr().Set(bool(False))
 
     def add_texture_menu(self, parent=None):
-        pass
+        stage = omni.usd.get_context().get_stage()
+        root_layer = stage.GetRootLayer()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        cube_path = default_prim_path + "/Cube"
+        # Create DR texture component
+        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/texture_component", False)
+        prim = DrSchema.TextureComponent.Define(stage, Sdf.Path(path))
+        prim.CreateCompNameAttr().Set(str("texture_component"))
+        tex_comp_path = default_prim_path + "/texture_component"
+        tex_comp = stage.GetPrimAtPath(tex_comp_path)
+        # Set attributes for DR texture component
+        prim.CreatePrimPathsRel().AddTarget(cube_path)
+        prim.CreateTextureListAttr().Set(
+            str(
+                "omni:/Projects/mwc_2019/Maps/Props/Materials/M_NvidiaCube.mdl,omni:/Projects/mwc_2019/Maps/Props/Materials/MI_011_banana.mdl,omni:/Projects/mwc_2019/Maps/Props/Materials/MI_006_mustard_bottle.mdl,omni:/Projects/mwc_2019/Maps/Props/Materials/MI_025_mug.mdl,omni:/Projects/mwc_2019/Maps/Props/Materials/MI_Apple_2.mdl"
+            )
+        )
+        prim.CreateIgnoredClassAttr().Set(str(""))
+        prim.CreateGroupedClassAttr().Set(str(""))
+        prim.CreateDurationAttr().Set(float(0.3))
+        prim.CreateIncludeChildrenAttr().Set(bool(True))
 
     def add_simple_room_scene(self, parent=None):
         omni.usd.get_context().open_stage("omni:/Users/sdebnath/DR/TowelRoomStageDemoRel.usda", None)
