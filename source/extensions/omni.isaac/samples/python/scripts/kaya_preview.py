@@ -25,7 +25,7 @@ from pxr import Sdf, Gf, PhysicsSchema
 from .utils.kaya import Kaya
 from omni.isaac.utils.scripts.scene_utils import setUpZAxis, SetupPhysics, CreateBackground
 
-EXTENSION_NAME = "Kaya Preview"
+EXTENSION_NAME = "Kaya Joystick"
 
 
 class Extension(omni.ext.IExt):
@@ -35,7 +35,14 @@ class Extension(omni.ext.IExt):
         self._editor = omni.kit.editor.get_editor_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, dock=omni.kit.ui.DockPreference.LEFT_BOTTOM)
+        self._window = omni.kit.ui.Window(
+            EXTENSION_NAME,
+            300,
+            200,
+            menu_path="Isaac Samples/Samples/" + EXTENSION_NAME,
+            open=False,
+            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
+        )
         self._window.set_update_fn(self._on_update_ui)
 
         self._dc = _dynamic_control.acquire_dynamic_control_interface()

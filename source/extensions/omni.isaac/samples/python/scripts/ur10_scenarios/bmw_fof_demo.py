@@ -17,10 +17,10 @@ from enum import Enum
 import omni
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils._isaac_utils import math as math_utils
-from omni.isaac.samples.utils.world import World
-from omni.isaac.samples.utils.state_machine import *
-from omni.isaac.samples.utils.ur10 import UR10, default_config
-from omni.isaac.samples.utils.math_utils import *
+from omni.isaac.samples.scripts.utils.world import World
+from omni.isaac.samples.scripts.utils.state_machine import *
+from omni.isaac.samples.scripts.utils.ur10 import UR10, default_config
+from omni.isaac.samples.scripts.utils.math_utils import *
 
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
 
@@ -106,20 +106,13 @@ class PickAndPlaceStateMachine(object):
         self.upside_offset = _dynamic_control.Transform()
         self.upside_flip = _dynamic_control.Transform()
 
-        # 69.05258297920227 67.0586109161377 -3.1120089814066887
-        self.upside_goal.p = (0.80808, 0.70978, -0.00389)
-        self.upside_goal.r = (0.12380744620354063, -0.510572739737588, -0.1093972128961598, 0.8438124456962951)
+        self.upside_goal.p = (0.76652, 0.61294, 0.1055)
+        self.upside_goal.r = (-0.225195, 0.435623, 0.0179048, -0.871321)
 
-        # (-0.225195, 0.435623, 0.0179048, -0.871321)
-        # self.upside_goal.r = (-0.85594,-0.0295757,-0.469593,-0.214414) # two possible orientations, need to figure out which is better
+        self.upside_offset.p = [-0.30, -0.1, 0.40]
 
-        # 51.85513496398926 92.21376180648804 13.704390823841095
-        self.upside_offset.p = [0.51855, 0.9221, 0.1370]
-        self.upside_offset.r = (0.12380744620354063, -0.510572739737588, -0.1093972128961598, 0.8438124456962951)
-
-        self.upside_flip.p = [0.51855, 0.9221, 0.1370]  # [0.15, 0.57159, 0.35]
-        self.upside_flip.r = (0.12380744620354063, -0.510572739737588, -0.1093972128961598, 0.8438124456962951)
-        # flip 180 degrees along y axis
+        self.upside_flip.p = [0.15, 0.57159, 0.35]
+        self.upside_flip.r = self.upside_goal.r
 
         self.pick_count = 0
         # Define the state machine handling functions
@@ -156,8 +149,8 @@ class PickAndPlaceStateMachine(object):
         self.previous_state = -1
         self._physxIFace = _physx.acquire_physx_interface()
 
-        x = [103, 82, 61]
-        y = [-67, -36, -5]
+        x = [102, 81, 60]
+        y = [-66, -35, -4]
         self.stack_coordinates = np.array(
             [
                 [x[0], y[0]],
@@ -432,10 +425,8 @@ class PickAndPlaceStateMachine(object):
             # Tell motion planner controller to ignore current object as an obstacle
             self.target_bodies[self.current].suppress()
             self.pick_count = 0
-            self.lerp_to_pose(self.default_position, 1)
-            self.lerp_to_pose(self.default_position, 60)
             # set target above the current tray with offset of 20 cm
-            self.set_target_to_object(12, 20, clear_waypoints=False)
+            self.set_target_to_object(12, 20)
             # start arm movement
             self.move_to_target()
             # Move to next state
@@ -459,7 +450,7 @@ class PickAndPlaceStateMachine(object):
         """
 
         self.lerp_to_pose(self.upside_flip, n_waypoints=1)
-        target_position = self.upside_offset
+        target_position = math_utils.mul(self.upside_offset, self.upside_goal)
         self.lerp_to_pose(target_position, 1)
         self.lerp_to_pose(self.upside_goal, 80)
         self.lerp_to_pose(self.upside_goal, 30)
@@ -475,7 +466,6 @@ class PickAndPlaceStateMachine(object):
         Handles a state machine step when the target goal is reached, and the machine is on attach state
         """
         self.robot.end_effector.gripper.close()
-        self.lerp_to_pose(self.target_position, 60)  # Wait 1 second in place for attachment
         if self.robot.end_effector.gripper.is_closed():
             self._attached = True
         else:  # Failed to attach so return grasp to try again
@@ -511,7 +501,7 @@ class PickAndPlaceStateMachine(object):
         else:
             target = _dynamic_control.Transform()
             x, y = self.get_current_place_pose()
-            target.r = [0, 0.35836791862248063, 0, 0.9335804383673595]
+            target.r = [0, 0.7071, 0, 0.7071]
             target.p.x = x / 100.0
             target.p.y = y / 100.0
             target.p.z = 0.15
@@ -527,12 +517,8 @@ class PickAndPlaceStateMachine(object):
                 target.p.y = y / 100.0
                 if self.add_tray is not None:
                     self.add_tray()
-
             self.lerp_to_pose(target, 50)
-            self.lerp_to_pose(target, 60)
-            target.r = [0, 0.7071, 0, 0.7071]
-            self.lerp_to_pose(target, 1)
-            self.lerp_to_pose(target, 30)
+            self.lerp_to_pose(target, 45)
             self.change_state(SM_states.PLACING)
 
     def _detach_goal_reached(self, *args):
@@ -552,17 +538,14 @@ class PickAndPlaceStateMachine(object):
             if self._upright:
                 self.tray_holder_object.unsuppress()
                 offset = _dynamic_control.Transform()
-                offset.p = (0.5, 0.517, 0.10)
-                offset.r = (0.14102078714018185, 0.6810133229625428, 0.059975620045362985, 0.7160565037356013)
+                offset.p = (0.1, 0.8, 0.20)
+                offset.r = (0, 0.7071, 0, 0.7071)
                 self.lerp_to_pose(copy(offset), 10)
-                offset.p = [0.9912, 0.517, 0.2900]
-                self.lerp_to_pose(offset, 20)
-                self.lerp_to_pose(offset, 60)  # wait in place for 1 second
                 self.target_position = self.waypoints.popleft()
                 self.move_to_target()
                 target_to_obj = self.get_target_to_object(18, 20)
                 offset2 = _dynamic_control.Transform()
-                offset2.p = (0.0, 0.0, 0.20)
+                offset2.p = (0.0, 0.0, 0.25)
                 offset2.r = (0, 0, 0, 1)
                 pre_target = math_utils.mul(offset2, target_to_obj)
                 self.lerp_to_pose(copy(pre_target), 20)
@@ -579,7 +562,6 @@ class PickAndPlaceStateMachine(object):
                 self.target_position = self.waypoints.popleft()
                 self.move_to_target()
                 self.lerp_to_pose(self.default_position, n_waypoints=1)
-                self.lerp_to_pose(self.default_position, n_waypoints=60)
                 self.start = False
                 self.total_trays += 1
                 self.stack_size[self.current_stack_list[self.current_stack]] += 1
@@ -593,19 +575,14 @@ class PickAndPlaceStateMachine(object):
         offset = _dynamic_control.Transform()
         if self._upright:
             n_waypoints = 1
-            offset.p = (-0.15, 0.0, 0)
-            # Quickly push the arm down 15 cm to clear the tray and let it fall on the platform
-            pose = math_utils.mul(self.target_position, offset)
-            # pose.r  = (0,0,0,1)
-            self.lerp_to_pose(pose, n_waypoints=1)
+            offset.p = (-0.25, 0.0, 0)
+            # Quickly push the arm down 25 cm to clear the tray and let it fall on the platform
+            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=1)
             # Wait in place for a while
-            self.lerp_to_pose(pose, n_waypoints=5)
+            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=30)
             # Then move to the side and slightly more down
-            offset.p = (-0.40, 0.20, 0.15)
-            pose = math_utils.mul(self.target_position, offset)
-            pose.r = math_utils.mul(pose.r, (0, 0.7071, 0, 0.7071))
-            # pose.r = (0, 0, 0.7071, 0.7071)
-            self.lerp_to_pose(pose, n_waypoints=60)
+            offset.p = (-0.30, 0.30, 0)
+            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=1)
         else:
 
             offset.p = (-0.10, 0.0, 0.0)
@@ -634,8 +611,8 @@ class PickAndPlaceStateMachine(object):
             # Set target towards surface of the tray
             tr = self.get_current_state_tr()
             offset = _dynamic_control.Transform()
-            offset.p = (distance + 0.15, 0, 0)
-
+            # Subtract a 1.5mm offset for simulation stability
+            offset.p = (distance - 0.25, 0, 0)
             target = math_utils.mul(tr, offset)
             target.p = math_utils.mul(target.p, 0.01)
             offset.p.x = -0.05
@@ -661,10 +638,10 @@ class PickAndPlaceStateMachine(object):
         if not self._flipped:
             # set target above the current tray with offset of 25 cm
             self.set_target_to_object(20, 16, 3)
-            # if self._upright:
-            #     self.thresh[SM_states.PICKING] = 1
-            # else:
-            self.thresh[SM_states.PICKING] = 0
+            if self._upright:
+                self.thresh[SM_states.PICKING] = 1
+            else:
+                self.thresh[SM_states.PICKING] = 0
             # start arm movement
             self.move_to_target()
 
@@ -695,7 +672,7 @@ class PickAndPlaceStateMachine(object):
                     target.p.z -= ((distance + x_off) / 100.0) - 0.16
                 else:
                     target.r = [0, 0.7071, 0, 0.7071]
-                    target.p.z -= ((distance + x_off) / 100.0) - 0.20
+                    target.p.z -= ((distance + x_off) / 100.0) - 0.17
 
             else:
                 self.move_to_target()  # trigger the  goal_reached event so it tries again
@@ -711,23 +688,14 @@ class PickAndPlaceStateMachine(object):
         self.change_state(SM_states.DETACH)
 
 
-class BinStack(Scenario):
-    """ 
-    Defines an obstacle avoidance scenario
+class AttachBody(Scenario):
+    """ Defines an obstacle avoidance scenario
+
     Scenarios define the life cycle within kit and handle init, startup, shutdown etc. 
     """
 
     def __init__(self, editor, dc, mp):
         super().__init__(editor, dc, mp)
-
-        self.asset_path = "omni:/Projects/gtc_sj_2020"
-        # use local content if not connected to omni server
-        if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
-            print("Use local content")
-            self.asset_path = "art_assets/gtc_sj_2020"
-        else:
-            print("Use server content")
-
         self._paused = True
         self._start = False
         self._reset = False
@@ -809,7 +777,6 @@ class BinStack(Scenario):
                 )
 
     def create_UR10(self, *args):
-        self.ur10_table_usd = self.asset_path + "/Stage/StageD6robotiq.usd"
         super().create_UR10()
         use_background = True
         if len(args) > 0:
@@ -887,23 +854,21 @@ class BinStack(Scenario):
         self.tray_handles = [self._dc.get_rigid_body(i) for i in self.tray_paths]
 
         # Create world and robot object
-        self.world = World(self._dc, self._mp)
 
         ur10_path = str(prim.GetPath()) + "/ur10"
         self.world = World(self._dc, self._mp)
         mjp = Surface_Gripper_Properties()
         mjp.parentPath = ur10_path + "/ee_link"
         mjp.d6JointPath = mjp.parentPath + "/d6FixedJoint"
-        mjp.gripThreshold = 1
-        mjp.forceLimit = 5.0e3
-        mjp.torqueLimit = 5.0e4
+        mjp.gripThreshold = 2
+        mjp.forceLimit = 5.0e4
+        mjp.torqueLimit = 5.0e5
         mjp.bendAngle = np.pi / 24  # 7.5 degrees
         mjp.stiffness = 1.0e5
         mjp.damping = 1.0e4
         tr = _dynamic_control.Transform()
-        tr.p.x = 15.509
+        tr.p.x = 22.15
         mjp.offset = tr
-
         self.ur10_solid = UR10(
             self._stage,
             self._stage.GetPrimAtPath(ur10_path),
@@ -913,7 +878,6 @@ class BinStack(Scenario):
             self.world,
             "/physics/scene/solid",
             default_config,
-            urdf="/urdf/ur10_robot_robotiq.urdf",
         )
 
         body_count = self._dc.get_articulation_body_count(self.ur10_solid.ar)
@@ -921,11 +885,11 @@ class BinStack(Scenario):
             body = self._dc.get_articulation_body(self.ur10_solid.ar, bodyIdx)
             self._dc.set_rigid_body_disable_gravity(body, True)
 
-        p = str(prim.GetPath()) + "/TexturedDemoTable/simple_table/CollisionCube"
-        print(p)
-        self.world.register_object(0, p, "housing_0")
-        self.world.make_obstacle("housing_0", 3, self._stage.GetPrimAtPath(p).GetAttribute("xformOp:scale").Get())
-
+        i = 0
+        for p in self._stage.GetPrimAtPath(str(prim.GetPath()) + "/sortbot_housing/RMPObstacle").GetChildren():
+            self.world.register_object(0, p.GetPath().pathString, "housing_" + str(i))
+            self.world.make_obstacle("housing_" + str(i), 3, p.GetAttribute("xformOp:scale").Get())
+            i += 1
         i = 0
         for p in self._stage.GetPrimAtPath(str(prim.GetPath()) + "/pallet_holder/RMPObstacle").GetChildren():
             self.world.register_object(0, p.GetPath().pathString, "holder_" + str(i))
@@ -948,10 +912,10 @@ class BinStack(Scenario):
         i = 0
 
         # # Set robot end effector
-        orig = [-0.0645, 0.7214, 0.495]  # [0, 0.75, 0.42]
+        orig = [0, 0.75, 0.42]
         default_position = _dynamic_control.Transform()
         default_position.p = orig
-        default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
+        default_position.r = math_utils.mul([0, 0.7071, 0, 0.7071], [0.7071, 0, 0, -0.7071])
         # tr = _dynamic_control.Transform()
         # tr.r = (0,0,-0.383,-0.924)
         # default_position = math_utils.mul(default_position,tr)
@@ -995,3 +959,12 @@ class BinStack(Scenario):
             self.ur10_solid.end_effector.gripper.open()
         else:
             self.ur10_solid.end_effector.gripper.close()
+        state = self.ur10_solid.end_effector.status.current_target
+        state_1 = self.pick_and_place.target_position
+        tr = state["orig"] * 100.0
+        print(tr[0], tr[1], tr[2])
+
+        mat = Gf.Matrix3f(
+            *state["axis_x"].astype(float), *state["axis_y"].astype(float), *state["axis_z"].astype(float)
+        )
+        print(mat.ExtractRotation().GetQuaternion())

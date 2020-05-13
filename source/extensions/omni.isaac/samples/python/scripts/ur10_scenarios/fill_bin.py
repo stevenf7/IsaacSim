@@ -17,10 +17,10 @@ from enum import Enum
 import omni
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils._isaac_utils import math as math_utils
-from omni.isaac.samples.utils.world import World
-from omni.isaac.samples.utils.state_machine import *
-from omni.isaac.samples.utils.ur10 import UR10, default_config
-from omni.isaac.samples.utils.math_utils import *
+from omni.isaac.samples.scripts.utils.world import World
+from omni.isaac.samples.scripts.utils.state_machine import *
+from omni.isaac.samples.scripts.utils.ur10 import UR10, default_config
+from omni.isaac.samples.scripts.utils.math_utils import *
 
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
 
@@ -29,6 +29,11 @@ from copy import copy
 
 from omni.physx import _physx
 from collections import deque
+
+
+def normalize(a):
+    norm = np.linalg.norm(a)
+    return a / norm
 
 
 class SM_events(Enum):
@@ -48,9 +53,7 @@ class SM_states(Enum):
 
     PICKING = 1
     ATTACH = 2
-    PLACING = 3
-    DETACH = 4
-    FLIPPING = 5
+    HOLDING = 3
 
 
 statedic = {0: "orig", 1: "axis_x", 2: "axis_y", 3: "axis_z"}
@@ -62,20 +65,18 @@ class PickAndPlaceStateMachine(object):
     and the handlers are defined as in-class functions
     """
 
-    def __init__(self, stage, robot, ee_prim, target_bodies, default_position, tray_holder_object):
+    def __init__(self, stage, robot, ee_prim, target_body, default_position):
         self.robot = robot
         self.dc = robot.dc
         self.end_effector = ee_prim
         self.end_effector_handle = None
         self._stage = stage
-        self.current = None
-        self.target_bodies = target_bodies
+        self.current = target_body
 
         self.start_time = 0.0
         self.start = False
         self._time = 0.0
         self.default_timeout = 0.5
-        self.tray_holder_object = tray_holder_object
         self.default_position = copy(default_position)
         self.target_position = default_position
         self.reset = False
@@ -101,19 +102,7 @@ class PickAndPlaceStateMachine(object):
         self._upright = False  # Used to indicate if the tray is being picked facing up, so the proper state is called
         self._flipped = False
 
-        # Constants for lifting, fliping, and intermediary goals
-        self.upside_goal = _dynamic_control.Transform()
-        self.upside_offset = _dynamic_control.Transform()
-        self.upside_flip = _dynamic_control.Transform()
-
-        self.upside_goal.p = (0.76652, 0.61294, 0.1055)
-        self.upside_goal.r = (-0.225195, 0.435623, 0.0179048, -0.871321)
-
-        self.upside_offset.p = [-0.30, -0.1, 0.40]
-
-        self.upside_flip.p = [0.15, 0.57159, 0.35]
-        self.upside_flip.r = self.upside_goal.r
-
+        self.is_closed = False
         self.pick_count = 0
         # Define the state machine handling functions
         self.sm = {}
@@ -133,62 +122,19 @@ class PickAndPlaceStateMachine(object):
         self.sm[SM_states.PICKING][SM_events.NONE] = self._picking_no_event
         self.thresh[SM_states.PICKING] = 1
 
-        self.sm[SM_states.FLIPPING][SM_events.GOAL_REACHED] = self._flipping_goal_reached
-        self.thresh[SM_states.FLIPPING] = 2
-
-        self.sm[SM_states.PLACING][SM_events.GOAL_REACHED] = self._placing_goal_reached
-        self.thresh[SM_states.PLACING] = 2
-
         self.sm[SM_states.ATTACH][SM_events.GOAL_REACHED] = self._attach_goal_reached
         self.sm[SM_states.ATTACH][SM_events.ATTACHED] = self._attach_attached
 
-        self.sm[SM_states.DETACH][SM_events.GOAL_REACHED] = self._detach_goal_reached
-        self.sm[SM_states.DETACH][SM_events.DETACHED] = self._detach_detached
+        self.sm[SM_states.HOLDING][SM_events.GOAL_REACHED] = self._holding_goal_reached
+        self.thresh[SM_states.PICKING] = 1
+        for s in SM_states:
+            self.sm[s][SM_events.DETACHED] = self._all_detached
 
         self.current_state = SM_states.STANDBY
         self.previous_state = -1
         self._physxIFace = _physx.acquire_physx_interface()
 
-        x = [102, 81, 60]
-        y = [-66, -35, -4]
-        self.stack_coordinates = np.array(
-            [
-                [x[0], y[0]],
-                [x[1], y[0]],
-                [x[0], y[1]],
-                [x[2], y[0]],
-                [x[1], y[1]],
-                [x[0], y[2]],
-                [x[2], y[1]],
-                [x[1], y[2]],
-                [x[2], y[2]],
-            ]
-        )
-        self.stack_size = np.zeros([9, 1])
-        self.stack_transition = ((3, 6, 8), (1, 3, 6))
-        self.current_stack_list = [0, 0]
-        self.current_stack = 0
-
-        self.total_trays = 0
-
     # Auxiliary functions
-
-    def get_current_place_pose(self):
-        """
-        Gets the (x,y) coordinates for the current stack placement
-        """
-        while self.stack_size[self.current_stack_list[self.current_stack]] > 3:
-            self.advance_stack()
-        return self.stack_coordinates[self.current_stack_list[self.current_stack]]
-
-    def advance_stack(self):
-        """
-        Moves to next stack, prioritizing filling the left-bottom-most stack, but maintaining 
-        a single bin ahead of the other stacks
-        """
-        self.current_stack_list[self.current_stack] = (self.current_stack_list[self.current_stack] + 1) % 9
-        if self.current_stack_list[self.current_stack] in self.stack_transition[self.current_stack]:
-            self.current_stack = (self.current_stack + 1) % 2
 
     def _empty(self, *args):
         """
@@ -267,20 +213,6 @@ class PickAndPlaceStateMachine(object):
             return usdGeom.GetPath().pathString, distance
         return None, 10000.0
 
-    def get_target(self):
-        """
-        Indicates if there is any tray at the bottom of the conveyor belt, if there is, the current target object is set
-        with the found value
-        """
-        origin = (-36.0, 44.0, -50.0)
-        rayDir = (1, 0, 0)
-        hit = self._physxIFace.raycast_closest(origin, rayDir, 100.0)
-        if hit["hit"]:
-            self.current = hit["rigidBody"]
-            return True
-        self.current = None
-        return False
-
     def lerp_to_pose(self, pose, n_waypoints=1):
         """
         adds spherical linear interpolated waypoints from last pose in the waypoint list to the provided pose
@@ -299,18 +231,12 @@ class PickAndPlaceStateMachine(object):
             self.waypoints.append(pose)
 
     def move_to_zero(self):
-        """
-        clears the robot target, so it returns to its rest pose
-        """
         self._is_moving = False
         self.robot.end_effector.go_local(
             orig=[], axis_x=[], axis_y=[], axis_z=[], use_default_config=True, wait_for_target=False, wait_time=5.0
         )
 
     def move_to_target(self):
-        """
-        moves the end effector to the current target pose
-        """
         xform_attr = self.target_position
         self._is_moving = True
 
@@ -336,8 +262,9 @@ class PickAndPlaceStateMachine(object):
         by [offset_up, offset_down] 
         """
         offset = _dynamic_control.Transform()
-        offset.p.z = offset_up
-        offset.r = (0, 0.7071, 0, 0.7071)
+        offset.p.x = -offset_up
+        offset.p.z = 3
+        offset.r = (0, 0, 0, 1)
         body_handle = self.dc.get_rigid_body(self.current)
         obj_pose = self.dc.get_rigid_body_pose(body_handle)
         offset_1 = _dynamic_control.Transform()
@@ -345,17 +272,16 @@ class PickAndPlaceStateMachine(object):
         rx = math_utils.dot(math_utils.get_basis_vector_y(obj_pose.r), math_utils.get_basis_vector_y(tr.r))
         if math_utils.get_basis_vector_z(obj_pose.r).z > 0:
             self._upright = True
-            if rx < 0:  # rotate target by 180 degrees on z axis
-                offset_1.r = (0, 0, 1, 0)
+            offset_1.r = (0, -1, 0, 0)
+            offset.p.z = -3
         else:  # If tray is upside down, pick by bottom
-            offset.p.z = offset_down
-            if rx < 0:  # rotate target by 180 degrees on z axis
-                offset_1.r = (1, 0, 0, 0)
-            else:
-                offset_1.r = (0, -1, 0, 0)
+            offset_1.r = (1, 0, 0, 0)
             self._upright = False
         target_position = math_utils.mul(math_utils.mul(obj_pose, offset_1), offset)
+        # offset_1.r = (0, 0, -1, 0)
+        # target_position = math_utils.mul(target_position, offset_1)
         target_position.p = math_utils.mul(target_position.p, 0.01)
+        # target_position.r = math_utils.mul([0.999, 0, 0, 0.05], target_position.r)  # , [1, 0, 0, 0])
         return target_position
 
     def set_target_to_object(self, offset_up=25, offset_down=25, n_waypoints=1, clear_waypoints=True):
@@ -378,6 +304,11 @@ class PickAndPlaceStateMachine(object):
             self.previous_state = self.current_state
         if not self.start:
             self.start = start
+
+        if self.is_closed and not self.robot.end_effector.gripper.is_closed():
+            self._detached = True
+            self.is_closed = False
+
         # Process events
         if reset:
             self.current_state = SM_states.STANDBY
@@ -387,11 +318,9 @@ class PickAndPlaceStateMachine(object):
             self.waypoints.clear()
             self.target_position = self.default_position
             self.move_to_target()
-            self.current_stack_list = [-1, 0]
-            self.current_stack = 0
-            self.total_trays = 0
-            self.stack_size *= 0
-            self.current = None
+        elif self._detached:
+            self._detached = False
+            self.sm[self.current_state][SM_events.DETACHED]()
         elif self.goalReached():
             if len(self.waypoints) == 0:
                 self.sm[self.current_state][SM_events.GOAL_REACHED]()
@@ -399,14 +328,11 @@ class PickAndPlaceStateMachine(object):
                 self.target_position = self.waypoints.popleft()
                 self.move_to_target()
                 self.start_time = self._time
-        elif self.current_state == SM_states.STANDBY and self.start and self.get_target():
+        elif self.current_state == SM_states.STANDBY and self.start:
             self.sm[self.current_state][SM_events.START]()
         elif self._attached:
             self._attached = False
             self.sm[self.current_state][SM_events.ATTACHED]()
-        elif self._detached:
-            self._detached = False
-            self.sm[self.current_state][SM_events.DETACHED]()
         elif self._time - self.start_time > self.default_timeout:
             self.sm[self.current_state][SM_events.TIMEOUT]()
         else:
@@ -421,53 +347,33 @@ class PickAndPlaceStateMachine(object):
         to move towards the tray from current  position.
         switches to picking state.
         """
-        if self.total_trays < 36:
-            # Tell motion planner controller to ignore current object as an obstacle
-            self.target_bodies[self.current].suppress()
-            self.pick_count = 0
-            # set target above the current tray with offset of 20 cm
-            self.set_target_to_object(12, 20)
-            # start arm movement
-            self.move_to_target()
-            # Move to next state
-            self.change_state(SM_states.PICKING)
-
-            self._flipped = False
+        # Tell motion planner controller to ignore current object as an obstacle
+        self.pick_count = 0
+        self.lerp_to_pose(self.default_position, 1)
+        self.lerp_to_pose(self.default_position, 90)
+        # set target above the current tray with offset of 20 cm
+        self.set_target_to_object(25, 25, 6, clear_waypoints=False)
+        # start arm movement
+        self.move_to_target()
+        # Move to next state
+        self.change_state(SM_states.PICKING)
 
     def _standby_goal_reached(self, *args):
         """
         Finished processing a tray, moves up the stack position for next tray placement
         """
         self.move_to_zero()
-        self.advance_stack()
         self.start = True
-
-    def _flipping_goal_reached(self, *args):
-        """
-        Reached the goal base pose for flipping.
-        sets the robot to flip the arm to the tray upside pose, and towards the placement goal in the platform.
-        Sets the next state as Detach.
-        """
-
-        self.lerp_to_pose(self.upside_flip, n_waypoints=1)
-        target_position = math_utils.mul(self.upside_offset, self.upside_goal)
-        self.lerp_to_pose(target_position, 1)
-        self.lerp_to_pose(self.upside_goal, 80)
-        self.lerp_to_pose(self.upside_goal, 30)
-        self.target_position = self.waypoints.popleft()
-        self.move_to_target()
-        self.change_state(SM_states.DETACH)
-        self._flipped = True
-        if self.add_tray is not None:
-            self.add_tray()
 
     def _attach_goal_reached(self, *args):
         """
         Handles a state machine step when the target goal is reached, and the machine is on attach state
         """
         self.robot.end_effector.gripper.close()
+        self.lerp_to_pose(self.target_position, 60)  # Wait 1 second in place for attachment
         if self.robot.end_effector.gripper.is_closed():
             self._attached = True
+            self.is_closed = True
         else:  # Failed to attach so return grasp to try again
             # move up 25 centimiters and return to picking state
             offset = _dynamic_control.Transform()
@@ -480,122 +386,15 @@ class PickAndPlaceStateMachine(object):
         """
         Handles a state machine step when the target goal is reached, and the machine is on attach state
         """
-        offset = _dynamic_control.Transform()
-        offset.p = (-0.20, 0.0, 0.0)
-        target = math_utils.mul(self.target_position, offset)
-        self.lerp_to_pose(target, 10)
-        if not self._upright:
-            target.p.z = 0.15
-            target.r = [0, 0.7071, 0, 0.7071]
-            self.lerp_to_pose(target, 10)
+        self.waypoints.clear()
+        target_position = _dynamic_control.Transform()
+        target_position.p = [0.1, 0.81, 0.58]
+        target_position.r = [0, -1, 0, 0]
+        print(target_position.r)
+        self.lerp_to_pose(target_position, 360)
         self.target_position = self.waypoints.popleft()
         self.move_to_target()
-        self.pick_count += 1
-        if self._upright:
-            # Add additional waypoints to hit before flipping
-            base_flip = _dynamic_control.Transform()
-            base_flip.p = [0, 0.7, 0]
-            base_flip.r = [0, 0.7071, 0, 0.70701]
-            self.lerp_to_pose(base_flip, 25)
-            self.change_state(SM_states.FLIPPING)
-        else:
-            target = _dynamic_control.Transform()
-            x, y = self.get_current_place_pose()
-            target.r = [0, 0.7071, 0, 0.7071]
-            target.p.x = x / 100.0
-            target.p.y = y / 100.0
-            target.p.z = 0.15
-            # If tray was picked from the bottom directly from the conveyor belt, send it to an intermediary waypoint
-            # before sending it to its target so it clears the robot base
-            if self.pick_count == 1:
-                target.p.x = 0.5
-                target.p.y = 0.5
-                self.lerp_to_pose(target, 25)
-                target.p.y = 0
-                self.lerp_to_pose(target, 25)
-                target.p.x = x / 100.0
-                target.p.y = y / 100.0
-                if self.add_tray is not None:
-                    self.add_tray()
-            self.lerp_to_pose(target, 50)
-            self.lerp_to_pose(target, 45)
-            self.change_state(SM_states.PLACING)
-
-    def _detach_goal_reached(self, *args):
-        """
-        Handles the goal reached event while in detach state.
-        If the tray is still fixed to the robot, opens the gripper and waits in place for it to open.
-        Then sets the next state which may be picking the tray again from the bottom, if it was upright, otherwise
-        sets it to the standby pose and state
-        """
-        if self.robot.end_effector.gripper.is_closed():
-            self.robot.end_effector.gripper.open()
-            # Lerp to its same pose to wait a few timesteps before entering this event again.
-            self.lerp_to_pose(self.target_position, n_waypoints=4)
-            self._detached = True
-            self.thresh[SM_states.DETACH] = 3
-        else:
-            if self._upright:
-                self.tray_holder_object.unsuppress()
-                offset = _dynamic_control.Transform()
-                offset.p = (0.1, 0.8, 0.20)
-                offset.r = (0, 0.7071, 0, 0.7071)
-                self.lerp_to_pose(copy(offset), 10)
-                self.target_position = self.waypoints.popleft()
-                self.move_to_target()
-                target_to_obj = self.get_target_to_object(18, 20)
-                offset2 = _dynamic_control.Transform()
-                offset2.p = (0.0, 0.0, 0.25)
-                offset2.r = (0, 0, 0, 1)
-                pre_target = math_utils.mul(offset2, target_to_obj)
-                self.lerp_to_pose(copy(pre_target), 20)
-                offset2.p.x = 0.0
-                offset2.p.z = 0.0
-                self.lerp_to_pose(math_utils.mul(offset2, target_to_obj), 25)
-                self.change_state(SM_states.PICKING)
-            else:
-                # Sends the arm to an intermediary pose that will help clear the robot base more easily
-                target = copy(self.default_position)
-                target.p = [0.8, 0.4, 0.4]
-                target.r = [-0.271, 0.650, 0.271, 0.651]
-                self.lerp_to_pose(target, n_waypoints=1)
-                self.target_position = self.waypoints.popleft()
-                self.move_to_target()
-                self.lerp_to_pose(self.default_position, n_waypoints=1)
-                self.start = False
-                self.total_trays += 1
-                self.stack_size[self.current_stack_list[self.current_stack]] += 1
-                self.change_state(SM_states.STANDBY)
-            self.thresh[SM_states.DETACH] = 0
-
-    def _detach_detached(self, *args):
-        """
-        Event that happens right after the arm succesfully detaches from the object it was holding.
-        """
-        offset = _dynamic_control.Transform()
-        if self._upright:
-            n_waypoints = 1
-            offset.p = (-0.25, 0.0, 0)
-            # Quickly push the arm down 25 cm to clear the tray and let it fall on the platform
-            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=1)
-            # Wait in place for a while
-            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=30)
-            # Then move to the side and slightly more down
-            offset.p = (-0.30, 0.30, 0)
-            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=1)
-        else:
-
-            offset.p = (-0.10, 0.0, 0.0)
-            # Give the tray a small speed so the object doesn't go to sleep in the simulation optimizer
-            self.dc.set_rigid_body_linear_velocity(self.dc.get_rigid_body(self.current), [0, 0, -1.0])
-
-            # Move the arm up slowly 10 cm
-            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=30)
-            offset.p = (-0.30, 0.0, 0.0)
-            # Move the arm further up 20 extra cm, but faster
-            self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=1)
-        self.target_position = self.waypoints.popleft()
-        self.move_to_target()
+        self.change_state(SM_states.HOLDING)
 
     def _picking_goal_reached(self, *args):
         """
@@ -603,30 +402,25 @@ class PickAndPlaceStateMachine(object):
         ensures the tray obstacle is suppressed for the planner, Updates the target position
         to where the tray surface is, and send the robot to move towards it. No change of state happens
         """
-        if self._flipped:
-            self._flipped = False
-            return
         obj, distance = self.ray_cast()
         if obj is not None:
             # Set target towards surface of the tray
             tr = self.get_current_state_tr()
             offset = _dynamic_control.Transform()
-            # Subtract a 1.5mm offset for simulation stability
-            offset.p = (distance - 0.25, 0, 0)
+            offset.p = (distance + 0.15, 0, 0)
+
             target = math_utils.mul(tr, offset)
             target.p = math_utils.mul(target.p, 0.01)
             offset.p.x = -0.05
+
+            # if self._upright:
+
             pre_target = math_utils.mul(target, offset)
-            self.lerp_to_pose(pre_target, n_waypoints=90)
-            self.lerp_to_pose(target, n_waypoints=60)
+            self.lerp_to_pose(pre_target, n_waypoints=40)
+            self.lerp_to_pose(target, n_waypoints=30)
             self.lerp_to_pose(target, n_waypoints=30)
             self.target_position = self.waypoints.popleft()
             self.move_to_target()
-            # Check if tray is upright or not
-            if self._upright:
-                # Ignore the tray holder obstacle to allow to enter the crevice to drop the tray
-                self.tray_holder_object.suppress()
-            # Move to attach state
             self.change_state(SM_states.ATTACH)
 
     def _picking_no_event(self, *args):
@@ -635,60 +429,28 @@ class PickAndPlaceStateMachine(object):
         ensures the tray obstacle is suppressed for the planner, Updates the target position
         to where the tray is, and send the robot to move towards it. No change of state happens
         """
-        if not self._flipped:
-            # set target above the current tray with offset of 25 cm
-            self.set_target_to_object(20, 16, 3)
-            if self._upright:
-                self.thresh[SM_states.PICKING] = 1
-            else:
-                self.thresh[SM_states.PICKING] = 0
-            # start arm movement
-            self.move_to_target()
+        self.set_target_to_object(25, 25, 1, True)
+        self.move_to_target()
 
-    def _placing_goal_reached(self, *args):
-        """
-        robot reached the placing pose. If it's placing on the final destination,.identifies how farther down it needs to go,
-        and places the tray either on top of another tray, or on a predefined grid pose.
-        """
-        if self._upright:
-            # If the tray is upright, places it on the platform for picking from the bottom
-            self.target_position = self.upside_goal
-            self.move_to_target()
-        else:
-            x_off = 25.0  # Offset to clear the tray it's currently holding
-            target = copy(self.target_position)
-            obj, distance = self.ray_cast(x_off)
-            if obj is not None:
-                if "Tray" in obj:  # if result is a tray, override current pose to be on top of the tray below.
-                    rb = self.dc.get_rigid_body(obj)
-                    tr = self.dc.get_rigid_body_pose(rb)
-                    target.p.x = tr.p.x * 0.01
-                    target.p.y = tr.p.y * 0.01
-                    r = (1, 0, 0, 0)
-                    rx = math_utils.get_basis_vector_x(tr.r).x
-                    if rx < 0:  # rotate target by 180 degrees on z axis
-                        r = (0, -1, 0, 0)
-                    target.r = math_utils.mul(math_utils.mul(tr.r, r), (0, 0.7071, 0, 0.7071))
-                    target.p.z -= ((distance + x_off) / 100.0) - 0.16
-                else:
-                    target.r = [0, 0.7071, 0, 0.7071]
-                    target.p.z -= ((distance + x_off) / 100.0) - 0.17
+    def _holding_goal_reached(self, *args):
 
-            else:
-                self.move_to_target()  # trigger the  goal_reached event so it tries again
-                return
-            target.p.z += 0.05
-            self.lerp_to_pose(target, int(distance) * 2)  # moves down the pose minus 5cm at a 30 cm/s
-            target.p.z -= 0.05
-            self.lerp_to_pose(target, 50)  # Moves down the last 5cm at ~1cm/s
-            self.lerp_to_pose(target, 75)  # Waits in place for arm to stabilize for about one second
-            self.target_position = self.waypoints.popleft()
-            self.move_to_target()
+        if self.add_tray is not None:
+            self.add_tray()
+        self.lerp_to_pose(self.target_position, 20)
+        self.move_to_target()
 
-        self.change_state(SM_states.DETACH)
+    def _all_detached(self, *args):
+        self.current_state = SM_states.STANDBY
+        self.start = False
+        self._upright = False
+        self.waypoints.clear()
+        self.lerp_to_pose(self.target_position, 60)
+        self.lerp_to_pose(self.default_position, 10)
+        self.lerp_to_pose(self.default_position, 60)
+        self.move_to_target()
 
 
-class AttachBody(Scenario):
+class FillBin(Scenario):
     """ Defines an obstacle avoidance scenario
 
     Scenarios define the life cycle within kit and handle init, startup, shutdown etc. 
@@ -696,6 +458,15 @@ class AttachBody(Scenario):
 
     def __init__(self, editor, dc, mp):
         super().__init__(editor, dc, mp)
+
+        self.asset_path = "omni:/Projects/gtc_sj_2020"
+        # use local content if not connected to omni server
+        if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
+            print("Use local content")
+            self.asset_path = "art_assets/gtc_sj_2020"
+        else:
+            print("Use server content")
+
         self._paused = True
         self._start = False
         self._reset = False
@@ -705,21 +476,25 @@ class AttachBody(Scenario):
 
         self.max_trays = 36
 
-        self.current_tray = 0
+        self.current_obj = 0
 
         self._trays = {}
 
-        self.add_tray_timeout = -1
+        self.add_objects_timeout = -1
+
+        self.objects = [
+            self.asset_path + "/props/flip_stack/Large_corner_bracket_physics.usd",
+            self.asset_path + "/props/flip_stack/screw_95_physics.usd",
+            self.asset_path + "/props/flip_stack/screw_99_physics.usd",
+            self.asset_path + "/props/flip_stack/small_corner_bracket_physics.usd",
+            self.asset_path + "/props/flip_stack/t_connector_physics.usd",
+        ]
 
     def on_startup(self):
         super().on_startup()
 
     def step(self, step):
         if self._editor.is_playing():
-            # Disable requires a one simulation step after they have been moved
-            # from their previous location to work.
-            if self._pending_disable:
-                self.disable_trays()
 
             # Updates current references and locations for the robot.
             self.world.update()
@@ -729,8 +504,6 @@ class AttachBody(Scenario):
             xform_attr = target.GetAttribute("xformOp:transform")
             if not self._paused:
                 self._time += 1.0 / 60.0
-                if self._start and self.current_tray == 0:
-                    self.create_new_tray()
                 self.pick_and_place.step(self._time, self._start, self._reset)
                 if self._reset:
                     self._paused = True
@@ -749,10 +522,10 @@ class AttachBody(Scenario):
                     setRotate(target, Gf.Matrix3d(Gf.Quatd(state_1.r.w, state_1.r.x, state_1.r.y, state_1.r.z)))
                 self._start = False
                 self._reset = False
-                if self.add_tray_timeout > 0:
-                    self.add_tray_timeout -= 1
-                    if self.add_tray_timeout == 0:
-                        self.create_new_tray()
+                if self.add_objects_timeout > 0:
+                    self.add_objects_timeout -= 1
+                    if self.add_objects_timeout == 0:
+                        self.create_new_objects()
 
             else:
                 self.pick_and_place.waypoints.clear()
@@ -777,6 +550,7 @@ class AttachBody(Scenario):
                 )
 
     def create_UR10(self, *args):
+        self.ur10_table_usd = self.asset_path + "/Stage/StageD6Fill_bin.usd"
         super().create_UR10()
         use_background = True
         if len(args) > 0:
@@ -786,89 +560,76 @@ class AttachBody(Scenario):
         self.env_path = "/environments/env"
         CreateSolidUR10(self._stage, self.env_path, self.ur10_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
 
-        a = [self.small_klt_usd for i in range(self.max_trays)]
-        b = [self.env_path + "/Trays/Tray_{}".format(i) for i in range(self.max_trays)]
-        c = [Gf.Vec3d(-50000 - 50 * i, 150, 0) for i in range(self.max_trays)]
-        CreateObjects(self._stage, a, b, c)
-
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
         setTranslate(GoalPrim, Gf.Vec3d(0, 75, 42))
         setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.5, -0.5, 0.5, 0.5)))
         # Load background
         if use_background:
-            CreateBackground(
-                self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
-            )
-            # prim = self._stage.GetPrimAtPath("/World")
-            # imageable = UsdGeom.Imageable(prim)
-            # imageable.MakeInvisible()
-        else:
-            CreateBackground(
-                self._stage,
-                self.asset_path + "/Backgrounds/Holodeck_curved.usd",
-                [-315.419, 127.124, -10.480],
-                Gf.Quatd(-0.7071, 0, 0, 0.7071),
-            )
-        prim = self._stage.GetPrimAtPath("/World")
-        imageable = UsdGeom.Imageable(prim)
-        imageable.MakeInvisible()
+            CreateBackground(self._stage, self.background_usd)
+            prim = self._stage.GetPrimAtPath("/World")
+            imageable = UsdGeom.Imageable(prim)
+            imageable.MakeInvisible()
 
         # Setup physics simulation
         SetupPhysics(self._stage)
 
     def add_tray(self, *args):
-        self.create_new_tray(args)
+        self.create_new_objects(args)
 
-    def create_new_tray(self, *args):
-        if self.current_tray < self.max_trays:
-            i = self.current_tray
-            self._dc.set_rigid_body_disable_simulation(self.tray_handles[i], False)
-
-            tf = _dynamic_control.Transform()
-            tf.p = [-random.random() * 15 - 5, 150, -19]
-            z = random.random() * 2 - 1
-            w = random.random() * 2 - 1
-            norm = np.sqrt(z ** 2 + w ** 2)
-            tf.r = [0, 0, z / norm, w / norm]
-            if random.random() > 0.5:
-                tf.r = math_utils.mul(tf.r, [0, 1, 0, 0])
-            self._dc.set_rigid_body_pose(self.tray_handles[i], tf)
-            self._dc.set_rigid_body_linear_velocity(self.tray_handles[i], [0, -20.0, 0])
-            self._tray_objects[self.tray_paths[i]].unsuppress()
-            self.current_tray += 1
+    def create_new_objects(self, *args):
+        num_objs = 3
+        a = [self.objects[random.randint(0, len(self.objects) - 1)] for i in range(num_objs)]
+        b = [self.env_path + "/objects/object_{}".format(self.current_obj + i) for i in range(num_objs)]
+        c = [Gf.Vec3d(random.randint(-5, 5), random.randint(-3, 3) + 81, 110 + 5 * i) for i in range(num_objs)]
+        d = [
+            Gf.Matrix3d(
+                Gf.Quatd(
+                    *normalize(
+                        [
+                            random.random() * 2 - 1,
+                            random.random() * 2 - 1,
+                            random.random() * 2 - 1,
+                            random.random() * 2 - 1,
+                        ]
+                    )
+                )
+            )
+            for i in range(num_objs)
+        ]
+        CreateObjects(self._stage, a, b, c, d)
+        self.current_obj += num_objs
 
     def disable_trays(self, *args):
-        for i in range(self.max_trays):
-            self._dc.set_rigid_body_disable_simulation(self.tray_handles[i], True)
+        # for i in range(self.max_trays):
+        #     self._dc.set_rigid_body_disable_simulation(self.tray_handles[i], True)
         self._pending_disable = False
 
-    def add_new_tray(self):
-        if self.current_tray < self.max_trays:
-            self.add_tray_timeout = int(random.random() * 200) + 100
+    def add_new_objects(self):
+        self.add_objects_timeout = 10
 
     def register_assets(self, *args):
 
         # Prim path of two blocks and their handles
         prim = self._stage.GetPrimAtPath(self.env_path)
-        self.tray_paths = [self.env_path + "/Trays/Tray_{}/SmallKLT".format(i) for i in range(self.max_trays)]
+        self.tray_paths = [self.env_path + "/SmallKLT/SmallKLT"]
         self.tray_handles = [self._dc.get_rigid_body(i) for i in self.tray_paths]
 
         # Create world and robot object
-
         ur10_path = str(prim.GetPath()) + "/ur10"
         self.world = World(self._dc, self._mp)
         mjp = Surface_Gripper_Properties()
         mjp.parentPath = ur10_path + "/ee_link"
         mjp.d6JointPath = mjp.parentPath + "/d6FixedJoint"
-        mjp.gripThreshold = 2
-        mjp.forceLimit = 5.0e4
-        mjp.torqueLimit = 5.0e5
+        mjp.gripThreshold = 1
+        mjp.forceLimit = 5.0e3
+        mjp.torqueLimit = 5.0e4
         mjp.bendAngle = np.pi / 24  # 7.5 degrees
         mjp.stiffness = 1.0e5
         mjp.damping = 1.0e4
         tr = _dynamic_control.Transform()
-        tr.p.x = 22.15
+        tr.p.x = 15.509
         mjp.offset = tr
+
         self.ur10_solid = UR10(
             self._stage,
             self._stage.GetPrimAtPath(ur10_path),
@@ -878,44 +639,20 @@ class AttachBody(Scenario):
             self.world,
             "/physics/scene/solid",
             default_config,
+            urdf="/urdf/ur10_robot_robotiq.urdf",
         )
 
+        self._dc
         body_count = self._dc.get_articulation_body_count(self.ur10_solid.ar)
         for bodyIdx in range(body_count):
             body = self._dc.get_articulation_body(self.ur10_solid.ar, bodyIdx)
             self._dc.set_rigid_body_disable_gravity(body, True)
 
-        i = 0
-        for p in self._stage.GetPrimAtPath(str(prim.GetPath()) + "/sortbot_housing/RMPObstacle").GetChildren():
-            self.world.register_object(0, p.GetPath().pathString, "housing_" + str(i))
-            self.world.make_obstacle("housing_" + str(i), 3, p.GetAttribute("xformOp:scale").Get())
-            i += 1
-        i = 0
-        for p in self._stage.GetPrimAtPath(str(prim.GetPath()) + "/pallet_holder/RMPObstacle").GetChildren():
-            self.world.register_object(0, p.GetPath().pathString, "holder_" + str(i))
-            # print(p.GetPath().pathString)
-            self.world.make_obstacle("holder_" + str(i), 3, p.GetAttribute("xformOp:scale").Get())
-            # self._obstacles.append(self.world.get_object_from_name("holder_" + str(i)))
-            self.world.get_object_from_name("holder_" + str(i)).suppress()
-            i += 1
-        self._tray_holder_obstacle = self.world.get_object_from_name("holder_0")
-
-        self._tray_objects = {}
-        for i, (tray_handle, tray_path) in enumerate(zip(self.tray_handles, self.tray_paths)):
-            self.world.register_object(tray_handle, tray_path, "{}_tray".format(i))
-            self.world.make_obstacle("{}_tray".format(i), 3, np.asarray(self.small_tray_scale))
-            obj = self.world.get_object_from_name("{}_tray".format(i))
-            self._dc.set_rigid_body_disable_simulation(tray_handle, True)
-            obj.suppress()
-            self._tray_objects[tray_path] = obj
-            self._obstacles.append(obj)
-        i = 0
-
         # # Set robot end effector
-        orig = [0, 0.75, 0.42]
+        orig = [-0.0645, 0.7214, 0.495]  # [0, 0.75, 0.42]
         default_position = _dynamic_control.Transform()
         default_position.p = orig
-        default_position.r = math_utils.mul([0, 0.7071, 0, 0.7071], [0.7071, 0, 0, -0.7071])
+        default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
         # tr = _dynamic_control.Transform()
         # tr.r = (0,0,-0.383,-0.924)
         # default_position = math_utils.mul(default_position,tr)
@@ -924,11 +661,10 @@ class AttachBody(Scenario):
             self._stage,
             self.ur10_solid,
             self._stage.GetPrimAtPath(self.env_path + "/ur10/ee_link"),
-            self._tray_objects,
+            self.tray_paths[0],
             default_position,
-            self._tray_holder_obstacle,
         )
-        self.pick_and_place.add_tray = self.add_new_tray
+        self.pick_and_place.add_tray = self.add_new_objects
 
     def perform_tasks(self, *args):
         self._start = True
@@ -943,9 +679,9 @@ class AttachBody(Scenario):
             for i in range(self.max_trays):
                 tf = _dynamic_control.Transform()
                 tf.p = [-50000 - 50 * i, 150, 0]
-                self._dc.set_rigid_body_pose(self.tray_handles[i], tf)
-                self._dc.set_rigid_body_linear_velocity(self.tray_handles[i], [0, 0, 0])
-                self._dc.set_rigid_body_angular_velocity(self.tray_handles[i], [0, 0, 0])
+                # self._dc.set_rigid_body_pose(self.tray_handles[i], tf)
+                # self._dc.set_rigid_body_linear_velocity(self.tray_handles[i], [0, 0, 0])
+                # self._dc.set_rigid_body_angular_velocity(self.tray_handles[i], [0, 0, 0])
 
     def pause_tasks(self, *args):
         self._paused = not self._paused
@@ -959,12 +695,3 @@ class AttachBody(Scenario):
             self.ur10_solid.end_effector.gripper.open()
         else:
             self.ur10_solid.end_effector.gripper.close()
-        state = self.ur10_solid.end_effector.status.current_target
-        state_1 = self.pick_and_place.target_position
-        tr = state["orig"] * 100.0
-        print(tr[0], tr[1], tr[2])
-
-        mat = Gf.Matrix3f(
-            *state["axis_x"].astype(float), *state["axis_y"].astype(float), *state["axis_z"].astype(float)
-        )
-        print(mat.ExtractRotation().GetQuaternion())

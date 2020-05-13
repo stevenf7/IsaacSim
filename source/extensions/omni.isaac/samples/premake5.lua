@@ -6,33 +6,12 @@ local ext_source = "%{root}/source/extensions/"..ext_group.."/"..ext_name
 local ext_folder = "%{root}/_build/$platform/$config/exts/"..ext_id
 
 group ("extensions/"..ext_id)
-
-    if os.target() == "linux" then
-        repo_build.prebuild_link {
-            { ext_source.."/leonardo_preview", ext_folder..".leonardo_preview".."/omni/isaac/samples/leonardo_preview" },
-            { ext_source.."/utils", ext_folder..".leonardo_preview".."/omni/isaac/samples/utils" },
-        }
-
-        repo_build.prebuild_link {
-            { ext_source.."/ur10_preview", ext_folder..".ur10_preview".."/omni/isaac/samples/ur10_preview" },
-            { ext_source.."/utils", ext_folder..".ur10_preview".."/omni/isaac/samples/utils" },
-        }
-    end
     
     repo_build.prebuild_link {
-        { ext_source.."/kaya_preview", ext_folder..".kaya_preview".."/omni/isaac/samples/kaya_preview" },
-        { ext_source.."/utils", ext_folder..".kaya_preview".."/omni/isaac/samples/utils" },
+        { ext_source.."/config", ext_folder.."/config" },
+        { ext_source.."/python/scripts", ext_folder.."/omni/isaac/samples/scripts" },
     }
-    
 
-    -- Example of python extension. Contains python sources, doesn't build or run, only for MSVS.
-    -- if os.target() == "windows" then
-    --     project "omni.isaac.samples"
-    --         kind "None"
-    --         --add_impl_folder("")
-
-    --         vpaths { ["*"] = ext_folder }
-    --         files { ext_folder.."/**.py" }
-    --         files { ext_folder.."/**.toml" }
-        
-    -- end
+    repo_build.prebuild_copy {
+        { ext_source.."/python/*.py", ext_folder.."/omni/isaac/samples" },
+    }

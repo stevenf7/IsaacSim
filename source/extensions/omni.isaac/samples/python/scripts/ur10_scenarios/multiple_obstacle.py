@@ -13,10 +13,10 @@ import numpy as np
 from pxr import Sdf, Gf, PhysicsSchema
 import concurrent.futures
 
-from omni.isaac.samples.utils.world import World
-from omni.isaac.samples.utils.state_machine import *
-from omni.isaac.samples.utils.ur10 import UR10, default_config
-from omni.isaac.samples.utils.math_utils import *
+from omni.isaac.samples.scripts.utils.world import World
+from omni.isaac.samples.scripts.utils.state_machine import *
+from omni.isaac.samples.scripts.utils.ur10 import UR10, default_config
+from omni.isaac.samples.scripts.utils.math_utils import *
 from .scenario import *
 
 
