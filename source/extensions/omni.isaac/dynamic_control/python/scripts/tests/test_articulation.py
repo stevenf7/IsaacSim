@@ -26,31 +26,34 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_articulation_load(self):
+        await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
-        await asyncio.sleep(0.125)
+        await omni.kit.asyncapi.next_update()
         obj_type = self._dc.peek_object_type("/panda")
         self.assertEqual(obj_type, _dynamic_control.ObjectType.OBJECT_ARTICULATION)
-
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
-
+        # make sure that articulation was registered properly
+        dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+        self.assertTrue(dof_states is not None)
         pass
 
         # Actual test, notice it is "async" function, so "await" can be used if needed
 
     async def test_articulation_teleport(self):
+        await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
-        await asyncio.sleep(0.125)
+        await omni.kit.asyncapi.next_update()
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
 
@@ -81,22 +84,24 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         dof_state_v1 = self._dc.get_dof_state(dof_ptr)
         # comparing it to using .get_articulation_dof_states()
         dof_idx = self._dc.find_articulation_dof_index(art, "panda_finger_joint1")
-        dof_state_v2 = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)["pos"][dof_idx]
+        dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+
+        self.assertTrue(dof_states is not None)
+        dof_state_v2 = dof_states["pos"][dof_idx]
+
         self.assertAlmostEqual(dof_state_v1.pos, dof_state_v2)
 
         # teleport the whole robot
         root_body = self._dc.get_articulation_root_body(art)
-        await asyncio.sleep(1.0)
         new_pose_p = (1.3, 2.1, 3.0)
         new_pose_r = (0, 0, 0.3007058, 0.953717)
         new_pose = _dynamic_control.Transform(new_pose_p, new_pose_r)
         self._dc.set_rigid_body_pose(root_body, new_pose)
-        await asyncio.sleep(0.125)
+        await asyncio.sleep(1.0)
         pos = self._dc.get_rigid_body_pose(root_body).p
         rot = self._dc.get_rigid_body_pose(root_body).r
         self.assertTupleEqual(tuple(np.round(np.array(pos), 5)), tuple(np.round(np.array(new_pose_p), 5)))
         self.assertTupleEqual(tuple(np.round(np.array(rot), 5)), tuple(np.round(np.array(new_pose_r), 5)))
-        await asyncio.sleep(1.0)
 
         # rigid body tests
         body_states = self._dc.get_articulation_body_states(art, _dynamic_control.STATE_ALL)
@@ -110,13 +115,14 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_articulation_movement(self):
+        await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
-        await asyncio.sleep(0.125)
+        await omni.kit.asyncapi.next_update()
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
 
@@ -124,6 +130,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # change dof target: modifying current state
         dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+        self.assertTrue(dof_states is not None)
         dof_pos = dof_states["pos"]
         dof_old = dof_pos[3] + 0.15
         dof_pos += 0.15
