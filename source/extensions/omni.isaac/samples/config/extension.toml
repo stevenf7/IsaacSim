@@ -1,0 +1,18 @@
+display_name = "Isaac Preview Samples"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.physx" = {}
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.motion_planning" = {}
+"omni.isaac.utils" = {}
+"omni.isaac.manip" = {}
+
+[[python.modules]]
+name = "omni.isaac.samples.scripts.kaya_preview"
+
+[[python.modules]]
+name = "omni.isaac.samples.scripts.leonardo_preview"
+
+[[python.modules]]
+name = "omni.isaac.samples.scripts.ur10_preview"
