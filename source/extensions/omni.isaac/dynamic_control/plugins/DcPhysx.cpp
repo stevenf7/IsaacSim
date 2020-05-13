@@ -2907,8 +2907,7 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
     }
 
     DcRigidBody* body0 = DC_LOOKUP_RIGID_BODY(props->body0);
-    DC_LOG_INFO("body0 %lld", props->body0);
-    DC_LOG_INFO("body1 %lld", props->body1);
+
     if (!body0 || !body0->pxRigidBody)
     {
         DC_LOG_ERROR("Failed to create Joint: body 0 handle is invalid");
@@ -2946,11 +2945,9 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
 
 
     size_t originId = (size_t)pxBody0->userData;
-    size_t targetId = 0;
     SdfPath targetPath;
     if (pxBody1)
     {
-        targetId = (size_t)pxBody1->userData;
         targetPath = ctx->physx->getPhysXObjectUsdPath((size_t)originId);
     }
     SdfPath originPath = ctx->physx->getPhysXObjectUsdPath(originId);
@@ -2978,7 +2975,6 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
     DcD6Joint* j_Ptr = dcJoint.get();
     DcHandle j_handle = ctx->addD6Joint(std::move(dcJoint), jointPath);
     j_Ptr->handle = j_handle;
-    DC_LOG_INFO("Joint Created: %lld", j_handle);
     return j_handle;
 }
 
