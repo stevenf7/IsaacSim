@@ -16,7 +16,6 @@
             "${workspaceFolder}/_build/target-deps/lula/include",
             "${workspaceFolder}/_build/target-deps/usd_ext_isaac/release/include",
             "${workspaceFolder}/_build/target-deps/usd_ext_physics/release/include",
-            "${workspaceFolder}/_build/target-deps/lula/include",
             "${workspaceFolder}/_build/target-deps/robotimpsdk/include",
             "${workspaceFolder}/include",
             "${workspaceFolder}/source/tests",
