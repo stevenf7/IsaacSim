@@ -6,7 +6,7 @@ import omni.kit.ui
 import carb.tokens
 
 from .. import _urdf
-
+from .tests.test_urdf import *
 
 EXTENSION_NAME = "URDF Importer"
 
@@ -20,6 +20,12 @@ class Extension(omni.ext.IExt):
         merge_fixed_joints_checkbox = omni.kit.ui.CheckBox("Merge Fixed Joints")
         merge_fixed_joints_checkbox.set_on_changed_fn(self._on_merge_fixed_joints_fn)
         self._window.layout.add_child(merge_fixed_joints_checkbox)
+
+        sublayout = self._window.layout.add_child(omni.kit.ui.RowLayout())
+        sublayout.add_child(omni.kit.ui.Label("Scaling Factor"))
+        scale_input = sublayout.add_child(omni.kit.ui.TextBox("100.0"))
+        scale_input.set_text_changed_fn(self._on_change_scale_fn)
+
         self._btn_load = self._window.layout.add_child(omni.kit.ui.Button("Load URDF"))
         self._btn_load.set_clicked_fn(self._select_file)
 
@@ -32,6 +38,9 @@ class Extension(omni.ext.IExt):
 
     def _on_merge_fixed_joints_fn(self, value):
         self._urdf_interface.merge_fixed_joints(value)
+
+    def _on_change_scale_fn(self, widget):
+        self._urdf_interface.set_unit_scale(float(widget.text))
 
     def _select_file(self, btn_widget):
         self._filepicker = omni.kit.ui.FilePicker("Select URDF File", file_type=omni.kit.ui.FileDialogSelectType.FILE)

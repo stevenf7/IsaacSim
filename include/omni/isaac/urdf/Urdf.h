@@ -24,6 +24,7 @@ struct Urdf
     CARB_PLUGIN_INTERFACE("omni::isaac::urdf::Urdf", 0, 1);
     void(CARB_ABI* importUrdf)(std::string asset_path);
     void(CARB_ABI* mergeFixedJoints)(bool merge);
+    void(CARB_ABI* setUnitScale)(float scale);
 };
 }
 }
