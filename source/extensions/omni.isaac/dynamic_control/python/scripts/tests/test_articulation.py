@@ -107,7 +107,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         body_states = self._dc.get_articulation_body_states(art, _dynamic_control.STATE_ALL)
         body_idx = self._dc.find_articulation_body_index(art, "panda_hand")
         body_pos = body_states["pose"]["p"][body_idx]
-        expected_pos = (19.815851, 15.068529, 54.849457)
+        expected_pos = (19.73296, 15.00503, 54.58207)
         self.assertTupleEqual(
             tuple(np.round(np.array(body_pos.tolist()), 5)), tuple(np.round(np.array(expected_pos), 5))
         )
@@ -159,6 +159,37 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_articulation_wheeled(self):
+        await omni.kit.asyncapi.new_stage()
+        (result, error) = await load_test_file("tests/robots/differential_base/differential_base.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+
+        editor = omni.kit.editor.get_editor_interface()
+        editor.play()
+        # wait for robot to fall
+        await asyncio.sleep(1.0)
+
+        art = self._dc.get_articulation("/differential_base")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+        root_body_ptr = self._dc.get_articulation_root_body(art)
+        left_wheel_ptr = self._dc.find_articulation_dof(art, "left_wheel")
+        right_wheel_ptr = self._dc.find_articulation_dof(art, "right_wheel")
+        self._dc.wake_up_articulation(art)
+
+        self._dc.wake_up_articulation(art)
+        self._dc.set_dof_velocity_target(left_wheel_ptr, -2.5)
+        self._dc.set_dof_velocity_target(right_wheel_ptr, 2.5)
+        await asyncio.sleep(3.0)
+        lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
+        ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
+        print(np.linalg.norm(lin_vel), ang_vel)
+
+        self.assertAlmostEqual(0, np.linalg.norm(lin_vel), 1)
+        self.assertGreater(ang_vel[2], 2.45)
+        self.assertLess(ang_vel[2], 2.55)
+        editor.stop()
+
+    async def test_articulation_carter(self):
         await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/carter/carter.usd")
         # Make sure the stage loaded
