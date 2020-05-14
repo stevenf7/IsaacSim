@@ -156,9 +156,9 @@ void onPrimAdd(const char* primPath, void* userData)
         {
             return;
         }
-        //Add the root prim
+        // Add the root prim
         g_application_handle->onComponentAdd(addedPrim);
-        //Check if it has any descendants that need to be added
+        // Check if it has any descendants that need to be added
         pxr::UsdPrimSubtreeRange range = addedPrim.GetDescendants();
         for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
         {
