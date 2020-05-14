@@ -67,7 +67,10 @@ group ("extensions/"..ext_id)
                 target_deps_dir.."/tbb/lib/intel64/vc14",
                 target_deps_dir.."/robotimpsdk/lib/windows-x86_64",
             }
-            links { "librobotimp" }
+            filter { "configurations:debug" }
+                links { "librobotimpdebug" }
+            filter { "configurations:release" }
+                links { "librobotimp" }
         filter {}
         
     -- Python Bindings for Carobnite Plugin
