@@ -54,6 +54,11 @@
                 "omni.isaac.motion_planning",
                 "omni.isaac.samples"
             ]
+        },
+        "renderer": {
+            "skipWhileMinimized": false,
+            "sleepMsOnFocus": 0,
+            "sleepMsOutOfFocus": 0
         }
     }
 }

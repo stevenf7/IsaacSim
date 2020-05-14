@@ -53,6 +53,11 @@
                 "omni.isaac.robot_engine_bridge"
             ]
         },
+        "renderer": {
+            "skipWhileMinimized": false,
+            "sleepMsOnFocus": 0,
+            "sleepMsOutOfFocus": 0
+        },
         "livestream":{
             "enabled": true
         }

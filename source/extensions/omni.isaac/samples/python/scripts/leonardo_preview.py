@@ -48,7 +48,6 @@ class Extension(omni.ext.IExt):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
         self._physxIFace = _physx.acquire_physx_interface()
-        self._physxIFace.force_load_physics_from_usd()
 
         self._selected_scenario = self._window.layout.add_child(omni.kit.ui.ComboBox())
         self._selected_scenario.add_item("Ghost Robots")

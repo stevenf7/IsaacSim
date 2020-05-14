@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PM_PACKMAN_VERSION=6.4-rc1
+PM_PACKMAN_VERSION=6.7
 
 # Specify where packman command exists
 export PM_INSTALL_PATH="$(dirname "${BASH_SOURCE}")"
@@ -56,9 +56,9 @@ export PM_MODULE="$PM_MODULE_DIR/packman.py"
 fetch_file_from_s3()
 {
 	SOURCE=$1
-	SOURCE_URL=http://packman-bootstrap.s3.amazonaws.com/$SOURCE
+	SOURCE_URL=http://bootstrap.packman.nvidia.com/$SOURCE
 	TARGET=$2
-	echo "Fetching $SOURCE from S3 ..."
+	echo "Fetching $SOURCE from bootstrap.packman.nvidia.com ..."
 	if command -v wget >/dev/null 2>&1; then
 		wget --quiet -O$TARGET $SOURCE_URL
 	else

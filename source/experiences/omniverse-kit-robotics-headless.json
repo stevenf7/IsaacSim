@@ -55,6 +55,11 @@
                 "omni.isaac.samples"
             ]
         },
+        "renderer": {
+            "skipWhileMinimized": false,
+            "sleepMsOnFocus": 0,
+            "sleepMsOutOfFocus": 0
+        },
         "livestream":{
             "enabled": true
         }

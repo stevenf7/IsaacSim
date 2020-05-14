@@ -12,7 +12,7 @@
 :: See the License for the specific language governing permissions and
 :: limitations under the License.
 
-@set PM_PACKMAN_VERSION=6.4-rc1
+@set PM_PACKMAN_VERSION=6.7
 
 :: Specify where packman command is rooted
 @set PM_INSTALL_PATH=%~dp0..
@@ -29,7 +29,7 @@
 :: We use *setx* here so that the variable is persisted in the user environment
 @echo Setting user environment variable PM_PACKAGES_ROOT to %PM_PACKAGES_ROOT%
 @setx PM_PACKAGES_ROOT %PM_PACKAGES_ROOT%
-@if errorlevel 1 goto ERROR
+@if %errorlevel% neq 0 ( goto ERROR )
 
 :: The above doesn't work properly from a build step in VisualStudio because a separate process is
 :: spawned for it so it will be lost for subsequent compilation steps - VisualStudio must
@@ -50,7 +50,7 @@
 @if not exist "%PM_PACKAGES_ROOT%" (
 	@echo Creating directory %PM_PACKAGES_ROOT%
 	@mkdir "%PM_PACKAGES_ROOT%"
-	@if errorlevel 1 goto ERROR_MKDIR_PACKAGES_ROOT
+	@if %errorlevel% neq 0 ( goto ERROR_MKDIR_PACKAGES_ROOT )
 )
 
 :: The Python interpreter may already be externally configured
@@ -71,14 +71,14 @@
 @for /f "delims=" %%a in ('powershell -ExecutionPolicy ByPass -NoLogo -NoProfile -File "%~dp0\generate_temp_file_name.ps1"') do @set TEMP_FILE_NAME=%%a
 @set TARGET=%TEMP_FILE_NAME%.zip
 @call "%~dp0fetch_file_from_s3.cmd" %PM_PYTHON_PACKAGE% "%TARGET%"
-@if errorlevel 1 goto ERROR
+@if %errorlevel% neq 0 ( goto ERROR )
 
 @for /f "delims=" %%a in ('powershell -ExecutionPolicy ByPass -NoLogo -NoProfile -File "%~dp0\generate_temp_folder.ps1" -parentPath "%PM_PYTHON_BASE_DIR%"') do @set TEMP_FOLDER_NAME=%%a
 @echo Unpacking Python interpreter ...
 @"%SystemRoot%\system32\expand.exe" -F:* "%TARGET%" "%TEMP_FOLDER_NAME%" 1> nul
 @del "%TARGET%"
 :: Failure during extraction to temp folder name, need to clean up and abort
-@if errorlevel 1 (
+@if %errorlevel% neq 0 (
     @call :CLEAN_UP_TEMP_FOLDER
     @goto ERROR
 )
@@ -94,7 +94,7 @@
 :: Perform atomic rename
 @rename "%TEMP_FOLDER_NAME%" "%PM_PYTHON_VERSION%" 1> nul
 :: Failure during move, need to clean up and abort
-@if errorlevel 1 (
+@if %errorlevel% neq 0 (
     @call :CLEAN_UP_TEMP_FOLDER
     @goto ERROR
 )
@@ -115,11 +115,11 @@
 @for /f "delims=" %%a in ('powershell -ExecutionPolicy ByPass -NoLogo -NoProfile -File "%~dp0\generate_temp_file_name.ps1"') do @set TEMP_FILE_NAME=%%a
 @set TARGET=%TEMP_FILE_NAME%
 @call "%~dp0fetch_file_from_s3.cmd" %PM_MODULE_PACKAGE% "%TARGET%"
-@if errorlevel 1 goto ERROR
+@if %errorlevel% neq 0 ( goto ERROR )
 
 @echo Unpacking ...
 @"%PM_PYTHON%" -S -s -u -E "%~dp0\install_package.py" "%TARGET%" "%PM_MODULE_DIR%"
-@if errorlevel 1 goto ERROR
+@if %errorlevel% neq 0 ( goto ERROR )
 
 @del "%TARGET%"
 
@@ -131,7 +131,7 @@
 @if exist "%PM_7Za_PATH%" goto END
 
 @"%PM_PYTHON%" -S -s -u -E "%PM_MODULE%" pull "%PM_MODULE_DIR%\deps.packman.xml"
-@if errorlevel 1 goto ERROR
+@if %errorlevel% neq 0 ( goto ERROR )
 
 @goto END
 
@@ -142,11 +142,11 @@
 @echo    setx PM_PACKAGES_ROOT {path-you-choose-for-storing-packman-packages-locally}
 @echo.
 @echo Then launch a new command console for the changes to take effect and run packman command again.
-@exit /B 1
+@exit /B %errorlevel%
 
 :ERROR
 @echo !!! Failure while configuring local machine :( !!!
-@exit /B 1
+@exit /B %errorlevel%
 
 :CLEAN_UP_TEMP_FOLDER
 @rd /S /Q "%TEMP_FOLDER_NAME%"

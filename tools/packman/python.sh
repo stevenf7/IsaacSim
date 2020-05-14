@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2019 NVIDIA CORPORATION
+# Copyright 2019-2020 NVIDIA CORPORATION
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,6 @@
 
 set -e
 
-source "$(dirname "${BASH_SOURCE}")/packman" --version > /dev/null
+source "$(dirname "${BASH_SOURCE}")/packman" init
 export PYTHONPATH="${PM_MODULE_DIR}:${PYTHONPATH}"
 "${PM_PYTHON}" -u "$@"

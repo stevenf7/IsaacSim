@@ -7,8 +7,17 @@ local ext_folder = "%{root}/_build/$platform/$config/exts/"..ext_id
 
 group ("extensions/"..ext_id)
     
+if os.target() == "linux" then
     repo_build.prebuild_link {
-        { ext_source.."/config", ext_folder.."/config" },
+        { ext_source.."/config/linux", ext_folder.."/config" },
+    }
+else
+    repo_build.prebuild_link {
+        { ext_source.."/config/windows", ext_folder.."/config" },
+    }
+end
+
+    repo_build.prebuild_link {
         { ext_source.."/python/scripts", ext_folder.."/omni/isaac/samples/scripts" },
     }
 
