@@ -5,6 +5,9 @@ import omni.ext
 from .. import _lidar
 from .menu import LidarMenu
 
+# any unit tests for the extension should be imported here
+from .tests.test_lidar import *
+
 EXTENSION_NAME = "Lidar"
 
 
