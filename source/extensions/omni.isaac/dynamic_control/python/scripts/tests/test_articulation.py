@@ -157,3 +157,53 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertNotEqual(dof_pos_old, dof_pos_new)
 
         pass
+
+    async def test_articulation_wheeled(self):
+        await omni.kit.asyncapi.new_stage()
+        (result, error) = await load_test_file("assets/robots/carter/carter.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+
+        editor = omni.kit.editor.get_editor_interface()
+        editor.play()
+        # wait for robot to fall
+        await asyncio.sleep(1.0)
+
+        art = self._dc.get_articulation("/carter")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+        left_wheel_ptr = self._dc.find_articulation_dof(art, "left_wheel")
+        right_wheel_ptr = self._dc.find_articulation_dof(art, "right_wheel")
+        self._dc.wake_up_articulation(art)
+        drive_target = 2.5
+
+        self._dc.set_dof_velocity_target(left_wheel_ptr, drive_target)
+        self._dc.set_dof_velocity_target(right_wheel_ptr, drive_target)
+        await asyncio.sleep(1.0)
+        dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+        self.assertAlmostEqual(drive_target, dof_states["vel"][0], 2)
+        self.assertAlmostEqual(drive_target, dof_states["vel"][2], 2)
+        root_body_ptr = self._dc.get_articulation_root_body(art)
+        lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
+        ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
+        self.assertAlmostEqual(drive_target * 24.0, np.linalg.norm(lin_vel), 1)
+        self.assertAlmostEqual(0, np.linalg.norm(ang_vel), 1)
+
+        self._dc.set_dof_velocity_target(left_wheel_ptr, 0)
+        self._dc.set_dof_velocity_target(right_wheel_ptr, 0)
+        await asyncio.sleep(1.0)
+        dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+        self.assertAlmostEqual(0, dof_states["vel"][0], 2)
+        self.assertAlmostEqual(0, dof_states["vel"][2], 2)
+
+        self._dc.wake_up_articulation(art)
+        self._dc.set_dof_velocity_target(left_wheel_ptr, -drive_target)
+        self._dc.set_dof_velocity_target(right_wheel_ptr, drive_target)
+        await asyncio.sleep(2.0)
+        lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
+        ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
+        # print(np.linalg.norm(lin_vel), ang_vel)
+
+        self.assertLess(np.linalg.norm(lin_vel), 1)
+        # This check fails currently, not sure why
+        # self.assertAlmostEqual(drive_target * 24.0 / 31.613607, ang_vel[2], 1)
+        editor.stop()

@@ -61,23 +61,26 @@ class joint_monkey:
             omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
         )
         self._physxIFace = _physx.acquire_physx_interface()
+        self._editor_event_subscription = None
+        self._editor = omni.kit.editor.get_editor_interface()
+        self.ar = _dynamic_control.INVALID_HANDLE
 
     def _on_load_robot(self, widget):
         asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
-        self._editor = omni.kit.editor.get_editor_interface()
 
     def _on_move_joints(self, widget):
         self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
         self._physxIFace.force_load_physics_from_usd()
         self._editor.play()
 
-        ar = self._dc.get_articulation("/panda")
-        if ar == _dynamic_control.INVALID_HANDLE:
+    def _on_first_step(self):
+        self.ar = self._dc.get_articulation("/panda")
+        if self.ar == _dynamic_control.INVALID_HANDLE:
             print("*** '%s' is not an articulation" % "/panda")
             return
 
-        num_dofs = self._dc.get_articulation_dof_count(ar)
-        dof_props = self._dc.get_articulation_dof_properties(ar)
+        num_dofs = self._dc.get_articulation_dof_count(self.ar)
+        dof_props = self._dc.get_articulation_dof_properties(self.ar)
         self.dof_props_label.text = str("--- DOF properties:\n") + str(dof_props) + "\n"
 
         dof_types = dof_props["type"]
@@ -85,11 +88,6 @@ class joint_monkey:
         lower_limits = dof_props["lower"]
         upper_limits = dof_props["upper"]
 
-        # disable any drives
-        dof_props["driveMode"].fill(_dynamic_control.DRIVE_POS)
-        dof_props["stiffness"].fill(6e8)
-        dof_props["damping"].fill(3e3)
-        self._dc.set_articulation_dof_properties(ar, dof_props)
         self.dof_props_label.text = str("--- DOF properties:\n") + str(dof_props) + "\n"
 
         # allocate dof state buffer
@@ -129,8 +127,6 @@ class joint_monkey:
             else:
                 speeds[i] = speed_scale * clamp(2 * (upper_limits[i] - lower_limits[i]), 0.1, 7.0)
 
-        self.ar = ar
-
         self.num_dofs = num_dofs
         self.defaults = defaults
         self.speeds = speeds
@@ -144,32 +140,35 @@ class joint_monkey:
         self.current_dof = 0
 
     def _on_editor_step(self, step):
-        dof = self.current_dof
-        speed = self.speeds[dof]
-        # animate the dofs
-        if self.anim_state == ANIM_SEEK_LOWER:
-            self.dof_positions[dof] -= speed * step
-            if self.dof_positions[dof] <= self.lower_limits[dof]:
-                self.dof_positions[dof] = self.lower_limits[dof]
-                self.anim_state = ANIM_SEEK_UPPER
-        elif self.anim_state == ANIM_SEEK_UPPER:
-            self.dof_positions[dof] += speed * step
-            if self.dof_positions[dof] >= self.upper_limits[dof]:
-                self.dof_positions[dof] = self.upper_limits[dof]
-                self.anim_state = ANIM_SEEK_DEFAULT
-        if self.anim_state == ANIM_SEEK_DEFAULT:
-            self.dof_positions[dof] -= speed * step
-            if self.dof_positions[dof] <= self.defaults[dof]:
+        if self._editor.is_playing():
+            if self.ar == _dynamic_control.INVALID_HANDLE:
+                self._on_first_step()
+            dof = self.current_dof
+            speed = self.speeds[dof]
+            # animate the dofs
+            if self.anim_state == ANIM_SEEK_LOWER:
+                self.dof_positions[dof] -= speed * step
+                if self.dof_positions[dof] <= self.lower_limits[dof]:
+                    self.dof_positions[dof] = self.lower_limits[dof]
+                    self.anim_state = ANIM_SEEK_UPPER
+            elif self.anim_state == ANIM_SEEK_UPPER:
+                self.dof_positions[dof] += speed * step
+                if self.dof_positions[dof] >= self.upper_limits[dof]:
+                    self.dof_positions[dof] = self.upper_limits[dof]
+                    self.anim_state = ANIM_SEEK_DEFAULT
+            if self.anim_state == ANIM_SEEK_DEFAULT:
+                self.dof_positions[dof] -= speed * step
+                if self.dof_positions[dof] <= self.defaults[dof]:
+                    self.dof_positions[dof] = self.defaults[dof]
+                    self.anim_state = ANIM_FINISHED
+            elif self.anim_state == ANIM_FINISHED:
                 self.dof_positions[dof] = self.defaults[dof]
-                self.anim_state = ANIM_FINISHED
-        elif self.anim_state == ANIM_FINISHED:
-            self.dof_positions[dof] = self.defaults[dof]
-            self.current_dof = (dof + 1) % self.num_dofs
-            self.anim_state = ANIM_SEEK_LOWER
-            print("Animating DOF %d" % (self.current_dof,))
-
-        self._dc.set_articulation_dof_position_targets(self.ar, self.dof_positions)
-        dof_states = self._dc.get_articulation_dof_states(self.ar, _dynamic_control.STATE_ALL)
-        self.dof_states_label.text = str("--- DOF states:\n") + str(dof_states) + "\n"
+                self.current_dof = (dof + 1) % self.num_dofs
+                self.anim_state = ANIM_SEEK_LOWER
+                # print("Animating DOF %d" % (self.current_dof,))
+            self._dc.wake_up_articulation(self.ar)
+            self._dc.set_articulation_dof_position_targets(self.ar, self.dof_positions)
+            dof_states = self._dc.get_articulation_dof_states(self.ar, _dynamic_control.STATE_ALL)
+            self.dof_states_label.text = str("--- DOF states:\n") + str(dof_states) + "\n"
 
         return
