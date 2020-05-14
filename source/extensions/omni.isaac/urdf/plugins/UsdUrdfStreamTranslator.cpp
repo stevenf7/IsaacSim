@@ -180,7 +180,6 @@ bool SetToPose(UsdGeomXformable const& gprim, const NvIsaac::Transform& pose, fl
     {
         return false;
     }
-
     // auto q = getQ(pose);
     // auto p = getP(pose);
     auto q = GfQuatf(pose.q.w, GfVec3f(pose.q.x, pose.q.y, pose.q.z));
@@ -575,7 +574,7 @@ UsdPrim AddCapsinderAttrs(UsdGeomCapsinder gprim,
     gprim.GetHeightAttr().Set(double(distanceScale * height));
     gprim.GetRadiusAttr().Set(double(distanceScale * radius));
     NvIsaac::Transform rotatedPose = pose;
-    rotatedPose.q *= NvIsaac::Quat(M_PI * 0.5, NvIsaac::Vec3(0, 1, 0));
+    rotatedPose.q *= NvIsaac::Quat(M_PI_2, NvIsaac::Vec3(0.0, 1.0, 1.0));
     SetToPose(gprim, rotatedPose, distanceScale);
 
     VtVec3fArray color(1);
@@ -1031,7 +1030,8 @@ void AddJointsToStage(UsdStageRefPtr stage,
 
 SdfLayerRefPtr UsdUrdfStream::UsdUrdfTranslateUrdfToUsd()
 {
-    const float distanceScale = 100.0; // TODO make this variable, but for now assume urdf is in m and graphene is in cm
+    float distanceScale = _distanceScale; // TODO make this variable, but for now assume urdf is in m and graphene is in
+                                          // cm
     // To create an SdfLayer holding Usd data representing \p urdfStream, we
     // would like to use the Usd and UsdGeom APIs.  To do so, we first create an
     // anonymous in-memory layer, then create a UsdStage with that layer as its
@@ -1202,7 +1202,7 @@ SdfLayerRefPtr UsdUrdfStream::UsdUrdfTranslateUrdfToUsd()
         }
         // Use mass from URDF instead of density
         PhysicsSchemaMassAPI massAPI = PhysicsSchemaMassAPI::Apply(bodyXform.GetPrim());
-        float udrfMass = pbody->getMass();
+        double udrfMass = pbody->getMass();
         if (udrfMass > 0)
         {
             massAPI.CreateMassAttr().Set(udrfMass);

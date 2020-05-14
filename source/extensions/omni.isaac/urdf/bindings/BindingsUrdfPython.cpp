@@ -34,6 +34,7 @@ PYBIND11_MODULE(_urdf, m)
 
     defineInterfaceClass<Urdf>(m, "Urdf", "acquire_urdf_interface", "release_urdf_interface")
         .def("importUrdf", wrapInterfaceFunction(&Urdf::importUrdf))
-        .def("merge_fixed_joints", wrapInterfaceFunction(&Urdf::mergeFixedJoints));
+        .def("merge_fixed_joints", wrapInterfaceFunction(&Urdf::mergeFixedJoints))
+        .def("set_unit_scale", wrapInterfaceFunction(&Urdf::setUnitScale));
 }
 }

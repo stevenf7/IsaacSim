@@ -31,6 +31,11 @@ public:
         _doMergeJoints = doMergeJoints;
     }
 
+    void SetDistanceScale(float distanceScale)
+    {
+        _distanceScale = distanceScale;
+    }
+
     void SetRobotModel(NvIsaac::IRobotModel* model)
     {
         _robotModel = model;
@@ -69,6 +74,8 @@ private:
 
     // The "stream" is really just a pointer to a DOM and graphics loaded with RobotImpSDK
     NvIsaac::IRobotModel* _robotModel;
+
+    float _distanceScale = 100.0f;
 
     // File names are used to derive the possible package paths, and can have more than one if more then one urdf is
     // loaded or if a urdf if combined into this one.  FIXME

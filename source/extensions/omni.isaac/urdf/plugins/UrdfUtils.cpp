@@ -86,6 +86,11 @@ void mergeFixedJoints(bool merge)
     g_urdfStream->SetDoMergeJoints(merge);
 }
 
+void setUnitScale(float scale)
+{
+    g_urdfStream->SetDistanceScale(scale);
+}
+
 void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
     pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
@@ -130,4 +135,5 @@ void fillInterface(omni::isaac::urdf::Urdf& iface)
     memset(&iface, 0, sizeof(iface));
     iface.importUrdf = importUrdf;
     iface.mergeFixedJoints = mergeFixedJoints;
+    iface.setUnitScale = setUnitScale;
 }

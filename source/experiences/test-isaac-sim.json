@@ -14,7 +14,8 @@
                 "omni.isaac.dr",
                 "omni.isaac.motion_planning",
                 "omni.isaac.decals",
-                "omni.isaac.utils"
+                "omni.isaac.utils",
+                "omni.isaac.urdf"
             ]
         },
         "renderer": {
