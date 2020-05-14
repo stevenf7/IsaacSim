@@ -16,6 +16,11 @@
                 "omni.isaac.decals",
                 "omni.isaac.utils"
             ]
+        },
+        "renderer": {
+            "skipWhileMinimized": false,
+            "sleepMsOnFocus": 0,
+            "sleepMsOutOfFocus": 0
         }
     },
     "exts": {
