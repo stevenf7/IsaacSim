@@ -12,6 +12,7 @@
                 "omni.physx",
                 "omni.isaac.dynamic_control",
                 "omni.isaac.dr",
+                "omni.isaac.lidar",
                 "omni.isaac.motion_planning",
                 "omni.isaac.decals",
                 "omni.isaac.utils",
