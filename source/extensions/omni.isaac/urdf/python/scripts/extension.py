@@ -37,6 +37,8 @@ class Extension(omni.ext.IExt):
         self._filepicker = omni.kit.ui.FilePicker("Select URDF File", file_type=omni.kit.ui.FileDialogSelectType.FILE)
         self._filepicker.set_file_selected_fn(self._select_picked_folder_callback)
         self._filepicker.add_filter("URDF Files (*.urdf)", r".*.urdf$")
+        data_dir = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf"))
+        self._filepicker.set_current_directory(data_dir)
         self._filepicker.show()
 
     def on_shutdown(self):
