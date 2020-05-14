@@ -14,7 +14,6 @@ from .samples.articulation import articulation_info
 from .samples.joint_monkey import joint_monkey
 
 # from .test_dofs import test_dofs
-# from .joint_monkey import get_joint_monkey
 # from .test_attractor import get_test_attractor
 # from .test_cartpole import get_cart_pole
 
