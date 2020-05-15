@@ -10,6 +10,7 @@
 
 
 #include "../core/SensorComponent.h"
+#include "LidarDebug.h"
 
 #include <carb/fastcache/FastCache.h>
 #include <carb/physx/physx.h>
@@ -54,7 +55,7 @@ public:
         return mDrawLidarPoints;
     }
 
-    std::vector<carb::renderer::PrimitiveVertex>& getDebugLines()
+    std::vector<DebugData>& getDebugLines()
     {
         return mDebugLines;
     }
@@ -143,7 +144,7 @@ private:
     std::set<int> mActiveDebugLines;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
 
-    std::vector<carb::renderer::PrimitiveVertex> mDebugLines;
+    std::vector<omni::isaac::lidar::DebugData> mDebugLines;
 
     carb::physics::PhysX* mPhysx = nullptr;
     physx::PxScene* mPxScene = nullptr;

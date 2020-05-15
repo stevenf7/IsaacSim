@@ -28,6 +28,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # basic urdf test: joints and links are imported correctly
     async def test_urdf_basic(self):
+        await omni.kit.asyncapi.new_stage()
         urdf_path = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf/tests/test_basic.urdf")
         )
@@ -56,9 +57,11 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertNotEqual(fingerJoint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(fingerJoint.GetTypeName(), "PrismaticPhysicsJoint")
         self.assertAlmostEqual(fingerJoint.GetAttribute("upperLimit").Get(), 0.08)
+
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
+        await omni.kit.asyncapi.next_update()
         await asyncio.sleep(1.0)
         # nothing crashes
         editor.stop()
@@ -66,6 +69,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # advanced urdf test: test for all the categories of inputs that an urdf can hold
     async def test_urdf_advanced(self):
+        await omni.kit.asyncapi.new_stage()
         urdf_path = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf/tests/test_advanced.urdf")
         )
@@ -80,8 +84,8 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         prim = stage.GetPrimAtPath("/test_advanced")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
-        # linkPrim = stage.GetPrimAtPath("/test_advanced/link_1")
-        # TODO: self.assertEqual(round(linkPrim.GetAttribute('mass').Get()),10)
+        linkPrim = stage.GetPrimAtPath("/test_advanced/link_1")
+        self.assertEqual(round(linkPrim.GetAttribute("mass").Get()), 10)
 
         materialShader = stage.GetPrimAtPath("/test_advanced/link_1/cylinder/_0Shader")
         self.assertNotEqual(materialShader.GetPath(), Sdf.Path.emptyPath)
@@ -98,6 +102,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
+        await omni.kit.asyncapi.next_update()
         await asyncio.sleep(1.0)
         # nothing crashes
         editor.stop()
@@ -105,6 +110,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # test for importing urdf where fixed joints are merged
     async def test_urdf_merge_joints(self):
+        await omni.kit.asyncapi.new_stage()
         urdf_path = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf/tests/test_merge_joints.urdf")
         )

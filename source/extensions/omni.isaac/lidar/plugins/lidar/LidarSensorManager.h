@@ -18,6 +18,7 @@
 #include <omni/kit/IEditor.h>
 #include <omni/kit/IViewport.h>
 #include <omni/kit/KitUtils.h>
+#include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdUtils.h>
 
@@ -63,21 +64,22 @@ public:
      *
      * @param physxPtr
      */
-    LidarSensorManager(omni::kit::IEditor* editor,
+    LidarSensorManager(omni::renderer::IDebugDraw* debugDrawPtr,
                        carb::physics::PhysX* physxPtr,
                        carb::fastcache::FastCache* fastCachePtr,
                        carb::tasking::ITasking* taskingPtr)
     {
-        mEditor = editor;
+        mDebugDrawPtr = debugDrawPtr;
         mPhysxPtr = physxPtr;
         mFastCachePtr = fastCachePtr;
         mTasking = taskingPtr;
         mTaskCounter = mTasking->createCounter();
+        mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
+        mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
 
-
-        mViewportUiEventSub = carb::events::createSubscriptionToPop(
-            carb::getCachedInterface<omni::kit::IViewport>()->getViewportWindow(nullptr)->getUiDrawEventStream().get(),
-            [this](carb::events::IEvent* e) { onUIDraw(e, omni::kit::getImGui()); }, 0, "Lidar viewport ui update");
+        // mViewportUiEventSub = carb::events::createSubscriptionToPop(
+        //     carb::getCachedInterface<omni::kit::IViewport>()->getViewportWindow(nullptr)->getUiDrawEventStream().get(),
+        //     [this](carb::events::IEvent* e) { onUIDraw(e, omni::kit::getImGui()); }, 0, "Lidar viewport ui update");
     }
 
     /**
@@ -88,7 +90,7 @@ public:
     {
         mViewportUiEventSub = nullptr;
         mTasking->yieldUntilCounter(mTaskCounter);
-        // releaseDebugLineList();
+        releaseDebugLineList();
         mTasking->destroyCounter(mTaskCounter);
         mComponents.clear();
     }
@@ -108,7 +110,6 @@ public:
                 component.second->onStart();
             }
             mDoOnce = true;
-            releaseDebugLineList();
         }
         else
         {
@@ -139,6 +140,23 @@ public:
                 component.second->tick();
             }
 #endif
+        }
+
+        size_t mShapeDebugIndex = 0;
+        releaseDebugLineList();
+        createDebugLineList();
+        for (auto& component : mComponents)
+        {
+            if (component.second.get()->getDrawLidarPoints())
+            {
+                auto& debugLines = component.second.get()->getDebugLines();
+                for (const auto& line : debugLines)
+                {
+                    // mDebugLineVector.push_back(line);
+                    mDebugDrawPtr->setLine(
+                        mShapeDebugLineBuffer, mShapeDebugIndex++, line.startPos, line.color, line.endPos, line.color);
+                }
+            }
         }
         this->mTimeSeconds += dt;
         this->mTimeNanoSeconds = mTimeSeconds * 1e9;
@@ -197,81 +215,37 @@ public:
 private:
     void createDebugLineList()
     {
-        if (!mDebugLineList)
+        if (mShapeDebugLineBuffer == omni::renderer::IDebugDraw::eInvalidBuffer)
         {
-            carb::renderer::SceneId id = omni::usd::UsdContext::getContext()->getRendererScene();
-            mDebugLineList = mEditor->getRenderer()->createPrimitiveList(
-                mEditor->getRenderContext(), id, carb::renderer::PrimitiveKind::eLine,
-                carb::renderer::kPrimitiveListFlagDepthTest | carb::renderer::kPrimitiveListFlagDepthTestWrite);
+            mShapeDebugLineBuffer = mDebugDrawPtr->allocateLineBuffer(4096);
+            mShapeDebugRenderInstanceBuffer = mDebugDrawPtr->allocateRenderInstanceBuffer(mShapeDebugLineBuffer, 1);
+            float transform[16] = {};
+            transform[0] = 1.f;
+            transform[1 + 4] = 1.f;
+            transform[2 + 8] = 1.f;
+            transform[3 + 12] = 1.f;
 
-            mDebugLineVector.reserve(65535);
+            mDebugDrawPtr->setRenderInstance(mShapeDebugRenderInstanceBuffer, 0, &transform[0], 0);
         }
     }
 
     void releaseDebugLineList()
     {
-        if (mDebugLineList)
+        if (mShapeDebugLineBuffer != omni::renderer::IDebugDraw::eInvalidBuffer)
         {
-            if (mEditor->getRenderer())
-            {
-                mEditor->getRenderer()->destroyPrimitiveList(mEditor->getRenderContext(), mDebugLineList);
-                mDebugLineList = nullptr;
-            }
-
-            mDebugLineVector.resize(0);
-            mDebugLineVector.shrink_to_fit();
-        }
-    }
-
-
-    void onUIDraw(carb::events::IEvent* e, carb::imgui::ImGui* imGui)
-    {
-        mTasking->yieldUntilCounter(mTaskCounter);
-        mDebugLineVector.clear();
-
-        for (auto& component : mComponents)
-        {
-            if (component.second.get()->getDrawLidarPoints())
-            {
-                auto& debugLines = component.second.get()->getDebugLines();
-                for (const auto& line : debugLines)
-                {
-                    mDebugLineVector.push_back(line);
-                }
-            }
-        }
-
-        if (!mDebugLineVector.empty())
-        {
-            createDebugLineList();
-
-            carb::renderer::PrimitiveListSettings settings;
-            settings.width = 0.01f / (float)UsdGeomGetStageMetersPerUnit(omni::usd::UsdContext::getContext()->getStage());
-            settings.antialiasingWidth = -1;
-            settings.fadeOutStartDistance = 1e5f;
-            settings.fadeOutEndDistance = 1e9f;
-
-            carb::renderer::PrimitiveListInstance inst = {};
-            inst.transform.m[0] = 1.f;
-            inst.transform.m[1 + 4] = 1.f;
-            inst.transform.m[2 + 8] = 1.f;
-            inst.transform.m[3 + 12] = 1.f;
-
-            mEditor->getRenderer()->updatePrimitiveListSettings(mEditor->getRenderContext(), mDebugLineList, settings);
-            mEditor->getRenderer()->updatePrimitiveListInstances(
-                mEditor->getRenderContext(), mDebugLineList, &inst, 0, 1, 1);
-            mEditor->getRenderer()->updatePrimitiveListVertices(mEditor->getRenderContext(), mDebugLineList,
-                                                                mDebugLineVector.data(), 0, mDebugLineVector.size(),
-                                                                mDebugLineVector.size());
+            mDebugDrawPtr->deallocateLineBuffer(mShapeDebugLineBuffer);
+            mDebugDrawPtr->deallocateRenderInstanceBuffer(mShapeDebugRenderInstanceBuffer);
+            mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
+            mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
         }
     }
 
     carb::physics::PhysX* mPhysxPtr = nullptr;
-    omni::kit::IEditor* mEditor = nullptr;
+    omni::renderer::IDebugDraw* mDebugDrawPtr = nullptr;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
 
-    carb::renderer::PrimitiveList* mDebugLineList = nullptr;
-    std::vector<carb::renderer::PrimitiveVertex> mDebugLineVector;
+    omni::renderer::LineBuffer mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
+    omni::renderer::RenderInstanceBuffer mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
     carb::events::ISubscriptionPtr mViewportUiEventSub;
     carb::tasking::ITasking* mTasking = nullptr;
     carb::tasking::Counter* mTaskCounter = nullptr;
