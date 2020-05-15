@@ -40,6 +40,7 @@
 #include <omni/kit/KitUtils.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UsdContext.h>
+#include <omni/renderer/IDebugDraw.h>
 
 #include <map>
 #include <vector>
@@ -53,6 +54,7 @@ CARB_PLUGIN_IMPL_DEPS(carb::physics::PhysX,
                       omni::kit::IEditor,
                       omni::kit::IStageUpdate,
                       carb::fastcache::FastCache,
+                      omni::renderer::IDebugDraw,
                       carb::tasking::ITasking)
 
 // private stuff
@@ -61,6 +63,7 @@ namespace
 
 
 omni::kit::IEditor* g_editor = nullptr;
+omni::renderer::IDebugDraw* g_debugDraw = nullptr;
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 carb::imgui::ImGui* g_imGuiInterface = nullptr;
@@ -359,6 +362,13 @@ CARB_EXPORT void carbOnPluginStartup()
         return;
     }
 
+    g_debugDraw = framework->acquireInterface<omni::renderer::IDebugDraw>();
+    if (!g_debugDraw)
+    {
+        CARB_LOG_ERROR("*** Failed to acquire debugdraw interface\n");
+        return;
+    }
+
     g_imGuiInterface = framework->acquireInterface<carb::imgui::ImGui>();
     if (!g_imGuiInterface)
     {
@@ -390,7 +400,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
 
     gLidarSensorManager =
-        std::make_unique<omni::isaac::lidar::LidarSensorManager>(g_editor, g_physx, g_FastCache, gTasking);
+        std::make_unique<omni::isaac::lidar::LidarSensorManager>(g_debugDraw, g_physx, g_FastCache, gTasking);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Lidar Interface";

@@ -235,7 +235,7 @@ void scan(int start,
           carb::physics::PhysX* physxPtr,
           physx::PxScene* physxScenePtr,
           pxr::LidarSchemaLidar& prim,
-          std::vector<carb::renderer::PrimitiveVertex>& debugLines,
+          std::vector<omni::isaac::lidar::DebugData>& debugLines,
           std::vector<uint16_t>& depth,
           std::vector<uint8_t>& intensity,
           std::vector<float>& zenith,
@@ -276,17 +276,11 @@ void scan(int start,
                 if (drawLidarPoints)
                 {
                     carb::Float3 hitPos = (const carb::Float3&)raycastHit.position;
-                    carb::renderer::PrimitiveVertex startPosition, endPosition;
-
-                    startPosition.position = (const carb::Float3&)origin;
-                    endPosition.position = hitPos;
-                    startPosition.color = { 199.0f / 255.0f, 244.0f / 255.0f, 100.0f / 255.0f, 1.0f };
-                    endPosition.color = { 199.0f / 255.0f, 244.0f / 255.0f, 100.0f / 255.0f, 1.0f };
-
-                    startPosition.width = endPosition.width = 1;
-
-                    debugLines.push_back(startPosition);
-                    debugLines.push_back(endPosition);
+                    omni::isaac::lidar::DebugData data;
+                    data.startPos = (const carb::Float3&)origin;
+                    data.endPos = (const carb::Float3&)hitPos;
+                    data.color = 0xFFc7f464;
+                    debugLines.push_back(data);
                 }
             }
             else
@@ -296,16 +290,11 @@ void scan(int start,
                 if (drawLidarPoints)
                 {
                     physx::PxVec3 hitPos = origin + unitDir * maxDepth;
-                    carb::renderer::PrimitiveVertex startPosition, endPosition;
-
-                    startPosition.position = (const carb::Float3&)origin;
-                    endPosition.position = (const carb::Float3&)hitPos;
-                    startPosition.color = { 85.0f / 255.0f, 98.0f / 255.0f, 112.0f / 255.0f, 1.0f };
-                    endPosition.color = { 85.0f / 255.0f, 98.0f / 255.0f, 112.0f / 255.0f, 1.0f };
-                    startPosition.width = endPosition.width = 1;
-
-                    debugLines.push_back(startPosition);
-                    debugLines.push_back(endPosition);
+                    omni::isaac::lidar::DebugData data;
+                    data.startPos = (const carb::Float3&)origin;
+                    data.endPos = (const carb::Float3&)hitPos;
+                    data.color = 0xFF556270;
+                    debugLines.push_back(data);
                 }
             }
 

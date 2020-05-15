@@ -35,7 +35,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         lidar.CreateMinRangeAttr().Set(0.4)
         lidar.CreateMaxRangeAttr().Set(100.0)
         lidar.CreateHighLodAttr().Set(True)
-        lidar.CreateDrawLidarPointsAttr().Set(False)
+        lidar.CreateDrawLidarPointsAttr().Set(True)
 
         return lidar
 
@@ -68,8 +68,8 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Tests a static lidar with a cube in front of it
     async def test_static_lidar(self):
+        await omni.kit.asyncapi.new_stage()
         stage = omni.usd.get_context().get_stage()
-
         # set up axis to z
         UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
         UsdGeom.SetStageMetersPerUnit(stage, 0.01)
@@ -97,7 +97,6 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         lidar.GetRotationRateAttr().Set(0.0)
         lidar.GetHighLodAttr().Set(False)
-        lidar.GetDrawLidarPointsAttr().Set(True)
         lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
         # Run for a second
@@ -112,8 +111,11 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertLess(depth[0, 0], 2000)
         self.assertEqual(depth[450, 0], 65535)
 
+        editor.stop()
+
     # Tests a lidar on a falling cube, with a cube in front of it after it lands
     async def test_dynamic_lidar(self):
+        await omni.kit.asyncapi.new_stage()
         stage = omni.usd.get_context().get_stage()
 
         # set up axis to z
@@ -147,7 +149,6 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         lidar.GetRotationRateAttr().Set(0.0)
         lidar.GetHighLodAttr().Set(False)
-        lidar.GetDrawLidarPointsAttr().Set(True)
         lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 50.0))
 
         # Run for two seconds
@@ -160,3 +161,4 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         depth = self._lidar.get_depth_data(lidarPath)
         self.assertLess(depth[0, 0], 2000)
         self.assertEqual(depth[450, 0], 65535)
+        editor.stop()
