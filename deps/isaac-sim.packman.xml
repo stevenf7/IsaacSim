@@ -17,6 +17,6 @@
     <package name="isaac_engine" version="linux_x64_20200505_84d332506" platforms="linux-x86_64"/>
   </dependency>
   <dependency name="robotimpsdk" linkPath="../_build/target-deps/robotimpsdk">
-    <package name="robotimpsdk" version="100-20190809-60ba355f81"/>
+    <package name="robotimpsdk" version="100-20200515-851a354c3fd"/>
   </dependency>
 </project>
