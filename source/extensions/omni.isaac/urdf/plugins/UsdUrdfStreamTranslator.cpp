@@ -574,7 +574,7 @@ UsdPrim AddCapsinderAttrs(UsdGeomCapsinder gprim,
     gprim.GetHeightAttr().Set(double(distanceScale * height));
     gprim.GetRadiusAttr().Set(double(distanceScale * radius));
     NvIsaac::Transform rotatedPose = pose;
-    rotatedPose.q *= NvIsaac::Quat(M_PI_2, NvIsaac::Vec3(0.0, 1.0, 1.0));
+    rotatedPose.q *= NvIsaac::Quat(M_PI * 0.5, NvIsaac::Vec3(0.0, 1.0, 1.0));
     SetToPose(gprim, rotatedPose, distanceScale);
 
     VtVec3fArray color(1);
