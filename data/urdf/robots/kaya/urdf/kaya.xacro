@@ -1,0 +1,301 @@
+<?xml version="1.0"?>
+<robot name="kaya" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="inertial_box" params="size rho:=1 xyz:='0 0 0' rpy:='0 0 0'">
+	<xacro:property name="w" value="${size.split()[0]}"/>
+	<xacro:property name="d" value="${size.split()[1]}"/>
+	<xacro:property name="h" value="${size.split()[2]}"/>
+	<xacro:property name="mass" value="${rho*w*d*h}"/>
+	<inertial>
+	  <origin xyz="${xyz}" rpy="${rpy}"/>
+	  <mass value="${mass}"/>
+	  <inertia ixx="${(mass/12)*(h**2 + d**2)}"
+			   iyy="${(mass/12)*(w**2 + h**2)}"
+			   izz="${(mass/12)*(w**2 + d**2)}"
+			   ixy="0" ixz="0" iyz="0"/>
+	</inertial>
+  </xacro:macro>
+
+  <xacro:macro name="inertial_cylinder" params="length radius rho:=1 xyz:='0 0 0' rpy:='0 0 0'">
+	<xacro:property name="mass" value="${rho*pi*length*radius**2}"/>
+	<inertial>
+	  <origin xyz="${xyz}" rpy="${rpy}"/>
+	  <mass value="${mass}"/>
+	  <inertia ixx="${(mass/12)*(3*radius**2 + length**2)}"
+			   iyy="${(mass/12)*(3*radius**2 + length**2)}"
+			   izz="${(mass/2)*radius**2}"
+			   ixy="0" ixz="0" iyz="0"/>
+	</inertial>
+  </xacro:macro>
+
+
+  <xacro:macro name="collision_cylinder" params="length radius xyz:='0 0 0' rpy:='0 0 0'">
+	<collision>
+	  <origin xyz="${xyz}" rpy="${rpy}"/>
+	  <geometry><cylinder length="${length}" radius="${radius}"/></geometry>
+	</collision>
+  </xacro:macro>
+
+  <xacro:macro name="collision_capsule" params="length radius xyz:='0 0 0' rpy:='0 0 0'">
+	<collision>
+	  <origin xyz="${xyz}" rpy="${rpy}"/>
+	  <geometry><capsule length="${length}" radius="${radius}"/></geometry>
+	</collision>
+  </xacro:macro>
+
+  
+  <xacro:macro name="collision_box" params="size xyz:='0 0 0' rpy:='0 0 0'">
+	<collision>
+	  <origin xyz="${xyz}" rpy="${rpy}"/>
+	  <geometry><box size="${size}"/></geometry>
+	</collision>
+  </xacro:macro>
+
+  <xacro:macro name="collision_sphere" params="radius xyz:='0 0 0' rpy:='0 0 0'">
+	<collision>
+	  <origin xyz="${xyz}" rpy="${rpy}"/>
+	  <geometry><sphere radius="${radius}"/></geometry>
+	</collision>
+  </xacro:macro>
+
+
+
+
+
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+		<mesh filename="package://meshes/base.dae"/>
+      </geometry>
+    </visual>
+	<collision>
+	  <geometry>
+		<mesh filename="package://meshes/base_collision.dae"/>
+	  </geometry>
+	</collision>
+  </link>
+
+
+  <link name="assembly_battery">
+    <visual>
+      <geometry>
+		<mesh filename="package://meshes/assembly_battery.dae"/>
+      </geometry>
+    </visual>
+	<xacro:collision_box xyz="0.00033 -0.0127 0.00241" size="0.770 1.140 0.486"/>
+	<xacro:inertial_box xyz="0.00033 -0.0127 0.00241" size="0.770 1.140 0.486" rho="10"/>
+
+  </link>
+  <joint name="assembly_battery_joint" type="fixed">
+	<origin xyz="0.00996 0.55389 -0.33654"/>
+	<parent link="base_link"/>
+	<child link="assembly_battery"/>
+  </joint>
+
+
+  <link name="nano_chassis_base">
+    <visual>
+      <geometry>
+		<mesh filename="package://meshes/nano_chassis_base.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="nano_chassis_base_joint" type="fixed">
+	<origin xyz="0.00825 0.77436 0.24927"/>
+	<parent link="base_link"/>
+	<child link="nano_chassis_base"/>
+  </joint>
+
+  <link name="nano_chassis_bridge">
+    <visual>
+      <geometry>
+		<mesh filename="package://meshes/nano_chassis_bridge.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="nano_chassis_bridge_joint" type="fixed">
+	<origin xyz="0.01140 0.71549 0.62302"/>
+	<parent link="base_link"/>
+	<child link="nano_chassis_bridge"/>
+  </joint>
+
+  <xacro:macro name="shock_mount" params="num xyz">
+  	<link name="shock_mount_${num}">
+      <visual>
+  		<geometry>
+  		  <mesh filename="package://meshes/shock_mount.dae"/>
+  		</geometry>
+      </visual>
+  	</link>
+  	<joint name="shock_mount_${num}_joint" type="fixed">
+  	  <origin xyz="${xyz}"/>
+  	  <parent link="base_link"/>
+  	  <child link="shock_mount_${num}"/>
+  	</joint>
+  </xacro:macro>
+
+  <xacro:shock_mount num="0" xyz="-0.21377 0.75734 0.73117"/>
+  <xacro:shock_mount num="1" xyz=" 0.23644 0.75734 0.73117"/>
+  <xacro:shock_mount num="2" xyz=" 0.01141 0.54717 0.73117"/>
+  
+  <link name="nano_chassis_rs_mount">
+    <visual>
+      <geometry>
+		<mesh filename="package://meshes/nano_chassis_rs_mount.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="nano_chassis_rs_mount_joint" type="fixed">
+	<origin xyz="0.01192 0.79804 0.84978"/>
+	<parent link="base_link"/>
+	<child link="nano_chassis_rs_mount"/>
+  </joint>
+
+  <link name="realsense">
+    <visual>
+      <geometry>
+		<mesh filename="package://meshes/realsense.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="realsense_joint" type="fixed">
+	<origin xyz="0.01053 0.90384 0.90843"/>
+	<parent link="base_link"/>
+	<child link="realsense"/>
+  </joint>
+
+  
+  <link name="pusher">
+    <visual>
+      <geometry>
+		<mesh filename="package://meshes/pusher.dae"/>
+      </geometry>
+    </visual>
+	<xacro:collision_box xyz="       0 -0.00983 -0.47219"                    size="0.290 0.090 0.952"/>
+	<xacro:collision_box xyz="-0.49078  0.17466 -0.74854" rpy="0 0 -0.41888" size="0.904 0.056 0.394"/>
+	<xacro:collision_box xyz=" 0.49078  0.17466 -0.74854" rpy="0 0  0.41888" size="0.904 0.056 0.394"/>
+	<xacro:collision_box xyz="-0.95612  0.44530 -0.81565" rpy="0 0 -1.05770" size="0.198 0.056 0.258"/>
+	<xacro:collision_box xyz=" 0.95612  0.44530 -0.81565" rpy="0 0  1.05770" size="0.198 0.056 0.258"/>
+
+  </link>
+  <joint name="pusher_joint" type="fixed">
+	<origin xyz="0.0 1.24025 0.15933"/>
+	<parent link="base_link"/>
+	<child link="pusher"/>
+  </joint>
+
+
+
+  
+
+
+
+
+
+  <xacro:macro name="roller" params="wheel_num num side">
+
+	<!-- Radius of the sphere used for the roller -->
+	<xacro:property name="radius" value="0.2"/>
+
+	<!-- Distance from center of wheel to the visual rotation axis -->
+	<xacro:property name="visual_axis_offset" value="-0.33162"/>
+	<!-- Distance from center of wheel to the bottom of the roller -->
+	<xacro:property name="roller_bottom_offset" value="-0.41319"/>
+	<!-- Distance from center of wheel to the real rotation axis-->
+	<xacro:property name="axis_offset" value="${roller_bottom_offset + radius}"/>
+
+  	<xacro:property name="angle" value="${(2*num+side)*0.2*pi}"/>
+
+  	<link name="roller_${wheel_num}_${side}_${num}">
+      <visual>
+  	  	<geometry>
+		  <box size="0.001 0.001 0.001"/>
+  	  	</geometry>
+      </visual>
+	  <!-- <xacro:collision_cylinder rpy="0 ${pi/2} 0" length="0.232" radius="0.094"/> -->
+	  <xacro:collision_sphere xyz="0 0 0" radius="${radius}"/>
+	  <xacro:inertial_cylinder rpy="0 ${pi/2} 0" length="0.232" radius="0.094"/>
+	</link>
+  	<joint name="roller_${wheel_num}_${side}_${num}_joint" type="continuous">
+  	  <origin xyz="${-sin(angle)*axis_offset}
+				   ${(2*side-1)*-0.09521}
+				   ${cos(angle)*axis_offset}" rpy="0 ${-angle} 0"/>
+  	  <parent link="wheel_${wheel_num}"/>
+  	  <child link="roller_${wheel_num}_${side}_${num}"/>
+  	</joint>
+
+
+  </xacro:macro>
+
+  
+  <xacro:macro name="mx12w_assembly" params="num xyz rpy">
+	<link name="mx12w_${num}">
+      <visual>
+  		<geometry>
+  		  <mesh filename="package://meshes/mx12w.dae"/>
+  		</geometry>
+      </visual>
+	  <xacro:collision_box size="0.328 0.380 0.502"/>
+	  <xacro:inertial_box size="0.328 0.380 0.502"/>
+  	</link>
+  	<joint name="mx12w_${num}_joint" type="fixed">
+  	  <origin xyz="${xyz}" rpy="${rpy}"/>
+  	  <parent link="base_link"/>
+  	  <child link="mx12w_${num}"/>
+  	</joint>
+  
+	<link name="axle_${num}">
+      <visual>
+		<geometry>
+  		  <mesh filename="package://meshes/axle.dae"/>
+		</geometry>
+      </visual>
+	  <xacro:collision_cylinder xyz="0.0 -0.18622 0.0" rpy="${pi/2} 0 0" length="0.448" radius="0.155"/>
+	  <xacro:inertial_cylinder xyz="0.0 -0.18622 0.0" rpy="${pi/2} 0 0" length="0.448" radius="0.155"/>
+	</link>
+	<joint name="axle_${num}_joint" type="continuous">
+  	  <origin xyz="-0.00105 -0.22823 -0.12904"/>
+  	  <axis xyz="0 -1 0"/>
+  	  <parent link="mx12w_${num}"/>
+  	  <child link="axle_${num}"/>
+	</joint>
+
+	<link name="wheel_${num}">
+      <visual>
+		<geometry>
+  		  <mesh filename="package://meshes/wheel_and_rollers.dae"/>
+		</geometry>
+      </visual>
+	  <xacro:collision_cylinder rpy="${pi/2} 0 0" length="0.292" radius="0.340"/>
+	  <xacro:inertial_cylinder rpy="${pi/2} 0 0" length="0.292" radius="0.378"/>
+	</link>
+	<joint name="wheel_${num}_joint" type="fixed">
+  	  <origin xyz="-0.00023 -0.19556 -0.00006"/>
+  	  <axis xyz="0 -1 0"/>
+  	  <parent link="axle_${num}"/>
+  	  <child link="wheel_${num}"/>
+	</joint>
+
+	<xacro:roller wheel_num="${num}" num="0" side="0"/>
+	<xacro:roller wheel_num="${num}" num="1" side="0"/>
+	<xacro:roller wheel_num="${num}" num="2" side="0"/>
+	<xacro:roller wheel_num="${num}" num="3" side="0"/>
+	<xacro:roller wheel_num="${num}" num="4" side="0"/>
+	<xacro:roller wheel_num="${num}" num="0" side="1"/>
+	<xacro:roller wheel_num="${num}" num="1" side="1"/>
+	<xacro:roller wheel_num="${num}" num="2" side="1"/>
+	<xacro:roller wheel_num="${num}" num="3" side="1"/>
+	<xacro:roller wheel_num="${num}" num="4" side="1"/>
+
+  </xacro:macro>
+
+
+  <xacro:mx12w_assembly num="0" xyz=" 0.00105 -0.25453 -0.32597" rpy="0 0 0"/>
+  <xacro:mx12w_assembly num="1" xyz=" 0.65344  0.87794 -0.32597" rpy="0 0 2.0944"/>
+  <xacro:mx12w_assembly num="2" xyz="-0.65344  0.87794 -0.32597" rpy="0 0 4.1888"/>
+
+  
+  
+  
+</robot>
