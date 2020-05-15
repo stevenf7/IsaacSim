@@ -107,9 +107,9 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         body_states = self._dc.get_articulation_body_states(art, _dynamic_control.STATE_ALL)
         body_idx = self._dc.find_articulation_body_index(art, "panda_hand")
         body_pos = body_states["pose"]["p"][body_idx]
-        expected_pos = (19.73296, 15.00503, 54.58207)
+        expected_pos = (19.73685, 15.00777, 54.59134)
         self.assertTupleEqual(
-            tuple(np.round(np.array(body_pos.tolist()), 5)), tuple(np.round(np.array(expected_pos), 5))
+            tuple(np.round(np.array(body_pos.tolist()), 2)), tuple(np.round(np.array(expected_pos), 2))
         )
 
         pass
