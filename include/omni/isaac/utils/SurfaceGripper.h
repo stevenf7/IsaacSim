@@ -68,6 +68,10 @@ public:
         mJointProperties.damping = 1.0e5f;
         mJointProperties.forceLimit = 0;
         mJointProperties.torqueLimit = 0;
+        for (int i = 0; i < 6; ++i)
+        {
+            mJointProperties.hasLimits[i] = false;
+        }
 
         mIsClosed = false;
         mIsInitialized = false;
@@ -150,16 +154,18 @@ public:
             DcHandle rb_0 = mDc->getRigidBody(mProps.parentPath.c_str());
             if (!rb_0)
             {
-                CARB_LOG_ERROR("Rarent rigid Body handle not valid");
+                CARB_LOG_ERROR("Parent rigid Body handle not valid");
                 return false;
             }
             DcTransform t_0 = mDc->getRigidBodyPose(rb_0);
-            DcTransform threshOffset;
-            threshOffset.p.x = mProps.gripThreshold;
             DcTransform _t_0 = (t_0 * mProps.offset);
             carb::Float3 p = _t_0.p;
-            // _t_0 = _t_0 * threshOffset;//Disabling until we get soft meshes for grippers
-            carb::Float3 dir = getBasisVectorX(t_0.r);
+            carb::Float3 dir = getBasisVectorX(_t_0.r);
+            // CARB_LOG_WARN("gripper position: (%f, %f, %f)", p.x, p.y, p.z);
+            // CARB_LOG_WARN("gripper direction: (%f, %f, %f)", dir.x, dir.y, dir.z);
+            // DcTransform threshOffset;
+            // threshOffset.p.x = mProps.gripThreshold;
+            // _t_0 = _t_0 * threshOffset; //Disabling until we get soft meshes for grippers
             DcRayCastResult hit = mDc->rayCast(p, dir, mProps.gripThreshold);
 
             if (hit.hit)
@@ -172,16 +178,32 @@ public:
                 mJointProperties.pose0 = mProps.offset;
                 mJointProperties.pose1 = t_1;
                 mJointProperties.axes = kDcAxisAll;
-                memset(mJointProperties.hasLimits, 0, sizeof(bool) * 6);
-                mJointProperties.hasLimits[4] = true;
-                mJointProperties.hasLimits[5] = true;
+
+
                 mJointProperties.stiffness = mProps.stiffness;
                 mJointProperties.damping = mProps.damping;
                 mJointProperties.limitStiffness = mProps.stiffness;
                 mJointProperties.limitDamping = mProps.damping;
-                mJointProperties.softLimit = true;
-                mJointProperties.lowerLimit = mProps.bendAngle;
-                mJointProperties.upperLimit = mProps.bendAngle;
+                if (mProps.bendAngle > 0)
+                {
+                    mJointProperties.softLimit = true;
+                    mJointProperties.lowerLimit = mProps.bendAngle;
+                    mJointProperties.upperLimit = mProps.bendAngle;
+                    mJointProperties.jointType = DcJointType::eSpherical;
+                    mJointProperties.hasLimits[4] = true;
+                    mJointProperties.hasLimits[5] = true;
+                }
+                else
+                {
+                    mJointProperties.hasLimits[4] = false;
+                    mJointProperties.hasLimits[5] = false;
+                    mJointProperties.softLimit = false;
+                    mJointProperties.lowerLimit = 0;
+                    mJointProperties.upperLimit = 0;
+                    mJointProperties.jointType = DcJointType::eFixed;
+                }
+
+
                 mJointProperties.forceLimit = mProps.forceLimit;
                 mJointProperties.torqueLimit = mProps.torqueLimit;
                 mDc->setD6JointProperties(mJointHandle, &mJointProperties);
