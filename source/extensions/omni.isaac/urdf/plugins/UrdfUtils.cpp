@@ -48,7 +48,7 @@ std::unique_ptr<UsdUrdfStream> g_urdfStream = nullptr;
 
 void importUrdf(std::string filename)
 {
-    CARB_LOG_ERROR("Trying to import %s", filename.c_str());
+    CARB_LOG_INFO("Trying to import %s", filename.c_str());
 
     std::ifstream fin(filename.c_str());
     if (!fin.is_open())
