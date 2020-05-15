@@ -7,6 +7,7 @@ import carb.tokens
 import os
 import asyncio
 import numpy as np
+from pxr import Gf
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
@@ -239,3 +240,38 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         # This check fails currently, not sure why
         # self.assertAlmostEqual(drive_target * 24.0 / 31.613607, ang_vel[2], 1)
         editor.stop()
+
+    async def test_articulation_position(self):
+        await omni.kit.asyncapi.new_stage()
+        (result, error) = await load_test_file("assets/robots/franka/franka.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+        # Start Simulation and wait
+        editor = omni.kit.editor.get_editor_interface()
+        editor.play()
+        await omni.kit.asyncapi.next_update()
+        art = self._dc.get_articulation("/panda")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+
+        dof_ptr = self._dc.find_articulation_dof(art, "panda_finger_joint1")
+
+        # set new dof pos target
+        new_pos = 4.0
+        self.assertTrue(self._dc.set_dof_position_target(dof_ptr, new_pos))
+        await asyncio.sleep(2.0)
+        dof_pos_new = self._dc.get_dof_position(dof_ptr)
+        self.assertTrue(Gf.IsClose(dof_pos_new, new_pos, 0.01))
+
+        # set new dof pos target
+        new_pos = 0.0
+        self.assertTrue(self._dc.set_dof_position_target(dof_ptr, new_pos))
+        await asyncio.sleep(2.0)
+        dof_pos_new = self._dc.get_dof_position(dof_ptr)
+        self.assertTrue(Gf.IsClose(dof_pos_new, new_pos, 0.01))
+
+        # set new dof pos target
+        new_pos = 2.0
+        self.assertTrue(self._dc.set_dof_position_target(dof_ptr, new_pos))
+        await asyncio.sleep(2.0)
+        dof_pos_new = self._dc.get_dof_position(dof_ptr)
+        self.assertTrue(Gf.IsClose(dof_pos_new, new_pos, 0.01))
