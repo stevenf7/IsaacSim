@@ -824,16 +824,28 @@ void AddRawJointFramesToStage(UsdStageRefPtr stage,
 }
 
 template <class T>
-void SetLimit(T& jointAPI, const NvIsaac::IRobotSkeleton::DOF* dn)
+void SetLimit(T& jointAPI, const NvIsaac::IRobotSkeleton::DOF* dn, float distanceScale)
 {
     jointAPI.CreateLowerLimitAttr().Set(dn->limitLow);
     jointAPI.CreateUpperLimitAttr().Set(dn->limitHigh);
 }
 template <>
-void SetLimit(PhysicsSchemaSphericalPhysicsJoint& sphericalJointAPI, const NvIsaac::IRobotSkeleton::DOF* dn)
+void SetLimit(PhysicsSchemaSphericalPhysicsJoint& sphericalJointAPI,
+              const NvIsaac::IRobotSkeleton::DOF* dn,
+              float distanceScale)
 {
     sphericalJointAPI.CreateConeAngle0LimitAttr().Set(dn->limitLow);
     sphericalJointAPI.CreateConeAngle1LimitAttr().Set(dn->limitHigh);
+}
+
+template <>
+void SetLimit(PhysicsSchemaPrismaticPhysicsJoint& prismaticJointAPI,
+              const NvIsaac::IRobotSkeleton::DOF* dn,
+              float distanceScale)
+{
+
+    prismaticJointAPI.CreateLowerLimitAttr().Set(dn->limitLow * distanceScale);
+    prismaticJointAPI.CreateUpperLimitAttr().Set(dn->limitHigh * distanceScale);
 }
 
 template <class T>
@@ -841,7 +853,8 @@ void AddSingleJoint(const NvIsaac::IRobotSkeleton::JointNode* jn,
                     UsdStageRefPtr stage,
                     const SdfPath& jointPath,
                     PhysicsSchemaPhysicsJoint& jointPrimBase,
-                    const NvIsaac::IRobotSkeleton* skel)
+                    const NvIsaac::IRobotSkeleton* skel,
+                    float distanceScale)
 {
     T jointPrim = T::Define(stage, SdfPath(jointPath));
     jointPrimBase = jointPrim;
@@ -854,7 +867,7 @@ void AddSingleJoint(const NvIsaac::IRobotSkeleton::JointNode* jn,
 
         if (dn->limitsEnabled)
         {
-            SetLimit(jointPrim, dn);
+            SetLimit(jointPrim, dn, distanceScale);
         }
 
         if (jn->getType() == NvIsaac::RobotJointType::kPrismatic)
@@ -920,15 +933,18 @@ void AddJointsToStage(UsdStageRefPtr stage,
         }
         else if (jn->getType() == NvIsaac::RobotJointType::kPrismatic)
         {
-            AddSingleJoint<PhysicsSchemaPrismaticPhysicsJoint>(jn, stage, SdfPath(jointPath), jointPrim, skel);
+            AddSingleJoint<PhysicsSchemaPrismaticPhysicsJoint>(
+                jn, stage, SdfPath(jointPath), jointPrim, skel, distanceScale);
         }
         else if (jn->getType() == NvIsaac::RobotJointType::kSpherical)
         {
-            AddSingleJoint<PhysicsSchemaSphericalPhysicsJoint>(jn, stage, SdfPath(jointPath), jointPrim, skel);
+            AddSingleJoint<PhysicsSchemaSphericalPhysicsJoint>(
+                jn, stage, SdfPath(jointPath), jointPrim, skel, distanceScale);
         }
         else // default if (jn->getType() == NvIsaac::RobotJointType::kRevolute)
         {
-            AddSingleJoint<PhysicsSchemaRevolutePhysicsJoint>(jn, stage, SdfPath(jointPath), jointPrim, skel);
+            AddSingleJoint<PhysicsSchemaRevolutePhysicsJoint>(
+                jn, stage, SdfPath(jointPath), jointPrim, skel, distanceScale);
         }
 
         SdfPathVector val0{ SdfPath(actor0) };
@@ -1030,8 +1046,8 @@ void AddJointsToStage(UsdStageRefPtr stage,
 
 SdfLayerRefPtr UsdUrdfStream::UsdUrdfTranslateUrdfToUsd()
 {
-    float distanceScale = _distanceScale; // TODO make this variable, but for now assume urdf is in m and graphene is in
-                                          // cm
+    float distanceScale = _distanceScale;
+    // cm
     // To create an SdfLayer holding Usd data representing \p urdfStream, we
     // would like to use the Usd and UsdGeom APIs.  To do so, we first create an
     // anonymous in-memory layer, then create a UsdStage with that layer as its
