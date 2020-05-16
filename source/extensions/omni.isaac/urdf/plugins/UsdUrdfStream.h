@@ -8,12 +8,23 @@
 //
 
 #pragma once
+#include <omni/isaac/urdf/Urdf.h>
+
 #include <string>
 
 namespace NvIsaac
 {
 class IRobotModel;
 }
+
+
+namespace omni
+{
+namespace isaac
+{
+namespace urdf
+{
+
 
 /// \class UsdUrdfStream
 ///
@@ -23,34 +34,25 @@ class IRobotModel;
 class UsdUrdfStream
 {
 public:
-    /// Construct with an optional epsilon value.
-    explicit UsdUrdfStream();
-
-    void SetDoMergeJoints(bool doMergeJoints)
+    void SetImportConfig(const ImportConfig& importConfig)
     {
-        _doMergeJoints = doMergeJoints;
+        mImportConfig = importConfig;
     }
-
-    void SetDistanceScale(float distanceScale)
-    {
-        _distanceScale = distanceScale;
-    }
-
     void SetRobotModel(NvIsaac::IRobotModel* model)
     {
-        _robotModel = model;
+        mRobotModel = model;
     }
     NvIsaac::IRobotModel* GetRobotModel() const
     {
-        return _robotModel;
+        return mRobotModel;
     }
     void SetFileName(std::string const& name)
     {
-        _fileName = name;
+        mFileName = name;
     }
     std::string GetFileName() const
     {
-        return _fileName;
+        return mFileName;
     }
 
 
@@ -66,18 +68,20 @@ public:
 
     /// Return an anonymous (in-memory-only) layer with data from \p urdfStream
     /// translated to Usd.
-    pxr::SdfLayerRefPtr UsdUrdfTranslateUrdfToUsd();
+    void UsdUrdfTranslateUrdfToUsd(pxr::UsdStageRefPtr stage);
 
 
 private:
-    bool _doMergeJoints = false;
-
+    ImportConfig mImportConfig;
     // The "stream" is really just a pointer to a DOM and graphics loaded with RobotImpSDK
-    NvIsaac::IRobotModel* _robotModel;
+    NvIsaac::IRobotModel* mRobotModel;
 
-    float _distanceScale = 100.0f;
 
     // File names are used to derive the possible package paths, and can have more than one if more then one urdf is
     // loaded or if a urdf if combined into this one.  FIXME
-    std::string _fileName;
+    std::string mFileName;
 };
+
+}
+}
+}

@@ -34,7 +34,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
-        self._urdf_interface.importUrdf(urdf_path)
+        self._urdf_interface.import_urdf(urdf_path, _urdf.ImportConfig())
 
         print("check object exist")
         prim = stage.GetPrimAtPath("/test_basic")
@@ -56,7 +56,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         fingerJoint = stage.GetPrimAtPath("/test_basic/palm_link/finger_1_joint")
         self.assertNotEqual(fingerJoint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(fingerJoint.GetTypeName(), "PrismaticPhysicsJoint")
-        self.assertAlmostEqual(fingerJoint.GetAttribute("upperLimit").Get(), 0.08)
+        self.assertAlmostEqual(fingerJoint.GetAttribute("upperLimit").Get(), 8)
 
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
@@ -77,8 +77,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         stage = omni.usd.get_context().get_stage()
 
         # enable merging fixed joints
-        self._urdf_interface.merge_fixed_joints(True)
-        self._urdf_interface.importUrdf(urdf_path)
+        import_config = _urdf.ImportConfig()
+        import_config.merge_fixed_joints = True
+        self._urdf_interface.import_urdf(urdf_path, import_config)
 
         # check if object is there
         prim = stage.GetPrimAtPath("/test_advanced")
@@ -118,8 +119,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         stage = omni.usd.get_context().get_stage()
 
         # enable merging fixed joints
-        self._urdf_interface.merge_fixed_joints(True)
-        self._urdf_interface.importUrdf(urdf_path)
+        import_config = _urdf.ImportConfig()
+        import_config.merge_fixed_joints = True
+        self._urdf_interface.import_urdf(urdf_path, import_config)
 
         # the merged link shouldn't be there
         prim = stage.GetPrimAtPath("/test_merge_joints/link_2")

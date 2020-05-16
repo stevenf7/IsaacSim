@@ -18,9 +18,6 @@
 using std::string;
 using std::vector;
 
-// #include <boost/iterator.hpp>
-// #include <boost/lexical_cast.hpp>
-
 /// FIXME
 #if defined(DEBUG) || defined(ERROR)
 // int oldDEBUG = DEBUG;
@@ -35,9 +32,13 @@ using std::vector;
 #    include <NvIsaacRobotModel.h>
 #endif
 
-UsdUrdfStream::UsdUrdfStream()
+
+namespace omni
 {
-}
+namespace isaac
+{
+namespace urdf
+{
 
 
 bool UsdUrdfStream::UsdUrdfReadDataFromFile(std::string const& fileName, std::string* error)
@@ -89,7 +90,7 @@ bool UsdUrdfStream::UsdUrdfReadDataFromStream(std::istream& input, std::string* 
     }
 
     NvIsaac::RobotModelImportSettings settings;
-    settings.mergeBodiesConnectedByFixedJoints = _doMergeJoints;
+    settings.mergeBodiesConnectedByFixedJoints = mImportConfig.mergeFixedJoints;
 
     NvIsaac::IRobotModel* model =
         modelMgr->importModel(GetFileName().c_str(), settings, inputAsVec.data(), inputAsVec.size());
@@ -106,4 +107,8 @@ bool UsdUrdfStream::UsdUrdfReadDataFromStream(std::istream& input, std::string* 
     }
     SetRobotModel(model);
     return true;
+}
+
+}
+}
 }
