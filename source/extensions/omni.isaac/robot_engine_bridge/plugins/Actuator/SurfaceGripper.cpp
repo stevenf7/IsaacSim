@@ -136,10 +136,10 @@ void SurfaceGripper::onComponentChange()
     pxr::GfQuatf offsetRotation(1, 0, 0, 0);
 
     mProps.gripThreshold = 1;
-    mProps.forceLimit = 1e7;
-    mProps.torqueLimit = 1e5;
-    mProps.bendAngle = 0.2618; // 15 degrees
-    mProps.stiffness = 1e5;
+    mProps.forceLimit = 1e10;
+    mProps.torqueLimit = 1e10;
+    mProps.bendAngle = 0;
+    mProps.stiffness = 1e10;
     mProps.damping = 1e3;
 
     isaac::utils::safeGetAttribute(typedPrim.GetOffsetPositionAttr(), offsetPosition);

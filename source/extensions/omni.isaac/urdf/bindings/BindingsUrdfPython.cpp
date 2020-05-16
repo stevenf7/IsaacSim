@@ -32,9 +32,15 @@ PYBIND11_MODULE(_urdf, m)
 
     m.doc() = "Isaac URDF Utils bindings";
 
+
+    py::class_<ImportConfig>(m, "ImportConfig")
+        .def(py::init<>())
+        .def_readwrite("merge_fixed_joints", &ImportConfig::mergeFixedJoints)
+        .def_readwrite("distance_scale", &ImportConfig::distanceScale)
+        .def_readwrite("force_z_up", &ImportConfig::forceZUp)
+        .def_readwrite("add_debug_info", &ImportConfig::addDebugInfo);
+
     defineInterfaceClass<Urdf>(m, "Urdf", "acquire_urdf_interface", "release_urdf_interface")
-        .def("importUrdf", wrapInterfaceFunction(&Urdf::importUrdf))
-        .def("merge_fixed_joints", wrapInterfaceFunction(&Urdf::mergeFixedJoints))
-        .def("set_unit_scale", wrapInterfaceFunction(&Urdf::setUnitScale));
+        .def("import_urdf", wrapInterfaceFunction(&Urdf::importUrdf));
 }
 }

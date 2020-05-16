@@ -59,14 +59,12 @@
 
   <link name="link_1">
     <visual>
-      <origin rpy="0 1.57075 0"/>
       <geometry>
         <cylinder length="0.8" radius=".1"/>
       </geometry>
       <material name="green"/>
     </visual>
     <collision>
-      <origin rpy="0 1.57075 0"/>
       <geometry>
         <cylinder length="0.8" radius=".1"/>
       </geometry>
@@ -104,14 +102,12 @@
 
   <link name="link_2">
     <visual>
-      <origin rpy="0 1.57075 0"/>
       <geometry>
         <cylinder length="0.6" radius=".06"/>
       </geometry>
       <material name="red"/>
     </visual>
     <collision>
-      <origin rpy="0 1.57075 0"/>
       <geometry>
         <cylinder length="0.6" radius=".06"/>
       </geometry>

@@ -45,6 +45,13 @@ using namespace pxr;
 #define VISUAL_MESH_NAME "/visualMesh"
 #define PHYSICS_BODY_NAME "/physicsBody"
 
+namespace omni
+{
+namespace isaac
+{
+namespace urdf
+{
+
 typedef void (*addJointFunction)(const UsdStagePtr& stage,
                                  const std::string& jointName,
                                  const std::string& actor0,
@@ -169,22 +176,17 @@ bool SetToPose(UsdGeomXformable const& gprim, const NvIsaac::Transform& pose, fl
     // before we start
     gprim.ClearXformOpOrder();
 
-    UsdGeomXformOp r, t;
+    UsdGeomXformOp trans;
 
 
-    if (!(t = gprim.AddTranslateOp()))
+    if (!(trans = gprim.AddTransformOp()))
     {
         return false;
     }
-    if (!(r = gprim.AddOrientOp()))
-    {
-        return false;
-    }
-    // auto q = getQ(pose);
-    // auto p = getP(pose);
-    auto q = GfQuatf(pose.q.w, GfVec3f(pose.q.x, pose.q.y, pose.q.z));
-    auto p = distanceScale * GfVec3d(pose.p.x, pose.p.y, pose.p.z);
-    bool retVal = (t.Set(p, UsdTimeCode::Default()) && r.Set(q, UsdTimeCode::Default()));
+    pxr::GfMatrix4d mat;
+    mat.SetTranslateOnly(distanceScale * GfVec3d(pose.p.x, pose.p.y, pose.p.z));
+    mat.SetRotateOnly(GfQuatf(pose.q.w, GfVec3f(pose.q.x, pose.q.y, pose.q.z)));
+    bool retVal = (trans.Set(mat, UsdTimeCode::Default()));
     return retVal;
 }
 
@@ -557,11 +559,13 @@ UsdPrim AddSphereToStage(UsdStageRefPtr stage,
 }
 
 template <class UsdGeomCapsinder>
-UsdPrim AddCapsinderAttrs(UsdGeomCapsinder gprim,
+UsdPrim AddCapsinderAttrs(UsdStageRefPtr stage,
+                          UsdGeomCapsinder gprim,
                           float distanceScale,
                           float radius,
                           float height,
                           std::string name,
+                          const SdfPath& originalPath,
                           const NvIsaac::Transform& pose,
                           bool isGuide = false)
 {
@@ -574,8 +578,12 @@ UsdPrim AddCapsinderAttrs(UsdGeomCapsinder gprim,
     gprim.GetHeightAttr().Set(double(distanceScale * height));
     gprim.GetRadiusAttr().Set(double(distanceScale * radius));
     NvIsaac::Transform rotatedPose = pose;
-    rotatedPose.q *= NvIsaac::Quat(M_PI * 0.5, NvIsaac::Vec3(0.0, 1.0, 1.0));
+    rotatedPose.q *= NvIsaac::Quat(M_PI * 0.5, NvIsaac::Vec3(0.0, 1.0, 0.0));
     SetToPose(gprim, rotatedPose, distanceScale);
+
+    // Have to rotate graphics cylinder too
+    pxr::UsdGeomXformable graphicsXform(stage->GetPrimAtPath(originalPath));
+    SetToPose(graphicsXform, rotatedPose, distanceScale);
 
     VtVec3fArray color(1);
     color[0] = GfVec3f(1, 0, 1);
@@ -604,10 +612,12 @@ UsdPrim AddCylinderToStage(UsdStageRefPtr stage,
                            bool isGuide = false)
 {
     std::string name = "cylinder";
-    SdfPath addPath = SdfPath(GetNewSdfPathString(stage, path.GetString() + "/" + name //, i
-                                                  ));
+    std::string originalPathString = path.GetString() + "/" + name;
+    SdfPath addPath = SdfPath(GetNewSdfPathString(stage, originalPathString));
+
     UsdGeomCylinder gprim = UsdGeomCylinder::Define(stage, addPath);
-    return AddCapsinderAttrs<UsdGeomCylinder>(gprim, distanceScale, radius, height, name, pose, isGuide);
+    return AddCapsinderAttrs<UsdGeomCylinder>(
+        stage, gprim, distanceScale, radius, height, name, SdfPath(originalPathString), pose, isGuide);
 }
 
 UsdPrim AddCapsuleToStage(UsdStageRefPtr stage,
@@ -620,25 +630,19 @@ UsdPrim AddCapsuleToStage(UsdStageRefPtr stage,
                           bool isGuide = false)
 {
     std::string name = "capsule";
-    UsdGeomCapsule gprim =
-        UsdGeomCapsule::Define(stage, SdfPath(GetNewSdfPathString(stage, path.GetString() + "/" + name //, i
-                                                                  )));
-    return AddCapsinderAttrs<UsdGeomCapsule>(gprim, distanceScale, radius, height, name, pose, isGuide);
+    std::string originalPathString = path.GetString() + "/" + name;
+    std::string addPath = GetNewSdfPathString(stage, originalPathString);
+    UsdGeomCapsule gprim = UsdGeomCapsule::Define(stage, SdfPath(addPath));
+
+    return AddCapsinderAttrs<UsdGeomCapsule>(
+        stage, gprim, distanceScale, radius, height, name, SdfPath(originalPathString), pose, isGuide);
 }
 
 void AddRawDOFToStage(UsdStageRefPtr stage, const SdfPath& path, const NvIsaac::IRobotSkeleton* skel)
 {
-    SdfPath mpath = SdfPath(GetNewSdfPathString(stage, path.GetString() + "/DOF"));
+    SdfPath mpath = SdfPath(GetNewSdfPathString(stage, path.GetString() + "/DebugInfo/DOF"));
     UsdPrim prim = stage->DefinePrim(mpath);
-    /*
-    struct DOF {
-    DOFAxis axis;
-    bool limitsEnabled = false;
-    float limitLow = 0.0f;
-    float limitHigh = 0.0f;
-    index_t jointIndex = -1;  // which joint this DOF belongs to
-    };
-    */
+
     int numDOF = skel->getDOFCount();
     VtIntArray axes(numDOF);
     VtBoolArray limitsEnablers(numDOF);
@@ -662,29 +666,11 @@ void AddRawDOFToStage(UsdStageRefPtr stage, const SdfPath& path, const NvIsaac::
 
 void AddRawJointsToStage(UsdStageRefPtr stage, const SdfPath& path, const NvIsaac::IRobotSkeleton* skel)
 {
-    SdfPath newPath = SdfPath(GetNewSdfPathString(stage, path.GetString() + "/Joints"));
+    SdfPath newPath = SdfPath(GetNewSdfPathString(stage, path.GetString() + "/DebugInfo/Joints"));
     UsdGeomXform gprim = UsdGeomXform::Define(stage, newPath);
 
     UsdGeomPrimvarsAPI primvars(gprim);
-    /*
-    virtual const char* getName() const = 0;
-    virtual index_t getIndex() const = 0;  // index in joint array
-    virtual RobotJointType getType() const = 0;
-    virtual index_t getBody0() const = 0;
-    virtual index_t getBody1() const = 0;
-    virtual const Transform& getLocalPose0() const = 0;
-    virtual const Transform& getLocalPose1() const = 0;
-    virtual bool getLimitsEnabled() const = 0;
-    virtual float getLimitLow() const = 0;
-    virtual float getLimitHigh() const = 0;
-    virtual float getLimitY() const = 0;
-    virtual float getLimitZ() const = 0;
-    virtual float getMaxEffort() const = 0;
-    virtual float getMaxVelocity() const = 0;
-    virtual float getDamping() const = 0;
-    virtual float getFriction() const = 0;
-    virtual index_t getDOFIndex() const = 0;  // index of first DOF for this joint
-    */
+
     int16_t num = skel->getJointCount();
 
     VtStringArray name(num);
@@ -761,15 +747,9 @@ void AddRawJointFramesToStage(UsdStageRefPtr stage,
                               const std::vector<std::string>& bodyNames,
                               const NvIsaac::IRobotSkeleton* skel)
 {
-    SdfPath mpath = SdfPath(GetNewSdfPathString(stage, path.GetString() + "/JointFrames"));
+    SdfPath mpath = SdfPath(GetNewSdfPathString(stage, path.GetString() + "/DebugInfo/JointFrames"));
     UsdPrim prim = stage->DefinePrim(mpath);
 
-    /*
-    virtual const char* getName() const = 0;
-    virtual index_t getIndex() const = 0;
-    virtual index_t getParentComponentIndex() const = 0;
-    virtual const Transform& getLocalPose() const = 0;
-    */
     int num = skel->getJointReferenceFrameCount();
     std::vector<std::string> nameVec(num);
     std::vector<int> indexVec(num);
@@ -1044,10 +1024,9 @@ void AddJointsToStage(UsdStageRefPtr stage,
     }
 }
 
-SdfLayerRefPtr UsdUrdfStream::UsdUrdfTranslateUrdfToUsd()
+void UsdUrdfStream::UsdUrdfTranslateUrdfToUsd(UsdStageRefPtr stage)
 {
-    float distanceScale = _distanceScale;
-    // cm
+    float distanceScale = mImportConfig.distanceScale;
     // To create an SdfLayer holding Usd data representing \p urdfStream, we
     // would like to use the Usd and UsdGeom APIs.  To do so, we first create an
     // anonymous in-memory layer, then create a UsdStage with that layer as its
@@ -1056,12 +1035,10 @@ SdfLayerRefPtr UsdUrdfStream::UsdUrdfTranslateUrdfToUsd()
     // the generated layer to the caller, discarding the UsdStage we created for
     // authoring purposes.
 
-    // Create the layer to populate.
-    SdfLayerRefPtr layer = SdfLayer::CreateAnonymous(".usda");
-
-    // Create a UsdStage with that root layer.
-    UsdStageRefPtr stage = UsdStage::Open(layer);
-    UsdGeomSetStageUpAxis(stage, UsdGeomTokens->z);
+    if (mImportConfig.forceZUp)
+    {
+        UsdGeomSetStageUpAxis(stage, UsdGeomTokens->z);
+    }
 
     PhysicsSchemaPhysicsScene scene = PhysicsSchemaPhysicsScene::Define(stage, SdfPath("/physicsScene"));
     scene.CreateGravityAttr().Set(GfVec3f(0.0f, 0.0f, -9.80f * distanceScale));
@@ -1070,13 +1047,22 @@ SdfLayerRefPtr UsdUrdfStream::UsdUrdfTranslateUrdfToUsd()
 
     NvIsaac::IRobotModel* model = GetRobotModel();
     SdfPath mpath = SdfPath(GetNewSdfPathString(stage, "/" + TfMakeValidIdentifier(std::string(model->getName()))));
+
+    // Remove the prim we are about to add in case it exists
+    if (stage->GetPrimAtPath(mpath))
+    {
+        stage->RemovePrim(mpath);
+    }
+
     UsdGeomXform robot = UsdGeomXform::Define(stage, mpath);
     PhysicsSchemaArticulationAPI physicsSchema = PhysicsSchemaArticulationAPI::Apply(robot.GetPrim());
     // By default fix the robot in place
     physicsSchema.CreateFixBaseAttr().Set(true);
-    robot.GetPrim().CreateAttribute(TfToken("fileName"), SdfValueTypeNames->String).Set(GetFileName());
-    robot.GetPrim().CreateAttribute(TfToken("assetPath"), SdfValueTypeNames->String).Set(std::string(model->getAssetPath()));
-    // fprintf(stderr, "\nmpath: %s\n", mpath.GetText());
+    // robot.GetPrim().CreateAttribute(TfToken("fileName"), SdfValueTypeNames->String).Set(GetFileName());
+    // robot.GetPrim().CreateAttribute(TfToken("assetPath"),
+    // SdfValueTypeNames->String).Set(std::string(model->getAssetPath())); fprintf(stderr, "\nmpath: %s\n",
+    // mpath.GetText());
+
 
     stage->SetDefaultPrim(robot.GetPrim());
 
@@ -1085,10 +1071,11 @@ SdfLayerRefPtr UsdUrdfStream::UsdUrdfTranslateUrdfToUsd()
     const NvIsaac::IRobotGraphics* graph = model->getGraphics();
     const NvIsaac::IRobotPhysics* phys = model->getPhysics();
 
-    // TODO Transfer these to physics.
-    AddRawDOFToStage(stage, mpath, skel);
-    AddRawJointsToStage(stage, mpath, skel);
-
+    if (mImportConfig.addDebugInfo)
+    {
+        AddRawDOFToStage(stage, mpath, skel);
+        AddRawJointsToStage(stage, mpath, skel);
+    }
     const bool setAsGuide = true;
     // Collect the collision and visual meshes for instancing.
     for (int bi = 0; bi < phys->getMeshCount(); ++bi)
@@ -1231,7 +1218,10 @@ SdfLayerRefPtr UsdUrdfStream::UsdUrdfTranslateUrdfToUsd()
         // addDensity(stage, bodyNames[bi], urdfMass);// TODO correct density, should just be able to set inertial
         // proerties, but getting 0 mass crash.
     }
-    AddRawJointFramesToStage(stage, mpath, bodyNames, skel);
+    if (mImportConfig.addDebugInfo)
+    {
+        AddRawJointFramesToStage(stage, mpath, bodyNames, skel);
+    }
     AddJointsToStage(stage, mpath, distanceScale, bodyNames, skel);
 #if MY_DEBUG_CRAP
     std::string s;
@@ -1242,7 +1232,8 @@ SdfLayerRefPtr UsdUrdfStream::UsdUrdfTranslateUrdfToUsd()
         out.close();
     }
 #endif
+}
 
-
-    return layer;
+}
+}
 }
