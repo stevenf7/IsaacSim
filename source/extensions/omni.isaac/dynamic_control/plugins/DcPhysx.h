@@ -121,6 +121,10 @@ struct DcDof
 
     DcDriveMode driveMode = DcDriveMode::eNone;
 
+    // helper values used to compute the cacheIdx
+    int linkIndex = 0;
+    int count = 0;
+
     int cacheIdx = -1; // index in PxArticulationCache
 
     DcHandle joint = kDcInvalidHandle;

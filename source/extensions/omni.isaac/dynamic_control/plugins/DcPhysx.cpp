@@ -377,7 +377,13 @@ bool DcArticulation::refreshCache() const
 
     // if (cacheAge < ctx->frameno)
     //{
+
     pxArticulation->copyInternalStateToCache(*pxArticulationCache, PxArticulationCache::eALL);
+
+    // Call this before any inverse dynamics methods
+    pxArticulation->commonInit();
+    // Put joint force in cache
+    pxArticulation->computeJointForce(*pxArticulationCache);
     //    cacheAge = ctx->frameno;
     //}
 
@@ -510,8 +516,6 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
 
     art->rigidBodies.resize(numLinks);
 
-    int dofCount = 0;
-
     for (PxU32 i = 0; i < numLinks; i++)
     {
         //
@@ -604,7 +608,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 dof->joint = jointHandle;
                 dof->path = jointPtr->path;
                 dof->name = jointPtr->name;
-
+                dof->count = link->getInboundJointDof();
+                dof->linkIndex = link->getLinkIndex();
                 // art->paths.insert(dof->path); // unnecessary, since dof->path == joint->path
 
                 if (jointType == PxArticulationJointType::eREVOLUTE)
@@ -617,9 +622,6 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                     dof->type = DcDofType::eTranslation;
                     dof->pxAxis = PxArticulationAxis::eX;
                 }
-
-                dof->cacheIdx = dofCount;
-                DC_LOG_INFO("  DOF cache index: %u\n", dof->cacheIdx);
 
                 PxArticulationDriveType::Enum driveType;
                 float stiffness;
@@ -681,18 +683,44 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 jointPtr->dofs.push_back(dofHandle);
             }
 
-            PxU32 inboundDofCount = link->getInboundJointDof(); // inbound dof count?
-            if (inboundDofCount != 0xffffffff)
-            {
-                dofCount += int(inboundDofCount);
-            }
-
             art->joints.push_back(jointPtr);
             art->jointMap[jointPtr->name] = jointPtr;
         }
 
         art->rigidBodies[i] = bodyPtr;
         art->rigidBodyMap[bodyPtr->name] = bodyPtr;
+    }
+
+    std::vector<size_t> dofStarts(numLinks);
+
+    // First map the link index to the dof count
+    // Link index can be different than the order the links show up in the articulation and corresponds to the index in
+    // the articulation cache
+    for (auto dof : art->dofs)
+    {
+        if (dof->count != 0xffffffff)
+        {
+            dofStarts[dof->linkIndex] = dof->count;
+        }
+        else
+        {
+            dofStarts[dof->linkIndex] = 0;
+        }
+    }
+    // Now do a "scan" operation to compute offsets in the cache for each dof
+    size_t count = 0;
+    for (size_t i = 0; i < dofStarts.size(); i++)
+    {
+        auto dofs = dofStarts[i];
+        dofStarts[i] = count;
+        count += dofs;
+    }
+    // Once we have all of the offsets, set them on the dof
+    for (size_t i = 0; i < art->dofs.size(); i++)
+    {
+        art->dofs[i]->cacheIdx = dofStarts[art->dofs[i]->linkIndex];
+        DC_LOG_INFO("dof index: i: %d with link index: %d has a DOF cache index of: %u", i, art->dofs[i]->linkIndex,
+                    art->dofs[i]->cacheIdx);
     }
 
     // resolve hierarchy relationships
