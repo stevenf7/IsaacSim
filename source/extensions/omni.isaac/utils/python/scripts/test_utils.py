@@ -1,5 +1,5 @@
 import omni.kit.asyncapi
-from pxr import Sdf, Usd
+from pxr import Sdf, Usd, PhysxSchema
 import os
 import carb.tokens
 
@@ -55,3 +55,36 @@ async def load_test_file(test_file_name: str):
     (result, error) = await omni.kit.asyncapi.open_stage(path_to_file)
     usd_context.enable_save_to_recent_files()
     return (result, error)
+
+
+def set_scene_physics_type(gpu=False, scene_path="/physicsScene"):
+    stage = omni.usd.get_context().get_stage()
+    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, scene_path)
+
+    if physxSceneAPI.GetPhysxSceneEnableCCDAttr().HasValue():
+        physxSceneAPI.GetPhysxSceneEnableCCDAttr().Set(True)
+    else:
+        physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
+
+    if physxSceneAPI.GetPhysxSceneEnableStabilizationAttr().HasValue():
+        physxSceneAPI.GetPhysxSceneEnableStabilizationAttr().Set(True)
+    else:
+        physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
+    
+    if physxSceneAPI.GetPhysxSceneSolverTypeAttr().HasValue():
+        physxSceneAPI.GetPhysxSceneSolverTypeAttr().Set("TGS")
+    else:
+        physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
+
+    if not physxSceneAPI.GetPhysxSceneEnableGPUDynamicsAttr().HasValue():
+        physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
+    
+    if not physxSceneAPI.GetPhysxSceneBroadphaseTypeAttr().HasValue():
+        physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
+
+    if gpu:
+        physxSceneAPI.GetPhysxSceneEnableGPUDynamicsAttr().Set(True)
+        physxSceneAPI.GetPhysxSceneBroadphaseTypeAttr().Set("GPU")
+    else:
+        physxSceneAPI.GetPhysxSceneEnableGPUDynamicsAttr().Set(False)
+        physxSceneAPI.GetPhysxSceneBroadphaseTypeAttr().Set("MBP")
