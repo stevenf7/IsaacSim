@@ -70,7 +70,7 @@ def set_scene_physics_type(gpu=False, scene_path="/physicsScene"):
         physxSceneAPI.GetPhysxSceneEnableStabilizationAttr().Set(True)
     else:
         physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
-    
+
     if physxSceneAPI.GetPhysxSceneSolverTypeAttr().HasValue():
         physxSceneAPI.GetPhysxSceneSolverTypeAttr().Set("TGS")
     else:
@@ -78,7 +78,7 @@ def set_scene_physics_type(gpu=False, scene_path="/physicsScene"):
 
     if not physxSceneAPI.GetPhysxSceneEnableGPUDynamicsAttr().HasValue():
         physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
-    
+
     if not physxSceneAPI.GetPhysxSceneBroadphaseTypeAttr().HasValue():
         physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
 
