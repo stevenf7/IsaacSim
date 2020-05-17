@@ -718,9 +718,9 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     // Once we have all of the offsets, set them on the dof
     for (size_t i = 0; i < art->dofs.size(); i++)
     {
-        art->dofs[i]->cacheIdx = dofStarts[art->dofs[i]->linkIndex];
-        DC_LOG_INFO("dof index: i: %d with link index: %d has a DOF cache index of: %u", i, art->dofs[i]->linkIndex,
-                    art->dofs[i]->cacheIdx);
+        art->dofs[i]->cacheIdx = int(dofStarts[art->dofs[i]->linkIndex]);
+        DC_LOG_INFO("dof index: i: %d with link index: %d has a DOF cache index of: %u", int(i),
+                    art->dofs[i]->linkIndex, art->dofs[i]->cacheIdx);
     }
 
     // resolve hierarchy relationships

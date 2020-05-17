@@ -16,6 +16,9 @@ template <class PrimType>
 class ComponentBase
 {
 public:
+    virtual ~ComponentBase()
+    {
+    }
     /**
      * @brief Set the USD prim and stage for this application
      *

@@ -48,7 +48,7 @@ public:
         return queue_size_;
     }
 
-    std::unique_ptr<RosCallback> callback_;
+    // std::unique_ptr<RosCallback> callback_;
 
 protected:
     RosEventType event_type = eRosEventNone;
