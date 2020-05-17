@@ -1,0 +1,166 @@
+#pragma once
+
+// clang-format off
+#include <UsdPCH.h>
+// clang-format on
+
+#include <functional>
+#include <memory>
+#include <vector>
+
+#include "ros/callback_queue.h"
+#include "ros/ros.h"
+// #include "RosCallback.h"
+#include "../Messenger/RosPublisher.h"
+#include "../Messenger/RosSubscriber.h"
+#include "../Messenger/RosService.h"
+#include "../Messenger/RosPeriodic.h"
+
+#include <carb/logging/Log.h>
+#include <carb/settings/ISettings.h>
+
+
+namespace omni
+{
+namespace isaac
+{
+namespace ros_bridge
+{
+
+
+class RosNode
+{
+public:
+    RosNode(std::string name);
+    ~RosNode()
+    {
+        stop();
+    }
+    void start();
+    void stop();
+    void tick();
+    void destroyMessage(std::string topic)
+    {
+        if (mMessages.find(topic) != mMessages.end())
+        {
+            mMessages[topic].reset();
+            mMessages.erase(topic);
+        }
+    }
+    template <typename MessageType, class Callback>
+    void createPublisher(std::string topic,
+                         const int queue_size,
+                         void (Callback::*callbackFn)(ros::Publisher* pub),
+                         Callback* callback)
+    {
+        if (topic.size() == 0)
+        {
+            CARB_LOG_ERROR("Publisher topic empty");
+        }
+
+        if (!callback && callbackFn)
+        {
+            CARB_LOG_ERROR("Publisher callback not valid %s", topic.c_str());
+            return;
+        }
+        // if we already have a message on this topic, delete the previous one and recreate
+        if (mMessages.find(topic) != mMessages.end())
+        {
+            mMessages[topic].reset();
+            mMessages.erase(topic);
+        }
+        if (rosnode_)
+        {
+            std::unique_ptr<RosPublisher> publisher = std::make_unique<RosPublisher>();
+            publisher->init<MessageType>(rosnode_.get(), topic, queue_size, callbackFn, callback);
+            // publisher->callback_ = std::move(callback);
+            mMessages[topic] = std::move(publisher);
+        }
+        else
+        {
+            CARB_LOG_ERROR("Could Not Create Publisher on %s", topic.c_str());
+        }
+    }
+    template <typename MessageType, class Callback>
+    void createSubscriber(std::string topic,
+                          const int queue_size,
+                          void (Callback::*callbackFn)(const typename MessageType::ConstPtr&),
+                          Callback* callback)
+    {
+        if (!callback && callbackFn)
+        {
+            CARB_LOG_ERROR("Subscriber callback not valid");
+        }
+        if (rosnode_ && topic.size())
+        {
+            std::unique_ptr<RosSubscriber> subscriber = std::make_unique<RosSubscriber>();
+            subscriber->init<MessageType>(rosnode_.get(), topic, queue_size, callbackFn, callback);
+            // subscriber->callback_ = std::move(callback);
+            mMessages[topic] = std::move(subscriber);
+        }
+        else
+        {
+            CARB_LOG_ERROR("Could Not Create Subscriber");
+        }
+    }
+
+    // template <typename MessageType, class Callback>
+    // IsaacHandle createPeriodic(void (Callback::*callbackFn)(), std::unique_ptr<Callback> callback)
+    // {
+
+    //     if (!callback && callbackFn)
+    //     {
+    //         CARB_LOG_ERROR("Periodic callback not valid");
+    //         return -1;
+    //     }
+    //     if (rosnode_)
+    //     {
+    //         std::unique_ptr<RosPeriodic> per_ = std::make_unique<RosPeriodic>();
+    //         per_->init<MessageType>(rosnode_.get(), callbackFn, callback.get());
+    //         per_->callback_ = std::move(callback);
+    //         mMessages.push_back(std::move(per_));
+    //         return mMessages.size() - 1;
+    //     }
+    //     else
+    //     {
+    //         CARB_LOG_ERROR("Could Not Create Subscriber");
+    //     }
+    //     return -1;
+    // }
+
+
+    // template <typename MessageType, class Callback>
+    // IsaacHandle createService(std::string topic,
+    //                           bool (Callback::*callbackFn)(typename MessageType::Request&,
+    //                                                        typename MessageType::Response&),
+    //                           std::unique_ptr<Callback> callback)
+    // {
+    //     if (!callback && callbackFn)
+    //     {
+    //         CARB_LOG_ERROR("Service callback not valid");
+    //         return -1;
+    //     }
+    //     if (rosnode_ && topic.size())
+    //     {
+    //         std::unique_ptr<RosService> srv_ = std::make_unique<RosService>();
+    //         srv_->init<MessageType>(rosnode_.get(), topic, callbackFn, callback.get());
+    //         srv_->callback_ = std::move(callback);
+    //         mMessages.push_back(std::move(srv_));
+    //         return mMessages.size() - 1;
+    //     }
+    //     else
+    //     {
+    //         CARB_LOG_ERROR("Could Not Create Service");
+    //     }
+    //     return -1;
+    // }
+    // bool deleteEvent(IsaacHandle event_handle);
+
+private:
+    std::unordered_map<std::string, std::unique_ptr<RosMessenger>> mMessages;
+    std::unique_ptr<ros::NodeHandle> rosnode_ = nullptr;
+    ros::CallbackQueue callbackQueue_;
+};
+}
+}
+}

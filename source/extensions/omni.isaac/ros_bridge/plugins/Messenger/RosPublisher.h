@@ -11,7 +11,7 @@
 
 #include "ros/callback_queue.h"
 #include "ros/ros.h"
-#include "../RosMessenger.h"
+#include "../Core/RosMessenger.h"
 
 
 namespace omni
@@ -33,7 +33,7 @@ public:
         {
             pub_->shutdown();
         }
-        pub_ = nullptr;
+        pub_.reset();
         pubCallback_ = nullptr;
     }
     RosPublisher(const RosPublisher&) = delete;
@@ -49,8 +49,7 @@ public:
         topic_ = topic;
         queue_size_ = queueSize;
         pubCallback_ = std::bind(callbackFn, object, std::placeholders::_1);
-        pub_ = std::make_unique<ros::Publisher>();
-        *pub_ = node->advertise<MessageType>(topic, queueSize);
+        pub_ = std::make_unique<ros::Publisher>(node->advertise<MessageType>(topic, queueSize));
     }
     void publish()
     {

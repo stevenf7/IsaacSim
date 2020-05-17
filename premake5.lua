@@ -286,6 +286,13 @@ workspace "omni_isaac_sim"
 
     filter {}
 
+-- A workaround to generate compile commands at the root level of the project
+-- this forces concatenation of all child compile commands files for each extension
+project "compile_commands"
+    kind "Utility"
+    location (workspace_dir.."/%{prj.name}")
+    filter {}
+    add_impl_folder("source")
 
 group "experiences"
     -- Robotics default experience

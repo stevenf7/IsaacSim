@@ -7,158 +7,167 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
+#define CARB_EXPORTS
+
 // clang-format off
-#include <UsdPCH.h>
+#include "UsdPCH.h"
+#include <pxr/usd/usd/inherits.h>
 // clang-format on
 
-#define CARB_EXPORTS
 #include <omni/isaac/ros_bridge/RosBridge.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/lidar/LidarInterface.h>
+#include <carb/sensors/Sensors.h>
+#include <carb/syntheticdata/SyntheticData.h>
+
 #include <omni/kit/IStageUpdate.h>
+#include <omni/kit/IEditor.h>
+
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
-#include <carb/input/IInput.h>
 #include <carb/logging/Log.h>
-#include <carb/physics/usd/Physics.h>
-#include <carb/physics/usd/PhysicsUsd.h>
-#include <carb/physx/physx.h>
 #include <carb/settings/ISettings.h>
-#include "RosManager.h"
-#include "RosGlobals.h"
+#include <carb/dictionary/DictionaryUtils.h>
+#include <carb/physx/physx.h>
 
-#include <inttypes.h> // print 64 bit pointers
+#include <unordered_map>
+#include <string>
+#include <vector>
 #include <memory>
 
-using namespace carb::physics::usdparser;
-using namespace omni::isaac::ros_bridge;
+#include "Core/IsaacApplication.h"
+#include "ros/ros.h"
 
-const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.ros_bridge.plugin", "Isaac ROS Bridge", "NVIDIA",
+const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.ros_bridge.plugin", "Isaac ROS bridge", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };
-CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::ros_bridge::RosBridge)
-CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate,
-                      carb::physics::PhysX,
-                      carb::dictionary::ISerializer,
-                      carb::dictionary::IDictionary,
-                      omni::isaac::dynamic_control::DynamicControl)
 
+CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::ros_bridge::RosBridge)
+CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
+                      carb::dictionary::IDictionary,
+                      omni::isaac::dynamic_control::DynamicControl,
+                      omni::kit::IStageUpdate,
+                      omni::kit::IEditor,
+                      omni::isaac::lidar::LidarInterface,
+                      carb::syntheticdata::SyntheticData,
+                      carb::physics::PhysX,
+                      carb::sensors::Sensors)
+
+// private stuff
 namespace
 {
 carb::Framework* g_framework = nullptr;
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
-static pxr::UsdStageRefPtr g_stage = nullptr;
-carb::physics::PhysX* g_physX = nullptr;
 carb::dictionary::ISerializer* g_jsonSerializer = nullptr;
-carb::dictionary::IDictionary* g_iDict = nullptr;
 omni::isaac::dynamic_control::DynamicControl* g_dynamicControl = nullptr;
-carb::settings::ISettings* g_settings = nullptr;
+carb::dictionary::IDictionary* g_iDict = nullptr;
+pxr::UsdStageRefPtr g_stage = nullptr;
+carb::physics::PhysX* g_physx = nullptr;
 
-std::unique_ptr<RosManager> Manager;
-std::unique_ptr<RosGlobals> Globals;
+std::unique_ptr<omni::isaac::ros_bridge::IsaacApplication> g_application_handle;
 
-static void onAttach(long int stageId, double metersPerUnit, void* userData)
+
+void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
-    // CARB_LOG_INFO("onAttach RosBridge");
-
-    // try and find USD stage from Id
     pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
-
     if (!stage)
     {
-        CARB_LOG_ERROR("Isaac RosBridge could not find USD stage");
+        CARB_LOG_ERROR("Isaac Robot Engine Bridge could not find USD stage");
         return;
     }
 
     g_stage = stage;
-
-    Globals = std::make_unique<omni::isaac::ros_bridge::RosGlobals>();
-    Globals->stage = g_stage;
-    Globals->dynamic_control = g_dynamicControl;
-    Globals->json_serializer = g_jsonSerializer;
-    Globals->idict = g_iDict;
-    Globals->stageUnits = UsdGeomGetStageMetersPerUnit(g_stage);
-
-    Manager = std::make_unique<RosManager>(Globals.get());
-    Manager->start();
+    if (g_application_handle)
+    {
+        g_application_handle->initialize(g_stage);
+        g_application_handle->initComponents();
+    }
 }
-
 void onDetach(void* userData)
 {
-    // CARB_LOG_INFO("onDetach RosBridge");
-    Manager->stop();
-    Manager.reset();
-    Manager = nullptr;
+    // Delete all components
+    if (g_application_handle)
+    {
+        g_application_handle->deleteAllComponents();
+    }
 }
-
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
 {
+    // Tick app
     if (!settings->isPlaying)
     {
         return;
     }
-    // CARB_LOG_INFO("Tick: %f - %f", currentTime, elapsedSecs);
-#if 1
-    // dt will run in realtime
-    Manager->tick(elapsedSecs);
-#else
-    // to run in physics time:
-    const float timestepsPerSecond =
-        g_settings->isAccessibleAs(carb::dictionary::ItemType::eFloat, ("/physics/timeStepsPerSecond")) ?
-            g_settings->getAsFloat("/physics/timeStepsPerSecond") :
-            60.0f;
-    const float fixedTimeStep = 1.0f / timestepsPerSecond;
-    Manager->tick(fixedTimeStep);
-#endif
+    if (!ros::master::check())
+    {
+        return;
+    }
+    if (g_application_handle)
+    {
+        g_application_handle->tick(elapsedSecs);
+    }
 }
-
-
 void onResume(float currentTime, void* userData)
 {
-    // CARB_LOG_INFO("onResume RosBridge");
-    // Empty
 }
 
 void onPause(void* userData)
 {
-    // CARB_LOG_INFO("onPause RosBridge");
-    // Empty
+}
+void onPrimAdd(const char* primPath, void* userData)
+{
+    // printf("++ REB: Prim Add: %s\n", primPath,
+    //        g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
+    if (g_application_handle)
+    {
+        pxr::UsdPrim addedPrim = g_stage->GetPrimAtPath(pxr::SdfPath(primPath));
+        if (!addedPrim)
+        {
+            return;
+        }
+        // Add the root prim
+        g_application_handle->onComponentAdd(addedPrim);
+        // Check if it has any descendants that need to be added
+        pxr::UsdPrimSubtreeRange range = addedPrim.GetDescendants();
+        for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
+        {
+            pxr::UsdPrim prim = *iter;
+            g_application_handle->onComponentAdd(prim);
+        }
+    }
+}
+void onComponentChange(const char* primPath, const omni::kit::PrimDirtyBits*, void* userData)
+{
+    // printf("++ REB: Prim Change: %s of type %s\n", primPath,
+    //        g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
+    if (g_application_handle)
+    {
+        g_application_handle->onComponentChange(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+    }
 }
 
-} // anonymous namespace
+void onPrimRemove(const char* primPath, void* userData)
+{
+    // printf("++ REB: Prim Remove: %s\n", primPath);
+    if (g_application_handle)
+    {
+        g_application_handle->onComponentRemove(pxr::SdfPath(primPath));
+    }
+}
+}
 
-using namespace omni::isaac;
 
 CARB_EXPORT void carbOnPluginStartup()
 {
     g_framework = carb::getFramework();
     g_stageUpdate = g_framework->acquireInterface<omni::kit::IStageUpdate>();
-
     g_jsonSerializer =
         carb::getFramework()->acquireInterface<carb::dictionary::ISerializer>("carb.dictionary.serializer-json.plugin");
-
     if (!g_jsonSerializer)
     {
         CARB_LOG_ERROR("Failed to acquire carb::dictionary::ISerializer interface");
         return;
     }
-
-    g_iDict = carb::getFramework()->acquireInterface<carb::dictionary::IDictionary>();
-
-    if (!g_iDict)
-    {
-        CARB_LOG_ERROR("Failed to acquire carb::dictionary::IDictionary interface");
-        return;
-    }
-
-
-    g_physX = g_framework->acquireInterface<carb::physics::PhysX>();
-
-    if (!g_physX)
-    {
-        CARB_LOG_ERROR("Failed to acquire carb::physics::PhysX interface");
-        return;
-    }
-
     g_dynamicControl = g_framework->acquireInterface<omni::isaac::dynamic_control::DynamicControl>();
 
     if (!g_dynamicControl)
@@ -166,8 +175,22 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
         return;
     }
-    g_settings = carb::getFramework()->acquireInterface<carb::settings::ISettings>();
 
+    g_iDict = g_framework->acquireInterface<carb::dictionary::IDictionary>();
+
+    if (!g_iDict)
+    {
+        CARB_LOG_ERROR("Failed to acquire carb::dictionary::IDictionary interface");
+        return;
+    }
+    g_physx = g_framework->acquireInterface<carb::physics::PhysX>();
+    if (!g_physx)
+    {
+        CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
+        return;
+    }
+
+    g_application_handle = std::make_unique<omni::isaac::ros_bridge::IsaacApplication>(g_dynamicControl);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "IsaacRosBridge";
@@ -176,72 +199,39 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onUpdate = onUpdate;
     desc.onResume = onResume;
     desc.onPause = onPause;
+    desc.onPrimAdd = onPrimAdd;
+    desc.onPrimChange = onComponentChange;
+    desc.onPrimRemove = onPrimRemove;
+    desc.order = 100;
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
+
+
+    ros::M_string args;
+    if (!ros::isInitialized())
+    {
+        ros::init(args, "OmniIsaacRosBridge");
+        ros::Time::init();
+    }
+    else
+    {
+        CARB_LOG_WARN("Ros already initialized");
+    }
+
+    // if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Error))
+    // {
+    //     ros::console::notifyLoggerLevelsChanged();
+    // }
 }
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
-    if (Manager)
-    {
-        Manager->stop();
-        Manager = nullptr;
-    }
-
-    Globals = nullptr;
-    g_stage = nullptr;
-    g_physX = nullptr;
-
+    g_application_handle.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
-}
-
-
-IsaacHandle addRosNode()
-{
-    return Manager->addNode();
-}
-
-bool deleteRosNode(IsaacHandle node_handle)
-{
-    return Manager->deleteNode(node_handle);
-}
-
-IsaacHandle addRosEvent(IsaacHandle node_handle,
-                        const std::vector<std::string> paths,
-                        std::string topic,
-                        const int queue_size,
-                        RosMessageType message_type,
-                        RosEventType event_type)
-{
-    return Manager->addEvent(node_handle, paths, topic, queue_size, message_type, event_type);
-}
-
-bool deleteRosEvent(IsaacHandle node_handle, IsaacHandle event_handle)
-{
-    return Manager->deleteEvent(node_handle, event_handle);
-}
-
-void setClockState(const bool state)
-{
-    Manager->setClockState(state);
-}
-
-std::string getJsonString()
-{
-    return Manager->getJsonString();
-}
-
-void parseJsonString(std::string json_config)
-{
-    Manager->parseJsonString(json_config);
 }
 
 void fillInterface(omni::isaac::ros_bridge::RosBridge& iface)
 {
-    iface.addRosNode = addRosNode;
-    iface.addRosEvent = addRosEvent;
-    iface.deleteRosNode = deleteRosNode;
-    iface.deleteRosEvent = deleteRosEvent;
-    iface.setClockState = setClockState;
-    iface.getJsonString = getJsonString;
-    iface.parseJsonString = parseJsonString;
+    using namespace omni::isaac::ros_bridge;
+
+    memset(&iface, 0, sizeof(iface));
 }

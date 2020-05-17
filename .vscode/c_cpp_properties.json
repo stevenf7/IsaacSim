@@ -1,81 +1,60 @@
 {
-    "env" : {
-        "sharedIncludePaths": [
-            "${workspaceFolder}/_build/target-deps",
-            "${workspaceFolder}/_build/target-deps/python/include",
-            "${workspaceFolder}/_build/target-deps/python/include/python3.6m",
-            "${workspaceFolder}/_build/target-deps/nv_usd/release/include",
-            "${workspaceFolder}/_build/target-deps/carb_sdk_plugins/include",
-            "${workspaceFolder}/_build/target-deps/kit_sdk_release/include",
-            "${workspaceFolder}/_build/target-deps/physx/include",
-            "${workspaceFolder}/_build/target-deps/pxshared/include",
-            "${workspaceFolder}/_build/target-deps/isaac_engine/include",
-            "${workspaceFolder}/_build/target-deps/rtx_plugins/include",
-            "${workspaceFolder}/_build/target-deps/omni_physics/include",
-            "${workspaceFolder}/_build/target-deps/cuda/include",
-            "${workspaceFolder}/_build/target-deps/lula/include",
-            "${workspaceFolder}/_build/target-deps/usd_ext_isaac/release/include",
-            "${workspaceFolder}/_build/target-deps/usd_ext_physics/release/include",
-            "${workspaceFolder}/_build/target-deps/robotimpsdk/include",
-            "${workspaceFolder}/include",
-            "${workspaceFolder}/source/tests",
-            "source/pch",
-            "source/extensions/omni.isaac/utils"
-        ]
-    },
     "configurations": [
         {
             "name": "Linux",
-            "includePath": [
-                "/usr/include",
-                "/usr/local/include",
-                "${sharedIncludePaths}"
-            ],
-            "defines": [
-                "__linux__"
-            ],
             "intelliSenseMode": "clang-x64",
-            "browse": {
-                "path": [
-                    "/usr/include",
-                    "/usr/local/include",
-                    "${workspaceFolder}"
-                ],
-                "limitSymbolsToIncludedHeaders": true,
-                "databaseFilename": ""
-            },
             "cStandard": "c11",
-            "cppStandard": "c++14"
+            "cppStandard": "c++14",
+            "compileCommands": "${workspaceFolder}/_build/linux-x86_64/release/compile_commands.json"
+        },
+        {
+            "name": "linux-x86_64-release",
+            "intelliSenseMode": "clang-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "compileCommands": "${workspaceFolder}/_build/linux-x86_64/release/compile_commands.json"
+        },
+        {
+            "name": "linux-x86_64-debug",
+            "intelliSenseMode": "clang-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "compileCommands": "${workspaceFolder}/_build/linux-x86_64/debug/compile_commands.json"
+        },
+        {
+            "name": "linux-aarch64-release",
+            "intelliSenseMode": "clang-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "compileCommands": "${workspaceFolder}/_build/linux-aarch64/release/compile_commands.json"
+        },
+        {
+            "name": "linux-aarch64-debug",
+            "intelliSenseMode": "clang-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "compileCommands": "${workspaceFolder}/_build/linux-aarch64/debug/compile_commands.json"
         },
         {
             "name": "Win32",
-            "includePath": [
-                "${workspaceFolder}/_build/host-deps/msvc/VC/include",
-                "${workspaceFolder}/_build/host-deps/winsdk/include/um",
-                "${workspaceFolder}/_build/host-deps/winsdk/include/ucrt",
-                "${workspaceFolder}/_build/host-deps/winsdk/include/shared",
-                "${workspaceFolder}/_build/host-deps/winsdk/include/winrt",
-                "${sharedIncludePaths}"
-            ],
-            "defines": [
-                "UNICODE",
-                "_UNICODE",
-                "_WIN32"
-            ],
             "intelliSenseMode": "msvc-x64",
-            "browse": {
-                "path": [
-                    "${workspaceFolder}",
-                    "${workspaceFolder}/_build/host-deps/winsdk/include/um",
-                    "${workspaceFolder}/_build/host-deps/winsdk/include/ucrt",
-                    "${workspaceFolder}/_build/host-deps/winsdk/include/shared",
-                    "${workspaceFolder}/_build/host-deps/winsdk/include/winrt"
-                ],
-                "limitSymbolsToIncludedHeaders": true,
-                "databaseFilename": ""
-            },
             "cStandard": "c11",
-            "cppStandard": "c++14"
+            "cppStandard": "c++14",
+            "compileCommands": "${workspaceFolder}/_build/windows-x86_64/release/compile_commands.json"
+        },
+        {
+            "name": "windows-x86_64-release",
+            "intelliSenseMode": "msvc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "compileCommands": "${workspaceFolder}/_build/windows-x86_64/release/compile_commands.json"
+        },
+        {
+            "name": "windows-x86_64-debug",
+            "intelliSenseMode": "msvc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "compileCommands": "${workspaceFolder}/_build/windows-x86_64/debug/compile_commands.json"
         }
     ],
     "version": 4
