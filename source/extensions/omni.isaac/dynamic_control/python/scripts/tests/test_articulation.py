@@ -7,11 +7,12 @@ import carb.tokens
 import os
 import asyncio
 import numpy as np
-from pxr import Gf
+from pxr import Gf, PhysxSchema
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.utils.scripts.test_utils import load_test_file
+from omni.isaac.utils.scripts.test_utils import load_test_file, set_scene_physics_type
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -26,11 +27,13 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
-    async def test_articulation_load(self):
+    async def test_articulation_load(self, gpu=False):
         await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
+        set_scene_physics_type(gpu)
+
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
@@ -46,14 +49,16 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Actual test, notice it is "async" function, so "await" can be used if needed
 
-    async def test_articulation_teleport(self):
+    async def test_articulation_teleport(self, gpu=False):
         await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
+        set_scene_physics_type(gpu)
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
+        await asyncio.sleep(1.0)
         await omni.kit.asyncapi.next_update()
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
@@ -93,33 +98,37 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(dof_state_v1.pos, dof_state_v2)
 
         # teleport the whole robot
+        self._dc.wake_up_articulation(art)
         root_body = self._dc.get_articulation_root_body(art)
         new_pose_p = (1.3, 2.1, 3.0)
         new_pose_r = (0, 0, 0.3007058, 0.953717)
         new_pose = _dynamic_control.Transform(new_pose_p, new_pose_r)
         self._dc.set_rigid_body_pose(root_body, new_pose)
-        await asyncio.sleep(1.0)
+        await asyncio.sleep(2.0)
+        await omni.kit.asyncapi.next_update()
+
         pos = self._dc.get_rigid_body_pose(root_body).p
         rot = self._dc.get_rigid_body_pose(root_body).r
-        self.assertTupleEqual(tuple(np.round(np.array(pos), 5)), tuple(np.round(np.array(new_pose_p), 5)))
-        self.assertTupleEqual(tuple(np.round(np.array(rot), 5)), tuple(np.round(np.array(new_pose_r), 5)))
+        self.assertTupleEqual(tuple(np.round(np.array(pos), 3)), tuple(np.round(np.array(new_pose_p), 3)))
+        self.assertTupleEqual(tuple(np.round(np.array(rot), 3)), tuple(np.round(np.array(new_pose_r), 3)))
 
         # rigid body tests
         body_states = self._dc.get_articulation_body_states(art, _dynamic_control.STATE_ALL)
         body_idx = self._dc.find_articulation_body_index(art, "panda_hand")
         body_pos = body_states["pose"]["p"][body_idx]
-        expected_pos = (19.73685, 15.00777, 54.59134)
+        expected_pos = (19.78094, 15.03849, 54.69755)
         self.assertTupleEqual(
             tuple(np.round(np.array(body_pos.tolist()), 2)), tuple(np.round(np.array(expected_pos), 2))
         )
 
         pass
 
-    async def test_articulation_movement(self):
+    async def test_articulation_movement(self, gpu=False):
         await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
+        set_scene_physics_type(gpu)
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
@@ -159,17 +168,17 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
-    async def test_articulation_wheeled(self):
+    async def test_articulation_wheeled(self, gpu=False):
         await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("tests/robots/differential_base/differential_base.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
-
+        set_scene_physics_type(gpu)
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
         # wait for robot to fall
         await asyncio.sleep(1.0)
-
+        await omni.kit.asyncapi.next_update()
         art = self._dc.get_articulation("/differential_base")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         left_wheel_ptr = self._dc.find_articulation_dof(art, "left_wheel")
@@ -178,6 +187,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.wake_up_articulation(art)
         self._dc.set_dof_velocity_target(left_wheel_ptr, -2.5)
         self._dc.set_dof_velocity_target(right_wheel_ptr, 2.5)
+        await omni.kit.asyncapi.next_update()
         await asyncio.sleep(2.0)
         await omni.kit.asyncapi.next_update()
         root_body_ptr = self._dc.get_articulation_root_body(art)
@@ -190,16 +200,18 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         # self.assertLess(ang_vel[2], 2.55)
         editor.stop()
 
-    async def test_articulation_carter(self):
+    async def test_articulation_carter(self, gpu=False):
         await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/carter/carter.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
+        set_scene_physics_type(gpu)
 
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
         # wait for robot to fall
         await asyncio.sleep(1.0)
+        await omni.kit.asyncapi.next_update()
 
         art = self._dc.get_articulation("/carter")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
@@ -243,11 +255,12 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(drive_target * 24.0 / (31.613607 - 5), ang_vel[2], 1)
         editor.stop()
 
-    async def test_articulation_position(self):
+    async def test_articulation_position_franka(self, gpu=False):
         await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
+        set_scene_physics_type(gpu)
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
@@ -278,12 +291,12 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         dof_pos_new = self._dc.get_dof_position(dof_ptr)
         self.assertTrue(Gf.IsClose(dof_pos_new, new_pos, 0.01))
 
-    async def test_articulation_position(self):
+    async def test_articulation_position_str(self, gpu=False):
         await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("tests/robots/str/str_physics.usd")
         # Make sure the stage loaded
-        # self.assertTrue(result)
-
+        self.assertTrue(result)
+        set_scene_physics_type(gpu)
         # await asyncio.sleep(1.0)
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
@@ -316,3 +329,24 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.asyncapi.next_update()
         dof_pos_new = self._dc.get_dof_position(dof_ptr)
         self.assertAlmostEqual(dof_pos_new, new_pos, 1)
+
+    async def test_articulation_load_gpu(self):
+        await self.test_articulation_load(True)
+
+    # async def test_articulation_teleport_gpu(self):
+    #     await self.test_articulation_teleport(True)
+
+    async def test_articulation_movement_gpu(self):
+        await self.test_articulation_movement(True)
+
+    async def test_articulation_wheeled_gpu(self):
+        await self.test_articulation_wheeled(True)
+
+    # async def test_articulation_carter_gpu(self):
+    #     await self.test_articulation_carter(True)
+
+    async def test_articulation_position_franka_gpu(self):
+        await self.test_articulation_position_franka(True)
+
+    async def test_articulation_position_str_gpu(self):
+        await self.test_articulation_position_str(True)
