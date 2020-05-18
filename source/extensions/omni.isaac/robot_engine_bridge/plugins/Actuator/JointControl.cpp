@@ -18,6 +18,7 @@ namespace isaac
 namespace robot_engine_bridge
 {
 
+using omni::isaac::dynamic_control::DcDofProperties;
 using omni::isaac::dynamic_control::DcDofState;
 using omni::isaac::dynamic_control::DcDofType;
 using omni::isaac::dynamic_control::DcHandle;
@@ -72,13 +73,21 @@ void JointControl::tick()
                 auto handle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, entity.cStr());
                 if (handle)
                 {
+                    float elementValue = static_cast<float>(elements[i]);
+                    DcDofProperties props;
+                    mDynamicControlPtr->getDofProperties(handle, &props);
+                    if (props.hasLimits)
+                    {
+                        elementValue =
+                            std::max(props.lower + mLimitOffset, std::min(elementValue, props.upper - mLimitOffset));
+                    }
                     if (measure == isaac_message::Composite::Measure::POSITION)
                     {
-                        mDynamicControlPtr->setDofPositionTarget(handle, static_cast<float>(elements[i]));
+                        mDynamicControlPtr->setDofPositionTarget(handle, elementValue);
                     }
                     else if (measure == isaac_message::Composite::Measure::SPEED)
                     {
-                        mDynamicControlPtr->setDofVelocityTarget(handle, static_cast<float>(elements[i]));
+                        mDynamicControlPtr->setDofVelocityTarget(handle, elementValue);
                     }
                 }
                 else
