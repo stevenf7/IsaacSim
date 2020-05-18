@@ -690,8 +690,9 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         art->rigidBodies[i] = bodyPtr;
         art->rigidBodyMap[bodyPtr->name] = bodyPtr;
     }
-
-    std::vector<size_t> dofStarts(numLinks);
+    // The code below requires that simulation is active before registering articulation, otherwise cache indices are
+    // not valid
+    std::vector<size_t> dofStarts(numLinks, 0);
 
     // First map the link index to the dof count
     // Link index can be different than the order the links show up in the articulation and corresponds to the index in
@@ -704,7 +705,10 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         }
         else
         {
-            dofStarts[dof->linkIndex] = 0;
+            if (dof->linkIndex >= 0)
+            {
+                dofStarts[dof->linkIndex] = 0;
+            }
         }
     }
     // Now do a "scan" operation to compute offsets in the cache for each dof
@@ -718,9 +722,16 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     // Once we have all of the offsets, set them on the dof
     for (size_t i = 0; i < art->dofs.size(); i++)
     {
-        art->dofs[i]->cacheIdx = int(dofStarts[art->dofs[i]->linkIndex]);
-        DC_LOG_INFO("dof index: i: %d with link index: %d has a DOF cache index of: %u", int(i),
-                    art->dofs[i]->linkIndex, art->dofs[i]->cacheIdx);
+        if (art->dofs[i]->linkIndex >= 0)
+        {
+            art->dofs[i]->cacheIdx = int(dofStarts[art->dofs[i]->linkIndex]);
+        }
+        else
+        {
+            art->dofs[i]->cacheIdx = 0;
+        }
+        DC_LOG_INFO("dof index: i: %zu with link index: %d has a DOF cache index of: %d", i, art->dofs[i]->linkIndex,
+                    art->dofs[i]->cacheIdx);
     }
 
     // resolve hierarchy relationships
