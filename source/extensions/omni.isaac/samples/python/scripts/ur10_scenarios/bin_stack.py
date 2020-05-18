@@ -886,6 +886,7 @@ class BinStack(Scenario):
         mjp.bendAngle = np.pi / 24  # 7.5 degrees
         mjp.stiffness = 1.0e5
         mjp.damping = 1.0e4
+        mjp.disableGravity = True
         tr = _dynamic_control.Transform()
         tr.p.x = 15.509
         mjp.offset = tr
