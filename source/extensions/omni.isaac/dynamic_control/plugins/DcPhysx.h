@@ -123,7 +123,7 @@ struct DcDof
 
     // helper values used to compute the cacheIdx
     int linkIndex = 0;
-    int count = 0;
+    size_t count = 0;
 
     int cacheIdx = -1; // index in PxArticulationCache
 
