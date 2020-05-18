@@ -98,16 +98,11 @@ PYBIND11_MODULE(_isaac_utils, m)
 
     auto math = m.def_submodule("math");
     // Basic operations between types (Add, Sub, Mul)
-    math.def(
-        "mul", [](const carb::Float3& a, float x) { return a * x; }, py::is_operator());
-    math.def(
-        "mul", [](const carb::Float4& a, float x) { return a * x; }, py::is_operator());
-    math.def(
-        "mul", [](const carb::Float4& a, carb::Float4& x) { return a * x; }, py::is_operator());
-    math.def(
-        "mul", [](const DcTransform& a, DcTransform& x) { return a * x; }, py::is_operator());
-    math.def(
-        "add", [](const carb::Float3& a, carb::Float3& x) { return a + x; }, py::is_operator());
+    math.def("mul", [](const carb::Float3& a, float x) { return a * x; }, py::is_operator());
+    math.def("mul", [](const carb::Float4& a, float x) { return a * x; }, py::is_operator());
+    math.def("mul", [](const carb::Float4& a, carb::Float4& x) { return a * x; }, py::is_operator());
+    math.def("mul", [](const DcTransform& a, DcTransform& x) { return a * x; }, py::is_operator());
+    math.def("add", [](const carb::Float3& a, carb::Float3& x) { return a + x; }, py::is_operator());
 
     // Vector and transform operations
     math.def("cross", &omni::isaac::utils::math::cross);
