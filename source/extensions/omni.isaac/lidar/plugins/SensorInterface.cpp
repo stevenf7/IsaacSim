@@ -171,6 +171,30 @@ uint16_t* CARB_ABI getDepthData(const char* primPath)
         return nullptr;
     }
 }
+
+float* CARB_ABI getLinearDepthData(const char* primPath)
+{
+    if (gLidarSensorManager)
+    {
+        omni::isaac::lidar::LidarSensor* sensor =
+            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getLinearDepthData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Lidar Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Lidar Sensor Manager does not exist");
+        return nullptr;
+    }
+}
 uint8_t* CARB_ABI getIntensityData(const char* primPath)
 {
     if (gLidarSensorManager)
@@ -443,6 +467,7 @@ void fillInterface(omni::isaac::lidar::LidarInterface& iface)
     iface.getNumColsTicked = getNumColsTicked;
 
     iface.getDepthData = getDepthData;
+    iface.getLinearDepthData = getLinearDepthData;
     iface.getIntensityData = getIntensityData;
     iface.getZenithData = getZenithData;
     iface.getAzimuthData = getAzimuthData;

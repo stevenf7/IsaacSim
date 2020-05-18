@@ -76,7 +76,7 @@ group ("extensions/"..ext_id)
         }
 
         links {
-            "gf", "sdf", "usdGeom", "usdUtils", "actionlib", "tf2", "tf2_ros", "roscpp" , "rosBridgeSchema", "cudart_static"
+            "gf", "sdf", "usdGeom", "usdUtils", "actionlib", "tf2", "tf2_ros", "roscpp" , "rosBridgeSchema", "cudart_static", "lidarSchema"
         }
         filter { "configurations:debug" }
             defines { "_DEBUG" }

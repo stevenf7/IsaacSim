@@ -57,7 +57,8 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::isaac::lidar::LidarInterface,
                       carb::syntheticdata::SyntheticData,
                       carb::physics::PhysX,
-                      carb::sensors::Sensors)
+                      carb::sensors::Sensors,
+                      carb::tasking::ITasking)
 
 // private stuff
 namespace

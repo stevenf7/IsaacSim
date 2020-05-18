@@ -44,15 +44,18 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include",
             target_deps_dir.."/robotimpsdk/include",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/include",
+            target_deps_dir.."/rtx_plugins/include",
         }
 
         libdirs {   
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
+            target_deps_dir.."/nv_usd/release/lib",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/lib",
+            "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins"   
         }
 
         links { 
-            "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools", "physxSchema"
+            "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools", "physxSchema", "omni.usd"
         }
         
         if os.target() == "linux" then
