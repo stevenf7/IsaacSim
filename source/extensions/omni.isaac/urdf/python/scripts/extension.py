@@ -6,7 +6,8 @@ import omni.kit.ui
 import carb.tokens
 
 from .. import _urdf
-
+from .tests.test_urdf import *
+from .samples.import_carter import import_carter
 
 EXTENSION_NAME = "URDF Importer"
 
@@ -17,21 +18,33 @@ class Extension(omni.ext.IExt):
         self._urdf_interface = _urdf.acquire_urdf_interface()
         menu_path = f"Window/Isaac/{EXTENSION_NAME}"
         self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, menu_path=menu_path)
-        merge_fixed_joints_checkbox = omni.kit.ui.CheckBox("Merge Fixed Joints")
-        merge_fixed_joints_checkbox.set_on_changed_fn(self._on_merge_fixed_joints_fn)
-        self._window.layout.add_child(merge_fixed_joints_checkbox)
+
+        self._merge_fixed_joints_checkbox = self._window.layout.add_child(omni.kit.ui.CheckBox("Merge Fixed Joints"))
+
+        self._zup_checkbox = self._window.layout.add_child(omni.kit.ui.CheckBox("Force Z Up"))
+        self._zup_checkbox.value = True
+
+        self._scale_input = self._window.layout.add_child(omni.kit.ui.FieldDouble("Scaling Factor", 100))
+
+        self._debug_info_checkbox = self._window.layout.add_child(omni.kit.ui.CheckBox("Add Debug Info"))
+        self._debug_info_checkbox.value = True
+
         self._btn_load = self._window.layout.add_child(omni.kit.ui.Button("Load URDF"))
         self._btn_load.set_clicked_fn(self._select_file)
+
+        self._import_carter = import_carter(self._urdf_interface)
 
     def _select_picked_folder_callback(self, path):
         if path.startswith("file:"):
             path = path[5:]
-            self._urdf_interface.importUrdf(path)
+            config = _urdf.ImportConfig()
+            config.merge_fixed_joints = self._merge_fixed_joints_checkbox.value
+            config.distance_scale = self._scale_input.value
+            config.force_z_up = self._zup_checkbox.value
+            config.add_debug_info = self._debug_info_checkbox.value
+            self._urdf_interface.import_urdf(path, config)
         else:
             print("Only local paths supported currently")
-
-    def _on_merge_fixed_joints_fn(self, value):
-        self._urdf_interface.merge_fixed_joints(value)
 
     def _select_file(self, btn_widget):
         self._filepicker = omni.kit.ui.FilePicker("Select URDF File", file_type=omni.kit.ui.FileDialogSelectType.FILE)
@@ -43,4 +56,5 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         print("Shutting down URDF Extension")
+        self._import_carter = None
         _urdf.release_urdf_interface(self._urdf_interface)

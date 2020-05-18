@@ -21,6 +21,7 @@ from .samples.joint_monkey import joint_monkey
 from .tests.test_core import *
 from .tests.test_articulation import *
 from .tests.test_pickles import *
+from .tests.test_surface_gripper import *
 
 EXTENSION_NAME = "Dynamic Control"
 

@@ -24,6 +24,8 @@ group ("extensions/"..ext_id)
     repo_build.prebuild_copy {
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/ros_bridge" },
         { "%{root}/_build/target-deps/nv_ros/lib/**", ext_bin_folder },
+        { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RosBridgeSchema/**", ext_folder.."/omni/isaac/RosBridgeSchema" },
+        { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}rosBridgeSchema${lib_ext}", ext_folder.."/bin/$platform/$config"},
     }
 
     -- C++ Carbonite plugin
@@ -36,6 +38,12 @@ group ("extensions/"..ext_id)
         add_impl_folder("plugins")
         add_iface_folder("%{root}/include/omni/isaac/ros_bridge")
         targetdir (target_dir.."/exts/"..ext_id.."/bin/%{platform}/%{cfg.buildcfg}")
+
+        filter { "files:**.cu", "system:linux", "configurations:debug"}
+            make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC -g", "-g")
+        filter { "files:**.cu", "system:linux", "configurations:release" }
+            make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC", "")
+        filter {}
 
         includedirs {
             "%{root}/source/pch",
@@ -52,7 +60,9 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_ros/include",
             target_deps_dir.."/rtx_plugins/include",
             target_deps_dir.."/omni_physics/include",
-            "%{root}/source/extensions/omni.isaac/ros_bridge/msgs/melodic"
+            target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/include",
+            "%{root}/source/extensions/omni.isaac/ros_bridge/msgs/melodic",
+            target_deps_dir.."/cuda/include"
         }
 
         libdirs {   
@@ -60,10 +70,13 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/usd_ext/%{cfg.buildcfg}/lib",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/lib",
             target_deps_dir.."/usd_audio_schema/%{cfg.buildcfg}/lib",
-            target_deps_dir.."/nv_ros/lib"
+            target_deps_dir.."/nv_ros/lib",
+            target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/lib",
+            target_deps_dir.."/cuda/lib64"
         }
+
         links {
-            "gf", "sdf", "usdGeom", "usdUtils", "actionlib", "tf2", "tf2_ros", "roscpp" 
+            "gf", "sdf", "usdGeom", "usdUtils", "actionlib", "tf2", "tf2_ros", "roscpp" , "rosBridgeSchema", "cudart_static", "lidarSchema"
         }
         filter { "configurations:debug" }
             defines { "_DEBUG" }

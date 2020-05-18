@@ -31,6 +31,7 @@ struct LidarInterface
     int(CARB_ABI* getNumColsTicked)(const char* lidarPath);
 
     uint16_t*(CARB_ABI* getDepthData)(const char* lidarPath);
+    float*(CARB_ABI* getLinearDepthData)(const char* lidarPath);
     uint8_t*(CARB_ABI* getIntensityData)(const char* lidarPath);
     float*(CARB_ABI* getZenithData)(const char* lidarPath);
     float*(CARB_ABI* getAzimuthData)(const char* lidarPath);

@@ -1,7 +1,8 @@
 import os
 import omni.ext
 from .. import _ros_bridge
-from .ros_menu import RosBridgeMenu
+from .menu import RosBridgeMenu
+from .roscore import Roscore
 
 
 class Extension(omni.ext.IExt):
@@ -15,9 +16,11 @@ class Extension(omni.ext.IExt):
 
         print("Loading RosBridge interface")
         self._rosbridge = _ros_bridge.acquire_rosbridge_interface()
-        self._ros_menu = RosBridgeMenu(self._rosbridge)
+        self._menu = RosBridgeMenu()
+        self._roscore = Roscore()
+        self._roscore.startup()
 
     def on_shutdown(self):
         _ros_bridge.release_rosbridge_interface(self._rosbridge)
-        self._ros_menu.shutdown()
-        self._ros_menu = None
+        self._menu = None
+        self._roscore.shutdown()

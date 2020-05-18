@@ -2,7 +2,9 @@ display_name = "ROS Bridge"
 
 [dependencies]
 "omni.kit.editor" = {}
-"omni.physx" = {}
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.lidar" = {}
+"omni.syntheticdata" = {}
 
 [[python.modules]]
 name = "omni.isaac.ros_bridge"
@@ -10,3 +12,11 @@ name = "omni.isaac.ros_bridge"
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false
+
+[[python.modules]]
+name = "omni.isaac.RosBridgeSchema"
+public = false
+
+
+[[libraries]]
+path = "bin/${platform}/${config}/${lib_prefix}rosBridgeSchema${lib_ext}"

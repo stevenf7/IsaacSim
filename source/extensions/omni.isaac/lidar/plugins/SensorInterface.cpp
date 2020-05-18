@@ -40,6 +40,7 @@
 #include <omni/kit/KitUtils.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UsdContext.h>
+#include <omni/renderer/IDebugDraw.h>
 
 #include <map>
 #include <vector>
@@ -53,6 +54,7 @@ CARB_PLUGIN_IMPL_DEPS(carb::physics::PhysX,
                       omni::kit::IEditor,
                       omni::kit::IStageUpdate,
                       carb::fastcache::FastCache,
+                      omni::renderer::IDebugDraw,
                       carb::tasking::ITasking)
 
 // private stuff
@@ -61,6 +63,7 @@ namespace
 
 
 omni::kit::IEditor* g_editor = nullptr;
+omni::renderer::IDebugDraw* g_debugDraw = nullptr;
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 carb::imgui::ImGui* g_imGuiInterface = nullptr;
@@ -155,6 +158,30 @@ uint16_t* CARB_ABI getDepthData(const char* primPath)
         {
 
             return sensor->getDepthData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Lidar Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Lidar Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+float* CARB_ABI getLinearDepthData(const char* primPath)
+{
+    if (gLidarSensorManager)
+    {
+        omni::isaac::lidar::LidarSensor* sensor =
+            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getLinearDepthData().data();
         }
         else
         {
@@ -359,6 +386,13 @@ CARB_EXPORT void carbOnPluginStartup()
         return;
     }
 
+    g_debugDraw = framework->acquireInterface<omni::renderer::IDebugDraw>();
+    if (!g_debugDraw)
+    {
+        CARB_LOG_ERROR("*** Failed to acquire debugdraw interface\n");
+        return;
+    }
+
     g_imGuiInterface = framework->acquireInterface<carb::imgui::ImGui>();
     if (!g_imGuiInterface)
     {
@@ -390,7 +424,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
 
     gLidarSensorManager =
-        std::make_unique<omni::isaac::lidar::LidarSensorManager>(g_editor, g_physx, g_FastCache, gTasking);
+        std::make_unique<omni::isaac::lidar::LidarSensorManager>(g_debugDraw, g_physx, g_FastCache, gTasking);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Lidar Interface";
@@ -433,6 +467,7 @@ void fillInterface(omni::isaac::lidar::LidarInterface& iface)
     iface.getNumColsTicked = getNumColsTicked;
 
     iface.getDepthData = getDepthData;
+    iface.getLinearDepthData = getLinearDepthData;
     iface.getIntensityData = getIntensityData;
     iface.getZenithData = getZenithData;
     iface.getAzimuthData = getAzimuthData;

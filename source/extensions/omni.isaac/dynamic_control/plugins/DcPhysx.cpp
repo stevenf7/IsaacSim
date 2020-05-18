@@ -377,7 +377,13 @@ bool DcArticulation::refreshCache() const
 
     // if (cacheAge < ctx->frameno)
     //{
+
     pxArticulation->copyInternalStateToCache(*pxArticulationCache, PxArticulationCache::eALL);
+
+    // Call this before any inverse dynamics methods
+    pxArticulation->commonInit();
+    // Put joint force in cache
+    pxArticulation->computeJointForce(*pxArticulationCache);
     //    cacheAge = ctx->frameno;
     //}
 
@@ -510,8 +516,6 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
 
     art->rigidBodies.resize(numLinks);
 
-    int dofCount = 0;
-
     for (PxU32 i = 0; i < numLinks; i++)
     {
         //
@@ -604,7 +608,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 dof->joint = jointHandle;
                 dof->path = jointPtr->path;
                 dof->name = jointPtr->name;
-
+                dof->count = link->getInboundJointDof();
+                dof->linkIndex = link->getLinkIndex();
                 // art->paths.insert(dof->path); // unnecessary, since dof->path == joint->path
 
                 if (jointType == PxArticulationJointType::eREVOLUTE)
@@ -617,9 +622,6 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                     dof->type = DcDofType::eTranslation;
                     dof->pxAxis = PxArticulationAxis::eX;
                 }
-
-                dof->cacheIdx = dofCount;
-                DC_LOG_INFO("  DOF cache index: %u\n", dof->cacheIdx);
 
                 PxArticulationDriveType::Enum driveType;
                 float stiffness;
@@ -681,18 +683,44 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 jointPtr->dofs.push_back(dofHandle);
             }
 
-            PxU32 inboundDofCount = link->getInboundJointDof(); // inbound dof count?
-            if (inboundDofCount != 0xffffffff)
-            {
-                dofCount += int(inboundDofCount);
-            }
-
             art->joints.push_back(jointPtr);
             art->jointMap[jointPtr->name] = jointPtr;
         }
 
         art->rigidBodies[i] = bodyPtr;
         art->rigidBodyMap[bodyPtr->name] = bodyPtr;
+    }
+
+    std::vector<size_t> dofStarts(numLinks);
+
+    // First map the link index to the dof count
+    // Link index can be different than the order the links show up in the articulation and corresponds to the index in
+    // the articulation cache
+    for (auto dof : art->dofs)
+    {
+        if (dof->count != 0xffffffff)
+        {
+            dofStarts[dof->linkIndex] = dof->count;
+        }
+        else
+        {
+            dofStarts[dof->linkIndex] = 0;
+        }
+    }
+    // Now do a "scan" operation to compute offsets in the cache for each dof
+    size_t count = 0;
+    for (size_t i = 0; i < dofStarts.size(); i++)
+    {
+        auto dofs = dofStarts[i];
+        dofStarts[i] = count;
+        count += dofs;
+    }
+    // Once we have all of the offsets, set them on the dof
+    for (size_t i = 0; i < art->dofs.size(); i++)
+    {
+        art->dofs[i]->cacheIdx = int(dofStarts[art->dofs[i]->linkIndex]);
+        DC_LOG_INFO("dof index: i: %d with link index: %d has a DOF cache index of: %u", int(i),
+                    art->dofs[i]->linkIndex, art->dofs[i]->cacheIdx);
     }
 
     // resolve hierarchy relationships
@@ -2906,21 +2934,23 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
         return kDcInvalidHandle;
     }
 
-    DcRigidBody* body0 = DC_LOOKUP_RIGID_BODY(props->body0);
-
-    if (!body0 || !body0->pxRigidBody)
-    {
-        DC_LOG_ERROR("Failed to create Joint: body 0 handle is invalid");
-        return kDcInvalidHandle;
-    }
-
-    PxRigidBody* pxBody0 = body0->pxRigidBody;
+    PxRigidBody* pxBody0 = nullptr;
     PxRigidBody* pxBody1 = nullptr;
-
-    if (!pxBody0->getScene())
+    if (props->body0 != kDcInvalidHandle)
     {
-        DC_LOG_ERROR("Failed to create Joint: body 0 not in scene");
-        return kDcInvalidHandle;
+        DcRigidBody* body0 = DC_LOOKUP_RIGID_BODY(props->body0);
+        if (!body0 || !body0->pxRigidBody)
+        {
+            DC_LOG_ERROR("Failed to create Joint: body 0 handle is invalid");
+            return kDcInvalidHandle;
+        }
+        pxBody0 = body0->pxRigidBody;
+        if (!pxBody0->getScene())
+        {
+            DC_LOG_ERROR("Failed to create Joint: body 0 not in scene");
+            return kDcInvalidHandle;
+        }
+        DcWakeUpRigidBody(props->body0);
     }
     if (props->body1 != kDcInvalidHandle)
     {
@@ -2930,31 +2960,31 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
             DC_LOG_ERROR("Failed to create Joint: body 1 handle is invalid");
             return kDcInvalidHandle;
         }
+        pxBody1 = body1->pxRigidBody;
         if (!pxBody1->getScene())
         {
             DC_LOG_ERROR("Failed to create Joint: body 1 not in scene");
             return kDcInvalidHandle;
         }
-        pxBody1 = body1->pxRigidBody;
+        DcWakeUpRigidBody(props->body1);
     }
-    std::string jointName;
+    std::string jointName = "/joint_" + std::to_string(ctx->numD6Joints());
+    SdfPath jointPath;
     if (props->name != nullptr)
-        jointName = props->name;
-    else
-        jointName = "joint";
+    {
+        jointName = std::string(props->name);
+    }
+    jointPath = SdfPath(jointName);
 
 
     size_t originId = (size_t)pxBody0->userData;
+    SdfPath originPath(ctx->physx->getPhysXObjectUsdPath(originId));
     SdfPath targetPath;
     if (pxBody1)
-    {
-        targetPath = ctx->physx->getPhysXObjectUsdPath((size_t)originId);
-    }
-    SdfPath originPath = ctx->physx->getPhysXObjectUsdPath(originId);
-    SdfPath jointPath((originPath.GetString() + "/joint").c_str() + std::to_string(ctx->numD6Joints()));
+        targetPath = ctx->physx->getPhysXObjectUsdPath((size_t)pxBody1->userData);
+
 
     PxD6Joint* joint = (PxD6Joint*)ctx->physx->createD6JointAtPath(jointPath, originPath, targetPath);
-
     if (!joint)
     {
         DC_LOG_ERROR("Failed to create D6 joint");

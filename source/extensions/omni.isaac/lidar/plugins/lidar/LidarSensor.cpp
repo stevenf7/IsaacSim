@@ -167,6 +167,8 @@ void LidarSensor::onComponentChange()
     mMaxColsPerTick = int(mColScanSpeed * mMaxStepSize);
 
     mDepth.assign(mRows * mCols, 0);
+    mLinearDepth.assign(mRows * mCols, 0);
+
     mIntensity.assign(mRows * mCols, 0);
     mZenith.assign(mRows, 0.0f);
     mAzimuth.assign(mCols, 0.0f);
@@ -185,6 +187,7 @@ void LidarSensor::onComponentChange()
 
     mLastAzimuth.assign(mMaxColsPerTick, 0.0f);
     mLastDepth.assign(mRows * mMaxColsPerTick, 0);
+    mLastLinearDepth.assign(mRows * mMaxColsPerTick, 0);
 
     mLastCol = 0;
     mLastNumColsTicked = 0;
@@ -235,12 +238,14 @@ void scan(int start,
           carb::physics::PhysX* physxPtr,
           physx::PxScene* physxScenePtr,
           pxr::LidarSchemaLidar& prim,
-          std::vector<carb::renderer::PrimitiveVertex>& debugLines,
+          std::vector<omni::isaac::lidar::DebugData>& debugLines,
           std::vector<uint16_t>& depth,
+          std::vector<float>& linearDepth,
           std::vector<uint8_t>& intensity,
           std::vector<float>& zenith,
           std::vector<float>& azimuth,
           float maxDepth,
+          float metersPerUnit,
           bool zUp)
 {
     carb::fastcache::Transform trans;
@@ -271,41 +276,32 @@ void scan(int start,
             if (hit)
             {
                 depth[i] = static_cast<uint16_t>(raycastHit.distance * invMaxDepth * 65535.0f);
+                linearDepth[i] = raycastHit.distance * metersPerUnit; // in meters
                 intensity[i] = 255;
 
                 if (drawLidarPoints)
                 {
                     carb::Float3 hitPos = (const carb::Float3&)raycastHit.position;
-                    carb::renderer::PrimitiveVertex startPosition, endPosition;
-
-                    startPosition.position = (const carb::Float3&)origin;
-                    endPosition.position = hitPos;
-                    startPosition.color = { 199.0f / 255.0f, 244.0f / 255.0f, 100.0f / 255.0f, 1.0f };
-                    endPosition.color = { 199.0f / 255.0f, 244.0f / 255.0f, 100.0f / 255.0f, 1.0f };
-
-                    startPosition.width = endPosition.width = 1;
-
-                    debugLines.push_back(startPosition);
-                    debugLines.push_back(endPosition);
+                    omni::isaac::lidar::DebugData data;
+                    data.startPos = (const carb::Float3&)origin;
+                    data.endPos = (const carb::Float3&)hitPos;
+                    data.color = 0xFFc7f464;
+                    debugLines.push_back(data);
                 }
             }
             else
             {
                 depth[i] = 65535;
+                linearDepth[i] = maxDepth * metersPerUnit; // in meters
                 intensity[i] = 0;
                 if (drawLidarPoints)
                 {
                     physx::PxVec3 hitPos = origin + unitDir * maxDepth;
-                    carb::renderer::PrimitiveVertex startPosition, endPosition;
-
-                    startPosition.position = (const carb::Float3&)origin;
-                    endPosition.position = (const carb::Float3&)hitPos;
-                    startPosition.color = { 85.0f / 255.0f, 98.0f / 255.0f, 112.0f / 255.0f, 1.0f };
-                    endPosition.color = { 85.0f / 255.0f, 98.0f / 255.0f, 112.0f / 255.0f, 1.0f };
-                    startPosition.width = endPosition.width = 1;
-
-                    debugLines.push_back(startPosition);
-                    debugLines.push_back(endPosition);
+                    omni::isaac::lidar::DebugData data;
+                    data.startPos = (const carb::Float3&)origin;
+                    data.endPos = (const carb::Float3&)hitPos;
+                    data.color = 0xFF556270;
+                    debugLines.push_back(data);
                 }
             }
 
@@ -329,11 +325,15 @@ void LidarSensor::dumpData(int start, int stop, float dt)
     int wrappedSize = std::max(0, stop - mCols);
 
     mLastDepth.resize(mRows * colsToTick);
+    mLastLinearDepth.resize(mRows * colsToTick);
     mLastIntensity.resize(mRows * colsToTick);
     mLastAzimuth.resize(colsToTick);
 
     std::copy(mAzimuth.begin() + start, mAzimuth.begin() + (start + unwrappedSize), mLastAzimuth.begin());
     std::copy(mDepth.begin() + start * mRows, mDepth.begin() + (start + unwrappedSize) * mRows, mLastDepth.begin());
+    std::copy(mLinearDepth.begin() + start * mRows, mLinearDepth.begin() + (start + unwrappedSize) * mRows,
+              mLastLinearDepth.begin());
+
     std::copy(mIntensity.begin() + start * mRows, mIntensity.begin() + (start + unwrappedSize) * mRows,
               mLastIntensity.begin());
 
@@ -342,6 +342,8 @@ void LidarSensor::dumpData(int start, int stop, float dt)
     {
         std::copy(mAzimuth.begin(), mAzimuth.begin() + wrappedSize, mLastAzimuth.begin() + unwrappedSize);
         std::copy(mDepth.begin(), mDepth.begin() + wrappedSize * mRows, mLastDepth.begin() + unwrappedSize * mRows);
+        std::copy(mLinearDepth.begin(), mLinearDepth.begin() + wrappedSize * mRows,
+                  mLastLinearDepth.begin() + unwrappedSize * mRows);
         std::copy(mIntensity.begin(), mIntensity.begin() + wrappedSize * mRows,
                   mLastIntensity.begin() + unwrappedSize * mRows);
     }
@@ -366,13 +368,13 @@ void LidarSensor::tick()
         mLastNumColsTicked = mCols;
         if (mDrawLidarPoints)
         {
-            scan<true>(0, mCols, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mIntensity,
-                       mZenith, mAzimuth, mMaxDepth, zUp);
+            scan<true>(0, mCols, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim, mDebugLines, mDepth,
+                       mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
         }
         else
         {
-            scan<false>(0, mCols, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mIntensity,
-                        mZenith, mAzimuth, mMaxDepth, zUp);
+            scan<false>(0, mCols, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim, mDebugLines, mDepth,
+                        mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
         }
         dumpData(0, mCols, elapsedTime);
 
@@ -402,12 +404,12 @@ void LidarSensor::tick()
         if (mDrawLidarPoints)
         {
             scan<true>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim,
-                       mDebugLines, mDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, zUp);
+                       mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
         }
         else
         {
             scan<false>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim,
-                        mDebugLines, mDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, zUp);
+                        mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
         }
         dumpData(mLastCol, mLastCol + mLastNumColsTicked, simulateTime);
 

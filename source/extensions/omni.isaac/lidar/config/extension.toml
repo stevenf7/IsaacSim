@@ -3,6 +3,7 @@ display_name = "Lidar"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.physx" = {} 
+"omni.debugdraw" = {}
 
 [[python.modules]]
 name = "omni.isaac.lidar"

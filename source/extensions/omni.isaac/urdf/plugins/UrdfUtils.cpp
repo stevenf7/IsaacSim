@@ -22,6 +22,8 @@
 #include <omni/ext/IExt.h>
 #include <omni/isaac/urdf/Urdf.h>
 #include <omni/kit/IApp.h>
+#include <omni/usd/UsdContextIncludes.h>
+#include <omni/usd/UsdContext.h>
 
 #include <memory>
 #include <fstream>
@@ -34,22 +36,25 @@ const struct carb::PluginImplDesc kPluginImpl = { EXTENSION_NAME, "URDF Utilitie
                                                   carb::PluginHotReload::eEnabled, "dev" };
 
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::urdf::Urdf)
-CARB_PLUGIN_IMPL_DEPS(omni::kit::IApp, carb::logging::ILogging, omni::kit::IStageUpdate)
+CARB_PLUGIN_IMPL_DEPS(omni::kit::IApp, carb::logging::ILogging)
 
 namespace
 {
 
 carb::Framework* g_framework = nullptr;
-omni::kit::IStageUpdate* g_stageUpdate = nullptr;
-omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
-pxr::UsdStageRefPtr g_stage = nullptr;
 
-std::unique_ptr<UsdUrdfStream> g_urdfStream = nullptr;
+std::unique_ptr<omni::isaac::urdf::UsdUrdfStream> g_urdfStream = nullptr;
 
-void importUrdf(std::string filename)
+void importUrdf(std::string filename, const omni::isaac::urdf::ImportConfig& importConfig)
 {
-    CARB_LOG_ERROR("Trying to import %s", filename.c_str());
+    CARB_LOG_INFO("Trying to import %s", filename.c_str());
 
+    pxr::UsdStageRefPtr stage = omni::usd::UsdContext::getContext()->getStage();
+    if (!stage)
+    {
+        CARB_LOG_ERROR("Stage Not Valid");
+        return;
+    }
     std::ifstream fin(filename.c_str());
     if (!fin.is_open())
     {
@@ -61,44 +66,16 @@ void importUrdf(std::string filename)
         std::string error;
 
         g_urdfStream->SetFileName(filename);
+        g_urdfStream->SetImportConfig(importConfig);
         if (!g_urdfStream->UsdUrdfReadDataFromStream(fin, &error))
         {
             CARB_LOG_ERROR("Failed to READ \"%s\"", filename.c_str());
         }
         else
         {
-
-            pxr::SdfLayerRefPtr urdfAsUsd = g_urdfStream->UsdUrdfTranslateUrdfToUsd();
-            if (!urdfAsUsd)
-            {
-                CARB_LOG_ERROR("Failed to CONVERT \"%s\"", filename.c_str());
-            }
-            else
-            {
-                g_stage->GetRootLayer()->TransferContent(urdfAsUsd);
-            }
+            g_urdfStream->UsdUrdfTranslateUrdfToUsd(stage);
         }
     }
-}
-
-void mergeFixedJoints(bool merge)
-{
-    g_urdfStream->SetDoMergeJoints(merge);
-}
-
-void onAttach(long int stageId, double metersPerUnit, void* userData)
-{
-    pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
-    if (!stage)
-    {
-        CARB_LOG_ERROR("Isaac Robot Engine Bridge could not find USD stage");
-        return;
-    }
-
-    g_stage = stage;
-}
-void onDetach(void* userData)
-{
 }
 }
 
@@ -108,14 +85,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
     // Get app interface using Carbonite Framework
     g_framework = carb::getFramework();
-    g_stageUpdate = g_framework->acquireInterface<omni::kit::IStageUpdate>();
-    g_urdfStream = std::make_unique<UsdUrdfStream>();
-
-    omni::kit::StageUpdateNodeDesc desc = { 0 };
-    desc.displayName = "IsaacUrdfUtils";
-    desc.onAttach = onAttach;
-    desc.onDetach = onDetach;
-    g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
+    g_urdfStream = std::make_unique<omni::isaac::urdf::UsdUrdfStream>();
 }
 
 
@@ -129,5 +99,4 @@ void fillInterface(omni::isaac::urdf::Urdf& iface)
 {
     memset(&iface, 0, sizeof(iface));
     iface.importUrdf = importUrdf;
-    iface.mergeFixedJoints = mergeFixedJoints;
 }

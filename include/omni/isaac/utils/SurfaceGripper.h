@@ -41,6 +41,8 @@ struct SurfaceGripperProperties
     float bendAngle; //! maximum bend angle for the gripper
     float stiffness; //! Gripper Stiffness
     float damping; //! Gripper damping
+    bool disableGravity; //! flag to disable gravity of selected item to compensate for object's mass on robotic
+                         //! controllers
 };
 
 /**
@@ -68,9 +70,15 @@ public:
         mJointProperties.damping = 1.0e5f;
         mJointProperties.forceLimit = 0;
         mJointProperties.torqueLimit = 0;
+        for (int i = 0; i < 6; ++i)
+        {
+            mJointProperties.hasLimits[i] = false;
+        }
 
         mIsClosed = false;
         mIsInitialized = false;
+
+        mJointHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
     }
 
     /**
@@ -100,12 +108,6 @@ public:
         {
             mDc->destroyD6Joint(mJointHandle);
             mJointHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
-        }
-        mJointHandle = mDc->getD6Joint(mProps.d6JointPath.c_str());
-        if (!mJointHandle)
-        {
-            mIsInitialized = false;
-            return false;
         }
         mIsInitialized = true;
         return true;
@@ -145,21 +147,23 @@ public:
             CARB_LOG_ERROR("Please call initialize before closing");
             return false;
         }
-        if (mJointHandle)
+        else
         {
             DcHandle rb_0 = mDc->getRigidBody(mProps.parentPath.c_str());
             if (!rb_0)
             {
-                CARB_LOG_ERROR("Rarent rigid Body handle not valid");
+                CARB_LOG_ERROR("Parent rigid Body handle not valid");
                 return false;
             }
             DcTransform t_0 = mDc->getRigidBodyPose(rb_0);
-            DcTransform threshOffset;
-            threshOffset.p.x = mProps.gripThreshold;
             DcTransform _t_0 = (t_0 * mProps.offset);
             carb::Float3 p = _t_0.p;
-            // _t_0 = _t_0 * threshOffset;//Disabling until we get soft meshes for grippers
-            carb::Float3 dir = getBasisVectorX(t_0.r);
+            carb::Float3 dir = getBasisVectorX(_t_0.r);
+            // CARB_LOG_WARN("gripper position: (%f, %f, %f)", p.x, p.y, p.z);
+            // CARB_LOG_WARN("gripper direction: (%f, %f, %f)", dir.x, dir.y, dir.z);
+            // DcTransform threshOffset;
+            // threshOffset.p.x = mProps.gripThreshold;
+            // _t_0 = _t_0 * threshOffset; //Disabling until we get soft meshes for grippers
             DcRayCastResult hit = mDc->rayCast(p, dir, mProps.gripThreshold);
 
             if (hit.hit)
@@ -168,23 +172,50 @@ public:
 
                 mJointProperties.body0 = rb_0;
                 mJointProperties.body1 = hit.rigidBody;
-                mDc->setRigidBodyDisableGravity(mJointProperties.body1, true);
+                mDc->setRigidBodyDisableGravity(mJointProperties.body1, mProps.disableGravity);
                 mJointProperties.pose0 = mProps.offset;
                 mJointProperties.pose1 = t_1;
                 mJointProperties.axes = kDcAxisAll;
-                memset(mJointProperties.hasLimits, 0, sizeof(bool) * 6);
-                mJointProperties.hasLimits[4] = true;
-                mJointProperties.hasLimits[5] = true;
+
+
                 mJointProperties.stiffness = mProps.stiffness;
                 mJointProperties.damping = mProps.damping;
                 mJointProperties.limitStiffness = mProps.stiffness;
                 mJointProperties.limitDamping = mProps.damping;
-                mJointProperties.softLimit = true;
-                mJointProperties.lowerLimit = mProps.bendAngle;
-                mJointProperties.upperLimit = mProps.bendAngle;
+                if (mProps.bendAngle > 0)
+                {
+                    mJointProperties.softLimit = true;
+                    mJointProperties.lowerLimit = mProps.bendAngle;
+                    mJointProperties.upperLimit = mProps.bendAngle;
+                    mJointProperties.jointType = DcJointType::eSpherical;
+                    mJointProperties.hasLimits[4] = true;
+                    mJointProperties.hasLimits[5] = true;
+                }
+                else
+                {
+                    mJointProperties.hasLimits[4] = false;
+                    mJointProperties.hasLimits[5] = false;
+                    mJointProperties.softLimit = false;
+                    mJointProperties.lowerLimit = 0;
+                    mJointProperties.upperLimit = 0;
+                    mJointProperties.jointType = DcJointType::eFixed;
+                }
+
+
                 mJointProperties.forceLimit = mProps.forceLimit;
                 mJointProperties.torqueLimit = mProps.torqueLimit;
-                mDc->setD6JointProperties(mJointHandle, &mJointProperties);
+                if (!mJointHandle)
+                {
+                    std::string s(mProps.parentPath + mProps.d6JointPath);
+                    mJointProperties.name = (char*)(s).c_str();
+                    // CARB_LOG_WARN("Joint handle not found, creating new joint: %s", mJointProperties.name);
+                    mJointHandle = mDc->createD6Joint(&mJointProperties);
+                }
+                else
+                {
+                    mDc->setD6JointProperties(mJointHandle, &mJointProperties);
+                }
+
                 mIsClosed = true;
             }
             return hit.hit;
@@ -205,7 +236,7 @@ public:
             CARB_LOG_ERROR("Please call initialize before opening");
             return false;
         }
-        if (mIsClosed && mJointHandle)
+        if (mIsClosed)
         {
             mJointProperties.axes = kDcAxisNone;
             mJointProperties.body0 = 0;

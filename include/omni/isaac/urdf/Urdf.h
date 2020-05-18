@@ -19,11 +19,19 @@ namespace isaac
 namespace urdf
 {
 
+struct ImportConfig
+{
+    bool mergeFixedJoints = false;
+    float distanceScale = 100.0;
+    bool forceZUp = true;
+    bool addDebugInfo = false;
+};
+
+
 struct Urdf
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::urdf::Urdf", 0, 1);
-    void(CARB_ABI* importUrdf)(std::string asset_path);
-    void(CARB_ABI* mergeFixedJoints)(bool merge);
+    void(CARB_ABI* importUrdf)(std::string asset_path, const ImportConfig& importConfig);
 };
 }
 }

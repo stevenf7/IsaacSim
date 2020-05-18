@@ -39,7 +39,7 @@ class LidarMenu:
         lidar.CreateVerticalResolutionAttr().Set(4.0)
         lidar.CreateMinRangeAttr().Set(0.4)
         lidar.CreateMaxRangeAttr().Set(100.0)
-        lidar.CreateHighLodAttr().Set(True)
+        lidar.CreateHighLodAttr().Set(False)
         lidar.CreateDrawLidarPointsAttr().Set(False)
         lidar.CreateYawOffsetAttr().Set(0.0)
 

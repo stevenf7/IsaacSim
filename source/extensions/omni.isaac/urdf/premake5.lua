@@ -44,31 +44,38 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include",
             target_deps_dir.."/robotimpsdk/include",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/include",
+            target_deps_dir.."/rtx_plugins/include",
         }
 
         libdirs {   
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
+            target_deps_dir.."/nv_usd/release/lib",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/lib",
+            "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins"   
         }
 
         links { 
-            "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools", "physxSchema"
+            "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools", "physxSchema", "omni.usd"
         }
         
-        filter { "system:linux" }
+        if os.target() == "linux" then
             includedirs {
                 target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include/boost",
                 target_deps_dir.."/python/include/python3.6m",
             }
             libdirs {target_deps_dir.."/robotimpsdk/lib/linux-x86_64"}
             links { "robotimp" }
-        filter { "system:windows" }
+        else
             libdirs {
                 target_deps_dir.."/tbb/lib/intel64/vc14",
                 target_deps_dir.."/robotimpsdk/lib/windows-x86_64",
             }
-            links { "librobotimp" }
-        filter {}
+            filter { "configurations:debug" }
+                links { "librobotimpdebug" }
+            filter { "configurations:release" }
+                links { "librobotimp" }
+            filter {}
+        end
         
     -- Python Bindings for Carobnite Plugin
     project "omni.isaac.urdf.python"

@@ -56,13 +56,15 @@ PYBIND11_MODULE(_isaac_utils, m)
             "bendAngle", &omni::isaac::utils::SurfaceGripperProperties::bendAngle, "maximum bend angle for the gripper")
         .def_readwrite("stiffness", &omni::isaac::utils::SurfaceGripperProperties::stiffness, "Griper Stiffness")
         .def_readwrite("damping", &omni::isaac::utils::SurfaceGripperProperties::damping, "Griper Damping")
+        .def_readwrite("disableGravity", &omni::isaac::utils::SurfaceGripperProperties::disableGravity,
+                       "Flag to disable gravity on selected object to compensate for its mass")
 
         .def(py::pickle(
             [](const omni::isaac::utils::SurfaceGripperProperties& props) {
                 return py::make_tuple(props.d6JointPath, props.parentPath, props.offset.p.x, props.offset.p.y,
                                       props.offset.p.z, props.offset.r.x, props.offset.r.y, props.offset.r.z,
                                       props.offset.r.w, props.gripThreshold, props.forceLimit, props.torqueLimit,
-                                      props.bendAngle, props.stiffness, props.damping);
+                                      props.bendAngle, props.stiffness, props.damping, props.disableGravity);
             },
             [](py::tuple t) {
                 omni::isaac::utils::SurfaceGripperProperties props;
@@ -80,6 +82,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                 props.bendAngle = t[12].cast<float>();
                 props.stiffness = t[13].cast<float>();
                 props.damping = t[14].cast<float>();
+                props.disableGravity = t[15].cast<bool>();
 
                 return props;
             }));
