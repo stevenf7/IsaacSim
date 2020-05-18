@@ -94,6 +94,14 @@ void ScissorLiftSimulator::tick()
     {
         mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
         auto handle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, mLiftJointName.c_str());
+
+        float currentPosition = mDynamicControlPtr->getDofPosition(handle);
+        if (mState == LiftState::Raised && pxr::GfIsClose(currentPosition, 0.0f, 0.0001f))
+        {
+            mState = LiftState::Lowered;
+            mCurrentHeight = 0.0f;
+        }
+
         if (mState == LiftState::Raising)
         {
             if (mCurrentHeight < mMaxHeight)
@@ -146,6 +154,13 @@ void ScissorLiftSimulator::tick()
         std::vector<std::vector<uint8_t>> buffers(1);
         auto statusProto = statusComposite.initProto();
         std::vector<double> elements{ stateVal, 0.0 };
+        // set tensor proto to specify dimension of buffer
+        auto tensor = statusProto.initPack();
+        tensor.setElementType(ElementType::FLOAT64);
+        auto tensor_sizes = tensor.initSizes(1);
+        tensor_sizes.set(0, static_cast<int>(elements.size()));
+        tensor.setScanlineStride(0);
+        tensor.setDataBufferIndex(0);
         // copy actual buffer data
         buffers[0].resize(elements.size() * sizeof(double));
         std::memcpy(buffers[0].data(), elements.data(), elements.size() * sizeof(double));
