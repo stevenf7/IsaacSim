@@ -8,6 +8,7 @@ import os
 import asyncio
 import numpy as np
 from pxr import Gf, PhysxSchema
+from omni.physx import _physx
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
@@ -19,6 +20,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
+        self._physxIFace = _physx.acquire_physx_interface()
 
         pass
 
@@ -45,6 +47,32 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         # make sure that articulation was registered properly
         dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
         self.assertTrue(dof_states is not None)
+        pass
+
+    # Actual test, notice it is "async" function, so "await" can be used if needed
+    async def test_articulation_non_sim(self, gpu=False):
+        await omni.kit.asyncapi.new_stage()
+        (result, error) = await load_test_file("assets/robots/franka/franka.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+        set_scene_physics_type(gpu)
+        # Articulation should be invalid as sim has not started
+        obj_type = self._dc.peek_object_type("/panda")
+        self.assertEqual(obj_type, _dynamic_control.ObjectType.OBJECT_NONE)
+        art = self._dc.get_articulation("/panda")
+        self.assertEqual(art, _dynamic_control.INVALID_HANDLE)
+        # force physics to load and some information should be valid
+        self._physxIFace.force_load_physics_from_usd()
+        obj_type = self._dc.peek_object_type("/panda")
+        self.assertEqual(obj_type, _dynamic_control.ObjectType.OBJECT_ARTICULATION)
+        art = self._dc.get_articulation("/panda")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+        # Dof states will still be none
+        dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+        self.assertTrue(dof_states is None)
+        dof_props = self._dc.get_articulation_dof_properties(art)
+        self.assertTrue(dof_props is not None)
+
         pass
 
         # Actual test, notice it is "async" function, so "await" can be used if needed
@@ -332,6 +360,9 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_load_gpu(self):
         await self.test_articulation_load(True)
+
+    async def test_articulation_non_sim_gpu(self):
+        await self.test_articulation_non_sim(True)
 
     # async def test_articulation_teleport_gpu(self):
     #     await self.test_articulation_teleport(True)
