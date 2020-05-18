@@ -41,6 +41,8 @@ struct SurfaceGripperProperties
     float bendAngle; //! maximum bend angle for the gripper
     float stiffness; //! Gripper Stiffness
     float damping; //! Gripper damping
+    bool disableGravity; //! flag to disable gravity of selected item to compensate for object's mass on robotic
+                         //! controllers
 };
 
 /**
@@ -75,6 +77,8 @@ public:
 
         mIsClosed = false;
         mIsInitialized = false;
+
+        mJointHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
     }
 
     /**
@@ -104,12 +108,6 @@ public:
         {
             mDc->destroyD6Joint(mJointHandle);
             mJointHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
-        }
-        mJointHandle = mDc->getD6Joint(mProps.d6JointPath.c_str());
-        if (!mJointHandle)
-        {
-            mIsInitialized = false;
-            return false;
         }
         mIsInitialized = true;
         return true;
@@ -149,7 +147,7 @@ public:
             CARB_LOG_ERROR("Please call initialize before closing");
             return false;
         }
-        if (mJointHandle)
+        else
         {
             DcHandle rb_0 = mDc->getRigidBody(mProps.parentPath.c_str());
             if (!rb_0)
@@ -174,7 +172,7 @@ public:
 
                 mJointProperties.body0 = rb_0;
                 mJointProperties.body1 = hit.rigidBody;
-                mDc->setRigidBodyDisableGravity(mJointProperties.body1, true);
+                mDc->setRigidBodyDisableGravity(mJointProperties.body1, mProps.disableGravity);
                 mJointProperties.pose0 = mProps.offset;
                 mJointProperties.pose1 = t_1;
                 mJointProperties.axes = kDcAxisAll;
@@ -206,7 +204,18 @@ public:
 
                 mJointProperties.forceLimit = mProps.forceLimit;
                 mJointProperties.torqueLimit = mProps.torqueLimit;
-                mDc->setD6JointProperties(mJointHandle, &mJointProperties);
+                if (!mJointHandle)
+                {
+                    std::string s(mProps.parentPath + mProps.d6JointPath);
+                    mJointProperties.name = (char*)(s).c_str();
+                    // CARB_LOG_WARN("Joint handle not found, creating new joint: %s", mJointProperties.name);
+                    mJointHandle = mDc->createD6Joint(&mJointProperties);
+                }
+                else
+                {
+                    mDc->setD6JointProperties(mJointHandle, &mJointProperties);
+                }
+
                 mIsClosed = true;
             }
             return hit.hit;
@@ -227,7 +236,7 @@ public:
             CARB_LOG_ERROR("Please call initialize before opening");
             return false;
         }
-        if (mIsClosed && mJointHandle)
+        if (mIsClosed)
         {
             mJointProperties.axes = kDcAxisNone;
             mJointProperties.body0 = 0;

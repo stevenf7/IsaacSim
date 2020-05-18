@@ -2934,21 +2934,23 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
         return kDcInvalidHandle;
     }
 
-    DcRigidBody* body0 = DC_LOOKUP_RIGID_BODY(props->body0);
-
-    if (!body0 || !body0->pxRigidBody)
-    {
-        DC_LOG_ERROR("Failed to create Joint: body 0 handle is invalid");
-        return kDcInvalidHandle;
-    }
-
-    PxRigidBody* pxBody0 = body0->pxRigidBody;
+    PxRigidBody* pxBody0 = nullptr;
     PxRigidBody* pxBody1 = nullptr;
-
-    if (!pxBody0->getScene())
+    if (props->body0 != kDcInvalidHandle)
     {
-        DC_LOG_ERROR("Failed to create Joint: body 0 not in scene");
-        return kDcInvalidHandle;
+        DcRigidBody* body0 = DC_LOOKUP_RIGID_BODY(props->body0);
+        if (!body0 || !body0->pxRigidBody)
+        {
+            DC_LOG_ERROR("Failed to create Joint: body 0 handle is invalid");
+            return kDcInvalidHandle;
+        }
+        pxBody0 = body0->pxRigidBody;
+        if (!pxBody0->getScene())
+        {
+            DC_LOG_ERROR("Failed to create Joint: body 0 not in scene");
+            return kDcInvalidHandle;
+        }
+        DcWakeUpRigidBody(props->body0);
     }
     if (props->body1 != kDcInvalidHandle)
     {
@@ -2958,31 +2960,31 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
             DC_LOG_ERROR("Failed to create Joint: body 1 handle is invalid");
             return kDcInvalidHandle;
         }
+        pxBody1 = body1->pxRigidBody;
         if (!pxBody1->getScene())
         {
             DC_LOG_ERROR("Failed to create Joint: body 1 not in scene");
             return kDcInvalidHandle;
         }
-        pxBody1 = body1->pxRigidBody;
+        DcWakeUpRigidBody(props->body1);
     }
-    std::string jointName;
+    std::string jointName = "/joint_" + std::to_string(ctx->numD6Joints());
+    SdfPath jointPath;
     if (props->name != nullptr)
-        jointName = props->name;
-    else
-        jointName = "joint";
+    {
+        jointName = std::string(props->name);
+    }
+    jointPath = SdfPath(jointName);
 
 
     size_t originId = (size_t)pxBody0->userData;
+    SdfPath originPath(ctx->physx->getPhysXObjectUsdPath(originId));
     SdfPath targetPath;
     if (pxBody1)
-    {
-        targetPath = ctx->physx->getPhysXObjectUsdPath((size_t)originId);
-    }
-    SdfPath originPath = ctx->physx->getPhysXObjectUsdPath(originId);
-    SdfPath jointPath((originPath.GetString() + "/joint").c_str() + std::to_string(ctx->numD6Joints()));
+        targetPath = ctx->physx->getPhysXObjectUsdPath((size_t)pxBody1->userData);
+
 
     PxD6Joint* joint = (PxD6Joint*)ctx->physx->createD6JointAtPath(jointPath, originPath, targetPath);
-
     if (!joint)
     {
         DC_LOG_ERROR("Failed to create D6 joint");
