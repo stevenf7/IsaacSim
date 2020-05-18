@@ -56,6 +56,7 @@ private:
     std::string mJointStateChannelName = "joint_state";
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
+    float mLimitOffset = 0.01f;
 };
 }
 }
