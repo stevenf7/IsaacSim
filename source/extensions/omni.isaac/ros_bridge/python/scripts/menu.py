@@ -10,7 +10,7 @@ import omni.isaac.RosBridgeSchema as ROSSchema
 ADD_ROS_CLOCK = "Create/Isaac/ROS/Clock"
 ADD_ROS_CAMERA = "Create/Isaac/ROS/Camera"
 ADD_ROS_JOINT_STATE = "Create/Isaac/ROS/Joint State"
-ADD_ROS_LIDAR = "Create/Isaac/ROS/LIDAR"
+ADD_ROS_LIDAR = "Create/Isaac/ROS/Lidar"
 ADD_ROS_POSE_TREE = "Create/Isaac/ROS/Pose Tree"
 ADD_ROS_SINK = "Create/Isaac/ROS/Sink"
 ADD_ROS_TELEPORT = "Create/Isaac/ROS/Teleport"
@@ -81,8 +81,9 @@ class RosBridgeMenu:
     def add_lidar(self):
         prim = ROSSchema.RosLidar.Define(self._stage, self.get_path("/ROS_Lidar"))
         self.setup_base_prim(prim)
-        prim.CreateLidarScanPubTopicAttr("/lidar_scan")
+        prim.CreateLaserScanPubTopicAttr("/laser_scan")
         prim.CreateLidarPrimRel()
+        prim.CreateFrameIdAttr("/sim_lidar")
         prim.CreateQueueSizeAttr(0)
         pass
 

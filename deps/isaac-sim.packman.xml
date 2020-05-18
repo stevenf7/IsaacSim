@@ -1,11 +1,11 @@
 <project toolsVersion="5.6">
   <dependency name="usd_ext_isaac_release" linkPath="../_build/target-deps/usd_ext_isaac/release">
-    <package name="usd_ext_isaac" version="19.11.88.ce683d5f-win64_py36_release-master" platforms="windows-x86_64"/>
-    <package name="usd_ext_isaac" version="19.11.88.ce683d5f-linux-x86_64_py36_release-master" platforms="linux-x86_64"/>
+    <package name="usd_ext_isaac" version="19.11.90.81a0dd59-win64_py36_release-master" platforms="windows-x86_64"/>
+    <package name="usd_ext_isaac" version="19.11.90.81a0dd59-linux-x86_64_py36_release-master" platforms="linux-x86_64"/>
   </dependency>
   <dependency name="usd_ext_isaac_debug" linkPath="../_build/target-deps/usd_ext_isaac/debug">
-    <package name="usd_ext_isaac" version="19.11.88.ce683d5f-win64_py36_debug-master" platforms="windows-x86_64"/>
-    <package name="usd_ext_isaac" version="19.11.88.ce683d5f-linux-x86_64_py36_debug-master" platforms="linux-x86_64"/>
+    <package name="usd_ext_isaac" version="19.11.90.81a0dd59-win64_py36_debug-master" platforms="windows-x86_64"/>
+    <package name="usd_ext_isaac" version="19.11.90.81a0dd59-linux-x86_64_py36_debug-master" platforms="linux-x86_64"/>
   </dependency>
   <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
     <package name="nv_ros" version="melodic.6575703-linux64_boost_1.68.0_release-master" platforms="linux-x86_64"/>

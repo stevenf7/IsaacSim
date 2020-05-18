@@ -85,6 +85,11 @@ public:
         return mLastDepth;
     }
 
+    std::vector<float>& getLinearDepthData()
+    {
+        return mLastLinearDepth;
+    }
+
     std::vector<uint8_t>& getIntensityData()
     {
         return mLastIntensity;
@@ -132,12 +137,16 @@ private:
     float mRemainingTime;
 
     std::vector<uint16_t> mDepth;
+    std::vector<float> mLinearDepth;
+
     std::vector<uint8_t> mIntensity;
 
     std::vector<float> mZenith;
     std::vector<float> mAzimuth;
 
     std::vector<uint16_t> mLastDepth;
+    std::vector<float> mLastLinearDepth;
+
     std::vector<uint8_t> mLastIntensity;
     std::vector<float> mLastAzimuth;
 

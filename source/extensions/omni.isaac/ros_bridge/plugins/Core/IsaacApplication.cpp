@@ -5,6 +5,7 @@
 #include "IsaacApplication.h"
 #include "../Components/RosClock.h"
 #include "../Components/RosCamera.h"
+#include "../Components/RosLidar.h"
 #include "../Components/RosJointState.h"
 
 #include "plugins/core/ScopedTimer.h"
@@ -95,6 +96,13 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
 
         component = std::make_unique<RosJointState>(mDynamicControlPtr);
         component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosJointState(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RosBridgeSchemaRosLidar>())
+    {
+        CARB_LOG_ERROR("RosBridgeSchemaRosLidar");
+
+        component = std::make_unique<RosLidar>();
+        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosLidar(prim), mStage);
     }
 
     if (component)
