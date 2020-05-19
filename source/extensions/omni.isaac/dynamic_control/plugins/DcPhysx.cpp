@@ -3324,8 +3324,14 @@ bool getD6JointConstraintIsBroken(DcD6Joint* dcJoint)
     }
 
     PxD6Joint* joint = dcJoint->pxJoint;
-
-    return joint->getConstraintFlags() & PxConstraintFlag::eBROKEN;
+    if (joint)
+    {
+        return joint->getConstraintFlags() & PxConstraintFlag::eBROKEN;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 //
@@ -3387,6 +3393,10 @@ void SuDetach(void* data)
 void SuPause(void* data)
 {
     printf("++ DC: Stage Pause\n");
+    if (g_dcCtx)
+    {
+        g_dcCtx->wasPaused = true;
+    }
 }
 
 void SuResume(float currentTime, void* data)
@@ -3396,10 +3406,15 @@ void SuResume(float currentTime, void* data)
     if (g_dcCtx)
     {
         // printf("Refreshing context\n");
-        g_dcCtx->refreshPhysicsPointers(true);
+        // if pause is pressed there is no need to refresh pointers on the next play
+        if (!g_dcCtx->wasPaused)
+        {
+            g_dcCtx->refreshPhysicsPointers(true);
+        }
 #if DC_TRACK_EDITOR_SIMULATION_STATE
         g_dcCtx->isSimulating = true;
 #endif
+        g_dcCtx->wasPaused = false;
     }
 }
 
@@ -3416,6 +3431,7 @@ void SuStop(void* data)
 #if DC_TRACK_EDITOR_SIMULATION_STATE
         g_dcCtx->isSimulating = false;
 #endif
+        g_dcCtx->wasPaused = false;
     }
 }
 
