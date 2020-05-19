@@ -52,7 +52,7 @@
   <joint name="elbow_joint" type="fixed">
     <parent link="link_1"/>
     <child link="link_2"/>
-    <origin xyz="0 0 0.4"/>
+    <origin xyz="0 0 0.4" rpy="1.571 0. 0."/>
  </joint>
   
   <link name="link_2">
