@@ -76,6 +76,10 @@ void JointControl::tick()
                     float elementValue = static_cast<float>(elements[i]);
                     DcDofProperties props;
                     mDynamicControlPtr->getDofProperties(handle, &props);
+                    if (props.type == omni::isaac::dynamic_control::DcDofType::eTranslation)
+                    {
+                        elementValue *= mUnitScale;
+                    }
                     if (props.hasLimits)
                     {
                         elementValue =
@@ -177,6 +181,7 @@ void JointControl::onComponentChange()
         CARB_LOG_ERROR("Articulation %s not found", articulationPath.GetString().c_str());
         return;
     }
+    mUnitScale = 1.0f / UsdGeomGetStageMetersPerUnit(mStage);
 }
 }
 }
