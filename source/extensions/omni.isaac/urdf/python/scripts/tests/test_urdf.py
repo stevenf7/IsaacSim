@@ -58,6 +58,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertEqual(fingerJoint.GetTypeName(), "PrismaticPhysicsJoint")
         self.assertAlmostEqual(fingerJoint.GetAttribute("upperLimit").Get(), 8)
 
+        fingerLink = stage.GetPrimAtPath("/test_basic/finger_link_2")
+        self.assertAlmostEqual(fingerLink.GetAttribute('diagonalInertia').Get()[0], 2.0)
+
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
@@ -96,7 +99,14 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(elbowPrim.GetAttribute("jointFriction").Get(), 0.1)
         self.assertAlmostEqual(elbowPrim.GetAttribute("drive:angular:damping").Get(), 1.0)
 
-        # TODO: print(materialShader.GetAttribute('inputs:diffuseColor').Get())
+        linkVisualMesh = stage.GetPrimAtPath("/test_advanced/link_1/cylinder_0")
+        r = linkVisualMesh.GetAttribute('primvars:displayColor').Get()[0][0]
+        g = linkVisualMesh.GetAttribute('primvars:displayColor').Get()[0][1]
+        b = linkVisualMesh.GetAttribute('primvars:displayColor').Get()[0][2]
+        self.assertAlmostEqual(r,1.0)
+        self.assertAlmostEqual(g,0.0)
+        self.assertAlmostEqual(b,1.0)
+
         # TODO: self.assertEqual(elbowJoint.GetAttribute("localPos0").Get())
         # TODO: check sensor attachment (camera)
 

@@ -1217,15 +1217,17 @@ void UsdUrdfStream::UsdUrdfTranslateUrdfToUsd(UsdStageRefPtr stage)
         }
         // Use Inertia tensor from URDF
         NvIsaac::Mat33 inertiaTensor = pbody->getMassSpaceInertiaTensor();
-        if (inertiaTensor.column0.isFinite() && inertiaTensor.column1.isFinite() && inertiaTensor.column2.isFinite())
-        {
-            GfVec3d urdfInertial(inertiaTensor.column0.x, inertiaTensor.column1.y, inertiaTensor.column2.z);
-            massAPI.CreateDiagonalInertiaAttr().Set(urdfInertial);
-        }
-        else
-        {
-            massAPI.CreateDiagonalInertiaAttr().Set(GfVec3d(1.0,1.0,1.0));
-        }
+        GfVec3d urdfInertial(inertiaTensor.column0.x, inertiaTensor.column1.y, inertiaTensor.column2.z);
+        massAPI.CreateDiagonalInertiaAttr().Set(urdfInertial);
+        // if (inertiaTensor.column0.isFinite() && inertiaTensor.column1.isFinite() && inertiaTensor.column2.isFinite())
+        // {
+        //     GfVec3d urdfInertial(inertiaTensor.column0.x, inertiaTensor.column1.y, inertiaTensor.column2.z);
+        //     massAPI.CreateDiagonalInertiaAttr().Set(urdfInertial);
+        // }
+        // else
+        // {
+        //     massAPI.CreateDiagonalInertiaAttr().Set(GfVec3d(1.0,1.0,1.0));
+        // }
         
         // addDensity(stage, bodyNames[bi], urdfMass);// TODO correct density, should just be able to set inertial
         // proerties, but getting 0 mass crash.

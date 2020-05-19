@@ -1,29 +1,4 @@
-<robot name="test_advanced">
-  <gazebo>
-    <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
-      <robotNamespace>/gripper</robotNamespace>
-      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
-      <legacyModeNS>true</legacyModeNS>
-    </plugin>
-  </gazebo>
-
-  <material name="blue">
-    <color rgba="0 0 .8 1"/>
-  </material>
-  <material name="red">
-    <color rgba="0.8 0 0 1"/>
-  </material>
-  <material name="green">
-    <color rgba="0 0.8 0 1"/>
-  </material>
-  <material name="yellow">
-    <color rgba="0.8 0.8 0 1"/>
-  </material>
-  <material name="cyan">
-    <color rgba="0 0.8 0.8 1"/>
-  </material>
- 
-
+<robot name="test_merge_joints">
   
  <link name="root_link"/>
 
@@ -37,7 +12,6 @@
       <geometry>
         <box size="0.3 .3 .2"/>
       </geometry>
-      <material name="blue"/>
     </visual>
     <collision>
       <geometry>
@@ -62,7 +36,6 @@
       <geometry>
         <cylinder length="0.8" radius=".1"/>
       </geometry>
-      <material name="green"/>
     </visual>
     <collision>
       <geometry>
@@ -76,36 +49,19 @@
   </link>
 
 
-  <joint name="elbow_joint" type="revolute">
+  <joint name="elbow_joint" type="fixed">
     <parent link="link_1"/>
     <child link="link_2"/>
+    <limit effort="1000.0" lower="-0.6" upper="0.6" velocity="0.5"/>
     <origin xyz="0 0 0.4" rpy="1.571 0 0"/>
     <axis xyz="1 0 0"/> 
-    
-    <calibration rising="0.0" falling="0.1"/>
-    <dynamics damping="0.10" friction="0.1"/>
-    <limit effort="1000.0" lower="-0.6" upper="0.6" velocity="0.5"/>
-    <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5"/>
- 
-  </joint>
-
-  <transmission name="trans_1">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="elbow_joint">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-    </joint>
-    <actuator name="elbow_motor">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>12</mechanicalReduction>
-    </actuator>
-   </transmission>
-
+ </joint>
+  
   <link name="link_2">
     <visual>
       <geometry>
         <cylinder length="0.6" radius=".06"/>
       </geometry>
-      <material name="red"/>
     </visual>
     <collision>
       <geometry>
@@ -118,7 +74,7 @@
     </inertial>
   </link>
 
-  <joint name="wrist_joint" type="continuous">
+  <joint name="wrist_joint" type="fixed">
     <parent link="link_2"/>
     <child link="palm_link"/>
     <origin xyz="0 0 0.33"/>
@@ -130,7 +86,6 @@
       <geometry>
         <box size="0.2 .06 .06"/>
       </geometry>
-      <material name="yellow"/>
     </visual>
     <collision>
       <geometry>
@@ -142,16 +97,6 @@
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
-
-
- <sensor name="my_camera_sensor" update_rate="20">
-   <parent link="palm_link"/>
-   <origin xyz="0 0 0" rpy="0 0 0"/>
-   <camera>
-     <image width="640" height="480" hfov="1.5708" format="RGB8" near="0.01" far="50.0"/>
-   </camera>
- </sensor>
-
 
   <joint name="finger_1_joint" type="prismatic">
     <parent link="palm_link"/>
@@ -166,7 +111,6 @@
       <geometry>
         <box size="0.06 .01 .01"/>
       </geometry>
-      <material name="cyan"/>
     </visual>
     <collision>
       <geometry>
@@ -174,7 +118,6 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="10"/>
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
@@ -192,7 +135,6 @@
       <geometry>
         <box size="0.06 .01 .01"/>
       </geometry>
-      <material name="cyan"/>
     </visual>
     <collision>
       <geometry>
@@ -200,11 +142,7 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="10"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <inertia ixx="2.0" ixy="0.0" ixz="0.0" iyy="3.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
-
-
-
 </robot>
