@@ -152,11 +152,11 @@ def run_pythontests(root: str, platform_host: str, config: str, linbuild_profile
 def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []):
     """Start and quit Kit"""
 
-    kit_folder = f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}"
-    bin_folder = f"{root}/_build/{platform_host}/{config}"
+    # kit_folder = f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}"
+    app_folder = f"{root}/_build/{platform_host}/{config}"
 
     # Search for all .bat/.sh files
-    executable_files = [os.path.basename(f) for f in glob.glob(bin_folder + "/*" + get_shell_ext(platform_host))]
+    executable_files = [os.path.basename(f) for f in glob.glob(app_folder + "/*" + get_shell_ext(platform_host))]
 
     # Explicitly add default kit:
     # executable_files.insert(0, f"omniverse-kit{get_exe_ext(platform_host)}")
@@ -181,7 +181,7 @@ def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile
     exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
     args = [
         "--exec",
-        f"open {kit_folder}/../../../data/scenes/BuiltInMaterials.usda",
+        f"open {app_folder}/data/usd/assets/robots/franka/franka.usd",
         "--carb/rtx/materialDb/syncLoads=true",
         "--carb/omni.kit.plugin/syncUsdLoads=true",
         "--carb/app/quitAfter=10",  # Quit after 10 updates
@@ -200,7 +200,7 @@ def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile
         teamcity_start_test(test_id)
 
         # Run process
-        proc_arglist = exec_prefix + [f"{bin_folder}/{executable_file}"] + args
+        proc_arglist = exec_prefix + [f"{app_folder}/{executable_file}"] + args
         returncode = omni.repo.man.run_process(proc_arglist, exit_on_error=False)
 
         # Report failure and mark overall run as failure
