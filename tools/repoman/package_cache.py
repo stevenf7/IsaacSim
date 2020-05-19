@@ -34,7 +34,7 @@ def remove_shader_source(archive_path, shaders_folder):
 
 
 def update_package(root: str, platform: str, config: str):
-    root_folder, archive_path = prepare_package(root, config, False, False)
+    root_folder, archive_path = prepare_package(root, platform, config, False, False)
 
     # update cache folder
     cache_folder = f"_build/target-deps/kit_sdk_{config}/_build/{platform}/{config}/cache"

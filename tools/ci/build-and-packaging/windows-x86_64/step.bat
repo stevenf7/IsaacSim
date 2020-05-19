@@ -2,23 +2,26 @@
 
 if not defined TEAMCITY_VERSION (
     :: Verify formatting
-    echo ##teamcity[progressMessage 'Verify formatting...']
+    echo ##teamcity[progressStart 'Verify formatting...']
     call "%~dp0..\..\..\..\format_code.bat" --verify
+    echo ##teamcity[progressFinish 'Verify formatting...']
 )
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Full rebuild
-echo ##teamcity[progressMessage 'Full rebuild...']
+echo ##teamcity[progressStart 'Full rebuild...']
 call "%~dp0..\..\..\..\build.bat" -x
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
+echo ##teamcity[progressFinish 'Full rebuild...']
 
 :: Docs
-echo ##teamcity[progressMessage 'Docs...']
+echo ##teamcity[progressStart 'Docs...']
 call "%~dp0..\..\..\build_docs.bat" -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
+echo ##teamcity[progressFinish 'Docs...']
 
 :: Gather licenses
-echo ##teamcity[progressMessage 'Gather licenses...']
+echo ##teamcity[progressStart 'Gather licenses...']
 call "%~dp0..\..\..\licensing.bat" ^
 gather ^
 -p %~dp0..\..\..\..\deps\isaac-sim.packman.xml ^
@@ -27,9 +30,10 @@ gather ^
 %~dp0..\..\..\..\deps\omni-physics.packman.xml ^
 -d %~dp0..\..\..\..\_build
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
+echo ##teamcity[progressFinish 'Gather licenses...']
 
 REM :: Validate licenses
-REM echo ##teamcity[progressMessage 'Validate licenses...']
+REM echo ##teamcity[progressStart 'Validate licenses...']
 REM if not "%1" == "--debug-only" (
 REM     call "%~dp0..\..\..\licensing.bat" ^
 REM     validate ^
@@ -40,20 +44,10 @@ REM     %~dp0..\..\..\..\deps\omni-physics.packman.xml ^
 REM     -d %~dp0..\..\..\..\_build ^
 REM     -b windows-x86_64\release
 REM )
-
-:: Run python tests
-::echo ##teamcity[progressMessage 'Python tests...']
-::call "%~dp0..\..\..\test_runner.bat" --suite pythontests --config release
-::if %errorlevel% neq 0 ( exit /b %errorlevel% )
-
-:: Run kit tests 
-::echo ##teamcity[progressMessage 'Kit tests...']
-:: SKIP THEM for now, that puts a hard requirement on TC agent (to have RTX, driver version, etc.)
-::call "%~dp0..\..\test_runner.bat" --suite kittests --config release
-::if %errorlevel% neq 0 ( exit /b %errorlevel% )
+REM echo ##teamcity[progressFinish 'Validate licenses...']
 
 :: Package
-echo ##teamcity[progressMessage 'Packaging...']
+echo ##teamcity[progressStart 'Packaging...']
 call "%~dp0..\..\..\package.bat" -m test_runner -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
@@ -77,8 +71,7 @@ if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 call "%~dp0..\..\..\package.bat" -m omni_domain_randomization -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
+echo ##teamcity[progressFinish 'Packaging...']
 
 :: publish artifacts to teamcity
 echo ##teamcity[publishArtifacts '_build/packages']
-
-
