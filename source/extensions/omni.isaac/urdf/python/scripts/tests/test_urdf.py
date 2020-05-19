@@ -5,7 +5,7 @@ import omni.kit.test
 import omni.kit.asyncapi
 import carb.tokens
 import os
-from pxr import Sdf
+from pxr import Sdf, Gf
 import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -100,15 +100,11 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(elbowPrim.GetAttribute("drive:angular:damping").Get(), 1.0)
 
         linkVisualMesh = stage.GetPrimAtPath("/test_advanced/link_1/cylinder_0")
-        r = linkVisualMesh.GetAttribute('primvars:displayColor').Get()[0][0]
-        g = linkVisualMesh.GetAttribute('primvars:displayColor').Get()[0][1]
-        b = linkVisualMesh.GetAttribute('primvars:displayColor').Get()[0][2]
-        self.assertAlmostEqual(r,1.0)
-        self.assertAlmostEqual(g,0.0)
-        self.assertAlmostEqual(b,1.0)
-
-        # TODO: self.assertEqual(elbowJoint.GetAttribute("localPos0").Get())
-        # TODO: check sensor attachment (camera)
+        rgb = linkVisualMesh.GetAttribute('primvars:displayColor').Get()
+        self.assertTrue(Gf.IsClose(rgb[0], Gf.Vec3f(1.0, 0.0, 1.0), 1e-5))
+        
+        joint_pos = elbowPrim.GetAttribute("localPos0").Get()
+        self.assertTrue(Gf.IsClose(joint_pos, Gf.Vec3f(0, 0, 40), 1e-5))
 
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
@@ -137,6 +133,4 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         prim = stage.GetPrimAtPath("/test_merge_joints/link_2")
         self.assertEqual(prim.GetPath(), Sdf.Path.emptyPath)
         
-        # test the location of the link before and after the merge
-
         pass
