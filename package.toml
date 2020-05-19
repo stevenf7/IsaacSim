@@ -64,16 +64,16 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/**/*$lib_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl/**/*$lib_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl"],
 
-    ["_build/target-deps/kit_sdk_$config/_build/assets/**", "_build/target-deps/kit_sdk_$config/_build/assets"],
+    #["_build/target-deps/kit_sdk_$config/_build/assets/**", "_build/target-deps/kit_sdk_$config/_build/assets"],
     ["_build/target-deps/kit_sdk_$config/_build/library/**", "_build/target-deps/kit_sdk_$config/_build/library"],
-    ["_build/target-deps/kit_sdk_$config/_build/manuals", "_build/target-deps/kit_sdk_$config/_build/manuals"],
+    ["_build/target-deps/kit_sdk_$config/_build/manuals/py", "_build/target-deps/kit_sdk_$config/_build/manuals/py"],
     ["_build/target-deps/kit_sdk_$config/_build/mdl", "_build/target-deps/kit_sdk_$config/_build/mdl"],
     #["_build/target-deps/kit_sdk_$config/_build/shaders", "_build/target-deps/kit_sdk_$config/_build/shaders"],
     ["_build/target-deps/kit_sdk_$config/_build/target-deps/python/**", "_build/target-deps/kit_sdk_$config/_build/target-deps/python"],
-    ["_build/target-deps/kit_sdk_$config/data/**", "_build/target-deps/kit_sdk_$config/data"],    
-    ["_build/target-deps/kit_sdk_$config/deps/**", "_build/target-deps/kit_sdk_$config/deps"],
-    ["_build/target-deps/kit_sdk_$config/include", "_build/target-deps/kit_sdk_$config/include"],
-    ["_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES", "_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES"],
+    #["_build/target-deps/kit_sdk_$config/data/**", "_build/target-deps/kit_sdk_$config/data"],    
+    #["_build/target-deps/kit_sdk_$config/deps/**", "_build/target-deps/kit_sdk_$config/deps"],
+    #["_build/target-deps/kit_sdk_$config/include", "_build/target-deps/kit_sdk_$config/include"],
+    #["_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES", "_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES"],
     #["_build/target-deps/kit_sdk_$config/tools/packman/**", "_build/target-deps/kit_sdk_$config/tools/packman"] 
 ]
 
@@ -98,7 +98,7 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/carb_gfx/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/carb_gfx"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd"],
-    ["_build/target-deps/kit_sdk_$config/omniverse-kit.bat", "_build/target-deps/kit_sdk_$config/omniverse-kit.bat"],
+    #["_build/target-deps/kit_sdk_$config/omniverse-kit.bat", "_build/target-deps/kit_sdk_$config/omniverse-kit.bat"],
 ]
 
 [isaac-sim.windows-x86_64.debug]
@@ -124,7 +124,7 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/example.rtx"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins"],
-    ["_build/target-deps/kit_sdk_$config/omniverse-kit.sh", "_build/target-deps/kit_sdk_$config/omniverse-kit.sh"],
+    #["_build/target-deps/kit_sdk_$config/omniverse-kit.sh", "_build/target-deps/kit_sdk_$config/omniverse-kit.sh"],
 ]
 
 ########################################################################################################################

@@ -16,7 +16,7 @@ echo "##teamcity[testSuiteStarted name='isaac-sim']"
 # Package shader cache
 if [ ! -z "$TEAMCITY_VERSION" ]
 then
-    "$SCRIPT_DIR/../../../packman/python.sh" "$SCRIPT_DIR/../../../repoman/package_cache.py" --platform linux-x86_64 --config release
+    "$SCRIPT_DIR/../../../packman/python.sh" "$SCRIPT_DIR/../../../repoman/package_cache.py" --platform linux-x86_64 --config release --experience isaac-sim
 fi
 
 echo "##teamcity[testSuiteFinished name='isaac-sim']"
@@ -35,7 +35,7 @@ then
     "$SCRIPT_DIR/../../../test_runner.sh" --suite startuptest --config release $package -e="--carb/rtx/shaderDb/obfuscateCode=true" -e="--carb/rtx/materialDb/compileMdlAsLibrary=true" $*
 
     # Package shader cache
-    "$SCRIPT_DIR/../../../packman/python.sh" "$SCRIPT_DIR/../../../repoman/package_cache.py" --platform linux-x86_64 --config release
+    "$SCRIPT_DIR/../../../packman/python.sh" "$SCRIPT_DIR/../../../repoman/package_cache.py" --platform linux-x86_64 --config release --experience omniverse-kit-robotics
 
     echo "##teamcity[testSuiteFinished name='omniverse-kit-robotics']"
     
