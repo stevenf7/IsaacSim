@@ -17,15 +17,15 @@
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
-            "name": "(Linux) test.unit",
+            "name": "(Linux) test-isaac-sim [debug]",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/_build/linux-x86_64/debug/test.unit",
-            "args": [],
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_debug/_build/linux-x86_64/debug/omniverse-kit",
+            "args": ["--config-path","_build/linux-x86_64/debug/experiences/test-isaac-sim.json"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true,
+            "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
                 {

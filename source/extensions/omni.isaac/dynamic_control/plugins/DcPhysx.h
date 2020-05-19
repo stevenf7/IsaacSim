@@ -552,7 +552,7 @@ public:
             auto jointIt = mD6JointMap.find(joint->path);
             if (jointIt != mD6JointMap.end())
             {
-                mAttractorMap.erase(jointIt);
+                mD6JointMap.erase(jointIt);
             }
             auto handleSet = mHandleMap.find(joint->path);
             if (handleSet != mHandleMap.end())
@@ -639,6 +639,7 @@ public:
     bool isSimulating = false;
 #endif
 
+    bool wasPaused = false;
     // refresh physics pointers after a reset
     void refreshPhysicsPointers(bool verbose);
 

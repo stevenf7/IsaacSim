@@ -37,10 +37,14 @@
             "includeTests": [
                 "omni.isaac.*"
             ],
-            "excludeTests": [
-                "omni.isaac.dynamic_control.*"
-            ],
             "runTestsAndQuit": true
+        }
+    },
+    "persistent": {
+        "app": {
+            "viewport": {
+                "displayOptions": 3085
+            }
         }
     }
 }
