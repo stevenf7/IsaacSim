@@ -126,4 +126,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         # the merged link shouldn't be there
         prim = stage.GetPrimAtPath("/test_merge_joints/link_2")
         self.assertEqual(prim.GetPath(), Sdf.Path.emptyPath)
+        
+        # test the location of the link before and after the merge
+
         pass
