@@ -23,6 +23,8 @@ from .ur10_scenarios import bin_stack
 from .ur10_scenarios import bmw_fof_demo
 from .ur10_scenarios.fill_bin import FillBin
 
+from .tests.test_ur10_samples import *
+
 EXTENSION_NAME = "UR10 Preview"
 
 
