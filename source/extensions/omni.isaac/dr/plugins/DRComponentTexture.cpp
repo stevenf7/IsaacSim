@@ -32,7 +32,7 @@ DRComponentTexture::~DRComponentTexture()
 {
     stop();
 }
-void DRComponentTexture::initialize(const pxr::DrSchemaTextureComponent& prim, pxr::UsdStageRefPtr stage)
+void DRComponentTexture::initialize(const pxr::DrSchemaTextureComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     DRComponentBase::initialize(prim, stage);
 }

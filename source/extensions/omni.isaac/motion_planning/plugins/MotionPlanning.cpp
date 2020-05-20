@@ -43,7 +43,7 @@ CARB_PLUGIN_IMPL_DEPS(omni::isaac::dynamic_control::DynamicControl, omni::kit::I
 // private stuff
 namespace
 {
-pxr::UsdStageRefPtr gStage = nullptr;
+pxr::UsdStageWeakPtr gStage = nullptr;
 carb::Framework* gFramework = nullptr;
 carb::tasking::ITasking* gTasking;
 carb::tasking::Counter* gTaskCounter;
@@ -271,7 +271,7 @@ std::vector<omni::isaac::dynamic_control::DcTransform> CARB_ABI MpUpdateGetRelat
 static void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
     // try and find USD stage from Id
-    pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
     if (!stage)
     {

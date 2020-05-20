@@ -28,7 +28,7 @@ DRComponentScale::~DRComponentScale()
 {
     stop();
 }
-void DRComponentScale::initialize(const pxr::DrSchemaScaleComponent& prim, pxr::UsdStageRefPtr stage)
+void DRComponentScale::initialize(const pxr::DrSchemaScaleComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     DRComponentBase::initialize(prim, stage);
 }

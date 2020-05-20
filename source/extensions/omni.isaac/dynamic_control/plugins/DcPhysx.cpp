@@ -914,9 +914,8 @@ bool DcContext::refreshPhysicsPointers(DcArticulation* art, bool verbose)
     {
         return false;
     }
-
+    art->pxArticulationCache = nullptr;
     art->pxArticulation = nullptr;
-    art->pxArticulationCache = nullptr; // FIXME: leak?
     art->cacheAge = -1;
 
     PxArticulationBase* abase = (PxArticulationBase*)physx->getPhysXPtr(art->path, carb::physics::ePTArticulation);
@@ -2597,6 +2596,12 @@ bool CARB_ABI DcSetDofProperties(DcHandle dofHandle, const DcDofProperties* prop
     // set drive properties
     pxJoint->setDrive(dof->pxAxis, stiffness, damping, props->maxEffort, driveType);
 
+    if (dof->art->pxArticulation->getScene())
+    {
+        // Cache becomes invalid, clear it
+        dof->art->pxArticulation->releaseCache(*dof->art->pxArticulationCache);
+        dof->art->pxArticulationCache = dof->art->pxArticulation->createCache();
+    }
     return true;
 }
 

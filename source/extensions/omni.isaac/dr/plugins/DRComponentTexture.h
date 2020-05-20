@@ -25,7 +25,7 @@ class DRComponentTexture : public DRComponentBase<pxr::DrSchemaBaseComponent>
 public:
     DRComponentTexture();
     ~DRComponentTexture();
-    virtual void initialize(const pxr::DrSchemaTextureComponent& prim, pxr::UsdStageRefPtr stage);
+    virtual void initialize(const pxr::DrSchemaTextureComponent& prim, pxr::UsdStageWeakPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();

@@ -49,7 +49,7 @@ IsaacApplication::~IsaacApplication()
     mSceneLoaderComponent = nullptr;
 }
 
-void IsaacApplication::initialize(pxr::UsdStageRefPtr stage)
+void IsaacApplication::initialize(pxr::UsdStageWeakPtr stage)
 {
     utils::BridgeApplicationBase<IsaacComponent>::initialize(stage);
 

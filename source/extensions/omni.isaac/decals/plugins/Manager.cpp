@@ -51,7 +51,7 @@ Manager::~Manager()
     term();
 }
 
-bool Manager::init(pxr::UsdStageRefPtr stage)
+bool Manager::init(pxr::UsdStageWeakPtr stage)
 {
     if (initialized() || stage == nullptr)
         return false;

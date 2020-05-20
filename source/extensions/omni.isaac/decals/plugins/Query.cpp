@@ -96,7 +96,7 @@ inline pxr::GfVec3f TransposeTransformDir(const pxr::GfMatrix4d& mat, const pxr:
 class SceneQueryHandler : public ISceneQueryHandler
 {
 public:
-    SceneQueryHandler(pxr::UsdStageRefPtr stage);
+    SceneQueryHandler(pxr::UsdStageWeakPtr stage);
 
     virtual void updateSurface(const char* primPath) override;
     virtual void updateQueryPosition(const carb::Float3& worldPosition) override;
@@ -138,13 +138,13 @@ private:
 
     bool findLocalGeometry(Float3& localPoistion, Float3& localNormal, const Float3& worldPosition);
 
-    pxr::UsdStageRefPtr m_stage;
+    pxr::UsdStageWeakPtr m_stage;
     kit::IEditor* m_editor;
     Cache m_cache;
     SceneQueryResult m_result;
 };
 
-SceneQueryHandler::SceneQueryHandler(pxr::UsdStageRefPtr stage) : m_stage(stage)
+SceneQueryHandler::SceneQueryHandler(pxr::UsdStageWeakPtr stage) : m_stage(stage)
 {
     carb::Framework* framework = carb::getFramework();
     m_editor = framework->acquireInterface<omni::kit::IEditor>();
@@ -325,7 +325,7 @@ bool SceneQueryHandler::Cache::extractPrimMeshData()
 }
 
 // Global create function
-ISceneQueryHandler* createSceneQueryHandler(pxr::UsdStageRefPtr stage)
+ISceneQueryHandler* createSceneQueryHandler(pxr::UsdStageWeakPtr stage)
 {
     if (stage == nullptr)
         return nullptr;

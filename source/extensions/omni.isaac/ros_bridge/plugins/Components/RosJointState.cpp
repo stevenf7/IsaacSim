@@ -35,7 +35,7 @@ RosJointState::~RosJointState()
 
 void RosJointState::initialize(RosNode* rosNode,
                                const pxr::RosBridgeSchemaRosBridgeComponent& prim,
-                               pxr::UsdStageRefPtr stage)
+                               pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
     onComponentChange();

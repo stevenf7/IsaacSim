@@ -69,7 +69,7 @@ omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 carb::imgui::ImGui* g_imGuiInterface = nullptr;
 carb::fastcache::FastCache* g_FastCache = nullptr;
 carb::physics::PhysX* g_physx = nullptr;
-pxr::UsdStageRefPtr g_stage = nullptr;
+pxr::UsdStageWeakPtr g_stage = nullptr;
 carb::tasking::ITasking* gTasking = nullptr;
 
 
@@ -292,7 +292,7 @@ bool CARB_ABI isLidar(const char* primPath)
 // stage update
 void onAttach(long stageId, double metersPerUnit, void* data)
 {
-    pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
     if (!stage)
     {
         CARB_LOG_ERROR("PhysX could not find USD stage");
@@ -353,7 +353,7 @@ void onComponentChange(const char* primPath, const omni::kit::PrimDirtyBits*, vo
 {
     // CARB_LOG_INFO("++ Lidar: Prim Change: %s of type %s\n", primPath,
     //    g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
-    if (gLidarSensorManager)
+    if (g_stage && gLidarSensorManager)
     {
         gLidarSensorManager->onComponentChange(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
     }

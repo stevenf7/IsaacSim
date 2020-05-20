@@ -24,7 +24,7 @@ class DRComponentRotation : public DRComponentBase<pxr::DrSchemaBaseComponent>
 public:
     DRComponentRotation();
     ~DRComponentRotation();
-    virtual void initialize(const pxr::DrSchemaRotationComponent& prim, pxr::UsdStageRefPtr stage);
+    virtual void initialize(const pxr::DrSchemaRotationComponent& prim, pxr::UsdStageWeakPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();

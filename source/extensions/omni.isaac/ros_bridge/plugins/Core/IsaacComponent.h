@@ -36,7 +36,7 @@ public:
      * @param stage
      */
 
-    virtual void initialize(RosNode* rosNode, const PrimType& prim, pxr::UsdStageRefPtr stage)
+    virtual void initialize(RosNode* rosNode, const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
         utils::ComponentBase<PrimType>::initialize(prim, stage);
         mRosNode = rosNode;

@@ -30,7 +30,7 @@ DRComponentLight::~DRComponentLight()
 {
     stop();
 }
-void DRComponentLight::initialize(const pxr::DrSchemaLightComponent& prim, pxr::UsdStageRefPtr stage)
+void DRComponentLight::initialize(const pxr::DrSchemaLightComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     DRComponentBase::initialize(prim, stage);
 }

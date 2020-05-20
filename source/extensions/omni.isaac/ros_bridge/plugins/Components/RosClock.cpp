@@ -25,7 +25,7 @@ RosClock::~RosClock()
     mRosNode->destroyMessage(mClockPubTopic);
 }
 
-void RosClock::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageRefPtr stage)
+void RosClock::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
     onComponentChange();
