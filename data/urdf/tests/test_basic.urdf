@@ -118,6 +118,7 @@
       </geometry>
     </collision>
     <inertial>
+      <mass value="3"/>
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
@@ -142,7 +143,8 @@
       </geometry>
     </collision>
     <inertial>
-      <inertia ixx="2.0" ixy="0.0" ixz="0.0" iyy="3.0" iyz="0.0" izz="1.0"/>
+      <mass value="3"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
 </robot>

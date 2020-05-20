@@ -1,21 +1,4 @@
-<robot name="simple_gripper">
-
-  <material name="blue">
-    <color rgba="0 0 .8 1"/>
-  </material>
-  <material name="red">
-    <color rgba="0.8 0 0 1"/>
-  </material>
-  <material name="green">
-    <color rgba="0 0.8 0 1"/>
-  </material>
-  <material name="yellow">
-    <color rgba="0.8 0.8 0 1"/>
-  </material>
-  <material name="cyan">
-    <color rgba="0 0.8 0.8 1"/>
-  </material>
-
+<robot name="test_basic">
   
  <link name="root_link"/>
 
@@ -23,22 +6,21 @@
     <parent link="root_link"/>
     <child link="base_link"/>
  </joint>
-
-  <link name="base_link">
+ 
+ <link name="base_link">
     <visual>
       <geometry>
-        <box size="0.3 .3 .1"/>
+        <box size="0.3 .3 .2"/>
       </geometry>
-      <material name="blue"/>
     </visual>
     <collision>
       <geometry>
-        <box size="0.3 .3 .1"/>
+        <box size="0.3 .3 .2"/>
       </geometry>
     </collision>
     <inertial>
       <mass value="10"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <!-- no inertial matrix -->
     </inertial>
   </link>
 
@@ -54,13 +36,8 @@
       <geometry>
         <cylinder length="0.8" radius=".1"/>
       </geometry>
-      <material name="green"/>
     </visual>
-    <collision>
-      <geometry>
-        <cylinder length="0.8" radius=".1"/>
-      </geometry>
-    </collision>
+    <!-- no collision mesh info -->
     <inertial>
       <mass value="10"/>
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
@@ -79,19 +56,15 @@
   <link name="link_2">
     <visual>
       <geometry>
-        <box size="0.06 0.06 0.6"/>
+        <cylinder length="0.6" radius=".06"/>
       </geometry>
-      <material name="red"/>
     </visual>
     <collision>
       <geometry>
         <cylinder length="0.6" radius=".06"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="10"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
-    </inertial>
+    <!-- no inertia or mass info -->
   </link>
 
   <joint name="wrist_joint" type="continuous">
@@ -106,23 +79,19 @@
       <geometry>
         <box size="0.2 .06 .06"/>
       </geometry>
-      <material name="yellow"/>
     </visual>
     <collision>
       <geometry>
         <box size="0.2 .06 .06"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="10"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
-    </inertial>
   </link>
 
   <joint name="finger_1_joint" type="prismatic">
     <parent link="palm_link"/>
     <child link="finger_link_1"/>
-    <limit effort="1000.0" lower="-0.02" upper="0.08" velocity="0.5"/>
+    <!-- limit effort="1000.0" lower="-0.02" upper="0.08" velocity="0.5"/-->
+    <!-- missing joint info -->
     <origin rpy="0 1.571 0" xyz="-0.10 0 0.05"/>
     <axis xyz="0 0 1"/>
   </joint>
@@ -132,7 +101,6 @@
       <geometry>
         <box size="0.06 .01 .01"/>
       </geometry>
-      <material name="cyan"/>
     </visual>
     <collision>
       <geometry>
@@ -140,7 +108,7 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="10"/>
+      <mass value="3"/>
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
@@ -158,7 +126,6 @@
       <geometry>
         <box size="0.06 .01 .01"/>
       </geometry>
-      <material name="cyan"/>
     </visual>
     <collision>
       <geometry>
@@ -166,7 +133,7 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="10"/>
+      <mass value="3"/>
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
