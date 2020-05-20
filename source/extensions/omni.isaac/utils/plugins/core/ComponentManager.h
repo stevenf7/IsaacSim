@@ -38,7 +38,7 @@ public:
      *
      * @param stage
      */
-    virtual void initialize(pxr::UsdStageRefPtr stage)
+    virtual void initialize(pxr::UsdStageWeakPtr stage)
     {
         mStage = stage;
     }
@@ -84,7 +84,7 @@ public:
     virtual void deleteAllComponents() = 0;
 
 protected:
-    pxr::UsdStageRefPtr mStage = nullptr;
+    pxr::UsdStageWeakPtr mStage = nullptr;
 
     double mTimeSeconds = 0; // current time in seconds
     int64_t mTimeNanoSeconds = 0; // current time in nano seconds

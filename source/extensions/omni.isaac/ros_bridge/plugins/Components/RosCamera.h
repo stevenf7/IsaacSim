@@ -27,7 +27,7 @@ public:
     virtual ~RosCamera();
     virtual void initialize(RosNode* rosNode,
                             const pxr::RosBridgeSchemaRosBridgeComponent& prim,
-                            pxr::UsdStageRefPtr stage);
+                            pxr::UsdStageWeakPtr stage);
 
     virtual void onComponentChange();
     void cameraInfoPubCallback(ros::Publisher* pub);

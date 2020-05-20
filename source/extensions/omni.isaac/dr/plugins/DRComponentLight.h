@@ -24,7 +24,7 @@ class DRComponentLight : public DRComponentBase<pxr::DrSchemaBaseComponent>
 public:
     DRComponentLight();
     ~DRComponentLight();
-    virtual void initialize(const pxr::DrSchemaLightComponent& prim, pxr::UsdStageRefPtr stage);
+    virtual void initialize(const pxr::DrSchemaLightComponent& prim, pxr::UsdStageWeakPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();

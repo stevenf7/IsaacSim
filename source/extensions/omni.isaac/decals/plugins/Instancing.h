@@ -23,7 +23,7 @@ public:
     Instancer();
     ~Instancer();
 
-    bool init(pxr::UsdStageRefPtr stage, const pxr::SdfPath& path, uint32_t maxInstanceCount);
+    bool init(pxr::UsdStageWeakPtr stage, const pxr::SdfPath& path, uint32_t maxInstanceCount);
 
     bool setMeshes(const pxr::SdfPathVector& meshPaths);
 

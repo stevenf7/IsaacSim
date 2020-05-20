@@ -26,7 +26,7 @@ class DRComponentColor : public DRComponentBase<pxr::DrSchemaBaseComponent>
 public:
     DRComponentColor(carb::tokens::ITokens* tokens);
     ~DRComponentColor();
-    virtual void initialize(const pxr::DrSchemaColorComponent& prim, pxr::UsdStageRefPtr stage);
+    virtual void initialize(const pxr::DrSchemaColorComponent& prim, pxr::UsdStageWeakPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();

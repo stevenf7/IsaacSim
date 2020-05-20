@@ -44,7 +44,7 @@ protected:
 
 
 // Create a drawing manager object using this function, and destroy with the release() function.
-IDrawingManager* createDrawingManager(pxr::UsdStageRefPtr stage);
+IDrawingManager* createDrawingManager(pxr::UsdStageWeakPtr stage);
 
 } // namespace omni
 } // namespace isaac

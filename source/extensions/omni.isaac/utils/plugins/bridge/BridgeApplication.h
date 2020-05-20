@@ -43,7 +43,7 @@ public:
      *
      * @param stage
      */
-    virtual void initialize(pxr::UsdStageRefPtr stage)
+    virtual void initialize(pxr::UsdStageWeakPtr stage)
     {
         mStage = stage;
         mNoticeListener = pxr::TfNotice::Register(pxr::TfCreateWeakPtr(this), &BridgeApplicationBase::HandlePrimChanged);

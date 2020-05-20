@@ -38,7 +38,7 @@ DRComponentColor::~DRComponentColor()
 {
     stop();
 }
-void DRComponentColor::initialize(const pxr::DrSchemaColorComponent& prim, pxr::UsdStageRefPtr stage)
+void DRComponentColor::initialize(const pxr::DrSchemaColorComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     DRComponentBase::initialize(prim, stage);
 }

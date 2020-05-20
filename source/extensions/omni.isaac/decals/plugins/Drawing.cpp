@@ -64,7 +64,7 @@ static inline pxr::GfVec3f rgbValToVec(uint32_t val)
         (float)((val >> 16) & 0xFF) / 255.0f, (float)((val >> 8) & 0xFF) / 255.0f, (float)(val & 0xFF) / 255.0f);
 }
 
-static inline bool createMeshClass(pxr::UsdGeomMesh& mesh, pxr::UsdStageRefPtr& stage, const char* name)
+static inline bool createMeshClass(pxr::UsdGeomMesh& mesh, pxr::UsdStageWeakPtr& stage, const char* name)
 {
     const pxr::SdfPath containerPath(DECAL_MESH_CONTAINER_PATH);
     pxr::UsdPrim containerPrim = stage->GetPrimAtPath(containerPath);
@@ -117,7 +117,7 @@ static inline void fillMeshClass(pxr::UsdGeomMesh& mesh,
 struct MeshClassCreate
 {
     virtual const char* name() const = 0;
-    virtual pxr::UsdGeomMesh create(pxr::UsdStageRefPtr stage) = 0;
+    virtual pxr::UsdGeomMesh create(pxr::UsdStageWeakPtr stage) = 0;
 };
 
 struct MeshClassCreateTriangle : public MeshClassCreate
@@ -127,7 +127,7 @@ struct MeshClassCreateTriangle : public MeshClassCreate
         return "triangle";
     }
 
-    pxr::UsdGeomMesh create(pxr::UsdStageRefPtr stage) override
+    pxr::UsdGeomMesh create(pxr::UsdStageWeakPtr stage) override
     {
         pxr::UsdGeomMesh mesh;
         if (createMeshClass(mesh, stage, name()))
@@ -153,7 +153,7 @@ struct MeshClassCreateSquare : public MeshClassCreate
         return "square";
     }
 
-    pxr::UsdGeomMesh create(pxr::UsdStageRefPtr stage) override
+    pxr::UsdGeomMesh create(pxr::UsdStageWeakPtr stage) override
     {
         pxr::UsdGeomMesh mesh;
         if (createMeshClass(mesh, stage, name()))
@@ -184,7 +184,7 @@ struct MeshClassCreateCircle : public MeshClassCreate
         return "circle";
     }
 
-    pxr::UsdGeomMesh create(pxr::UsdStageRefPtr stage) override
+    pxr::UsdGeomMesh create(pxr::UsdStageWeakPtr stage) override
     {
         pxr::UsdGeomMesh mesh;
         if (createMeshClass(mesh, stage, name()))
@@ -481,7 +481,7 @@ bool DecalGraphics::load(pxr::UsdPrim decalPrim)
 class DrawingManager : public IDrawingManager
 {
 public:
-    DrawingManager(pxr::UsdStageRefPtr stage);
+    DrawingManager(pxr::UsdStageWeakPtr stage);
 
     virtual void updateGraphics() override;
     virtual void release() override;
@@ -540,7 +540,7 @@ private:
 
     void draw();
 
-    pxr::UsdStageRefPtr m_stage;
+    pxr::UsdStageWeakPtr m_stage;
 
     // Pen parameters
     float m_penWidth;
@@ -567,7 +567,7 @@ private:
     pxr::SdfPathVector m_meshPaths;
 };
 
-DrawingManager::DrawingManager(pxr::UsdStageRefPtr stage)
+DrawingManager::DrawingManager(pxr::UsdStageWeakPtr stage)
     : m_stage(stage),
       m_penWidth(1.0f),
       m_penOffset(0.01f),
@@ -881,7 +881,7 @@ void DrawingManager::draw()
 }
 
 // Global create function
-IDrawingManager* createDrawingManager(pxr::UsdStageRefPtr stage)
+IDrawingManager* createDrawingManager(pxr::UsdStageWeakPtr stage)
 {
     if (stage == nullptr)
         return nullptr;

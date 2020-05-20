@@ -48,7 +48,7 @@ LidarSensor::~LidarSensor()
 void LidarSensor::initialize(carb::physics::PhysX* physxPtr,
                              carb::fastcache::FastCache* fastCachePtr,
                              const pxr::LidarSchemaLidar& prim,
-                             pxr::UsdStageRefPtr stage)
+                             pxr::UsdStageWeakPtr stage)
 {
     SensorComponent::initialize(prim, stage);
     mPhysx = physxPtr;

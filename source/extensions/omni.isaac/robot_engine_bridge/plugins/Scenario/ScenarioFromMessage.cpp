@@ -39,7 +39,7 @@ ScenarioFromMessage::ScenarioFromMessage(omni::isaac::dynamic_control::DynamicCo
 void ScenarioFromMessage::initialize(IsaacCApi* isaacCApiPtr,
                                      const isaac_handle_t& appHandle,
                                      const pxr::RobotEngineBridgeSchemaRobotEngineBridgeComponent& prim,
-                                     pxr::UsdStageRefPtr stage)
+                                     pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(isaacCApiPtr, appHandle, prim, stage);
     initSubComponents();

@@ -24,7 +24,7 @@ Eigen::Vector3d asEigenVector3d(const carb::Float3& v)
     return Eigen::Vector3d(v.x, v.y, v.z);
 }
 
-MotionPolicy::MotionPolicy(pxr::UsdStageRefPtr stage, omni::isaac::dynamic_control::DynamicControl* dynamicControl)
+MotionPolicy::MotionPolicy(pxr::UsdStageWeakPtr stage, omni::isaac::dynamic_control::DynamicControl* dynamicControl)
 {
     mStage = stage;
     mDynamicControl = dynamicControl;
