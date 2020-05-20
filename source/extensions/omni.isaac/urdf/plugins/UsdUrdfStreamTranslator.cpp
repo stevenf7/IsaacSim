@@ -184,6 +184,7 @@ bool SetToPose(UsdGeomXformable const& gprim, const NvIsaac::Transform& pose, fl
         return false;
     }
     pxr::GfMatrix4d mat;
+    mat.SetIdentity();
     mat.SetTranslateOnly(distanceScale * GfVec3d(pose.p.x, pose.p.y, pose.p.z));
     mat.SetRotateOnly(GfQuatf(pose.q.w, GfVec3f(pose.q.x, pose.q.y, pose.q.z)));
     bool retVal = (trans.Set(mat, UsdTimeCode::Default()));
