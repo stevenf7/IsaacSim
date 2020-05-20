@@ -493,6 +493,10 @@ class FillBin(Scenario):
             self.asset_path + "/props/flip_stack/t_connector_physics.usd",
         ]
 
+    def __del__(self):
+        self.ur10_solid.end_effector.gripper = None
+        super().__del__()
+
     def on_startup(self):
         super().on_startup()
 
