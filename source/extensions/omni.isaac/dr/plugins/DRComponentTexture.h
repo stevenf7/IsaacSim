@@ -2,6 +2,7 @@
 
 #include "DRComponentBase.h"
 
+#include <carb/datasource/IDataSource.h>
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
@@ -42,6 +43,8 @@ private:
     std::unordered_map<std::string, pxr::UsdShadeMaterialBindingAPI> mPrimMaterialBindingsMap;
     bool mIsIgnore, mIsGrouping;
     pxr::SdfLayerHandle mTextureLayer;
+    carb::datasource::IDataSource* mDatasource;
+    carb::datasource::Connection* mConnection;
 };
 }
 }

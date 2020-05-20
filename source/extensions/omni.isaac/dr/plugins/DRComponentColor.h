@@ -3,6 +3,7 @@
 
 #include "DRComponentBase.h"
 
+#include <carb/datasource/IDataSource.h>
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 #include <carb/tokens/ITokens.h>
@@ -43,6 +44,8 @@ private:
     pxr::UsdShadeMaterial mColorMaterialShade;
     pxr::UsdPrim mColorMaterialPrim;
     carb::tokens::ITokens* mTokens;
+    carb::datasource::IDataSource* mDatasource;
+    carb::datasource::Connection* mConnection;
 };
 
 }
