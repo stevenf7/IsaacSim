@@ -74,13 +74,11 @@ class Extension(omni.ext.IExt):
         )
         self.application_path = layout.add_child(omni.kit.ui.TextBox(json_path))
         self.application_path.width = -1
-        self._create_btn = self._window.layout.add_child(omni.kit.ui.Button("Create Application"))
-        self._create_btn.set_clicked_fn(self._on_create_fn)
-
-        self._destroy_btn = self._window.layout.add_child(omni.kit.ui.Button("Destroy Application"))
-        self._destroy_btn.set_clicked_fn(self._on_destroy_fn)
+        self._create_destroy_btn = self._window.layout.add_child(omni.kit.ui.Button("Create Application"))
+        self._create_destroy_btn.set_clicked_fn(self._on_create_destroy_fn)
 
         self._menu = RobotEngineBridgeMenu()
+        self._is_created = False
 
     def on_shutdown(self):
         self._menu.shutdown()
@@ -93,11 +91,15 @@ class Extension(omni.ext.IExt):
             self._inp_comp.value, self._req_channel.value, self._out_comp.value, self._rep_channel.value
         )
 
-    def _on_create_fn(self, widget):
-        self._re_bridge.createApplication("", self.application_path.value, [], [])
-        self._re_bridge.initializeStageLoader(
-            self._inp_comp.value, self._req_channel.value, self._out_comp.value, self._rep_channel.value
-        )
-
-    def _on_destroy_fn(self, widget):
-        self._re_bridge.destroyApplication()
+    def _on_create_destroy_fn(self, widget):
+        if self._is_created is False:
+            self._re_bridge.createApplication("", self.application_path.value, [], [])
+            self._re_bridge.initializeStageLoader(
+                self._inp_comp.value, self._req_channel.value, self._out_comp.value, self._rep_channel.value
+            )
+            self._is_created = True
+            widget.text = "Destroy Application"
+        else:
+            self._re_bridge.destroyApplication()
+            self._is_created = False
+            widget.text = "Create Application"
