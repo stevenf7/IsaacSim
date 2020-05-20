@@ -49,7 +49,7 @@ void importUrdf(std::string filename, const omni::isaac::urdf::ImportConfig& imp
 {
     CARB_LOG_INFO("Trying to import %s", filename.c_str());
 
-    pxr::UsdStageRefPtr stage = omni::usd::UsdContext::getContext()->getStage();
+    pxr::UsdStageWeakPtr stage = omni::usd::UsdContext::getContext()->getStage();
     if (!stage)
     {
         CARB_LOG_ERROR("Stage Not Valid");

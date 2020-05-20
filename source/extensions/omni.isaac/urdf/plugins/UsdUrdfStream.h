@@ -68,7 +68,7 @@ public:
 
     /// Return an anonymous (in-memory-only) layer with data from \p urdfStream
     /// translated to Usd.
-    void UsdUrdfTranslateUrdfToUsd(pxr::UsdStageRefPtr stage);
+    void UsdUrdfTranslateUrdfToUsd(pxr::UsdStageWeakPtr stage);
 
 
 private:

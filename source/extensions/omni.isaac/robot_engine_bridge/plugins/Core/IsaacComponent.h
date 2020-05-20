@@ -38,7 +38,7 @@ public:
     virtual void initialize(IsaacCApi* isaacCApiPtr,
                             const isaac_handle_t& appHandle,
                             const PrimType& prim,
-                            pxr::UsdStageRefPtr stage)
+                            pxr::UsdStageWeakPtr stage)
     {
         utils::ComponentBase<PrimType>::initialize(prim, stage);
 

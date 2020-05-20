@@ -101,6 +101,10 @@ public:
      */
     void tick(double dt)
     {
+        if (mComponents.size() == 0)
+        {
+            return;
+        }
         // omni::isaac::utils::ScopedTimer T("LIDAR");
 
         if (mDoOnce == false)
@@ -143,18 +147,34 @@ public:
         }
 
         size_t mShapeDebugIndex = 0;
-        releaseDebugLineList();
-        createDebugLineList();
+        bool shouldDraw = false;
         for (auto& component : mComponents)
         {
             if (component.second.get()->getDrawLidarPoints())
             {
                 auto& debugLines = component.second.get()->getDebugLines();
-                for (const auto& line : debugLines)
+                if (debugLines.size() > 0)
                 {
-                    // mDebugLineVector.push_back(line);
-                    mDebugDrawPtr->setLine(
-                        mShapeDebugLineBuffer, mShapeDebugIndex++, line.startPos, line.color, line.endPos, line.color);
+                    shouldDraw = true;
+                    break;
+                }
+            }
+        }
+        if (shouldDraw)
+        {
+            releaseDebugLineList();
+            createDebugLineList();
+            for (auto& component : mComponents)
+            {
+                if (component.second.get()->getDrawLidarPoints())
+                {
+                    auto& debugLines = component.second.get()->getDebugLines();
+                    for (const auto& line : debugLines)
+                    {
+                        // mDebugLineVector.push_back(line);
+                        mDebugDrawPtr->setLine(mShapeDebugLineBuffer, mShapeDebugIndex++, line.startPos, line.color,
+                                               line.endPos, line.color);
+                    }
                 }
             }
         }
@@ -203,7 +223,14 @@ public:
     {
         if (prim)
         {
-            return mComponents[prim.GetPath().GetString()].get();
+            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            {
+                return mComponents[prim.GetPath().GetString()].get();
+            }
+            else
+            {
+                return nullptr;
+            }
         }
         else
         {

@@ -40,7 +40,7 @@ Instancer::~Instancer()
 {
 }
 
-bool Instancer::init(pxr::UsdStageRefPtr stage, const pxr::SdfPath& path, uint32_t maxInstanceCount)
+bool Instancer::init(pxr::UsdStageWeakPtr stage, const pxr::SdfPath& path, uint32_t maxInstanceCount)
 {
     if (stage == nullptr || maxInstanceCount == 0)
         return false;

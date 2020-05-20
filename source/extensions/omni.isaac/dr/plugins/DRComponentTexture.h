@@ -2,6 +2,7 @@
 
 #include "DRComponentBase.h"
 
+#include <carb/datasource/IDataSource.h>
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
@@ -25,7 +26,7 @@ class DRComponentTexture : public DRComponentBase<pxr::DrSchemaBaseComponent>
 public:
     DRComponentTexture();
     ~DRComponentTexture();
-    virtual void initialize(const pxr::DrSchemaTextureComponent& prim, pxr::UsdStageRefPtr stage);
+    virtual void initialize(const pxr::DrSchemaTextureComponent& prim, pxr::UsdStageWeakPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();
@@ -42,6 +43,8 @@ private:
     std::unordered_map<std::string, pxr::UsdShadeMaterialBindingAPI> mPrimMaterialBindingsMap;
     bool mIsIgnore, mIsGrouping;
     pxr::SdfLayerHandle mTextureLayer;
+    carb::datasource::IDataSource* mDatasource;
+    carb::datasource::Connection* mConnection;
 };
 }
 }

@@ -34,7 +34,7 @@ DRManager::~DRManager()
     deleteAllComponents();
 }
 
-void DRManager::initialize(pxr::UsdStageRefPtr stage, carb::tokens::ITokens* tokens)
+void DRManager::initialize(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* tokens)
 {
     utils::ComponentManager::initialize(stage);
     mTokens = tokens;

@@ -33,8 +33,39 @@ def remove_shader_source(archive_path, shaders_folder):
         sys.exit(1)
 
 
-def update_package(root: str, platform: str, config: str):
-    root_folder, archive_path = prepare_package(root, config, False, False)
+def remove_package_info(archive_path, info_file):
+    args = [find_7za(), "d", archive_path, info_file]
+    p = subprocess.Popen(args)
+    returncode = p.wait()
+    if returncode != 0:
+        print("Error removing the package info file")
+        sys.exit(1)
+
+
+def copy_data_folder(archive_path, root_folder, data_folder):
+    data_path = os.path.join(root_folder, data_folder)
+
+    if not os.path.exists(data_path):
+        logger.error("Data folder not found: {data_path}")
+        sys.exit(-1)
+
+    if os.path.exists(data_folder):
+        shutil.rmtree(data_folder)
+
+    print(f"Copying {data_path} => {data_folder}")
+    shutil.copytree(data_path, data_folder)
+
+    args = [find_7za(), "u", archive_path, data_folder, "-spf"]
+    p = subprocess.Popen(args)
+    returncode = p.wait()
+
+    if returncode != 0:
+        print("Error copying data folder")
+        sys.exit(1)
+
+
+def update_package(root: str, platform: str, config: str, experience: str):
+    root_folder, archive_path = prepare_package(root, platform, config, False, False)
 
     # update cache folder
     cache_folder = f"_build/target-deps/kit_sdk_{config}/_build/{platform}/{config}/cache"
@@ -66,30 +97,16 @@ def update_package(root: str, platform: str, config: str):
     shaders_folder = f"_build/target-deps/kit_sdk_{config}/_build/shaders"
     remove_shader_source(archive_path, shaders_folder)
 
+    # remove info file
+    print(f"Removing package info file")
+    info_file = f"PACKAGE-INFO.yaml"
+    remove_package_info(archive_path, info_file)
+
     # update data folder
+    print(f"Updating data folder")
     data_folder = f"_build/target-deps/kit_sdk_{config}/_build/{platform}/{config}/data"
-    data_path = os.path.join(root_folder, data_folder)
-
-    if not os.path.exists(data_path):
-        logger.error("Cache folder not found")
-        sys.exit(-1)
-
-    if os.path.exists(data_folder):
-        shutil.rmtree(data_folder)
-
-    print(f"Copying {data_path} => {data_folder}")
-    shutil.copytree(data_path, data_folder)
-
-    args = [find_7za(), "u", archive_path, data_folder, "-spf"]
-    p = subprocess.Popen(args)
-    returncode = p.wait()
-
-    if os.path.exists(data_folder):
-        shutil.rmtree(data_folder)
-
-    if returncode != 0:
-        logger.error(f"Error updating {archive_path}")
-        sys.exit(1)
+    copy_data_folder(archive_path, root_folder, f"{data_folder}/Kit/{experience}/2020.1/pip3-envs")
+    copy_data_folder(archive_path, root_folder, f"{data_folder}/Kit/{experience}-headless/2020.1/pip3-envs")
 
 
 def main():
@@ -108,9 +125,10 @@ def main():
     parser.add_argument(
         "-c", "--config", dest="config", required=False, default="debug", help="Config target. (default: %(default)s)"
     )
+    parser.add_argument("--experience", dest="experience", default="isaac-sim", help="Experience to run.")
 
     options = parser.parse_args()
-    update_package(repo_folders["root"], options.platform, options.config)
+    update_package(repo_folders["root"], options.platform, options.config, options.experience)
 
 
 if __name__ == "__main__":

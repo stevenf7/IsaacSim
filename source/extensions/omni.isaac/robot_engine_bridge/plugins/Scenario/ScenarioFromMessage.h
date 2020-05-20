@@ -44,7 +44,7 @@ public:
     virtual void initialize(IsaacCApi* isaacCApiPtr,
                             const isaac_handle_t& appHandle,
                             const pxr::RobotEngineBridgeSchemaRobotEngineBridgeComponent& prim,
-                            pxr::UsdStageRefPtr stage);
+                            pxr::UsdStageWeakPtr stage);
 
     /**
      * @brief

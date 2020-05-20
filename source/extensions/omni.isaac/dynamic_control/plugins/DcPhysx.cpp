@@ -690,8 +690,9 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         art->rigidBodies[i] = bodyPtr;
         art->rigidBodyMap[bodyPtr->name] = bodyPtr;
     }
-
-    std::vector<size_t> dofStarts(numLinks);
+    // The code below requires that simulation is active before registering articulation, otherwise cache indices are
+    // not valid
+    std::vector<size_t> dofStarts(numLinks, 0);
 
     // First map the link index to the dof count
     // Link index can be different than the order the links show up in the articulation and corresponds to the index in
@@ -704,7 +705,10 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         }
         else
         {
-            dofStarts[dof->linkIndex] = 0;
+            if (dof->linkIndex >= 0)
+            {
+                dofStarts[dof->linkIndex] = 0;
+            }
         }
     }
     // Now do a "scan" operation to compute offsets in the cache for each dof
@@ -718,9 +722,16 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     // Once we have all of the offsets, set them on the dof
     for (size_t i = 0; i < art->dofs.size(); i++)
     {
-        art->dofs[i]->cacheIdx = int(dofStarts[art->dofs[i]->linkIndex]);
-        DC_LOG_INFO("dof index: i: %d with link index: %d has a DOF cache index of: %u", int(i),
-                    art->dofs[i]->linkIndex, art->dofs[i]->cacheIdx);
+        if (art->dofs[i]->linkIndex >= 0)
+        {
+            art->dofs[i]->cacheIdx = int(dofStarts[art->dofs[i]->linkIndex]);
+        }
+        else
+        {
+            art->dofs[i]->cacheIdx = 0;
+        }
+        DC_LOG_INFO("dof index: i: %zu with link index: %d has a DOF cache index of: %d", i, art->dofs[i]->linkIndex,
+                    art->dofs[i]->cacheIdx);
     }
 
     // resolve hierarchy relationships
@@ -903,9 +914,8 @@ bool DcContext::refreshPhysicsPointers(DcArticulation* art, bool verbose)
     {
         return false;
     }
-
+    art->pxArticulationCache = nullptr;
     art->pxArticulation = nullptr;
-    art->pxArticulationCache = nullptr; // FIXME: leak?
     art->cacheAge = -1;
 
     PxArticulationBase* abase = (PxArticulationBase*)physx->getPhysXPtr(art->path, carb::physics::ePTArticulation);
@@ -2586,6 +2596,12 @@ bool CARB_ABI DcSetDofProperties(DcHandle dofHandle, const DcDofProperties* prop
     // set drive properties
     pxJoint->setDrive(dof->pxAxis, stiffness, damping, props->maxEffort, driveType);
 
+    if (dof->art->pxArticulation->getScene())
+    {
+        // Cache becomes invalid, clear it
+        dof->art->pxArticulation->releaseCache(*dof->art->pxArticulationCache);
+        dof->art->pxArticulationCache = dof->art->pxArticulation->createCache();
+    }
     return true;
 }
 
@@ -3313,8 +3329,14 @@ bool getD6JointConstraintIsBroken(DcD6Joint* dcJoint)
     }
 
     PxD6Joint* joint = dcJoint->pxJoint;
-
-    return joint->getConstraintFlags() & PxConstraintFlag::eBROKEN;
+    if (joint)
+    {
+        return joint->getConstraintFlags() & PxConstraintFlag::eBROKEN;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 //
@@ -3376,6 +3398,10 @@ void SuDetach(void* data)
 void SuPause(void* data)
 {
     printf("++ DC: Stage Pause\n");
+    if (g_dcCtx)
+    {
+        g_dcCtx->wasPaused = true;
+    }
 }
 
 void SuResume(float currentTime, void* data)
@@ -3385,10 +3411,15 @@ void SuResume(float currentTime, void* data)
     if (g_dcCtx)
     {
         // printf("Refreshing context\n");
-        g_dcCtx->refreshPhysicsPointers(true);
+        // if pause is pressed there is no need to refresh pointers on the next play
+        if (!g_dcCtx->wasPaused)
+        {
+            g_dcCtx->refreshPhysicsPointers(true);
+        }
 #if DC_TRACK_EDITOR_SIMULATION_STATE
         g_dcCtx->isSimulating = true;
 #endif
+        g_dcCtx->wasPaused = false;
     }
 }
 
@@ -3405,6 +3436,7 @@ void SuStop(void* data)
 #if DC_TRACK_EDITOR_SIMULATION_STATE
         g_dcCtx->isSimulating = false;
 #endif
+        g_dcCtx->wasPaused = false;
     }
 }
 

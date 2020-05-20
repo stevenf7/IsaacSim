@@ -24,7 +24,7 @@ class DRComponentScale : public DRComponentBase<pxr::DrSchemaBaseComponent>
 public:
     DRComponentScale();
     ~DRComponentScale();
-    virtual void initialize(const pxr::DrSchemaScaleComponent& prim, pxr::UsdStageRefPtr stage);
+    virtual void initialize(const pxr::DrSchemaScaleComponent& prim, pxr::UsdStageWeakPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();

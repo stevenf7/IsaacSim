@@ -36,7 +36,7 @@ public:
      * @param prim
      * @param stage
      */
-    virtual void initialize(const PrimType& prim, pxr::UsdStageRefPtr stage)
+    virtual void initialize(const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
         utils::ComponentBase<PrimType>::initialize(prim, stage);
     }

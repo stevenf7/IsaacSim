@@ -37,7 +37,7 @@
 class MotionPolicy
 {
 public:
-    MotionPolicy(pxr::UsdStageRefPtr stage, omni::isaac::dynamic_control::DynamicControl* dynamic_control);
+    MotionPolicy(pxr::UsdStageWeakPtr stage, omni::isaac::dynamic_control::DynamicControl* dynamic_control);
 
     /**
      * Initialize the RMP with a specific control frame
@@ -171,7 +171,7 @@ public:
 
 private:
     // Global pointers:
-    pxr::UsdStageRefPtr mStage = nullptr;
+    pxr::UsdStageWeakPtr mStage = nullptr;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControl = nullptr;
 
 

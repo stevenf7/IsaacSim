@@ -12,6 +12,7 @@
 #include <carb/filesystem/IFileSystem.h>
 #include <DrSchema/textureComponent.h>
 
+#include <omni/kit/KitUtils.h>
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/AssetUtils.h>
 #include <omni/usd/UsdUtils.h>
@@ -25,6 +26,8 @@ namespace dr
 
 DRComponentTexture::DRComponentTexture() : DRComponentBase()
 {
+    mDatasource = carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("omni.connection.plugin");
+    mConnection = omni::kit::getLatestConnection(omni::kit::getConnectionHub());
     mIsIgnore = false;
     mIsGrouping = false;
 }
@@ -32,7 +35,7 @@ DRComponentTexture::~DRComponentTexture()
 {
     stop();
 }
-void DRComponentTexture::initialize(const pxr::DrSchemaTextureComponent& prim, pxr::UsdStageRefPtr stage)
+void DRComponentTexture::initialize(const pxr::DrSchemaTextureComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     DRComponentBase::initialize(prim, stage);
 }
@@ -107,6 +110,7 @@ void DRComponentTexture::update()
         pxr::UsdEditContext context(mStage, mTextureLayer);
         for (std::string& url : mTextureList)
         {
+            std::string mdlDataSourcePath = url.substr(std::strlen("omni:"));
             carb::extras::Path urlPath(url.c_str());
             if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Textures"))
             {
@@ -116,7 +120,8 @@ void DRComponentTexture::update()
                     });
             }
             auto materialPrim = omni::usd::AssetUtils::createPrimFromAssetPath(
-                mStage, url.c_str(), ("/Textures/" + urlPath.getStem()).getStringBuffer());
+                mStage, url.c_str(), ("/Textures/" + urlPath.getStem()).getStringBuffer(), mdlDataSourcePath.c_str(),
+                mDatasource, mConnection);
             mMaterialPrims.push_back(materialPrim);
 
             pxr::UsdShadeMaterial material(materialPrim);

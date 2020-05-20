@@ -47,8 +47,9 @@ class SM_events(Enum):
     DETACHED = 4
     TIMEOUT = 5
     STOP = 6
+    BROKENGRIP = 7
 
-    NONE = 7  # no event ocurred, just clocks
+    NONE = 8  # no event ocurred, just clocks
 
 
 class SM_states(Enum):
@@ -108,6 +109,7 @@ class PickAndPlaceStateMachine(object):
         self._detached = False
         self._upright = False  # Used to indicate if the tray is being picked facing up, so the proper state is called
         self._flipped = False
+        self._closed = False
 
         # Constants for lifting, fliping, and intermediary goals
         self.upside_goal = _dynamic_control.Transform()
@@ -131,6 +133,10 @@ class PickAndPlaceStateMachine(object):
             for e in SM_events:
                 self.sm[s][e] = self._empty
                 self.thresh[s] = 0
+
+        # Use a same event handler for broken grip on all events
+        for s in SM_states:
+            self.sm[s][SM_events.BROKENGRIP] = self._all_broken_grip
 
         # Fill in the functions to handle each event for each status
         self.sm[SM_states.STANDBY][SM_events.START] = self._standby_start
@@ -390,6 +396,7 @@ class PickAndPlaceStateMachine(object):
         if reset:
             self.current_state = SM_states.STANDBY
             self.robot.end_effector.gripper.open()
+            self._closed = False
             self.start = False
             self._upright = False
             self.waypoints.clear()
@@ -400,6 +407,8 @@ class PickAndPlaceStateMachine(object):
             self.total_trays = 0
             self.stack_size *= 0
             self.current = None
+        elif self._closed and not self.robot.end_effector.gripper.is_closed():
+            self.sm[self.current_state][SM_events.BROKENGRIP]()
         elif self.goalReached():
             if len(self.waypoints) == 0:
                 self.sm[self.current_state][SM_events.GOAL_REACHED]()
@@ -476,6 +485,7 @@ class PickAndPlaceStateMachine(object):
         self.robot.end_effector.gripper.close()
         if self.robot.end_effector.gripper.is_closed():
             self._attached = True
+            self._closed = True
         else:  # Failed to attach so return grasp to try again
             # move up 25 centimiters and return to picking state
             offset = _dynamic_control.Transform()
@@ -538,6 +548,7 @@ class PickAndPlaceStateMachine(object):
         """
         if self.robot.end_effector.gripper.is_closed():
             self.robot.end_effector.gripper.open()
+            self._closed = False
             # Lerp to its same pose to wait a few timesteps before entering this event again.
             self.lerp_to_pose(self.target_position, n_waypoints=4)
             self._detached = True
@@ -693,6 +704,16 @@ class PickAndPlaceStateMachine(object):
             self.move_to_target()
 
         self.change_state(SM_states.DETACH)
+
+    def _all_broken_grip(self, *args):
+        self._closed = False
+        tr = self.get_current_state_tr()
+        self.waypoints.clear()
+        self.lerp_to_pose(tr, 60)
+        self.lerp_to_pose(self.default_position, 90)
+        self.target_position = self.waypoints.popleft()
+        self.move_to_target()
+        self.current_state = SM_states.STANDBY
 
 
 class AttachBody(Scenario):
@@ -953,8 +974,10 @@ class AttachBody(Scenario):
     def open_gripper(self):
         if self.ur10_solid.end_effector.gripper.is_closed():
             self.ur10_solid.end_effector.gripper.open()
+            self.pick_and_place._closed = False
         else:
             self.ur10_solid.end_effector.gripper.close()
+            self.pick_and_place._closed = True
         state = self.ur10_solid.end_effector.status.current_target
         state_1 = self.pick_and_place.target_position
         tr = state["orig"] * 100.0

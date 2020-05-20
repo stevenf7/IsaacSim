@@ -35,7 +35,7 @@ class DRManager : public utils::ComponentManager, public pxr::TfWeakBase
 public:
     DRManager();
     ~DRManager();
-    void initialize(pxr::UsdStageRefPtr stage, carb::tokens::ITokens* tokens);
+    void initialize(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* tokens);
     void tick(double dt);
     void initComponents();
     void onComponentAdd(const pxr::UsdPrim& prim);

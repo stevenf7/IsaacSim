@@ -28,7 +28,7 @@ DRComponentRotation::~DRComponentRotation()
 {
     stop();
 }
-void DRComponentRotation::initialize(const pxr::DrSchemaRotationComponent& prim, pxr::UsdStageRefPtr stage)
+void DRComponentRotation::initialize(const pxr::DrSchemaRotationComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     DRComponentBase::initialize(prim, stage);
 }

@@ -81,7 +81,7 @@ def teamcity_stop_test(test_id):
     teamcity_message("testFinished", name=test_id)
 
 
-def prepare_package(root: str, config: str, clean: bool, copy_test_data: bool) -> str:
+def prepare_package(root: str, platform_host: str, config: str, clean: bool, copy_test_data: bool) -> str:
     """Find and extract a package, return path to a folder"""
 
     archive_pattern = os.getenv("ARCHIVE_PATTERN")
@@ -115,8 +115,9 @@ def prepare_package(root: str, config: str, clean: bool, copy_test_data: bool) -
 
     # Copy test files from test_runner package
     if copy_test_data:
-        src = f"{root}/_build"
-        dst = f"{folder_to_extract}/_build"
+        src = f"{root}/_build/{platform_host}/{config}"
+        dst = f"{folder_to_extract}/_build/{platform_host}/{config}"
+        logger.info(f"Copying test data: {src}")
         omni.repo.package.repo_fileutils.copy_files(src, dst)
 
     return folder_to_extract, archive_path
@@ -140,7 +141,8 @@ def run_pythontests(root: str, platform_host: str, config: str, linbuild_profile
 
     executable = f"test-isaac-sim{get_shell_ext(platform_host)}"
     exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
-    args = ["--exec", '"run_tests.py"']
+    # args = ["--exec", '"run_tests.py"']
+    args = []
     args.extend(extra_args)
 
     proc_arglist = exec_prefix + [f"{root}/_build/{platform_host}/{config}/{executable}"] + args
@@ -150,11 +152,11 @@ def run_pythontests(root: str, platform_host: str, config: str, linbuild_profile
 def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []):
     """Start and quit Kit"""
 
-    kit_folder = f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}"
-    bin_folder = f"{root}/_build/{platform_host}/{config}"
+    # kit_folder = f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}"
+    app_folder = f"{root}/_build/{platform_host}/{config}"
 
     # Search for all .bat/.sh files
-    executable_files = [os.path.basename(f) for f in glob.glob(bin_folder + "/*" + get_shell_ext(platform_host))]
+    executable_files = [os.path.basename(f) for f in glob.glob(app_folder + "/*" + get_shell_ext(platform_host))]
 
     # Explicitly add default kit:
     # executable_files.insert(0, f"omniverse-kit{get_exe_ext(platform_host)}")
@@ -179,7 +181,7 @@ def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile
     exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
     args = [
         "--exec",
-        f"open {kit_folder}/../../../data/scenes/BuiltInMaterials.usda",
+        f"open {app_folder}/data/usd/assets/robots/franka/franka.usd",
         "--carb/rtx/materialDb/syncLoads=true",
         "--carb/omni.kit.plugin/syncUsdLoads=true",
         "--carb/app/quitAfter=10",  # Quit after 10 updates
@@ -198,7 +200,7 @@ def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile
         teamcity_start_test(test_id)
 
         # Run process
-        proc_arglist = exec_prefix + [f"{bin_folder}/{executable_file}"] + args
+        proc_arglist = exec_prefix + [f"{app_folder}/{executable_file}"] + args
         returncode = omni.repo.man.run_process(proc_arglist, exit_on_error=False)
 
         # Report failure and mark overall run as failure
@@ -306,7 +308,7 @@ def main():
     if options.suite != "startuptest":
         copy_test_data = True
     if options.from_package:
-        root_folder, _ = prepare_package(root_folder, options.config, options.clean, copy_test_data)
+        root_folder, _ = prepare_package(root_folder, platform_host, options.config, options.clean, copy_test_data)
 
     if options.linbuild_profile is not None:
         packmanapi.pull(os.path.join(repo_folders["deps_xml_folder"], "linbuild.packman.xml"), platform=platform_host)

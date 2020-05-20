@@ -1,0 +1,248 @@
+# NOTE:
+#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
+#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
+import omni.kit.test
+import omni.kit.asyncapi
+import omni.kit.usd
+import omni.kit.connectionhub
+from omni.isaac.dynamic_control import _dynamic_control as dc
+from omni.isaac.motion_planning import _motion_planning as mp
+import carb.tokens
+import os
+import asyncio
+import numpy as np
+from omni.isaac.utils._isaac_utils import math as mu
+from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, PhysicsSchema, PhysicsSchemaTools
+from omni.physx import _physx as physx
+
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+from ..ur10_scenarios.scenario import Scenario
+from ..ur10_scenarios import bin_stack
+from ..ur10_scenarios import bmw_fof_demo
+from ..ur10_scenarios import fill_bin
+
+
+class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
+
+    # Before running each test
+    async def setUp(self):
+        self.connection_handle = None
+        if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
+            self.connection_handle = omni.kit.connectionhub.get_connection_hub_interface().connect(
+                "ov-isaac-dev:3009", "admin", "admin", False
+            )
+            await asyncio.sleep(1.0)
+        self.assertTrue(len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) > 0)
+
+        self._dc = dc.acquire_dynamic_control_interface()
+        self._mp = mp.acquire_motion_planning_interface()
+        self._physx = physx.acquire_physx_interface()
+        await omni.kit.asyncapi.new_stage()
+
+        self.assertFalse(self._dc.is_simulating())
+        # Start Simulation and wait
+        self.editor = omni.kit.editor.get_editor_interface()
+        self.upright_sequence = [
+            bin_stack.SM_states.STANDBY,
+            bin_stack.SM_states.PICKING,
+            bin_stack.SM_states.ATTACH,
+            bin_stack.SM_states.FLIPPING,
+            bin_stack.SM_states.DETACH,
+            bin_stack.SM_states.PICKING,
+            bin_stack.SM_states.ATTACH,
+            bin_stack.SM_states.PLACING,
+            bin_stack.SM_states.DETACH,
+        ]
+        self.default_sequence = [
+            bin_stack.SM_states.STANDBY,
+            bin_stack.SM_states.PICKING,
+            bin_stack.SM_states.ATTACH,
+            bin_stack.SM_states.PLACING,
+            bin_stack.SM_states.DETACH,
+        ]
+
+        self.total_pass = 0
+        self.upright_pass = 0
+        self.down_pass = 0
+        self._scenario = None
+        pass
+
+    # After running each test
+    async def tearDown(self):
+        print("tear down")
+        if self.editor.is_playing():
+            self.editor.stop()
+        await omni.kit.asyncapi.next_update()
+        self.assertFalse(self._dc.is_simulating())
+        self._dc = None
+        self._mp = None
+        self._physx = None
+        if self._scenario is not None:
+            self._scenario.stop_tasks()
+            self._scenario = None
+        if self.connection_handle is not None:
+            omni.kit.connectionhub.get_connection_hub_interface().disconnect(self.connection_handle, False)
+        print("done")
+        pass
+
+    async def test_bwm_demo_run(self):
+        await self.load_bmw_demo_scene()
+        await self.execute_stack_scene()
+        pass
+
+    async def test_bin_stack_run(self):
+        await self.load_bin_stack_scene()
+        await self.execute_stack_scene()
+        pass
+
+    async def test_fill_bin_run(self):
+
+        await self.load_fill_bin_scene()
+        self._scenario.perform_tasks()
+
+        self.current_state = self.default_sequence[0]
+        self.state_idx = 0
+        while self.total_pass < 1:
+            while self._scenario.pick_and_place.current_state == self.current_state:
+                await omni.kit.asyncapi.next_update()
+                self.assertTrue(self._dc.is_simulating())
+                self._scenario.step(None)
+            next_state = (self.state_idx + 1) % len(self.default_sequence)
+            self.assertTrue(self._scenario.pick_and_place.current_state == self.default_sequence[next_state])
+            self.state_idx = next_state
+            self.current_state = self.default_sequence[next_state]
+            if next_state == 0:
+                self.total_pass += 1
+        pass
+
+    async def check_box_pose(self):
+        box_pose = self._dc.get_rigid_body_pose(self._scenario.tray_handles[self.total_pass])
+        rx = mu.get_basis_vector_x(box_pose.r)
+        rz = mu.get_basis_vector_z(box_pose.r)
+        self.assertTrue(mu.dot(rz, (0, 0, -1)) > 0.99)
+        self.assertTrue(abs(mu.dot(rx, (1, 0, 0))) > 0.99)
+        self.assertTrue(box_pose.p.x > 0)
+        self.assertTrue(box_pose.p.y < 0)
+        pass
+
+    async def execute_stack_scene(self):
+
+        self._scenario.perform_tasks()
+
+        self.current_state = self.default_sequence[0]
+        self.state_idx = 0
+        self.upright = False
+        timeout_max = 1000
+        timeout = 0
+        while self.total_pass < 4 or self.upright_pass < 1 or self.down_pass < 1:
+            while self._scenario.pick_and_place.current_state == self.current_state and timeout < timeout_max:
+                timeout += 1
+                await omni.kit.asyncapi.next_update()
+                self.assertTrue(self._dc.is_simulating())
+                self._scenario.step(None)
+            self.assertTrue(timeout < timeout_max)
+            timeout = 0
+            if self._scenario.pick_and_place._upright or self.upright:
+                self.upright = True
+                next_state = (self.state_idx + 1) % len(self.upright_sequence)
+                self.assertTrue(self._scenario.pick_and_place.current_state == self.upright_sequence[next_state])
+                self.state_idx = next_state
+                self.current_state = self.upright_sequence[next_state]
+                if next_state == 0:
+                    await self.check_box_pose()
+                    self.upright = False
+                    self.upright_pass += 1
+                    self.total_pass += 1
+            else:
+                next_state = (self.state_idx + 1) % len(self.default_sequence)
+                self.assertTrue(self._scenario.pick_and_place.current_state == self.default_sequence[next_state])
+                self.state_idx = next_state
+                self.current_state = self.default_sequence[next_state]
+                if next_state == 0:
+                    await self.check_box_pose()
+                    self.down_pass += 1
+                    self.total_pass += 1
+        pass
+
+    async def load_bin_stack_scene(self):
+
+        self._scenario = bin_stack.BinStack(self.editor, self._dc, self._mp)
+        # Make sure the stage loaded
+        self.assertTrue(self._scenario is not None)
+
+        self._physx.release_physics_objects()
+
+        self._scenario.create_UR10(False)
+
+        self._physx.release_physics_objects()
+        self._physx.force_load_physics_from_usd()
+
+        self.editor.play()
+        await omni.kit.asyncapi.next_update()
+        self.assertTrue(self._dc.is_simulating())
+        self._scenario.register_assets()
+        pass
+
+    async def load_bmw_demo_scene(self):
+
+        self._scenario = bmw_fof_demo.AttachBody(self.editor, self._dc, self._mp)
+        # Make sure the stage loaded
+        self.assertTrue(self._scenario is not None)
+
+        self._physx.release_physics_objects()
+
+        self._scenario.create_UR10(False)
+
+        self._physx.release_physics_objects()
+        self._physx.force_load_physics_from_usd()
+
+        self.editor.play()
+        await omni.kit.asyncapi.next_update()
+        self.assertTrue(self._dc.is_simulating())
+        self._scenario.register_assets()
+
+        self.upright_sequence = [
+            bmw_fof_demo.SM_states.STANDBY,
+            bmw_fof_demo.SM_states.PICKING,
+            bmw_fof_demo.SM_states.ATTACH,
+            bmw_fof_demo.SM_states.FLIPPING,
+            bmw_fof_demo.SM_states.DETACH,
+            bmw_fof_demo.SM_states.PICKING,
+            bmw_fof_demo.SM_states.ATTACH,
+            bmw_fof_demo.SM_states.PLACING,
+            bmw_fof_demo.SM_states.DETACH,
+        ]
+        self.default_sequence = [
+            bmw_fof_demo.SM_states.STANDBY,
+            bmw_fof_demo.SM_states.PICKING,
+            bmw_fof_demo.SM_states.ATTACH,
+            bmw_fof_demo.SM_states.PLACING,
+            bmw_fof_demo.SM_states.DETACH,
+        ]
+        pass
+
+    async def load_fill_bin_scene(self):
+
+        self._scenario = fill_bin.FillBin(self.editor, self._dc, self._mp)
+        # Make sure the stage loaded
+        self.assertTrue(self._scenario is not None)
+
+        self._physx.release_physics_objects()
+
+        self._scenario.create_UR10(False)
+
+        self._physx.release_physics_objects()
+        self._physx.force_load_physics_from_usd()
+
+        self.editor.play()
+        await omni.kit.asyncapi.next_update()
+        self.assertTrue(self._dc.is_simulating())
+        self._scenario.register_assets()
+
+        self.default_sequence = [
+            fill_bin.SM_states.STANDBY,
+            fill_bin.SM_states.PICKING,
+            fill_bin.SM_states.ATTACH,
+            fill_bin.SM_states.HOLDING,
+        ]
+        pass

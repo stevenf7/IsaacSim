@@ -45,7 +45,7 @@ public:
      *
      * @param stage
      */
-    virtual void initialize(pxr::UsdStageRefPtr stage);
+    virtual void initialize(pxr::UsdStageWeakPtr stage);
 
 
     void tick(double dt);

@@ -25,7 +25,7 @@ public:
      * @param prim
      * @param stage
      */
-    virtual void initialize(const PrimType& prim, pxr::UsdStageRefPtr stage)
+    virtual void initialize(const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
         mPrim = prim;
         mStage = stage;
@@ -73,7 +73,7 @@ protected:
     // USD reference to prim that stores settings for this component
     PrimType mPrim;
     // USD stage that the prim is in
-    pxr::UsdStageRefPtr mStage = nullptr;
+    pxr::UsdStageWeakPtr mStage = nullptr;
 
     double mTimeSeconds = 0; // current time in seconds
     int64_t mTimeNanoSeconds = 0; // current time in nano seconds
