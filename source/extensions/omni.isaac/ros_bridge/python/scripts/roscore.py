@@ -1,22 +1,18 @@
 import subprocess
-import shlex
 import sys
 import signal
-import psutil
+import os
 
 
 def kill_child_processes(parent_pid, sig=signal.SIGTERM):
     try:
-        parent = psutil.Process(parent_pid)
-        print(parent)
-    except psutil.NoSuchProcess:
+        os.kill(parent_pid, 0)
+        print(parent_pid)
+    except OSError:
         print("parent process not existing")
         return
-    children = parent.children(recursive=True)
-    print(children)
-    for process in children:
-        print("try to kill child: " + str(process))
-        process.send_signal(sig)
+    print("try to kill child: " + str(parent_pid))
+    os.kill(parent_pid, sig)
 
 
 class Roscore(object):

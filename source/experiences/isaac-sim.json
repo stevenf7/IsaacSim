@@ -56,7 +56,11 @@
         "renderer": {
             "skipWhileMinimized": false,
             "sleepMsOnFocus": 0,
-            "sleepMsOutOfFocus": 0
+            "sleepMsOutOfFocus": 0,
+            "resolution": {
+                "width": 1280,
+                "height": 720
+            }
         }
     }
 }
