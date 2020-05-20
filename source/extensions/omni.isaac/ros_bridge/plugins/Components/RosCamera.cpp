@@ -158,25 +158,25 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
     cam_info_msg.header.seq = 0;
     cam_info_msg.header.frame_id = mFrameId;
     cam_info_msg.header.stamp.fromSec(mTimeSeconds);
-    cam_info_msg.height = imgInfo.height;
-    cam_info_msg.width = imgInfo.width;
+    cam_info_msg.height = imgInfo.tex.height;
+    cam_info_msg.width = imgInfo.tex.width;
 
-    cam_info_msg.K = { imgInfo.width * focalLength / horizontalAperture,
+    cam_info_msg.K = { imgInfo.tex.width * focalLength / horizontalAperture,
                        0,
-                       imgInfo.width * 0.5f,
+                       imgInfo.tex.width * 0.5f,
                        0,
-                       imgInfo.height * focalLength / verticalAperture,
-                       imgInfo.height * 0.5f,
+                       imgInfo.tex.height * focalLength / verticalAperture,
+                       imgInfo.tex.height * 0.5f,
                        0,
                        0,
                        1 };
-    cam_info_msg.P = { imgInfo.width * focalLength / horizontalAperture,
+    cam_info_msg.P = { imgInfo.tex.width * focalLength / horizontalAperture,
                        0,
-                       imgInfo.width * 0.5f,
+                       imgInfo.tex.width * 0.5f,
                        0,
                        0,
-                       imgInfo.height * focalLength / verticalAperture,
-                       imgInfo.height * 0.5f,
+                       imgInfo.tex.height * focalLength / verticalAperture,
+                       imgInfo.tex.height * 0.5f,
                        0,
                        0,
                        0,
@@ -194,24 +194,24 @@ void RosCamera::rgbPubCallback(ros::Publisher* pub)
     const carb::sensors::SensorInfo& rgbInfo = mSensorsInterface->getSensorInfo(mRgbSensor);
 
     const int color_channels = 3;
-    const size_t color_step = rgbInfo.width * color_channels * sizeof(uint8_t);
+    const size_t color_step = rgbInfo.tex.width * color_channels * sizeof(uint8_t);
 
     sensor_msgs::Image color_msg;
     color_msg.header.seq = 0;
     color_msg.header.frame_id = mFrameId;
     color_msg.header.stamp.fromSec(mTimeSeconds);
-    color_msg.width = rgbInfo.width;
-    color_msg.height = rgbInfo.height;
+    color_msg.width = rgbInfo.tex.width;
+    color_msg.height = rgbInfo.tex.height;
     color_msg.step = color_step;
     color_msg.encoding = sensor_msgs::image_encodings::RGB8;
-    color_msg.data.resize(rgbInfo.height * color_step);
+    color_msg.data.resize(rgbInfo.tex.height * color_step);
     uint8_t* rgb = &color_msg.data[0];
     uint8_t* rgbDevice;
-    const size_t bufferSize = rgbInfo.width * rgbInfo.height * 3;
+    const size_t bufferSize = rgbInfo.tex.width * rgbInfo.tex.height * 3;
     CUDA_CHECK(cudaMalloc(&rgbDevice, bufferSize));
     mRgbSensorData = mSyntheticDataInterface->getSensorDeviceData(mRgbSensor);
 
-    rgbaToRgb(rgbDevice, (uint8_t*)mRgbSensorData, rgbInfo.width, rgbInfo.height, rgbInfo.rowSize);
+    rgbaToRgb(rgbDevice, (uint8_t*)mRgbSensorData, rgbInfo.tex.width, rgbInfo.tex.height, rgbInfo.tex.rowSize);
     CUDA_CHECK(cudaMemcpy(rgb, rgbDevice, bufferSize, cudaMemcpyDeviceToHost));
 
     CUDA_CHECK(cudaFree(rgbDevice));
@@ -227,22 +227,22 @@ void RosCamera::depthPubCallback(ros::Publisher* pub)
     const carb::sensors::SensorInfo& depthInfo = mSensorsInterface->getSensorInfo(mDepthSensor);
 
     const int depth_channels = 1;
-    const size_t depth_step = depthInfo.width * depth_channels * sizeof(float);
+    const size_t depth_step = depthInfo.tex.width * depth_channels * sizeof(float);
 
 
     sensor_msgs::Image depth_msg;
     depth_msg.header.seq = 0;
     depth_msg.header.frame_id = mFrameId;
     depth_msg.header.stamp.fromSec(mTimeSeconds);
-    depth_msg.width = depthInfo.width;
-    depth_msg.height = depthInfo.height;
+    depth_msg.width = depthInfo.tex.width;
+    depth_msg.height = depthInfo.tex.height;
     depth_msg.step = depth_step;
     depth_msg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
-    depth_msg.data.resize(depthInfo.height * depth_step);
+    depth_msg.data.resize(depthInfo.tex.height * depth_step);
 
     uint8_t* depth = &depth_msg.data[0];
     mDepthSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthSensor);
-    CUDA_CHECK(cudaMemcpy(depth, mDepthSensorData, depthInfo.rowSize * depthInfo.height, cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(depth, mDepthSensorData, depthInfo.tex.rowSize * depthInfo.tex.height, cudaMemcpyDeviceToHost));
     pub->publish(depth_msg);
 }
 }

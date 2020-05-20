@@ -223,7 +223,14 @@ public:
     {
         if (prim)
         {
-            return mComponents[prim.GetPath().GetString()].get();
+            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            {
+                return mComponents[prim.GetPath().GetString()].get();
+            }
+            else
+            {
+                return nullptr;
+            }
         }
         else
         {

@@ -114,21 +114,21 @@ void CameraComponent::tick()
         // Create the image
         auto imageProto = cameraMessageProto.initImage();
         imageProto.setElementType(ElementType::UINT8);
-        imageProto.setRows(rgbInfo.height);
-        imageProto.setCols(rgbInfo.width);
+        imageProto.setRows(rgbInfo.tex.height);
+        imageProto.setCols(rgbInfo.tex.width);
         imageProto.setChannels(3);
         imageProto.setDataBufferIndex(0);
 
         // Pinhole info
         auto pinhole = cameraMessageProto.initPinhole();
-        pinhole.setRows(rgbInfo.height);
-        pinhole.setCols(rgbInfo.width);
+        pinhole.setRows(rgbInfo.tex.height);
+        pinhole.setCols(rgbInfo.tex.width);
         auto focal = pinhole.initFocal();
-        focal.setX(rgbInfo.height * focalLength / verticalAperture);
-        focal.setY(rgbInfo.width * focalLength / horizontalAperture);
+        focal.setX(rgbInfo.tex.height * focalLength / verticalAperture);
+        focal.setY(rgbInfo.tex.width * focalLength / horizontalAperture);
         auto center = pinhole.initCenter();
-        center.setX(rgbInfo.height * 0.5f);
-        center.setY(rgbInfo.width * 0.5f);
+        center.setX(rgbInfo.tex.height * 0.5f);
+        center.setY(rgbInfo.tex.width * 0.5f);
 
         // Distortion info
         auto distortion = cameraMessageProto.initDistortion();
@@ -139,14 +139,14 @@ void CameraComponent::tick()
             coeff.set(i, 0.0f);
 
 
-        const size_t bufferSize = rgbInfo.width * rgbInfo.height * 3;
+        const size_t bufferSize = rgbInfo.tex.width * rgbInfo.tex.height * 3;
         std::vector<std::vector<uint8_t>> buffers(1);
         buffers[0] = std::vector<uint8_t>(bufferSize);
 
         uint8_t* rgbDevice;
         CUDA_CHECK(cudaMalloc(&rgbDevice, bufferSize));
 
-        rgbaToRgb(rgbDevice, (uint8_t*)mRgbSensorData, rgbInfo.width, rgbInfo.height, rgbInfo.rowSize);
+        rgbaToRgb(rgbDevice, (uint8_t*)mRgbSensorData, rgbInfo.tex.width, rgbInfo.tex.height, rgbInfo.tex.rowSize);
         CUDA_CHECK(cudaMemcpy(buffers[0].data(), rgbDevice, bufferSize, cudaMemcpyDeviceToHost));
 
         CUDA_CHECK(cudaFree(rgbDevice));
@@ -167,28 +167,28 @@ void CameraComponent::tick()
         // Create the image
         auto imageProto = cameraMessageProto.initDepthImage();
         imageProto.setElementType(ElementType::FLOAT32);
-        imageProto.setRows(depthInfo.height);
-        imageProto.setCols(depthInfo.width);
+        imageProto.setRows(depthInfo.tex.height);
+        imageProto.setCols(depthInfo.tex.width);
         imageProto.setChannels(1);
         imageProto.setDataBufferIndex(0);
 
         // TODO : remove duplication with RGB camera
         // Pinhole info
         auto pinhole = cameraMessageProto.initPinhole();
-        pinhole.setRows(depthInfo.height);
-        pinhole.setCols(depthInfo.width);
+        pinhole.setRows(depthInfo.tex.height);
+        pinhole.setCols(depthInfo.tex.width);
         auto focal = pinhole.initFocal();
-        focal.setX(depthInfo.height * focalLength / verticalAperture);
-        focal.setY(depthInfo.width * focalLength / horizontalAperture);
+        focal.setX(depthInfo.tex.height * focalLength / verticalAperture);
+        focal.setY(depthInfo.tex.width * focalLength / horizontalAperture);
         auto center = pinhole.initCenter();
-        center.setX(depthInfo.height * 0.5f);
-        center.setY(depthInfo.width * 0.5f);
+        center.setX(depthInfo.tex.height * 0.5f);
+        center.setY(depthInfo.tex.width * 0.5f);
 
         std::vector<std::vector<uint8_t>> buffers(1);
-        buffers[0] = std::vector<uint8_t>(depthInfo.width * depthInfo.height * sizeof(float));
+        buffers[0] = std::vector<uint8_t>(depthInfo.tex.width * depthInfo.tex.height * sizeof(float));
         mDepthSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthSensor);
         CUDA_CHECK(cudaMemcpy(
-            buffers[0].data(), mDepthSensorData, depthInfo.rowSize * depthInfo.height, cudaMemcpyDeviceToHost));
+            buffers[0].data(), mDepthSensorData, depthInfo.tex.rowSize * depthInfo.tex.height, cudaMemcpyDeviceToHost));
 
         publish(mDepthOutputComponent, mDepthChannelName, cameraMessageProto, isaac_message::DepthCameraProtoId, buffers);
     }
@@ -206,33 +206,33 @@ void CameraComponent::tick()
         // Create the instance image
         auto instanceImageProto = cameraMessageProto.initInstanceImage();
         instanceImageProto.setElementType(ElementType::UINT16);
-        instanceImageProto.setRows(segmentationInfo.height);
-        instanceImageProto.setCols(segmentationInfo.width);
+        instanceImageProto.setRows(segmentationInfo.tex.height);
+        instanceImageProto.setCols(segmentationInfo.tex.width);
         instanceImageProto.setChannels(1);
         instanceImageProto.setDataBufferIndex(0);
 
         // TODO : remove duplication with RGB camera
         // Pinhole info
         auto pinhole = cameraMessageProto.initPinhole();
-        pinhole.setRows(segmentationInfo.height);
-        pinhole.setCols(segmentationInfo.width);
+        pinhole.setRows(segmentationInfo.tex.height);
+        pinhole.setCols(segmentationInfo.tex.width);
         auto focal = pinhole.initFocal();
-        focal.setX(segmentationInfo.height * focalLength / verticalAperture);
-        focal.setY(segmentationInfo.width * focalLength / horizontalAperture);
+        focal.setX(segmentationInfo.tex.height * focalLength / verticalAperture);
+        focal.setY(segmentationInfo.tex.width * focalLength / horizontalAperture);
         auto center = pinhole.initCenter();
-        center.setX(segmentationInfo.height * 0.5f);
-        center.setY(segmentationInfo.width * 0.5f);
+        center.setX(segmentationInfo.tex.height * 0.5f);
+        center.setY(segmentationInfo.tex.width * 0.5f);
 
 
-        const size_t bufferSize = segmentationInfo.width * segmentationInfo.height * sizeof(uint16_t);
+        const size_t bufferSize = segmentationInfo.tex.width * segmentationInfo.tex.height * sizeof(uint16_t);
         std::vector<std::vector<uint8_t>> buffers(1);
         buffers[0] = std::vector<uint8_t>(bufferSize);
 
         uint16_t* segmentationDevice;
         CUDA_CHECK(cudaMalloc(&segmentationDevice, bufferSize));
 
-        uint32ToUint16(segmentationDevice, (uint32_t*)mSegmentationSensorData, segmentationInfo.width,
-                       segmentationInfo.height, segmentationInfo.rowSize);
+        uint32ToUint16(segmentationDevice, (uint32_t*)mSegmentationSensorData, segmentationInfo.tex.width,
+                       segmentationInfo.tex.height, segmentationInfo.tex.rowSize);
         CUDA_CHECK(cudaMemcpy(buffers[0].data(), segmentationDevice, bufferSize, cudaMemcpyDeviceToHost));
 
         CUDA_CHECK(cudaFree(segmentationDevice));
