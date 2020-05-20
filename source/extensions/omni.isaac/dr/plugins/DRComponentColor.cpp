@@ -13,6 +13,7 @@
 #include <carb/InterfaceUtils.h>
 #include <carb/filesystem/IFileSystem.h>
 
+#include <omni/kit/KitUtils.h>
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/AssetUtils.h>
 #include <omni/usd/UsdUtils.h>
@@ -33,6 +34,8 @@ DRComponentColor::DRComponentColor(carb::tokens::ITokens* tokens) : DRComponentB
     mGRange.push_back(1);
     mBRange.push_back(0);
     mBRange.push_back(1);
+    mDatasource = carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-file.plugin");
+    mConnection = omni::kit::getLatestConnection(omni::kit::getConnectionHub());
 }
 DRComponentColor::~DRComponentColor()
 {
@@ -72,7 +75,8 @@ void DRComponentColor::onStart()
                 });
         }
         mColorMaterialPrim = omni::usd::AssetUtils::createPrimFromAssetPath(
-            mStage, mOmniPBRMatPath.c_str(), ("/Colors/" + mCompName + "/" + urlPath.getStem()).getStringBuffer());
+            mStage, mOmniPBRMatPath.c_str(), ("/Colors/" + mCompName + "/" + urlPath.getStem()).getStringBuffer(),
+            mOmniPBRMatPath.c_str(), mDatasource, mConnection);
         pxr::UsdShadeMaterial materialShade(mColorMaterialPrim);
         mColorMaterialShade = materialShade;
     }
