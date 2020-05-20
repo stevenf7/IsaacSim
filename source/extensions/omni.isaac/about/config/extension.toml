@@ -1,0 +1,7 @@
+display_name = "Isaac About Window"
+
+[dependencies]
+"omni.kit.editor" = {}
+
+[[python.modules]]
+name = "omni.isaac.about"
