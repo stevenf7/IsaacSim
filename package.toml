@@ -266,5 +266,5 @@ files = [
     ["deps"],
     ["tools"],
     ["_build/$platform/$config/experiences/test*", "_build/$platform/$config/experiences"],
-    ["_build/$platform/$config/test*.sh", "_build/$platform/$config"],
+    ["_build/$platform/$config/test*$shell_ext", "_build/$platform/$config"],
 ]
