@@ -33,7 +33,6 @@
 
 #include <NvIsaacRobotModel.h>
 #include <cmath>
-#include <string>
 
 using namespace pxr;
 
