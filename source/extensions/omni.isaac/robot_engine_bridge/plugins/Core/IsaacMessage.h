@@ -6,6 +6,7 @@
 #include <messages/camera.capnp.h>
 #include <messages/collision.capnp.h>
 #include <messages/composite.capnp.h>
+#include <messages/detections.capnp.h>
 #include <messages/differential_base.capnp.h>
 #include <messages/flatscan.capnp.h>
 #include <messages/json.capnp.h>
@@ -86,7 +87,8 @@ static const uint64_t PoseTreeEdgeProtoId = 15616880102797312316U;
 static const uint64_t RangeScanProtoId = 11901202900662173387U;
 static const uint64_t RigidBody3GroupProtoId = 11014643331508973803U;
 static const uint64_t StateProtoId = 13177870757040999364U;
-
+static const uint64_t Detections2ProtoId = 12576484744224273470U;
+static const uint64_t Detections3ProtoId = 16439473061879685265U;
 // namespace ElementType
 // {
 // static const std::string uint8 = "uint8";
@@ -152,8 +154,14 @@ typedef ColorCameraProto ColorCamera;
 /// "camera.capnp".SegmentationCameraProto
 typedef SegmentationCameraProto SegmentationCamera;
 
-/// "camera.capnp".DepthCameraProtoProto
+/// "camera.capnp".DepthCameraProto
 typedef DepthCameraProto DepthCamera;
+
+/// "detections.capnp".Detections2Proto
+typedef Detections2Proto Detections2;
+
+/// "detections.capnp".Detections3Proto
+typedef Detections3Proto Detections3;
 
 enum CameraCaptureType
 {

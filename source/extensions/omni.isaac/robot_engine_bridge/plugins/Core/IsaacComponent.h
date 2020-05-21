@@ -306,6 +306,7 @@ public:
             mAppHandle, node_name.c_str(), component_name.c_str(), channel_name.c_str(), &uuid);
         if (mError != isaac_error_t::isaac_error_success)
         {
+            (mIsaacCApiPtr->isaac_destroy_message)(mAppHandle, &uuid);
             return mError;
         }
 
