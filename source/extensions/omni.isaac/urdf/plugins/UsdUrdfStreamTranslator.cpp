@@ -328,20 +328,30 @@ NvIsaac::Vec3 GetDimensionsFromName(const char* param1)
         // find the second dimension
         int d2_begin = d1_length + 2;
         int d2_length = d2_begin;
-        while (param1[d2_length + 1] != ',')
+        while (param1[d2_length + 1] != ',' && param1[d2_length + 1] != ')')
             d2_length++;
 
-        // find third dimension
-        int d3_begin = d2_length + 2;
-        int d3_length = d3_begin;
-        while (param1[d3_length + 1] != ')')
-            d3_length++;
+        if (param1[d2_length + 1] == ')')
+        {
+            std::string dim1 = std::string(param1).substr(d1_begin, d1_length + 1 - d1_begin);
+            std::string dim2 = std::string(param1).substr(d2_begin, d2_length + 1 - d2_begin);
+            return NvIsaac::Vec3(stod(dim1), stod(dim2), 0.0);
+        }
 
-        std::string dim1 = std::string(param1).substr(d1_begin, d1_length + 1 - d1_begin);
-        std::string dim2 = std::string(param1).substr(d2_begin, d2_length + 1 - d2_begin);
-        std::string dim3 = std::string(param1).substr(d3_begin, d3_length + 1 - d3_begin);
+        else
+        {
+            // find third dimension
+            int d3_begin = d2_length + 2;
+            int d3_length = d3_begin;
+            while (param1[d3_length + 1] != ')')
+                d3_length++;
 
-        return NvIsaac::Vec3(stod(dim1), stod(dim2), stod(dim3));
+            std::string dim1 = std::string(param1).substr(d1_begin, d1_length + 1 - d1_begin);
+            std::string dim2 = std::string(param1).substr(d2_begin, d2_length + 1 - d2_begin);
+            std::string dim3 = std::string(param1).substr(d3_begin, d3_length + 1 - d3_begin);
+
+            return NvIsaac::Vec3(stod(dim1), stod(dim2), stod(dim3));
+        }
     }
 }
 
@@ -719,11 +729,6 @@ UsdPrim AddCapsinderAttrs(UsdStageRefPtr stage,
     gprim.GetHeightAttr().Set(double(distanceScale * height));
     gprim.GetRadiusAttr().Set(double(distanceScale * radius));
     SetToPose(gprim, pose, distanceScale);
-
-
-    // // Have to rotate graphics cylinder too
-    // pxr::UsdGeomXformable graphicsXform(stage->GetPrimAtPath(originalPath));
-    // SetToPose(graphicsXform, pose, distanceScale);
 
     VtVec3fArray color(1);
     color[0] = GfVec3f(1, 0, 1);
@@ -1296,7 +1301,7 @@ void UsdUrdfStream::UsdUrdfTranslateUrdfToUsd(UsdStageRefPtr stage)
             else if (strncmp(vmesh->getName(), "@sphere", 7) == 0)
             {
                 float radius = GetDimensionsFromName(vmesh->getName())[0];
-                AddSphereToStage(stage, distanceScale, bodyPath, radius, vis->localPose, vi);
+                AddVisualSphereToStage(stage, distanceScale, bodyPath, radius, vis->localPose, vi);
             }
             else
             {
