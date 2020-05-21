@@ -59,7 +59,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(fingerJoint.GetAttribute("upperLimit").Get(), 8)
 
         fingerLink = stage.GetPrimAtPath("/test_basic/finger_link_2")
-        self.assertAlmostEqual(fingerLink.GetAttribute('diagonalInertia').Get()[0], 2.0)
+        self.assertAlmostEqual(fingerLink.GetAttribute("diagonalInertia").Get()[0], 2.0)
 
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
@@ -100,9 +100,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(elbowPrim.GetAttribute("drive:angular:damping").Get(), 1.0)
 
         linkVisualMesh = stage.GetPrimAtPath("/test_advanced/link_1/cylinder_0")
-        rgb = linkVisualMesh.GetAttribute('primvars:displayColor').Get()
+        rgb = linkVisualMesh.GetAttribute("primvars:displayColor").Get()
         self.assertTrue(Gf.IsClose(rgb[0], Gf.Vec3f(1.0, 0.0, 1.0), 1e-5))
-        
+
         joint_pos = elbowPrim.GetAttribute("localPos0").Get()
         self.assertTrue(Gf.IsClose(joint_pos, Gf.Vec3f(0, 0, 40), 1e-5))
 
@@ -132,5 +132,5 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         # the merged link shouldn't be there
         prim = stage.GetPrimAtPath("/test_merge_joints/link_2")
         self.assertEqual(prim.GetPath(), Sdf.Path.emptyPath)
-        
+
         pass
