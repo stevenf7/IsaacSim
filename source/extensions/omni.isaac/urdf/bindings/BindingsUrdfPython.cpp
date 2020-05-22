@@ -36,6 +36,7 @@ PYBIND11_MODULE(_urdf, m)
     py::class_<ImportConfig>(m, "ImportConfig")
         .def(py::init<>())
         .def_readwrite("merge_fixed_joints", &ImportConfig::mergeFixedJoints)
+        .def_readwrite("enable_convex_decomp", &ImportConfig::enableConvexDecomp)
         .def_readwrite("distance_scale", &ImportConfig::distanceScale)
         .def_readwrite("force_z_up", &ImportConfig::forceZUp)
         .def_readwrite("add_debug_info", &ImportConfig::addDebugInfo);
