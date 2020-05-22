@@ -101,5 +101,43 @@
                 }
             ]
         },
+        {
+            "name": "(Linux) omniverse-kit-robotics [release]",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_release/_build/linux-x86_64/release/omniverse-kit",
+            "args": ["--config-path","_build/linux-x86_64/release/experiences/omniverse-kit-robotics.json"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(Linux) omniverse-kit-robotics [debug]",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_debug/_build/linux-x86_64/debug/omniverse-kit",
+            "args": ["--config-path","_build/linux-x86_64/debug/experiences/omniverse-kit-robotics.json"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
     ]
 }

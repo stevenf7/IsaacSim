@@ -158,6 +158,7 @@ private:
     carb::physics::PhysX* mPhysx = nullptr;
     physx::PxScene* mPxScene = nullptr;
     float mMetersPerUnit;
+    pxr::UsdPrim mParentPrim;
 };
 
 

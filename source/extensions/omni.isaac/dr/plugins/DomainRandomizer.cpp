@@ -38,7 +38,11 @@
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.dr.plugin", "Omni-Kit Domain Randomizer Utilities",
                                                   "NVIDIA", carb::PluginHotReload::eEnabled, "dev" };
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::dr::DomainRandomizer)
-CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate, carb::tokens::ITokens)
+CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate,
+                      carb::tokens::ITokens,
+                      carb::datasource::IDataSource,
+                      carb::settings::ISettings,
+                      carb::filesystem::IFileSystem)
 
 namespace
 {

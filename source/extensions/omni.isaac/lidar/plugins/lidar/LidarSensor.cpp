@@ -24,7 +24,8 @@
 
 // #include <omni/usd/UsdUtils.h>
 #include <omni/isaac/utils/Conversions.h>
-
+#include <omni/usd/UtilsIncludes.h>
+#include <omni/usd/UsdUtils.h>
 using namespace physx;
 using namespace pxr;
 
@@ -82,6 +83,8 @@ void LidarSensor::onStart()
 
 void LidarSensor::onComponentChange()
 {
+    mParentPrim = mStage->GetPrimAtPath(mPrim.GetPath()).GetParent();
+
     SensorComponent::onComponentChange();
     mMetersPerUnit = UsdGeomGetStageMetersPerUnit(mStage);
 
@@ -134,6 +137,16 @@ void LidarSensor::onComponentChange()
     {
         mPrim.GetYawOffsetAttr().Get(&mYawOffset);
     }
+
+    // we have to have atleast one beam so the FOV can never be smaller than resolution
+    mHorizontalResolution = pxr::GfClamp(mHorizontalResolution, 0.005f, 1024);
+    mHorizontalFov = pxr::GfClamp(mHorizontalFov, mHorizontalResolution, 360);
+
+    mVerticalResolution = pxr::GfClamp(mVerticalResolution, 0.005f, 1024);
+    mVerticalFov = pxr::GfClamp(mVerticalFov, mVerticalResolution, 360);
+    mRotationRate = pxr::GfClamp(mRotationRate, 0, 1024);
+    mMinRange = pxr::GfClamp(mMinRange, 0, 1e9f);
+    mMaxRange = pxr::GfClamp(mMaxRange, mMinRange, 1e9f);
 
 
     // CARB_LOG_INFO("%f %f %f %f %f %f %f %d %d\n",
@@ -234,7 +247,8 @@ void scan(int start,
           int stop,
           int rows,
           int cols,
-          carb::fastcache::FastCache* fastCachePtr,
+          const physx::PxVec3& origin,
+          const physx::PxQuat& worldRotation,
           carb::physics::PhysX* physxPtr,
           physx::PxScene* physxScenePtr,
           pxr::LidarSchemaLidar& prim,
@@ -248,11 +262,7 @@ void scan(int start,
           float metersPerUnit,
           bool zUp)
 {
-    carb::fastcache::Transform trans;
-    fastCachePtr->getTransform(prim.GetPath(), trans);
 
-    physx::PxVec3 origin = utils::conversions::asPxVec3(trans.position);
-    physx::PxQuat worldRotation = utils::conversions::asPxQuat(trans.orientation);
 
     int i = start * rows;
     int j = start;
@@ -358,6 +368,16 @@ void LidarSensor::tick()
         return;
     }
 
+    carb::fastcache::Transform parentTrans;
+    mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
+
+    auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
+
+    physx::PxQuat parentRot = (const physx::PxQuat&)parentTrans.orientation;
+    physx::PxVec3 finalTranslation = ((const physx::PxVec3&)parentTrans.position) +
+                                     parentRot.rotate(utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation()));
+    physx::PxQuat finalRotation = parentRot * utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
+
     float elapsedTime = mTimeDelta;
     mDebugLines.clear();
     bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
@@ -368,13 +388,13 @@ void LidarSensor::tick()
         mLastNumColsTicked = mCols;
         if (mDrawLidarPoints)
         {
-            scan<true>(0, mCols, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim, mDebugLines, mDepth,
-                       mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
+            scan<true>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mPrim, mDebugLines,
+                       mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
         }
         else
         {
-            scan<false>(0, mCols, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim, mDebugLines, mDepth,
-                        mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
+            scan<false>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mPrim, mDebugLines,
+                        mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
         }
         dumpData(0, mCols, elapsedTime);
 
@@ -403,13 +423,15 @@ void LidarSensor::tick()
         // Now scan the columns and dump the data
         if (mDrawLidarPoints)
         {
-            scan<true>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim,
-                       mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
+            scan<true>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation, mPhysx,
+                       mPxScene, mPrim, mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth,
+                       mMetersPerUnit, zUp);
         }
         else
         {
-            scan<false>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFastCachePtr, mPhysx, mPxScene, mPrim,
-                        mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
+            scan<false>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation, mPhysx,
+                        mPxScene, mPrim, mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth,
+                        mMetersPerUnit, zUp);
         }
         dumpData(mLastCol, mLastCol + mLastNumColsTicked, simulateTime);
 
