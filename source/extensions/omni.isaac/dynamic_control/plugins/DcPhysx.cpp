@@ -3248,7 +3248,6 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
     joint->setLocalPose(PxJointActorIndex::eACTOR1, pose1);
 
     joint->setBreakForce(props->forceLimit, props->torqueLimit);
-    joint->setConstraintFlag(PxConstraintFlag::eBROKEN, false);
 
     PxD6JointDrive drive(props->stiffness, props->damping, props->forceLimit, false);
     PxD6JointDrive defaultDrive;
