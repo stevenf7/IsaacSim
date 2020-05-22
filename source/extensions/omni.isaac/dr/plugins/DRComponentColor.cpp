@@ -35,23 +35,26 @@ DRComponentColor::DRComponentColor(carb::tokens::ITokens* tokens) : DRComponentB
     mBRange.push_back(0);
     mBRange.push_back(1);
     mDatasource = carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-file.plugin");
-#if CARB_PLATFORM_WINDOWS
-    carb::filesystem::IFileSystem* fs = carb::getFramework()->acquireInterface<carb::filesystem::IFileSystem>();
-    for (char drive = 'A'; drive <= 'Z'; drive++)
-    {
-        std::string drivePath = std::string(1, drive) + ":";
-        if (fs->exists(drivePath.c_str()))
-        {
-            mConnection = carb::datasource::connectAndWait(carb::datasource::ConnectionDesc{ drivePath.c_str() });
-        }
-    }
-#else
-    // add the root of the filesystem
-    {
-        const char* drivePath = "/";
-        mConnection = carb::datasource::connectAndWait(carb::datasource::ConnectionDesc{ drivePath }, mDatasource);
-    }
-#endif
+    mConnection = omni::kit::getLatestConnection(omni::kit::getConnectionHub());
+    // #if CARB_PLATFORM_WINDOWS
+    //     carb::filesystem::IFileSystem* fs = carb::getFramework()->acquireInterface<carb::filesystem::IFileSystem>();
+    //     for (char drive = 'A'; drive <= 'Z'; drive++)
+    //     {
+    //         std::string drivePath = std::string(1, drive) + ":";
+    //         if (fs->exists(drivePath.c_str()))
+    //         {
+    //             mConnection = carb::datasource::connectAndWait(carb::datasource::ConnectionDesc{ drivePath.c_str()
+    //             });
+    //         }
+    //     }
+    // #else
+    //     // add the root of the filesystem
+    //     {
+    //         const char* drivePath = "/";
+    //         mConnection = carb::datasource::connectAndWait(carb::datasource::ConnectionDesc{ drivePath },
+    //         mDatasource);
+    //     }
+    // #endif
 }
 DRComponentColor::~DRComponentColor()
 {
