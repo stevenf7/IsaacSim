@@ -71,9 +71,9 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Validate attribute for randomizing color
         color_attr = color_mat.GetAttribute("inputs:diffuse_color_constant")
         self.assertIsNotNone(color_attr)
-        color_value_1 = color_attr.Get()
+        color_value_1 = Gf.Vec3f(color_attr.Get())
         await omni.kit.asyncapi.next_update()
-        color_value_2 = color_attr.Get()
+        color_value_2 = Gf.Vec3f(color_attr.Get())
         # Check if color values are different after one frame
         self.assertFalse(Gf.IsClose(color_value_1, color_value_2, 0.00001))
         pass
