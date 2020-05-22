@@ -60,6 +60,9 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Box1
         self.createRigidCube(*box1_props)
 
+        # d6FixedJoint = PhysicsSchema.PhysicsJoint.Define(self.stage, "/box0/d6FixedJoint")
+        # d6FixedJoint.CreateBody0Rel().SetTargets(["/box0"])
+
     # Before running each test
     async def setUp(self):
         self._dc = dc.acquire_dynamic_control_interface()
@@ -67,7 +70,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.box1 = "/box1"
         self.box0_props = [self.box0, 300, [1, 1, 2.0], [-50, 0, 100], [0, 0, 0, 1], [80, 80, 255]]
         self.box1_props = [self.box1, 1.0, [0.1, 0.1, 0.1], [6, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
-        self.d6FixedJoint = "/d6FixedJoint"
+        self.d6FixedJoint = "/box0/d6FixedJoint"
 
         self.sgp = Surface_Gripper_Properties()
         self.sgp.d6JointPath = self.d6FixedJoint
@@ -141,6 +144,47 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.sgp.stiffness = 1.0e10
 
         self.surface_gripper.initialize(self.sgp)
+        box0 = self._dc.get_rigid_body(self.box0)
+        box1 = self._dc.get_rigid_body(self.box1)
+        t = dc.Transform()
+        t.p = self.box1_props[3]
+        t.r = self.box1_props[4]
+        self._dc.set_rigid_body_pose(box1, t)
+        self._dc.set_rigid_body_linear_velocity(box1, [0.0, 0.0, 0.0])
+        self._dc.set_rigid_body_angular_velocity(box1, [0.0, 0.0, 0.0])
+        self.assertTrue(self.surface_gripper.close())
+        # use 100 instead of 30, to make sure the joint doesn't break
+        for i in range(100):
+            await omni.kit.asyncapi.next_update()
+            self.surface_gripper.update()
+            self._dc.wake_up_rigid_body(box1)
+        self.assertTrue(self.surface_gripper.is_closed())
+        await asyncio.sleep(1.0)
+        await omni.kit.asyncapi.next_update()
+        tr = self._dc.get_rigid_body_pose(box1)
+        self.assertGreater(tr.p.z, 200)
+
+        # Check to make sure that pause and then play does not break joint
+        self.editor.pause()
+        await asyncio.sleep(0.125)
+        await omni.kit.asyncapi.next_update()
+        self.editor.play()
+        await asyncio.sleep(0.5)
+        await omni.kit.asyncapi.next_update()
+        self.surface_gripper.update()
+        tr = self._dc.get_rigid_body_pose(box1)
+        self.assertGreater(tr.p.z, 200)
+        self.assertTrue(self.surface_gripper.is_closed())
+        pass
+
+    async def test_close_stop_close(self):
+        await self.test_close_surface_gripper()
+        self.editor.stop()
+        await asyncio.sleep(0.5)
+        await omni.kit.asyncapi.next_update()
+
+        self.editor.play()
+        await omni.kit.asyncapi.next_update()
         box0 = self._dc.get_rigid_body(self.box0)
         box1 = self._dc.get_rigid_body(self.box1)
         t = dc.Transform()

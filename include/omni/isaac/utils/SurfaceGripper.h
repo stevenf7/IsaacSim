@@ -207,15 +207,11 @@ public:
                 mJointProperties.torqueLimit = mProps.torqueLimit;
                 if (!mJointHandle)
                 {
-                    std::string s(mProps.parentPath + mProps.d6JointPath);
+                    std::string s(mProps.d6JointPath);
                     mJointProperties.name = (char*)(s).c_str();
-                    // CARB_LOG_WARN("Joint handle not found, creating new joint: %s", mJointProperties.name);
                     mJointHandle = mDc->createD6Joint(&mJointProperties);
                 }
-                else
-                {
-                    mDc->setD6JointProperties(mJointHandle, &mJointProperties);
-                }
+                mDc->setD6JointProperties(mJointHandle, &mJointProperties);
 
                 mIsClosed = true;
             }
@@ -241,8 +237,10 @@ public:
         {
             mDc->wakeUpRigidBody(mJointProperties.body1);
             mDc->setRigidBodyDisableGravity(mJointProperties.body1, false);
+
             mDc->destroyD6Joint(mJointHandle);
             mJointHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
+
             mIsClosed = false;
             return true;
         }
