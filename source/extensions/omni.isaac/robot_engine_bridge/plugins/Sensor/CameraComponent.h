@@ -75,6 +75,9 @@ private:
     carb::sensors::Sensor* mSegmentationSensor = nullptr;
     void* mSegmentationSensorData = nullptr;
 
+    carb::sensors::Sensor* mBoundingBox2DSensor = nullptr;
+    void* mBoundingBox2DSensorData = nullptr;
+
 
     /// <summary>
     /// The name of the channel where captured color images will be published
@@ -97,6 +100,14 @@ private:
     std::string mSegmentationOutputComponent = "output";
     std::string mSegmentationChannelName = "segmentation";
     bool mEnableSegmentation = false;
+
+    /// <summary>
+    /// The name of the channel where captured 2D bounding box data will be published
+    /// </summary>
+    std::string mBoundingBox2DOutputComponent = "output";
+    std::string mBoundingBox2DChannelName = "bbox";
+    std::vector<std::string> mBoundingBox2DClassList;
+    bool mEnableBoundingBox2D = false;
 
     double mUnitScale;
 };
