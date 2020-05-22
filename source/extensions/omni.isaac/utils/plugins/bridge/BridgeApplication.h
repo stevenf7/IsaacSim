@@ -150,6 +150,16 @@ protected:
                 }
             }
         }
+        for (auto& path : objectsChanged.GetChangedInfoOnlyPaths())
+        {
+            auto primPath =
+                mStage->GetPseudoRoot().GetPath() == path ? mStage->GetPseudoRoot().GetPath() : path.GetPrimPath();
+
+            // Update the component attached to this prim, onComponentChange checks to see if the prim exists in
+            // this BridgeApplication
+            pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
+            onComponentChange(prim);
+        }
     }
 };
 

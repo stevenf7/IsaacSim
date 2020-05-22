@@ -50,7 +50,8 @@
                 "omni.isaac.utils",
                 "omni.isaac.lidar",
                 "omni.isaac.dynamic_control",
-                "omni.isaac.robot_engine_bridge"
+                "omni.isaac.robot_engine_bridge",
+                "omni.isaac.dr"
             ]
         },
         "renderer": {
