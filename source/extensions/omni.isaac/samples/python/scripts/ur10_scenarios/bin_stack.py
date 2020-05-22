@@ -153,13 +153,15 @@ class PickAndPlaceStateMachine(object):
         self.thresh[SM_states.FLIPPING] = 2
 
         self.sm[SM_states.PLACING][SM_events.GOAL_REACHED] = self._placing_goal_reached
-        self.thresh[SM_states.PLACING] = 2
+        self.thresh[SM_states.PLACING] = 0
 
         self.sm[SM_states.ATTACH][SM_events.GOAL_REACHED] = self._attach_goal_reached
         self.sm[SM_states.ATTACH][SM_events.ATTACHED] = self._attach_attached
+        self.thresh[SM_states.ATTACH] = 0
 
         self.sm[SM_states.DETACH][SM_events.GOAL_REACHED] = self._detach_goal_reached
         self.sm[SM_states.DETACH][SM_events.DETACHED] = self._detach_detached
+        self.thresh[SM_states.DETACH] = 0
 
         self.current_state = SM_states.STANDBY
         self.previous_state = -1
@@ -617,9 +619,6 @@ class PickAndPlaceStateMachine(object):
         else:
 
             offset.p = (-0.10, 0.0, 0.0)
-            # Give the tray a small speed so the object doesn't go to sleep in the simulation optimizer
-            self.dc.set_rigid_body_linear_velocity(self.dc.get_rigid_body(self.current), [0, 0, -1.0])
-
             # Move the arm up slowly 10 cm
             self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=30)
             offset.p = (-0.30, 0.0, 0.0)
