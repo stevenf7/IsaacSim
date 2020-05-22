@@ -37,6 +37,7 @@ private:
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
     double mUnitScale = 1;
+    pxr::SdfPath mArticulationPath;
 };
 }
 }
