@@ -4,6 +4,9 @@
 
 #include <carb/cuda/CudaRuntime.h>
 
+#include <boost/algorithm/string.hpp>
+
+#include <algorithm>
 #include <cuda.h>
 namespace omni
 {
@@ -69,6 +72,11 @@ CameraComponent::~CameraComponent()
         mSegmentationSensor = nullptr;
         mSegmentationSensorData = nullptr;
     }
+    if (mBoundingBox2DSensor)
+    {
+        mBoundingBox2DSensor = nullptr;
+        mBoundingBox2DSensorData = nullptr;
+    }
 
     mFramework->releaseInterface(mEditorInterface);
     mFramework->releaseInterface(mSyntheticDataInterface);
@@ -79,7 +87,7 @@ void CameraComponent::tick()
 {
     CARB_PROFILE_ZONE(0, "REB CameraComponent Tick");
 
-    if (!mRgbSensor && !mDepthSensor && !mSegmentationSensor)
+    if (!mRgbSensor && !mDepthSensor && !mSegmentationSensor && !mBoundingBox2DSensor)
         return;
 
     const char* cameraPath = mEditorInterface->getActiveCamera();
@@ -240,6 +248,55 @@ void CameraComponent::tick()
         publish(mSegmentationOutputComponent, mSegmentationChannelName, cameraMessageProto,
                 isaac_message::SegmentationCameraProtoId, buffers);
     }
+
+    if (mEnableBoundingBox2D)
+    {
+        mBoundingBox2DSensorData = mSyntheticDataInterface->getSensorHostData(mBoundingBox2DSensor);
+
+        const carb::sensors::SensorInfo& boundingBoxInfo = mSensorsInterface->getSensorInfo(mBoundingBox2DSensor);
+        size_t bufferSize = boundingBoxInfo.buff.size;
+        int numBoundingBoxes = bufferSize / sizeof(carb::sensors::BoundingBox2DValues);
+
+        if (bufferSize > 0)
+        {
+            // Create the message
+            IsaacMessage<isaac_message::Detections2> detectionMessage;
+            auto detectionMessageProto = detectionMessage.initProto();
+            auto boundingBoxesProto = detectionMessageProto.initBoundingBoxes(numBoundingBoxes);
+            auto predictionsProto = detectionMessageProto.initPredictions(numBoundingBoxes);
+
+            carb::sensors::BoundingBox2DValues* data =
+                reinterpret_cast<carb::sensors::BoundingBox2DValues*>(mBoundingBox2DSensorData);
+            for (int boundingBoxId = 0; boundingBoxId < numBoundingBoxes; boundingBoxId++)
+            {
+                std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
+                // Filter bounding boxes based on semantic data
+                if (mBoundingBox2DClassList.size() > 0)
+                {
+                    if (std::find(mBoundingBox2DClassList.begin(), mBoundingBox2DClassList.end(), semanticLabel) ==
+                        mBoundingBox2DClassList.end())
+                    {
+                        data++;
+                        continue;
+                    }
+                }
+                // CARB_LOG_ERROR("Data %d: %s %d, %d, %d, %d, %d, %d", boundingBoxId + 1, semanticLabel.c_str(),
+                // data->instanceId, data->semanticId, data->x_min, data->y_min, data->x_max, data->y_max);
+                auto minProto = boundingBoxesProto[boundingBoxId].initMin();
+                auto maxProto = boundingBoxesProto[boundingBoxId].initMax();
+                minProto.setX(data->y_min);
+                minProto.setY(data->x_min);
+                maxProto.setX(data->y_max);
+                maxProto.setY(data->x_max);
+                predictionsProto[boundingBoxId].setLabel(semanticLabel);
+                predictionsProto[boundingBoxId].setConfidence(1.0);
+                data++;
+            }
+            std::vector<std::vector<uint8_t>> buffers;
+            publish(mBoundingBox2DOutputComponent, mBoundingBox2DChannelName, detectionMessageProto,
+                    isaac_message::Detections2ProtoId, buffers);
+        }
+    }
 }
 void CameraComponent::onStart()
 {
@@ -267,6 +324,16 @@ void CameraComponent::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetSegmentationOutputComponentAttr(), mSegmentationOutputComponent);
     isaac::utils::safeGetAttribute(typedPrim.GetSegmentationOutputChannelAttr(), mSegmentationChannelName);
     isaac::utils::safeGetAttribute(typedPrim.GetSegmentationEnabledAttr(), mEnableSegmentation);
+
+    // Bounding Box attributes
+    std::string filterClassList;
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DOutputComponentAttr(), mBoundingBox2DOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DOutputChannelAttr(), mBoundingBox2DChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DClassListAttr(), filterClassList);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DEnabledAttr(), mEnableBoundingBox2D);
+    mBoundingBox2DClassList.clear();
+    if (filterClassList != "")
+        boost::split(mBoundingBox2DClassList, filterClassList, [](char c) { return c == ','; });
 
 
     if (mEnableRgb)
@@ -300,6 +367,16 @@ void CameraComponent::onComponentChange()
     {
         mSegmentationSensor = nullptr;
         mSegmentationSensorData = nullptr;
+    }
+
+    if (mEnableBoundingBox2D)
+    {
+        mBoundingBox2DSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight);
+    }
+    else
+    {
+        mBoundingBox2DSensor = nullptr;
+        mBoundingBox2DSensorData = nullptr;
     }
 }
 }
