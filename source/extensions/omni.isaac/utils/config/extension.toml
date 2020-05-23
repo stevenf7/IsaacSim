@@ -2,6 +2,7 @@ display_name = "Isaac Utilities"
 
 [dependencies]
 "omni.kit.editor" = {}
+"omni.physx" = {}
 
 [[python.modules]]
 name = "omni.isaac.utils"

@@ -810,6 +810,29 @@ DcHandle DcContext::registerD6Joint(const pxr::SdfPath& usdPath)
     }
 }
 
+
+void CARB_ABI DcWakeUpRigidBody(DcHandle bodyHandle)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
+    if (body && body->pxRigidBody)
+    {
+        PxRigidBody* rigid = body->pxRigidBody;
+        PxActorType::Enum type = rigid->getType();
+        if (type == PxActorType::eRIGID_DYNAMIC)
+        {
+            // wake the body
+            static_cast<PxRigidDynamic*>(rigid)->wakeUp();
+        }
+        else if (type == PxActorType::eARTICULATION_LINK && body->art && body->art->pxArticulation)
+        {
+            // wake the articulation
+            body->art->pxArticulation->wakeUp();
+        }
+    }
+}
+
 bool DcContext::refreshPhysicsPointers(DcRigidBody* body, bool verbose)
 {
     if (!body)
@@ -976,20 +999,92 @@ bool DcContext::refreshPhysicsPointers(DcD6Joint* j, bool verbose)
     {
         return false;
     }
-
-    j->pxJoint = nullptr;
-
-    PxJoint* pxJoint = (PxJoint*)physx->getPhysXPtr(j->path, carb::physics::ePTJoint);
-    if (!pxJoint || pxJoint->getConcreteType() != PxJointConcreteType::eD6)
+    DcContext* ctx = g_dcCtx;
+    if (!ctx)
     {
-        if (verbose)
-        {
-            DC_LOG_ERROR("Failed to refresh joint %s", j->path.GetString().c_str());
-        }
         return false;
     }
 
-    j->pxJoint = static_cast<PxD6Joint*>(pxJoint);
+    j->pxJoint = nullptr;
+    // The joint exists in usd stage
+    PxJoint* pxJoint = (PxJoint*)physx->getPhysXPtr(j->path, carb::physics::ePTJoint);
+    if (pxJoint && pxJoint->getConcreteType() == PxJointConcreteType::eD6)
+    {
+        j->pxJoint = static_cast<PxD6Joint*>(pxJoint);
+
+        if (verbose)
+        {
+            printf("Refreshed joint %s\n", j->path.GetString().c_str());
+        }
+        return true;
+    }
+    printf("Refreshing joint %s\n", j->path.GetString().c_str());
+    // Joint was created through DC so it doesn't exist after sim is stopped, re-create
+    PxRigidBody* pxBody0 = nullptr;
+    PxRigidBody* pxBody1 = nullptr;
+    if (j->props.body0 != kDcInvalidHandle)
+    {
+        DcRigidBody* body0 = DC_LOOKUP_RIGID_BODY(j->props.body0);
+        if (!body0 || !body0->pxRigidBody)
+        {
+            if (verbose)
+            {
+                DC_LOG_ERROR("Failed to refresh Joint: body 0 handle is invalid");
+            }
+            return kDcInvalidHandle;
+        }
+        pxBody0 = body0->pxRigidBody;
+        if (!pxBody0->getScene())
+        {
+            if (verbose)
+            {
+                DC_LOG_ERROR("Failed to refresh Joint: body 0 not in scene");
+            }
+            return kDcInvalidHandle;
+        }
+        DcWakeUpRigidBody(j->props.body0);
+    }
+    if (j->props.body1 != kDcInvalidHandle)
+    {
+        DcRigidBody* body1 = DC_LOOKUP_RIGID_BODY(j->props.body1);
+        if (!body1 || !body1->pxRigidBody)
+        {
+            if (verbose)
+            {
+                DC_LOG_ERROR("Failed to refresh Joint: body 1 handle is invalid");
+            }
+            return kDcInvalidHandle;
+        }
+        pxBody1 = body1->pxRigidBody;
+        if (!pxBody1->getScene())
+        {
+            if (verbose)
+            {
+                DC_LOG_ERROR("Failed to refresh Joint: body 1 not in scene");
+            }
+            return kDcInvalidHandle;
+        }
+        DcWakeUpRigidBody(j->props.body1);
+    }
+    std::string jointName = "/joint_" + std::to_string(ctx->numD6Joints());
+    SdfPath jointPath;
+    if (j->props.name != nullptr)
+    {
+        jointName = std::string(j->props.name);
+    }
+    jointPath = SdfPath(jointName);
+
+
+    size_t originId = (size_t)pxBody0->userData;
+    SdfPath originPath(ctx->physx->getPhysXObjectUsdPath(originId));
+    SdfPath targetPath;
+    if (pxBody1)
+        targetPath = ctx->physx->getPhysXObjectUsdPath((size_t)pxBody1->userData);
+
+
+    j->pxJoint = (PxD6Joint*)ctx->physx->createD6JointAtPath(jointPath, originPath, targetPath);
+
+
     if (verbose)
     {
         printf("Refreshed joint %s\n", j->path.GetString().c_str());
@@ -1348,27 +1443,6 @@ int CARB_ABI DcGetArticulations(DcContext* ctx, DcArticulation** userBuffer, int
 }
 #endif
 
-void CARB_ABI DcWakeUpRigidBody(DcHandle bodyHandle)
-{
-    (void)DC_CHECK_SIMULATING();
-
-    DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
-    if (body && body->pxRigidBody)
-    {
-        PxRigidBody* rigid = body->pxRigidBody;
-        PxActorType::Enum type = rigid->getType();
-        if (type == PxActorType::eRIGID_DYNAMIC)
-        {
-            // wake the body
-            static_cast<PxRigidDynamic*>(rigid)->wakeUp();
-        }
-        else if (type == PxActorType::eARTICULATION_LINK && body->art && body->art->pxArticulation)
-        {
-            // wake the articulation
-            body->art->pxArticulation->wakeUp();
-        }
-    }
-}
 
 void CARB_ABI DcWakeUpArticulation(DcHandle artHandle)
 {
@@ -3174,7 +3248,6 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
     joint->setLocalPose(PxJointActorIndex::eACTOR1, pose1);
 
     joint->setBreakForce(props->forceLimit, props->torqueLimit);
-    joint->setConstraintFlag(PxConstraintFlag::eBROKEN, false);
 
     PxD6JointDrive drive(props->stiffness, props->damping, props->forceLimit, false);
     PxD6JointDrive defaultDrive;

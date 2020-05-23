@@ -221,6 +221,28 @@ inline physx::PxVec3 asPxVec3(const carb::Float3& v)
 }
 
 /**
+ * @brief convert pxr::GfVec3f into PxVec3
+ *
+ * @param v
+ * @return physx::PxVec3
+ */
+inline physx::PxVec3 asPxVec3(const pxr::GfVec3f& v)
+{
+    return physx::PxVec3{ v[0], v[1], v[2] };
+}
+
+/**
+ * @brief convert pxr::GfVec3d into PxVec3
+ *
+ * @param v
+ * @return physx::PxVec3
+ */
+inline physx::PxVec3 asPxVec3(const pxr::GfVec3d& v)
+{
+    return physx::PxVec3{ static_cast<float>(v[0]), static_cast<float>(v[1]), static_cast<float>(v[2]) };
+}
+
+/**
  * @brief Convert carb::Float4 into PxQuat
  *
  * @param q
@@ -229,6 +251,31 @@ inline physx::PxVec3 asPxVec3(const carb::Float3& v)
 inline physx::PxQuat asPxQuat(const carb::Float4& q)
 {
     return physx::PxQuat{ q.x, q.y, q.z, q.w };
+}
+
+/**
+ * @brief Convert pxr::GfQuatf into PxQuat
+ *
+ * @param q
+ * @return physx::PxQuat
+ */
+inline physx::PxQuat asPxQuat(const pxr::GfQuatf& v)
+{
+    const pxr::GfVec3f& imag = v.GetImaginary();
+    return physx::PxQuat{ imag[0], imag[1], imag[2], v.GetReal() };
+}
+
+/**
+ * @brief Convert pxr::GfQuatd into PxQuat
+ *
+ * @param q
+ * @return physx::PxQuat
+ */
+inline physx::PxQuat asPxQuat(const pxr::GfQuatd& v)
+{
+    const pxr::GfVec3d& imag = v.GetImaginary();
+    return physx::PxQuat{ static_cast<float>(imag[0]), static_cast<float>(imag[1]), static_cast<float>(imag[2]),
+                          static_cast<float>(v.GetReal()) };
 }
 
 /**

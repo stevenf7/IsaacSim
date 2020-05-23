@@ -148,6 +148,7 @@ public:
 
         size_t mShapeDebugIndex = 0;
         bool shouldDraw = false;
+        size_t count = 0;
         for (auto& component : mComponents)
         {
             if (component.second.get()->getDrawLidarPoints())
@@ -156,14 +157,14 @@ public:
                 if (debugLines.size() > 0)
                 {
                     shouldDraw = true;
-                    break;
+                    count += debugLines.size();
                 }
             }
         }
         if (shouldDraw)
         {
             releaseDebugLineList();
-            createDebugLineList();
+            createDebugLineList(count);
             for (auto& component : mComponents)
             {
                 if (component.second.get()->getDrawLidarPoints())
@@ -240,11 +241,11 @@ public:
 
 
 private:
-    void createDebugLineList()
+    void createDebugLineList(size_t size)
     {
         if (mShapeDebugLineBuffer == omni::renderer::IDebugDraw::eInvalidBuffer)
         {
-            mShapeDebugLineBuffer = mDebugDrawPtr->allocateLineBuffer(4096);
+            mShapeDebugLineBuffer = mDebugDrawPtr->allocateLineBuffer(size);
             mShapeDebugRenderInstanceBuffer = mDebugDrawPtr->allocateRenderInstanceBuffer(mShapeDebugLineBuffer, 1);
             float transform[16] = {};
             transform[0] = 1.f;

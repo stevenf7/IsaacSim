@@ -37,6 +37,9 @@
             "includeTests": [
                 "omni.isaac.*"
             ],
+            "excludeTests": [
+                "omni.isaac.dr.scripts.tests.test_domain_randomizer.TestDomainRandomizer.test_color_component"
+            ],
             "runTestsAndQuit": true
         }
     },

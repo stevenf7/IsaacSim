@@ -206,9 +206,14 @@ class RobotEngineBridgeMenu:
         prim.CreateSegmentationOutputComponentAttr("output")
         prim.CreateSegmentationOutputChannelAttr("segmentation")
 
+        prim.CreateBoundingBox2DOutputComponentAttr("output")
+        prim.CreateBoundingBox2DOutputChannelAttr("bbox")
+        prim.CreateBoundingBox2DClassListAttr("")
+
         prim.CreateRgbEnabledAttr(True)
         prim.CreateDepthEnabledAttr(False)
         prim.CreateSegmentationEnabledAttr(False)
+        prim.CreateBoundingBox2DEnabledAttr(False)
 
         pass
 
