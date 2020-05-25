@@ -4,6 +4,9 @@
 import omni.kit.test
 import omni.kit.asyncapi
 import carb.tokens
+
+# carb data types are used as return values, need this
+import carb
 import os
 import asyncio
 import numpy as np
@@ -137,8 +140,12 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pos = self._dc.get_rigid_body_pose(root_body).p
         rot = self._dc.get_rigid_body_pose(root_body).r
-        self.assertTupleEqual(tuple(np.round(np.array(pos), 3)), tuple(np.round(np.array(new_pose_p), 3)))
-        self.assertTupleEqual(tuple(np.round(np.array(rot), 3)), tuple(np.round(np.array(new_pose_r), 3)))
+        self.assertTupleEqual(
+            tuple(np.round(np.array([pos.x, pos.y, pos.z]), 3)), tuple(np.round(np.array(new_pose_p), 3))
+        )
+        self.assertTupleEqual(
+            tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)), tuple(np.round(np.array(new_pose_r), 3))
+        )
 
         # rigid body tests
         body_states = self._dc.get_articulation_body_states(art, _dynamic_control.STATE_ALL)
@@ -221,7 +228,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         root_body_ptr = self._dc.get_articulation_root_body(art)
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
-        print(np.linalg.norm(lin_vel), ang_vel)
+        print(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), ang_vel)
         # TODO: Fix test when run from commandline
         # self.assertAlmostEqual(0, np.linalg.norm(lin_vel), 1)
         # self.assertGreater(ang_vel[2], 2.45)
@@ -261,8 +268,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         root_body_ptr = self._dc.get_articulation_root_body(art)
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
-        self.assertAlmostEqual(drive_target * 24.0, np.linalg.norm(lin_vel), 1)
-        self.assertAlmostEqual(0, np.linalg.norm(ang_vel), 1)
+        self.assertAlmostEqual(drive_target * 24.0, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1)
+        self.assertAlmostEqual(0, np.linalg.norm([ang_vel.x, ang_vel.y, ang_vel.z]), 1)
 
         self._dc.set_dof_velocity_target(left_wheel_ptr, 0)
         self._dc.set_dof_velocity_target(right_wheel_ptr, 0)
@@ -281,7 +288,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
         # print(np.linalg.norm(lin_vel), ang_vel)
 
-        self.assertLess(np.linalg.norm(lin_vel), 1.5)
+        self.assertLess(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1.5)
         # the wheels are offset 5cm from the wheel mesh, need to account for that in wheelbase
         self.assertAlmostEqual(drive_target * 24.0 / (31.613607 - 5), ang_vel[2], 1)
         editor.stop()

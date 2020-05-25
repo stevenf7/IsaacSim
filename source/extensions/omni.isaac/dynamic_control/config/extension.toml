@@ -3,6 +3,7 @@ display_name = "Dynamic Control"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.physx" = {}
+"omni.isaac.utils" = {}
 
 [[python.modules]]
 name = "omni.isaac.dynamic_control"

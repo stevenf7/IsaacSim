@@ -1,15 +1,26 @@
 import asyncio
+import os
+import carb.tokens
 import omni.isaac.DrSchema as DrSchema
 import omni.kit
 import omni.kit.asyncapi
 import omni.usd
 
 from pxr import Gf, Usd, UsdGeom, Sdf
-from omni.isaac.utils.scripts.test_utils import get_data_file
 
 ADD_COMPONENT_SAMPLE_MENU = "Isaac Samples/Domain Randomizer/Component Sample"
 ADD_SIMPLE_ROOM_SAMPLE_MENU = "Isaac Samples/Domain Randomizer/Simple Room Sample"
 ADD_WAREHOUSE_SAMPLE_MENU = "Isaac Samples/Domain Randomizer/Warehouse Sample"
+
+
+def get_data_file(file_name: str):
+    if os.path.isabs(file_name):
+        path_to_file = file_name
+    else:
+        path_to_file = os.path.abspath(
+            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
+        )
+    return path_to_file
 
 
 class DRSamples:

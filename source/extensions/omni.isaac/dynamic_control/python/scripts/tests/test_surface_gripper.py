@@ -7,6 +7,7 @@ import omni.kit.usd
 from omni.isaac.dynamic_control import _dynamic_control as dc
 import carb.tokens
 import os
+import carb
 import asyncio
 import numpy as np
 from omni.isaac.utils._isaac_utils import math as mu
@@ -262,8 +263,8 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         v1 = self._dc.get_rigid_body_linear_velocity(box1)
 
         # Check if both objects are moving
-        self.assertGreater(np.linalg.norm(v0), 0.01)
-        self.assertGreater(np.linalg.norm(v1), 0.01)
+        self.assertGreater(np.linalg.norm([v0.x, v0.y, v0.z]), 0.01)
+        self.assertGreater(np.linalg.norm([v1.x, v1.y, v1.z]), 0.01)
 
         pass
 
@@ -325,7 +326,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.asyncapi.next_update()
         self.assertFalse(self.surface_gripper.is_closed())
         lin_vel = self._dc.get_rigid_body_linear_velocity(box1)
-        self.assertGreater(np.linalg.norm(lin_vel), 0)
+        self.assertGreater(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 0)
         tr = self._dc.get_rigid_body_pose(box1)
         self.assertLess(tr.p.z, 200)
 
@@ -377,7 +378,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         lin_vel = self._dc.get_rigid_body_linear_velocity(box1)
         print(lin_vel)
-        self.assertGreater(np.linalg.norm(lin_vel), 0)
+        self.assertGreater(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 0)
         # Do not stop editor, check if joint cleans up correctly
         pass
 
