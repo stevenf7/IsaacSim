@@ -61,6 +61,8 @@ PYBIND11_MODULE(_motion_planning, m)
 {
     using namespace carb;
     using namespace omni::isaac::motion_planning;
+    // We use carb data types, must import bindings for them
+    auto carb_module = py::module::import("carb");
 
     m.doc() = "Isaac motion planning bindings";
 

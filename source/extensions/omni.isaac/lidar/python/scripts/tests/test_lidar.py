@@ -4,14 +4,34 @@ import omni.kit.test
 from omni.isaac.lidar import _lidar
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysicsSchemaTools
 import omni.isaac.LidarSchema as LidarSchema
-from omni.isaac.utils.scripts.test_utils import load_test_file, set_scene_physics_type
 import asyncio
-import inspect
 import numpy as np
+import os
+import carb.tokens
 
-# import pxr
-# import pkgutil
-# import os.path, pkgutil
+
+def get_data_file(file_name: str):
+    if os.path.isabs(file_name):
+        path_to_file = file_name
+    else:
+        path_to_file = os.path.abspath(
+            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
+        )
+    return path_to_file
+
+
+async def load_test_file(test_file_name: str):
+    if not Usd.Stage.IsSupportedFile(test_file_name):
+        raise ValueError("Only USD files can be loaded with this method")
+
+    path_to_file = get_data_file(test_file_name)
+
+    usd_context = omni.usd.get_context()
+    usd_context.disable_save_to_recent_files()
+    (result, error) = await omni.kit.asyncapi.open_stage(path_to_file)
+    usd_context.enable_save_to_recent_files()
+    return (result, error)
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -44,7 +64,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def sweep_parameter(self, parameter, min_v, max_v, step):
         print(parameter.GetName())
         for value in np.arange(min_v, max_v, step):
-            print(value)
+            # print(value)
             parameter.Set(float(value))
             await omni.kit.asyncapi.next_update()
             await omni.kit.asyncapi.next_update()
@@ -162,14 +182,18 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._editor.play()
         lidar.GetHighLodAttr().Set(True)
-
-        await self.sweep_parameter(lidar.GetHorizontalFovAttr(), -1024, 1024, 8)
-        await self.sweep_parameter(lidar.GetVerticalFovAttr(), -1024, 1024, 8)
-        await self.sweep_parameter(lidar.GetRotationRateAttr(), -1024, 1024, 8)
-        await self.sweep_parameter(lidar.GetHorizontalResolutionAttr(), -0.1, 10.0, 0.1)
-        await self.sweep_parameter(lidar.GetVerticalResolutionAttr(), -0.1, 10.0, 0.1)
-        await self.sweep_parameter(lidar.GetMinRangeAttr(), -1024, 1024, 8)
-        await self.sweep_parameter(lidar.GetMaxRangeAttr(), -1024, 1024, 8)
+        lidar.GetDrawLidarPointsAttr().Set(False)
+        await self.sweep_parameter(lidar.GetRotationRateAttr(), -1024, 1024, 32)
+        lidar.GetRotationRateAttr().Set(0)
+        await self.sweep_parameter(lidar.GetHorizontalFovAttr(), -1024, 1024, 32)
+        lidar.GetHorizontalFovAttr().Set(360)
+        await self.sweep_parameter(lidar.GetVerticalFovAttr(), -1024, 1024, 32)
+        lidar.GetHorizontalFovAttr().Set(120)
+        lidar.GetVerticalFovAttr().Set(30)
+        await self.sweep_parameter(lidar.GetHorizontalResolutionAttr(), -0.1, 1.0, 0.1)
+        await self.sweep_parameter(lidar.GetVerticalResolutionAttr(), -0.1, 1.0, 0.1)
+        await self.sweep_parameter(lidar.GetMinRangeAttr(), -1024, 1024, 32)
+        await self.sweep_parameter(lidar.GetMaxRangeAttr(), -1024, 1024, 32)
         lidar.GetHighLodAttr().Set(False)
 
     async def test_carter_lidar(self):

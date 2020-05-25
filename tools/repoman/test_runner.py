@@ -184,7 +184,8 @@ def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile
         f"open {app_folder}/data/usd/assets/robots/franka/franka.usd",
         "--carb/rtx/materialDb/syncLoads=true",
         "--carb/omni.kit.plugin/syncUsdLoads=true",
-        "--carb/app/quitAfter=10",  # Quit after 10 updates
+        "--carb/app/quitAfter=60",  # Quit after 10 updates
+        "-v",
     ]
     args.extend(extra_args)
 
@@ -211,7 +212,7 @@ def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile
         teamcity_stop_test(test_id)
 
         # Override the command line options after the first execution to just launch and quit
-        args = ["--carb/app/quitAfter=10"]  # Quit git after 10 updates
+        args = ["--carb/app/quitAfter=60", "-v"]  # Quit git after 10 updates
 
     # Exit with non-zero code on failure
     if failure:

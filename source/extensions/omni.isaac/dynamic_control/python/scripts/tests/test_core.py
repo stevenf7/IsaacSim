@@ -33,8 +33,10 @@ class TestCore(omni.kit.test.AsyncTestCaseFailOnLogError):
         editor = omni.kit.editor.get_editor_interface()
         editor.play()
         await asyncio.sleep(0.125)
+        await omni.kit.asyncapi.next_update()
         self.assertTrue(self._dc.is_simulating())
         editor.stop()
         await asyncio.sleep(0.125)
+        await omni.kit.asyncapi.next_update()
         self.assertFalse(self._dc.is_simulating())
         pass

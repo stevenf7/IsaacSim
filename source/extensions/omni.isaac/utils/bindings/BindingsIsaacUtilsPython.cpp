@@ -36,6 +36,8 @@ PYBIND11_MODULE(_isaac_utils, m)
     using namespace omni::isaac::utils::math;
     using namespace omni::isaac::utils;
     using namespace omni::isaac::dynamic_control;
+    // We use carb data types, must import bindings for them
+    auto carb_module = py::module::import("carb");
 
     m.doc() = "Isaac utils bindings";
 

@@ -20,7 +20,6 @@
                 "omni.isaac.dr",
                 "omni.isaac.lidar",
                 "omni.isaac.motion_planning",
-                "omni.isaac.decals",
                 "omni.isaac.utils",
                 "omni.isaac.urdf"
             ]
@@ -38,7 +37,7 @@
                 "omni.isaac.*"
             ],
             "excludeTests": [
-                "omni.isaac.dr.scripts.tests.test_domain_randomizer.TestDomainRandomizer.test_color_component"
+                "omni.isaac.dr.*"
             ],
             "runTestsAndQuit": true
         }

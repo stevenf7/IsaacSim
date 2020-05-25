@@ -6,10 +6,35 @@ import omni.kit.asyncapi
 import carb.tokens
 import os
 import asyncio
+import carb
+from pxr import Usd
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.motion_planning import _motion_planning
-from omni.isaac.utils.scripts.test_utils import load_test_file
+
+
+def get_data_file(file_name: str):
+    if os.path.isabs(file_name):
+        path_to_file = file_name
+    else:
+        path_to_file = os.path.abspath(
+            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
+        )
+    return path_to_file
+
+
+async def load_test_file(test_file_name: str):
+    if not Usd.Stage.IsSupportedFile(test_file_name):
+        raise ValueError("Only USD files can be loaded with this method")
+
+    path_to_file = get_data_file(test_file_name)
+
+    usd_context = omni.usd.get_context()
+    usd_context.disable_save_to_recent_files()
+    (result, error) = await omni.kit.asyncapi.open_stage(path_to_file)
+    usd_context.enable_save_to_recent_files()
+    return (result, error)
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestMotionPlanning(omni.kit.test.AsyncTestCaseFailOnLogError):
