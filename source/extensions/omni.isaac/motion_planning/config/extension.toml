@@ -4,7 +4,6 @@ display_name = "Motion Planning"
 "omni.kit.editor" = {}
 "omni.kit.test" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.utils" = {}
 
 [[python.modules]]
 name = "omni.isaac.motion_planning"
