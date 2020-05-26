@@ -315,6 +315,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.asyncapi.next_update()
         dof_pos_new = self._dc.get_dof_position(dof_ptr)
         self.assertTrue(Gf.IsClose(dof_pos_new, new_pos, 0.01))
+        dof_target_new = self._dc.get_dof_position_target(dof_ptr)
+        self.assertTrue(Gf.IsClose(dof_target_new, new_pos, 0.01))
 
         # set new dof pos target
         new_pos = 0.0
@@ -323,6 +325,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.asyncapi.next_update()
         dof_pos_new = self._dc.get_dof_position(dof_ptr)
         self.assertTrue(Gf.IsClose(dof_pos_new, new_pos, 0.01))
+        dof_target_new = self._dc.get_dof_position_target(dof_ptr)
+        self.assertTrue(Gf.IsClose(dof_target_new, new_pos, 0.01))
 
         # set new dof pos target
         new_pos = 2.0
@@ -331,6 +335,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.asyncapi.next_update()
         dof_pos_new = self._dc.get_dof_position(dof_ptr)
         self.assertTrue(Gf.IsClose(dof_pos_new, new_pos, 0.01))
+        dof_target_new = self._dc.get_dof_position_target(dof_ptr)
+        self.assertTrue(Gf.IsClose(dof_target_new, new_pos, 0.01))
 
     async def test_articulation_position_str(self, gpu=False):
         await omni.kit.asyncapi.new_stage()
@@ -354,6 +360,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.asyncapi.next_update()
         dof_pos_new = self._dc.get_dof_position(dof_ptr)
         self.assertAlmostEqual(dof_pos_new, new_pos, 1)
+        dof_target_new = self._dc.get_dof_position_target(dof_ptr)
+        self.assertTrue(Gf.IsClose(dof_target_new, new_pos, 0.01))
 
         new_pos = 0.0
         self._dc.wake_up_articulation(art)
@@ -362,6 +370,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.asyncapi.next_update()
         dof_pos_new = self._dc.get_dof_position(dof_ptr)
         self.assertAlmostEqual(dof_pos_new, new_pos, 1)
+        dof_target_new = self._dc.get_dof_position_target(dof_ptr)
+        self.assertTrue(Gf.IsClose(dof_target_new, new_pos, 0.01))
 
         new_pos = 2.0
         self._dc.wake_up_articulation(art)
@@ -370,6 +380,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.asyncapi.next_update()
         dof_pos_new = self._dc.get_dof_position(dof_ptr)
         self.assertAlmostEqual(dof_pos_new, new_pos, 1)
+        dof_target_new = self._dc.get_dof_position_target(dof_ptr)
+        self.assertTrue(Gf.IsClose(dof_target_new, new_pos, 0.01))
 
     # async def test_articulation_load_gpu(self):
     #     await self.test_articulation_load(True)
