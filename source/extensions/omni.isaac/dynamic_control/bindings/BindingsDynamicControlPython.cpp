@@ -837,6 +837,8 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("set_dof_properties", wrapInterfaceFunction(&DynamicControl::setDofProperties))
         .def("set_dof_position_target", wrapInterfaceFunction(&DynamicControl::setDofPositionTarget))
         .def("set_dof_velocity_target", wrapInterfaceFunction(&DynamicControl::setDofVelocityTarget))
+        .def("get_dof_position_target", wrapInterfaceFunction(&DynamicControl::getDofPositionTarget))
+        .def("get_dof_velocity_target", wrapInterfaceFunction(&DynamicControl::getDofVelocityTarget))
         .def("apply_dof_effort", wrapInterfaceFunction(&DynamicControl::applyDofEffort))
 
         // attractors
