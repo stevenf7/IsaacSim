@@ -90,6 +90,14 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_bin_stack_run(self):
         await self.load_bin_stack_scene()
+        await self.execute_stack_scene(True)
+        self.editor.stop()
+        await omni.kit.asyncapi.next_update()
+        self._scenario.stop_tasks()
+        self._scenario.step(None)
+        self.editor.play()
+        await omni.kit.asyncapi.next_update()
+        self._scenario.step(None)
         await self.execute_stack_scene()
         pass
 
@@ -106,7 +114,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
                 self.assertTrue(self._dc.is_simulating())
                 self._scenario.step(None)
             next_state = (self.state_idx + 1) % len(self.default_sequence)
-            self.assertTrue(self._scenario.pick_and_place.current_state == self.default_sequence[next_state])
+            self.assertEqual(self._scenario.pick_and_place.current_state, self.default_sequence[next_state])
             self.state_idx = next_state
             self.current_state = self.default_sequence[next_state]
             if next_state == 0:
@@ -117,13 +125,13 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         box_pose = self._dc.get_rigid_body_pose(self._scenario.tray_handles[self.total_pass])
         rx = mu.get_basis_vector_x(box_pose.r)
         rz = mu.get_basis_vector_z(box_pose.r)
-        self.assertTrue(mu.dot(rz, (0, 0, -1)) > 0.99)
-        self.assertTrue(abs(mu.dot(rx, (1, 0, 0))) > 0.99)
-        self.assertTrue(box_pose.p.x > 0)
-        self.assertTrue(box_pose.p.y < 0)
+        self.assertGreater(mu.dot(rz, (0, 0, -1)), 0.99)
+        self.assertGreater(abs(mu.dot(rx, (1, 0, 0))), 0.99)
+        self.assertGreater(box_pose.p.x, 0)
+        self.assertLess(box_pose.p.y, 0)
         pass
 
-    async def execute_stack_scene(self):
+    async def execute_stack_scene(self, stop_when_attached=False):
 
         self._scenario.perform_tasks()
 
@@ -132,18 +140,25 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.upright = False
         timeout_max = 1000
         timeout = 0
+        self.upright = False
+        self.total_pass = 0
+        self.upright_pass = 0
+        self.down_pass = 0
         while self.total_pass < 4 or self.upright_pass < 1 or self.down_pass < 1:
             while self._scenario.pick_and_place.current_state == self.current_state and timeout < timeout_max:
                 timeout += 1
                 await omni.kit.asyncapi.next_update()
                 self.assertTrue(self._dc.is_simulating())
                 self._scenario.step(None)
-            self.assertTrue(timeout < timeout_max)
+            self.assertLess(timeout, timeout_max)
             timeout = 0
+            if self.current_state == bin_stack.SM_states.ATTACH and stop_when_attached:
+                self.assertTrue(self._scenario.pick_and_place.robot.end_effector.gripper.is_closed())
+                return
             if self._scenario.pick_and_place._upright or self.upright:
                 self.upright = True
                 next_state = (self.state_idx + 1) % len(self.upright_sequence)
-                self.assertTrue(self._scenario.pick_and_place.current_state == self.upright_sequence[next_state])
+                self.assertEqual(self._scenario.pick_and_place.current_state, self.upright_sequence[next_state])
                 self.state_idx = next_state
                 self.current_state = self.upright_sequence[next_state]
                 if next_state == 0:
@@ -153,7 +168,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
                     self.total_pass += 1
             else:
                 next_state = (self.state_idx + 1) % len(self.default_sequence)
-                self.assertTrue(self._scenario.pick_and_place.current_state == self.default_sequence[next_state])
+                self.assertEqual(self._scenario.pick_and_place.current_state, self.default_sequence[next_state])
                 self.state_idx = next_state
                 self.current_state = self.default_sequence[next_state]
                 if next_state == 0:

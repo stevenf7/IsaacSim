@@ -30,6 +30,8 @@
 
 #include "MotionPolicy.h"
 
+#include <lula/util/logging.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -370,6 +372,8 @@ CARB_EXPORT void carbOnPluginStartup()
     size_t index = gStageUpdate->getStageUpdateNodeCount();
     gStageUpdateNode = gStageUpdate->createStageUpdateNode(desc);
     gStageUpdate->setStageUpdateNodeOrder(index, -100);
+
+    lula::util::SetStderrLoggingLevel(lula::util::LoggingLevel::ERROR);
 }
 
 CARB_EXPORT void carbOnPluginShutdown()
