@@ -3,7 +3,8 @@ import omni
 import omni.kit.test
 import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.utils.scripts.test_utils import load_test_file
+from pxr import Usd
+import os
 from omni.physx import _physx
 import numpy as np
 
@@ -12,6 +13,38 @@ ANIM_SEEK_LOWER = 1
 ANIM_SEEK_UPPER = 2
 ANIM_SEEK_DEFAULT = 3
 ANIM_FINISHED = 4
+
+
+def get_data_file(file_name: str):
+    if os.path.isabs(file_name):
+        path_to_file = file_name
+    else:
+        path_to_file = os.path.abspath(
+            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
+        )
+    return path_to_file
+
+
+async def load_test_file(test_file_name: str):
+    """
+    Load the contents of the USD test file onto the stage, synchronously, when called as "await load_test_file(X)".
+    In a testing environment we need to run one test at a time since there is no guarantee
+    that tests can run concurrently, especially when loading files. This method encapsulates
+    the logic necessary to load a test file using the omni.kit.asyncapi method and then wait
+    for it to complete before returning.
+    :param test_file_name: Name of the test file to load - if not an absolute path then looks in the data/usd/tests/ComputeGraph directory
+    :raises: ValueError if the test file is not a valid USD file
+    """
+    if not Usd.Stage.IsSupportedFile(test_file_name):
+        raise ValueError("Only USD files can be loaded with this method")
+
+    path_to_file = get_data_file(test_file_name)
+
+    usd_context = omni.usd.get_context()
+    usd_context.disable_save_to_recent_files()
+    (result, error) = await omni.kit.asyncapi.open_stage(path_to_file)
+    usd_context.enable_save_to_recent_files()
+    return (result, error)
 
 
 def clamp(x, min_value, max_value):
