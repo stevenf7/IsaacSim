@@ -4,11 +4,16 @@
             "title": "Omniverse Kit For Robotics"
         },
         "settings": {
-            "persistent": true,
+            "persistent": true
         },
         "extensions": {
-            "folders2": ["${kit}/exts","${kit}/extsPhysics","${app}/../exts"],
-            "foldersBuiltin": ["${kit}/extensions/extensions-bundled", "${kit}/extensions/extensions-other", "${documents}/extensions","${app}/../extensions"],
+            "folders2": ["${kit}/exts", "${kit}/extsPhysics", "${app}/../exts"],
+            "foldersBuiltin": [
+                "${kit}/extensions/extensions-bundled",
+                "${kit}/extensions/extensions-other",
+                "${documents}/extensions",
+                "${app}/../extensions"
+            ],
             "enabledBuiltin": [
                 "omni.renderer-rtx",
                 "omni.kit.editor-full",
@@ -52,7 +57,8 @@
                 "omni.isaac.manip",
                 "omni.isaac.dynamic_control",
                 "omni.isaac.motion_planning",
-                "omni.isaac.samples"
+                "omni.isaac.samples",
+                "omni.isaac.dr"
             ]
         },
         "renderer": {
