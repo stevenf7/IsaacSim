@@ -8,6 +8,7 @@ import carb.tokens
 from .. import _urdf
 from .tests.test_urdf import *
 from .samples.import_carter import import_carter
+from .samples.import_kaya import import_kaya
 
 EXTENSION_NAME = "URDF Importer"
 
@@ -34,6 +35,7 @@ class Extension(omni.ext.IExt):
         self._btn_load.set_clicked_fn(self._select_file)
 
         self._import_carter = import_carter(self._urdf_interface)
+        self._import_kaya = import_kaya(self._urdf_interface)
 
     def _select_picked_folder_callback(self, path):
         if path.startswith("file:"):
@@ -59,4 +61,5 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         print("Shutting down URDF Extension")
         self._import_carter = None
+        self._import_kaya = None
         _urdf.release_urdf_interface(self._urdf_interface)
