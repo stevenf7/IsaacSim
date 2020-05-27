@@ -281,6 +281,8 @@ struct DynamicControl
 
     bool(CARB_ABI* setDofPositionTarget)(DcHandle dofHandle, float target);
     bool(CARB_ABI* setDofVelocityTarget)(DcHandle dofHandle, float target);
+    float(CARB_ABI* getDofPositionTarget)(DcHandle dofHandle);
+    float(CARB_ABI* getDofVelocityTarget)(DcHandle dofHandle);
     bool(CARB_ABI* applyDofEffort)(DcHandle dofHandle, float effort);
 
     // attractors

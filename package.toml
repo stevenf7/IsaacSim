@@ -106,6 +106,8 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/msvcp140d.dll"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/ucrtbased.dll"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/vcruntime140d.dll"],
+
+    ["_build/target-deps/rtx_plugins/shaders", "_build/target-deps/kit_sdk_$config/_build/shaders"],
 ]
 
 [isaac-sim.windows-x86_64.release]
@@ -125,6 +127,11 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins"],
     #["_build/target-deps/kit_sdk_$config/omniverse-kit.sh", "_build/target-deps/kit_sdk_$config/omniverse-kit.sh"],
+]
+
+[isaac-sim.linux.debug]
+files = [
+    ["_build/target-deps/rtx_plugins/shaders", "_build/target-deps/kit_sdk_$config/_build/shaders"],
 ]
 
 ########################################################################################################################
@@ -200,6 +207,8 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/msvcp140d.dll"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/ucrtbased.dll"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/vcruntime140d.dll"],
+
+    ["_build/target-deps/rtx_plugins/shaders", "_build/target-deps/kit_sdk_$config/_build/shaders"],
 ]
 
 [omniverse-kit-robotics.windows-x86_64.release]
@@ -219,6 +228,11 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins"],
     #["_build/target-deps/kit_sdk_$config/omniverse-kit.sh", "_build/target-deps/kit_sdk_$config/omniverse-kit.sh"],
+]
+
+[omniverse-kit-robotics.linux.debug]
+files = [
+    ["_build/target-deps/rtx_plugins/shaders", "_build/target-deps/kit_sdk_$config/_build/shaders"],
 ]
 
 ########################################################################################################################

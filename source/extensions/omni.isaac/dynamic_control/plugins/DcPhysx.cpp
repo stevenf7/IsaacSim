@@ -1018,78 +1018,9 @@ bool DcContext::refreshPhysicsPointers(DcD6Joint* j, bool verbose)
         }
         return true;
     }
-    printf("Refreshing joint %s\n", j->path.GetString().c_str());
-    // Joint was created through DC so it doesn't exist after sim is stopped, re-create
-    PxRigidBody* pxBody0 = nullptr;
-    PxRigidBody* pxBody1 = nullptr;
-    if (j->props.body0 != kDcInvalidHandle)
-    {
-        DcRigidBody* body0 = DC_LOOKUP_RIGID_BODY(j->props.body0);
-        if (!body0 || !body0->pxRigidBody)
-        {
-            if (verbose)
-            {
-                DC_LOG_ERROR("Failed to refresh Joint: body 0 handle is invalid");
-            }
-            return kDcInvalidHandle;
-        }
-        pxBody0 = body0->pxRigidBody;
-        if (!pxBody0->getScene())
-        {
-            if (verbose)
-            {
-                DC_LOG_ERROR("Failed to refresh Joint: body 0 not in scene");
-            }
-            return kDcInvalidHandle;
-        }
-        DcWakeUpRigidBody(j->props.body0);
-    }
-    if (j->props.body1 != kDcInvalidHandle)
-    {
-        DcRigidBody* body1 = DC_LOOKUP_RIGID_BODY(j->props.body1);
-        if (!body1 || !body1->pxRigidBody)
-        {
-            if (verbose)
-            {
-                DC_LOG_ERROR("Failed to refresh Joint: body 1 handle is invalid");
-            }
-            return kDcInvalidHandle;
-        }
-        pxBody1 = body1->pxRigidBody;
-        if (!pxBody1->getScene())
-        {
-            if (verbose)
-            {
-                DC_LOG_ERROR("Failed to refresh Joint: body 1 not in scene");
-            }
-            return kDcInvalidHandle;
-        }
-        DcWakeUpRigidBody(j->props.body1);
-    }
-    std::string jointName = "/joint_" + std::to_string(ctx->numD6Joints());
-    SdfPath jointPath;
-    if (j->props.name != nullptr)
-    {
-        jointName = std::string(j->props.name);
-    }
-    jointPath = SdfPath(jointName);
-
-
-    size_t originId = (size_t)pxBody0->userData;
-    SdfPath originPath(ctx->physx->getPhysXObjectUsdPath(originId));
-    SdfPath targetPath;
-    if (pxBody1)
-        targetPath = ctx->physx->getPhysXObjectUsdPath((size_t)pxBody1->userData);
-
-
-    j->pxJoint = (PxD6Joint*)ctx->physx->createD6JointAtPath(jointPath, originPath, targetPath);
-
-
-    if (verbose)
-    {
-        printf("Refreshed joint %s\n", j->path.GetString().c_str());
-    }
-    return true;
+    // Joint was destroyed as it was not in stage, clear handles:
+    j->pxJoint = nullptr;
+    return false;
 }
 
 void DcContext::refreshPhysicsPointers(bool verbose)
@@ -1704,6 +1635,8 @@ bool CARB_ABI DcGetDofProperties(DcHandle dofHandle, DcDofProperties* props);
 bool CARB_ABI DcSetDofProperties(DcHandle dofHandle, const DcDofProperties* props);
 bool CARB_ABI DcSetDofPositionTarget(DcHandle dofHandle, float target);
 bool CARB_ABI DcSetDofVelocityTarget(DcHandle dofHandle, float target);
+float CARB_ABI DcGetDofPositionTarget(DcHandle dofHandle);
+float CARB_ABI DcGetDofVelocityTarget(DcHandle dofHandle);
 
 int CARB_ABI DcGetArticulationDofCount(DcHandle artHandle)
 {
@@ -2715,6 +2648,42 @@ bool CARB_ABI DcSetDofVelocityTarget(DcHandle dofHandle, float target)
     return true;
 }
 
+float CARB_ABI DcGetDofPositionTarget(DcHandle dofHandle)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcDof* dof = DC_LOOKUP_DOF(dofHandle);
+    if (!dof || !dof->pxArticulationJoint)
+    {
+        return false;
+    }
+
+    if (dof->driveMode == DcDriveMode::ePositionTarget)
+    {
+        return dof->pxArticulationJoint->getDriveTarget(dof->pxAxis);
+    }
+
+    return 0;
+}
+
+float CARB_ABI DcGetDofVelocityTarget(DcHandle dofHandle)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcDof* dof = DC_LOOKUP_DOF(dofHandle);
+    if (!dof || !dof->pxArticulationJoint)
+    {
+        return false;
+    }
+
+    if (dof->driveMode == DcDriveMode::eVelocityTarget)
+    {
+        return dof->pxArticulationJoint->getDriveVelocity(dof->pxAxis);
+    }
+
+    return 0;
+}
+
 bool CARB_ABI DcApplyDofEffort(DcHandle dofHandle, float effort)
 {
     (void)DC_CHECK_SIMULATING();
@@ -3199,8 +3168,78 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
     PxD6Joint* joint = dcJoint->pxJoint;
     if (!joint)
     {
-        DC_LOG_ERROR("D6 Joint is missing physics joint");
-        return false;
+        DcContext* ctx = g_dcCtx;
+        if (!ctx)
+        {
+            return false;
+        }
+        printf("Refreshing joint %s\n", dcJoint->path.GetString().c_str());
+        // Joint was created through DC so it doesn't exist after sim is stopped, re-create
+        PxRigidBody* pxBody0 = nullptr;
+        PxRigidBody* pxBody1 = nullptr;
+        if (dcJoint->props.body0 != kDcInvalidHandle)
+        {
+            DcRigidBody* body0 = DC_LOOKUP_RIGID_BODY(dcJoint->props.body0);
+            if (!body0 || !body0->pxRigidBody)
+            {
+
+                DC_LOG_ERROR("Failed to refresh Joint: body 0 %s at %s handle is invalid", body0->name.c_str(),
+                             body0->path.GetString().c_str());
+
+                return kDcInvalidHandle;
+            }
+            pxBody0 = body0->pxRigidBody;
+            if (!pxBody0->getScene())
+            {
+
+                DC_LOG_ERROR("Failed to refresh Joint: body 0 %s at %s not in scene", body0->name.c_str(),
+                             body0->path.GetString().c_str());
+
+                return kDcInvalidHandle;
+            }
+            DcWakeUpRigidBody(dcJoint->props.body0);
+        }
+        if (dcJoint->props.body1 != kDcInvalidHandle)
+        {
+            DcRigidBody* body1 = DC_LOOKUP_RIGID_BODY(dcJoint->props.body1);
+            if (!body1 || !body1->pxRigidBody)
+            {
+
+                DC_LOG_ERROR("Failed to refresh Joint: body 1 %s at %s handle is invalid", body1->name.c_str(),
+                             body1->path.GetString().c_str());
+
+                return kDcInvalidHandle;
+            }
+            pxBody1 = body1->pxRigidBody;
+            if (!pxBody1->getScene())
+            {
+
+                DC_LOG_ERROR("Failed to refresh Joint: body 1 %s at %s not in scene", body1->name.c_str(),
+                             body1->path.GetString().c_str());
+
+                return kDcInvalidHandle;
+            }
+            DcWakeUpRigidBody(dcJoint->props.body1);
+        }
+        std::string jointName = "/joint_" + std::to_string(ctx->numD6Joints());
+        SdfPath jointPath;
+        if (dcJoint->props.name != nullptr)
+        {
+            jointName = std::string(dcJoint->props.name);
+        }
+        jointPath = SdfPath(jointName);
+
+
+        size_t originId = (size_t)pxBody0->userData;
+        SdfPath originPath(ctx->physx->getPhysXObjectUsdPath(originId));
+        SdfPath targetPath;
+        if (pxBody1)
+            targetPath = ctx->physx->getPhysXObjectUsdPath((size_t)pxBody1->userData);
+
+
+        dcJoint->pxJoint = (PxD6Joint*)ctx->physx->createD6JointAtPath(jointPath, originPath, targetPath);
+        joint = dcJoint->pxJoint;
+        printf("Refreshed joint %s\n", dcJoint->path.GetString().c_str());
     }
     PxRigidBody* pxBody0 = nullptr;
     PxRigidBody* pxBody1 = nullptr;
@@ -3711,6 +3750,8 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.setDofProperties = DcSetDofProperties;
     iface.setDofPositionTarget = DcSetDofPositionTarget;
     iface.setDofVelocityTarget = DcSetDofVelocityTarget;
+    iface.getDofPositionTarget = DcGetDofPositionTarget;
+    iface.getDofVelocityTarget = DcGetDofVelocityTarget;
     iface.applyDofEffort = DcApplyDofEffort;
 
     iface.createRigidBodyAttractor = DcCreateRigidBodyAttractor;
