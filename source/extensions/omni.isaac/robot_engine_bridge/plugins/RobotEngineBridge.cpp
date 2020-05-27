@@ -146,6 +146,13 @@ void onResume(float currentTime, void* userData)
 void onPause(void* userData)
 {
 }
+void onStop(void* userData)
+{
+    if (g_stage && g_application_handle)
+    {
+        g_application_handle->onStop();
+    }
+}
 void onPrimAdd(const char* primPath, void* userData)
 {
     // printf("++ REB: Prim Add: %s\n", primPath,
@@ -233,6 +240,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onUpdate = onUpdate;
     desc.onResume = onResume;
     desc.onPause = onPause;
+    desc.onStop = onStop;
     desc.onPrimAdd = onPrimAdd;
     desc.onPrimChange = onComponentChange;
     desc.onPrimRemove = onPrimRemove;
