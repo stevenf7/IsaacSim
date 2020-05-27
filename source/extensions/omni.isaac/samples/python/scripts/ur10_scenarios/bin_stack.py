@@ -734,11 +734,11 @@ class BinStack(Scenario):
     def __init__(self, editor, dc, mp):
         super().__init__(editor, dc, mp)
 
-        self.asset_path = "omni:/Projects/gtc_sj_2020"
+        self.asset_path = "omni:/Isaac"
         # use local content if not connected to omni server
         if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
             print("Use local content")
-            self.asset_path = "art_assets/gtc_sj_2020"
+            self.asset_path = "art_assets/Isaac"
         else:
             print("Use server content")
 
@@ -818,7 +818,7 @@ class BinStack(Scenario):
                 )
 
     def create_UR10(self, *args):
-        self.ur10_table_usd = self.asset_path + "/Stage/StageD6robotiq.usd"
+        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd"
         super().create_UR10()
         use_background = True
         if len(args) > 0:
@@ -844,8 +844,8 @@ class BinStack(Scenario):
         else:
             CreateBackground(
                 self._stage,
-                self.asset_path + "/Backgrounds/Holodeck_curved.usd",
-                [-315.419, 127.124, -10.480],
+                self.asset_path + "/Environments/Grid/gridroom_curved.usd",
+                [-315.419, 127.124, -154.65],
                 Gf.Quatd(-0.7071, 0, 0, 0.7071),
             )
         prim = self._stage.GetPrimAtPath("/World")
@@ -928,7 +928,7 @@ class BinStack(Scenario):
             body = self._dc.get_articulation_body(self.ur10_solid.ar, bodyIdx)
             self._dc.set_rigid_body_disable_gravity(body, True)
 
-        p = str(prim.GetPath()) + "/TexturedDemoTable/simple_table/CollisionCube"
+        p = str(prim.GetPath()) + "/table/simple_table/CollisionCube"
         print(p)
         self.world.register_object(0, p, "housing_0")
         self.world.make_obstacle("housing_0", 3, self._stage.GetPrimAtPath(p).GetAttribute("xformOp:scale").Get())
