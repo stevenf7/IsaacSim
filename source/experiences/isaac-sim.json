@@ -4,11 +4,16 @@
             "title": "Omniverse Isaac Sim"
         },
         "settings": {
-            "persistent": true,
+            "persistent": true
         },
         "extensions": {
-            "folders2": ["${kit}/exts","${kit}/extsPhysics","${app}/../exts"],
-            "foldersBuiltin": ["${kit}/extensions/extensions-bundled", "${kit}/extensions/extensions-other", "${documents}/extensions","${app}/../extensions"],
+            "folders2": ["${kit}/exts", "${kit}/extsPhysics", "${app}/../exts"],
+            "foldersBuiltin": [
+                "${kit}/extensions/extensions-bundled",
+                "${kit}/extensions/extensions-other",
+                "${documents}/extensions",
+                "${app}/../extensions"
+            ],
             "enabledBuiltin": [
                 "omni.renderer-rtx",
                 "omni.kit.editor-full",
@@ -49,7 +54,10 @@
                 "omni.isaac.urdf",
                 "omni.isaac.utils",
                 "omni.isaac.lidar",
+                "omni.isaac.manip",
                 "omni.isaac.dynamic_control",
+                "omni.isaac.motion_planning",
+                "omni.isaac.samples",
                 "omni.isaac.robot_engine_bridge",
                 "omni.isaac.dr"
             ]
@@ -62,6 +70,12 @@
                 "width": 1280,
                 "height": 720
             }
+        }
+    },
+    "persistent": {
+        "physics": {
+            "maxNumSteps": 3.0,
+            "updateToUsd": false
         }
     }
 }

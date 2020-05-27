@@ -28,7 +28,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def setUp(self):
         self.connection_handle = None
         await omni.kit.asyncapi.connect("ov-isaac-dev:3009", "testing", "testing")
-
+        await omni.kit.asyncapi.next_update()
         connections = omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()
         self.assertEqual(len(connections), 1)
 
