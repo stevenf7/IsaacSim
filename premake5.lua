@@ -318,6 +318,7 @@ group "exts"
     include ("source/extensions/omni.isaac/utils")
     include ("source/extensions/omni.isaac/urdf")
     include ("source/extensions/omni.isaac/samples")
+    include ("source/extensions/omni.isaac/tests")
 
     -- Linux Only
     if os.target() == "linux" then

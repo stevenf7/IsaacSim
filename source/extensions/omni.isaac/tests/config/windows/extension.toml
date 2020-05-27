@@ -1,0 +1,14 @@
+display_name = "Isaac Isaac Tests"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.physx" = {}
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.utils" = {}
+"omni.isaac.manip" = {}
+"omni.isaac.urdf" = {}
+"omni.isaac.lidar" = {}
+"omni.isaac.dr" = {}
+
+[[python.modules]]
+name = "omni.isaac.tests"

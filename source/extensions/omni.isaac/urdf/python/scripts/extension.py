@@ -6,7 +6,6 @@ import omni.kit.ui
 import carb.tokens
 
 from .. import _urdf
-from .tests.test_urdf import *
 from .samples.import_carter import import_carter
 
 EXTENSION_NAME = "URDF Importer"
