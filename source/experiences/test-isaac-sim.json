@@ -21,7 +21,8 @@
                 "omni.isaac.lidar",
                 "omni.isaac.motion_planning",
                 "omni.isaac.utils",
-                "omni.isaac.urdf"
+                "omni.isaac.urdf",
+                "omni.isaac.samples"
             ]
         },
         "renderer": {
