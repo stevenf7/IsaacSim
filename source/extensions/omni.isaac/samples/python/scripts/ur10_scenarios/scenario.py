@@ -167,20 +167,19 @@ class Scenario:
         self._executor = None
         self._created = False
 
-        self.asset_path = "omni:/Projects/gtc_sj_2020"
+        self.asset_path = "omni:/Isaac"
         # use local content if not connected to omni server
         if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
             print("Use local content")
-            self.asset_path = "art_assets/gtc_sj_2020"
+            self.asset_path = "art_assets/Isaac"
         else:
             print("Use server content")
 
-        self.ur10_table_usd = self.asset_path + "/Stage/StageD6SRT.usd"
-        self.normal_klt_usd = self.asset_path + "/props/NormalKLT.usd"
-        self.small_klt_usd = self.asset_path + "/props/SmallKLT.usd"
+        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd"
+        self.small_klt_usd = self.asset_path + "/Props/KLT_Bin/small_KLT.usd"
         self.small_tray_scale = np.array([0.19, 0.296, 0.08])
-        self.background_usd = self.asset_path + "/Backgrounds/Warehouse/Warehouse_Empty_small.usd"
-        self.rubiks_cube_usd = self.asset_path + "/props/Rubiks_Cube/Rubiks_Cube.usd"
+        self.background_usd = self.asset_path + "/Environments/Simple_Warehouse/warehouse.usd"
+        self.rubiks_cube_usd = self.asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
 
     def __del__(self):
         self.robot_created = False
