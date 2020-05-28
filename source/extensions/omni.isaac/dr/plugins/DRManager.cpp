@@ -17,6 +17,7 @@
 #include <DrSchema/rotationComponent.h>
 #include <DrSchema/scaleComponent.h>
 #include <DrSchema/textureComponent.h>
+#include <DrSchema/materialComponent.h>
 
 namespace omni
 {
@@ -74,8 +75,7 @@ void DRManager::initComponents()
 
 void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
 {
-    if (std::find(mSupportedComponents.begin(), mSupportedComponents.end(), prim.GetTypeName()) ==
-        mSupportedComponents.end())
+    if (!prim.IsA<pxr::DrSchemaBaseComponent>())
         return;
 
     std::string primPath = prim.GetPath().GetString();
@@ -99,8 +99,13 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
     }
     else if (prim.IsA<pxr::DrSchemaTextureComponent>())
     {
-        component = std::make_unique<DRComponentTexture>();
+        component = std::make_unique<DRComponentTexture>(mTokens);
         component->initialize(pxr::DrSchemaTextureComponent(prim), mStage);
+    }
+    else if (prim.IsA<pxr::DrSchemaMaterialComponent>())
+    {
+        component = std::make_unique<DRComponentMaterial>();
+        component->initialize(pxr::DrSchemaMaterialComponent(prim), mStage);
     }
     else if (prim.IsA<pxr::DrSchemaMovementComponent>())
     {
@@ -130,8 +135,7 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
 
 void DRManager::onComponentChange(const pxr::UsdPrim& prim)
 {
-    if (std::find(mSupportedComponents.begin(), mSupportedComponents.end(), prim.GetTypeName()) ==
-        mSupportedComponents.end())
+    if (!prim.IsA<pxr::DrSchemaBaseComponent>())
         return;
 
     std::string primPath = prim.GetPath().GetString();
@@ -140,6 +144,10 @@ void DRManager::onComponentChange(const pxr::UsdPrim& prim)
         mAllComponents[primPath]->onComponentChange();
     }
     else if (prim.IsA<pxr::DrSchemaTextureComponent>())
+    {
+        mAllComponents[primPath]->onComponentChange();
+    }
+    else if (prim.IsA<pxr::DrSchemaMaterialComponent>())
     {
         mAllComponents[primPath]->onComponentChange();
     }

@@ -10,6 +10,7 @@ ADD_ROTATION_DR_MENU_ITEM = "Create/Isaac/DR/Rotation Component"
 ADD_SCALE_DR_MENU_ITEM = "Create/Isaac/DR/Scale Component"
 ADD_LIGHT_DR_MENU_ITEM = "Create/Isaac/DR/Light Component"
 ADD_TEXTURE_DR_MENU_ITEM = "Create/Isaac/DR/Texture Component"
+ADD_MATERIAL_DR_MENU_ITEM = "Create/Isaac/DR/Material Component"
 
 
 class DRMenu:
@@ -22,7 +23,7 @@ class DRMenu:
         self._dr = domain_randomizer_interface
         self.texture_layer_index = -1
         self.texture_component_count = 0
-        self.num_components = 6
+        self.num_components = 7
 
         self._menus = []
         editor_menu = omni.kit.ui.get_editor_menu()
@@ -32,6 +33,7 @@ class DRMenu:
         self._menus.append(editor_menu.add_item(ADD_SCALE_DR_MENU_ITEM, self._on_dr_menu_click))
         self._menus.append(editor_menu.add_item(ADD_LIGHT_DR_MENU_ITEM, self._on_dr_menu_click))
         self._menus.append(editor_menu.add_item(ADD_TEXTURE_DR_MENU_ITEM, self._on_dr_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_MATERIAL_DR_MENU_ITEM, self._on_dr_menu_click))
 
     def add_color_menu(self, parent=None):
         if parent:
@@ -160,6 +162,27 @@ class DRMenu:
         prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
 
+    def add_material_menu(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, parent + "/material_component_" + str(self.component_count[6]), False
+            )
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, "/material_component_" + str(self.component_count[6]), True
+            )
+
+        prim = DrSchema.MaterialComponent.Define(self._stage, Sdf.Path(path))
+
+        prim.CreateCompNameAttr().Set(str("material_component_" + str(self.component_count[6])))
+        prim.CreatePrimPathsRel()
+        prim.CreateMaterialListAttr().Set(str(""))
+        prim.CreateIgnoredClassAttr().Set(str(""))
+        prim.CreateGroupedClassAttr().Set(str(""))
+        prim.CreateDurationAttr().Set(float(1.0))
+        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        pass
+
     def _on_dr_menu_click(self, menu, value):
         self._stage = self._usd_context.get_stage()
         self.component_count = [0] * self.num_components
@@ -176,6 +199,8 @@ class DRMenu:
                 self.component_count[4] = self.component_count[4] + 1
             if child_prim.GetTypeName() == "RotationComponent":
                 self.component_count[5] = self.component_count[5] + 1
+            if child_prim.GetTypeName() == "MaterialComponent":
+                self.component_count[6] = self.component_count[6] + 1
 
         selectedPrims = self._usd_context.get_selection().get_selected_prim_paths()
         if len(selectedPrims) > 0:
@@ -195,6 +220,8 @@ class DRMenu:
             self.add_light_menu(curr_prim)
         if menu == ADD_TEXTURE_DR_MENU_ITEM:
             self.add_texture_menu(curr_prim)
+        if menu == ADD_MATERIAL_DR_MENU_ITEM:
+            self.add_material_menu(curr_prim)
 
     def _build_dr_ui(self):
         title = "Manual Mode"
