@@ -4,7 +4,7 @@ from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.urdf import _urdf
 
 # from omni.physx import _physx
-from .common import import_robot, set_angular_drive, remove_all_schema_multiple_attributes
+from .common import import_robot, set_drive_parameters, remove_all_schema_multiple_attributes
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysicsSchemaTools, PhysxSchema
 
 
@@ -15,7 +15,7 @@ class import_kaya:
             "Import Kaya",
             300,
             200,
-            menu_path="Isaac Samples/URDF/Kaya",
+            menu_path="Isaac Robotics/URDF/Kaya",
             open=False,
             dock=omni.kit.ui.DockPreference.DISABLED,
         )
@@ -72,6 +72,6 @@ class import_kaya:
         axle_1 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_1_joint"), "angular")
         axle_2 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_2_joint"), "angular")
 
-        set_angular_drive(axle_0, 1)
-        set_angular_drive(axle_1, 1)
-        set_angular_drive(axle_2, 1)
+        set_drive_parameters(axle_0, "velocity", 1, 0, 1000000, 1e8)
+        set_drive_parameters(axle_1, "velocity", 1, 0, 1000000, 1e8)
+        set_drive_parameters(axle_2, "velocity", 1, 0, 1000000, 1e8)

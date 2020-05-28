@@ -62,7 +62,7 @@ class articulation_info:
             "Articulation Info",
             300,
             200,
-            menu_path="Isaac Samples/Dynamic Control/Articulation info",
+            menu_path="Isaac Robotics/Dynamic Control/Articulation info",
             open=False,
             dock=omni.kit.ui.DockPreference.DISABLED,
         )

@@ -27,7 +27,7 @@ class joint_states:
             "Joint State",
             300,
             200,
-            menu_path="Isaac Samples/ROS/Joint State",
+            menu_path="Isaac Robotics/ROS/Joint State",
             open=False,
             dock=omni.kit.ui.DockPreference.DISABLED,
         )
