@@ -51,6 +51,7 @@ class DRSamples:
         self._selected_scenario.add_item("Scale")
         self._selected_scenario.add_item("Light")
         self._selected_scenario.add_item("Texture")
+        self._selected_scenario.add_item("Material")
         self._selected_scenario.selected_index = 0
         clear_stage_btn = sublayout.add_child(omni.kit.ui.Button("Clear Stage"))
         clear_stage_btn.set_clicked_fn(self._on_clear_stage)
@@ -63,9 +64,11 @@ class DRSamples:
         omni.usd.get_context().new_stage(None)
 
     def _on_load_stage(self, widget):
-        path_to_file = get_data_file("assets/dr/SimpleCubeWithLight.usd")
-        omni.usd.get_context().open_stage(path_to_file, None)
-        # omni.usd.get_context().open_stage("omni:/Users/sdebnath/DR/SimpleCubeWithLight.usd", None)
+        if self._selected_scenario.selected_index == 5:
+            omni.usd.get_context().open_stage("omni:/Users/sdebnath/DR/SimpleCubeWithLight.usd", None)
+        else:
+            path_to_file = get_data_file("assets/dr/SimpleCubeWithLight.usd")
+            omni.usd.get_context().open_stage(path_to_file, None)
 
     def _on_load_component(self, widget):
         if self._selected_scenario.selected_index == 0:
@@ -80,6 +83,8 @@ class DRSamples:
             self.add_light_menu()
         elif self._selected_scenario.selected_index == 5:
             self.add_texture_menu()
+        elif self._selected_scenario.selected_index == 6:
+            self.add_material_menu()
 
     def add_color_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
@@ -194,19 +199,42 @@ class DRSamples:
         prim.CreatePrimPathsRel().AddTarget(cube_path)
         prim.CreateTextureListAttr().Set(
             str(
+                "omni:/Projects/mwc_2019/Maps/Props/Materials/Textures/006_mustard_bottle_D.png,omni:/Projects/mwc_2019/Maps/Props/Materials/Textures/025_mug_D.png,omni:/Projects/mwc_2019/Maps/Props/Materials/Textures/T_Apple_2_D.png,omni:/Projects/mwc_2019/Maps/Props/Materials/Textures/T_NvidiaCube_D1.png,omni:/Projects/mwc_2019/Maps/Props/Materials/Textures/011_banana_D.png"
+            )
+        )
+        prim.CreateIgnoredClassAttr().Set(str(""))
+        prim.CreateGroupedClassAttr().Set(str(""))
+        prim.CreateDurationAttr().Set(float(0.3))
+        prim.CreateIncludeChildrenAttr().Set(bool(False))
+
+    def add_material_menu(self, parent=None):
+        stage = omni.usd.get_context().get_stage()
+        root_layer = stage.GetRootLayer()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        cube_path = default_prim_path + "/Cube"
+        # Create DR material component
+        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/material_component", False)
+        prim = DrSchema.MaterialComponent.Define(stage, Sdf.Path(path))
+        prim.CreateCompNameAttr().Set(str("material_component"))
+        tex_comp_path = default_prim_path + "/material_component"
+        tex_comp = stage.GetPrimAtPath(tex_comp_path)
+        # Set attributes for DR material component
+        prim.CreatePrimPathsRel().AddTarget(cube_path)
+        prim.CreateMaterialListAttr().Set(
+            str(
                 "omni:/Projects/mwc_2019/Maps/Props/Materials/M_NvidiaCube.mdl,omni:/Projects/mwc_2019/Maps/Props/Materials/MI_011_banana.mdl,omni:/Projects/mwc_2019/Maps/Props/Materials/MI_006_mustard_bottle.mdl,omni:/Projects/mwc_2019/Maps/Props/Materials/MI_025_mug.mdl,omni:/Projects/mwc_2019/Maps/Props/Materials/MI_Apple_2.mdl"
             )
         )
         prim.CreateIgnoredClassAttr().Set(str(""))
         prim.CreateGroupedClassAttr().Set(str(""))
         prim.CreateDurationAttr().Set(float(0.3))
-        prim.CreateIncludeChildrenAttr().Set(bool(True))
+        prim.CreateIncludeChildrenAttr().Set(bool(False))
 
     def add_simple_room_scene(self, parent=None):
-        omni.usd.get_context().open_stage("omni:/Users/sdebnath/DR/TowelRoomStageDemoRel.usda", None)
+        omni.usd.get_context().open_stage("omni:/Users/sdebnath/DR/SimpleRoomSample.usda", None)
 
     def add_warehouse_scene(self, parent=None):
-        omni.usd.get_context().open_stage("omni:/Users/sdebnath/DR/SimpleWarehouseStageDemoRel.usda", None)
+        omni.usd.get_context().open_stage("omni:/Users/sdebnath/DR/WarehouseMaterialSample.usda", None)
 
     def _on_dr_sample_menu_click(self, menu, value):
         self._stage = self._usd_context.get_stage()
