@@ -54,6 +54,7 @@ void LidarSensor::initialize(carb::physics::PhysX* physxPtr,
     SensorComponent::initialize(prim, stage);
     mPhysx = physxPtr;
     mFastCachePtr = fastCachePtr;
+    onComponentChange();
 }
 
 

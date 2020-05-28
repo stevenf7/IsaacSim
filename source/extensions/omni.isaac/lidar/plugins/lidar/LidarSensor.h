@@ -122,19 +122,19 @@ private:
     float mYawOffset = 0.0f;
 
     // Ranges converted to proper units
-    float mMinDepth;
-    float mMaxDepth;
+    float mMinDepth = 0;
+    float mMaxDepth = 1e8;
 
-    float mMaxStepSize;
+    float mMaxStepSize = 0;
 
-    int mRows, mCols;
-    int mMaxColsPerTick;
+    int mRows = 0, mCols = 0;
+    int mMaxColsPerTick = 0;
 
-    int mLastCol;
-    int mLastNumColsTicked;
-    float mColScanSpeed;
+    int mLastCol = 0;
+    int mLastNumColsTicked = 0;
+    float mColScanSpeed = 0;
 
-    float mRemainingTime;
+    float mRemainingTime = 0;
 
     std::vector<uint16_t> mDepth;
     std::vector<float> mLinearDepth;
