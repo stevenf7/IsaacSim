@@ -22,9 +22,10 @@ namespace urdf
 struct ImportConfig
 {
     bool mergeFixedJoints = false;
-    float distanceScale = 100.0;
+    bool enableConvexDecomp = false;
     bool forceZUp = true;
     bool addDebugInfo = false;
+    float distanceScale = 100.0;
 };
 
 

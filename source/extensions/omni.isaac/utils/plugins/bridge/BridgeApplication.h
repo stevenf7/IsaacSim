@@ -43,7 +43,7 @@ public:
      *
      * @param stage
      */
-    virtual void initialize(pxr::UsdStageRefPtr stage)
+    virtual void initialize(pxr::UsdStageWeakPtr stage)
     {
         mStage = stage;
         mNoticeListener = pxr::TfNotice::Register(pxr::TfCreateWeakPtr(this), &BridgeApplicationBase::HandlePrimChanged);
@@ -69,6 +69,15 @@ public:
             pxr::UsdPrim prim = *iter;
             onComponentAdd(prim);
         }
+        mDoOnce = false;
+    }
+
+    /**
+     * @brief Function that runs after stop is pressed
+     *
+     */
+    virtual void onStop()
+    {
         mDoOnce = false;
     }
 
@@ -149,6 +158,16 @@ protected:
                     onComponentRemove(primPath);
                 }
             }
+        }
+        for (auto& path : objectsChanged.GetChangedInfoOnlyPaths())
+        {
+            auto primPath =
+                mStage->GetPseudoRoot().GetPath() == path ? mStage->GetPseudoRoot().GetPath() : path.GetPrimPath();
+
+            // Update the component attached to this prim, onComponentChange checks to see if the prim exists in
+            // this BridgeApplication
+            pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
+            onComponentChange(prim);
         }
     }
 };

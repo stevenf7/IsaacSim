@@ -45,7 +45,7 @@ public:
     virtual void initialize(carb::physics::PhysX* physxPtr,
                             carb::fastcache::FastCache* fastCachePtr,
                             const pxr::LidarSchemaLidar& prim,
-                            pxr::UsdStageRefPtr stage);
+                            pxr::UsdStageWeakPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();
@@ -158,6 +158,7 @@ private:
     carb::physics::PhysX* mPhysx = nullptr;
     physx::PxScene* mPxScene = nullptr;
     float mMetersPerUnit;
+    pxr::UsdPrim mParentPrim;
 };
 
 

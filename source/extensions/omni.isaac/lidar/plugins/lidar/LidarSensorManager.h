@@ -101,6 +101,10 @@ public:
      */
     void tick(double dt)
     {
+        if (mComponents.size() == 0)
+        {
+            return;
+        }
         // omni::isaac::utils::ScopedTimer T("LIDAR");
 
         if (mDoOnce == false)
@@ -143,18 +147,35 @@ public:
         }
 
         size_t mShapeDebugIndex = 0;
-        releaseDebugLineList();
-        createDebugLineList();
+        bool shouldDraw = false;
+        size_t count = 0;
         for (auto& component : mComponents)
         {
             if (component.second.get()->getDrawLidarPoints())
             {
                 auto& debugLines = component.second.get()->getDebugLines();
-                for (const auto& line : debugLines)
+                if (debugLines.size() > 0)
                 {
-                    // mDebugLineVector.push_back(line);
-                    mDebugDrawPtr->setLine(
-                        mShapeDebugLineBuffer, mShapeDebugIndex++, line.startPos, line.color, line.endPos, line.color);
+                    shouldDraw = true;
+                    count += debugLines.size();
+                }
+            }
+        }
+        if (shouldDraw)
+        {
+            releaseDebugLineList();
+            createDebugLineList(count);
+            for (auto& component : mComponents)
+            {
+                if (component.second.get()->getDrawLidarPoints())
+                {
+                    auto& debugLines = component.second.get()->getDebugLines();
+                    for (const auto& line : debugLines)
+                    {
+                        // mDebugLineVector.push_back(line);
+                        mDebugDrawPtr->setLine(mShapeDebugLineBuffer, mShapeDebugIndex++, line.startPos, line.color,
+                                               line.endPos, line.color);
+                    }
                 }
             }
         }
@@ -203,7 +224,14 @@ public:
     {
         if (prim)
         {
-            return mComponents[prim.GetPath().GetString()].get();
+            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            {
+                return mComponents[prim.GetPath().GetString()].get();
+            }
+            else
+            {
+                return nullptr;
+            }
         }
         else
         {
@@ -213,11 +241,11 @@ public:
 
 
 private:
-    void createDebugLineList()
+    void createDebugLineList(size_t size)
     {
         if (mShapeDebugLineBuffer == omni::renderer::IDebugDraw::eInvalidBuffer)
         {
-            mShapeDebugLineBuffer = mDebugDrawPtr->allocateLineBuffer(4096);
+            mShapeDebugLineBuffer = mDebugDrawPtr->allocateLineBuffer(size);
             mShapeDebugRenderInstanceBuffer = mDebugDrawPtr->allocateRenderInstanceBuffer(mShapeDebugLineBuffer, 1);
             float transform[16] = {};
             transform[0] = 1.f;

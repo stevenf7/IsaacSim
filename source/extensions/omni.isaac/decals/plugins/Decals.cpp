@@ -57,7 +57,7 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
 
     Manager& decals = *reinterpret_cast<Manager*>(userData);
 
-    pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
     if (!stage)
     {
         CARB_LOG_ERROR("omni::isaac::decals::Decals could not find USD stage");
@@ -96,7 +96,7 @@ static void setEnabled(bool enabled)
     {
         omni::kit::IEditor* editor = framework->acquireInterface<omni::kit::IEditor>();
 
-        pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(
+        pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(
             pxr::UsdStageCache::Id::FromLongInt(omni::usd::UsdContext::getContext()->getStageId()));
 
         // Create decal manager

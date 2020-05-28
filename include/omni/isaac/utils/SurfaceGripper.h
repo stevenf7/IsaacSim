@@ -87,7 +87,8 @@ public:
      */
     ~SurfaceGripper()
     {
-        if (mJointHandle)
+        // Make sure that DC is valid before we destroy in case Dc was released already.
+        if (mJointHandle && mDc)
         {
             mDc->destroyD6Joint(mJointHandle);
         }
@@ -206,15 +207,11 @@ public:
                 mJointProperties.torqueLimit = mProps.torqueLimit;
                 if (!mJointHandle)
                 {
-                    std::string s(mProps.parentPath + mProps.d6JointPath);
+                    std::string s(mProps.d6JointPath);
                     mJointProperties.name = (char*)(s).c_str();
-                    // CARB_LOG_WARN("Joint handle not found, creating new joint: %s", mJointProperties.name);
                     mJointHandle = mDc->createD6Joint(&mJointProperties);
                 }
-                else
-                {
-                    mDc->setD6JointProperties(mJointHandle, &mJointProperties);
-                }
+                mDc->setD6JointProperties(mJointHandle, &mJointProperties);
 
                 mIsClosed = true;
             }
@@ -238,13 +235,12 @@ public:
         }
         if (mIsClosed)
         {
-            mJointProperties.axes = kDcAxisNone;
-            mJointProperties.body0 = 0;
+            mDc->wakeUpRigidBody(mJointProperties.body1);
             mDc->setRigidBodyDisableGravity(mJointProperties.body1, false);
-            mJointProperties.body1 = 0;
-            mJointProperties.forceLimit = 0;
-            mJointProperties.torqueLimit = 0;
-            mDc->setD6JointProperties(mJointHandle, &mJointProperties);
+
+            mDc->destroyD6Joint(mJointHandle);
+            mJointHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
+
             mIsClosed = false;
             return true;
         }

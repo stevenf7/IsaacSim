@@ -460,11 +460,11 @@ class FillBin(Scenario):
     def __init__(self, editor, dc, mp):
         super().__init__(editor, dc, mp)
 
-        self.asset_path = "omni:/Projects/gtc_sj_2020"
+        self.asset_path = "omni:/Isaac"
         # use local content if not connected to omni server
         if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
             print("Use local content")
-            self.asset_path = "art_assets/gtc_sj_2020"
+            self.asset_path = "art_assets/Isaac"
         else:
             print("Use server content")
 
@@ -486,12 +486,16 @@ class FillBin(Scenario):
         self.add_objects_timeout = -1
 
         self.objects = [
-            self.asset_path + "/props/flip_stack/Large_corner_bracket_physics.usd",
-            self.asset_path + "/props/flip_stack/screw_95_physics.usd",
-            self.asset_path + "/props/flip_stack/screw_99_physics.usd",
-            self.asset_path + "/props/flip_stack/small_corner_bracket_physics.usd",
-            self.asset_path + "/props/flip_stack/t_connector_physics.usd",
+            self.asset_path + "/Props/Flip_Stack/large_corner_bracket_physics.usd",
+            self.asset_path + "/Props/Flip_Stack/screw_95_physics.usd",
+            self.asset_path + "/Props/Flip_Stack/screw_99_physics.usd",
+            self.asset_path + "/Props/Flip_Stack/small_corner_bracket_physics.usd",
+            self.asset_path + "/Props/Flip_Stack/t_connector_physics.usd",
         ]
+
+    def __del__(self):
+        self.ur10_solid.end_effector.gripper = None
+        super().__del__()
 
     def on_startup(self):
         super().on_startup()
@@ -548,7 +552,7 @@ class FillBin(Scenario):
                 )
 
     def create_UR10(self, *args):
-        self.ur10_table_usd = self.asset_path + "/Stage/StageD6Fill_bin.usd"
+        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_filling.usd"
         super().create_UR10()
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"
@@ -602,7 +606,7 @@ class FillBin(Scenario):
 
         # Prim path of two blocks and their handles
         prim = self._stage.GetPrimAtPath(self.env_path)
-        self.tray_paths = [self.env_path + "/SmallKLT/SmallKLT"]
+        self.tray_paths = [self.env_path + "/bin/SmallKLT"]
         self.tray_handles = [self._dc.get_rigid_body(i) for i in self.tray_paths]
 
         # Create world and robot object
@@ -634,8 +638,8 @@ class FillBin(Scenario):
             urdf="/urdf/ur10_robot_robotiq.urdf",
         )
 
-        self.world.register_object(0, self.env_path + "/staticPlaneActor", "ground")
-        self.world.make_obstacle("ground", 3, (10, 10, 0.1))
+        # self.world.register_object(0, self.env_path + "/gridroom_curved/staticPlaneActor", "ground")
+        # self.world.make_obstacle("ground", 3, (10, 10, 0.1))
 
         body_count = self._dc.get_articulation_body_count(self.ur10_solid.ar)
         for bodyIdx in range(body_count):

@@ -690,8 +690,9 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         art->rigidBodies[i] = bodyPtr;
         art->rigidBodyMap[bodyPtr->name] = bodyPtr;
     }
-
-    std::vector<size_t> dofStarts(numLinks);
+    // The code below requires that simulation is active before registering articulation, otherwise cache indices are
+    // not valid
+    std::vector<size_t> dofStarts(numLinks, 0);
 
     // First map the link index to the dof count
     // Link index can be different than the order the links show up in the articulation and corresponds to the index in
@@ -704,7 +705,10 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         }
         else
         {
-            dofStarts[dof->linkIndex] = 0;
+            if (dof->linkIndex >= 0)
+            {
+                dofStarts[dof->linkIndex] = 0;
+            }
         }
     }
     // Now do a "scan" operation to compute offsets in the cache for each dof
@@ -718,9 +722,16 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     // Once we have all of the offsets, set them on the dof
     for (size_t i = 0; i < art->dofs.size(); i++)
     {
-        art->dofs[i]->cacheIdx = int(dofStarts[art->dofs[i]->linkIndex]);
-        DC_LOG_INFO("dof index: i: %d with link index: %d has a DOF cache index of: %u", int(i),
-                    art->dofs[i]->linkIndex, art->dofs[i]->cacheIdx);
+        if (art->dofs[i]->linkIndex >= 0)
+        {
+            art->dofs[i]->cacheIdx = int(dofStarts[art->dofs[i]->linkIndex]);
+        }
+        else
+        {
+            art->dofs[i]->cacheIdx = 0;
+        }
+        DC_LOG_INFO("dof index: i: %zu with link index: %d has a DOF cache index of: %d", i, art->dofs[i]->linkIndex,
+                    art->dofs[i]->cacheIdx);
     }
 
     // resolve hierarchy relationships
@@ -796,6 +807,29 @@ DcHandle DcContext::registerD6Joint(const pxr::SdfPath& usdPath)
     {
         // not supported yet
         return kDcInvalidHandle;
+    }
+}
+
+
+void CARB_ABI DcWakeUpRigidBody(DcHandle bodyHandle)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
+    if (body && body->pxRigidBody)
+    {
+        PxRigidBody* rigid = body->pxRigidBody;
+        PxActorType::Enum type = rigid->getType();
+        if (type == PxActorType::eRIGID_DYNAMIC)
+        {
+            // wake the body
+            static_cast<PxRigidDynamic*>(rigid)->wakeUp();
+        }
+        else if (type == PxActorType::eARTICULATION_LINK && body->art && body->art->pxArticulation)
+        {
+            // wake the articulation
+            body->art->pxArticulation->wakeUp();
+        }
     }
 }
 
@@ -903,9 +937,8 @@ bool DcContext::refreshPhysicsPointers(DcArticulation* art, bool verbose)
     {
         return false;
     }
-
+    art->pxArticulationCache = nullptr;
     art->pxArticulation = nullptr;
-    art->pxArticulationCache = nullptr; // FIXME: leak?
     art->cacheAge = -1;
 
     PxArticulationBase* abase = (PxArticulationBase*)physx->getPhysXPtr(art->path, carb::physics::ePTArticulation);
@@ -966,25 +999,28 @@ bool DcContext::refreshPhysicsPointers(DcD6Joint* j, bool verbose)
     {
         return false;
     }
-
-    j->pxJoint = nullptr;
-
-    PxJoint* pxJoint = (PxJoint*)physx->getPhysXPtr(j->path, carb::physics::ePTJoint);
-    if (!pxJoint || pxJoint->getConcreteType() != PxJointConcreteType::eD6)
+    DcContext* ctx = g_dcCtx;
+    if (!ctx)
     {
-        if (verbose)
-        {
-            DC_LOG_ERROR("Failed to refresh joint %s", j->path.GetString().c_str());
-        }
         return false;
     }
 
-    j->pxJoint = static_cast<PxD6Joint*>(pxJoint);
-    if (verbose)
+    j->pxJoint = nullptr;
+    // The joint exists in usd stage
+    PxJoint* pxJoint = (PxJoint*)physx->getPhysXPtr(j->path, carb::physics::ePTJoint);
+    if (pxJoint && pxJoint->getConcreteType() == PxJointConcreteType::eD6)
     {
-        printf("Refreshed joint %s\n", j->path.GetString().c_str());
+        j->pxJoint = static_cast<PxD6Joint*>(pxJoint);
+
+        if (verbose)
+        {
+            printf("Refreshed joint %s\n", j->path.GetString().c_str());
+        }
+        return true;
     }
-    return true;
+    // Joint was destroyed as it was not in stage, clear handles:
+    j->pxJoint = nullptr;
+    return false;
 }
 
 void DcContext::refreshPhysicsPointers(bool verbose)
@@ -1338,27 +1374,6 @@ int CARB_ABI DcGetArticulations(DcContext* ctx, DcArticulation** userBuffer, int
 }
 #endif
 
-void CARB_ABI DcWakeUpRigidBody(DcHandle bodyHandle)
-{
-    (void)DC_CHECK_SIMULATING();
-
-    DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
-    if (body && body->pxRigidBody)
-    {
-        PxRigidBody* rigid = body->pxRigidBody;
-        PxActorType::Enum type = rigid->getType();
-        if (type == PxActorType::eRIGID_DYNAMIC)
-        {
-            // wake the body
-            static_cast<PxRigidDynamic*>(rigid)->wakeUp();
-        }
-        else if (type == PxActorType::eARTICULATION_LINK && body->art && body->art->pxArticulation)
-        {
-            // wake the articulation
-            body->art->pxArticulation->wakeUp();
-        }
-    }
-}
 
 void CARB_ABI DcWakeUpArticulation(DcHandle artHandle)
 {
@@ -1620,6 +1635,8 @@ bool CARB_ABI DcGetDofProperties(DcHandle dofHandle, DcDofProperties* props);
 bool CARB_ABI DcSetDofProperties(DcHandle dofHandle, const DcDofProperties* props);
 bool CARB_ABI DcSetDofPositionTarget(DcHandle dofHandle, float target);
 bool CARB_ABI DcSetDofVelocityTarget(DcHandle dofHandle, float target);
+float CARB_ABI DcGetDofPositionTarget(DcHandle dofHandle);
+float CARB_ABI DcGetDofVelocityTarget(DcHandle dofHandle);
 
 int CARB_ABI DcGetArticulationDofCount(DcHandle artHandle)
 {
@@ -2586,6 +2603,12 @@ bool CARB_ABI DcSetDofProperties(DcHandle dofHandle, const DcDofProperties* prop
     // set drive properties
     pxJoint->setDrive(dof->pxAxis, stiffness, damping, props->maxEffort, driveType);
 
+    if (dof->art->pxArticulation->getScene())
+    {
+        // Cache becomes invalid, clear it
+        dof->art->pxArticulation->releaseCache(*dof->art->pxArticulationCache);
+        dof->art->pxArticulationCache = dof->art->pxArticulation->createCache();
+    }
     return true;
 }
 
@@ -2623,6 +2646,42 @@ bool CARB_ABI DcSetDofVelocityTarget(DcHandle dofHandle, float target)
     }
 
     return true;
+}
+
+float CARB_ABI DcGetDofPositionTarget(DcHandle dofHandle)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcDof* dof = DC_LOOKUP_DOF(dofHandle);
+    if (!dof || !dof->pxArticulationJoint)
+    {
+        return false;
+    }
+
+    if (dof->driveMode == DcDriveMode::ePositionTarget)
+    {
+        return dof->pxArticulationJoint->getDriveTarget(dof->pxAxis);
+    }
+
+    return 0;
+}
+
+float CARB_ABI DcGetDofVelocityTarget(DcHandle dofHandle)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcDof* dof = DC_LOOKUP_DOF(dofHandle);
+    if (!dof || !dof->pxArticulationJoint)
+    {
+        return false;
+    }
+
+    if (dof->driveMode == DcDriveMode::eVelocityTarget)
+    {
+        return dof->pxArticulationJoint->getDriveVelocity(dof->pxAxis);
+    }
+
+    return 0;
 }
 
 bool CARB_ABI DcApplyDofEffort(DcHandle dofHandle, float effort)
@@ -3109,8 +3168,78 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
     PxD6Joint* joint = dcJoint->pxJoint;
     if (!joint)
     {
-        DC_LOG_ERROR("D6 Joint is missing physics joint");
-        return false;
+        DcContext* ctx = g_dcCtx;
+        if (!ctx)
+        {
+            return false;
+        }
+        printf("Refreshing joint %s\n", dcJoint->path.GetString().c_str());
+        // Joint was created through DC so it doesn't exist after sim is stopped, re-create
+        PxRigidBody* pxBody0 = nullptr;
+        PxRigidBody* pxBody1 = nullptr;
+        if (dcJoint->props.body0 != kDcInvalidHandle)
+        {
+            DcRigidBody* body0 = DC_LOOKUP_RIGID_BODY(dcJoint->props.body0);
+            if (!body0 || !body0->pxRigidBody)
+            {
+
+                DC_LOG_ERROR("Failed to refresh Joint: body 0 %s at %s handle is invalid", body0->name.c_str(),
+                             body0->path.GetString().c_str());
+
+                return kDcInvalidHandle;
+            }
+            pxBody0 = body0->pxRigidBody;
+            if (!pxBody0->getScene())
+            {
+
+                DC_LOG_ERROR("Failed to refresh Joint: body 0 %s at %s not in scene", body0->name.c_str(),
+                             body0->path.GetString().c_str());
+
+                return kDcInvalidHandle;
+            }
+            DcWakeUpRigidBody(dcJoint->props.body0);
+        }
+        if (dcJoint->props.body1 != kDcInvalidHandle)
+        {
+            DcRigidBody* body1 = DC_LOOKUP_RIGID_BODY(dcJoint->props.body1);
+            if (!body1 || !body1->pxRigidBody)
+            {
+
+                DC_LOG_ERROR("Failed to refresh Joint: body 1 %s at %s handle is invalid", body1->name.c_str(),
+                             body1->path.GetString().c_str());
+
+                return kDcInvalidHandle;
+            }
+            pxBody1 = body1->pxRigidBody;
+            if (!pxBody1->getScene())
+            {
+
+                DC_LOG_ERROR("Failed to refresh Joint: body 1 %s at %s not in scene", body1->name.c_str(),
+                             body1->path.GetString().c_str());
+
+                return kDcInvalidHandle;
+            }
+            DcWakeUpRigidBody(dcJoint->props.body1);
+        }
+        std::string jointName = "/joint_" + std::to_string(ctx->numD6Joints());
+        SdfPath jointPath;
+        if (dcJoint->props.name != nullptr)
+        {
+            jointName = std::string(dcJoint->props.name);
+        }
+        jointPath = SdfPath(jointName);
+
+
+        size_t originId = (size_t)pxBody0->userData;
+        SdfPath originPath(ctx->physx->getPhysXObjectUsdPath(originId));
+        SdfPath targetPath;
+        if (pxBody1)
+            targetPath = ctx->physx->getPhysXObjectUsdPath((size_t)pxBody1->userData);
+
+
+        dcJoint->pxJoint = (PxD6Joint*)ctx->physx->createD6JointAtPath(jointPath, originPath, targetPath);
+        joint = dcJoint->pxJoint;
+        printf("Refreshed joint %s\n", dcJoint->path.GetString().c_str());
     }
     PxRigidBody* pxBody0 = nullptr;
     PxRigidBody* pxBody1 = nullptr;
@@ -3158,7 +3287,6 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
     joint->setLocalPose(PxJointActorIndex::eACTOR1, pose1);
 
     joint->setBreakForce(props->forceLimit, props->torqueLimit);
-    joint->setConstraintFlag(PxConstraintFlag::eBROKEN, false);
 
     PxD6JointDrive drive(props->stiffness, props->damping, props->forceLimit, false);
     PxD6JointDrive defaultDrive;
@@ -3313,8 +3441,14 @@ bool getD6JointConstraintIsBroken(DcD6Joint* dcJoint)
     }
 
     PxD6Joint* joint = dcJoint->pxJoint;
-
-    return joint->getConstraintFlags() & PxConstraintFlag::eBROKEN;
+    if (joint)
+    {
+        return joint->getConstraintFlags() & PxConstraintFlag::eBROKEN;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 //
@@ -3376,6 +3510,10 @@ void SuDetach(void* data)
 void SuPause(void* data)
 {
     printf("++ DC: Stage Pause\n");
+    if (g_dcCtx)
+    {
+        g_dcCtx->wasPaused = true;
+    }
 }
 
 void SuResume(float currentTime, void* data)
@@ -3385,10 +3523,15 @@ void SuResume(float currentTime, void* data)
     if (g_dcCtx)
     {
         // printf("Refreshing context\n");
-        g_dcCtx->refreshPhysicsPointers(true);
+        // if pause is pressed there is no need to refresh pointers on the next play
+        if (!g_dcCtx->wasPaused)
+        {
+            g_dcCtx->refreshPhysicsPointers(true);
+        }
 #if DC_TRACK_EDITOR_SIMULATION_STATE
         g_dcCtx->isSimulating = true;
 #endif
+        g_dcCtx->wasPaused = false;
     }
 }
 
@@ -3405,6 +3548,7 @@ void SuStop(void* data)
 #if DC_TRACK_EDITOR_SIMULATION_STATE
         g_dcCtx->isSimulating = false;
 #endif
+        g_dcCtx->wasPaused = false;
     }
 }
 
@@ -3606,6 +3750,8 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.setDofProperties = DcSetDofProperties;
     iface.setDofPositionTarget = DcSetDofPositionTarget;
     iface.setDofVelocityTarget = DcSetDofVelocityTarget;
+    iface.getDofPositionTarget = DcGetDofPositionTarget;
+    iface.getDofVelocityTarget = DcGetDofVelocityTarget;
     iface.applyDofEffort = DcApplyDofEffort;
 
     iface.createRigidBodyAttractor = DcCreateRigidBodyAttractor;

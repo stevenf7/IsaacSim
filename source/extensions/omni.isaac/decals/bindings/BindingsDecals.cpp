@@ -34,6 +34,8 @@ PYBIND11_MODULE(_decals, m)
 {
     using namespace carb;
     using namespace omni::isaac::decals;
+    // We use carb data types, must import bindings for them
+    auto carb_module = py::module::import("carb");
 
     m.doc() = "pybind11 omni.isaac.decals bindings";
 

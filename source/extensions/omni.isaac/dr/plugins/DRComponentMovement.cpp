@@ -28,7 +28,7 @@ DRComponentMovement::~DRComponentMovement()
 {
     stop();
 }
-void DRComponentMovement::initialize(const pxr::DrSchemaMovementComponent& prim, pxr::UsdStageRefPtr stage)
+void DRComponentMovement::initialize(const pxr::DrSchemaMovementComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     DRComponentBase::initialize(prim, stage);
 }

@@ -78,7 +78,7 @@ class Extension(omni.ext.IExt):
     def _on_environment_setup(self, widget):
         self._stage = self._usd_context.get_stage()
         print("loading enviornment")
-        asset_path = "omni:/Library/Robots/Kaya"
+        asset_path = "omni:/Isaac/Robots/Kaya"
         kaya_usd = asset_path + "/kaya.usd"
         speed_gain = 10.0
 
@@ -89,7 +89,7 @@ class Extension(omni.ext.IExt):
         if self._create_background_chk.value:
             CreateBackground(
                 self._stage,
-                "omni:/Library/Environments/GridRoom/gridroom_curved.usd",
+                "omni:/Isaac/Environments/Grid/gridroom_curved.usd",
                 background_path="/background",
                 offset=Gf.Vec3d(0, 0, -9),
             )

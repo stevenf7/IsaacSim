@@ -38,7 +38,7 @@ public:
      *
      * @param stage
      */
-    virtual void initialize(pxr::UsdStageRefPtr stage)
+    virtual void initialize(pxr::UsdStageWeakPtr stage)
     {
         mStage = stage;
     }
@@ -56,6 +56,21 @@ public:
      */
     virtual void initComponents() = 0;
 
+    /**
+     * @brief Optional function that runs after start is pressed
+     *
+     */
+    virtual void onStart()
+    {
+    }
+
+    /**
+     * @brief Optional function that runs after stop is pressed
+     *
+     */
+    virtual void onStop()
+    {
+    }
     /**
      * @brief Create a supported component in this application
      * Pure virtual, must be defined by the child class
@@ -84,7 +99,7 @@ public:
     virtual void deleteAllComponents() = 0;
 
 protected:
-    pxr::UsdStageRefPtr mStage = nullptr;
+    pxr::UsdStageWeakPtr mStage = nullptr;
 
     double mTimeSeconds = 0; // current time in seconds
     int64_t mTimeNanoSeconds = 0; // current time in nano seconds

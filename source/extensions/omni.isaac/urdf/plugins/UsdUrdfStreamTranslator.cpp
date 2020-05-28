@@ -64,7 +64,7 @@ typedef void (*addJointFunction)(const UsdStagePtr& stage,
                                  float breakTorque);
 
 // Make a path name that is not already used.
-std::string GetNewSdfPathString(UsdStageRefPtr stage, std::string path, int nameClashNum = -1)
+std::string GetNewSdfPathString(UsdStageWeakPtr stage, std::string path, int nameClashNum = -1)
 {
     bool appendedNumber = false;
     int numberAppended = std::max<int>(nameClashNum, 0);
@@ -184,6 +184,7 @@ bool SetToPose(UsdGeomXformable const& gprim, const NvIsaac::Transform& pose, fl
         return false;
     }
     pxr::GfMatrix4d mat;
+    mat.SetIdentity();
     mat.SetTranslateOnly(distanceScale * GfVec3d(pose.p.x, pose.p.y, pose.p.z));
     mat.SetRotateOnly(GfQuatf(pose.q.w, GfVec3f(pose.q.x, pose.q.y, pose.q.z)));
     bool retVal = (trans.Set(mat, UsdTimeCode::Default()));
@@ -202,7 +203,7 @@ const NvIsaac::IRobotGraphics::Material* GetMaterial(const NvIsaac::IRobotGraphi
     return sm ? &sm->getMaterial() : nullptr;
 }
 
-void CreateMaterial(UsdGeomGprim& gprim, const NvIsaac::IRobotGraphics::Material* smMat, SdfPath path, UsdStageRefPtr stage)
+void CreateMaterial(UsdGeomGprim& gprim, const NvIsaac::IRobotGraphics::Material* smMat, SdfPath path, UsdStageWeakPtr stage)
 {
     VtVec3fArray color(1);
     if (!smMat || (smMat && !stage))
@@ -407,7 +408,7 @@ const NvIsaac::IRobotGraphics::Tri* GetTri(const NvIsaac::IRobotGraphics::SubMes
     return sm->getTriangle(i);
 }
 
-void AddCollisionMeshesToStage(UsdStageRefPtr stage,
+void AddCollisionMeshesToStage(UsdStageWeakPtr stage,
                                float distanceScale,
                                const SdfPath& robotPath,
                                const SdfPath& path,
@@ -435,7 +436,7 @@ void AddCollisionMeshesToStage(UsdStageRefPtr stage,
             convexMesh.CreatePurposeAttr().Set(UsdGeomTokens->guide);
     }
 }
-UsdPrim AddVisualMeshesToStage(UsdStageRefPtr stage,
+UsdPrim AddVisualMeshesToStage(UsdStageWeakPtr stage,
                                float distanceScale,
                                const SdfPath& robotPath,
                                const SdfPath& path,
@@ -559,7 +560,7 @@ UsdPrim AddVisualCapsuleToStage(UsdStageRefPtr stage,
 
 template <class Mesh, class SubMesh, class Tri>
 int AddInstanceMeshesToStage(
-    UsdStageRefPtr stage, float distanceScale, const SdfPath& path, const Mesh* mesh, int i, bool isCollision = false)
+    UsdStageWeakPtr stage, float distanceScale, const SdfPath& path, const Mesh* mesh, int i, bool isCollision = false)
 {
     SdfPath meshPath = SdfPath(path.GetString() + std::to_string(i));
     UsdPrim prim = stage->OverridePrim(meshPath);
@@ -635,7 +636,7 @@ int AddInstanceMeshesToStage(
 }
 
 
-UsdPrim AddBoxToStage(UsdStageRefPtr stage,
+UsdPrim AddBoxToStage(UsdStageWeakPtr stage,
                       float distanceScale,
                       const SdfPath& path,
                       const NvIsaac::Vec3& size,
@@ -673,7 +674,7 @@ UsdPrim AddBoxToStage(UsdStageRefPtr stage,
     return gprim.GetPrim();
 }
 
-UsdPrim AddSphereToStage(UsdStageRefPtr stage,
+UsdPrim AddSphereToStage(UsdStageWeakPtr stage,
                          float distanceScale,
                          const SdfPath& path,
                          float radius,
@@ -709,7 +710,7 @@ UsdPrim AddSphereToStage(UsdStageRefPtr stage,
 }
 
 template <class UsdGeomCapsinder>
-UsdPrim AddCapsinderAttrs(UsdStageRefPtr stage,
+UsdPrim AddCapsinderAttrs(UsdStageWeakPtr stage,
                           UsdGeomCapsinder gprim,
                           float distanceScale,
                           float radius,
@@ -746,7 +747,7 @@ UsdPrim AddCapsinderAttrs(UsdStageRefPtr stage,
     return gprim.GetPrim();
 }
 
-UsdPrim AddCylinderToStage(UsdStageRefPtr stage,
+UsdPrim AddCylinderToStage(UsdStageWeakPtr stage,
                            float distanceScale,
                            const SdfPath& path,
                            float radius,
@@ -764,7 +765,7 @@ UsdPrim AddCylinderToStage(UsdStageRefPtr stage,
         stage, gprim, distanceScale, radius, height, name, SdfPath(originalPathString), pose, isGuide);
 }
 
-UsdPrim AddCapsuleToStage(UsdStageRefPtr stage,
+UsdPrim AddCapsuleToStage(UsdStageWeakPtr stage,
                           float distanceScale,
                           const SdfPath& path,
                           float radius,
@@ -782,7 +783,7 @@ UsdPrim AddCapsuleToStage(UsdStageRefPtr stage,
         stage, gprim, distanceScale, radius, height, name, SdfPath(originalPathString), pose, isGuide);
 }
 
-void AddRawDOFToStage(UsdStageRefPtr stage, const SdfPath& path, const NvIsaac::IRobotSkeleton* skel)
+void AddRawDOFToStage(UsdStageWeakPtr stage, const SdfPath& path, const NvIsaac::IRobotSkeleton* skel)
 {
     SdfPath mpath = SdfPath(GetNewSdfPathString(stage, path.GetString() + "/DebugInfo/DOF"));
     UsdPrim prim = stage->DefinePrim(mpath);
@@ -808,7 +809,7 @@ void AddRawDOFToStage(UsdStageRefPtr stage, const SdfPath& path, const NvIsaac::
     prim.CreateAttribute(TfToken("jointIndex"), SdfValueTypeNames->IntArray).Set(jointIndices);
 }
 
-void AddRawJointsToStage(UsdStageRefPtr stage, const SdfPath& path, const NvIsaac::IRobotSkeleton* skel)
+void AddRawJointsToStage(UsdStageWeakPtr stage, const SdfPath& path, const NvIsaac::IRobotSkeleton* skel)
 {
     SdfPath newPath = SdfPath(GetNewSdfPathString(stage, path.GetString() + "/DebugInfo/Joints"));
     UsdGeomXform gprim = UsdGeomXform::Define(stage, newPath);
@@ -886,7 +887,7 @@ void AddRawJointsToStage(UsdStageRefPtr stage, const SdfPath& path, const NvIsaa
     primvars.CreatePrimvar(TfToken("DOFIndexCount"), SdfValueTypeNames->IntArray).Set(DOFIndexCount);
 }
 
-void AddRawJointFramesToStage(UsdStageRefPtr stage,
+void AddRawJointFramesToStage(UsdStageWeakPtr stage,
                               const SdfPath& path,
                               const std::vector<std::string>& bodyNames,
                               const NvIsaac::IRobotSkeleton* skel)
@@ -974,7 +975,7 @@ void SetLimit(PhysicsSchemaPrismaticPhysicsJoint& prismaticJointAPI,
 
 template <class T>
 void AddSingleJoint(const NvIsaac::IRobotSkeleton::JointNode* jn,
-                    UsdStageRefPtr stage,
+                    UsdStageWeakPtr stage,
                     const SdfPath& jointPath,
                     PhysicsSchemaPhysicsJoint& jointPrimBase,
                     const NvIsaac::IRobotSkeleton* skel,
@@ -1016,7 +1017,7 @@ void AddSingleJoint(const NvIsaac::IRobotSkeleton::JointNode* jn,
         }
     }
 }
-void AddJointsToStage(UsdStageRefPtr stage,
+void AddJointsToStage(UsdStageWeakPtr stage,
                       const SdfPath& path,
                       float distanceScale,
                       const std::vector<std::string>& bodyNames,
@@ -1168,7 +1169,7 @@ void AddJointsToStage(UsdStageRefPtr stage,
     }
 }
 
-void UsdUrdfStream::UsdUrdfTranslateUrdfToUsd(UsdStageRefPtr stage)
+void UsdUrdfStream::UsdUrdfTranslateUrdfToUsd(UsdStageWeakPtr stage)
 {
     float distanceScale = mImportConfig.distanceScale;
     // To create an SdfLayer holding Usd data representing \p urdfStream, we

@@ -5,28 +5,73 @@ from omni.isaac.lidar import _lidar
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysicsSchemaTools
 import omni.isaac.LidarSchema as LidarSchema
 import asyncio
-import inspect
+import numpy as np
+import os
+import carb.tokens
 
-# import pxr
-# import pkgutil
-# import os.path, pkgutil
+
+def get_data_file(file_name: str):
+    if os.path.isabs(file_name):
+        path_to_file = file_name
+    else:
+        path_to_file = os.path.abspath(
+            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
+        )
+    return path_to_file
+
+
+async def load_test_file(test_file_name: str):
+    if not Usd.Stage.IsSupportedFile(test_file_name):
+        raise ValueError("Only USD files can be loaded with this method")
+
+    path_to_file = get_data_file(test_file_name)
+
+    usd_context = omni.usd.get_context()
+    usd_context.disable_save_to_recent_files()
+    (result, error) = await omni.kit.asyncapi.open_stage(path_to_file)
+    usd_context.enable_save_to_recent_files()
+    return (result, error)
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         self._lidar = _lidar.acquire_lidar_interface()
-
+        self._editor = omni.kit.editor.get_editor_interface()
         await omni.kit.asyncapi.new_stage()
+        self._stage = omni.usd.get_context().get_stage()
+
+        # light
+        sphereLight = UsdLux.SphereLight.Define(self._stage, Sdf.Path("/World/SphereLight"))
+        sphereLight.CreateRadiusAttr(150)
+        sphereLight.CreateIntensityAttr(30000)
+        sphereLight.AddTranslateOp().Set(Gf.Vec3f(650.0, 0.0, 1150.0))
+
+        # set up axis to z
+        UsdGeom.SetStageUpAxis(self._stage, UsdGeom.Tokens.z)
+        UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
+
+        # Physics scene
+        scene = PhysicsSchema.PhysicsScene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
 
     # After running each test
     async def tearDown(self):
+        self._editor.stop()
         pass
 
-    def add_lidar(self, lidarPath):
-        stage = omni.usd.get_context().get_stage()
+    async def sweep_parameter(self, parameter, min_v, max_v, step):
+        print(parameter.GetName())
+        for value in np.arange(min_v, max_v, step):
+            # print(value)
+            parameter.Set(float(value))
+            await omni.kit.asyncapi.next_update()
+            await omni.kit.asyncapi.next_update()
 
-        lidar = LidarSchema.Lidar.Define(stage, Sdf.Path(lidarPath))
+    def add_lidar(self, lidarPath):
+
+        lidar = LidarSchema.Lidar.Define(self._stage, Sdf.Path(lidarPath))
         lidar.CreateHorizontalFovAttr().Set(360.0)
         lidar.CreateVerticalFovAttr().Set(30.0)
         lidar.CreateRotationRateAttr().Set(20.0)
@@ -40,10 +85,9 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         return lidar
 
     def add_cube(self, path, size, offset):
-        stage = omni.usd.get_context().get_stage()
 
-        cubeGeom = UsdGeom.Cube.Define(stage, path)
-        cubePrim = stage.GetPrimAtPath(path)
+        cubeGeom = UsdGeom.Cube.Define(self._stage, path)
+        cubePrim = self._stage.GetPrimAtPath(path)
 
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
@@ -68,24 +112,8 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Tests a static lidar with a cube in front of it
     async def test_static_lidar(self):
-        await omni.kit.asyncapi.new_stage()
-        stage = omni.usd.get_context().get_stage()
-        # set up axis to z
-        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
-        UsdGeom.SetStageMetersPerUnit(stage, 0.01)
-
-        # light
-        sphereLight = UsdLux.SphereLight.Define(stage, Sdf.Path("/World/SphereLight"))
-        sphereLight.CreateRadiusAttr(150)
-        sphereLight.CreateIntensityAttr(30000)
-        sphereLight.AddTranslateOp().Set(Gf.Vec3f(650.0, 0.0, 1150.0))
-
-        # Physics scene
-        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/physicsScene"))
-        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
-
         # Plane
-        PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500.0, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
+        PhysicsSchemaTools.addGroundPlane(self._stage, "/World/groundPlane", "Z", 1500.0, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
 
         # Add a cube
         cubePath = "/World/Cube"
@@ -100,40 +128,21 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
         # Run for a second
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._editor.play()
         await asyncio.sleep(1)
-        editor.pause()
+        self._editor.pause()
 
         # Get depth, and check that we hit the cube in front, and hit nothing in back
         depth = self._lidar.get_depth_data(lidarPath)
 
         self.assertLess(depth[0, 0], 2000)
         self.assertEqual(depth[450, 0], 65535)
-
-        editor.stop()
+        self._editor.play()
 
     # Tests a lidar on a falling cube, with a cube in front of it after it lands
     async def test_dynamic_lidar(self):
-        await omni.kit.asyncapi.new_stage()
-        stage = omni.usd.get_context().get_stage()
-
-        # set up axis to z
-        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
-        UsdGeom.SetStageMetersPerUnit(stage, 0.01)
-
-        # light
-        sphereLight = UsdLux.SphereLight.Define(stage, Sdf.Path("/World/SphereLight"))
-        sphereLight.CreateRadiusAttr(150)
-        sphereLight.CreateIntensityAttr(30000)
-        sphereLight.AddTranslateOp().Set(Gf.Vec3f(650.0, 0.0, 1150.0))
-
-        # Physics scene
-        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/physicsScene"))
-        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
-
         # Plane
-        PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500.0, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
+        PhysicsSchemaTools.addGroundPlane(self._stage, "/World/groundPlane", "Z", 1500.0, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
 
         # Add a cube
         cubePath = "/World/Cube"
@@ -152,13 +161,63 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 50.0))
 
         # Run for two seconds
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+
+        self._editor.play()
         await asyncio.sleep(2)
-        editor.pause()
-        # TODO; Fix this test
+        self._editor.pause()
         # Get depth, and check that we hit the cube in front, and hit nothing in back
-        # depth = self._lidar.get_depth_data(lidarPath)
-        # self.assertLess(depth[0, 0], 2000)
-        # self.assertEqual(depth[450, 0], 65535)
-        editor.stop()
+        depth = self._lidar.get_depth_data(lidarPath)
+        self.assertLess(depth[0, 0], 2000)
+        self.assertEqual(depth[450, 0], 65535)
+
+    async def test_parameter_ranges(self):
+        # Plane
+        PhysicsSchemaTools.addGroundPlane(self._stage, "/World/groundPlane", "Z", 1500.0, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
+
+        cubePath2 = "/World/Cube2"
+        cubeGeom2 = self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
+
+        lidarPath = "/World/Cube2/Lidar"
+        lidar = self.add_lidar(lidarPath)
+
+        self._editor.play()
+        lidar.GetHighLodAttr().Set(True)
+        lidar.GetDrawLidarPointsAttr().Set(False)
+        await self.sweep_parameter(lidar.GetRotationRateAttr(), -1024, 1024, 32)
+        lidar.GetRotationRateAttr().Set(0)
+        await self.sweep_parameter(lidar.GetHorizontalFovAttr(), -1024, 1024, 32)
+        lidar.GetHorizontalFovAttr().Set(360)
+        await self.sweep_parameter(lidar.GetVerticalFovAttr(), -1024, 1024, 32)
+        lidar.GetHorizontalFovAttr().Set(120)
+        lidar.GetVerticalFovAttr().Set(30)
+        await self.sweep_parameter(lidar.GetHorizontalResolutionAttr(), -0.1, 1.0, 0.1)
+        await self.sweep_parameter(lidar.GetVerticalResolutionAttr(), -0.1, 1.0, 0.1)
+        await self.sweep_parameter(lidar.GetMinRangeAttr(), -1024, 1024, 32)
+        await self.sweep_parameter(lidar.GetMaxRangeAttr(), -1024, 1024, 32)
+        lidar.GetHighLodAttr().Set(False)
+
+    async def test_carter_lidar(self):
+        (result, error) = await load_test_file("assets/robots/carter/carter.usd")
+        self._stage = omni.usd.get_context().get_stage()
+
+        # Add a cube
+        cubePath = "/World/Cube"
+        cubeGeom = self.add_cube(cubePath, 75.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+
+        # Add lidar
+        lidarPath = "/carter/chassis_link/Lidar"
+        lidar = self.add_lidar(lidarPath)
+
+        lidar.GetRotationRateAttr().Set(0.0)
+        lidar.GetHighLodAttr().Set(False)
+        lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 50.0))
+
+        # Run for two seconds
+
+        self._editor.play()
+        await asyncio.sleep(2)
+        self._editor.pause()
+        # Get depth, and check that we hit the cube in front, and hit nothing in back
+        depth = self._lidar.get_depth_data(lidarPath)
+        self.assertLess(depth[0, 0], 2000)
+        self.assertEqual(depth[450, 0], 65535)

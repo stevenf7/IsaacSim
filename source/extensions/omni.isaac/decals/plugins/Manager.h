@@ -29,7 +29,7 @@ public:
     Manager();
     ~Manager();
 
-    bool init(pxr::UsdStageRefPtr stage);
+    bool init(pxr::UsdStageWeakPtr stage);
     void term();
 
     bool initialized()
@@ -57,7 +57,7 @@ public:
 private:
     void updateDrawing();
 
-    pxr::UsdStageRefPtr m_stage;
+    pxr::UsdStageWeakPtr m_stage;
     ISceneQueryHandler* m_sceneQueryHandler;
     IDrawingManager* m_drawingManager;
     kit::SubscriptionId m_updateSubId;

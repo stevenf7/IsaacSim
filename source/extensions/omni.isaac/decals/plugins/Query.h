@@ -64,7 +64,7 @@ protected:
 
 
 // Create a scene query handler object using this function, and destroy with the release() function.
-ISceneQueryHandler* createSceneQueryHandler(pxr::UsdStageRefPtr stage);
+ISceneQueryHandler* createSceneQueryHandler(pxr::UsdStageWeakPtr stage);
 
 } // namespace omni
 } // namespace isaac

@@ -4,17 +4,27 @@
             "title": "Omniverse Isaac Sim Tests"
         },
         "extensions": {
-            "folders2": ["${kit}/exts","${kit}/extsPhysics","${app}/../exts"],
-            "foldersBuiltin": ["${kit}/extensions/extensions-bundled", "${kit}/extensions/extensions-other", "${documents}/extensions","${app}/../extensions"],
+            "folders2": ["${kit}/exts", "${kit}/extsPhysics", "${app}/../exts"],
+            "foldersBuiltin": [
+                "${kit}/extensions/extensions-bundled",
+                "${kit}/extensions/extensions-other",
+                "${documents}/extensions",
+                "${app}/../extensions"
+            ],
             "enabledBuiltin": [
+                "omni.renderer-rtx",
                 "omni.kit.editor-full",
+                "omni.kit.builtin.file_menu",
                 "omni.kit.builtin.toolbar",
+                "omni.kit.window.viewport",
+                "omni.utils.utilities_menu",
+                "omni.utils.usd_paths",
+                "omni.kit.context_menu",
                 "omni.physx",
                 "omni.isaac.dynamic_control",
                 "omni.isaac.dr",
                 "omni.isaac.lidar",
                 "omni.isaac.motion_planning",
-                "omni.isaac.decals",
                 "omni.isaac.utils",
                 "omni.isaac.urdf"
             ]
@@ -26,9 +36,18 @@
         }
     },
     "exts": {
-        "omni.kit.test" : {
+        "omni.kit.test": {
             "printTests": true,
+            "includeTests": ["omni.isaac.*"],
+            "excludeTests": ["omni.isaac.dr.*"],
             "runTestsAndQuit": true
-        },
+        }
+    },
+    "persistent": {
+        "app": {
+            "viewport": {
+                "displayOptions": 3085
+            }
+        }
     }
 }

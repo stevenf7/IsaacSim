@@ -2,6 +2,7 @@ display_name = "URDF Import and Utils"
 
 [dependencies]
 "omni.kit.editor" = {}
+"omni.isaac.utils" = {}
 
 [[python.modules]]
 name = "omni.isaac.urdf"

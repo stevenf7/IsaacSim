@@ -47,8 +47,9 @@ class SM_events(Enum):
     DETACHED = 4
     TIMEOUT = 5
     STOP = 6
+    BROKENGRIP = 7
 
-    NONE = 7  # no event ocurred, just clocks
+    NONE = 8  # no event ocurred, just clocks
 
 
 class SM_states(Enum):
@@ -108,6 +109,7 @@ class PickAndPlaceStateMachine(object):
         self._detached = False
         self._upright = False  # Used to indicate if the tray is being picked facing up, so the proper state is called
         self._flipped = False
+        self._closed = False
 
         # Constants for lifting, fliping, and intermediary goals
         self.upside_goal = _dynamic_control.Transform()
@@ -134,6 +136,10 @@ class PickAndPlaceStateMachine(object):
                 self.sm[s][e] = self._empty
                 self.thresh[s] = 0
 
+        # Use a same event handler for broken grip on all events
+        for s in SM_states:
+            self.sm[s][SM_events.BROKENGRIP] = self._all_broken_grip
+
         # Fill in the functions to handle each event for each status
         self.sm[SM_states.STANDBY][SM_events.START] = self._standby_start
         self.sm[SM_states.STANDBY][SM_events.GOAL_REACHED] = self._standby_goal_reached
@@ -147,13 +153,15 @@ class PickAndPlaceStateMachine(object):
         self.thresh[SM_states.FLIPPING] = 2
 
         self.sm[SM_states.PLACING][SM_events.GOAL_REACHED] = self._placing_goal_reached
-        self.thresh[SM_states.PLACING] = 2
+        self.thresh[SM_states.PLACING] = 0
 
         self.sm[SM_states.ATTACH][SM_events.GOAL_REACHED] = self._attach_goal_reached
         self.sm[SM_states.ATTACH][SM_events.ATTACHED] = self._attach_attached
+        self.thresh[SM_states.ATTACH] = 0
 
         self.sm[SM_states.DETACH][SM_events.GOAL_REACHED] = self._detach_goal_reached
         self.sm[SM_states.DETACH][SM_events.DETACHED] = self._detach_detached
+        self.thresh[SM_states.DETACH] = 0
 
         self.current_state = SM_states.STANDBY
         self.previous_state = -1
@@ -389,6 +397,7 @@ class PickAndPlaceStateMachine(object):
         if reset:
             self.current_state = SM_states.STANDBY
             self.robot.end_effector.gripper.open()
+            self._closed = False
             self.start = False
             self._upright = False
             self.waypoints.clear()
@@ -399,6 +408,8 @@ class PickAndPlaceStateMachine(object):
             self.total_trays = 0
             self.stack_size *= 0
             self.current = None
+        elif self._closed and not self.robot.end_effector.gripper.is_closed():
+            self.sm[self.current_state][SM_events.BROKENGRIP]()
         elif self.goalReached():
             if len(self.waypoints) == 0:
                 self.sm[self.current_state][SM_events.GOAL_REACHED]()
@@ -475,6 +486,7 @@ class PickAndPlaceStateMachine(object):
         Handles a state machine step when the target goal is reached, and the machine is on attach state
         """
         self.robot.end_effector.gripper.close()
+        self._closed = True
         self.lerp_to_pose(self.target_position, 60)  # Wait 1 second in place for attachment
         if self.robot.end_effector.gripper.is_closed():
             self._attached = True
@@ -544,6 +556,7 @@ class PickAndPlaceStateMachine(object):
         """
         if self.robot.end_effector.gripper.is_closed():
             self.robot.end_effector.gripper.open()
+            self._closed = False
             # Lerp to its same pose to wait a few timesteps before entering this event again.
             self.lerp_to_pose(self.target_position, n_waypoints=4)
             self._detached = True
@@ -606,9 +619,6 @@ class PickAndPlaceStateMachine(object):
         else:
 
             offset.p = (-0.10, 0.0, 0.0)
-            # Give the tray a small speed so the object doesn't go to sleep in the simulation optimizer
-            self.dc.set_rigid_body_linear_velocity(self.dc.get_rigid_body(self.current), [0, 0, -1.0])
-
             # Move the arm up slowly 10 cm
             self.lerp_to_pose(math_utils.mul(self.target_position, offset), n_waypoints=30)
             offset.p = (-0.30, 0.0, 0.0)
@@ -704,6 +714,16 @@ class PickAndPlaceStateMachine(object):
 
         self.change_state(SM_states.DETACH)
 
+    def _all_broken_grip(self, *args):
+        self._closed = False
+        tr = self.get_current_state_tr()
+        self.waypoints.clear()
+        self.lerp_to_pose(tr, 60)
+        self.lerp_to_pose(self.default_position, 90)
+        self.target_position = self.waypoints.popleft()
+        self.move_to_target()
+        self.current_state = SM_states.STANDBY
+
 
 class BinStack(Scenario):
     """
@@ -714,11 +734,11 @@ class BinStack(Scenario):
     def __init__(self, editor, dc, mp):
         super().__init__(editor, dc, mp)
 
-        self.asset_path = "omni:/Projects/gtc_sj_2020"
+        self.asset_path = "omni:/Isaac"
         # use local content if not connected to omni server
         if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
             print("Use local content")
-            self.asset_path = "art_assets/gtc_sj_2020"
+            self.asset_path = "art_assets/Isaac"
         else:
             print("Use server content")
 
@@ -798,7 +818,7 @@ class BinStack(Scenario):
                 )
 
     def create_UR10(self, *args):
-        self.ur10_table_usd = self.asset_path + "/Stage/StageD6robotiq.usd"
+        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd"
         super().create_UR10()
         use_background = True
         if len(args) > 0:
@@ -824,8 +844,8 @@ class BinStack(Scenario):
         else:
             CreateBackground(
                 self._stage,
-                self.asset_path + "/Backgrounds/Holodeck_curved.usd",
-                [-315.419, 127.124, -10.480],
+                self.asset_path + "/Environments/Grid/gridroom_curved.usd",
+                [-315.419, 127.124, -154.65],
                 Gf.Quatd(-0.7071, 0, 0, 0.7071),
             )
         prim = self._stage.GetPrimAtPath("/World")
@@ -908,7 +928,7 @@ class BinStack(Scenario):
             body = self._dc.get_articulation_body(self.ur10_solid.ar, bodyIdx)
             self._dc.set_rigid_body_disable_gravity(body, True)
 
-        p = str(prim.GetPath()) + "/TexturedDemoTable/simple_table/CollisionCube"
+        p = str(prim.GetPath()) + "/table/simple_table/CollisionCube"
         print(p)
         self.world.register_object(0, p, "housing_0")
         self.world.make_obstacle("housing_0", 3, self._stage.GetPrimAtPath(p).GetAttribute("xformOp:scale").Get())
@@ -975,5 +995,7 @@ class BinStack(Scenario):
     def open_gripper(self):
         if self.ur10_solid.end_effector.gripper.is_closed():
             self.ur10_solid.end_effector.gripper.open()
+            self.pick_and_place._closed = False
         else:
             self.ur10_solid.end_effector.gripper.close()
+            self.pick_and_place._closed = True

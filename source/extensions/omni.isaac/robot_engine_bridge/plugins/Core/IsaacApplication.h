@@ -50,7 +50,7 @@ public:
      *
      * @param stage
      */
-    virtual void initialize(pxr::UsdStageRefPtr stage);
+    virtual void initialize(pxr::UsdStageWeakPtr stage);
 
     /**
      * @brief Create the application from JSON
@@ -112,7 +112,7 @@ public:
      *
      * @param stage
      */
-    void setStage(pxr::UsdStageRefPtr stage);
+    void setStage(pxr::UsdStageWeakPtr stage);
     /**
      * @brief initialize stage loader parameters
      *

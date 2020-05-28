@@ -24,7 +24,7 @@ public:
     virtual ~RosJointState();
     virtual void initialize(RosNode* rosNode,
                             const pxr::RosBridgeSchemaRosBridgeComponent& prim,
-                            pxr::UsdStageRefPtr stage);
+                            pxr::UsdStageWeakPtr stage);
 
     virtual void onComponentChange();
     void pubCallback(ros::Publisher* pub);
@@ -37,6 +37,7 @@ private:
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
     double mUnitScale = 1;
+    pxr::SdfPath mArticulationPath;
 };
 }
 }

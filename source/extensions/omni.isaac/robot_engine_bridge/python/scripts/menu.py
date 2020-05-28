@@ -11,6 +11,7 @@ ADD_DIFFERENTIALBASE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Differential B
 ADD_JOINTCONTROL_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Joint Control"
 ADD_SCISSORLIFT_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Scissor Lift"
 ADD_SURFACEGRIPPER_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Surface Gripper"
+ADD_TWOFINGERGRIPPER_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Two Finger Gripper"
 ADD_RIGIDBODYSINK_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Rigid Body Sink"
 ADD_TELEPORT_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Teleport"
 ADD_SCENARIOFROMMESSAGE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Scenario From Message"
@@ -32,6 +33,7 @@ class RobotEngineBridgeMenu:
         self._menus.append(editor_menu.add_item(ADD_JOINTCONTROL_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_SCISSORLIFT_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_SURFACEGRIPPER_SCENE_MENU_ITEM, self._on_scene_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_TWOFINGERGRIPPER_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_RIGIDBODYSINK_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_TELEPORT_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_SCENARIOFROMMESSAGE_SCENE_MENU_ITEM, self._on_scene_menu_click))
@@ -142,6 +144,31 @@ class RobotEngineBridgeMenu:
 
         pass
 
+    def add_twofinger_gripper(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_TwoFingerGripper", False)
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_TwoFingerGripper", True)
+
+        prim = REBSchema.RobotEngineTwoFingerGripper.Define(self._stage, path)
+        self.setup_base_prim(prim)
+
+        prim.CreateInputComponentAttr("input")
+        prim.CreateInputChannelAttr("io_command")
+
+        prim.CreateOutputComponentAttr("output")
+        prim.CreateOutputChannelAttr("io_state")
+
+        prim.CreateArticulationPrimRel()
+        prim.CreateLeftFingerJointAttr("left_finger")
+        prim.CreateRightFingerJointAttr("right_finger")
+        prim.CreateGripperEntityAttr("gripper")
+
+        prim.CreateClosedDistanceAttr(0)
+        prim.CreateOpenDistanceAttr(0.04)
+
+        pass
+
     def add_rigid_body_sink(self, parent=None):
         if parent:
             path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_RigidBodiesSink", False)
@@ -206,9 +233,14 @@ class RobotEngineBridgeMenu:
         prim.CreateSegmentationOutputComponentAttr("output")
         prim.CreateSegmentationOutputChannelAttr("segmentation")
 
+        prim.CreateBoundingBox2DOutputComponentAttr("output")
+        prim.CreateBoundingBox2DOutputChannelAttr("bbox")
+        prim.CreateBoundingBox2DClassListAttr("")
+
         prim.CreateRgbEnabledAttr(True)
         prim.CreateDepthEnabledAttr(False)
         prim.CreateSegmentationEnabledAttr(False)
+        prim.CreateBoundingBox2DEnabledAttr(False)
 
         pass
 
@@ -258,6 +290,8 @@ class RobotEngineBridgeMenu:
             self.add_scissor_lift_simulator(curr_prim)
         elif menu == ADD_SURFACEGRIPPER_SCENE_MENU_ITEM:
             self.add_surface_gripper(curr_prim)
+        elif menu == ADD_TWOFINGERGRIPPER_SCENE_MENU_ITEM:
+            self.add_twofinger_gripper(curr_prim)
         elif menu == ADD_RIGIDBODYSINK_SCENE_MENU_ITEM:
             self.add_rigid_body_sink(curr_prim)
         elif menu == ADD_TELEPORT_SCENE_MENU_ITEM:

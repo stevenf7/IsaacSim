@@ -35,7 +35,7 @@ RosJointState::~RosJointState()
 
 void RosJointState::initialize(RosNode* rosNode,
                                const pxr::RosBridgeSchemaRosBridgeComponent& prim,
-                               pxr::UsdStageRefPtr stage)
+                               pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
     onComponentChange();
@@ -68,21 +68,21 @@ void RosJointState::onComponentChange()
     {
         return;
     }
-    pxr::SdfPath articulationPath = targets[0];
+    mArticulationPath = targets[0];
 
-    if (mDynamicControlPtr->peekObjectType(articulationPath.GetString().c_str()) ==
+    if (mDynamicControlPtr->peekObjectType(mArticulationPath.GetString().c_str()) ==
         omni::isaac::dynamic_control::eDcObjectArticulation)
     {
-        mArticulationHandle = mDynamicControlPtr->getArticulation(articulationPath.GetString().c_str());
+        mArticulationHandle = mDynamicControlPtr->getArticulation(mArticulationPath.GetString().c_str());
     }
     else
     {
-        CARB_LOG_ERROR("Articulation %s is not valid art", articulationPath.GetString().c_str());
+        CARB_LOG_ERROR("Articulation %s is not valid art", mArticulationPath.GetString().c_str());
         return;
     }
     if (!mArticulationHandle)
     {
-        CARB_LOG_ERROR("Articulation %s not found", articulationPath.GetString().c_str());
+        CARB_LOG_ERROR("Articulation %s not found", mArticulationPath.GetString().c_str());
         return;
     }
     mUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(mStage);
@@ -92,7 +92,21 @@ void RosJointState::pubCallback(ros::Publisher* pub)
 {
     if (!mArticulationHandle)
     {
-        return;
+        if (mDynamicControlPtr->peekObjectType(mArticulationPath.GetString().c_str()) ==
+            omni::isaac::dynamic_control::eDcObjectArticulation)
+        {
+            mArticulationHandle = mDynamicControlPtr->getArticulation(mArticulationPath.GetString().c_str());
+        }
+        else
+        {
+            CARB_LOG_ERROR("Articulation %s is not valid art", mArticulationPath.GetString().c_str());
+            return;
+        }
+        if (!mArticulationHandle)
+        {
+            CARB_LOG_ERROR("Articulation %s not found", mArticulationPath.GetString().c_str());
+            return;
+        }
     }
 
     double stageUnits = 1.0 / mUnitScale;
@@ -134,7 +148,21 @@ void RosJointState::subCallback(const sensor_msgs::JointState::ConstPtr& msg)
 {
     if (!mArticulationHandle)
     {
-        return;
+        if (mDynamicControlPtr->peekObjectType(mArticulationPath.GetString().c_str()) ==
+            omni::isaac::dynamic_control::eDcObjectArticulation)
+        {
+            mArticulationHandle = mDynamicControlPtr->getArticulation(mArticulationPath.GetString().c_str());
+        }
+        else
+        {
+            CARB_LOG_ERROR("Articulation %s is not valid art", mArticulationPath.GetString().c_str());
+            return;
+        }
+        if (!mArticulationHandle)
+        {
+            CARB_LOG_ERROR("Articulation %s not found", mArticulationPath.GetString().c_str());
+            return;
+        }
     }
     const unsigned int num_actuators = msg->name.size();
     if (msg->position.size() != num_actuators)

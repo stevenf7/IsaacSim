@@ -13,8 +13,31 @@ from pxr import Gf, Kind, Sdf, Usd, UsdGeom, UsdShade, UsdLux, UsdShade
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dr import _dr
-from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.kit.builtin.commands.usd_commands import *
+
+
+def get_data_file(file_name: str):
+    if os.path.isabs(file_name):
+        path_to_file = file_name
+    else:
+        path_to_file = os.path.abspath(
+            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
+        )
+    return path_to_file
+
+
+async def load_test_file(test_file_name: str):
+    if not Usd.Stage.IsSupportedFile(test_file_name):
+        raise ValueError("Only USD files can be loaded with this method")
+
+    path_to_file = get_data_file(test_file_name)
+
+    usd_context = omni.usd.get_context()
+    usd_context.disable_save_to_recent_files()
+    (result, error) = await omni.kit.asyncapi.open_stage(path_to_file)
+    usd_context.enable_save_to_recent_files()
+    return (result, error)
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -24,35 +47,37 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._omni_pbr_data = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${kit}/../../library/mdl/Base/OmniPBR.mdl")
         )
+        await omni.kit.asyncapi.connect("ov-isaac-dev:3009", "testing", "testing")
+        await omni.kit.asyncapi.new_stage()
+        self._stage = omni.usd.get_context().get_stage()
+        self._editor = omni.kit.editor.get_editor_interface()
         pass
 
     # After running each test
     async def tearDown(self):
+        self._editor.stop()
         pass
 
     # Unit test for color component
     async def test_color_component(self):
-        await omni.kit.asyncapi.new_stage()
-        stage = omni.usd.get_context().get_stage()
-        root_layer = stage.GetRootLayer()
-        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        root_layer = self._stage.GetRootLayer()
+        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
         # Create cube
-        cubeGeom = UsdGeom.Cube.Define(stage, default_prim_path + "/Cube")
+        cubeGeom = UsdGeom.Cube.Define(self._stage, default_prim_path + "/Cube")
         # make sure the prim exists
         cube_path = default_prim_path + "/Cube"
-        cube = stage.GetPrimAtPath(cube_path)
+        cube = self._stage.GetPrimAtPath(cube_path)
         self.assertTrue(cube)
         # Start Simulation
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._editor.play()
         # Make cube Xformable
         xformable = UsdGeom.Xformable(cube)
         # Create DR component and check if it exists
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/color_component", False)
-        prim = DrSchema.ColorComponent.Define(stage, Sdf.Path(path))
+        path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/color_component", False)
+        prim = DrSchema.ColorComponent.Define(self._stage, Sdf.Path(path))
         prim.CreateCompNameAttr().Set(str("color_component"))
         color_comp_path = default_prim_path + "/color_component"
-        color_comp = stage.GetPrimAtPath(color_comp_path)
+        color_comp = self._stage.GetPrimAtPath(color_comp_path)
         self.assertTrue(color_comp)
         # Set parameter for DR component
         prim.CreatePrimPathsRel().AddTarget(cube_path)
@@ -64,42 +89,39 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         await asyncio.sleep(10.0)
         # Validate color material prim
         color_mat_path = default_prim_path + "/Colors/color_component/OmniPBR_2"
-        color_mat = stage.GetPrimAtPath(color_mat_path)
+        color_mat = self._stage.GetPrimAtPath(color_mat_path)
         self.assertTrue(color_mat)
         # Validate attribute for randomizing color
         color_attr = color_mat.GetAttribute("inputs:diffuse_color_constant")
         self.assertIsNotNone(color_attr)
-        color_value_1 = color_attr.Get()
+        color_value_1 = Gf.Vec3f(color_attr.Get())
         await omni.kit.asyncapi.next_update()
-        color_value_2 = color_attr.Get()
+        color_value_2 = Gf.Vec3f(color_attr.Get())
         # Check if color values are different after one frame
         self.assertFalse(Gf.IsClose(color_value_1, color_value_2, 0.00001))
         pass
 
     # Unit test for movement component
     async def test_movement_component(self):
-        await omni.kit.asyncapi.new_stage()
-        stage = omni.usd.get_context().get_stage()
-        root_layer = stage.GetRootLayer()
-        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        root_layer = self._stage.GetRootLayer()
+        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
         # Create cube
-        cubeGeom = UsdGeom.Cube.Define(stage, default_prim_path + "/Cube")
+        cubeGeom = UsdGeom.Cube.Define(self._stage, default_prim_path + "/Cube")
         # make sure the prim exists
         cube_path = default_prim_path + "/Cube"
-        cube = stage.GetPrimAtPath(cube_path)
+        cube = self._stage.GetPrimAtPath(cube_path)
         self.assertTrue(cube)
         # Start Simulation
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._editor.play()
         # Get initial transform matrix
         xformable = UsdGeom.Xformable(cube)
         transform_matrix_1 = xformable.GetLocalTransformation()
         # Create DR component and check if it exists
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/movement_component", False)
-        prim = DrSchema.MovementComponent.Define(stage, Sdf.Path(path))
+        path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/movement_component", False)
+        prim = DrSchema.MovementComponent.Define(self._stage, Sdf.Path(path))
         prim.CreateCompNameAttr().Set(str("movement_component"))
         mov_comp_path = default_prim_path + "/movement_component"
-        mov_comp = stage.GetPrimAtPath(mov_comp_path)
+        mov_comp = self._stage.GetPrimAtPath(mov_comp_path)
         self.assertTrue(mov_comp)
         # Set parameter for DR component
         prim.CreatePrimPathsRel().AddTarget(cube_path)
@@ -125,24 +147,22 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for rotation component
     async def test_rotation_component(self):
-        await omni.kit.asyncapi.new_stage()
-        stage = omni.usd.get_context().get_stage()
-        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
         # Create cube
-        cubeGeom = UsdGeom.Cube.Define(stage, default_prim_path + "/Cube")
+        cubeGeom = UsdGeom.Cube.Define(self._stage, default_prim_path + "/Cube")
         # make sure the prim exists
         cube_path = default_prim_path + "/Cube"
-        cube = stage.GetPrimAtPath(cube_path)
+        cube = self._stage.GetPrimAtPath(cube_path)
         self.assertTrue(cube)
         # Get initial transform matrix
         xformable = UsdGeom.Xformable(cube)
         transform_matrix_1 = xformable.GetLocalTransformation()
         # Create DR component and check if it exists
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/rotation_component", False)
-        prim = DrSchema.RotationComponent.Define(stage, Sdf.Path(path))
+        path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/rotation_component", False)
+        prim = DrSchema.RotationComponent.Define(self._stage, Sdf.Path(path))
         prim.CreateCompNameAttr().Set(str("rotation_component"))
         rot_comp_path = default_prim_path + "/rotation_component"
-        rot_comp = stage.GetPrimAtPath(rot_comp_path)
+        rot_comp = self._stage.GetPrimAtPath(rot_comp_path)
         self.assertTrue(rot_comp)
         # Set parameter for DR component
         prim.CreatePrimPathsRel().AddTarget(cube_path)
@@ -168,24 +188,22 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for scale component
     async def test_scale_component(self):
-        await omni.kit.asyncapi.new_stage()
-        stage = omni.usd.get_context().get_stage()
-        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
         # Create cube
-        cubeGeom = UsdGeom.Cube.Define(stage, default_prim_path + "/Cube")
+        cubeGeom = UsdGeom.Cube.Define(self._stage, default_prim_path + "/Cube")
         # make sure the prim exists
         cube_path = default_prim_path + "/Cube"
-        cube = stage.GetPrimAtPath(cube_path)
+        cube = self._stage.GetPrimAtPath(cube_path)
         self.assertTrue(cube)
         # Get initial transform matrix
         xformable = UsdGeom.Xformable(cube)
         transform_matrix_1 = xformable.GetLocalTransformation()
         # Create DR component and check if it exists
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/scale_component", False)
-        prim = DrSchema.ScaleComponent.Define(stage, Sdf.Path(path))
+        path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/scale_component", False)
+        prim = DrSchema.ScaleComponent.Define(self._stage, Sdf.Path(path))
         prim.CreateCompNameAttr().Set(str("scale_component"))
         scale_comp_path = default_prim_path + "/scale_component"
-        scale_comp = stage.GetPrimAtPath(scale_comp_path)
+        scale_comp = self._stage.GetPrimAtPath(scale_comp_path)
         self.assertTrue(scale_comp)
         # Set parameter for DR component
         prim.CreatePrimPathsRel().AddTarget(cube_path)
@@ -206,24 +224,22 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for light component
     async def test_light_component(self):
-        await omni.kit.asyncapi.new_stage()
-        stage = omni.usd.get_context().get_stage()
-        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
         # Create rect light
-        lightGeom = UsdLux.RectLight.Define(stage, default_prim_path + "/RectLight")
+        lightGeom = UsdLux.RectLight.Define(self._stage, default_prim_path + "/RectLight")
         # make sure the prim exists
         light_path = default_prim_path + "/RectLight"
-        light = stage.GetPrimAtPath(light_path)
+        light = self._stage.GetPrimAtPath(light_path)
         self.assertTrue(light)
         # Start Simulation
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+
+        self._editor.play()
         # Create DR component and check if it exists
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/light_component", False)
-        prim = DrSchema.LightComponent.Define(stage, Sdf.Path(path))
+        path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/light_component", False)
+        prim = DrSchema.LightComponent.Define(self._stage, Sdf.Path(path))
         prim.CreateCompNameAttr().Set("light_component")
         light_comp_path = default_prim_path + "/light_component"
-        light_comp = stage.GetPrimAtPath(light_comp_path)
+        light_comp = self._stage.GetPrimAtPath(light_comp_path)
         self.assertTrue(light_comp)
         # Set parameter for DR component
         prim.CreatePrimPathsRel().AddTarget(light_path)

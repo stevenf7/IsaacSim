@@ -48,6 +48,9 @@ PYBIND11_MODULE(_dynamic_control, m)
     using namespace carb;
     using namespace omni::isaac::dynamic_control;
 
+    // We use carb data types, must import bindings for them
+    auto carb_module = py::module::import("carb");
+
     m.doc() = "Dynamic Control bindings";
 
     m.attr("INVALID_HANDLE") = py::int_(kDcInvalidHandle);
@@ -261,12 +264,14 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def_readwrite(
             "r", &DcTransform::r,
             R"pbdoc(Rotation Quaternion, represented in the format :math:`x\hat{i} + y\hat{j} + z\hat{k} + w`)pbdoc")
-        .def("__init__",
-             [](DcTransform& self, const carb::Float3* p, const carb::Float4* r) {
-                 self.p = p ? *p : carb::Float3{ 0.0f, 0.0f, 0.0f };
-                 self.r = r ? *r : carb::Float4{ 0.0f, 0.0f, 0.0f, 1.0f };
-             },
+        .def(py::init([](const carb::Float3& p, const carb::Float4& r) {
+                 DcTransform transform;
+                 transform.p = p;
+                 transform.r = r;
+                 return transform;
+             }),
              py::arg("p") = nullptr, py::arg("r") = nullptr)
+        .def(py::init<>())
         .def_property_readonly_static("dtype",
                                       [](const py::object&) {
                                           return py::dtype::of<DcTransform>(); // return the numpy structured dtype
@@ -388,12 +393,14 @@ PYBIND11_MODULE(_dynamic_control, m)
     py::class_<DcVelocity>(m, "Velocity", "Linear and angular velocity")
         .def_readwrite("linear", &DcVelocity::linear, "Linear velocity")
         .def_readwrite("angular", &DcVelocity::angular, "Angular velocity")
-        .def("__init__",
-             [](DcVelocity& self, const carb::Float3* linear, const carb::Float3* angular) {
-                 self.linear = linear ? *linear : carb::Float3{ 0.0f, 0.0f, 0.0f };
-                 self.angular = angular ? *linear : carb::Float3{ 0.0f, 0.0f, 0.0f };
-             },
+        .def(py::init([](const carb::Float3& linear, const carb::Float3& angular) {
+                 DcVelocity vel;
+                 vel.linear = linear;
+                 vel.angular = angular;
+                 return vel;
+             }),
              py::arg("linear") = nullptr, py::arg("angular") = nullptr)
+        .def(py::init<>())
         .def_property_readonly_static("dtype",
                                       [](const py::object&) {
                                           // return the numpy structured dtype
@@ -413,12 +420,14 @@ PYBIND11_MODULE(_dynamic_control, m)
     py::class_<DcRigidBodyState>(m, "RigidBodyState", "Containing states to get/set for a rigid body in the simulation")
         .def_readwrite("pose", &DcRigidBodyState::pose, "Transform with position and orientation of rigid body")
         .def_readwrite("vel", &DcRigidBodyState::vel, "Linear and angular velocities of rigid body")
-        .def("__init__",
-             [](DcRigidBodyState& self, const DcTransform* pose, const DcVelocity* vel) {
-                 self.pose = pose ? *pose : kTransformIdentity;
-                 self.vel = vel ? *vel : kVelocityZero;
-             },
+        .def(py::init([](const DcTransform& pose, const DcVelocity& vel) {
+                 DcRigidBodyState state;
+                 state.pose = pose;
+                 state.vel = vel;
+                 return state;
+             }),
              py::arg("pose") = nullptr, py::arg("vel") = nullptr)
+        .def(py::init<>())
         .def_property_readonly_static("dtype",
                                       [](const py::object&) {
                                           return py::dtype::of<DcRigidBodyState>(); // return the numpy structured dtype
@@ -443,12 +452,14 @@ PYBIND11_MODULE(_dynamic_control, m)
                        "DOF position, in radians if it's a revolute DOF, or meters, if it's a prismatic DOF")
         .def_readwrite("vel", &DcDofState::vel,
                        "DOF velocity, in radians/s if it's a revolute DOF, or m/s, if it's a prismatic DOF")
-        .def("__init__",
-             [](DcDofState& self, const float* pos, const float* vel) {
-                 self.pos = pos ? *pos : 0.0f;
-                 self.vel = vel ? *vel : 0.0f;
-             },
+        .def(py::init([](const float& pos, const float& vel) {
+                 DcDofState state;
+                 state.pos = pos;
+                 state.vel = vel;
+                 return state;
+             }),
              py::arg("pos") = nullptr, py::arg("vel") = nullptr)
+        .def(py::init<>())
         .def_property_readonly_static("dtype",
                                       [](const py::object&) {
                                           return py::dtype::of<DcDofState>(); // return the numpy structured dtype
@@ -826,6 +837,8 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("set_dof_properties", wrapInterfaceFunction(&DynamicControl::setDofProperties))
         .def("set_dof_position_target", wrapInterfaceFunction(&DynamicControl::setDofPositionTarget))
         .def("set_dof_velocity_target", wrapInterfaceFunction(&DynamicControl::setDofVelocityTarget))
+        .def("get_dof_position_target", wrapInterfaceFunction(&DynamicControl::getDofPositionTarget))
+        .def("get_dof_velocity_target", wrapInterfaceFunction(&DynamicControl::getDofVelocityTarget))
         .def("apply_dof_effort", wrapInterfaceFunction(&DynamicControl::applyDofEffort))
 
         // attractors

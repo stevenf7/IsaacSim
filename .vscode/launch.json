@@ -17,15 +17,15 @@
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
-            "name": "(Linux) test.unit",
+            "name": "(Linux) test-isaac-sim [debug]",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/_build/linux-x86_64/debug/test.unit",
-            "args": [],
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_debug/_build/linux-x86_64/debug/omniverse-kit",
+            "args": ["--config-path", "_build/linux-x86_64/debug/experiences/test-isaac-sim.json"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true,
+            "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
                 {
@@ -48,7 +48,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/_build/target-deps/kit_sdk_debug/_build/windows-x86_64/debug/omniverse-kit.exe",
             "args": [
-                "--config-path","_build/linux-x86_64/debug/experiences/isaac-sim.json",
+                "--config-path",
+                "_build/linux-x86_64/debug/experiences/isaac-sim.json",
                 "--carb/app/window/fullscreen=false",
                 "--carb/log/level='warn'",
                 "--carb/log/file='log.txt'",
@@ -68,7 +69,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/_build/target-deps/kit_sdk_release/_build/linux-x86_64/release/omniverse-kit",
-            "args": ["--config-path","_build/linux-x86_64/release/experiences/isaac-sim.json"],
+            "args": ["--config-path", "_build/linux-x86_64/release/experiences/isaac-sim.json"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -87,7 +88,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/_build/target-deps/kit_sdk_debug/_build/linux-x86_64/debug/omniverse-kit",
-            "args": ["--config-path","_build/linux-x86_64/debug/experiences/isaac-sim.json"],
+            "args": ["--config-path", "_build/linux-x86_64/debug/experiences/isaac-sim.json"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -101,5 +102,116 @@
                 }
             ]
         },
+        {
+            "name": "(Linux) omniverse-kit-robotics [release]",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_release/_build/linux-x86_64/release/omniverse-kit",
+            "args": ["--config-path", "_build/linux-x86_64/release/experiences/omniverse-kit-robotics.json"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(Linux) omniverse-kit-robotics [debug]",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_debug/_build/linux-x86_64/debug/omniverse-kit",
+            "args": ["--config-path", "_build/linux-x86_64/debug/experiences/omniverse-kit-robotics.json"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(Linux) test-isaac-sim [debug]",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_debug/_build/linux-x86_64/debug/omniverse-kit",
+            "args": ["--config-path", "_build/linux-x86_64/debug/experiences/test-isaac-sim.json", "-v"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(Linux) startup tests [release]",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_release/_build/linux-x86_64/release/omniverse-kit",
+            "args": [
+                "--config-path",
+                "_build/linux-x86_64/release/experiences/isaac-sim.json",
+                "-v",
+                "--carb/rtx/materialDb/syncLoads=true",
+                "--carb/omni.kit.plugin/syncUsdLoads=true",
+                "--carb/app/quitAfter=10",
+                "--exec", "open ${workspaceFolder}/_build/linux-x86_64/release/data/usd/assets/robots/franka/franka.usd"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(Linux) startup tests [debug]",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/_build/target-deps/kit_sdk_debug/_build/linux-x86_64/debug/omniverse-kit",
+            "args": [
+                "--config-path",
+                "_build/linux-x86_64/debug/experiences/isaac-sim.json",
+                "-v",
+                "--carb/rtx/materialDb/syncLoads=true",
+                "--carb/omni.kit.plugin/syncUsdLoads=true",
+                "--carb/app/quitAfter=10",
+                "--exec", "open ${workspaceFolder}/_build/linux-x86_64/debug/data/usd/assets/robots/franka/franka.usd"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
     ]
 }

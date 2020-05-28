@@ -91,6 +91,7 @@ bool UsdUrdfStream::UsdUrdfReadDataFromStream(std::istream& input, std::string* 
 
     NvIsaac::RobotModelImportSettings settings;
     settings.mergeBodiesConnectedByFixedJoints = mImportConfig.mergeFixedJoints;
+    settings.enableConvexDecomposition = mImportConfig.enableConvexDecomp;
 
     NvIsaac::IRobotModel* model =
         modelMgr->importModel(GetFileName().c_str(), settings, inputAsVec.data(), inputAsVec.size());

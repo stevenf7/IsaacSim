@@ -4,11 +4,16 @@
             "title": "Omniverse Isaac Sim Headless"
         },
         "settings": {
-            "persistent": true,
+            "persistent": true
         },
         "extensions": {
-            "folders2": ["${kit}/exts","${kit}/extsPhysics","${app}/../exts"],
-            "foldersBuiltin": ["${kit}/extensions/extensions-bundled", "${kit}/extensions/extensions-other", "${documents}/extensions","${app}/../extensions"],
+            "folders2": ["${kit}/exts", "${kit}/extsPhysics", "${app}/../exts"],
+            "foldersBuiltin": [
+                "${kit}/extensions/extensions-bundled",
+                "${kit}/extensions/extensions-other",
+                "${documents}/extensions",
+                "${app}/../extensions"
+            ],
             "enabledBuiltin": [
                 "omni.renderer-rtx",
                 "omni.kit.editor-full",
@@ -17,7 +22,6 @@
                 "omni.kit.builtin.file_menu",
                 "omni.kit.builtin.toolbar",
                 "omni.kit.builtin.extensions_manager_window",
-                "omni.kit.builtin.about_window",
                 "omni.kit.builtin.preferences_window",
                 "omni.kit.builtin.provide_feedback_window",
                 "omni.kit.builtin.profiler",
@@ -46,20 +50,35 @@
                 "omni.kit.context_menu",
                 "omni.physx",
                 "omni.physx.ui",
+                "omni.isaac.about",
                 "omni.isaac.urdf",
                 "omni.isaac.utils",
                 "omni.isaac.lidar",
+                "omni.isaac.manip",
                 "omni.isaac.dynamic_control",
-                "omni.isaac.robot_engine_bridge"
+                "omni.isaac.motion_planning",
+                "omni.isaac.samples",
+                "omni.isaac.robot_engine_bridge",
+                "omni.isaac.dr"
             ]
         },
         "renderer": {
             "skipWhileMinimized": false,
             "sleepMsOnFocus": 0,
-            "sleepMsOutOfFocus": 0
+            "sleepMsOutOfFocus": 0,
+            "resolution": {
+                "width": 1280,
+                "height": 720
+            }
         },
-        "livestream":{
+        "livestream": {
             "enabled": true
+        }
+    },
+    "persistent": {
+        "physics": {
+            "maxNumSteps": 3.0,
+            "updateToUsd": false
         }
     }
 }

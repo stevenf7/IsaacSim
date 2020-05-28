@@ -4,6 +4,9 @@
 
 #include <carb/cuda/CudaRuntime.h>
 
+#include <boost/algorithm/string.hpp>
+
+#include <algorithm>
 #include <cuda.h>
 namespace omni
 {
@@ -69,6 +72,11 @@ CameraComponent::~CameraComponent()
         mSegmentationSensor = nullptr;
         mSegmentationSensorData = nullptr;
     }
+    if (mBoundingBox2DSensor)
+    {
+        mBoundingBox2DSensor = nullptr;
+        mBoundingBox2DSensorData = nullptr;
+    }
 
     mFramework->releaseInterface(mEditorInterface);
     mFramework->releaseInterface(mSyntheticDataInterface);
@@ -79,7 +87,7 @@ void CameraComponent::tick()
 {
     CARB_PROFILE_ZONE(0, "REB CameraComponent Tick");
 
-    if (!mRgbSensor && !mDepthSensor && !mSegmentationSensor)
+    if (!mRgbSensor && !mDepthSensor && !mSegmentationSensor && !mBoundingBox2DSensor)
         return;
 
     const char* cameraPath = mEditorInterface->getActiveCamera();
@@ -114,21 +122,21 @@ void CameraComponent::tick()
         // Create the image
         auto imageProto = cameraMessageProto.initImage();
         imageProto.setElementType(ElementType::UINT8);
-        imageProto.setRows(rgbInfo.height);
-        imageProto.setCols(rgbInfo.width);
+        imageProto.setRows(rgbInfo.tex.height);
+        imageProto.setCols(rgbInfo.tex.width);
         imageProto.setChannels(3);
         imageProto.setDataBufferIndex(0);
 
         // Pinhole info
         auto pinhole = cameraMessageProto.initPinhole();
-        pinhole.setRows(rgbInfo.height);
-        pinhole.setCols(rgbInfo.width);
+        pinhole.setRows(rgbInfo.tex.height);
+        pinhole.setCols(rgbInfo.tex.width);
         auto focal = pinhole.initFocal();
-        focal.setX(rgbInfo.height * focalLength / verticalAperture);
-        focal.setY(rgbInfo.width * focalLength / horizontalAperture);
+        focal.setX(rgbInfo.tex.height * focalLength / verticalAperture);
+        focal.setY(rgbInfo.tex.width * focalLength / horizontalAperture);
         auto center = pinhole.initCenter();
-        center.setX(rgbInfo.height * 0.5f);
-        center.setY(rgbInfo.width * 0.5f);
+        center.setX(rgbInfo.tex.height * 0.5f);
+        center.setY(rgbInfo.tex.width * 0.5f);
 
         // Distortion info
         auto distortion = cameraMessageProto.initDistortion();
@@ -139,14 +147,14 @@ void CameraComponent::tick()
             coeff.set(i, 0.0f);
 
 
-        const size_t bufferSize = rgbInfo.width * rgbInfo.height * 3;
+        const size_t bufferSize = rgbInfo.tex.width * rgbInfo.tex.height * 3;
         std::vector<std::vector<uint8_t>> buffers(1);
         buffers[0] = std::vector<uint8_t>(bufferSize);
 
         uint8_t* rgbDevice;
         CUDA_CHECK(cudaMalloc(&rgbDevice, bufferSize));
 
-        rgbaToRgb(rgbDevice, (uint8_t*)mRgbSensorData, rgbInfo.width, rgbInfo.height, rgbInfo.rowSize);
+        rgbaToRgb(rgbDevice, (uint8_t*)mRgbSensorData, rgbInfo.tex.width, rgbInfo.tex.height, rgbInfo.tex.rowSize);
         CUDA_CHECK(cudaMemcpy(buffers[0].data(), rgbDevice, bufferSize, cudaMemcpyDeviceToHost));
 
         CUDA_CHECK(cudaFree(rgbDevice));
@@ -167,28 +175,28 @@ void CameraComponent::tick()
         // Create the image
         auto imageProto = cameraMessageProto.initDepthImage();
         imageProto.setElementType(ElementType::FLOAT32);
-        imageProto.setRows(depthInfo.height);
-        imageProto.setCols(depthInfo.width);
+        imageProto.setRows(depthInfo.tex.height);
+        imageProto.setCols(depthInfo.tex.width);
         imageProto.setChannels(1);
         imageProto.setDataBufferIndex(0);
 
         // TODO : remove duplication with RGB camera
         // Pinhole info
         auto pinhole = cameraMessageProto.initPinhole();
-        pinhole.setRows(depthInfo.height);
-        pinhole.setCols(depthInfo.width);
+        pinhole.setRows(depthInfo.tex.height);
+        pinhole.setCols(depthInfo.tex.width);
         auto focal = pinhole.initFocal();
-        focal.setX(depthInfo.height * focalLength / verticalAperture);
-        focal.setY(depthInfo.width * focalLength / horizontalAperture);
+        focal.setX(depthInfo.tex.height * focalLength / verticalAperture);
+        focal.setY(depthInfo.tex.width * focalLength / horizontalAperture);
         auto center = pinhole.initCenter();
-        center.setX(depthInfo.height * 0.5f);
-        center.setY(depthInfo.width * 0.5f);
+        center.setX(depthInfo.tex.height * 0.5f);
+        center.setY(depthInfo.tex.width * 0.5f);
 
         std::vector<std::vector<uint8_t>> buffers(1);
-        buffers[0] = std::vector<uint8_t>(depthInfo.width * depthInfo.height * sizeof(float));
+        buffers[0] = std::vector<uint8_t>(depthInfo.tex.width * depthInfo.tex.height * sizeof(float));
         mDepthSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthSensor);
         CUDA_CHECK(cudaMemcpy(
-            buffers[0].data(), mDepthSensorData, depthInfo.rowSize * depthInfo.height, cudaMemcpyDeviceToHost));
+            buffers[0].data(), mDepthSensorData, depthInfo.tex.rowSize * depthInfo.tex.height, cudaMemcpyDeviceToHost));
 
         publish(mDepthOutputComponent, mDepthChannelName, cameraMessageProto, isaac_message::DepthCameraProtoId, buffers);
     }
@@ -206,39 +214,88 @@ void CameraComponent::tick()
         // Create the instance image
         auto instanceImageProto = cameraMessageProto.initInstanceImage();
         instanceImageProto.setElementType(ElementType::UINT16);
-        instanceImageProto.setRows(segmentationInfo.height);
-        instanceImageProto.setCols(segmentationInfo.width);
+        instanceImageProto.setRows(segmentationInfo.tex.height);
+        instanceImageProto.setCols(segmentationInfo.tex.width);
         instanceImageProto.setChannels(1);
         instanceImageProto.setDataBufferIndex(0);
 
         // TODO : remove duplication with RGB camera
         // Pinhole info
         auto pinhole = cameraMessageProto.initPinhole();
-        pinhole.setRows(segmentationInfo.height);
-        pinhole.setCols(segmentationInfo.width);
+        pinhole.setRows(segmentationInfo.tex.height);
+        pinhole.setCols(segmentationInfo.tex.width);
         auto focal = pinhole.initFocal();
-        focal.setX(segmentationInfo.height * focalLength / verticalAperture);
-        focal.setY(segmentationInfo.width * focalLength / horizontalAperture);
+        focal.setX(segmentationInfo.tex.height * focalLength / verticalAperture);
+        focal.setY(segmentationInfo.tex.width * focalLength / horizontalAperture);
         auto center = pinhole.initCenter();
-        center.setX(segmentationInfo.height * 0.5f);
-        center.setY(segmentationInfo.width * 0.5f);
+        center.setX(segmentationInfo.tex.height * 0.5f);
+        center.setY(segmentationInfo.tex.width * 0.5f);
 
 
-        const size_t bufferSize = segmentationInfo.width * segmentationInfo.height * sizeof(uint16_t);
+        const size_t bufferSize = segmentationInfo.tex.width * segmentationInfo.tex.height * sizeof(uint16_t);
         std::vector<std::vector<uint8_t>> buffers(1);
         buffers[0] = std::vector<uint8_t>(bufferSize);
 
         uint16_t* segmentationDevice;
         CUDA_CHECK(cudaMalloc(&segmentationDevice, bufferSize));
 
-        uint32ToUint16(segmentationDevice, (uint32_t*)mSegmentationSensorData, segmentationInfo.width,
-                       segmentationInfo.height, segmentationInfo.rowSize);
+        uint32ToUint16(segmentationDevice, (uint32_t*)mSegmentationSensorData, segmentationInfo.tex.width,
+                       segmentationInfo.tex.height, segmentationInfo.tex.rowSize);
         CUDA_CHECK(cudaMemcpy(buffers[0].data(), segmentationDevice, bufferSize, cudaMemcpyDeviceToHost));
 
         CUDA_CHECK(cudaFree(segmentationDevice));
 
         publish(mSegmentationOutputComponent, mSegmentationChannelName, cameraMessageProto,
                 isaac_message::SegmentationCameraProtoId, buffers);
+    }
+
+    if (mEnableBoundingBox2D)
+    {
+        mBoundingBox2DSensorData = mSyntheticDataInterface->getSensorHostData(mBoundingBox2DSensor);
+
+        const carb::sensors::SensorInfo& boundingBoxInfo = mSensorsInterface->getSensorInfo(mBoundingBox2DSensor);
+        size_t bufferSize = boundingBoxInfo.buff.size;
+        int numBoundingBoxes = bufferSize / sizeof(carb::sensors::BoundingBox2DValues);
+
+        if (bufferSize > 0)
+        {
+            // Create the message
+            IsaacMessage<isaac_message::Detections2> detectionMessage;
+            auto detectionMessageProto = detectionMessage.initProto();
+            auto boundingBoxesProto = detectionMessageProto.initBoundingBoxes(numBoundingBoxes);
+            auto predictionsProto = detectionMessageProto.initPredictions(numBoundingBoxes);
+
+            carb::sensors::BoundingBox2DValues* data =
+                reinterpret_cast<carb::sensors::BoundingBox2DValues*>(mBoundingBox2DSensorData);
+            for (int boundingBoxId = 0; boundingBoxId < numBoundingBoxes; boundingBoxId++)
+            {
+                std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
+                // Filter bounding boxes based on semantic data
+                if (mBoundingBox2DClassList.size() > 0)
+                {
+                    if (std::find(mBoundingBox2DClassList.begin(), mBoundingBox2DClassList.end(), semanticLabel) ==
+                        mBoundingBox2DClassList.end())
+                    {
+                        data++;
+                        continue;
+                    }
+                }
+                // CARB_LOG_ERROR("Data %d: %s %d, %d, %d, %d, %d, %d", boundingBoxId + 1, semanticLabel.c_str(),
+                // data->instanceId, data->semanticId, data->x_min, data->y_min, data->x_max, data->y_max);
+                auto minProto = boundingBoxesProto[boundingBoxId].initMin();
+                auto maxProto = boundingBoxesProto[boundingBoxId].initMax();
+                minProto.setX(data->y_min);
+                minProto.setY(data->x_min);
+                maxProto.setX(data->y_max);
+                maxProto.setY(data->x_max);
+                predictionsProto[boundingBoxId].setLabel(semanticLabel);
+                predictionsProto[boundingBoxId].setConfidence(1.0);
+                data++;
+            }
+            std::vector<std::vector<uint8_t>> buffers;
+            publish(mBoundingBox2DOutputComponent, mBoundingBox2DChannelName, detectionMessageProto,
+                    isaac_message::Detections2ProtoId, buffers);
+        }
     }
 }
 void CameraComponent::onStart()
@@ -267,6 +324,16 @@ void CameraComponent::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetSegmentationOutputComponentAttr(), mSegmentationOutputComponent);
     isaac::utils::safeGetAttribute(typedPrim.GetSegmentationOutputChannelAttr(), mSegmentationChannelName);
     isaac::utils::safeGetAttribute(typedPrim.GetSegmentationEnabledAttr(), mEnableSegmentation);
+
+    // Bounding Box attributes
+    std::string filterClassList;
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DOutputComponentAttr(), mBoundingBox2DOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DOutputChannelAttr(), mBoundingBox2DChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DClassListAttr(), filterClassList);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DEnabledAttr(), mEnableBoundingBox2D);
+    mBoundingBox2DClassList.clear();
+    if (filterClassList != "")
+        boost::split(mBoundingBox2DClassList, filterClassList, [](char c) { return c == ','; });
 
 
     if (mEnableRgb)
@@ -300,6 +367,16 @@ void CameraComponent::onComponentChange()
     {
         mSegmentationSensor = nullptr;
         mSegmentationSensorData = nullptr;
+    }
+
+    if (mEnableBoundingBox2D)
+    {
+        mBoundingBox2DSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight);
+    }
+    else
+    {
+        mBoundingBox2DSensor = nullptr;
+        mBoundingBox2DSensorData = nullptr;
     }
 }
 }

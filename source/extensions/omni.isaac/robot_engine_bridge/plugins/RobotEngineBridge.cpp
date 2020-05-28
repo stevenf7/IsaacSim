@@ -69,7 +69,7 @@ omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 carb::dictionary::ISerializer* g_jsonSerializer = nullptr;
 omni::isaac::dynamic_control::DynamicControl* g_dynamicControl = nullptr;
 carb::dictionary::IDictionary* g_iDict = nullptr;
-pxr::UsdStageRefPtr g_stage = nullptr;
+pxr::UsdStageWeakPtr g_stage = nullptr;
 carb::physics::PhysX* g_physx = nullptr;
 
 std::unique_ptr<omni::isaac::robot_engine_bridge::IsaacCApi> g_c_api;
@@ -105,7 +105,7 @@ void CARB_ABI initializeStageLoader(std::string inputComponent,
 
 void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
-    pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
     if (!stage)
     {
         CARB_LOG_ERROR("Isaac Robot Engine Bridge could not find USD stage");
@@ -146,6 +146,13 @@ void onResume(float currentTime, void* userData)
 void onPause(void* userData)
 {
 }
+void onStop(void* userData)
+{
+    if (g_stage && g_application_handle)
+    {
+        g_application_handle->onStop();
+    }
+}
 void onPrimAdd(const char* primPath, void* userData)
 {
     // printf("++ REB: Prim Add: %s\n", primPath,
@@ -172,7 +179,7 @@ void onComponentChange(const char* primPath, const omni::kit::PrimDirtyBits*, vo
 {
     // printf("++ REB: Prim Change: %s of type %s\n", primPath,
     //        g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
-    if (g_application_handle)
+    if (g_stage && g_application_handle)
     {
         g_application_handle->onComponentChange(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
     }
@@ -233,6 +240,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onUpdate = onUpdate;
     desc.onResume = onResume;
     desc.onPause = onPause;
+    desc.onStop = onStop;
     desc.onPrimAdd = onPrimAdd;
     desc.onPrimChange = onComponentChange;
     desc.onPrimRemove = onPrimRemove;

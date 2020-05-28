@@ -24,7 +24,7 @@ class DRComponentMovement : public DRComponentBase<pxr::DrSchemaBaseComponent>
 public:
     DRComponentMovement();
     ~DRComponentMovement();
-    virtual void initialize(const pxr::DrSchemaMovementComponent& prim, pxr::UsdStageRefPtr stage);
+    virtual void initialize(const pxr::DrSchemaMovementComponent& prim, pxr::UsdStageWeakPtr stage);
     virtual void onStart();
     virtual void tick();
     virtual void onComponentChange();
