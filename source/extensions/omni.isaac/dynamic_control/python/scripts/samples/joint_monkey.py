@@ -74,7 +74,7 @@ class joint_monkey:
             "Joint Monkey",
             300,
             200,
-            menu_path="Isaac Samples/Dynamic Control/Joint Monkey",
+            menu_path="Isaac Robotics/Dynamic Control/Joint Monkey",
             open=False,
             dock=omni.kit.ui.DockPreference.DISABLED,
         )

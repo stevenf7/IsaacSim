@@ -17,25 +17,30 @@ def remove_all_schema_multiple_attributes(api, prim, schemaAPI, apiName):
     pass
 
 
-def set_angular_drive(drive, target_vel):
+def set_drive_parameters(drive, target_type, target_value, stiffness, damping, max_force):
     """Enable velocity drive for a given joint"""
 
     if not drive.GetTargetTypeAttr():
-        drive.CreateTargetTypeAttr("velocity")
+        drive.CreateTargetTypeAttr(target_type)
     else:
-        drive.GetTargetTypeAttr().Set("velocity")
+        drive.GetTargetTypeAttr().Set(target_type)
 
     if not drive.GetTargetAttr():
-        drive.CreateTargetAttr(target_vel)
+        drive.CreateTargetAttr(target_value)
     else:
-        drive.GetTargetAttr().Set(target_vel)
+        drive.GetTargetAttr().Set(target_value)
 
     if not drive.GetStiffnessAttr():
-        drive.CreateStiffnessAttr(0)
+        drive.CreateStiffnessAttr(stiffness)
     else:
-        drive.GetStiffnessAttr().Set(0)
+        drive.GetStiffnessAttr().Set(stiffness)
 
     if not drive.GetDampingAttr():
-        drive.CreateDampingAttr(100000)
+        drive.CreateDampingAttr(damping)
     else:
-        drive.GetDampingAttr().Set(100000)
+        drive.GetDampingAttr().Set(damping)
+
+    if not drive.GetMaxForceAttr():
+        drive.CreateMaxForceAttr(max_force)
+    else:
+        drive.GetMaxForceAttr().Set(max_force)

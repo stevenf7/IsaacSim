@@ -4,7 +4,7 @@ from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.urdf import _urdf
 
 # from omni.physx import _physx
-from .common import import_robot, set_angular_drive
+from .common import import_robot, set_drive_parameters, remove_all_schema_multiple_attributes
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysicsSchemaTools, PhysxSchema
 
 
@@ -15,7 +15,7 @@ class import_carter:
             "Import Carter",
             300,
             200,
-            menu_path="Isaac Samples/URDF/Carter",
+            menu_path="Isaac Robotics/URDF/Carter",
             open=False,
             dock=omni.kit.ui.DockPreference.DISABLED,
         )
@@ -53,5 +53,15 @@ class import_carter:
         right_wheel_drive = PhysicsSchema.DriveAPI.Get(
             stage.GetPrimAtPath("/carter/chassis_link/right_wheel"), "angular"
         )
-        set_angular_drive(left_wheel_drive, 2.5)
-        set_angular_drive(right_wheel_drive, 2.5)
+        # Drive forward
+        set_drive_parameters(left_wheel_drive, "velocity", 2.5, 0, 1000000, 1e8)
+        set_drive_parameters(right_wheel_drive, "velocity", 2.5, 0, 1000000, 1e8)
+
+        # Remove drive from rear wheel and pivot
+        prim = stage.GetPrimAtPath("/carter/chassis_link/rear_pivot")
+        remove_all_schema_multiple_attributes(PhysicsSchema.DriveAPI, prim, "drive", "angular")
+        PhysicsSchema.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")
+
+        prim = stage.GetPrimAtPath("/carter/rear_pivot_link/rear_axle")
+        remove_all_schema_multiple_attributes(PhysicsSchema.DriveAPI, prim, "drive", "angular")
+        PhysicsSchema.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")

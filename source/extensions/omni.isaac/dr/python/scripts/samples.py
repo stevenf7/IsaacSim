@@ -8,9 +8,9 @@ import omni.usd
 
 from pxr import Gf, Usd, UsdGeom, Sdf
 
-ADD_COMPONENT_SAMPLE_MENU = "Isaac Samples/Domain Randomizer/Component Sample"
-ADD_SIMPLE_ROOM_SAMPLE_MENU = "Isaac Samples/Domain Randomizer/Simple Room Sample"
-ADD_WAREHOUSE_SAMPLE_MENU = "Isaac Samples/Domain Randomizer/Warehouse Sample"
+ADD_COMPONENT_SAMPLE_MENU = "Isaac Robotics/Domain Randomizer/Component Sample"
+ADD_SIMPLE_ROOM_SAMPLE_MENU = "Isaac Robotics/Domain Randomizer/Simple Room Sample"
+ADD_WAREHOUSE_SAMPLE_MENU = "Isaac Robotics/Domain Randomizer/Warehouse Sample"
 
 
 def get_data_file(file_name: str):

@@ -23,7 +23,7 @@ class lidar_info:
             "LIDAR Info",
             300,
             200,
-            menu_path="Isaac Samples/LIDAR/LIDAR info",
+            menu_path="Isaac Robotics/LIDAR/LIDAR info",
             open=False,
             dock=omni.kit.ui.DockPreference.DISABLED,
         )
