@@ -306,56 +306,6 @@ std::string FindSubstringName(const char* param1)
 }
 
 
-NvIsaac::Vec3 GetDimensionsFromName(const char* param1)
-{
-    int name_begin = 0;
-    int name_length = 0;
-
-    if (param1[0] == '@')
-    {
-        // finding the name
-        name_begin = 1;
-        name_length = 0;
-        while (param1[name_length + 1] != 0 && param1[name_length + 1] != '(')
-            name_length++;
-
-        // find the first dimension
-        int d1_begin = name_length + 2;
-        int d1_length = d1_begin;
-        while (param1[d1_length + 1] != ',')
-            d1_length++;
-
-        // find the second dimension
-        int d2_begin = d1_length + 2;
-        int d2_length = d2_begin;
-        while (param1[d2_length + 1] != ',' && param1[d2_length + 1] != ')')
-            d2_length++;
-
-        if (param1[d2_length + 1] == ')')
-        {
-            std::string dim1 = std::string(param1).substr(d1_begin, d1_length + 1 - d1_begin);
-            std::string dim2 = std::string(param1).substr(d2_begin, d2_length + 1 - d2_begin);
-            return NvIsaac::Vec3(stod(dim1), stod(dim2), 0.0);
-        }
-
-        else
-        {
-            // find third dimension
-            int d3_begin = d2_length + 2;
-            int d3_length = d3_begin;
-            while (param1[d3_length + 1] != ')')
-                d3_length++;
-
-            std::string dim1 = std::string(param1).substr(d1_begin, d1_length + 1 - d1_begin);
-            std::string dim2 = std::string(param1).substr(d2_begin, d2_length + 1 - d2_begin);
-            std::string dim3 = std::string(param1).substr(d3_begin, d3_length + 1 - d3_begin);
-
-            return NvIsaac::Vec3(stod(dim1), stod(dim2), stod(dim3));
-        }
-    }
-}
-
-
 template <class Mesh>
 int GetSubMeshCount(const Mesh*);
 template <>
@@ -446,115 +396,24 @@ UsdPrim AddVisualMeshesToStage(UsdStageWeakPtr stage,
                                int i)
 {
     std::string subStringName = FindSubstringName(meshName);
-    SdfPath meshPath =
-        SdfPath(GetNewSdfPathString(stage,
-                                    path.GetString() + "/" + TfMakeValidIdentifier(subStringName) + "_visual" //, i
-                                    ));
+    SdfPath meshPath = SdfPath(GetNewSdfPathString(stage,
+                                                   path.GetString() + "/" + TfMakeValidIdentifier(subStringName) //, i
+                                                   ));
     UsdGeomXform xform = UsdGeomXform::Define(stage, meshPath);
     xform.GetPrim().GetReferences().AddInternalReference(
         SdfPath(robotPath.GetString() + VISUAL_MESH_NAME + std::to_string(meshIndex)));
-    SetToPose(xform, pose, distanceScale);
+
+    NvIsaac::Transform rotatedPose = pose;
+
+    // gotta rotate cylinder and capsule since they have different up vector assumption in Kit/PhysX
+    if (strncmp(meshName, "@cylinder", 9) == 0 || strncmp(meshName, "@capsule", 8) == 0)
+    {
+        rotatedPose.q *= NvIsaac::Quat(M_PI * 0.5, NvIsaac::Vec3(0.0, 1.0, 0.0));
+    }
+
+    SetToPose(xform, rotatedPose, distanceScale);
 
     return xform.GetPrim();
-}
-UsdPrim AddVisualBoxToStage(UsdStageRefPtr stage,
-                            float distanceScale,
-                            const SdfPath& path,
-                            const NvIsaac::Vec3& size,
-                            const NvIsaac::Transform& pose,
-                            int i)
-{
-    std::string name = "box";
-    // USD has cube, which maybe we can scale to get a box.
-    UsdGeomCube gprim =
-        UsdGeomCube::Define(stage, SdfPath(GetNewSdfPathString(stage, path.GetString() + "/" + name + "_visual" //,
-                                                                                                                // i
-                                                               )));
-    VtVec3fArray extentArray(2);
-    extentArray[1] = distanceScale * GfVec3f(size.x * 0.5, size.y * 0.5, size.z * 0.5);
-    extentArray[0] = -extentArray[1];
-    gprim.GetExtentAttr().Set(extentArray);
-    gprim.GetSizeAttr().Set(1.0);
-    SetToPose(gprim, pose, distanceScale);
-    UsdGeomXformOp s = gprim.AddScaleOp();
-    s.Set(distanceScale * GfVec3f(size.x, size.y, size.z));
-
-    gprim.GetPrim().CreateAttribute(TfToken("name"), SdfValueTypeNames->String).Set(name);
-    return gprim.GetPrim();
-}
-
-UsdPrim AddVisualSphereToStage(
-    UsdStageRefPtr stage, float distanceScale, const SdfPath& path, float radius, const NvIsaac::Transform& pose, int i)
-{
-    std::string name = "sphere";
-    UsdGeomSphere gprim =
-        UsdGeomSphere::Define(stage, SdfPath(GetNewSdfPathString(stage, path.GetString() + "/" + name + "_visual" //, i
-                                                                 )));
-    VtVec3fArray extentArray(2);
-    gprim.ComputeExtent(distanceScale * radius, &extentArray);
-    gprim.GetExtentAttr().Set(extentArray);
-    gprim.GetRadiusAttr().Set(double(distanceScale * radius));
-    SetToPose(gprim, pose, distanceScale);
-
-    gprim.GetPrim().CreateAttribute(TfToken("name"), SdfValueTypeNames->String).Set(name);
-    return gprim.GetPrim();
-}
-template <class UsdGeomCapsinder>
-UsdPrim AddVisualCapsinderAttrs(UsdStageRefPtr stage,
-                                UsdGeomCapsinder gprim,
-                                float distanceScale,
-                                float radius,
-                                float height,
-                                std::string name,
-                                const SdfPath& originalPath,
-                                const NvIsaac::Transform& pose)
-{
-    VtVec3fArray extentArray(2);
-    // PhysicsDOM assumes the long axis is x (so does PhysX).
-    // URDF assumes the long axis is z.
-    gprim.ComputeExtent(distanceScale * height, distanceScale * radius, UsdGeomTokens->x, &extentArray);
-    gprim.GetAxisAttr().Set(UsdGeomTokens->z);
-    gprim.GetExtentAttr().Set(extentArray);
-    gprim.GetHeightAttr().Set(double(distanceScale * height));
-    gprim.GetRadiusAttr().Set(double(distanceScale * radius));
-    SetToPose(gprim, pose, distanceScale);
-
-    // add the name
-    gprim.GetPrim().CreateAttribute(TfToken("name"), SdfValueTypeNames->String).Set(name);
-    return gprim.GetPrim();
-}
-UsdPrim AddVisualCylinderToStage(UsdStageRefPtr stage,
-                                 float distanceScale,
-                                 const SdfPath& path,
-                                 float radius,
-                                 float height,
-                                 const NvIsaac::Transform& pose,
-                                 int i)
-{
-    std::string name = "cylinder";
-    std::string originalPathString = path.GetString() + "/" + name;
-    SdfPath addPath = SdfPath(GetNewSdfPathString(stage, originalPathString + "_visual"));
-
-    UsdGeomCylinder gprim = UsdGeomCylinder::Define(stage, addPath);
-    return AddVisualCapsinderAttrs<UsdGeomCylinder>(
-        stage, gprim, distanceScale, radius, height, name, SdfPath(originalPathString), pose);
-}
-
-UsdPrim AddVisualCapsuleToStage(UsdStageRefPtr stage,
-                                float distanceScale,
-                                const SdfPath& path,
-                                float radius,
-                                float height,
-                                const NvIsaac::Transform& pose,
-                                int i)
-{
-    std::string name = "capsule";
-    std::string originalPathString = path.GetString() + "/" + name;
-    std::string addPath = GetNewSdfPathString(stage, originalPathString + "_visual");
-    UsdGeomCapsule gprim = UsdGeomCapsule::Define(stage, SdfPath(addPath));
-
-    return AddVisualCapsinderAttrs<UsdGeomCapsule>(
-        stage, gprim, distanceScale, radius, height, name, SdfPath(originalPathString), pose);
 }
 
 
@@ -710,13 +569,11 @@ UsdPrim AddSphereToStage(UsdStageWeakPtr stage,
 }
 
 template <class UsdGeomCapsinder>
-UsdPrim AddCapsinderAttrs(UsdStageWeakPtr stage,
-                          UsdGeomCapsinder gprim,
+UsdPrim AddCapsinderAttrs(UsdGeomCapsinder gprim,
                           float distanceScale,
                           float radius,
                           float height,
                           std::string name,
-                          const SdfPath& originalPath,
                           const NvIsaac::Transform& pose,
                           bool isGuide = false)
 {
@@ -728,6 +585,7 @@ UsdPrim AddCapsinderAttrs(UsdStageWeakPtr stage,
     gprim.GetExtentAttr().Set(extentArray);
     gprim.GetHeightAttr().Set(double(distanceScale * height));
     gprim.GetRadiusAttr().Set(double(distanceScale * radius));
+    NvIsaac::Transform rotatedPose = pose;
     SetToPose(gprim, pose, distanceScale);
 
     VtVec3fArray color(1);
@@ -757,12 +615,10 @@ UsdPrim AddCylinderToStage(UsdStageWeakPtr stage,
                            bool isGuide = false)
 {
     std::string name = "cylinder";
-    std::string originalPathString = path.GetString() + "/" + name;
-    SdfPath addPath = SdfPath(GetNewSdfPathString(stage, originalPathString));
-
+    SdfPath addPath = SdfPath(GetNewSdfPathString(stage, path.GetString() + "/" + name //, i
+                                                  ));
     UsdGeomCylinder gprim = UsdGeomCylinder::Define(stage, addPath);
-    return AddCapsinderAttrs<UsdGeomCylinder>(
-        stage, gprim, distanceScale, radius, height, name, SdfPath(originalPathString), pose, isGuide);
+    return AddCapsinderAttrs<UsdGeomCylinder>(gprim, distanceScale, radius, height, name, pose, isGuide);
 }
 
 UsdPrim AddCapsuleToStage(UsdStageWeakPtr stage,
@@ -775,12 +631,10 @@ UsdPrim AddCapsuleToStage(UsdStageWeakPtr stage,
                           bool isGuide = false)
 {
     std::string name = "capsule";
-    std::string originalPathString = path.GetString() + "/" + name;
-    std::string addPath = GetNewSdfPathString(stage, originalPathString);
-    UsdGeomCapsule gprim = UsdGeomCapsule::Define(stage, SdfPath(addPath));
-
-    return AddCapsinderAttrs<UsdGeomCapsule>(
-        stage, gprim, distanceScale, radius, height, name, SdfPath(originalPathString), pose, isGuide);
+    UsdGeomCapsule gprim =
+        UsdGeomCapsule::Define(stage, SdfPath(GetNewSdfPathString(stage, path.GetString() + "/" + name //, i
+                                                                  )));
+    return AddCapsinderAttrs<UsdGeomCapsule>(gprim, distanceScale, radius, height, name, pose, isGuide);
 }
 
 void AddRawDOFToStage(UsdStageWeakPtr stage, const SdfPath& path, const NvIsaac::IRobotSkeleton* skel)
@@ -1281,33 +1135,8 @@ void UsdUrdfStream::UsdUrdfTranslateUrdfToUsd(UsdStageWeakPtr stage)
             if (!vis || !vmesh)
                 continue;
 
-            if (strncmp(vmesh->getName(), "@cylinder", 9) == 0)
-            {
-                float radius = GetDimensionsFromName(vmesh->getName())[0];
-                float height = GetDimensionsFromName(vmesh->getName())[1];
-                AddVisualCylinderToStage(stage, distanceScale, bodyPath, radius, height, vis->localPose, vi);
-            }
-            else if (strncmp(vmesh->getName(), "@capsule", 8) == 0)
-            {
-                float radius = GetDimensionsFromName(vmesh->getName())[0];
-                float height = GetDimensionsFromName(vmesh->getName())[1];
-                AddVisualCapsuleToStage(stage, distanceScale, bodyPath, radius, height, vis->localPose, vi);
-            }
-            else if (strncmp(vmesh->getName(), "@box", 4) == 0)
-            {
-                NvIsaac::Vec3 size = GetDimensionsFromName(vmesh->getName());
-                AddVisualBoxToStage(stage, distanceScale, bodyPath, size, vis->localPose, vi);
-            }
-            else if (strncmp(vmesh->getName(), "@sphere", 7) == 0)
-            {
-                float radius = GetDimensionsFromName(vmesh->getName())[0];
-                AddVisualSphereToStage(stage, distanceScale, bodyPath, radius, vis->localPose, vi);
-            }
-            else
-            {
-                AddVisualMeshesToStage(
-                    stage, distanceScale, mpath, bodyPath, vmesh->getName(), vis->localPose, vis->meshIndex, vi);
-            }
+            AddVisualMeshesToStage(
+                stage, distanceScale, mpath, bodyPath, vmesh->getName(), vis->localPose, vis->meshIndex, vi);
         }
         // get the physics
         int colliderCount = pbody->getColliderCount();
@@ -1385,20 +1214,11 @@ void UsdUrdfStream::UsdUrdfTranslateUrdfToUsd(UsdStageWeakPtr stage)
             // mass was not valid so fallback with density
             massAPI.CreateDensityAttr().Set(1.0f);
         }
-        // Use Inertia tensor from URDF
+
+        // read in the inertia Tensor
         NvIsaac::Mat33 inertiaTensor = pbody->getMassSpaceInertiaTensor();
         GfVec3d urdfInertial(inertiaTensor.column0.x, inertiaTensor.column1.y, inertiaTensor.column2.z);
         massAPI.CreateDiagonalInertiaAttr().Set(urdfInertial);
-        // if (inertiaTensor.column0.isFinite() && inertiaTensor.column1.isFinite() && inertiaTensor.column2.isFinite())
-        // {
-        //     GfVec3d urdfInertial(inertiaTensor.column0.x, inertiaTensor.column1.y, inertiaTensor.column2.z);
-        //     massAPI.CreateDiagonalInertiaAttr().Set(urdfInertial);
-        // }
-        // else
-        // {
-        //     massAPI.CreateDiagonalInertiaAttr().Set(GfVec3d(1.0,1.0,1.0));
-        // }
-
         // addDensity(stage, bodyNames[bi], urdfMass);// TODO correct density, should just be able to set inertial
         // proerties, but getting 0 mass crash.
     }

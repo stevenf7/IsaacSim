@@ -40,12 +40,6 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         prim = stage.GetPrimAtPath("/test_basic")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
-        print("check links are imported, both visual and collision")
-        visualPrim = stage.GetPrimAtPath("/test_basic/base_link/sphere_visual")
-        self.assertNotEqual(visualPrim.GetPath(), Sdf.Path.emptyPath)
-        collisionPrim = stage.GetPrimAtPath("/test_basic/base_link/sphere")
-        self.assertNotEqual(collisionPrim.GetPath(), Sdf.Path.emptyPath)
-
         print("check different types of joints are imported")
         # make sure the joints exist
         rootJoint = stage.GetPrimAtPath("/test_basic/rootJoint")
@@ -91,18 +85,18 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         prim = stage.GetPrimAtPath("/test_advanced")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
-        # materialShader = stage.GetPrimAtPath("/test_advanced/link_1/cylinder/_0Shader")
-        # self.assertNotEqual(materialShader.GetPath(), Sdf.Path.emptyPath)
+        # check material and color are imported
+        materialShader = stage.GetPrimAtPath("/test_advanced/link_1/cylinder/_0Shader")
+        self.assertNotEqual(materialShader.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(Gf.IsClose(materialShader.GetAttribute("inputs:diffuseColor").Get(), Gf.Vec3f(0, 0.8, 0), 1e-5))
 
+        # check joint properties
         elbowPrim = stage.GetPrimAtPath("/test_advanced/link_1/elbow_joint")
         self.assertNotEqual(elbowPrim.GetPath(), Sdf.Path.emptyPath)
         self.assertAlmostEqual(elbowPrim.GetAttribute("jointFriction").Get(), 0.1)
         self.assertAlmostEqual(elbowPrim.GetAttribute("drive:angular:damping").Get(), 1.0)
 
-        # linkVisualMesh = stage.GetPrimAtPath("/test_advanced/link_1/cylinder_visual")
-        # rgb = linkVisualMesh.GetAttribute("primvars:displayColor").Get()
-        # self.assertTrue(Gf.IsClose(rgb[0], Gf.Vec3f(1.0, 0.0, 1.0), 1e-5))
-
+        # check position of a link
         joint_pos = elbowPrim.GetAttribute("localPos0").Get()
         self.assertTrue(Gf.IsClose(joint_pos, Gf.Vec3f(0, 0, 40), 1e-5))
 

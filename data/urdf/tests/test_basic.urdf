@@ -10,12 +10,12 @@
  <link name="base_link">
     <visual>
       <geometry>
-        <sphere radius="0.3"/>
+        <sphere radius="0.2"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.3"/>
+        <sphere radius="0.2"/>
       </geometry>
     </collision>
     <inertial>
