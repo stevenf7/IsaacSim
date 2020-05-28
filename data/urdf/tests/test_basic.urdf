@@ -10,12 +10,12 @@
  <link name="base_link">
     <visual>
       <geometry>
-        <box size="0.3 .3 .2"/>
+        <sphere radius="0.2"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <box size="0.3 .3 .2"/>
+        <sphere radius="0.2"/>
       </geometry>
     </collision>
     <inertial>
@@ -60,12 +60,12 @@
   <link name="link_2">
     <visual>
       <geometry>
-        <cylinder length="0.6" radius=".06"/>
+        <capsule length="0.6" radius=".06"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <cylinder length="0.6" radius=".06"/>
+        <capsule length="0.6" radius=".06"/>
       </geometry>
     </collision>
     <inertial>
@@ -118,6 +118,7 @@
       </geometry>
     </collision>
     <inertial>
+      <mass value="3"/>
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
@@ -142,7 +143,8 @@
       </geometry>
     </collision>
     <inertial>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <mass value="3"/>
+      <inertia ixx="2.0" ixy="0.0" ixz="0.0" iyy="3.0" iyz="0.0" izz="4.0"/>
     </inertial>
   </link>
 </robot>

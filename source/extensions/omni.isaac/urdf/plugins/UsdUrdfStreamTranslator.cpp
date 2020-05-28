@@ -402,7 +402,16 @@ UsdPrim AddVisualMeshesToStage(UsdStageWeakPtr stage,
     UsdGeomXform xform = UsdGeomXform::Define(stage, meshPath);
     xform.GetPrim().GetReferences().AddInternalReference(
         SdfPath(robotPath.GetString() + VISUAL_MESH_NAME + std::to_string(meshIndex)));
-    SetToPose(xform, pose, distanceScale);
+
+    NvIsaac::Transform rotatedPose = pose;
+
+    // gotta rotate cylinder and capsule since they have different up vector assumption in Kit/PhysX
+    if (strncmp(meshName, "@cylinder", 9) == 0 || strncmp(meshName, "@capsule", 8) == 0)
+    {
+        rotatedPose.q *= NvIsaac::Quat(M_PI * 0.5, NvIsaac::Vec3(0.0, 1.0, 0.0));
+    }
+
+    SetToPose(xform, rotatedPose, distanceScale);
 
     return xform.GetPrim();
 }
@@ -560,13 +569,11 @@ UsdPrim AddSphereToStage(UsdStageWeakPtr stage,
 }
 
 template <class UsdGeomCapsinder>
-UsdPrim AddCapsinderAttrs(UsdStageWeakPtr stage,
-                          UsdGeomCapsinder gprim,
+UsdPrim AddCapsinderAttrs(UsdGeomCapsinder gprim,
                           float distanceScale,
                           float radius,
                           float height,
                           std::string name,
-                          const SdfPath& originalPath,
                           const NvIsaac::Transform& pose,
                           bool isGuide = false)
 {
@@ -574,17 +581,12 @@ UsdPrim AddCapsinderAttrs(UsdStageWeakPtr stage,
     // PhysicsDOM assumes the long axis is x (so does PhysX).
     // URDF assumes the long axis is z.
     gprim.ComputeExtent(distanceScale * height, distanceScale * radius, UsdGeomTokens->x, &extentArray);
-    gprim.GetAxisAttr().Set(UsdGeomTokens->x);
+    gprim.GetAxisAttr().Set(UsdGeomTokens->z);
     gprim.GetExtentAttr().Set(extentArray);
     gprim.GetHeightAttr().Set(double(distanceScale * height));
     gprim.GetRadiusAttr().Set(double(distanceScale * radius));
     NvIsaac::Transform rotatedPose = pose;
-    rotatedPose.q *= NvIsaac::Quat(M_PI * 0.5, NvIsaac::Vec3(0.0, 1.0, 0.0));
-    SetToPose(gprim, rotatedPose, distanceScale);
-
-    // Have to rotate graphics cylinder too
-    pxr::UsdGeomXformable graphicsXform(stage->GetPrimAtPath(originalPath));
-    SetToPose(graphicsXform, rotatedPose, distanceScale);
+    SetToPose(gprim, pose, distanceScale);
 
     VtVec3fArray color(1);
     color[0] = GfVec3f(1, 0, 1);
@@ -613,12 +615,10 @@ UsdPrim AddCylinderToStage(UsdStageWeakPtr stage,
                            bool isGuide = false)
 {
     std::string name = "cylinder";
-    std::string originalPathString = path.GetString() + "/" + name;
-    SdfPath addPath = SdfPath(GetNewSdfPathString(stage, originalPathString));
-
+    SdfPath addPath = SdfPath(GetNewSdfPathString(stage, path.GetString() + "/" + name //, i
+                                                  ));
     UsdGeomCylinder gprim = UsdGeomCylinder::Define(stage, addPath);
-    return AddCapsinderAttrs<UsdGeomCylinder>(
-        stage, gprim, distanceScale, radius, height, name, SdfPath(originalPathString), pose, isGuide);
+    return AddCapsinderAttrs<UsdGeomCylinder>(gprim, distanceScale, radius, height, name, pose, isGuide);
 }
 
 UsdPrim AddCapsuleToStage(UsdStageWeakPtr stage,
@@ -631,12 +631,10 @@ UsdPrim AddCapsuleToStage(UsdStageWeakPtr stage,
                           bool isGuide = false)
 {
     std::string name = "capsule";
-    std::string originalPathString = path.GetString() + "/" + name;
-    std::string addPath = GetNewSdfPathString(stage, originalPathString);
-    UsdGeomCapsule gprim = UsdGeomCapsule::Define(stage, SdfPath(addPath));
-
-    return AddCapsinderAttrs<UsdGeomCapsule>(
-        stage, gprim, distanceScale, radius, height, name, SdfPath(originalPathString), pose, isGuide);
+    UsdGeomCapsule gprim =
+        UsdGeomCapsule::Define(stage, SdfPath(GetNewSdfPathString(stage, path.GetString() + "/" + name //, i
+                                                                  )));
+    return AddCapsinderAttrs<UsdGeomCapsule>(gprim, distanceScale, radius, height, name, pose, isGuide);
 }
 
 void AddRawDOFToStage(UsdStageWeakPtr stage, const SdfPath& path, const NvIsaac::IRobotSkeleton* skel)
@@ -1216,6 +1214,11 @@ void UsdUrdfStream::UsdUrdfTranslateUrdfToUsd(UsdStageWeakPtr stage)
             // mass was not valid so fallback with density
             massAPI.CreateDensityAttr().Set(1.0f);
         }
+
+        // read in the inertia Tensor
+        NvIsaac::Mat33 inertiaTensor = pbody->getMassSpaceInertiaTensor();
+        GfVec3d urdfInertial(inertiaTensor.column0.x, inertiaTensor.column1.y, inertiaTensor.column2.z);
+        massAPI.CreateDiagonalInertiaAttr().Set(urdfInertial);
         // addDensity(stage, bodyNames[bi], urdfMass);// TODO correct density, should just be able to set inertial
         // proerties, but getting 0 mass crash.
     }
