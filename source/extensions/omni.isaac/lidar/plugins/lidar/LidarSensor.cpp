@@ -272,12 +272,12 @@ void scan(int start,
     for (int colPreMod = start; colPreMod < stop; colPreMod++)
     {
         int col = colPreMod % cols;
-        physx::PxQuat rot = worldRotation * physx::PxQuat(azimuth[col], azimuthDir);
+        physx::PxQuat mainrot = worldRotation * physx::PxQuat(azimuth[col], azimuthDir);
 
         for (int row = 0; row < rows; row++)
         {
             // Pitch then yaw
-            rot *= physx::PxQuat(zenith[row], zenithDir);
+            physx::PxQuat rot = mainrot * physx::PxQuat(zenith[row], zenithDir);
             physx::PxVec3 unitDir = rot.rotate(physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized();
             physx::PxRaycastHit raycastHit;
 
