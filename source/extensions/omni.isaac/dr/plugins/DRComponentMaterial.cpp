@@ -49,6 +49,7 @@ void DRComponentMaterial::onStart()
         if (layer->GetIdentifier().find(mDRLayerName) != std::string::npos)
             mMaterialLayer = layer;
     }
+    onComponentChange();
 }
 void DRComponentMaterial::update()
 {
@@ -119,11 +120,15 @@ void DRComponentMaterial::update()
                         return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
                     });
             }
-            auto materialPrim = omni::usd::AssetUtils::createPrimFromAssetPath(
-                mStage, url.c_str(), ("/Materials/" + urlPath.getStem()).getStringBuffer(), mdlDataSourcePath.c_str(),
-                mDatasource, mConnection);
+            std::string materialPrimPath = "/Materials/" + urlPath.getStem();
+            if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, materialPrimPath))
+            {
+                omni::usd::AssetUtils::createPrimFromAssetPath(
+                    mStage, url.c_str(), materialPrimPath.c_str(), mdlDataSourcePath.c_str(), mDatasource, mConnection);
+            }
+            auto materialPrim = mStage->GetPrimAtPath(
+                pxr::SdfPath((mStage->GetDefaultPrim().GetPath().GetString() + materialPrimPath).c_str()));
             mMaterialPrims.push_back(materialPrim);
-
             pxr::UsdShadeMaterial material(materialPrim);
             mMaterialShades.push_back(material);
         }
@@ -187,7 +192,7 @@ void DRComponentMaterial::tick()
 {
     for (auto& primMaterialBinding : mPrimMaterialBindingsMap)
     {
-        if (mMaterialList.size() == 0)
+        if (mMaterialList.size() == 0 || mMaterialShades.size() == 0)
             return;
         int randVal = int(randomRange(0.0f, mMaterialList.size() * 1.0f));
         pxr::UsdShadeMaterialBindingAPI materialBinding = primMaterialBinding.second;

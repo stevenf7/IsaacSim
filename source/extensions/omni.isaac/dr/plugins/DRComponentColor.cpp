@@ -101,6 +101,7 @@ void DRComponentColor::onStart()
     }
     pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
     mStage->SetEditTarget(editTarget);
+    onComponentChange();
 }
 void DRComponentColor::update()
 {
