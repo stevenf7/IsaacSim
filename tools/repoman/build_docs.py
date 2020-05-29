@@ -34,20 +34,28 @@ def main():
 
     # Add extensions folder and sphinx folder (with sphinx) into PYTHONPATH
     path_to_extensions = f"{ROOT_DIR}/_build/{platform_host}/{options.config}/exts/"
-    path_to_physics_extensions = (
-        f"{ROOT_DIR}/_build/target-deps/kit_sdk_{options.config}/_build/{platform_host}/{options.config}/extsPhysics/"
+    path_to_kit = f"{ROOT_DIR}/_build/target-deps/kit_sdk_{options.config}/_build/{platform_host}/{options.config}"
+    all_exts = (
+        list(glob.glob(f"{path_to_extensions}/*/"))
+        + list(glob.glob(f"{path_to_kit}/exts/*/"))
+        + list(glob.glob(f"{path_to_kit}/extsPhysics/*/"))
+        + list(glob.glob(f"{path_to_kit}/extensions/extensions-bundled"))
+        + list(glob.glob(f"{path_to_kit}/plugins/bindings-python"))
     )
-    all_exts = list(glob.glob(f"{path_to_extensions}/*/"))
-    all_physics_exts = list(glob.glob(f"{path_to_physics_extensions}/*/"))
+    for t in all_exts:
+        print(t)
     os.environ["PYTHONPATH"] += os.pathsep.join([sphinx_path] + all_exts)
-    os.environ["PYTHONPATH"] += os.pathsep.join([sphinx_path] + all_physics_exts)
 
     # To help find any shared libs that the extensions load:
-    all_bindir = list(glob.glob(f"{path_to_extensions}/*/bin/{platform_host}/{options.config}/"))
+    all_bindir = list(glob.glob(f"{path_to_extensions}/*/bin/{platform_host}/{options.config}/")) + list(
+        glob.glob(f"{path_to_extensions}/*/omni/isaac/*/")
+    )
+    all_plugin_dirs = list(glob.glob(f"{path_to_kit}/plugins/")) + list(glob.glob(f"{path_to_kit}/plugins/*/"))
+
     if "LD_LIBRARY_PATH" in os.environ:
-        os.environ["LD_LIBRARY_PATH"] += os.pathsep.join([sphinx_path] + all_bindir)
+        os.environ["LD_LIBRARY_PATH"] += os.pathsep.join([sphinx_path] + all_bindir + all_plugin_dirs)
     else:
-        os.environ["LD_LIBRARY_PATH"] = os.pathsep.join([sphinx_path] + all_bindir)
+        os.environ["LD_LIBRARY_PATH"] = os.pathsep.join([sphinx_path] + all_bindir + all_plugin_dirs)
 
     # Run sphinx module. Use kit_sdk python runner, it already has properly PATH and PYTHONPATH set to enable importing of Kit SDK modules
     config_dir = paths["docs_src"]
