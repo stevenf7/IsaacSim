@@ -75,6 +75,9 @@ private:
     carb::sensors::Sensor* mSegmentationSensor = nullptr;
     void* mSegmentationSensorData = nullptr;
 
+    carb::sensors::Sensor* mSemanticSensor = nullptr;
+    void* mSemanticSensorData = nullptr;
+
     carb::sensors::Sensor* mBoundingBox2DSensor = nullptr;
     void* mBoundingBox2DSensorData = nullptr;
 
