@@ -755,6 +755,8 @@ class AttachBody(Scenario):
 
             target = self._stage.GetPrimAtPath("/environments/env/target")
             xform_attr = target.GetAttribute("xformOp:transform")
+            if self._reset:
+                self._paused = False
             if not self._paused:
                 self._time += 1.0 / 60.0
                 if self._start and self.current_tray == 0:
@@ -763,8 +765,11 @@ class AttachBody(Scenario):
                 if self._reset:
                     self._paused = True
                     self._time = 0
-                    setTranslate(target, Gf.Vec3d(0, 75, 42))
-                    setRotate(target, Gf.Matrix3d(Gf.Quatd(0, 0.7071, 0, -0.7071)))
+                    p = self.default_position.p
+                    r = self.default_position.r
+                    setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                    setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+
                 else:
                     state = self.ur10_solid.end_effector.status.current_target
                     state_1 = self.pick_and_place.target_position
@@ -778,8 +783,8 @@ class AttachBody(Scenario):
                     if self.add_tray_timeout == 0:
                         self.create_new_tray()
 
-            else:
-                self.pick_and_place.waypoints.clear()
+            if self._paused:
+
                 translate_attr = xform_attr.Get().GetRow3(3)
                 # print(translate_attr.Get())
                 rotate_x = xform_attr.Get().GetRow3(0)
@@ -802,9 +807,6 @@ class AttachBody(Scenario):
 
     def create_UR10(self, *args):
         super().create_UR10()
-        use_background = True
-        if len(args) > 0:
-            use_background = args[0]
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"
         self.env_path = "/environments/env"
@@ -815,21 +817,22 @@ class AttachBody(Scenario):
         c = [Gf.Vec3d(-50000 - 50 * i, 150, 0) for i in range(self.max_trays)]
         CreateObjects(self._stage, a, b, c)
 
+        # robot end effector default pose
+        orig = [0, 0.75, 0.42]
+        self.default_position = _dynamic_control.Transform()
+        self.default_position.p = orig
+        self.default_position.r = math_utils.mul([0, 0.7071, 0, 0.7071], [0.7071, 0, 0, -0.7071])
+
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
-        setTranslate(GoalPrim, Gf.Vec3d(0, 75, 42))
-        setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.5, -0.5, 0.5, 0.5)))
-        # Load background
-        if use_background:
-            CreateBackground(
-                self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
-            )
-        else:
-            CreateBackground(
-                self._stage,
-                self.asset_path + "/Backgrounds/Holodeck_curved.usd",
-                [-315.419, 127.124, -10.480],
-                Gf.Quatd(-0.7071, 0, 0, 0.7071),
-            )
+        p = self.default_position.p
+        r = self.default_position.r
+        setTranslate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+        setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+
+        CreateBackground(
+            self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
+        )
+
         prim = self._stage.GetPrimAtPath("/World")
         imageable = UsdGeom.Imageable(prim)
         imageable.MakeInvisible()
@@ -931,18 +934,12 @@ class AttachBody(Scenario):
             self._obstacles.append(obj)
         i = 0
 
-        # Set robot end effector
-        orig = [0, 0.75, 0.42]
-        default_position = _dynamic_control.Transform()
-        default_position.p = orig
-        default_position.r = math_utils.mul([0, 0.7071, 0, 0.7071], [0.7071, 0, 0, -0.7071])
-
         self.pick_and_place = PickAndPlaceStateMachine(
             self._stage,
             self.ur10_solid,
             self._stage.GetPrimAtPath(self.env_path + "/ur10/ee_link"),
             self._tray_objects,
-            default_position,
+            self.default_position,
             self._tray_holder_obstacle,
         )
         self.pick_and_place.add_tray = self.add_new_tray
@@ -956,6 +953,7 @@ class AttachBody(Scenario):
         if self.pick_and_place is not None:
             self._reset = True
             self.current_tray = 0
+            self.add_tray_timeout = -1
             self._pending_disable = True
             for i in range(self.max_trays):
                 tf = _dynamic_control.Transform()
@@ -969,6 +967,15 @@ class AttachBody(Scenario):
         if self._paused:
             selection = omni.usd.get_context().get_selection()
             selection.set_selected_prim_paths(["/environments/env/target"], False)
+            target = self._stage.GetPrimAtPath("/environments/env/target")
+            xform_attr = target.GetAttribute("xformOp:transform")
+            translate_attr = np.array(xform_attr.Get().GetRow3(3))
+            if np.linalg.norm(translate_attr) < 0.01:
+                p = self.default_position.p
+                r = self.default_position.r
+                setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+
         return self._paused
 
     def open_gripper(self):

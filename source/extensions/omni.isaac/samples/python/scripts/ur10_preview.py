@@ -56,8 +56,6 @@ class Extension(omni.ext.IExt):
         self._selected_scenario.add_item("Fill Bin")
         self._selected_scenario.selected_index = 0
 
-        self._create_background_chk = self._window.layout.add_child(omni.kit.ui.CheckBox("Load Background", False))
-
         self._create_UR10_btn = self._window.layout.add_child(omni.kit.ui.Button("Create Scenario"))
         self._create_UR10_btn.set_clicked_fn(self._on_create_UR10)
 
@@ -128,8 +126,7 @@ class Extension(omni.ext.IExt):
         self._settings.set("/rtx/shadows/denoiser/quarterRes", True)
         self._settings.set("/rtx/translucency/reflectionCutoff", 0.1)
 
-        self._scenario.create_UR10(self._create_background_chk.value)
-        self._create_background_chk.enabled = False
+        self._scenario.create_UR10()
 
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()
