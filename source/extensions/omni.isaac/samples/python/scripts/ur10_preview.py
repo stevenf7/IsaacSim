@@ -105,11 +105,17 @@ class Extension(omni.ext.IExt):
     def _on_create_UR10(self, *args):
         if self._selected_scenario.selected_index == 0:
             self._scenario = bin_stack.BinStack(self._editor, self._dc, self._mp)
+            self._editor.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", -83.41, -126.78, -80.28, True)
         if self._selected_scenario.selected_index == 1:
             self._scenario = bmw_fof_demo.AttachBody(self._editor, self._dc, self._mp)
+            self._editor.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", -83.41, -126.78, -80.28, True)
         if self._selected_scenario.selected_index == 2:
             self._scenario = FillBin(self._editor, self._dc, self._mp)
             self._add_new_trays_btn.text = "Drop Parts"
+            self._editor.set_camera_position("/OmniverseKit_Persp", -142.07, 284.72, 111.53, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", -140.6, 282.7, 110.6, True)
 
         self._first_step = True
         self._create_UR10_btn.enabled = False
