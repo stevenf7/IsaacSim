@@ -81,6 +81,7 @@ void DRComponentTexture::onStart()
     }
     pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
     mStage->SetEditTarget(editTarget);
+    onComponentChange();
 }
 void DRComponentTexture::update()
 {
@@ -236,7 +237,7 @@ void DRComponentTexture::tick()
 
     for (auto& primMaterialBinding : mPrimMaterialBindingsMap)
     {
-        if (mTextureList.size() == 0)
+        if (mTextureList.size() == 0 || mMaterialShades.size() == 0)
             return;
         int randVal = int(randomRange(0.0f, mTextureList.size() * 1.0f));
         pxr::UsdShadeMaterialBindingAPI materialBinding = primMaterialBinding.second;
