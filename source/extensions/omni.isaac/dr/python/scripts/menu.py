@@ -90,9 +90,9 @@ class DRMenu:
 
         prim.CreateCompNameAttr().Set(str("rotation_component_" + str(self.component_count[5])))
         prim.CreatePrimPathsRel()
-        prim.CreateXRangeAttr().Set((float(0.0), float(0.0)))
-        prim.CreateYRangeAttr().Set((float(0.0), float(0.0)))
-        prim.CreateZRangeAttr().Set((float(0.0), float(0.0)))
+        prim.CreateXRangeAttr().Set((float(0.0), float(360.0)))
+        prim.CreateYRangeAttr().Set((float(0.0), float(360.0)))
+        prim.CreateZRangeAttr().Set((float(0.0), float(360.0)))
         prim.CreateDurationAttr().Set(float(1.0))
         prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
