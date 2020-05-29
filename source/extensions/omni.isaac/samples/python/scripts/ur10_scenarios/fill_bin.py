@@ -472,6 +472,9 @@ class FillBin(Scenario):
         self._start = False
         self._reset = False
         self._time = 0
+        self._start_time = 0
+        self.current_state = SM_states.STANDBY
+        self.timeout_max = 8.0
         self.pick_and_place = None
         self._pending_disable = False
 
@@ -515,8 +518,9 @@ class FillBin(Scenario):
                 self._time += 1.0 / 60.0
                 self.pick_and_place.step(self._time, self._start, self._reset)
                 if self._reset:
-                    self._paused = True
+                    self._paused = (self._time - self._start_time) < self.timeout_max
                     self._time = 0
+                    self._start_time = 0
                     p = self.default_position.p
                     r = self.default_position.r
                     setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
@@ -533,6 +537,16 @@ class FillBin(Scenario):
                     self.add_objects_timeout -= 1
                     if self.add_objects_timeout == 0:
                         self.create_new_objects()
+                if (
+                    self.pick_and_place.current_state == self.current_state
+                    and self.current_state in [SM_states.PICKING, SM_states.ATTACH]
+                    and (self._time - self._start_time) > self.timeout_max
+                ):
+                    self.stop_tasks()
+                elif self.pick_and_place.current_state != self.current_state:
+                    self._start_time = self._time
+                    print(self._time)
+                    self.current_state = self.pick_and_place.current_state
 
             if self._paused:
                 translate_attr = xform_attr.Get().GetRow3(3)
@@ -702,6 +716,8 @@ class FillBin(Scenario):
             tf = _dynamic_control.Transform()
             tf.p = [0, 81, -43.0]
             self._dc.set_rigid_body_pose(tray, tf)
+            self._dc.set_rigid_body_linear_velocity(tray, [0, 0, 0])
+            self._dc.set_rigid_body_angular_velocity(tray, [0, 0, 0])
 
     def pause_tasks(self, *args):
         self._paused = not self._paused
