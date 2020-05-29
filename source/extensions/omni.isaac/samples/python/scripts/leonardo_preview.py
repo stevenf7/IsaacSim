@@ -92,6 +92,8 @@ class Extension(omni.ext.IExt):
     def _on_create_franka(self, *args):
         """Load any assets required by the scenario and create objects
         """
+        self._stage = self._usd_context.get_stage()
+
         if self._selected_scenario.selected_index == 0:
             self._scenario = GhostScenario(self._editor, self._dc, self._mp)
         elif self._selected_scenario.selected_index == 1:
@@ -124,6 +126,10 @@ class Extension(omni.ext.IExt):
 
         self._editor.set_camera_position("/OmniverseKit_Persp", 142, -127, 56, True)
         self._editor.set_camera_target("/OmniverseKit_Persp", -180, 234, -27, True)
+
+        light_prim = self._stage.GetPrimAtPath("/World/defaultLight")
+        if light_prim:
+            light_prim.SetActive(False)
 
     def _on_stop_tasks(self, *args):
         """Stop all tasks being performed by the scenario

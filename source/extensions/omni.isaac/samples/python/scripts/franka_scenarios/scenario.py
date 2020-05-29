@@ -41,39 +41,19 @@ def setTranslate(prim, new_loc):
 
 
 # Specify collision group for a prim
-def setCollisionGroup(prim, group):
-    collisionAPI = PhysicsSchema.CollisionAPI.Apply(prim)
-    rel = collisionAPI.CreateCollisionGroupRel()
-    rel.AddTarget(Sdf.Path(group))
+def setCollisionGroup(stage, path, group):
+    collisionAPI = PhysicsSchema.CollisionAPI.Get(stage, path)
+    if collisionAPI:
+        rel = collisionAPI.CreateCollisionGroupRel()
+        rel.AddTarget(Sdf.Path(group))
 
 
 # Specify collision group for franka USD and franka ghost USD
 def setCollisionGroupFranka(stage, prim_path, group_path, is_ghost):
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_link0/link0_obj"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_link1/link1_obj"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_link2/link2_obj"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_link3/link3_obj"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_link4/link4_obj"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_link5/link5_obj"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_link6/link6_obj"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_link7/link7_obj"), group_path)
+    franka_prim = stage.GetPrimAtPath(prim_path)
 
-    # if the robot is a ghost, the paths are slightly different for the hand
-    if is_ghost is False:
-        hand_name = "/panda_hand/hand_dae"
-        setCollisionGroup(stage.GetPrimAtPath(prim_path + hand_name + "/panda_hand/ID234_001frA"), group_path)
-        setCollisionGroup(stage.GetPrimAtPath(prim_path + hand_name + "/panda_hand/ID234_001m4u"), group_path)
-        setCollisionGroup(stage.GetPrimAtPath(prim_path + hand_name + "/realsense/ID4_000"), group_path)
-        setCollisionGroup(stage.GetPrimAtPath(prim_path + hand_name + "/realsense/ID4_000m4u"), group_path)
-        setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_leftfinger/finger_dae/ID27"), group_path)
-        setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_leftfinger/finger_dae/ID27SVM"), group_path)
-        setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_rightfinger/finger_dae/ID27"), group_path)
-        setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_rightfinger/finger_dae/ID27SVM"), group_path)
-    else:
-        hand_name = "/panda_hand/hand_dae"
-        setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_hand/hand_obj"), group_path)
-        setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_leftfinger/finger_obj"), group_path)
-        setCollisionGroup(stage.GetPrimAtPath(prim_path + "/panda_rightfinger/finger_obj"), group_path)
+    for p in Usd.PrimRange(franka_prim):
+        setCollisionGroup(stage, p.GetPath(), group_path)
 
 
 # Instantiate a solid franka usd in the stage at a given path
@@ -122,8 +102,8 @@ def CreateBackground(stage, background_stage):
     if not stage.GetPrimAtPath(background_path):
         backPrim = stage.DefinePrim(background_path, "Xform")
         backPrim.GetReferences().AddReference(background_stage)
-        # Move the stage down -104cm so that the floor is below the table wheels
-        setTranslate(backPrim, Gf.Vec3d(0, 0, -104))
+        # Move the stage down -104cm so that the floor is below the table wheels, move in y axis to get light closer
+        setTranslate(backPrim, Gf.Vec3d(0, -400, -104))
 
 
 # Set default physics parameters
@@ -161,19 +141,19 @@ class Scenario:
         self._created = False  # Is the robot created or not
         self._running = False  # Is the task running or not
 
-        self.asset_path = "omni:/Projects/gtc_china_2019"
+        self.asset_path = "omni:/Isaac"
         # use local content if not connected to omni server
         if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
             print("Use local content")
-            self.asset_path = "art_assets/leonardo_preview"
+            self.asset_path = "art_assets/Isaac"
         else:
             print("Use server content")
 
         # USD paths loaded by scenarios
-        self.franka_table_usd = self.asset_path + "/Stage/Franka_Table.usd"
-        self.franka_ghost_usd = self.asset_path + "/Stage/Franka_Ghost.usd"
-        self.background_usd = self.asset_path + "/Backgrounds/holodeck_black.usd"
-        self.rubiks_cube_usd = self.asset_path + "/Props/Rubiks_Cube/Rubiks_Cube.usd"
+        self.franka_table_usd = self.asset_path + "/Samples/Leonardo/Stage/franka_block_stacking.usd"
+        self.franka_ghost_usd = self.asset_path + "/Samples/Leonardo/Robots/franka_ghost.usd"
+        self.background_usd = self.asset_path + "/Environments/Grid/gridroom_curved.usd"
+        self.rubiks_cube_usd = self.asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
         self.red_cube_usd = self.asset_path + "/Props/Blocks/red_block.usd"
         self.yellow_cube_usd = self.asset_path + "/Props/Blocks/yellow_block.usd"
         self.green_cube_usd = self.asset_path + "/Props/Blocks/green_block.usd"
