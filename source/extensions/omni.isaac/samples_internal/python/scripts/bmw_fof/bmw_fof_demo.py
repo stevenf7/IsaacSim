@@ -22,7 +22,7 @@ from omni.isaac.samples.scripts.utils.world import World
 from omni.isaac.samples.scripts.utils.ur10 import UR10, default_config
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
 
-from .scenario import (
+from omni.isaac.samples.scripts.ur10_scenarios.scenario import (
     setTranslate,
     setRotate,
     CreateSolidUR10,

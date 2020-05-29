@@ -8,6 +8,7 @@ display_name = "Isaac Tests"
 "omni.isaac.manip" = {}
 "omni.isaac.motion_planning" = {}
 "omni.isaac.samples" = {}
+"omni.isaac.samples_internal" = {}
 "omni.isaac.urdf" = {}
 "omni.isaac.lidar" = {}
 "omni.isaac.dr" = {}

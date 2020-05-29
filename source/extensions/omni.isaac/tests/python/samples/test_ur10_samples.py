@@ -18,7 +18,7 @@ from omni.physx import _physx as physx
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.samples.scripts.ur10_scenarios.scenario import Scenario
 from omni.isaac.samples.scripts.ur10_scenarios import bin_stack
-from omni.isaac.samples.scripts.ur10_scenarios import bmw_fof_demo
+from omni.isaac.samples_internal.scripts.bmw_fof import bmw_fof_demo
 from omni.isaac.samples.scripts.ur10_scenarios import fill_bin
 
 
