@@ -509,14 +509,18 @@ class FillBin(Scenario):
 
             target = self._stage.GetPrimAtPath("/environments/env/target")
             xform_attr = target.GetAttribute("xformOp:transform")
+            if self._reset:
+                self._paused = False
             if not self._paused:
                 self._time += 1.0 / 60.0
                 self.pick_and_place.step(self._time, self._start, self._reset)
                 if self._reset:
-                    self.stop_tasks
+                    self._paused = True
                     self._time = 0
-                    setTranslate(target, Gf.Vec3d(0, 75, 42))
-                    setRotate(target, Gf.Matrix3d(Gf.Quatd(0, 0.7071, 0, -0.7071)))
+                    p = self.default_position.p
+                    r = self.default_position.r
+                    setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                    setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
                 else:
                     state = self.ur10_solid.end_effector.status.current_target
                     state_1 = self.pick_and_place.target_position
@@ -530,8 +534,7 @@ class FillBin(Scenario):
                     if self.add_objects_timeout == 0:
                         self.create_new_objects()
 
-            else:
-                self.pick_and_place.waypoints.clear()
+            if self._paused:
                 translate_attr = xform_attr.Get().GetRow3(3)
                 rotate_x = xform_attr.Get().GetRow3(0)
                 rotate_y = xform_attr.Get().GetRow3(1)
@@ -559,9 +562,21 @@ class FillBin(Scenario):
         self.env_path = "/environments/env"
         CreateSolidUR10(self._stage, self.env_path, self.ur10_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
 
+        # Set robot end effector Target
+        orig = [0, 0.75, 0.42]
+        self.default_position = _dynamic_control.Transform()
+        self.default_position.p = orig
+        self.default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
-        setTranslate(GoalPrim, Gf.Vec3d(0, 75, 42))
-        setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.5, -0.5, 0.5, 0.5)))
+
+        GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
+        p = self.default_position.p
+        r = self.default_position.r
+        setTranslate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+        setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+
+        # setTranslate(GoalPrim, Gf.Vec3d(0, 75, 42))
+        # setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.5, -0.5, 0.5, 0.5)))
 
         prim = self._stage.GetPrimAtPath("/World")
         imageable = UsdGeom.Imageable(prim)
@@ -606,8 +621,8 @@ class FillBin(Scenario):
 
         # Prim path of two blocks and their handles
         prim = self._stage.GetPrimAtPath(self.env_path)
-        self.tray_paths = [self.env_path + "/bin/SmallKLT"]
-        self.tray_handles = [self._dc.get_rigid_body(i) for i in self.tray_paths]
+        self.tray_path = self.env_path + "/bin/SmallKLT"
+        self.tray_handle = self._dc.get_rigid_body(self.tray_path)
 
         # Create world and robot object
         ur10_path = str(prim.GetPath()) + "/ur10"
@@ -646,18 +661,12 @@ class FillBin(Scenario):
             body = self._dc.get_articulation_body(self.ur10_solid.ar, bodyIdx)
             self._dc.set_rigid_body_disable_gravity(body, True)
 
-        # Set robot end effector
-        orig = [-0.0645, 0.7214, 0.495]
-        default_position = _dynamic_control.Transform()
-        default_position.p = orig
-        default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
-
         self.pick_and_place = PickAndPlaceStateMachine(
             self._stage,
             self.ur10_solid,
             self._stage.GetPrimAtPath(self.env_path + "/ur10/ee_link"),
-            self.tray_paths[0],
-            default_position,
+            self.tray_path,
+            self.default_position,
         )
         self.pick_and_place.add_tray = self.add_new_objects
 
@@ -680,7 +689,6 @@ class FillBin(Scenario):
     def stop_tasks(self, *args):
         if self.pick_and_place is not None:
             self._reset = True
-            self.current_tray = 0
             self._pending_disable = True
             if self._editor.is_playing():
                 self.ur10_solid.end_effector.gripper.open()
@@ -690,7 +698,7 @@ class FillBin(Scenario):
                 self._dc.set_rigid_body_pose(self.objects_handles[i], tf)
                 self._dc.set_rigid_body_linear_velocity(self.objects_handles[i], [0, 0, 0])
                 self._dc.set_rigid_body_angular_velocity(self.objects_handles[i], [0, 0, 0])
-            tray = self._dc.get_rigid_body(self.env_path + "/SmallKLT/SmallKLT")
+            tray = self._dc.get_rigid_body(self.tray_path)
             tf = _dynamic_control.Transform()
             tf.p = [0, 81, -43.0]
             self._dc.set_rigid_body_pose(tray, tf)
@@ -700,6 +708,14 @@ class FillBin(Scenario):
         if self._paused:
             selection = omni.usd.get_context().get_selection()
             selection.set_selected_prim_paths(["/environments/env/target"], False)
+            target = self._stage.GetPrimAtPath("/environments/env/target")
+            xform_attr = target.GetAttribute("xformOp:transform")
+            translate_attr = np.array(xform_attr.Get().GetRow3(3))
+            if np.linalg.norm(translate_attr) < 0.01:
+                p = self.default_position.p
+                r = self.default_position.r
+                setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
         return self._paused
 
     def open_gripper(self):
