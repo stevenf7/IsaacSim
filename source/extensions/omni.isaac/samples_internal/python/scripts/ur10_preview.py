@@ -18,12 +18,11 @@ from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.physx import _physx
 
-from .ur10_scenarios.scenario import Scenario
-from .ur10_scenarios import bin_stack
-from .ur10_scenarios.fill_bin import FillBin
+from omni.isaac.samples.scripts.ur10_scenarios.scenario import Scenario
+from .bmw_fof import bmw_fof_demo
 
 
-EXTENSION_NAME = "UR10 Preview"
+EXTENSION_NAME = "UR10 Factory of Future"
 
 
 class Extension(omni.ext.IExt):
@@ -35,7 +34,7 @@ class Extension(omni.ext.IExt):
             EXTENSION_NAME,
             300,
             200,
-            menu_path="Isaac Robotics/Samples/" + EXTENSION_NAME,
+            menu_path="Isaac Robotics/Samples/Internal/" + EXTENSION_NAME,
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
@@ -48,11 +47,6 @@ class Extension(omni.ext.IExt):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
         self._physxIFace = _physx.acquire_physx_interface()
-
-        self._selected_scenario = self._window.layout.add_child(omni.kit.ui.ComboBox())
-        self._selected_scenario.add_item("Stack Bins")
-        self._selected_scenario.add_item("Fill Bin")
-        self._selected_scenario.selected_index = 0
 
         self._create_UR10_btn = self._window.layout.add_child(omni.kit.ui.Button("Create Scenario"))
         self._create_UR10_btn.set_clicked_fn(self._on_create_UR10)
@@ -99,19 +93,13 @@ class Extension(omni.ext.IExt):
         self._scenario = Scenario(self._editor, self._dc, self._mp)
 
     def _on_create_UR10(self, *args):
-        if self._selected_scenario.selected_index == 0:
-            self._scenario = bin_stack.BinStack(self._editor, self._dc, self._mp)
-            self._editor.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", -83.41, -126.78, -80.28, True)
-        if self._selected_scenario.selected_index == 1:
-            self._scenario = FillBin(self._editor, self._dc, self._mp)
-            self._add_new_trays_btn.text = "Drop Parts"
-            self._editor.set_camera_position("/OmniverseKit_Persp", -142.07, 284.72, 111.53, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", -140.6, 282.7, 110.6, True)
+
+        self._scenario = bmw_fof_demo.AttachBody(self._editor, self._dc, self._mp)
+        self._editor.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)
+        self._editor.set_camera_target("/OmniverseKit_Persp", -83.41, -126.78, -80.28, True)
 
         self._first_step = True
         self._create_UR10_btn.enabled = False
-        self._selected_scenario.enabled = False
 
         self._editor.stop()
         self._physxIFace.release_physics_objects()
@@ -167,7 +155,6 @@ class Extension(omni.ext.IExt):
         self.stage = self._usd_context.get_stage()
         if event.type == int(omni.usd.StageEventType.OPENED):
             self._create_UR10_btn.enabled = True
-            self._selected_scenario.enabled = True
             self._perform_task_btn.enabled = False
             self._stop_task_btn.enabled = False
             self._pause_task_btn.enabled = False
