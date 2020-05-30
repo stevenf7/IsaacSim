@@ -26,9 +26,6 @@ class Extension(omni.ext.IExt):
         self._zup_checkbox = self._window.layout.add_child(omni.kit.ui.CheckBox("Force Z Up"))
         self._zup_checkbox.value = True
 
-        self._debug_info_checkbox = self._window.layout.add_child(omni.kit.ui.CheckBox("Add Debug Info"))
-        self._debug_info_checkbox.value = True
-
         self._scale_input = self._window.layout.add_child(omni.kit.ui.FieldDouble("Scaling Factor", 100))
 
         self._btn_load = self._window.layout.add_child(omni.kit.ui.Button("Load URDF"))
@@ -46,7 +43,7 @@ class Extension(omni.ext.IExt):
             config.enable_convex_decomp = self._enable_convex_decomp.value
             config.distance_scale = self._scale_input.value
             config.force_z_up = self._zup_checkbox.value
-            config.add_debug_info = self._debug_info_checkbox.value
+            config.add_debug_info = False
             self._urdf_interface.import_urdf(path, config)
         else:
             print("Only local paths supported currently")
