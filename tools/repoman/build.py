@@ -1,13 +1,13 @@
 import os
 import sys
 import platform
-
+import glob
 import logging
 from typing import Dict
 
 import packmanapi
 
-
+root = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..")
 logger = logging.getLogger(os.path.basename(__file__))
 
 
@@ -35,6 +35,22 @@ VSCODE_PYTHON_ENV = {
         "$root/_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins",
     ],
 }
+
+# Find and add all extensions to VSCODE_PYTHON_ENV:
+def postprocess_vscode_python_env(env_dict, platform, config):
+    path_to_kit = f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform}/{config}"
+    all_exts = (
+        glob.glob(f"{root}/_build/{platform}/{config}/exts/*/")
+        + glob.glob(f"{path_to_kit}/exts/*/")
+        + glob.glob(f"{path_to_kit}/extsPhysics/*/")
+        + glob.glob(f"{path_to_kit}/extensions/extensions-bundled")
+        # + glob.glob(f"{path_to_kit}/plugins/bindings-python")
+    )
+
+    for ext in all_exts:
+        env_dict["PYTHONPATH"].append(ext)
+        env_dict["PATH"].append(f"{ext}/bin/{platform}/{config}")
+    return env_dict
 
 
 def clean():
@@ -104,6 +120,7 @@ def main():
     settings.stage_files_error_if_missing = False
     settings.vscode_python = os.path.join(root, "_build/target-deps/kit_sdk_debug/_build/target-deps/python")
     settings.vscode_python_env = VSCODE_PYTHON_ENV
+    settings.vscode_python_env_postprocess_fn = postprocess_vscode_python_env
     settings.sln_file = "omni_isaac_sim.sln"
     settings.vs_version = "vs2017"
     settings.stage_files_error_if_missing = True
