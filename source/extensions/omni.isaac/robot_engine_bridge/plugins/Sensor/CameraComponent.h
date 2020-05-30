@@ -102,6 +102,7 @@ private:
     /// </summary>
     std::string mSegmentationOutputComponent = "output";
     std::string mSegmentationChannelName = "segmentation";
+    std::map<uint8_t, std::string> mSegmentationIDLabelMap;
     bool mEnableSegmentation = false;
 
     /// <summary>

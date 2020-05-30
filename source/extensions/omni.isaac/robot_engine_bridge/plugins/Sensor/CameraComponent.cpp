@@ -97,14 +97,6 @@ void CameraComponent::tick()
     if (!mRgbSensor && !mDepthSensor && !mSegmentationSensor && !mSemanticSensor && !mBoundingBox2DSensor)
         return;
 
-    // These should not be mutually exlcuslive, that would be very bad
-    // if (mSegmentationSensor ^ mSemanticSensor)
-    // {
-    // 	CARB_LOG_ERROR("The instance segmentation and semantic segmentation sensors aren't both created, this shouldn't
-    // happen."); 	return;
-    // }
-
-
     const char* cameraPath = mEditorInterface->getActiveCamera();
     if (!cameraPath)
         return;
@@ -216,7 +208,8 @@ void CameraComponent::tick()
         publish(mDepthOutputComponent, mDepthChannelName, cameraMessageProto, isaac_message::DepthCameraProtoId, buffers);
     }
 
-    if (mSegmentationSensor || mSemanticSensor)
+    // TODO can we turn on mSegmentationSensor && mSemanticSensor separately
+    if (mSegmentationSensor && mSemanticSensor)
     {
         mSegmentationSensorData = mSyntheticDataInterface->getSensorDeviceData(mSegmentationSensor);
         mSemanticSensorData = mSyntheticDataInterface->getSensorDeviceData(mSemanticSensor);
@@ -244,6 +237,16 @@ void CameraComponent::tick()
         semanticImageProto.setChannels(1);
         semanticImageProto.setDataBufferIndex(1);
 
+        auto semanticLabelsProto = cameraMessageProto.initLabels(mSegmentationIDLabelMap.size());
+        int index = 0;
+        for (std::map<uint8_t, std::string>::iterator it = mSegmentationIDLabelMap.begin();
+             it != mSegmentationIDLabelMap.end(); ++it)
+        {
+            semanticLabelsProto[index].setIndex(it->first);
+            semanticLabelsProto[index].setName(it->second);
+            index++;
+        }
+
         // These images should be of the same resolution
         if (segmentationInfo.tex.height != semanticInfo.tex.height || segmentationInfo.tex.width != semanticInfo.tex.width)
         {
@@ -263,10 +266,8 @@ void CameraComponent::tick()
         center.setX(segmentationInfo.tex.height * 0.5f);
         center.setY(segmentationInfo.tex.width * 0.5f);
 
-
         // Message buffers
         std::vector<std::vector<uint8_t>> buffers(2);
-
 
         // TODO : The instance and semantic segmentation should be refactored into one method
         // TODO : Have persistent device buffers for the CUDA conversion
@@ -415,6 +416,18 @@ void CameraComponent::onComponentChange()
 
         mSegmentationSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation);
         mSemanticSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation);
+
+        // build segmentation ID to label map
+        mSegmentationIDLabelMap.clear();
+        for (int i = 0; i < 256; ++i)
+        {
+            std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(i));
+            if (!semanticLabel.empty())
+            {
+                mSegmentationIDLabelMap[i] = semanticLabel;
+                // CARB_LOG_ERROR("The initial segmentation labels are %i %s", i, mSegmentationIDLabelMap[i].c_str());
+            }
+        }
     }
     else
     {
