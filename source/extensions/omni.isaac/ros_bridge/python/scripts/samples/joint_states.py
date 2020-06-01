@@ -20,8 +20,8 @@ from omni.isaac.utils.scripts.test_utils import load_test_file
 import asyncio
 
 
-class joint_states:
-    def __init__(self):
+class Extension(omni.ext.IExt):
+    def on_startup(self):
         # setting up the UI on the menu bar for this example
         self._window = omni.kit.ui.Window(
             "Joint State",
@@ -29,7 +29,7 @@ class joint_states:
             200,
             menu_path="Isaac Robotics/ROS/Joint State",
             open=False,
-            dock=omni.kit.ui.DockPreference.DISABLED,
+            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
         sublayout = self._window.layout.add_child(omni.kit.ui.ColumnLayout())
         load_robot_btn = sublayout.add_child(omni.kit.ui.Button("Load Robot"))
@@ -43,6 +43,9 @@ class joint_states:
 
         self._editor_event_subscription = None
         self._editor = omni.kit.editor.get_editor_interface()
+
+    def on_shutdown(self):
+        self._window = None
 
     # loading the robot
     def _on_load_robot(self, widget):

@@ -7,6 +7,9 @@ display_name = "Domain Randomization"
 name = "omni.isaac.dr"
 
 [[python.modules]]
+name = "omni.isaac.dr.scripts.samples"
+
+[[python.modules]]
 name = "omni.isaac.DrSchema"
 public = false
 

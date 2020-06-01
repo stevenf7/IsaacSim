@@ -71,6 +71,12 @@ class Extension(omni.ext.IExt):
             omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
         )
 
+    def on_shutdown(self):
+        # Perform cleanup once the sample closes
+        _lidar.release_lidar_interface(self._li)
+        self._editor = None
+        self._window = None
+
     def _spawn_lidar_function(self, widget):
         stage = omni.usd.get_context().get_stage()
 

@@ -8,23 +8,26 @@ from .common import import_robot, set_drive_parameters, remove_all_schema_multip
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysicsSchemaTools, PhysxSchema
 
 
-class import_kaya:
-    def __init__(self, urdf_interface):
-        self._urdf_interface = urdf_interface
+class Extension(omni.ext.IExt):
+    def on_startup(self):
+        self._urdf_interface = _urdf.acquire_urdf_interface()
         self._window = omni.kit.ui.Window(
             "Import Kaya",
             300,
             200,
             menu_path="Isaac Robotics/URDF/Kaya",
             open=False,
-            dock=omni.kit.ui.DockPreference.DISABLED,
+            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
         load_robot_btn = self._window.layout.add_child(omni.kit.ui.Button("Load Robot"))
         load_robot_btn.set_clicked_fn(self._on_load_robot)
 
         config_robot_btn = self._window.layout.add_child(omni.kit.ui.Button("Configure Robot"))
         config_robot_btn.set_clicked_fn(self._on_config_robot)
-        # self._physxIFace = _physx.acquire_physx_interface()
+
+    def on_shutdown(self):
+        _urdf.release_urdf_interface(self._urdf_interface)
+        self._window = None
 
     def _on_load_robot(self, widget):
         # TODO: fix this workaround to clear stage
