@@ -49,7 +49,8 @@
             ],
             "excludeTests": [
                 "omni.isaac.tests.domain_randomizer.*",
-                "omni.isaac.tests.samples.*"
+                "omni.isaac.tests.samples.*",
+                "omni.isaac.tests.urdf.*"
             ],
             "runTestsAndQuit": true
         }

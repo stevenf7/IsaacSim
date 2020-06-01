@@ -47,14 +47,12 @@ void RosNode::tick()
 
     if (ros::ok())
     {
-        CARB_LOG_ERROR("Ros Node Tick");
         callbackQueue_.callAvailable();
         for (auto& msg : mMessages)
         {
             RosPublisher* pub = dynamic_cast<RosPublisher*>(msg.second.get());
             if (msg.second && msg.second->getEventType() == eRosEventPublish && pub)
             {
-
                 pub->publish();
             }
             RosPeriodic* per = dynamic_cast<RosPeriodic*>(msg.second.get());
