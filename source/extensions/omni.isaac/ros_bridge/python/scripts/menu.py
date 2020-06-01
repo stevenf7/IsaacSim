@@ -26,7 +26,7 @@ class RosBridgeMenu:
         self._menus.append(editor_menu.add_item(ADD_ROS_CAMERA, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_ROS_JOINT_STATE, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_ROS_LIDAR, self._on_scene_menu_click))
-        # self._menus.append(editor_menu.add_item(ADD_ROS_POSE_TREE, self._on_scene_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_ROS_POSE_TREE, self._on_scene_menu_click))
         # self._menus.append(editor_menu.add_item(ADD_ROS_SINK, self._on_scene_menu_click))
         # self._menus.append(editor_menu.add_item(ADD_ROS_TELEPORT, self._on_scene_menu_click))
 
@@ -128,8 +128,8 @@ class RosBridgeMenu:
             self.add_joint_state()
         elif menu == ADD_ROS_LIDAR:
             self.add_lidar()
-        # elif menu == ADD_ROS_POSE_TREE:
-        #     self.add_pose_tree()
+        elif menu == ADD_ROS_POSE_TREE:
+            self.add_pose_tree()
         # elif menu == ADD_ROS_SINK:
         #     self.add_sink()
         # elif menu == ADD_ROS_TELEPORT:
