@@ -1217,8 +1217,9 @@ void UsdUrdfStream::UsdUrdfTranslateUrdfToUsd(UsdStageWeakPtr stage)
 
         // read in the inertia Tensor
         NvIsaac::Mat33 inertiaTensor = pbody->getMassSpaceInertiaTensor();
+        // kg/m^2 scaled to user units. 100 means cm
         GfVec3d urdfInertial(inertiaTensor.column0.x, inertiaTensor.column1.y, inertiaTensor.column2.z);
-        massAPI.CreateDiagonalInertiaAttr().Set(urdfInertial);
+        massAPI.CreateDiagonalInertiaAttr().Set(urdfInertial * distanceScale * distanceScale);
         // addDensity(stage, bodyNames[bi], urdfMass);// TODO correct density, should just be able to set inertial
         // proerties, but getting 0 mass crash.
     }
