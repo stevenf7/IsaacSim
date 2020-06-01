@@ -7,6 +7,12 @@ display_name = "Dynamic Control"
 [[python.modules]]
 name = "omni.isaac.dynamic_control"
 
+[[python.modules]]
+name = "omni.isaac.dynamic_control.scripts.samples.articulation"
+
+[[python.modules]]
+name = "omni.isaac.dynamic_control.scripts.samples.joint_monkey"
+
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false

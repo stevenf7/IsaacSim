@@ -23,8 +23,8 @@ def get_data_file(file_name: str):
     return path_to_file
 
 
-class DRSamples:
-    def __init__(self):
+class Extension(omni.ext.IExt):
+    def on_startup(self):
         self._editor = omni.kit.editor.get_editor_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
@@ -35,7 +35,7 @@ class DRSamples:
             200,
             menu_path=ADD_COMPONENT_SAMPLE_MENU,
             open=False,
-            dock=omni.kit.ui.DockPreference.DISABLED,
+            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
 
         self._menus = []
@@ -59,6 +59,17 @@ class DRSamples:
         load_stage_btn.set_clicked_fn(self._on_load_stage)
         load_comp_btn = sublayout.add_child(omni.kit.ui.Button("Load DR Component"))
         load_comp_btn.set_clicked_fn(self._on_load_component)
+
+    def on_shutdown(self):
+        self.menus = []
+        editor_menu = omni.kit.ui.get_editor_menu()
+        editor_menu.remove_item(ADD_COMPONENT_SAMPLE_MENU)
+        editor_menu.remove_item(ADD_SIMPLE_ROOM_SAMPLE_MENU)
+        editor_menu.remove_item(ADD_WAREHOUSE_SAMPLE_MENU)
+        self._editor = None
+        self._window = None
+        self._usd_context = None
+        self._stage = None
 
     def _on_clear_stage(self, widget):
         omni.usd.get_context().new_stage(None)
@@ -243,10 +254,3 @@ class DRSamples:
             self.add_simple_room_scene()
         if menu == ADD_WAREHOUSE_SAMPLE_MENU:
             self.add_warehouse_scene()
-
-    def shutdown(self):
-        self.menus = []
-        editor_menu = omni.kit.ui.get_editor_menu()
-        editor_menu.remove_item(ADD_COMPONENT_SAMPLE_MENU)
-        editor_menu.remove_item(ADD_SIMPLE_ROOM_SAMPLE_MENU)
-        editor_menu.remove_item(ADD_WAREHOUSE_SAMPLE_MENU)

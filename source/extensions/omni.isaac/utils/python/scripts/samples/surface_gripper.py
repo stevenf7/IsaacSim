@@ -84,6 +84,10 @@ class Extension(omni.ext.IExt):
         self.box = None
         self._stage_id = -1
 
+    def on_shutdown(self):
+        dc.release_dynamic_control_interface(self._dc)
+        self._window = None
+
     def _on_update_ui(self, widget):
         self._create_scenario_button.enabled = self._editor.is_playing()
         self._toggle_gripper_button.enabled = self._editor.is_playing()
