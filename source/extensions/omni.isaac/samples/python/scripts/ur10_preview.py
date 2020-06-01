@@ -20,10 +20,8 @@ from omni.physx import _physx
 
 from .ur10_scenarios.scenario import Scenario
 from .ur10_scenarios import bin_stack
-from .ur10_scenarios import bmw_fof_demo
 from .ur10_scenarios.fill_bin import FillBin
 
-from .tests.test_ur10_samples import *
 
 EXTENSION_NAME = "UR10 Preview"
 
@@ -37,7 +35,7 @@ class Extension(omni.ext.IExt):
             EXTENSION_NAME,
             300,
             200,
-            menu_path="Isaac Samples/Samples/" + EXTENSION_NAME,
+            menu_path="Isaac Robotics/Samples/" + EXTENSION_NAME,
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
@@ -53,11 +51,8 @@ class Extension(omni.ext.IExt):
 
         self._selected_scenario = self._window.layout.add_child(omni.kit.ui.ComboBox())
         self._selected_scenario.add_item("Stack Bins")
-        self._selected_scenario.add_item("BMW FoF Demo")
         self._selected_scenario.add_item("Fill Bin")
         self._selected_scenario.selected_index = 0
-
-        self._create_background_chk = self._window.layout.add_child(omni.kit.ui.CheckBox("Load Background", False))
 
         self._create_UR10_btn = self._window.layout.add_child(omni.kit.ui.Button("Create Scenario"))
         self._create_UR10_btn.set_clicked_fn(self._on_create_UR10)
@@ -106,11 +101,13 @@ class Extension(omni.ext.IExt):
     def _on_create_UR10(self, *args):
         if self._selected_scenario.selected_index == 0:
             self._scenario = bin_stack.BinStack(self._editor, self._dc, self._mp)
+            self._editor.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", -83.41, -126.78, -80.28, True)
         if self._selected_scenario.selected_index == 1:
-            self._scenario = bmw_fof_demo.AttachBody(self._editor, self._dc, self._mp)
-        if self._selected_scenario.selected_index == 2:
             self._scenario = FillBin(self._editor, self._dc, self._mp)
             self._add_new_trays_btn.text = "Drop Parts"
+            self._editor.set_camera_position("/OmniverseKit_Persp", -142.07, 284.72, 111.53, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", -140.6, 282.7, 110.6, True)
 
         self._first_step = True
         self._create_UR10_btn.enabled = False
@@ -123,8 +120,7 @@ class Extension(omni.ext.IExt):
         self._settings.set("/rtx/shadows/denoiser/quarterRes", True)
         self._settings.set("/rtx/translucency/reflectionCutoff", 0.1)
 
-        self._scenario.create_UR10(self._create_background_chk.value)
-        self._create_background_chk.enabled = False
+        self._scenario.create_UR10()
 
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()

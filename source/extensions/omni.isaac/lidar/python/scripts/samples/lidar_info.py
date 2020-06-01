@@ -16,6 +16,9 @@ class lidar_info:
         # in lidar/bindings
         self._li = lidar_interface
 
+        # We also need an interface to the editor to do things like set and get camera positions
+        self._editor = omni.kit.editor.get_editor_interface()
+
         # This just defines the window we will use to access the lidar_info GUI.  Note that clicking on the menu item
         # does not create an instance of lidar_info; that is done by the extension when it is loaded by kit.  All this
         # menu does is show or hide our GUI we will use for interacting with lidar_info
@@ -23,7 +26,7 @@ class lidar_info:
             "LIDAR Info",
             300,
             200,
-            menu_path="Isaac Samples/LIDAR/LIDAR info",
+            menu_path="Isaac Robotics/LIDAR/LIDAR info",
             open=False,
             dock=omni.kit.ui.DockPreference.DISABLED,
         )
@@ -128,6 +131,10 @@ class lidar_info:
         collisionAPI = PhysicsSchema.CollisionAPI.Apply(cubePrim)
         collisionAPI.CreatePhysicsMaterialRel()
         collisionAPI.CreateCollisionGroupRel()
+
+        # we want to make sure we can see the obstacle we made, so we set the camera position and look target
+        self._editor.set_camera_position("/OmniverseKit_Persp", 500, 500, 500, True)
+        self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
 
     def _get_info_function(self, widget):
         maxDepth = self.lidar.GetMaxRangeAttr().Get()

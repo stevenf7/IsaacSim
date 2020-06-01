@@ -57,6 +57,21 @@ public:
     virtual void initComponents() = 0;
 
     /**
+     * @brief Optional function that runs after start is pressed
+     *
+     */
+    virtual void onStart()
+    {
+    }
+
+    /**
+     * @brief Optional function that runs after stop is pressed
+     *
+     */
+    virtual void onStop()
+    {
+    }
+    /**
      * @brief Create a supported component in this application
      * Pure virtual, must be defined by the child class
      * @param prim

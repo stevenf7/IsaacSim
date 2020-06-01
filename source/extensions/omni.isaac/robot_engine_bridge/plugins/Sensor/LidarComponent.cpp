@@ -47,6 +47,7 @@ LidarComponent::~LidarComponent()
 void LidarComponent::onStart()
 {
     onComponentChange();
+    mSkipFirstFrame = true;
 }
 void LidarComponent::tick()
 {
@@ -54,6 +55,11 @@ void LidarComponent::tick()
 
 void LidarComponent::publishAllMessages()
 {
+    if (mSkipFirstFrame)
+    {
+        mSkipFirstFrame = false;
+        return;
+    }
     CARB_PROFILE_ZONE(0, "REB LidarComponent Tick");
 
     pxr::UsdPrim prim = mStage->GetPrimAtPath(mLidarPath);

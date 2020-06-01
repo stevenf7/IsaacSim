@@ -5,7 +5,7 @@ import omni.kit.test
 import omni.kit.asyncapi
 import carb.tokens
 import os
-from pxr import Sdf
+from pxr import Sdf, Gf
 import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -40,10 +40,6 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         prim = stage.GetPrimAtPath("/test_basic")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
-        print("check links are imported")
-        linkPrim = stage.GetPrimAtPath("/test_basic/base_link/box_0")
-        self.assertNotEqual(linkPrim.GetPath(), Sdf.Path.emptyPath)
-
         print("check different types of joints are imported")
         # make sure the joints exist
         rootJoint = stage.GetPrimAtPath("/test_basic/rootJoint")
@@ -57,6 +53,10 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertNotEqual(fingerJoint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(fingerJoint.GetTypeName(), "PrismaticPhysicsJoint")
         self.assertAlmostEqual(fingerJoint.GetAttribute("upperLimit").Get(), 8)
+
+        fingerLink = stage.GetPrimAtPath("/test_basic/finger_link_2")
+        self.assertAlmostEqual(fingerLink.GetAttribute("diagonalInertia").Get()[0], 2.0)
+        self.assertAlmostEqual(fingerLink.GetAttribute("mass").Get(), 3)
 
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
@@ -85,20 +85,20 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         prim = stage.GetPrimAtPath("/test_advanced")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
-        linkPrim = stage.GetPrimAtPath("/test_advanced/link_1")
-        self.assertEqual(round(linkPrim.GetAttribute("mass").Get()), 10)
-
+        # check material and color are imported
         materialShader = stage.GetPrimAtPath("/test_advanced/link_1/cylinder/_0Shader")
         self.assertNotEqual(materialShader.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(Gf.IsClose(materialShader.GetAttribute("inputs:diffuseColor").Get(), Gf.Vec3f(0, 0.8, 0), 1e-5))
 
+        # check joint properties
         elbowPrim = stage.GetPrimAtPath("/test_advanced/link_1/elbow_joint")
         self.assertNotEqual(elbowPrim.GetPath(), Sdf.Path.emptyPath)
         self.assertAlmostEqual(elbowPrim.GetAttribute("jointFriction").Get(), 0.1)
         self.assertAlmostEqual(elbowPrim.GetAttribute("drive:angular:damping").Get(), 1.0)
 
-        # TODO: print(materialShader.GetAttribute('inputs:diffuseColor').Get())
-        # TODO: self.assertEqual(elbowJoint.GetAttribute("localPos0").Get())
-        # TODO: check sensor attachment (camera)
+        # check position of a link
+        joint_pos = elbowPrim.GetAttribute("localPos0").Get()
+        self.assertTrue(Gf.IsClose(joint_pos, Gf.Vec3f(0, 0, 40), 1e-5))
 
         # Start Simulation and wait
         editor = omni.kit.editor.get_editor_interface()
@@ -126,4 +126,5 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         # the merged link shouldn't be there
         prim = stage.GetPrimAtPath("/test_merge_joints/link_2")
         self.assertEqual(prim.GetPath(), Sdf.Path.emptyPath)
+
         pass

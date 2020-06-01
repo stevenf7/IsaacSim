@@ -17,12 +17,6 @@ from .samples.joint_monkey import joint_monkey
 # from .test_attractor import get_test_attractor
 # from .test_cartpole import get_cart_pole
 
-# any unit tests for the extension should be imported here
-from .tests.test_core import *
-from .tests.test_articulation import *
-from .tests.test_pickles import *
-from .tests.test_surface_gripper import *
-
 EXTENSION_NAME = "Dynamic Control"
 
 

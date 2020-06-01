@@ -4,7 +4,7 @@ from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.urdf import _urdf
 
 # from omni.physx import _physx
-from .common import import_robot
+from .common import import_robot, set_drive_parameters, remove_all_schema_multiple_attributes
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysicsSchemaTools, PhysxSchema
 
 
@@ -15,7 +15,7 @@ class import_carter:
             "Import Carter",
             300,
             200,
-            menu_path="Isaac Samples/URDF/Carter",
+            menu_path="Isaac Robotics/URDF/Carter",
             open=False,
             dock=omni.kit.ui.DockPreference.DISABLED,
         )
@@ -49,45 +49,19 @@ class import_carter:
         physicsArticulationAPI.GetFixBaseAttr().Set(False)
 
         left_wheel_drive = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/left_wheel"), "angular")
-        if not left_wheel_drive.GetTargetTypeAttr():
-            left_wheel_drive.CreateTargetTypeAttr("velocity")
-        else:
-            left_wheel_drive.GetTargetTypeAttr().Set("velocity")
-
-        if not left_wheel_drive.GetTargetAttr():
-            left_wheel_drive.CreateTargetAttr(2.5)
-        else:
-            left_wheel_drive.GetTargetAttr().Set(2.5)
-
-        if not left_wheel_drive.GetStiffnessAttr():
-            left_wheel_drive.CreateStiffnessAttr(0)
-        else:
-            left_wheel_drive.GetStiffnessAttr().Set(0)
-
-        if not left_wheel_drive.GetDampingAttr():
-            left_wheel_drive.CreateDampingAttr(100000)
-        else:
-            left_wheel_drive.GetDampingAttr().Set(100000)
 
         right_wheel_drive = PhysicsSchema.DriveAPI.Get(
             stage.GetPrimAtPath("/carter/chassis_link/right_wheel"), "angular"
         )
-        if not right_wheel_drive.GetTargetTypeAttr():
-            right_wheel_drive.CreateTargetTypeAttr("velocity")
-        else:
-            right_wheel_drive.GetTargetTypeAttr().Set("velocity")
+        # Drive forward
+        set_drive_parameters(left_wheel_drive, "velocity", 2.5, 0, 1000000, 1e8)
+        set_drive_parameters(right_wheel_drive, "velocity", 2.5, 0, 1000000, 1e8)
 
-        if not right_wheel_drive.GetTargetAttr():
-            right_wheel_drive.CreateTargetAttr(2.5)
-        else:
-            right_wheel_drive.GetTargetAttr().Set(2.5)
+        # Remove drive from rear wheel and pivot
+        prim = stage.GetPrimAtPath("/carter/chassis_link/rear_pivot")
+        remove_all_schema_multiple_attributes(PhysicsSchema.DriveAPI, prim, "drive", "angular")
+        PhysicsSchema.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")
 
-        if not right_wheel_drive.GetStiffnessAttr():
-            right_wheel_drive.CreateStiffnessAttr(0)
-        else:
-            right_wheel_drive.GetStiffnessAttr().Set(0)
-
-        if not right_wheel_drive.GetDampingAttr():
-            right_wheel_drive.CreateDampingAttr(100000)
-        else:
-            right_wheel_drive.GetDampingAttr().Set(100000)
+        prim = stage.GetPrimAtPath("/carter/rear_pivot_link/rear_axle")
+        remove_all_schema_multiple_attributes(PhysicsSchema.DriveAPI, prim, "drive", "angular")
+        PhysicsSchema.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")

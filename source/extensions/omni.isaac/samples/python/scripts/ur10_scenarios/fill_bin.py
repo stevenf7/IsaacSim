@@ -460,11 +460,11 @@ class FillBin(Scenario):
     def __init__(self, editor, dc, mp):
         super().__init__(editor, dc, mp)
 
-        self.asset_path = "omni:/Projects/gtc_sj_2020"
+        self.asset_path = "omni:/Isaac"
         # use local content if not connected to omni server
         if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
             print("Use local content")
-            self.asset_path = "art_assets/gtc_sj_2020"
+            self.asset_path = "art_assets/Isaac"
         else:
             print("Use server content")
 
@@ -472,6 +472,9 @@ class FillBin(Scenario):
         self._start = False
         self._reset = False
         self._time = 0
+        self._start_time = 0
+        self.current_state = SM_states.STANDBY
+        self.timeout_max = 8.0
         self.pick_and_place = None
         self._pending_disable = False
 
@@ -486,11 +489,11 @@ class FillBin(Scenario):
         self.add_objects_timeout = -1
 
         self.objects = [
-            self.asset_path + "/props/flip_stack/Large_corner_bracket_physics.usd",
-            self.asset_path + "/props/flip_stack/screw_95_physics.usd",
-            self.asset_path + "/props/flip_stack/screw_99_physics.usd",
-            self.asset_path + "/props/flip_stack/small_corner_bracket_physics.usd",
-            self.asset_path + "/props/flip_stack/t_connector_physics.usd",
+            self.asset_path + "/Props/Flip_Stack/large_corner_bracket_physics.usd",
+            self.asset_path + "/Props/Flip_Stack/screw_95_physics.usd",
+            self.asset_path + "/Props/Flip_Stack/screw_99_physics.usd",
+            self.asset_path + "/Props/Flip_Stack/small_corner_bracket_physics.usd",
+            self.asset_path + "/Props/Flip_Stack/t_connector_physics.usd",
         ]
 
     def __del__(self):
@@ -509,14 +512,19 @@ class FillBin(Scenario):
 
             target = self._stage.GetPrimAtPath("/environments/env/target")
             xform_attr = target.GetAttribute("xformOp:transform")
+            if self._reset:
+                self._paused = False
             if not self._paused:
                 self._time += 1.0 / 60.0
                 self.pick_and_place.step(self._time, self._start, self._reset)
                 if self._reset:
-                    self.stop_tasks
+                    self._paused = (self._time - self._start_time) < self.timeout_max
                     self._time = 0
-                    setTranslate(target, Gf.Vec3d(0, 75, 42))
-                    setRotate(target, Gf.Matrix3d(Gf.Quatd(0, 0.7071, 0, -0.7071)))
+                    self._start_time = 0
+                    p = self.default_position.p
+                    r = self.default_position.r
+                    setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                    setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
                 else:
                     state = self.ur10_solid.end_effector.status.current_target
                     state_1 = self.pick_and_place.target_position
@@ -529,9 +537,18 @@ class FillBin(Scenario):
                     self.add_objects_timeout -= 1
                     if self.add_objects_timeout == 0:
                         self.create_new_objects()
+                if (
+                    self.pick_and_place.current_state == self.current_state
+                    and self.current_state in [SM_states.PICKING, SM_states.ATTACH]
+                    and (self._time - self._start_time) > self.timeout_max
+                ):
+                    self.stop_tasks()
+                elif self.pick_and_place.current_state != self.current_state:
+                    self._start_time = self._time
+                    print(self._time)
+                    self.current_state = self.pick_and_place.current_state
 
-            else:
-                self.pick_and_place.waypoints.clear()
+            if self._paused:
                 translate_attr = xform_attr.Get().GetRow3(3)
                 rotate_x = xform_attr.Get().GetRow3(0)
                 rotate_y = xform_attr.Get().GetRow3(1)
@@ -552,16 +569,28 @@ class FillBin(Scenario):
                 )
 
     def create_UR10(self, *args):
-        self.ur10_table_usd = self.asset_path + "/Stage/StageD6Fill_bin.usd"
+        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_filling.usd"
         super().create_UR10()
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"
         self.env_path = "/environments/env"
         CreateSolidUR10(self._stage, self.env_path, self.ur10_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
 
+        # Set robot end effector Target
+        orig = [0, 0.75, 0.42]
+        self.default_position = _dynamic_control.Transform()
+        self.default_position.p = orig
+        self.default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
-        setTranslate(GoalPrim, Gf.Vec3d(0, 75, 42))
-        setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.5, -0.5, 0.5, 0.5)))
+
+        GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
+        p = self.default_position.p
+        r = self.default_position.r
+        setTranslate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+        setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+
+        # setTranslate(GoalPrim, Gf.Vec3d(0, 75, 42))
+        # setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.5, -0.5, 0.5, 0.5)))
 
         prim = self._stage.GetPrimAtPath("/World")
         imageable = UsdGeom.Imageable(prim)
@@ -606,8 +635,8 @@ class FillBin(Scenario):
 
         # Prim path of two blocks and their handles
         prim = self._stage.GetPrimAtPath(self.env_path)
-        self.tray_paths = [self.env_path + "/SmallKLT/SmallKLT"]
-        self.tray_handles = [self._dc.get_rigid_body(i) for i in self.tray_paths]
+        self.tray_path = self.env_path + "/bin/SmallKLT"
+        self.tray_handle = self._dc.get_rigid_body(self.tray_path)
 
         # Create world and robot object
         ur10_path = str(prim.GetPath()) + "/ur10"
@@ -638,26 +667,20 @@ class FillBin(Scenario):
             urdf="/urdf/ur10_robot_robotiq.urdf",
         )
 
-        self.world.register_object(0, self.env_path + "/staticPlaneActor", "ground")
-        self.world.make_obstacle("ground", 3, (10, 10, 0.1))
+        # self.world.register_object(0, self.env_path + "/gridroom_curved/staticPlaneActor", "ground")
+        # self.world.make_obstacle("ground", 3, (10, 10, 0.1))
 
         body_count = self._dc.get_articulation_body_count(self.ur10_solid.ar)
         for bodyIdx in range(body_count):
             body = self._dc.get_articulation_body(self.ur10_solid.ar, bodyIdx)
             self._dc.set_rigid_body_disable_gravity(body, True)
 
-        # Set robot end effector
-        orig = [-0.0645, 0.7214, 0.495]
-        default_position = _dynamic_control.Transform()
-        default_position.p = orig
-        default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
-
         self.pick_and_place = PickAndPlaceStateMachine(
             self._stage,
             self.ur10_solid,
             self._stage.GetPrimAtPath(self.env_path + "/ur10/ee_link"),
-            self.tray_paths[0],
-            default_position,
+            self.tray_path,
+            self.default_position,
         )
         self.pick_and_place.add_tray = self.add_new_objects
 
@@ -680,7 +703,6 @@ class FillBin(Scenario):
     def stop_tasks(self, *args):
         if self.pick_and_place is not None:
             self._reset = True
-            self.current_tray = 0
             self._pending_disable = True
             if self._editor.is_playing():
                 self.ur10_solid.end_effector.gripper.open()
@@ -690,16 +712,26 @@ class FillBin(Scenario):
                 self._dc.set_rigid_body_pose(self.objects_handles[i], tf)
                 self._dc.set_rigid_body_linear_velocity(self.objects_handles[i], [0, 0, 0])
                 self._dc.set_rigid_body_angular_velocity(self.objects_handles[i], [0, 0, 0])
-            tray = self._dc.get_rigid_body(self.env_path + "/SmallKLT/SmallKLT")
+            tray = self._dc.get_rigid_body(self.tray_path)
             tf = _dynamic_control.Transform()
             tf.p = [0, 81, -43.0]
             self._dc.set_rigid_body_pose(tray, tf)
+            self._dc.set_rigid_body_linear_velocity(tray, [0, 0, 0])
+            self._dc.set_rigid_body_angular_velocity(tray, [0, 0, 0])
 
     def pause_tasks(self, *args):
         self._paused = not self._paused
         if self._paused:
             selection = omni.usd.get_context().get_selection()
             selection.set_selected_prim_paths(["/environments/env/target"], False)
+            target = self._stage.GetPrimAtPath("/environments/env/target")
+            xform_attr = target.GetAttribute("xformOp:transform")
+            translate_attr = np.array(xform_attr.Get().GetRow3(3))
+            if np.linalg.norm(translate_attr) < 0.01:
+                p = self.default_position.p
+                r = self.default_position.r
+                setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
         return self._paused
 
     def open_gripper(self):

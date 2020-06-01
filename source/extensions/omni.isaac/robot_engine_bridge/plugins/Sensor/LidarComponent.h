@@ -69,6 +69,7 @@ private:
     pxr::SdfPath mLidarPath = pxr::SdfPath("/");
 
     omni::isaac::lidar::LidarHandle mLidarHandle = omni::isaac::lidar::kLidarInvalidHandle;
+    bool mSkipFirstFrame = true;
 };
 }
 }

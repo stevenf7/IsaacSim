@@ -167,8 +167,8 @@ class PickAndPlaceStateMachine(object):
         self.previous_state = -1
         self._physxIFace = _physx.acquire_physx_interface()
 
-        x = [103, 82, 61]
-        y = [-67, -36, -5]
+        x = [100, 79, 58]
+        y = [-66, -35, -4]
         self.stack_coordinates = np.array(
             [
                 [x[0], y[0]],
@@ -696,10 +696,10 @@ class PickAndPlaceStateMachine(object):
                     if rx < 0:  # rotate target by 180 degrees on z axis
                         r = (0, -1, 0, 0)
                     target.r = math_utils.mul(math_utils.mul(tr.r, r), (0, 0.7071, 0, 0.7071))
-                    target.p.z -= ((distance + x_off) / 100.0) - 0.16
+                    target.p.z -= ((distance + x_off) / 100.0) - 0.15
                 else:
                     target.r = [0, 0.7071, 0, 0.7071]
-                    target.p.z -= ((distance + x_off) / 100.0) - 0.20
+                    target.p.z -= ((distance + x_off) / 100.0) - 0.22
 
             else:
                 self.move_to_target()  # trigger the  goal_reached event so it tries again
@@ -734,11 +734,11 @@ class BinStack(Scenario):
     def __init__(self, editor, dc, mp):
         super().__init__(editor, dc, mp)
 
-        self.asset_path = "omni:/Projects/gtc_sj_2020"
+        self.asset_path = "omni:/Isaac"
         # use local content if not connected to omni server
         if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
             print("Use local content")
-            self.asset_path = "art_assets/gtc_sj_2020"
+            self.asset_path = "art_assets/Isaac"
         else:
             print("Use server content")
 
@@ -757,6 +757,8 @@ class BinStack(Scenario):
 
         self.add_tray_timeout = -1
 
+        self._waypoints_backup = None
+
     def on_startup(self):
         super().on_startup()
 
@@ -773,6 +775,8 @@ class BinStack(Scenario):
 
             target = self._stage.GetPrimAtPath("/environments/env/target")
             xform_attr = target.GetAttribute("xformOp:transform")
+            if self._reset:
+                self._paused = False
             if not self._paused:
                 self._time += 1.0 / 60.0
                 if self._start and self.current_tray == 0:
@@ -781,8 +785,11 @@ class BinStack(Scenario):
                 if self._reset:
                     self._paused = True
                     self._time = 0
-                    setTranslate(target, Gf.Vec3d(0, 75, 42))
-                    setRotate(target, Gf.Matrix3d(Gf.Quatd(0, 0.7071, 0, -0.7071)))
+                    p = self.default_position.p
+                    r = self.default_position.r
+                    setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                    setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+
                 else:
                     state = self.ur10_solid.end_effector.status.current_target
                     state_1 = self.pick_and_place.target_position
@@ -796,8 +803,7 @@ class BinStack(Scenario):
                     if self.add_tray_timeout == 0:
                         self.create_new_tray()
 
-            else:
-                self.pick_and_place.waypoints.clear()
+            if self._paused:
                 translate_attr = xform_attr.Get().GetRow3(3)
                 rotate_x = xform_attr.Get().GetRow3(0)
                 rotate_y = xform_attr.Get().GetRow3(1)
@@ -818,15 +824,18 @@ class BinStack(Scenario):
                 )
 
     def create_UR10(self, *args):
-        self.ur10_table_usd = self.asset_path + "/Stage/StageD6robotiq.usd"
+        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd"
         super().create_UR10()
-        use_background = True
-        if len(args) > 0:
-            use_background = args[0]
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"
         self.env_path = "/environments/env"
         CreateSolidUR10(self._stage, self.env_path, self.ur10_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
+
+        # Set robot end effector
+        orig = [-0.0645, 0.7214, 0.495]
+        self.default_position = _dynamic_control.Transform()
+        self.default_position.p = orig
+        self.default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
 
         a = [self.small_klt_usd for i in range(self.max_trays)]
         b = [self.env_path + "/Trays/Tray_{}".format(i) for i in range(self.max_trays)]
@@ -834,20 +843,15 @@ class BinStack(Scenario):
         CreateObjects(self._stage, a, b, c)
 
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
-        setTranslate(GoalPrim, Gf.Vec3d(0, 75, 42))
-        setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.5, -0.5, 0.5, 0.5)))
-        # Load background
-        if use_background:
-            CreateBackground(
-                self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
-            )
-        else:
-            CreateBackground(
-                self._stage,
-                self.asset_path + "/Backgrounds/Holodeck_curved.usd",
-                [-315.419, 127.124, -10.480],
-                Gf.Quatd(-0.7071, 0, 0, 0.7071),
-            )
+        p = self.default_position.p
+        r = self.default_position.r
+        setTranslate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+        setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+        # setTranslate(GoalPrim, Gf.Vec3d(-6.45, 72.14, 49.5))
+        # setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.624, -0.334, 0.335, 0.623)))
+        CreateBackground(
+            self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
+        )
         prim = self._stage.GetPrimAtPath("/World")
         imageable = UsdGeom.Imageable(prim)
         imageable.MakeInvisible()
@@ -928,10 +932,11 @@ class BinStack(Scenario):
             body = self._dc.get_articulation_body(self.ur10_solid.ar, bodyIdx)
             self._dc.set_rigid_body_disable_gravity(body, True)
 
-        p = str(prim.GetPath()) + "/TexturedDemoTable/simple_table/CollisionCube"
-        print(p)
-        self.world.register_object(0, p, "housing_0")
-        self.world.make_obstacle("housing_0", 3, self._stage.GetPrimAtPath(p).GetAttribute("xformOp:scale").Get())
+        i = 0
+        for p in self._stage.GetPrimAtPath(str(prim.GetPath()) + "/sortbot_housing/RMPObstacle").GetChildren():
+            self.world.register_object(0, p.GetPath().pathString, "housing_" + str(i))
+            self.world.make_obstacle("housing_" + str(i), 3, p.GetAttribute("xformOp:scale").Get())
+            i += 1
 
         i = 0
         for p in self._stage.GetPrimAtPath(str(prim.GetPath()) + "/pallet_holder/RMPObstacle").GetChildren():
@@ -952,18 +957,12 @@ class BinStack(Scenario):
             self._obstacles.append(obj)
         i = 0
 
-        # Set robot end effector
-        orig = [-0.0645, 0.7214, 0.495]
-        default_position = _dynamic_control.Transform()
-        default_position.p = orig
-        default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
-
         self.pick_and_place = PickAndPlaceStateMachine(
             self._stage,
             self.ur10_solid,
             self._stage.GetPrimAtPath(self.env_path + "/ur10/ee_link"),
             self._tray_objects,
-            default_position,
+            self.default_position,
             self._tray_holder_obstacle,
         )
         self.pick_and_place.add_tray = self.add_new_tray
@@ -977,6 +976,7 @@ class BinStack(Scenario):
         if self.pick_and_place is not None:
             self._reset = True
             self.current_tray = 0
+            self.add_tray_timeout = -1
             self._pending_disable = True
             for i in range(self.max_trays):
                 tf = _dynamic_control.Transform()
@@ -990,6 +990,15 @@ class BinStack(Scenario):
         if self._paused:
             selection = omni.usd.get_context().get_selection()
             selection.set_selected_prim_paths(["/environments/env/target"], False)
+            target = self._stage.GetPrimAtPath("/environments/env/target")
+            xform_attr = target.GetAttribute("xformOp:transform")
+            translate_attr = np.array(xform_attr.Get().GetRow3(3))
+            if np.linalg.norm(translate_attr) < 0.01:
+                p = self.default_position.p
+                r = self.default_position.r
+                setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+
         return self._paused
 
     def open_gripper(self):

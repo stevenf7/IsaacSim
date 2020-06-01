@@ -16,10 +16,10 @@ from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, PhysicsSchema, PhysicsSchemaT
 from omni.physx import _physx as physx
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from ..ur10_scenarios.scenario import Scenario
-from ..ur10_scenarios import bin_stack
-from ..ur10_scenarios import bmw_fof_demo
-from ..ur10_scenarios import fill_bin
+from omni.isaac.samples.scripts.ur10_scenarios.scenario import Scenario
+from omni.isaac.samples.scripts.ur10_scenarios import bin_stack
+from omni.isaac.samples_internal.scripts.bmw_fof import bmw_fof_demo
+from omni.isaac.samples.scripts.ur10_scenarios import fill_bin
 
 
 class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -27,9 +27,17 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         self.connection_handle = None
-        await omni.kit.asyncapi.connect("ov-isaac-dev:3009", "testing", "testing")
-        await omni.kit.asyncapi.next_update()
-        connections = omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()
+        for i in range(0, 10):
+            print("connection attempt:", i)
+            event, self.connection_handle = await omni.kit.asyncapi.connect("ov-isaac-dev:3009", "testing", "testing")
+            print(event, self.connection_handle)
+            await omni.kit.asyncapi.next_update()
+            await asyncio.sleep(1.0)
+            await omni.kit.asyncapi.next_update()
+            connections = omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()
+            if len(connections) > 0:
+                print("connected")
+                break
         self.assertEqual(len(connections), 1)
 
         self._dc = dc.acquire_dynamic_control_interface()
@@ -79,7 +87,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
             self._scenario.stop_tasks()
             self._scenario = None
         if self.connection_handle is not None:
-            omni.kit.connectionhub.get_connection_hub_interface().disconnect(self.connection_handle, False)
+            await omni.kit.asyncapi.disconnect(self.connection_handle)
         print("done")
         pass
 

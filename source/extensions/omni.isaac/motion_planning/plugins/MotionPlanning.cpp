@@ -31,6 +31,7 @@
 #include "MotionPolicy.h"
 
 #include <lula/util/logging.h>
+#include <glog/logging.h>
 
 #include <map>
 #include <string>
@@ -372,7 +373,7 @@ CARB_EXPORT void carbOnPluginStartup()
     size_t index = gStageUpdate->getStageUpdateNodeCount();
     gStageUpdateNode = gStageUpdate->createStageUpdateNode(desc);
     gStageUpdate->setStageUpdateNodeOrder(index, -100);
-
+    google::InitGoogleLogging("Lula");
     lula::util::SetStderrLoggingLevel(lula::util::LoggingLevel::ERROR);
 }
 

@@ -104,29 +104,26 @@ public:
         }
     }
 
-    // template <typename MessageType, class Callback>
-    // IsaacHandle createPeriodic(void (Callback::*callbackFn)(), std::unique_ptr<Callback> callback)
-    // {
+    template <typename MessageType, class Callback>
+    void createPeriodic(const std::string& uniqueName, void (Callback::*callbackFn)(), Callback* callback)
+    {
 
-    //     if (!callback && callbackFn)
-    //     {
-    //         CARB_LOG_ERROR("Periodic callback not valid");
-    //         return -1;
-    //     }
-    //     if (rosnode_)
-    //     {
-    //         std::unique_ptr<RosPeriodic> per_ = std::make_unique<RosPeriodic>();
-    //         per_->init<MessageType>(rosnode_.get(), callbackFn, callback.get());
-    //         per_->callback_ = std::move(callback);
-    //         mMessages.push_back(std::move(per_));
-    //         return mMessages.size() - 1;
-    //     }
-    //     else
-    //     {
-    //         CARB_LOG_ERROR("Could Not Create Subscriber");
-    //     }
-    //     return -1;
-    // }
+        if (!callback && callbackFn)
+        {
+            CARB_LOG_ERROR("Periodic callback not valid");
+        }
+        if (rosnode_)
+        {
+            std::unique_ptr<RosPeriodic> periodic = std::make_unique<RosPeriodic>();
+            periodic->init<MessageType>(rosnode_.get(), callbackFn, callback);
+            // periodic->callback_ = std::move(callback);
+            mMessages[uniqueName] = (std::move(periodic));
+        }
+        else
+        {
+            CARB_LOG_ERROR("Could Not Create Periodic publisher");
+        }
+    }
 
 
     // template <typename MessageType, class Callback>

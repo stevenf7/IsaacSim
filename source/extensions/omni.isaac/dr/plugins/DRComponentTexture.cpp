@@ -7,6 +7,8 @@
 #include <AudioSchema/sound.h>
 #include <boost/algorithm/string.hpp>
 #include <carb/Framework.h>
+#include <carb/tokens/ITokens.h>
+#include <carb/tokens/TokensUtils.h>
 #include <carb/Types.h>
 #include <carb/InterfaceUtils.h>
 #include <carb/filesystem/IFileSystem.h>
@@ -24,12 +26,16 @@ namespace isaac
 namespace dr
 {
 
-DRComponentTexture::DRComponentTexture() : DRComponentBase()
+DRComponentTexture::DRComponentTexture(carb::tokens::ITokens* tokens) : DRComponentBase()
 {
-    mDatasource = carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("omni.connection.plugin");
-    mConnection = omni::kit::getLatestConnection(omni::kit::getConnectionHub());
+    mTokens = tokens;
+    mDatasource = carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-file.plugin");
+    mConnection = carb::datasource::connectAndWait(
+        carb::datasource::ConnectionDesc{ carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/").c_str() },
+        mDatasource);
     mIsIgnore = false;
     mIsGrouping = false;
+    mDoOnce = true;
 }
 DRComponentTexture::~DRComponentTexture()
 {
@@ -49,6 +55,35 @@ void DRComponentTexture::onStart()
         if (layer->GetIdentifier().find(mDRLayerName) != std::string::npos)
             mTextureLayer = layer;
     }
+    if (mTextureLayer)
+    {
+        pxr::UsdEditContext context(mStage, mTextureLayer);
+        carb::extras::Path urlPath(mOmniPBRMatPath.c_str());
+        // Check for /Textures prim and if base OmniPBR material is loaded
+        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Textures"))
+        {
+            omni::usd::UsdUtils::createPrim(
+                mStage, "/Textures", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
+                    return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
+                });
+        }
+        std::string textureCompMaterialPath = "/Textures/" + mCompName;
+        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, textureCompMaterialPath))
+        {
+            omni::usd::UsdUtils::createPrim(
+                mStage, textureCompMaterialPath.c_str(), [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
+                    return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
+                });
+        }
+        mTextureMaterialPrim = omni::usd::AssetUtils::createPrimFromAssetPath(
+            mStage, mOmniPBRMatPath.c_str(), ("/Textures/" + mCompName + "/" + urlPath.getStem()).getStringBuffer(),
+            "OmniPBR.mdl", mDatasource, mConnection);
+        pxr::UsdShadeMaterial materialShade(mTextureMaterialPrim);
+        mTextureMaterialShade = materialShade;
+    }
+    pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
+    mStage->SetEditTarget(editTarget);
+    onComponentChange();
 }
 void DRComponentTexture::update()
 {
@@ -107,26 +142,26 @@ void DRComponentTexture::update()
     {
         mMaterialPrims.clear();
         mMaterialShades.clear();
+        unsigned int textureIndex = 1;
         pxr::UsdEditContext context(mStage, mTextureLayer);
         for (std::string& url : mTextureList)
         {
-            std::string mdlDataSourcePath = url.substr(std::strlen("omni:"));
-            carb::extras::Path urlPath(url.c_str());
-            if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Textures"))
+            textureIndex++;
+            std::string mTextureCompPathName = mStage->GetDefaultPrim().GetPath().GetString() + "/Textures/" + mCompName;
+            std::string mCopyTextureMaterialPrimName = mTextureCompPathName + "/OmniPBR_" + std::to_string(textureIndex);
+            if (mTextureMaterialPrim && !omni::usd::UsdUtils::hasPrimAtPath(mStage, mCopyTextureMaterialPrimName, false))
             {
-                omni::usd::UsdUtils::createPrim(
-                    mStage, "/Textures", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
-                        return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
-                    });
+                pxr::UsdEditContext context(mStage, mTextureLayer);
+                omni::usd::UsdUtils::copyPrim(mTextureMaterialPrim, nullptr, false, false);
+                pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
+                mStage->SetEditTarget(editTarget);
             }
-            auto materialPrim = omni::usd::AssetUtils::createPrimFromAssetPath(
-                mStage, url.c_str(), ("/Textures/" + urlPath.getStem()).getStringBuffer(), mdlDataSourcePath.c_str(),
-                mDatasource, mConnection);
-            mMaterialPrims.push_back(materialPrim);
-
-            pxr::UsdShadeMaterial material(materialPrim);
-            mMaterialShades.push_back(material);
+            auto mCopyTextureMaterialPrim = mStage->GetPrimAtPath(pxr::SdfPath(mCopyTextureMaterialPrimName.c_str()));
+            mMaterialPrims.push_back(mCopyTextureMaterialPrim);
+            pxr::UsdShadeMaterial materialShade(mCopyTextureMaterialPrim);
+            mMaterialShades.push_back(materialShade);
         }
+        mDoOnce = true;
     }
     pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
     mStage->SetEditTarget(editTarget);
@@ -134,6 +169,7 @@ void DRComponentTexture::update()
 void DRComponentTexture::onComponentChange()
 {
     std::string textureList, ignoredClass, groupedClass;
+    mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
 
     const pxr::DrSchemaTextureComponent& texturePrim = (pxr::DrSchemaTextureComponent)mPrim;
     texturePrim.GetCompNameAttr().Get(&mCompName);
@@ -185,9 +221,25 @@ void DRComponentTexture::stop()
 }
 void DRComponentTexture::tick()
 {
+    if (mDoOnce)
+    {
+        unsigned int textureIndex = 0;
+        for (auto materialPrim : mMaterialPrims)
+        {
+            if (!materialPrim.HasAttribute(pxr::TfToken("inputs:diffuse_texture")))
+                break;
+            pxr::UsdAttribute diffuseTextureAttr = materialPrim.GetAttribute(pxr::TfToken("inputs:diffuse_texture"));
+            if (diffuseTextureAttr)
+                diffuseTextureAttr.Set(pxr::SdfAssetPath(mTextureList[textureIndex].c_str()));
+            textureIndex++;
+        }
+        if (textureIndex == mMaterialPrims.size())
+            mDoOnce = false;
+    }
+
     for (auto& primMaterialBinding : mPrimMaterialBindingsMap)
     {
-        if (mTextureList.size() == 0)
+        if (mTextureList.size() == 0 || mMaterialShades.size() == 0)
             return;
         int randVal = int(randomRange(0.0f, mTextureList.size() * 1.0f));
         pxr::UsdShadeMaterialBindingAPI materialBinding = primMaterialBinding.second;

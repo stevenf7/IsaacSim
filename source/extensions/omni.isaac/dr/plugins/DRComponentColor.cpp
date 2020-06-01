@@ -35,26 +35,9 @@ DRComponentColor::DRComponentColor(carb::tokens::ITokens* tokens) : DRComponentB
     mBRange.push_back(0);
     mBRange.push_back(1);
     mDatasource = carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-file.plugin");
-    mConnection = omni::kit::getLatestConnection(omni::kit::getConnectionHub());
-    // #if CARB_PLATFORM_WINDOWS
-    //     carb::filesystem::IFileSystem* fs = carb::getFramework()->acquireInterface<carb::filesystem::IFileSystem>();
-    //     for (char drive = 'A'; drive <= 'Z'; drive++)
-    //     {
-    //         std::string drivePath = std::string(1, drive) + ":";
-    //         if (fs->exists(drivePath.c_str()))
-    //         {
-    //             mConnection = carb::datasource::connectAndWait(carb::datasource::ConnectionDesc{ drivePath.c_str()
-    //             });
-    //         }
-    //     }
-    // #else
-    //     // add the root of the filesystem
-    //     {
-    //         const char* drivePath = "/";
-    //         mConnection = carb::datasource::connectAndWait(carb::datasource::ConnectionDesc{ drivePath },
-    //         mDatasource);
-    //     }
-    // #endif
+    mConnection = carb::datasource::connectAndWait(
+        carb::datasource::ConnectionDesc{ carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/").c_str() },
+        mDatasource);
 }
 DRComponentColor::~DRComponentColor()
 {
@@ -95,12 +78,13 @@ void DRComponentColor::onStart()
         }
         mColorMaterialPrim = omni::usd::AssetUtils::createPrimFromAssetPath(
             mStage, mOmniPBRMatPath.c_str(), ("/Colors/" + mCompName + "/" + urlPath.getStem()).getStringBuffer(),
-            mOmniPBRMatPath.c_str(), mDatasource, mConnection);
+            "OmniPBR.mdl", mDatasource, mConnection);
         pxr::UsdShadeMaterial materialShade(mColorMaterialPrim);
         mColorMaterialShade = materialShade;
     }
     pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
     mStage->SetEditTarget(editTarget);
+    onComponentChange();
 }
 void DRComponentColor::update()
 {

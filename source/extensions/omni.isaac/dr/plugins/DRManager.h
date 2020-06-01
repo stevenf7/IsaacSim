@@ -3,6 +3,7 @@
 #include "DRComponentBase.h"
 #include "DRComponentColor.h"
 #include "DRComponentLight.h"
+#include "DRComponentMaterial.h"
 #include "DRComponentMovement.h"
 #include "DRComponentRotation.h"
 #include "DRComponentScale.h"
@@ -56,8 +57,6 @@ private:
     double mTimeElapsed = 0.0f;
     bool mDoOnce = false;
     std::string mRootLayerIdentifier = "";
-    std::vector<std::string> mSupportedComponents{ "ColorComponent", "MovementComponent", "RotationComponent",
-                                                   "ScaleComponent", "LightComponent",    "TextureComponent" };
 };
 }
 }

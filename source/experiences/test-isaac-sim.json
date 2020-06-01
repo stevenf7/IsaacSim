@@ -4,7 +4,11 @@
             "title": "Omniverse Isaac Sim Tests"
         },
         "extensions": {
-            "folders2": ["${kit}/exts", "${kit}/extsPhysics", "${app}/../exts"],
+            "folders2": [
+                "${kit}/exts",
+                "${kit}/extsPhysics",
+                "${app}/../exts"
+            ],
             "foldersBuiltin": [
                 "${kit}/extensions/extensions-bundled",
                 "${kit}/extensions/extensions-other",
@@ -26,7 +30,9 @@
                 "omni.isaac.lidar",
                 "omni.isaac.motion_planning",
                 "omni.isaac.utils",
-                "omni.isaac.urdf"
+                "omni.isaac.urdf",
+                "omni.isaac.samples",
+                "omni.isaac.tests"
             ]
         },
         "renderer": {
@@ -38,8 +44,14 @@
     "exts": {
         "omni.kit.test": {
             "printTests": true,
-            "includeTests": ["omni.isaac.*"],
-            "excludeTests": ["omni.isaac.dr.*"],
+            "includeTests": [
+                "omni.isaac.tests.*"
+            ],
+            "excludeTests": [
+                "omni.isaac.tests.domain_randomizer.*",
+                "omni.isaac.tests.samples.*",
+                "omni.isaac.tests.urdf.*"
+            ],
             "runTestsAndQuit": true
         }
     },

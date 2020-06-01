@@ -17,6 +17,7 @@ namespace robot_engine_bridge
 
 extern "C" void rgbaToRgb(uint8_t* dest, const uint8_t* src, int width, int height, int srcStride);
 extern "C" void uint32ToUint16(uint16_t* dest, const uint32_t* src, int width, int height, int srcStride);
+extern "C" void uint32ToUint8(uint8_t* dest, const uint32_t* src, int width, int height, int srcStride);
 
 CameraComponent::CameraComponent() : IsaacComponent()
 {
@@ -72,6 +73,12 @@ CameraComponent::~CameraComponent()
         mSegmentationSensor = nullptr;
         mSegmentationSensorData = nullptr;
     }
+    if (mSemanticSensor)
+    {
+        // mSyntheticDataInterface->destroySensor(mSemanticSensor);
+        mSemanticSensor = nullptr;
+        mSemanticSensorData = nullptr;
+    }
     if (mBoundingBox2DSensor)
     {
         mBoundingBox2DSensor = nullptr;
@@ -87,7 +94,7 @@ void CameraComponent::tick()
 {
     CARB_PROFILE_ZONE(0, "REB CameraComponent Tick");
 
-    if (!mRgbSensor && !mDepthSensor && !mSegmentationSensor && !mBoundingBox2DSensor)
+    if (!mRgbSensor && !mDepthSensor && !mSegmentationSensor && !mSemanticSensor && !mBoundingBox2DSensor)
         return;
 
     const char* cameraPath = mEditorInterface->getActiveCamera();
@@ -201,11 +208,14 @@ void CameraComponent::tick()
         publish(mDepthOutputComponent, mDepthChannelName, cameraMessageProto, isaac_message::DepthCameraProtoId, buffers);
     }
 
-    if (mSegmentationSensor)
+    // TODO can we turn on mSegmentationSensor && mSemanticSensor separately
+    if (mSegmentationSensor && mSemanticSensor)
     {
         mSegmentationSensorData = mSyntheticDataInterface->getSensorDeviceData(mSegmentationSensor);
+        mSemanticSensorData = mSyntheticDataInterface->getSensorDeviceData(mSemanticSensor);
 
         const carb::sensors::SensorInfo& segmentationInfo = mSensorsInterface->getSensorInfo(mSegmentationSensor);
+        const carb::sensors::SensorInfo& semanticInfo = mSensorsInterface->getSensorInfo(mSemanticSensor);
 
         // Create the message
         IsaacMessage<isaac_message::SegmentationCamera> cameraMessage;
@@ -219,6 +229,31 @@ void CameraComponent::tick()
         instanceImageProto.setChannels(1);
         instanceImageProto.setDataBufferIndex(0);
 
+        // Create the semantic image
+        auto semanticImageProto = cameraMessageProto.initLabelImage();
+        semanticImageProto.setElementType(ElementType::UINT8);
+        semanticImageProto.setRows(semanticInfo.tex.height);
+        semanticImageProto.setCols(semanticInfo.tex.width);
+        semanticImageProto.setChannels(1);
+        semanticImageProto.setDataBufferIndex(1);
+
+        auto semanticLabelsProto = cameraMessageProto.initLabels(mSegmentationIDLabelMap.size());
+        int index = 0;
+        for (std::map<uint8_t, std::string>::iterator it = mSegmentationIDLabelMap.begin();
+             it != mSegmentationIDLabelMap.end(); ++it)
+        {
+            semanticLabelsProto[index].setIndex(it->first);
+            semanticLabelsProto[index].setName(it->second);
+            index++;
+        }
+
+        // These images should be of the same resolution
+        if (segmentationInfo.tex.height != semanticInfo.tex.height || segmentationInfo.tex.width != semanticInfo.tex.width)
+        {
+            CARB_LOG_ERROR("The segmentation and semantic textures have different resolutions");
+            return;
+        }
+
         // TODO : remove duplication with RGB camera
         // Pinhole info
         auto pinhole = cameraMessageProto.initPinhole();
@@ -231,9 +266,13 @@ void CameraComponent::tick()
         center.setX(segmentationInfo.tex.height * 0.5f);
         center.setY(segmentationInfo.tex.width * 0.5f);
 
+        // Message buffers
+        std::vector<std::vector<uint8_t>> buffers(2);
 
+        // TODO : The instance and semantic segmentation should be refactored into one method
+        // TODO : Have persistent device buffers for the CUDA conversion
+        // Instance segmentation
         const size_t bufferSize = segmentationInfo.tex.width * segmentationInfo.tex.height * sizeof(uint16_t);
-        std::vector<std::vector<uint8_t>> buffers(1);
         buffers[0] = std::vector<uint8_t>(bufferSize);
 
         uint16_t* segmentationDevice;
@@ -244,6 +283,21 @@ void CameraComponent::tick()
         CUDA_CHECK(cudaMemcpy(buffers[0].data(), segmentationDevice, bufferSize, cudaMemcpyDeviceToHost));
 
         CUDA_CHECK(cudaFree(segmentationDevice));
+
+
+        // Semantic segmentation
+        const size_t semanticBufferSize = semanticInfo.tex.width * semanticInfo.tex.height * sizeof(uint8_t);
+        buffers[1] = std::vector<uint8_t>(semanticBufferSize);
+
+        uint8_t* semanticDevice;
+        CUDA_CHECK(cudaMalloc(&semanticDevice, semanticBufferSize));
+
+        uint32ToUint8(semanticDevice, (uint32_t*)mSemanticSensorData, semanticInfo.tex.width, semanticInfo.tex.height,
+                      semanticInfo.tex.rowSize);
+        CUDA_CHECK(cudaMemcpy(buffers[1].data(), semanticDevice, semanticBufferSize, cudaMemcpyDeviceToHost));
+
+        CUDA_CHECK(cudaFree(semanticDevice));
+
 
         publish(mSegmentationOutputComponent, mSegmentationChannelName, cameraMessageProto,
                 isaac_message::SegmentationCameraProtoId, buffers);
@@ -357,16 +411,30 @@ void CameraComponent::onComponentChange()
         mDepthSensorData = nullptr;
     }
 
-
     if (mEnableSegmentation)
     {
 
         mSegmentationSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation);
+        mSemanticSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation);
+
+        // build segmentation ID to label map
+        mSegmentationIDLabelMap.clear();
+        for (int i = 0; i < 256; ++i)
+        {
+            std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(i));
+            if (!semanticLabel.empty())
+            {
+                mSegmentationIDLabelMap[i] = semanticLabel;
+                // CARB_LOG_ERROR("The initial segmentation labels are %i %s", i, mSegmentationIDLabelMap[i].c_str());
+            }
+        }
     }
     else
     {
         mSegmentationSensor = nullptr;
         mSegmentationSensorData = nullptr;
+        mSemanticSensor = nullptr;
+        mSemanticSensorData = nullptr;
     }
 
     if (mEnableBoundingBox2D)

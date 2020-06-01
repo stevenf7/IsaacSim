@@ -75,6 +75,9 @@ private:
     carb::sensors::Sensor* mSegmentationSensor = nullptr;
     void* mSegmentationSensorData = nullptr;
 
+    carb::sensors::Sensor* mSemanticSensor = nullptr;
+    void* mSemanticSensorData = nullptr;
+
     carb::sensors::Sensor* mBoundingBox2DSensor = nullptr;
     void* mBoundingBox2DSensorData = nullptr;
 
@@ -99,6 +102,7 @@ private:
     /// </summary>
     std::string mSegmentationOutputComponent = "output";
     std::string mSegmentationChannelName = "segmentation";
+    std::map<uint8_t, std::string> mSegmentationIDLabelMap;
     bool mEnableSegmentation = false;
 
     /// <summary>
