@@ -62,10 +62,6 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         self.menus = []
-        editor_menu = omni.kit.ui.get_editor_menu()
-        editor_menu.remove_item(ADD_COMPONENT_SAMPLE_MENU)
-        editor_menu.remove_item(ADD_SIMPLE_ROOM_SAMPLE_MENU)
-        editor_menu.remove_item(ADD_WAREHOUSE_SAMPLE_MENU)
         self._editor = None
         self._window = None
         self._usd_context = None

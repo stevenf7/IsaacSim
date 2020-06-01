@@ -66,5 +66,12 @@
             "sleepMsOnFocus": 0,
             "sleepMsOutOfFocus": 0
         }
+    },
+    "persistent": {
+        "app": { "stage": { "upAxis": "Z" } },
+        "physics": {
+            "maxNumSteps": 3.0,
+            "updateToUsd": false
+        }
     }
 }

@@ -32,7 +32,7 @@ class MultipleObstacle(Scenario):
         self.mid = [200, 1000]
 
     def step(self, step):
-        if self._editor.is_playing():
+        if self._editor.is_playing() and self._running:
             # Logic for generating motion of both rubiks cubes
             new_loc_y = (self.editor_step_count[0] - self.mid[0]) / self.mid[0] * math.pi * 0.5
             new_loc_z = (self.editor_step_count[1] - self.mid[1]) / self.mid[1] * math.pi * 0.5
@@ -114,3 +114,9 @@ class MultipleObstacle(Scenario):
         # Track the handles of the two rubiks cubes as obstacles
         self._obstacles.append(self.world.get_object_from_name("rubiks_cube"))
         self._obstacles.append(self.world.get_object_from_name("rubiks_cube1"))
+
+    def perform_tasks(self, *args):
+        super().perform_tasks()
+
+    def stop_tasks(self, *args):
+        super().stop_tasks()
