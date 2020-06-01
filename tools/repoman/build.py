@@ -33,6 +33,7 @@ VSCODE_PYTHON_ENV = {
         "$${PATH}",
         "$root/_build/target-deps/kit_sdk_$config/_build/$platform/$config",
         "$root/_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins",
+        "$root/_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx",
     ],
 }
 

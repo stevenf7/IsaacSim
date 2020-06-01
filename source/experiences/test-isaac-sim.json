@@ -4,11 +4,7 @@
             "title": "Omniverse Isaac Sim Tests"
         },
         "extensions": {
-            "folders2": [
-                "${kit}/exts",
-                "${kit}/extsPhysics",
-                "${app}/../exts"
-            ],
+            "folders2": ["${kit}/exts", "${kit}/extsPhysics", "${app}/../exts"],
             "foldersBuiltin": [
                 "${kit}/extensions/extensions-bundled",
                 "${kit}/extensions/extensions-other",
@@ -44,9 +40,7 @@
     "exts": {
         "omni.kit.test": {
             "printTests": true,
-            "includeTests": [
-                "omni.isaac.tests.*"
-            ],
+            "includeTests": ["omni.isaac.tests.*"],
             "excludeTests": [
                 "omni.isaac.tests.domain_randomizer.*",
                 "omni.isaac.tests.samples.*",
@@ -59,7 +53,12 @@
         "app": {
             "viewport": {
                 "displayOptions": 3085
-            }
+            },
+            "stage": { "upAxis": "Z" }
+        },
+        "physics": {
+            "maxNumSteps": 3.0,
+            "updateToUsd": false
         }
     }
 }

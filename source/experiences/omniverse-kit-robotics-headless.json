@@ -69,5 +69,12 @@
         "livestream": {
             "enabled": true
         }
+    },
+    "persistent": {
+        "app": { "stage": { "upAxis": "Z" } },
+        "physics": {
+            "maxNumSteps": 3.0,
+            "updateToUsd": false
+        }
     }
 }
