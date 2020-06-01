@@ -5,8 +5,8 @@ import omni.isaac.LidarSchema as LidarSchema
 from pxr import Usd, UsdGeom, Sdf, Gf, PhysicsSchema
 
 
-class lidar_info:
-    def __init__(self, lidar_interface):
+class Extension(omni.ext.IExt):
+    def on_startup(self):
         """
         This sample is written to demonstrate the LIDAR python API for Isaac Sim.
         """
@@ -14,7 +14,7 @@ class lidar_info:
         # The extension acquires the LIDAR interface at startup.  It will be released during extension shutdown.  We
         # create a LIDAR prim using our schema, and then we interact with / query that prim using the python API found
         # in lidar/bindings
-        self._li = lidar_interface
+        self._li = _lidar.acquire_lidar_interface()
 
         # We also need an interface to the editor to do things like set and get camera positions
         self._editor = omni.kit.editor.get_editor_interface()
@@ -28,7 +28,7 @@ class lidar_info:
             200,
             menu_path="Isaac Robotics/LIDAR/LIDAR info",
             open=False,
-            dock=omni.kit.ui.DockPreference.DISABLED,
+            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
 
         #  Kit GUIs are defined by a tree of layouts, and leaf layouts contain GUI elements (like buttons or
@@ -38,9 +38,20 @@ class lidar_info:
 
         # We are using a single colum layout, so these buttons will appear as a single column on
         # the left side of the window.
-        spawn_lidar_button = sublayout.add_child(omni.kit.ui.Button("Spawn LIDAR"))
-        spawn_obstacles_button = sublayout.add_child(omni.kit.ui.Button("Spawn obstacles"))
-        get_info_button = sublayout.add_child(omni.kit.ui.Button("Get Info"))
+        sublayout.add_child(omni.kit.ui.Label("This sample demonstrates how to:"))
+        spawn_lidar_button = sublayout.add_child(omni.kit.ui.Button("Spawn a LIDAR"))
+        spawn_lidar_button.tooltip = omni.kit.ui.Label("Spawn a LIDAR in the Stage and set its properties")
+        spawn_obstacles_button = sublayout.add_child(omni.kit.ui.Button("Spawn an obstacle for LIDAR"))
+        spawn_obstacles_button.tooltip = omni.kit.ui.Label("Spawn an obstacle and move camera so its in view")
+        get_info_button = sublayout.add_child(omni.kit.ui.Button("Get data from LIDAR (press play first)"))
+        get_info_button.tooltip = omni.kit.ui.Label(
+            "Press play to enable simulation and then press this button to get the current LIDAR information"
+        )
+        sublayout.add_child(
+            omni.kit.ui.Label(
+                'Note: The buttons above only work with the lidar spawned by the "Spawn a LIDAR" button and not existing ones in the stage'
+            )
+        )
 
         # When you interact with a GUI element, you are interacting with a kit Widget.  A widget is a single
         # GUI element that may or may not contain functions you can use to define how to interact with that widget.
@@ -81,7 +92,7 @@ class lidar_info:
 
         # Horizontal and vertical field of view in degrees
         self.lidar.CreateHorizontalFovAttr().Set(360.0)
-        self.lidar.CreateVerticalFovAttr().Set(45.0)
+        self.lidar.CreateVerticalFovAttr().Set(10)
 
         # Rotation rate in Hz
         self.lidar.CreateRotationRateAttr().Set(20.0)
@@ -89,8 +100,8 @@ class lidar_info:
         # Horizontal and vertical resolution in degrees.  Rays will be fired on the bin boundries defined by the
         # resolution.  If your FOV is 45 degrees and your resolution is 15 degrees, you will get rays at
         # 0, 15, 30, and 45 degrees.
-        self.lidar.CreateHorizontalResolutionAttr().Set(15.0)
-        self.lidar.CreateVerticalResolutionAttr().Set(15.0)
+        self.lidar.CreateHorizontalResolutionAttr().Set(1.0)
+        self.lidar.CreateVerticalResolutionAttr().Set(1.0)
 
         # Min and max range for the LIDAR.  This defines the starting and stopping locations for the linetrace
         self.lidar.CreateMinRangeAttr().Set(0.4)
@@ -105,7 +116,7 @@ class lidar_info:
         # We set the attributes we created.  We could have just set the attributes at creation, but this was
         # more illustrative.  It's important to remember that attributes do not exist until you create them; even
         # if they are defined in the schema.
-        self.lidar.GetRotationRateAttr().Set(0.0)
+        self.lidar.GetRotationRateAttr().Set(0.5)
         self.lidar.GetDrawLidarPointsAttr().Set(True)
         self.lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
