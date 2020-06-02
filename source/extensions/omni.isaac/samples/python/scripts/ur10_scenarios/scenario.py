@@ -177,7 +177,7 @@ class Scenario:
 
         self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd"
         self.small_klt_usd = self.asset_path + "/Props/KLT_Bin/small_KLT.usd"
-        self.small_tray_scale = np.array([0.19, 0.296, 0.08])
+        self.small_bin_scale = np.array([0.19, 0.296, 0.08])
         self.background_usd = self.asset_path + "/Environments/Simple_Warehouse/warehouse.usd"
         self.rubiks_cube_usd = self.asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
 
@@ -204,7 +204,7 @@ class Scenario:
     def open_gripper(self):
         pass
 
-    def add_tray(self, *args):
+    def add_bin(self, *args):
         pass
 
     def create_UR10(self, *args):
