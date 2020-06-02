@@ -200,16 +200,25 @@ void DRComponentTexture::stop()
     if (mStage && mTextureLayer)
     {
         pxr::UsdEditContext context(mStage, mTextureLayer);
+        // Remove texture material instances
         for (pxr::UsdPrim& materialPrim : mMaterialPrims)
         {
             if (materialPrim)
                 omni::usd::UsdUtils::removePrim(materialPrim);
         }
+        // Remove base texture material
+        if (mTextureMaterialPrim)
+            omni::usd::UsdUtils::removePrim(mTextureMaterialPrim);
+        // Remove component level Texture prim
+        pxr::UsdPrim textureCompPrim = mStage->GetPrimAtPath(
+            pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/Textures/" + mCompName));
+        if (textureCompPrim)
+            omni::usd::UsdUtils::removePrim(textureCompPrim);
+        // Remove top-level Texture prim
         pxr::UsdPrim texturePrim =
             mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/Textures"));
-        if (texturePrim)
-            if (texturePrim.GetChildren().empty())
-                omni::usd::UsdUtils::removePrim(texturePrim);
+        if (texturePrim && texturePrim.GetChildren().empty())
+            omni::usd::UsdUtils::removePrim(texturePrim);
 
         mPrimClassMap.clear();
         mPrimMaterialBindingsMap.clear();
