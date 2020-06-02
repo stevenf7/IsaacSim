@@ -67,16 +67,16 @@ def _print_body_rec(dc, body, indent_level=0):
     return str_output
 
 
-class joint_monkey:
-    def __init__(self, dc):
-        self._dc = dc
+class Extension(omni.ext.IExt):
+    def on_startup(self):
+        self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._window = omni.kit.ui.Window(
             "Joint Monkey",
             300,
             200,
             menu_path="Isaac Robotics/Dynamic Control/Joint Monkey",
             open=False,
-            dock=omni.kit.ui.DockPreference.DISABLED,
+            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
         sublayout = self._window.layout.add_child(omni.kit.ui.ColumnLayout())
         load_robot_btn = sublayout.add_child(omni.kit.ui.Button("Load Robot"))
@@ -97,6 +97,12 @@ class joint_monkey:
         self._editor_event_subscription = None
         self._editor = omni.kit.editor.get_editor_interface()
         self.ar = _dynamic_control.INVALID_HANDLE
+
+    def on_shutdown(self):
+        _dynamic_control.release_dynamic_control_interface(self._dc)
+        _physx.release_physx_interface(self._physxIFace)
+        self._editor = None
+        self._window = None
 
     def _on_load_robot(self, widget):
         asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))

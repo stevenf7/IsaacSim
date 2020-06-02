@@ -56,6 +56,19 @@ void DRManager::tick(double dt)
         mDoOnce = true;
     }
 
+    if (mPrimDeleted)
+    {
+        // reload remaining components
+        for (auto& component : mAllComponents)
+        {
+            if (component.second)
+            {
+                component.second->onComponentChange();
+            }
+        }
+        mPrimDeleted = false;
+    }
+
     for (auto& component : mAllComponents)
     {
         if (component.second &&
@@ -177,6 +190,7 @@ void DRManager::onComponentRemove(const pxr::SdfPath& primPath)
         CARB_LOG_WARN("Delete: Prim %s", primPath.GetString().c_str());
         mAllComponents[primPath.GetString()].reset();
         mAllComponents.erase(primPath.GetString());
+        mPrimDeleted = true;
     }
 }
 

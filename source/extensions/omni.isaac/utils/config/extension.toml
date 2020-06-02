@@ -15,3 +15,6 @@ public = false
 [[python.modules]]
 name = "omni.isaac.utils.scripts.semantics_ui"
 public = false
+
+[[python.modules]]
+name = "omni.isaac.utils.scripts.samples.surface_gripper"

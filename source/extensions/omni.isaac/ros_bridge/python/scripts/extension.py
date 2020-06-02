@@ -4,8 +4,6 @@ from .. import _ros_bridge
 from .menu import RosBridgeMenu
 from .roscore import Roscore
 
-from .samples.joint_states import joint_states
-
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
@@ -18,7 +16,6 @@ class Extension(omni.ext.IExt):
 
         print("Loading RosBridge interface")
         self._rosbridge = _ros_bridge.acquire_rosbridge_interface()
-        self._sample_joints = joint_states()
         self._menu = RosBridgeMenu()
         self._roscore = Roscore()
         self._roscore.startup()
@@ -26,5 +23,4 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         _ros_bridge.release_rosbridge_interface(self._rosbridge)
         self._menu = None
-        self._sample_joints = None
         self._roscore.shutdown()

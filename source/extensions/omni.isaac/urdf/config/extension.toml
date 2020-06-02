@@ -7,6 +7,15 @@ display_name = "URDF Import and Utils"
 [[python.modules]]
 name = "omni.isaac.urdf"
 
+[[python.modules]]
+name = "omni.isaac.urdf.scripts.samples.import_carter"
+
+[[python.modules]]
+name = "omni.isaac.urdf.scripts.samples.import_franka"
+
+[[python.modules]]
+name = "omni.isaac.urdf.scripts.samples.import_kaya"
+
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false

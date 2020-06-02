@@ -8,6 +8,10 @@ display_name = "Lidar"
 [[python.modules]]
 name = "omni.isaac.lidar"
 
+
+[[python.modules]]
+name = "omni.isaac.lidar.scripts.samples.lidar_info"
+
 [[python.modules]]
 name = "omni.isaac.LidarSchema"
 public = false

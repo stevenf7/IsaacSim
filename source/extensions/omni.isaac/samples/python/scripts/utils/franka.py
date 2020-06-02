@@ -52,19 +52,24 @@ class Gripper:
         self.ar = ar
         self.finger_j1 = self.dc.find_articulation_dof(self.ar, "panda_finger_joint1")
         self.finger_j2 = self.dc.find_articulation_dof(self.ar, "panda_finger_joint2")
+        self.width = 0
 
     def open(self, wait=False):
-        self.move(width=0.045, wait=True)
-        self.move(width=0.09, wait=wait)
+        if self.width < 0.045:
+            self.move(0.045, wait=True)
+        self.move(0.09, wait=wait)
 
     def close(self, wait=False, force=0):
-        self.move(width=0, wait=wait)
+        self.move(0, wait=wait)
 
     def move(self, width=0.03, speed=0.2, wait=False):
-        self.dc.set_dof_position_target(self.finger_j1, width * 0.5 * 100)
-        self.dc.set_dof_position_target(self.finger_j2, width * 0.5 * 100)
+        self.width = width
         if wait:
             time.sleep(0.5)
+
+    def update(self):
+        self.dc.set_dof_position_target(self.finger_j1, self.width * 0.5 * 100)
+        self.dc.set_dof_position_target(self.finger_j2, self.width * 0.5 * 100)
 
 
 class Status:
@@ -220,6 +225,11 @@ class Franka:
 
         self.base = self.dc.get_articulation_root_body(self.ar)
 
+        body_count = self.dc.get_articulation_body_count(self.ar)
+        for bodyIdx in range(body_count):
+            body = self.dc.get_articulation_body(self.ar, bodyIdx)
+            self.dc.set_rigid_body_disable_gravity(body, True)
+
         exec_folder = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve(
                 "${app}/../exts/omni.isaac.motion_planning/resources/lula/lula_franka"
@@ -263,6 +273,7 @@ class Franka:
         pass
 
     def update(self):
+        self.end_effector.gripper.update()
         self.end_effector.status.update()
         if self.imageable:
             if self.target_visibility is not self.imageable.ComputeVisibility(Usd.TimeCode.Default()):
