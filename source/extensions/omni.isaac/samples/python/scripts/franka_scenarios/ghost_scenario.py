@@ -66,6 +66,7 @@ class GhostScenario(Scenario):
                     ghost_domain.franka.update()
                 domain.block_locations.update()
                 domain.franka.update()
+                domain.tick(step)
 
             if self.on_stop > 0 and time.time() > self.on_stop:
                 self.stop_tasks()

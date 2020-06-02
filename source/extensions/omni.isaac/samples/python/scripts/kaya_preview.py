@@ -58,7 +58,6 @@ class Extension(omni.ext.IExt):
         self._settings = omni.kit.settings.get_settings_interface()
         self._settings.set("/persistent/physics/updateToUsd", False)
         self._settings.set("/persistent/physics/useFastCache", True)
-        self._settings.set("/persistent/physics/numThreads", 8)
 
         self._manip = _manip.acquire()
         self._joystick_deadzone = 0.2

@@ -79,15 +79,9 @@ class Extension(omni.ext.IExt):
 
         self._settings = omni.kit.settings.get_settings_interface()
 
-        self._settings.set("/app/renderer/gpuSynchronization", False)
-        self._settings.set("/persistent/app/stage/upAxis", "Z")
-
         self._settings.set("/persistent/physics/updateToUsd", False)
         self._settings.set("/persistent/physics/useFastCache", True)
         self._settings.set("/persistent/physics/numThreads", 8)
-        self._settings.set("/physics/timeStepsPerSecond", 60.0)
-
-        self._physxIFace.overwrite_gpu_setting(0)
 
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()

@@ -316,7 +316,9 @@ class PinchBlock(State):
     def __init__(self, domain, target_orig, target_axis_y):
         self.domain = domain
         self.target = {"orig": target_orig, "axis_y": target_axis_y}
-        self.termination_criteria = FrameTerminationCriteria()
+        self.termination_criteria = FrameTerminationCriteria(
+            orig_thresh=0.001, axis_x_thresh=0.001, axis_y_thresh=0.001, axis_z_thresh=0.001
+        )
         self.next_state = None
 
     def enter(self):
@@ -326,7 +328,7 @@ class PinchBlock(State):
         self.domain.franka.end_effector.go_local(
             target=self.target,
             approach_direction=self.domain.down,
-            approach_standoff=0.07,
+            approach_standoff=0.2,
             approach_standoff_std_dev=0.001,
             use_default_config=False,
             wait_for_target=False,
@@ -351,20 +353,21 @@ class PinchBlock(State):
 
 
 class RotateTowardAxisRotatePartially(State):
-    def __init__(self, domain, final_target_axis_y, up_only=False, max_height=0.1):
+    def __init__(self, domain, final_target_axis_y, up_only=False, max_height=0.1, rotation_time=0.5):
         """ Rotate smoothly toward the given axis. 
 
         The name of this state is a misnomer. It actually rotates entirely toward the axis.
         Previously it was used in conjunction with a shift up state, but now all functionality is
-        implemented here. Additionally, this version is much smoother than the behavior sketch
-        script in behaviors.py.
+        implemented here.
         """
         self.domain = domain
         self.final_target_axis_y = final_target_axis_y
         self.up_only = up_only
 
-        self.termination_criteria = FrameTerminationCriteria()
-        self.rotation_time = 0.5
+        self.termination_criteria = FrameTerminationCriteria(
+            orig_thresh=0.001, axis_x_thresh=0.001, axis_y_thresh=0.001, axis_z_thresh=0.001
+        )
+        self.rotation_time = rotation_time
         self.next_state = None
         self.max_height = max_height
 
@@ -402,8 +405,8 @@ class RotateTowardAxisRotatePartially(State):
         self.domain.franka.end_effector.go_local(
             target=self.target,
             approach_direction=approach_direction,
-            approach_standoff=0.07,
-            approach_standoff_std_dev=0.02,
+            approach_standoff=0.2,
+            approach_standoff_std_dev=0.001,
             use_default_config=False,
             wait_for_target=False,
         )
@@ -426,10 +429,12 @@ class RotateTowardAxis(HierarchicalState):
     vastly different orientations.
     """
 
-    def __init__(self, domain, final_target_axis_y, up_only=False, max_height=0.1):
+    def __init__(self, domain, final_target_axis_y, up_only=False, max_height=0.1, rotation_time=0.5):
         self.domain = domain
 
-        self.rotate_state = RotateTowardAxisRotatePartially(domain, final_target_axis_y, up_only, max_height)
+        self.rotate_state = RotateTowardAxisRotatePartially(
+            domain, final_target_axis_y, up_only, max_height, rotation_time
+        )
         self.next_state = None
 
         super().__init__(self.rotate_state)
@@ -502,9 +507,13 @@ class PinchAlignCycle(HierarchicalState):
         start_from_pinch_block_state=False,
     ):
         self.domain = domain
-        self.rotate_toward_pinch1 = RotateTowardAxis(domain, pinch_target_axis_y1, up_only=True, max_height=0)
+        self.rotate_toward_pinch1 = RotateTowardAxis(
+            domain, pinch_target_axis_y1, up_only=True, max_height=0, rotation_time=0.5
+        )
         self.pinch_block1 = PinchBlock(domain, pinch_target_orig, pinch_target_axis_y1)
-        self.rotate_toward_pinch2 = RotateTowardAxis(domain, pinch_target_axis_y2, up_only=True)
+        self.rotate_toward_pinch2 = RotateTowardAxis(
+            domain, pinch_target_axis_y2, up_only=True, max_height=0.2, rotation_time=2.0
+        )
         self.pinch_block2 = PinchBlock(domain, pinch_target_orig, pinch_target_axis_y2)
         self.lift = PinchAlignLift(domain)
 

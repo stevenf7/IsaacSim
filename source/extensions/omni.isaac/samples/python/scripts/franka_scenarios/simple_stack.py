@@ -105,6 +105,7 @@ class SimpleStack(Scenario):
             for domain in self._domains:
                 domain.block_locations.update()
                 domain.franka.update()
+                domain.tick(step)
 
     def create_franka(self, *args):
         super().create_franka()
