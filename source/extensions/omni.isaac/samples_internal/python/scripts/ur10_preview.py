@@ -67,9 +67,9 @@ class Extension(omni.ext.IExt):
         self._open_gripper_btn.set_clicked_fn(self._on_open_gripper)
         self._open_gripper_btn.enabled = False
 
-        self._add_new_trays_btn = self._window.layout.add_child(omni.kit.ui.Button("Add New tray"))
-        self._add_new_trays_btn.set_clicked_fn(self._on_add_tray)
-        self._add_new_trays_btn.enabled = False
+        self._add_new_bins_btn = self._window.layout.add_child(omni.kit.ui.Button("Add Bin"))
+        self._add_new_bins_btn.set_clicked_fn(self._on_add_bin)
+        self._add_new_bins_btn.enabled = False
 
         self._settings = omni.kit.settings.get_settings_interface()
 
@@ -118,7 +118,7 @@ class Extension(omni.ext.IExt):
         self._physxIFace.force_load_physics_from_usd()
         self._stop_task_btn.enabled = True
         self._pause_task_btn.enabled = True
-        self._add_new_trays_btn.enabled = True
+        self._add_new_bins_btn.enabled = True
 
     def _on_stop_tasks(self, *args):
         self._scenario.stop_tasks()
@@ -131,8 +131,8 @@ class Extension(omni.ext.IExt):
     def _on_open_gripper(self, *args):
         self._scenario.open_gripper()
 
-    def _on_add_tray(self, *args):
-        self._scenario.add_tray()
+    def _on_add_bin(self, *args):
+        self._scenario.add_bin()
 
     def _sub_keyboard_event(self, event, *args, **kwargs):
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
@@ -141,7 +141,7 @@ class Extension(omni.ext.IExt):
             if event.input == carb.input.KeyboardInput.KEY_2:
                 self._on_pause_tasks()
             if event.input == carb.input.KeyboardInput.KEY_3:
-                self._on_add_tray()
+                self._on_add_bin()
         return True
 
     def _on_editor_step(self, step):
@@ -159,7 +159,7 @@ class Extension(omni.ext.IExt):
             self._stop_task_btn.enabled = False
             self._pause_task_btn.enabled = False
             self._open_gripper_btn.enabled = False
-            self._add_new_trays_btn.enabled = False
+            self._add_new_bins_btn.enabled = False
             self._editor.stop()
             self._on_stop_tasks()
             self._scenario = Scenario(self._editor, self._dc, self._mp)
@@ -180,7 +180,7 @@ class Extension(omni.ext.IExt):
         if self._editor.is_playing() or self._scenario.is_created():
             self._create_UR10_btn.enabled = False
             self._perform_task_btn.enabled = True
-            self._add_new_trays_btn.enabled = True
+            self._add_new_bins_btn.enabled = True
             self._perform_task_btn.text = "Perform Task"
             if not self._scenario.is_created():
                 self._perform_task_btn.enabled = False
@@ -188,7 +188,7 @@ class Extension(omni.ext.IExt):
         if not self._editor.is_playing():
             self._perform_task_btn.enabled = False
             self._open_gripper_btn.enabled = False
-            self._add_new_trays_btn.enabled = False
+            self._add_new_bins_btn.enabled = False
             self._perform_task_btn.text = "Press Play To Enable"
             if not self._scenario.is_created():
                 self._create_UR10_btn.enabled = True
