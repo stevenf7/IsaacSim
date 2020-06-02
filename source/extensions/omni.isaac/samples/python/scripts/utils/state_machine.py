@@ -172,9 +172,6 @@ class RunState(HierarchicalState):
                         go_home(domain.franka)
                     print("State machine terminated")
                     return
-                if self.domains is not None:
-                    for domain in self.domains:
-                        domain.tick(1.0 / 30.0)
                 if self.active_state is None:
                     for domain in self.domains:
                         go_home(domain.franka)
