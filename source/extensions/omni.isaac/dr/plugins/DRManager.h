@@ -55,7 +55,7 @@ private:
     omni::usd::Layers* mLayer = nullptr;
     std::string mDRLayerName = "";
     double mTimeElapsed = 0.0f;
-    bool mDoOnce = false;
+    bool mDoOnce = false, mPrimDeleted = false;
     std::string mRootLayerIdentifier = "";
 };
 }

@@ -71,11 +71,7 @@ class Extension(omni.ext.IExt):
         omni.usd.get_context().new_stage(None)
 
     def _on_load_stage(self, widget):
-        if self._selected_scenario.selected_index == 5:
-            omni.usd.get_context().open_stage("omni:/Isaac/Samples/DR/Props/simple_cube_with_light.usd", None)
-        else:
-            path_to_file = get_data_file("assets/dr/SimpleCubeWithLight.usd")
-            omni.usd.get_context().open_stage(path_to_file, None)
+        omni.usd.get_context().open_stage("omni:/Isaac/Samples/DR/Props/simple_cube_with_light.usd", None)
 
     def _on_load_component(self, widget):
         if self._selected_scenario.selected_index == 0:
