@@ -49,8 +49,9 @@ def postprocess_vscode_python_env(env_dict, platform, config):
     )
 
     for ext in all_exts:
-        env_dict["PYTHONPATH"].append(ext)
-        env_dict["PATH"].append(f"{ext}/bin/{platform}/{config}")
+        if "robot_engine_bridge" not in ext:
+            env_dict["PYTHONPATH"].append(ext)
+            env_dict["PATH"].append(f"{ext}/bin/{platform}/{config}")
     return env_dict
 
 
