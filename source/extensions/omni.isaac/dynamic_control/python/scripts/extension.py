@@ -1,11 +1,8 @@
-import os
-
 import omni.ext
 import omni.kit.commands
 import omni.kit.editor
 import omni.kit.ui
 import gc
-import omni.physx._physx as omni_physx
 from .. import _dynamic_control
 
 EXTENSION_NAME = "Dynamic Control"
