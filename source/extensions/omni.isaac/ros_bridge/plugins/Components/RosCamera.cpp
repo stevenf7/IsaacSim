@@ -59,9 +59,9 @@ RosCamera::RosCamera()
 RosCamera::~RosCamera()
 {
     CARB_LOG_ERROR("RosCamera Destroyed");
-    mRosNode->destroyMessage(mCameraInfoPubTopic);
-    mRosNode->destroyMessage(mRgbPubTopic);
-    mRosNode->destroyMessage(mDepthPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mCameraInfoPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mRgbPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mDepthPubTopic);
 }
 
 void RosCamera::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageWeakPtr stage)
@@ -78,9 +78,9 @@ void RosCamera::onComponentChange()
     const pxr::RosBridgeSchemaRosCamera& typedPrim = (pxr::RosBridgeSchemaRosCamera)mPrim;
 
     // Destroy the old message, in case the topic changes
-    mRosNode->destroyMessage(mCameraInfoPubTopic);
-    mRosNode->destroyMessage(mRgbPubTopic);
-    mRosNode->destroyMessage(mDepthPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mCameraInfoPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mRgbPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mDepthPubTopic);
 
 
     isaac::utils::safeGetAttribute(typedPrim.GetCameraInfoPubTopicAttr(), mCameraInfoPubTopic);
@@ -94,9 +94,11 @@ void RosCamera::onComponentChange()
 
 
     mRosNode->createPublisher<sensor_msgs::CameraInfo>(
-        mCameraInfoPubTopic, mQueueSize, &RosCamera::cameraInfoPubCallback, this);
-    mRosNode->createPublisher<sensor_msgs::Image>(mRgbPubTopic, mQueueSize, &RosCamera::rgbPubCallback, this);
-    mRosNode->createPublisher<sensor_msgs::Image>(mDepthPubTopic, mQueueSize, &RosCamera::depthPubCallback, this);
+        mPrim.GetPath().GetString(), mCameraInfoPubTopic, mQueueSize, &RosCamera::cameraInfoPubCallback, this);
+    mRosNode->createPublisher<sensor_msgs::Image>(
+        mPrim.GetPath().GetString(), mRgbPubTopic, mQueueSize, &RosCamera::rgbPubCallback, this);
+    mRosNode->createPublisher<sensor_msgs::Image>(
+        mPrim.GetPath().GetString(), mDepthPubTopic, mQueueSize, &RosCamera::depthPubCallback, this);
 
 
     if (mEnableRgb)
