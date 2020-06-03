@@ -133,7 +133,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         box_pose = self._dc.get_rigid_body_pose(self._scenario.bin_handles[self.total_pass])
         rx = mu.get_basis_vector_x(box_pose.r)
         rz = mu.get_basis_vector_z(box_pose.r)
-        self.assertGreater(mu.dot(rz, (0, 0, -1)), 0.99)
+        self.assertGreater(mu.dot(rz, (0, 0, -1)), 0.9999)
         self.assertGreater(abs(mu.dot(rx, (1, 0, 0))), 0.99)
         self.assertGreater(box_pose.p.x, 0)
         self.assertLess(box_pose.p.y, 0)

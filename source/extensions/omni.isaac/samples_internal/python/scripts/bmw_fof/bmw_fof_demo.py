@@ -881,25 +881,25 @@ class AttachBody(Scenario):
 
         ur10_path = str(prim.GetPath()) + "/ur10"
         self.world = World(self._dc, self._mp)
-        mjp = Surface_Gripper_Properties()
-        mjp.parentPath = ur10_path + "/ee_link"
-        mjp.d6JointPath = mjp.parentPath + "/d6FixedJoint"
-        mjp.gripThreshold = 2
-        mjp.forceLimit = 5.0e4
-        mjp.torqueLimit = 5.0e5
-        mjp.bendAngle = np.pi / 24  # 7.5 degrees
-        mjp.stiffness = 1.0e5
-        mjp.damping = 1.0e4
-        mjp.disableGravity = True
+        sgp = Surface_Gripper_Properties()
+        sgp.parentPath = ur10_path + "/ee_link"
+        sgp.d6JointPath = sgp.parentPath + "/d6FixedJoint"
+        sgp.gripThreshold = 2
+        sgp.forceLimit = 5.0e4
+        sgp.torqueLimit = 5.0e5
+        sgp.bendAngle = np.pi / 24  # 7.5 degrees
+        sgp.stiffness = 1.0e5
+        sgp.damping = 1.0e4
+        sgp.disableGravity = True
         tr = _dynamic_control.Transform()
         tr.p.x = 22.15
-        mjp.offset = tr
+        sgp.offset = tr
         self.ur10_solid = UR10(
             self._stage,
             self._stage.GetPrimAtPath(ur10_path),
             self._dc,
             self._mp,
-            mjp,
+            sgp,
             self.world,
             "/physics/scene/solid",
             default_config,
@@ -951,6 +951,7 @@ class AttachBody(Scenario):
 
     def stop_tasks(self, *args):
         if self.pick_and_place is not None:
+            self.ur10_solid.stop()
             self._reset = True
             self.current_bin = 0
             self.add_bin_timeout = -1

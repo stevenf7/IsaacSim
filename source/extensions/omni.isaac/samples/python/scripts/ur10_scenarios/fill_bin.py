@@ -581,16 +581,12 @@ class FillBin(Scenario):
         self.default_position = _dynamic_control.Transform()
         self.default_position.p = orig
         self.default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
-        GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
 
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
         p = self.default_position.p
         r = self.default_position.r
         setTranslate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
         setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
-
-        # setTranslate(GoalPrim, Gf.Vec3d(0, 75, 42))
-        # setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.5, -0.5, 0.5, 0.5)))
 
         prim = self._stage.GetPrimAtPath("/World")
         imageable = UsdGeom.Imageable(prim)
@@ -602,6 +598,7 @@ class FillBin(Scenario):
         c = [Gf.Vec3d(-50000, 0, -50000 + 5 * i) for i in range(num_objs)]
         CreateObjects(self._stage, a, b, c)
         self.current_obj = 0
+
         # Setup physics simulation
         SetupPhysics(self._stage)
 
@@ -641,26 +638,26 @@ class FillBin(Scenario):
         # Create world and robot object
         ur10_path = str(prim.GetPath()) + "/ur10"
         self.world = World(self._dc, self._mp)
-        mjp = Surface_Gripper_Properties()
-        mjp.parentPath = ur10_path + "/ee_link"
-        mjp.d6JointPath = mjp.parentPath + "/d6FixedJoint"
-        mjp.gripThreshold = 1
-        mjp.forceLimit = 5.0e3
-        mjp.torqueLimit = 5.0e4
-        mjp.bendAngle = np.pi / 24  # 7.5 degrees
-        mjp.stiffness = 1.0e5
-        mjp.damping = 1.0e4
-        mjp.disableGravity = True
+        sgp = Surface_Gripper_Properties()
+        sgp.parentPath = ur10_path + "/ee_link"
+        sgp.d6JointPath = sgp.parentPath + "/d6FixedJoint"
+        sgp.gripThreshold = 1
+        sgp.forceLimit = 5.0e3
+        sgp.torqueLimit = 5.0e4
+        sgp.bendAngle = np.pi / 24  # 7.5 degrees
+        sgp.stiffness = 1.0e5
+        sgp.damping = 1.0e4
+        sgp.disableGravity = True
         tr = _dynamic_control.Transform()
         tr.p.x = 15.509
-        mjp.offset = tr
+        sgp.offset = tr
 
         self.ur10_solid = UR10(
             self._stage,
             self._stage.GetPrimAtPath(ur10_path),
             self._dc,
             self._mp,
-            mjp,
+            sgp,
             self.world,
             "/physics/scene/solid",
             default_config,
@@ -702,6 +699,7 @@ class FillBin(Scenario):
 
     def stop_tasks(self, *args):
         if self.pick_and_place is not None:
+            self.ur10_solid.stop()
             self._reset = True
             self._pending_disable = True
             if self._editor.is_playing():
