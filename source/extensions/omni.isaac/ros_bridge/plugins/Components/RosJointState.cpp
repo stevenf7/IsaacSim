@@ -29,8 +29,8 @@ RosJointState::RosJointState(omni::isaac::dynamic_control::DynamicControl* dynam
 RosJointState::~RosJointState()
 {
     CARB_LOG_ERROR("RosJointState Destroyed");
-    mRosNode->destroyMessage(mJointStatePubTopic);
-    mRosNode->destroyMessage(mJointStateSubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mJointStatePubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mJointStateSubTopic);
 }
 
 void RosJointState::initialize(RosNode* rosNode,
@@ -48,8 +48,8 @@ void RosJointState::onComponentChange()
 
     const pxr::RosBridgeSchemaRosJointState& typedPrim = (pxr::RosBridgeSchemaRosJointState)mPrim;
     // Destroy the old message, in case the topic changes
-    mRosNode->destroyMessage(mJointStatePubTopic);
-    mRosNode->destroyMessage(mJointStateSubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mJointStatePubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mJointStateSubTopic);
 
 
     isaac::utils::safeGetAttribute(typedPrim.GetJointStatePubTopicAttr(), mJointStatePubTopic);
@@ -57,9 +57,9 @@ void RosJointState::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
 
     mRosNode->createPublisher<sensor_msgs::JointState>(
-        mJointStatePubTopic, mQueueSize, &RosJointState::pubCallback, this);
+        mPrim.GetPath().GetString(), mJointStatePubTopic, mQueueSize, &RosJointState::pubCallback, this);
     mRosNode->createSubscriber<sensor_msgs::JointState>(
-        mJointStateSubTopic, mQueueSize, &RosJointState::subCallback, this);
+        mPrim.GetPath().GetString(), mJointStateSubTopic, mQueueSize, &RosJointState::subCallback, this);
 
     pxr::SdfPathVector targets;
     typedPrim.GetArticulationPrimRel().GetTargets(&targets);

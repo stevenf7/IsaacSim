@@ -33,7 +33,7 @@ RosPoseTree::RosPoseTree(omni::isaac::dynamic_control::DynamicControl* dynamicCo
 RosPoseTree::~RosPoseTree()
 {
     CARB_LOG_ERROR("RosPoseTree Destroyed");
-    mRosNode->destroyMessage(mPoseTreePubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mPoseTreePubTopic);
 }
 
 void RosPoseTree::initialize(RosNode* rosNode,
@@ -51,7 +51,7 @@ void RosPoseTree::onComponentChange()
 
     const pxr::RosBridgeSchemaRosPoseTree& typedPrim = (pxr::RosBridgeSchemaRosPoseTree)mPrim;
     // Destroy the old message, in case the topic changes
-    mRosNode->destroyMessage(mPoseTreePubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mPoseTreePubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetPoseTreePubTopicAttr(), mPoseTreePubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
 
@@ -75,7 +75,8 @@ void RosPoseTree::onComponentChange()
     }
 
 
-    mRosNode->createPublisher<tf2_msgs::TFMessage>(mPoseTreePubTopic, mQueueSize, &RosPoseTree::pubCallback, this);
+    mRosNode->createPublisher<tf2_msgs::TFMessage>(
+        mPrim.GetPath().GetString(), mPoseTreePubTopic, mQueueSize, &RosPoseTree::pubCallback, this);
     // mRosNode->createPeriodic<tf2_msgs::TFMessage>(mPrim.GetPath().GetString(), &RosPoseTree::periodicCallback, this);
 
     mStageUnits = UsdGeomGetStageMetersPerUnit(mStage);

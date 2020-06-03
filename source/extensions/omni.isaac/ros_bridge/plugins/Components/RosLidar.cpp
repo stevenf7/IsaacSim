@@ -39,7 +39,7 @@ RosLidar::RosLidar()
 RosLidar::~RosLidar()
 {
     CARB_LOG_ERROR("RosLidar Destroyed");
-    mRosNode->destroyMessage(mLaserScanPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mLaserScanPubTopic);
 }
 
 void RosLidar::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageWeakPtr stage)
@@ -55,12 +55,13 @@ void RosLidar::onComponentChange()
 
     const pxr::RosBridgeSchemaRosLidar& typedPrim = (pxr::RosBridgeSchemaRosLidar)mPrim;
     // Destroy the old message, in case the topic changes
-    mRosNode->destroyMessage(mLaserScanPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mLaserScanPubTopic);
 
     isaac::utils::safeGetAttribute(typedPrim.GetLaserScanPubTopicAttr(), mLaserScanPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
 
-    mRosNode->createPublisher<sensor_msgs::LaserScan>(mLaserScanPubTopic, mQueueSize, &RosLidar::pubCallback, this);
+    mRosNode->createPublisher<sensor_msgs::LaserScan>(
+        mPrim.GetPath().GetString(), mLaserScanPubTopic, mQueueSize, &RosLidar::pubCallback, this);
 
 
     pxr::SdfPathVector targets;

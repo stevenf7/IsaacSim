@@ -48,7 +48,8 @@ public:
         }
     }
     template <typename MessageType, class Callback>
-    void createPublisher(std::string topic,
+    void createPublisher(std::string uniquePrefix,
+                         std::string topic,
                          const int queue_size,
                          void (Callback::*callbackFn)(ros::Publisher* pub),
                          Callback* callback)
@@ -63,18 +64,18 @@ public:
             CARB_LOG_ERROR("Publisher callback not valid %s", topic.c_str());
             return;
         }
-        // if we already have a message on this topic, delete the previous one and recreate
-        if (mMessages.find(topic) != mMessages.end())
-        {
-            mMessages[topic].reset();
-            mMessages.erase(topic);
-        }
+        // // if we already have a message on this topic, delete the previous one and recreate
+        // if (mMessages.find(topic) != mMessages.end())
+        // {
+        //     mMessages[topic].reset();
+        //     mMessages.erase(topic);
+        // }
         if (rosnode_)
         {
             std::unique_ptr<RosPublisher> publisher = std::make_unique<RosPublisher>();
             publisher->init<MessageType>(rosnode_.get(), topic, queue_size, callbackFn, callback);
             // publisher->callback_ = std::move(callback);
-            mMessages[topic] = std::move(publisher);
+            mMessages[uniquePrefix + topic] = std::move(publisher);
         }
         else
         {
@@ -82,7 +83,8 @@ public:
         }
     }
     template <typename MessageType, class Callback>
-    void createSubscriber(std::string topic,
+    void createSubscriber(std::string uniquePrefix,
+                          std::string topic,
                           const int queue_size,
                           void (Callback::*callbackFn)(const typename MessageType::ConstPtr&),
                           Callback* callback)
@@ -96,7 +98,7 @@ public:
             std::unique_ptr<RosSubscriber> subscriber = std::make_unique<RosSubscriber>();
             subscriber->init<MessageType>(rosnode_.get(), topic, queue_size, callbackFn, callback);
             // subscriber->callback_ = std::move(callback);
-            mMessages[topic] = std::move(subscriber);
+            mMessages[uniquePrefix + topic] = std::move(subscriber);
         }
         else
         {
@@ -126,31 +128,28 @@ public:
     }
 
 
-    // template <typename MessageType, class Callback>
-    // IsaacHandle createService(std::string topic,
-    //                           bool (Callback::*callbackFn)(typename MessageType::Request&,
-    //                                                        typename MessageType::Response&),
-    //                           std::unique_ptr<Callback> callback)
-    // {
-    //     if (!callback && callbackFn)
-    //     {
-    //         CARB_LOG_ERROR("Service callback not valid");
-    //         return -1;
-    //     }
-    //     if (rosnode_ && topic.size())
-    //     {
-    //         std::unique_ptr<RosService> srv_ = std::make_unique<RosService>();
-    //         srv_->init<MessageType>(rosnode_.get(), topic, callbackFn, callback.get());
-    //         srv_->callback_ = std::move(callback);
-    //         mMessages.push_back(std::move(srv_));
-    //         return mMessages.size() - 1;
-    //     }
-    //     else
-    //     {
-    //         CARB_LOG_ERROR("Could Not Create Service");
-    //     }
-    //     return -1;
-    // }
+    template <typename MessageType, class Callback>
+    void createService(std::string uniquePrefix,
+                       std::string topic,
+                       bool (Callback::*callbackFn)(typename MessageType::Request&, typename MessageType::Response&),
+                       Callback* callback)
+    {
+        if (!callback && callbackFn)
+        {
+            CARB_LOG_ERROR("Service callback not valid");
+        }
+        if (rosnode_ && topic.size())
+        {
+            std::unique_ptr<RosService> srv_ = std::make_unique<RosService>();
+            srv_->init<MessageType>(rosnode_.get(), topic, callbackFn, callback);
+            // srv_->callback_ = std::move(callback);
+            mMessages[uniquePrefix + topic] = (std::move(srv_));
+        }
+        else
+        {
+            CARB_LOG_ERROR("Could Not Create Service");
+        }
+    }
     // bool deleteEvent(IsaacHandle event_handle);
 
 private:
