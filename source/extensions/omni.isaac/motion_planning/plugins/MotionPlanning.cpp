@@ -53,7 +53,7 @@ carb::tasking::Counter* gTaskCounter;
 omni::kit::IStageUpdate* gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 omni::isaac::dynamic_control::DynamicControl* gDynamicControl = nullptr;
-
+static bool gInitLogging = false;
 static float gTime = 0;
 
 std::unordered_map<size_t, std::shared_ptr<MotionPolicy>> gMotionPolicies;
@@ -373,8 +373,12 @@ CARB_EXPORT void carbOnPluginStartup()
     size_t index = gStageUpdate->getStageUpdateNodeCount();
     gStageUpdateNode = gStageUpdate->createStageUpdateNode(desc);
     gStageUpdate->setStageUpdateNodeOrder(index, -100);
-    google::InitGoogleLogging("Lula");
-    lula::util::SetStderrLoggingLevel(lula::util::LoggingLevel::ERROR);
+    if (!gInitLogging)
+    {
+        google::InitGoogleLogging("Lula");
+        lula::util::SetStderrLoggingLevel(lula::util::LoggingLevel::ERROR);
+        gInitLogging = true;
+    }
 }
 
 CARB_EXPORT void carbOnPluginShutdown()

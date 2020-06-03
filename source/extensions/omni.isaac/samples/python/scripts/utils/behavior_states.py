@@ -498,13 +498,7 @@ class PinchAlignCycle(HierarchicalState):
     """
 
     def __init__(
-        self,
-        domain,
-        pinch_target_orig,
-        pinch_target_axis_y1,
-        pinch_target_axis_y2,
-        num_cycles=1,
-        start_from_pinch_block_state=False,
+        self, domain, pinch_target_orig, pinch_target_axis_y1, pinch_target_axis_y2, start_from_pinch_block_state=False
     ):
         self.domain = domain
         self.rotate_toward_pinch1 = RotateTowardAxis(
@@ -512,7 +506,7 @@ class PinchAlignCycle(HierarchicalState):
         )
         self.pinch_block1 = PinchBlock(domain, pinch_target_orig, pinch_target_axis_y1)
         self.rotate_toward_pinch2 = RotateTowardAxis(
-            domain, pinch_target_axis_y2, up_only=True, max_height=0.2, rotation_time=2.0
+            domain, pinch_target_axis_y2, up_only=True, max_height=0.07, rotation_time=2.0
         )
         self.pinch_block2 = PinchBlock(domain, pinch_target_orig, pinch_target_axis_y2)
         self.lift = PinchAlignLift(domain)
@@ -520,7 +514,7 @@ class PinchAlignCycle(HierarchicalState):
         self.rotate_toward_pinch1.next_state = self.pinch_block1
         self.pinch_block1.next_state = self.rotate_toward_pinch2
         self.rotate_toward_pinch2.next_state = self.pinch_block2
-        self.num_cycles = num_cycles
+        self.pinch_block2.next_state = self.lift
 
         if start_from_pinch_block_state:
             start_state = self.pinch_block1
@@ -529,12 +523,6 @@ class PinchAlignCycle(HierarchicalState):
         super().__init__(start_state)
 
     def enter(self):
-        self.cycle_count = 0
-        if self.num_cycles == 1:
-            self.pinch_block2.next_state = self.lift
-        else:
-            # The lift state will be set when we cycle through.
-            self.pinch_block2.next_state = None
         super().enter()
 
     def transition(self):
@@ -544,17 +532,7 @@ class PinchAlignCycle(HierarchicalState):
         if next_state is not None:
             return next_state
         else:
-            self.cycle_count += 1
-            if self.cycle_count >= self.num_cycles:
-                # print("Cycles complete (%d), exiting" % self.cycle_count)
-                return None
-            else:
-                # print("Cycling back (start cycle %d of %d)..." % (self.cycle_count + 1, self.num_cycles))
-                if self.cycle_count == self.num_cycles - 1:
-                    self.pinch_block2.next_state = self.lift
-                self.init_state = self.rotate_toward_pinch1
-                super().enter()
-                return self.transition()
+            return None
 
 
 class PinchAlign(HierarchicalState):
@@ -568,7 +546,6 @@ class PinchAlign(HierarchicalState):
         self,
         domain,
         block_index=None,
-        num_cycles=1,
         suppress_block=True,
         maintain_block_suppression_on_exit=False,
         start_from_pinch_block_state=False,
@@ -578,7 +555,6 @@ class PinchAlign(HierarchicalState):
         self.suppress_block = suppress_block
         self.maintain_block_suppression_on_exit = maintain_block_suppression_on_exit
         self.start_from_pinch_block_state = start_from_pinch_block_state
-        self.num_cycles = num_cycles
 
         # The initial state will be filled in below.
         super().__init__(init_state=None)
@@ -632,7 +608,6 @@ class PinchAlign(HierarchicalState):
             pinch_target_orig,
             pinch_target_axis_y1,
             pinch_target_axis_y2,
-            num_cycles=self.num_cycles,
             start_from_pinch_block_state=self.start_from_pinch_block_state,
         )
 
@@ -686,7 +661,7 @@ class LookAt(State):
         self.update_continuously = update_continuously
         self.look_at_point = None
         self.next_state = next_state
-        self.is_done = None
+        self.is_done = True
         self.random_index = None
 
     @property
@@ -739,7 +714,7 @@ class LookAt(State):
                 self.converged_time = now
             elif (now - self.converged_time) >= self.look_time:
                 return self.next_state
-            elif self.is_done is not None and self.is_done():
+            elif self.is_done is not None:
                 if self.is_done_start is None:
                     self.is_done_start = now
                 elif (now - self.is_done_start) >= 2.0:
@@ -1557,7 +1532,6 @@ class PickAndPlaceMachine(HierarchicalState):
         self.domain = domain
 
         look_at_block = LookAt(domain, look_at_commander_tag="short", block_index=block_index, look_time=3.0)
-        look_at_block.is_done = RealsensePoserbpfIsAvailable(domain, block_index)
         self.look_at_block_behavior = Behavior(look_at_block)
 
         self.pick_block = PickBlock(domain, pick_info, block_index, use_full_orientation_constraint_on_pick)
@@ -1706,7 +1680,6 @@ class PickAndPlaceGhostMachine(HierarchicalState):
             think_machines.append(unhide_robot)
 
         look_at_block = LookAt(domain, look_at_commander_tag="short", block_index=block_index, look_time=3.0)
-        look_at_block.is_done = RealsensePoserbpfIsAvailable(domain, block_index)
         self.look_at_block_behavior = Behavior(look_at_block)
         run_machine = PickBlock(domain, pick_info, block_index, use_full_orientation_constraint_on_pick)
         if len(self.domain.ghost_domains) > 0:
@@ -1892,22 +1865,6 @@ class ResolveViolations(HierarchicalState):
         super().step()
 
 
-class RealsensePoserbpfIsAvailable(object):
-    def __init__(self, domain, block_index=None):
-        self.domain = domain
-        self._block_index = block_index
-
-    @property
-    def block_index(self):
-        if self._block_index is not None:
-            return self._block_index
-        else:
-            return self.domain.logical_state.active_block
-
-    def __call__(self):
-        return True
-
-
 class StackBlocksEconomical(HierarchicalState):
     """ Full block stacking behavior stacking blocks in the order of the colors given in
     domain.block_colors.
@@ -1926,7 +1883,6 @@ class StackBlocksEconomical(HierarchicalState):
                 block_index=block_index,
                 look_time=300.0,
             )
-            look_at_block.is_done = RealsensePoserbpfIsAvailable(domain, block_index)
 
             reset_robots = [Behavior(look_at_block)]
             for ghost_domain in domain.ghost_domains:
@@ -1939,7 +1895,7 @@ class StackBlocksEconomical(HierarchicalState):
             )
             tower_pick_and_place_behavior = Behavior(PickAndPlace(domain, block_index, block_tower_place_orig))
             second_pinch_align_behavior = WorldSuppressedBehavior(
-                domain, PinchAlign(domain, block_index, num_cycles=1, suppress_block=False)
+                domain, PinchAlign(domain, block_index, suppress_block=False)
             )
 
             latest_behavior.terminal_transition = NextStateTransition(look_at_block_behavior)

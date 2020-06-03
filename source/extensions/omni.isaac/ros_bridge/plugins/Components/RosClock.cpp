@@ -22,7 +22,7 @@ namespace ros_bridge
 RosClock::~RosClock()
 {
     CARB_LOG_ERROR("RosClock Destroyed");
-    mRosNode->destroyMessage(mClockPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mClockPubTopic);
 }
 
 void RosClock::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageWeakPtr stage)
@@ -38,13 +38,14 @@ void RosClock::onComponentChange()
 
     const pxr::RosBridgeSchemaRosClock& typedPrim = (pxr::RosBridgeSchemaRosClock)mPrim;
     // Destroy the old message, in case the topic changes
-    mRosNode->destroyMessage(mClockPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mClockPubTopic);
 
     isaac::utils::safeGetAttribute(typedPrim.GetClockPubTopicAttr(), mClockPubTopic);
     // isaac::utils::safeGetAttribute(typedPrim.GetSimTimeAttr(), mSimTime);
 
 
-    mRosNode->createPublisher<rosgraph_msgs::Clock>(mClockPubTopic, 0, &RosClock::pubCallback, this);
+    mRosNode->createPublisher<rosgraph_msgs::Clock>(
+        mPrim.GetPath().GetString(), mClockPubTopic, 0, &RosClock::pubCallback, this);
 }
 
 void RosClock::pubCallback(ros::Publisher* pub)

@@ -3,6 +3,7 @@ import omni.kit.usd.new_stage
 from omni.isaac.lidar import _lidar
 import omni.isaac.LidarSchema as LidarSchema
 from pxr import Usd, UsdGeom, Sdf, Gf, PhysicsSchema
+import asyncio
 
 
 class Extension(omni.ext.IExt):
@@ -38,7 +39,11 @@ class Extension(omni.ext.IExt):
 
         # We are using a single colum layout, so these buttons will appear as a single column on
         # the left side of the window.
-        sublayout.add_child(omni.kit.ui.Label("This sample demonstrates how to:"))
+        sublayout.add_child(
+            omni.kit.ui.Label(
+                "This sample demonstrates how to create a LIDAR, set properties and get data from it. Press play once LIDAR is created to simulate"
+            )
+        )
         spawn_lidar_button = sublayout.add_child(omni.kit.ui.Button("Spawn a LIDAR"))
         spawn_lidar_button.tooltip = omni.kit.ui.Label("Spawn a LIDAR in the Stage and set its properties")
         spawn_obstacles_button = sublayout.add_child(omni.kit.ui.Button("Spawn an obstacle for LIDAR"))
@@ -56,8 +61,8 @@ class Extension(omni.ext.IExt):
         # When you interact with a GUI element, you are interacting with a kit Widget.  A widget is a single
         # GUI element that may or may not contain functions you can use to define how to interact with that widget.
         # In this case, we are making simple button widgets, which will call a function we define whenever we click it.
-        spawn_lidar_button.set_clicked_fn(self._spawn_lidar_function)
-        spawn_obstacles_button.set_clicked_fn(self._spawn_obstacles_button)
+        spawn_lidar_button.set_clicked_fn(self._on_spawn_lidar_button)
+        spawn_obstacles_button.set_clicked_fn(self._on_spawn_obstacles_button)
         get_info_button.set_clicked_fn(self._get_info_function)
 
         # The separator is an example of a widget that does not contain any interactive functionality.  I simply puts
@@ -77,63 +82,77 @@ class Extension(omni.ext.IExt):
         self._editor = None
         self._window = None
 
-    def _spawn_lidar_function(self, widget):
-        stage = omni.usd.get_context().get_stage()
+    async def _spawn_lidar_function(self, task):
+        # Wait for stage clear to complete before creating LIDAR
+        done, pending = await asyncio.wait({task})
+        if task in done:
+            stage = omni.usd.get_context().get_stage()
 
-        # Set up axis to z.  The LIDAR extension scans in the XZ plane, which is assumed to be perpendicular to the
-        # rotational plane, and so to use the LIDAR as it is currently written, Z must be up.
-        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
-        UsdGeom.SetStageMetersPerUnit(stage, 0.01)
+            # Set up axis to z.  The LIDAR extension scans in the XZ plane, which is assumed to be perpendicular to the
+            # rotational plane, and so to use the LIDAR as it is currently written, Z must be up.
+            UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
+            UsdGeom.SetStageMetersPerUnit(stage, 0.01)
 
-        # Create the PhysicsScene.  The lidar is going to execute line trace calls in PhysX, and return a value based
-        # on how far it travels before colliding with an object that is using the PhysX collision API.  Because of this,
-        # to use the LIDAR extension, you MUST have a physics scene defined
-        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/physicsScene"))
+            # Create the PhysicsScene.  The lidar is going to execute line trace calls in PhysX, and return a value based
+            # on how far it travels before colliding with an object that is using the PhysX collision API.  Because of this,
+            # to use the LIDAR extension, you MUST have a physics scene defined
+            scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/physicsScene"))
 
-        # create the LIDAR.  Before we can set any attributes on our LIDAR, we must first create the prim using our
-        # LIDAR schema, and then populate it with the parameters we will be manipulating.  If you try to manipulate
-        # a parameter before creating it, you will get a runtime error
-        self.lidarPath = "/World/Lidar"
-        self.lidar = LidarSchema.Lidar.Define(stage, Sdf.Path(self.lidarPath))
+            # create the LIDAR.  Before we can set any attributes on our LIDAR, we must first create the prim using our
+            # LIDAR schema, and then populate it with the parameters we will be manipulating.  If you try to manipulate
+            # a parameter before creating it, you will get a runtime error
+            self.lidarPath = "/World/Lidar"
+            self.lidar = LidarSchema.Lidar.Define(stage, Sdf.Path(self.lidarPath))
 
-        # Horizontal and vertical field of view in degrees
-        self.lidar.CreateHorizontalFovAttr().Set(360.0)
-        self.lidar.CreateVerticalFovAttr().Set(10)
+            # Horizontal and vertical field of view in degrees
+            self.lidar.CreateHorizontalFovAttr().Set(360.0)
+            self.lidar.CreateVerticalFovAttr().Set(10)
 
-        # Rotation rate in Hz
-        self.lidar.CreateRotationRateAttr().Set(20.0)
+            # Rotation rate in Hz
+            self.lidar.CreateRotationRateAttr().Set(20.0)
 
-        # Horizontal and vertical resolution in degrees.  Rays will be fired on the bin boundries defined by the
-        # resolution.  If your FOV is 45 degrees and your resolution is 15 degrees, you will get rays at
-        # 0, 15, 30, and 45 degrees.
-        self.lidar.CreateHorizontalResolutionAttr().Set(1.0)
-        self.lidar.CreateVerticalResolutionAttr().Set(1.0)
+            # Horizontal and vertical resolution in degrees.  Rays will be fired on the bin boundries defined by the
+            # resolution.  If your FOV is 45 degrees and your resolution is 15 degrees, you will get rays at
+            # 0, 15, 30, and 45 degrees.
+            self.lidar.CreateHorizontalResolutionAttr().Set(1.0)
+            self.lidar.CreateVerticalResolutionAttr().Set(1.0)
 
-        # Min and max range for the LIDAR.  This defines the starting and stopping locations for the linetrace
-        self.lidar.CreateMinRangeAttr().Set(0.4)
-        self.lidar.CreateMaxRangeAttr().Set(100.0)
+            # Min and max range for the LIDAR.  This defines the starting and stopping locations for the linetrace
+            self.lidar.CreateMinRangeAttr().Set(0.4)
+            self.lidar.CreateMaxRangeAttr().Set(100.0)
 
-        # These attributes affect drawing the lidar in the viewport.  High Level Of Detail (HighLod) = True will draw
-        # all rays.  If false it will only draw horizontal rays.  Draw Lidar Points = True will draw the actual
-        # LIDAR rays in the viewport.
-        self.lidar.CreateHighLodAttr().Set(True)
-        self.lidar.CreateDrawLidarPointsAttr().Set(False)
+            # These attributes affect drawing the lidar in the viewport.  High Level Of Detail (HighLod) = True will draw
+            # all rays.  If false it will only draw horizontal rays.  Draw Lidar Points = True will draw the actual
+            # LIDAR rays in the viewport.
+            self.lidar.CreateHighLodAttr().Set(True)
+            self.lidar.CreateDrawLidarPointsAttr().Set(False)
 
-        # We set the attributes we created.  We could have just set the attributes at creation, but this was
-        # more illustrative.  It's important to remember that attributes do not exist until you create them; even
-        # if they are defined in the schema.
-        self.lidar.GetRotationRateAttr().Set(0.5)
-        self.lidar.GetDrawLidarPointsAttr().Set(True)
-        self.lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
+            # We set the attributes we created.  We could have just set the attributes at creation, but this was
+            # more illustrative.  It's important to remember that attributes do not exist until you create them; even
+            # if they are defined in the schema.
+            self.lidar.GetRotationRateAttr().Set(0.5)
+            self.lidar.GetDrawLidarPointsAttr().Set(True)
+            self.lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
-    def _spawn_obstacles_button(self, widget):
+            # we want to make sure we can see the lidar we made, so we set the camera position and look target
+            self._editor.set_camera_position("/OmniverseKit_Persp", 500, 500, 500, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+
+    def _on_spawn_lidar_button(self, widget):
+        # wait for new stage before creating lidar
+        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        asyncio.ensure_future(self._spawn_lidar_function(task))
+
+    def _on_spawn_obstacles_button(self, widget):
         stage = omni.usd.get_context().get_stage()
         self.CubePath = "/World/Cube"
         offset = Gf.Vec3f(-200.0, 0.0, 50.0)
         size = 100
 
         # To create a cube, we first define our geometry at our chosen path.  Then, becuase
-        # we will need the primitive later, we query the prim from the stage.
+        # we will need the primitive later, we query the prim from the stage. If the prim already exists, skip creation
+        if stage.GetPrimAtPath(self.CubePath):
+            return
         cubeGeom = UsdGeom.Cube.Define(stage, self.CubePath)
         cubePrim = stage.GetPrimAtPath(self.CubePath)
 
@@ -148,10 +167,6 @@ class Extension(omni.ext.IExt):
         collisionAPI = PhysicsSchema.CollisionAPI.Apply(cubePrim)
         collisionAPI.CreatePhysicsMaterialRel()
         collisionAPI.CreateCollisionGroupRel()
-
-        # we want to make sure we can see the obstacle we made, so we set the camera position and look target
-        self._editor.set_camera_position("/OmniverseKit_Persp", 500, 500, 500, True)
-        self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
 
     def _get_info_function(self, widget):
         maxDepth = self.lidar.GetMaxRangeAttr().Get()

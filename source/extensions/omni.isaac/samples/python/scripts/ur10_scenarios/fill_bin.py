@@ -99,7 +99,7 @@ class PickAndPlaceStateMachine(object):
             [0.08, 0.4, 0.4, 0.4],
             [0.18, 0.6, 0.6, 0.6],
         ]
-        self.add_tray = None
+        self.add_bin = None
 
         # Event management variables
 
@@ -107,7 +107,7 @@ class PickAndPlaceStateMachine(object):
         self._is_moving = False
         self._attached = False  # Used to flag the Attached/Detached events on a change of state from the end effector
         self._detached = False
-        self._upright = False  # Used to indicate if the tray is being picked facing up, so the proper state is called
+        self._upright = False  # Used to indicate if the bin is being picked facing up, so the proper state is called
         self._flipped = False
 
         self.is_closed = False
@@ -279,7 +279,7 @@ class PickAndPlaceStateMachine(object):
             self._upright = True
             offset_1.r = (0, -1, 0, 0)
             offset.p.z = -3
-        else:  # If tray is upside down, pick by bottom
+        else:  # If bin is upside down, pick by bottom
             offset_1.r = (1, 0, 0, 0)
             self._upright = False
         target_position = math_utils.mul(math_utils.mul(obj_pose, offset_1), offset)
@@ -346,15 +346,15 @@ class PickAndPlaceStateMachine(object):
     def _standby_start(self, *args):
         """
         Handles the start event when in standby mode.
-        Proceeds to pick up the next tray on the queue, and set the arm
-        to move towards the tray from current  position.
+        Proceeds to pick up the next bin on the queue, and set the arm
+        to move towards the bin from current  position.
         switches to picking state.
         """
         # Tell motion planner controller to ignore current object as an obstacle
         self.pick_count = 0
         self.lerp_to_pose(self.default_position, 1)
         self.lerp_to_pose(self.default_position, 90)
-        # set target above the current tray with offset of 20 cm
+        # set target above the current bin with offset of 20 cm
         self.set_target_to_object(25, 25, 6, clear_waypoints=False)
         # start arm movement
         self.move_to_target()
@@ -363,7 +363,7 @@ class PickAndPlaceStateMachine(object):
 
     def _standby_goal_reached(self, *args):
         """
-        Finished processing a tray, moves up the stack position for next tray placement
+        Finished processing a bin, moves up the stack position for next bin placement
         """
         self.move_to_zero()
         self.start = True
@@ -402,12 +402,12 @@ class PickAndPlaceStateMachine(object):
     def _picking_goal_reached(self, *args):
         """
         Handles a state machine step when goal was reached event happens, while on picking state
-        ensures the tray obstacle is suppressed for the planner, Updates the target position
-        to where the tray surface is, and send the robot to move towards it. No change of state happens
+        ensures the bin obstacle is suppressed for the planner, Updates the target position
+        to where the bin surface is, and send the robot to move towards it. No change of state happens
         """
         obj, distance = self.ray_cast()
         if obj is not None:
-            # Set target towards surface of the tray
+            # Set target towards surface of the bin
             tr = self.get_current_state_tr()
             offset = _dynamic_control.Transform()
             offset.p = (distance + 0.15, 0, 0)
@@ -427,16 +427,16 @@ class PickAndPlaceStateMachine(object):
     def _picking_no_event(self, *args):
         """
         Handles a state machine step when no event happened, while on picking state
-        ensures the tray obstacle is suppressed for the planner, Updates the target position
-        to where the tray is, and send the robot to move towards it. No change of state happens
+        ensures the bin obstacle is suppressed for the planner, Updates the target position
+        to where the bin is, and send the robot to move towards it. No change of state happens
         """
         self.set_target_to_object(25, 25, 1, True)
         self.move_to_target()
 
     def _holding_goal_reached(self, *args):
 
-        if self.add_tray is not None:
-            self.add_tray()
+        if self.add_bin is not None:
+            self.add_bin()
         self.lerp_to_pose(self.target_position, 20)
         self.move_to_target()
 
@@ -478,13 +478,13 @@ class FillBin(Scenario):
         self.pick_and_place = None
         self._pending_disable = False
 
-        self.max_trays = 36
+        self.max_bins = 36
 
         self.current_obj = 0
         self.max_objs = 100
         self.num_objs = 3
 
-        self._trays = {}
+        self._bins = {}
 
         self.add_objects_timeout = -1
 
@@ -605,7 +605,7 @@ class FillBin(Scenario):
         # Setup physics simulation
         SetupPhysics(self._stage)
 
-    def add_tray(self, *args):
+    def add_bin(self, *args):
         self.create_new_objects(args)
 
     def create_new_objects(self, *args):
@@ -623,7 +623,7 @@ class FillBin(Scenario):
             )
         self.current_obj = (self.current_obj + self.num_objs) % self.max_objs
 
-    def disable_trays(self, *args):
+    def disable_bins(self, *args):
         for i in range(self.max_objs):
             self._dc.set_rigid_body_disable_simulation(self.objects_handles[i], True)
         self._pending_disable = False
@@ -635,8 +635,8 @@ class FillBin(Scenario):
 
         # Prim path of two blocks and their handles
         prim = self._stage.GetPrimAtPath(self.env_path)
-        self.tray_path = self.env_path + "/bin/SmallKLT"
-        self.tray_handle = self._dc.get_rigid_body(self.tray_path)
+        self.bin_path = self.env_path + "/bin/SmallKLT"
+        self.bin_handle = self._dc.get_rigid_body(self.bin_path)
 
         # Create world and robot object
         ur10_path = str(prim.GetPath()) + "/ur10"
@@ -679,10 +679,10 @@ class FillBin(Scenario):
             self._stage,
             self.ur10_solid,
             self._stage.GetPrimAtPath(self.env_path + "/ur10/ee_link"),
-            self.tray_path,
+            self.bin_path,
             self.default_position,
         )
-        self.pick_and_place.add_tray = self.add_new_objects
+        self.pick_and_place.add_bin = self.add_new_objects
 
         self.objects_handles = []
         for prim in self._stage.GetPrimAtPath(self.env_path + "/objects").GetChildren():
@@ -712,12 +712,12 @@ class FillBin(Scenario):
                 self._dc.set_rigid_body_pose(self.objects_handles[i], tf)
                 self._dc.set_rigid_body_linear_velocity(self.objects_handles[i], [0, 0, 0])
                 self._dc.set_rigid_body_angular_velocity(self.objects_handles[i], [0, 0, 0])
-            tray = self._dc.get_rigid_body(self.tray_path)
+            bin = self._dc.get_rigid_body(self.bin_path)
             tf = _dynamic_control.Transform()
             tf.p = [0, 81, -43.0]
-            self._dc.set_rigid_body_pose(tray, tf)
-            self._dc.set_rigid_body_linear_velocity(tray, [0, 0, 0])
-            self._dc.set_rigid_body_angular_velocity(tray, [0, 0, 0])
+            self._dc.set_rigid_body_pose(bin, tf)
+            self._dc.set_rigid_body_linear_velocity(bin, [0, 0, 0])
+            self._dc.set_rigid_body_angular_velocity(bin, [0, 0, 0])
 
     def pause_tasks(self, *args):
         self._paused = not self._paused

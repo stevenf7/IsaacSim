@@ -2,6 +2,7 @@ import carb
 import omni
 from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.urdf import _urdf
+import asyncio
 
 # from omni.physx import _physx
 from .common import import_robot, set_drive_parameters, remove_all_schema_multiple_attributes
@@ -30,15 +31,24 @@ class Extension(omni.ext.IExt):
         self._window = None
 
     def _on_load_robot(self, widget):
-        # TODO: fix this workaround to clear stage
-        stage = omni.usd.get_context().get_stage()
-        prim = stage.GetDefaultPrim()
-        prim.SetActive(False)
+        load_stage = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        asyncio.ensure_future(self._load_kaya(load_stage))
 
-        import_config = _urdf.ImportConfig()
-        import_config.merge_fixed_joints = True
-        import_config.distance_scale = 10
-        import_robot(self._urdf_interface, "data/urdf/robots/kaya/urdf/kaya.urdf", import_config)
+    async def _load_kaya(self, task):
+        done, pending = await asyncio.wait({task})
+        if task in done:
+            stage = omni.usd.get_context().get_stage()
+            prim = stage.GetDefaultPrim()
+            prim.SetActive(False)
+
+            import_config = _urdf.ImportConfig()
+            import_config.merge_fixed_joints = True
+            import_config.distance_scale = 10
+            import_robot(self._urdf_interface, "data/urdf/robots/kaya/urdf/kaya.urdf", import_config)
+
+            editor = omni.kit.editor.get_editor_interface()
+            editor.set_camera_position("/OmniverseKit_Persp", 200, -200, 43, True)
+            editor.set_camera_target("/OmniverseKit_Persp", -96, 108, -40, True)
 
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
@@ -48,8 +58,8 @@ class Extension(omni.ext.IExt):
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
         distantLight.CreateIntensityAttr(500)
 
-        carter_prim = stage.GetPrimAtPath("/kaya")
-        physicsArticulationAPI = PhysicsSchema.ArticulationAPI.Get(stage, carter_prim.GetPath())
+        kaya_prim = stage.GetPrimAtPath("/kaya")
+        physicsArticulationAPI = PhysicsSchema.ArticulationAPI.Get(stage, kaya_prim.GetPath())
         physicsArticulationAPI.GetFixBaseAttr().Set(False)
         # Make all rollers spin freely by removing extra drive API
         for axle in range(0, 2 + 1):
