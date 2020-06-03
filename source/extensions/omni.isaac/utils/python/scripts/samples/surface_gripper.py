@@ -139,73 +139,80 @@ class Extension(omni.ext.IExt):
         if self.surface_gripper is not None:
             self.surface_gripper.open()
 
+    async def _create_scenario(self, task):
+        done, pending = await asyncio.wait({task})
+        if task in done:
+            # Repurpose button to reset Scene
+            self._create_scenario_button.text = "Reset Scene"
+            self._create_scenario_button.tooltip.text = "Resets scenario with the cone on top of the Cube"
+
+            # Get Handle for stage and stage ID to check if stage was reloaded
+            self._stage = self._usd_context.get_stage()
+            self._stage_id = self._usd_context.get_stage_id()
+            self._editor.stop()
+            self._create_scenario_button.set_clicked_fn(self._on_reset_scenario_button_clicked)
+
+            # Adds a light to the scene
+            distantLight = UsdLux.DistantLight.Define(self._stage, Sdf.Path("/DistantLight"))
+            distantLight.CreateIntensityAttr(500)
+            distantLight.AddOrientOp().Set(Gf.Quatf(-0.3748, -0.42060, -0.0716, 0.823))
+
+            # Set up stage with Z up, treat units as cm, set up gravity and ground plane
+            UsdGeom.SetStageUpAxis(self._stage, UsdGeom.Tokens.z)
+            UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
+            self.scene = PhysicsSchema.PhysicsScene.Define(self._stage, Sdf.Path("/physicsScene"))
+            self.scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
+            PhysicsSchemaTools.addGroundPlane(self._stage, "/groundPlane", "Z", 1000, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
+
+            # Colors to represent when gripper is open or closed
+            self.color_closed = Gf.Vec3f(1.0, 0.2, 0.2)
+            self.color_open = Gf.Vec3f(0.2, 1.0, 0.2)
+
+            # Cone that will represent the gripper
+            self.gripper_start_pose = dc.Transform([0, 0, 50.1], [0, 0, 0, 1])
+            self.coneGeom = self.createRigidBody(
+                UsdGeom.Cone,
+                "/GripperCone",
+                1.0,
+                [10, 10, 30],
+                self.gripper_start_pose.p,
+                self.gripper_start_pose.r,
+                self.color_open,
+            )
+
+            # Box to be picked
+            self.box_start_pose = dc.Transform([0, 0, 10], [0, 0, 0, 1])
+            self.boxGeom = self.createRigidBody(
+                UsdGeom.Cube, "/Box", 1.0, [10, 10, 10], self.box_start_pose.p, self.box_start_pose.r, [0.2, 0.2, 1]
+            )
+
+            # Gripper properties
+            self.sgp = Surface_Gripper_Properties()
+            self.sgp.d6JointPath = ""
+            self.sgp.parentPath = "/GripperCone"
+            self.sgp.offset = dc.Transform()
+            self.sgp.offset.p.x = 0
+            self.sgp.offset.p.z = -30.01
+            self.sgp.offset.r = [0, 0.7171, 0, 0.7171]  # Rotate to point gripper in Z direction
+            self.sgp.gripThreshold = 2
+            self.sgp.forceLimit = 1.0e4
+            self.sgp.torqueLimit = 1.0e5
+            self.sgp.bendAngle = np.pi / 4
+            self.sgp.stiffness = 1.0e4
+            self.sgp.damping = 1.0e3
+
+            self.surface_gripper = None
+
+            # Set camera to a nearby pose and looking directly at the Gripper cone
+            self._editor.set_camera_position("/OmniverseKit_Persp", 400, 400, 400, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", *self.gripper_start_pose.p, True)
+
+            self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+
     def _on_create_scenario_button_clicked(self, button):
-        # Repurpose button to reset Scene
-        self._create_scenario_button.text = "Reset Scene"
-        self._create_scenario_button.tooltip.text = "Resets scenario with the cone on top of the Cube"
-
-        # Get Handle for stage and stage ID to check if stage was reloaded
-        self._stage = self._usd_context.get_stage()
-        self._stage_id = self._usd_context.get_stage_id()
-        self._editor.stop()
-        self._create_scenario_button.set_clicked_fn(self._on_reset_scenario_button_clicked)
-
-        # Adds a light to the scene
-        distantLight = UsdLux.DistantLight.Define(self._stage, Sdf.Path("/DistantLight"))
-        distantLight.CreateIntensityAttr(500)
-        distantLight.AddOrientOp().Set(Gf.Quatf(-0.3748, -0.42060, -0.0716, 0.823))
-
-        # Set up stage with Z up, treat units as cm, set up gravity and ground plane
-        UsdGeom.SetStageUpAxis(self._stage, UsdGeom.Tokens.z)
-        UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
-        self.scene = PhysicsSchema.PhysicsScene.Define(self._stage, Sdf.Path("/physicsScene"))
-        self.scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
-        PhysicsSchemaTools.addGroundPlane(self._stage, "/groundPlane", "Z", 1000, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
-
-        # Colors to represent when gripper is open or closed
-        self.color_closed = Gf.Vec3f(1.0, 0.2, 0.2)
-        self.color_open = Gf.Vec3f(0.2, 1.0, 0.2)
-
-        # Cone that will represent the gripper
-        self.gripper_start_pose = dc.Transform([0, 0, 50.1], [0, 0, 0, 1])
-        self.coneGeom = self.createRigidBody(
-            UsdGeom.Cone,
-            "/GripperCone",
-            1.0,
-            [10, 10, 30],
-            self.gripper_start_pose.p,
-            self.gripper_start_pose.r,
-            self.color_open,
-        )
-
-        # Box to be picked
-        self.box_start_pose = dc.Transform([0, 0, 10], [0, 0, 0, 1])
-        self.boxGeom = self.createRigidBody(
-            UsdGeom.Cube, "/Box", 1.0, [10, 10, 10], self.box_start_pose.p, self.box_start_pose.r, [0.2, 0.2, 1]
-        )
-
-        # Gripper properties
-        self.sgp = Surface_Gripper_Properties()
-        self.sgp.d6JointPath = ""
-        self.sgp.parentPath = "/GripperCone"
-        self.sgp.offset = dc.Transform()
-        self.sgp.offset.p.x = 0
-        self.sgp.offset.p.z = -30.01
-        self.sgp.offset.r = [0, 0.7171, 0, 0.7171]  # Rotate to point gripper in Z direction
-        self.sgp.gripThreshold = 2
-        self.sgp.forceLimit = 1.0e4
-        self.sgp.torqueLimit = 1.0e5
-        self.sgp.bendAngle = np.pi / 4
-        self.sgp.stiffness = 1.0e4
-        self.sgp.damping = 1.0e3
-
-        self.surface_gripper = None
-
-        # Set camera to a nearby pose and looking directly at the Gripper cone
-        self._editor.set_camera_position("/OmniverseKit_Persp", 400, 400, 400, True)
-        self._editor.set_camera_target("/OmniverseKit_Persp", *self.gripper_start_pose.p, True)
-
-        self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+        # wait for new stage before creating scenario
+        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        asyncio.ensure_future(self._create_scenario(task))
 
     def _on_toggle_gripper_button_clicked(self, button):
         if self._editor.is_playing():

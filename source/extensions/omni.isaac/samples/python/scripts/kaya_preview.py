@@ -14,6 +14,7 @@ import omni.kit.ui
 import omni.kit.settings
 import gc
 import numpy as np
+import asyncio
 
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.manip import _manip
@@ -49,10 +50,11 @@ class Extension(omni.ext.IExt):
 
         self._load_kaya_btn = self._window.layout.add_child(omni.kit.ui.Button("Load Kaya"))
         self._load_kaya_btn.set_clicked_fn(self._on_environment_setup)
-
-        self._gamepad_setup_btn = self._window.layout.add_child(omni.kit.ui.Button("Connect Gamepad"))
+        self._load_kaya_btn.tooltip = omni.kit.ui.Label("Reset the stage and load the kaya environment")
+        self._gamepad_setup_btn = self._window.layout.add_child(omni.kit.ui.Button("Press Load Kaya First"))
         self._gamepad_setup_btn.set_clicked_fn(self._on_gamepad_setup)
-        self._create_background_chk = self._window.layout.add_child(omni.kit.ui.CheckBox("Load Background", True))
+        self._gamepad_setup_btn.enabled = False
+        self._gamepad_setup_btn.tooltip = omni.kit.ui.Label("Connect the gamepad to the robot and begin simulation")
         self.kaya = None
 
         self._settings = omni.kit.settings.get_settings_interface()
@@ -63,8 +65,7 @@ class Extension(omni.ext.IExt):
         self._joystick_deadzone = 0.2
         self._gains = (4, 4, 0.5)
         self._vel_target = np.zeros(3)
-
-        print("Kaya Extension setup ready")
+        print("Kaya Preview Startup Complete")
 
     def _on_gamepad_setup(self, widget):
         if self.kaya is None:
@@ -74,44 +75,36 @@ class Extension(omni.ext.IExt):
         self._editor.play()
         self._manip.bind_gamepad(self._on_event_fn)
 
-    def _on_environment_setup(self, widget):
-        self._stage = self._usd_context.get_stage()
-        print("loading enviornment")
-        asset_path = "omni:/Isaac/Robots/Kaya"
-        kaya_usd = asset_path + "/kaya.usd"
-        speed_gain = 10.0
+    async def _create_kaya(self, task):
+        done, pending = await asyncio.wait({task})
+        if task in done:
+            print("Loading Kaya Enviornment")
+            self._editor.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            self._stage = self._usd_context.get_stage()
+            asset_path = "omni:/Isaac/Robots/Kaya"
+            kaya_usd = asset_path + "/kaya.usd"
+            speed_gain = 10.0
 
-        setUpZAxis(self._stage)
-        SetupPhysics(self._stage)
+            setUpZAxis(self._stage)
+            SetupPhysics(self._stage)
 
-        self.kaya = Kaya(stage=self._stage, dc=self._dc, usd_path=kaya_usd, prim_path="/kaya", speed_gain=speed_gain)
-        if self._create_background_chk.value:
+            self.kaya = Kaya(
+                stage=self._stage, dc=self._dc, usd_path=kaya_usd, prim_path="/kaya", speed_gain=speed_gain
+            )
             CreateBackground(
                 self._stage,
                 "omni:/Isaac/Environments/Grid/gridroom_curved.usd",
                 background_path="/background",
                 offset=Gf.Vec3d(0, 0, -9),
             )
+            self._gamepad_setup_btn.enabled = True
+            self._gamepad_setup_btn.text = "Connect GamePad"
 
-    def _on_editor_step(self, step):
-        """This function is called every timestep in the editor
-        
-        Arguments:
-            step (float): elapsed time between steps
-        """
-        print("Editor Step")
-
-    def _on_stage_event(self, event):
-        """This function is called when stage events occur.
-        Enables UI elements when stage is opened.
-        Prevents tasks from being started until all assets are loaded
-        
-        Arguments:
-            event (int): event type
-        """
-        self.stage = self._usd_context.get_stage()
-        if event.type == int(omni.usd.StageEventType.OPENED):
-            print("Stage")
+    def _on_environment_setup(self, widget):
+        # wait for new stage before creating kaya
+        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        asyncio.ensure_future(self._create_kaya(task))
 
     def _on_update_ui(self, widget):
         """Callback that updates UI elements every frame

@@ -20,8 +20,6 @@ class Kaya:
 
         self.wheel_check = None
 
-        print("Kaya Env Ready")
-
     def control_setup(self):
         self.ar = self._dc.get_articulation(str(self.prim.GetPath()))
 
@@ -32,8 +30,6 @@ class Kaya:
         self.wheel_back_idx = self._dc.find_articulation_dof_index(self.ar, "axle_0_joint")
         self.wheel_right_idx = self._dc.find_articulation_dof_index(self.ar, "axle_1_joint")
         self.wheel_left_idx = self._dc.find_articulation_dof_index(self.ar, "axle_2_joint")
-
-        print("loaded wheels")
 
         self.vel_props = _dynamic_control.DofProperties()
         self.vel_props.drive_mode = _dynamic_control.DRIVE_VEL
@@ -69,7 +65,7 @@ class Kaya:
         if not self.wheel_check:
             self.control_setup()
         wheel_speed = self.compute_wheel_speed(vel_target)
-        # enable articulation in case it went to sleep
+        # Wake up articulation every move command to ensure commands are applied
         self._dc.wake_up_articulation(self.ar)
         self._dc.set_dof_velocity_target(
             self.wheel_right, np.clip(self.speed_gain * wheel_speed[1], -self.speed_gain, self.speed_gain)
