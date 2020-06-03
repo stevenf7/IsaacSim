@@ -7,7 +7,7 @@ pages:
     - mkdir .public
     - echo "10.36.168.30 teamcity.nvidia.com" >> /etc/hosts
     - wget --output-document=docs.7z --no-check-certificate --http-user=svcgtlautomate '--http-password=@ut0M@t3GTL$cr1pt$' https://teamcity.nvidia.com/repository/download/Omniverse_OmniDocs_Releases_IsaacSim_BuildAndPackaging_BuildDocumentationWindows/.lastSuccessful/omniverse-robotics-docs%40%7Bbuild.number%7D-internal.7z
-    - 7z x docs.7z -o .public
+    - 7z x docs.7z -o.public
     - mv .public public
   artifacts:
     paths:
