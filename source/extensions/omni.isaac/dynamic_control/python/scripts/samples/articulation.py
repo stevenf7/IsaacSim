@@ -67,11 +67,24 @@ class Extension(omni.ext.IExt):
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
         sublayout = self._window.layout.add_child(omni.kit.ui.ColumnLayout())
-        load_robot_btn = sublayout.add_child(omni.kit.ui.Button("Load Robot"))
-        load_robot_btn.set_clicked_fn(self._on_load_robot)
+        sublayout.add_child(
+            omni.kit.ui.Label(
+                "This sample demonstrates how to load a USD stage containing an articulated robot and then retreiving that articulation and using the dynamic_control python API to query it",
+                clippingmode=omni.kit.ui.ClippingType.WRAP,
+            )
+        )
 
-        get_info_btn = sublayout.add_child(omni.kit.ui.Button("Get Info"))
+        load_robot_btn = sublayout.add_child(omni.kit.ui.Button("Load Franka USD"))
+        load_robot_btn.set_clicked_fn(self._on_load_robot)
+        load_robot_btn.tooltip = omni.kit.ui.Label("Press to load the Franka USD file and start simulation")
+        get_info_btn = sublayout.add_child(omni.kit.ui.Button("Get Articulation Info"))
         get_info_btn.set_clicked_fn(self._on_print_info)
+        get_info_btn.tooltip = omni.kit.ui.Label("Pressing this button will print information below")
+        sublayout.add_child(
+            omni.kit.ui.Label(
+                'Note: The buttons above only work with the robot loaded by the "Load Franka USD" button and not existing robots/articulations in the stage'
+            )
+        )
         sublayout.add_child(omni.kit.ui.Separator())
         scrolling_frame = sublayout.add_child(omni.kit.ui.ScrollingFrame("", -1, -1))
         self.hierarchy_label = scrolling_frame.add_child(
@@ -87,6 +100,7 @@ class Extension(omni.ext.IExt):
             omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
         )
         self._physxIFace = _physx.acquire_physx_interface()
+        self._editor = omni.kit.editor.get_editor_interface()
 
     def on_shutdown(self):
         _dynamic_control.release_dynamic_control_interface(self._dc)
@@ -94,8 +108,17 @@ class Extension(omni.ext.IExt):
         self._editor = None
         self._window = None
 
+    async def _setup_camera(self, task):
+        # wait for the stage load task to finish before setting camera and starting simulation
+        done, pending = await asyncio.wait({task})
+        if task in done:
+            self._editor.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 50, True)
+            self._editor.play()
+
     def _on_load_robot(self, widget):
-        asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
+        task = asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
+        asyncio.ensure_future(self._setup_camera(task))
 
     def _on_print_info(self, widget):
         self._physxIFace.force_load_physics_from_usd()

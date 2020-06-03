@@ -132,12 +132,16 @@ class Extension(omni.ext.IExt):
             btn = omni.kit.ui.Button(btn_text)
 
             def modify_add_fun(widget, model_path=model_path, model=model, tbox=tbox):
+                stage = self._usd_context.get_stage()
                 path = model_path[1:]
                 paths = path.split("/")
                 if widget.text == "Add":
-                    model._prim.GetRelationship(paths[0]).AddTarget(tbox.text)
-                    self._selection.clear_selected_prim_paths()
-                    self._selection.set_selected_prim_paths([str(model._prim.GetPrimPath())], True)
+                    if stage.GetPrimAtPath(tbox.text):
+                        model._prim.GetRelationship(paths[0]).AddTarget(tbox.text)
+                        self._selection.clear_selected_prim_paths()
+                        self._selection.set_selected_prim_paths([str(model._prim.GetPrimPath())], True)
+                    else:
+                        print("Error: Trying To Add Invalid Path")
                     return
                 if len(paths) == 2:
                     targets = model._prim.GetRelationship(paths[0]).GetTargets()

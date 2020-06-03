@@ -88,17 +88,23 @@ void RosLidar::onComponentChange()
 
 void RosLidar::pubCallback(ros::Publisher* pub)
 {
+    // Lidar prim hasn't been assigned yet
+    if (mLidarPath == pxr::SdfPath("/"))
+    {
+        CARB_LOG_ERROR(
+            "No Lidar prim reference assigned, Please Create->Isaac->Sensors->Lidar and then assign the relationship to this prim");
+        return;
+    }
     if (!mLidarInterface->isLidar(mLidarPath.GetString().c_str()))
     {
-        CARB_LOG_ERROR("Prim is not registered with Lidar extension");
+        CARB_LOG_ERROR("Invalid Lidar Reference, Prim is not registered with Lidar extension");
         return;
     }
     bool highLod = false;
     isaac::utils::safeGetAttribute(mLidarPrim.GetHighLodAttr(), highLod);
     if (highLod)
     {
-        CARB_LOG_ERROR("High LOD not supported, only 2D Lidar Supported");
-
+        CARB_LOG_ERROR("High LOD not supported, only 2D Lidar Supported. Please disable High LOD setting");
         return;
     }
     sensor_msgs::LaserScan laser_msg;
