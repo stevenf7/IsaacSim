@@ -104,8 +104,15 @@ class Extension(omni.ext.IExt):
         self._editor = None
         self._window = None
 
+    async def _setup_camera(self, task):
+        done, pending = await asyncio.wait({task})
+        if task in done:
+            self._editor.set_camera_position("/OmniverseKit_Persp", 150, -150, 150, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
+
     def _on_load_robot(self, widget):
-        asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
+        task = asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
+        asyncio.ensure_future(self._setup_camera(task))
 
     def _on_move_joints(self, widget):
         self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
@@ -135,7 +142,7 @@ class Extension(omni.ext.IExt):
         speed_scale = 1.0
 
         # initialize default positions, limits, and speeds (make sure they are in reasonable ranges)
-        defaults = np.zeros(num_dofs, dtype=np.float32)
+        defaults = np.array([0.0, -0.0, 0.0, -0.0, 0.0, 3.037, 0.741, 4.0, 4.0], dtype=np.float32)
         speeds = np.zeros(num_dofs)
 
         for i in range(num_dofs):

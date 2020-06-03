@@ -2,6 +2,7 @@ import carb
 import omni
 from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.urdf import _urdf
+import asyncio
 
 # from omni.physx import _physx
 from .common import import_robot, set_drive_parameters
@@ -30,16 +31,25 @@ class Extension(omni.ext.IExt):
         self._window = None
 
     def _on_load_robot(self, widget):
-        # TODO: fix this workaround to clear stage
-        stage = omni.usd.get_context().get_stage()
-        prim = stage.GetDefaultPrim()
-        prim.SetActive(False)
+        load_stage = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        asyncio.ensure_future(self._load_franka(load_stage))
 
-        import_config = _urdf.ImportConfig()
-        import_config.merge_fixed_joints = False
-        import_robot(
-            self._urdf_interface, "data/urdf/robots/franka_description/robots/panda_arm_hand.urdf", import_config
-        )
+    async def _load_franka(self, task):
+        done, pending = await asyncio.wait({task})
+        if task in done:
+            stage = omni.usd.get_context().get_stage()
+            prim = stage.GetDefaultPrim()
+            prim.SetActive(False)
+
+            import_config = _urdf.ImportConfig()
+            import_config.merge_fixed_joints = False
+            import_robot(
+                self._urdf_interface, "data/urdf/robots/franka_description/robots/panda_arm_hand.urdf", import_config
+            )
+
+            editor = omni.kit.editor.get_editor_interface()
+            editor.set_camera_position("/OmniverseKit_Persp", 122, -124, 113, True)
+            editor.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
 
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
@@ -57,10 +67,9 @@ class Extension(omni.ext.IExt):
         # uniform token physxMaterial:frictionCombineMode = "max"
         # bool physxMaterial:improvePatchFriction
         # uniform token physxMaterial:restitutionCombineMode
-
-        carter_prim = stage.GetPrimAtPath("/panda")
+        franka_prim = stage.GetDefaultPrim()
         # Set articulation base parameters
-        physicsArticulationAPI = PhysicsSchema.ArticulationAPI.Get(stage, carter_prim.GetPath())
+        physicsArticulationAPI = PhysicsSchema.ArticulationAPI.Get(stage, franka_prim.GetPath())
         physicsArticulationAPI.GetFixBaseAttr().Set(True)
 
         joint_1 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular")

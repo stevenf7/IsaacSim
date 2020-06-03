@@ -10,7 +10,7 @@
 # This is an example script showing how to use rosbridge to publish joint_states of an articulated robot
 
 import carb
-from pxr import PhysicsSchema, Sdf
+from pxr import PhysicsSchema, Sdf, Gf, UsdGeom
 import omni.usd
 import omni
 import omni.kit.ui
@@ -35,30 +35,49 @@ class Extension(omni.ext.IExt):
         load_robot_btn = sublayout.add_child(omni.kit.ui.Button("Load Robot"))
         load_robot_btn.set_clicked_fn(self._on_load_robot)
 
-        connect_js_btn = sublayout.add_child(omni.kit.ui.Button("Connect Joint State Node"))
+        connect_js_btn = sublayout.add_child(omni.kit.ui.Button("Connect Joint State Topics"))
         connect_js_btn.set_clicked_fn(self._on_connect_js)
+        connect_js_btn.tooltip = omni.kit.ui.Label(
+            "start a joint_state and joint_command topic to publish and receive joint states"
+        )
 
-        connect_camera_btn = sublayout.add_child(omni.kit.ui.Button("Connect Camera Node"))
+        connect_camera_btn = sublayout.add_child(omni.kit.ui.Button("Connect Camera Topic"))
         connect_camera_btn.set_clicked_fn(self._on_connect_camera)
 
+        connect_tf_btn = sublayout.add_child(omni.kit.ui.Button("Connect TF topic"))
+        connect_tf_btn.set_clicked_fn(self._on_connect_tf)
+
+        add_cube_btn = sublayout.add_child(omni.kit.ui.Button("Add Cube"))
+        add_cube_btn.set_clicked_fn(self._on_add_cube)
+        add_cube_btn.tooltip = omni.kit.ui.Label("Add a Cube to the scene and the TF tree")
+
         self._editor_event_subscription = None
+        self.stage = omni.usd.get_context().get_stage()
         self._editor = omni.kit.editor.get_editor_interface()
 
     def on_shutdown(self):
         self._window = None
 
-    # loading the robot
-    def _on_load_robot(self, widget):
-        asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
+    # Fix camera location and angle
+    async def _setup_camera(self, task):
+        done, pending = await asyncio.wait({task})
+        if task in done:
+            self._editor.set_camera_position("/OmniverseKit_Persp", 122, -124, 113, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
 
-    # Starting up the joint_state rosnode and connect it to the robot
+    # load robot
+    def _on_load_robot(self, widget):
+        task = asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
+        asyncio.ensure_future(self._setup_camera(task))
+
+    # Starting up the joint_state rostopics and connect it to the robot
     def _on_connect_js(self, widget):
         # check robot is loaded and articulation exist
         self.stage = omni.usd.get_context().get_stage()
         robot_prim = self.stage.GetPrimAtPath("/panda")
         assert robot_prim.HasAPI(PhysicsSchema.ArticulationAPI)
 
-        # setup ROSnode to publish and receive joint state info
+        # setup Rostopic to publish and receive joint state info
         js_prim = ROSSchema.RosJointState.Define(self.stage, Sdf.Path("/ROS_JointState"))
 
         # adding prefix to the published /joint_state topic if needed
@@ -73,7 +92,7 @@ class Extension(omni.ext.IExt):
         js_prim.CreateArticulationPrimRel()
         js_prim.CreateQueueSizeAttr(0)
 
-        # The joint_state rosnode must be connected to the root of the robot's articulation in order to publish its states
+        # The joint_state rostopic must be connected to the root of the robot's articulation in order to publish its states
         ROS_prim = self.stage.GetPrimAtPath("/ROS_JointState")
         ROS_prim.GetRelationship("articulationPrim").SetTargets(["/panda"])
 
@@ -83,6 +102,7 @@ class Extension(omni.ext.IExt):
 
     # adding camera topic
     def _on_connect_camera(self, widget):
+        self.stage = omni.usd.get_context().get_stage()
         # add camera prim to path
         camera_prim = ROSSchema.RosCamera.Define(self.stage, Sdf.Path("/ROS_Camera"))
         # adding prefix to the publisher topic if needed
@@ -109,3 +129,60 @@ class Extension(omni.ext.IExt):
         # use image_view to view the published image:
         # rosrun image_view image_view image:=/rgb
         # rosrun image_view image_view image:=/depth
+
+    # adding the tf topic
+    def _on_connect_tf(self, widget):
+        self.stage = omni.usd.get_context().get_stage()
+        # setup rostpic for the tf tree
+        tf_prim = ROSSchema.RosPoseTree.Define(self.stage, Sdf.Path("/ROS_PoseTree"))
+        tf_prim.CreateEnabledAttr(True)
+        # create the publishing topic
+        tf_prim.CreatePoseTreePubTopicAttr("/tf")
+        tf_prim.CreateTargetPrimsRel()
+        tf_prim.CreateQueueSizeAttr(0)
+
+        # The tf rostopic must be connected to the root of the robot's articulation in order to publish its transforms
+        ROS_prim = self.stage.GetPrimAtPath("/ROS_PoseTree")
+        # if one doesn't exist already, create one. Creating a new TF topic will overwrite the existing one if one already exist.
+        if not ROS_prim:
+            # create the topic if one does not exist
+            tf_prim = ROSSchema.RosPoseTree.Define(self.stage, Sdf.Path("/ROS_PoseTree"))
+            tf_prim.CreateEnabledAttr(True)
+            # create the publishing topic
+            tf_prim.CreatePoseTreePubTopicAttr("/tf")
+            tf_prim.CreateTargetPrimsRel()
+            tf_prim.CreateQueueSizeAttr(0)
+            ROS_prim.GetRelationship("targetPrims").SetTargets(["/panda"])
+        else:
+            ROS_prim.GetRelationship("targetPrims").AddTarget(Sdf.Path("/panda"))
+
+        # editor must be playing for messages to be published and received
+        if not self._editor.is_playing():
+            self._editor.play()
+
+    def _on_add_cube(self, widget):
+        # first create a cube
+        self.stage = omni.usd.get_context().get_stage()
+        CubePath = "/cube"
+        # offset to some position in space
+        offset = Gf.Vec3f(50.0, 0.0, 50.0)
+        size = 10  # cm
+        cubeGeom = UsdGeom.Cube.Define(self.stage, CubePath)
+        cubeGeom.CreateSizeAttr(size)
+        cubeGeom.AddTranslateOp().Set(offset)
+
+        # add the cube to tf tree, DO NOT CREATE NEW TF topics if one already exist.
+        # Creating a new TF topic will overwrite the existing one if one already exist.
+        ROS_prim = self.stage.GetPrimAtPath("/ROS_PoseTree")
+        if not ROS_prim:
+            # create the topic if one does not exist
+            tf_prim = ROSSchema.RosPoseTree.Define(self.stage, Sdf.Path("/ROS_PoseTree"))
+            tf_prim.CreateEnabledAttr(True)
+            # create the publishing topic
+            tf_prim.CreatePoseTreePubTopicAttr("/tf")
+            tf_prim.CreateTargetPrimsRel()
+            tf_prim.CreateQueueSizeAttr(0)
+            ROS_prim = self.stage.GetPrimAtPath("/ROS_PoseTree")
+            ROS_prim.GetRelationship("targetPrims").SetTargets(["/cube"])
+        else:
+            ROS_prim.GetRelationship("targetPrims").AddTarget(Sdf.Path("/cube"))
