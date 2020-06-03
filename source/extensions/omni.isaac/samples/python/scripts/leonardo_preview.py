@@ -14,6 +14,7 @@ import omni.ext
 import omni.appwindow
 import omni.kit.ui
 import omni.kit.settings
+import asyncio
 
 from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.dynamic_control import _dynamic_control
@@ -56,7 +57,7 @@ class Extension(omni.ext.IExt):
         self._selected_scenario.selected_index = 0
 
         self._create_franka_btn = self._window.layout.add_child(omni.kit.ui.Button("Create Scenario"))
-        self._create_franka_btn.set_clicked_fn(self._on_create_franka)
+        self._create_franka_btn.set_clicked_fn(self._on_environment_setup)
 
         self._perform_task_btn = self._window.layout.add_child(omni.kit.ui.Button("Perform Task"))
         self._perform_task_btn.set_clicked_fn(self._on_perform_task)
@@ -85,9 +86,18 @@ class Extension(omni.ext.IExt):
         )
         self._scenario = Scenario(self._editor, self._dc, self._mp)
 
-    def _on_create_franka(self, *args):
+    def _on_environment_setup(self, widget):
+        # wait for new stage before creating franka
+        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        asyncio.ensure_future(self._on_create_franka(task))
+
+    async def _on_create_franka(self, task):
         """Load any assets required by the scenario and create objects
         """
+        done, pending = await asyncio.wait({task})
+        if task not in done:
+            return
+
         self._stage = self._usd_context.get_stage()
 
         if self._selected_scenario.selected_index == 0:
