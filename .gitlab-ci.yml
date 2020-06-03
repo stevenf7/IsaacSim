@@ -1,4 +1,6 @@
 pages:
+  tags: 
+    - pages
   image:
     gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/docs:latest
   script:
