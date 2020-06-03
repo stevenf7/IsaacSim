@@ -750,14 +750,12 @@ class BinStack(Scenario):
         self._pending_disable = False
 
         self.max_bins = 36
-
         self.current_bin = 0
-
         self._bins = {}
-
         self.add_bin_timeout = -1
 
         self._waypoints_backup = None
+        self.stopped = True
 
     def on_startup(self):
         super().on_startup()
@@ -837,18 +835,17 @@ class BinStack(Scenario):
         self.default_position.p = orig
         self.default_position.r = [-0.33417784954541885, 0.33389792551856345, 0.6230546169232118, 0.6234102056738156]
 
-        a = [self.small_klt_usd for i in range(self.max_bins)]
-        b = [self.env_path + "/bins/bin_{}".format(i) for i in range(self.max_bins)]
-        c = [Gf.Vec3d(-50000 - 50 * i, 150, 0) for i in range(self.max_bins)]
-        CreateObjects(self._stage, a, b, c)
-
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
         p = self.default_position.p
         r = self.default_position.r
         setTranslate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
         setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
-        # setTranslate(GoalPrim, Gf.Vec3d(-6.45, 72.14, 49.5))
-        # setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(0.624, -0.334, 0.335, 0.623)))
+
+        a = [self.small_klt_usd for i in range(self.max_bins)]
+        b = [self.env_path + "/bins/bin_{}".format(i) for i in range(self.max_bins)]
+        c = [Gf.Vec3d(-50000 - 50 * i, 150, 0) for i in range(self.max_bins)]
+        CreateObjects(self._stage, a, b, c)
+
         CreateBackground(
             self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
         )
@@ -901,36 +898,31 @@ class BinStack(Scenario):
 
         ur10_path = str(prim.GetPath()) + "/ur10"
         self.world = World(self._dc, self._mp)
-        mjp = Surface_Gripper_Properties()
-        mjp.parentPath = ur10_path + "/ee_link"
-        mjp.d6JointPath = mjp.parentPath + "/d6FixedJoint"
-        mjp.gripThreshold = 1
-        mjp.forceLimit = 5.0e3
-        mjp.torqueLimit = 5.0e4
-        mjp.bendAngle = np.pi / 24  # 7.5 degrees
-        mjp.stiffness = 1.0e5
-        mjp.damping = 1.0e4
-        mjp.disableGravity = True
+        sgp = Surface_Gripper_Properties()
+        sgp.parentPath = ur10_path + "/ee_link"
+        sgp.d6JointPath = sgp.parentPath + "/d6FixedJoint"
+        sgp.gripThreshold = 1
+        sgp.forceLimit = 5.0e3
+        sgp.torqueLimit = 5.0e4
+        sgp.bendAngle = np.pi / 24  # 7.5 degrees
+        sgp.stiffness = 1.0e5
+        sgp.damping = 1.0e4
+        sgp.disableGravity = True
         tr = _dynamic_control.Transform()
         tr.p.x = 15.509
-        mjp.offset = tr
+        sgp.offset = tr
 
         self.ur10_solid = UR10(
             self._stage,
             self._stage.GetPrimAtPath(ur10_path),
             self._dc,
             self._mp,
-            mjp,
+            sgp,
             self.world,
             "/physics/scene/solid",
             default_config,
             urdf="/urdf/ur10_robot_robotiq.urdf",
         )
-
-        body_count = self._dc.get_articulation_body_count(self.ur10_solid.ar)
-        for bodyIdx in range(body_count):
-            body = self._dc.get_articulation_body(self.ur10_solid.ar, bodyIdx)
-            self._dc.set_rigid_body_disable_gravity(body, True)
 
         i = 0
         for p in self._stage.GetPrimAtPath(str(prim.GetPath()) + "/sortbot_housing/RMPObstacle").GetChildren():
@@ -974,6 +966,7 @@ class BinStack(Scenario):
 
     def stop_tasks(self, *args):
         if self.pick_and_place is not None:
+            self.ur10_solid.stop()
             self._reset = True
             self.current_bin = 0
             self.add_bin_timeout = -1

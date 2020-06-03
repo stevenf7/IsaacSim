@@ -180,11 +180,12 @@ class UR10:
         prim,
         dc,
         mp,
-        mjp,
+        sgp,
         world=None,
         group_path="",
         default_config=None,
         is_ghost=False,
+        compensate_gravity=True,
         urdf="/urdf/ur10_robot_no_mat.urdf",
     ):
         self.dc = dc
@@ -194,6 +195,8 @@ class UR10:
         # get handle to the articulation for this UR10
         self.ar = self.dc.get_articulation(prim.GetPath().pathString)
         self.is_ghost = is_ghost
+        self.compensate_gravity = compensate_gravity
+        self.stopped = True
 
         self.base = self.dc.get_articulation_root_body(self.ar)
 
@@ -222,7 +225,7 @@ class UR10:
         self.end_effector = EndEffector(self.dc, self.mp, self.ar, self.rmp_handle)
 
         self.end_effector.gripper = Surface_Gripper(self.dc)
-        self.end_effector.gripper.initialize(mjp)
+        self.end_effector.gripper.initialize(sgp)
 
         if default_config:
             self.mp.setDefaultConfig(self.rmp_handle, default_config)
@@ -244,7 +247,16 @@ class UR10:
     def set_speed(self, speed_level):
         pass
 
+    def stop(self):
+        self.stopped = True
+
     def update(self):
+        if self.stopped and self.compensate_gravity:
+            body_count = self.dc.get_articulation_body_count(self.ar)
+            for bodyIdx in range(body_count):
+                body = self.dc.get_articulation_body(self.ar, bodyIdx)
+                self.dc.set_rigid_body_disable_gravity(body, True)
+            self.stopped = False
         if self.end_effector.gripper is not None:
             if self.end_effector.gripper.update is not None:
                 self.end_effector.gripper.update()
