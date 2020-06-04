@@ -23,8 +23,10 @@ PYBIND11_MODULE(_lidar, m)
     m.doc() = "Isaac Lidar bindings";
 
     defineInterfaceClass<LidarInterface>(m, "LidarInterface", "acquire_lidar_interface", "release_lidar_interface")
-        .def("get_num_cols", wrapInterfaceFunction(&LidarInterface::getNumCols))
-        .def("get_num_rows", wrapInterfaceFunction(&LidarInterface::getNumRows))
+        .def("get_num_cols", wrapInterfaceFunction(&LidarInterface::getNumCols),
+             "get the number of vertical scans of the lidar")
+        .def("get_num_rows", wrapInterfaceFunction(&LidarInterface::getNumRows),
+             "get the number of horizontal scans of the lidar")
         .def("get_num_cols_ticked", wrapInterfaceFunction(&LidarInterface::getNumColsTicked))
 
         .def("get_depth_data",
@@ -36,7 +38,8 @@ PYBIND11_MODULE(_lidar, m)
                  int numColsTicked = li->getNumColsTicked(lidarPath);
                  return py::array(py::buffer_info(data, sizeof(uint16_t), py::format_descriptor<uint16_t>::value, 2,
                                                   { numColsTicked, rows }, { sizeof(uint16_t) * rows, sizeof(uint16_t) }));
-             })
+             },
+             "get the distance from the lidar to the hit for each beam in uint16 and scaled by min and max distance")
 
         .def("get_intensity_data",
              [](const LidarInterface* li, const char* lidarPath) -> py::object {
@@ -47,7 +50,8 @@ PYBIND11_MODULE(_lidar, m)
                  int numColsTicked = li->getNumColsTicked(lidarPath);
                  return py::array(py::buffer_info(data, sizeof(uint8_t), py::format_descriptor<uint8_t>::value, 2,
                                                   { numColsTicked, rows }, { sizeof(uint8_t) * rows, sizeof(uint8_t) }));
-             })
+             },
+             "get the observed specular intensity of each beam")
 
         .def("get_zenith_data",
              [](const LidarInterface* li, const char* lidarPath) -> py::object {
@@ -57,7 +61,8 @@ PYBIND11_MODULE(_lidar, m)
                  int rows = li->getNumRows(lidarPath);
                  return py::array(py::buffer_info(
                      data, sizeof(float), py::format_descriptor<float>::value, 1, { rows }, { sizeof(float) }));
-             })
+             },
+             "get the zenith angle in radians for each row")
 
         .def("get_azimuth_data",
              [](const LidarInterface* li, const char* lidarPath) -> py::object {
@@ -67,8 +72,10 @@ PYBIND11_MODULE(_lidar, m)
                  int numColsTicked = li->getNumColsTicked(lidarPath);
                  return py::array(py::buffer_info(data, sizeof(float), py::format_descriptor<float>::value, 1,
                                                   { numColsTicked }, { sizeof(float) }));
-             })
+             },
+             "get the azimuth data for each column")
 
-        .def("is_lidar", wrapInterfaceFunction(&LidarInterface::isLidar));
+        .def("is_lidar", wrapInterfaceFunction(&LidarInterface::isLidar),
+             "check a lidar sensor exists at the given path");
 }
 }
