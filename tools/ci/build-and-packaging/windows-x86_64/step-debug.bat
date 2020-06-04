@@ -21,17 +21,17 @@ call "%~dp0..\..\..\build_docs.bat" -c debug
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 echo ##teamcity[blockClosed name='Docs...']
 
-:: Gather licenses
-echo ##teamcity[blockOpened name='Gather licenses...']
-call "%~dp0..\..\..\licensing.bat" ^
-gather ^
--p %~dp0..\..\..\..\deps\isaac-sim.packman.xml ^
-%~dp0..\..\..\..\deps\kit-sdk.packman.xml ^
-%~dp0..\..\..\..\deps\rtx-plugins.packman.xml ^
-%~dp0..\..\..\..\deps\omni-physics.packman.xml ^
--d %~dp0..\..\..\..\_build
-if %errorlevel% neq 0 ( exit /b %errorlevel% )
-echo ##teamcity[blockClosed name='Gather licenses...']
+REM :: Gather licenses
+REM echo ##teamcity[blockOpened name='Gather licenses...']
+REM call "%~dp0..\..\..\licensing.bat" ^
+REM gather ^
+REM -p %~dp0..\..\..\..\deps\isaac-sim.packman.xml ^
+REM %~dp0..\..\..\..\deps\kit-sdk.packman.xml ^
+REM %~dp0..\..\..\..\deps\rtx-plugins.packman.xml ^
+REM %~dp0..\..\..\..\deps\omni-physics.packman.xml ^
+REM -d %~dp0..\..\..\..\_build
+REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
+REM echo ##teamcity[blockClosed name='Gather licenses...']
 
 REM :: Validate licenses
 REM echo ##teamcity[blockOpened name='Validate licenses...']
