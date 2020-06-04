@@ -1,7 +1,5 @@
-omni.isaac.dynamic_control
-###########################
-
-Example of Python only extension
+omni.isaac.dynamic_control:  Dynamic Control Extension
+######################################################
 
 .. automodule:: omni.isaac.dynamic_control._dynamic_control
     :platform: Windows-x86_64, Linux-x86_64
@@ -9,4 +7,4 @@ Example of Python only extension
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: contextmanager
+    :exclude-members: 

@@ -20,7 +20,7 @@ import omni.isaac
 
 # -- Project information -----------------------------------------------------
 
-project = "Omniverse Isaac Sim"
+project = "Omniverse Robotics"
 copyright = "2020, NVIDIA."
 author = "NVIDIA"
 version = "2020.1"
@@ -62,10 +62,32 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_theme = "sphinx_rtd_theme"
 
 # html_theme = 'alabaster'
+html_logo = "content/robotics_logo_square.png"
+
+html_theme_options = {
+    "logo_only": True,
+    "display_version": True,
+    "prev_next_buttons_location": "bottom",
+    "style_external_links": False,
+    "style_nav_header_background": "#000000",
+    # Toc options
+    "collapse_navigation": False,
+    "sticky_navigation": False,
+    # 'navigation_depth': 10,
+    "includehidden": True,
+    "titles_only": False,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = []
+html_static_path = ["pk_scripts.js"]
 
 html_last_updated_fmt = ""
+
+
+def setup(app):
+    app.add_css_file("custom.css")
+
+
+html_js_files = ["pk_scripts.js"]

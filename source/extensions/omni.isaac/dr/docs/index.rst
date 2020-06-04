@@ -1,7 +1,5 @@
-omni.isaac.dr
-###########################
-
-Example of Python only extension
+omni.isaac.dr: Domain Randomization
+###################################
 
 .. automodule:: omni.isaac.dr._dr
     :platform: Windows-x86_64, Linux-x86_64
@@ -9,4 +7,4 @@ Example of Python only extension
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: contextmanager
+    :exclude-members: 
