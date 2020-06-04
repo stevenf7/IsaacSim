@@ -29,7 +29,7 @@ gather ^
 %~dp0..\..\..\..\deps\kit-sdk.packman.xml ^
 %~dp0..\..\..\..\deps\rtx-plugins.packman.xml ^
 %~dp0..\..\..\..\deps\omni-physics.packman.xml ^
--d %~dp0..\..\..\..\_build
+-d %~dp0..\..\..\..
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 echo ##teamcity[blockClosed name='Gather licenses...']
 
