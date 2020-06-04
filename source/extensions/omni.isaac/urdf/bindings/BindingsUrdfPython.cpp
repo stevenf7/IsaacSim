@@ -35,11 +35,11 @@ PYBIND11_MODULE(_urdf, m)
 
     py::class_<ImportConfig>(m, "ImportConfig")
         .def(py::init<>())
-        .def_readwrite("merge_fixed_joints", &ImportConfig::mergeFixedJoints)
-        .def_readwrite("enable_convex_decomp", &ImportConfig::enableConvexDecomp)
-        .def_readwrite("distance_scale", &ImportConfig::distanceScale)
-        .def_readwrite("force_z_up", &ImportConfig::forceZUp)
-        .def_readwrite("add_debug_info", &ImportConfig::addDebugInfo);
+        .def_readwrite("merge_fixed_joints", &ImportConfig::mergeFixedJoints,"Consolidating links that are connected by fixed joints")
+        .def_readwrite("enable_convex_decomp", &ImportConfig::enableConvexDecomp,"Decompose a convex mesh into smaller pieces for a closer fit")
+        .def_readwrite("distance_scale", &ImportConfig::distanceScale,"Set the unit scaling factor")
+        .def_readwrite("force_z_up", &ImportConfig::forceZUp,"Force Z axis to be up in the simulator")
+        .def_readwrite("add_debug_info", &ImportConfig::addDebugInfo,"Publish details for the imported URDF");
 
     defineInterfaceClass<Urdf>(m, "Urdf", "acquire_urdf_interface", "release_urdf_interface")
         .def("import_urdf", wrapInterfaceFunction(&Urdf::importUrdf));
