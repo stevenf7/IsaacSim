@@ -24,10 +24,10 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         # setting up the UI on the menu bar for this example
         self._window = omni.kit.ui.Window(
-            "Joint State",
+            "Rostopics",
             300,
             200,
-            menu_path="Isaac Robotics/ROS/Joint State",
+            menu_path="Isaac Robotics/ROS/Rostopics",
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
@@ -41,15 +41,15 @@ class Extension(omni.ext.IExt):
             "start a joint_state and joint_command topic to publish and receive joint states"
         )
 
-        connect_camera_btn = sublayout.add_child(omni.kit.ui.Button("Connect Camera Topic"))
+        connect_camera_btn = sublayout.add_child(omni.kit.ui.Button("Connect Camera Topics"))
         connect_camera_btn.set_clicked_fn(self._on_connect_camera)
 
-        connect_tf_btn = sublayout.add_child(omni.kit.ui.Button("Connect TF topic"))
+        connect_tf_btn = sublayout.add_child(omni.kit.ui.Button("Connect TF Topics"))
         connect_tf_btn.set_clicked_fn(self._on_connect_tf)
 
         add_cube_btn = sublayout.add_child(omni.kit.ui.Button("Add Cube"))
         add_cube_btn.set_clicked_fn(self._on_add_cube)
-        add_cube_btn.tooltip = omni.kit.ui.Label("Add a Cube to the scene and the TF tree")
+        add_cube_btn.tooltip = omni.kit.ui.Label("Add a Cube to the scene and append to TF tree")
 
         self._editor_event_subscription = None
         self.stage = omni.usd.get_context().get_stage()
@@ -143,7 +143,7 @@ class Extension(omni.ext.IExt):
 
         # The tf rostopic must be connected to the root of the robot's articulation in order to publish its transforms
         ROS_prim = self.stage.GetPrimAtPath("/ROS_PoseTree")
-        # if one doesn't exist already, create one. Creating a new TF topic will overwrite the existing one if one already exist.
+        # if one doesn't exist already, create one.
         if not ROS_prim:
             # create the topic if one does not exist
             tf_prim = ROSSchema.RosPoseTree.Define(self.stage, Sdf.Path("/ROS_PoseTree"))
@@ -171,8 +171,7 @@ class Extension(omni.ext.IExt):
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
 
-        # add the cube to tf tree, DO NOT CREATE NEW TF topics if one already exist.
-        # Creating a new TF topic will overwrite the existing one if one already exist.
+        # add the cube to tf tree
         ROS_prim = self.stage.GetPrimAtPath("/ROS_PoseTree")
         if not ROS_prim:
             # create the topic if one does not exist
