@@ -8,6 +8,7 @@
 #include "../Components/RosLidar.h"
 #include "../Components/RosJointState.h"
 #include "../Components/RosPoseTree.h"
+#include "../Components/RosTeleport.h"
 
 #include "plugins/core/ScopedTimer.h"
 #include "ros/ros.h"
@@ -112,7 +113,13 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
         component = std::make_unique<RosPoseTree>(mDynamicControlPtr);
         component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosPoseTree(prim), mStage);
     }
+    else if (prim.IsA<pxr::RosBridgeSchemaRosTeleport>())
+    {
+        CARB_LOG_ERROR("RosBridgeSchemaRosTeleport");
 
+        component = std::make_unique<RosTeleport>(mDynamicControlPtr);
+        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosTeleport(prim), mStage);
+    }
     if (component)
     {
         CARB_LOG_ERROR("Create: Prim %s with type: %s", prim.GetPath().GetString().c_str(),
