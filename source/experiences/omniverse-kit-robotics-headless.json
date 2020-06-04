@@ -46,7 +46,6 @@
                 "omni.utils.usd_paths",
                 "omni.utils.collect_tool",
                 "omni.assetimport",
-                "omni.computegraph",
                 "omni.kit.context_menu",
                 "omni.physx",
                 "omni.physx.ui",
