@@ -1,7 +1,5 @@
-omni.isaac.lidar
-###########################
-
-Example of Python only extension
+omni.isaac.lidar: LIDAR Simulation
+##################################
 
 .. automodule:: omni.isaac.lidar._lidar
     :platform: Windows-x86_64, Linux-x86_64
@@ -9,4 +7,4 @@ Example of Python only extension
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: contextmanager
+    :exclude-members: 

@@ -31,7 +31,7 @@ echo "##teamcity[blockOpened name='Gathering licenses...']"
     $ROOT_DIR/deps/kit-sdk.packman.xml \
     $ROOT_DIR/deps/rtx-plugins.packman.xml \
     $ROOT_DIR/deps/omni-physics.packman.xml \
-    -d $ROOT_DIR/_build
+    -d $ROOT_DIR
 echo "##teamcity[blockClosed name='Gathering licenses...']"
 
 # Validating licenses

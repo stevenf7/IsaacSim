@@ -9,4 +9,4 @@ Example of Python only extension
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: contextmanager
+    :exclude-members: 

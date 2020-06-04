@@ -34,6 +34,7 @@ VSCODE_PYTHON_ENV = {
         "$root/_build/target-deps/kit_sdk_$config/_build/$platform/$config",
         "$root/_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins",
         "$root/_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx",
+        "$root/_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl",
     ],
 }
 
@@ -45,7 +46,7 @@ def postprocess_vscode_python_env(env_dict, platform, config):
         + glob.glob(f"{path_to_kit}/exts/*/")
         + glob.glob(f"{path_to_kit}/extsPhysics/*/")
         + glob.glob(f"{path_to_kit}/extensions/extensions-bundled")
-        # + glob.glob(f"{path_to_kit}/plugins/bindings-python")
+        + glob.glob(f"{path_to_kit}/plugins/bindings-python")
     )
 
     for ext in all_exts:

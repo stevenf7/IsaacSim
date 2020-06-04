@@ -10,7 +10,7 @@ display_name = "ROS Bridge"
 name = "omni.isaac.ros_bridge"
 
 [[python.modules]]
-name = "omni.isaac.ros_bridge.scripts.samples.joint_states"
+name = "omni.isaac.ros_bridge.scripts.samples.rostopics"
 
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"

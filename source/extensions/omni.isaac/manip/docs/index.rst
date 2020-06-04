@@ -1,12 +1,10 @@
-omni.isaac.manip
-###########################
+omni.isaac.manip: Joystick Manipulation
+#######################################
 
-Example of Python only extension
-
-.. automodule:: omni.isaac.manip
+.. automodule:: omni.isaac.manip._manip
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: contextmanager
+    :exclude-members: 

@@ -8,6 +8,7 @@
 #include "../Actuator/JointControl.h"
 #include "../Actuator/ScissorLiftSimulator.h"
 #include "../Actuator/SurfaceGripper.h"
+#include "../Actuator/TwoFingerGripper.h"
 #include "../Scenario/ScenarioFromMessage.h"
 #include "../Monitor/RigidBodiesSink.h"
 #include "../Scenario/SceneLoader.h"
@@ -294,6 +295,12 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
         component = std::make_unique<ContactMonitor>(mDynamicControlPtr);
         component->initialize(
             mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineContactMonitor(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineTwoFingerGripper>())
+    {
+        component = std::make_unique<TwoFingerGripper>(mDynamicControlPtr);
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineTwoFingerGripper(prim), mStage);
     }
     if (component)
     {

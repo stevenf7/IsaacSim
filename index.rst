@@ -1,4 +1,4 @@
-Kit Sdk: Extensions & Apps Example
+Omniverse Robotics: Extensions
 ==================================
 
 .. toctree::
@@ -6,8 +6,6 @@ Kit Sdk: Extensions & Apps Example
    :caption: Contents
    :glob:
 
-   docs/manual/overview
-   docs/api/index
    source/extensions/index
 
    
