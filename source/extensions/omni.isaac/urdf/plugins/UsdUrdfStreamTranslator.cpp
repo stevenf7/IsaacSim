@@ -28,6 +28,7 @@
 #include <PhysicsSchemaTools/UsdTools.h>
 
 #include <PhysxSchema/physxMeshCollisionAPI.h>
+#include <PhysxSchema/physxSceneAPI.h>
 
 // #include <PxPhysicsAPI.h>
 
@@ -232,7 +233,8 @@ void CreateMaterial(UsdGeomGprim& gprim, const NvIsaac::IRobotGraphics::Material
     color[0] = GfVec3f(cd.r, cd.g, cd.b);
     gprim.CreateDisplayColorPrimvar().Set(color);
     // TODO, Once we start using material in graphene, then set these correctly.
-#if 1
+    // Curently enabling this will crash if the extension is reloaded after importing a urdf
+#if 0
     // create the material as a container in which to put the shaders
     SdfPath matPath = SdfPath(path.GetString() + "Mat");
     UsdShadeMaterial meshMat = UsdShadeMaterial::Define(stage, matPath);
@@ -1041,6 +1043,14 @@ void UsdUrdfStream::UsdUrdfTranslateUrdfToUsd(UsdStageWeakPtr stage)
 
     PhysicsSchemaPhysicsScene scene = PhysicsSchemaPhysicsScene::Define(stage, SdfPath("/physicsScene"));
     scene.CreateGravityAttr().Set(GfVec3f(0.0f, 0.0f, -9.80f * distanceScale));
+    PhysxSchemaPhysxSceneAPI physxSceneAPI =
+        PhysxSchemaPhysxSceneAPI::Apply(stage->GetPrimAtPath(SdfPath("/physicsScene")));
+    physxSceneAPI.CreatePhysxSceneEnableCCDAttr().Set(true);
+    physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr().Set(true);
+    physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr().Set(false);
+
+    physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr().Set(TfToken("MBP"));
+    physxSceneAPI.CreatePhysxSceneSolverTypeAttr().Set(TfToken("TGS"));
 
     // addGroundPlane(stage, "/plane", TfToken("Z"), distanceScale);
 
