@@ -24,21 +24,21 @@ def find_7za():
     return "7za"
 
 
-def remove_shader_source(archive_path, shaders_folder):
-    args = [find_7za(), "d", archive_path, shaders_folder, "-r"]
+def remove_folder(archive_path, folder_path):
+    args = [find_7za(), "d", archive_path, folder_path, "-r"]
     p = subprocess.Popen(args)
     returncode = p.wait()
     if returncode != 0:
-        print("Error removing the shader source")
+        print("Error removing {folder_path}")
         sys.exit(1)
 
 
-def remove_package_info(archive_path, info_file):
-    args = [find_7za(), "d", archive_path, info_file]
+def remove_file(archive_path, file_path):
+    args = [find_7za(), "d", archive_path, file_path]
     p = subprocess.Popen(args)
     returncode = p.wait()
     if returncode != 0:
-        print("Error removing the package info file")
+        print("Error removing the {file_path}")
         sys.exit(1)
 
 
@@ -95,12 +95,17 @@ def update_package(root: str, platform: str, config: str, experience: str):
     # remove shaders folder
     print(f"Removing shaders folder")
     shaders_folder = f"_build/target-deps/kit_sdk_{config}/_build/shaders"
-    remove_shader_source(archive_path, shaders_folder)
+    remove_folder(archive_path, shaders_folder)
 
     # remove info file
     print(f"Removing package info file")
     info_file = f"PACKAGE-INFO.yaml"
-    remove_package_info(archive_path, info_file)
+    remove_file(archive_path, info_file)
+
+    # remove samples_internal extensions
+    print(f"Removing samples_internal extensions")
+    extension_folder = f"_build/{platform}/{config}/exts/omni.isaac.samples_internal"
+    remove_folder(archive_path, extension_folder)
 
     # update data folder
     print(f"Updating data folder")
