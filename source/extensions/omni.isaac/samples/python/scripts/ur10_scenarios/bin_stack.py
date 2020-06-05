@@ -737,10 +737,11 @@ class BinStack(Scenario):
         self.asset_path = "omni:/Isaac"
         # use local content if not connected to omni server
         if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
-            print("Use local content")
+            # print("Use local content")
             self.asset_path = "art_assets/Isaac"
         else:
-            print("Use server content")
+            # print("Use server content")
+            pass
 
         self._paused = True
         self._start = False
