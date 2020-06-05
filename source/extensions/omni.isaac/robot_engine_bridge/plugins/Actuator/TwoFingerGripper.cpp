@@ -158,10 +158,10 @@ void TwoFingerGripper::onComponentChange()
         return;
     }
 
-    mRightFingerHandle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, mLeftJointName.c_str());
+    mRightFingerHandle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, mRightJointName.c_str());
     if (!mRightFingerHandle)
     {
-        CARB_LOG_ERROR("RightFingerJoint Name %s not valid", mLeftJointName.c_str());
+        CARB_LOG_ERROR("RightFingerJoint Name %s not valid", mRightJointName.c_str());
         return;
     }
     mUnitScale = 1.0f / UsdGeomGetStageMetersPerUnit(mStage);

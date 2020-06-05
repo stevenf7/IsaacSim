@@ -9,7 +9,12 @@
 
 #include <PxActor.h>
 
-
+namespace omni
+{
+namespace isaac
+{
+namespace ros_bridge
+{
 inline omni::isaac::dynamic_control::DcTransform asDcTransform(const geometry_msgs::Pose& p, const float scale = 1)
 {
     omni::isaac::dynamic_control::DcTransform t;
@@ -99,4 +104,7 @@ inline geometry_msgs::Transform asRosTransform(const pxr::GfTransform& trans, co
     p.rotation.z = rot.GetImaginary()[2];
     p.rotation.w = rot.GetReal();
     return p;
+}
+}
+}
 }

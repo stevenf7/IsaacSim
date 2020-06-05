@@ -28,7 +28,7 @@ class RosBridgeMenu:
         self._menus.append(editor_menu.add_item(ADD_ROS_LIDAR, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_ROS_POSE_TREE, self._on_scene_menu_click))
         # self._menus.append(editor_menu.add_item(ADD_ROS_SINK, self._on_scene_menu_click))
-        # self._menus.append(editor_menu.add_item(ADD_ROS_TELEPORT, self._on_scene_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_ROS_TELEPORT, self._on_scene_menu_click))
 
     def setup_base_prim(self, prim):
         prim.CreateRosNodePrefixAttr("")
@@ -111,9 +111,8 @@ class RosBridgeMenu:
     def add_teleport(self):
         prim = ROSSchema.RosTeleport.Define(self._stage, self.get_path("/ROS_Teleport"))
         self.setup_base_prim(prim)
-        prim.CreatePoseSubTopicAttr("/teleport_pos")
+        prim.CreatePoseSrvTopicAttr("/teleport_pos")
         prim.CreateTeleportPrimsRel()
-        prim.CreateQueueSizeAttr(0)
 
         pass
 
@@ -132,8 +131,8 @@ class RosBridgeMenu:
             self.add_pose_tree()
         # elif menu == ADD_ROS_SINK:
         #     self.add_sink()
-        # elif menu == ADD_ROS_TELEPORT:
-        #     self.add_teleport()
+        elif menu == ADD_ROS_TELEPORT:
+            self.add_teleport()
 
     def shutdown(self):
         self._menus = None
