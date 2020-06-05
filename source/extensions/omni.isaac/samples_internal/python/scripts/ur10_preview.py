@@ -201,4 +201,4 @@ class Extension(omni.ext.IExt):
         self._editor_event_subscription = None
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
         self._window.set_update_fn(None)
-        print("Shutting down")
+        print("Shutting down UR10 Preview Internal")

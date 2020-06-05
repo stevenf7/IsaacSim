@@ -30,10 +30,19 @@ class Extension(omni.ext.IExt):
         self._enable_convex_decomp = self._window.layout.add_child(omni.kit.ui.CheckBox("Enable Convex Decomposition"))
 
         self._zup_checkbox = self._window.layout.add_child(omni.kit.ui.CheckBox("Force Z Up"))
+        self._zup_checkbox.tooltip = omni.kit.ui.Label("Sets the stage to Z up on urdf import")
         self._zup_checkbox.value = True
 
         self._scale_input = self._window.layout.add_child(omni.kit.ui.FieldDouble("Scaling Factor", 100))
-        self._scale_input.tooltip = omni.kit.ui.Label("Kit unit is in centimeter, adjust unit scale accordingly")
+        self._scale_input.tooltip = omni.kit.ui.Label(
+            "Kit units are in centimeter by default, adjust unit scale accordingly, default value of 100 corresponds to centimeters"
+        )
+
+        self._inertia_checkbox = self._window.layout.add_child(omni.kit.ui.CheckBox("Import Inertia Tensor"))
+        self._inertia_checkbox.tooltip = omni.kit.ui.Label(
+            "If True, inertia will be loaded from urdf, if the urdf does not specify inertia tensor, identity will be used and scaled by the scaling factor. If false physx will compute automatically"
+        )
+        self._inertia_checkbox.value = False
 
         self._btn_load = self._window.layout.add_child(omni.kit.ui.Button("Load URDF"))
         self._btn_load.set_clicked_fn(self._select_file)
@@ -47,6 +56,7 @@ class Extension(omni.ext.IExt):
             config.distance_scale = self._scale_input.value
             config.force_z_up = self._zup_checkbox.value
             config.add_debug_info = False
+            config.import_inertia_tensor = self._inertia_checkbox.value
             self._urdf_interface.import_urdf(path, config)
         else:
             print("Only local paths supported currently")

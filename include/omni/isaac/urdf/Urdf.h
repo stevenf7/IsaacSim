@@ -26,6 +26,7 @@ struct ImportConfig
     bool forceZUp = true;
     bool addDebugInfo = false;
     float distanceScale = 100.0;
+    bool importInertiaTensor = false;
 };
 
 
