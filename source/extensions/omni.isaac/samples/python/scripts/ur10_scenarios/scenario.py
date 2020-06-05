@@ -57,23 +57,6 @@ def setCollisionGroup(prim, group):
     rel.AddTarget(Sdf.Path(group))
 
 
-def setCollisionGroupUR10(stage, prim_path, group_path, is_ghost):
-    print(prim_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/base_link/Cylinder"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/shoulder_link/Cylinder"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/upper_arm_link/Cylinder"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/upper_arm_link/Cylinder_01"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/upper_arm_link/Cylinder_02"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/forearm_link/Cylinder"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/forearm_link/Cylinder_01"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/forearm_link/Cylinder_02"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/wrist_1_link/Cylinder"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/wrist_2_link/Cylinder"), group_path)
-    setCollisionGroup(stage.GetPrimAtPath(prim_path + "/wrist_3_link/Cylinder"), group_path)
-    for p in stage.GetPrimAtPath(prim_path + "/ee_link/collision").GetChildren():
-        setCollisionGroup(p, group_path)
-
-
 def setUpZAxis(stage):
     rootLayer = stage.GetRootLayer()
     rootLayer.SetPermissionToEdit(True)
@@ -86,18 +69,6 @@ def CreateSolidUR10(stage, env_path, UR10_stage, solid_robot, location):
     envPrim.GetReferences().AddReference(UR10_stage)
     setTranslate(envPrim, location)
     print(env_path + "/ur10", solid_robot)
-    setCollisionGroupUR10(stage, env_path + "/ur10", solid_robot, False)
-
-
-def CreateGhostUR10(stage, env_path, UR10_ghost_usd, ghost_robot, ghost_index):
-    ghost_path = env_path + "/Ghost/robot_{}".format(ghost_index)
-    ghostPrim = stage.DefinePrim(ghost_path, "Xform")
-    ghostPrim.GetReferences().AddReference(UR10_ghost_usd)
-    setTranslate(ghostPrim, Gf.Vec3d(0, 0, 0))
-    imageable = UsdGeom.Imageable(ghostPrim)
-    if imageable:
-        imageable.MakeInvisible()
-    setCollisionGroupUR10(stage, ghost_path + "/ur10", ghost_robot, True)
 
 
 def CreateObjects(stage, asset_paths, env_paths, translations, rotations=None):
