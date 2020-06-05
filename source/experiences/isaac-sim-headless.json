@@ -1,6 +1,8 @@
 {
     "app": {
         "window": {
+            "width": 1440,
+            "height": 900,
             "title": "Omniverse Isaac Sim Headless"
         },
         "settings": {

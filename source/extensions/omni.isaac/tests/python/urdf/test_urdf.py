@@ -34,7 +34,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
-        self._urdf_interface.import_urdf(urdf_path, _urdf.ImportConfig())
+        config = _urdf.ImportConfig()
+        config.import_inertia_tensor = True
+        self._urdf_interface.import_urdf(urdf_path, config)
 
         print("check object exist")
         prim = stage.GetPrimAtPath("/test_basic")
@@ -55,7 +57,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(fingerJoint.GetAttribute("upperLimit").Get(), 8)
 
         fingerLink = stage.GetPrimAtPath("/test_basic/finger_link_2")
-        self.assertAlmostEqual(fingerLink.GetAttribute("diagonalInertia").Get()[0], 2.0)
+        self.assertAlmostEqual(fingerLink.GetAttribute("diagonalInertia").Get()[0], 20000.0)
         self.assertAlmostEqual(fingerLink.GetAttribute("mass").Get(), 3)
 
         # Start Simulation and wait
