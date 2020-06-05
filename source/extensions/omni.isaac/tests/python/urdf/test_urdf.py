@@ -87,10 +87,10 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         prim = stage.GetPrimAtPath("/test_advanced")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
-        # check material and color are imported
-        materialShader = stage.GetPrimAtPath("/test_advanced/link_1/cylinder/_0Shader")
-        self.assertNotEqual(materialShader.GetPath(), Sdf.Path.emptyPath)
-        self.assertTrue(Gf.IsClose(materialShader.GetAttribute("inputs:diffuseColor").Get(), Gf.Vec3f(0, 0.8, 0), 1e-5))
+        # check color are imported
+        mesh = stage.GetPrimAtPath("/test_advanced/link_1/cylinder/_0")
+        self.assertNotEqual(mesh.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(Gf.IsClose(mesh.GetAttribute("primvars:displayColor").Get()[0], Gf.Vec3f(0, 0.8, 0), 1e-5))
 
         # check joint properties
         elbowPrim = stage.GetPrimAtPath("/test_advanced/link_1/elbow_joint")

@@ -43,18 +43,19 @@ class Extension(omni.ext.IExt):
 
             import_config = _urdf.ImportConfig()
             import_config.merge_fixed_joints = True
+            import_config.import_inertia_tensor = True
             import_config.distance_scale = 10
             import_robot(self._urdf_interface, "data/urdf/robots/kaya/urdf/kaya.urdf", import_config)
 
             editor = omni.kit.editor.get_editor_interface()
-            editor.set_camera_position("/OmniverseKit_Persp", 200, -200, 43, True)
-            editor.set_camera_target("/OmniverseKit_Persp", -96, 108, -40, True)
+            editor.set_camera_position("/OmniverseKit_Persp", -51, 63, 25, True)
+            editor.set_camera_target("/OmniverseKit_Persp", 220, -218, -160, True)
 
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
         scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/physicsScene"))
-        # scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
-        PhysicsSchemaTools.addGroundPlane(stage, "/groundPlane", "Z", 1500.0, Gf.Vec3f(-50), Gf.Vec3f(0.5))
+        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
+        PhysicsSchemaTools.addGroundPlane(stage, "/groundPlane", "Z", 1500.0, Gf.Vec3f(-25), Gf.Vec3f(0.5))
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
         distantLight.CreateIntensityAttr(500)
 
@@ -85,6 +86,6 @@ class Extension(omni.ext.IExt):
         axle_1 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_1_joint"), "angular")
         axle_2 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_2_joint"), "angular")
 
-        set_drive_parameters(axle_0, "velocity", 1, 0, 1000000, 1e8)
-        set_drive_parameters(axle_1, "velocity", 1, 0, 1000000, 1e8)
-        set_drive_parameters(axle_2, "velocity", 1, 0, 1000000, 1e8)
+        set_drive_parameters(axle_0, "velocity", 2, 0, 1e8, 1e10)
+        set_drive_parameters(axle_1, "velocity", 2, 0, 1e8, 1e10)
+        set_drive_parameters(axle_2, "velocity", 2, 0, 1e8, 1e10)

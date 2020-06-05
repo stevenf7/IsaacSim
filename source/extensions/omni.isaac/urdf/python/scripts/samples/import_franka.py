@@ -54,19 +54,11 @@ class Extension(omni.ext.IExt):
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
         scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/physicsScene"))
-        # scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
-        # PhysicsSchemaTools.addGroundPlane(stage, "/groundPlane", "Z", 1500.0, Gf.Vec3f(-50), Gf.Vec3f(0.5))
+        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
+        PhysicsSchemaTools.addGroundPlane(stage, "/groundPlane", "Z", 1500.0, Gf.Vec3f(0), Gf.Vec3f(0.5))
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
         distantLight.CreateIntensityAttr(500)
-        # TODO:Create a body material
-        # float dynamicFriction = 1
-        # float restitution = 0.5
-        # float staticFriction = 1
 
-        # Create a finger material
-        # uniform token physxMaterial:frictionCombineMode = "max"
-        # bool physxMaterial:improvePatchFriction
-        # uniform token physxMaterial:restitutionCombineMode
         franka_prim = stage.GetDefaultPrim()
         # Set articulation base parameters
         physicsArticulationAPI = PhysicsSchema.ArticulationAPI.Get(stage, franka_prim.GetPath())
@@ -122,7 +114,3 @@ class Extension(omni.ext.IExt):
         PhysxSchema.PhysxArticulationJointAPI.Get(
             stage, "/panda/panda_hand/panda_finger_joint2"
         ).CreatePhysxArticulationJointMaxJointVelocityAttr(10.0)
-
-        # Set the contact offset for fingers
-        # float minTorsionalPatchRadius = 0.8
-        # float torsionalPatchRadius = 1
