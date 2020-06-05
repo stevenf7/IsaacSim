@@ -184,28 +184,28 @@
         <parent link ="shoulder_link" />
         <child link="upper_arm_link" />
     </joint>
-    <joint name="upper_arm_joint" type="revolute">
+    <joint name="elbow_joint" type="revolute">
         <origin xyz="0.612 -0.128 0" rpy="0 0 0"/>
         <axis xyz="0 1 0" />
         <limit upper="6.28318" lower="-6.28318" velocity="3.14159" effort="150.0" />
         <parent link ="upper_arm_link" />
         <child link="forearm_link" />
     </joint>
-    <joint name="forearm_joint" type="revolute">
+    <joint name="wrist_1_joint" type="revolute">
         <origin xyz="0.572 0.116 0" rpy="0 0 0"/>
         <axis xyz="0 1 0" />
         <limit upper="6.28318" lower="-6.28318" velocity="3.14159" effort="56.0" />
         <parent link ="forearm_link" />
         <child link="wrist_1_link" />
     </joint>
-    <joint name="wrist_1_joint" type="revolute">
+    <joint name="wrist_2_joint" type="revolute">
         <origin xyz="0 0 -0.116" rpy="0 0 0"/>
         <axis xyz="0 0 -1" />
         <limit upper="6.28318" lower="-6.28318" velocity="3.14159" effort="56.0" />
         <parent link ="wrist_1_link" />
         <child link="wrist_2_link" />
     </joint>
-    <joint name="wrist_2_joint" type="revolute">
+    <joint name="wrist_3_joint" type="revolute">
         <origin xyz="0 0.092 0" rpy="0 0 0"/>
         <axis xyz="0 1 0" />
         <limit upper="6.28318" lower="-6.28318" velocity="3.14159" effort="56.0" />
