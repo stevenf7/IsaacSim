@@ -31,7 +31,6 @@ from .scenario import (
     CreateObjects,
     SetupPhysics,
     setCollisionGroup,
-    setCollisionGroupUR10,
 )
 from copy import copy
 

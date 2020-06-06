@@ -52,7 +52,7 @@ class Extension(omni.ext.IExt):
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
         scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/physicsScene"))
-        # scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
+        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
         PhysicsSchemaTools.addGroundPlane(stage, "/groundPlane", "Z", 1500.0, Gf.Vec3f(-50), Gf.Vec3f(0.5))
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
         distantLight.CreateIntensityAttr(500)

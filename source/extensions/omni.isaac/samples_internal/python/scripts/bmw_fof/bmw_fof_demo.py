@@ -31,7 +31,6 @@ from omni.isaac.samples.scripts.ur10_scenarios.scenario import (
     CreateObjects,
     SetupPhysics,
     setCollisionGroup,
-    setCollisionGroupUR10,
 )
 from copy import copy
 

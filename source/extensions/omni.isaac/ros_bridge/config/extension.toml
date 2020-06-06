@@ -12,6 +12,9 @@ name = "omni.isaac.ros_bridge"
 [[python.modules]]
 name = "omni.isaac.ros_bridge.scripts.samples.rostopics"
 
+[[python.modules]]
+name = "omni.isaac.ros_bridge.scripts.samples.rosservices"
+
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false

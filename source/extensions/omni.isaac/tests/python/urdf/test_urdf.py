@@ -34,7 +34,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
-        self._urdf_interface.import_urdf(urdf_path, _urdf.ImportConfig())
+        config = _urdf.ImportConfig()
+        config.import_inertia_tensor = True
+        self._urdf_interface.import_urdf(urdf_path, config)
 
         print("check object exist")
         prim = stage.GetPrimAtPath("/test_basic")
@@ -55,7 +57,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(fingerJoint.GetAttribute("upperLimit").Get(), 8)
 
         fingerLink = stage.GetPrimAtPath("/test_basic/finger_link_2")
-        self.assertAlmostEqual(fingerLink.GetAttribute("diagonalInertia").Get()[0], 2.0)
+        self.assertAlmostEqual(fingerLink.GetAttribute("diagonalInertia").Get()[0], 20000.0)
         self.assertAlmostEqual(fingerLink.GetAttribute("mass").Get(), 3)
 
         # Start Simulation and wait
@@ -85,10 +87,10 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         prim = stage.GetPrimAtPath("/test_advanced")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
-        # check material and color are imported
-        materialShader = stage.GetPrimAtPath("/test_advanced/link_1/cylinder/_0Shader")
-        self.assertNotEqual(materialShader.GetPath(), Sdf.Path.emptyPath)
-        self.assertTrue(Gf.IsClose(materialShader.GetAttribute("inputs:diffuseColor").Get(), Gf.Vec3f(0, 0.8, 0), 1e-5))
+        # check color are imported
+        mesh = stage.GetPrimAtPath("/test_advanced/link_1/cylinder/_0")
+        self.assertNotEqual(mesh.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(Gf.IsClose(mesh.GetAttribute("primvars:displayColor").Get()[0], Gf.Vec3f(0, 0.8, 0), 1e-5))
 
         # check joint properties
         elbowPrim = stage.GetPrimAtPath("/test_advanced/link_1/elbow_joint")
