@@ -65,6 +65,7 @@ class Extension(omni.ext.IExt):
         self._joystick_deadzone = 0.2
         self._gains = (4, 4, 0.5)
         self._vel_target = np.zeros(3)
+        self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
         print("Kaya Preview Startup Complete")
 
     def _on_gamepad_setup(self, widget):
@@ -124,7 +125,12 @@ class Extension(omni.ext.IExt):
             self._vel_target[2] = -signal * self._gains[2]
         else:
             pass
-        self.kaya.move(self._vel_target)
+
+    def _on_editor_step(self, step):
+        """Update kaya physics once per step
+        """
+        if self.kaya is not None:
+            self.kaya.move(self._vel_target)
 
     def on_shutdown(self):
         """Cleanup objects on extension shutdown

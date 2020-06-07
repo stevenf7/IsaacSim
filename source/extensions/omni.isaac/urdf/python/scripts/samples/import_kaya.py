@@ -89,3 +89,7 @@ class Extension(omni.ext.IExt):
         set_drive_parameters(axle_0, "velocity", 2, 0, 1e8, 1e10)
         set_drive_parameters(axle_1, "velocity", 2, 0, 1e8, 1e10)
         set_drive_parameters(axle_2, "velocity", 2, 0, 1e8, 1e10)
+
+        usd_context = omni.usd.get_context()
+        selection = usd_context.get_selection()
+        selection.set_selected_prim_paths(["/kaya"], True)
