@@ -319,24 +319,25 @@ if __name__ == "__main__":
 
     # If root is not specified use the environment variable SHAPENET_LOCAL_DIR with the _nomat suffix as root
     if args.root is None:
-        args.root = f"{os.environ['SHAPENET_LOCAL_DIR']}_nomat"
+        args.root = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_nomat"
 
     # If ShapeNet categories are specified with their names, convert to synset ID
     # Remove this if using with a different dataset than ShapeNet
     args.categories = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
 
-    dataset = RandomObjects(args.root, args.categories)
+    dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size)
 
     # Iterate through dataset and visualize the output
     plt.ion()
-    _, ax = plt.subplots()
-    ax.axis("off")
+    _, axes = plt.subplots(1, 2, figsize=(10, 5))
     plt.tight_layout()
     for image, target in dataset:
-        ax.clear()
+        for ax in axes:
+            ax.clear()
+            ax.axis("off")
 
         np_image = image.permute(1, 2, 0).cpu().numpy()
-        ax.imshow(np_image)
+        axes[0].imshow(np_image)
 
         num_instances = len(target["boxes"])
         colours = vis.random_colours(num_instances)
@@ -344,8 +345,10 @@ if __name__ == "__main__":
         for mask, colour in zip(target["masks"].cpu().numpy(), colours):
             overlay[mask, :3] = colour
 
-        ax.imshow(overlay, alpha=0.7)
-        vis.plot_boxes(ax, target["boxes"].tolist(), list(range(num_instances)))
+        axes[1].imshow(overlay)
+        mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
+        labels = [shapenet.SYNSET_TO_LABEL[mapping[label.item()]] for label in target["labels"]]
+        vis.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
 
         plt.draw()
         plt.pause(0.01)

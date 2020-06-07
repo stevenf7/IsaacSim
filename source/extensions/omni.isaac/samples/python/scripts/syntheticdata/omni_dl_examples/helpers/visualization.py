@@ -27,19 +27,21 @@ def random_colours(N):
     return colours
 
 
-def plot_boxes(ax, bboxes, labels, label_size=0):
-    colours = random_colours(len(set(labels)))
-    colour_mapping = {label: colours[i] for i, label in enumerate(set(labels))}
-    for bb, label in zip(bboxes, labels):
+def plot_boxes(ax, bboxes, labels=None, colours=None, label_size=10):
+    if colours is None:
+        colours = random_colours(len(bboxes))
+    if labels is None:
+        labels = [""] * len(bboxes)
+    for bb, label, colour in zip(bboxes, labels, colours):
         x = bb[0]
         y = bb[1]
         w = bb[2] - x
         h = bb[3] - y
-        box = plt.Rectangle((x, y), w, h, fill=False, edgecolor=colour_mapping[label])
+        box = plt.Rectangle((x, y), w, h, fill=False, edgecolor=colour)
         ax.add_patch(box)
-        if label_size > 0:
-            font = {"family": "sans-serif", "color": colour_mapping[label], "size": 10}
-            ax.text(bb[0], bb[1], label, font_dict=font)
+        if label:
+            font = {"family": "sans-serif", "color": colour, "size": label_size}
+            ax.text(bb[0], bb[1], label, fontdict=font)
 
 
 def instance_segmentation_to_rgb(instance_segmentation):
