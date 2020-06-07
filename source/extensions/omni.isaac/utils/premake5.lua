@@ -28,7 +28,6 @@ group ("extensions/"..ext_id)
     project "omni.isaac.utils.python"
         define_bindings_python("_isaac_utils")
         add_impl_folder("bindings")
-        add_impl_folder("plugins")
         targetdir (target_dir.."/exts/"..ext_id.."/omni/isaac/utils")
         includedirs {
             "%{root}/source/pch",

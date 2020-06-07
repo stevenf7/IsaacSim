@@ -2,7 +2,7 @@ import omni
 import omni.kit.usd.new_stage
 from omni.isaac.lidar import _lidar
 import omni.isaac.LidarSchema as LidarSchema
-from pxr import Usd, UsdGeom, Sdf, Gf, PhysicsSchema
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema
 import asyncio
 
 
@@ -44,7 +44,7 @@ class Extension(omni.ext.IExt):
                 "This sample demonstrates how to create a LIDAR, set properties and get data from it. Press play once LIDAR is created to simulate"
             )
         )
-        spawn_lidar_button = sublayout.add_child(omni.kit.ui.Button("Spawn a LIDAR"))
+        spawn_lidar_button = sublayout.add_child(omni.kit.ui.Button("Clean Stage And Spawn a LIDAR"))
         spawn_lidar_button.tooltip = omni.kit.ui.Label("Spawn a LIDAR in the Stage and set its properties")
         spawn_obstacles_button = sublayout.add_child(omni.kit.ui.Button("Spawn an obstacle for LIDAR"))
         spawn_obstacles_button.tooltip = omni.kit.ui.Label("Spawn an obstacle and move camera so its in view")
@@ -148,6 +148,10 @@ class Extension(omni.ext.IExt):
         self.CubePath = "/World/Cube"
         offset = Gf.Vec3f(-200.0, 0.0, 50.0)
         size = 100
+
+        # Define a light so we can see the obstacle better
+        distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
+        distantLight.CreateIntensityAttr(500)
 
         # To create a cube, we first define our geometry at our chosen path.  Then, becuase
         # we will need the primitive later, we query the prim from the stage. If the prim already exists, skip creation
