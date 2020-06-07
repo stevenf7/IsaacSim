@@ -28,7 +28,7 @@ SCALE = 50.0
 
 
 def main():
-    kit = OmniKitHelper()
+    kit = OmniKitHelper({"renderer": "RayTracedLighting"})
     sd_helper = SyntheticDataHelper()
 
     # SCENE SETUP
@@ -99,17 +99,23 @@ def main():
     random.seed(1)
     axes[2].set_title("BBox 2D Tight")
     bboxes = gt["boundingBox2DTight"][["x_min", "y_min", "x_max", "y_max"]]
-    labels = gt["boundingBox2DLoose"]["semanticId"]
-    vis.plot_boxes(axes[2], bboxes, labels)
+    labels = gt["boundingBox2DTight"]["semanticLabel"]
+    label_ids = gt["boundingBox2DTight"]["semanticId"]
+    label_colours = vis.random_colours(max(label_ids) + 1)
+    colours = [label_colours[label_id] for label_id in label_ids]
+    vis.plot_boxes(axes[2], bboxes, labels=labels, colours=colours)
 
     # BBOX2D LOOSE
     random.seed(1)
     axes[3].set_title("BBox 2D Loose")
     bboxes = gt["boundingBox2DLoose"][["x_min", "y_min", "x_max", "y_max"]]
-    labels = gt["boundingBox2DLoose"]["semanticId"]
-    vis.plot_boxes(axes[3], bboxes, labels)
+    labels = gt["boundingBox2DLoose"]["semanticLabel"]
+    label_ids = gt["boundingBox2DLoose"]["semanticId"]
+    label_colours = vis.random_colours(max(label_ids) + 1)
+    colours = [label_colours[label_id] for label_id in label_ids]
+    vis.plot_boxes(axes[3], bboxes, labels=labels, colours=colours)
 
-    # # INSTANCE SEGMENTATION
+    # INSTANCE SEGMENTATION
     random.seed(1)
     axes[4].set_title("Instance Segmentation")
     _, instance_seg = gt["instanceSegmentation"]
@@ -142,6 +148,7 @@ def main():
     # Display figure
     plt.tight_layout()
     plt.show()
+    plt.savefig("out.png")
 
 
 if __name__ == "__main__":
