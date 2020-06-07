@@ -9,8 +9,10 @@
 #include <carb/BindingsPythonUtils.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <pybind11/pybind11/functional.h>
 #include <pybind11/pybind11/numpy.h>
-
+#include <pybind11/pybind11/pybind11.h>
+#include <pybind11/pybind11/stl.h>
 CARB_BINDINGS("omni.isaac.dynamic_control.python")
 
 namespace omni

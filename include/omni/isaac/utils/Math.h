@@ -11,6 +11,8 @@
 
 #include <omni/isaac/dynamic_control/DynamicControlTypes.h>
 
+#include <cmath>
+
 namespace omni
 {
 namespace isaac
