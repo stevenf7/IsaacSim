@@ -24,13 +24,13 @@ def main():
     platform_host = omni.repo.man.get_and_validate_host_platform(["windows-x86_64", "linux-x86_64"])
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config", dest="config", required=False, default="debug")
+    parser.add_argument("-c", "--config", dest="config", required=False, default="release")
     options = parser.parse_args()
 
     paths = omni.repo.man.get_repo_paths(ROOT_DIR)
 
     # Install sphinx
-    sphinx_path = packmanapi.install("sphinx", "2.0.1-py3.5")["sphinx"]
+    sphinx_path = packmanapi.install("sphinx", "2.4.1-py3.6")["sphinx"]
 
     # Add extensions folder and sphinx folder (with sphinx) into PYTHONPATH
     path_to_extensions = f"{ROOT_DIR}/_build/{platform_host}/{options.config}/exts/"

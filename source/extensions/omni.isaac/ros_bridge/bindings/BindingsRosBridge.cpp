@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019, NVIDIA CORPORATION.  All rights reserved.
+// Copyright (c) 2018-2020, NVIDIA CORPORATION.  All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -34,8 +34,7 @@ PYBIND11_MODULE(_ros_bridge, m)
     m.doc() = "Isaac ROS bridge bindings";
 
     {
-        defineInterfaceClass<RosBridge>(
-            m, "Isaac RosBridge", "acquire_rosbridge_interface", "release_rosbridge_interface");
+        defineInterfaceClass<RosBridge>(m, "RosBridge", "acquire_rosbridge_interface", "release_rosbridge_interface");
     }
 }
 }
