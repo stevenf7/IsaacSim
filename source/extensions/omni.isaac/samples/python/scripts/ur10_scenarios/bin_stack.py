@@ -822,7 +822,7 @@ class BinStack(Scenario):
                 )
 
     def create_UR10(self, *args):
-        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd"
+        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_short_suction.usd"
         super().create_UR10()
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"
