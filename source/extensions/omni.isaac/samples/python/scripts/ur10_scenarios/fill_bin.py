@@ -588,10 +588,6 @@ class FillBin(Scenario):
         setTranslate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
         setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
 
-        prim = self._stage.GetPrimAtPath("/World")
-        imageable = UsdGeom.Imageable(prim)
-        imageable.MakeInvisible()
-
         num_objs = self.max_objs
         a = [self.objects[random.randint(0, len(self.objects) - 1)] for i in range(num_objs)]
         b = [self.env_path + "/objects/object_{}".format(self.current_obj + i) for i in range(num_objs)]
@@ -686,11 +682,9 @@ class FillBin(Scenario):
             for o in prim.GetChildren():
                 if "Looks" not in o.GetPath().pathString:
                     obj = self._dc.get_rigid_body(o.GetPath().pathString)
-                    print(obj, o.GetPath().pathString)
                     self.objects_handles.append(obj)
                     self._dc.set_rigid_body_disable_simulation(obj, True)
                     break
-        print(self.objects_handles)
 
     def perform_tasks(self, *args):
         self._start = True
