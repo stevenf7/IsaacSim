@@ -21,6 +21,7 @@ from omni.physx import _physx
 from omni.isaac.samples.scripts.ur10_scenarios.scenario import Scenario
 from .bmw_fof import bmw_fof_demo
 
+import asyncio
 
 EXTENSION_NAME = "UR10 Factory of Future"
 
@@ -49,7 +50,7 @@ class Extension(omni.ext.IExt):
         self._physxIFace = _physx.acquire_physx_interface()
 
         self._create_UR10_btn = self._window.layout.add_child(omni.kit.ui.Button("Create Scenario"))
-        self._create_UR10_btn.set_clicked_fn(self._on_create_UR10)
+        self._create_UR10_btn.set_clicked_fn(self._on_environment_setup)
 
         self._perform_task_btn = self._window.layout.add_child(omni.kit.ui.Button("Perform Task"))
         self._perform_task_btn.set_clicked_fn(self._on_perform_task)
@@ -92,7 +93,18 @@ class Extension(omni.ext.IExt):
         )
         self._scenario = Scenario(self._editor, self._dc, self._mp)
 
-    def _on_create_UR10(self, *args):
+    def _on_environment_setup(self, widget):
+        # wait for new stage before creating franka
+        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        asyncio.ensure_future(self._on_create_UR10(task))
+
+    async def _on_create_UR10(self, task):
+
+        done, pending = await asyncio.wait({task})
+        if task not in done:
+            return
+
+        self._stage = self._usd_context.get_stage()
 
         self._scenario = bmw_fof_demo.AttachBody(self._editor, self._dc, self._mp)
         self._editor.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)

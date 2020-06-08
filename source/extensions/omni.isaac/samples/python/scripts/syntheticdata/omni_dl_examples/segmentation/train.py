@@ -31,7 +31,9 @@ def main(args):
     device = "cuda"
 
     # Setup data
-    train_set = RandomObjects(args.root, args.categories, num_assets_min=3, num_assets_max=5)
+    train_set = RandomObjects(
+        args.root, args.categories, num_assets_min=3, num_assets_max=5, max_asset_size=args.max_asset_size
+    )
     train_loader = DataLoader(train_set, batch_size=2, collate_fn=lambda x: tuple(zip(*x)))
 
     # Setup Model
@@ -41,8 +43,7 @@ def main(args):
 
     if args.visualize:
         plt.ion()
-        _, axes = plt.subplots(1, 2, figsize=(14, 7))
-        plt.tight_layout()
+        fig, axes = plt.subplots(1, 2, figsize=(14, 7))
 
     for i, train_batch in enumerate(train_loader):
         if i > args.max_iters:
@@ -75,6 +76,7 @@ def main(args):
 
                 np_image = images[idx].permute(1, 2, 0).cpu().numpy()
                 for ax in axes:
+                    fig.suptitle(f"Iteration {i:05}", fontsize=14)
                     ax.cla()
                     ax.axis("off")
                     ax.imshow(np_image)
@@ -90,8 +92,9 @@ def main(args):
                     overlay[mask.squeeze().cpu().numpy() > mask_thresh, :3] = colour
 
                 axes[1].imshow(overlay, alpha=0.5)
-
-                vis.plot_boxes(axes[1], pred["boxes"], colours)
+                mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
+                labels = [shapenet.SYNSET_TO_LABEL[mapping[label.item()]] for label in pred["labels"]]
+                vis.plot_boxes(axes[1], pred["boxes"], labels=labels, colours=colours)
 
                 plt.draw()
                 plt.pause(0.01)
@@ -110,6 +113,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--categories", type=str, nargs="+", required=True, help="List of ShapeNet categories to use (space seperated)."
     )
+    parser.add_argument(
+        "--max-asset-size",
+        type=float,
+        default=10.0,
+        help="Maximum asset size to use in MB. Larger assets will be skipped.",
+    )
     parser.add_argument("-lr", "--learning_rate", type=float, default=1e-4, help="Learning rate")
     parser.add_argument("--max-iters", type=float, default=1000, help="Number of training iterations.")
     parser.add_argument("--visualize", action="store_true", help="Visualize predicted masks during training.")
@@ -117,7 +126,7 @@ if __name__ == "__main__":
 
     # If root is not specified use the environment variable SHAPENET_LOCAL_DIR with the _nomat suffix as root
     if args.root is None:
-        args.root = f"{os.environ['SHAPENET_LOCAL_DIR']}_nomat"
+        args.root = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_nomat"
 
     # If ShapeNet categories are specified with their names, convert to synset ID
     # Remove this if using with a different dataset than ShapeNet

@@ -22,6 +22,7 @@ from .ur10_scenarios.scenario import Scenario
 from .ur10_scenarios import bin_stack
 from .ur10_scenarios.fill_bin import FillBin
 
+import asyncio
 
 EXTENSION_NAME = "UR10 Preview"
 
@@ -49,13 +50,13 @@ class Extension(omni.ext.IExt):
 
         self._physxIFace = _physx.acquire_physx_interface()
 
-        self._selected_scenario = self._window.layout.add_child(omni.kit.ui.ComboBox())
+        self._selected_scenario = self._window.layout.add_child(omni.kit.ui.ComboBox("Select Scenario:"))
         self._selected_scenario.add_item("Stack Bins")
         self._selected_scenario.add_item("Fill Bin")
         self._selected_scenario.selected_index = 0
 
         self._create_UR10_btn = self._window.layout.add_child(omni.kit.ui.Button("Create Scenario"))
-        self._create_UR10_btn.set_clicked_fn(self._on_create_UR10)
+        self._create_UR10_btn.set_clicked_fn(self._on_environment_setup)
 
         self._perform_task_btn = self._window.layout.add_child(omni.kit.ui.Button("Perform Task"))
         self._perform_task_btn.set_clicked_fn(self._on_perform_task)
@@ -69,7 +70,7 @@ class Extension(omni.ext.IExt):
         self._pause_task_btn.set_clicked_fn(self._on_pause_tasks)
         self._pause_task_btn.enabled = False
 
-        self._open_gripper_btn = self._window.layout.add_child(omni.kit.ui.Button("Close/Open Gripper"))
+        self._open_gripper_btn = self._window.layout.add_child(omni.kit.ui.Button("Attach/Detach Suction Gripper"))
         self._open_gripper_btn.set_clicked_fn(self._on_open_gripper)
         self._open_gripper_btn.enabled = False
 
@@ -92,7 +93,28 @@ class Extension(omni.ext.IExt):
         )
         self._scenario = Scenario(self._editor, self._dc, self._mp)
 
-    def _on_create_UR10(self, *args):
+    def _on_clear_scenario(self, widget):
+        # wait for new stage before creating franka
+        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        self._create_UR10_btn.text = "Create Scenario"
+        self._create_UR10_btn.set_clicked_fn(self._on_environment_setup)
+        self._selected_scenario.enabled = True
+
+    def _on_environment_setup(self, widget):
+        # wait for new stage before creating franka
+        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        asyncio.ensure_future(self._on_create_UR10(task))
+        self._create_UR10_btn.text = "Clear Scenario"
+        self._create_UR10_btn.set_clicked_fn(self._on_clear_scenario)
+
+    async def _on_create_UR10(self, task):
+
+        done, pending = await asyncio.wait({task})
+        if task not in done:
+            return
+
+        self._stage = self._usd_context.get_stage()
+
         if self._selected_scenario.selected_index == 0:
             self._scenario = bin_stack.BinStack(self._editor, self._dc, self._mp)
             self._editor.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)
@@ -104,7 +126,6 @@ class Extension(omni.ext.IExt):
             self._editor.set_camera_target("/OmniverseKit_Persp", -140.6, 282.7, 110.6, True)
 
         self._first_step = True
-        self._create_UR10_btn.enabled = False
         self._selected_scenario.enabled = False
 
         self._editor.stop()
@@ -185,7 +206,6 @@ class Extension(omni.ext.IExt):
         self._is_playing = not is_stopped
 
         if self._editor.is_playing() or self._scenario.is_created():
-            self._create_UR10_btn.enabled = False
             self._perform_task_btn.enabled = True
             self._add_new_bins_btn.enabled = True
             self._perform_task_btn.text = "Perform Task"

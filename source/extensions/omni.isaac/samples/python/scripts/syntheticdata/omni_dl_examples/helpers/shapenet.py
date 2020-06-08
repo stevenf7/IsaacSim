@@ -58,6 +58,8 @@ LABEL_TO_SYNSET = {
     "can": "02946921",
 }
 
+SYNSET_TO_LABEL = {v: k for k, v in LABEL_TO_SYNSET.items()}
+
 
 async def convert_nomat(in_file, out_file):
     # This import causes conflicts when global

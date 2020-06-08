@@ -849,9 +849,6 @@ class BinStack(Scenario):
         CreateBackground(
             self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
         )
-        prim = self._stage.GetPrimAtPath("/World")
-        imageable = UsdGeom.Imageable(prim)
-        imageable.MakeInvisible()
 
         # Setup physics simulation
         SetupPhysics(self._stage)
