@@ -167,7 +167,7 @@ class PickAndPlaceStateMachine(object):
         self._physxIFace = _physx.acquire_physx_interface()
 
         x = [100, 79, 58]
-        y = [-66, -35, -4]
+        y = [-62, -31, 0]
         self.stack_coordinates = np.array(
             [
                 [x[0], y[0]],
