@@ -167,7 +167,7 @@ class PickAndPlaceStateMachine(object):
         self._physxIFace = _physx.acquire_physx_interface()
 
         x = [100, 79, 58]
-        y = [-66, -35, -4]
+        y = [-62, -31, 0]
         self.stack_coordinates = np.array(
             [
                 [x[0], y[0]],
@@ -822,7 +822,7 @@ class BinStack(Scenario):
                 )
 
     def create_UR10(self, *args):
-        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd"
+        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_short_suction.usd"
         super().create_UR10()
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"

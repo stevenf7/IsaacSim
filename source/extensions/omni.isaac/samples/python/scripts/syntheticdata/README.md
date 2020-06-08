@@ -4,8 +4,10 @@ This repo contains simple examples of DL applications within Omniverse Kit.
 ## Requirements
 - Python 3.6 environment (conda works well)
 - [Pytorch](https://pytorch.org/) == 1.4
+- torchvision == 0.5.0
 - Matplotlib >= 3.1.3 (for visualizations)
 - requests == 2.23.0 (for the ShapeNet extension)
+- six == 1.12.0
 
 ## Setup
 ```

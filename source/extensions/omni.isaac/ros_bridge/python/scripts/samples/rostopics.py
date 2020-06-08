@@ -62,8 +62,8 @@ class Extension(omni.ext.IExt):
     async def _setup_camera(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            self._editor.set_camera_position("/OmniverseKit_Persp", 122, -124, 113, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
+            self._editor.set_camera_position("/OmniverseKit_Persp", 59, 120, 164, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", -190, -346, -263, True)
 
     # load robot
     def _on_load_robot(self, widget):
