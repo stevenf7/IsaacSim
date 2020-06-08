@@ -101,6 +101,8 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         _dynamic_control.release_dynamic_control_interface(self._dc)
         _physx.release_physx_interface(self._physxIFace)
+        self._sub_stage_event = None
+        self._editor_event_subscription = None
         self._editor = None
         self._window = None
 
@@ -118,6 +120,15 @@ class Extension(omni.ext.IExt):
         self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
         self._physxIFace.force_load_physics_from_usd()
         self._editor.play()
+        self._sub_stage_event = (
+            omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
+        )
+
+    def _on_stage_event(self, event):
+        if event.type == int(omni.usd.StageEventType.OPENED) or event.type == int(omni.usd.StageEventType.CLOSED):
+            # stage was opened or closed, cleanup
+            self._editor_event_subscription = None
+            self.ar = _dynamic_control.INVALID_HANDLE
 
     def _on_first_step(self):
         self.ar = self._dc.get_articulation("/panda")

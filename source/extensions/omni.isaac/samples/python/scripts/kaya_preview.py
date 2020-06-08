@@ -44,7 +44,6 @@ class Extension(omni.ext.IExt):
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
-        self._window.set_update_fn(self._on_update_ui)
 
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
@@ -65,7 +64,7 @@ class Extension(omni.ext.IExt):
         self._joystick_deadzone = 0.2
         self._gains = (4, 4, 0.5)
         self._vel_target = np.zeros(3)
-        self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+
         print("Kaya Preview Startup Complete")
 
     def _on_gamepad_setup(self, widget):
@@ -102,16 +101,13 @@ class Extension(omni.ext.IExt):
             self._gamepad_setup_btn.enabled = True
             self._gamepad_setup_btn.text = "Connect GamePad"
 
+            # start stepping after kaya is created
+            self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+
     def _on_environment_setup(self, widget):
         # wait for new stage before creating kaya
         task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
         asyncio.ensure_future(self._create_kaya(task))
-
-    def _on_update_ui(self, widget):
-        """Callback that updates UI elements every frame
-        """
-        # print('UI update')
-        pass
 
     def _on_event_fn(self, axis, signal):
         if abs(signal) < self._joystick_deadzone:
