@@ -18,7 +18,7 @@ This is where the Robotics experiece for Omniverse is developed
 Master: Stable, should be used by most users
 Develop: Latest Codebase
 
-###List of internal servers:
+### List of internal servers:
 * ov-isaac : http://ov-isaac.nvidia.com/
 
     For releases or demos (content that doesn't change much)
@@ -234,7 +234,7 @@ Windows Builds ``tools\ci\build-and-packaging\windows-x86_64\step.bat``
 Windows Tests ``tools\ci\testing\test-windows-x86_64\step.bat``
 
 ---
-### Debuggin in vscode on linux
+### Debugging in vscode on linux
 
 press Ctrl-Shift-D and then select the configuration you would like to run:
 
