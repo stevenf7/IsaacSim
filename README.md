@@ -1,5 +1,40 @@
 # Omniverse Isaac Sim
-This is where isaac sim extensions for omniverse are getting developed
+This is where the Robotics experiece for Omniverse is developed
+
+[Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Simulator)
+
+[Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/releases)
+
+### Latest Docs and Master Packages
+
+[Documentation](http://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim)
+
+[Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackaging_BuildLinuxX8664/.lastSuccessful/isaac-sim%40%7Bbuild.number%7D-linux-x86_64-release.7z)
+
+### Filing Bugs
+[Omniverse JIRA](https://nvidia-omniverse.atlassian.net/secure/RapidBoard.jspa?rapidView=25049)
+
+### Branches
+Master: Stable, should be used by most users
+Develop: Latest Codebase
+
+###List of internal servers:
+* ov-isaac : http://ov-isaac.nvidia.com/
+
+    For releases or demos (content that doesn't change much)
+
+* ov-isaac-dev : http://ov-isaac-dev.nvidia.com/
+
+    For development work
+
+* ov-isaac-qa : http://ov-isaac-qa.nvidia.com/
+
+    For QA testing or messing around
+    Content can be purged periodically
+    This server will be use for server version updates
+
+[Status of internal servers](http://stl-isaac/)
+
 
 ### TeamCity Pipelines
 Master: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation&tab=buildTypeHistoryList&Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation=%3Cdefault%3E&branch_Carbon_Isaac_OmniIsaacSim_Master=%3Cdefault%3E)
