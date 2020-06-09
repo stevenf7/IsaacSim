@@ -1,5 +1,21 @@
 # Omniverse Isaac Sim
-This is where isaac sim extensions for omniverse are getting developed
+This is where the Robotics experiece for Omniverse is developed
+
+### Confluence
+[Omniverse Isaac Simulator](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Simulator)
+
+### Releases
+[Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/releases)
+
+### Documentation
+[Latest Documentation](http://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim)
+
+### Filing Bugs
+[Omniverse JIRA](https://nvidia-omniverse.atlassian.net/secure/RapidBoard.jspa?rapidView=25049)
+
+### Branches
+Master: Stable, should be used by most users
+Develop: Latest Codebase
 
 ### TeamCity Pipelines
 Master: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation&tab=buildTypeHistoryList&Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation=%3Cdefault%3E&branch_Carbon_Isaac_OmniIsaacSim_Master=%3Cdefault%3E)
