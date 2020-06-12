@@ -15,4 +15,4 @@ pages:
       - public
   only:
     - master
-    - develo
+    - develop
