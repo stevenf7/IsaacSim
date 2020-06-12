@@ -8,6 +8,7 @@ import omni.isaac.RobotEngineBridgeSchema as REBSchema
 
 
 ADD_DIFFERENTIALBASE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Differential Base"
+ADD_HOLONOMICBASE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Holonomic Base"
 ADD_JOINTCONTROL_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Joint Control"
 ADD_SCISSORLIFT_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Scissor Lift"
 ADD_SURFACEGRIPPER_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Surface Gripper"
@@ -30,6 +31,7 @@ class RobotEngineBridgeMenu:
         # add
         # self._menus.append(editor_menu.add_item(ADD_BRIDGE_NODE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_DIFFERENTIALBASE_SCENE_MENU_ITEM, self._on_scene_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_HOLONOMICBASE_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_JOINTCONTROL_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_SCISSORLIFT_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_SURFACEGRIPPER_SCENE_MENU_ITEM, self._on_scene_menu_click))
@@ -65,6 +67,39 @@ class RobotEngineBridgeMenu:
         prim.CreateRightWheelJointNameAttr("")
 
         prim.CreateRobotFrontAttr((1, 0, 0))
+        prim.CreateMaxSpeedAttr((1.5, 1.0))
+        prim.CreateMaxTimeWithoutCommandAttr(0.2)
+        prim.CreateMaxMotorTorqueAttr(10)
+        prim.CreateUseProportionalDriverAttr(True)
+
+        prim.CreateProportionalGainAttr(100)
+        prim.CreateBrakeTorqueAttr(100)
+        prim.CreateAccelerationSmoothingAttr(1.0)
+        pass
+
+    def add_holonomic_base(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_HolonomicBase", False)
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_HolonomicBase", True)
+
+        prim = REBSchema.RobotEngineHolonomicBase.Define(self._stage, path)
+        self.setup_base_prim(prim)
+
+        prim.CreateInputComponentAttr("input")
+        prim.CreateInputChannelAttr("base_command")
+
+        prim.CreateOutputComponentAttr("output")
+        prim.CreateOutputChannelAttr("base_state")
+
+        prim.CreateArticulationPrimRel()
+        prim.CreateWheel1JointNameAttr("")
+        prim.CreateWheel2JointNameAttr("")
+        prim.CreateWheel3JointNameAttr("")
+
+        # prim.CreateRobotFrontAttr((1, 0, 0))
+        prim.CreateWheelRadiusAttr(0.04)
+        prim.CreateWheelBaseAttr(0.125)
         prim.CreateMaxSpeedAttr((1.5, 1.0))
         prim.CreateMaxTimeWithoutCommandAttr(0.2)
         prim.CreateMaxMotorTorqueAttr(10)
@@ -284,6 +319,8 @@ class RobotEngineBridgeMenu:
 
         if menu == ADD_DIFFERENTIALBASE_SCENE_MENU_ITEM:
             self.add_differential_base(curr_prim)
+        elif menu == ADD_HOLONOMICBASE_SCENE_MENU_ITEM:
+            self.add_holonomic_base(curr_prim)
         elif menu == ADD_JOINTCONTROL_SCENE_MENU_ITEM:
             self.add_joint_control(curr_prim)
         elif menu == ADD_SCISSORLIFT_SCENE_MENU_ITEM:

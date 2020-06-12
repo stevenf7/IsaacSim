@@ -5,6 +5,7 @@
 #include "IsaacApplication.h"
 
 #include "../Actuator/DifferentialBaseSimulator.h"
+#include "../Actuator/HolonomicBaseSimulator.h"
 #include "../Actuator/JointControl.h"
 #include "../Actuator/ScissorLiftSimulator.h"
 #include "../Actuator/SurfaceGripper.h"
@@ -244,6 +245,12 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
         component = std::make_unique<DifferentialBaseSimulator>(mDynamicControlPtr);
         component->initialize(
             mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineDifferentialBase(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineHolonomicBase>())
+    {
+        component = std::make_unique<HolonomicBaseSimulator>(mDynamicControlPtr);
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineHolonomicBase(prim), mStage);
     }
     else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineLidar>())
     {

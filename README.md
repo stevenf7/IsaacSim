@@ -5,18 +5,24 @@ This is where the Robotics experiece for Omniverse is developed
 
 [Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/releases)
 
-### Latest Docs and Master Packages
+### Branches
+* Master: Stable, should be used by most users
+* Develop: Latest Codebase
+
+### Latest Documentation and Packages
 
 [Documentation](http://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim)
 
 [Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackaging_BuildLinuxX8664/.lastSuccessful/isaac-sim%40%7Bbuild.number%7D-linux-x86_64-release.7z)
 
-### Filing Bugs
-[Omniverse JIRA](https://nvidia-omniverse.atlassian.net/secure/RapidBoard.jspa?rapidView=25049)
+[Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Carbon_Isaac_OmniIsaacSim_Develop_BuildAndPackaging_BuildLinuxX8664Release/.lastSuccessful/isaac-sim%40%7Bbuild.number%7D-linux-x86_64-release.7z)
 
-### Branches
-Master: Stable, should be used by most users
-Develop: Latest Codebase
+
+### Filing Bugs and Feature Requests
+Use the links below to create a new bug/feature request
+* [Create New Bug](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=1&priority=10&assignee=hmazhar&customfield_16630=17684&components=22384&customfield_10005=OM-16165)
+* [Create New Feature Request](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=2&assignee=hmazhar&customfield_16630=17684&components=22384&customfield_10005=OM-16163)
+* [Main Robotics JIRA Board](https://nvidia-omniverse.atlassian.net/secure/RapidBoard.jspa?rapidView=25049)
 
 ### List of internal servers:
 * ov-isaac : http://ov-isaac.nvidia.com/
@@ -236,7 +242,4 @@ Windows Tests ``tools\ci\testing\test-windows-x86_64\step.bat``
 ---
 ### Debugging in vscode on linux
 
-press Ctrl-Shift-D and then select the configuration you would like to run:
-
-- (linux) isaac-sim \[release\]
-- (linux) isaac-sim \[debug\]
+press Ctrl-Shift-D and then select the configuration you would like to run from the dropdown. Then Press the green arrow to the left of the dropdown to start debugging. 
