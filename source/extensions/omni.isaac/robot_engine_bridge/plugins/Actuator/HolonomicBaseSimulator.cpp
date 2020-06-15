@@ -62,9 +62,10 @@ void HolonomicBaseSimulator::tick()
             {
                 CARB_LOG_ERROR("Wrong number of elements: %lu", elements.size());
             }
-            mCommandedSpeed[0] = pxr::GfClamp(elements[0], -mMaximumSpeed[0], mMaximumSpeed[0]);
-            mCommandedSpeed[1] = pxr::GfClamp(elements[1], -mMaximumSpeed[0], mMaximumSpeed[0]);
-            mCommandedSpeed[2] = pxr::GfClamp(elements[1], -mMaximumSpeed[1], mMaximumSpeed[1]);
+            // Input comes in m/s
+            mCommandedSpeed[0] = pxr::GfClamp(elements[0], -mMaximumSpeed[0], mMaximumSpeed[0]) / mUnitScale;
+            mCommandedSpeed[1] = pxr::GfClamp(elements[1], -mMaximumSpeed[0], mMaximumSpeed[0]) / mUnitScale;
+            mCommandedSpeed[2] = pxr::GfClamp(elements[2], -mMaximumSpeed[1], mMaximumSpeed[1]);
 
             mLastCommandTime = mTimeSeconds;
 
@@ -78,7 +79,7 @@ void HolonomicBaseSimulator::tick()
     }
     // Compute new velocities
     mWheelDesiredSpeed = getWheelDesireSpeed(mCommandedSpeed);
-    // CARB_LOG_ERROR("Speeds %f %f", mWheelDesiredSpeed[0], mWheelDesiredSpeed[1]);
+    // CARB_LOG_ERROR("Speeds %f %f %f", mWheelDesiredSpeed[0], mWheelDesiredSpeed[1], mWheelDesiredSpeed[2]);
     if (mArticulationHandle)
     {
         mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
@@ -276,8 +277,9 @@ pxr::GfVec3d HolonomicBaseSimulator::getWheelDesireSpeed(const pxr::GfVec3d& mCo
 {
     double kOneByThree = 1.0 / 3.0;
     double kOneBySqrtThree = 1.0 / sqrt(3.0);
-    double wheel_distance = mWheelBase;
-    double wheel_radius = mWheelRadius;
+    double wheel_distance = mWheelBase / mUnitScale;
+    double wheel_radius = mWheelRadius / mUnitScale;
+    // CARB_LOG_ERROR("HolonomicBaseSimulator %f %f %f", mCommandedSpeed[0], mCommandedSpeed[1], mCommandedSpeed[2]);
 
     pxr::GfMatrix3d forward_matrix(0, -kOneBySqrtThree, kOneBySqrtThree, kOneByThree * 2, -kOneByThree, -kOneByThree,
                                    -kOneByThree / wheel_distance, -kOneByThree / wheel_distance,
@@ -285,9 +287,9 @@ pxr::GfVec3d HolonomicBaseSimulator::getWheelDesireSpeed(const pxr::GfVec3d& mCo
 
 
     pxr::GfMatrix3d wheels_radius_matrix(wheel_radius, 0, 0, 0, wheel_radius, 0, 0, 0, wheel_radius);
-    auto transform_matrix = (forward_matrix * wheels_radius_matrix);
+    auto transform_matrix = forward_matrix * wheels_radius_matrix;
     auto inverse_matrix = transform_matrix.GetInverse();
-    auto wheel_speed = inverse_matrix * mCommandedSpeed;
+    pxr::GfVec3d wheel_speed = inverse_matrix * mCommandedSpeed;
 
     // mBrakeRequested =
     //     pxr::GfIsClose(mCommandedSpeed[0], 0.0f, FLT_EPSILON) && pxr::GfIsClose(mCommandedSpeed[1], 0.0f,
@@ -297,7 +299,7 @@ pxr::GfVec3d HolonomicBaseSimulator::getWheelDesireSpeed(const pxr::GfVec3d& mCo
 
 float HolonomicBaseSimulator::getVelocity(float target)
 {
-    return pxr::GfClamp(target * mProportionalGain, -mMaxMotorTorque, mMaxMotorTorque);
+    return target; // pxr::GfClamp(target * mProportionalGain, -mMaxMotorTorque, mMaxMotorTorque);
 }
 
 float HolonomicBaseSimulator::timedSmoothingFactor(float dt, float lambda)
