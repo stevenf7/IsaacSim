@@ -137,6 +137,7 @@ class Scenario:
         self._obstacles = []  # Containts references to any obstacles in the scenario
         self._executor = None
         self._created = False
+        self._add_bin_enabled = True
 
         self.asset_path = "omni:/Isaac"
         # use local content if not connected to omni server
