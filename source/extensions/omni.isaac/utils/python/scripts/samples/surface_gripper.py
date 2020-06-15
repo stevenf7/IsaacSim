@@ -201,7 +201,8 @@ class Extension(omni.ext.IExt):
             self.sgp.stiffness = 1.0e4
             self.sgp.damping = 1.0e3
 
-            self.surface_gripper = None
+            self.surface_gripper = Surface_Gripper(self._dc)
+            self.surface_gripper.initialize(self.sgp)
 
             # Set camera to a nearby pose and looking directly at the Gripper cone
             self._editor.set_camera_position("/OmniverseKit_Persp", 400, 400, 400, True)
@@ -216,9 +217,6 @@ class Extension(omni.ext.IExt):
 
     def _on_toggle_gripper_button_clicked(self, button):
         if self._editor.is_playing():
-            if self.surface_gripper is None:
-                self.surface_gripper = Surface_Gripper(self._dc)
-                self.surface_gripper.initialize(self.sgp)
             if self.surface_gripper.is_closed():
                 self.surface_gripper.open()
             else:
