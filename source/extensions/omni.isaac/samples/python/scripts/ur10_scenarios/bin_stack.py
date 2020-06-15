@@ -751,8 +751,10 @@ class BinStack(Scenario):
 
         self.max_bins = 36
         self.current_bin = 0
+        self.unpicked_bins = 0
         self._bins = {}
         self.add_bin_timeout = -1
+        self.bin_added_timeout = 0
 
         self._waypoints_backup = None
         self.stopped = True
@@ -771,12 +773,20 @@ class BinStack(Scenario):
             self.world.update()
             self.ur10_solid.update()
 
+            if self.bin_added_timeout > 0:
+                self.bin_added_timeout -= 1
+                self._add_bin_enabled = self.bin_added_timeout == 0 and self.unpicked_bins < 3
+
             target = self._stage.GetPrimAtPath("/environments/env/target")
             xform_attr = target.GetAttribute("xformOp:transform")
             if self._reset:
                 self._paused = False
             if not self._paused:
                 self._time += 1.0 / 60.0
+                if self.add_bin_timeout > 0:
+                    self.add_bin_timeout -= 1
+                    if self.add_bin_timeout == 0:
+                        self.create_new_bin()
                 if self._start and self.current_bin == 0:
                     self.create_new_bin()
                 self.pick_and_place.step(self._time, self._start, self._reset)
@@ -796,10 +806,6 @@ class BinStack(Scenario):
                     setRotate(target, Gf.Matrix3d(Gf.Quatd(state_1.r.w, state_1.r.x, state_1.r.y, state_1.r.z)))
                 self._start = False
                 self._reset = False
-                if self.add_bin_timeout > 0:
-                    self.add_bin_timeout -= 1
-                    if self.add_bin_timeout == 0:
-                        self.create_new_bin()
 
             if self._paused:
                 translate_attr = xform_attr.Get().GetRow3(3)
@@ -857,7 +863,7 @@ class BinStack(Scenario):
         self.create_new_bin(args)
 
     def create_new_bin(self, *args):
-        if self.current_bin < self.max_bins:
+        if self.current_bin < self.max_bins and self.unpicked_bins < 3 and self.bin_added_timeout == 0:
             i = self.current_bin
             self._dc.set_rigid_body_disable_simulation(self.bin_handles[i], False)
 
@@ -873,14 +879,21 @@ class BinStack(Scenario):
             self._dc.set_rigid_body_linear_velocity(self.bin_handles[i], [0, -20.0, 0])
             self._bin_objects[self.bin_paths[i]].unsuppress()
             self.current_bin += 1
+            self.unpicked_bins += 1
+            self.bin_added_timeout = 100
+            self._add_bin_enabled = False
 
     def disable_bins(self, *args):
         for i in range(self.max_bins):
             self._dc.set_rigid_body_disable_simulation(self.bin_handles[i], True)
         self._pending_disable = False
+        self.unpicked_bins = 0
+        self.bin_added_timeout = 0
+        self._add_bin_enabled = True
 
     def add_new_bin(self):
         if self.current_bin < self.max_bins:
+            self.unpicked_bins -= 1
             self.add_bin_timeout = int(random.random() * 200) + 100
 
     def register_assets(self, *args):
