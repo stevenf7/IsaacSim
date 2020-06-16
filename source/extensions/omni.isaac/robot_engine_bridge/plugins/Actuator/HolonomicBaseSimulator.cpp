@@ -62,9 +62,10 @@ void HolonomicBaseSimulator::tick()
             {
                 CARB_LOG_ERROR("Wrong number of elements: %lu", elements.size());
             }
-            mCommandedSpeed[0] = pxr::GfClamp(elements[0], -mMaximumSpeed[0], mMaximumSpeed[0]);
-            mCommandedSpeed[1] = pxr::GfClamp(elements[1], -mMaximumSpeed[0], mMaximumSpeed[0]);
-            mCommandedSpeed[2] = pxr::GfClamp(elements[1], -mMaximumSpeed[1], mMaximumSpeed[1]);
+            // Input comes in m/s
+            mCommandedSpeed[0] = pxr::GfClamp(elements[0], -mMaximumSpeed[0], mMaximumSpeed[0]) / mUnitScale;
+            mCommandedSpeed[1] = pxr::GfClamp(elements[1], -mMaximumSpeed[0], mMaximumSpeed[0]) / mUnitScale;
+            mCommandedSpeed[2] = pxr::GfClamp(elements[2], -mMaximumSpeed[1], mMaximumSpeed[1]);
 
             mLastCommandTime = mTimeSeconds;
 
@@ -78,7 +79,6 @@ void HolonomicBaseSimulator::tick()
     }
     // Compute new velocities
     mWheelDesiredSpeed = getWheelDesireSpeed(mCommandedSpeed);
-    // CARB_LOG_ERROR("Speeds %f %f", mWheelDesiredSpeed[0], mWheelDesiredSpeed[1]);
     if (mArticulationHandle)
     {
         mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
@@ -128,24 +128,36 @@ void HolonomicBaseSimulator::tick()
     tensorProto.setScanlineStride(0);
     tensorProto.setDataBufferIndex(0);
 
-    // auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
+    auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
     auto chassisLinVel = mDynamicControlPtr->getRigidBodyLinearVelocity(mChassisHandle);
     auto chassisAngVel = mDynamicControlPtr->getRigidBodyAngularVelocity(mChassisHandle);
 
     // CARB_LOG_ERROR("[%f %f %f] [%f %f %f] [%f %f %f]", chassisPose.p.x, chassisPose.p.y, chassisPose.p.z,
     // chassisLinVel.x, chassisLinVel.y, chassisLinVel.z, chassisAngVel.x, chassisAngVel.y, chassisAngVel.z);
 
-    // pxr::GfVec3d vecForward =
-    //     asGfRotation(chassisPose.r).TransformDir(pxr::GfVec3d(mRobotFront[0], mRobotFront[1], mRobotFront[2]));
+    pxr::GfVec3d vecForward =
+        asGfRotation(chassisPose.r).TransformDir(pxr::GfVec3d(mRobotFront[0], mRobotFront[1], mRobotFront[2]));
+    pxr::GfVec3d vecRight = pxr::GfCross(vecForward, mZUp ? pxr::GfVec3d(0, 0, 1) : pxr::GfVec3d(0, 1, 0));
+
+
+    // CARB_LOG_ERROR("forward %f %f %f rotated %f %f %f", mRobotFront[0], mRobotFront[1], mRobotFront[2],
+    // vecForward[0],
+    //                vecForward[1], vecForward[2]);
 
     pxr::GfVec3d measuredSpeed;
-    measuredSpeed[0] = chassisLinVel.x * mUnitScale;
-    measuredSpeed[1] = mZUp ? chassisLinVel.y * mUnitScale : chassisLinVel.z * mUnitScale;
+    auto forwardVel = pxr::GfDot(asGfVec3d(chassisLinVel), vecForward);
+    auto rightVel = pxr::GfDot(asGfVec3d(chassisLinVel), vecRight);
+    measuredSpeed[0] = forwardVel * mUnitScale;
+    measuredSpeed[1] = rightVel * mUnitScale;
     measuredSpeed[2] = mZUp ? chassisAngVel.z : chassisAngVel.y;
 
     pxr::GfVec3d measuredAcceleration = (measuredSpeed - mLastSpeed) / mTimeDelta;
     mLastAcceleration +=
         timedSmoothingFactor(mTimeDelta, mAccelerationSmoothing) * (measuredAcceleration - mLastAcceleration);
+
+    // CARB_LOG_ERROR("Request %f %f %f Actual %f %f %f", mCommandedSpeed[0], mCommandedSpeed[1], mCommandedSpeed[2],
+    //                mLastSpeed[0], mLastSpeed[1], mLastSpeed[2]);
+
     // no data to set in state message, skip ?
     std::vector<double> real_data = {
         mLastSpeed[0], // x velocity
@@ -170,6 +182,28 @@ void HolonomicBaseSimulator::onComponentChange()
 
     const pxr::RobotEngineBridgeSchemaRobotEngineHolonomicBase& typedPrim =
         (pxr::RobotEngineBridgeSchemaRobotEngineHolonomicBase)mPrim;
+
+    // Parse component and channel
+    isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mCommandChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputComponentAttr(), mOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputChannelAttr(), mStateChannelName);
+
+    // Parse parameters
+
+    isaac::utils::safeGetAttribute(typedPrim.GetRobotFrontAttr(), mRobotFront);
+    // CARB_LOG_ERROR("forward %f %f %f", mRobotFront[0], mRobotFront[1], mRobotFront[2]);
+    isaac::utils::safeGetAttribute(typedPrim.GetMaxSpeedAttr(), mMaximumSpeed);
+    isaac::utils::safeGetAttribute(typedPrim.GetMaxTimeWithoutCommandAttr(), mMaximumTimeWithoutCommand);
+    isaac::utils::safeGetAttribute(typedPrim.GetMaxMotorTorqueAttr(), mMaxMotorTorque);
+    isaac::utils::safeGetAttribute(typedPrim.GetUseProportionalDriverAttr(), mUseProprotionalDriver);
+    isaac::utils::safeGetAttribute(typedPrim.GetProportionalGainAttr(), mProportionalGain);
+    isaac::utils::safeGetAttribute(typedPrim.GetBrakeTorqueAttr(), mBrakeTorque);
+    isaac::utils::safeGetAttribute(typedPrim.GetAccelerationSmoothingAttr(), mAccelerationSmoothing);
+
+    isaac::utils::safeGetAttribute(typedPrim.GetWheelBaseAttr(), mWheelBase);
+    isaac::utils::safeGetAttribute(typedPrim.GetWheelRadiusAttr(), mWheelRadius);
+
 
     pxr::SdfPath chassisPath;
     std::string wheel1Name;
@@ -233,25 +267,7 @@ void HolonomicBaseSimulator::onComponentChange()
         return;
     }
 
-    // Parse component and channel
-    isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
-    isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mCommandChannelName);
-    isaac::utils::safeGetAttribute(typedPrim.GetOutputComponentAttr(), mOutputComponent);
-    isaac::utils::safeGetAttribute(typedPrim.GetOutputChannelAttr(), mStateChannelName);
 
-    // Parse parameters
-
-    // isaac::utils::safeGetAttribute(typedPrim.GetRobotFrontAttr(), mRobotFront);
-    isaac::utils::safeGetAttribute(typedPrim.GetMaxSpeedAttr(), mMaximumSpeed);
-    isaac::utils::safeGetAttribute(typedPrim.GetMaxTimeWithoutCommandAttr(), mMaximumTimeWithoutCommand);
-    isaac::utils::safeGetAttribute(typedPrim.GetMaxMotorTorqueAttr(), mMaxMotorTorque);
-    isaac::utils::safeGetAttribute(typedPrim.GetUseProportionalDriverAttr(), mUseProprotionalDriver);
-    isaac::utils::safeGetAttribute(typedPrim.GetProportionalGainAttr(), mProportionalGain);
-    isaac::utils::safeGetAttribute(typedPrim.GetBrakeTorqueAttr(), mBrakeTorque);
-    isaac::utils::safeGetAttribute(typedPrim.GetAccelerationSmoothingAttr(), mAccelerationSmoothing);
-
-    isaac::utils::safeGetAttribute(typedPrim.GetWheelBaseAttr(), mWheelBase);
-    isaac::utils::safeGetAttribute(typedPrim.GetWheelRadiusAttr(), mWheelRadius);
     // auto wheel1 = mDynamicControlPtr->getDofChildBody(mWheel1Handle);
     // auto wheel2 = mDynamicControlPtr->getDofChildBody(mWheel2Handle);
     // auto wheel3 = mDynamicControlPtr->getDofChildBody(mWheel3Handle);
@@ -276,8 +292,9 @@ pxr::GfVec3d HolonomicBaseSimulator::getWheelDesireSpeed(const pxr::GfVec3d& mCo
 {
     double kOneByThree = 1.0 / 3.0;
     double kOneBySqrtThree = 1.0 / sqrt(3.0);
-    double wheel_distance = mWheelBase;
-    double wheel_radius = mWheelRadius;
+    double wheel_distance = mWheelBase / mUnitScale;
+    double wheel_radius = mWheelRadius / mUnitScale;
+    // CARB_LOG_ERROR("HolonomicBaseSimulator %f %f %f", mCommandedSpeed[0], mCommandedSpeed[1], mCommandedSpeed[2]);
 
     pxr::GfMatrix3d forward_matrix(0, -kOneBySqrtThree, kOneBySqrtThree, kOneByThree * 2, -kOneByThree, -kOneByThree,
                                    -kOneByThree / wheel_distance, -kOneByThree / wheel_distance,
@@ -285,9 +302,9 @@ pxr::GfVec3d HolonomicBaseSimulator::getWheelDesireSpeed(const pxr::GfVec3d& mCo
 
 
     pxr::GfMatrix3d wheels_radius_matrix(wheel_radius, 0, 0, 0, wheel_radius, 0, 0, 0, wheel_radius);
-    auto transform_matrix = (forward_matrix * wheels_radius_matrix);
+    auto transform_matrix = forward_matrix * wheels_radius_matrix;
     auto inverse_matrix = transform_matrix.GetInverse();
-    auto wheel_speed = inverse_matrix * mCommandedSpeed;
+    pxr::GfVec3d wheel_speed = inverse_matrix * mCommandedSpeed;
 
     // mBrakeRequested =
     //     pxr::GfIsClose(mCommandedSpeed[0], 0.0f, FLT_EPSILON) && pxr::GfIsClose(mCommandedSpeed[1], 0.0f,
@@ -297,7 +314,7 @@ pxr::GfVec3d HolonomicBaseSimulator::getWheelDesireSpeed(const pxr::GfVec3d& mCo
 
 float HolonomicBaseSimulator::getVelocity(float target)
 {
-    return pxr::GfClamp(target * mProportionalGain, -mMaxMotorTorque, mMaxMotorTorque);
+    return target; // pxr::GfClamp(target * mProportionalGain, -mMaxMotorTorque, mMaxMotorTorque);
 }
 
 float HolonomicBaseSimulator::timedSmoothingFactor(float dt, float lambda)

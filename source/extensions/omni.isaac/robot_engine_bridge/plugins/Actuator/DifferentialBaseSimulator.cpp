@@ -157,6 +157,23 @@ void DifferentialBaseSimulator::onComponentChange()
     const pxr::RobotEngineBridgeSchemaRobotEngineDifferentialBase& typedPrim =
         (pxr::RobotEngineBridgeSchemaRobotEngineDifferentialBase)mPrim;
 
+    // Parse component and channel
+    isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mCommandChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputComponentAttr(), mOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetOutputChannelAttr(), mStateChannelName);
+
+    // Parse parameters
+
+    isaac::utils::safeGetAttribute(typedPrim.GetRobotFrontAttr(), mRobotFront);
+    isaac::utils::safeGetAttribute(typedPrim.GetMaxSpeedAttr(), mMaximumSpeed);
+    isaac::utils::safeGetAttribute(typedPrim.GetMaxTimeWithoutCommandAttr(), mMaximumTimeWithoutCommand);
+    isaac::utils::safeGetAttribute(typedPrim.GetMaxMotorTorqueAttr(), mMaxMotorTorque);
+    isaac::utils::safeGetAttribute(typedPrim.GetUseProportionalDriverAttr(), mUseProprotionalDriver);
+    isaac::utils::safeGetAttribute(typedPrim.GetProportionalGainAttr(), mProportionalGain);
+    isaac::utils::safeGetAttribute(typedPrim.GetBrakeTorqueAttr(), mBrakeTorque);
+    isaac::utils::safeGetAttribute(typedPrim.GetAccelerationSmoothingAttr(), mAccelerationSmoothing);
+
     pxr::SdfPath chassisPath;
     std::string wheelFLName;
     std::string wheelFRName;
@@ -207,23 +224,6 @@ void DifferentialBaseSimulator::onComponentChange()
         CARB_LOG_ERROR("rightWheelJointPrim %s not valid", wheelFRName.c_str());
         return;
     }
-
-    // Parse component and channel
-    isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
-    isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mCommandChannelName);
-    isaac::utils::safeGetAttribute(typedPrim.GetOutputComponentAttr(), mOutputComponent);
-    isaac::utils::safeGetAttribute(typedPrim.GetOutputChannelAttr(), mStateChannelName);
-
-    // Parse parameters
-
-    isaac::utils::safeGetAttribute(typedPrim.GetRobotFrontAttr(), mRobotFront);
-    isaac::utils::safeGetAttribute(typedPrim.GetMaxSpeedAttr(), mMaximumSpeed);
-    isaac::utils::safeGetAttribute(typedPrim.GetMaxTimeWithoutCommandAttr(), mMaximumTimeWithoutCommand);
-    isaac::utils::safeGetAttribute(typedPrim.GetMaxMotorTorqueAttr(), mMaxMotorTorque);
-    isaac::utils::safeGetAttribute(typedPrim.GetUseProportionalDriverAttr(), mUseProprotionalDriver);
-    isaac::utils::safeGetAttribute(typedPrim.GetProportionalGainAttr(), mProportionalGain);
-    isaac::utils::safeGetAttribute(typedPrim.GetBrakeTorqueAttr(), mBrakeTorque);
-    isaac::utils::safeGetAttribute(typedPrim.GetAccelerationSmoothingAttr(), mAccelerationSmoothing);
 
 
     auto leftWheel = mDynamicControlPtr->getDofChildBody(mWheelFLHandle);

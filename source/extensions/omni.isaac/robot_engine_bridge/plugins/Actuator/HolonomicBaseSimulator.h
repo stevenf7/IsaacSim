@@ -108,11 +108,11 @@ private:
     std::string mOutputComponent = "output";
     std::string mStateChannelName = "base_state";
 
-    /// The front of the robot
-    // pxr::GfVec3d mRobotFront = pxr::GfVec3d(1.0, 0.0, 0.0);
+    // The front of the robot
+    pxr::GfVec3f mRobotFront = pxr::GfVec3f(1.0, 0.0, 0.0);
 
     /// The maximal allowed linear and angular speed
-    pxr::GfVec2d mMaximumSpeed = pxr::GfVec2d(3.0f, 1.5f);
+    pxr::GfVec2f mMaximumSpeed = pxr::GfVec2f(3.0f, 1.5f);
 
     /// The maximum allowed time duration which the robot will continue with the last sent speed
     /// command in the absence of speed commands.
