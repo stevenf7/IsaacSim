@@ -97,7 +97,7 @@ class RobotEngineBridgeMenu:
         prim.CreateWheel2JointNameAttr("")
         prim.CreateWheel3JointNameAttr("")
 
-        # prim.CreateRobotFrontAttr((1, 0, 0))
+        prim.CreateRobotFrontAttr((1, 0, 0))
         prim.CreateWheelRadiusAttr(0.04)
         prim.CreateWheelBaseAttr(0.125)
         prim.CreateMaxSpeedAttr((1.5, 1.0))
