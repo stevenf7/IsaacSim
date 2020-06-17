@@ -57,30 +57,31 @@ CameraComponent::~CameraComponent()
 {
     if (mRgbSensor)
     {
-        // mSyntheticDataInterface->destroySensor(mRgbSensor);
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eRgb);
         mRgbSensor = nullptr;
         mRgbSensorData = nullptr;
     }
     if (mDepthSensor)
     {
-        // mSyntheticDataInterface->destroySensor(mDepthSensor);
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eDepthLinear);
         mDepthSensor = nullptr;
         mDepthSensorData = nullptr;
     }
     if (mSegmentationSensor)
     {
-        // mSyntheticDataInterface->destroySensor(mSegmentationSensor);
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eInstanceSegmentation);
         mSegmentationSensor = nullptr;
         mSegmentationSensorData = nullptr;
     }
     if (mSemanticSensor)
     {
-        // mSyntheticDataInterface->destroySensor(mSemanticSensor);
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eSemanticSegmentation);
         mSemanticSensor = nullptr;
         mSemanticSensorData = nullptr;
     }
     if (mBoundingBox2DSensor)
     {
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eBoundingBox2DTight);
         mBoundingBox2DSensor = nullptr;
         mBoundingBox2DSensorData = nullptr;
     }
