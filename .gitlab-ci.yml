@@ -14,5 +14,4 @@ pages:
     paths:
       - public
   only:
-    - master
-    - develop
+    - develop@Isaac/omni_isaac_sim
