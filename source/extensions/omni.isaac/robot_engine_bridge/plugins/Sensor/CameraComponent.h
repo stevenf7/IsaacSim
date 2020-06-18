@@ -61,6 +61,13 @@ public:
 
 
 private:
+    /// Publish camera intrinsics with pinhole parameters
+    void publishIntrinsics(std::string outputComponent,
+                           std::string channelName,
+                           const carb::sensors::SensorInfo& info,
+                           float focalLength,
+                           float horizontalAperture,
+                           float verticalAperture);
     carb::Framework* mFramework = nullptr;
     omni::kit::IEditor* mEditorInterface = nullptr;
     carb::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;

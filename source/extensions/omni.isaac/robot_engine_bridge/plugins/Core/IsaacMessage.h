@@ -9,7 +9,9 @@
 #include <messages/detections.capnp.h>
 #include <messages/differential_base.capnp.h>
 #include <messages/flatscan.capnp.h>
+#include <messages/image.capnp.h>
 #include <messages/json.capnp.h>
+#include <messages/label.capnp.h>
 #include <messages/math.capnp.h>
 #include <messages/pose_tree.capnp.h>
 #include <messages/range_scan.capnp.h>
@@ -76,10 +78,10 @@ namespace isaac_message
 {
 static const uint64_t ActorGroupProtoId = 15616880102797312316U;
 static const uint64_t CollisionProtoId = 16245352794000411201U;
-static const uint64_t ColorCameraProtoId = 12905539496848989000U;
+static const uint64_t ImageProtoId = 16240193334533147313U;
+static const uint64_t CameraIntrinsicsProtoId = 17438625575095802085U;
 static const uint64_t CompositeProtoId = 11748931141111337194U;
-static const uint64_t DepthCameraProtoId = 12947112471508155621U;
-static const uint64_t SegmentationCameraProtoId = 14547487683356910760U;
+static const uint64_t LabelProtoId = 13706910962019518033U;
 static const uint64_t FlatscanProtoId = 15101491517973344605U;
 static const uint64_t JsonProtoId = 16451265754834835783U;
 static const uint64_t Plan2ProtoId = 17863627595039553900U;
@@ -142,20 +144,14 @@ typedef VectorXdProto VectorXd;
 /// "camera.capnp".DistortionProto
 typedef DistortionProto Distortion;
 
+/// "camera.capnp".CameraIntrinsicsProto
+typedef CameraIntrinsicsProto CameraIntrinsics;
+
 /// "image.capnp".ImageProto
 typedef ImageProto Image;
 
-/// "camera.capnp".ColorCameraProto
-typedef ColorCameraProto ColorCamera;
-
-/// "camera.capnp".ColorCameraProto
-typedef ColorCameraProto ColorCamera;
-
-/// "camera.capnp".SegmentationCameraProto
-typedef SegmentationCameraProto SegmentationCamera;
-
-/// "camera.capnp".DepthCameraProto
-typedef DepthCameraProto DepthCamera;
+/// "label.capnp".LabelProto
+typedef LabelProto Labels;
 
 /// "detections.capnp".Detections2Proto
 typedef Detections2Proto Detections2;
