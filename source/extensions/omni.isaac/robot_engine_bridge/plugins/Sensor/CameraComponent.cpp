@@ -116,44 +116,19 @@ void CameraComponent::tick()
     cameraPrim.GetHorizontalApertureAttr().Get(&horizontalAperture);
     cameraPrim.GetVerticalApertureAttr().Get(&verticalAperture);
 
-
     if (mRgbSensor)
     {
         mRgbSensorData = mSyntheticDataInterface->getSensorDeviceData(mRgbSensor);
         const carb::sensors::SensorInfo& rgbInfo = mSensorsInterface->getSensorInfo(mRgbSensor);
 
-        // Create the message
-        IsaacMessage<isaac_message::ColorCamera> cameraMessage;
-        auto cameraMessageProto = cameraMessage.initProto();
-        cameraMessageProto.setColorSpace(ColorCameraProto::ColorSpace::RGB);
-
-        // Create the image
-        auto imageProto = cameraMessageProto.initImage();
+        // Publish rgb image
+        IsaacMessage<isaac_message::Image> imageMessage;
+        auto imageProto = imageMessage.initProto();
         imageProto.setElementType(ElementType::UINT8);
         imageProto.setRows(rgbInfo.tex.height);
         imageProto.setCols(rgbInfo.tex.width);
         imageProto.setChannels(3);
         imageProto.setDataBufferIndex(0);
-
-        // Pinhole info
-        auto pinhole = cameraMessageProto.initPinhole();
-        pinhole.setRows(rgbInfo.tex.height);
-        pinhole.setCols(rgbInfo.tex.width);
-        auto focal = pinhole.initFocal();
-        focal.setX(rgbInfo.tex.height * focalLength / verticalAperture);
-        focal.setY(rgbInfo.tex.width * focalLength / horizontalAperture);
-        auto center = pinhole.initCenter();
-        center.setX(rgbInfo.tex.height * 0.5f);
-        center.setY(rgbInfo.tex.width * 0.5f);
-
-        // Distortion info
-        auto distortion = cameraMessageProto.initDistortion();
-        distortion.setModel(DistortionProto::DistortionModel::BROWN);
-        auto distortionCoeff = distortion.initCoefficients();
-        auto coeff = distortionCoeff.initCoefficients(5);
-        for (int i = 0; i < 5; i++)
-            coeff.set(i, 0.0f);
-
 
         const size_t bufferSize = rgbInfo.tex.width * rgbInfo.tex.height * 3;
         std::vector<std::vector<uint8_t>> buffers(1);
@@ -167,7 +142,9 @@ void CameraComponent::tick()
 
         CUDA_CHECK(cudaFree(rgbDevice));
 
-        publish(mRgbOutputComponent, mRgbChannelName, cameraMessageProto, isaac_message::ColorCameraProtoId, buffers);
+        publish(mRgbOutputComponent, mRgbChannelName, imageProto, isaac_message::ImageProtoId, buffers);
+        publishIntrinsics(
+            mRgbOutputComponent, mRgbChannelName, rgbInfo, focalLength, horizontalAperture, verticalAperture);
     }
 
 
@@ -176,29 +153,14 @@ void CameraComponent::tick()
 
         const carb::sensors::SensorInfo& depthInfo = mSensorsInterface->getSensorInfo(mDepthSensor);
 
-        // Create the message
-        IsaacMessage<isaac_message::DepthCamera> cameraMessage;
-        auto cameraMessageProto = cameraMessage.initProto();
-
-        // Create the image
-        auto imageProto = cameraMessageProto.initDepthImage();
+        // Publish depth image
+        IsaacMessage<isaac_message::Image> imageMessage;
+        auto imageProto = imageMessage.initProto();
         imageProto.setElementType(ElementType::FLOAT32);
         imageProto.setRows(depthInfo.tex.height);
         imageProto.setCols(depthInfo.tex.width);
         imageProto.setChannels(1);
         imageProto.setDataBufferIndex(0);
-
-        // TODO : remove duplication with RGB camera
-        // Pinhole info
-        auto pinhole = cameraMessageProto.initPinhole();
-        pinhole.setRows(depthInfo.tex.height);
-        pinhole.setCols(depthInfo.tex.width);
-        auto focal = pinhole.initFocal();
-        focal.setX(depthInfo.tex.height * focalLength / verticalAperture);
-        focal.setY(depthInfo.tex.width * focalLength / horizontalAperture);
-        auto center = pinhole.initCenter();
-        center.setX(depthInfo.tex.height * 0.5f);
-        center.setY(depthInfo.tex.width * 0.5f);
 
         std::vector<std::vector<uint8_t>> buffers(1);
         buffers[0] = std::vector<uint8_t>(depthInfo.tex.width * depthInfo.tex.height * sizeof(float));
@@ -206,7 +168,9 @@ void CameraComponent::tick()
         CUDA_CHECK(cudaMemcpy(
             buffers[0].data(), mDepthSensorData, depthInfo.tex.rowSize * depthInfo.tex.height, cudaMemcpyDeviceToHost));
 
-        publish(mDepthOutputComponent, mDepthChannelName, cameraMessageProto, isaac_message::DepthCameraProtoId, buffers);
+        publish(mDepthOutputComponent, mDepthChannelName, imageProto, isaac_message::ImageProtoId, buffers);
+        publishIntrinsics(
+            mDepthOutputComponent, mDepthChannelName, depthInfo, focalLength, horizontalAperture, verticalAperture);
     }
 
     // TODO can we turn on mSegmentationSensor && mSemanticSensor separately
@@ -217,37 +181,6 @@ void CameraComponent::tick()
 
         const carb::sensors::SensorInfo& segmentationInfo = mSensorsInterface->getSensorInfo(mSegmentationSensor);
         const carb::sensors::SensorInfo& semanticInfo = mSensorsInterface->getSensorInfo(mSemanticSensor);
-
-        // Create the message
-        IsaacMessage<isaac_message::SegmentationCamera> cameraMessage;
-        auto cameraMessageProto = cameraMessage.initProto();
-
-        // Create the instance image
-        auto instanceImageProto = cameraMessageProto.initInstanceImage();
-        instanceImageProto.setElementType(ElementType::UINT16);
-        instanceImageProto.setRows(segmentationInfo.tex.height);
-        instanceImageProto.setCols(segmentationInfo.tex.width);
-        instanceImageProto.setChannels(1);
-        instanceImageProto.setDataBufferIndex(0);
-
-        // Create the semantic image
-        auto semanticImageProto = cameraMessageProto.initLabelImage();
-        semanticImageProto.setElementType(ElementType::UINT8);
-        semanticImageProto.setRows(semanticInfo.tex.height);
-        semanticImageProto.setCols(semanticInfo.tex.width);
-        semanticImageProto.setChannels(1);
-        semanticImageProto.setDataBufferIndex(1);
-
-        auto semanticLabelsProto = cameraMessageProto.initLabels(mSegmentationIDLabelMap.size());
-        int index = 0;
-        for (std::map<uint8_t, std::string>::iterator it = mSegmentationIDLabelMap.begin();
-             it != mSegmentationIDLabelMap.end(); ++it)
-        {
-            semanticLabelsProto[index].setIndex(it->first);
-            semanticLabelsProto[index].setName(it->second);
-            index++;
-        }
-
         // These images should be of the same resolution
         if (segmentationInfo.tex.height != semanticInfo.tex.height || segmentationInfo.tex.width != semanticInfo.tex.width)
         {
@@ -255,53 +188,87 @@ void CameraComponent::tick()
             return;
         }
 
-        // TODO : remove duplication with RGB camera
-        // Pinhole info
-        auto pinhole = cameraMessageProto.initPinhole();
-        pinhole.setRows(segmentationInfo.tex.height);
-        pinhole.setCols(segmentationInfo.tex.width);
-        auto focal = pinhole.initFocal();
-        focal.setX(segmentationInfo.tex.height * focalLength / verticalAperture);
-        focal.setY(segmentationInfo.tex.width * focalLength / horizontalAperture);
-        auto center = pinhole.initCenter();
-        center.setX(segmentationInfo.tex.height * 0.5f);
-        center.setY(segmentationInfo.tex.width * 0.5f);
+        // Create the instance image
+        IsaacMessage<isaac_message::Image> instanceMessage;
+        auto instanceImageProto = instanceMessage.initProto();
+        instanceImageProto.setElementType(ElementType::UINT16);
+        instanceImageProto.setRows(segmentationInfo.tex.height);
+        instanceImageProto.setCols(segmentationInfo.tex.width);
+        instanceImageProto.setChannels(1);
+        instanceImageProto.setDataBufferIndex(0);
 
-        // Message buffers
-        std::vector<std::vector<uint8_t>> buffers(2);
+        // Create the semantic image
+        IsaacMessage<isaac_message::Image> semanticMessage;
+        auto semanticImageProto = semanticMessage.initProto();
+        semanticImageProto.setElementType(ElementType::UINT8);
+        semanticImageProto.setRows(semanticInfo.tex.height);
+        semanticImageProto.setCols(semanticInfo.tex.width);
+        semanticImageProto.setChannels(1);
+        semanticImageProto.setDataBufferIndex(0);
+
 
         // TODO : The instance and semantic segmentation should be refactored into one method
         // TODO : Have persistent device buffers for the CUDA conversion
         // Instance segmentation
-        const size_t bufferSize = segmentationInfo.tex.width * segmentationInfo.tex.height * sizeof(uint16_t);
-        buffers[0] = std::vector<uint8_t>(bufferSize);
+        {
+            // Message buffers
+            std::vector<std::vector<uint8_t>> buffers(1);
+            const size_t bufferSize = segmentationInfo.tex.width * segmentationInfo.tex.height * sizeof(uint16_t);
+            buffers[0] = std::vector<uint8_t>(bufferSize);
 
-        uint16_t* segmentationDevice;
-        CUDA_CHECK(cudaMalloc(&segmentationDevice, bufferSize));
+            uint16_t* segmentationDevice;
+            CUDA_CHECK(cudaMalloc(&segmentationDevice, bufferSize));
 
-        uint32ToUint16(segmentationDevice, (uint32_t*)mSegmentationSensorData, segmentationInfo.tex.width,
-                       segmentationInfo.tex.height, segmentationInfo.tex.rowSize);
-        CUDA_CHECK(cudaMemcpy(buffers[0].data(), segmentationDevice, bufferSize, cudaMemcpyDeviceToHost));
+            uint32ToUint16(segmentationDevice, (uint32_t*)mSegmentationSensorData, segmentationInfo.tex.width,
+                           segmentationInfo.tex.height, segmentationInfo.tex.rowSize);
+            CUDA_CHECK(cudaMemcpy(buffers[0].data(), segmentationDevice, bufferSize, cudaMemcpyDeviceToHost));
 
-        CUDA_CHECK(cudaFree(segmentationDevice));
+            CUDA_CHECK(cudaFree(segmentationDevice));
 
+            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_instance", instanceImageProto,
+                    isaac_message::ImageProtoId, buffers);
+        }
 
         // Semantic segmentation
-        const size_t semanticBufferSize = semanticInfo.tex.width * semanticInfo.tex.height * sizeof(uint8_t);
-        buffers[1] = std::vector<uint8_t>(semanticBufferSize);
+        {
+            std::vector<std::vector<uint8_t>> buffers(1);
+            const size_t semanticBufferSize = semanticInfo.tex.width * semanticInfo.tex.height * sizeof(uint8_t);
+            buffers[0] = std::vector<uint8_t>(semanticBufferSize);
 
-        uint8_t* semanticDevice;
-        CUDA_CHECK(cudaMalloc(&semanticDevice, semanticBufferSize));
+            uint8_t* semanticDevice;
+            CUDA_CHECK(cudaMalloc(&semanticDevice, semanticBufferSize));
 
-        uint32ToUint8(semanticDevice, (uint32_t*)mSemanticSensorData, semanticInfo.tex.width, semanticInfo.tex.height,
-                      semanticInfo.tex.rowSize);
-        CUDA_CHECK(cudaMemcpy(buffers[1].data(), semanticDevice, semanticBufferSize, cudaMemcpyDeviceToHost));
+            uint32ToUint8(semanticDevice, (uint32_t*)mSemanticSensorData, semanticInfo.tex.width,
+                          semanticInfo.tex.height, semanticInfo.tex.rowSize);
+            CUDA_CHECK(cudaMemcpy(buffers[0].data(), semanticDevice, semanticBufferSize, cudaMemcpyDeviceToHost));
 
-        CUDA_CHECK(cudaFree(semanticDevice));
+            CUDA_CHECK(cudaFree(semanticDevice));
 
+            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_class", semanticImageProto,
+                    isaac_message::ImageProtoId, buffers);
+        }
 
-        publish(mSegmentationOutputComponent, mSegmentationChannelName, cameraMessageProto,
-                isaac_message::SegmentationCameraProtoId, buffers);
+        // Class labels
+        {
+            IsaacMessage<isaac_message::Labels> labelsMessage;
+            auto labelsProto = labelsMessage.initProto();
+            auto semanticLabelsProto = labelsProto.initLabels(mSegmentationIDLabelMap.size());
+            int index = 0;
+            for (std::map<uint8_t, std::string>::iterator it = mSegmentationIDLabelMap.begin();
+                 it != mSegmentationIDLabelMap.end(); ++it)
+            {
+                semanticLabelsProto[index].setIndex(it->first);
+                semanticLabelsProto[index].setName(it->second);
+                index++;
+            }
+            std::vector<std::vector<uint8_t>> buffers;
+            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_labels", labelsProto,
+                    isaac_message::LabelProtoId, buffers);
+        }
+
+        // Camera intrinsics
+        publishIntrinsics(mSegmentationOutputComponent, mSegmentationChannelName, segmentationInfo, focalLength,
+                          horizontalAperture, verticalAperture);
     }
 
     if (mEnableBoundingBox2D)
@@ -447,6 +414,31 @@ void CameraComponent::onComponentChange()
         mBoundingBox2DSensor = nullptr;
         mBoundingBox2DSensorData = nullptr;
     }
+}
+
+void CameraComponent::publishIntrinsics(std::string outputComponent,
+                                        std::string channelName,
+                                        const carb::sensors::SensorInfo& info,
+                                        float focalLength,
+                                        float horizontalAperture,
+                                        float verticalAperture)
+{
+    IsaacMessage<isaac_message::CameraIntrinsics> intrinsicsMessage;
+    auto intrinsicsProto = intrinsicsMessage.initProto();
+
+    auto pinhole = intrinsicsProto.initPinhole();
+    pinhole.setRows(info.tex.height);
+    pinhole.setCols(info.tex.width);
+    auto focal = pinhole.initFocal();
+    focal.setX(info.tex.height * focalLength / verticalAperture);
+    focal.setY(info.tex.width * focalLength / horizontalAperture);
+    auto center = pinhole.initCenter();
+    center.setX(info.tex.height * 0.5f);
+    center.setY(info.tex.width * 0.5f);
+
+    std::vector<std::vector<uint8_t>> dummy_buffers;
+    publish(outputComponent, channelName + "_intrinsics", intrinsicsProto, isaac_message::CameraIntrinsicsProtoId,
+            dummy_buffers);
 }
 }
 }
