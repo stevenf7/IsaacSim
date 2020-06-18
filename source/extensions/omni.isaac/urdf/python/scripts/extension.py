@@ -33,7 +33,10 @@ class Extension(omni.ext.IExt):
         self._zup_checkbox.tooltip = omni.kit.ui.Label("Sets the stage to Z up on urdf import")
         self._zup_checkbox.value = True
 
-        self._scale_input = self._window.layout.add_child(omni.kit.ui.FieldDouble("Scaling Factor", 100))
+        self._scale_input = self._window.layout.add_child(
+            omni.kit.ui.DragDouble("Scaling Factor", value=100, min=0.0000001)
+        )
+        self._scale_input.width = 200
         self._scale_input.tooltip = omni.kit.ui.Label(
             "Kit units are in centimeter by default, adjust unit scale accordingly, default value of 100 corresponds to centimeters"
         )
