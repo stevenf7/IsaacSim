@@ -193,7 +193,7 @@ void Manager::setPickingEnabled(bool pickingEnabled)
     }
 }
 
-void Manager::onPrimRemove(const char* primPath)
+void Manager::onPrimRemove(const pxr::SdfPath& primPath)
 {
     if (!initialized())
         return; // This could be called from a callback after the manager is shut down

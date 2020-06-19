@@ -74,6 +74,9 @@ files = [
     #["_build/target-deps/kit_sdk_$config/include", "_build/target-deps/kit_sdk_$config/include"],
     #["_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES", "_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES"],
     #["_build/target-deps/kit_sdk_$config/tools/packman/**", "_build/target-deps/kit_sdk_$config/tools/packman"] 
+
+    # HACK: For StartupTests
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so.10.2"],
 ]
 
 
@@ -174,6 +177,9 @@ files = [
     #["_build/target-deps/kit_sdk_$config/include", "_build/target-deps/kit_sdk_$config/include"],
     #["_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES", "_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES"],
     #["_build/target-deps/kit_sdk_$config/tools/packman/**", "_build/target-deps/kit_sdk_$config/tools/packman"] 
+
+    # HACK: For StartupTests
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so.10.2"],
 ]
 
 

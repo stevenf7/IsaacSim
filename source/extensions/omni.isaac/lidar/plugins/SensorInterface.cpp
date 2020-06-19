@@ -340,31 +340,31 @@ void onStop(void* userData)
     }
 }
 
-void onPrimAdd(const char* primPath, void* userData)
+void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 {
     // CARB_LOG_INFO("++ Lidar: Prim Add: %s of type %s\n", primPath,
     //    g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
     if (gLidarSensorManager)
     {
-        gLidarSensorManager->onComponentAdd(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        gLidarSensorManager->onComponentAdd(g_stage->GetPrimAtPath(primPath));
     }
 }
-void onComponentChange(const char* primPath, const omni::kit::PrimDirtyBits*, void* userData)
+void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
     // CARB_LOG_INFO("++ Lidar: Prim Change: %s of type %s\n", primPath,
     //    g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
     if (g_stage && gLidarSensorManager)
     {
-        gLidarSensorManager->onComponentChange(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        gLidarSensorManager->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
     }
 }
 
-void onPrimRemove(const char* primPath, void* userData)
+void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
     // CARB_LOG_INFO("++ Lidar: Prim Remove: %s\n", primPath);
     if (gLidarSensorManager)
     {
-        gLidarSensorManager->onComponentRemove(pxr::SdfPath(primPath));
+        gLidarSensorManager->onComponentRemove(primPath);
     }
 }
 
@@ -433,7 +433,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onUpdate = onUpdate;
     desc.onStop = onStop;
     desc.onPrimAdd = onPrimAdd;
-    desc.onPrimChange = onComponentChange;
+    desc.onPrimOrPropertyChange = onComponentChange;
     desc.onPrimRemove = onPrimRemove;
     desc.order = 50; // happens after physx, dc, but before robot engine bridge
 

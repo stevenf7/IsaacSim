@@ -7,8 +7,8 @@
 
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
-#include <carb/syntheticdata/SyntheticData.h>
 #include <carb/sensors/Sensors.h>
+#include <carb/syntheticdata/SyntheticData.h>
 #include <carb/profiler/Profile.h>
 #include <RobotEngineBridgeSchema/robotEngineCamera.h>
 

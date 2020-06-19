@@ -2,6 +2,7 @@ display_name = "Domain Randomization"
 
 [dependencies]
 "omni.kit.editor" = {}
+"omni.client" = {}
 
 [[python.modules]]
 name = "omni.isaac.dr"

@@ -1,5 +1,4 @@
 import omni
-import omni.kit.usd.new_stage
 from omni.isaac.lidar import _lidar
 import omni.isaac.LidarSchema as LidarSchema
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema

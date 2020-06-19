@@ -16,10 +16,10 @@ if %errorlevel% neq 0 ( exit /b %errorlevel% )
 echo ##teamcity[blockClosed name='Full rebuild...']
 
 :: Docs
-echo ##teamcity[blockOpened name='Docs...']
-call "%~dp0..\..\..\build_docs.bat" -c debug
-if %errorlevel% neq 0 ( exit /b %errorlevel% )
-echo ##teamcity[blockClosed name='Docs...']
+REM echo ##teamcity[blockOpened name='Docs...']
+REM call "%~dp0..\..\..\build_docs.bat" -c debug
+REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
+REM echo ##teamcity[blockClosed name='Docs...']
 
 REM :: Gather licenses
 REM echo ##teamcity[blockOpened name='Gather licenses...']

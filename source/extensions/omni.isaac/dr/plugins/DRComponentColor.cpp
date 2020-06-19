@@ -4,14 +4,9 @@
 
 #include "DRComponentColor.h"
 
-#include <AudioSchema/sound.h>
 #include <boost/algorithm/string.hpp>
-#include <carb/Framework.h>
 #include <carb/tokens/ITokens.h>
 #include <carb/tokens/TokensUtils.h>
-#include <carb/Types.h>
-#include <carb/InterfaceUtils.h>
-#include <carb/filesystem/IFileSystem.h>
 
 #include <omni/kit/KitUtils.h>
 #include <omni/usd/UtilsIncludes.h>
@@ -34,7 +29,8 @@ DRComponentColor::DRComponentColor(carb::tokens::ITokens* tokens) : DRComponentB
     mGRange.push_back(1);
     mBRange.push_back(0);
     mBRange.push_back(1);
-    mDatasource = carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-file.plugin");
+    mDatasource =
+        carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-omniclient.plugin");
     mConnection = carb::datasource::connectAndWait(
         carb::datasource::ConnectionDesc{ carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/").c_str() },
         mDatasource);
