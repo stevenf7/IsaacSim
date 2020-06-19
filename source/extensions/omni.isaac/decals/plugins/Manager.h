@@ -51,7 +51,7 @@ public:
 
     void setPickingEnabled(bool pickingEnabled);
 
-    void onPrimRemove(const char* primPath);
+    void onPrimRemove(const pxr::SdfPath& primPath);
     void onRaycast(const float* orig, const float* dir, bool input);
 
 private:

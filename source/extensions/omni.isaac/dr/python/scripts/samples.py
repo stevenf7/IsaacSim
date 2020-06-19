@@ -71,7 +71,9 @@ class Extension(omni.ext.IExt):
         omni.usd.get_context().new_stage(None)
 
     def _on_load_stage(self, widget):
-        omni.usd.get_context().open_stage("omni:/Isaac/Samples/DR/Props/simple_cube_with_light.usd", None)
+        omni.usd.get_context().open_stage(
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Props/simple_cube_with_light.usd", None
+        )
 
     def _on_load_component(self, widget):
         if self._selected_scenario.selected_index == 0:
@@ -202,7 +204,7 @@ class Extension(omni.ext.IExt):
         prim.CreatePrimPathsRel().AddTarget(cube_path)
         prim.CreateTextureListAttr().Set(
             str(
-                "omni:/Isaac/Samples/DR/Materials/Textures/checkered.png,omni:/Isaac/Samples/DR/Materials/Textures/marble_tile.png,omni:/Isaac/Samples/DR/Materials/Textures/picture_a.png,omni:/Isaac/Samples/DR/Materials/Textures/picture_b.png,omni:/Isaac/Samples/DR/Materials/Textures/textured_wall.png,omni:/Isaac/Samples/DR/Materials/Textures/checkered_color.png"
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png"
             )
         )
         prim.CreateIgnoredClassAttr().Set(str(""))
@@ -225,7 +227,7 @@ class Extension(omni.ext.IExt):
         prim.CreatePrimPathsRel().AddTarget(cube_path)
         prim.CreateMaterialListAttr().Set(
             str(
-                "omni:/Isaac/Samples/DR/Materials/checkered.mdl,omni:/Isaac/Samples/DR/Materials/checkered_color.mdl,omni:/Isaac/Samples/DR/Materials/marble_tile.mdl,omni:/Isaac/Samples/DR/Materials/picture_a.mdl,omni:/Isaac/Samples/DR/Materials/picture_b.mdl,omni:/Isaac/Samples/DR/Materials/textured_wall.mdl"
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/checkered.mdl,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/checkered_color.mdl,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/marble_tile.mdl,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/picture_a.mdl,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/picture_b.mdl,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/textured_wall.mdl"
             )
         )
         prim.CreateIgnoredClassAttr().Set(str(""))
@@ -234,10 +236,14 @@ class Extension(omni.ext.IExt):
         prim.CreateIncludeChildrenAttr().Set(bool(False))
 
     def add_simple_room_scene(self, parent=None):
-        omni.usd.get_context().open_stage("omni:/Isaac/Samples/DR/Stage/simple_room_sample.usda", None)
+        omni.usd.get_context().open_stage(
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Stage/simple_room_sample.usda", None
+        )
 
     def add_warehouse_scene(self, parent=None):
-        omni.usd.get_context().open_stage("omni:/Isaac/Samples/DR/Stage/simple_warehouse_material_sample.usda", None)
+        omni.usd.get_context().open_stage(
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Stage/simple_warehouse_material_sample.usda", None
+        )
 
     def _on_dr_sample_menu_click(self, menu, value):
         self._stage = self._usd_context.get_stage()

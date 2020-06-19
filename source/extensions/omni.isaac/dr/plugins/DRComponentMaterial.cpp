@@ -4,13 +4,7 @@
 
 #include "DRComponentMaterial.h"
 
-#include <AudioSchema/sound.h>
 #include <boost/algorithm/string.hpp>
-#include <carb/Framework.h>
-#include <carb/Types.h>
-#include <carb/InterfaceUtils.h>
-#include <carb/filesystem/IFileSystem.h>
-#include <DrSchema/materialComponent.h>
 
 #include <omni/kit/KitUtils.h>
 #include <omni/usd/UtilsIncludes.h>
@@ -26,8 +20,9 @@ namespace dr
 
 DRComponentMaterial::DRComponentMaterial() : DRComponentBase()
 {
-    mDatasource = carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("omni.connection.plugin");
-    mConnection = omni::kit::getLatestConnection(omni::kit::getConnectionHub());
+    mDatasource =
+        carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-omniclient.plugin");
+    mConnection = carb::datasource::connectAndWait(carb::datasource::ConnectionDesc{ "" }, mDatasource);
     mIsIgnore = false;
     mIsGrouping = false;
 }
@@ -111,7 +106,7 @@ void DRComponentMaterial::update()
         pxr::UsdEditContext context(mStage, mMaterialLayer);
         for (std::string& url : mMaterialList)
         {
-            std::string mdlDataSourcePath = url.substr(std::strlen("omni:"));
+            std::string mdlDataSourcePath = url;
             carb::extras::Path urlPath(url.c_str());
             if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Materials"))
             {

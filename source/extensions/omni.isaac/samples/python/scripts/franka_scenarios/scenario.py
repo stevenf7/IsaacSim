@@ -141,14 +141,14 @@ class Scenario:
         self._created = False  # Is the robot created or not
         self._running = False  # Is the task running or not
 
-        self.asset_path = "omni:/Isaac"
+        self.asset_path = "omniverse://ov-isaac-dev/Isaac"
         # use local content if not connected to omni server
-        if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
-            # print("Use local content")
-            self.asset_path = "art_assets/Isaac"
-        else:
-            # print("Use server content")
-            pass
+        # if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) <= 0:
+        #     # print("Use local content")
+        #     self.asset_path = "art_assets/Isaac"
+        # else:
+        #     # print("Use server content")
+        #     pass
 
         # USD paths loaded by scenarios
         self.franka_table_usd = self.asset_path + "/Samples/Leonardo/Stage/franka_block_stacking.usd"

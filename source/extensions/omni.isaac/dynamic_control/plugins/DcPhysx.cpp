@@ -487,7 +487,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
 
     if (!abase || abase->getConcreteType() != PxConcreteType::eARTICULATION_REDUCED_COORDINATE)
     {
-        DC_LOG_ERROR("Failed to find articulation at '%s'", usdPath.GetString().c_str());
+        DC_LOG_WARN("Failed to find articulation at '%s'", usdPath.GetString().c_str());
         return kDcInvalidHandle;
     }
 
@@ -3573,23 +3573,18 @@ void SuUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
     }
 }
 
-void CARB_ABI SuPrimAdd(const char* primPath, void* userData)
+void CARB_ABI onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 {
     // printf("++ DC: Prim Add: %s\n", primPath);
 }
 
-void CARB_ABI SuPrimChange(const char* primPath, const omni::kit::PrimDirtyBits*, void* userData)
+void CARB_ABI onPrimOrPropertyChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
     // printf("++ DC: Prim Change: %s\n", primPath);
 }
 
-void CARB_ABI SuPrimRemove(const char* primPath, void* userData)
+void CARB_ABI onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
-    if (!primPath)
-    {
-        return;
-    }
-
     // printf("++ DC: Prim Remove: %s\n", primPath);
 
     DcContext* ctx = g_dcCtx;
@@ -3598,7 +3593,7 @@ void CARB_ABI SuPrimRemove(const char* primPath, void* userData)
         return;
     }
 
-    ctx->removeUsdPath(SdfPath(primPath));
+    ctx->removeUsdPath(primPath);
 }
 }
 }
@@ -3633,9 +3628,9 @@ CARB_EXPORT void carbOnPluginStartup()
     suDesc.onStop = SuStop;
     // suDesc.onRaycast = handleRaycast;
 
-    suDesc.onPrimAdd = SuPrimAdd;
-    suDesc.onPrimChange = SuPrimChange;
-    suDesc.onPrimRemove = SuPrimRemove;
+    suDesc.onPrimAdd = onPrimAdd;
+    suDesc.onPrimOrPropertyChange = onPrimOrPropertyChange;
+    suDesc.onPrimRemove = onPrimRemove;
 
     g_suNode = g_su->createStageUpdateNode(suDesc);
     if (!g_suNode)
