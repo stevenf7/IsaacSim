@@ -53,6 +53,13 @@ protected:
         return p(rng);
     }
 
+    static int randomRangeInt(int low, int high)
+    {
+        static std::default_random_engine rng(0xBEEF);
+        std::uniform_int_distribution<int> p(low, high);
+        return p(rng);
+    }
+
     bool ignoreClass(std::string prim, std::vector<std::string>& groupClassList)
     {
         for (std::string& ignoreClass : mIgnoreClassList)
