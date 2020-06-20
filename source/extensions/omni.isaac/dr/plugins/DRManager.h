@@ -4,6 +4,7 @@
 #include "DRComponentColor.h"
 #include "DRComponentLight.h"
 #include "DRComponentMaterial.h"
+#include "DRComponentMesh.h"
 #include "DRComponentMovement.h"
 #include "DRComponentRotation.h"
 #include "DRComponentScale.h"
