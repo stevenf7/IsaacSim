@@ -53,6 +53,8 @@ class DRMenu:
         prim.CreatePrimPathsRel()
         prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
         prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
+        prim.CreateRoughnessAttr().Set((float(0.0), float(1.0)))
+        prim.CreateMetallicAttr().Set((float(0.0), float(1.0)))
         prim.CreateDurationAttr().Set(float(1.0))
         prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
