@@ -39,6 +39,7 @@ private:
     std::string mOmniPBRMatPath;
     std::vector<std::string> mPaths;
     std::vector<float> mRRange, mGRange, mBRange;
+    pxr::GfVec2f mRoughnessRange, mMetallicRange;
     std::vector<pxr::UsdPrim> mAllPrims, mAllMaterialPrims;
     pxr::SdfLayerHandle mColorLayer;
     pxr::UsdShadeMaterial mColorMaterialShade;

@@ -93,19 +93,18 @@ class Extension(omni.ext.IExt):
 
     def add_color_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
-        root_layer = stage.GetRootLayer()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR color component
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/color_component", False)
         prim = DrSchema.ColorComponent.Define(stage, Sdf.Path(path))
         prim.CreateCompNameAttr().Set(str("color_component"))
-        color_comp_path = default_prim_path + "/color_component"
-        color_comp = stage.GetPrimAtPath(color_comp_path)
         # Set attributes for DR color component
         prim.CreatePrimPathsRel().AddTarget(cube_path)
         prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
         prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
+        prim.CreateRoughnessAttr().Set((float(0.0), float(1.0)))
+        prim.CreateMetallicAttr().Set((float(0.0), float(1.0)))
         prim.CreateDurationAttr().Set(float(0.3))
         prim.CreateIncludeChildrenAttr().Set(bool(False))
 
@@ -191,7 +190,6 @@ class Extension(omni.ext.IExt):
 
     def add_texture_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
-        root_layer = stage.GetRootLayer()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR texture component
@@ -214,7 +212,6 @@ class Extension(omni.ext.IExt):
 
     def add_material_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
-        root_layer = stage.GetRootLayer()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR material component

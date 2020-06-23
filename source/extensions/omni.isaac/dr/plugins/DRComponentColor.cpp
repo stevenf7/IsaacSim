@@ -140,6 +140,8 @@ void DRComponentColor::onComponentChange()
     colorPrim.GetCompNameAttr().Get(&mCompName);
     colorPrim.GetFirstColorAttr().Get(&firstColor);
     colorPrim.GetSecondColorAttr().Get(&secondColor);
+    colorPrim.GetRoughnessAttr().Get(&mRoughnessRange);
+    colorPrim.GetMetallicAttr().Get(&mMetallicRange);
     colorPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     colorPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
@@ -193,8 +195,6 @@ void DRComponentColor::tick()
     {
         if (mAllMaterialPrims[primIndex].HasAttribute(pxr::TfToken("inputs:diffuse_color_constant")))
         {
-            pxr::VtValue value;
-            // CARB_LOG_WARN("prim with color: %s", prim.GetPrimPath().GetString().c_str());
             pxr::UsdAttribute primColor =
                 mAllMaterialPrims[primIndex].GetAttribute(pxr::TfToken("inputs:diffuse_color_constant"));
             if (primColor)
@@ -206,6 +206,18 @@ void DRComponentColor::tick()
                 pxr::GfVec3f usdColor{ pxr::GfVec3f(r, g, b) };
                 primColor.Set(usdColor);
             }
+        }
+        if (mAllMaterialPrims[primIndex].HasAttribute(pxr::TfToken("inputs:reflection_roughness_constant")))
+        {
+            mAllMaterialPrims[primIndex]
+                .GetAttribute(pxr::TfToken("inputs:reflection_roughness_constant"))
+                .Set(randomRange(mRoughnessRange[0], mRoughnessRange[1]));
+        }
+        if (mAllMaterialPrims[primIndex].HasAttribute(pxr::TfToken("inputs:metallic_constant")))
+        {
+            mAllMaterialPrims[primIndex]
+                .GetAttribute(pxr::TfToken("inputs:metallic_constant"))
+                .Set(randomRange(mMetallicRange[0], mMetallicRange[1]));
         }
         primIndex++;
     }
