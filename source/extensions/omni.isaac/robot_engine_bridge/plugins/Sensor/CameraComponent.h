@@ -121,6 +121,11 @@ private:
     bool mEnableBoundingBox2D = false;
 
     double mUnitScale;
+
+    std::vector<std::unique_ptr<IsaacBuffer>> mRgbBuffers;
+    std::vector<std::unique_ptr<IsaacBuffer>> mDepthBuffers;
+    std::vector<std::unique_ptr<IsaacBuffer>> mSegmentationBuffers;
+    std::vector<std::unique_ptr<IsaacBuffer>> mSemanticBuffers;
 };
 }
 }

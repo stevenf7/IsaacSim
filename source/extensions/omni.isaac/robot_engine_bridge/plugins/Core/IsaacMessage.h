@@ -1,5 +1,8 @@
 #pragma once
 
+#include <carb/cuda/CudaRuntime.h>
+#include <carb/logging/Log.h>
+
 #include <capnp/compat/json.h>
 #include <messages/actor_group.capnp.h>
 #include <messages/alice.capnp.h>
@@ -19,6 +22,7 @@
 #include <messages/state.capnp.h>
 #include <messages/tensor.capnp.h>
 
+#include <cuda.h>
 #include <memory>
 #include <stddef.h>
 #include <stdint.h>
@@ -40,10 +44,89 @@ struct MessageHeader
     int64_t pubtime;
 };
 
-struct IsaacBuffer
+class IsaacBuffer
 {
-    size_t size;
-    char* data;
+public:
+    virtual ~IsaacBuffer()
+    {
+    }
+    virtual void resize(size_t size) = 0;
+    virtual uint8_t* data() const = 0;
+    virtual size_t size() const = 0;
+    virtual isaac_memory_t type() const
+    {
+        return mMemoryType;
+    }
+
+protected:
+    isaac_memory_t mMemoryType;
+};
+
+class IsaacDeviceBuffer : public IsaacBuffer
+{
+public:
+    IsaacDeviceBuffer(size_t size = 0)
+    {
+        mMemoryType = isaac_memory_t::isaac_memory_cuda;
+        resize(size);
+    }
+    virtual ~IsaacDeviceBuffer()
+    {
+        CUDA_CHECK(cudaFree(mBuffer));
+        mBuffer = nullptr;
+    }
+    virtual void resize(size_t size)
+    {
+        if (size != mSize)
+        {
+            if (mBuffer)
+            {
+                CUDA_CHECK(cudaFree(mBuffer));
+                mBuffer = nullptr;
+            }
+            if (size > 0)
+            {
+                CUDA_CHECK(cudaMalloc(&mBuffer, size));
+            }
+            mSize = size;
+        }
+    }
+    virtual uint8_t* data() const
+    {
+        return mBuffer;
+    }
+    virtual size_t size() const
+    {
+        return mSize;
+    }
+
+private:
+    uint8_t* mBuffer = nullptr;
+    size_t mSize = 0;
+};
+
+class IsaacHostBuffer : public IsaacBuffer
+{
+public:
+    IsaacHostBuffer(size_t size = 0)
+    {
+        mMemoryType = isaac_memory_t::isaac_memory_host;
+        resize(size);
+    }
+    virtual void resize(size_t size)
+    {
+        mBuffer.resize(size);
+    }
+    virtual uint8_t* data() const
+    {
+        return (uint8_t*)mBuffer.data();
+    }
+    virtual size_t size() const
+    {
+        return mBuffer.size();
+    }
+
+    std::vector<uint8_t> mBuffer;
 };
 
 

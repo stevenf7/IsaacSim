@@ -200,7 +200,7 @@ void ContactMonitor::publishAllMessages()
         // auto pointProto = collisionProto.initContactPoint();
         // toVector3dProto(contact.velocity, pointProto);
 
-        std::vector<std::vector<uint8_t>> buffers;
+        std::vector<std::unique_ptr<IsaacBuffer>> buffers;
 
         // printf("JSON: %s\n", isaac_message::gJsonCodec.encode(collisionProto).cStr());
         publish(mOutputComponent, mOutputChannel, collisionProto, isaac_message::RigidBody3GroupProtoId, buffers);
