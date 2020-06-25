@@ -110,8 +110,8 @@ def update_package(root: str, platform: str, config: str, experience: str):
     # update data folder
     print(f"Updating data folder")
     data_folder = f"_build/target-deps/kit_sdk_{config}/_build/{platform}/{config}/data"
-    copy_data_folder(archive_path, root_folder, f"{data_folder}/Kit/{experience}/2020.2.3012/pip3-envs")
-    copy_data_folder(archive_path, root_folder, f"{data_folder}/Kit/{experience}-headless/2020.2.3012/pip3-envs")
+    copy_data_folder(archive_path, root_folder, f"{data_folder}/Kit/{experience}/2020.2.3598/pip3-envs")
+    copy_data_folder(archive_path, root_folder, f"{data_folder}/Kit/{experience}-headless/2020.2.3598/pip3-envs")
 
 
 def main():
