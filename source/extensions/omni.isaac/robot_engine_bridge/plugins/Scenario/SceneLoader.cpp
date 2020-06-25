@@ -53,9 +53,8 @@ void SceneLoader::tick()
     auto jsonProto = json.initProto();
     {
         // Receive current command
-        std::vector<std::vector<uint8_t>> buffers;
         MessageHeader header;
-        if (receive(mInputComponent, mRequestChannelName, header, jsonProto, buffers))
+        if (receive(mInputComponent, mRequestChannelName, header, jsonProto))
         {
             CARB_LOG_INFO("SceneLoader got message");
             std::string jsonConfig = jsonProto.getSerialized().asString();
@@ -105,7 +104,8 @@ void SceneLoader::SendResponse(int status, std::string request)
     mIDict->destroyItem(dictionaryRoot);
 
     jsonReplyProto.setSerialized(replyMessage);
-    std::vector<std::vector<uint8_t>> buffers;
+    std::vector<std::unique_ptr<IsaacBuffer>> buffers;
+
     publish(mOutputComponent, mReplyChannelName, jsonReplyProto, isaac_message::JsonProtoId, buffers);
 }
 

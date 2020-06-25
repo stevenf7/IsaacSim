@@ -47,7 +47,7 @@ void DifferentialBaseSimulator::tick()
     auto command_composite_proto = commandComposite.initProto();
     {
         // Receive current command
-        std::vector<std::vector<uint8_t>> buffers;
+        std::vector<IsaacHostBuffer> buffers;
         MessageHeader header;
         if (receive(mInputComponent, mCommandChannelName, header, command_composite_proto, buffers))
         {
@@ -141,9 +141,9 @@ void DifferentialBaseSimulator::tick()
         mLastAcceleration[1],
     };
 
-    std::vector<std::vector<uint8_t>> buffers(1);
-    buffers[0] = std::vector<uint8_t>(real_data.size() * sizeof(double));
-    std::memcpy(buffers[0].data(), real_data.data(), real_data.size() * sizeof(double));
+    std::vector<std::unique_ptr<IsaacBuffer>> buffers(1);
+    buffers[0] = std::make_unique<IsaacHostBuffer>(real_data.size() * sizeof(double));
+    std::memcpy(buffers[0]->data(), real_data.data(), real_data.size() * sizeof(double));
     publish(mOutputComponent, mStateChannelName, stateMessageProto, isaac_message::StateProtoId, buffers);
     mLastSpeed = measuredSpeed;
 }

@@ -5,6 +5,8 @@
 #include "plugins/core/Component.h"
 #include "plugins/core/UsdUtilities.h"
 
+#include <carb/profiler/Profile.h>
+
 #include <RobotEngineBridgeSchema/robotEngineBridgeComponent.h>
 #include <engine/alice/c_api/isaac_c_api_error.h>
 
@@ -121,7 +123,7 @@ public:
                  const std::string& channel,
                  const T& data,
                  uint64_t protoId,
-                 const std::vector<std::vector<uint8_t>>& buffers)
+                 const std::vector<std::unique_ptr<IsaacBuffer>>& buffers)
     {
         kj::String json_message = isaac_message::gJsonCodec.encode(data);
 
@@ -142,29 +144,11 @@ public:
      */
     bool publish(const std::string& component, const std::string& channel, const std::string& data)
     {
-        std::vector<std::vector<uint8_t>> buffers;
+        std::vector<std::unique_ptr<IsaacBuffer>> buffers;
 
         return checkErrorCode(publishJSONMessage(mNodeName, component, channel,
                                                  this->mTimeNanoSeconds + mTimeDifferenceNanoSeconds,
                                                  kj::StringPtr(data), isaac_message::JsonProtoId, buffers));
-    }
-
-    /**
-     * @brief Publishes a camera capture on a channel
-     * Camera capture pipeline have a one frame delay, so need to give acquire time explicitly
-     * @param component
-     * @param channel
-     * @param data
-     * @param acqtime
-     * @return true
-     * @return false
-     */
-    bool publish(const std::string& component,
-                 const std::string& channel,
-                 const isaac_message::CameraCapture& data,
-                 int64_t acqtime)
-    {
-        return false;
     }
 
     /**
@@ -181,7 +165,7 @@ public:
     template <class T>
     bool receive(const std::string& component, const std::string& channel, MessageHeader& header, T& data)
     {
-        std::vector<std::vector<uint8_t>> buffers;
+        std::vector<IsaacHostBuffer> buffers;
         return receive(component, channel, header, data, buffers);
     }
 
@@ -202,7 +186,7 @@ public:
                  const std::string channel,
                  MessageHeader& header,
                  T& data,
-                 std::vector<std::vector<uint8_t>>& buffers)
+                 std::vector<IsaacHostBuffer>& buffers)
     {
         // printf("receive %s %s %s\n", mNodeName.c_str(), component.c_str(), channel.c_str());
         kj::String json_message;
@@ -258,8 +242,9 @@ public:
                                      int64_t acqtime,
                                      const kj::StringPtr& message_json,
                                      uint64_t protoId,
-                                     const std::vector<std::vector<uint8_t>>& buffers)
+                                     const std::vector<std::unique_ptr<IsaacBuffer>>& buffers)
     {
+        CARB_PROFILE_ZONE(0, "publishJSONMessage");
 
         isaac_uuid_t uuid;
         mError = (mIsaacCApiPtr->isaac_create_message)(mAppHandle, &uuid);
@@ -271,9 +256,9 @@ public:
 
         for (size_t i = 0; i < buffers.size(); ++i)
         {
-            if (buffers[i].size() > 0)
+            if (buffers[i]->size() > 0)
             {
-                isaac_buffer_t isaac_buffer = { buffers[i].data(), buffers[i].size(), isaac_memory_t::isaac_memory_host };
+                isaac_buffer_t isaac_buffer = { buffers[i]->data(), buffers[i]->size(), buffers[i]->type() };
                 mError = (mIsaacCApiPtr->isaac_message_append_buffer)(mAppHandle, &uuid, &isaac_buffer, &buffer_index);
                 if (mError != isaac_error_t::isaac_error_success)
                 {
@@ -332,7 +317,7 @@ public:
                                               const std::string& channel_name,
                                               MessageHeader& header,
                                               kj::String& message_json,
-                                              std::vector<std::vector<uint8_t>>& buffers)
+                                              std::vector<IsaacHostBuffer>& buffers)
     {
         isaac_error_t result = isaac_error_success;
         message_json = kj::String();

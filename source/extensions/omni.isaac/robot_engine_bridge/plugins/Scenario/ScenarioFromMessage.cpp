@@ -54,9 +54,8 @@ void ScenarioFromMessage::tick()
     auto actorGroupProto = actorGroup.initProto();
     {
         // Receive current command
-        std::vector<std::vector<uint8_t>> buffers;
         MessageHeader header;
-        if (receive(mInputComponent, mRequestChannelName, header, actorGroupProto, buffers))
+        if (receive(mInputComponent, mRequestChannelName, header, actorGroupProto))
         {
             LoadScenarioFromMessage(actorGroupProto);
         }
