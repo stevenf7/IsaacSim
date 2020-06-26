@@ -29,7 +29,7 @@ def remove_folder(archive_path, folder_path):
     p = subprocess.Popen(args)
     returncode = p.wait()
     if returncode != 0:
-        print("Error removing {folder_path}")
+        print(f"Error removing {folder_path}")
         sys.exit(1)
 
 
@@ -38,7 +38,7 @@ def remove_file(archive_path, file_path):
     p = subprocess.Popen(args)
     returncode = p.wait()
     if returncode != 0:
-        print("Error removing the {file_path}")
+        print(f"Error removing the {file_path}")
         sys.exit(1)
 
 
@@ -46,7 +46,7 @@ def copy_data_folder(archive_path, root_folder, data_folder):
     data_path = os.path.join(root_folder, data_folder)
 
     if not os.path.exists(data_path):
-        logger.error("Data folder not found: {data_folder}")
+        logger.error(f"Data folder not found: {data_folder}")
         sys.exit(1)
 
     if os.path.exists(data_folder):
@@ -68,11 +68,12 @@ def update_package(root: str, platform: str, config: str, experience: str):
     root_folder, archive_path = prepare_package(root, platform, config, False, False)
 
     # update cache folder
+    print(f"Updating cache folder...")
     cache_folder = f"_build/target-deps/kit_sdk_{config}/_build/{platform}/{config}/cache"
     cache_path = os.path.join(root_folder, cache_folder)
 
     if not os.path.exists(cache_path):
-        logger.error("Cache folder not found")
+        logger.error(f"Cache folder not found: {root_folder}/{cache_folder}")
         sys.exit(-1)
 
     if os.path.exists(cache_folder):
@@ -91,27 +92,37 @@ def update_package(root: str, platform: str, config: str, experience: str):
     if returncode != 0:
         logger.error(f"Error updating {archive_path}")
         sys.exit(1)
+    print(f"Updating cache folder...done")
 
     # remove shaders folder
-    print(f"Removing shaders folder")
+    print(f"Removing shaders folder...")
     shaders_folder = f"_build/target-deps/kit_sdk_{config}/_build/shaders"
     remove_folder(archive_path, shaders_folder)
+    print(f"Removing shaders folder...done")
 
     # remove info file
-    print(f"Removing package info file")
+    print(f"Removing package info file...")
     info_file = f"PACKAGE-INFO.yaml"
     remove_file(archive_path, info_file)
+    print(f"Removing package info file...done")
 
     # remove samples_internal extensions
-    print(f"Removing samples_internal extensions")
+    print(f"Removing samples_internal extensions...")
     extension_folder = f"_build/{platform}/{config}/exts/omni.isaac.samples_internal"
     remove_folder(archive_path, extension_folder)
+    print(f"Removing samples_internal extensions...done")
 
     # update data folder
-    print(f"Updating data folder")
+    print(f"Updating data folder...")
     data_folder = f"_build/target-deps/kit_sdk_{config}/_build/{platform}/{config}/data"
-    copy_data_folder(archive_path, root_folder, f"{data_folder}/Kit/{experience}/2020.2.3012/pip3-envs")
-    copy_data_folder(archive_path, root_folder, f"{data_folder}/Kit/{experience}-headless/2020.2.3012/pip3-envs")
+    if os.path.exists(f"{root_folder}/{data_folder}"):
+        kit_version = os.listdir(f"{root_folder}/{data_folder}/Kit/{experience}")
+        print(f"Kit version is {kit_version[0]}")
+        copy_data_folder(archive_path, root_folder, f"{data_folder}/Kit/{experience}/{kit_version[0]}/pip3-envs")
+        copy_data_folder(
+            archive_path, root_folder, f"{data_folder}/Kit/{experience}-headless/{kit_version[0]}/pip3-envs"
+        )
+    print(f"Updating data folder...done")
 
 
 def main():
