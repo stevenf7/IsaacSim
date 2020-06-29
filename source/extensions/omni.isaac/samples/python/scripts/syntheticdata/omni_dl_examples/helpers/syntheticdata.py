@@ -17,7 +17,7 @@ segmentation (instance and semantic), and camera parameters.
 
     kit = OmniKitHelper()   # Start omniverse kit
     sd_helper = SyntheticDataHelper()
-    gt = sd_helper.get_groundtruth(('rgb', 'depth', 'bbox2d_tight'))
+    gt = sd_helper.get_groundtruth(('rgb', 'depth', 'boundingBox2DTight'))
 
 """
 
@@ -41,7 +41,7 @@ except ImportError as err:
     warnings.warn(f"{err}", Warning)
     use_torch = False
 
-from omni_dl_examples.helpers.camera import get_view_proj_mat
+from .camera import get_view_proj_mat
 
 
 # List of sensors requiring RayTracedLighting mode
@@ -76,6 +76,7 @@ class SyntheticDataHelper:
             "boundingBox2DLoose": self.get_bbox2d_loose,
             "boundingBox3D": self.compute_3d_bounding_box_oobb,
             "camera": self.get_camera_params,
+            "pose": self.get_pose,
         }
 
         self.sensor_state = {s: False for s in list(self.sensor_helpers.keys())}
@@ -189,7 +190,7 @@ class SyntheticDataHelper:
         sensor = self.sd.SensorType.InstanceSegmentation
         instance_tex = self._get_sensor_data(sensor, "uint32")
         instance_mappings = self.get_instance_mappings()
-        instances_list = [im[4] for im in instance_mappings]
+        instances_list = [im[3] for im in instance_mappings]
         instance_names = [im[0] for im in instance_mappings]
 
         instance_masks = np.zeros((len(instance_mappings), *instance_tex.shape), dtype=np.bool)
@@ -211,7 +212,7 @@ class SyntheticDataHelper:
 
         semantic_mappings = {}
         for im in instance_mappings:
-            semantic_mappings.setdefault(im[3], []).extend(im[4])
+            semantic_mappings.setdefault(im[2], []).extend(im[3])
 
         semantic_labels = list(semantic_mappings.keys())
         semantic_masks = torch.zeros((len(semantic_labels), *instance_seg_texture.shape), dtype=np.bool)
@@ -233,7 +234,7 @@ class SyntheticDataHelper:
 
         semantic_mappings = {}
         for im in instance_mappings:
-            semantic_mappings.setdefault(im[3], []).extend(im[4])
+            semantic_mappings.setdefault(im[2], []).extend(im[3])
 
         semantic_labels = list(semantic_mappings.keys())
         semantic_masks = np.zeros((len(semantic_labels), *instance_seg_texture.shape), dtype=np.bool)
@@ -303,6 +304,19 @@ class SyntheticDataHelper:
             "clipping_range": (near, far),
         }
 
+    def get_pose(self):
+        """Get pose of all objects with a semantic label.
+        """
+        stage = omni.usd.get_context().get_stage()
+        mappings = self.get_instance_mappings()
+        pose = {}
+        for m in mappings:
+            prim_path = m[0]
+            prim = stage.GetPrimAtPath(prim_path)
+            prim_tf = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(0.0)
+            pose[str(prim_path)] = prim_tf
+        return pose
+
     def compute_3d_bounding_box_oobb(self):
         """Compute the 3D Object Oriented Bounding Box.
         Uses the UsdGeom.Imageable module to compute local bounds
@@ -328,46 +342,19 @@ class SyntheticDataHelper:
         instance_mappings = []
         descendant_instance_ids = []
         children = cur_prim.GetChildren()
-        instance_id = self.sd_interface.get_instance_segmentation_id(str(cur_prim.GetPath()))
+        instance_id = self.sd_interface.get_instance_segmentation_id(str(cur_prim.GetPath())).tolist()
 
         for child in children:
             child_descendant_instance_ids, child_instance_mappings = self._get_instance_mapping(child)
             descendant_instance_ids += child_descendant_instance_ids
             instance_mappings += child_instance_mappings
-        if instance_id > 0:
-            descendant_instance_ids += [instance_id]
+        if instance_id:
+            descendant_instance_ids += instance_id
         if cur_prim.HasAPI(Semantics.SemanticsAPI):
             semantic_label = cur_prim.GetAttribute("semantic:Semantics:params:semanticData").Get()
             semantic_id = self.sd_interface.get_semantic_segmentation_id_from_data(semantic_label)
-            instance_mappings.append(
-                (cur_prim.GetPath(), instance_id, semantic_id, semantic_label, descendant_instance_ids)
-            )
+            instance_mappings.append((str(cur_prim.GetPath()), semantic_id, semantic_label, descendant_instance_ids))
         return descendant_instance_ids, instance_mappings
-
-    def _reduce_bboxes(self, bboxes):
-        """Reduce bounding boxes of leaf nodes to parents with a semantic label
-        and add label to data.
-        """
-        instance_mappings = self.get_instance_mappings()
-        reduced_bboxes = []
-        for im in instance_mappings:
-            if im[4]:  # if mapping has descendant instance ids
-                mask = np.isin(bboxes["instanceId"], im[4])
-                bbox_masked = bboxes[mask]
-                if len(bbox_masked) > 0:
-                    reduced_bboxes.append(
-                        (
-                            im[3],
-                            im[1],
-                            im[2],  # semanticLabel, instanceId, semanticId
-                            np.min(bbox_masked["x_min"]),
-                            np.min(bbox_masked["y_min"]),
-                            np.max(bbox_masked["x_max"]),
-                            np.max(bbox_masked["y_max"]),
-                        )
-                    )
-
-        return np.array(reduced_bboxes, dtype=[("semanticLabel", "O")] + bboxes.dtype.descr)
 
     def get_instance_mappings(self):
         """Get mapping between prims with semantic labels and leaf instance IDs.
@@ -376,14 +363,39 @@ class SyntheticDataHelper:
 
         Returns:
             list of tuples mapping leaf instance IDs to a parent with a semantic label. Each tuple is represented by
-            (<Path>, <Instance ID>, <Semantic ID>, <List of descendant instance IDs>, <semantic Label>). For
+            (<Path>, <Semantic ID>, <semantic Label>, <List of descendant instance IDs>). For
             example:
 
-            [('/World/car', 0, 1, [0, 1, 3, 4], 'Vehicle'), ('/World/car/tail_lights', 0, 2, [2, 3], 'TailLights')]
+            [('/World/car', 1, 'Vehicle', [0, 1, 3, 4]), ('/World/car/tail_lights', 2, 'TailLights', [2, 3])]
         """
         stage = omni.usd.get_context().get_stage()
         _, self.instance_mappings = self._get_instance_mapping(stage.GetPseudoRoot())
         return self.instance_mappings
+
+    def _reduce_bboxes(self, bboxes):
+        """Reduce bounding boxes of leaf nodes to parents with a semantic label
+        and add label to data.
+        """
+        instance_mappings = self.get_instance_mappings()
+        reduced_bboxes = []
+        for im in instance_mappings:
+            if im[3]:  # if mapping has descendant instance ids
+                mask = np.isin(bboxes["instanceId"], im[3])
+                bbox_masked = bboxes[mask]
+                if len(bbox_masked) > 0:
+                    reduced_bboxes.append(
+                        (
+                            im[0],  # Prim path (name)
+                            im[2],  # semanticLabel
+                            im[1],  # semanticId
+                            np.min(bbox_masked["x_min"]),
+                            np.min(bbox_masked["y_min"]),
+                            np.max(bbox_masked["x_max"]),
+                            np.max(bbox_masked["y_max"]),
+                        )
+                    )
+
+        return np.array(reduced_bboxes, dtype=[("name", "O"), ("semanticLabel", "O")] + bboxes.dtype.descr[1:])
 
     def _get_bbox2d(self, sensor):
         size = self.sd_interface.get_sensor_size(sensor)

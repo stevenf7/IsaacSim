@@ -26,6 +26,7 @@ import omni.kit.app
 import omni.kit.editor
 import omni.kit.pipapi
 import omni.kit.asyncapi
+import omni.kit.commands
 from pxr import UsdGeom
 
 import os
@@ -35,9 +36,6 @@ import asyncio
 
 
 DEFAULT_CONFIG = {
-    "ov-server": None,
-    "username": None,
-    "password": None,
     "width": 1024,
     "height": 800,
     "renderer": "PathTracing",
@@ -52,7 +50,6 @@ class OmniKitHelper:
     def __init__(self, config=None):
         # initialize vars
         self._is_dirty_instance_mappings = True
-
         atexit.register(self._cleanup)
         self.config = DEFAULT_CONFIG
         if config is not None:
@@ -70,6 +67,7 @@ class OmniKitHelper:
         self._start_app()
 
         while self.app.is_running() and not setup_future.done():
+            time.sleep(0.001)  # This sleep prevents a deadlock in certain cases
             self.update()
 
         self.editor = omni.kit.editor.get_editor_interface()
@@ -77,48 +75,95 @@ class OmniKitHelper:
     def _launch_kit(self):
         # Set up the renderer
         async def setup():
-            if self.config["ov-server"] and self.config["username"] and self.config["password"]:
-                await omni.kit.asyncapi.connect(
-                    self.config["ov-server"], self.config["username"], self.config["password"]
-                )
             await omni.kit.asyncapi.new_stage()
-
+            self.carb_settings = carb.settings.acquire_settings_interface()
             # Setup renderer
-            self.settings = carb.settings.acquire_settings_interface()
-            self.settings.set_int("/rtx/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
-            self.settings.set_bool("/rtx/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
-            self.settings.set_string("/rtx/rendermode", self.config["renderer"])
-            self.settings.set_int("/rtx/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"])
+            self.set_setting("/rtx/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
+            self.set_setting("/rtx/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
+            self.set_setting("/rtx/rendermode", self.config["renderer"])
+            self.set_setting("/rtx/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"])
 
         return asyncio.ensure_future(setup())
 
     def _start_app(self):
         args = [
             os.path.abspath(__file__),
-            "--carb/persistent/app/viewport/displayOptions=0",
-            "--carb/app/window/hideUi=true",
-            f'--carb/app/renderer/resolution/width={self.config["width"]}',
-            f'--carb/app/renderer/resolution/height={self.config["height"]}',
-            "--carb/app/extensions/enabled/0='omni.syntheticdata'",
+            "--merge-config=kit-syntheticdata.json",
+            "--/persistent/app/viewport/displayOptions=0",
+            "--/persistent/physics/overrideGPUSettings=0",  # force CPU physx
+            # "--/persistent/physics/updateToUsd=True",
+            # "--/persistent/physics/useFastCache=True",
+            "--/app/content/emptyStageOnStart=False",  # This is required due to a infinite loop but results in errors on launch
+            f'--/app/renderer/resolution/width={self.config["width"]}',
+            f'--/app/renderer/resolution/height={self.config["height"]}',
         ]
         if self.config.get("headless"):
             args.append("--no-window")
+            args.append("--/app/window/hideUi=true")
         self.app.startup("omniverse-kit", os.environ["CARB_APP_PATH"], args)
 
     def _cleanup(self):
         self.update()
+        self.app.post_quit()
         self.app.shutdown()
 
     def get_stage(self):
         """Returns the current stage."""
         return omni.usd.get_context().get_stage()
 
-    def update(self):
-        """Render one frame."""
-        time_now = time.time()
-        dt = time_now - self.last_update_t
-        self.last_update_t = time_now
-        self.app.update(dt)
+    def set_setting(self, setting, value):
+        """Convenience function to set settings."""
+        if isinstance(value, str):
+            self.carb_settings.set_string(setting, value)
+        elif isinstance(value, bool):
+            self.carb_settings.set_bool(setting, value)
+        elif isinstance(value, int):
+            self.carb_settings.set_int(setting, value)
+        elif isinstance(value, float):
+            self.carb_settings.set_float(setting, value)
+        else:
+            raise ValueError(f"Value of type {type(value)} is not supported.")
+
+    def update(self, dt=0.0):
+        """Render one frame. Optionally specify dt in seconds, specify None to use wallclock"""
+        if dt is not None:
+            self.app.update(dt)
+        else:
+            time_now = time.time()
+            dt = time_now - self.last_update_t
+            self.last_update_t = time_now
+            self.app.update(dt)
+
+    def play(self):
+        """Starts the editor physics simulation"""
+        self.update()
+        self.editor.play()
+        self.update()
+
+    def pause(self):
+        """Pauses the editor physics simulation"""
+        self.update()
+        self.editor.pause()
+        self.update()
+
+    def stop(self):
+        """Stops the editor physics simulation"""
+        self.update()
+        self.editor.stop()
+        self.update()
+
+    def get_status(self):
+        """Get the status of the renderer to see if anything is loading"""
+        return self.editor.get_current_renderer_status()
+
+    def is_loading(self):
+        """convenience function to see if any files are being loaded"""
+        time, message, loaded, loading = self.get_status()
+        return loading > 0
+
+    def execute(self, *args, **kwargs):
+        """allow use of kit command interface"""
+        omni.kit.commands.execute(*args, **kwargs)
 
 
 if __name__ == "__main__":
