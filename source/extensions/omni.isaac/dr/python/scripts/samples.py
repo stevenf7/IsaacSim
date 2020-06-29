@@ -159,6 +159,7 @@ class Extension(omni.ext.IExt):
         prim.CreateXRangeAttr().Set((float(0.0), float(5.0)))
         prim.CreateYRangeAttr().Set((float(0.0), float(5.0)))
         prim.CreateZRangeAttr().Set((float(0.0), float(5.0)))
+        prim.CreateEnableUniformAttr().Set(bool(False))
         prim.CreateDurationAttr().Set(float(0.3))
         prim.CreateIncludeChildrenAttr().Set(bool(False))
 

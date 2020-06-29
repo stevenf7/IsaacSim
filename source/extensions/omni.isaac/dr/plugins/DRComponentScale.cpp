@@ -23,6 +23,7 @@ namespace dr
 
 DRComponentScale::DRComponentScale() : DRComponentBase()
 {
+    mEnableUniform = false;
 }
 DRComponentScale::~DRComponentScale()
 {
@@ -63,6 +64,7 @@ void DRComponentScale::onComponentChange()
     scalePrim.GetXRangeAttr().Get(&mXRange);
     scalePrim.GetYRangeAttr().Get(&mYRange);
     scalePrim.GetZRangeAttr().Get(&mZRange);
+    scalePrim.GetEnableUniformAttr().Get(&mEnableUniform);
     scalePrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     scalePrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
 
@@ -90,6 +92,8 @@ void DRComponentScale::tick()
             float x = randomRange(mXRange[0], mXRange[1]);
             float y = randomRange(mYRange[0], mYRange[1]);
             float z = randomRange(mZRange[0], mZRange[1]);
+            if (mEnableUniform)
+                z = y = x;
             pxr::GfVec3d doubleScale(x, y, z);
             auto currentTransformMat = omni::usd::UsdUtils::getLocalTransformMatrix(prim);
             pxr::GfVec3d currentTrans = currentTransformMat.ExtractTranslation();
