@@ -118,7 +118,7 @@ class DRMenu:
         prim.CreateXRangeAttr().Set((float(1.0), float(1.0)))
         prim.CreateYRangeAttr().Set((float(1.0), float(1.0)))
         prim.CreateZRangeAttr().Set((float(1.0), float(1.0)))
-        prim.CreateEnableUniformAttr().Set(bool(True))
+        prim.CreateEnableUniformAttr().Set(bool(False))
         prim.CreateDurationAttr().Set(float(1.0))
         prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
