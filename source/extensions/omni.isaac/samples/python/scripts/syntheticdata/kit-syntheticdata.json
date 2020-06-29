@@ -1,0 +1,22 @@
+{
+    "app": {
+        "settings": {
+            "persistent": false
+        },
+        "extensions": {
+            "enabledBuiltin": [
+                "omni.renderer-rtx",
+                "omni.kit.editor-full",
+                "omni.kit.builtin.init",
+                "omni.kit.builtin.profiler",
+                "omni.kit.builtin.material_library",
+                "omni.kit.window.viewport",
+                "omni.kit.window.toolbar",
+                "omni.kit.primitive.mesh",
+                "omni.kit.context_menu",
+                "omni.physx",
+                "omni.syntheticdata"
+            ]
+        }
+    }
+}
