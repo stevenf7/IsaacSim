@@ -65,9 +65,9 @@ class Extension(omni.ext.IExt):
                         self._ui_render_mode_label = ui.Label("Render Mode: ", width=100)
                         self._ui_render_mode = ui.ComboBox(0, "Use Current", "RayTracing", "PathTracing", width=300)
                     with ui.HStack():
-                        ui.Spacer(width=5)
-                        self._ui_dir_label = ui.Label("Capture period in seconds:", width=100)
-                        self._capture_period = ui.FloatField()
+                        ui.Spacer(width=10)
+                        self._ui_dir_label = ui.Label("Capture period in seconds:", width=150)
+                        self._capture_period = ui.FloatField(width=250)
                         # 0 means capture every frame
                         self._capture_period.model.set_value(0.0)
                     with ui.HStack():
