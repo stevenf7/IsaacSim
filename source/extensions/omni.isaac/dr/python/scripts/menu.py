@@ -76,6 +76,9 @@ class DRMenu:
         prim.CreateXRangeAttr().Set((float(0.0), float(0.0)))
         prim.CreateYRangeAttr().Set((float(0.0), float(0.0)))
         prim.CreateZRangeAttr().Set((float(0.0), float(0.0)))
+        prim.CreateEnableLookAtTargetAttr().Set(bool(False))
+        prim.CreateLookAtTargetPathsRel()
+        prim.CreateLookAtTargetOffsetAttr().Set((float(0.0), float(0.0), float(0.0)))
         prim.CreateDurationAttr().Set(float(1.0))
         prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
