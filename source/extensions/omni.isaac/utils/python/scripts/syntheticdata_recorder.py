@@ -41,6 +41,7 @@ class Extension(omni.ext.IExt):
         self.sub_update = self._editor.subscribe_to_update_events(self._update)
         self._settings = get_settings_interface()
         self._build_window_ui()
+        self._accumulated_time = 0
 
     def on_shutdown(self):
         """Called when the extesion us unloaded"""
@@ -63,6 +64,12 @@ class Extension(omni.ext.IExt):
                         ui.Spacer(width=10)
                         self._ui_render_mode_label = ui.Label("Render Mode: ", width=100)
                         self._ui_render_mode = ui.ComboBox(0, "Use Current", "RayTracing", "PathTracing", width=300)
+                    with ui.HStack():
+                        ui.Spacer(width=5)
+                        self._ui_dir_label = ui.Label("Capture period in seconds:", width=100)
+                        self._capture_period = ui.FloatField()
+                        # 0 means capture every frame
+                        self._capture_period.model.set_value(0.0)
                     with ui.HStack():
                         ui.Spacer(width=5)
                         self._capture_btn = ui.Button("Start Recording", width=100)
@@ -94,6 +101,13 @@ class Extension(omni.ext.IExt):
     def _update(self, dt):
         if self._enable_record == False:
             return
+
+        if self._accumulated_time < self._capture_period.model.get_value_as_float():
+            self._accumulated_time += dt
+            return
+
+        # reset _accumulated_time
+        self._accumulated_time = 0
 
         data_dir = str(self._ui_dir_name.model.get_value_as_string())
         if not os.path.exists(data_dir):
