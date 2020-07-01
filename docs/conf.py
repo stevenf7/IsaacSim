@@ -23,7 +23,7 @@ import omni.isaac
 project = "Omniverse Robotics"
 copyright = "2020, NVIDIA."
 author = "NVIDIA"
-version = "2020.1"
+version = "2020.2"
 release = version
 
 # -- General configuration ---------------------------------------------------
