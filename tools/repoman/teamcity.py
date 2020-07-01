@@ -9,7 +9,7 @@ repoman.bootstrap()
 import omni.repo.man
 
 
-MAJOR_VERSION = os.getenv("MAJOR_VERSION", "2020.1")
+MAJOR_VERSION = os.getenv("MAJOR_VERSION", "2020.2")
 
 
 def run_command():
