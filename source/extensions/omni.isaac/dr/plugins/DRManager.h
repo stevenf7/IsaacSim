@@ -9,6 +9,7 @@
 #include "DRComponentRotation.h"
 #include "DRComponentScale.h"
 #include "DRComponentTexture.h"
+#include "DRComponentVisibility.h"
 #include "plugins/core/ComponentManager.h"
 
 #include <carb/Framework.h>
