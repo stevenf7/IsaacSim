@@ -43,9 +43,9 @@ DEFAULT_CONFIG = {
     "denoiser": True,
     "subdiv_refinement_level": 2,
     "headless": True,
-    "max_bounces": 5,
-    "max_specular_transmission_bounces": 5,
-    "max_volume_bounces": 5,
+    "max_bounces": 4,
+    "max_specular_transmission_bounces": 6,
+    "max_volume_bounces": 4,
 }
 
 
