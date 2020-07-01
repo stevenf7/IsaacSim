@@ -80,50 +80,38 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     std::unique_ptr<IsaacComponent> component;
     if (prim.IsA<pxr::RosBridgeSchemaRosClock>())
     {
-        CARB_LOG_ERROR("RosBridgeSchemaRosClock");
-
         component = std::make_unique<RosClock>();
         component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosClock(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosCamera>())
     {
-        CARB_LOG_ERROR("RosBridgeSchemaRosCamera");
-
         component = std::make_unique<RosCamera>();
         component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosCamera(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosJointState>())
     {
-        CARB_LOG_ERROR("RosBridgeSchemaRosJointState");
-
         component = std::make_unique<RosJointState>(mDynamicControlPtr);
         component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosJointState(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosLidar>())
     {
-        CARB_LOG_ERROR("RosBridgeSchemaRosLidar");
-
         component = std::make_unique<RosLidar>();
         component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosLidar(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosPoseTree>())
     {
-        CARB_LOG_ERROR("RosBridgeSchemaRosPoseTree");
-
         component = std::make_unique<RosPoseTree>(mDynamicControlPtr);
         component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosPoseTree(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosTeleport>())
     {
-        CARB_LOG_ERROR("RosBridgeSchemaRosTeleport");
-
         component = std::make_unique<RosTeleport>(mDynamicControlPtr);
         component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosTeleport(prim), mStage);
     }
     if (component)
     {
-        CARB_LOG_ERROR("Create: Prim %s with type: %s", prim.GetPath().GetString().c_str(),
-                       component->getPrim().GetPrim().GetTypeName().GetString().c_str());
+        CARB_LOG_INFO("Create: Prim %s with type: %s", prim.GetPath().GetString().c_str(),
+                      component->getPrim().GetPrim().GetTypeName().GetString().c_str());
         mComponents[prim.GetPath().GetString()] = std::move(component);
     }
 }

@@ -31,7 +31,7 @@ RosCamera::RosCamera()
     mFramework = carb::getFramework();
     if (!mFramework)
     {
-        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
+        CARB_LOG_ERROR("Failed to get Carbonite framework");
         return;
     }
 
@@ -58,7 +58,7 @@ RosCamera::RosCamera()
 }
 RosCamera::~RosCamera()
 {
-    CARB_LOG_ERROR("RosCamera Destroyed");
+    CARB_LOG_INFO("RosCamera Destroyed");
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mCameraInfoPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mRgbPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mDepthPubTopic);

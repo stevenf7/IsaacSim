@@ -187,7 +187,7 @@ CARB_EXPORT void carbOnPluginStartup()
     g_physx = g_framework->acquireInterface<carb::physics::PhysX>();
     if (!g_physx)
     {
-        CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
+        CARB_LOG_ERROR("Failed to acquire PhysX interface");
         return;
     }
 
