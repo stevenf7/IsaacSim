@@ -30,7 +30,7 @@ RosTeleport::RosTeleport(omni::isaac::dynamic_control::DynamicControl* dynamicCo
 
 RosTeleport::~RosTeleport()
 {
-    CARB_LOG_ERROR("RosTeleport Destroyed");
+    CARB_LOG_INFO("RosTeleport Destroyed");
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mPoseSrvTopic);
 }
 

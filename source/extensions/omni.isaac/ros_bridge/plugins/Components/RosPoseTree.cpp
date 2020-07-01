@@ -32,7 +32,7 @@ RosPoseTree::RosPoseTree(omni::isaac::dynamic_control::DynamicControl* dynamicCo
 
 RosPoseTree::~RosPoseTree()
 {
-    CARB_LOG_ERROR("RosPoseTree Destroyed");
+    CARB_LOG_INFO("RosPoseTree Destroyed");
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mPoseTreePubTopic);
 }
 

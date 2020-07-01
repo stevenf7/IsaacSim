@@ -15,7 +15,7 @@ namespace ros_bridge
 {
 RosNode::RosNode(std::string name)
 {
-    CARB_LOG_ERROR("Ros Node %s Was Created", name.c_str());
+    CARB_LOG_INFO("Ros Node %s Was Created", name.c_str());
     rosnode_ = std::make_unique<ros::NodeHandle>(name);
     rosnode_->setCallbackQueue(&(callbackQueue_));
 }

@@ -28,7 +28,7 @@ RosJointState::RosJointState(omni::isaac::dynamic_control::DynamicControl* dynam
 
 RosJointState::~RosJointState()
 {
-    CARB_LOG_ERROR("RosJointState Destroyed");
+    CARB_LOG_INFO("RosJointState Destroyed");
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mJointStatePubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mJointStateSubTopic);
 }

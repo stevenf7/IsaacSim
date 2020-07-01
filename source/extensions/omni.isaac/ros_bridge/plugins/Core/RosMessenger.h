@@ -30,7 +30,7 @@ public:
 
     virtual ~RosMessenger()
     {
-        CARB_LOG_ERROR("Destroying Messenger");
+        CARB_LOG_INFO("Destroying Messenger");
     }
 
     RosMessenger(const RosMessenger&) = delete;

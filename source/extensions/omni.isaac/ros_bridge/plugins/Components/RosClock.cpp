@@ -21,7 +21,7 @@ namespace ros_bridge
 
 RosClock::~RosClock()
 {
-    CARB_LOG_ERROR("RosClock Destroyed");
+    CARB_LOG_INFO("RosClock Destroyed");
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mClockPubTopic);
 }
 
@@ -54,7 +54,6 @@ void RosClock::pubCallback(ros::Publisher* pub)
     {
         return;
     }
-    CARB_LOG_ERROR("Publish Sim State Message");
     rosgraph_msgs::Clock time_msg;
     ros::Time t;
     t.fromSec(mTimeSeconds);
