@@ -19,6 +19,7 @@
 #include <DrSchema/textureComponent.h>
 #include <DrSchema/materialComponent.h>
 #include <DrSchema/meshComponent.h>
+#include <DrSchema/visibilityComponent.h>
 
 namespace omni
 {
@@ -146,6 +147,11 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
         component = std::make_unique<DRComponentMesh>();
         component->initialize(pxr::DrSchemaMeshComponent(prim), mStage);
     }
+    else if (prim.IsA<pxr::DrSchemaVisibilityComponent>())
+    {
+        component = std::make_unique<DRComponentVisibility>();
+        component->initialize(pxr::DrSchemaVisibilityComponent(prim), mStage);
+    }
     component->onComponentChange();
     component->onStart();
     mAllComponents[primPath] = std::move(component);
@@ -187,6 +193,10 @@ void DRManager::onComponentChange(const pxr::UsdPrim& prim)
         mAllComponents[primPath]->onComponentChange();
     }
     else if (prim.IsA<pxr::DrSchemaMeshComponent>())
+    {
+        mAllComponents[primPath]->onComponentChange();
+    }
+    else if (prim.IsA<pxr::DrSchemaVisibilityComponent>())
     {
         mAllComponents[primPath]->onComponentChange();
     }

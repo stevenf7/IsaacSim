@@ -12,6 +12,7 @@ ADD_LIGHT_DR_MENU_ITEM = "Create/Isaac/DR/Light Component"
 ADD_TEXTURE_DR_MENU_ITEM = "Create/Isaac/DR/Texture Component"
 ADD_MATERIAL_DR_MENU_ITEM = "Create/Isaac/DR/Material Component"
 ADD_MESH_DR_MENU_ITEM = "Create/Isaac/DR/Mesh Component"
+ADD_VISIBILITY_DR_MENU_ITEM = "Create/Isaac/DR/Visibility Component"
 
 
 class DRMenu:
@@ -24,7 +25,7 @@ class DRMenu:
         self._dr = domain_randomizer_interface
         self.texture_layer_index = -1
         self.texture_component_count = 0
-        self.num_components = 8
+        self.num_components = 9
 
         self._menus = []
         editor_menu = omni.kit.ui.get_editor_menu()
@@ -36,6 +37,7 @@ class DRMenu:
         self._menus.append(editor_menu.add_item(ADD_TEXTURE_DR_MENU_ITEM, self._on_dr_menu_click))
         self._menus.append(editor_menu.add_item(ADD_MATERIAL_DR_MENU_ITEM, self._on_dr_menu_click))
         self._menus.append(editor_menu.add_item(ADD_MESH_DR_MENU_ITEM, self._on_dr_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_VISIBILITY_DR_MENU_ITEM, self._on_dr_menu_click))
 
     def add_color_menu(self, parent=None):
         if parent:
@@ -194,19 +196,38 @@ class DRMenu:
     def add_mesh_menu(self, parent=None):
         if parent:
             path = omni.kit.utils.get_stage_next_free_path(
-                self._stage, parent + "/mesh_component_" + str(self.component_count[6]), False
+                self._stage, parent + "/mesh_component_" + str(self.component_count[7]), False
             )
         else:
             path = omni.kit.utils.get_stage_next_free_path(
-                self._stage, "/mesh_component_" + str(self.component_count[6]), True
+                self._stage, "/mesh_component_" + str(self.component_count[7]), True
             )
 
         prim = DrSchema.MeshComponent.Define(self._stage, Sdf.Path(path))
 
-        prim.CreateCompNameAttr().Set(str("mesh_component_" + str(self.component_count[6])))
+        prim.CreateCompNameAttr().Set(str("mesh_component_" + str(self.component_count[7])))
         prim.CreatePrimPathsRel()
         prim.CreateMeshListAttr().Set(str(""))
         prim.CreateNumMeshRangeAttr().Set(Gf.Vec2i(1, 1))
+        prim.CreateDurationAttr().Set(float(1.0))
+        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        pass
+
+    def add_visibility_menu(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, parent + "/visibility_component_" + str(self.component_count[8]), False
+            )
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, "/visibility_component_" + str(self.component_count[8]), True
+            )
+
+        prim = DrSchema.VisibilityComponent.Define(self._stage, Sdf.Path(path))
+
+        prim.CreateCompNameAttr().Set(str("visibility_component_" + str(self.component_count[8])))
+        prim.CreatePrimPathsRel()
+        prim.CreateNumVisibleRangeAttr().Set(Gf.Vec2i(1, 1))
         prim.CreateDurationAttr().Set(float(1.0))
         prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
@@ -231,6 +252,8 @@ class DRMenu:
                 self.component_count[6] = self.component_count[6] + 1
             if child_prim.GetTypeName() == "MeshComponent":
                 self.component_count[7] = self.component_count[7] + 1
+            if child_prim.GetTypeName() == "VisibilityComponent":
+                self.component_count[8] = self.component_count[8] + 1
 
         selectedPrims = self._usd_context.get_selection().get_selected_prim_paths()
         if len(selectedPrims) > 0:
@@ -254,6 +277,8 @@ class DRMenu:
             self.add_material_menu(curr_prim)
         if menu == ADD_MESH_DR_MENU_ITEM:
             self.add_mesh_menu(curr_prim)
+        if menu == ADD_VISIBILITY_DR_MENU_ITEM:
+            self.add_visibility_menu(curr_prim)
 
     def _build_dr_ui(self):
         title = "Manual Mode"
