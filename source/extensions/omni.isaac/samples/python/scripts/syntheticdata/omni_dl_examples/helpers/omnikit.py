@@ -43,6 +43,9 @@ DEFAULT_CONFIG = {
     "denoiser": True,
     "subdiv_refinement_level": 2,
     "headless": True,
+    "max_bounces": 5,
+    "max_specular_transmission_bounces": 5,
+    "max_volume_bounces": 5,
 }
 
 
@@ -79,6 +82,12 @@ class OmniKitHelper:
             self.carb_settings = carb.settings.acquire_settings_interface()
             # Setup renderer
             self.set_setting("/rtx/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
+            self.set_setting("/rtx/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"])
+            self.set_setting("/rtx/pathtracing/maxBounces", self.config["max_bounces"])
+            self.set_setting(
+                "/rtx/pathtracing/maxSpecularAndTransmissionBounces", self.config["max_specular_transmission_bounces"]
+            )
+            self.set_setting("/rtx/pathtracing/maxVolumeBounces", self.config["max_volume_bounces"])
             self.set_setting("/rtx/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
             self.set_setting("/rtx/rendermode", self.config["renderer"])
             self.set_setting("/rtx/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"])
