@@ -209,6 +209,7 @@ class Extension(omni.ext.IExt):
                 "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png,omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png"
             )
         )
+        prim.CreateEnableProjectUVWAttr().Set(bool(False))
         prim.CreateIgnoredClassAttr().Set(str(""))
         prim.CreateGroupedClassAttr().Set(str(""))
         prim.CreateDurationAttr().Set(float(0.3))
