@@ -80,17 +80,8 @@ class OmniKitHelper:
         async def setup():
             await omni.kit.asyncapi.new_stage()
             self.carb_settings = carb.settings.acquire_settings_interface()
-            # Setup renderer
-            self.set_setting("/rtx/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
-            self.set_setting("/rtx/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"])
-            self.set_setting("/rtx/pathtracing/maxBounces", self.config["max_bounces"])
-            self.set_setting(
-                "/rtx/pathtracing/maxSpecularAndTransmissionBounces", self.config["max_specular_transmission_bounces"]
-            )
-            self.set_setting("/rtx/pathtracing/maxVolumeBounces", self.config["max_volume_bounces"])
-            self.set_setting("/rtx/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
+            self.setup_renderer()
             self.set_setting("/rtx/rendermode", self.config["renderer"])
-            self.set_setting("/rtx/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"])
 
         return asyncio.ensure_future(setup())
 
@@ -173,6 +164,18 @@ class OmniKitHelper:
     def execute(self, *args, **kwargs):
         """allow use of kit command interface"""
         omni.kit.commands.execute(*args, **kwargs)
+
+    def setup_renderer(self):
+        """Set settings for renderer"""
+        self.set_setting("/rtx/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
+        self.set_setting("/rtx/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"])
+        self.set_setting("/rtx/pathtracing/maxBounces", self.config["max_bounces"])
+        self.set_setting(
+            "/rtx/pathtracing/maxSpecularAndTransmissionBounces", self.config["max_specular_transmission_bounces"]
+        )
+        self.set_setting("/rtx/pathtracing/maxVolumeBounces", self.config["max_volume_bounces"])
+        self.set_setting("/rtx/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
+        self.set_setting("/rtx/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"])
 
 
 if __name__ == "__main__":

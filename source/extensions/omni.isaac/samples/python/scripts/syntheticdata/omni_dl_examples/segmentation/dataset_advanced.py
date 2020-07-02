@@ -44,8 +44,11 @@ RENDER_CONFIG = {
     "width": 600,
     "height": 600,
     "renderer": "PathTracing",
-    "samples_per_pixel_per_frame": 12,
+    "samples_per_pixel_per_frame": 32,
     "headless": True,
+    "max_bounces": 10,
+    "max_specular_transmission_bounces": 6,
+    "max_volume_bounces": 4,
 }
 
 
@@ -106,6 +109,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.camera = self.create_prim("/World/CameraRig/Camera", "Camera", translation=(0.0, 0.0, CAMERA_DISTANCE))
         vpi = omni.kit.viewport.get_viewport_interface()
         vpi.get_viewport_window().set_active_camera(str(self.camera.GetPath()))
+        self.kit.setup_renderer()
         await omni.kit.asyncapi.next_update()
 
     def setup_physics(self):
@@ -265,7 +269,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
             # or by selecting the Shader attached to the Material in the stage window and looking at the details panel
             color = Gf.Vec3f(random.random(), random.random(), random.random())
             omni.kit.usd.create_material_input(mtl_prim, "glass_color", color, Sdf.ValueTypeNames.Color3f)
-            omni.kit.usd.create_material_input(mtl_prim, "glass_ior", 1.0, Sdf.ValueTypeNames.Float)
+            omni.kit.usd.create_material_input(mtl_prim, "glass_ior", 1.45, Sdf.ValueTypeNames.Float)
             # Bind the material to the prim
             prim_mat_shade = UsdShade.Material(mtl_prim)
             UsdShade.MaterialBindingAPI(asset).Bind(prim_mat_shade, UsdShade.Tokens.strongerThanDescendants)
@@ -312,8 +316,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         # pause simulation to capture frame
         self.kit.pause()
-        # Return to user specified render mode
-        self.kit.set_setting("/rtx/rendermode", RENDER_CONFIG["renderer"])
 
         # Collect Groundtruth in RT mode
         gt = self.sd_helper.get_groundtruth(["boundingBox2DTight", "instanceSegmentation", "semanticSegmentation"])
@@ -326,6 +328,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         while self.kit.is_loading():
             self.kit.update()
         print("done")
+        # Return to user specified render mode
+        self.kit.set_setting("/rtx/rendermode", RENDER_CONFIG["renderer"])
         # Collect Groundtruth in PT mode for RGB only
         gt_pt = self.sd_helper.get_groundtruth(["rgb"])
 
