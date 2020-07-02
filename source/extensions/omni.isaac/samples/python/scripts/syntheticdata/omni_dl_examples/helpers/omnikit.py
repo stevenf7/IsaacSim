@@ -169,6 +169,7 @@ class OmniKitHelper:
         """Set settings for renderer"""
         self.set_setting("/rtx/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
         self.set_setting("/rtx/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"])
+        self.set_setting("/rtx/pathtracing/clampSpp", self.config["samples_per_pixel_per_frame"])
         self.set_setting("/rtx/pathtracing/maxBounces", self.config["max_bounces"])
         self.set_setting(
             "/rtx/pathtracing/maxSpecularAndTransmissionBounces", self.config["max_specular_transmission_bounces"]

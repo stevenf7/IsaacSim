@@ -64,7 +64,15 @@ class RandomObjects(torch.utils.data.IterableDataset):
     """
 
     def __init__(
-        self, root, categories, max_asset_size=None, num_assets_min=3, num_assets_max=5, split=0.7, train=True
+        self,
+        root,
+        categories,
+        max_asset_size=None,
+        num_assets_min=3,
+        num_assets_max=5,
+        split=0.7,
+        train=True,
+        save_usd=False,
     ):
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
         self.sd_helper = SyntheticDataHelper()
@@ -72,6 +80,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.categories = categories
         self.range_num_assets = (num_assets_min, max(num_assets_min, num_assets_max))
         self.references = self._find_usd_assets(root, categories, max_asset_size, split, train)
+        self.save_usd = save_usd
 
         self.cur_idx = 0
 
@@ -238,7 +247,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         from omni.physx.scripts import utils
 
         # Add physics to prims
-        utils.setRigidBody(asset, "boundingCube", False)
+        utils.setRigidBody(asset, "convexHull", False)
         # Set Mass to 1 kg
         mass_api = PhysicsSchema.MassAPI.Apply(asset)
         mass_api.CreateMassAttr(1)
@@ -270,6 +279,10 @@ class RandomObjects(torch.utils.data.IterableDataset):
             color = Gf.Vec3f(random.random(), random.random(), random.random())
             omni.kit.usd.create_material_input(mtl_prim, "glass_color", color, Sdf.ValueTypeNames.Color3f)
             omni.kit.usd.create_material_input(mtl_prim, "glass_ior", 1.45, Sdf.ValueTypeNames.Float)
+            # This value is the volumetric light absorption scale, reduce to zero to make glass clearer
+            omni.kit.usd.create_material_input(mtl_prim, "depth", 0, Sdf.ValueTypeNames.Float)
+            # Enable for thin glass objects if needed
+            omni.kit.usd.create_material_input(mtl_prim, "thin_walled", False, Sdf.ValueTypeNames.Bool)
             # Bind the material to the prim
             prim_mat_shade = UsdShade.Material(mtl_prim)
             UsdShade.MaterialBindingAPI(asset).Bind(prim_mat_shade, UsdShade.Tokens.strongerThanDescendants)
@@ -328,12 +341,18 @@ class RandomObjects(torch.utils.data.IterableDataset):
         while self.kit.is_loading():
             self.kit.update()
         print("done")
+
+        # store the usd for debugging, save while paused so physics state is preserved
+        if self.save_usd:
+            usd_path = os.path.join("usd", "{:03d}.usd".format(self.cur_idx))
+            omni.usd.get_context().export_as_stage(usd_path, None)
+
         # Return to user specified render mode
         self.kit.set_setting("/rtx/rendermode", RENDER_CONFIG["renderer"])
         # Collect Groundtruth in PT mode for RGB only
         gt_pt = self.sd_helper.get_groundtruth(["rgb"])
 
-        # everything is captured, stop simulating
+        # everything is captured, stop simulating, this will also reset physics
         self.kit.stop()
 
         # RGB
@@ -415,7 +434,7 @@ if __name__ == "__main__":
     # Remove this if using with a different dataset than ShapeNet
     args.categories = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
 
-    dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size)
+    dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size, save_usd=False)
 
     # Iterate through dataset and visualize the output
     plt.ion()
