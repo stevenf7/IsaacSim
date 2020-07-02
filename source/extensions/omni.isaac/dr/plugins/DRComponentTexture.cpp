@@ -31,6 +31,7 @@ DRComponentTexture::DRComponentTexture(carb::tokens::ITokens* tokens) : DRCompon
     mIsIgnore = false;
     mIsGrouping = false;
     mDoOnce = true;
+    mEnableProjectUVW = false;
 }
 DRComponentTexture::~DRComponentTexture()
 {
@@ -116,7 +117,8 @@ void DRComponentTexture::update()
     mPrimClassMap.clear();
     for (auto& prim : mAllPrims)
     {
-        if (prim && prim.GetTypeName().GetString() == "Mesh")
+        auto primType = prim.GetTypeName().GetString();
+        if (prim && (primType == "Mesh" || primType == "Xform"))
         {
             pxr::UsdShadeMaterialBindingAPI materialBinding(prim);
             mPrimMaterialBindingsMap.insert(std::make_pair(prim.GetPath().GetString(), materialBinding));
@@ -169,6 +171,7 @@ void DRComponentTexture::onComponentChange()
     const pxr::DrSchemaTextureComponent& texturePrim = (pxr::DrSchemaTextureComponent)mPrim;
     texturePrim.GetCompNameAttr().Get(&mCompName);
     texturePrim.GetTextureListAttr().Get(&textureList);
+    texturePrim.GetEnableProjectUVWAttr().Get(&mEnableProjectUVW);
     texturePrim.GetIgnoredClassAttr().Get(&ignoredClass);
     texturePrim.GetGroupedClassAttr().Get(&groupedClass);
     texturePrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
@@ -230,11 +233,15 @@ void DRComponentTexture::tick()
         unsigned int textureIndex = 0;
         for (auto materialPrim : mMaterialPrims)
         {
-            if (!materialPrim.HasAttribute(pxr::TfToken("inputs:diffuse_texture")))
+            if (!materialPrim.HasAttribute(pxr::TfToken("inputs:diffuse_texture")) ||
+                !materialPrim.HasAttribute(pxr::TfToken("inputs:project_uvw")))
                 break;
             pxr::UsdAttribute diffuseTextureAttr = materialPrim.GetAttribute(pxr::TfToken("inputs:diffuse_texture"));
             if (diffuseTextureAttr)
                 diffuseTextureAttr.Set(pxr::SdfAssetPath(mTextureList[textureIndex].c_str()));
+            pxr::UsdAttribute projectUVWAttr = materialPrim.GetAttribute(pxr::TfToken("inputs:project_uvw"));
+            if (projectUVWAttr)
+                projectUVWAttr.Set(mEnableProjectUVW);
             textureIndex++;
         }
         if (textureIndex == mMaterialPrims.size())

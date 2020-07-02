@@ -166,6 +166,7 @@ class DRMenu:
         prim.CreateCompNameAttr().Set(str("texture_component_" + str(self.component_count[4])))
         prim.CreatePrimPathsRel()
         prim.CreateTextureListAttr().Set(str(""))
+        prim.CreateEnableProjectUVWAttr().Set(bool(False))
         prim.CreateIgnoredClassAttr().Set(str(""))
         prim.CreateGroupedClassAttr().Set(str(""))
         prim.CreateDurationAttr().Set(float(1.0))
