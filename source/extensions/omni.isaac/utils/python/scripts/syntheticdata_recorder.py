@@ -140,7 +140,7 @@ class Extension(omni.ext.IExt):
                     with ui.HStack():
                         ui.Spacer(width=10)
                         self._ui_dir_label = ui.Label("Output Directory:", width=100)
-                        default_dir = os.path.join(os.getcwd(), "data")
+                        default_dir = os.path.join(os.getcwd(), "output")
                         self._ui_dir_name = ui.StringField(width=300)
                         self._ui_dir_name.model.set_value(default_dir)
                     with ui.HStack():
