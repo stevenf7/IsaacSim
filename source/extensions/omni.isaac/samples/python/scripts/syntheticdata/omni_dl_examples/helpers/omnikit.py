@@ -96,6 +96,9 @@ class OmniKitHelper:
             "--/app/content/emptyStageOnStart=False",  # This is required due to a infinite loop but results in errors on launch
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',
+            f'--carb/app/extensions/folders2/0="{os.environ["KIT_PATH"]}/exts"',  # adding to json doesn't work
+            f'--carb/app/extensions/folders2/1="{os.environ["KIT_PATH"]}/extsPhysics"',  # adding to json doesn't work
+            f'--carb/app/extensions/folders2/2="{os.environ["ISAAC_PATH"]}/exts"',  # adding to json doesn't work
         ]
         if self.config.get("headless"):
             args.append("--no-window")
