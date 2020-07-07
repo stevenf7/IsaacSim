@@ -15,7 +15,8 @@
                 "omni.kit.primitive.mesh",
                 "omni.kit.context_menu",
                 "omni.physx",
-                "omni.syntheticdata"
+                "omni.syntheticdata",
+                "omni.isaac.dr"
             ]
         }
     }
