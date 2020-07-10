@@ -82,7 +82,8 @@ void DRComponentMaterial::update()
     mPrimClassMap.clear();
     for (auto& prim : mAllPrims)
     {
-        if (prim && prim.GetTypeName().GetString() == "Mesh")
+        auto primType = prim.GetTypeName().GetString();
+        if (prim && (primType == "Mesh" || primType == "Xform"))
         {
             pxr::UsdShadeMaterialBindingAPI materialBinding(prim);
             mPrimMaterialBindingsMap.insert(std::make_pair(prim.GetPath().GetString(), materialBinding));
