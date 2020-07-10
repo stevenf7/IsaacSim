@@ -19,4 +19,8 @@
   <dependency name="robotimpsdk" linkPath="../_build/target-deps/robotimpsdk">
     <package name="robotimpsdk" version="100-20200515-851a354c3fd"/>
   </dependency>
+  <dependency name="step_reader" linkPath="../_build/target-deps/stepreader">
+    <package name="step_reader" version="linux_x64_linbuild_20200710_1779942" platforms="linux-x86_64" />
+    <package name="step_reader" version="win_x64_winbuild_20200710_1779942" platforms="windows-x86_64" />
+  </dependency>
 </project>

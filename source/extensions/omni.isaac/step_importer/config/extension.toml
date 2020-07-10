@@ -1,0 +1,13 @@
+display_name = "STEP Importer"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.kit.test" = {}
+
+[[python.modules]]
+name = "omni.isaac.step_importer"
+
+[[native.plugins]]
+search_path = "bin/${platform}/${config}/*.plugin"
+recursive = false
+
