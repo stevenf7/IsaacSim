@@ -100,10 +100,19 @@ void DRComponentMaterial::update()
             }
         }
     }
+    mMaterialPrims.clear();
+    mMaterialShades.clear();
+    if (mLoadedMaterialPaths.size() > 0)
+    {
+        for (std::string& materialPath : mLoadedMaterialPaths)
+        {
+            auto materialPrim = mStage->GetPrimAtPath(pxr::SdfPath(materialPath.c_str()));
+            pxr::UsdShadeMaterial material(materialPrim);
+            mMaterialShades.push_back(material);
+        }
+    }
     if (mMaterialLayer)
     {
-        mMaterialPrims.clear();
-        mMaterialShades.clear();
         pxr::UsdEditContext context(mStage, mMaterialLayer);
         for (std::string& url : mMaterialList)
         {
@@ -156,6 +165,12 @@ void DRComponentMaterial::onComponentChange()
         boost::split(mIgnoreClassList, ignoredClass, [](char c) { return c == ','; });
     if (groupedClass != "")
         boost::split(mGroupClassList, groupedClass, [](char c) { return c == ','; });
+    mLoadedMaterialPaths.clear();
+    pxr::UsdRelationship loadedMaterialPrimPaths = materialPrim.GetLoadedMaterialPrimPathsRel();
+    pxr::SdfPathVector materialTargets;
+    loadedMaterialPrimPaths.GetTargets(&materialTargets);
+    for (auto target : materialTargets)
+        mLoadedMaterialPaths.push_back(target.GetString());
     update();
     CARB_LOG_INFO("Material Update: %s", mCompName.c_str());
 }
@@ -188,9 +203,9 @@ void DRComponentMaterial::tick()
 {
     for (auto& primMaterialBinding : mPrimMaterialBindingsMap)
     {
-        if (mMaterialList.size() == 0 || mMaterialShades.size() == 0)
+        if (mMaterialShades.size() == 0)
             return;
-        int randVal = int(randomRange(0.0f, mMaterialList.size() * 1.0f));
+        int randVal = int(randomRange(0.0f, mMaterialShades.size() * 1.0f));
         pxr::UsdShadeMaterialBindingAPI materialBinding = primMaterialBinding.second;
         // Check for classes to be grouped
         if (mIsGrouping && mPrimClassMap.find(primMaterialBinding.first) != mPrimClassMap.end())

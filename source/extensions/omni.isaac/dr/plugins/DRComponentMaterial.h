@@ -35,7 +35,7 @@ private:
     void update();
     void stop();
 
-    std::vector<std::string> mPaths, mMaterialList, mGroupClassList;
+    std::vector<std::string> mPaths, mMaterialList, mGroupClassList, mLoadedMaterialPaths;
     std::vector<pxr::UsdPrim> mMaterialPrims, mAllPrims;
     std::vector<pxr::UsdShadeMaterial> mMaterialShades;
     std::unordered_map<std::string, std::string> mPrimClassMap;
