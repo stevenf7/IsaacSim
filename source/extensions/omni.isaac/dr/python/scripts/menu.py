@@ -190,6 +190,7 @@ class DRMenu:
         prim.CreateMaterialListAttr().Set(str(""))
         prim.CreateIgnoredClassAttr().Set(str(""))
         prim.CreateGroupedClassAttr().Set(str(""))
+        prim.CreateLoadedMaterialPrimPathsRel()
         prim.CreateDurationAttr().Set(float(1.0))
         prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass

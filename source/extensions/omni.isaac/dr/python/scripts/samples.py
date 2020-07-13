@@ -234,6 +234,7 @@ class Extension(omni.ext.IExt):
         )
         prim.CreateIgnoredClassAttr().Set(str(""))
         prim.CreateGroupedClassAttr().Set(str(""))
+        prim.CreateLoadedMaterialPrimPathsRel()
         prim.CreateDurationAttr().Set(float(0.3))
         prim.CreateIncludeChildrenAttr().Set(bool(False))
 
