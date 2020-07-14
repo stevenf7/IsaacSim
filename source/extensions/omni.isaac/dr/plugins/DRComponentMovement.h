@@ -37,7 +37,8 @@ private:
     pxr::GfVec2f mXRange, mYRange, mZRange;
     std::vector<pxr::UsdPrim> mAllPrims;
     bool mEnableLookAtTarget;
-    pxr::GfVec3d mUpUsd, mLookAtTargetOffset;
+    pxr::GfVec3d mLookAtTargetOffset = pxr::GfVec3d(0.0, 0.0, 0.0);
+    pxr::GfVec3d mUpUsd;
 };
 
 }
