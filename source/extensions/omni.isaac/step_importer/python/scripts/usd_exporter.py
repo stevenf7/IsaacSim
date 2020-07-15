@@ -1,8 +1,8 @@
 import omni
 import carb
 import pxr
-from pxr import UsdShade, Sdf, Gf, Vt, UsdGeom
-from pxr.Vt import IntArray, Vec3fArray
+from pxr import UsdShade, Sdf, Gf, Vt, UsdGeom, UsdLux
+from pxr.Vt import IntArray, Vec3fArray, Vec2fArray
 import random
 import os
 import shutil
@@ -76,7 +76,10 @@ def export_material_list(material_list, path):
 
 def make_array(_type, a):
     if _type == "float":
-        return Vec3fArray([Gf.Vec3f(float(a[i][0]), float(a[i][1]), float(a[i][2])) for i in range(a.shape[0])])
+        if a.shape[1] == 3:
+            return Vec3fArray([Gf.Vec3f(float(a[i][0]), float(a[i][1]), float(a[i][2])) for i in range(a.shape[0])])
+        if a.shape[1] == 2:
+            return Vec2fArray([Gf.Vec2f(float(a[i][0]), float(a[i][1])) for i in range(a.shape[0])])
     elif _type == "int":
         al = a.flatten().tolist()
         return IntArray(al)
@@ -187,6 +190,9 @@ class PartExporter:
                 xform = UsdGeom.Xform.Define(stage, usd_sub_path).GetPrim()
                 xform.GetReferences().AddReference(os.path.relpath(mesh_path, self.path))
                 set_pose(xform, c.pose)
+
+            distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
+            distantLight.CreateIntensityAttr(3000)
             stage.Save()
         if self._make_assembly_usd:
             return self.assemblies_path[index]
@@ -242,6 +248,7 @@ def create_usd_mesh(mesh, path, materials_stage, materials_list):
 
     Vertex = make_array("float", mesh.get_vertices())
     VertexNormals = make_array("float", mesh.get_vertex_normals())
+    VertexUVs = make_array("float", mesh.get_vertex_UVs())
     faceVertexCount = IntArray([3 for i in range(int(mesh.get_triangles().shape[0] / 3))])
     facesIndices = make_array("int", mesh.get_triangles())
     # faceNormals = make_array(Vec3fArray, mesh.get_triangles_normals())
@@ -250,10 +257,16 @@ def create_usd_mesh(mesh, path, materials_stage, materials_list):
     usdMesh.CreateNormalsAttr(VertexNormals)
     usdMesh.CreateFaceVertexCountsAttr(faceVertexCount)
     usdMesh.CreateFaceVertexIndicesAttr(facesIndices)
-    usdMesh.SetNormalsInterpolation(pxr.UsdGeom.Tokens.faceVarying)
-
+    # usdMesh.SetNormalsInterpolation(pxr.UsdGeom.Tokens.faceVarying)
+    texCoord = usdMesh.CreatePrimvar("st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.varying)
+    texCoord.Set(VertexUVs)
+    usdMesh.CreateSubdivisionSchemeAttr("none")
+    usdMesh.CreateTriangleSubdivisionRuleAttr("smooth")
     extent = usdMesh.ComputeExtent(Vertex)
     usdMesh.CreateExtentAttr().Set(extent)
+
+    distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
+    distantLight.CreateIntensityAttr(3000)
 
     mat_set = set(face_materials)
     for material in mat_set:

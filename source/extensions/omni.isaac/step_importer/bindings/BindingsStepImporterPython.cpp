@@ -61,6 +61,11 @@ PYBIND11_MODULE(_step_importer, m)
 
     m.doc() = "Isaac STEP importer bindings";
 
+    py::class_<step_reader::float2>(m, "float2", "vector of size 2")
+        .def(py::init<>())
+        .def_readwrite("x", &step_reader::float2::x)
+        .def_readwrite("y", &step_reader::float2::y);
+
     py::class_<step_reader::float3>(m, "float3", "vector of size 3")
         .def(py::init<>())
         .def_readwrite("x", &step_reader::float3::x)
@@ -157,6 +162,11 @@ PYBIND11_MODULE(_step_importer, m)
              [](Mesh& self) {
                  return py::array_t<float>(
                      { self.vertices.size(), (size_t)3 }, reinterpret_cast<float*>(self.vertex_normals.data()));
+             })
+        .def("get_vertex_UVs",
+             [](Mesh& self) {
+                 return py::array_t<float>(
+                     { self.vertex_UVs.size(), (size_t)2 }, reinterpret_cast<float*>(self.vertex_UVs.data()));
              })
         .def("get_triangles_normals", [](Mesh& self) {
             return py::array_t<float>(

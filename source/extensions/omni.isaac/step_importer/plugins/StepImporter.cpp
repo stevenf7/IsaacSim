@@ -39,8 +39,10 @@ omni::isaac::step_importer::Mesh fromStepReader(step_reader::Mesh* m)
     std::vector<size_t> triangles(m->triangles, m->triangles + m->triangles_size * 3);
     std::vector<step_reader::float3> face_normals(m->face_normals, m->face_normals + m->triangles_size);
     std::vector<step_reader::float3> vertex_normals(m->vertex_normals, m->vertex_normals + m->vertex_size);
+    std::vector<step_reader::float2> vertex_UVs(m->vertex_UVs, m->vertex_UVs + m->vertex_size);
     std::vector<size_t> face_materials(m->face_mats, m->face_mats + m->triangles_size);
-    return omni::isaac::step_importer::Mesh{ m->name, vertices, triangles, face_normals, vertex_normals, face_materials };
+    return omni::isaac::step_importer::Mesh{ m->name,        vertices,   triangles,     face_normals,
+                                             vertex_normals, vertex_UVs, face_materials };
 }
 
 omni::isaac::step_importer::Assembly fromStepReader(step_reader::Assembly* m)
@@ -85,6 +87,7 @@ void CARB_ABI SiImportStepFile(char* filename,
         std::unique_ptr<step_reader::float3[]> vertices_ptr(p.meshes[i].vertices);
         std::unique_ptr<step_reader::float3[]> vertex_normals_ptr(p.meshes[i].vertex_normals);
         std::unique_ptr<step_reader::float3[]> face_normals_ptr(p.meshes[i].face_normals);
+        std::unique_ptr<step_reader::float2[]> UVs_ptr(p.meshes[i].vertex_UVs);
         std::unique_ptr<size_t[]> triangles_ptr(p.meshes[i].triangles);
         std::unique_ptr<size_t[]> face_mats_ptr(p.meshes[i].face_mats);
     }

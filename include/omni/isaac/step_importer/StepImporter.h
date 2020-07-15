@@ -27,6 +27,7 @@ struct Mesh
     std::vector<size_t> triangles; // index of vertices that make up each mesh (length: 3*size)
     std::vector<step_reader::float3> face_normals;
     std::vector<step_reader::float3> vertex_normals;
+    std::vector<step_reader::float2> vertex_UVs;
     std::vector<size_t> face_materials;
 };
 
