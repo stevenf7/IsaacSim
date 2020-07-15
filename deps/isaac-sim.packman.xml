@@ -1,26 +1,26 @@
 <project toolsVersion="5.6">
-  <dependency name="usd_ext_isaac_release" linkPath="../_build/target-deps/usd_ext_isaac/release">
-    <package name="usd_ext_isaac" version="19.11.115.5973c0a4-win64_py36_release-master" platforms="windows-x86_64"/>
-    <package name="usd_ext_isaac" version="19.11.115.5973c0a4-linux-x86_64_py36_release-master" platforms="linux-x86_64"/>
-  </dependency>
-  <dependency name="usd_ext_isaac_debug" linkPath="../_build/target-deps/usd_ext_isaac/debug">
-    <package name="usd_ext_isaac" version="19.11.115.5973c0a4-win64_py36_debug-master" platforms="windows-x86_64"/>
-    <package name="usd_ext_isaac" version="19.11.115.5973c0a4-linux-x86_64_py36_debug-master" platforms="linux-x86_64"/>
-  </dependency>
-  <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
-    <package name="nv_ros" version="melodic_20200605_045b485-linux64_boost_1.68.0_release-master" platforms="linux-x86_64"/>
-  </dependency>
-  <dependency name="lula" linkPath="../_build/target-deps/lula">
-    <package name="lula" version="linux_x64_linbuild_20200415_a36cb37" platforms="linux-x86_64"/>
-  </dependency>
-  <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
-    <package name="isaac_engine" version="linux_x64_20200629_41d2b8be9" platforms="linux-x86_64"/>
-  </dependency>
-  <dependency name="robotimpsdk" linkPath="../_build/target-deps/robotimpsdk">
-    <package name="robotimpsdk" version="100-20200515-851a354c3fd"/>
-  </dependency>
-  <dependency name="step_reader" linkPath="../_build/target-deps/stepreader">
-    <package name="step_reader" version="linux_x64_linbuild_20200710_1779942" platforms="linux-x86_64" />
-    <package name="step_reader" version="win_x64_winbuild_20200710_1779942" platforms="windows-x86_64" />
-  </dependency>
+    <dependency name="usd_ext_isaac_release" linkPath="../_build/target-deps/usd_ext_isaac/release">
+        <package name="usd_ext_isaac" version="19.11.115.5973c0a4-win64_py36_release-master" platforms="windows-x86_64"/>
+        <package name="usd_ext_isaac" version="19.11.115.5973c0a4-linux-x86_64_py36_release-master" platforms="linux-x86_64"/>
+    </dependency>
+    <dependency name="usd_ext_isaac_debug" linkPath="../_build/target-deps/usd_ext_isaac/debug">
+        <package name="usd_ext_isaac" version="19.11.115.5973c0a4-win64_py36_debug-master" platforms="windows-x86_64"/>
+        <package name="usd_ext_isaac" version="19.11.115.5973c0a4-linux-x86_64_py36_debug-master" platforms="linux-x86_64"/>
+    </dependency>
+    <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
+        <package name="nv_ros" version="melodic_20200605_045b485-linux64_boost_1.68.0_release-master" platforms="linux-x86_64"/>
+    </dependency>
+    <dependency name="lula" linkPath="../_build/target-deps/lula">
+        <package name="lula" version="linux_x64_linbuild_20200415_a36cb37" platforms="linux-x86_64"/>
+    </dependency>
+    <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
+        <package name="isaac_engine" version="linux_x64_20200629_41d2b8be9" platforms="linux-x86_64"/>
+    </dependency>
+    <dependency name="robotimpsdk" linkPath="../_build/target-deps/robotimpsdk">
+        <package name="robotimpsdk" version="100-20200515-851a354c3fd"/>
+    </dependency>
+    <dependency name="step_reader" linkPath="../_build/target-deps/stepreader">
+        <package name="step_reader" version="linux_x64_linbuild_20200714_bbdd965" platforms="linux-x86_64" />
+        <package name="step_reader" version="win_x64_winbuild_20200714_bbdd965" platforms="windows-x86_64" />
+    </dependency>
 </project>
