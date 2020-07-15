@@ -51,8 +51,7 @@ class Extension(omni.ext.IExt):
         self._btn_load.set_clicked_fn(self._select_file)
 
     def _select_picked_folder_callback(self, path):
-        if path.startswith("file:"):
-            path = path[5:]
+        if not path.startswith("omniverse:"):
             config = _urdf.ImportConfig()
             config.merge_fixed_joints = self._merge_fixed_joints_checkbox.value
             config.enable_convex_decomp = self._enable_convex_decomp.value
