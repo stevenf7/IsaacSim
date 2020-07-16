@@ -26,6 +26,9 @@
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
+
+#include <iostream>
+
 using namespace physx;
 using namespace pxr;
 
@@ -35,6 +38,56 @@ namespace isaac
 {
 namespace lidar
 {
+
+// taken from https://stackoverflow.com/questions/40629345/fill-array-dynamicly-with-gradient-color-c
+uint32_t dist_to_color(double ratio, bool bigEndian)
+{
+    // we want to normalize ratio so that it fits in to 6 regions
+    // where each region is 256 units long
+    int normalized = int(ratio * 256 * 6);
+
+    // find the distance to the start of the closest region
+    int x = normalized % 256;
+
+    int alpha = 255, grn = 0, red = 0, blu = 0;
+
+
+    switch (normalized / 256)
+    {
+    case 0:
+        red = 255;
+        grn = x;
+        blu = 0;
+        break; // red
+    case 1:
+        red = 255 - x;
+        grn = 255;
+        blu = 0;
+        break; // yellow
+    case 2:
+        red = 0;
+        grn = 255;
+        blu = x;
+        break; // green
+    case 3:
+        red = 0;
+        grn = 255 - x;
+        blu = 255;
+        break; // cyan
+    case 4:
+        red = x;
+        grn = 0;
+        blu = 255;
+        break; // blue
+    case 5:
+        red = 255;
+        grn = 0;
+        blu = 255 - x;
+        break; // magenta
+    }
+
+    return blu + (grn << 8) + (red << 16) + (alpha << 24);
+}
 
 
 LidarSensor::LidarSensor()
@@ -132,6 +185,11 @@ void LidarSensor::onComponentChange()
     if (mPrim.GetDrawLidarPointsAttr().HasValue())
     {
         mPrim.GetDrawLidarPointsAttr().Get(&mDrawLidarPoints);
+    }
+
+    if (mPrim.GetDrawLidarLinesAttr().HasValue())
+    {
+        mPrim.GetDrawLidarLinesAttr().Get(&mDrawLidarLines);
     }
 
     if (mPrim.GetYawOffsetAttr().HasValue())
@@ -243,7 +301,7 @@ bool raycastClosest(const physx::PxVec3& pos,
     // }
     return ret;
 }
-template <bool drawLidarPoints>
+template <bool drawLidarPoints, bool drawLidarLines>
 void scan(int start,
           int stop,
           int rows,
@@ -260,10 +318,10 @@ void scan(int start,
           std::vector<float>& zenith,
           std::vector<float>& azimuth,
           float maxDepth,
+          float minDepth,
           float metersPerUnit,
           bool zUp)
 {
-
 
     int i = start * rows;
     int j = start;
@@ -290,13 +348,45 @@ void scan(int start,
                 linearDepth[i] = raycastHit.distance * metersPerUnit; // in meters
                 intensity[i] = 255;
 
+                if (linearDepth[i] < minDepth * metersPerUnit)
+                {
+                    depth[i] = 0;
+                    linearDepth[i] = minDepth * metersPerUnit; // in meters
+                    intensity[i] = 0;
+                    continue;
+                }
+
                 if (drawLidarPoints)
                 {
-                    carb::Float3 hitPos = (const carb::Float3&)raycastHit.position;
+                    // std::cout << "calling drawLidarPoints" <<std::endl;
+                    carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
                     omni::isaac::lidar::DebugData data;
-                    data.startPos = (const carb::Float3&)origin;
-                    data.endPos = (const carb::Float3&)hitPos;
-                    data.color = 0xFFc7f464;
+
+                    physx::PxVec3 diff = raycastHit.position - origin;
+                    // TODO: replace lines with dots.
+
+                    data.startPos = hitPos;
+                    auto temp = raycastHit.position - diff.getNormalized();
+                    data.endPos = { temp.x, temp.y, temp.z };
+                    // set ratio for color.  should be zero at minDepth and unity at maxDepth
+                    auto ratio = (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
+                    data.color = dist_to_color(ratio, true);
+                    debugLines.push_back(data);
+                }
+
+                if (drawLidarLines)
+                {
+                    // std::cout << "calling drawLidarLines" <<std::endl;
+                    carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
+                    omni::isaac::lidar::DebugData data;
+
+                    physx::PxVec3 diff = raycastHit.position - origin;
+                    auto temp = origin + diff.getNormalized() * minDepth;
+                    data.startPos = { temp.x, temp.y, temp.z };
+                    data.endPos = hitPos;
+                    // set ratio for color.  should be zero at minDepth and unity at maxDepth
+                    auto ratio = (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
+                    data.color = dist_to_color(ratio, true);
                     debugLines.push_back(data);
                 }
             }
@@ -305,15 +395,6 @@ void scan(int start,
                 depth[i] = 65535;
                 linearDepth[i] = maxDepth * metersPerUnit; // in meters
                 intensity[i] = 0;
-                if (drawLidarPoints)
-                {
-                    physx::PxVec3 hitPos = origin + unitDir * maxDepth;
-                    omni::isaac::lidar::DebugData data;
-                    data.startPos = (const carb::Float3&)origin;
-                    data.endPos = (const carb::Float3&)hitPos;
-                    data.color = 0xFF556270;
-                    debugLines.push_back(data);
-                }
             }
 
             if (zenith[row] == 0.0f)
@@ -387,15 +468,23 @@ void LidarSensor::tick()
     if (mRotationRate == 0.0f)
     {
         mLastNumColsTicked = mCols;
-        if (mDrawLidarPoints)
+        if (mDrawLidarLines)
         {
-            scan<true>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mPrim, mDebugLines,
-                       mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
+            scan<false, true>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mPrim,
+                              mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMinDepth,
+                              mMetersPerUnit, zUp);
+        }
+        else if (mDrawLidarPoints)
+        {
+            scan<true, false>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mPrim,
+                              mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMinDepth,
+                              mMetersPerUnit, zUp);
         }
         else
         {
-            scan<false>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mPrim, mDebugLines,
-                        mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMetersPerUnit, zUp);
+            scan<false, false>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mPrim,
+                               mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMinDepth,
+                               mMetersPerUnit, zUp);
         }
         dumpData(0, mCols, elapsedTime);
 
@@ -422,17 +511,23 @@ void LidarSensor::tick()
         mRemainingTime = std::fmod(mRemainingTime, mMaxStepSize);
 
         // Now scan the columns and dump the data
-        if (mDrawLidarPoints)
+        if (mDrawLidarLines)
         {
-            scan<true>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation, mPhysx,
-                       mPxScene, mPrim, mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth,
-                       mMetersPerUnit, zUp);
+            scan<false, true>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation,
+                              mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth,
+                              mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+        }
+        else if (mDrawLidarPoints)
+        {
+            scan<true, false>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation,
+                              mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth,
+                              mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
         else
         {
-            scan<false>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation, mPhysx,
-                        mPxScene, mPrim, mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth,
-                        mMetersPerUnit, zUp);
+            scan<false, false>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation,
+                               mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mLinearDepth, mIntensity, mZenith,
+                               mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
         dumpData(mLastCol, mLastCol + mLastNumColsTicked, simulateTime);
 

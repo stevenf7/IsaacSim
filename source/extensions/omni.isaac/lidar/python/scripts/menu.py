@@ -41,6 +41,7 @@ class LidarMenu:
         lidar.CreateMaxRangeAttr().Set(100.0)
         lidar.CreateHighLodAttr().Set(False)
         lidar.CreateDrawLidarPointsAttr().Set(False)
+        lidar.CreateDrawLidarLinesAttr().Set(False)
         lidar.CreateYawOffsetAttr().Set(0.0)
 
         return lidar
