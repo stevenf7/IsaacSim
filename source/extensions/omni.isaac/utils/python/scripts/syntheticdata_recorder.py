@@ -14,7 +14,9 @@ import omni.kit.editor
 import omni.ui as ui
 
 import atexit
+import colorsys
 import queue
+import random
 import os
 import threading
 import numpy as np
@@ -72,14 +74,62 @@ class DataWriter:
                 if gt_type in ["DEPTH", "RGB"]:
                     self.save_image(gt_type, data, filename)
                 elif gt_type == "INSTANCE":
-                    self.save_segmentation(data, filename)
+                    self.save_segmentation(
+                        gt_type,
+                        data,
+                        filename,
+                        groundtruth["METADATA"]["WIDTH"],
+                        groundtruth["METADATA"]["HEIGHT"],
+                        False,
+                    )
+                elif gt_type == "SEMANTIC":
+                    self.save_segmentation(
+                        gt_type,
+                        data,
+                        filename,
+                        groundtruth["METADATA"]["WIDTH"],
+                        groundtruth["METADATA"]["HEIGHT"],
+                        False,
+                    )
                 else:
                     raise NotImplementedError
             self.q.task_done()
 
-    def save_segmentation(self, data, filename):
+    def random_colours(self, N):
+        start = random.random()
+        hues = [(start + i / N) % 1.0 for i in range(N)]
+        colours = [colorsys.hsv_to_rgb(h, 0.9, 1.0) for i, h in enumerate(hues)]
+        random.shuffle(colours)
+        return colours
+
+    def colorize_segmentation(self, segmentation_image, width=1280, height=720):
+        color_image = np.zeros([height, width, 3], dtype=np.uint8)
+        color_pixels = self.random_colours(np.max(segmentation_image[:, :, 0]) + 1)
+        for row in range(height):
+            for col in range(width):
+                pixel_value = segmentation_image[row, col, 0]
+                if pixel_value > 0:
+                    color_image[row, col] = [
+                        int(color_pixels[pixel_value][0] * 255),
+                        int(color_pixels[pixel_value][1] * 255),
+                        int(color_pixels[pixel_value][2] * 255),
+                    ]
+        return np.array(color_image)
+
+    def save_segmentation(self, data_type, data, filename, width=1280, height=720, display_rgb=True):
         # Save ground truth data locally as npy
-        np.save(self.instance_folder + filename + ".npy", data)
+        if data_type == "INSTANCE":
+            np.save(self.instance_folder + filename + ".npy", data)
+        if data_type == "SEMANTIC":
+            np.save(self.semantic_folder + filename + ".npy", data)
+        if display_rgb:
+            image_data = np.frombuffer(data, dtype=np.uint8).reshape(*data.shape, -1)
+            color_image = self.colorize_segmentation(image_data, width, height)
+            color_image_rgb = Image.fromarray(color_image, "RGB")
+            if data_type == "INSTANCE":
+                color_image_rgb.save(f"{self.instance_folder}/{filename}.png")
+            if data_type == "SEMANTIC":
+                color_image_rgb.save(f"{self.semantic_folder}/{filename}.png")
 
     def save_image(self, img_type, image_data, filename):
         if img_type == "RGB":
@@ -104,9 +154,12 @@ class DataWriter:
         self.depth_folder = self.data_dir + "/depth/"
         if not os.path.exists(self.depth_folder):
             os.mkdir(self.depth_folder)
-        self.instance_folder = self.data_dir + "/segmentation/"
+        self.instance_folder = self.data_dir + "/instance_segmentation/"
         if not os.path.exists(self.instance_folder):
             os.mkdir(self.instance_folder)
+        self.semantic_folder = self.data_dir + "/semantic_segmentation/"
+        if not os.path.exists(self.semantic_folder):
+            os.mkdir(self.semantic_folder)
 
 
 class Extension(omni.ext.IExt):
@@ -211,6 +264,7 @@ class Extension(omni.ext.IExt):
         self._enable_rgb = self._settings.get("/syntheticdata/sensors/rgbSensor")
         self._enable_depth = self._settings.get("/syntheticdata/sensors/depthLinearSensor")
         self._enable_instance = self._settings.get("/syntheticdata/sensors/instanceSegmentationSensor")
+        self._enable_semantic = self._settings.get("/syntheticdata/sensors/semanticSegmentationSensor")
 
         groundtruth = {"METADATA": {"image_id": str(self._counter)}, "DATA": {}}
         # RGB
@@ -247,6 +301,22 @@ class Extension(omni.ext.IExt):
                 instance_sensor, instance_width, instance_height, instance_row_size
             )
             groundtruth["DATA"]["INSTANCE"] = instance_data
+            groundtruth["METADATA"]["WIDTH"] = instance_width
+            groundtruth["METADATA"]["HEIGHT"] = instance_height
+
+        # Semantic Segmentation
+        if self._enable_semantic and "Ray" in self._render_mode:
+            semantic_sensor = gt.SensorType.SemanticSegmentation
+            semantic_width = self._interface.get_sensor_width(semantic_sensor)
+            semantic_height = self._interface.get_sensor_height(semantic_sensor)
+            semantic_row_size = self._interface.get_sensor_row_size(semantic_sensor)
+            semantic_size = self._interface.get_sensor_size(semantic_sensor)
+            semantic_data = self._interface.get_sensor_host_uint32_texture_array(
+                semantic_sensor, semantic_width, semantic_height, semantic_row_size
+            )
+            groundtruth["DATA"]["SEMANTIC"] = semantic_data
+            groundtruth["METADATA"]["WIDTH"] = semantic_width
+            groundtruth["METADATA"]["HEIGHT"] = semantic_height
 
         self.data_writer.q.put(groundtruth)
 
