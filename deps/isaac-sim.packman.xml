@@ -23,6 +23,9 @@
         <package name="step_reader" version="linux_x64_linbuild_20200714_bbdd965" platforms="linux-x86_64" />
         <package name="step_reader" version="win_x64_winbuild_20200714_bbdd965" platforms="windows-x86_64" />
     </dependency>
+    <dependency name="octomap" linkPath="../_build/target-deps/octomap">
+        <package name="octomap" version="linux_x64_20200717_a3f3809" platforms="linux-x86_64" />
+    </dependency>
 </project>
 
 
