@@ -327,6 +327,7 @@ group "exts"
         include ("source/extensions/omni.isaac/motion_planning")
         include ("source/extensions/omni.isaac/robot_engine_bridge")
         include ("source/extensions/omni.isaac/ros_bridge")
+        include ("source/extensions/omni.isaac/occupancy_map")
     end
 
 -- Create a symlink for any data we need for tests
