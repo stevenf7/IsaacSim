@@ -74,9 +74,6 @@ files = [
     #["_build/target-deps/kit_sdk_$config/include", "_build/target-deps/kit_sdk_$config/include"],
     #["_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES", "_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES"],
     #["_build/target-deps/kit_sdk_$config/tools/packman/**", "_build/target-deps/kit_sdk_$config/tools/packman"] 
-
-    # HACK: For StartupTests
-    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so.10.2"],
 ]
 
 
@@ -101,6 +98,9 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd"],
     #["_build/target-deps/kit_sdk_$config/omniverse-kit.bat", "_build/target-deps/kit_sdk_$config/omniverse-kit.bat"],
+
+    # HACK: For StartupTests
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts/omni.kit.pip_archive-0.1/pip_prebundle/numpy/.libs/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts/omni.kit.pip_archive-0.1/pip_prebundle/numpy/.libs"],
 ]
 
 [isaac-sim.windows-x86_64.debug]
@@ -129,6 +129,9 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins"],
     #["_build/target-deps/kit_sdk_$config/omniverse-kit.sh", "_build/target-deps/kit_sdk_$config/omniverse-kit.sh"],
+
+    # HACK: For StartupTests
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so.10.2"],
 ]
 
 [isaac-sim.linux.debug]
@@ -177,9 +180,6 @@ files = [
     #["_build/target-deps/kit_sdk_$config/include", "_build/target-deps/kit_sdk_$config/include"],
     #["_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES", "_build/target-deps/kit_sdk_$config/PACKAGE-LICENSES"],
     #["_build/target-deps/kit_sdk_$config/tools/packman/**", "_build/target-deps/kit_sdk_$config/tools/packman"] 
-
-    # HACK: For StartupTests
-    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so.10.2"],
 ]
 
 
@@ -204,6 +204,9 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd"],
     #["_build/target-deps/kit_sdk_$config/omniverse-kit.bat", "_build/target-deps/kit_sdk_$config/omniverse-kit.bat"],
+
+    # HACK: For StartupTests
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts/omni.kit.pip_archive-0.1/pip_prebundle/numpy/.libs/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts/omni.kit.pip_archive-0.1/pip_prebundle/numpy/.libs"],
 ]
 
 [omniverse-kit-robotics.windows-x86_64.debug]
@@ -232,6 +235,9 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins"],
     #["_build/target-deps/kit_sdk_$config/omniverse-kit.sh", "_build/target-deps/kit_sdk_$config/omniverse-kit.sh"],
+
+    # HACK: For StartupTests
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so.10.2"],
 ]
 
 [omniverse-kit-robotics.linux.debug]
