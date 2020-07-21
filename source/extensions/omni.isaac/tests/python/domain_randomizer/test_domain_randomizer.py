@@ -3,13 +3,11 @@
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit.asyncapi
-import omni.kit.undo
 import omni.kit.commands
-import omni.isaac.DrSchema as DrSchema
 import carb.tokens
 import os
 import asyncio
-from pxr import Gf, Kind, Sdf, Usd, UsdGeom, UsdShade, UsdLux, UsdShade
+from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dr import _dr
@@ -74,17 +72,20 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         xformable = UsdGeom.Xformable(cube)
         # Create DR component and check if it exists
         path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/color_component", False)
-        prim = DrSchema.ColorComponent.Define(self._stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set(str("color_component"))
+        result, prim = omni.kit.commands.execute(
+            "CreateColorComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            first_color_range=(0.0, 0.0, 0.0),
+            second_color_range=(1.0, 1.0, 1.0),
+            roughness_range=(0.0, 1.0),
+            metallic_range=(0.0, 1.0),
+            duration=0.0,
+            include_children=False,
+        )
         color_comp_path = default_prim_path + "/color_component"
         color_comp = self._stage.GetPrimAtPath(color_comp_path)
         self.assertTrue(color_comp)
-        # Set parameter for DR component
-        prim.CreatePrimPathsRel().AddTarget(cube_path)
-        prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
-        prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
-        prim.CreateDurationAttr().Set(float(0.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
         # Let the material load
         await asyncio.sleep(10.0)
         # Validate color material prim
@@ -118,18 +119,20 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         transform_matrix_1 = xformable.GetLocalTransformation()
         # Create DR component and check if it exists
         path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/movement_component", False)
-        prim = DrSchema.MovementComponent.Define(self._stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set(str("movement_component"))
+        result, prim = omni.kit.commands.execute(
+            "CreateMovementComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            min_range=(0.0, 0.0, 0.0),
+            max_range=(10.0, 10.0, 10.0),
+            target_position=None,
+            target_paths=None,
+            duration=0.0,
+            include_children=False,
+        )
         mov_comp_path = default_prim_path + "/movement_component"
         mov_comp = self._stage.GetPrimAtPath(mov_comp_path)
         self.assertTrue(mov_comp)
-        # Set parameter for DR component
-        prim.CreatePrimPathsRel().AddTarget(cube_path)
-        prim.CreateXRangeAttr().Set((float(0.0), float(10.0)))
-        prim.CreateYRangeAttr().Set((float(0.0), float(10.0)))
-        prim.CreateZRangeAttr().Set((float(0.0), float(10.0)))
-        prim.CreateDurationAttr().Set(float(0.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
         # Enable manual mode and execute DR once
         self._dr.toggle_manual_mode()
         self._dr.randomize_once()
@@ -159,18 +162,18 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         transform_matrix_1 = xformable.GetLocalTransformation()
         # Create DR component and check if it exists
         path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/rotation_component", False)
-        prim = DrSchema.RotationComponent.Define(self._stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set(str("rotation_component"))
+        result, prim = omni.kit.commands.execute(
+            "CreateRotationComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            min_range=(0.0, 0.0, 0.0),
+            max_range=(360.0, 360.0, 360.0),
+            duration=0.0,
+            include_children=False,
+        )
         rot_comp_path = default_prim_path + "/rotation_component"
         rot_comp = self._stage.GetPrimAtPath(rot_comp_path)
         self.assertTrue(rot_comp)
-        # Set parameter for DR component
-        prim.CreatePrimPathsRel().AddTarget(cube_path)
-        prim.CreateXRangeAttr().Set((float(0.0), float(360.0)))
-        prim.CreateYRangeAttr().Set((float(0.0), float(360.0)))
-        prim.CreateZRangeAttr().Set((float(0.0), float(360.0)))
-        prim.CreateDurationAttr().Set(float(0.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
         # Enable manual mode and execute DR once
         self._dr.toggle_manual_mode()
         self._dr.randomize_once()
@@ -200,18 +203,19 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         transform_matrix_1 = xformable.GetLocalTransformation()
         # Create DR component and check if it exists
         path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/scale_component", False)
-        prim = DrSchema.ScaleComponent.Define(self._stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set(str("scale_component"))
+        result, prim = omni.kit.commands.execute(
+            "CreateScaleComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            min_range=(0.5, 0.5, 0.5),
+            max_range=(5.0, 5.0, 5.0),
+            uniform_scaling=False,
+            duration=0.0,
+            include_children=False,
+        )
         scale_comp_path = default_prim_path + "/scale_component"
         scale_comp = self._stage.GetPrimAtPath(scale_comp_path)
         self.assertTrue(scale_comp)
-        # Set parameter for DR component
-        prim.CreatePrimPathsRel().AddTarget(cube_path)
-        prim.CreateXRangeAttr().Set((float(0.0), float(5.0)))
-        prim.CreateYRangeAttr().Set((float(0.0), float(5.0)))
-        prim.CreateZRangeAttr().Set((float(0.0), float(5.0)))
-        prim.CreateDurationAttr().Set(float(0.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
         # Enable manual mode and execute DR once
         self._dr.toggle_manual_mode()
         self._dr.randomize_once()
@@ -236,20 +240,21 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._editor.play()
         # Create DR component and check if it exists
         path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/light_component", False)
-        prim = DrSchema.LightComponent.Define(self._stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set("light_component")
+        result, prim = omni.kit.commands.execute(
+            "CreateLightComponentCommand",
+            path=path,
+            light_paths=[light_path],
+            first_color_range=(0.0, 0.0, 0.0),
+            second_color_range=(1.0, 1.0, 1.0),
+            intensity_range=(40000.0, 70000.0),
+            temperature_range=(1500.0, 6500.0),
+            enable_temperature=True,
+            duration=0.0,
+            include_children=False,
+        )
         light_comp_path = default_prim_path + "/light_component"
         light_comp = self._stage.GetPrimAtPath(light_comp_path)
         self.assertTrue(light_comp)
-        # Set parameter for DR component
-        prim.CreatePrimPathsRel().AddTarget(light_path)
-        prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
-        prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
-        prim.CreateIntensityRangeAttr().Set((float(40000.0), float(70000.0)))
-        prim.CreateTemperatureRangeAttr().Set((float(1500.0), float(6500.0)))
-        prim.CreateEnableTemperatureAttr().Set(bool(True))
-        prim.CreateDurationAttr().Set(float(0.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
         # Validate attribute for randomizing light
         light_color_attr = light.GetAttribute("color")
         self.assertIsNotNone(light_color_attr)
