@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import cv2
 import os
 import gc
 import numpy as np
@@ -82,6 +83,7 @@ class Extension(omni.ext.IExt):
         self._depth_enable = False
         self._semantic_enable = False
         self._instance_enable = False
+        self._bbox_2d_enable = False
         self._build_window_ui()
 
     def on_shutdown(self):
@@ -112,7 +114,7 @@ class Extension(omni.ext.IExt):
 
                     # Depth - Numpy
                     if self._depth_enable:
-                        depth_sensor = gt.SensorType.DepthLinear
+                        depth_sensor = gt.SensorType.Depth
                         depth_width = interface.get_sensor_width(depth_sensor)
                         depth_height = interface.get_sensor_height(depth_sensor)
                         depth_row_size = interface.get_sensor_row_size(depth_sensor)
@@ -157,6 +159,25 @@ class Extension(omni.ext.IExt):
                             image_semantic_data, semantic_width, semantic_height
                         )
 
+                    # BBox 2D - Numpy
+                    if self._bbox_2d_enable and self._rgb_enable:
+                        bboxes_2d_sensor = gt.SensorType.BoundingBox2DTight
+                        bboxes_2d_size = interface.get_sensor_size(bboxes_2d_sensor)
+                        bboxes_2d_data = interface.get_sensor_host_bounding_box_2d_buffer_array(
+                            bboxes_2d_sensor, bboxes_2d_size
+                        )
+                        bboxes_2d_rgb = np.frombuffer(rgb_data, dtype=np.uint8).reshape((rgb_height, rgb_width, 4))
+                        for bbox_2d in bboxes_2d_data:
+                            if bbox_2d[1] > 0:
+                                bboxes_2d_rgb = cv2.rectangle(
+                                    bboxes_2d_rgb,
+                                    (bbox_2d[2], bbox_2d[3]),
+                                    (bbox_2d[4], bbox_2d[5]),
+                                    (0, 255, 0, 255),
+                                    2,
+                                )
+                        bboxes_2d_rgb = bboxes_2d_rgb.reshape(bboxes_2d_rgb.size)
+
                     # Visualize via omni.ui
                     if self._rgb_enable:
                         self._rgb_byte_provider = omni.ui.ByteImageProvider()
@@ -178,18 +199,43 @@ class Extension(omni.ext.IExt):
                             colorize_semantic_image, [semantic_width, semantic_height]
                         )
 
+                    if self._bbox_2d_enable:
+                        self._bbox_2d_byte_provider = omni.ui.ByteImageProvider()
+                        self._bbox_2d_byte_provider.set_data(bboxes_2d_rgb.tolist(), [rgb_width, rgb_height])
+
                     with window.frame:
                         with omni.ui.VStack():
+                            with omni.ui.HStack(height=0):
+                                with omni.ui.VStack():
+                                    omni.ui.Label("RGB", alignment=omni.ui.Alignment.CENTER)
+                                with omni.ui.VStack():
+                                    omni.ui.Label("Depth", alignment=omni.ui.Alignment.CENTER)
                             with omni.ui.HStack():
-                                if self._rgb_enable:
-                                    omni.ui.ImageWithProvider(self._rgb_byte_provider)
-                                if self._depth_enable:
-                                    omni.ui.ImageWithProvider(self._depth_byte_provider)
+                                with omni.ui.VStack():
+                                    if self._rgb_enable:
+                                        omni.ui.ImageWithProvider(self._rgb_byte_provider)
+                                with omni.ui.VStack():
+                                    if self._depth_enable:
+                                        omni.ui.ImageWithProvider(self._depth_byte_provider)
+                            with omni.ui.HStack(height=0):
+                                with omni.ui.VStack():
+                                    omni.ui.Label("Semantic Segmentation", alignment=omni.ui.Alignment.CENTER)
+                                with omni.ui.VStack():
+                                    omni.ui.Label("Instance Segmentation", alignment=omni.ui.Alignment.CENTER)
                             with omni.ui.HStack():
-                                if self._semantic_enable:
-                                    omni.ui.ImageWithProvider(self._semantic_byte_provider)
-                                if self._instance_enable:
-                                    omni.ui.ImageWithProvider(self._instance_byte_provider)
+                                with omni.ui.VStack():
+                                    if self._semantic_enable:
+                                        omni.ui.ImageWithProvider(self._semantic_byte_provider)
+                                with omni.ui.VStack():
+                                    if self._instance_enable:
+                                        omni.ui.ImageWithProvider(self._instance_byte_provider)
+                            with omni.ui.HStack(height=0):
+                                with omni.ui.VStack():
+                                    omni.ui.Label("BBox 2D", alignment=omni.ui.Alignment.CENTER)
+                            with omni.ui.HStack():
+                                with omni.ui.VStack():
+                                    if self._bbox_2d_enable:
+                                        omni.ui.ImageWithProvider(self._bbox_2d_byte_provider)
 
                 def toggle_rgb_sensor(self, value):
                     self._rgb_enable = value
@@ -197,7 +243,7 @@ class Extension(omni.ext.IExt):
 
                 def toggle_depth_sensor(self, value):
                     self._depth_enable = value
-                    self._settings.set("/syntheticdata/sensors/depthLinearSensor", value)
+                    self._settings.set("/syntheticdata/sensors/depthSensor", value)
 
                 def toggle_instance_segmentation_sensor(self, value):
                     self._instance_enable = value
@@ -206,6 +252,10 @@ class Extension(omni.ext.IExt):
                 def toggle_semantic_segmentation_sensor(self, value):
                     self._semantic_enable = value
                     self._settings.set("/syntheticdata/sensors/semanticSegmentationSensor", value)
+
+                def toggle_bbox_2d_sensor(self, value):
+                    self._bbox_2d_enable = value
+                    self._settings.set("/syntheticdata/sensors/boundingBox2DTightSensor", value)
 
                 with omni.ui.HStack(height=30):
                     omni.ui.Label("RGB", height=0)
@@ -230,6 +280,12 @@ class Extension(omni.ext.IExt):
                     self.instance_checkbox = omni.ui.CheckBox()
                     self.instance_checkbox.model.add_value_changed_fn(
                         lambda a, this=self: toggle_instance_segmentation_sensor(self, a.get_value_as_bool())
+                    )
+                with omni.ui.HStack(height=30):
+                    omni.ui.Label("BBox 2D", height=0)
+                    self.bbox_2d_checkbox = omni.ui.CheckBox()
+                    self.bbox_2d_checkbox.model.add_value_changed_fn(
+                        lambda a, this=self: toggle_bbox_2d_sensor(self, a.get_value_as_bool())
                     )
                 with omni.ui.HStack():
                     omni.ui.Button(
