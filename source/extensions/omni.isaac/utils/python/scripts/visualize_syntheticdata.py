@@ -18,6 +18,7 @@ import omni.usd
 import omni.kit.editor
 import omni.ui
 import omni.syntheticdata._syntheticdata as gt
+from omni.kit.settings import get_settings_interface
 
 EXTENSION_NAME = "Visualize Synthetic Data"
 
@@ -25,7 +26,9 @@ EXTENSION_NAME = "Visualize Synthetic Data"
 def random_colours(N):
     start = random.random()
     hues = [(start + i / N) % 1.0 for i in range(N)]
-    colours = [colorsys.hsv_to_rgb(h, 0.9, 1.0) for i, h in enumerate(hues)]
+    colours = [list(colorsys.hsv_to_rgb(h, 0.9, 1.0)) for i, h in enumerate(hues)]
+    for color in colours:
+        color.append(1.0)
     random.shuffle(colours)
     return colours
 
@@ -36,40 +39,33 @@ def interpolate(p, a, b):
 
 
 def colorize_depth(depth_image, width, height):
-    color_image = []
-    # color_pixels = [[51, 51, 51], [127, 51, 51], [255, 229, 165], [255, 255, 255], [216, 242, 255]]
-    color_pixels = [[0, 0, 0], [255, 255, 255]]
-    for row in range(height):
-        for col in range(width):
-            pixel_value = depth_image[row, col]
-            normalize_pixel_value = pixel_value / 255.0
-            gradient = normalize_pixel_value * (len(color_pixels) - 1)
-            gradient_index = math.floor(gradient)
-            if gradient_index == len(color_pixels) - 1:
-                gradient_color = [216, 242, 255, 255]
-            else:
-                gradient_color = interpolate(
-                    gradient - gradient_index, color_pixels[gradient_index], color_pixels[gradient_index + 1]
-                )
-            color_image.extend(gradient_color)
-    return color_image
+    colorized_image = np.zeros((height, width, 4))
+    depth_image[depth_image == 0.0] = 1e-5
+    depth_image = np.clip(depth_image, 0, 255)
+    depth_image -= np.min(depth_image)
+    depth_image /= np.max(depth_image)
+    colorized_image[:, :, 0] = depth_image
+    colorized_image[:, :, 1] = depth_image
+    colorized_image[:, :, 2] = depth_image
+    colorized_image[:, :, 3] = 1
+    colorized_image = (colorized_image * 255).astype(int)
+    colorized_image = colorized_image.reshape(colorized_image.size)
+    return colorized_image.tolist()
 
 
 def colorize_instance(instance_image, width, height):
-    color_image = []
-    color_pixels = random_colours(np.max(instance_image[:, :, 0]) + 1)
-    for row in range(height):
-        for col in range(width):
-            pixel_value = instance_image[row, col, 0]
-            color_image.extend(
-                [
-                    int(color_pixels[pixel_value][0] * 255),
-                    int(color_pixels[pixel_value][1] * 255),
-                    int(color_pixels[pixel_value][2] * 255),
-                    255,
-                ]
-            )
-    return color_image
+    instance_mappings = instance_image[:, :, 0]
+    instance_list = np.unique(instance_mappings)
+    color_pixels = random_colours(len(instance_list))
+    instance_masks = np.zeros((len(instance_list), *instance_mappings.shape), dtype=np.bool)
+    for index, instance_id in enumerate(instance_list):
+        instance_masks[index] = instance_mappings == instance_id
+    color_image = np.zeros((height, width, 4))
+    for mask, colour in zip(instance_masks, color_pixels):
+        color_image[mask] = colour
+    color_image_list = (color_image * 255).astype(int)
+    color_image_list = color_image_list.reshape(color_image_list.size)
+    return color_image_list.tolist()
 
 
 class Extension(omni.ext.IExt):
@@ -79,6 +75,7 @@ class Extension(omni.ext.IExt):
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400)
         self._visualize_window = omni.ui.Window("Visualization", width=300, height=300)
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/{EXTENSION_NAME}", self._menu_callback)
+        self._settings = get_settings_interface()
         self._window.visible = False
         self._visualize_window.visible = False
         self._rgb_enable = False
@@ -196,31 +193,19 @@ class Extension(omni.ext.IExt):
 
                 def toggle_rgb_sensor(self, value):
                     self._rgb_enable = value
-                    if value:
-                        self._syntheticdata.create_sensor(gt.SensorType.Rgb)
-                    else:
-                        self._syntheticdata.destroy_sensor(gt.SensorType.Rgb)
+                    self._settings.set("/syntheticdata/sensors/rgbSensor", value)
 
                 def toggle_depth_sensor(self, value):
                     self._depth_enable = value
-                    if value:
-                        self._syntheticdata.create_sensor(gt.SensorType.DepthLinear)
-                    else:
-                        self._syntheticdata.destroy_sensor(gt.SensorType.DepthLinear)
+                    self._settings.set("/syntheticdata/sensors/depthLinearSensor", value)
 
                 def toggle_instance_segmentation_sensor(self, value):
                     self._instance_enable = value
-                    if value:
-                        self._syntheticdata.create_sensor(gt.SensorType.InstanceSegmentation)
-                    else:
-                        self._syntheticdata.destroy_sensor(gt.SensorType.InstanceSegmentation)
+                    self._settings.set("/syntheticdata/sensors/instanceSegmentationSensor", value)
 
                 def toggle_semantic_segmentation_sensor(self, value):
                     self._semantic_enable = value
-                    if value:
-                        self._syntheticdata.create_sensor(gt.SensorType.SemanticSegmentation)
-                    else:
-                        self._syntheticdata.destroy_sensor(gt.SensorType.SemanticSegmentation)
+                    self._settings.set("/syntheticdata/sensors/semanticSegmentationSensor", value)
 
                 with omni.ui.HStack(height=30):
                     omni.ui.Label("RGB", height=0)

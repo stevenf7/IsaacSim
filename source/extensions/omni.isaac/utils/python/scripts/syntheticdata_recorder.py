@@ -98,23 +98,22 @@ class DataWriter:
     def random_colours(self, N):
         start = random.random()
         hues = [(start + i / N) % 1.0 for i in range(N)]
-        colours = [colorsys.hsv_to_rgb(h, 0.9, 1.0) for i, h in enumerate(hues)]
+        colours = [list(colorsys.hsv_to_rgb(h, 0.9, 1.0)) for i, h in enumerate(hues)]
         random.shuffle(colours)
         return colours
 
     def colorize_segmentation(self, segmentation_image, width=1280, height=720):
-        color_image = np.zeros([height, width, 3], dtype=np.uint8)
-        color_pixels = self.random_colours(np.max(segmentation_image[:, :, 0]) + 1)
-        for row in range(height):
-            for col in range(width):
-                pixel_value = segmentation_image[row, col, 0]
-                if pixel_value > 0:
-                    color_image[row, col] = [
-                        int(color_pixels[pixel_value][0] * 255),
-                        int(color_pixels[pixel_value][1] * 255),
-                        int(color_pixels[pixel_value][2] * 255),
-                    ]
-        return np.array(color_image)
+        segmentation_mappings = segmentation_image[:, :, 0]
+        segmentation_list = np.unique(segmentation_mappings)
+        color_pixels = self.random_colours(len(segmentation_list))
+        segmentation_masks = np.zeros((len(segmentation_list), *segmentation_mappings.shape), dtype=np.bool)
+        for index, segmentation_id in enumerate(segmentation_list):
+            segmentation_masks[index] = segmentation_mappings == segmentation_id
+        color_image = np.zeros((height, width, 3), dtype=np.uint8)
+        for mask, colour in zip(segmentation_masks, color_pixels):
+            color_image[mask] = colour
+        color_image_list = color_image * 255
+        return np.array(color_image_list)
 
     def save_segmentation(self, data_type, data, filename, width=1280, height=720, display_rgb=True):
         # Save ground truth data locally as npy
