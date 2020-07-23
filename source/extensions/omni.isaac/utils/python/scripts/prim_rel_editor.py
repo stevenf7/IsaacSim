@@ -136,12 +136,11 @@ class Extension(omni.ext.IExt):
                 path = model_path[1:]
                 paths = path.split("/")
                 if widget.text == "Add":
-                    if stage.GetPrimAtPath(tbox.text):
-                        model._prim.GetRelationship(paths[0]).AddTarget(tbox.text)
-                        self._selection.clear_selected_prim_paths()
-                        self._selection.set_selected_prim_paths([str(model._prim.GetPrimPath())], True)
-                    else:
-                        print("Error: Trying To Add Invalid Path")
+                    model._prim.GetRelationship(paths[0]).AddTarget(tbox.text)
+                    self._selection.clear_selected_prim_paths()
+                    self._selection.set_selected_prim_paths([str(model._prim.GetPrimPath())], True)
+                    if not stage.GetPrimAtPath(tbox.text):
+                        print("Warning: Added Invalid or Non-Existent Path")
                     return
                 if len(paths) == 2:
                     targets = model._prim.GetRelationship(paths[0]).GetTargets()
