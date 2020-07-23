@@ -7,12 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import cv2
-import os
-import gc
 import numpy as np
 import random
-import math
 import colorsys
 import omni.ext
 import omni.usd
@@ -20,6 +16,9 @@ import omni.kit.editor
 import omni.ui
 import omni.syntheticdata._syntheticdata as gt
 from omni.kit.settings import get_settings_interface
+from omni.kit import pipapi
+
+pipapi.install("opencv-python")
 
 EXTENSION_NAME = "Visualize Synthetic Data"
 
@@ -67,6 +66,31 @@ def colorize_instance(instance_image, width, height):
     color_image_list = (color_image * 255).astype(int)
     color_image_list = color_image_list.reshape(color_image_list.size)
     return color_image_list.tolist()
+
+
+def colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb):
+    import cv2
+
+    semantic_id_list = []
+    bbox_2d_list = []
+    for bbox_2d in bboxes_2d_data:
+        if bbox_2d[1] > 0:
+            semantic_id_list.append(bbox_2d[1])
+            bbox_2d_list.append(bbox_2d)
+    semantic_id_list_np = np.unique(np.array(semantic_id_list))
+    color_list = random_colours(len(semantic_id_list_np.tolist()))
+    for bbox_2d in bbox_2d_list:
+        index = np.where(semantic_id_list_np == bbox_2d[1])[0][0]
+        bbox_color = color_list[index]
+        bboxes_2d_rgb = cv2.rectangle(
+            bboxes_2d_rgb,
+            (bbox_2d[2], bbox_2d[3]),
+            (bbox_2d[4], bbox_2d[5]),
+            (int(255 * bbox_color[0]), int(255 * bbox_color[1]), int(255 * bbox_color[2]), int(255 * bbox_color[3])),
+            2,
+        )
+    bboxes_2d_rgb = bboxes_2d_rgb.reshape(bboxes_2d_rgb.size)
+    return bboxes_2d_rgb
 
 
 class Extension(omni.ext.IExt):
@@ -167,16 +191,7 @@ class Extension(omni.ext.IExt):
                             bboxes_2d_sensor, bboxes_2d_size
                         )
                         bboxes_2d_rgb = np.frombuffer(rgb_data, dtype=np.uint8).reshape((rgb_height, rgb_width, 4))
-                        for bbox_2d in bboxes_2d_data:
-                            if bbox_2d[1] > 0:
-                                bboxes_2d_rgb = cv2.rectangle(
-                                    bboxes_2d_rgb,
-                                    (bbox_2d[2], bbox_2d[3]),
-                                    (bbox_2d[4], bbox_2d[5]),
-                                    (0, 255, 0, 255),
-                                    2,
-                                )
-                        bboxes_2d_rgb = bboxes_2d_rgb.reshape(bboxes_2d_rgb.size)
+                        bboxes_2d_rgb = colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb)
 
                     # Visualize via omni.ui
                     if self._rgb_enable:
