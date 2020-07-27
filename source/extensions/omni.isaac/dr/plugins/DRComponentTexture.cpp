@@ -100,6 +100,11 @@ void DRComponentTexture::update()
 
         if (mIncludeChild && prim)
         {
+            // Unbinding material for parent since strongerThanDescendants is used that will disable child material
+            // binding
+            mAllPrims.pop_back();
+            pxr::UsdShadeMaterialBindingAPI materialBinding(prim);
+            materialBinding.UnbindAllBindings();
             pxr::UsdPrimSubtreeRange range = prim.GetDescendants();
             for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
             {
@@ -233,13 +238,15 @@ void DRComponentTexture::tick()
         unsigned int textureIndex = 0;
         for (auto materialPrim : mMaterialPrims)
         {
-            if (!materialPrim.HasAttribute(pxr::TfToken("inputs:diffuse_texture")) ||
-                !materialPrim.HasAttribute(pxr::TfToken("inputs:project_uvw")))
+            auto materialShadePrim =
+                mStage->GetPrimAtPath(pxr::SdfPath(materialPrim.GetPrimPath().GetString() + "/Shader"));
+            if (!materialShadePrim.HasAttribute(pxr::TfToken("inputs:diffuse_texture")) ||
+                !materialShadePrim.HasAttribute(pxr::TfToken("inputs:project_uvw")))
                 break;
-            pxr::UsdAttribute diffuseTextureAttr = materialPrim.GetAttribute(pxr::TfToken("inputs:diffuse_texture"));
+            pxr::UsdAttribute diffuseTextureAttr = materialShadePrim.GetAttribute(pxr::TfToken("inputs:diffuse_texture"));
             if (diffuseTextureAttr)
                 diffuseTextureAttr.Set(pxr::SdfAssetPath(mTextureList[textureIndex].c_str()));
-            pxr::UsdAttribute projectUVWAttr = materialPrim.GetAttribute(pxr::TfToken("inputs:project_uvw"));
+            pxr::UsdAttribute projectUVWAttr = materialShadePrim.GetAttribute(pxr::TfToken("inputs:project_uvw"));
             if (projectUVWAttr)
                 projectUVWAttr.Set(mEnableProjectUVW);
             textureIndex++;
