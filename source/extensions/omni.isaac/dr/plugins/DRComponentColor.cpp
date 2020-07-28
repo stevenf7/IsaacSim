@@ -72,11 +72,21 @@ void DRComponentColor::onStart()
                     return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
                 });
         }
-        mColorMaterialPrim = omni::usd::AssetUtils::createPrimFromAssetPath(
-            mStage, mOmniPBRMatPath.c_str(), ("/Colors/" + mCompName + "/" + urlPath.getStem()).getStringBuffer(),
-            "OmniPBR.mdl", mDatasource, mConnection);
-        pxr::UsdShadeMaterial materialShade(mColorMaterialPrim);
-        mColorMaterialShade = materialShade;
+        std::string colorMaterialPrimName =
+            mStage->GetDefaultPrim().GetPath().GetString() + colorCompMaterialPath + "/OmniPBR";
+        mColorMaterialPrim = mStage->DefinePrim(pxr::SdfPath(colorMaterialPrimName.c_str()), pxr::TfToken("Material"));
+        auto shadeMaterialPrim = pxr::UsdShadeMaterial(mColorMaterialPrim);
+        auto shaderMtlPath = mStage->DefinePrim(pxr::SdfPath(colorMaterialPrimName + "/Shader"), pxr::TfToken("Shader"));
+        auto shadeShaderPrim = pxr::UsdShadeShader(shaderMtlPath);
+        auto shaderOut = shadeShaderPrim.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+
+        shadeMaterialPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeMaterialPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeMaterialPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeShaderPrim.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
+        shadeShaderPrim.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
+        shadeShaderPrim.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
+        mColorMaterialShade = shadeMaterialPrim;
     }
     pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
     mStage->SetEditTarget(editTarget);
@@ -195,28 +205,25 @@ void DRComponentColor::tick()
     {
         auto materialShadePrim =
             mStage->GetPrimAtPath(pxr::SdfPath(mAllMaterialPrims[primIndex].GetPrimPath().GetString() + "/Shader"));
-        if (materialShadePrim.HasAttribute(pxr::TfToken("inputs:diffuse_color_constant")))
+        pxr::UsdShadeMaterial materialShade(materialShadePrim);
+        auto primColor = materialShade.GetInput(pxr::TfToken("diffuse_color_constant"));
+        if (primColor)
         {
-            pxr::UsdAttribute primColor = materialShadePrim.GetAttribute(pxr::TfToken("inputs:diffuse_color_constant"));
-            if (primColor)
-            {
-                // CARB_LOG_WARN("prim set color");
-                float r = randomRange(mRRange[0], mRRange[1]);
-                float g = randomRange(mGRange[0], mGRange[1]);
-                float b = randomRange(mBRange[0], mBRange[1]);
-                pxr::GfVec3f usdColor{ pxr::GfVec3f(r, g, b) };
-                primColor.Set(usdColor);
-            }
+            // CARB_LOG_WARN("prim set color");
+            float r = randomRange(mRRange[0], mRRange[1]);
+            float g = randomRange(mGRange[0], mGRange[1]);
+            float b = randomRange(mBRange[0], mBRange[1]);
+            primColor.Set(pxr::GfVec3f(r, g, b));
         }
-        if (materialShadePrim.HasAttribute(pxr::TfToken("inputs:reflection_roughness_constant")))
+        auto primRoughness = materialShade.GetInput(pxr::TfToken("reflection_roughness_constant"));
+        if (primRoughness)
         {
-            materialShadePrim.GetAttribute(pxr::TfToken("inputs:reflection_roughness_constant"))
-                .Set(randomRange(mRoughnessRange[0], mRoughnessRange[1]));
+            primRoughness.Set(randomRange(mRoughnessRange[0], mRoughnessRange[1]));
         }
-        if (materialShadePrim.HasAttribute(pxr::TfToken("inputs:metallic_constant")))
+        auto primMetallic = materialShade.GetInput(pxr::TfToken("metallic_constant"));
+        if (primMetallic)
         {
-            materialShadePrim.GetAttribute(pxr::TfToken("inputs:metallic_constant"))
-                .Set(randomRange(mMetallicRange[0], mMetallicRange[1]));
+            primMetallic.Set(randomRange(mMetallicRange[0], mMetallicRange[1]));
         }
         primIndex++;
     }

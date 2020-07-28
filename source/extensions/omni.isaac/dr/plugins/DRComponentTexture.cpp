@@ -71,11 +71,23 @@ void DRComponentTexture::onStart()
                     return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
                 });
         }
-        mTextureMaterialPrim = omni::usd::AssetUtils::createPrimFromAssetPath(
-            mStage, mOmniPBRMatPath.c_str(), ("/Textures/" + mCompName + "/" + urlPath.getStem()).getStringBuffer(),
-            "OmniPBR.mdl", mDatasource, mConnection);
-        pxr::UsdShadeMaterial materialShade(mTextureMaterialPrim);
-        mTextureMaterialShade = materialShade;
+        std::string textureMaterialPrimName =
+            mStage->GetDefaultPrim().GetPath().GetString() + textureCompMaterialPath + "/OmniPBR";
+        mTextureMaterialPrim =
+            mStage->DefinePrim(pxr::SdfPath(textureMaterialPrimName.c_str()), pxr::TfToken("Material"));
+        auto shadeMaterialPrim = pxr::UsdShadeMaterial(mTextureMaterialPrim);
+        auto shaderMtlPath =
+            mStage->DefinePrim(pxr::SdfPath(textureMaterialPrimName + "/Shader"), pxr::TfToken("Shader"));
+        auto shadeShaderPrim = pxr::UsdShadeShader(shaderMtlPath);
+        auto shaderOut = shadeShaderPrim.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+
+        shadeMaterialPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeMaterialPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeMaterialPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeShaderPrim.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
+        shadeShaderPrim.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
+        shadeShaderPrim.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
+        mTextureMaterialShade = shadeMaterialPrim;
     }
     pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
     mStage->SetEditTarget(editTarget);
@@ -240,15 +252,15 @@ void DRComponentTexture::tick()
         {
             auto materialShadePrim =
                 mStage->GetPrimAtPath(pxr::SdfPath(materialPrim.GetPrimPath().GetString() + "/Shader"));
-            if (!materialShadePrim.HasAttribute(pxr::TfToken("inputs:diffuse_texture")) ||
-                !materialShadePrim.HasAttribute(pxr::TfToken("inputs:project_uvw")))
+            pxr::UsdShadeMaterial materialShade(materialShadePrim);
+            auto primTexture = materialShade.GetInput(pxr::TfToken("diffuse_texture"));
+            auto primProjectUVW = materialShade.GetInput(pxr::TfToken("project_uvw"));
+            if (!primTexture || !primProjectUVW)
                 break;
-            pxr::UsdAttribute diffuseTextureAttr = materialShadePrim.GetAttribute(pxr::TfToken("inputs:diffuse_texture"));
-            if (diffuseTextureAttr)
-                diffuseTextureAttr.Set(pxr::SdfAssetPath(mTextureList[textureIndex].c_str()));
-            pxr::UsdAttribute projectUVWAttr = materialShadePrim.GetAttribute(pxr::TfToken("inputs:project_uvw"));
-            if (projectUVWAttr)
-                projectUVWAttr.Set(mEnableProjectUVW);
+            if (primTexture)
+                primTexture.Set(pxr::SdfAssetPath(mTextureList[textureIndex].c_str()));
+            if (primProjectUVW)
+                primProjectUVW.Set(mEnableProjectUVW);
             textureIndex++;
         }
         if (textureIndex == mMaterialPrims.size())
