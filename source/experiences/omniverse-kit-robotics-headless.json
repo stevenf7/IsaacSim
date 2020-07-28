@@ -75,6 +75,11 @@
             "enabled": true
         }
     },
+    "rtx": {
+        "raytracing": {
+            "fractionalCutoutOpacity": false
+        }
+    },
     "persistent": {
         "app": { "stage": { "upAxis": "Z" } },
         "physics": {

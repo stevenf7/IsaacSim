@@ -73,6 +73,11 @@
             "sleepMsOutOfFocus": 0
         }
     },
+    "rtx": {
+        "raytracing": {
+            "fractionalCutoutOpacity": false
+        }
+    },
     "persistent": {
         "app": { "stage": { "upAxis": "Z" } },
         "physics": {
