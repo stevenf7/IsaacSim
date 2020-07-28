@@ -39,6 +39,11 @@
             "sleepMsOutOfFocus": 0
         }
     },
+    "rtx": {
+        "raytracing": {
+            "fractionalCutoutOpacity": false
+        }
+    },
     "exts": {
         "omni.kit.test": {
             "printTests": true,
