@@ -67,6 +67,8 @@ void DRComponentScale::onComponentChange()
     scalePrim.GetEnableUniformAttr().Get(&mEnableUniform);
     scalePrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     scalePrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
+    scalePrim.GetSeedAttr().Get(&mSeed);
+    mRandomGenerator.seed(mSeed);
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = scalePrim.GetPrimPathsRel();
@@ -89,9 +91,9 @@ void DRComponentScale::tick()
         if (prim)
         {
             // Randomized scale parameters
-            float x = randomRange(mXRange[0], mXRange[1]);
-            float y = randomRange(mYRange[0], mYRange[1]);
-            float z = randomRange(mZRange[0], mZRange[1]);
+            float x = randomRangeFloat(mXRange[0], mXRange[1]);
+            float y = randomRangeFloat(mYRange[0], mYRange[1]);
+            float z = randomRangeFloat(mZRange[0], mZRange[1]);
             if (mEnableUniform)
                 z = y = x;
             pxr::GfVec3d doubleScale(x, y, z);
