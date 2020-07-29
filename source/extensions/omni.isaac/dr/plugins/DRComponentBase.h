@@ -26,6 +26,7 @@ public:
         mIncludeChild = false;
         mDRLayerName = "";
         mCompName = "";
+        mSeed = 12345;
     }
     virtual ~DRComponentBase()
     {
@@ -44,20 +45,20 @@ public:
     bool mIncludeChild;
     std::vector<std::string> mIgnoreClassList;
     std::string mDRLayerName, mCompName;
+    int mSeed;
+    std::default_random_engine mRandomGenerator;
 
 protected:
-    static float randomRange(float low, float high)
+    float randomRangeFloat(float low, float high)
     {
-        static std::default_random_engine rng(0xBEEF);
         std::uniform_real_distribution<float> p(low, high);
-        return p(rng);
+        return p(mRandomGenerator);
     }
 
-    static int randomRangeInt(int low, int high)
+    int randomRangeInt(int low, int high)
     {
-        static std::default_random_engine rng(0xBEEF);
         std::uniform_int_distribution<int> p(low, high);
-        return p(rng);
+        return p(mRandomGenerator);
     }
 
     bool ignoreClass(std::string prim, std::vector<std::string>& groupClassList)

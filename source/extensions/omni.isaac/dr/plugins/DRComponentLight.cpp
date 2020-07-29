@@ -71,6 +71,8 @@ void DRComponentLight::onComponentChange()
     lightPrim.GetEnableTemperatureAttr().Get(&mEnableColorTemperature);
     lightPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     lightPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
+    lightPrim.GetSeedAttr().Get(&mSeed);
+    mRandomGenerator.seed(mSeed);
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = lightPrim.GetPrimPathsRel();
@@ -101,9 +103,9 @@ void DRComponentLight::tick()
             pxr::UsdAttribute primColor = prim.GetAttribute(pxr::TfToken("color"));
             if (primColor)
             {
-                float r = randomRange(mLrRange[0], mLrRange[1]);
-                float g = randomRange(mLgRange[0], mLgRange[1]);
-                float b = randomRange(mLbRange[0], mLbRange[1]);
+                float r = randomRangeFloat(mLrRange[0], mLrRange[1]);
+                float g = randomRangeFloat(mLgRange[0], mLgRange[1]);
+                float b = randomRangeFloat(mLbRange[0], mLbRange[1]);
                 pxr::GfVec3f usdColor(r, g, b);
                 primColor.Set(usdColor);
             }
@@ -112,7 +114,7 @@ void DRComponentLight::tick()
             pxr::UsdAttribute primIntensity = prim.GetAttribute(pxr::TfToken("intensity"));
             if (primIntensity)
             {
-                float i = randomRange(mLiRange[0], mLiRange[1]);
+                float i = randomRangeFloat(mLiRange[0], mLiRange[1]);
                 primIntensity.Set(i);
             }
 
@@ -125,7 +127,7 @@ void DRComponentLight::tick()
                 pxr::UsdAttribute primColorTemperature = prim.GetAttribute(pxr::TfToken("colorTemperature"));
                 if (primColorTemperature)
                 {
-                    float t = randomRange(mLtRange[0], mLtRange[1]);
+                    float t = randomRangeFloat(mLtRange[0], mLtRange[1]);
                     primColorTemperature.Set(t);
                 }
             }

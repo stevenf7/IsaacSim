@@ -65,6 +65,8 @@ void DRComponentRotation::onComponentChange()
     rotPrim.GetZRangeAttr().Get(&mZRange);
     rotPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     rotPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
+    rotPrim.GetSeedAttr().Get(&mSeed);
+    mRandomGenerator.seed(mSeed);
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = rotPrim.GetPrimPathsRel();
@@ -86,9 +88,9 @@ void DRComponentRotation::tick()
     {
         if (prim)
         {
-            float x = randomRange(mXRange[0], mXRange[1]);
-            float y = randomRange(mYRange[0], mYRange[1]);
-            float z = randomRange(mZRange[0], mZRange[1]);
+            float x = randomRangeFloat(mXRange[0], mXRange[1]);
+            float y = randomRangeFloat(mYRange[0], mYRange[1]);
+            float z = randomRangeFloat(mZRange[0], mZRange[1]);
             // Set random rotation
             pxr::GfTransform bodyPose;
             pxr::GfRotation rowRot(pxr::GfVec3d(1, 0, 0), x), pitchRot(pxr::GfVec3d(0, 1, 0), y),

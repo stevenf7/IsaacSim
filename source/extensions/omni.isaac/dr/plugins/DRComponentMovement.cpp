@@ -72,6 +72,8 @@ void DRComponentMovement::onComponentChange()
     movPrim.GetLookAtTargetOffsetAttr().Get(&mLookAtTargetOffset);
     movPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     movPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
+    movPrim.GetSeedAttr().Get(&mSeed);
+    mRandomGenerator.seed(mSeed);
 
     mPaths.clear();
     mLookAtTargetPaths.clear();
@@ -99,9 +101,9 @@ void DRComponentMovement::tick()
         if (prim)
         {
             // Set random translation
-            float x = randomRange(mXRange[0], mXRange[1]);
-            float y = randomRange(mYRange[0], mYRange[1]);
-            float z = randomRange(mZRange[0], mZRange[1]);
+            float x = randomRangeFloat(mXRange[0], mXRange[1]);
+            float y = randomRangeFloat(mYRange[0], mYRange[1]);
+            float z = randomRangeFloat(mZRange[0], mZRange[1]);
             pxr::GfVec3d eyeUsd(x, y, z);
             pxr::GfMatrix4d currentTransformMat, finalTransformMat, scaledTransformMat, scaleMat;
             currentTransformMat = omni::usd::UsdUtils::getLocalTransformMatrix(prim);

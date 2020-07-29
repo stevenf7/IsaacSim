@@ -154,6 +154,8 @@ void DRComponentColor::onComponentChange()
     colorPrim.GetMetallicAttr().Get(&mMetallicRange);
     colorPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     colorPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
+    colorPrim.GetSeedAttr().Get(&mSeed);
+    mRandomGenerator.seed(mSeed);
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = colorPrim.GetPrimPathsRel();
@@ -210,20 +212,20 @@ void DRComponentColor::tick()
         if (primColor)
         {
             // CARB_LOG_WARN("prim set color");
-            float r = randomRange(mRRange[0], mRRange[1]);
-            float g = randomRange(mGRange[0], mGRange[1]);
-            float b = randomRange(mBRange[0], mBRange[1]);
+            float r = randomRangeFloat(mRRange[0], mRRange[1]);
+            float g = randomRangeFloat(mGRange[0], mGRange[1]);
+            float b = randomRangeFloat(mBRange[0], mBRange[1]);
             primColor.Set(pxr::GfVec3f(r, g, b));
         }
         auto primRoughness = materialShade.GetInput(pxr::TfToken("reflection_roughness_constant"));
         if (primRoughness)
         {
-            primRoughness.Set(randomRange(mRoughnessRange[0], mRoughnessRange[1]));
+            primRoughness.Set(randomRangeFloat(mRoughnessRange[0], mRoughnessRange[1]));
         }
         auto primMetallic = materialShade.GetInput(pxr::TfToken("metallic_constant"));
         if (primMetallic)
         {
-            primMetallic.Set(randomRange(mMetallicRange[0], mMetallicRange[1]));
+            primMetallic.Set(randomRangeFloat(mMetallicRange[0], mMetallicRange[1]));
         }
         primIndex++;
     }

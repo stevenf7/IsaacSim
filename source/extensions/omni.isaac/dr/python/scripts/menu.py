@@ -58,6 +58,7 @@ class DRMenu:
             metallic_range=(0.0, 1.0),
             duration=1.0,
             include_children=False,
+            seed=12345,
         )
 
         pass
@@ -81,6 +82,7 @@ class DRMenu:
             target_paths=None,
             duration=1.0,
             include_children=False,
+            seed=12345,
         )
         pass
 
@@ -101,6 +103,7 @@ class DRMenu:
             max_range=(360.0, 360.0, 360.0),
             duration=1.0,
             include_children=False,
+            seed=12345,
         )
         pass
 
@@ -121,6 +124,7 @@ class DRMenu:
             uniform_scaling=False,
             duration=1.0,
             include_children=False,
+            seed=12345,
         )
         pass
 
@@ -145,6 +149,7 @@ class DRMenu:
             enable_temperature=False,
             duration=1.0,
             include_children=False,
+            seed=12345,
         )
         pass
 
@@ -168,6 +173,7 @@ class DRMenu:
             grouped_class_list=[],
             duration=1.0,
             include_children=False,
+            seed=12345,
         )
         pass
 
@@ -190,6 +196,7 @@ class DRMenu:
             loaded_material_paths=[],
             duration=1.0,
             include_children=False,
+            seed=12345,
         )
         pass
 
@@ -211,6 +218,7 @@ class DRMenu:
             mesh_range=(1, 1),
             duration=1.0,
             include_children=False,
+            seed=12345,
         )
 
         pass
@@ -232,6 +240,7 @@ class DRMenu:
             num_visible_range=(1, 1),
             duration=1.0,
             include_children=False,
+            seed=12345,
         )
 
         pass

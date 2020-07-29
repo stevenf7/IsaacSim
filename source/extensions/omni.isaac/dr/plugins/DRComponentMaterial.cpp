@@ -152,6 +152,8 @@ void DRComponentMaterial::onComponentChange()
     materialPrim.GetGroupedClassAttr().Get(&groupedClass);
     materialPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     materialPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
+    materialPrim.GetSeedAttr().Get(&mSeed);
+    mRandomGenerator.seed(mSeed);
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = materialPrim.GetPrimPathsRel();
@@ -205,7 +207,7 @@ void DRComponentMaterial::tick()
     {
         if (mMaterialShades.size() == 0)
             return;
-        int randVal = int(randomRange(0.0f, mMaterialShades.size() * 1.0f));
+        int randVal = int(randomRangeFloat(0.0f, mMaterialShades.size() * 1.0f));
         pxr::UsdShadeMaterialBindingAPI materialBinding = primMaterialBinding.second;
         // Check for classes to be grouped
         if (mIsGrouping && mPrimClassMap.find(primMaterialBinding.first) != mPrimClassMap.end())

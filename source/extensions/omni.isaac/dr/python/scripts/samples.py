@@ -104,6 +104,7 @@ class Extension(omni.ext.IExt):
             metallic_range=(0.0, 1.0),
             duration=0.3,
             include_children=False,
+            seed=12345,
         )
 
     def add_movement_menu(self, parent=None):
@@ -122,6 +123,7 @@ class Extension(omni.ext.IExt):
             target_paths=None,
             duration=0.3,
             include_children=False,
+            seed=12345,
         )
 
     def add_rotation_menu(self, parent=None):
@@ -138,6 +140,7 @@ class Extension(omni.ext.IExt):
             max_range=(360.0, 360.0, 360.0),
             duration=0.3,
             include_children=False,
+            seed=12345,
         )
 
     def add_scale_menu(self, parent=None):
@@ -155,6 +158,7 @@ class Extension(omni.ext.IExt):
             uniform_scaling=False,
             duration=0.3,
             include_children=False,
+            seed=12345,
         )
 
     def add_light_menu(self, parent=None):
@@ -180,6 +184,7 @@ class Extension(omni.ext.IExt):
             enable_temperature=True,
             duration=0.3,
             include_children=False,
+            seed=12345,
         )
 
     def add_texture_menu(self, parent=None):
@@ -205,6 +210,7 @@ class Extension(omni.ext.IExt):
             grouped_class_list=[],
             duration=0.3,
             include_children=False,
+            seed=12345,
         )
 
     def add_material_menu(self, parent=None):
@@ -230,6 +236,7 @@ class Extension(omni.ext.IExt):
             loaded_material_paths=[],
             duration=0.3,
             include_children=False,
+            seed=12345,
         )
 
     def add_simple_room_scene(self, parent=None):

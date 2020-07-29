@@ -16,6 +16,7 @@ class CreateColorComponentCommand(omni.kit.commands.Command):
         metallic_range=(0.0, 1.0),
         duration=0.0,
         include_children=False,
+        seed=12345,
     ):
         self._path = path
         self._prim_paths = prim_paths
@@ -25,6 +26,7 @@ class CreateColorComponentCommand(omni.kit.commands.Command):
         self._metallic_range = metallic_range
         self._duration = duration
         self._include_children = include_children
+        self._seed = seed
 
     def do(self):
         """Create a color randomization component"""
@@ -49,6 +51,7 @@ class CreateColorComponentCommand(omni.kit.commands.Command):
         prim.CreateMetallicAttr().Set(((float(self._metallic_range[0]), float(self._metallic_range[1]))))
         prim.CreateDurationAttr().Set(float(self._duration))
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
+        prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
 
@@ -63,6 +66,7 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         target_paths=None,
         duration=0.0,
         include_children=False,
+        seed=12345,
     ):
         self._path = path
         self._prim_paths = prim_paths
@@ -72,6 +76,7 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         self._target_paths = target_paths
         self._duration = duration
         self._include_children = include_children
+        self._seed = seed
 
     def do(self):
         """Create a movement randomization component, if target position or paths are specified the object will point towards that target"""
@@ -105,6 +110,7 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
             prim.CreateLookAtTargetOffsetAttr().Set(self._target_position)
         prim.CreateDurationAttr().Set(float(self._duration))
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
+        prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
 
@@ -117,6 +123,7 @@ class CreateRotationComponentCommand(omni.kit.commands.Command):
         max_range=(360.0, 360.0, 360.0),
         duration=0.0,
         include_children=False,
+        seed=12345,
     ):
         self._path = path
         self._prim_paths = prim_paths
@@ -124,6 +131,7 @@ class CreateRotationComponentCommand(omni.kit.commands.Command):
         self._max_range = max_range
         self._duration = duration
         self._include_children = include_children
+        self._seed = seed
 
     def do(self):
         """Create a rotation randomization component"""
@@ -145,6 +153,7 @@ class CreateRotationComponentCommand(omni.kit.commands.Command):
         prim.CreateZRangeAttr().Set((float(self._min_range[2]), float(self._max_range[2])))
         prim.CreateDurationAttr().Set(float(self._duration))
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
+        prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
 
@@ -158,6 +167,7 @@ class CreateScaleComponentCommand(omni.kit.commands.Command):
         uniform_scaling=False,
         duration=0.0,
         include_children=False,
+        seed=12345,
     ):
         self._path = path
         self._prim_paths = prim_paths
@@ -166,6 +176,7 @@ class CreateScaleComponentCommand(omni.kit.commands.Command):
         self._uniform_scaling = uniform_scaling
         self._duration = duration
         self._include_children = include_children
+        self._seed = seed
 
     def do(self):
         """Create a scale randomization component"""
@@ -186,6 +197,7 @@ class CreateScaleComponentCommand(omni.kit.commands.Command):
         prim.CreateEnableUniformAttr().Set(bool(self._uniform_scaling))
         prim.CreateDurationAttr().Set(float(self._duration))
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
+        prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
 
@@ -201,6 +213,7 @@ class CreateLightComponentCommand(omni.kit.commands.Command):
         enable_temperature=True,
         duration=0.0,
         include_children=False,
+        seed=12345,
     ):
         self._path = path
         self._light_paths = light_paths
@@ -211,6 +224,7 @@ class CreateLightComponentCommand(omni.kit.commands.Command):
         self._enable_temperature = enable_temperature
         self._duration = duration
         self._include_children = include_children
+        self._seed = seed
 
     def do(self):
         """Create a light randomization component"""
@@ -237,6 +251,7 @@ class CreateLightComponentCommand(omni.kit.commands.Command):
         prim.CreateEnableTemperatureAttr().Set(bool(self._enable_temperature))
         prim.CreateDurationAttr().Set(float(self._duration))
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
+        prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
 
@@ -251,6 +266,7 @@ class CreateTextureComponentCommand(omni.kit.commands.Command):
         grouped_class_list=[],
         duration=0.0,
         include_children=False,
+        seed=12345,
     ):
         self._path = path
         self._prim_paths = prim_paths
@@ -260,6 +276,7 @@ class CreateTextureComponentCommand(omni.kit.commands.Command):
         self._grouped_class_list = grouped_class_list
         self._duration = duration
         self._include_children = include_children
+        self._seed = seed
 
     def do(self):
         """Create a texture randomization component"""
@@ -282,6 +299,7 @@ class CreateTextureComponentCommand(omni.kit.commands.Command):
         prim.CreateGroupedClassAttr().Set(str(",").join(self._grouped_class_list))
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateDurationAttr().Set(float(self._duration))
+        prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
 
@@ -296,6 +314,7 @@ class CreateMaterialComponentCommand(omni.kit.commands.Command):
         loaded_material_paths=[],
         duration=0.0,
         include_children=False,
+        seed=12345,
     ):
         self._path = path
         self._prim_paths = prim_paths
@@ -305,6 +324,7 @@ class CreateMaterialComponentCommand(omni.kit.commands.Command):
         self._loaded_material_paths = loaded_material_paths
         self._duration = duration
         self._include_children = include_children
+        self._seed = seed
 
     def do(self):
         """Create a material randomization component"""
@@ -331,17 +351,28 @@ class CreateMaterialComponentCommand(omni.kit.commands.Command):
             mat_paths.AddTarget(path)
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateDurationAttr().Set(float(self._duration))
+        prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
 
 class CreateMeshComponentCommand(omni.kit.commands.Command):
-    def __init__(self, path=None, prim_paths=[], mesh_list=[], mesh_range=(1, 1), duration=0.0, include_children=False):
+    def __init__(
+        self,
+        path=None,
+        prim_paths=[],
+        mesh_list=[],
+        mesh_range=(1, 1),
+        duration=0.0,
+        include_children=False,
+        seed=12345,
+    ):
         self._path = path
         self._prim_paths = prim_paths
         self._mesh_list = mesh_list
         self._mesh_range = mesh_range
         self._duration = duration
         self._include_children = include_children
+        self._seed = seed
 
     def do(self):
         """Create a mesh randomization component"""
@@ -360,16 +391,20 @@ class CreateMeshComponentCommand(omni.kit.commands.Command):
         prim.CreateNumMeshRangeAttr().Set(Gf.Vec2i(self._mesh_range[0], self._mesh_range[1]))
         prim.CreateDurationAttr().Set(float(self._duration))
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
+        prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
 
 class CreateVisibilityComponentCommand(omni.kit.commands.Command):
-    def __init__(self, path=None, prim_paths=[], num_visible_range=(1, 1), duration=0.0, include_children=False):
+    def __init__(
+        self, path=None, prim_paths=[], num_visible_range=(1, 1), duration=0.0, include_children=False, seed=12345
+    ):
         self._path = path
         self._prim_paths = prim_paths
         self._num_visible_range = num_visible_range
         self._duration = duration
         self._include_children = include_children
+        self._seed = seed
 
     def do(self):
         """Create a visibility randomization component"""
@@ -390,6 +425,7 @@ class CreateVisibilityComponentCommand(omni.kit.commands.Command):
         prim.CreateNumVisibleRangeAttr().Set(Gf.Vec2i(int(self._num_visible_range[0]), int(self._num_visible_range[1])))
         prim.CreateDurationAttr().Set(float(self._duration))
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
+        prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
 
