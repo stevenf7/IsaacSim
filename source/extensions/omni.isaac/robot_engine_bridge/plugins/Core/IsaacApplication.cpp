@@ -6,6 +6,7 @@
 
 #include "../Actuator/DifferentialBaseSimulator.h"
 #include "../Actuator/HolonomicBaseSimulator.h"
+#include "../Actuator/VehicleSimulator.h"
 #include "../Actuator/JointControl.h"
 #include "../Actuator/ScissorLiftSimulator.h"
 #include "../Actuator/SurfaceGripper.h"
@@ -236,6 +237,16 @@ void IsaacApplication::tick(double dt)
     mTimeNanoSeconds = mTimeSeconds * 1e9;
 }
 
+void IsaacApplication::onStop()
+{
+    utils::BridgeApplicationBase<IsaacComponent>::onStop();
+
+    for (auto& component : mComponents)
+    {
+        component.second->onStop();
+    }
+}
+
 void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
 {
     std::unique_ptr<IsaacComponent> component;
@@ -251,6 +262,11 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
         component = std::make_unique<HolonomicBaseSimulator>(mDynamicControlPtr);
         component->initialize(
             mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineHolonomicBase(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineVehicle>())
+    {
+        component = std::make_unique<VehicleSimulator>();
+        component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineVehicle(prim), mStage);
     }
     else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineLidar>())
     {
