@@ -8,13 +8,6 @@ local ext_bin_folder = ext_folder.."/bin/$platform/$config"
 
 group ("extensions/"..ext_id)
 
-    -- Python code. Contains python sources, doesn't build or run, only for MSVS.
-    if os.target() == "windows" then
-        project "omni.isaac.robot_engine_bridge"
-            kind "None"
-            add_impl_folder("source/extensions/omni.isaac/robot_engine_bridge/python")
-    end
-
     repo_build.prebuild_link {
         { ext_source.."/config", ext_folder.."/config" },
         { ext_source.."/python/scripts", ext_folder.."/omni/isaac/robot_engine_bridge/scripts" },
@@ -71,14 +64,24 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/lib",
             "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins" 
         }
+
+        filter { "system:linux", "platforms:x86_64", "configurations:debug" }
+            libdirs { 
+                target_deps_dir.."/physx/bin/linux.clang/debug", 
+            }
+            defines {  "PX_PHYSX_STATIC_LIB", "_DEBUG" }
+        filter { "system:linux", "platforms:x86_64", "configurations:release" }
+            libdirs { 
+                target_deps_dir.."/physx/bin/linux.clang/"..physxLibs, 
+            }
+            defines {  "PX_PHYSX_STATIC_LIB", "NDEBUG" }
+        filter {}
         links { 
             "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "kj", "capnp", "omni.usd", "lidarSchema", "robotEngineBridgeSchema", "physxSchema"
+            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "kj", "capnp", "omni.usd", "lidarSchema", "robotEngineBridgeSchema", "physxSchema", "PhysXVehicle_static_64"
         }
 
-        filter  { "system:windows", "platforms:x86_64" }
-            libdirs { target_deps_dir.."/cuda/lib/x64"}
-            links { "cudart_static" }
+
         filter { "system:linux", "platforms:x86_64" }
             libdirs { target_deps_dir.."/cuda/lib64" }
             links { "cudart_static" }
