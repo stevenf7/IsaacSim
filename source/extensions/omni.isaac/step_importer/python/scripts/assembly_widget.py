@@ -163,7 +163,7 @@ class AssemblyTreeModel(ui.AbstractItemModel):
             )
             self.make_sub_tree(child.children[-1])
         for m in assembly.meshes:
-            child_mesh = self.part.meshes[m.id]
+            child_mesh = self.part.meshes_properties[m.id]
             child.children.append(
                 AssemblyItem(child_mesh.name, itemType.Mesh, m.id, m.pose, self.usd_paths[itemType.Mesh][m.id])
             )
