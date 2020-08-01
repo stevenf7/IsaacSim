@@ -146,9 +146,18 @@ PYBIND11_MODULE(_step_importer, m)
                 return out;
             }));
 
+    py::class_<MeshProperties>(m, "MeshProperties", "Contains properties of the meshes")
+        .def(py::init<>())
+        .def_readwrite("name", &MeshProperties::name, "Name")
+        .def_readwrite("com", &MeshProperties::com, "Center of Mass")
+        .def_readwrite("volume", &MeshProperties::volume, "Volume")
+        .def_readwrite("density", &MeshProperties::density, "Density")
+        .def("get_inertia_diag_matrix",
+             [](MeshProperties& self) { return py::array_t<float>({ 6 }, self.inertiaMatrix); },
+             "Diagonal matrix with inertia (Ixx, Ixy, Iyy, Ixz, Iyz, Izz)");
+
     py::class_<Mesh>(m, "Mesh", "Holds a Mesh made of vertices and triangles")
         .def(py::init<>())
-        .def_readwrite("name", &Mesh::name, "Object name")
         .def("get_vertices",
              [](Mesh& self) {
                  return py::array_t<float>(
@@ -213,7 +222,7 @@ PYBIND11_MODULE(_step_importer, m)
         "Full imported assembly from the CAD file. Every assembly, mesh and material is listed only once, and referred by indexes on the assemblies that use that element. The first element at the Assembly list is the root of the part.")
         .def(py::init<>())
         .def_readwrite("assemblies", &Part::assemblies, "unique list of assemblies")
-        .def_readwrite("meshes", &Part::meshes, "unique list of meshes")
+        .def_readwrite("meshes_properties", &Part::meshes_properties, "unique list of meshes")
         .def_readwrite("materials", &Part::materials, "unique list of assemblies");
     // .def("get_assemblies",
     //      [](Part& self) { return py::array_t<Assembly>({ self.assemblies.size() }, self.assemblies.data()); })
@@ -257,6 +266,9 @@ PYBIND11_MODULE(_step_importer, m)
 
 
     defineInterfaceClass<StepImporter>(m, "StepImporter", "acquire_interface", "release_interface")
-        .def("import_step_file", wrapInterfaceFunction(&StepImporter::importStepFile));
+        .def("load_step_file", wrapInterfaceFunction(&StepImporter::loadStepFile))
+        .def("release_step_file", wrapInterfaceFunction(&StepImporter::releaseStepFile))
+        .def("get_assembly_structure", wrapInterfaceFunction(&StepImporter::getAssemblyStructure))
+        .def("get_mesh", wrapInterfaceFunction(&StepImporter::getMesh));
 }
 }

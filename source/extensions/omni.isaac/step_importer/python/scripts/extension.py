@@ -5,12 +5,17 @@ import omni.ui as ui
 import os
 import gc
 import carb
-from . import usd_exporter
-from .assembly_widget import *
-
 import asyncio
+import weakref
+
 from functools import wraps, partial
 from pathlib import Path
+
+from . import usd_exporter
+from .assembly_widget import *
+from .tesselation_props_list import *
+from .mesh_list_widget import *
+
 
 # from .. import _step_importer
 from omni.isaac.step_importer import _step_importer
@@ -29,82 +34,36 @@ def wrap(func):
     return run
 
 
-def labeled_FloatDrag(props, parent, label, min, max, default=0, width=80, spacing=10, tooltipFn=None):
-    with parent:
-        with ui.HStack(spacing=spacing, width=width + 130, height=20, tooltip_fn=tooltipFn, tooltip_offset_y=25):
-            ui.Label(label, width=120, name=label)
-            props[label] = ui.FloatDrag(min=min, max=max, width=width)
-            props[label].model.set_value(default)
-
-
-def labeled_CheckBox(props, parent, label, checked=False, spacing=10, tooltipFn=None):
-    with parent:
-        with ui.HStack(spacing=spacing, height=20):
-            ui.Label(label, width=120, name=label, tooltip_fn=tooltipFn)
-            props[label] = ui.CheckBox()
-            props[label].model.set_value(checked)
-
-
-def image_tooltip(text, image_src, width, height):
-    """ Base Image tooltip function used on the UI"""
-    with ui.VStack(width=width, height=height):
-        ui.Label(text, width=width, height=20)
-        ui.Image(image_src, height=height - 20)
-
-
-def lin_deflection_tooltip():
-    image_tooltip(
-        " limits the distance between a curve and its tessellation",
-        str(Path(__file__).parent.joinpath("data/linear_displacement.png")),
-        400,
-        220,
-    )
-
-
-def ang_deflection_tooltip():
-    image_tooltip(
-        "  limits the angle between subsequent segments in a polyline",
-        str(Path(__file__).parent.joinpath("data/angular_displacement.png")),
-        400,
-        220,
-    )
-
-
-def surface_area_tooltip():
-    ui.Label("Minimum area for each triangle in the Mesh. Negative values means no limit.")
-
-
-def rel_offset_tooltip():
-    ui.Label("Scales the linear deflection offset by the segment length.")
-
-
-def int_verts_tooltip():
-    ui.Label("Takes internal vertices in consideration when building the mesh.")
-
-
-def com_tooltip():
-    ui.Label("Exports meshes with origin at volumetric center of mass")
-
-
-class Callback_Exporter:
-    def __init__(self, exporter):
-        self.exporter = exporter
-
-    def __call__(self, a, b):
-        print(a, b)
-        result = omni.usd.get_context().close_stage(self.exporter)
-        print(result)
-
-
 class StepImporter(omni.ext.IExt):
     def on_startup(self):
         print("Loading Step Importer Extension")
         self._si = _step_importer.acquire_interface()
-        self.async_import = wrap(self._si.import_step_file)
+        self.async_load_file = wrap(self._si.load_step_file)
+        self.async_get_assembly = wrap(self._si.get_assembly_structure)
         self._editor = omni.kit.editor.get_editor_interface()
         self.part = _step_importer.Part()
-        self._filepicker = None
+        # self._filepicker = None
+        self.exporter = None
         self.path = ""
+        self._window = None
+        self._assembly_model = None
+        self._mesh_model = None
+
+        self.build_steps = []
+        self.build_steps_fns = [self.build_step_0, self.build_step_1, self.build_step_2]
+        self.current_step = -1
+
+        self.asset_importer = None
+
+        self._filepicker = None
+
+        self._usd_context = omni.usd.get_context()
+        self.stage = self._usd_context.get_stage()
+        self._selection = self._usd_context.get_selection()
+        self._events = self._usd_context.get_stage_event_stream()
+        self._stage_event_subscription = self._events.create_subscription_to_pop(
+            self._on_stage_event, name="UsdShadeGraphModel Selection Watch"
+        )
 
         try:
             self._style = self._editor.get_ui_style()
@@ -115,7 +74,7 @@ class StepImporter(omni.ext.IExt):
                 self._style = "NvidiaDark"
 
         self._menu = omni.kit.ui.get_editor_menu().add_item(
-            "Window/Isaac/" + EXTENSION_NAME, self.show_window, toggle=True, value=True
+            "Window/Isaac/" + EXTENSION_NAME, self.show_window, toggle=False, value=False
         )
 
         if self._style == "NvidiaLight":
@@ -142,6 +101,8 @@ class StepImporter(omni.ext.IExt):
                 "TreeView.Item:selected": {"color": 0xFF2A2825},
                 "TreeView:selected": {"background_color": 0x409D905C},
             }
+            self.menu_button_style = {"Button.disabled": {"background_color": 0xFF535354, "color": 0xFFCCCCCC}}
+
         else:
             self.tree_style = {
                 "TreeView": {
@@ -157,145 +118,402 @@ class StepImporter(omni.ext.IExt):
                 "TreeView.Item:selected": {"color": 0xFF23211F},
                 "TreeView:selected": {"background_color": 0xFF8A8777},
             }
+            self.menu_button_style = {
+                "Button": {"border_radius": 0, "margin": 0},
+                "Button:selected": {"background_color": 0xFF454545, "padding": 5},
+                ":disabled": {"color": 0xFF333333},
+                # "Button:hovered":{"background_color":0xFF9A9A9A},
+            }
 
         self._delegate = AssemblyDelegate()
 
-        self.show_window(None, True)
+        # self.show_window(None, True)
+
+    def _on_stage_event(self, event):
+        """Called with omni.usd.context when stage event"""
+
+        if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
+            self._on_kit_selection_changed()
+        if event.type == int(omni.usd.StageEventType.OPENED):
+            if self._mesh_model:
+                self._mesh_model.update_prim_paths()
+
+    def _select_meshes_with_same_volume(self):
+        selection = []
+        volumes = [item.get_col_value(2) for item in self._mesh_list.selection]
+        for v in volumes:
+            selection = selection + [i for i in self._mesh_list.model._children if abs(i.get_col_value(2) - v) == 0]
+        self._mesh_list.selection = list(set(selection))
+
+    def get_selected_prim_paths(self, source):
+        selection = []
+        for item in self._mesh_list.selection:
+            selection = selection + item.prims
+        return list(set([str(i.GetPath()) for i in selection]))
+
+    def toggle_selected_visibility(self, source):
+        omni.kit.commands.execute(
+            "ToggleVisibilitySelectedPrimsCommand", selected_paths=self.get_selected_prim_paths(source)
+        )
+
+    def ReplaceDuplicatesSelected(self):
+        pass
+
+    def _on_kit_selection_changed(self):
+        """The selection in kit is changed"""
+        if self.exporter:
+            selection = []
+            for sel in self._selection.get_selected_prim_paths():
+                usd_path = ""
+                current_sel = sel
+                prim = self._usd_context.get_stage().GetPrimAtPath(sel)
+                identifier = (prim.GetPrimStack()[-1]).layer.identifier
+                if "meshes" in identifier:
+                    if self.exporter.path.lower() in identifier.lower():
+                        # print (identifier)
+                        usd_path = os.path.relpath(identifier, self.exporter.path).replace("\\", "/")
+                        selection.append(self._mesh_model._childrenMap[usd_path])
+            self._mesh_list.selection = list(set(selection))
+
+    def _on_mesh_list_selection_changed(self, source):
+        selection = self.get_selected_prim_paths(source)
+        self._selection.set_selected_prim_paths(selection, False)
+
+    def select_step(self, step):
+        if step != self.current_step:
+            if self.current_step >= 0:
+                self.build_steps[self.current_step].visible = False
+                self.step_btns[self.current_step].selected = False
+            self.current_step = step
+            self.build_steps[self.current_step].visible = True
+            self.step_btns[self.current_step].selected = True
+
+    def build_step_0(self, container):
+        with container:
+            self._step_picker_button = ui.Button("load Preview", clicked_fn=lambda a=self: self._select_file(a))
+
+    def build_step_1(self, container):
+        self._tp_delegate = TesselationPropsDelegate()
+        self._tp_model = TesselationPropertiesListModel([_step_importer.Tesselation_Properties()])
+
+        self._mesh_delegate = MeshListDelegate()
+        self._mesh_model = MeshListModel()
+
+        with container:
+            with ui.VStack(aligmnent=ui.Alignment.LEFT_TOP, height=ui.Percent(100)):
+                with ui.CollapsableFrame("Mesh List", height=ui.Pixel(0)):
+                    with ui.VStack(height=ui.Pixel(200)):
+                        with ui.HStack():
+                            with ui.ScrollingFrame(
+                                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
+                                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                                style_type_name_override="TreeView.ScrollingFrame",
+                                style=self.tree_style,
+                                height=ui.Pixel(180),
+                            ):
+                                self._mesh_list = ui.TreeView(
+                                    self._mesh_model,
+                                    style=self.tree_style,
+                                    delegate=self._mesh_delegate,
+                                    header_visible=True,
+                                    height=ui.Percent(100),
+                                    tooltip="Double click on item open isolated mesh",
+                                    column_widths=[40, ui.Fraction(1), 60, 40, 150, 40],
+                                )
+                                self._mesh_list.set_selection_changed_fn(self._on_mesh_list_selection_changed)
+                            with ui.VStack(width=80):
+                                ui.Button(
+                                    "Show Full Part",
+                                    clicked_fn=lambda: self._delegate.on_mouse_double_clicked(
+                                        self._assembly_model._root.children[0]
+                                    ),
+                                    height=ui.Pixel(25),
+                                )
+                                ui.Button(
+                                    "Find Similar Meshes",
+                                    clicked_fn=lambda: self._select_meshes_with_same_volume(),
+                                    height=ui.Pixel(25),
+                                    tooltip="Selects Potential duplicate meshes based on metadata",
+                                )
+                                ui.Button(
+                                    "Toggle Visibility",
+                                    clicked_fn=lambda: self.toggle_selected_visibility(self._mesh_list),
+                                    height=ui.Pixel(25),
+                                    tooltip="Selects Potential duplicate meshes based on metadata",
+                                )
+
+                                def on_edit_names(button):
+                                    self._mesh_model.toggle_edit_mode()
+                                    if self._mesh_model.edit_mode:
+                                        button.text = "Done Editing Names"
+                                    else:
+                                        button.text = "Edit Mesh Names"
+
+                                btn = ui.Button(
+                                    "Edit Mesh Names",
+                                    height=ui.Pixel(25),
+                                    tooltip="Allow editing mesh names and updates assemblies.",
+                                )
+                                btn.set_clicked_fn(lambda a=btn: on_edit_names(a))
+                                ui.Button(
+                                    "remove selected duplicates",
+                                    clicked_fn=lambda: self.ReplaceDuplicatesSelected(),
+                                    height=ui.Pixel(25),
+                                    tooltip="Replaces all selected meshes with a single instance (First selected)",
+                                )
+                                with ui.HStack(tooltip="Import the meshes with given LOD properties"):
+                                    ui.Label("Import", height=ui.Pixel(25), width=ui.Pixel(30))
+                                    ui.Button("All", clicked_fn=lambda: self.reimport_meshes(True), height=ui.Pixel(25))
+                                    ui.Button(
+                                        "Selected", clicked_fn=lambda: self.reimport_meshes(), height=ui.Pixel(25)
+                                    )
+                ui.Spacer(height=10)
+                with ui.CollapsableFrame("LOD properties", height=ui.Pixel(0)):
+                    with ui.HStack(height=ui.Percent(100)):
+                        with ui.VStack(width=ui.Pixel(20)):
+                            ui.Spacer(height=ui.Pixel(13))
+                            self._add_lod = ui.Button(
+                                "+",
+                                clicked_fn=lambda: self._tp_model.add_prop(),
+                                height=ui.Pixel(20),
+                                width=ui.Pixel(20),
+                            )
+                            self._remove_lod = ui.Button(
+                                "-",
+                                clicked_fn=lambda: self.remove_selected_lod(),
+                                height=ui.Pixel(20),
+                                width=ui.Pixel(20),
+                                tooltip="Removes selected element from the list. if None is selected, removes last.",
+                            )
+                        with ui.ScrollingFrame(
+                            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
+                            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                            # style_type_name_override="TreeView.ScrollingFrame",
+                            style=self.tree_style,
+                            height=ui.Pixel(80),
+                        ):
+                            self._tesselation_properties_list = ui.TreeView(
+                                self._tp_model,
+                                style=self.tree_style,
+                                delegate=self._tp_delegate,
+                                header_visible=True,
+                                height=ui.Percent(100),
+                                alignment=ui.Alignment.CENTER_TOP,
+                            )
+            ui.Button("Review Assemblies", clicked_fn=lambda: self.select_step(2), height=ui.Pixel(25))
+
+    def reimport_meshes(self, import_all=False):
+        props = self._tp_model.get_props()
+        if import_all:
+            items = self._mesh_model._children
+        else:
+            items = self._mesh_list.selection
+
+        def export():
+            for item in items:
+                mesh_idx = item.id
+                self.exporter.export_mesh(mesh_idx, props, len(items) == 1)
+
+            if len(items) > 1 or import_all:
+                self._delegate.on_mouse_double_clicked(self._assembly_model._root.children[0])
+
+        if not (len(items) > 1 or import_all):
+            export()
+        else:
+            omni.usd.get_context().close_stage(
+                on_finish_fn=lambda a, b: omni.usd.get_context().new_stage(on_finish_fn=lambda a, b: export())
+            )
+
+    def build_step_2(self, container):
+        with container:
+            self._assembly_model = AssemblyTreeModel()
+            self._sf = ui.ScrollingFrame(
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                style_type_name_override="TreeView.ScrollingFrame",
+                style=self.tree_style,
+                height=ui.Percent(100)
+                # mouse_pressed_fn=lambda x, y, b, _: self._delegate.on_mouse_pressed(b, None, False),
+            )
+            with self._sf:
+                self._treeView = ui.TreeView(
+                    self._assembly_model,
+                    column_widths=[ui.Fraction(1), 80],
+                    root_visible=False,
+                    header_visible=True,
+                    delegate=self._delegate,
+                    style=self.tree_style,
+                )
+            self._finish_import_btn = ui.Button("Finish Import", clicked_fn=lambda: self._select_folder(self))
+
+    def remove_selected_lod(self):
+        # print(self._tesselation_properties_list.selection)
+        self._tp_model.remove_item(self._tesselation_properties_list.selection)
+        self._tesselation_properties_list.clear_selection()
+
+    def _finish_import(self, output_dir):
+        # setting asset importer parameters to upload
+        if not self.asset_importer:
+            from omni.assetimport import get_extension as get_asset_importer
+
+            self.asset_importer = get_asset_importer()
+            self.asset_importer.__dict__["_waiting_popup_upload"] = None
+            self.asset_importer.__dict__["_content_window"] = None
+        self.asset_importer._menu_upload_clicked = True
+        self.asset_importer._upload_absolute_paths, self.asset_importer._upload_relative_paths = (
+            self.exporter.get_abs_and_rel_paths()
+        )
+
+        async def import_file():
+            await self.asset_importer._start_upload_internal(output_dir, False, None)
+            omni.usd.get_context().open_stage(output_dir + "/" + self.exporter.part_name + "/root.usd", None)
+            self.asset_importer.on_shutdown()
+            self.asset_importer = None
+            # omni.usd.get_context().close_stage(on_finish_fn= lambda a,b: omni.usd.get_context().open_stage(output_dir +"/"+self.exporter.part_name+ "/root.usd", None))
+
+        self.asset_importer._upload_future = asyncio.ensure_future(
+            import_file()
+            # self.asset_importer._start_upload_internal(output_dir, False, None)
+        )
 
     def show_window(self, menu, value):
-        if value:
+        if self._window:
+            self._window = None
+            self.build_steps.clear()
+            self.current_step = -1
+            if self._assembly_model:
+                self._assembly_model.reset()
+                self._assembly_model = None
+            self.part = _step_importer.Part()
+        else:
             self._window = ui.Window(
                 EXTENSION_NAME,
-                width=300,
+                width=600,
                 height=200,
                 menu_path="Isaac Robotics/Importers/" + EXTENSION_NAME,
                 open=value,
                 dock=ui.DockPreference.LEFT_BOTTOM,
             )
+            self._window.set_visibility_changed_fn(lambda a: self.show_window(self._menu, False))
             self.props = {}
             with self._window.frame:
-                self._hstack = ui.HStack(spacing=10)
-                with self._hstack:
-                    self._vstack = ui.VStack(spacing=5)
-                    with self._vstack:
-                        labeled_FloatDrag(
-                            self.props,
-                            self._vstack,
-                            "Max Linear Deflection",
-                            0,
-                            100,
-                            0.001,
-                            80,
-                            tooltipFn=lin_deflection_tooltip,
+                with ui.VStack(alignment=ui.Alignment.TOP):
+                    with ui.HStack(
+                        spacing=0, height=ui.Pixel(20), style={**self.menu_button_style}, alignment=ui.Alignment.BOTTOM
+                    ):
+                        self._select_step_btn = ui.Button(
+                            "Select Step File", clicked_fn=lambda: self.select_step(0), height=ui.Pixel(20)
                         )
-                        labeled_FloatDrag(
-                            self.props,
-                            self._vstack,
-                            "Max Angular Deflection",
-                            0,
-                            10,
-                            0.5,
-                            80,
-                            tooltipFn=ang_deflection_tooltip,
+                        self._review_meshes_btn = ui.Button(
+                            "Review Meshes", clicked_fn=lambda: self.select_step(1), height=ui.Pixel(20)
                         )
-                        labeled_FloatDrag(
-                            self.props, self._vstack, "Min Surface Area", -1, 10, -1, 80, tooltipFn=surface_area_tooltip
+                        self._review_meshes_btn.enabled = False
+                        self._review_assemblies_btn = ui.Button(
+                            "Review Assemblies", clicked_fn=lambda: self.select_step(2), height=ui.Pixel(20)
                         )
-                        labeled_CheckBox(
-                            self.props, self._vstack, "Use Relative Offset", True, tooltipFn=rel_offset_tooltip
-                        )
-                        labeled_CheckBox(
-                            self.props, self._vstack, "Use Internal Vertices", True, tooltipFn=int_verts_tooltip
-                        )
-                        labeled_CheckBox(self.props, self._vstack, "Re-Center meshes", True, tooltipFn=com_tooltip)
-                        self._step_picker_button = ui.Button(
-                            "load STEP", clicked_fn=lambda a=self: self._select_file(a)
-                        )
-                    self._model = AssemblyTreeModel()
-                    with ui.VStack(spacing=10):
-                        self._sf = ui.ScrollingFrame(
-                            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
-                            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                            style_type_name_override="TreeView.ScrollingFrame",
-                            style=self.tree_style,
-                            height=ui.Percent(100)
-                            # mouse_pressed_fn=lambda x, y, b, _: self._delegate.on_mouse_pressed(b, None, False),
-                        )
-                        with self._sf:
-                            self._treeView = ui.TreeView(
-                                self._model,
-                                column_widths=[ui.Fraction(1), 80],
-                                root_visible=False,
-                                header_visible=True,
-                                delegate=self._delegate,
-                                style=self.tree_style,
-                            )
-                            # self._treeView.build_header = self.build_header
-                            # self._sf.visible = False
-
-        else:
-            self._window = None
-            self._model.reset()
-            self._model = None
-            self.part = _step_importer.Part()
-
-    @staticmethod
-    def dummy(a, b):
-        pass
+                        self._review_assemblies_btn.enabled = False
+                        self.step_btns = [self._select_step_btn, self._review_meshes_btn, self._review_assemblies_btn]
+                    # with ui.ZStack():
+                    for i in range(len(self.build_steps_fns)):
+                        vstack = ui.VStack(spacing=10, alignment=ui.Alignment.TOP)
+                        self.build_steps_fns[i](vstack)
+                        vstack.visible = False
+                        self.build_steps.append(vstack)
+                        self.step_btns[i].selected = False
+                    self.select_step(0)
+                    if menu:
+                        self._select_file(self)
+                        # self._select_picked_file_callback("/home/rgasoto/Downloads/as1-oc-214.stp")
 
     def on_shutdown(self):
         print("Shutting down Step Importer")
+        self._menu = None
+        if self._assembly_model:
+            self._assembly_model.reset()
+        if self._mesh_model:
+            self._mesh_model.reset()
+        if self.asset_importer:
+            # del self.asset_importer
+            self.asset_importer = None
         if self._filepicker:
             self._filepicker.set_file_selected_fn(None)
-            self._filepicker = None
-        self._menu = None
-        self._model.reset()
-        self._model = None
+            # self._filepicker = None  # Why does that crash?
+        self._sf = None
+        self._mesh_model = None
+        self._assembly_model = None
+        # print("deleting part")
         del self.part
         self.part = None
+        # print("deleting exporter")
+        del self.exporter
+        self.exporter = None
         gc.collect()
+        # print("releasing interface")
+        # self._si = None
         # _step_importer.release_interface(self._si)
+        print("done")
 
     def _select_file(self, btn_widget):
-        if not self._filepicker:
-            self._filepicker = omni.kit.ui.FilePicker(
-                "Select STEP File", file_type=omni.kit.ui.FileDialogSelectType.FILE
-            )
-            self._filepicker.set_file_selected_fn(self._select_picked_folder_callback)
-            self._filepicker.add_filter("STEP Files (*.step | *.stp)", r".*.step$|.*.stp$")
+
+        # else:
+        #     self._filepicker.title = "Select STEP File"
+        #     self._filepicker.selection_type = omni.kit.ui.FileDialogSelectType.FILE
+        self._filepicker = omni.kit.ui.FilePicker("Select STEP File", file_type=omni.kit.ui.FileDialogSelectType.FILE)
+        self._filepicker.set_file_selected_fn(self._select_picked_file_callback)
+        self._filepicker.add_filter("STEP Files (*.step | *.stp)", r".*.step$|.*.stp$")
+
         self._filepicker.show()
 
-    async def _import_file(self, task):
-        done, pending = await asyncio.wait({task})
-        if task in done:
-            path, basename = os.path.split(self.path)
-            basename = os.path.splitext(basename)[0]
-            exporter = usd_exporter.PartExporter(self.part, path, basename, self._model)
-            self._model.reset()
-            # Close current stage to ensure it can override
-            if omni.usd.get_context().can_close_stage():
-                omni.usd.get_context().close_stage(on_finish_fn=exporter)
-            else:
-                omni.usd.get_context().new_stage(on_finish_fn=Callback_Exporter(exporter))
-            self._sf.visible = True
+    def _select_folder(self, btn_widget):
+        self._filepicker = omni.kit.ui.FilePicker(
+            "Select Destination Folder", file_type=omni.kit.ui.FileDialogSelectType.DIRECTORY
+        )
+        self._filepicker.set_file_selected_fn(self._finish_import)
+        self._filepicker.show()
 
-    def _select_picked_folder_callback(self, path):
-        print(path)
+    def _import_file(self, step_path):
+        self.step_file = self._si.load_step_file(step_path)
+        if self._si.get_assembly_structure(self.step_file, self.part):
+            print(self.path)
+            path, basename = os.path.split(self.path)
+            print(path, basename)
+            basename = os.path.splitext(basename)[0]
+            print(basename)
+            clean_path = None
+            print("Creating USD Exporter")
+            self.exporter = usd_exporter.PartExporter(
+                weakref.proxy(self._si), self.step_file, weakref.proxy(self.part), path, basename
+            )
+
+            print("Resetting models")
+            self._mesh_model.reset()
+            self._assembly_model.reset()
+
+            self.exporter.export()
+            self._assembly_model.add_part(self.part, self.exporter.assemblies_path, self.exporter.mesh_usd_paths)
+            self._mesh_model.add_mesh_list(weakref.proxy(self.exporter))
+
+            self.step_btns[1].enabled = True
+            self.step_btns[2].enabled = True
+            self.select_step(1)
+
+    def _select_picked_file_callback(self, path):
         if not path.startswith("omniverse://"):
             self.path = path
-            props = _step_importer.Tesselation_Properties()
-            props.max_linear_offset = float(self.props["Max Linear Deflection"].model.get_value_as_float())
-            props.max_angular_offset = float(self.props["Max Angular Deflection"].model.get_value_as_float())
-            props.min_surface = float(self.props["Min Surface Area"].model.get_value_as_float())
-            props.use_relative_offset = self.props["Use Relative Offset"].model.get_value_as_bool()
-            props.use_internal_vertices = self.props["Use Internal Vertices"].model.get_value_as_bool()
-            props.volumetric_center_meshes = self.props["Re-Center meshes"].model.get_value_as_bool()
+            if self.exporter and self.exporter.is_temp_stage_open():
 
-            task = asyncio.ensure_future(self.async_import(path, props, self.part))
+                def import_file():
+                    del self.exporter
+                    self.exporter = None
+                    gc.collect()
+                    self._import_file(self.path)
 
-            asyncio.ensure_future(self._import_file(task))
+                omni.usd.get_context().close_stage(on_finish_fn=lambda a, b: import_file())
+            else:
+                self._import_file(self.path)
         else:
-            self._model.reset()
+            self._assembly_model.reset()
+            self._mesh_model.reset()
             self.path = ""
             self._exporter_button.enabled = False
             carb.log_error("Only Local Paths supported")
