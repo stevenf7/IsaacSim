@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/alice/c_api/isaac_c_api.h>
+#include <packages/engine_c_api/isaac_c_api.h>
 
 #include <dlfcn.h>
 #include <functional>

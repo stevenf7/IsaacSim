@@ -35,7 +35,7 @@
 #include <vector>
 #include <memory>
 
-#include <engine/alice/c_api/isaac_c_api.h>
+#include <packages/engine_c_api/isaac_c_api.h>
 
 #include <messages/uuid.capnp.h>
 #include <uuid/uuid.h>

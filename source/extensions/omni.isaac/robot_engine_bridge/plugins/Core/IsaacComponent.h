@@ -8,7 +8,7 @@
 #include <carb/profiler/Profile.h>
 
 #include <RobotEngineBridgeSchema/robotEngineBridgeComponent.h>
-#include <engine/alice/c_api/isaac_c_api_error.h>
+#include <packages/engine_c_api/isaac_c_api_error.h>
 
 #include <string>
 #include <vector>
