@@ -52,13 +52,15 @@ Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildTyp
 - GPU supporting DirectX Raytracing or Vulkan Raytracing (This includes Pascal cards with 6 GB of RAM or more, Volta or Turing GPUs)
 
 #### Linux/Windows
-- Install Ubuntu 18.04+ (linux-x86_64) / Windows 10 version 1809+ (windows-x86_64 and DXR)
-- Install NVIDIA driver 440.59+ (Linux) / NVIDIA driver 442.19+ (Windows)
+- Install Ubuntu 18.04 (linux-x86_64) / Windows 10 version 1809 (windows-x86_64 and DXR)
+- Install NVIDIA driver 450.57 (Linux) / NVIDIA driver 451.48 (Windows)
 - Install VS Code (recommended) or VS2017 with [SDK 10.17763+](https://go.microsoft.com/fwlink/?LinkID=2023014)
-- (Optional) Install Vulkan SDK 1.1.106.0:
+- (Optional) Install Vulkan SDK 1.2.131.1:
     * Required for debug builds and validation layers only.
-    * [Windows] (https://sdk.lunarg.com/sdk/download/1.1.106.0/windows/VulkanSDK-1.1.106.0-Installer.exe)
-    * [Linux] (https://sdk.lunarg.com/sdk/download/1.1.106.0/linux/vulkansdk-linux-x86_64-1.1.106.0.tar.gz)
+    * Vulkan 1.1 core remains our min requirement for development. 
+    * Vulkan SDKs prior to this version has known bugs and are not compatible.
+    * [Windows] (https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.131.1/windows/VulkanSDK-1.2.131.1-Installer.exe)
+    * [Linux] (https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.131.1/linux/vulkansdk-linux-x86_64-1.2.131.1.tar.gz)
 - Install "git".
 - Install "git-lfs":
     * Required for fetching data folder used in unit tests only.
