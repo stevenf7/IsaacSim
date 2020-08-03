@@ -281,8 +281,8 @@ void scan(int start,
             physx::PxQuat rot = mainrot * physx::PxQuat(zenith[row], zenithDir);
             physx::PxVec3 unitDir = rot.rotate(physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized();
             physx::PxRaycastHit raycastHit;
-
-            bool hit = raycastClosest(origin, unitDir, maxDepth, raycastHit, physxScenePtr);
+            // Project the start point out to prevent collisions from origin
+            bool hit = raycastClosest(origin + unitDir * minDepth, unitDir, maxDepth, raycastHit, physxScenePtr);
 
             if (hit)
             {
