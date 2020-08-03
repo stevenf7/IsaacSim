@@ -27,7 +27,7 @@ REM echo ##teamcity[blockClosed name='Docs...']
 echo ##teamcity[blockOpened name='Gather licenses...']
 call "tools\gather_licenses.bat"
 if %errorlevel% neq 0 (
-    echo ##teamcity[buildStatus text='Licensing validation failed.' status='FAILURE']
+    echo ##teamcity[buildStatus text='Licensing gather failed.' status='FAILURE']
     exit /b %errorlevel%
 )
 echo ##teamcity[blockClosed name='Gather licenses...']
@@ -40,7 +40,10 @@ if not "%1" == "--debug-only" (
     -p deps\isaac-sim.packman.xml ^
     -b _build\windows-x86_64\release\
 )
-if %errorlevel% neq 0 ( goto Error )
+if %errorlevel% neq 0 (
+    echo ##teamcity[buildStatus text='Licensing validation failed.' status='FAILURE']
+    exit /b %errorlevel%
+)
 echo ##teamcity[blockClosed name='Validate licenses...']
 
 :: Package

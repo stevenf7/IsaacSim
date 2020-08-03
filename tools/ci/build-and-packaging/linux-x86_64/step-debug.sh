@@ -26,7 +26,9 @@ echo "##teamcity[blockClosed name='Docs...']"
 
 # Gathering licenses
 echo "##teamcity[blockOpened name='Gathering licenses...']"
-"./tools/gather_licenses.sh" || echo "##teamcity[buildStatus text='Licensing validation failed.' status='FAILURE']"
+"./tools/gather_licenses.sh" \
+   || (echo "##teamcity[buildStatus text='Licensing gather failed.' status='FAILURE']" \
+   && exit 1)
 echo "##teamcity[blockClosed name='Gathering licenses...']"
 
 # Validating licenses
