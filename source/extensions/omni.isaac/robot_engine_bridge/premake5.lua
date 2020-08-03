@@ -12,12 +12,13 @@ group ("extensions/"..ext_id)
         { ext_source.."/config", ext_folder.."/config" },
         { ext_source.."/python/scripts", ext_folder.."/omni/isaac/robot_engine_bridge/scripts" },
         { "%{root}/_build/target-deps/isaac_engine/data/", ext_folder.."/resources/isaac_engine/" },
+        { "%{root}/_build/target-deps/isaac_engine/packages/", ext_folder.."/packages/" },
     }
 
     repo_build.prebuild_copy {
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/robot_engine_bridge" },
         { ext_source.."/python/__init__.py", target_deps_dir.."/kit_sdk_$config/_build/$platform/$config/exts/omni.syntheticdata/omni/syntheticdata/__init__.py" },
-        { "%{root}/_build/target-deps/isaac_engine/lib/**", ext_bin_folder },
+        { "%{root}/_build/target-deps/isaac_engine/lib/*.so", ext_bin_folder },
         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RobotEngineBridgeSchema/**", ext_folder.."/omni/isaac/RobotEngineBridgeSchema" },
         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}robotEngineBridgeSchema${lib_ext}", ext_folder.."/bin/$platform/$config"},
     }

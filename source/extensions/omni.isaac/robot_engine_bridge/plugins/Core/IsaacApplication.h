@@ -10,8 +10,8 @@
 #include <carb/tasking/ITasking.h>
 
 #include <RobotEngineBridgeSchema/robotEngineBridgeComponent.h>
-#include <engine/alice/c_api/isaac_c_api.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <packages/engine_c_api/isaac_c_api.h>
 
 #include <memory>
 #include <string>

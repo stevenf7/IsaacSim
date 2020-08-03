@@ -93,7 +93,10 @@ class Extension(omni.ext.IExt):
 
     def _on_create_destroy_fn(self, widget):
         if self._is_created is False:
-            self._re_bridge.createApplication("", self.application_path.value, [], [])
+            asset_path = os.path.abspath(
+                carb.tokens.get_tokens_interface().resolve("${app}/../exts/omni.isaac.robot_engine_bridge/")
+            )
+            self._re_bridge.createApplication(asset_path, self.application_path.value, [], [])
             self._re_bridge.initializeStageLoader(
                 self._inp_comp.value, self._req_channel.value, self._out_comp.value, self._rep_channel.value
             )
