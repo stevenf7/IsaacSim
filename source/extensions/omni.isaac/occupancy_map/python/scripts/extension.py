@@ -6,6 +6,8 @@ import omni
 import carb
 from pxr import UsdGeom, Gf
 from PIL import Image, ImageDraw
+import os
+import gc
 
 
 def create_xyz(init=0):
@@ -33,6 +35,7 @@ class Extension(omni.ext.IExt):
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400)
         # self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/{EXTENSION_NAME}", self._menu_callback)
         self._om = _occupancy_map.acquire_occupancy_map_interface()
+        self._editor = omni.kit.editor.get_editor_interface()
         with self._window.frame:
             with ui.HStack():
                 with ui.VStack():
@@ -91,10 +94,6 @@ class Extension(omni.ext.IExt):
                         # style = {"background_color": 0xFF000000, "secondary_color": 0xFFAAAAAA, "color": 0xFF444444}
                         # slider = ui.FloatSlider(enabled = False, style = style)
                         # slider.model.set_value(.5)
-                        with ui.CollapsableFrame(title="Stats", collapsed=True):
-                            with ui.VStack():
-                                ui.Label("Rays", width=0, height=0)
-                                ui.Label("Voxels", width=0, height=0)
 
                 ui.Spacer(width=10)
                 with ui.VStack():
@@ -115,14 +114,18 @@ class Extension(omni.ext.IExt):
                         ui.Spacer(width=10)
                         self.unknown_color_model = ui.ColorWidget(0.5, 0.5, 0.5, 1, width=0).model
 
-                    ui.Button("Generate Image", clicked_fn=self._generate_image)
+                    self.generate_image_btn = ui.Button("Generate Image", clicked_fn=self._generate_image)
+                    self.generate_image_btn.visible = False
+                    self.draw_voxel_btn = ui.Button("Draw Voxels", clicked_fn=self._draw_instances)
+                    self.draw_voxel_btn.visible = False
 
-        # self.btn_manual_comp = omni.kit.ui.Button("castRay")
-        # self.btn_manual_comp.set_clicked_fn(self._manual_comp)
-        # self._window.layout.add_child(self.btn_manual_comp)
-        # print((self.start_location.model.get_item_value_model_count()))
+    def _draw_instances(self):
 
-    def _draw_instances(self, instancePath, cubePath, pos_list, scale, color):
+        instancePath = "/occupancyMap/occupiedInstances"
+        cubePath = "/occupancyMap/occupiedCube"
+        pos_list = self._om.getOccupiedPositions()
+        scale = self.cell_size.model.get_value_as_float() * 0.5
+        color = (0.0, 1.0, 1.0)
         stage = omni.usd.get_context().get_stage()
         if stage.GetPrimAtPath(instancePath):
             stage.RemovePrim(instancePath)
@@ -141,7 +144,6 @@ class Extension(omni.ext.IExt):
         proto_indices_attr.Set([0] * len(pos_list))
 
     def _manual_comp(self):
-
         self._om.generateMap(
             (
                 self.start_location["X"].model.get_value_as_float(),
@@ -163,22 +165,8 @@ class Extension(omni.ext.IExt):
             self.min_search_dist.model.get_value_as_float(),
             self.occupancy_threshold.model.get_value_as_float(),
         )
-
-        self._draw_instances(
-            "/occupancyMap/occupiedInstances",
-            "/occupancyMap/occupiedCube",
-            self._om.getOccupiedPositions(),
-            self.cell_size.model.get_value_as_float() * 0.5,
-            (0.0, 1.0, 1.0),
-        )
-
-        # self._draw_instances(
-        #     "/occupancyMap/freeInstances",
-        #     "/occupancyMap/freeCube",
-        #     self._om.getFreePositions(),
-        #     self.cell_size.model.get_value_as_float() * 0.5,
-        #     (1.0, 1.0, 0.0),
-        # )
+        self.generate_image_btn.visible = True
+        self.draw_voxel_btn.visible = True
 
     def _generate_image(self):
         print(self._om.getMinBound())
@@ -251,15 +239,34 @@ class Extension(omni.ext.IExt):
             border=None,
             thresh=0,
         )
+        # Flip image to match what SDK expects
         im = im.transpose(Image.FLIP_LEFT_RIGHT)
+
         image = list(im.tobytes())
         self._visualize_window = omni.ui.Window("Visualization", width=300, height=300)
+
+        def save_image(path):
+            print("Saving occupancy map image to", path)
+            im.save(path)
+
+        def save_file():
+            self._filepicker = omni.kit.ui.FilePicker(
+                "Save Generated Image",
+                file_type=omni.kit.ui.FileDialogSelectType.FILE,
+                mode=omni.kit.ui.FileDialogOpenMode.SAVE,
+            )
+            self._filepicker.set_file_selected_fn(save_image)
+            self._filepicker.add_filter("PNG (*.png)", r".*.png$")
+            self._filepicker.show()
+
         with self._visualize_window.frame:
             self._rgb_byte_provider = omni.ui.ByteImageProvider()
             self._rgb_byte_provider.set_data(image, [int(size[0] / scale), int(size[1] / scale)])
-            omni.ui.ImageWithProvider(self._rgb_byte_provider)
-        im.save("myfile.png")
+            with ui.VStack():
+                omni.ui.ImageWithProvider(self._rgb_byte_provider)
+                ui.Button("Save Image", clicked_fn=save_file, height=0)
 
     def on_shutdown(self):
         print("Shutting down Occupancy Map")
         _occupancy_map.release_occupancy_map_interface(self._om)
+        gc.collect()
