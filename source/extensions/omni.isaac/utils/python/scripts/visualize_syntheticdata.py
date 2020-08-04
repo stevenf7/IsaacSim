@@ -17,8 +17,7 @@ import omni.ui
 import omni.syntheticdata._syntheticdata as gt
 from omni.kit.settings import get_settings_interface
 from omni.kit import pipapi
-
-pipapi.install("opencv-python")
+from PIL import Image, ImageDraw
 
 EXTENSION_NAME = "Visualize Synthetic Data"
 
@@ -69,10 +68,10 @@ def colorize_instance(instance_image, width, height):
 
 
 def colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb):
-    import cv2
-
     semantic_id_list = []
     bbox_2d_list = []
+    rgb_img = Image.fromarray(bboxes_2d_rgb)
+    rgb_img_draw = ImageDraw.Draw(rgb_img)
     for bbox_2d in bboxes_2d_data:
         if bbox_2d[1] > 0:
             semantic_id_list.append(bbox_2d[1])
@@ -82,13 +81,17 @@ def colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb):
     for bbox_2d in bbox_2d_list:
         index = np.where(semantic_id_list_np == bbox_2d[1])[0][0]
         bbox_color = color_list[index]
-        bboxes_2d_rgb = cv2.rectangle(
-            bboxes_2d_rgb,
-            (bbox_2d[2], bbox_2d[3]),
-            (bbox_2d[4], bbox_2d[5]),
-            (int(255 * bbox_color[0]), int(255 * bbox_color[1]), int(255 * bbox_color[2]), int(255 * bbox_color[3])),
-            2,
+        rgb_img_draw.rectangle(
+            [(bbox_2d[2], bbox_2d[3]), (bbox_2d[4], bbox_2d[5])],
+            outline=(
+                int(255 * bbox_color[0]),
+                int(255 * bbox_color[1]),
+                int(255 * bbox_color[2]),
+                int(255 * bbox_color[3]),
+            ),
+            width=2,
         )
+    bboxes_2d_rgb = np.array(rgb_img)
     bboxes_2d_rgb = bboxes_2d_rgb.reshape(bboxes_2d_rgb.size)
     return bboxes_2d_rgb
 
