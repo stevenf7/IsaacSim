@@ -344,17 +344,18 @@ void scan(int start,
 
             if (hit)
             {
-                depth[i] = static_cast<uint16_t>(raycastHit.distance * invMaxDepth * 65535.0f);
-                linearDepth[i] = raycastHit.distance * metersPerUnit; // in meters
+                // the distance of the ray should be from center of lidar
+                depth[i] = static_cast<uint16_t>((raycastHit.distance + minDepth) * invMaxDepth * 65535.0f);
+                linearDepth[i] = (raycastHit.distance + minDepth) * metersPerUnit; // in meters
                 intensity[i] = 255;
 
-                if (linearDepth[i] < minDepth * metersPerUnit)
-                {
-                    depth[i] = 0;
-                    linearDepth[i] = minDepth * metersPerUnit; // in meters
-                    intensity[i] = 0;
-                    continue;
-                }
+                // if (linearDepth[i] < minDepth * metersPerUnit)
+                // {
+                //     depth[i] = 0;
+                //     linearDepth[i] = minDepth * metersPerUnit; // in meters
+                //     intensity[i] = 0;
+                //     continue;
+                // }
 
                 if (drawLidarPoints)
                 {
