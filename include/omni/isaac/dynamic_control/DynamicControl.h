@@ -213,6 +213,7 @@ struct DynamicControl
 
     DcTransform(CARB_ABI* getRigidBodyPose)(DcHandle bodyHandle);
     carb::Float3(CARB_ABI* getRigidBodyLinearVelocity)(DcHandle bodyHandle);
+    carb::Float3(CARB_ABI* getRigidBodyLocalLinearVelocity)(DcHandle bodyHandle);
     carb::Float3(CARB_ABI* getRigidBodyAngularVelocity)(DcHandle bodyHandle);
 
     /**
@@ -241,6 +242,8 @@ struct DynamicControl
                                          size_t numBodies,
                                          const DcHandle* bodyHandles,
                                          DcTransform* bodyTransforms);
+
+    bool(CARB_ABI* getRigidBodyProperties)(DcHandle bodyHandle, DcRigidBodyProperties* props);
 
     // joints
 
