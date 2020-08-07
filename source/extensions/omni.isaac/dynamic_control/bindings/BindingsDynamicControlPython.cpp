@@ -471,6 +471,22 @@ PYBIND11_MODULE(_dynamic_control, m)
                             return DcDofState{ t[0].cast<float>(), t[1].cast<float>() };
                         }));
 
+    py::class_<DcRigidBodyProperties>(m, "RigidBodyProperties")
+        .def(py::init<>())
+        .def_readwrite("mass", &DcRigidBodyProperties::mass)
+        .def_readwrite("moment", &DcRigidBodyProperties::moment)
+
+        .def(py::pickle(
+            [](const DcRigidBodyProperties& props) {
+                return py::make_tuple(props.mass, props.moment.x, props.moment.y, props.moment.z);
+            },
+            [](py::tuple t) {
+                DcRigidBodyProperties props;
+                props.mass = t[0].cast<float>();
+                props.moment = { t[1].cast<float>(), t[2].cast<float>(), t[3].cast<float>() };
+                return props;
+            }));
+
     py::class_<DcDofProperties>(m, "DofProperties")
         .def(py::init<>())
         //.def_readonly("type", &DcDofProperties::type)
@@ -591,6 +607,7 @@ PYBIND11_MODULE(_dynamic_control, m)
     PYBIND11_NUMPY_DTYPE(DcDofState, pos, vel);
     PYBIND11_NUMPY_DTYPE(
         DcDofProperties, type, hasLimits, lower, upper, driveMode, maxVelocity, maxEffort, stiffness, damping);
+    PYBIND11_NUMPY_DTYPE(DcRigidBodyProperties, mass, moment);
 
     defineInterfaceClass<DynamicControl>(
         m, "DynamicControl", "acquire_dynamic_control_interface", "release_dynamic_control_interface")
@@ -799,6 +816,8 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("set_rigid_body_disable_gravity", wrapInterfaceFunction(&DynamicControl::setRigidBodyDisableGravity))
         .def("set_rigid_body_disable_simulation", wrapInterfaceFunction(&DynamicControl::setRigidBodyDisableSimulation))
         .def("get_rigid_body_linear_velocity", wrapInterfaceFunction(&DynamicControl::getRigidBodyLinearVelocity))
+        .def("get_rigid_body_local_linear_velocity",
+             wrapInterfaceFunction(&DynamicControl::getRigidBodyLocalLinearVelocity))
         .def("set_rigid_body_linear_velocity", wrapInterfaceFunction(&DynamicControl::setRigidBodyLinearVelocity))
         .def("get_rigid_body_angular_velocity", wrapInterfaceFunction(&DynamicControl::getRigidBodyAngularVelocity))
         .def("set_rigid_body_angular_velocity", wrapInterfaceFunction(&DynamicControl::setRigidBodyAngularVelocity))
@@ -810,7 +829,19 @@ PYBIND11_MODULE(_dynamic_control, m)
                  dc->getRelativeBodyPoses(parentHandle, numBodies, bodyHandles.data(), outputTransforms.data());
                  return outputTransforms;
              })
-
+        .def("get_rigid_body_properties", wrapInterfaceFunction(&DynamicControl::getRigidBodyProperties))
+        .def("get_rigid_body_properties",
+             [](const DynamicControl* dc, DcHandle attHandle) -> py::object {
+                 if (dc)
+                 {
+                     DcRigidBodyProperties props;
+                     if (dc->getRigidBodyProperties(attHandle, &props))
+                     {
+                         return py::cast(props);
+                     }
+                 }
+                 return py::none();
+             })
         // joints
 
         .def("get_joint_name", wrapInterfaceFunction(&DynamicControl::getJointName), py::return_value_policy::reference)
