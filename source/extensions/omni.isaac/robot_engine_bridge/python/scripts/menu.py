@@ -48,6 +48,7 @@ class RobotEngineBridgeMenu:
     def setup_base_prim(self, prim):
         prim.CreateNodeNameAttr("interface")
         prim.CreateEnabledAttr(True)
+        prim.CreateTimeOffsetAttr(0.0)
 
     def add_differential_base(self, parent=None):
         if parent:

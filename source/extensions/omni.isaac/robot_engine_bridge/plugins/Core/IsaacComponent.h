@@ -81,6 +81,9 @@ public:
     {
         isaac::utils::safeGetAttribute(this->mPrim.GetNodeNameAttr(), mNodeName);
         isaac::utils::safeGetAttribute(this->mPrim.GetEnabledAttr(), this->mEnabled);
+        double timeOffset;
+        isaac::utils::safeGetAttribute(this->mPrim.GetTimeOffsetAttr(), timeOffset);
+        mComponentTimeOffsetNanoSeconds = static_cast<int64_t>(timeOffset);
     }
 
     /**
@@ -133,9 +136,10 @@ public:
     {
         kj::String json_message = isaac_message::gJsonCodec.encode(data);
 
-        return checkErrorCode(publishJSONMessage(mNodeName, component, channel,
-                                                 this->mTimeNanoSeconds + mTimeDifferenceNanoSeconds, json_message,
-                                                 protoId, buffers));
+        return checkErrorCode(
+            publishJSONMessage(mNodeName, component, channel,
+                               this->mTimeNanoSeconds + mComponentTimeOffsetNanoSeconds + mTimeDifferenceNanoSeconds,
+                               json_message, protoId, buffers));
     }
 
 
@@ -152,9 +156,10 @@ public:
     {
         std::vector<std::unique_ptr<IsaacBuffer>> buffers;
 
-        return checkErrorCode(publishJSONMessage(mNodeName, component, channel,
-                                                 this->mTimeNanoSeconds + mTimeDifferenceNanoSeconds,
-                                                 kj::StringPtr(data), isaac_message::JsonProtoId, buffers));
+        return checkErrorCode(
+            publishJSONMessage(mNodeName, component, channel,
+                               this->mTimeNanoSeconds + mComponentTimeOffsetNanoSeconds + mTimeDifferenceNanoSeconds,
+                               kj::StringPtr(data), isaac_message::JsonProtoId, buffers));
     }
 
     /**
@@ -420,6 +425,7 @@ protected:
     std::string mNodeName = "interface";
     isaac_error_t mError = isaac_error_t::isaac_error_success;
     int64_t mTimeDifferenceNanoSeconds = 0;
+    int64_t mComponentTimeOffsetNanoSeconds = 0;
 };
 
 
