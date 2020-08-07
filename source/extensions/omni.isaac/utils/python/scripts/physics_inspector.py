@@ -68,29 +68,30 @@ class Extension(omni.ext.IExt):
                             self._add_plot(label="lin_acc", title="Linear Acceleration: [0.0, 0.0, 0.0] cm/s^2")
 
     def _on_stage_event(self, event):
-        if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
-            selection = self._selection.get_selected_prim_paths()
-            stage = self._usd_context.get_stage()
-            prim = None
-            if len(selection) == 0:
-                pass
-            else:
-                path = selection[0]
-                prim = stage.GetPrimAtPath(path)
-                objectType = self._dc.peek_object_type(path)
-                print(objectType)
-                self._selected_handle = dc.INVALID_HANDLE
-                if objectType == dc.ObjectType.OBJECT_RIGIDBODY:
-                    self._selected_handle = self._dc.get_object(path)
-
-                    for value in self._data.values():
-                        for i in range(len(value)):
-                            value.append(0.0)
-
-                if self._selected_handle != dc.INVALID_HANDLE:
-                    self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+        if self._editor.is_playing() and self._window.visible:
+            if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
+                selection = self._selection.get_selected_prim_paths()
+                stage = self._usd_context.get_stage()
+                prim = None
+                if len(selection) == 0:
+                    pass
                 else:
-                    self._editor_event_subscription = None
+                    path = selection[0]
+                    prim = stage.GetPrimAtPath(path)
+                    objectType = self._dc.peek_object_type(path)
+                    print(objectType)
+                    self._selected_handle = dc.INVALID_HANDLE
+                    if objectType == dc.ObjectType.OBJECT_RIGIDBODY:
+                        self._selected_handle = self._dc.get_object(path)
+
+                        for value in self._data.values():
+                            for i in range(len(value)):
+                                value.append(0.0)
+
+                    if self._selected_handle != dc.INVALID_HANDLE:
+                        self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+                    else:
+                        self._editor_event_subscription = None
 
     def _menu_callback(self, name, visible):
         self._window.visible = not self._window.visible
@@ -136,7 +137,7 @@ class Extension(omni.ext.IExt):
             self._plots[f"{label}_{axis}"].set_data(*self._data[f"{label}_{axis}"])
 
     def _on_editor_step(self, step):
-        if self._editor.is_playing():
+        if self._editor.is_playing() and self._window.visible:
             rigid_body_props = self._dc.get_rigid_body_properties(self._selected_handle)
 
             self._labels["mass"].text = f"Mass: {round(rigid_body_props.mass,3)} kg"
