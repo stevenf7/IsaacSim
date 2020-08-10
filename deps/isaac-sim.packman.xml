@@ -14,7 +14,7 @@
         <package name="lula" version="linux_x64_linbuild_20200415_a36cb37" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
-        <package name="isaac_engine" version="linux_x64_20200803_54123f994" platforms="linux-x86_64"/>
+        <package name="isaac_engine" version="linux_x64_20200810_bca885cbb" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="robotimpsdk" linkPath="../_build/target-deps/robotimpsdk">
         <package name="robotimpsdk" version="100-20200515-851a354c3fd"/>
