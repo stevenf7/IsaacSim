@@ -32,8 +32,8 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         print("Starting Occupancy Map Extension")
         EXTENSION_NAME = "Occupancy Map"
-        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400)
-        # self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/{EXTENSION_NAME}", self._menu_callback)
+        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
+        self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/{EXTENSION_NAME}", self._menu_callback)
         self._om = _occupancy_map.acquire_occupancy_map_interface()
         self._editor = omni.kit.editor.get_editor_interface()
         with self._window.frame:
@@ -118,6 +118,9 @@ class Extension(omni.ext.IExt):
                     self.generate_image_btn.visible = False
                     self.draw_voxel_btn = ui.Button("Draw Voxels", clicked_fn=self._draw_instances)
                     self.draw_voxel_btn.visible = False
+
+    def _menu_callback(self, name, visible):
+        self._window.visible = not self._window.visible
 
     def _draw_instances(self):
 
