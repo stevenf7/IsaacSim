@@ -20,5 +20,5 @@ name = "omni.isaac.urdf.scripts.samples.import_kaya"
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false
 
-[[libraries]]
-path = "bin/${platform}/${config}/librobotimp${lib_ext}"
+# [[libraries]]
+# path = "bin/${platform}/${config}/librobotimp${lib_ext}"

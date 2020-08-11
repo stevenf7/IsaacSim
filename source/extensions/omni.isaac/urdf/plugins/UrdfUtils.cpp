@@ -14,7 +14,8 @@
 #include "UsdPCH.h"
 // clang-format on
 
-#include "UsdUrdfStream.h"
+#include "import/UrdfImporter.h"
+#include "import/ImportHelpers.h"
 
 #include <carb/PluginUtils.h>
 #include <carb/logging/Log.h>
@@ -43,38 +44,47 @@ namespace
 
 carb::Framework* g_framework = nullptr;
 
-std::unique_ptr<omni::isaac::urdf::UsdUrdfStream> g_urdfStream = nullptr;
-
-void importUrdf(std::string filename, const omni::isaac::urdf::ImportConfig& importConfig)
+omni::isaac::urdf::UrdfRobot parseUrdf(const std::string& assetRoot,
+                                       const std::string& assetName,
+                                       const omni::isaac::urdf::ImportConfig& importConfig)
 {
-    CARB_LOG_INFO("Trying to import %s", filename.c_str());
+    omni::isaac::urdf::UrdfRobot robot;
 
+    std::string filename = assetRoot + "/" + assetName;
     pxr::UsdStageWeakPtr stage = omni::usd::UsdContext::getContext()->getStage();
-    if (!stage)
-    {
-        CARB_LOG_ERROR("Stage Not Valid");
-        return;
-    }
-    std::ifstream fin(filename.c_str());
-    if (!fin.is_open())
-    {
-        CARB_LOG_ERROR("Failed to open file \"%s\"", filename.c_str());
-    }
-    else
+    if (stage)
     {
 
-        std::string error;
 
-        g_urdfStream->SetFileName(filename);
-        g_urdfStream->SetImportConfig(importConfig);
-        if (!g_urdfStream->UsdUrdfReadDataFromStream(fin, &error))
+        CARB_LOG_ERROR("Trying to import %s", filename.c_str());
+
+        if (parseUrdf(assetRoot, assetName, robot))
         {
-            CARB_LOG_ERROR("Failed to READ \"%s\"", filename.c_str());
         }
         else
         {
-            g_urdfStream->UsdUrdfTranslateUrdfToUsd(stage);
+            CARB_LOG_ERROR("Failed to parse URDF file '%s'", assetName.c_str());
         }
+
+        if (importConfig.mergeFixedJoints)
+        {
+            collapseFixedJoints(robot);
+        }
+    }
+    return robot;
+}
+void importRobot(const std::string& assetRoot,
+                 const std::string& assetName,
+                 const omni::isaac::urdf::UrdfRobot& robot,
+                 const omni::isaac::urdf::ImportConfig& importConfig)
+{
+
+    omni::isaac::urdf::GymAssetOptions options;
+    omni::isaac::urdf::UrdfImporter urdfImporter(assetRoot, assetName, options);
+    pxr::UsdStageWeakPtr stage = omni::usd::UsdContext::getContext()->getStage();
+    if (stage)
+    {
+        urdfImporter.addToStage(stage, robot);
     }
 }
 }
@@ -85,18 +95,17 @@ CARB_EXPORT void carbOnPluginStartup()
 
     // Get app interface using Carbonite Framework
     g_framework = carb::getFramework();
-    g_urdfStream = std::make_unique<omni::isaac::urdf::UsdUrdfStream>();
 }
 
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
-    g_urdfStream = nullptr;
 }
 
 
 void fillInterface(omni::isaac::urdf::Urdf& iface)
 {
     memset(&iface, 0, sizeof(iface));
-    iface.importUrdf = importUrdf;
+    iface.parseUrdf = parseUrdf;
+    iface.importRobot = importRobot;
 }

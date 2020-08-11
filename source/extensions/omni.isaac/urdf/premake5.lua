@@ -22,7 +22,8 @@ group ("extensions/"..ext_id)
 
     repo_build.prebuild_copy {
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/urdf" },
-        { "%{root}/_build/target-deps/robotimpsdk/lib/%{platform}/**", ext_bin_folder },
+        -- { "%{root}/_build/target-deps/robotimpsdk/lib/%{platform}/**", ext_bin_folder },
+        { "%{root}/_build/target-deps/assimp/lib/**", ext_bin_folder },
     }
 
     -- C++ Carbonite plugin
@@ -42,20 +43,22 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/physx/include",
             target_deps_dir.."/pxshared/include",
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include",
-            target_deps_dir.."/robotimpsdk/include",
+            -- target_deps_dir.."/robotimpsdk/include",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/include",
             target_deps_dir.."/rtx_plugins/include",
+            target_deps_dir.."/assimp/include",
         }
 
         libdirs {   
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
             target_deps_dir.."/nv_usd/release/lib",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/lib",
+            target_deps_dir.."/assimp/lib",
             "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins"   
         }
 
         links { 
-            "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools", "physxSchema", "omni.usd"
+            "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools", "physxSchema", "omni.usd", "assimp"
         }
         
         if os.target() == "linux" then
@@ -63,18 +66,18 @@ group ("extensions/"..ext_id)
                 target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include/boost",
                 target_deps_dir.."/python/include/python3.6m",
             }
-            libdirs {target_deps_dir.."/robotimpsdk/lib/linux-x86_64"}
-            links { "robotimp" }
+            -- libdirs {target_deps_dir.."/robotimpsdk/lib/linux-x86_64"}
+            -- links { "robotimp" }
         else
             libdirs {
                 target_deps_dir.."/tbb/lib/intel64/vc14",
-                target_deps_dir.."/robotimpsdk/lib/windows-x86_64",
+                -- target_deps_dir.."/robotimpsdk/lib/windows-x86_64",
             }
-            filter { "configurations:debug" }
-                links { "librobotimpdebug" }
-            filter { "configurations:release" }
-                links { "librobotimp" }
-            filter {}
+            -- filter { "configurations:debug" }
+            --     links { "librobotimpdebug" }
+            -- filter { "configurations:release" }
+            --     links { "librobotimp" }
+            -- filter {}
         end
         
     -- Python Bindings for Carobnite Plugin

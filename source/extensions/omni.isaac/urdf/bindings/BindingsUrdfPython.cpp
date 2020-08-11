@@ -9,8 +9,11 @@
 #include <carb/BindingsPythonUtils.h>
 
 #include <omni/isaac/urdf/Urdf.h>
+#include <pybind11/pybind11/stl.h>
+#include <pybind11/pybind11/stl_bind.h>
 
 CARB_BINDINGS("omni.isaac.urdf.python")
+PYBIND11_MAKE_OPAQUE(std::map<std::string, omni::isaac::urdf::UrdfMaterial>);
 
 namespace omni
 {
@@ -25,6 +28,30 @@ namespace urdf
 
 namespace
 {
+// Helper function that creates a python type for a std::map with a string key and a custom value type
+template <class T>
+void declare_map(py::module& m, const std::string typestr)
+{
+    py::class_<std::map<std::string, T>>(m, typestr.c_str())
+        .def(py::init<>())
+        .def("__getitem__",
+             [](const std::map<std::string, T>& map, std::string key) {
+                 try
+                 {
+                     return map.at(key);
+                 }
+                 catch (const std::out_of_range&)
+                 {
+                     throw py::key_error("key '" + key + "' does not exist");
+                 }
+             })
+        .def("__iter__",
+             [](std::map<std::string, T>& items) { return py::make_key_iterator(items.begin(), items.end()); },
+             py::keep_alive<0, 1>())
+
+        .def("items", [](std::map<std::string, T>& items) { return py::make_iterator(items.begin(), items.end()); },
+             py::keep_alive<0, 1>());
+}
 PYBIND11_MODULE(_urdf, m)
 {
     using namespace carb;
@@ -39,14 +66,149 @@ PYBIND11_MODULE(_urdf, m)
                        "Consolidating links that are connected by fixed joints")
         .def_readwrite("enable_convex_decomp", &ImportConfig::enableConvexDecomp,
                        "Decompose a convex mesh into smaller pieces for a closer fit")
-        .def_readwrite("distance_scale", &ImportConfig::distanceScale,
-                       "Set the unit scaling factor, 1.0 means meters, 100.0 means cm")
-        .def_readwrite("force_z_up", &ImportConfig::forceZUp, "Force Z axis to be up in the simulator durin import")
-        .def_readwrite("add_debug_info", &ImportConfig::addDebugInfo, "Publish details for the imported URDF")
+        // .def_readwrite("distance_scale", &ImportConfig::distanceScale,
+        //    "Set the unit scaling factor, 1.0 means meters, 100.0 means cm")
+        // .def_readwrite("force_z_up", &ImportConfig::forceZUp, "Force Z axis to be up in the simulator durin import")
+        // .def_readwrite("add_debug_info", &ImportConfig::addDebugInfo, "Publish details for the imported URDF")
         .def_readwrite("import_inertia_tensor", &ImportConfig::importInertiaTensor,
                        "Import inertia tensor from urdf, if not specified in urdf it will import as identity");
 
+    py::class_<UrdfOrigin>(m, "UrdfOrigin", "")
+        .def_readwrite("x", &UrdfOrigin::x, "")
+        .def_readwrite("y", &UrdfOrigin::y, "")
+        .def_readwrite("z", &UrdfOrigin::z, "")
+        .def_readwrite("roll", &UrdfOrigin::roll, "")
+        .def_readwrite("pitch", &UrdfOrigin::pitch, "")
+        .def_readwrite("yaw", &UrdfOrigin::yaw, "")
+        .def(py::init<>());
+
+    py::class_<UrdfInertia>(m, "UrdfInertia", "")
+        .def_readwrite("ixx", &UrdfInertia::ixx, "")
+        .def_readwrite("ixy", &UrdfInertia::ixy, "")
+        .def_readwrite("ixz", &UrdfInertia::ixz, "")
+        .def_readwrite("iyy", &UrdfInertia::iyy, "")
+        .def_readwrite("iyz", &UrdfInertia::iyz, "")
+        .def_readwrite("izz", &UrdfInertia::izz, "")
+        .def(py::init<>());
+
+    py::class_<UrdfInertial>(m, "UrdfInertial", "")
+        .def_readwrite("origin", &UrdfInertial::origin, "")
+        .def_readwrite("mass", &UrdfInertial::mass, "")
+        .def_readwrite("inertia", &UrdfInertial::inertia, "")
+        .def_readwrite("hasOrigin", &UrdfInertial::hasOrigin, "")
+        .def_readwrite("hasMass", &UrdfInertial::hasMass, "")
+        .def_readwrite("hasInertia", &UrdfInertial::hasInertia, "")
+        .def(py::init<>());
+
+    py::class_<UrdfAxis>(m, "UrdfAxis", "")
+        .def_readwrite("x", &UrdfAxis::x, "")
+        .def_readwrite("y", &UrdfAxis::y, "")
+        .def_readwrite("z", &UrdfAxis::z, "")
+        .def(py::init<>());
+
+    py::class_<UrdfColor>(m, "UrdfColor", "")
+        .def_readwrite("r", &UrdfColor::r, "")
+        .def_readwrite("g", &UrdfColor::g, "")
+        .def_readwrite("b", &UrdfColor::b, "")
+        .def_readwrite("a", &UrdfColor::a, "")
+        .def(py::init<>());
+
+    py::enum_<UrdfJointType>(m, "UrdfJointType", py::arithmetic(), "")
+        .value("JOINT_REVOLUTE", UrdfJointType::REVOLUTE)
+        .value("JOINT_CONTINUOUS", UrdfJointType::CONTINUOUS)
+        .value("JOINT_PRISMATIC", UrdfJointType::PRISMATIC)
+        .value("JOINT_FIXED", UrdfJointType::FIXED)
+        .value("JOINT_FLOATING", UrdfJointType::FLOATING)
+        .value("JOINT_PLANAR", UrdfJointType::PLANAR)
+        .export_values();
+
+
+    py::class_<UrdfDynamics>(m, "UrdfDynamics", "")
+        .def_readwrite("damping", &UrdfDynamics::damping, "")
+        .def_readwrite("friction", &UrdfDynamics::friction, "")
+        .def(py::init<>());
+
+    py::class_<UrdfLimit>(m, "UrdfLimit", "")
+        .def_readwrite("lower", &UrdfLimit::lower, "")
+        .def_readwrite("upper", &UrdfLimit::upper, "")
+        .def_readwrite("effort", &UrdfLimit::effort, "")
+        .def_readwrite("velocity", &UrdfLimit::velocity, "")
+        .def(py::init<>());
+
+    py::enum_<UrdfGeometryType>(m, "UrdfGeometryType", py::arithmetic(), "")
+        .value("GEOMETRY_BOX", UrdfGeometryType::BOX)
+        .value("GEOMETRY_CYLINDER", UrdfGeometryType::CYLINDER)
+        .value("GEOMETRY_SPHERE", UrdfGeometryType::SPHERE)
+        .value("GEOMETRY_MESH", UrdfGeometryType::MESH)
+        .export_values();
+
+    py::class_<UrdfGeometry>(m, "UrdfGeometry", "")
+        .def_readwrite("type", &UrdfGeometry::type, "")
+        .def_readwrite("size_x", &UrdfGeometry::size_x, "")
+        .def_readwrite("size_y", &UrdfGeometry::size_y, "")
+        .def_readwrite("size_z", &UrdfGeometry::size_z, "")
+        .def_readwrite("radius", &UrdfGeometry::radius, "")
+        .def_readwrite("length", &UrdfGeometry::length, "")
+        .def_readwrite("scale_x", &UrdfGeometry::scale_x, "")
+        .def_readwrite("scale_y", &UrdfGeometry::scale_y, "")
+        .def_readwrite("scale_z", &UrdfGeometry::scale_z, "")
+        .def_readwrite("mesh_file_path", &UrdfGeometry::meshFilePath, "")
+
+        .def(py::init<>());
+
+
+    py::class_<UrdfMaterial>(m, "UrdfMaterial", "")
+        .def_readwrite("name", &UrdfMaterial::name, "")
+        .def_readwrite("color", &UrdfMaterial::color, "")
+        .def_readwrite("texture_file_path", &UrdfMaterial::textureFilePath, "")
+        .def(py::init<>());
+
+
+    py::class_<UrdfVisual>(m, "UrdfVisual", "")
+        .def_readwrite("name", &UrdfVisual::name, "")
+        .def_readwrite("origin", &UrdfVisual::origin, "")
+        .def_readwrite("geometry", &UrdfVisual::geometry, "")
+        .def_readwrite("material", &UrdfVisual::material, "")
+        .def(py::init<>());
+
+    py::class_<UrdfCollision>(m, "UrdfCollision", "")
+        .def_readwrite("name", &UrdfCollision::name, "")
+        .def_readwrite("origin", &UrdfCollision::origin, "")
+        .def_readwrite("geometry", &UrdfCollision::geometry, "")
+        .def(py::init<>());
+
+    py::class_<UrdfLink>(m, "UrdfLink", "")
+        .def_readwrite("name", &UrdfLink::name, "")
+        .def_readwrite("inertial", &UrdfLink::inertial, "")
+        .def_readwrite("visuals", &UrdfLink::visuals, "")
+        .def_readwrite("collisions", &UrdfLink::collisions, "")
+        .def(py::init<>());
+
+    py::class_<UrdfJoint>(m, "UrdfJoint", "")
+        .def_readwrite("name", &UrdfJoint::name, "")
+        .def_readwrite("type", &UrdfJoint::type, "")
+        .def_readwrite("origin", &UrdfJoint::origin, "")
+        .def_readwrite("parent_link_name", &UrdfJoint::parentLinkName, "")
+        .def_readwrite("child_link_name", &UrdfJoint::childLinkName, "")
+        .def_readwrite("axis", &UrdfJoint::axis, "")
+        .def_readwrite("dynamics", &UrdfJoint::dynamics, "")
+        .def_readwrite("limit", &UrdfJoint::limit, "")
+        .def(py::init<>());
+
+    py::class_<UrdfRobot>(m, "UrdfRobot", "")
+        .def_readwrite("name", &UrdfRobot::name, "")
+        .def_readwrite("links", &UrdfRobot::links, "")
+        .def_readwrite("joints", &UrdfRobot::joints, "")
+        .def_readwrite("materials", &UrdfRobot::materials, "")
+        .def(py::init<>());
+
+    declare_map<UrdfLink>(m, std::string("UrdfLinkMap"));
+    declare_map<UrdfJoint>(m, std::string("UrdfJointMap"));
+    declare_map<UrdfMaterial>(m, std::string("UrdfMaterialMap"));
+
+
     defineInterfaceClass<Urdf>(m, "Urdf", "acquire_urdf_interface", "release_urdf_interface")
-        .def("import_urdf", wrapInterfaceFunction(&Urdf::importUrdf));
+        .def("parse_urdf", wrapInterfaceFunction(&Urdf::parseUrdf))
+        .def("import_robot", wrapInterfaceFunction(&Urdf::importRobot));
 }
 }

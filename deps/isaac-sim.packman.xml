@@ -16,15 +16,17 @@
     <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
         <package name="isaac_engine" version="linux_x64_20200810_bca885cbb" platforms="linux-x86_64"/>
     </dependency>
-    <dependency name="robotimpsdk" linkPath="../_build/target-deps/robotimpsdk">
-        <package name="robotimpsdk" version="100-20200515-851a354c3fd"/>
-    </dependency>
     <dependency name="step_reader" linkPath="../_build/target-deps/stepreader">
         <package name="step_reader" version="linux_x64_linbuild_20200729_281967c" platforms="linux-x86_64" />
         <package name="step_reader" version="win_x64_winbuild_20200729_281967c" platforms="windows-x86_64" />
     </dependency>
     <dependency name="octomap" linkPath="../_build/target-deps/octomap">
         <package name="octomap" version="linux_x64_20200720_a3f3809" platforms="linux-x86_64" />
+    </dependency>
+    <dependency name="assimp" linkPath="../_build/target-deps/assimp">
+        <package name="assimp" version="5.0.0.29.906d5a3b-windows-x86_64-release" platforms="windows-x86_64" />
+        <package name="assimp" version="5.0.0.29.906d5a3b-linux-x86_64-release" platforms="linux-x86_64" />
+        <package name="assimp" version="4.0.1-linux-aarch64" platforms="linux-aarch64" />
     </dependency>
 </project>
 
