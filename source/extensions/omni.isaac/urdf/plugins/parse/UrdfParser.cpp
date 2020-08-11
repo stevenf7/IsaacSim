@@ -1,0 +1,1163 @@
+// Copyright (c) 2019-2020, NVIDIA CORPORATION.  All rights reserved.
+//
+// NVIDIA CORPORATION and its licensors retain all intellectual property
+// and proprietary rights in and to this software, related documentation
+// and any modifications thereto.  Any use, reproduction, disclosure or
+// distribution of this software and related documentation without an express
+// license agreement from NVIDIA CORPORATION is strictly prohibited.
+//
+
+#include "UrdfParser.h"
+
+// #include "../../core/core.h"
+// #include "../../core/platform.h"
+
+
+//#define VERBOSE_URDF
+namespace omni
+{
+namespace isaac
+{
+namespace urdf
+{
+
+// Stream operators for nice printing
+
+std::ostream& operator<<(std::ostream& out, const UrdfOrigin& origin)
+{
+    out << "Origin: ";
+    out << "x=" << origin.x << " y=" << origin.y << " z=" << origin.z;
+    out << " r=" << origin.roll << " p=" << origin.pitch << " y=" << origin.yaw;
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfInertia& inertia)
+{
+    out << "Inertia: ";
+    out << "ixx=" << inertia.ixx << " ixy=" << inertia.ixy << " ixz=" << inertia.ixz;
+    out << " iyy=" << inertia.iyy << " iyz=" << inertia.iyz << " izz=" << inertia.izz;
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfInertial& inertial)
+{
+    out << "Interial: " << std::endl;
+    out << " \t \t" << inertial.origin << std::endl;
+    if (inertial.hasMass)
+    {
+        out << " \t \tMass: " << inertial.mass << std::endl;
+    }
+    else
+    {
+        out << " \t \tMass: No mass was specified for the link" << std::endl;
+    }
+    if (inertial.hasInertia)
+    {
+        out << " \t \t" << inertial.inertia;
+    }
+    else
+    {
+        out << " \t \tInertia: No inertia was specified for the link" << std::endl;
+    }
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfAxis& axis)
+{
+    out << "Axis: ";
+    out << "x=" << axis.x << " y=" << axis.y << " z=" << axis.z;
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfColor& color)
+{
+    out << "Color: ";
+    out << "r=" << color.r << " g=" << color.g << " b=" << color.b << " a=" << color.a;
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfJointType& type)
+{
+    out << "Type: ";
+    std::string jointType = "unknown";
+    switch (type)
+    {
+    case UrdfJointType::REVOLUTE:
+        jointType = "revolute";
+        break;
+    case UrdfJointType::CONTINUOUS:
+        jointType = "continuous";
+        break;
+    case UrdfJointType::PRISMATIC:
+        jointType = "prismatic";
+        break;
+    case UrdfJointType::FIXED:
+        jointType = "fixed";
+        break;
+    case UrdfJointType::FLOATING:
+        jointType = "floating";
+        break;
+    case UrdfJointType::PLANAR:
+        jointType = "planar";
+        break;
+    }
+    out << jointType;
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfDynamics& dynamics)
+{
+    out << "Dynamics: ";
+    out << "damping=" << dynamics.damping << " friction=" << dynamics.friction;
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfLimit& limit)
+{
+    out << "Limit: ";
+    out << "lower=" << limit.lower << " upper=" << limit.upper << " effort=" << limit.effort
+        << " velocity=" << limit.velocity;
+    out << std::endl;
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfGeometry& geometry)
+{
+    out << "Geometry: ";
+    switch (geometry.type)
+    {
+    case UrdfGeometryType::BOX:
+        out << "type=box size=" << geometry.size_x << " " << geometry.size_y << " " << geometry.size_z;
+        break;
+    case UrdfGeometryType::CYLINDER:
+        out << "type=cylinder radius=" << geometry.radius << " length=" << geometry.length;
+        break;
+    case UrdfGeometryType::SPHERE:
+        out << "type=sphere, radius=" << geometry.radius;
+        break;
+    case UrdfGeometryType::MESH:
+        out << "type=mesh filemame=" << geometry.meshFilePath;
+        break;
+    }
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfMaterial& material)
+{
+    out << "Material: ";
+    out << " Name=" << material.name << " " << material.color;
+    if (!material.textureFilePath.empty())
+        out << " textureFilePath=" << material.textureFilePath;
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfVisual& visual)
+{
+    out << "Visual:" << std::endl;
+    if (!visual.name.empty())
+        out << " \t \tName=" << visual.name << std::endl;
+    out << " \t \t" << visual.origin << std::endl;
+    out << " \t \t" << visual.geometry << std::endl;
+    out << " \t \t" << visual.material;
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfCollision& collision)
+{
+    out << "Collision:" << std::endl;
+    if (!collision.name.empty())
+        out << " \t \tName=" << collision.name << std::endl;
+    out << " \t \t" << collision.origin << std::endl;
+    out << " \t \t" << collision.geometry;
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfLink& link)
+{
+    out << "Link: ";
+    out << " \tName=" << link.name << std::endl;
+    for (auto& visual : link.visuals)
+    {
+        out << " \t" << visual << std::endl;
+    }
+    for (auto& collision : link.collisions)
+    {
+        out << " \t" << collision << std::endl;
+    }
+    out << " \t" << link.inertial << std::endl;
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfJoint& joint)
+{
+    out << "Joint: ";
+    out << " Name=" << joint.name << std::endl;
+    out << " \t" << joint.type << std::endl;
+    out << " \t" << joint.origin << std::endl;
+    out << " \tParentLinkName=" << joint.parentLinkName << std::endl;
+    out << " \tChildLinkName=" << joint.childLinkName << std::endl;
+    out << " \t" << joint.axis << std::endl;
+    out << " \t" << joint.dynamics << std::endl;
+    out << " \t" << joint.limit << std::endl;
+
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const UrdfRobot& robot)
+{
+    out << "Robot: ";
+    out << robot.name << std::endl;
+    for (auto& link : robot.links)
+    {
+        out << link.second << std::endl;
+    }
+    for (auto& joint : robot.joints)
+    {
+        out << joint.second << std::endl;
+    }
+    for (auto& material : robot.materials)
+    {
+        out << material.second << std::endl;
+    }
+    return out;
+}
+
+using namespace tinyxml2;
+
+bool parseXyz(const char* str, float& x, float& y, float& z)
+{
+    if (sscanf(str, "%f %f %f", &x, &y, &z) == 3)
+    {
+        return true;
+    }
+    else
+    {
+        printf("*** Could not parse xyz string '%s' \n", str);
+        return false;
+    }
+}
+
+bool parseColor(const char* str, float& r, float& g, float& b, float& a)
+{
+    if (sscanf(str, "%f %f %f %f", &r, &g, &b, &a) == 4)
+    {
+        return true;
+    }
+    else
+    {
+        printf("*** Could not parse color string '%s' \n", str);
+        return false;
+    }
+}
+
+bool parseFloat(const char* str, float& value)
+{
+    if (sscanf(str, "%f", &value) == 1)
+    {
+        return true;
+    }
+    else
+    {
+        printf("*** Could not parse float string '%s' \n", str);
+        return false;
+    }
+}
+
+bool parseInt(const char* str, int& value)
+{
+    if (sscanf(str, "%d", &value) == 1)
+    {
+        return true;
+    }
+    else
+    {
+        printf("*** Could not parse int string '%s' \n", str);
+        return false;
+    }
+}
+
+bool parseJointType(const char* str, UrdfJointType& type)
+{
+    if (strcmp(str, "revolute") == 0)
+    {
+        type = UrdfJointType::REVOLUTE;
+    }
+    else if (strcmp(str, "continuous") == 0)
+    {
+        type = UrdfJointType::CONTINUOUS;
+    }
+    else if (strcmp(str, "prismatic") == 0)
+    {
+        type = UrdfJointType::PRISMATIC;
+    }
+    else if (strcmp(str, "fixed") == 0)
+    {
+        type = UrdfJointType::FIXED;
+    }
+    else if (strcmp(str, "floating") == 0)
+    {
+        type = UrdfJointType::FLOATING;
+    }
+    else if (strcmp(str, "planar") == 0)
+    {
+        type = UrdfJointType::PLANAR;
+    }
+    else
+    {
+        printf("*** Unknown joint type '%s' \n", str);
+        return false;
+    }
+    return true;
+}
+
+bool parseOrigin(const XMLElement& element, UrdfOrigin& origin)
+{
+    auto originElement = element.FirstChildElement("origin");
+    if (originElement)
+    {
+        auto attribute = originElement->Attribute("xyz");
+        if (attribute)
+        {
+            if (!parseXyz(attribute, origin.x, origin.y, origin.z))
+            {
+                return false;
+            }
+        }
+        attribute = originElement->Attribute("rpy");
+        if (attribute)
+        {
+            if (!parseXyz(attribute, origin.roll, origin.pitch, origin.yaw))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool parseAxis(const XMLElement& element, UrdfAxis& axis)
+{
+    auto axisElement = element.FirstChildElement("axis");
+    if (axisElement)
+    {
+        if (!parseXyz(axisElement->Attribute("xyz"), axis.x, axis.y, axis.z))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool parseLimit(const XMLElement& element, UrdfLimit& limit)
+{
+    auto limitElement = element.FirstChildElement("limit");
+    if (limitElement)
+    {
+        auto attribute = limitElement->Attribute("lower");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, limit.lower))
+            {
+                return false;
+            }
+        }
+        attribute = limitElement->Attribute("upper");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, limit.upper))
+            {
+                return false;
+            }
+        }
+        attribute = limitElement->Attribute("effort");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, limit.effort))
+            {
+                return false;
+            }
+        }
+        attribute = limitElement->Attribute("velocity");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, limit.velocity))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool parseDynamics(const XMLElement& element, UrdfDynamics& dynamics)
+{
+    auto dynamicsElement = element.FirstChildElement("dynamics");
+    if (dynamicsElement)
+    {
+        auto attribute = dynamicsElement->Attribute("damping");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, dynamics.damping))
+            {
+                return false;
+            }
+        }
+        attribute = dynamicsElement->Attribute("friction");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, dynamics.friction))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool parseMass(const XMLElement& element, float& mass)
+{
+    auto massElement = element.FirstChildElement("mass");
+    if (massElement)
+    {
+        auto attribute = massElement->Attribute("value");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, mass))
+            {
+                return false;
+            }
+            return true;
+        }
+        else
+        {
+            printf("*** mass missing from inertia \n");
+            return false;
+        }
+    }
+    return false;
+}
+
+bool parseInertia(const XMLElement& element, UrdfInertia& inertia)
+{
+    auto inertiaElement = element.FirstChildElement("inertia");
+    if (inertiaElement)
+    {
+        auto attribute = inertiaElement->Attribute("ixx");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, inertia.ixx))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            printf("*** ixx missing from inertia \n");
+            return false;
+        }
+
+        attribute = inertiaElement->Attribute("ixz");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, inertia.ixz))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            printf("*** ixz missing from inertia \n");
+            return false;
+        }
+
+        attribute = inertiaElement->Attribute("ixy");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, inertia.ixy))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            printf("*** ixy missing from inertia \n");
+            return false;
+        }
+
+        attribute = inertiaElement->Attribute("iyy");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, inertia.iyy))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            printf("*** iyy missing from inertia \n");
+            return false;
+        }
+
+        attribute = inertiaElement->Attribute("iyz");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, inertia.iyz))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            printf("*** iyz missing from inertia \n");
+            return false;
+        }
+
+        attribute = inertiaElement->Attribute("izz");
+        if (attribute)
+        {
+            if (!parseFloat(attribute, inertia.izz))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            printf("*** izz missing from inertia \n");
+            return false;
+        }
+
+        // if we made it here, all elements were parsed successfully
+        return true;
+    }
+    return false;
+}
+
+bool parseInertial(const XMLElement& element, UrdfInertial& inertial)
+{
+    auto inertialElement = element.FirstChildElement("inertial");
+    if (inertialElement)
+    {
+        inertial.hasOrigin = parseOrigin(*inertialElement, inertial.origin);
+        inertial.hasMass = parseMass(*inertialElement, inertial.mass);
+        inertial.hasInertia = parseInertia(*inertialElement, inertial.inertia);
+    }
+    return true;
+}
+
+bool parseGeometry(const XMLElement& element, UrdfGeometry& geometry)
+{
+    auto geometryElement = element.FirstChildElement("geometry");
+    if (geometryElement)
+    {
+        auto geometryElementChild = geometryElement->FirstChildElement();
+
+        if (strcmp(geometryElementChild->Value(), "mesh") == 0)
+        {
+            geometry.type = UrdfGeometryType::MESH;
+
+            auto filename = geometryElementChild->Attribute("filename");
+            if (filename)
+            {
+                geometry.meshFilePath = filename;
+            }
+            else
+            {
+                printf("*** mesh geometry requires a file path \n");
+                return false;
+            }
+
+            auto scale = geometryElementChild->Attribute("scale");
+            if (scale)
+            {
+                if (!parseXyz(scale, geometry.scale_x, geometry.scale_y, geometry.scale_z))
+                {
+                    return false;
+                }
+            }
+        }
+        else if (strcmp(geometryElementChild->Value(), "box") == 0)
+        {
+            geometry.type = UrdfGeometryType::BOX;
+            auto attribute = geometryElementChild->Attribute("size");
+            if (attribute)
+            {
+                if (!parseXyz(attribute, geometry.size_x, geometry.size_y, geometry.size_z))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                printf("*** box geometry requires a size \n");
+                return false;
+            }
+        }
+        else if (strcmp(geometryElementChild->Value(), "cylinder") == 0)
+        {
+            geometry.type = UrdfGeometryType::CYLINDER;
+            auto attribute = geometryElementChild->Attribute("radius");
+            if (attribute)
+            {
+                if (!parseFloat(attribute, geometry.radius))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                printf("*** cylinder geometry requires a radius \n");
+                return false;
+            }
+
+            attribute = geometryElementChild->Attribute("length");
+            if (attribute)
+            {
+                if (!parseFloat(attribute, geometry.length))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                printf("*** cylinder geometry requires a length \n");
+                return false;
+            }
+        }
+        else if (strcmp(geometryElementChild->Value(), "sphere") == 0)
+        {
+            geometry.type = UrdfGeometryType::SPHERE;
+            auto attribute = geometryElementChild->Attribute("radius");
+            if (attribute)
+            {
+                if (!parseFloat(attribute, geometry.radius))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                printf("*** sphere geometry requires a radius \n");
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool parseChildAttributeFloat(const tinyxml2::XMLElement& element, const char* child, const char* attribute, float& output)
+{
+    auto childElement = element.FirstChildElement(child);
+
+    if (childElement)
+    {
+        const char* s = childElement->Attribute(attribute);
+        if (s)
+        {
+            return parseFloat(s, output);
+        }
+    }
+
+    return false;
+}
+
+bool parseChildAttributeString(const tinyxml2::XMLElement& element,
+                               const char* child,
+                               const char* attribute,
+                               std::string& output)
+{
+    auto childElement = element.FirstChildElement(child);
+
+    if (childElement)
+    {
+        const char* s = childElement->Attribute(attribute);
+        if (s)
+        {
+            output = s;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+// bool parseFem(const tinyxml2::XMLElement& element, UrdfFem& fem)
+// {
+//     parseOrigin(element, fem.origin);
+
+//     if (!parseChildAttributeFloat(element, "density", "value", fem.density))
+//         fem.density = 1000.0f;
+
+//     if (!parseChildAttributeFloat(element, "youngs", "value", fem.youngs))
+//         fem.youngs = 1.e+4f;
+
+//     if (!parseChildAttributeFloat(element, "poissons", "value", fem.poissons))
+//         fem.poissons = 0.3f;
+
+//     if (!parseChildAttributeFloat(element, "damping", "value", fem.damping))
+//         fem.damping = 0.0f;
+
+//     if (!parseChildAttributeFloat(element, "attachDistance", "value", fem.attachDistance))
+//         fem.attachDistance = 0.0f;
+
+//     if (!parseChildAttributeString(element, "tetmesh", "filename", fem.meshFilePath))
+//         fem.meshFilePath = "";
+
+//     if (!parseChildAttributeFloat(element, "scale", "value", fem.scale))
+//         fem.scale = 1.0f;
+
+//     return true;
+// }
+
+bool parseMaterial(const XMLElement& element, UrdfMaterial& material)
+{
+    auto materialElement = element.FirstChildElement("material");
+    if (materialElement)
+    {
+        auto name = materialElement->Attribute("name");
+        if (name)
+        {
+            material.name = name;
+        }
+        else
+        {
+            if (materialElement->FirstChildElement("color"))
+            {
+                if (!parseColor(materialElement->FirstChildElement("color")->Attribute("rgba"), material.color.r,
+                                material.color.g, material.color.b, material.color.a))
+                {
+                    return false;
+                }
+            }
+            if (materialElement->FirstChildElement("texture"))
+            {
+                auto matString = materialElement->FirstChildElement("texture")->Attribute("filename");
+                if (matString == nullptr)
+                {
+                    printf("*** filename required for material with texture \n");
+                    return false;
+                }
+                material.textureFilePath = matString;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool parseMaterials(const XMLElement& root, std::map<std::string, UrdfMaterial>& urdfMaterials)
+{
+    auto materialElement = root.FirstChildElement("material");
+    if (materialElement)
+    {
+        do
+        {
+            UrdfMaterial material;
+            auto name = materialElement->Attribute("name");
+            if (name)
+            {
+                material.name = name;
+            }
+            else
+            {
+                printf("*** Found unnamed material \n");
+                return false;
+            }
+
+            auto elem = materialElement->FirstChildElement("color");
+            if (elem)
+            {
+                if (!parseColor(elem->Attribute("rgba"), material.color.r, material.color.g, material.color.b,
+                                material.color.a))
+                {
+                    return false;
+                }
+            }
+            elem = materialElement->FirstChildElement("texture");
+            if (elem)
+            {
+                auto matString = elem->FirstChildElement("texture")->Attribute("filename");
+                if (matString == nullptr)
+                {
+                    printf("*** filename required for material with texture \n");
+                    return false;
+                }
+            }
+
+            urdfMaterials.emplace(material.name, material);
+
+        } while ((materialElement = materialElement->NextSiblingElement("material")));
+    }
+    return true;
+}
+
+bool parseLinks(const XMLElement& root, std::map<std::string, UrdfLink>& urdfLinks)
+{
+    auto linkElement = root.FirstChildElement("link");
+    if (linkElement)
+    {
+        do
+        {
+            UrdfLink link;
+
+            // name
+            auto name = linkElement->Attribute("name");
+            if (name)
+            {
+                link.name = name;
+            }
+            else
+            {
+                printf("*** Found unnamed link \n");
+                return false;
+            }
+
+            // visuals
+            auto visualElement = linkElement->FirstChildElement("visual");
+            if (visualElement)
+            {
+                do
+                {
+                    UrdfVisual visual;
+                    auto name = visualElement->Attribute("name");
+                    if (name)
+                    {
+                        visual.name = name;
+                    }
+
+                    if (!parseOrigin(*visualElement, visual.origin))
+                    {
+                        return false;
+                    }
+
+                    if (!parseGeometry(*visualElement, visual.geometry))
+                    {
+                        return false;
+                    }
+
+                    if (!parseMaterial(*visualElement, visual.material))
+                    {
+                        return false;
+                    }
+
+                    link.visuals.push_back(visual);
+
+                } while ((visualElement = visualElement->NextSiblingElement("visual")));
+            }
+
+            // collisions
+            auto collisionElement = linkElement->FirstChildElement("collision");
+            if (collisionElement)
+            {
+                do
+                {
+                    UrdfCollision collision;
+                    auto name = collisionElement->Attribute("name");
+                    if (name)
+                    {
+                        collision.name = name;
+                    }
+
+                    if (!parseOrigin(*collisionElement, collision.origin))
+                    {
+                        return false;
+                    }
+
+                    if (!parseGeometry(*collisionElement, collision.geometry))
+                    {
+                        return false;
+                    }
+
+                    link.collisions.push_back(collision);
+
+                } while ((collisionElement = collisionElement->NextSiblingElement("collision")));
+            }
+
+            // inertia
+            if (!parseInertial(*linkElement, link.inertial))
+            {
+                return false;
+            }
+
+            // auto femElement = linkElement->FirstChildElement("fem");
+            // if (femElement)
+            // {
+            //     do
+            //     {
+            //         UrdfFem fem;
+            //         if (!parseFem(*femElement, fem))
+            //         {
+            //             return false;
+            //         }
+
+            //         link.softs.push_back(fem);
+
+            //     } while ((femElement = femElement->NextSiblingElement("fem")));
+            // }
+
+            urdfLinks.emplace(link.name, link);
+
+        } while ((linkElement = linkElement->NextSiblingElement("link")));
+    }
+    return true;
+}
+
+bool parseJoints(const XMLElement& root, std::map<std::string, UrdfJoint>& urdfJoints)
+{
+    auto jointElement = root.FirstChildElement("joint");
+    if (jointElement)
+    {
+        do
+        {
+            UrdfJoint joint;
+
+            // name
+            auto name = jointElement->Attribute("name");
+            if (name)
+            {
+                joint.name = name;
+            }
+            else
+            {
+                printf("*** Found unnamed joint \n");
+                return false;
+            }
+
+            auto type = jointElement->Attribute("type");
+            if (type)
+            {
+                if (!parseJointType(type, joint.type))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                printf("*** Found untyped joint \n");
+                return false;
+            }
+
+            auto parentElement = jointElement->FirstChildElement("parent");
+            if (parentElement)
+            {
+                joint.parentLinkName = parentElement->Attribute("link");
+            }
+            else
+            {
+                printf("*** Joint has no parent link \n");
+                return false;
+            }
+
+            auto childElement = jointElement->FirstChildElement("child");
+            if (childElement)
+            {
+                joint.childLinkName = childElement->Attribute("link");
+            }
+            else
+            {
+                printf("*** Joint has no child link \n");
+                return false;
+            }
+
+            if (!parseOrigin(*jointElement, joint.origin))
+            {
+                return false;
+            }
+
+            if (!parseAxis(*jointElement, joint.axis))
+            {
+                return false;
+            }
+
+            if (!parseLimit(*jointElement, joint.limit))
+            {
+                return false;
+            }
+
+            if (!parseDynamics(*jointElement, joint.dynamics))
+            {
+                return false;
+            }
+
+            urdfJoints.emplace(joint.name, joint);
+
+        } while ((jointElement = jointElement->NextSiblingElement("joint")));
+    }
+    return true;
+}
+
+
+// bool parseSpringGroup(const XMLElement& element, UrdfSpringGroup& springGroup)
+// {
+//     auto start = element.Attribute("start");
+//     auto count = element.Attribute("size");
+//     auto scale = element.Attribute("scale");
+//     if (!start || !parseInt(start, springGroup.springStart))
+//     {
+//         return false;
+//     }
+//     if (!count || !parseInt(count, springGroup.springCount))
+//     {
+//         return false;
+//     }
+//     if (!scale || !parseFloat(scale, springGroup.scale))
+//     {
+//         return false;
+//     }
+//     return true;
+// }
+
+// bool parseSoftActuators(const XMLElement& root, std::vector<UrdfSoft1DActuator>& urdfActs)
+// {
+//     auto actuatorElement = root.FirstChildElement("actuator");
+//     while (actuatorElement)
+//     {
+//         auto name = actuatorElement->Attribute("name");
+//         auto type = actuatorElement->Attribute("type");
+//         if (type)
+//         {
+//             if (strcmp(type, "pneumatic1D") == 0)
+//             {
+//                 UrdfSoft1DActuator act;
+//                 act.name = std::string(name);
+//                 act.link = std::string(actuatorElement->Attribute("link"));
+//                 auto gains = actuatorElement->FirstChildElement("gains");
+//                 auto thresholds = actuatorElement->FirstChildElement("thresholds");
+//                 auto springGroups = actuatorElement->FirstChildElement("springGroups");
+//                 auto maxPressure = actuatorElement->Attribute("maxPressure");
+//                 if (!maxPressure || !parseFloat(maxPressure, act.maxPressure))
+//                 {
+//                     act.maxPressure = 0.0f;
+//                 }
+//                 if (gains)
+//                 {
+//                     auto inflate = gains->Attribute("inflate");
+//                     auto deflate = gains->Attribute("deflate");
+//                     if (!inflate || !parseFloat(inflate, act.inflateGain))
+//                     {
+//                         act.inflateGain = 1.0f;
+//                     }
+//                     if (!deflate || !parseFloat(deflate, act.deflateGain))
+//                     {
+//                         act.deflateGain = 1.0f;
+//                     }
+//                 }
+//                 if (thresholds)
+//                 {
+//                     auto deflate = thresholds->Attribute("deflate");
+//                     auto deactivate = thresholds->Attribute("deactivate");
+//                     if (!deflate || !parseFloat(deflate, act.deflateThreshold))
+//                     {
+//                         act.deflateThreshold = 1.0f;
+//                     }
+//                     if (!deactivate || !parseFloat(deactivate, act.deactivateThreshold))
+//                     {
+//                         act.deactivateThreshold = 1.0e-2f;
+//                     }
+//                 }
+//                 if (springGroups)
+//                 {
+//                     auto springGroup = springGroups->FirstChildElement("springGroup");
+//                     while (springGroup)
+//                     {
+//                         UrdfSpringGroup sg;
+//                         if (parseSpringGroup(*springGroup, sg))
+//                         {
+//                             act.springGroups.push_back(sg);
+//                         }
+//                         springGroup = springGroup->NextSiblingElement("springGroup");
+//                     }
+//                 }
+//                 if (maxPressure && gains && thresholds && springGroups)
+//                     urdfActs.push_back(act);
+//                 else
+//                 {
+//                     printf("*** unable to parse soft actuator %s \n", act.name.c_str());
+//                     return false;
+//                 }
+//             }
+//         }
+//         actuatorElement = actuatorElement->NextSiblingElement("actuator");
+//     }
+//     return true;
+// }
+
+
+bool parseRobot(const XMLElement& root, UrdfRobot& urdfRobot)
+{
+    auto name = root.Attribute("name");
+    if (name)
+    {
+        urdfRobot.name = name;
+    }
+
+    urdfRobot.links.clear();
+    urdfRobot.joints.clear();
+    urdfRobot.materials.clear();
+
+    if (!parseMaterials(root, urdfRobot.materials))
+    {
+        return false;
+    }
+    if (!parseLinks(root, urdfRobot.links))
+    {
+        return false;
+    }
+    if (!parseJoints(root, urdfRobot.joints))
+    {
+        return false;
+    }
+    // if (!parseSoftActuators(root, urdfRobot.softActuators))
+    // {
+    //     return false;
+    // }
+    return true;
+}
+
+bool parseUrdf(const std::string& urdfPackagePath, const std::string& urdfFileRelativeToPackage, UrdfRobot& urdfRobot)
+{
+    std::string path;
+
+    //    #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+    //    path = GetFilePathByPlatform((urdfPackagePath + "\\" + urdfFileRelativeToPackage).c_str());
+    //#else
+    //    path = GetFilePathByPlatform((urdfPackagePath + "/" + urdfFileRelativeToPackage).c_str());
+    //#endif
+
+    path = urdfPackagePath + "/" + urdfFileRelativeToPackage;
+
+#ifdef VERBOSE_URDF
+    printf("Loading URDF at '%s'", path.c_str());
+#endif
+
+    // Weird stack smashing error with tinyxml2 when the descructor is called
+    static XMLDocument doc;
+    if (doc.LoadFile(path.c_str()) != XML_SUCCESS)
+    {
+        printf("*** Failed to load '%s'", path.c_str());
+        return false;
+    }
+
+    XMLElement* root = doc.RootElement();
+    if (!root)
+    {
+        printf("*** Empty document '%s' \n", path.c_str());
+        return false;
+    }
+
+    if (!parseRobot(*root, urdfRobot))
+    {
+        return false;
+    }
+
+#ifdef VERBOSE_URDF
+    std::cout << urdfRobot << std::endl;
+#endif
+
+    return true;
+}
+
+} // namespace urdf
+}
+}

@@ -8,6 +8,8 @@
 //
 #pragma once
 
+#include "UrdfTypes.h"
+
 #include <carb/Defines.h>
 
 #include <stdint.h>
@@ -23,9 +25,6 @@ struct ImportConfig
 {
     bool mergeFixedJoints = false;
     bool enableConvexDecomp = false;
-    bool forceZUp = true;
-    bool addDebugInfo = false;
-    float distanceScale = 100.0;
     bool importInertiaTensor = false;
 };
 
@@ -33,7 +32,16 @@ struct ImportConfig
 struct Urdf
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::urdf::Urdf", 0, 1);
-    void(CARB_ABI* importUrdf)(std::string asset_path, const ImportConfig& importConfig);
+
+    // Parses a urdf file into a UrdfRobot data structure
+    UrdfRobot(CARB_ABI* parseUrdf)(const std::string& assetRoot,
+                                   const std::string& assetName,
+                                   const ImportConfig& importConfig);
+    // Imports a UrdfRobot into the stage
+    void(CARB_ABI* importRobot)(const std::string& assetRoot,
+                                const std::string& assetName,
+                                const UrdfRobot& robot,
+                                const ImportConfig& importConfig);
 };
 }
 }
