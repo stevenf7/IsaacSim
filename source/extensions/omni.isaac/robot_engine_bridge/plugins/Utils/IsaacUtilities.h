@@ -36,7 +36,8 @@ static void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicC
     DcTransform t;
     pxr::GfMatrix4d parentToWorldMat =
         pxr::UsdGeomXformable(prim).ComputeParentToWorldTransform(pxr::UsdTimeCode::Default());
-    auto newTranslation = pxBodyTranslation + parentToWorldMat.ExtractTranslation();
+    // NOTE: reverting this for now, rigid body sink publishes global so teleport should be global too
+    auto newTranslation = pxBodyTranslation; // + parentToWorldMat.ExtractTranslation();
 
     t.p = { newTranslation[0], newTranslation[1], newTranslation[2] };
     t.r = { pxBodyRotation[0], pxBodyRotation[1], pxBodyRotation[2], pxBodyRotation[3] };
@@ -69,7 +70,8 @@ static void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicC
         usdBodyPose.SetTranslation(pxBodyTranslation);
         usdBodyPose.SetRotation(
             pxr::GfRotation(pxr::GfQuatf(pxBodyRotation[3], pxBodyRotation[0], pxBodyRotation[1], pxBodyRotation[2])));
-        omni::usd::UsdUtils::setLocalTransformMatrix(prim, usdBodyPose.GetMatrix());
+        // Pose is global so offset by parent pose
+        omni::usd::UsdUtils::setLocalTransformMatrix(prim, usdBodyPose.GetMatrix() * parentToWorldMat.GetInverse());
     }
 }
 /**
