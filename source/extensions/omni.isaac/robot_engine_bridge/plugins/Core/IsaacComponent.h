@@ -81,7 +81,7 @@ public:
     {
         isaac::utils::safeGetAttribute(this->mPrim.GetNodeNameAttr(), mNodeName);
         isaac::utils::safeGetAttribute(this->mPrim.GetEnabledAttr(), this->mEnabled);
-        double timeOffset;
+        double timeOffset = 0;
         isaac::utils::safeGetAttribute(this->mPrim.GetTimeOffsetAttr(), timeOffset);
         mComponentTimeOffsetNanoSeconds = static_cast<int64_t>(timeOffset);
     }
