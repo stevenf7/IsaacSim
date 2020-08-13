@@ -88,6 +88,9 @@ private:
     carb::sensors::Sensor* mBoundingBox2DSensor = nullptr;
     void* mBoundingBox2DSensorData = nullptr;
 
+    carb::sensors::Sensor* mBoundingBox3DSensor = nullptr;
+    void* mBoundingBox3DSensorData = nullptr;
+
 
     /// <summary>
     /// The name of the channel where captured color images will be published
@@ -119,6 +122,14 @@ private:
     std::string mBoundingBox2DChannelName = "bbox";
     std::vector<std::string> mBoundingBox2DClassList;
     bool mEnableBoundingBox2D = false;
+
+    /// <summary>
+    /// The name of the channel where captured 3D bounding box data will be published
+    /// </summary>
+    std::string mBoundingBox3DOutputComponent = "output";
+    std::string mBoundingBox3DChannelName = "bbox3d";
+    std::vector<std::string> mBoundingBox3DClassList;
+    bool mEnableBoundingBox3D = false;
 
     double mUnitScale;
 

@@ -1,5 +1,6 @@
 #include "CameraComponent.h"
 
+#include "../Utils/IsaacConversions.h"
 #include "plugins/core/UsdUtilities.h"
 
 #include <carb/cuda/CudaRuntime.h>
@@ -84,6 +85,12 @@ CameraComponent::~CameraComponent()
         mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eBoundingBox2DTight);
         mBoundingBox2DSensor = nullptr;
         mBoundingBox2DSensorData = nullptr;
+    }
+    if (mBoundingBox3DSensor)
+    {
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eBoundingBox3D);
+        mBoundingBox3DSensor = nullptr;
+        mBoundingBox3DSensorData = nullptr;
     }
 
     mFramework->releaseInterface(mEditorInterface);
@@ -305,6 +312,81 @@ void CameraComponent::tick()
                     isaac_message::Detections2ProtoId, buffers);
         }
     }
+
+    if (mEnableBoundingBox3D)
+    {
+        CARB_PROFILE_ZONE(0, "BBox3D");
+
+        mBoundingBox3DSensorData = mSyntheticDataInterface->getSensorHostData(mBoundingBox3DSensor);
+
+        const carb::sensors::SensorInfo& boundingBoxInfo = mSensorsInterface->getSensorInfo(mBoundingBox3DSensor);
+        size_t bufferSize = boundingBoxInfo.buff.size;
+        int numBoundingBoxes = bufferSize / sizeof(carb::sensors::BoundingBox3DValues);
+
+        if (bufferSize > 0)
+        {
+            // Create the message
+            IsaacMessage<isaac_message::Detections3> detectionMessage;
+            auto detectionMessageProto = detectionMessage.initProto();
+            auto boundingBoxesProto = detectionMessageProto.initBoundingBoxes(numBoundingBoxes);
+            auto predictionsProto = detectionMessageProto.initPredictions(numBoundingBoxes);
+            auto posesProto = detectionMessageProto.initPoses(numBoundingBoxes);
+
+            carb::sensors::BoundingBox3DValues* data =
+                reinterpret_cast<carb::sensors::BoundingBox3DValues*>(mBoundingBox3DSensorData);
+            for (int boundingBoxId = 0; boundingBoxId < numBoundingBoxes; boundingBoxId++)
+            {
+                std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
+                // Filter bounding boxes based on semantic data
+                if (mBoundingBox3DClassList.size() > 0)
+                {
+                    if (std::find(mBoundingBox3DClassList.begin(), mBoundingBox3DClassList.end(), semanticLabel) ==
+                        mBoundingBox3DClassList.end())
+                    {
+                        data++;
+                        continue;
+                    }
+                }
+
+                // Get pose in world space
+                auto floatTransform = data->transform;
+                std::vector<std::vector<float>> transformMatrix(4, std::vector<float>(4, 0));
+                for (int row = 0; row < 4; row++)
+                    for (int col = 0; col < 4; col++)
+                        transformMatrix[row][col] = floatTransform[row][col];
+                pxr::GfTransform gfTransform = pxr::GfTransform(pxr::GfMatrix4d(transformMatrix));
+                auto isaacTranslationProto = posesProto[boundingBoxId].initTranslation();
+                auto isaacRotationProto = posesProto[boundingBoxId].initRotation();
+                pxr::GfVec3d translationValue = gfTransform.GetTranslation();
+                pxr::GfQuatd rotationValue = gfTransform.GetRotation().GetQuat();
+                pxr::GfVec3d scaleValue = gfTransform.GetScale() * mUnitScale;
+                toVector3dProto(translationValue * mUnitScale, isaacTranslationProto);
+                toSO3dProto(rotationValue, isaacRotationProto);
+                // Get min and max values of 3D bounding box in local space
+                auto minProto = boundingBoxesProto[boundingBoxId].initMin();
+                auto maxProto = boundingBoxesProto[boundingBoxId].initMax();
+                minProto.setX(data->x_min * scaleValue[0]);
+                minProto.setY(data->y_min * scaleValue[1]);
+                minProto.setZ(data->z_min * scaleValue[2]);
+                maxProto.setX(data->x_max * scaleValue[0]);
+                maxProto.setY(data->y_max * scaleValue[1]);
+                maxProto.setZ(data->z_max * scaleValue[2]);
+                predictionsProto[boundingBoxId].setLabel(semanticLabel);
+                predictionsProto[boundingBoxId].setConfidence(1.0);
+                // CARB_LOG_ERROR("Translation: %f, %f, %f", isaacTranslationProto.getX(), isaacTranslationProto.getY(),
+                //                isaacTranslationProto.getZ());
+                // CARB_LOG_ERROR("Scale: %f, %f, %f", scaleValue[0], scaleValue[1], scaleValue[2]);
+                // std::string primUri(mSyntheticDataInterface->getUriFromInstanceId(data->instanceId));
+                // CARB_LOG_ERROR("Data %d: %s, %s, %d, %d, %f, %f, %f, %f, %f, %f", boundingBoxId + 1, primUri.c_str(),
+                //                semanticLabel.c_str(), data->instanceId, data->semanticId, data->x_min, data->y_min,
+                //                data->z_min, data->x_max, data->y_max, data->z_max);
+                data++;
+            }
+            std::vector<std::unique_ptr<IsaacBuffer>> buffers;
+            publish(mBoundingBox3DOutputComponent, mBoundingBox3DChannelName, detectionMessageProto,
+                    isaac_message::Detections3ProtoId, buffers);
+        }
+    }
 }
 void CameraComponent::onStart()
 {
@@ -339,9 +421,21 @@ void CameraComponent::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DOutputChannelAttr(), mBoundingBox2DChannelName);
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DClassListAttr(), filterClassList);
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DEnabledAttr(), mEnableBoundingBox2D);
+
+    // Bounding Box 3D attributes
+    std::string filterClassList3D;
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DOutputComponentAttr(), mBoundingBox3DOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DOutputChannelAttr(), mBoundingBox3DChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DClassListAttr(), filterClassList3D);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DEnabledAttr(), mEnableBoundingBox3D);
+
     mBoundingBox2DClassList.clear();
     if (filterClassList != "")
         boost::split(mBoundingBox2DClassList, filterClassList, [](char c) { return c == ','; });
+
+    mBoundingBox3DClassList.clear();
+    if (filterClassList3D != "")
+        boost::split(mBoundingBox3DClassList, filterClassList3D, [](char c) { return c == ','; });
 
 
     if (mEnableRgb)
@@ -409,6 +503,16 @@ void CameraComponent::onComponentChange()
     {
         mBoundingBox2DSensor = nullptr;
         mBoundingBox2DSensorData = nullptr;
+    }
+
+    if (mEnableBoundingBox3D)
+    {
+        mBoundingBox3DSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D);
+    }
+    else
+    {
+        mBoundingBox3DSensor = nullptr;
+        mBoundingBox3DSensorData = nullptr;
     }
 }
 
