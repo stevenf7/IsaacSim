@@ -294,10 +294,15 @@ class RobotEngineBridgeMenu:
         prim.CreateBoundingBox2DOutputChannelAttr("bbox")
         prim.CreateBoundingBox2DClassListAttr("")
 
+        prim.CreateBoundingBox3DOutputComponentAttr("output")
+        prim.CreateBoundingBox3DOutputChannelAttr("bbox3d")
+        prim.CreateBoundingBox3DClassListAttr("")
+
         prim.CreateRgbEnabledAttr(True)
         prim.CreateDepthEnabledAttr(False)
         prim.CreateSegmentationEnabledAttr(False)
         prim.CreateBoundingBox2DEnabledAttr(False)
+        prim.CreateBoundingBox3DEnabledAttr(False)
 
         pass
 
