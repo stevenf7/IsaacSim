@@ -122,6 +122,8 @@ bool CARB_ABI SiGetMesh(SiHandle step_reader_handle, size_t mesh_key, step_reade
         return false;
     }
     step_reader::Mesh m;
+    if (props.min_surface == 0)
+        props.min_surface = -1.0f;
     if (step_reader::GetMesh(step_reader, mesh_key, m, props))
     {
         fromStepReader(m, mesh);
@@ -169,9 +171,9 @@ CARB_EXPORT void carbOnPluginShutdown()
 
     g_ctx.get()->clearStepReaders();
     CARB_LOG_INFO("  Deleting SI Context");
-    g_ctx.reset(nullptr);
+    // g_ctx.reset(nullptr);
     CARB_LOG_INFO("  Deleting interface");
-    g_stepImporter.reset(nullptr);
+    // g_stepImporter.reset(nullptr);
     CARB_LOG_INFO("Done");
 }
 

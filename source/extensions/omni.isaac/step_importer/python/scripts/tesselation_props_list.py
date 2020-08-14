@@ -3,7 +3,7 @@ from enum import Enum
 from pathlib import Path
 from omni.isaac.step_importer import _step_importer
 
-mins = [0.0, 0.0, -1.0]
+mins = [0.0, 0.0, 0.0]
 maxs = [10.0, 3.14, 10]
 defaults = [0.001, 0.5, -1.0]
 
@@ -140,11 +140,15 @@ class TesselationPropsDelegate(ui.AbstractItemDelegate):
                 mouse_pressed_fn=(lambda x, y, b, arg: self.on_mouse_pressed(b, item, expanded, arg)),
                 alignment=(ui.Alignment.CENTER),
             ):
-                if column_id < 3:
+                if column_id < 2:
                     ui.Spacer(width=3)
                     ui.FloatDrag(model=value_model, min=(mins[column_id]), max=(maxs[column_id]))
                     ui.Spacer(width=3)
-                else:
+                elif column_id == 2:
+                    ui.Spacer(width=3)
+                    ui.FloatDrag(model=value_model, min=(mins[column_id]), max=(maxs[column_id]))
+                    ui.Spacer(width=3)
+                elif column_id > 2:
                     ui.Spacer()
                     ui.CheckBox(model=value_model)
 

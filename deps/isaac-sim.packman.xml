@@ -17,8 +17,8 @@
         <package name="isaac_engine" version="linux_x64_20200810_bca885cbb" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="step_reader" linkPath="../_build/target-deps/stepreader">
-        <package name="step_reader" version="linux_x64_linbuild_20200729_281967c" platforms="linux-x86_64" />
-        <package name="step_reader" version="win_x64_winbuild_20200729_281967c" platforms="windows-x86_64" />
+        <package name="step_reader" version="linux_x64_linbuild_20200814_88c7bed" platforms="linux-x86_64" />
+        <package name="step_reader" version="win_x64_winbuild_20200813_88c7bed" platforms="windows-x86_64" />
     </dependency>
     <dependency name="octomap" linkPath="../_build/target-deps/octomap">
         <package name="octomap" version="linux_x64_20200720_a3f3809" platforms="linux-x86_64" />
