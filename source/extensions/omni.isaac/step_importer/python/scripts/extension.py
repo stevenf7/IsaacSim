@@ -23,23 +23,10 @@ from omni.isaac.step_importer import _step_importer
 EXTENSION_NAME = "Step Importer"
 
 
-def wrap(func):
-    @wraps(func)
-    async def run(*args, loop=None, executor=None, **kwargs):
-        if loop is None:
-            loop = asyncio.get_event_loop()
-        pfunc = partial(func, *args, **kwargs)
-        return await loop.run_in_executor(executor, pfunc)
-
-    return run
-
-
 class StepImporter(omni.ext.IExt):
     def on_startup(self):
-        print("Loading Step Importer Extension")
+        carb.log_info("Loading Step Importer Extension")
         self._si = _step_importer.acquire_interface()
-        self.async_load_file = wrap(self._si.load_step_file)
-        self.async_get_assembly = wrap(self._si.get_assembly_structure)
         self._editor = omni.kit.editor.get_editor_interface()
         self.part = _step_importer.Part()
         # self._filepicker = None
@@ -50,12 +37,14 @@ class StepImporter(omni.ext.IExt):
         self._mesh_model = None
 
         self.build_steps = []
-        self.build_steps_fns = [self.build_step_0, self.build_step_1, self.build_step_2]
+        self.build_steps_fns = [self.build_step_0, self.build_step_1, self.build_step_1]
         self.current_step = -1
 
         self.asset_importer = None
 
         self._filepicker = None
+
+        self.step_file = None
 
         self._usd_context = omni.usd.get_context()
         self.stage = self._usd_context.get_stage()
@@ -135,21 +124,28 @@ class StepImporter(omni.ext.IExt):
         if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
             self._on_kit_selection_changed()
         if event.type == int(omni.usd.StageEventType.OPENED):
+            if self.exporter:
+                if self.exporter.is_temp_stage_open():
+                    self.exporter.set_materials_to_color_layer()
+
             if self._mesh_model:
                 self._mesh_model.update_prim_paths()
 
     def _select_meshes_with_same_volume(self):
         selection = []
-        volumes = [item.get_col_value(2) for item in self._mesh_list.selection]
+        volumes = [item for item in self._mesh_list.selection]
+        selection += volumes
+        to_select = []
         for v in volumes:
-            selection = selection + [i for i in self._mesh_list.model._children if abs(i.get_col_value(2) - v) == 0]
-        self._mesh_list.selection = list(set(selection))
+            to_select = list(set(to_select + [i for i in self._mesh_list.model._children if v.is_similar(i)]))
+        selection = selection + [i for i in list(set(to_select)) if i not in selection]
+        self._mesh_list.selection = selection
 
     def get_selected_prim_paths(self, source):
         selection = []
         for item in self._mesh_list.selection:
-            selection = selection + item.prims
-        return list(set([str(i.GetPath()) for i in selection]))
+            selection = selection + [i for i in item.prims if i not in selection]
+        return [str(i.GetPath()) for i in selection]
 
     def toggle_selected_visibility(self, source):
         omni.kit.commands.execute(
@@ -157,13 +153,19 @@ class StepImporter(omni.ext.IExt):
         )
 
     def ReplaceDuplicatesSelected(self):
-        pass
+        mesh_id = self._mesh_list.selection[0].id
+        for i in range(1, len(self._mesh_list.selection)):
+            self._mesh_list.selection[i].set_replacement_id(mesh_id)
+        self._mesh_model.export_model()
 
     def _on_kit_selection_changed(self):
         """The selection in kit is changed"""
         if self.exporter:
             selection = []
             for sel in self._selection.get_selected_prim_paths():
+                if sel.startswith("/Looks"):
+                    self.exporter.set_material_authoring_layer()
+                    return
                 usd_path = ""
                 current_sel = sel
                 prim = self._usd_context.get_stage().GetPrimAtPath(sel)
@@ -172,8 +174,13 @@ class StepImporter(omni.ext.IExt):
                     if self.exporter.path.lower() in identifier.lower():
                         # print (identifier)
                         usd_path = os.path.relpath(identifier, self.exporter.path).replace("\\", "/")
-                        selection.append(self._mesh_model._childrenMap[usd_path])
-            self._mesh_list.selection = list(set(selection))
+                        if self._mesh_model._childrenMap[usd_path] not in selection:
+                            selection.append(self._mesh_model._childrenMap[usd_path])
+
+            self.exporter.set_root_authoring_layer()
+            self._mesh_list.selection = [i for i in self._mesh_list.selection if i in selection] + [
+                i for i in list(set(selection)) if i not in self._mesh_list.selection
+            ]
 
     def _on_mesh_list_selection_changed(self, source):
         selection = self.get_selected_prim_paths(source)
@@ -200,16 +207,49 @@ class StepImporter(omni.ext.IExt):
         self._mesh_model = MeshListModel()
 
         with container:
-            with ui.VStack(aligmnent=ui.Alignment.LEFT_TOP, height=ui.Percent(100)):
-                with ui.CollapsableFrame("Mesh List", height=ui.Pixel(0)):
+            with ui.VStack(aligmnent=ui.Alignment.LEFT_TOP):
+                with ui.CollapsableFrame("LOD properties", height=ui.Pixel(0)):
+                    with ui.HStack(height=ui.Percent(100)):
+                        with ui.VStack(width=ui.Pixel(20)):
+                            ui.Spacer(height=ui.Pixel(13))
+                            self._add_lod = ui.Button(
+                                "+",
+                                clicked_fn=lambda: self._tp_model.add_prop(),
+                                height=ui.Pixel(20),
+                                width=ui.Pixel(20),
+                            )
+                            self._remove_lod = ui.Button(
+                                "-",
+                                clicked_fn=lambda: self.remove_selected_lod(),
+                                height=ui.Pixel(20),
+                                width=ui.Pixel(20),
+                                tooltip="Removes selected element from the list. if None is selected, removes last.",
+                            )
+                        with ui.ScrollingFrame(
+                            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
+                            # vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                            # style_type_name_override="TreeView.ScrollingFrame",
+                            style=self.tree_style,
+                            height=ui.Pixel(90),
+                        ):
+                            self._tesselation_properties_list = ui.TreeView(
+                                self._tp_model,
+                                style=self.tree_style,
+                                delegate=self._tp_delegate,
+                                header_visible=True,
+                                height=ui.Pixel(88),
+                                alignment=ui.Alignment.CENTER_TOP,
+                            )
+                ui.Spacer(height=10)
+                with ui.CollapsableFrame("Edit / Reimport Meshes", height=ui.Pixel(0)):
                     with ui.VStack(height=ui.Pixel(200)):
                         with ui.HStack():
                             with ui.ScrollingFrame(
                                 horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
-                                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                                # vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                                 style_type_name_override="TreeView.ScrollingFrame",
                                 style=self.tree_style,
-                                height=ui.Pixel(180),
+                                height=ui.Pixel(198),
                             ):
                                 self._mesh_list = ui.TreeView(
                                     self._mesh_model,
@@ -218,7 +258,7 @@ class StepImporter(omni.ext.IExt):
                                     header_visible=True,
                                     height=ui.Percent(100),
                                     tooltip="Double click on item open isolated mesh",
-                                    column_widths=[40, ui.Fraction(1), 60, 40, 150, 40],
+                                    column_widths=[ui.Fraction(1), 60, 40, 150, 40],
                                 )
                                 self._mesh_list.set_selection_changed_fn(self._on_mesh_list_selection_changed)
                             with ui.VStack(width=80):
@@ -239,7 +279,7 @@ class StepImporter(omni.ext.IExt):
                                     "Toggle Visibility",
                                     clicked_fn=lambda: self.toggle_selected_visibility(self._mesh_list),
                                     height=ui.Pixel(25),
-                                    tooltip="Selects Potential duplicate meshes based on metadata",
+                                    tooltip="Show/Hide selected meshes",
                                 )
 
                                 def on_edit_names(button):
@@ -256,51 +296,48 @@ class StepImporter(omni.ext.IExt):
                                 )
                                 btn.set_clicked_fn(lambda a=btn: on_edit_names(a))
                                 ui.Button(
-                                    "remove selected duplicates",
+                                    "Remove selected duplicates",
                                     clicked_fn=lambda: self.ReplaceDuplicatesSelected(),
                                     height=ui.Pixel(25),
                                     tooltip="Replaces all selected meshes with a single instance (First selected)",
                                 )
                                 with ui.HStack(tooltip="Import the meshes with given LOD properties"):
-                                    ui.Label("Import", height=ui.Pixel(25), width=ui.Pixel(30))
+                                    ui.Spacer(width=ui.Pixel(5))
+                                    ui.Label("Re-Mesh", height=ui.Pixel(25), width=ui.Pixel(30))
+                                    ui.Spacer()
                                     ui.Button("All", clicked_fn=lambda: self.reimport_meshes(True), height=ui.Pixel(25))
                                     ui.Button(
                                         "Selected", clicked_fn=lambda: self.reimport_meshes(), height=ui.Pixel(25)
                                     )
+                                    ui.Spacer()
+                                # with ui.HStack():
+                                #     ui.CheckBox(model=ui.SimpleBoolModel(self._mesh_model.hide_duplicates), width=10)
+                                #     ui.Label("Hide Mesh Duplicates")
                 ui.Spacer(height=10)
-                with ui.CollapsableFrame("LOD properties", height=ui.Pixel(0)):
-                    with ui.HStack(height=ui.Percent(100)):
-                        with ui.VStack(width=ui.Pixel(20)):
-                            ui.Spacer(height=ui.Pixel(13))
-                            self._add_lod = ui.Button(
-                                "+",
-                                clicked_fn=lambda: self._tp_model.add_prop(),
-                                height=ui.Pixel(20),
-                                width=ui.Pixel(20),
-                            )
-                            self._remove_lod = ui.Button(
-                                "-",
-                                clicked_fn=lambda: self.remove_selected_lod(),
-                                height=ui.Pixel(20),
-                                width=ui.Pixel(20),
-                                tooltip="Removes selected element from the list. if None is selected, removes last.",
-                            )
-                        with ui.ScrollingFrame(
-                            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
-                            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                            # style_type_name_override="TreeView.ScrollingFrame",
+                with ui.CollapsableFrame("Assembly Description", height=ui.Pixel(0)):
+                    self._sf = ui.ScrollingFrame(
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                        style_type_name_override="TreeView.ScrollingFrame",
+                        style=self.tree_style,
+                        height=ui.Pixel(100)
+                        # mouse_pressed_fn=lambda x, y, b, _: self._delegate.on_mouse_pressed(b, None, False),
+                    )
+                    with self._sf:
+                        self._treeView = ui.TreeView(
+                            self._assembly_model,
+                            column_widths=[ui.Fraction(1), 80],
+                            root_visible=False,
+                            header_visible=True,
+                            delegate=self._delegate,
                             style=self.tree_style,
-                            height=ui.Pixel(80),
-                        ):
-                            self._tesselation_properties_list = ui.TreeView(
-                                self._tp_model,
-                                style=self.tree_style,
-                                delegate=self._tp_delegate,
-                                header_visible=True,
-                                height=ui.Percent(100),
-                                alignment=ui.Alignment.CENTER_TOP,
-                            )
-            ui.Button("Review Assemblies", clicked_fn=lambda: self.select_step(2), height=ui.Pixel(25))
+                            height=ui.Percent(98),
+                        )
+                self._finish_import_btn = ui.Button(
+                    "Finish Import", clicked_fn=lambda: self._select_folder(self), height=ui.Pixel(25)
+                )
+
+            # ui.Button("Review Assemblies", clicked_fn=lambda: self.select_step(2), height=ui.Pixel(25))
 
     def reimport_meshes(self, import_all=False):
         props = self._tp_model.get_props()
@@ -313,38 +350,12 @@ class StepImporter(omni.ext.IExt):
             for item in items:
                 mesh_idx = item.id
                 self.exporter.export_mesh(mesh_idx, props, len(items) == 1)
+                # self.exporter.export() #regenerate USDs
 
             if len(items) > 1 or import_all:
-                self._delegate.on_mouse_double_clicked(self._assembly_model._root.children[0])
+                self.exporter.export()
 
-        if not (len(items) > 1 or import_all):
-            export()
-        else:
-            omni.usd.get_context().close_stage(
-                on_finish_fn=lambda a, b: omni.usd.get_context().new_stage(on_finish_fn=lambda a, b: export())
-            )
-
-    def build_step_2(self, container):
-        with container:
-            self._assembly_model = AssemblyTreeModel()
-            self._sf = ui.ScrollingFrame(
-                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
-                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                style_type_name_override="TreeView.ScrollingFrame",
-                style=self.tree_style,
-                height=ui.Percent(100)
-                # mouse_pressed_fn=lambda x, y, b, _: self._delegate.on_mouse_pressed(b, None, False),
-            )
-            with self._sf:
-                self._treeView = ui.TreeView(
-                    self._assembly_model,
-                    column_widths=[ui.Fraction(1), 80],
-                    root_visible=False,
-                    header_visible=True,
-                    delegate=self._delegate,
-                    style=self.tree_style,
-                )
-            self._finish_import_btn = ui.Button("Finish Import", clicked_fn=lambda: self._select_folder(self))
+        omni.usd.get_context().new_stage(on_finish_fn=lambda a, b: export())
 
     def remove_selected_lod(self):
         # print(self._tesselation_properties_list.selection)
@@ -366,15 +377,32 @@ class StepImporter(omni.ext.IExt):
 
         async def import_file():
             await self.asset_importer._start_upload_internal(output_dir, False, None)
-            omni.usd.get_context().open_stage(output_dir + "/" + self.exporter.part_name + "/root.usd", None)
+            omni.usd.get_context().open_stage(
+                output_dir + "/" + self.exporter.part_name + "/" + os.path.basename(self.exporter.assemblies_path[1]),
+                lambda a, b: self.close_window(),
+            )
             self.asset_importer.on_shutdown()
             self.asset_importer = None
+
             # omni.usd.get_context().close_stage(on_finish_fn= lambda a,b: omni.usd.get_context().open_stage(output_dir +"/"+self.exporter.part_name+ "/root.usd", None))
 
         self.asset_importer._upload_future = asyncio.ensure_future(
             import_file()
             # self.asset_importer._start_upload_internal(output_dir, False, None)
         )
+
+    def close_window(self):
+        self._window = None
+        self.build_steps.clear()
+        self.current_step = -1
+        if self._assembly_model:
+            self._assembly_model.reset()
+            self._assembly_model = None
+        if self._mesh_model:
+            self._mesh_model.reset()
+            self._mesh_model = None
+        self.exporter = None
+        self.part = None
 
     def show_window(self, menu, value):
         if self._window:
@@ -388,76 +416,93 @@ class StepImporter(omni.ext.IExt):
         else:
             self._window = ui.Window(
                 EXTENSION_NAME,
-                width=600,
-                height=200,
+                width=800,
+                height=400,
                 menu_path="Isaac Robotics/Importers/" + EXTENSION_NAME,
                 open=value,
                 dock=ui.DockPreference.LEFT_BOTTOM,
             )
             self._window.set_visibility_changed_fn(lambda a: self.show_window(self._menu, False))
+            self._assembly_model = AssemblyTreeModel()
             self.props = {}
             with self._window.frame:
-                with ui.VStack(alignment=ui.Alignment.TOP):
-                    with ui.HStack(
-                        spacing=0, height=ui.Pixel(20), style={**self.menu_button_style}, alignment=ui.Alignment.BOTTOM
-                    ):
-                        self._select_step_btn = ui.Button(
-                            "Select Step File", clicked_fn=lambda: self.select_step(0), height=ui.Pixel(20)
-                        )
-                        self._review_meshes_btn = ui.Button(
-                            "Review Meshes", clicked_fn=lambda: self.select_step(1), height=ui.Pixel(20)
-                        )
-                        self._review_meshes_btn.enabled = False
-                        self._review_assemblies_btn = ui.Button(
-                            "Review Assemblies", clicked_fn=lambda: self.select_step(2), height=ui.Pixel(20)
-                        )
-                        self._review_assemblies_btn.enabled = False
-                        self.step_btns = [self._select_step_btn, self._review_meshes_btn, self._review_assemblies_btn]
-                    # with ui.ZStack():
-                    for i in range(len(self.build_steps_fns)):
-                        vstack = ui.VStack(spacing=10, alignment=ui.Alignment.TOP)
-                        self.build_steps_fns[i](vstack)
-                        vstack.visible = False
-                        self.build_steps.append(vstack)
-                        self.step_btns[i].selected = False
-                    self.select_step(0)
-                    if menu:
-                        self._select_file(self)
-                        # self._select_picked_file_callback("/home/rgasoto/Downloads/as1-oc-214.stp")
+                with ui.ScrollingFrame(
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
+                    # vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    style=self.tree_style,
+                    height=ui.Percent(100),
+                ):
+                    with ui.HStack():
+                        with ui.VStack(alignment=ui.Alignment.TOP):
+                            with ui.HStack(
+                                spacing=0,
+                                height=ui.Pixel(20),
+                                style={**self.menu_button_style},
+                                alignment=ui.Alignment.BOTTOM,
+                            ):
+                                self._select_step_btn = ui.Button(
+                                    "Select Step File", clicked_fn=lambda: self.select_step(0), height=ui.Pixel(20)
+                                )
+                                self._review_meshes_btn = ui.Button(
+                                    "Review Meshes", clicked_fn=lambda: self.select_step(1), height=ui.Pixel(20)
+                                )
+                                self._review_meshes_btn.enabled = False
+                                # self._review_assemblies_btn = ui.Button(
+                                #     "Review Assemblies", clicked_fn=lambda: self.select_step(2), height=ui.Pixel(20)
+                                # )
+                                # self._review_assemblies_btn.enabled = False
+                                self.step_btns = [
+                                    self._select_step_btn,
+                                    self._review_meshes_btn,
+                                ]  # , self._review_assemblies_btn]
+                            # with ui.ZStack():
+                            for i in range(len(self.build_steps_fns) - 1):
+                                vstack = ui.VStack(spacing=10, alignment=ui.Alignment.TOP)
+                                self.build_steps_fns[i](vstack)
+                                vstack.visible = False
+                                self.build_steps.append(vstack)
+                                self.step_btns[i].selected = False
+                            self.select_step(0)
+                        ui.Spacer(width=ui.Pixel(20))
+            if menu:
+                self._select_file(self)
+                # self._select_picked_file_callback("/home/rgasoto/Downloads/as1-oc-214.stp")
 
     def on_shutdown(self):
-        print("Shutting down Step Importer")
+        carb.log_info("Shutting down Step Importer")
         self._menu = None
         if self._assembly_model:
             self._assembly_model.reset()
+            self._assembly_model = None
+            self._treeView = None
         if self._mesh_model:
             self._mesh_model.reset()
+            self._mesh_list = None
         if self.asset_importer:
             # del self.asset_importer
             self.asset_importer = None
-        if self._filepicker:
-            self._filepicker.set_file_selected_fn(None)
-            # self._filepicker = None  # Why does that crash?
         self._sf = None
         self._mesh_model = None
         self._assembly_model = None
-        # print("deleting part")
-        del self.part
-        self.part = None
-        # print("deleting exporter")
-        del self.exporter
-        self.exporter = None
+        if self._filepicker:
+            self._filepicker.set_file_selected_fn(None)
+            # self._filepicker = None  # Why does that crash?
+        if self.exporter:
+            self.exporter = None
+        if self.part:
+            self.part = None
         gc.collect()
-        # print("releasing interface")
-        # self._si = None
-        # _step_importer.release_interface(self._si)
+        print("releasing interface")
+        if self.step_file:
+            self._si.release_step_file(self.step_file)
+
+        _step_importer.release_interface(self._si)
+        self._si = None
         print("done")
+        carb.log_info("done")
 
     def _select_file(self, btn_widget):
 
-        # else:
-        #     self._filepicker.title = "Select STEP File"
-        #     self._filepicker.selection_type = omni.kit.ui.FileDialogSelectType.FILE
         self._filepicker = omni.kit.ui.FilePicker("Select STEP File", file_type=omni.kit.ui.FileDialogSelectType.FILE)
         self._filepicker.set_file_selected_fn(self._select_picked_file_callback)
         self._filepicker.add_filter("STEP Files (*.step | *.stp)", r".*.step$|.*.stp$")
@@ -474,28 +519,31 @@ class StepImporter(omni.ext.IExt):
     def _import_file(self, step_path):
         self.step_file = self._si.load_step_file(step_path)
         if self._si.get_assembly_structure(self.step_file, self.part):
-            print(self.path)
+            carb.log_info(self.path)
             path, basename = os.path.split(self.path)
-            print(path, basename)
+            carb.log_info(path + ", " + basename)
             basename = os.path.splitext(basename)[0]
-            print(basename)
+            carb.log_info(basename)
             clean_path = None
-            print("Creating USD Exporter")
+            carb.log_info("Creating USD Exporter")
             self.exporter = usd_exporter.PartExporter(
                 weakref.proxy(self._si), self.step_file, weakref.proxy(self.part), path, basename
             )
+            self.exporter.set_on_exported_fn(self._on_exported_done)
 
-            print("Resetting models")
+            carb.log_info("Resetting models")
             self._mesh_model.reset()
             self._assembly_model.reset()
 
             self.exporter.export()
-            self._assembly_model.add_part(self.part, self.exporter.assemblies_path, self.exporter.mesh_usd_paths)
-            self._mesh_model.add_mesh_list(weakref.proxy(self.exporter))
 
             self.step_btns[1].enabled = True
-            self.step_btns[2].enabled = True
+            # self.step_btns[2].enabled = True
             self.select_step(1)
+
+    def _on_exported_done(self):
+        self._assembly_model.add_part(weakref.proxy(self.exporter))
+        self._mesh_model.add_mesh_list(weakref.proxy(self.exporter))
 
     def _select_picked_file_callback(self, path):
         if not path.startswith("omniverse://"):

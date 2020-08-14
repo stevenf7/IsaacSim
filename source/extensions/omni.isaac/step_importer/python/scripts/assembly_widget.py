@@ -4,6 +4,7 @@ import omni.kit.commands
 import omni.ui as ui
 import os
 import asyncio
+import weakref
 from enum import Enum
 
 from omni.isaac.step_importer import _step_importer
@@ -27,7 +28,7 @@ class AssemblyDelegate(ui.AbstractItemDelegate):
 
     def build_branch(self, model, item, column_id, level, expanded):
         """Create a branch widget that opens or closes subtree"""
-        from omni.kit.widget.stage.stage_icons import StageIcons
+        # from omni.kit.widget.stage.stage_icons import StageIcons
 
         if column_id == 0:
             with ui.HStack(width=16 * (level + 2), height=0):
@@ -35,9 +36,10 @@ class AssemblyDelegate(ui.AbstractItemDelegate):
                 if model.can_item_have_children(item):
                     # Draw the +/- icon
                     image_name = "Minus" if expanded else "Plus"
-                    ui.Image(
-                        StageIcons().get(image_name), width=10, height=10, style_type_name_override="TreeView.Item"
-                    )
+                    ui.Label("-" if expanded else "+")
+                    # ui.Image(
+                    #     StageIcons().get(image_name), width=10, height=10, style_type_name_override="TreeView.Item"
+                    # )
                     ui.Spacer(width=4)
 
     def on_mouse_double_clicked(self, item):
@@ -140,12 +142,14 @@ class AssemblyTreeModel(ui.AbstractItemModel):
         self._item_changed(None)
         self.usd_paths.clear()
 
-    def add_part(self, part, assembly_paths, mesh_paths):
-        self.part = part
-        self.usd_paths[itemType.Assembly] = assembly_paths
-        self.usd_paths[itemType.Mesh] = mesh_paths
-        self.make_sub_tree(self._root)
-        for i, c in enumerate(part.materials):
+    def add_part(self, exporter):
+        self.reset()
+        self.exporter = exporter
+        # self.part = part
+        # self.usd_paths[itemType.Assembly] = assembly_paths
+        # self.usd_paths[itemType.Mesh] = mesh_paths
+        self.make_sub_tree(weakref.proxy(self._root))
+        for i, c in enumerate(self.exporter.part.materials):
             self._root.children.append(AssemblyItem("Color {}".format(i), itemType.Color, i))
         self._item_changed(None)
         # for c in self._root.children:
@@ -153,19 +157,22 @@ class AssemblyTreeModel(ui.AbstractItemModel):
         # print("Done", self.get_item_value_model_count(self.children[0]), len(self.get_item_children(self.children[0])))
 
     def make_sub_tree(self, child):
-        assembly = self.part.assemblies[child.index]
-        for a in assembly.sub_assemblies:
-            child_assembly = self.part.assemblies[a.id]
+        for a in self.exporter.part.assemblies[child.index].sub_assemblies:
             child.children.append(
                 AssemblyItem(
-                    child_assembly.name, itemType.Assembly, a.id, a.pose, self.usd_paths[itemType.Assembly][a.id]
+                    self.exporter.part.assemblies[a.id].name,
+                    itemType.Assembly,
+                    a.id,
+                    a.pose,
+                    self.exporter.assemblies_path[a.id],
                 )
             )
-            self.make_sub_tree(child.children[-1])
-        for m in assembly.meshes:
-            child_mesh = self.part.meshes_properties[m.id]
+            self.make_sub_tree(weakref.proxy(child.children[-1]))
+        for m in self.exporter.part.assemblies[child.index].meshes:
             child.children.append(
-                AssemblyItem(child_mesh.name, itemType.Mesh, m.id, m.pose, self.usd_paths[itemType.Mesh][m.id])
+                AssemblyItem(
+                    self.exporter.get_mesh_name(m.id), itemType.Mesh, m.id, m.pose, self.exporter.get_mesh_path(m.id)
+                )
             )
 
     def get_item_children(self, item):

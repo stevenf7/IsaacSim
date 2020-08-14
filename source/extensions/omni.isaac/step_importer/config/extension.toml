@@ -2,7 +2,6 @@ display_name = "STEP Importer"
 
 [dependencies]
 "omni.kit.editor" = {}
-"omni.kit.test" = {}
 
 [[python.modules]]
 name = "omni.isaac.step_importer"

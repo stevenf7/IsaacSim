@@ -84,7 +84,16 @@ PYBIND11_MODULE(_step_importer, m)
         .def_readwrite("r", &step_reader::color::r)
         .def_readwrite("g", &step_reader::color::g)
         .def_readwrite("b", &step_reader::color::b)
-        .def_readwrite("a", &step_reader::color::a);
+        .def_readwrite("a", &step_reader::color::a)
+        .def(py::pickle([](const step_reader::color& c) { return py::make_tuple(c.r, c.g, c.b, c.a); },
+                        [](py::tuple t) {
+                            step_reader::color c;
+                            c.r = t[0].cast<float>();
+                            c.g = t[0].cast<float>();
+                            c.b = t[0].cast<float>();
+                            c.a = t[0].cast<float>();
+                            return c;
+                        }));
 
     py::class_<step_reader::Visual_Material>(m, "Visual_Material", "Holds the visual properties of a PBR material")
         .def(py::init<>())
