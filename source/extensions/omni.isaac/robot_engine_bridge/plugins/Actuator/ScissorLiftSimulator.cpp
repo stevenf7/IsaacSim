@@ -44,10 +44,9 @@ void ScissorLiftSimulator::tick()
 
     {
         MessageHeader header;
-        IsaacMessage<isaac_message::State> commandsState;
-        auto commands = commandsState.initProto();
+        IsaacMessage<isaac_message::State> commandComposite;
         std::vector<IsaacHostBuffer> buffers;
-        if (receive(mInputComponent, mCommandChannelName, header, commands, buffers))
+        if (checkErrorCode(receive(mInputComponent, mCommandChannelName, header, commandComposite, buffers)))
         {
 
 
@@ -164,7 +163,7 @@ void ScissorLiftSimulator::tick()
         std::vector<std::unique_ptr<IsaacBuffer>> buffers(1);
         buffers[0] = std::make_unique<IsaacHostBuffer>(elements.size() * sizeof(double));
         std::memcpy(buffers[0]->data(), elements.data(), elements.size() * sizeof(double));
-        publish(mOutputComponent, mStateChannelName, statusProto, isaac_message::StateProtoId, buffers);
+        publish(mOutputComponent, mStateChannelName, statusComposite, isaac_message::StateProtoId, buffers);
     }
 }
 

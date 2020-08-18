@@ -42,11 +42,11 @@ void SurfaceGripper::tick()
 
     {
         MessageHeader header;
-        IsaacMessage<isaac_message::Composite> commandsComposite;
-        auto commands = commandsComposite.initProto();
+        IsaacMessage<isaac_message::Composite> commandComposite;
         std::vector<IsaacHostBuffer> buffers;
-        if (receive(mInputComponent, mGripperControlChannelName, header, commands, buffers))
+        if (checkErrorCode(receive(mInputComponent, mGripperControlChannelName, header, commandComposite, buffers)))
         {
+            auto commands = commandComposite.getProto();
 
             std::vector<double> elements(buffers[0].size() / sizeof(double));
             std::memcpy(elements.data(), buffers[0].data(), elements.size() * sizeof(double));
@@ -95,7 +95,7 @@ void SurfaceGripper::tick()
         buffers[0] = std::make_unique<IsaacHostBuffer>(elements.size() * sizeof(double));
         std::memcpy(buffers[0]->data(), elements.data(), elements.size() * sizeof(double));
 
-        publish(mOutputComponent, mGripperStateChannelName, statusProto, isaac_message::CompositeProtoId, buffers);
+        publish(mOutputComponent, mGripperStateChannelName, statusComposite, isaac_message::CompositeProtoId, buffers);
     }
 }
 

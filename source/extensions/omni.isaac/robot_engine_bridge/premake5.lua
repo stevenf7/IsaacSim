@@ -53,7 +53,7 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/usd_ext_isaac/%{cfg.buildcfg}/include",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/include",
             target_deps_dir.."/omni_physics/include",
-            target_deps_dir.."/cuda/include"
+            target_deps_dir.."/cuda/include",
         }
 
         libdirs {   
@@ -79,8 +79,9 @@ group ("extensions/"..ext_id)
         filter {}
         links { 
             "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "kj", "capnp", "omni.usd", "lidarSchema", "robotEngineBridgeSchema", "physxSchema", "PhysXVehicle_static_64"
+            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "capnp", "omni.usd", "lidarSchema", "robotEngineBridgeSchema", "physxSchema", "PhysXVehicle_static_64"
         }
+        linkoptions{"-Wl,--whole-archive %{root}/_build/target-deps/isaac_engine/lib/libkj.a -Wl,--no-whole-archive"}
 
 
         filter { "system:linux", "platforms:x86_64" }

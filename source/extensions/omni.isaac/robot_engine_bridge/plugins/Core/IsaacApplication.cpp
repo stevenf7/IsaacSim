@@ -175,6 +175,7 @@ auto TaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
     if (taskData->component->getEnabled())
     {
         taskData->component->publishAllMessages();
+        // taskData->component->tick();
     }
 };
 
@@ -200,7 +201,7 @@ void IsaacApplication::tick(double dt)
                 component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
             }
 
-
+#if 1
             // omni::isaac::utils::ScopedTimer TimerApp("  Publish");
             TaskData* taskArray = new TaskData[mComponents.size()];
             int index = 0;
@@ -226,6 +227,18 @@ void IsaacApplication::tick(double dt)
 
             mTasking->yieldUntilCounter(mTaskCounter);
             delete[] taskArray;
+
+#else
+
+            for (auto& component : mComponents)
+            {
+                if (component.second->getEnabled())
+                {
+                    component.second->publishAllMessages();
+                    component.second->tick();
+                }
+            }
+#endif
 
 
             mSceneLoaderComponent->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);

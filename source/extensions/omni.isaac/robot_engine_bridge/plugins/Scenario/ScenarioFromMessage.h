@@ -76,7 +76,7 @@ private:
      *
      * @param request
      */
-    void LoadScenarioFromMessage(isaac_message::ActorGroup::Builder& request);
+    void LoadScenarioFromMessage(isaac_message::ActorGroup::Reader& request);
 
     /**
      * @brief Adds rigid body and teleport objects

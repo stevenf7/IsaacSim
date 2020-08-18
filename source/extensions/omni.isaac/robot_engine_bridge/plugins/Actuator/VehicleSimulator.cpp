@@ -182,12 +182,11 @@ void VehicleSimulator::tick()
 
 
     IsaacMessage<isaac_message::State> commandComposite;
-    auto command_composite_proto = commandComposite.initProto();
     {
         // Receive current command
         std::vector<IsaacHostBuffer> buffers;
         MessageHeader header;
-        if (receive(mInputComponent, mCommandChannelName, header, command_composite_proto, buffers))
+        if (checkErrorCode(receive(mInputComponent, mCommandChannelName, header, commandComposite, buffers)))
         {
             // State need buffer for data
             if (buffers.size() == 0)
@@ -289,7 +288,7 @@ void VehicleSimulator::tick()
         buffers[0] = std::make_unique<IsaacHostBuffer>(elements.size() * sizeof(double));
         std::memcpy(buffers[0]->data(), elements.data(), elements.size() * sizeof(double));
 
-        publish(mOutputComponent, mStateChannelName, stateProto, isaac_message::CompositeProtoId, buffers);
+        publish(mOutputComponent, mStateChannelName, stateComposite, isaac_message::CompositeProtoId, buffers);
     }
 }
 
