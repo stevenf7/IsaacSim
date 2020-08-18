@@ -12,8 +12,7 @@ namespace urdf
 {
 KinematicChain::~KinematicChain()
 {
-    if (baseNode)
-        deleteNode(baseNode);
+    baseNode.reset();
 }
 
 // Computes the kinematic chain for a Urdf robot
@@ -30,7 +29,7 @@ bool KinematicChain::computeKinematicChain(const UrdfRobot& urdfRobot)
         }
         else if (urdfRobot.links.size() == 1)
         {
-            baseNode = new Node{ urdfRobot.links.begin()->second.name, "" };
+            baseNode = std::make_unique<Node>(urdfRobot.links.begin()->second.name, "");
         }
         else
         {
@@ -66,7 +65,7 @@ bool KinematicChain::computeKinematicChain(const UrdfRobot& urdfRobot)
             success = false;
         }
 
-        baseNode = new Node{ baseLinkName, "" };
+        baseNode = std::make_unique<Node>(baseLinkName, "");
 
         // Recursively add the rest of the kinematic chain
         computeChildNodes(baseNode, urdfRobot);
@@ -75,14 +74,14 @@ bool KinematicChain::computeKinematicChain(const UrdfRobot& urdfRobot)
     return success;
 }
 
-void KinematicChain::computeChildNodes(Node* parentNode, const UrdfRobot& urdfRobot)
+void KinematicChain::computeChildNodes(std::unique_ptr<Node>& parentNode, const UrdfRobot& urdfRobot)
 {
     for (auto& joint : urdfRobot.joints)
     {
         if (joint.second.parentLinkName == parentNode->linkName_)
         {
-            Node* childNode = new Node{ joint.second.childLinkName, joint.second.name };
-            parentNode->childNodes_.push_back(childNode);
+            std::unique_ptr<Node> childNode = std::make_unique<Node>(joint.second.childLinkName, joint.second.name);
+            parentNode->childNodes_.push_back(std::move(childNode));
 #ifdef VERBOSE_URDF
             CARB_LOG_INFO("Link %s has child %s \n", parentNode->linkName_.c_str(), joint.second.childLinkName.c_str());
 #endif
@@ -100,20 +99,6 @@ void KinematicChain::computeChildNodes(Node* parentNode, const UrdfRobot& urdfRo
             computeChildNodes(childLink, urdfRobot);
         }
     }
-}
-
-// Recursively deletes the tree
-void KinematicChain::deleteNode(Node* node)
-{
-    std::vector<Node*> childLinks = node->childNodes_;
-    if (!childLinks.empty())
-    {
-        for (auto& child : node->childNodes_)
-        {
-            deleteNode(child);
-        }
-    }
-    delete node;
 }
 }
 }

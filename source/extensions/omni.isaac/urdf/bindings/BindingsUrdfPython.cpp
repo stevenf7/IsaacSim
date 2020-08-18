@@ -50,8 +50,10 @@ void declare_map(py::module& m, const std::string typestr)
              py::keep_alive<0, 1>())
 
         .def("items", [](std::map<std::string, T>& items) { return py::make_iterator(items.begin(), items.end()); },
-             py::keep_alive<0, 1>());
+             py::keep_alive<0, 1>())
+        .def("__len__", [](std::map<std::string, T>& items) { return items.size(); });
 }
+
 PYBIND11_MODULE(_urdf, m)
 {
     using namespace carb;
@@ -71,7 +73,10 @@ PYBIND11_MODULE(_urdf, m)
         // .def_readwrite("force_z_up", &ImportConfig::forceZUp, "Force Z axis to be up in the simulator durin import")
         // .def_readwrite("add_debug_info", &ImportConfig::addDebugInfo, "Publish details for the imported URDF")
         .def_readwrite("import_inertia_tensor", &ImportConfig::importInertiaTensor,
-                       "Import inertia tensor from urdf, if not specified in urdf it will import as identity");
+                       "Import inertia tensor from urdf, if not specified in urdf it will import as identity")
+        .def_readwrite("fix_base", &ImportConfig::fixBase, "Create fix joint for base link")
+        .def_readwrite(
+            "self_collision", &ImportConfig::selfCollision, "Self collisions between links in the articulation");
 
     py::class_<UrdfOrigin>(m, "UrdfOrigin", "")
         .def_readwrite("x", &UrdfOrigin::x, "")
@@ -95,9 +100,9 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("origin", &UrdfInertial::origin, "")
         .def_readwrite("mass", &UrdfInertial::mass, "")
         .def_readwrite("inertia", &UrdfInertial::inertia, "")
-        .def_readwrite("hasOrigin", &UrdfInertial::hasOrigin, "")
-        .def_readwrite("hasMass", &UrdfInertial::hasMass, "")
-        .def_readwrite("hasInertia", &UrdfInertial::hasInertia, "")
+        .def_readwrite("has_origin", &UrdfInertial::hasOrigin, "")
+        .def_readwrite("has_mass", &UrdfInertial::hasMass, "")
+        .def_readwrite("has_inertia", &UrdfInertial::hasInertia, "")
         .def(py::init<>());
 
     py::class_<UrdfAxis>(m, "UrdfAxis", "")
@@ -122,10 +127,27 @@ PYBIND11_MODULE(_urdf, m)
         .value("JOINT_PLANAR", UrdfJointType::PLANAR)
         .export_values();
 
+    py::enum_<UrdfJointTargetType>(m, "UrdfJointTargetType", py::arithmetic(), "")
+        .value("JOINT_DRIVE_NONE", UrdfJointTargetType::NONE)
+        .value("JOINT_DRIVE_POSITION", UrdfJointTargetType::POSITION)
+        .value("JOINT_DRIVE_VELOCITY", UrdfJointTargetType::VELOCITY)
+        .export_values();
+
+    py::enum_<UrdfJointDriveType>(m, "UrdfJointDriveType", py::arithmetic(), "")
+        .value("JOINT_DRIVE_ACCELERATION", UrdfJointDriveType::ACCELERATION)
+        .value("JOINT_DRIVE_FORCE", UrdfJointDriveType::FORCE)
+        .export_values();
 
     py::class_<UrdfDynamics>(m, "UrdfDynamics", "")
         .def_readwrite("damping", &UrdfDynamics::damping, "")
         .def_readwrite("friction", &UrdfDynamics::friction, "")
+        .def_readwrite("stiffness", &UrdfDynamics::stiffness, "")
+        .def(py::init<>());
+
+    py::class_<UrdfJointDrive>(m, "UrdfJointDrive", "")
+        .def_readwrite("target", &UrdfJointDrive::target, "")
+        .def_readwrite("target_type", &UrdfJointDrive::targetType, "")
+        .def_readwrite("drive_type", &UrdfJointDrive::driveType, "")
         .def(py::init<>());
 
     py::class_<UrdfLimit>(m, "UrdfLimit", "")
@@ -193,6 +215,7 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("axis", &UrdfJoint::axis, "")
         .def_readwrite("dynamics", &UrdfJoint::dynamics, "")
         .def_readwrite("limit", &UrdfJoint::limit, "")
+        .def_readwrite("drive", &UrdfJoint::drive, "")
         .def(py::init<>());
 
     py::class_<UrdfRobot>(m, "UrdfRobot", "")
@@ -209,6 +232,7 @@ PYBIND11_MODULE(_urdf, m)
 
     defineInterfaceClass<Urdf>(m, "Urdf", "acquire_urdf_interface", "release_urdf_interface")
         .def("parse_urdf", wrapInterfaceFunction(&Urdf::parseUrdf))
-        .def("import_robot", wrapInterfaceFunction(&Urdf::importRobot));
+        .def("import_robot", wrapInterfaceFunction(&Urdf::importRobot))
+        .def("get_kinematic_chain", wrapInterfaceFunction(&Urdf::getKinematicChain));
 }
 }

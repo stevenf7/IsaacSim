@@ -36,6 +36,7 @@
 #include <omni/isaac/urdf/UrdfTypes.h>
 #include "../core/maths.h"
 #include "MeshImporter.h"
+#include <omni/isaac/urdf/Urdf.h>
 #include <carb/logging/Log.h>
 
 namespace omni
@@ -97,11 +98,11 @@ class UrdfImporter
 private:
     std::string assetRoot_;
     std::string urdfPath_;
-    const GymAssetOptions options_;
+    const ImportConfig config;
 
 public:
-    UrdfImporter(const std::string& assetRoot, const std::string& urdfPath, const GymAssetOptions& options)
-        : assetRoot_(assetRoot), urdfPath_(urdfPath), options_(options)
+    UrdfImporter(const std::string& assetRoot, const std::string& urdfPath, const ImportConfig& options)
+        : assetRoot_(assetRoot), urdfPath_(urdfPath), config(options)
     {
     }
 

@@ -46,8 +46,9 @@
 
 #include <PhysxSchema/physxMeshCollisionAPI.h>
 #include <PhysxSchema/physxSceneAPI.h>
-#include "ImportHelpers.h"
+#include <PhysxSchema/physxArticulationJointAPI.h>
 
+#include "ImportHelpers.h"
 //#define VERBOSE_URDF
 
 namespace omni
@@ -69,7 +70,7 @@ UrdfRobot UrdfImporter::createAsset()
         return robot;
     }
 
-    if (options_.collapseFixedJoints)
+    if (config.mergeFixedJoints)
     {
         collapseFixedJoints(robot);
     }
@@ -91,7 +92,7 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
         std::string meshUri = geometry.meshFilePath;
         std::string meshPath = resolveXrefPath(assetRoot, urdfPath, meshUri);
 
-        pxr::GfMatrix4d meshMat;
+        // pxr::GfMatrix4d meshMat;
         if (meshPath.empty())
         {
             CARB_LOG_INFO("Failed to resolve mesh '%s'", meshUri.c_str());
@@ -126,7 +127,7 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
     {
         pxr::UsdGeomCube gprim = pxr::UsdGeomCube::Define(stage, pxr::SdfPath(name));
         pxr::VtVec3fArray extentArray(2);
-        extentArray[1] = pxr::GfVec3f(geometry.size_x * 0.5, geometry.size_y * 0.5, geometry.size_z * 0.5);
+        extentArray[1] = pxr::GfVec3f(geometry.size_x * 0.5f, geometry.size_y * 0.5f, geometry.size_z * 0.5f);
         extentArray[0] = -extentArray[1];
         gprim.GetExtentAttr().Set(extentArray);
         gprim.GetSizeAttr().Set(1.0);
@@ -210,16 +211,16 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         {
             massAPI.CreateMassAttr().Set(double(link.inertial.mass));
         }
+        else
+        {
+            // scale from kg/m^2 to specified units
+            massAPI.CreateDensityAttr().Set(double(config.density / (100.0 * 100.0 * 100.0)));
+        }
         if (link.inertial.hasInertia)
         {
             // input is meters, but convert to kit units
             massAPI.CreateDiagonalInertiaAttr().Set(
                 pxr::GfVec3d(link.inertial.inertia.ixx, link.inertial.inertia.iyy, link.inertial.inertia.izz) * 100 * 100);
-        }
-        if (!link.inertial.hasMass && !link.inertial.hasInertia)
-        {
-            // scale from kg/m^2 to specified units
-            massAPI.CreateDensityAttr().Set(double(options_.density / (100.0 * 100.0 * 100.0)));
         }
     }
     else
@@ -358,30 +359,58 @@ void AddSingleJoint(const UrdfJoint& joint,
         jointPrim.CreateLowerLimitAttr().Set(scale * joint.limit.lower);
         jointPrim.CreateUpperLimitAttr().Set(scale * joint.limit.upper);
     }
+    if (joint.drive.targetType != UrdfJointTargetType::NONE)
+    {
+        if (joint.type == UrdfJointType::PRISMATIC)
+        {
+            pxr::PhysicsSchemaDriveAPI driveAPI =
+                pxr::PhysicsSchemaDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
+            driveAPI.CreateMaxForceAttr().Set(joint.limit.effort);
+            driveAPI.CreateTargetAttr().Set(joint.drive.target);
+            if (joint.drive.driveType == UrdfJointDriveType::FORCE)
+                driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
+            else
+            {
+                driveAPI.CreateTypeAttr().Set(pxr::TfToken("acceleration"));
+            }
 
-    if (joint.type == UrdfJointType::PRISMATIC)
-    {
-        pxr::PhysicsSchemaDriveAPI driveAPI =
-            pxr::PhysicsSchemaDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
-        driveAPI.CreateMaxForceAttr().Set(FLT_MAX);
-        driveAPI.CreateTargetAttr().Set(0.0f);
-        driveAPI.CreateTypeAttr().Set(pxr::TfToken("acceleration"));
-        driveAPI.CreateTargetTypeAttr().Set(pxr::TfToken("position"));
-        driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
-        driveAPI.CreateStiffnessAttr().Set(100000.0f);
+            if (joint.drive.targetType == UrdfJointTargetType::POSITION)
+                driveAPI.CreateTargetTypeAttr().Set(pxr::TfToken("position"));
+            else
+            {
+                driveAPI.CreateTargetTypeAttr().Set(pxr::TfToken("velocity"));
+            }
+
+            driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
+            driveAPI.CreateStiffnessAttr().Set(joint.dynamics.stiffness);
+        }
+        // continuous and revolute are identical except for setting limits
+        else if (joint.type == UrdfJointType::REVOLUTE || joint.type == UrdfJointType::CONTINUOUS)
+        {
+            pxr::PhysicsSchemaDriveAPI driveAPI =
+                pxr::PhysicsSchemaDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("angular"));
+            driveAPI.CreateMaxForceAttr().Set(joint.limit.effort);
+            driveAPI.CreateTargetAttr().Set(joint.drive.target);
+            if (joint.drive.driveType == UrdfJointDriveType::FORCE)
+                driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
+            else
+            {
+                driveAPI.CreateTypeAttr().Set(pxr::TfToken("acceleration"));
+            }
+
+            if (joint.drive.targetType == UrdfJointTargetType::POSITION)
+                driveAPI.CreateTargetTypeAttr().Set(pxr::TfToken("position"));
+            else
+            {
+                driveAPI.CreateTargetTypeAttr().Set(pxr::TfToken("velocity"));
+            }
+            driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
+            driveAPI.CreateStiffnessAttr().Set(joint.dynamics.stiffness);
+        }
     }
-    // continuous and revolute are identical except for setting limits
-    else if (joint.type == UrdfJointType::REVOLUTE || joint.type == UrdfJointType::CONTINUOUS)
-    {
-        pxr::PhysicsSchemaDriveAPI driveAPI =
-            pxr::PhysicsSchemaDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("angular"));
-        driveAPI.CreateMaxForceAttr().Set(FLT_MAX);
-        driveAPI.CreateTargetAttr().Set(0.0f);
-        driveAPI.CreateTypeAttr().Set(pxr::TfToken("acceleration"));
-        driveAPI.CreateTargetTypeAttr().Set(pxr::TfToken("position"));
-        driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
-        driveAPI.CreateStiffnessAttr().Set(100000.0f);
-    }
+    auto artJointAPI = pxr::PhysxSchemaPhysxArticulationJointAPI::Apply(jointPrim.GetPrim());
+    artJointAPI.CreatePhysxArticulationJointMaxJointVelocityAttr().Set(joint.limit.velocity);
+    artJointAPI.CreatePhysxArticulationJointFrictionCoefficientAttr().Set(joint.dynamics.friction);
 }
 
 
@@ -511,7 +540,7 @@ void UrdfImporter::addLinksAndJoints(pxr::UsdStageWeakPtr stage,
         {
             const UrdfJoint urdfJoint = robot.joints.at(childNode->parentJointName_);
             const UrdfLink& childLink = robot.links.at(childNode->linkName_);
-            const UrdfLink& parentLink = robot.links.at(parentNode->linkName_);
+            // const UrdfLink& parentLink = robot.links.at(parentNode->linkName_);
 
             Transform poseJointToLink = urdfOriginToTransform(urdfJoint.origin);
             // According to URDF spec, the frame of a link coincides with its parent joint frame
@@ -532,7 +561,7 @@ void UrdfImporter::addLinksAndJoints(pxr::UsdStageWeakPtr stage,
             }
 
             // Recurse through the links children
-            addLinksAndJoints(stage, poseLinkToWorld, childNode, robot, robotPrim);
+            addLinksAndJoints(stage, poseLinkToWorld, childNode.get(), robot, robotPrim);
         }
     }
 }
@@ -566,8 +595,9 @@ void UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& urdfR
 
     pxr::UsdGeomXform robotPrim = pxr::UsdGeomXform::Define(stage, primPath);
     pxr::PhysicsSchemaArticulationAPI physicsSchema = pxr::PhysicsSchemaArticulationAPI::Apply(robotPrim.GetPrim());
-    // TODO: make an option
-    physicsSchema.CreateFixBaseAttr().Set(true);
+
+    physicsSchema.CreateFixBaseAttr().Set(config.fixBase);
+    physicsSchema.CreateEnableSelfCollisionsAttr().Set(config.selfCollision);
 
     stage->SetDefaultPrim(robotPrim.GetPrim());
 
@@ -578,7 +608,7 @@ void UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& urdfR
         return;
     }
 
-    addLinksAndJoints(stage, Transform(), chain.baseNode, urdfRobot, robotPrim);
+    addLinksAndJoints(stage, Transform(), chain.baseNode.get(), urdfRobot, robotPrim);
     // Start adding base
 
 

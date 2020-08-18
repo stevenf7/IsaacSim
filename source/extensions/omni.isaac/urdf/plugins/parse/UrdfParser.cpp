@@ -340,9 +340,13 @@ bool parseAxis(const XMLElement& element, UrdfAxis& axis)
     auto axisElement = element.FirstChildElement("axis");
     if (axisElement)
     {
-        if (!parseXyz(axisElement->Attribute("xyz"), axis.x, axis.y, axis.z))
+        auto attribute = axisElement->Attribute("xyz");
+        if (attribute)
         {
-            return false;
+            if (!parseXyz(attribute, axis.x, axis.y, axis.z))
+            {
+                return false;
+            }
         }
     }
     return true;

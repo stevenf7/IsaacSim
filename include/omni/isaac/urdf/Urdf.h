@@ -12,6 +12,8 @@
 
 #include <carb/Defines.h>
 
+#include <pybind11/pybind11/pybind11.h>
+
 #include <stdint.h>
 
 namespace omni
@@ -26,6 +28,11 @@ struct ImportConfig
     bool mergeFixedJoints = false;
     bool enableConvexDecomp = false;
     bool importInertiaTensor = false;
+    bool fixBase = true;
+    bool selfCollision = false;
+    float density = 1000; // default density used for objects without mass/inertia
+    UrdfJointTargetType defaultDriveType = UrdfJointTargetType::POSITION;
+    float defaultDriveStiffness = 1000;
 };
 
 
@@ -42,6 +49,8 @@ struct Urdf
                                 const std::string& assetName,
                                 const UrdfRobot& robot,
                                 const ImportConfig& importConfig);
+
+    pybind11::dict(CARB_ABI* getKinematicChain)(const UrdfRobot& robot);
 };
 }
 }
