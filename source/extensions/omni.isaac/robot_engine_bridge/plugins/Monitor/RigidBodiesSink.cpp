@@ -155,7 +155,7 @@ void RigidBodiesSink::publishAllMessages()
         bodyIndex++;
     }
     std::vector<std::unique_ptr<IsaacBuffer>> buffers;
-    publish(mOutputComponent, mRigidBodyChannelName, rigidBodiesProto, isaac_message::RigidBody3GroupProtoId, buffers);
+    publish(mOutputComponent, mRigidBodyChannelName, rigidBodiesMessage, isaac_message::RigidBody3GroupProtoId, buffers);
 }
 
 void RigidBodiesSink::onStart()

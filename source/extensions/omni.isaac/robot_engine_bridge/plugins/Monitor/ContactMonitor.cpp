@@ -203,7 +203,7 @@ void ContactMonitor::publishAllMessages()
         std::vector<std::unique_ptr<IsaacBuffer>> buffers;
 
         // printf("JSON: %s\n", isaac_message::gJsonCodec.encode(collisionProto).cStr());
-        publish(mOutputComponent, mOutputChannel, collisionProto, isaac_message::RigidBody3GroupProtoId, buffers);
+        publish(mOutputComponent, mOutputChannel, collisionMessage, isaac_message::RigidBody3GroupProtoId, buffers);
     }
     mContactData.clear();
 }

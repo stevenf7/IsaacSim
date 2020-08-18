@@ -57,6 +57,12 @@ public:
      * @brief
      *
      */
+    virtual void onStop();
+
+    /**
+     * @brief
+     *
+     */
     virtual void onComponentChange();
 
 
