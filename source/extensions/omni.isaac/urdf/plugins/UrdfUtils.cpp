@@ -28,6 +28,7 @@
 
 #include <memory>
 #include <fstream>
+#include <pybind11/pybind11/pybind11.h>
 
 #define EXTENSION_NAME "omni.isaac.urdf"
 
@@ -70,6 +71,12 @@ omni::isaac::urdf::UrdfRobot parseUrdf(const std::string& assetRoot,
         {
             collapseFixedJoints(robot);
         }
+
+        for (auto& joint : robot.joints)
+        {
+            joint.second.dynamics.stiffness = importConfig.defaultDriveStiffness;
+            joint.second.drive.targetType = importConfig.defaultDriveType;
+        }
     }
     return robot;
 }
@@ -79,14 +86,49 @@ void importRobot(const std::string& assetRoot,
                  const omni::isaac::urdf::ImportConfig& importConfig)
 {
 
-    omni::isaac::urdf::GymAssetOptions options;
-    omni::isaac::urdf::UrdfImporter urdfImporter(assetRoot, assetName, options);
+    omni::isaac::urdf::UrdfImporter urdfImporter(assetRoot, assetName, importConfig);
     pxr::UsdStageWeakPtr stage = omni::usd::UsdContext::getContext()->getStage();
     if (stage)
     {
         urdfImporter.addToStage(stage, robot);
     }
 }
+}
+
+
+pybind11::list addLinksAndJoints(omni::isaac::urdf::KinematicChain::Node* parentNode)
+{
+    if (parentNode->parentJointName_ == "")
+    {
+    }
+    pybind11::list temp_list;
+
+    if (!parentNode->childNodes_.empty())
+    {
+        for (const auto& childNode : parentNode->childNodes_)
+        {
+            pybind11::dict temp;
+            temp["A_joint"] = childNode->parentJointName_;
+            temp["A_link"] = parentNode->linkName_;
+            temp["B_link"] = childNode->linkName_;
+            temp["B_node"] = addLinksAndJoints(childNode.get());
+            temp_list.append(temp);
+        }
+    }
+    return temp_list;
+}
+
+pybind11::dict getKinematicChain(const omni::isaac::urdf::UrdfRobot& robot)
+{
+    pybind11::dict robotDict;
+    omni::isaac::urdf::KinematicChain chain;
+    if (chain.computeKinematicChain(robot))
+    {
+        robotDict["A_joint"] = "";
+        robotDict["B_link"] = chain.baseNode->linkName_;
+        robotDict["B_node"] = addLinksAndJoints(chain.baseNode.get());
+    }
+    return robotDict;
 }
 
 CARB_EXPORT void carbOnPluginStartup()
@@ -108,4 +150,5 @@ void fillInterface(omni::isaac::urdf::Urdf& iface)
     memset(&iface, 0, sizeof(iface));
     iface.parseUrdf = parseUrdf;
     iface.importRobot = importRobot;
+    iface.getKinematicChain = getKinematicChain;
 }

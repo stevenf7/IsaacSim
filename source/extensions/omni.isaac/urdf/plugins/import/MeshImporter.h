@@ -76,7 +76,7 @@ struct Mesh
     // Remapping information of mesh points
     size_t remappingVertexCount;
     std::vector<bool> keepPoints;
-    std::vector<int> indexRemapping;
+    std::vector<size_t> indexRemapping;
 
     // If exportPointerInstancer is true, it will export pointer instancer for this mesh.
     // pointerInstances hosts the indexes of mMeshInstances
@@ -203,7 +203,7 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
             std::sort(meshPoints.begin(), meshPoints.end());
 
             std::vector<bool> keepPoints(mesh->mNumVertices, false);
-            std::vector<int> referenceIndex(mesh->mNumVertices);
+            std::vector<size_t> referenceIndex(mesh->mNumVertices);
 
             // Find and mark all redundant points
             auto meshPoint = meshPoints[0];
@@ -229,7 +229,7 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
 
             // Keep only unique points
             size_t keepPointsSize = 0;
-            std::vector<int> indexRemapping(mesh->mNumVertices);
+            std::vector<size_t> indexRemapping(mesh->mNumVertices);
             for (size_t j = 0; j < mesh->mNumVertices; j++)
             {
                 if (keepPoints[j])
@@ -260,15 +260,15 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
 
 
     pxr::VtArray<pxr::GfVec3f> allPoints;
-    pxr::VtArray<int> allFaceVertexCounts;
-    pxr::VtArray<int> allFaceVertexIndices;
+    pxr::VtArray<size_t> allFaceVertexCounts;
+    pxr::VtArray<size_t> allFaceVertexIndices;
     pxr::VtArray<pxr::GfVec3f> allNormals;
     pxr::VtArray<pxr::VtArray<pxr::GfVec2f>> uvs;
     pxr::VtArray<pxr::VtArray<pxr::GfVec3f>> allColors;
 
     size_t indexOffset = 0;
     size_t vertexOffset = 0;
-    std::map<int, pxr::VtArray<int>> materialMap;
+    std::map<int, pxr::VtArray<size_t>> materialMap;
     for (size_t m = 0; m < meshTransforms.size(); m++)
     {
         auto transformedMesh = meshTransforms[m];
@@ -276,8 +276,8 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         auto& meshPrim = mMeshPrims[m];
 
         pxr::VtArray<pxr::GfVec3f> points;
-        pxr::VtArray<int> faceVertexCounts;
-        pxr::VtArray<int> faceVertexIndices;
+        pxr::VtArray<size_t> faceVertexCounts;
+        pxr::VtArray<size_t> faceVertexIndices;
         pxr::VtArray<pxr::VtArray<pxr::GfVec3f>> colors;
         pxr::VtArray<pxr::GfVec3f> normals;
         pxr::VtArray<pxr::GfVec3f> tangentX;
@@ -359,15 +359,15 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                 size_t facePointsCounts = 3;
                 if (face.mNumIndices == 1)
                 {
-                    int v0 = meshPrim.indexRemapping[face.mIndices[0]];
+                    size_t v0 = meshPrim.indexRemapping[face.mIndices[0]];
                     faceVertexIndices.push_back(v0);
                     faceVertexIndices.push_back(v0);
                     faceVertexIndices.push_back(v0);
                 }
                 else if (face.mNumIndices == 2)
                 {
-                    int v0 = meshPrim.indexRemapping[face.mIndices[0]];
-                    int v1 = meshPrim.indexRemapping[face.mIndices[1]];
+                    size_t v0 = meshPrim.indexRemapping[face.mIndices[0]];
+                    size_t v1 = meshPrim.indexRemapping[face.mIndices[1]];
                     faceVertexIndices.push_back(v0);
                     faceVertexIndices.push_back(v1);
                     faceVertexIndices.push_back(v1);
@@ -376,7 +376,7 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                 {
                     for (size_t i = 0; i < face.mNumIndices; i++)
                     {
-                        int v = meshPrim.indexRemapping[face.mIndices[i]];
+                        size_t v = meshPrim.indexRemapping[face.mIndices[i]];
                         faceVertexIndices.push_back(v);
                     }
                     facePointsCounts = face.mNumIndices;

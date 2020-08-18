@@ -2,6 +2,7 @@
 
 #include <omni/isaac/urdf/UrdfTypes.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -21,14 +22,14 @@ public:
     {
         std::string linkName_;
         std::string parentJointName_;
-        std::vector<Node*> childNodes_;
+        std::vector<std::unique_ptr<Node>> childNodes_;
 
         Node(std::string linkName, std::string parentJointName) : linkName_(linkName), parentJointName_(parentJointName)
         {
         }
     };
 
-    Node* baseNode = nullptr;
+    std::unique_ptr<Node> baseNode;
 
     KinematicChain() = default;
 
@@ -39,10 +40,7 @@ public:
 
 private:
     // Recursively finds a node's children
-    void computeChildNodes(Node* parentNode, const UrdfRobot& urdfRobot);
-
-    // Recursively deletes the tree
-    void deleteNode(Node* node);
+    void computeChildNodes(std::unique_ptr<Node>& parentNode, const UrdfRobot& urdfRobot);
 };
 
 }

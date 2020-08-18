@@ -85,10 +85,31 @@ enum class UrdfJointType
     PLANAR = 5 // This joint allows motion in a plane perpendicular to the axis
 };
 
+enum class UrdfJointTargetType
+{
+    NONE = 0,
+    POSITION = 1,
+    VELOCITY = 2
+};
+
+enum class UrdfJointDriveType
+{
+    ACCELERATION = 0,
+    FORCE = 2
+};
+
 struct UrdfDynamics
 {
     float damping = 0.0f;
     float friction = 0.0f;
+    float stiffness = 0.0f;
+};
+
+struct UrdfJointDrive
+{
+    float target = 0.0;
+    UrdfJointTargetType targetType = UrdfJointTargetType::POSITION;
+    UrdfJointDriveType driveType = UrdfJointDriveType::ACCELERATION;
 };
 
 struct UrdfLimit
@@ -167,6 +188,7 @@ struct UrdfJoint
     UrdfAxis axis;
     UrdfDynamics dynamics;
     UrdfLimit limit;
+    UrdfJointDrive drive;
 };
 
 struct UrdfRobot
