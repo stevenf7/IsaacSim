@@ -260,15 +260,15 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
 
 
     pxr::VtArray<pxr::GfVec3f> allPoints;
-    pxr::VtArray<size_t> allFaceVertexCounts;
-    pxr::VtArray<size_t> allFaceVertexIndices;
+    pxr::VtArray<int> allFaceVertexCounts;
+    pxr::VtArray<int> allFaceVertexIndices;
     pxr::VtArray<pxr::GfVec3f> allNormals;
     pxr::VtArray<pxr::VtArray<pxr::GfVec2f>> uvs;
     pxr::VtArray<pxr::VtArray<pxr::GfVec3f>> allColors;
 
     size_t indexOffset = 0;
     size_t vertexOffset = 0;
-    std::map<int, pxr::VtArray<size_t>> materialMap;
+    std::map<int, pxr::VtArray<int>> materialMap;
     for (size_t m = 0; m < meshTransforms.size(); m++)
     {
         auto transformedMesh = meshTransforms[m];
@@ -276,8 +276,8 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         auto& meshPrim = mMeshPrims[m];
 
         pxr::VtArray<pxr::GfVec3f> points;
-        pxr::VtArray<size_t> faceVertexCounts;
-        pxr::VtArray<size_t> faceVertexIndices;
+        pxr::VtArray<int> faceVertexCounts;
+        pxr::VtArray<int> faceVertexIndices;
         pxr::VtArray<pxr::VtArray<pxr::GfVec3f>> colors;
         pxr::VtArray<pxr::GfVec3f> normals;
         pxr::VtArray<pxr::GfVec3f> tangentX;

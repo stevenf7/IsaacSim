@@ -84,7 +84,7 @@ class Extension(omni.ext.IExt):
                         with ui.HStack():
                             ui.Label("Clean Stage", tooltip="Check this box to load URDF on a clean stage")
                             self.models["clean_stage"] = ui.CheckBox()
-                            self.models["clean_stage"].model.set_value(True)
+                            self.models["clean_stage"].model.set_value(False)
                         ui.Spacer(height=5)
                         with ui.HStack():
                             ui.Label(
