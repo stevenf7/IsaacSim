@@ -26,13 +26,15 @@ namespace urdf
 struct ImportConfig
 {
     bool mergeFixedJoints = false;
-    bool enableConvexDecomp = false;
+    bool convexDecomp = false;
     bool importInertiaTensor = false;
     bool fixBase = true;
     bool selfCollision = false;
     float density = 1000; // default density used for objects without mass/inertia
     UrdfJointTargetType defaultDriveType = UrdfJointTargetType::POSITION;
     float defaultDriveStiffness = 1000;
+    float distanceScale = 100;
+    UrdfAxis upVector = { 0, 0, 1 };
 };
 
 
