@@ -66,17 +66,37 @@ PYBIND11_MODULE(_urdf, m)
         .def(py::init<>())
         .def_readwrite("merge_fixed_joints", &ImportConfig::mergeFixedJoints,
                        "Consolidating links that are connected by fixed joints")
-        .def_readwrite("enable_convex_decomp", &ImportConfig::enableConvexDecomp,
+        .def_readwrite("convex_decomp", &ImportConfig::convexDecomp,
                        "Decompose a convex mesh into smaller pieces for a closer fit")
-        // .def_readwrite("distance_scale", &ImportConfig::distanceScale,
-        //    "Set the unit scaling factor, 1.0 means meters, 100.0 means cm")
-        // .def_readwrite("force_z_up", &ImportConfig::forceZUp, "Force Z axis to be up in the simulator durin import")
-        // .def_readwrite("add_debug_info", &ImportConfig::addDebugInfo, "Publish details for the imported URDF")
         .def_readwrite("import_inertia_tensor", &ImportConfig::importInertiaTensor,
                        "Import inertia tensor from urdf, if not specified in urdf it will import as identity")
         .def_readwrite("fix_base", &ImportConfig::fixBase, "Create fix joint for base link")
+        .def_readwrite("self_collision", &ImportConfig::selfCollision, "Self collisions between links in the articulation")
+        .def_readwrite("density", &ImportConfig::density, "default density used for links")
+        .def_readwrite("default_drive_type", &ImportConfig::defaultDriveType, "default drive type used for joints")
         .def_readwrite(
-            "self_collision", &ImportConfig::selfCollision, "Self collisions between links in the articulation");
+            "default_drive_stiffness", &ImportConfig::defaultDriveStiffness, "default drive stiffness used for joints")
+        .def_readwrite("distance_scale", &ImportConfig::distanceScale,
+                       "Set the unit scaling factor, 1.0 means meters, 100.0 means cm")
+        .def_readwrite("up_vector", &ImportConfig::upVector, "Up vector used for import")
+        // setters for each property
+        .def("set_merge_fixed_joints", [](ImportConfig& config, const bool value) { config.mergeFixedJoints = value; })
+        .def("set_convex_decomp", [](ImportConfig& config, const bool value) { config.convexDecomp = value; })
+        .def("set_import_inertia_tensor",
+             [](ImportConfig& config, const bool value) { config.importInertiaTensor = value; })
+        .def("set_fix_base", [](ImportConfig& config, const bool value) { config.fixBase = value; })
+        .def("set_self_collision", [](ImportConfig& config, const bool value) { config.selfCollision = value; })
+        .def("set_density", [](ImportConfig& config, const float value) { config.density = value; })
+        .def("set_default_drive_type",
+             [](ImportConfig& config, const int value) {
+                 config.defaultDriveType = static_cast<UrdfJointTargetType>(value);
+             })
+        .def("set_default_drive_stiffness",
+             [](ImportConfig& config, const float value) { config.defaultDriveStiffness = value; })
+        .def("set_distance_scale", [](ImportConfig& config, const float value) { config.distanceScale = value; })
+        .def("set_up_vector", [](ImportConfig& config, const float x, const float y, const float z) {
+            config.upVector = { x, y, z };
+        });
 
     py::class_<UrdfOrigin>(m, "UrdfOrigin", "")
         .def_readwrite("x", &UrdfOrigin::x, "")

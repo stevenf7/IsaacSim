@@ -49,10 +49,12 @@ class Extension(omni.ext.IExt):
         self._urdf_interface = _urdf.acquire_urdf_interface()
         self._usd_context = omni.usd.get_context()
         menu_path = f"Window/Isaac/{EXTENSION_NAME}"
-        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
+        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=True)
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/URDF Importer", self._menu_callback)
         self._file_picker = None
         self.models = {}
+        self.config = _urdf.ImportConfig()
+
         with self._window.frame:
             with ui.ScrollingFrame(
                 horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
@@ -60,7 +62,7 @@ class Extension(omni.ext.IExt):
             ):
                 self._hstack = ui.HStack()
                 with self._hstack:
-                    with ui.VStack(width=ui.Percent(20)):
+                    with ui.VStack(width=ui.Percent(30)):
                         ui.Button("Parse URDF", clicked_fn=self._parse_urdf)
                         ui.Button("Load Robot", clicked_fn=self._load_robot)
                         ui.Label("Parser Settings:")
@@ -70,14 +72,18 @@ class Extension(omni.ext.IExt):
                                 "Merge Fixed Joints",
                                 tooltip="Check this box to skip adding articulation on fixed joints",
                             )
-                            self.models["merge_fixed"] = ui.CheckBox()
+                            ui.CheckBox().model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_merge_fixed_joints(m.get_value_as_bool())
+                            )
                         ui.Spacer(height=5)
                         with ui.HStack():
                             ui.Label(
                                 "Import Inertia Tensor",
                                 tooltip="If True, inertia will be loaded from urdf, if the urdf does not specify inertia tensor, identity will be used and scaled by the scaling factor. If false physx will compute automatically",
                             )
-                            self.models["import_inertia"] = ui.CheckBox()
+                            ui.CheckBox().model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_import_inertia_tensor(m.get_value_as_bool())
+                            )
                         ui.Spacer(height=5)
                         ui.Label("Importer Settings:")
                         ui.Line(height=5)
@@ -91,24 +97,33 @@ class Extension(omni.ext.IExt):
                                 "Convex Decomposition",
                                 tooltip="If true, non-convex meshes will be decomposed into convex collision shapes, if false a convex hull will be used.",
                             )
-                            self.models["convex_decomp"] = ui.CheckBox()
-                            self.models["convex_decomp"].model.set_value(True)
+                            model = ui.CheckBox().model
+                            model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_convex_decomp(m.get_value_as_bool())
+                            )
+                            model.set_value(False)
                         ui.Spacer(height=5)
                         with ui.HStack():
                             ui.Label(
                                 "Fix Base Link",
                                 tooltip="If true, enables the fix base property on the root of the articulation.",
                             )
-                            self.models["fix_base"] = ui.CheckBox()
-                            self.models["fix_base"].model.set_value(True)
+                            model = ui.CheckBox().model
+                            model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_fix_base(m.get_value_as_bool())
+                            )
+                            model.set_value(True)
                         ui.Spacer(height=5)
                         with ui.HStack():
                             ui.Label(
                                 "Self Collision",
                                 tooltip="If true, allows self intersection between links in the robot, can cause instability if collision meshes between links are self intersecting",
                             )
-                            self.models["self_collision"] = ui.CheckBox()
-                            self.models["self_collision"].model.set_value(False)
+                            model = ui.CheckBox().model
+                            model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_self_collision(m.get_value_as_bool())
+                            )
+                            model.set_value(False)
                         ui.Spacer(height=5)
                         ui.Label("Importer Defaults:")
                         ui.Line(height=5)
@@ -117,34 +132,69 @@ class Extension(omni.ext.IExt):
                                 "Link Density:",
                                 tooltip="[kg/m^3] If a link doesn't have mass, use this density as backup",
                             )
-                            self.models["density"] = ui.FloatField()
-                            self.models["density"].model.set_value(1000)
+                            model = ui.FloatField().model
+                            model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_density(m.get_value_as_float())
+                            )
+                            model.set_value(1000)
                         ui.Spacer(height=5)
                         with ui.HStack():
                             ui.Label("Joint Drive Type:")
-                            self.models["default_drive"] = ui.ComboBox(1, "None", "Position", "Velocity")
+                            model = ui.ComboBox(1, "None", "Position", "Velocity").model
+                            model.add_item_changed_fn(
+                                lambda m, i, config=self.config: config.set_default_drive_type(
+                                    m.get_item_value_model().as_int
+                                )
+                            )
                         ui.Spacer(height=5)
                         with ui.HStack():
                             ui.Label("Joint Drive Stiffness:")
-                            self.models["drive_stiffness"] = ui.FloatField()
-                            self.models["drive_stiffness"].model.set_value(100000)
+                            model = ui.FloatField().model
+                            model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_default_drive_stiffness(m.get_value_as_float())
+                            )
+                            model.set_value(100000)
                         ui.Line(height=5)
-                        ui.Label("Current Stage Settings Used For Import:")
-                        ui.Spacer(height=5)
                         with ui.HStack():
                             ui.Label("Up Axis:")
-                            self.models["up_axis"] = ui.ComboBox(0, "Y", "Z", enabled=False)
+                            self.models["up_axis"] = ui.MultiFloatField(0.0, 0.0, 1.0)
+                            self.models["up_axis"].model.add_item_changed_fn(
+                                lambda m, n, config=self.config: config.set_up_vector(
+                                    m.get_item_value_model(m.get_item_children()[0]).get_value_as_float(),
+                                    m.get_item_value_model(m.get_item_children()[1]).get_value_as_float(),
+                                    m.get_item_value_model(m.get_item_children()[2]).get_value_as_float(),
+                                )
+                            )
                         ui.Spacer(height=5)
                         with ui.HStack():
                             ui.Label("Stage Units Per Meter:")
-                            self.models["scale"] = ui.FloatField(enabled=False)
+                            self.models["scale"] = ui.FloatField(enabled=True)
+                            self.models["scale"].model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_distance_scale(m.get_value_as_float())
+                            )
 
         stage = self._usd_context.get_stage()
         if stage:
             if UsdGeom.GetStageUpAxis(stage) == UsdGeom.Tokens.y:
-                self.models["up_axis"].model.get_item_value_model(None).set_value(0)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[0]
+                ).set_value(0)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[1]
+                ).set_value(1)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[2]
+                ).set_value(0)
             if UsdGeom.GetStageUpAxis(stage) == UsdGeom.Tokens.z:
-                self.models["up_axis"].model.get_item_value_model(None).set_value(1)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[0]
+                ).set_value(0)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[1]
+                ).set_value(0)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[2]
+                ).set_value(1)
             units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
             self.models["scale"].model.set_value(units_per_meter)
 
@@ -170,54 +220,31 @@ class Extension(omni.ext.IExt):
         stage = self._usd_context.get_stage()
         if stage:
             if UsdGeom.GetStageUpAxis(stage) == UsdGeom.Tokens.y:
-                self.models["up_axis"].model.get_item_value_model(None).set_value(0)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[0]
+                ).set_value(0)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[1]
+                ).set_value(1)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[2]
+                ).set_value(0)
             if UsdGeom.GetStageUpAxis(stage) == UsdGeom.Tokens.z:
-                self.models["up_axis"].model.get_item_value_model(None).set_value(1)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[0]
+                ).set_value(0)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[1]
+                ).set_value(0)
+                self.models["up_axis"].model.get_item_value_model(
+                    self.models["up_axis"].model.get_item_children()[2]
+                ).set_value(1)
+            units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
+            self.models["scale"].model.set_value(units_per_meter)
 
     def _print_robot(self):
         for key, value in self._imported_robot.materials.items():
             print(value.color.r, value.color.g, value.color.b)
-
-    def _create_robot_tree(self, tree_item, robot, level=0, offset_x=[0], offset_y=[0]):
-        if not tree_item:
-            return
-        if isinstance(tree_item, list):
-            for item in tree_item:
-
-                def link_tooltip(link=robot.links[item["B_link"]]):
-                    with ui.VStack(width=200, style=tooltip_style):
-                        ui.Label(link.name)
-
-                with ui.Placer(offset_x=offset_x[0], offset_y=offset_y[0]):
-                    text = item["A_joint"]
-                    with ui.Frame(width=0, height=20):
-                        with ui.HStack():
-                            robot_block(0xFFA07D4F, text)
-                            # robot_block(0xFFFFFFFF, "Drive")
-                            robot_block(0xFF76A371, item["B_link"])
-                offset_y[0] = offset_y[0] + 20
-                # offset_x[0] = offset_x[0] + 32
-                self._create_robot_tree(item["B_node"], robot, level + 1, [offset_x[0] + 32], offset_y)
-
-        else:
-
-            def link_tooltip(link=robot.links[tree_item["B_link"]]):
-                with ui.VStack(width=200, style=tooltip_style):
-                    ui.Label(link.name)
-
-            with ui.Placer(offset_x=offset_x[0], offset_y=offset_y[0]):
-                text = "Root"
-                if len(tree_item["A_joint"]) > 0:
-                    text = tree_item["A_joint"]
-                with ui.Frame(width=0, height=20):
-                    with ui.HStack():
-
-                        robot_block(0xFFA07D4F, text)
-                        robot_block(0xFF76A371, tree_item["B_link"])
-            #
-            offset_y[0] = offset_y[0] + 20
-            offset_x[0] = offset_x[0] + 32
-            self._create_robot_tree(tree_item["B_node"], robot, level + 1, [offset_x[0]], offset_y)
 
     def _create_graphviz_tree(self, tree_item, robot, graph):
         if not tree_item:
@@ -244,20 +271,15 @@ class Extension(omni.ext.IExt):
             self._create_graphviz_tree(tree_item["B_node"], robot, graph)
 
     def _create_robot_parser(self, robot):
-        # self._robot_window = ui.Window("Robot Editor", width=600, height=200, dockPreference=ui.DockPreference.MAIN)
-        # self._diagram = ui.Window("Robot Diagram", width=600, height=200, dockPreference=ui.DockPreference.MAIN)
 
         self._link_delegate = RobotDelegate()
         self.robot_model = RobotListModel(robot)
         import pprint
 
         robot_tree = self._urdf_interface.get_kinematic_chain(robot)
-        # pprint.pprint(robot_tree)
         robot_graph = Graph("robot_graph", strict=True, engine="dot")
         robot_graph.attr(rankdir="TB", splines="ortho")
         robot_graph.attr(packMode="node")
-        # h.attr( size = "7.75,15")
-        # h.attr('node', shape='rect')
         with robot_graph.subgraph(name="cluster_legend") as legend_graph:
             legend_graph.attr(label="legend")
             legend_graph.node("legend_fixed", "Fixed", color="red", shape="rect", margin="0", height="0")
@@ -285,19 +307,13 @@ class Extension(omni.ext.IExt):
                 with ui.ScrollingFrame():
                     self._rgb_byte_provider = omni.ui.ByteImageProvider()
                     self._rgb_byte_provider.set_data(list(im.tobytes("raw", "RGBA")), [im.size[0], im.size[1]])
-                    # with ui.VStack():
                     omni.ui.ImageWithProvider(self._rgb_byte_provider, width=im.size[0], height=im.size[1])
-        # self._diagram.dock_in_window("Robot Editor", ui.DockPosition.SAME)
-        # ui.dock_window_in_window("Robot Editor", "Robot Diagram", ui.DockPosition.SAME, 0.5)
 
     def _select_picked_folder_callback(self, path):
         if not path.startswith("omniverse:"):
-            config = _urdf.ImportConfig()
-            config.merge_fixed_joints = self.models["merge_fixed"].model.get_value_as_bool()
-            config.enable_convex_decomp = self.models["convex_decomp"].model.get_value_as_bool()
-            config.import_inertia_tensor = self.models["import_inertia"].model.get_value_as_bool()
+
             self.root_path, self.filename = os.path.split(os.path.abspath(path))
-            self._imported_robot = self._urdf_interface.parse_urdf(self.root_path, self.filename, config)
+            self._imported_robot = self._urdf_interface.parse_urdf(self.root_path, self.filename, self.config)
             self._create_robot_parser(self._imported_robot)
         else:
             print("Omniverse Paths not Supported, Only local paths can be imported")
@@ -314,12 +330,7 @@ class Extension(omni.ext.IExt):
         self._filepicker.show()
 
     def _load_robot(self):
-        config = _urdf.ImportConfig()
-        config.merge_fixed_joints = self.models["merge_fixed"].model.get_value_as_bool()
-        config.enable_convex_decomp = self.models["convex_decomp"].model.get_value_as_bool()
-        config.import_inertia_tensor = self.models["import_inertia"].model.get_value_as_bool()
-
-        self._urdf_interface.import_robot(self.root_path, self.filename, self._imported_robot, config)
+        self._urdf_interface.import_robot(self.root_path, self.filename, self._imported_robot, self.config)
 
     def on_shutdown(self):
         print("Shutting down URDF Extension")

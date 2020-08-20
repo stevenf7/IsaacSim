@@ -6,9 +6,6 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-#define AI_CONFIG_GLOBAL_SCALE_FACTOR_DEFAULT 100.0
-#define AI_CONFIG_APP_SCALE_KEY 100.0
-
 #include "UrdfImporter.h"
 
 #include "../core/PathUtils.h"
@@ -84,7 +81,8 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
                      std::string urdfPath,
                      std::string name,
                      UrdfOrigin origin,
-                     const bool loadMaterials = true)
+                     const bool loadMaterials,
+                     const float distanceScale)
 {
     pxr::SdfPath path;
     if (geometry.type == UrdfGeometryType::MESH)
@@ -160,15 +158,15 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
         scale.SetIdentity();
         if (geometry.type == UrdfGeometryType::MESH)
         {
-            scale.SetScale(100 * pxr::GfVec3d(geometry.scale_x, geometry.scale_y, geometry.scale_z));
+            scale.SetScale(distanceScale * pxr::GfVec3d(geometry.scale_x, geometry.scale_y, geometry.scale_z));
         }
         else if (geometry.type == UrdfGeometryType::BOX)
         {
-            scale.SetScale(100 * pxr::GfVec3d(geometry.size_x, geometry.size_y, geometry.size_z));
+            scale.SetScale(distanceScale * pxr::GfVec3d(geometry.size_x, geometry.size_y, geometry.size_z));
         }
         else
         {
-            scale.SetScale(pxr::GfVec3d(100, 100, 100));
+            scale.SetScale(pxr::GfVec3d(distanceScale, distanceScale, distanceScale));
         }
         pxr::UsdGeomXformable gprim = pxr::UsdGeomXformable(prim);
         gprim.ClearXformOpOrder();
@@ -193,11 +191,10 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         Transform transform = poseBodyToWorld; // urdfOriginToTransform(link.inertial.origin);
 
         pxr::GfMatrix4d mat;
-        mat.SetTranslateOnly(100 * pxr::GfVec3d(transform.p.x, transform.p.y, transform.p.z));
+        mat.SetTranslateOnly(config.distanceScale * pxr::GfVec3d(transform.p.x, transform.p.y, transform.p.z));
         mat.SetRotateOnly(pxr::GfQuatd(transform.q.w, transform.q.x, transform.q.y, transform.q.z));
         pxr::GfMatrix4d scale;
         scale.SetIdentity();
-        // scale.SetScale(100);
 
         linkPrim.ClearXformOpOrder();
         pxr::UsdGeomXformOp trans = linkPrim.AddTransformOp();
@@ -214,13 +211,15 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         else
         {
             // scale from kg/m^2 to specified units
-            massAPI.CreateDensityAttr().Set(double(config.density / (100.0 * 100.0 * 100.0)));
+            massAPI.CreateDensityAttr().Set(
+                double(config.density / (config.distanceScale * config.distanceScale * config.distanceScale)));
         }
         if (link.inertial.hasInertia)
         {
             // input is meters, but convert to kit units
             massAPI.CreateDiagonalInertiaAttr().Set(
-                pxr::GfVec3d(link.inertial.inertia.ixx, link.inertial.inertia.iyy, link.inertial.inertia.izz) * 100 * 100);
+                pxr::GfVec3d(link.inertial.inertia.ixx, link.inertial.inertia.iyy, link.inertial.inertia.izz) *
+                config.distanceScale * config.distanceScale);
         }
     }
     else
@@ -265,8 +264,8 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
             loadMaterial = false;
         }
 
-        pxr::UsdPrim prim = addMesh(
-            stage, link.visuals[i].geometry, assetRoot_, urdfPath_, meshName, link.visuals[i].origin, loadMaterial);
+        pxr::UsdPrim prim = addMesh(stage, link.visuals[i].geometry, assetRoot_, urdfPath_, meshName,
+                                    link.visuals[i].origin, loadMaterial, config.distanceScale);
         if (!prim)
         {
             CARB_LOG_ERROR("Prim %s not created", meshName.c_str());
@@ -291,8 +290,8 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
             meshName = robotBasePath + link.name + "/collisions";
         }
 
-        pxr::UsdPrim prim =
-            addMesh(stage, link.collisions[i].geometry, assetRoot_, urdfPath_, meshName, link.collisions[i].origin);
+        pxr::UsdPrim prim = addMesh(stage, link.collisions[i].geometry, assetRoot_, urdfPath_, meshName,
+                                    link.collisions[i].origin, false, config.distanceScale);
         // Enable collisions on prim
         if (prim)
         {
@@ -340,12 +339,13 @@ template <class T>
 void AddSingleJoint(const UrdfJoint& joint,
                     pxr::UsdStageWeakPtr stage,
                     const pxr::SdfPath& jointPath,
-                    pxr::PhysicsSchemaPhysicsJoint& jointPrimBase)
+                    pxr::PhysicsSchemaPhysicsJoint& jointPrimBase,
+                    const float distanceScale)
 {
 
     T jointPrim = T::Define(stage, pxr::SdfPath(jointPath));
     jointPrimBase = jointPrim;
-    jointPrim.CreateAxisAttr().Set(getAxisXYZ(joint.axis));
+    jointPrim.CreateAxisAttr().Set(pxr::TfToken("X"));
     jointPrim.CreateJointFrictionAttr().Set(joint.dynamics.friction);
 
     // Set the limits if the joint is anything except a continuous joint
@@ -354,7 +354,7 @@ void AddSingleJoint(const UrdfJoint& joint,
         float scale = 1.0f;
         if (joint.type == UrdfJointType::PRISMATIC)
         {
-            scale = 100.0f;
+            scale = distanceScale;
         }
         jointPrim.CreateLowerLimitAttr().Set(scale * joint.limit.lower);
         jointPrim.CreateUpperLimitAttr().Set(scale * joint.limit.upper);
@@ -436,7 +436,8 @@ void UrdfImporter::addJoint(pxr::UsdStageWeakPtr stage,
     }
     else if (joint.type == UrdfJointType::PRISMATIC)
     {
-        AddSingleJoint<pxr::PhysicsSchemaPrismaticPhysicsJoint>(joint, stage, pxr::SdfPath(jointPath), jointPrim);
+        AddSingleJoint<pxr::PhysicsSchemaPrismaticPhysicsJoint>(
+            joint, stage, pxr::SdfPath(jointPath), jointPrim, config.distanceScale);
     }
     // else if (joint.type == UrdfJointType::SPHERICAL)
     // {
@@ -445,7 +446,8 @@ void UrdfImporter::addJoint(pxr::UsdStageWeakPtr stage,
     // }
     else if (joint.type == UrdfJointType::REVOLUTE || joint.type == UrdfJointType::CONTINUOUS)
     {
-        AddSingleJoint<pxr::PhysicsSchemaRevolutePhysicsJoint>(joint, stage, pxr::SdfPath(jointPath), jointPrim);
+        AddSingleJoint<pxr::PhysicsSchemaRevolutePhysicsJoint>(
+            joint, stage, pxr::SdfPath(jointPath), jointPrim, config.distanceScale);
     }
 
 
@@ -457,41 +459,28 @@ void UrdfImporter::addJoint(pxr::UsdStageWeakPtr stage,
         jointPrim.CreateBody0Rel().SetTargets(val0);
     }
 
-    pxr::GfVec3f localPos0 =
-        100 * pxr::GfVec3f(poseJointToParentBody.p.x, poseJointToParentBody.p.y, poseJointToParentBody.p.z);
+    pxr::GfVec3f localPos0 = config.distanceScale * pxr::GfVec3f(poseJointToParentBody.p.x, poseJointToParentBody.p.y,
+                                                                 poseJointToParentBody.p.z);
     pxr::GfQuatf localRot0 = pxr::GfQuatf(
         poseJointToParentBody.q.w, poseJointToParentBody.q.x, poseJointToParentBody.q.y, poseJointToParentBody.q.z);
-    pxr::GfVec3f localPos1 = 100 * pxr::GfVec3f(0, 0, 0);
+    pxr::GfVec3f localPos1 = config.distanceScale * pxr::GfVec3f(0, 0, 0);
     pxr::GfQuatf localRot1 = pxr::GfQuatf(1, 0, 0, 0);
 
-
+    // Take the joint axis and cross it with X
     Vec3 rotAxis = -Cross(urdfAxisToVec(joint.axis), Vec3(1.0f, 0.0f, 0.0f));
-    if (Dot(rotAxis, rotAxis) < 1e-5f)
+    float d = Dot(rotAxis, rotAxis);
+    if (d < 1e-5f)
     {
+        // If the joint axis was itself X, then use a fixed rotation axis
         rotAxis = Vec3(0.0f, 1.0f, 0.0f);
     }
     else
     {
-        rotAxis /= sqrtf(Dot(rotAxis, rotAxis));
+        // normalize the rotation axis
+        rotAxis /= sqrtf(d);
     }
-    Quat axisRot;
 
-    if (joint.axis.x != 0.0)
-    {
-        axisRot = QuatFromAxisAngle(rotAxis, acos(-joint.axis.x));
-    }
-    else if (joint.axis.y != 0.0)
-    {
-        axisRot = QuatFromAxisAngle(rotAxis, acos(-joint.axis.y));
-    }
-    else if (joint.axis.z != 0.0)
-    {
-        axisRot = QuatFromAxisAngle(rotAxis, acos(-joint.axis.z));
-    }
-    else
-    {
-        axisRot = QuatFromAxisAngle(rotAxis, acos(-joint.axis.x));
-    }
+    Quat axisRot = QuatFromAxisAngle(rotAxis, acos(joint.axis.x));
 
     // printf("jointPath: %s [%f %f %f], [%f %f %f] [%f %f %f %f]\n", jointPath.c_str(), rotAxis.x, rotAxis.y,
     // rotAxis.z, joint.axis.x,
@@ -568,12 +557,10 @@ void UrdfImporter::addLinksAndJoints(pxr::UsdStageWeakPtr stage,
 
 void UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& urdfRobot)
 {
-    // TODO: FIX
-    float distanceScale = 100;
 
     // Create scene
     pxr::PhysicsSchemaPhysicsScene scene = pxr::PhysicsSchemaPhysicsScene::Define(stage, pxr::SdfPath("/physicsScene"));
-    scene.CreateGravityAttr().Set(pxr::GfVec3f(0.0f, 0.0f, -9.80f * distanceScale));
+    scene.CreateGravityAttr().Set(pxr::GfVec3f(0.0f, 0.0f, -9.80f * config.distanceScale));
     pxr::PhysxSchemaPhysxSceneAPI physxSceneAPI =
         pxr::PhysxSchemaPhysxSceneAPI::Apply(stage->GetPrimAtPath(pxr::SdfPath("/physicsScene")));
     physxSceneAPI.CreatePhysxSceneEnableCCDAttr().Set(true);

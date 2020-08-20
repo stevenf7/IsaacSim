@@ -4,7 +4,9 @@ import carb.tokens
 
 def import_robot(urdf_interface, path, import_config):
     urdf_path = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../" + path))
-    urdf_interface.import_urdf(urdf_path, import_config)
+    root_path, filename = os.path.split(os.path.abspath(urdf_path))
+    imported_robot = urdf_interface.parse_urdf(root_path, filename, import_config)
+    urdf_interface.import_robot(root_path, filename, imported_robot, import_config)
 
 
 def remove_all_schema_multiple_attributes(api, prim, schemaAPI, apiName):
