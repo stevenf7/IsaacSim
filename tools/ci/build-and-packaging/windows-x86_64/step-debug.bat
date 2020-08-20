@@ -52,9 +52,9 @@ echo ##teamcity[progressMessage 'Packaging test_runner...']
 call "%~dp0..\..\..\package.bat" -m test_runner -c debug
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
-echo ##teamcity[progressMessage 'Packaging docs...']
-call "%~dp0..\..\..\package.bat" -m docs -c debug
-if %errorlevel% neq 0 ( exit /b %errorlevel% )
+REM echo ##teamcity[progressMessage 'Packaging docs...']
+REM call "%~dp0..\..\..\package.bat" -m docs -c debug
+REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 echo ##teamcity[progressMessage 'Packaging isaac-sim...']
 call "%~dp0..\..\..\package.bat" -m isaac-sim -c debug
