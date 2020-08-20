@@ -49,7 +49,7 @@ class Extension(omni.ext.IExt):
         self._urdf_interface = _urdf.acquire_urdf_interface()
         self._usd_context = omni.usd.get_context()
         menu_path = f"Window/Isaac/{EXTENSION_NAME}"
-        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=True)
+        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/URDF Importer", self._menu_callback)
         self._file_picker = None
         self.models = {}
