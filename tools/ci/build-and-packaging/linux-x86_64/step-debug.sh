@@ -20,9 +20,14 @@ echo "##teamcity[blockOpened name='Full rebuild...']"
 echo "##teamcity[blockClosed name='Full rebuild...']"
 
 # Docs
-echo "##teamcity[blockOpened name='Docs...']"
-"./tools/build_docs.sh" -c debug
-echo "##teamcity[blockClosed name='Docs...']"
+if [ ! -z "$TEAMCITY_VERSION" ]
+then
+   echo "##teamcity[blockOpened name='Docs...']"
+   "./tools/build_docs.sh" -c debug
+   echo "##teamcity[blockClosed name='Docs...']"
+   echo "##teamcity[progressMessage 'Packaging docs...']"
+   "./tools/package.sh" -m docs -c debug
+fi
 
 # Gathering licenses
 echo "##teamcity[blockOpened name='Gathering licenses...']"
@@ -43,8 +48,6 @@ echo "##teamcity[blockClosed name='Validating licenses...']"
 echo "##teamcity[blockOpened name='Build packages...']"
 echo "##teamcity[progressMessage 'Packaging test_runner...']"
 "./tools/package.sh" -m test_runner -c debug
-echo "##teamcity[progressMessage 'Packaging docs...']"
-"./tools/package.sh" -m docs -c debug
 echo "##teamcity[progressMessage 'Packaging isaac-sim...']"
 "./tools/package.sh" -m isaac-sim -c debug
 echo "##teamcity[progressMessage 'Packaging omniverse-kit-robotics...']"
