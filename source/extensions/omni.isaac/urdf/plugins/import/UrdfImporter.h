@@ -99,6 +99,7 @@ private:
     std::string assetRoot_;
     std::string urdfPath_;
     const ImportConfig config;
+    std::map<std::string, std::string> matPrimPaths;
 
 public:
     UrdfImporter(const std::string& assetRoot, const std::string& urdfPath, const ImportConfig& options)
@@ -127,6 +128,7 @@ private:
                            const KinematicChain::Node* parentNode,
                            const UrdfRobot& robot,
                            pxr::UsdGeomXform robotPrim);
+    void addMaterials(pxr::UsdStageWeakPtr stage, const UrdfRobot& robot, const pxr::SdfPath& prefixPath);
 };
 }
 }

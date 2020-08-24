@@ -720,7 +720,7 @@ bool parseMaterial(const XMLElement& element, UrdfMaterial& material)
     if (materialElement)
     {
         auto name = materialElement->Attribute("name");
-        if (name)
+        if (strlen(name) > 0)
         {
             material.name = name;
         }
@@ -781,7 +781,7 @@ bool parseMaterials(const XMLElement& root, std::map<std::string, UrdfMaterial>&
             elem = materialElement->FirstChildElement("texture");
             if (elem)
             {
-                auto matString = elem->FirstChildElement("texture")->Attribute("filename");
+                auto matString = elem->Attribute("filename");
                 if (matString == nullptr)
                 {
                     printf("*** filename required for material with texture \n");

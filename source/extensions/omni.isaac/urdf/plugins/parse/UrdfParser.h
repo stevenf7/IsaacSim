@@ -8,9 +8,9 @@
 //
 #pragma once
 
-#include "tinyxml2.h"
-
 #include <omni/isaac/urdf/UrdfTypes.h>
+
+#include <tinyxml2.h>
 namespace omni
 {
 namespace isaac

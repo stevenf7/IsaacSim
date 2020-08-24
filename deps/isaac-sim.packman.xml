@@ -23,6 +23,10 @@
     <dependency name="octomap" linkPath="../_build/target-deps/octomap">
         <package name="octomap" version="linux_x64_20200720_a3f3809" platforms="linux-x86_64" />
     </dependency>
+    <dependency name="tinyxml2" linkPath="../_build/target-deps/tinyxml2">
+        <package name="tinyxml2" version="linux_x64_20200823_2c5a6bf" platforms="linux-x86_64" />
+        <package name="tinyxml2" version="win_x64_20200824_2c5a6bf" platforms="windows-x86_64" />
+    </dependency>
     <dependency name="assimp" linkPath="../_build/target-deps/assimp">
         <package name="assimp" version="5.0.0.29.906d5a3b-windows-x86_64-release" platforms="windows-x86_64" />
         <package name="assimp" version="5.0.0.29.906d5a3b-linux-x86_64-release" platforms="linux-x86_64" />
