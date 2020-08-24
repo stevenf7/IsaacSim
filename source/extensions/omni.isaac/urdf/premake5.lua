@@ -22,7 +22,8 @@ group ("extensions/"..ext_id)
 
     repo_build.prebuild_copy {
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/urdf" },
-        { "%{root}/_build/target-deps/assimp/lib/**", ext_bin_folder },
+        { "%{root}/_build/target-deps/assimp/lib/lib**", ext_bin_folder },
+        { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext_bin_folder },
     }
 
     -- C++ Carbonite plugin
@@ -46,6 +47,7 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/rtx_plugins/include",
             target_deps_dir.."/assimp/include",
             target_deps_dir.."/python/include",
+            target_deps_dir.."/tinyxml2/include",
         }
 
         libdirs {   
@@ -53,11 +55,12 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_usd/release/lib",
             target_deps_dir.."/usd_ext_physics/%{cfg.buildcfg}/lib",
             target_deps_dir.."/assimp/lib",
+            target_deps_dir.."/tinyxml2/lib",
             "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins"   
         }
 
         links { 
-            "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools", "physxSchema", "omni.usd", "assimp"
+            "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "physicsSchema", "physicsSchemaTools", "physxSchema", "omni.usd", "assimp", "tinyxml2"
         }
         
         if os.target() == "linux" then

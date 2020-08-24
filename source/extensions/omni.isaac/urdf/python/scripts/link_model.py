@@ -158,21 +158,22 @@ def create_joint(joint):
             colored_block(0xFFA07D4F, "Max Velocity")
             ui.FloatField().model.set_value(joint.limit.velocity)
         ui.Line(height=10)
-        with ui.HStack():
-            colored_block(0xFFA07D4F, "Drive Type")
-            ui.ComboBox(int(joint.drive.target_type), "None", "Position", "Velocity")
-        with ui.HStack():
-            colored_block(0xFFA07D4F, "Drive Target")
-            ui.FloatField(min=-1e12, max=1e12).model.set_value(joint.drive.target)
-        with ui.HStack():
-            colored_block(0xFFA07D4F, "Damping")
-            ui.FloatField(min=0, max=1e12).model.set_value(joint.dynamics.damping)
-        with ui.HStack():
-            colored_block(0xFFA07D4F, "Stiffness")
-            ui.FloatField(min=0, max=1e12).model.set_value(joint.dynamics.stiffness)
-        with ui.HStack():
-            colored_block(0xFFA07D4F, "Friction")
-            ui.FloatField(min=0, max=1e12).model.set_value(joint.dynamics.friction)
+        if joint.type is not omni.isaac.urdf._urdf.JOINT_FIXED:
+            with ui.HStack():
+                colored_block(0xFFA07D4F, "Drive Type")
+                ui.ComboBox(int(joint.drive.target_type), "None", "Position", "Velocity")
+            with ui.HStack():
+                colored_block(0xFFA07D4F, "Drive Target")
+                ui.FloatField(min=-1e12, max=1e12).model.set_value(joint.drive.target)
+            with ui.HStack():
+                colored_block(0xFFA07D4F, "Damping")
+                ui.FloatField(min=0, max=1e12).model.set_value(joint.dynamics.damping)
+            with ui.HStack():
+                colored_block(0xFFA07D4F, "Stiffness")
+                ui.FloatField(min=0, max=1e12).model.set_value(joint.dynamics.stiffness)
+            with ui.HStack():
+                colored_block(0xFFA07D4F, "Friction")
+                ui.FloatField(min=0, max=1e12).model.set_value(joint.dynamics.friction)
 
 
 def create_material(material):

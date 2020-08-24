@@ -246,26 +246,77 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
             meshName = robotBasePath + link.name + "/visuals";
         }
         bool loadMaterial = true;
-        UrdfMaterial urdfMat;
-        if (link.visuals[i].material.name.size() > 0)
+
+        auto mat = link.visuals[i].material;
+        auto urdfMatIter = robot.materials.find(link.visuals[i].material.name);
+        if (urdfMatIter != robot.materials.end())
         {
-            auto urdfMatIter = robot.materials.find(link.visuals[i].material.name);
-            if (urdfMatIter != robot.materials.end())
-            {
-                urdfMat = urdfMatIter->second;
-            }
+            mat = urdfMatIter->second;
         }
-        else
-        {
-            urdfMat = link.visuals[i].material;
-        }
-        if (urdfMat.color.r > 0 && urdfMat.color.g > 0 && urdfMat.color.b > 0)
+
+        auto& color = mat.color;
+        CARB_LOG_WARN("MAT: %s %f %f %f ", link.visuals[i].material.name.c_str(), color.r, color.g, color.b);
+        if (color.r >= 0 && color.g >= 0 && color.b >= 0)
         {
             loadMaterial = false;
         }
 
         pxr::UsdPrim prim = addMesh(stage, link.visuals[i].geometry, assetRoot_, urdfPath_, meshName,
                                     link.visuals[i].origin, loadMaterial, config.distanceScale);
+
+        if (loadMaterial == false)
+        {
+            // This Material was in the master list, reuse
+            auto urdfMatIter = robot.materials.find(link.visuals[i].material.name);
+            if (urdfMatIter != robot.materials.end())
+            {
+                std::string path = matPrimPaths[link.visuals[i].material.name];
+                CARB_LOG_WARN("EXISTING MAT: %s ", path.c_str());
+
+                auto matPrim = stage->GetPrimAtPath(pxr::SdfPath(path));
+
+                if (matPrim)
+                {
+                    auto shadePrim = pxr::UsdShadeMaterial(matPrim);
+                    if (shadePrim)
+                    {
+                        pxr::UsdShadeMaterialBindingAPI mbi(prim);
+                        mbi.Bind(shadePrim);
+                    }
+                }
+            }
+            else
+            {
+                auto& color = link.visuals[i].material.color;
+                pxr::SdfPath shaderPath = prim.GetPath().AppendPath(pxr::SdfPath(
+                    "Looks/" + MakeValidUSDIdentifier("material_" + std::to_string(color.r) + "_" +
+                                                      std::to_string(color.g) + "_" + std::to_string(color.b))));
+                CARB_LOG_WARN("NEW MAT: %s ", shaderPath.GetString().c_str());
+                pxr::UsdShadeMaterial matPrim = pxr::UsdShadeMaterial::Define(stage, shaderPath);
+                if (matPrim)
+                {
+                    pxr::UsdShadeShader pbrShader =
+                        pxr::UsdShadeShader::Define(stage, shaderPath.AppendPath(pxr::SdfPath("Shader")));
+                    if (pbrShader)
+                    {
+                        pbrShader.CreateIdAttr(pxr::VtValue(pxr::UsdImagingTokens->UsdPreviewSurface));
+
+                        pbrShader.CreateInput(pxr::TfToken("diffuseColor"), pxr::SdfValueTypeNames->Color3f)
+                            .Set(pxr::GfVec3f(color.r, color.g, color.b));
+
+                        auto output = matPrim.CreateSurfaceOutput();
+                        output.ConnectToSource(pbrShader, pxr::TfToken("surface"));
+                    }
+                    else
+                    {
+                        CARB_LOG_WARN("Couldn't create shader at: %s", shaderPath.GetString());
+                    }
+
+                    pxr::UsdShadeMaterialBindingAPI mbi(prim);
+                    mbi.Bind(matPrim);
+                }
+            }
+        }
         if (!prim)
         {
             CARB_LOG_ERROR("Prim %s not created", meshName.c_str());
@@ -365,7 +416,8 @@ void AddSingleJoint(const UrdfJoint& joint,
         {
             pxr::PhysicsSchemaDriveAPI driveAPI =
                 pxr::PhysicsSchemaDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
-            driveAPI.CreateMaxForceAttr().Set(joint.limit.effort);
+            // convert kg*m/s^2 to kg * cm /s^2
+            driveAPI.CreateMaxForceAttr().Set(joint.limit.effort * distanceScale);
             driveAPI.CreateTargetAttr().Set(joint.drive.target);
             if (joint.drive.driveType == UrdfJointDriveType::FORCE)
                 driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
@@ -389,7 +441,8 @@ void AddSingleJoint(const UrdfJoint& joint,
         {
             pxr::PhysicsSchemaDriveAPI driveAPI =
                 pxr::PhysicsSchemaDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("angular"));
-            driveAPI.CreateMaxForceAttr().Set(joint.limit.effort);
+            // convert kg*m/s^2 * m to kg * cm /s^2 * cm
+            driveAPI.CreateMaxForceAttr().Set(joint.limit.effort * distanceScale * distanceScale);
             driveAPI.CreateTargetAttr().Set(joint.drive.target);
             if (joint.drive.driveType == UrdfJointDriveType::FORCE)
                 driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
@@ -555,6 +608,49 @@ void UrdfImporter::addLinksAndJoints(pxr::UsdStageWeakPtr stage,
     }
 }
 
+void UrdfImporter::addMaterials(pxr::UsdStageWeakPtr stage, const UrdfRobot& robot, const pxr::SdfPath& prefixPath)
+{
+    for (auto& mat : robot.materials)
+    {
+        auto& color = mat.second.color;
+        auto& name = mat.second.name;
+
+        CARB_LOG_WARN("Add material %s  %f %f %f", name.c_str(), color.r, color.g, color.b);
+        if (color.r >= 0 && color.g >= 0 && color.b >= 0)
+        {
+            pxr::SdfPath shaderPath =
+                prefixPath.AppendPath(pxr::SdfPath("Looks/" + MakeValidUSDIdentifier("material_" + name)));
+
+            pxr::UsdShadeMaterial matPrim = pxr::UsdShadeMaterial::Define(stage, shaderPath);
+            if (matPrim)
+            {
+                pxr::UsdShadeShader pbrShader =
+                    pxr::UsdShadeShader::Define(stage, shaderPath.AppendPath(pxr::SdfPath("Shader")));
+                if (pbrShader)
+                {
+                    pbrShader.CreateIdAttr(pxr::VtValue(pxr::UsdImagingTokens->UsdPreviewSurface));
+
+                    pbrShader.CreateInput(pxr::TfToken("diffuseColor"), pxr::SdfValueTypeNames->Color3f)
+                        .Set(pxr::GfVec3f(color.r, color.g, color.b));
+
+                    auto output = matPrim.CreateSurfaceOutput();
+                    output.ConnectToSource(pbrShader, pxr::TfToken("surface"));
+                    matPrimPaths[name] = shaderPath.GetString();
+                }
+                else
+                {
+                    CARB_LOG_WARN("Couldn't create shader at: %s", shaderPath.GetString());
+                }
+            }
+            else
+            {
+                CARB_LOG_WARN("Couldn't create material at: %s", shaderPath.GetString());
+            }
+        }
+    }
+}
+
+
 void UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& urdfRobot)
 {
 
@@ -595,13 +691,9 @@ void UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& urdfR
         return;
     }
 
+    addMaterials(stage, urdfRobot, primPath);
+
     addLinksAndJoints(stage, Transform(), chain.baseNode.get(), urdfRobot, robotPrim);
-    // Start adding base
-
-
-    // Load Joints
-
-    // Load Meshes
 }
 }
 }
