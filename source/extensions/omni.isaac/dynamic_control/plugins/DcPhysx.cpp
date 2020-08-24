@@ -766,7 +766,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     }
     else
     {
-        DC_LOG_WARN("Articulation is not in a physics scene, some functionality is missing");
+        DC_LOG_WARN(
+            "Articulation is not in a physics scene, some functionality is missing, make sure that a physics scene is present and simulation is running");
     }
 
     // figure out which path this articulation is mapped to in omni.physx

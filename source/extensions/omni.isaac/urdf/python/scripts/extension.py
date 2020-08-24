@@ -19,62 +19,42 @@ import io
 
 EXTENSION_NAME = "URDF Importer"
 
-tooltip_style = {"Tooltip": {"background_color": 0xFF444444, "border_width": 2, "border_radius": 5}}
-
-
-def robot_block(color, label):
-    with ui.ZStack():
-        ui.Rectangle(style={"background_color": color})
-        with ui.HStack():
-            ui.Spacer(width=2)
-            ui.Label(label, alignment=ui.Alignment.CENTER, style={"color": 0xFF000000}, width=0)
-            ui.Spacer(width=2)
-
-
-def create_tooltip():
-    with ui.VStack(width=200, style=tooltip_style):
-        with ui.HStack():
-            ui.Label("Fancy tooltip", width=150)
-            ui.IntField().model.set_value(12)
-        ui.Line(height=2, style={"color": 0xFFFFFFFF})
-        with ui.HStack():
-            ui.Label("Anything is possible", width=150)
-            ui.StringField().model.set_value("you bet")
-        image_source = "resources/desktop-icons/omniverse_512.png"
-        ui.Image(image_source, width=200, height=200, alignment=ui.Alignment.CENTER, style={"margin": 0})
-
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._urdf_interface = _urdf.acquire_urdf_interface()
         self._usd_context = omni.usd.get_context()
         menu_path = f"Window/Isaac/{EXTENSION_NAME}"
-        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=True)
+        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/URDF Importer", self._menu_callback)
         self._file_picker = None
         self.models = {}
         self.config = _urdf.ImportConfig()
+        self._rgb_byte_provider = None
+        self._rgb_image_provider = None
+        self._robot_graph_im = None
 
         with self._window.frame:
             with ui.ScrollingFrame(
                 horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
                 vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
             ):
-                self._hstack = ui.HStack()
-                with self._hstack:
+                with ui.HStack():
                     with ui.VStack(width=ui.Percent(30)):
                         ui.Button("Parse URDF", clicked_fn=self._parse_urdf)
                         ui.Button("Load Robot", clicked_fn=self._load_robot)
-                        ui.Label("Parser Settings:")
+                        ui.Label("Parser Settings (Set before Parsing URDF):")
                         ui.Line(height=5)
                         with ui.HStack():
                             ui.Label(
                                 "Merge Fixed Joints",
                                 tooltip="Check this box to skip adding articulation on fixed joints",
                             )
-                            ui.CheckBox().model.add_value_changed_fn(
+                            model = ui.CheckBox().model
+                            model.add_value_changed_fn(
                                 lambda m, config=self.config: config.set_merge_fixed_joints(m.get_value_as_bool())
                             )
+                            model.set_value(True)
                         ui.Spacer(height=5)
                         with ui.HStack():
                             ui.Label(
@@ -148,7 +128,7 @@ class Extension(omni.ext.IExt):
                             )
                         ui.Spacer(height=5)
                         with ui.HStack():
-                            ui.Label("Joint Drive Stiffness:")
+                            ui.Label("Joint Drive Stiffness:", tooltip="[N] for prismatic or [N*m] for revolute")
                             model = ui.FloatField().model
                             model.add_value_changed_fn(
                                 lambda m, config=self.config: config.set_default_drive_stiffness(m.get_value_as_float())
@@ -172,6 +152,7 @@ class Extension(omni.ext.IExt):
                             self.models["scale"].model.add_value_changed_fn(
                                 lambda m, config=self.config: config.set_distance_scale(m.get_value_as_float())
                             )
+                    self._frame = ui.Frame()
 
         stage = self._usd_context.get_stage()
         if stage:
@@ -198,9 +179,6 @@ class Extension(omni.ext.IExt):
             units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
             self.models["scale"].model.set_value(units_per_meter)
 
-        # self._select_picked_folder_callback(
-        #     "/home/hmazhar/repos/omni_isaac_sim/_build/linux-x86_64/release/data/urdf/robots/kaya/urdf/kaya.urdf"
-        # )
         self._file_picker = None
 
     def _menu_callback(self, name, visible):
@@ -216,7 +194,6 @@ class Extension(omni.ext.IExt):
             self._stage_event_sub = None
 
     def _on_stage_event(self, event):
-        print(event)
         stage = self._usd_context.get_stage()
         if stage:
             if UsdGeom.GetStageUpAxis(stage) == UsdGeom.Tokens.y:
@@ -241,10 +218,6 @@ class Extension(omni.ext.IExt):
                 ).set_value(1)
             units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
             self.models["scale"].model.set_value(units_per_meter)
-
-    def _print_robot(self):
-        for key, value in self._imported_robot.materials.items():
-            print(value.color.r, value.color.g, value.color.b)
 
     def _create_graphviz_tree(self, tree_item, robot, graph):
         if not tree_item:
@@ -270,15 +243,16 @@ class Extension(omni.ext.IExt):
             graph.edge("Root", tree_item["B_link"], tree_item["A_joint"], color="red", penwidth=str(5))
             self._create_graphviz_tree(tree_item["B_node"], robot, graph)
 
-    def _create_robot_parser(self, robot):
-
-        self._link_delegate = RobotDelegate()
-        self.robot_model = RobotListModel(robot)
-        import pprint
-
+    def _generate_robot_image(self, robot, vertical=True):
+        im = None
         robot_tree = self._urdf_interface.get_kinematic_chain(robot)
         robot_graph = Graph("robot_graph", strict=True, engine="dot")
-        robot_graph.attr(rankdir="TB", splines="ortho")
+        robot_graph.attr(splines="ortho")
+        if vertical:
+            robot_graph.attr(rankdir="TB")
+        else:
+            robot_graph.attr(rankdir="LR")
+
         robot_graph.attr(packMode="node")
         with robot_graph.subgraph(name="cluster_legend") as legend_graph:
             legend_graph.attr(label="legend")
@@ -287,7 +261,6 @@ class Extension(omni.ext.IExt):
             legend_graph.node("legend_prismatic", "Prismatic", color="blue", shape="rect", margin="0", height="0")
             legend_graph.node("legend_continuous", "Continuous", color="orange", shape="rect", margin="0", height="0")
 
-        im = None
         try:
             self._create_graphviz_tree(robot_tree, robot, robot_graph)
             buffer = io.BytesIO(robot_graph.pipe(format="png"))
@@ -295,26 +268,76 @@ class Extension(omni.ext.IExt):
             im = Image.open(buffer)
             im.thumbnail([min(im.size[0], 3000), min(im.size[1], 3000)], Image.ANTIALIAS)
             # im.show()
-            im = im.convert("RGBA")  # needed sometimes image changes to RGB without this
-            print([im.size[0], im.size[1]])
+            im = im.convert("RGBA")  # needed sometimes as image can change to RGB without this
         except Exception as e:
             im = None
             print("Error: ", e, ", graph generation disabled")
-        with self._hstack:
-            with ui.ScrollingFrame(horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF):
-                ui.TreeView(self.robot_model, root_visible=False, delegate=self._link_delegate)
-            if im is not None:
+        return im
+
+    def _create_ui(self, robot):
+
+        self._link_delegate = RobotDelegate()
+        self._robot_model = RobotListModel(robot)
+        self._rgb_byte_provider = None
+        self._rgb_image_provider = None
+        self._robot_graph_im = self._generate_robot_image(robot, vertical=True)
+        with self._frame:
+            with ui.HStack():
                 with ui.ScrollingFrame():
-                    self._rgb_byte_provider = omni.ui.ByteImageProvider()
-                    self._rgb_byte_provider.set_data(list(im.tobytes("raw", "RGBA")), [im.size[0], im.size[1]])
-                    omni.ui.ImageWithProvider(self._rgb_byte_provider, width=im.size[0], height=im.size[1])
+                    ui.TreeView(self._robot_model, root_visible=False, delegate=self._link_delegate)
+                if self._robot_graph_im is not None:
+                    with ui.VStack():
+                        with ui.ScrollingFrame():
+                            self._rgb_byte_provider = omni.ui.ByteImageProvider()
+                            self._rgb_image_provider = omni.ui.ImageWithProvider(
+                                self._rgb_byte_provider,
+                                width=self._robot_graph_im.size[0],
+                                height=self._robot_graph_im.size[1],
+                                fill_policy=ui.IwpFillPolicy.IWP_PRESERVE_ASPECT_FIT,
+                            )
+
+                            self._rgb_byte_provider.set_data(
+                                list(self._robot_graph_im.tobytes("raw", "RGBA")),
+                                [int(self._robot_graph_im.size[0]), int(self._robot_graph_im.size[1])],
+                            )
+
+                        def scale_image(scale):
+                            self._rgb_image_provider.width = ui.Length(scale[0])
+                            self._rgb_image_provider.height = ui.Length(scale[1])
+
+                        def update_image(vertical=True):
+                            self._robot_graph_im = self._generate_robot_image(robot, vertical=vertical)
+                            # if im is not None:
+                            self._rgb_byte_provider.set_data(
+                                list(self._robot_graph_im.tobytes("raw", "RGBA")),
+                                [int(self._robot_graph_im.size[0]), int(self._robot_graph_im.size[1])],
+                            )
+                            scale_image([int(self._robot_graph_im.size[0]), int(self._robot_graph_im.size[1])])
+
+                        with ui.HStack(height=0):
+                            ui.Label("Scale: ", width=0)
+                            model = ui.FloatDrag(min=0.1, height=0).model
+                            model.set_value(1.0)
+                            model.add_value_changed_fn(
+                                lambda m: (
+                                    scale_image(
+                                        (
+                                            int(self._robot_graph_im.size[0] * m.get_value_as_float()),
+                                            int(self._robot_graph_im.size[1] * m.get_value_as_float()),
+                                        )
+                                    )
+                                )
+                            )
+                        with ui.HStack(height=0):
+                            ui.Label("Layout Orientation: ", width=0)
+                            model = ui.ComboBox(1, "Horizontal", "Vertical").model
+                            model.add_item_changed_fn(lambda m, i: (update_image(m.get_item_value_model().as_int)))
 
     def _select_picked_folder_callback(self, path):
         if not path.startswith("omniverse:"):
-
             self.root_path, self.filename = os.path.split(os.path.abspath(path))
             self._imported_robot = self._urdf_interface.parse_urdf(self.root_path, self.filename, self.config)
-            self._create_robot_parser(self._imported_robot)
+            self._create_ui(self._imported_robot)
         else:
             print("Omniverse Paths not Supported, Only local paths can be imported")
 

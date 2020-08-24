@@ -30,3 +30,7 @@ name = "omni.isaac.utils.scripts.physics_inspector"
 
 [[python.modules]]
 name = "omni.isaac.utils.scripts.samples.surface_gripper"
+
+[[python.modules]]
+name = "omni.isaac.utils.scripts.merge_mesh_tool"
+public = false
