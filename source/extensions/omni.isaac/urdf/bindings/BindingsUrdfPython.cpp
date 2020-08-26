@@ -79,6 +79,9 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("distance_scale", &ImportConfig::distanceScale,
                        "Set the unit scaling factor, 1.0 means meters, 100.0 means cm")
         .def_readwrite("up_vector", &ImportConfig::upVector, "Up vector used for import")
+        .def_readwrite(
+            "create_physics_scene", &ImportConfig::createPhysicsScene, "add a physics scene to the stage on import")
+        .def_readwrite("make_default_prim", &ImportConfig::makeDefaultPrim, "set imported robot as default prim")
         // setters for each property
         .def("set_merge_fixed_joints", [](ImportConfig& config, const bool value) { config.mergeFixedJoints = value; })
         .def("set_convex_decomp", [](ImportConfig& config, const bool value) { config.convexDecomp = value; })
@@ -94,9 +97,13 @@ PYBIND11_MODULE(_urdf, m)
         .def("set_default_drive_stiffness",
              [](ImportConfig& config, const float value) { config.defaultDriveStiffness = value; })
         .def("set_distance_scale", [](ImportConfig& config, const float value) { config.distanceScale = value; })
-        .def("set_up_vector", [](ImportConfig& config, const float x, const float y, const float z) {
-            config.upVector = { x, y, z };
-        });
+        .def("set_up_vector",
+             [](ImportConfig& config, const float x, const float y, const float z) {
+                 config.upVector = { x, y, z };
+             })
+        .def("set_create_physics_scene",
+             [](ImportConfig& config, const bool value) { config.createPhysicsScene = value; })
+        .def("set_make_default_prim", [](ImportConfig& config, const bool value) { config.makeDefaultPrim = value; });
 
     py::class_<UrdfOrigin>(m, "UrdfOrigin", "")
         .def_readwrite("x", &UrdfOrigin::x, "")

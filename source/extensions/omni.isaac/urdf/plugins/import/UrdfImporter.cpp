@@ -211,8 +211,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         else
         {
             // scale from kg/m^2 to specified units
-            massAPI.CreateDensityAttr().Set(
-                double(config.density / (config.distanceScale * config.distanceScale * config.distanceScale)));
+            massAPI.CreateDensityAttr().Set(double(config.density));
         }
         if (link.inertial.hasInertia)
         {
@@ -255,7 +254,6 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         }
 
         auto& color = mat.color;
-        CARB_LOG_WARN("MAT: %s %f %f %f ", link.visuals[i].material.name.c_str(), color.r, color.g, color.b);
         if (color.r >= 0 && color.g >= 0 && color.b >= 0)
         {
             loadMaterial = false;
@@ -271,7 +269,6 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
             if (urdfMatIter != robot.materials.end())
             {
                 std::string path = matPrimPaths[link.visuals[i].material.name];
-                CARB_LOG_WARN("EXISTING MAT: %s ", path.c_str());
 
                 auto matPrim = stage->GetPrimAtPath(pxr::SdfPath(path));
 
@@ -291,7 +288,6 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
                 pxr::SdfPath shaderPath = prim.GetPath().AppendPath(pxr::SdfPath(
                     "Looks/" + MakeValidUSDIdentifier("material_" + std::to_string(color.r) + "_" +
                                                       std::to_string(color.g) + "_" + std::to_string(color.b))));
-                CARB_LOG_WARN("NEW MAT: %s ", shaderPath.GetString().c_str());
                 pxr::UsdShadeMaterial matPrim = pxr::UsdShadeMaterial::Define(stage, shaderPath);
                 if (matPrim)
                 {
@@ -309,7 +305,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
                     }
                     else
                     {
-                        CARB_LOG_WARN("Couldn't create shader at: %s", shaderPath.GetString());
+                        CARB_LOG_WARN("Couldn't create shader at: %s", shaderPath.GetString().c_str());
                     }
 
                     pxr::UsdShadeMaterialBindingAPI mbi(prim);
@@ -615,7 +611,6 @@ void UrdfImporter::addMaterials(pxr::UsdStageWeakPtr stage, const UrdfRobot& rob
         auto& color = mat.second.color;
         auto& name = mat.second.name;
 
-        CARB_LOG_WARN("Add material %s  %f %f %f", name.c_str(), color.r, color.g, color.b);
         if (color.r >= 0 && color.g >= 0 && color.b >= 0)
         {
             pxr::SdfPath shaderPath =
@@ -651,30 +646,32 @@ void UrdfImporter::addMaterials(pxr::UsdStageWeakPtr stage, const UrdfRobot& rob
 }
 
 
-void UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& urdfRobot)
+std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& urdfRobot)
 {
+    if (config.createPhysicsScene)
+    {
+        // Create physics scene
+        pxr::PhysicsSchemaPhysicsScene scene =
+            pxr::PhysicsSchemaPhysicsScene::Define(stage, pxr::SdfPath("/physicsScene"));
+        scene.CreateGravityAttr().Set(pxr::GfVec3f(0.0f, 0.0f, -9.80f * config.distanceScale));
+        pxr::PhysxSchemaPhysxSceneAPI physxSceneAPI =
+            pxr::PhysxSchemaPhysxSceneAPI::Apply(stage->GetPrimAtPath(pxr::SdfPath("/physicsScene")));
+        physxSceneAPI.CreatePhysxSceneEnableCCDAttr().Set(true);
+        physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr().Set(true);
+        physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr().Set(false);
 
-    // Create scene
-    pxr::PhysicsSchemaPhysicsScene scene = pxr::PhysicsSchemaPhysicsScene::Define(stage, pxr::SdfPath("/physicsScene"));
-    scene.CreateGravityAttr().Set(pxr::GfVec3f(0.0f, 0.0f, -9.80f * config.distanceScale));
-    pxr::PhysxSchemaPhysxSceneAPI physxSceneAPI =
-        pxr::PhysxSchemaPhysxSceneAPI::Apply(stage->GetPrimAtPath(pxr::SdfPath("/physicsScene")));
-    physxSceneAPI.CreatePhysxSceneEnableCCDAttr().Set(true);
-    physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr().Set(true);
-    physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr().Set(false);
-
-    physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr().Set(pxr::TfToken("MBP"));
-    physxSceneAPI.CreatePhysxSceneSolverTypeAttr().Set(pxr::TfToken("TGS"));
-
+        physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr().Set(pxr::TfToken("MBP"));
+        physxSceneAPI.CreatePhysxSceneSolverTypeAttr().Set(pxr::TfToken("TGS"));
+    }
 
     pxr::SdfPath primPath =
         pxr::SdfPath(GetNewSdfPathString(stage, "/" + pxr::TfMakeValidIdentifier(std::string(urdfRobot.name))));
 
-    // Remove the prim we are about to add in case it exists
-    if (stage->GetPrimAtPath(primPath))
-    {
-        stage->RemovePrim(primPath);
-    }
+    // // Remove the prim we are about to add in case it exists
+    // if (stage->GetPrimAtPath(primPath))
+    // {
+    //     stage->RemovePrim(primPath);
+    // }
 
     pxr::UsdGeomXform robotPrim = pxr::UsdGeomXform::Define(stage, primPath);
     pxr::PhysicsSchemaArticulationAPI physicsSchema = pxr::PhysicsSchemaArticulationAPI::Apply(robotPrim.GetPrim());
@@ -682,18 +679,23 @@ void UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& urdfR
     physicsSchema.CreateFixBaseAttr().Set(config.fixBase);
     physicsSchema.CreateEnableSelfCollisionsAttr().Set(config.selfCollision);
 
-    stage->SetDefaultPrim(robotPrim.GetPrim());
+    if (config.makeDefaultPrim)
+    {
+        stage->SetDefaultPrim(robotPrim.GetPrim());
+    }
 
 
     KinematicChain chain;
     if (!chain.computeKinematicChain(urdfRobot))
     {
-        return;
+        return "";
     }
 
     addMaterials(stage, urdfRobot, primPath);
 
     addLinksAndJoints(stage, Transform(), chain.baseNode.get(), urdfRobot, robotPrim);
+
+    return primPath.GetString();
 }
 }
 }

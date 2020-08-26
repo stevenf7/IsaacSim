@@ -110,7 +110,7 @@ public:
     // Creates and populates a GymAsset
     UrdfRobot createAsset();
 
-    void addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& robot);
+    std::string addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& robot);
 
 
 private:
