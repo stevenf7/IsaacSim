@@ -9,9 +9,9 @@
 
 #include "UrdfParser.h"
 
-// #include "../../core/core.h"
-// #include "../../core/platform.h"
-
+// clang-format off
+#include "UsdPCH.h"
+// clang-format on
 
 //#define VERBOSE_URDF
 namespace omni
@@ -22,6 +22,17 @@ namespace urdf
 {
 
 // Stream operators for nice printing
+
+static std::string makeValidUSDIdentifier(const std::string& name)
+{
+    auto validName = pxr::TfMakeValidIdentifier(name);
+    if (validName[0] == '_')
+    {
+        validName = "a" + validName;
+    }
+
+    return validName;
+}
 
 std::ostream& operator<<(std::ostream& out, const UrdfOrigin& origin)
 {
@@ -722,7 +733,7 @@ bool parseMaterial(const XMLElement& element, UrdfMaterial& material)
         auto name = materialElement->Attribute("name");
         if (strlen(name) > 0)
         {
-            material.name = name;
+            material.name = makeValidUSDIdentifier(name);
         }
         else
         {
@@ -761,7 +772,7 @@ bool parseMaterials(const XMLElement& root, std::map<std::string, UrdfMaterial>&
             auto name = materialElement->Attribute("name");
             if (name)
             {
-                material.name = name;
+                material.name = makeValidUSDIdentifier(name);
             }
             else
             {
@@ -809,7 +820,7 @@ bool parseLinks(const XMLElement& root, std::map<std::string, UrdfLink>& urdfLin
             auto name = linkElement->Attribute("name");
             if (name)
             {
-                link.name = name;
+                link.name = makeValidUSDIdentifier(name);
             }
             else
             {
@@ -827,7 +838,7 @@ bool parseLinks(const XMLElement& root, std::map<std::string, UrdfLink>& urdfLin
                     auto name = visualElement->Attribute("name");
                     if (name)
                     {
-                        visual.name = name;
+                        visual.name = makeValidUSDIdentifier(name);
                     }
 
                     if (!parseOrigin(*visualElement, visual.origin))
@@ -860,7 +871,7 @@ bool parseLinks(const XMLElement& root, std::map<std::string, UrdfLink>& urdfLin
                     auto name = collisionElement->Attribute("name");
                     if (name)
                     {
-                        collision.name = name;
+                        collision.name = makeValidUSDIdentifier(name);
                     }
 
                     if (!parseOrigin(*collisionElement, collision.origin))
@@ -920,7 +931,7 @@ bool parseJoints(const XMLElement& root, std::map<std::string, UrdfJoint>& urdfJ
             auto name = jointElement->Attribute("name");
             if (name)
             {
-                joint.name = name;
+                joint.name = makeValidUSDIdentifier(name);
             }
             else
             {
@@ -1093,7 +1104,7 @@ bool parseRobot(const XMLElement& root, UrdfRobot& urdfRobot)
     auto name = root.Attribute("name");
     if (name)
     {
-        urdfRobot.name = name;
+        urdfRobot.name = makeValidUSDIdentifier(name);
     }
 
     urdfRobot.links.clear();
@@ -1136,7 +1147,7 @@ bool parseUrdf(const std::string& urdfPackagePath, const std::string& urdfFileRe
 #endif
 
     // Weird stack smashing error with tinyxml2 when the descructor is called
-    static XMLDocument doc;
+    static tinyxml2::XMLDocument doc;
     if (doc.LoadFile(path.c_str()) != XML_SUCCESS)
     {
         printf("*** Failed to load '%s'", path.c_str());

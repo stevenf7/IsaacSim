@@ -57,7 +57,7 @@ omni::isaac::urdf::UrdfRobot parseUrdf(const std::string& assetRoot,
     {
 
 
-        CARB_LOG_ERROR("Trying to import %s", filename.c_str());
+        CARB_LOG_INFO("Trying to import %s", filename.c_str());
 
         if (parseUrdf(assetRoot, assetName, robot))
         {
@@ -80,18 +80,19 @@ omni::isaac::urdf::UrdfRobot parseUrdf(const std::string& assetRoot,
     }
     return robot;
 }
-void importRobot(const std::string& assetRoot,
-                 const std::string& assetName,
-                 const omni::isaac::urdf::UrdfRobot& robot,
-                 const omni::isaac::urdf::ImportConfig& importConfig)
+std::string importRobot(const std::string& assetRoot,
+                        const std::string& assetName,
+                        const omni::isaac::urdf::UrdfRobot& robot,
+                        const omni::isaac::urdf::ImportConfig& importConfig)
 {
 
     omni::isaac::urdf::UrdfImporter urdfImporter(assetRoot, assetName, importConfig);
     pxr::UsdStageWeakPtr stage = omni::usd::UsdContext::getContext()->getStage();
     if (stage)
     {
-        urdfImporter.addToStage(stage, robot);
+        return urdfImporter.addToStage(stage, robot);
     }
+    return "";
 }
 }
 

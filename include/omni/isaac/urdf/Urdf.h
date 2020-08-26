@@ -32,9 +32,11 @@ struct ImportConfig
     bool selfCollision = false;
     float density = 1000; // default density used for objects without mass/inertia
     UrdfJointTargetType defaultDriveType = UrdfJointTargetType::POSITION;
-    float defaultDriveStiffness = 1000;
+    float defaultDriveStiffness = 100000;
     float distanceScale = 100;
     UrdfAxis upVector = { 0, 0, 1 };
+    bool createPhysicsScene = true;
+    bool makeDefaultPrim = true;
 };
 
 
@@ -47,10 +49,10 @@ struct Urdf
                                    const std::string& assetName,
                                    const ImportConfig& importConfig);
     // Imports a UrdfRobot into the stage
-    void(CARB_ABI* importRobot)(const std::string& assetRoot,
-                                const std::string& assetName,
-                                const UrdfRobot& robot,
-                                const ImportConfig& importConfig);
+    std::string(CARB_ABI* importRobot)(const std::string& assetRoot,
+                                       const std::string& assetName,
+                                       const UrdfRobot& robot,
+                                       const ImportConfig& importConfig);
 
     pybind11::dict(CARB_ABI* getKinematicChain)(const UrdfRobot& robot);
 };

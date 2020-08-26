@@ -40,7 +40,7 @@ class Extension(omni.ext.IExt):
                 vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
             ):
                 with ui.HStack():
-                    with ui.VStack(width=ui.Percent(30)):
+                    with ui.VStack(width=ui.Percent(30), height=0):
                         ui.Button("Parse URDF", clicked_fn=self._parse_urdf)
                         ui.Button("Load Robot", clicked_fn=self._load_robot)
                         ui.Label("Parser Settings (Set before Parsing URDF):")
@@ -54,7 +54,7 @@ class Extension(omni.ext.IExt):
                             model.add_value_changed_fn(
                                 lambda m, config=self.config: config.set_merge_fixed_joints(m.get_value_as_bool())
                             )
-                            model.set_value(True)
+                            model.set_value(False)
                         ui.Spacer(height=5)
                         with ui.HStack():
                             ui.Label(
@@ -104,6 +104,25 @@ class Extension(omni.ext.IExt):
                                 lambda m, config=self.config: config.set_self_collision(m.get_value_as_bool())
                             )
                             model.set_value(False)
+                        ui.Spacer(height=5)
+                        with ui.HStack():
+                            ui.Label("Create Physics Scene", tooltip="If true, creates a default physics scene")
+                            model = ui.CheckBox().model
+                            model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_create_physics_scene(m.get_value_as_bool())
+                            )
+                            model.set_value(True)
+                        ui.Spacer(height=5)
+                        with ui.HStack():
+                            ui.Label(
+                                "Make Default Prim",
+                                tooltip="If true, makes imported robot the default prim for the stage",
+                            )
+                            model = ui.CheckBox().model
+                            model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_make_default_prim(m.get_value_as_bool())
+                            )
+                            model.set_value(True)
                         ui.Spacer(height=5)
                         ui.Label("Importer Defaults:")
                         ui.Line(height=5)
