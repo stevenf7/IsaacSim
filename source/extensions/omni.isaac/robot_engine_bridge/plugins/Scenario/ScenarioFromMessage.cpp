@@ -51,13 +51,13 @@ void ScenarioFromMessage::tick()
     CARB_PROFILE_ZONE(0, "REB ScenarioFromMessage Tick");
 
     IsaacMessage<isaac_message::ActorGroup> actorGroup;
-    auto actorGroupProto = actorGroup.initProto();
+
     {
         // Receive current command
-        std::vector<std::vector<uint8_t>> buffers;
         MessageHeader header;
-        if (receive(mInputComponent, mRequestChannelName, header, actorGroupProto, buffers))
+        if (checkErrorCode(receive(mInputComponent, mRequestChannelName, header, actorGroup)))
         {
+            auto actorGroupProto = actorGroup.getProto();
             LoadScenarioFromMessage(actorGroupProto);
         }
     }
@@ -118,7 +118,7 @@ void ScenarioFromMessage::initSubComponents()
     mRigidBodiesSink->initialize(mIsaacCApiPtr, mAppHandle, mPrim, mStage);
 }
 
-void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Builder& request)
+void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Reader& request)
 {
     // handle spawn request
     auto actorCreateRequests = request.getSpawnRequests();
@@ -126,8 +126,8 @@ void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Bui
     {
         for (size_t i = 0; i < actorCreateRequests.size(); i++)
         {
-            std::string actorName = actorCreateRequests[i].getName().asString();
-            std::string mUsdAsset = actorCreateRequests[i].getPrefab().asString();
+            std::string actorName = actorCreateRequests[i].getName();
+            std::string mUsdAsset = actorCreateRequests[i].getPrefab();
             carb::extras::Path mUsdAssetPath(mUsdAsset);
             std::string warningMsg;
 
@@ -160,7 +160,7 @@ void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Bui
         for (size_t i = 0; i < actorDestroyRequests.size(); i++)
         {
             // destroy all child gameobject by name
-            std::string actorName = actorDestroyRequests[i].asString();
+            std::string actorName = actorDestroyRequests[i];
             auto defaultPrim = mStage->GetDefaultPrim();
             auto targetPath = defaultPrim.GetPath().GetString() + "/" + actorName;
             auto prim = mStage->GetPrimAtPath(pxr::SdfPath(targetPath));

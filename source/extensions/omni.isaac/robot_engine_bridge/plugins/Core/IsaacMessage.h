@@ -1,6 +1,10 @@
 #pragma once
 
-#include <capnp/compat/json.h>
+#include <carb/cuda/CudaRuntime.h>
+#include <carb/logging/Log.h>
+
+// #include <capnp/compat/json.h>
+#include <capnp/serialize.h>
 #include <messages/actor_group.capnp.h>
 #include <messages/alice.capnp.h>
 #include <messages/camera.capnp.h>
@@ -19,13 +23,13 @@
 #include <messages/state.capnp.h>
 #include <messages/tensor.capnp.h>
 
+#include <cuda.h>
 #include <memory>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string>
 #include <unordered_map>
-
 namespace omni
 {
 namespace isaac
@@ -33,46 +37,6 @@ namespace isaac
 namespace robot_engine_bridge
 {
 
-struct MessageHeader
-{
-    isaac_uuid_t uuid;
-    int64_t acqtime;
-    int64_t pubtime;
-};
-
-struct IsaacBuffer
-{
-    size_t size;
-    char* data;
-};
-
-
-/// Generate JSON message data and buffer data from captured camera data (Color, Depth and
-/// Instance).
-
-// static std::string ToJsonMessage(const CameraCapture& data, ulong& proto_id, unsigned char* buffers)
-// {
-//     // TODO
-// }
-
-/**
- * @brief A wrapper around proto messages to make construction easier
- *
- * @tparam Proto
- */
-template <typename Proto>
-class IsaacMessage
-{
-public:
-    typename Proto::Builder initProto()
-    {
-        mCapnpMessageBuilder.reset(new ::capnp::MallocMessageBuilder());
-        return mCapnpMessageBuilder->initRoot<Proto>();
-    }
-
-private:
-    std::unique_ptr<::capnp::MallocMessageBuilder> mCapnpMessageBuilder;
-};
 
 namespace isaac_message
 {
@@ -91,22 +55,8 @@ static const uint64_t RigidBody3GroupProtoId = 11014643331508973803U;
 static const uint64_t StateProtoId = 13177870757040999364U;
 static const uint64_t Detections2ProtoId = 12576484744224273470U;
 static const uint64_t Detections3ProtoId = 16439473061879685265U;
-// namespace ElementType
-// {
-// static const std::string uint8 = "uint8";
-// static const std::string uint16 = "uint16";
-// static const std::string uint32 = "uint32";
-// static const std::string uint64 = "uint64";
-// static const std::string int8 = "int8";
-// static const std::string int16 = "int16";
-// static const std::string int32 = "int32";
-// static const std::string int64 = "int64";
-// static const std::string float16 = "float16";
-// static const std::string float32 = "float32";
-// static const std::string float64 = "float64";
-// }
 
-static capnp::JsonCodec gJsonCodec;
+// static capnp::JsonCodec gJsonCodec;
 
 /// "math.capnp".Vector2dProto
 typedef Vector2dProto Vector2d;
@@ -234,6 +184,173 @@ typedef Plan2Proto Plan2;
 /// "json.capnp".JsonProto
 typedef JsonProto Json;
 }
+
+
+namespace
+{
+constexpr uint16_t word_length = sizeof(capnp::word);
+}
+
+struct MessageHeader
+{
+    isaac_uuid_t uuid;
+    int64_t acqtime;
+    int64_t pubtime;
+};
+
+class IsaacBuffer
+{
+public:
+    virtual ~IsaacBuffer()
+    {
+    }
+    virtual void resize(size_t size) = 0;
+    virtual uint8_t* data() const = 0;
+    virtual size_t size() const = 0;
+    virtual isaac_memory_t type() const
+    {
+        return mMemoryType;
+    }
+
+protected:
+    isaac_memory_t mMemoryType;
+};
+
+class IsaacDeviceBuffer : public IsaacBuffer
+{
+public:
+    IsaacDeviceBuffer(size_t size = 0)
+    {
+        mMemoryType = isaac_memory_t::isaac_memory_cuda;
+        resize(size);
+    }
+    virtual ~IsaacDeviceBuffer()
+    {
+        CUDA_CHECK(cudaFree(mBuffer));
+        mBuffer = nullptr;
+    }
+    virtual void resize(size_t size)
+    {
+        if (size != mSize)
+        {
+            if (mBuffer)
+            {
+                CUDA_CHECK(cudaFree(mBuffer));
+                mBuffer = nullptr;
+            }
+            if (size > 0)
+            {
+                CUDA_CHECK(cudaMalloc(&mBuffer, size));
+            }
+            mSize = size;
+        }
+    }
+    virtual uint8_t* data() const
+    {
+        return mBuffer;
+    }
+    virtual size_t size() const
+    {
+        return mSize;
+    }
+
+private:
+    uint8_t* mBuffer = nullptr;
+    size_t mSize = 0;
+};
+
+class IsaacHostBuffer : public IsaacBuffer
+{
+public:
+    IsaacHostBuffer(size_t size = 0)
+    {
+        mMemoryType = isaac_memory_t::isaac_memory_host;
+        resize(size);
+    }
+    virtual void resize(size_t size)
+    {
+        mBuffer.resize(size);
+    }
+    virtual uint8_t* data() const
+    {
+        return (uint8_t*)mBuffer.data();
+    }
+    virtual size_t size() const
+    {
+        return mBuffer.size();
+    }
+
+    std::vector<uint8_t> mBuffer;
+};
+
+
+/**
+ * @brief A wrapper around proto messages to make construction easier
+ *
+ * @tparam Proto
+ */
+template <typename Proto>
+class IsaacMessage
+{
+public:
+    typename Proto::Builder initProto()
+    {
+
+        mCapnpMessageBuilder.reset(new ::capnp::MallocMessageBuilder());
+        return mCapnpMessageBuilder->initRoot<Proto>();
+    }
+#if 1
+    typename Proto::Reader getProto()
+    {
+        return mCapnpMessageBuilder->getRoot<Proto>();
+    }
+#else
+    typename Proto::Builder getProtoBuilder()
+    {
+        return mCapnpMessageBuilder->getRoot<Proto>();
+    }
+#endif
+    void capnpSegmentsToFlatArray()
+    {
+        segments = mCapnpMessageBuilder->getSegmentsForOutput();
+        segment_ptrs.resize(segments.size());
+        segment_sizes.resize(segments.size());
+        constexpr uint16_t word_length = sizeof(capnp::word);
+        for (uint64_t i = 0; i < segments.size(); ++i)
+        {
+            segment_ptrs[i] = reinterpret_cast<const uint8_t*>(segments[i].begin());
+            segment_sizes[i] = segments[i].size() * word_length;
+        }
+    }
+
+    void flatArrayToCapnpBuffer()
+    {
+        kj_segments.resize(segment_ptrs.size());
+        for (uint64_t i = 0; i < segment_ptrs.size(); i++)
+        {
+            kj_segments[i] = (kj::ArrayPtr<const ::capnp::word>(
+                reinterpret_cast<const ::capnp::word*>(segment_ptrs[i]),
+                reinterpret_cast<const ::capnp::word*>(segment_ptrs[i] + segment_sizes[i])));
+        }
+
+        ::capnp::ReaderOptions options;
+        options.traversalLimitInWords = kj::maxValue;
+        segments = kj::ArrayPtr<const kj::ArrayPtr<const ::capnp::word>>(kj_segments.data(), kj_segments.size());
+        mCapnpSegmentMessageReader.reset(new ::capnp::SegmentArrayMessageReader(segments, options));
+        // Copy the data to a builder so it cannot go out of scope
+        mCapnpMessageBuilder.reset(new ::capnp::MallocMessageBuilder());
+        mCapnpMessageBuilder->setRoot(mCapnpSegmentMessageReader->getRoot<Proto>());
+    }
+    std::vector<const uint8_t*> segment_ptrs;
+    std::vector<uint64_t> segment_sizes;
+
+private:
+    std::unique_ptr<::capnp::MallocMessageBuilder> mCapnpMessageBuilder;
+    std::unique_ptr<::capnp::SegmentArrayMessageReader> mCapnpSegmentMessageReader;
+    std::vector<kj::ArrayPtr<const ::capnp::word>> kj_segments;
+    kj::ArrayPtr<const kj::ArrayPtr<const ::capnp::word>> segments;
+};
+
 }
 }
 }

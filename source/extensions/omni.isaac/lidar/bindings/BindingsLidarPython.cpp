@@ -41,6 +41,19 @@ PYBIND11_MODULE(_lidar, m)
              },
              "get the distance from the lidar to the hit for each beam in uint16 and scaled by min and max distance")
 
+        .def("get_linear_depth_data",
+             [](const LidarInterface* li, const char* lidarPath) -> py::object {
+                 if (!li)
+                     return py::none();
+                 float* data = li->getLinearDepthData(lidarPath);
+                 int rows = li->getNumRows(lidarPath);
+                 int numColsTicked = li->getNumColsTicked(lidarPath);
+                 return py::array(py::buffer_info(data, sizeof(float), py::format_descriptor<float>::value, 2,
+                                                  { numColsTicked, rows }, { sizeof(float) * rows, sizeof(float) }));
+             },
+             "get the distance from the lidar to the hit for each beam in meters")
+
+
         .def("get_intensity_data",
              [](const LidarInterface* li, const char* lidarPath) -> py::object {
                  if (!li)

@@ -29,13 +29,14 @@ void Teleport::tick()
 
     MessageHeader header;
     IsaacMessage<isaac_message::RigidBody3Group> commandsRigidBody3Group;
-    auto commands = commandsRigidBody3Group.initProto();
     if (mObjects.size() <= 0)
     {
         return;
     }
-    if (receive(mInputComponent, mTeleportChannelName, header, commands))
+    if (checkErrorCode(receive(mInputComponent, mTeleportChannelName, header, commandsRigidBody3Group)))
     {
+        auto commands = commandsRigidBody3Group.getProto();
+
         auto bodies = commands.getBodies();
         auto names = commands.getNames();
         if (bodies.size() != names.size())
@@ -59,7 +60,7 @@ void Teleport::tick()
             {
                 pxr::UsdPrim prim = object.second;
                 std::string actorName = object.first;
-                if (strcmp(actorName.c_str(), names[i].asString().cStr()) == 0)
+                if (strcmp(actorName.c_str(), names[i].cStr()) == 0)
                 {
                     setTransform(mDynamicControlPtr, prim, pxBodyTranslation * mInvUnitScale, pxBodyRotation);
                     setScale(mDynamicControlPtr, prim, pxBodyScale);

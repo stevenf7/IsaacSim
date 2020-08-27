@@ -50,15 +50,15 @@ void SceneLoader::tick()
     CARB_PROFILE_ZONE(0, "REB SceneLoader Tick");
 
     IsaacMessage<isaac_message::Json> json;
-    auto jsonProto = json.initProto();
     {
         // Receive current command
-        std::vector<std::vector<uint8_t>> buffers;
         MessageHeader header;
-        if (receive(mInputComponent, mRequestChannelName, header, jsonProto, buffers))
+        if (checkErrorCode(receive(mInputComponent, mRequestChannelName, header, json)))
         {
+            auto jsonProto = json.getProto();
+
             CARB_LOG_INFO("SceneLoader got message");
-            std::string jsonConfig = jsonProto.getSerialized().asString();
+            std::string jsonConfig = jsonProto.getSerialized();
             carb::dictionary::Item* jsonBase = mJsonSerializer->createDictionaryFromStringBuffer(jsonConfig.c_str());
 
             const carb::dictionary::Item* requestDict = mIDict->getItem(jsonBase, "request");
@@ -90,8 +90,8 @@ void SceneLoader::initializeParams(std::string inputComponent,
 
 void SceneLoader::SendResponse(int status, std::string request)
 {
-    IsaacMessage<isaac_message::Json> json;
-    auto jsonReplyProto = json.initProto();
+    IsaacMessage<isaac_message::Json> jsonMessage;
+    auto jsonReplyProto = jsonMessage.initProto();
 
     auto dictionaryRoot = mIDict->createItem(nullptr, "<root>", carb::dictionary::ItemType::eDictionary);
     auto statusItem = mIDict->createItem(dictionaryRoot, "status", carb::dictionary::ItemType::eDictionary);
@@ -105,8 +105,9 @@ void SceneLoader::SendResponse(int status, std::string request)
     mIDict->destroyItem(dictionaryRoot);
 
     jsonReplyProto.setSerialized(replyMessage);
-    std::vector<std::vector<uint8_t>> buffers;
-    publish(mOutputComponent, mReplyChannelName, jsonReplyProto, isaac_message::JsonProtoId, buffers);
+    std::vector<std::unique_ptr<IsaacBuffer>> buffers;
+
+    publish(mOutputComponent, mReplyChannelName, jsonMessage, isaac_message::JsonProtoId, buffers);
 }
 
 void SceneLoader::LoadSceneAndScenario(std::string sceneName, int scenarioIndex, std::string request)

@@ -55,6 +55,11 @@ public:
         return mDrawLidarPoints;
     }
 
+    bool getDrawLidarLines()
+    {
+        return mDrawLidarLines;
+    }
+
     std::vector<DebugData>& getDebugLines()
     {
         return mDebugLines;
@@ -119,6 +124,7 @@ private:
     float mMaxRange = 100.0f;
     bool mHighLod = true;
     bool mDrawLidarPoints = false;
+    bool mDrawLidarLines = false;
     float mYawOffset = 0.0f;
 
     // Ranges converted to proper units

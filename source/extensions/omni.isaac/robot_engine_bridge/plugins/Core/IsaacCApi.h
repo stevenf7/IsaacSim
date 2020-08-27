@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/alice/c_api/isaac_c_api.h>
+#include <packages/engine_c_api/isaac_c_api.h>
 
 #include <dlfcn.h>
 #include <functional>
@@ -45,6 +45,8 @@ CREATEBINDING(isaac_set_message_acqtime);
 CREATEBINDING(isaac_get_message_pubtime);
 CREATEBINDING(isaac_get_message_proto_id);
 CREATEBINDING(isaac_set_message_proto_id);
+CREATEBINDING(isaac_read_message_proto_segments);
+CREATEBINDING(isaac_set_message_proto_segments);
 CREATEBINDING(isaac_message_get_buffers);
 CREATEBINDING(isaac_message_append_buffer);
 CREATEBINDING(isaac_get_external_time_difference);
@@ -90,6 +92,8 @@ public:
         BINDFUNCTION(isaac_get_message_pubtime, g_c_api_handle);
         BINDFUNCTION(isaac_get_message_proto_id, g_c_api_handle);
         BINDFUNCTION(isaac_set_message_proto_id, g_c_api_handle);
+        BINDFUNCTION(isaac_read_message_proto_segments, g_c_api_handle);
+        BINDFUNCTION(isaac_set_message_proto_segments, g_c_api_handle);
         BINDFUNCTION(isaac_message_get_buffers, g_c_api_handle);
         BINDFUNCTION(isaac_message_append_buffer, g_c_api_handle);
         BINDFUNCTION(isaac_get_external_time_difference, g_c_api_handle);
@@ -130,6 +134,8 @@ public:
     DEFINEBINDING(isaac_get_message_pubtime);
     DEFINEBINDING(isaac_get_message_proto_id);
     DEFINEBINDING(isaac_set_message_proto_id);
+    DEFINEBINDING(isaac_read_message_proto_segments);
+    DEFINEBINDING(isaac_set_message_proto_segments);
     DEFINEBINDING(isaac_message_get_buffers);
     DEFINEBINDING(isaac_message_append_buffer);
     DEFINEBINDING(isaac_get_external_time_difference);

@@ -65,6 +65,10 @@ class Extension(omni.ext.IExt):
             self._editor.set_camera_position("/OmniverseKit_Persp", 59, 120, 164, True)
             self._editor.set_camera_target("/OmniverseKit_Persp", -190, -346, -263, True)
 
+            # editor must be playing for articulation to work, so start it now
+            if not self._editor.is_playing():
+                self._editor.play()
+
     # load robot
     def _on_load_robot(self, widget):
         task = asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
@@ -72,6 +76,7 @@ class Extension(omni.ext.IExt):
 
     # Starting up the joint_state rostopics and connect it to the robot
     def _on_connect_js(self, widget):
+
         # check robot is loaded and articulation exist
         self.stage = omni.usd.get_context().get_stage()
         robot_prim = self.stage.GetPrimAtPath("/panda")
@@ -95,10 +100,6 @@ class Extension(omni.ext.IExt):
         # The joint_state rostopic must be connected to the root of the robot's articulation in order to publish its states
         ROS_prim = self.stage.GetPrimAtPath("/ROS_JointState")
         ROS_prim.GetRelationship("articulationPrim").SetTargets(["/panda"])
-
-        # editor must be playing for messages to be published and received
-        if not self._editor.is_playing():
-            self._editor.play()
 
     # adding camera topic
     def _on_connect_camera(self, widget):

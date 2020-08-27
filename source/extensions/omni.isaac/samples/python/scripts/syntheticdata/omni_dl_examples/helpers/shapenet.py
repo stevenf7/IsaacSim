@@ -10,6 +10,7 @@
 
 import os
 import asyncio
+import pprint
 import omni.kit.pipapi
 import omni
 import omni.kit.app
@@ -56,12 +57,16 @@ LABEL_TO_SYNSET = {
     "washer": "04554684",
     "rifle": "04090263",
     "can": "02946921",
+    "bottle": "02876657",
+    "bowl": "02880940",
+    "earphone": "03261776",
+    "mug": "03797390",
 }
 
 SYNSET_TO_LABEL = {v: k for k, v in LABEL_TO_SYNSET.items()}
 
 
-async def convert_nomat(in_file, out_file):
+async def convert(in_file, out_file, load_materials=False):
     # This import causes conflicts when global
     from omni.isaac import shapenet
 
@@ -71,12 +76,12 @@ async def convert_nomat(in_file, out_file):
     # flags can be OMNI_CONVERTER_FLAGS_IGNORE_ANIMATION, OMNI_CONVERTER_FLAGS_IGNORE_MATERIALS,
     #              OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE, or OMNI_CONVERTER_FLAGS_GEN_SMOOTH_NORMALS
     # print(in_file, ' is being converted and saved as ', out_file, ', please standby, and remember to tip your waitress.' )
-    future = omni.assetimport.assetconverter.omniConverterCreateUSD(
-        in_file,
-        out_file,
-        omni.assetimport.assetconverter.OMNI_CONVERTER_FLAGS_IGNORE_MATERIALS
-        | omni.assetimport.assetconverter.OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE,
-    )
+
+    flags = omni.assetimport.assetconverter.OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE
+    if load_materials is False:
+        flags = flags | omni.assetimport.assetconverter.OMNI_CONVERTER_FLAGS_IGNORE_MATERIALS
+
+    future = omni.assetimport.assetconverter.omniConverterCreateUSD(in_file, out_file, flags)
     status = omni.assetimport.assetconverter.OmniConverterStatus.eOK
     while True:
         status = omni.assetimport.assetconverter.omniConverterCheckFutureStatus(future)
@@ -88,15 +93,18 @@ async def convert_nomat(in_file, out_file):
     return status
 
 
-def shapenet_convert_nomat(args):
-    # This import causes conflicts when global
-    from omni.isaac import shapenet
+def shapenet_convert(args):
 
     OmniKitHelper()
 
+    # This import needs to occur after kit is loaded so that physx can be discovered
+    from omni.isaac import shapenet
+
     local_shapenet = shapenet.get_local_shape_loc()
-    local_shapenet_nomat = f"{os.path.abspath(local_shapenet)}_nomat"
-    os.makedirs(local_shapenet_nomat, exist_ok=True)
+    local_shapenet_output = f"{os.path.abspath(local_shapenet)}_nomat"
+    if args.load_materials:
+        local_shapenet_output = f"{os.path.abspath(local_shapenet)}_mat"
+    os.makedirs(local_shapenet_output, exist_ok=True)
 
     synsets = args.categories
     if synsets is None:
@@ -115,11 +123,14 @@ def shapenet_convert_nomat(args):
             local_path = os.path.join(local_shapenet, synset, model_id, "models/model_normalized.obj")
 
             shape_name = "model_normalized_nomat"
-            out_dir = os.path.join(local_shapenet_nomat, synset, model_id)
+            if args.load_materials:
+                shape_name = "model_normalized_mat"
+
+            out_dir = os.path.join(local_shapenet_output, synset, model_id)
             os.makedirs(out_dir, exist_ok=True)
             out_path = os.path.join(out_dir, f"{shape_name}.usd")
             if not os.path.exists(out_path):
-                status = asyncio.get_event_loop().run_until_complete(convert_nomat(local_path, out_path))
+                status = asyncio.get_event_loop().run_until_complete(convert(local_path, out_path, args.load_materials))
                 if not status == omni.assetimport.assetconverter.OmniConverterStatus.eOK:
                     print(f"ERROR OmniConverterStatus is {status}")
                 print(f"---Added {out_path}")
@@ -128,7 +139,7 @@ def shapenet_convert_nomat(args):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser("Convert ShapeNet assets to USD without material")
+    parser = argparse.ArgumentParser("Convert ShapeNet assets to USD")
     parser.add_argument(
         "--categories",
         type=str,
@@ -139,8 +150,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--max-models", type=int, default=None, help="If specified, convert up to `max-models` per category."
     )
+    parser.add_argument(
+        "--load-materials", action="store_true", help="If specified, materials will be loaded from shapenet meshes"
+    )
     args = parser.parse_args()
 
+    if args.categories is None:
+        print("The following categories and id's are supported:")
+        pprint.pprint(LABEL_TO_SYNSET)
+        raise ValueError(f"No categories specified via --categories argument")
     # Ensure all categories specified are valid
     invalid_categories = []
     for c in args.categories:
@@ -150,4 +168,4 @@ if __name__ == "__main__":
     if invalid_categories:
         raise ValueError(f"The following are not valid ShapeNet categories: {invalid_categories}")
 
-    shapenet_convert_nomat(args)
+    shapenet_convert(args)

@@ -151,7 +151,7 @@ public:
         size_t count = 0;
         for (auto& component : mComponents)
         {
-            if (component.second.get()->getDrawLidarPoints())
+            if (component.second.get()->getDrawLidarPoints() || component.second.get()->getDrawLidarLines())
             {
                 auto& debugLines = component.second.get()->getDebugLines();
                 if (debugLines.size() > 0)
@@ -167,7 +167,7 @@ public:
             createDebugLineList(count);
             for (auto& component : mComponents)
             {
-                if (component.second.get()->getDrawLidarPoints())
+                if (component.second.get()->getDrawLidarPoints() || component.second.get()->getDrawLidarLines())
                 {
                     auto& debugLines = component.second.get()->getDebugLines();
                     for (const auto& line : debugLines)

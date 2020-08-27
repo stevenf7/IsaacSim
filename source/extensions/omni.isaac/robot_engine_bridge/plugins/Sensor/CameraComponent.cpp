@@ -1,5 +1,6 @@
 #include "CameraComponent.h"
 
+#include "../Utils/IsaacConversions.h"
 #include "plugins/core/UsdUtilities.h"
 
 #include <carb/cuda/CudaRuntime.h>
@@ -55,36 +56,8 @@ CameraComponent::CameraComponent() : IsaacComponent()
 
 CameraComponent::~CameraComponent()
 {
-    if (mRgbSensor)
-    {
-        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eRgb);
-        mRgbSensor = nullptr;
-        mRgbSensorData = nullptr;
-    }
-    if (mDepthSensor)
-    {
-        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eDepthLinear);
-        mDepthSensor = nullptr;
-        mDepthSensorData = nullptr;
-    }
-    if (mSegmentationSensor)
-    {
-        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eInstanceSegmentation);
-        mSegmentationSensor = nullptr;
-        mSegmentationSensorData = nullptr;
-    }
-    if (mSemanticSensor)
-    {
-        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eSemanticSegmentation);
-        mSemanticSensor = nullptr;
-        mSemanticSensorData = nullptr;
-    }
-    if (mBoundingBox2DSensor)
-    {
-        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eBoundingBox2DTight);
-        mBoundingBox2DSensor = nullptr;
-        mBoundingBox2DSensorData = nullptr;
-    }
+    // Destroy all sensors
+    onStop();
 
     mFramework->releaseInterface(mEditorInterface);
     mFramework->releaseInterface(mSyntheticDataInterface);
@@ -93,7 +66,7 @@ CameraComponent::~CameraComponent()
 
 void CameraComponent::tick()
 {
-    CARB_PROFILE_ZONE(0, "REB CameraComponent Tick");
+    CARB_PROFILE_ZONE(0, "CameraComponent Tick");
 
     if (!mRgbSensor && !mDepthSensor && !mSegmentationSensor && !mSemanticSensor && !mBoundingBox2DSensor)
         return;
@@ -118,6 +91,8 @@ void CameraComponent::tick()
 
     if (mRgbSensor)
     {
+        CARB_PROFILE_ZONE(0, "RGB");
+
         mRgbSensorData = mSyntheticDataInterface->getSensorDeviceData(mRgbSensor);
         const carb::sensors::SensorInfo& rgbInfo = mSensorsInterface->getSensorInfo(mRgbSensor);
 
@@ -131,18 +106,11 @@ void CameraComponent::tick()
         imageProto.setDataBufferIndex(0);
 
         const size_t bufferSize = rgbInfo.tex.width * rgbInfo.tex.height * 3;
-        std::vector<std::vector<uint8_t>> buffers(1);
-        buffers[0] = std::vector<uint8_t>(bufferSize);
+        mRgbBuffers[0]->resize(bufferSize);
 
-        uint8_t* rgbDevice;
-        CUDA_CHECK(cudaMalloc(&rgbDevice, bufferSize));
-
-        rgbaToRgb(rgbDevice, (uint8_t*)mRgbSensorData, rgbInfo.tex.width, rgbInfo.tex.height, rgbInfo.tex.rowSize);
-        CUDA_CHECK(cudaMemcpy(buffers[0].data(), rgbDevice, bufferSize, cudaMemcpyDeviceToHost));
-
-        CUDA_CHECK(cudaFree(rgbDevice));
-
-        publish(mRgbOutputComponent, mRgbChannelName, imageProto, isaac_message::ImageProtoId, buffers);
+        rgbaToRgb(mRgbBuffers[0]->data(), (uint8_t*)mRgbSensorData, rgbInfo.tex.width, rgbInfo.tex.height,
+                  rgbInfo.tex.rowSize);
+        publish(mRgbOutputComponent, mRgbChannelName, imageMessage, isaac_message::ImageProtoId, mRgbBuffers);
         publishIntrinsics(
             mRgbOutputComponent, mRgbChannelName, rgbInfo, focalLength, horizontalAperture, verticalAperture);
     }
@@ -150,7 +118,7 @@ void CameraComponent::tick()
 
     if (mDepthSensor)
     {
-
+        CARB_PROFILE_ZONE(0, "Depth");
         const carb::sensors::SensorInfo& depthInfo = mSensorsInterface->getSensorInfo(mDepthSensor);
 
         // Publish depth image
@@ -162,13 +130,12 @@ void CameraComponent::tick()
         imageProto.setChannels(1);
         imageProto.setDataBufferIndex(0);
 
-        std::vector<std::vector<uint8_t>> buffers(1);
-        buffers[0] = std::vector<uint8_t>(depthInfo.tex.width * depthInfo.tex.height * sizeof(float));
+        mDepthBuffers[0]->resize(depthInfo.tex.width * depthInfo.tex.height * sizeof(float));
         mDepthSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthSensor);
-        CUDA_CHECK(cudaMemcpy(
-            buffers[0].data(), mDepthSensorData, depthInfo.tex.rowSize * depthInfo.tex.height, cudaMemcpyDeviceToHost));
+        CUDA_CHECK(cudaMemcpy(mDepthBuffers[0]->data(), mDepthSensorData, depthInfo.tex.rowSize * depthInfo.tex.height,
+                              cudaMemcpyDeviceToDevice));
 
-        publish(mDepthOutputComponent, mDepthChannelName, imageProto, isaac_message::ImageProtoId, buffers);
+        publish(mDepthOutputComponent, mDepthChannelName, imageMessage, isaac_message::ImageProtoId, mDepthBuffers);
         publishIntrinsics(
             mDepthOutputComponent, mDepthChannelName, depthInfo, focalLength, horizontalAperture, verticalAperture);
     }
@@ -176,6 +143,8 @@ void CameraComponent::tick()
     // TODO can we turn on mSegmentationSensor && mSemanticSensor separately
     if (mSegmentationSensor && mSemanticSensor)
     {
+        CARB_PROFILE_ZONE(0, "Segmentation");
+
         mSegmentationSensorData = mSyntheticDataInterface->getSensorDeviceData(mSegmentationSensor);
         mSemanticSensorData = mSyntheticDataInterface->getSensorDeviceData(mSemanticSensor);
 
@@ -208,44 +177,32 @@ void CameraComponent::tick()
 
 
         // TODO : The instance and semantic segmentation should be refactored into one method
-        // TODO : Have persistent device buffers for the CUDA conversion
         // Instance segmentation
         {
             // Message buffers
-            std::vector<std::vector<uint8_t>> buffers(1);
             const size_t bufferSize = segmentationInfo.tex.width * segmentationInfo.tex.height * sizeof(uint16_t);
-            buffers[0] = std::vector<uint8_t>(bufferSize);
+            mSegmentationBuffers[0]->resize(bufferSize);
 
-            uint16_t* segmentationDevice;
-            CUDA_CHECK(cudaMalloc(&segmentationDevice, bufferSize));
+            uint32ToUint16((uint16_t*)mSegmentationBuffers[0]->data(), (uint32_t*)mSegmentationSensorData,
+                           segmentationInfo.tex.width, segmentationInfo.tex.height, segmentationInfo.tex.rowSize);
 
-            uint32ToUint16(segmentationDevice, (uint32_t*)mSegmentationSensorData, segmentationInfo.tex.width,
-                           segmentationInfo.tex.height, segmentationInfo.tex.rowSize);
-            CUDA_CHECK(cudaMemcpy(buffers[0].data(), segmentationDevice, bufferSize, cudaMemcpyDeviceToHost));
-
-            CUDA_CHECK(cudaFree(segmentationDevice));
-
-            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_instance", instanceImageProto,
-                    isaac_message::ImageProtoId, buffers);
+            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_instance", instanceMessage,
+                    isaac_message::ImageProtoId, mSegmentationBuffers);
         }
 
         // Semantic segmentation
         {
-            std::vector<std::vector<uint8_t>> buffers(1);
             const size_t semanticBufferSize = semanticInfo.tex.width * semanticInfo.tex.height * sizeof(uint8_t);
-            buffers[0] = std::vector<uint8_t>(semanticBufferSize);
+            std::vector<std::unique_ptr<IsaacBuffer>> buffers(1);
+            mSemanticBuffers[0]->resize(semanticBufferSize);
 
-            uint8_t* semanticDevice;
-            CUDA_CHECK(cudaMalloc(&semanticDevice, semanticBufferSize));
 
-            uint32ToUint8(semanticDevice, (uint32_t*)mSemanticSensorData, semanticInfo.tex.width,
+            uint32ToUint8(mSemanticBuffers[0]->data(), (uint32_t*)mSemanticSensorData, semanticInfo.tex.width,
                           semanticInfo.tex.height, semanticInfo.tex.rowSize);
-            CUDA_CHECK(cudaMemcpy(buffers[0].data(), semanticDevice, semanticBufferSize, cudaMemcpyDeviceToHost));
 
-            CUDA_CHECK(cudaFree(semanticDevice));
 
-            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_class", semanticImageProto,
-                    isaac_message::ImageProtoId, buffers);
+            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_class", semanticMessage,
+                    isaac_message::ImageProtoId, mSemanticBuffers);
         }
 
         // Class labels
@@ -261,8 +218,8 @@ void CameraComponent::tick()
                 semanticLabelsProto[index].setName(it->second);
                 index++;
             }
-            std::vector<std::vector<uint8_t>> buffers;
-            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_labels", labelsProto,
+            std::vector<std::unique_ptr<IsaacBuffer>> buffers;
+            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_labels", labelsMessage,
                     isaac_message::LabelProtoId, buffers);
         }
 
@@ -273,6 +230,8 @@ void CameraComponent::tick()
 
     if (mEnableBoundingBox2D)
     {
+        CARB_PROFILE_ZONE(0, "BBox");
+
         mBoundingBox2DSensorData = mSyntheticDataInterface->getSensorHostData(mBoundingBox2DSensor);
 
         const carb::sensors::SensorInfo& boundingBoxInfo = mSensorsInterface->getSensorInfo(mBoundingBox2DSensor);
@@ -281,15 +240,11 @@ void CameraComponent::tick()
 
         if (bufferSize > 0)
         {
-            // Create the message
-            IsaacMessage<isaac_message::Detections2> detectionMessage;
-            auto detectionMessageProto = detectionMessage.initProto();
-            auto boundingBoxesProto = detectionMessageProto.initBoundingBoxes(numBoundingBoxes);
-            auto predictionsProto = detectionMessageProto.initPredictions(numBoundingBoxes);
 
             carb::sensors::BoundingBox2DValues* data =
                 reinterpret_cast<carb::sensors::BoundingBox2DValues*>(mBoundingBox2DSensorData);
-            for (int boundingBoxId = 0; boundingBoxId < numBoundingBoxes; boundingBoxId++)
+            int numValidBoundingBoxes = 0;
+            for (int i = 0; i < numBoundingBoxes; i++)
             {
                 std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
                 // Filter bounding boxes based on semantic data
@@ -302,27 +257,196 @@ void CameraComponent::tick()
                         continue;
                     }
                 }
-                // CARB_LOG_ERROR("Data %d: %s %d, %d, %d, %d, %d, %d", boundingBoxId + 1, semanticLabel.c_str(),
-                // data->instanceId, data->semanticId, data->x_min, data->y_min, data->x_max, data->y_max);
-                auto minProto = boundingBoxesProto[boundingBoxId].initMin();
-                auto maxProto = boundingBoxesProto[boundingBoxId].initMax();
-                minProto.setX(data->y_min);
-                minProto.setY(data->x_min);
-                maxProto.setX(data->y_max);
-                maxProto.setY(data->x_max);
-                predictionsProto[boundingBoxId].setLabel(semanticLabel);
-                predictionsProto[boundingBoxId].setConfidence(1.0);
                 data++;
+                numValidBoundingBoxes++;
             }
-            std::vector<std::vector<uint8_t>> buffers;
-            publish(mBoundingBox2DOutputComponent, mBoundingBox2DChannelName, detectionMessageProto,
-                    isaac_message::Detections2ProtoId, buffers);
+            if (numValidBoundingBoxes > 0)
+            {
+                // Create the message
+                IsaacMessage<isaac_message::Detections2> detectionMessage;
+                auto detectionMessageProto = detectionMessage.initProto();
+                auto boundingBoxesProto = detectionMessageProto.initBoundingBoxes(numValidBoundingBoxes);
+                auto predictionsProto = detectionMessageProto.initPredictions(numValidBoundingBoxes);
+
+                data = reinterpret_cast<carb::sensors::BoundingBox2DValues*>(mBoundingBox2DSensorData);
+                int boundingBoxId = 0;
+                for (int i = 0; i < numBoundingBoxes; i++)
+                {
+                    std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
+                    // Filter bounding boxes based on semantic data
+                    if (mBoundingBox2DClassList.size() > 0)
+                    {
+                        if (std::find(mBoundingBox2DClassList.begin(), mBoundingBox2DClassList.end(), semanticLabel) ==
+                            mBoundingBox2DClassList.end())
+                        {
+                            data++;
+                            continue;
+                        }
+                    }
+                    // CARB_LOG_ERROR("Data %d: %s %d, %d, %d, %d, %d, %d", boundingBoxId + 1, semanticLabel.c_str(),
+                    // data->instanceId, data->semanticId, data->x_min, data->y_min, data->x_max, data->y_max);
+                    auto minProto = boundingBoxesProto[boundingBoxId].initMin();
+                    auto maxProto = boundingBoxesProto[boundingBoxId].initMax();
+                    minProto.setX(data->y_min);
+                    minProto.setY(data->x_min);
+                    maxProto.setX(data->y_max);
+                    maxProto.setY(data->x_max);
+                    predictionsProto[boundingBoxId].setLabel(semanticLabel);
+                    predictionsProto[boundingBoxId].setConfidence(1.0);
+                    data++;
+                    boundingBoxId++;
+                }
+                std::vector<std::unique_ptr<IsaacBuffer>> buffers;
+                publish(mBoundingBox2DOutputComponent, mBoundingBox2DChannelName, detectionMessage,
+                        isaac_message::Detections2ProtoId, buffers);
+            }
+        }
+    }
+
+    if (mEnableBoundingBox3D)
+    {
+        CARB_PROFILE_ZONE(0, "BBox3D");
+
+        mBoundingBox3DSensorData = mSyntheticDataInterface->getSensorHostData(mBoundingBox3DSensor);
+
+        const carb::sensors::SensorInfo& boundingBoxInfo = mSensorsInterface->getSensorInfo(mBoundingBox3DSensor);
+        size_t bufferSize = boundingBoxInfo.buff.size;
+        int numBoundingBoxes = bufferSize / sizeof(carb::sensors::BoundingBox3DValues);
+
+        if (bufferSize > 0)
+        {
+            int numValidBoundingBoxes = 0;
+
+            carb::sensors::BoundingBox3DValues* data =
+                reinterpret_cast<carb::sensors::BoundingBox3DValues*>(mBoundingBox3DSensorData);
+
+            for (int i = 0; i < numBoundingBoxes; i++)
+            {
+                std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
+                // Filter bounding boxes based on semantic data
+                if (mBoundingBox3DClassList.size() > 0)
+                {
+                    if (std::find(mBoundingBox3DClassList.begin(), mBoundingBox3DClassList.end(), semanticLabel) ==
+                        mBoundingBox3DClassList.end())
+                    {
+                        data++;
+                        continue;
+                    }
+                }
+                data++;
+                numValidBoundingBoxes++;
+            }
+            if (numValidBoundingBoxes > 0)
+            {
+                // Create the message
+                data = reinterpret_cast<carb::sensors::BoundingBox3DValues*>(mBoundingBox3DSensorData);
+                IsaacMessage<isaac_message::Detections3> detectionMessage;
+                auto detectionMessageProto = detectionMessage.initProto();
+                auto boundingBoxesProto = detectionMessageProto.initBoundingBoxes(numValidBoundingBoxes);
+                auto predictionsProto = detectionMessageProto.initPredictions(numValidBoundingBoxes);
+                auto posesProto = detectionMessageProto.initPoses(numValidBoundingBoxes);
+
+                int boundingBoxId = 0;
+                for (int i = 0; i < numBoundingBoxes; i++)
+                {
+                    std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
+                    // Filter bounding boxes based on semantic data
+                    if (mBoundingBox3DClassList.size() > 0)
+                    {
+                        if (std::find(mBoundingBox3DClassList.begin(), mBoundingBox3DClassList.end(), semanticLabel) ==
+                            mBoundingBox3DClassList.end())
+                        {
+                            data++;
+                            continue;
+                        }
+                    }
+
+                    // Get pose in world space
+                    auto floatTransform = data->transform;
+                    std::vector<std::vector<float>> transformMatrix(4, std::vector<float>(4, 0));
+                    for (int row = 0; row < 4; row++)
+                        for (int col = 0; col < 4; col++)
+                            transformMatrix[row][col] = floatTransform[row][col];
+                    pxr::GfTransform gfTransform = pxr::GfTransform(pxr::GfMatrix4d(transformMatrix));
+                    auto isaacTranslationProto = posesProto[boundingBoxId].initTranslation();
+                    auto isaacRotationProto = posesProto[boundingBoxId].initRotation();
+                    pxr::GfVec3d translationValue = gfTransform.GetTranslation();
+                    pxr::GfQuatd rotationValue = gfTransform.GetRotation().GetQuat();
+                    pxr::GfVec3d scaleValue = gfTransform.GetScale() * mUnitScale;
+                    toVector3dProto(translationValue * mUnitScale, isaacTranslationProto);
+                    toSO3dProto(rotationValue, isaacRotationProto);
+                    // Get min and max values of 3D bounding box in local space
+                    auto minProto = boundingBoxesProto[boundingBoxId].initMin();
+                    auto maxProto = boundingBoxesProto[boundingBoxId].initMax();
+                    minProto.setX(data->x_min * scaleValue[0]);
+                    minProto.setY(data->y_min * scaleValue[1]);
+                    minProto.setZ(data->z_min * scaleValue[2]);
+                    maxProto.setX(data->x_max * scaleValue[0]);
+                    maxProto.setY(data->y_max * scaleValue[1]);
+                    maxProto.setZ(data->z_max * scaleValue[2]);
+                    predictionsProto[boundingBoxId].setLabel(semanticLabel);
+                    predictionsProto[boundingBoxId].setConfidence(1.0);
+                    // CARB_LOG_ERROR("Translation: %f, %f, %f", isaacTranslationProto.getX(),
+                    // isaacTranslationProto.getY(),
+                    //                isaacTranslationProto.getZ());
+                    // CARB_LOG_ERROR("Scale: %f, %f, %f", scaleValue[0], scaleValue[1], scaleValue[2]);
+                    // std::string primUri(mSyntheticDataInterface->getUriFromInstanceId(data->instanceId));
+                    // CARB_LOG_ERROR("Data %d: %s, %s, %d, %d, %f, %f, %f, %f, %f, %f", boundingBoxId + 1,
+                    // primUri.c_str(),
+                    //                semanticLabel.c_str(), data->instanceId, data->semanticId, data->x_min,
+                    //                data->y_min, data->z_min, data->x_max, data->y_max, data->z_max);
+                    data++;
+                    boundingBoxId++;
+                }
+                std::vector<std::unique_ptr<IsaacBuffer>> buffers;
+                publish(mBoundingBox3DOutputComponent, mBoundingBox3DChannelName, detectionMessage,
+                        isaac_message::Detections3ProtoId, buffers);
+            }
         }
     }
 }
 void CameraComponent::onStart()
 {
     onComponentChange();
+}
+void CameraComponent::onStop()
+{
+    if (mRgbSensor)
+    {
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eRgb);
+        mRgbSensor = nullptr;
+        mRgbSensorData = nullptr;
+    }
+    if (mDepthSensor)
+    {
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eDepthLinear);
+        mDepthSensor = nullptr;
+        mDepthSensorData = nullptr;
+    }
+    if (mSegmentationSensor)
+    {
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eInstanceSegmentation);
+        mSegmentationSensor = nullptr;
+        mSegmentationSensorData = nullptr;
+    }
+    if (mSemanticSensor)
+    {
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eSemanticSegmentation);
+        mSemanticSensor = nullptr;
+        mSemanticSensorData = nullptr;
+    }
+    if (mBoundingBox2DSensor)
+    {
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eBoundingBox2DTight);
+        mBoundingBox2DSensor = nullptr;
+        mBoundingBox2DSensorData = nullptr;
+    }
+    if (mBoundingBox3DSensor)
+    {
+        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eBoundingBox3D);
+        mBoundingBox3DSensor = nullptr;
+        mBoundingBox3DSensorData = nullptr;
+    }
 }
 
 void CameraComponent::onComponentChange()
@@ -353,30 +477,47 @@ void CameraComponent::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DOutputChannelAttr(), mBoundingBox2DChannelName);
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DClassListAttr(), filterClassList);
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DEnabledAttr(), mEnableBoundingBox2D);
+
+    // Bounding Box 3D attributes
+    std::string filterClassList3D;
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DOutputComponentAttr(), mBoundingBox3DOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DOutputChannelAttr(), mBoundingBox3DChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DClassListAttr(), filterClassList3D);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DEnabledAttr(), mEnableBoundingBox3D);
+
     mBoundingBox2DClassList.clear();
     if (filterClassList != "")
         boost::split(mBoundingBox2DClassList, filterClassList, [](char c) { return c == ','; });
+
+    mBoundingBox3DClassList.clear();
+    if (filterClassList3D != "")
+        boost::split(mBoundingBox3DClassList, filterClassList3D, [](char c) { return c == ','; });
 
 
     if (mEnableRgb)
     {
         mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb);
+        mRgbBuffers.resize(1);
+        mRgbBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
     }
     else
     {
         mRgbSensor = nullptr;
         mRgbSensorData = nullptr;
+        mRgbBuffers.clear();
     }
 
     if (mEnableDepth)
     {
-
         mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear);
+        mDepthBuffers.resize(1);
+        mDepthBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
     }
     else
     {
         mDepthSensor = nullptr;
         mDepthSensorData = nullptr;
+        mDepthBuffers.clear();
     }
 
     if (mEnableSegmentation)
@@ -384,7 +525,10 @@ void CameraComponent::onComponentChange()
 
         mSegmentationSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation);
         mSemanticSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation);
-
+        mSegmentationBuffers.resize(1);
+        mSegmentationBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
+        mSemanticBuffers.resize(1);
+        mSemanticBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
         // build segmentation ID to label map
         mSegmentationIDLabelMap.clear();
         for (int i = 0; i < 256; ++i)
@@ -403,6 +547,8 @@ void CameraComponent::onComponentChange()
         mSegmentationSensorData = nullptr;
         mSemanticSensor = nullptr;
         mSemanticSensorData = nullptr;
+        mSegmentationBuffers.clear();
+        mSemanticBuffers.clear();
     }
 
     if (mEnableBoundingBox2D)
@@ -413,6 +559,16 @@ void CameraComponent::onComponentChange()
     {
         mBoundingBox2DSensor = nullptr;
         mBoundingBox2DSensorData = nullptr;
+    }
+
+    if (mEnableBoundingBox3D)
+    {
+        mBoundingBox3DSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D);
+    }
+    else
+    {
+        mBoundingBox3DSensor = nullptr;
+        mBoundingBox3DSensorData = nullptr;
     }
 }
 
@@ -436,9 +592,10 @@ void CameraComponent::publishIntrinsics(std::string outputComponent,
     center.setX(info.tex.height * 0.5f);
     center.setY(info.tex.width * 0.5f);
 
-    std::vector<std::vector<uint8_t>> dummy_buffers;
-    publish(outputComponent, channelName + "_intrinsics", intrinsicsProto, isaac_message::CameraIntrinsicsProtoId,
-            dummy_buffers);
+    std::vector<std::unique_ptr<IsaacBuffer>> dummyBuffers;
+
+    publish(outputComponent, channelName + "_intrinsics", intrinsicsMessage, isaac_message::CameraIntrinsicsProtoId,
+            dummyBuffers);
 }
 }
 }

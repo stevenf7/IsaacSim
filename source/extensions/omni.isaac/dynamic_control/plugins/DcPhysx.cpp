@@ -487,7 +487,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
 
     if (!abase || abase->getConcreteType() != PxConcreteType::eARTICULATION_REDUCED_COORDINATE)
     {
-        DC_LOG_ERROR("Failed to find articulation at '%s'", usdPath.GetString().c_str());
+        DC_LOG_WARN("Failed to find articulation at '%s'", usdPath.GetString().c_str());
         return kDcInvalidHandle;
     }
 
@@ -766,7 +766,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     }
     else
     {
-        DC_LOG_WARN("Articulation is not in a physics scene, some functionality is missing");
+        DC_LOG_WARN(
+            "Articulation is not in a physics scene, some functionality is missing, make sure that a physics scene is present and simulation is running");
     }
 
     // figure out which path this articulation is mapped to in omni.physx
@@ -2072,6 +2073,22 @@ carb::Float3 CARB_ABI DcGetRigidBodyLinearVelocity(DcHandle bodyHandle)
     return kFloat3Zero;
 }
 
+carb::Float3 CARB_ABI DcGetRigidBodyLocalLinearVelocity(DcHandle bodyHandle)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
+    if (body && body->pxRigidBody)
+    {
+        PxTransform pose = body->pxRigidBody->getGlobalPose();
+        PxVec3 vel = body->pxRigidBody->getLinearVelocity();
+
+        return carb::Float3{ vel.dot(pose.q.rotate(PxVec3(1, 0, 0))), vel.dot(pose.q.rotate(PxVec3(0, 1, 0))),
+                             vel.dot(pose.q.rotate(PxVec3(0, 0, 1))) };
+    }
+    return kFloat3Zero;
+}
+
 carb::Float3 CARB_ABI DcGetRigidBodyAngularVelocity(DcHandle bodyHandle)
 {
     (void)DC_CHECK_SIMULATING();
@@ -2199,6 +2216,22 @@ void CARB_ABI DcGetRelativeBodyPoses(DcHandle parentHandle,
             }
         }
     }
+}
+
+bool CARB_ABI DcGetRigidBodyProperties(DcHandle bodyHandle, DcRigidBodyProperties* props)
+{
+    (void)DC_CHECK_SIMULATING();
+
+    DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
+    if (body)
+    {
+        PxRigidBody* pxBody = body->pxRigidBody;
+
+        props->mass = pxBody->getMass();
+        props->moment = asFloat3(pxBody->getMassSpaceInertiaTensor());
+        return true;
+    }
+    return false;
 }
 
 //
@@ -3573,23 +3606,18 @@ void SuUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
     }
 }
 
-void CARB_ABI SuPrimAdd(const char* primPath, void* userData)
+void CARB_ABI onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 {
     // printf("++ DC: Prim Add: %s\n", primPath);
 }
 
-void CARB_ABI SuPrimChange(const char* primPath, const omni::kit::PrimDirtyBits*, void* userData)
+void CARB_ABI onPrimOrPropertyChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
     // printf("++ DC: Prim Change: %s\n", primPath);
 }
 
-void CARB_ABI SuPrimRemove(const char* primPath, void* userData)
+void CARB_ABI onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
-    if (!primPath)
-    {
-        return;
-    }
-
     // printf("++ DC: Prim Remove: %s\n", primPath);
 
     DcContext* ctx = g_dcCtx;
@@ -3598,7 +3626,7 @@ void CARB_ABI SuPrimRemove(const char* primPath, void* userData)
         return;
     }
 
-    ctx->removeUsdPath(SdfPath(primPath));
+    ctx->removeUsdPath(primPath);
 }
 }
 }
@@ -3633,9 +3661,9 @@ CARB_EXPORT void carbOnPluginStartup()
     suDesc.onStop = SuStop;
     // suDesc.onRaycast = handleRaycast;
 
-    suDesc.onPrimAdd = SuPrimAdd;
-    suDesc.onPrimChange = SuPrimChange;
-    suDesc.onPrimRemove = SuPrimRemove;
+    suDesc.onPrimAdd = onPrimAdd;
+    suDesc.onPrimOrPropertyChange = onPrimOrPropertyChange;
+    suDesc.onPrimRemove = onPrimRemove;
 
     g_suNode = g_su->createStageUpdateNode(suDesc);
     if (!g_suNode)
@@ -3717,6 +3745,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.getRigidBodyChildJoint = DcGetRigidBodyChildJoint;
     iface.getRigidBodyPose = DcGetRigidBodyPose;
     iface.getRigidBodyLinearVelocity = DcGetRigidBodyLinearVelocity;
+    iface.getRigidBodyLocalLinearVelocity = DcGetRigidBodyLocalLinearVelocity;
     iface.getRigidBodyAngularVelocity = DcGetRigidBodyAngularVelocity;
     iface.setRigidBodyDisableGravity = DcSetRigidBodyDisableGravity;
     iface.setRigidBodyDisableSimulation = DcSetRigidBodyDisableSimulation;
@@ -3725,6 +3754,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.setRigidBodyAngularVelocity = DcSetRigidBodyAngularVelocity;
     iface.applyBodyForce = DcApplyBodyForce;
     iface.getRelativeBodyPoses = DcGetRelativeBodyPoses;
+    iface.getRigidBodyProperties = DcGetRigidBodyProperties;
 
     iface.getJointName = DcGetJointName;
     iface.getJointPath = DcGetJointPath;

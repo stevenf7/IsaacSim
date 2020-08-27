@@ -23,7 +23,7 @@ group ("extensions/"..ext_id)
 
     repo_build.prebuild_copy {
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/ros_bridge" },
-        { "%{root}/_build/target-deps/nv_ros/lib/**", ext_bin_folder },
+        { "%{root}/_build/target-deps/nv_ros/lib/lib**", ext_bin_folder },
         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RosBridgeSchema/**", ext_folder.."/omni/isaac/RosBridgeSchema" },
         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}rosBridgeSchema${lib_ext}", ext_folder.."/bin/$platform/$config"},
     }

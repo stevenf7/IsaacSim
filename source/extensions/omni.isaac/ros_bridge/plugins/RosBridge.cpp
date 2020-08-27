@@ -115,13 +115,13 @@ void onResume(float currentTime, void* userData)
 void onPause(void* userData)
 {
 }
-void onPrimAdd(const char* primPath, void* userData)
+void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 {
     // printf("++ REB: Prim Add: %s\n", primPath,
     //        g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
     if (g_application_handle)
     {
-        pxr::UsdPrim addedPrim = g_stage->GetPrimAtPath(pxr::SdfPath(primPath));
+        pxr::UsdPrim addedPrim = g_stage->GetPrimAtPath(primPath);
         if (!addedPrim)
         {
             return;
@@ -137,22 +137,22 @@ void onPrimAdd(const char* primPath, void* userData)
         }
     }
 }
-void onComponentChange(const char* primPath, const omni::kit::PrimDirtyBits*, void* userData)
+void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
     // printf("++ REB: Prim Change: %s of type %s\n", primPath,
     //        g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
     if (g_stage && g_application_handle)
     {
-        g_application_handle->onComponentChange(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        g_application_handle->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
     }
 }
 
-void onPrimRemove(const char* primPath, void* userData)
+void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
     // printf("++ REB: Prim Remove: %s\n", primPath);
     if (g_application_handle)
     {
-        g_application_handle->onComponentRemove(pxr::SdfPath(primPath));
+        g_application_handle->onComponentRemove(primPath);
     }
 }
 }
@@ -187,7 +187,7 @@ CARB_EXPORT void carbOnPluginStartup()
     g_physx = g_framework->acquireInterface<carb::physics::PhysX>();
     if (!g_physx)
     {
-        CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
+        CARB_LOG_ERROR("Failed to acquire PhysX interface");
         return;
     }
 
@@ -201,7 +201,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onResume = onResume;
     desc.onPause = onPause;
     desc.onPrimAdd = onPrimAdd;
-    desc.onPrimChange = onComponentChange;
+    desc.onPrimOrPropertyChange = onComponentChange;
     desc.onPrimRemove = onPrimRemove;
     desc.order = 100;
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);

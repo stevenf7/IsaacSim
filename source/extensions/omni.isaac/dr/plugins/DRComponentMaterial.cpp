@@ -4,13 +4,7 @@
 
 #include "DRComponentMaterial.h"
 
-#include <AudioSchema/sound.h>
 #include <boost/algorithm/string.hpp>
-#include <carb/Framework.h>
-#include <carb/Types.h>
-#include <carb/InterfaceUtils.h>
-#include <carb/filesystem/IFileSystem.h>
-#include <DrSchema/materialComponent.h>
 
 #include <omni/kit/KitUtils.h>
 #include <omni/usd/UtilsIncludes.h>
@@ -26,8 +20,9 @@ namespace dr
 
 DRComponentMaterial::DRComponentMaterial() : DRComponentBase()
 {
-    mDatasource = carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("omni.connection.plugin");
-    mConnection = omni::kit::getLatestConnection(omni::kit::getConnectionHub());
+    mDatasource =
+        carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-omniclient.plugin");
+    mConnection = carb::datasource::connectAndWait(carb::datasource::ConnectionDesc{ "" }, mDatasource);
     mIsIgnore = false;
     mIsGrouping = false;
 }
@@ -87,7 +82,8 @@ void DRComponentMaterial::update()
     mPrimClassMap.clear();
     for (auto& prim : mAllPrims)
     {
-        if (prim && prim.GetTypeName().GetString() == "Mesh")
+        auto primType = prim.GetTypeName().GetString();
+        if (prim && (primType == "Mesh" || primType == "Xform"))
         {
             pxr::UsdShadeMaterialBindingAPI materialBinding(prim);
             mPrimMaterialBindingsMap.insert(std::make_pair(prim.GetPath().GetString(), materialBinding));
@@ -104,14 +100,23 @@ void DRComponentMaterial::update()
             }
         }
     }
+    mMaterialPrims.clear();
+    mMaterialShades.clear();
+    if (mLoadedMaterialPaths.size() > 0)
+    {
+        for (std::string& materialPath : mLoadedMaterialPaths)
+        {
+            auto materialPrim = mStage->GetPrimAtPath(pxr::SdfPath(materialPath.c_str()));
+            pxr::UsdShadeMaterial material(materialPrim);
+            mMaterialShades.push_back(material);
+        }
+    }
     if (mMaterialLayer)
     {
-        mMaterialPrims.clear();
-        mMaterialShades.clear();
         pxr::UsdEditContext context(mStage, mMaterialLayer);
         for (std::string& url : mMaterialList)
         {
-            std::string mdlDataSourcePath = url.substr(std::strlen("omni:"));
+            std::string mdlDataSourcePath = url;
             carb::extras::Path urlPath(url.c_str());
             if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Materials"))
             {
@@ -147,6 +152,8 @@ void DRComponentMaterial::onComponentChange()
     materialPrim.GetGroupedClassAttr().Get(&groupedClass);
     materialPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     materialPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
+    materialPrim.GetSeedAttr().Get(&mSeed);
+    mRandomGenerator.seed(mSeed);
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = materialPrim.GetPrimPathsRel();
@@ -160,6 +167,12 @@ void DRComponentMaterial::onComponentChange()
         boost::split(mIgnoreClassList, ignoredClass, [](char c) { return c == ','; });
     if (groupedClass != "")
         boost::split(mGroupClassList, groupedClass, [](char c) { return c == ','; });
+    mLoadedMaterialPaths.clear();
+    pxr::UsdRelationship loadedMaterialPrimPaths = materialPrim.GetLoadedMaterialPrimPathsRel();
+    pxr::SdfPathVector materialTargets;
+    loadedMaterialPrimPaths.GetTargets(&materialTargets);
+    for (auto target : materialTargets)
+        mLoadedMaterialPaths.push_back(target.GetString());
     update();
     CARB_LOG_INFO("Material Update: %s", mCompName.c_str());
 }
@@ -192,9 +205,9 @@ void DRComponentMaterial::tick()
 {
     for (auto& primMaterialBinding : mPrimMaterialBindingsMap)
     {
-        if (mMaterialList.size() == 0 || mMaterialShades.size() == 0)
+        if (mMaterialShades.size() == 0)
             return;
-        int randVal = int(randomRange(0.0f, mMaterialList.size() * 1.0f));
+        int randVal = int(randomRangeFloat(0.0f, mMaterialShades.size() * 1.0f));
         pxr::UsdShadeMaterialBindingAPI materialBinding = primMaterialBinding.second;
         // Check for classes to be grouped
         if (mIsGrouping && mPrimClassMap.find(primMaterialBinding.first) != mPrimClassMap.end())

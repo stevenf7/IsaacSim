@@ -11,6 +11,8 @@ ADD_SCALE_DR_MENU_ITEM = "Create/Isaac/DR/Scale Component"
 ADD_LIGHT_DR_MENU_ITEM = "Create/Isaac/DR/Light Component"
 ADD_TEXTURE_DR_MENU_ITEM = "Create/Isaac/DR/Texture Component"
 ADD_MATERIAL_DR_MENU_ITEM = "Create/Isaac/DR/Material Component"
+ADD_MESH_DR_MENU_ITEM = "Create/Isaac/DR/Mesh Component"
+ADD_VISIBILITY_DR_MENU_ITEM = "Create/Isaac/DR/Visibility Component"
 
 
 class DRMenu:
@@ -23,7 +25,7 @@ class DRMenu:
         self._dr = domain_randomizer_interface
         self.texture_layer_index = -1
         self.texture_component_count = 0
-        self.num_components = 7
+        self.num_components = 9
 
         self._menus = []
         editor_menu = omni.kit.ui.get_editor_menu()
@@ -34,6 +36,8 @@ class DRMenu:
         self._menus.append(editor_menu.add_item(ADD_LIGHT_DR_MENU_ITEM, self._on_dr_menu_click))
         self._menus.append(editor_menu.add_item(ADD_TEXTURE_DR_MENU_ITEM, self._on_dr_menu_click))
         self._menus.append(editor_menu.add_item(ADD_MATERIAL_DR_MENU_ITEM, self._on_dr_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_MESH_DR_MENU_ITEM, self._on_dr_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_VISIBILITY_DR_MENU_ITEM, self._on_dr_menu_click))
 
     def add_color_menu(self, parent=None):
         if parent:
@@ -45,14 +49,18 @@ class DRMenu:
                 self._stage, "/color_component_" + str(self.component_count[0]), True
             )
 
-        prim = DrSchema.ColorComponent.Define(self._stage, Sdf.Path(path))
+        result, prim = omni.kit.commands.execute(
+            "CreateColorComponentCommand",
+            path=path,
+            first_color_range=(0.0, 0.0, 0.0),
+            second_color_range=(1.0, 1.0, 1.0),
+            roughness_range=(0.0, 1.0),
+            metallic_range=(0.0, 1.0),
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
 
-        prim.CreateCompNameAttr().Set(str("color_component_" + str(self.component_count[0])))
-        prim.CreatePrimPathsRel()
-        prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
-        prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
-        prim.CreateDurationAttr().Set(float(1.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
         pass
 
     def add_movement_menu(self, parent=None):
@@ -65,15 +73,17 @@ class DRMenu:
                 self._stage, "/movement_component_" + str(self.component_count[1]), True
             )
 
-        prim = DrSchema.MovementComponent.Define(self._stage, Sdf.Path(path))
-
-        prim.CreateCompNameAttr().Set(str("movement_component_" + str(self.component_count[1])))
-        prim.CreatePrimPathsRel()
-        prim.CreateXRangeAttr().Set((float(0.0), float(0.0)))
-        prim.CreateYRangeAttr().Set((float(0.0), float(0.0)))
-        prim.CreateZRangeAttr().Set((float(0.0), float(0.0)))
-        prim.CreateDurationAttr().Set(float(1.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        result, prim = omni.kit.commands.execute(
+            "CreateMovementComponentCommand",
+            path=path,
+            min_range=(0.0, 0.0, 0.0),
+            max_range=(0.0, 0.0, 0.0),
+            target_position=None,
+            target_paths=None,
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
         pass
 
     def add_rotation_menu(self, parent=None):
@@ -86,15 +96,15 @@ class DRMenu:
                 self._stage, "/rotation_component_" + str(self.component_count[5]), True
             )
 
-        prim = DrSchema.RotationComponent.Define(self._stage, Sdf.Path(path))
-
-        prim.CreateCompNameAttr().Set(str("rotation_component_" + str(self.component_count[5])))
-        prim.CreatePrimPathsRel()
-        prim.CreateXRangeAttr().Set((float(0.0), float(360.0)))
-        prim.CreateYRangeAttr().Set((float(0.0), float(360.0)))
-        prim.CreateZRangeAttr().Set((float(0.0), float(360.0)))
-        prim.CreateDurationAttr().Set(float(1.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        result, prim = omni.kit.commands.execute(
+            "CreateRotationComponentCommand",
+            path=path,
+            min_range=(0.0, 0.0, 0.0),
+            max_range=(360.0, 360.0, 360.0),
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
         pass
 
     def add_scale_menu(self, parent=None):
@@ -106,16 +116,16 @@ class DRMenu:
             path = omni.kit.utils.get_stage_next_free_path(
                 self._stage, "/scale_component_" + str(self.component_count[2]), True
             )
-
-        prim = DrSchema.ScaleComponent.Define(self._stage, Sdf.Path(path))
-
-        prim.CreateCompNameAttr().Set(str("scale_component_" + str(self.component_count[2])))
-        prim.CreatePrimPathsRel()
-        prim.CreateXRangeAttr().Set((float(1.0), float(1.0)))
-        prim.CreateYRangeAttr().Set((float(1.0), float(1.0)))
-        prim.CreateZRangeAttr().Set((float(1.0), float(1.0)))
-        prim.CreateDurationAttr().Set(float(1.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        result, prim = omni.kit.commands.execute(
+            "CreateScaleComponentCommand",
+            path=path,
+            min_range=(0.5, 0.5, 0.5),
+            max_range=(1.0, 1.0, 1.0),
+            uniform_scaling=False,
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
         pass
 
     def add_light_menu(self, parent=None):
@@ -128,17 +138,19 @@ class DRMenu:
                 self._stage, "/light_component_" + str(self.component_count[3]), True
             )
 
-        prim = DrSchema.LightComponent.Define(self._stage, Sdf.Path(path))
-
-        prim.CreateCompNameAttr().Set(str("light_component_" + str(self.component_count[3])))
-        prim.CreatePrimPathsRel()
-        prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
-        prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
-        prim.CreateIntensityRangeAttr().Set((float(40000.0), float(70000.0)))
-        prim.CreateTemperatureRangeAttr().Set((float(6500.0), float(6500.0)))
-        prim.CreateEnableTemperatureAttr().Set(bool(False))
-        prim.CreateDurationAttr().Set(float(1.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        result, prim = omni.kit.commands.execute(
+            "CreateLightComponentCommand",
+            path=path,
+            light_paths=[],
+            first_color_range=(0.0, 0.0, 0.0),
+            second_color_range=(1.0, 1.0, 1.0),
+            intensity_range=(40000.0, 70000.0),
+            temperature_range=(6500.0, 6500.0),
+            enable_temperature=False,
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
         pass
 
     def add_texture_menu(self, parent=None):
@@ -151,15 +163,18 @@ class DRMenu:
                 self._stage, "/texture_component_" + str(self.component_count[4]), True
             )
 
-        prim = DrSchema.TextureComponent.Define(self._stage, Sdf.Path(path))
-
-        prim.CreateCompNameAttr().Set(str("texture_component_" + str(self.component_count[4])))
-        prim.CreatePrimPathsRel()
-        prim.CreateTextureListAttr().Set(str(""))
-        prim.CreateIgnoredClassAttr().Set(str(""))
-        prim.CreateGroupedClassAttr().Set(str(""))
-        prim.CreateDurationAttr().Set(float(1.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        result, prim = omni.kit.commands.execute(
+            "CreateTextureComponentCommand",
+            path=path,
+            prim_paths=[],
+            enable_project_uvw=False,
+            texture_list=[],
+            ignored_class_list=[],
+            grouped_class_list=[],
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
         pass
 
     def add_material_menu(self, parent=None):
@@ -171,16 +186,63 @@ class DRMenu:
             path = omni.kit.utils.get_stage_next_free_path(
                 self._stage, "/material_component_" + str(self.component_count[6]), True
             )
+        result, prim = omni.kit.commands.execute(
+            "CreateMaterialComponentCommand",
+            path=path,
+            prim_paths=[],
+            material_list=[],
+            ignored_class_list=[],
+            grouped_class_list=[],
+            loaded_material_paths=[],
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
+        pass
 
-        prim = DrSchema.MaterialComponent.Define(self._stage, Sdf.Path(path))
+    def add_mesh_menu(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, parent + "/mesh_component_" + str(self.component_count[7]), False
+            )
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, "/mesh_component_" + str(self.component_count[7]), True
+            )
 
-        prim.CreateCompNameAttr().Set(str("material_component_" + str(self.component_count[6])))
-        prim.CreatePrimPathsRel()
-        prim.CreateMaterialListAttr().Set(str(""))
-        prim.CreateIgnoredClassAttr().Set(str(""))
-        prim.CreateGroupedClassAttr().Set(str(""))
-        prim.CreateDurationAttr().Set(float(1.0))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        result, prim = omni.kit.commands.execute(
+            "CreateMeshComponentCommand",
+            path=path,
+            prim_paths=[],
+            mesh_list=[],
+            mesh_range=(1, 1),
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
+
+        pass
+
+    def add_visibility_menu(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, parent + "/visibility_component_" + str(self.component_count[8]), False
+            )
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, "/visibility_component_" + str(self.component_count[8]), True
+            )
+
+        result, prim = omni.kit.commands.execute(
+            "CreateVisibilityComponentCommand",
+            path=path,
+            prim_paths=[],
+            num_visible_range=(1, 1),
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
+
         pass
 
     def _on_dr_menu_click(self, menu, value):
@@ -201,6 +263,10 @@ class DRMenu:
                 self.component_count[5] = self.component_count[5] + 1
             if child_prim.GetTypeName() == "MaterialComponent":
                 self.component_count[6] = self.component_count[6] + 1
+            if child_prim.GetTypeName() == "MeshComponent":
+                self.component_count[7] = self.component_count[7] + 1
+            if child_prim.GetTypeName() == "VisibilityComponent":
+                self.component_count[8] = self.component_count[8] + 1
 
         selectedPrims = self._usd_context.get_selection().get_selected_prim_paths()
         if len(selectedPrims) > 0:
@@ -222,6 +288,10 @@ class DRMenu:
             self.add_texture_menu(curr_prim)
         if menu == ADD_MATERIAL_DR_MENU_ITEM:
             self.add_material_menu(curr_prim)
+        if menu == ADD_MESH_DR_MENU_ITEM:
+            self.add_mesh_menu(curr_prim)
+        if menu == ADD_VISIBILITY_DR_MENU_ITEM:
+            self.add_visibility_menu(curr_prim)
 
     def _build_dr_ui(self):
         title = "Manual Mode"

@@ -4,10 +4,12 @@
 #include "DRComponentColor.h"
 #include "DRComponentLight.h"
 #include "DRComponentMaterial.h"
+#include "DRComponentMesh.h"
 #include "DRComponentMovement.h"
 #include "DRComponentRotation.h"
 #include "DRComponentScale.h"
 #include "DRComponentTexture.h"
+#include "DRComponentVisibility.h"
 #include "plugins/core/ComponentManager.h"
 
 #include <carb/Framework.h>

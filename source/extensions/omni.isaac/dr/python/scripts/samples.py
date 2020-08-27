@@ -1,12 +1,9 @@
-import asyncio
 import os
 import carb.tokens
-import omni.isaac.DrSchema as DrSchema
 import omni.kit
-import omni.kit.asyncapi
 import omni.usd
 
-from pxr import Gf, Usd, UsdGeom, Sdf
+from pxr import UsdGeom
 
 ADD_COMPONENT_SAMPLE_MENU = "Isaac Robotics/Domain Randomizer/Component Sample"
 ADD_SIMPLE_ROOM_SAMPLE_MENU = "Isaac Robotics/Domain Randomizer/Simple Room Sample"
@@ -71,7 +68,9 @@ class Extension(omni.ext.IExt):
         omni.usd.get_context().new_stage(None)
 
     def _on_load_stage(self, widget):
-        omni.usd.get_context().open_stage("omni:/Isaac/Samples/DR/Props/simple_cube_with_light.usd", None)
+        omni.usd.get_context().open_stage(
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Props/simple_cube_with_light.usd", None
+        )
 
     def _on_load_component(self, widget):
         if self._selected_scenario.selected_index == 0:
@@ -91,21 +90,22 @@ class Extension(omni.ext.IExt):
 
     def add_color_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
-        root_layer = stage.GetRootLayer()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR color component
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/color_component", False)
-        prim = DrSchema.ColorComponent.Define(stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set(str("color_component"))
-        color_comp_path = default_prim_path + "/color_component"
-        color_comp = stage.GetPrimAtPath(color_comp_path)
-        # Set attributes for DR color component
-        prim.CreatePrimPathsRel().AddTarget(cube_path)
-        prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
-        prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
-        prim.CreateDurationAttr().Set(float(0.3))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        result, prim = omni.kit.commands.execute(
+            "CreateColorComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            first_color_range=(0.0, 0.0, 0.0),
+            second_color_range=(1.0, 1.0, 1.0),
+            roughness_range=(0.0, 1.0),
+            metallic_range=(0.0, 1.0),
+            duration=0.3,
+            include_children=False,
+            seed=12345,
+        )
 
     def add_movement_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
@@ -113,17 +113,18 @@ class Extension(omni.ext.IExt):
         cube_path = default_prim_path + "/Cube"
         # Create DR movement component
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/movement_component", False)
-        prim = DrSchema.MovementComponent.Define(stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set(str("movement_component"))
-        mov_comp_path = default_prim_path + "/movement_component"
-        mov_comp = stage.GetPrimAtPath(mov_comp_path)
-        # Set attributes for DR movement component
-        prim.CreatePrimPathsRel().AddTarget(cube_path)
-        prim.CreateXRangeAttr().Set((float(0.0), float(100.0)))
-        prim.CreateYRangeAttr().Set((float(0.0), float(100.0)))
-        prim.CreateZRangeAttr().Set((float(0.0), float(100.0)))
-        prim.CreateDurationAttr().Set(float(0.3))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        result, prim = omni.kit.commands.execute(
+            "CreateMovementComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            min_range=(0.0, 0.0, 0.0),
+            max_range=(100.0, 100.0, 100.0),
+            target_position=None,
+            target_paths=None,
+            duration=0.3,
+            include_children=False,
+            seed=12345,
+        )
 
     def add_rotation_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
@@ -131,17 +132,16 @@ class Extension(omni.ext.IExt):
         cube_path = default_prim_path + "/Cube"
         # Create DR rotation component
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/rotation_component", False)
-        prim = DrSchema.RotationComponent.Define(stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set(str("rotation_component"))
-        rot_comp_path = default_prim_path + "/rotation_component"
-        rot_comp = stage.GetPrimAtPath(rot_comp_path)
-        # Set attributes for DR rotation component
-        prim.CreatePrimPathsRel().AddTarget(cube_path)
-        prim.CreateXRangeAttr().Set((float(0.0), float(360.0)))
-        prim.CreateYRangeAttr().Set((float(0.0), float(360.0)))
-        prim.CreateZRangeAttr().Set((float(0.0), float(360.0)))
-        prim.CreateDurationAttr().Set(float(0.3))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        result, prim = omni.kit.commands.execute(
+            "CreateRotationComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            min_range=(0.0, 0.0, 0.0),
+            max_range=(360.0, 360.0, 360.0),
+            duration=0.3,
+            include_children=False,
+            seed=12345,
+        )
 
     def add_scale_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
@@ -149,17 +149,17 @@ class Extension(omni.ext.IExt):
         cube_path = default_prim_path + "/Cube"
         # Create DR scale component
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/scale_component", False)
-        prim = DrSchema.ScaleComponent.Define(stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set(str("scale_component"))
-        scale_comp_path = default_prim_path + "/scale_component"
-        scale_comp = stage.GetPrimAtPath(scale_comp_path)
-        # Set attributes for DR scale component
-        prim.CreatePrimPathsRel().AddTarget(cube_path)
-        prim.CreateXRangeAttr().Set((float(0.0), float(5.0)))
-        prim.CreateYRangeAttr().Set((float(0.0), float(5.0)))
-        prim.CreateZRangeAttr().Set((float(0.0), float(5.0)))
-        prim.CreateDurationAttr().Set(float(0.3))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        result, prim = omni.kit.commands.execute(
+            "CreateScaleComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            min_range=(0.5, 0.5, 0.5),
+            max_range=(5.0, 5.0, 5.0),
+            uniform_scaling=False,
+            duration=0.3,
+            include_children=False,
+            seed=12345,
+        )
 
     def add_light_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
@@ -173,71 +173,81 @@ class Extension(omni.ext.IExt):
             imageable.MakeInvisible()
         # Create DR light component
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/light_component", False)
-        prim = DrSchema.LightComponent.Define(stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set("light_component")
-        light_comp_path = default_prim_path + "/light_component"
-        light_comp = stage.GetPrimAtPath(light_comp_path)
-        # Set attributes for DR light component
-        prim.CreatePrimPathsRel().AddTarget(light_path)
-        prim.CreateFirstColorAttr().Set((float(0.0), float(0.0), float(0.0)))
-        prim.CreateSecondColorAttr().Set((float(1.0), float(1.0), float(1.0)))
-        prim.CreateIntensityRangeAttr().Set((float(40000.0), float(70000.0)))
-        prim.CreateTemperatureRangeAttr().Set((float(1500.0), float(6500.0)))
-        prim.CreateEnableTemperatureAttr().Set(bool(True))
-        prim.CreateDurationAttr().Set(float(0.3))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
+        result, prim = omni.kit.commands.execute(
+            "CreateLightComponentCommand",
+            path=path,
+            light_paths=[light_path],
+            first_color_range=(0.0, 0.0, 0.0),
+            second_color_range=(1.0, 1.0, 1.0),
+            intensity_range=(40000.0, 70000.0),
+            temperature_range=(1500.0, 6500.0),
+            enable_temperature=True,
+            duration=0.3,
+            include_children=False,
+            seed=12345,
+        )
 
     def add_texture_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
-        root_layer = stage.GetRootLayer()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR texture component
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/texture_component", False)
-        prim = DrSchema.TextureComponent.Define(stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set(str("texture_component"))
-        tex_comp_path = default_prim_path + "/texture_component"
-        tex_comp = stage.GetPrimAtPath(tex_comp_path)
-        # Set attributes for DR texture component
-        prim.CreatePrimPathsRel().AddTarget(cube_path)
-        prim.CreateTextureListAttr().Set(
-            str(
-                "omni:/Isaac/Samples/DR/Materials/Textures/checkered.png,omni:/Isaac/Samples/DR/Materials/Textures/marble_tile.png,omni:/Isaac/Samples/DR/Materials/Textures/picture_a.png,omni:/Isaac/Samples/DR/Materials/Textures/picture_b.png,omni:/Isaac/Samples/DR/Materials/Textures/textured_wall.png,omni:/Isaac/Samples/DR/Materials/Textures/checkered_color.png"
-            )
+        result, prim = omni.kit.commands.execute(
+            "CreateTextureComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            enable_project_uvw=False,
+            texture_list=[
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png",
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png",
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png",
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
+            ],
+            ignored_class_list=[],
+            grouped_class_list=[],
+            duration=0.3,
+            include_children=False,
+            seed=12345,
         )
-        prim.CreateIgnoredClassAttr().Set(str(""))
-        prim.CreateGroupedClassAttr().Set(str(""))
-        prim.CreateDurationAttr().Set(float(0.3))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
 
     def add_material_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
-        root_layer = stage.GetRootLayer()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR material component
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/material_component", False)
-        prim = DrSchema.MaterialComponent.Define(stage, Sdf.Path(path))
-        prim.CreateCompNameAttr().Set(str("material_component"))
-        tex_comp_path = default_prim_path + "/material_component"
-        tex_comp = stage.GetPrimAtPath(tex_comp_path)
-        # Set attributes for DR material component
-        prim.CreatePrimPathsRel().AddTarget(cube_path)
-        prim.CreateMaterialListAttr().Set(
-            str(
-                "omni:/Isaac/Samples/DR/Materials/checkered.mdl,omni:/Isaac/Samples/DR/Materials/checkered_color.mdl,omni:/Isaac/Samples/DR/Materials/marble_tile.mdl,omni:/Isaac/Samples/DR/Materials/picture_a.mdl,omni:/Isaac/Samples/DR/Materials/picture_b.mdl,omni:/Isaac/Samples/DR/Materials/textured_wall.mdl"
-            )
+        result, prim = omni.kit.commands.execute(
+            "CreateMaterialComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            material_list=[
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/checkered.mdl",
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/checkered_color.mdl",
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/marble_tile.mdl",
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/picture_a.mdl",
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/picture_b.mdl",
+                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/textured_wall.mdl",
+            ],
+            ignored_class_list=[],
+            grouped_class_list=[],
+            loaded_material_paths=[],
+            duration=0.3,
+            include_children=False,
+            seed=12345,
         )
-        prim.CreateIgnoredClassAttr().Set(str(""))
-        prim.CreateGroupedClassAttr().Set(str(""))
-        prim.CreateDurationAttr().Set(float(0.3))
-        prim.CreateIncludeChildrenAttr().Set(bool(False))
 
     def add_simple_room_scene(self, parent=None):
-        omni.usd.get_context().open_stage("omni:/Isaac/Samples/DR/Stage/simple_room_sample.usda", None)
+        omni.usd.get_context().open_stage(
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Stage/simple_room_sample.usda", None
+        )
 
     def add_warehouse_scene(self, parent=None):
-        omni.usd.get_context().open_stage("omni:/Isaac/Samples/DR/Stage/simple_warehouse_material_sample.usda", None)
+        omni.usd.get_context().open_stage(
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Stage/simple_warehouse_material_sample.usda", None
+        )
 
     def _on_dr_sample_menu_click(self, menu, value):
         self._stage = self._usd_context.get_stage()

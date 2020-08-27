@@ -75,7 +75,7 @@ static void onDetach(void* userData)
     decals.term();
 }
 
-static void onPrimRemove(const char* primPath, void* userData)
+static void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
     reinterpret_cast<Manager*>(userData)->onPrimRemove(primPath);
 }

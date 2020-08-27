@@ -1,0 +1,15 @@
+display_name = "Occupancy Map"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.kit.test" = {}
+"omni.physx" = {} 
+"omni.debugdraw" = {}
+
+[[python.modules]]
+name = "omni.isaac.occupancy_map"
+
+[[native.plugins]]
+search_path = "bin/${platform}/${config}/*.plugin"
+recursive = false
+

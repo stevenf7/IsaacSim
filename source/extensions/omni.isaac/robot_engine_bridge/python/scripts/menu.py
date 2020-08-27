@@ -9,6 +9,7 @@ import omni.isaac.RobotEngineBridgeSchema as REBSchema
 
 ADD_DIFFERENTIALBASE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Differential Base"
 ADD_HOLONOMICBASE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Holonomic Base"
+ADD_VEHICLE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Vehicle"
 ADD_JOINTCONTROL_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Joint Control"
 ADD_SCISSORLIFT_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Scissor Lift"
 ADD_SURFACEGRIPPER_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Surface Gripper"
@@ -32,6 +33,7 @@ class RobotEngineBridgeMenu:
         # self._menus.append(editor_menu.add_item(ADD_BRIDGE_NODE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_DIFFERENTIALBASE_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_HOLONOMICBASE_SCENE_MENU_ITEM, self._on_scene_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_VEHICLE_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_JOINTCONTROL_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_SCISSORLIFT_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_SURFACEGRIPPER_SCENE_MENU_ITEM, self._on_scene_menu_click))
@@ -46,6 +48,7 @@ class RobotEngineBridgeMenu:
     def setup_base_prim(self, prim):
         prim.CreateNodeNameAttr("interface")
         prim.CreateEnabledAttr(True)
+        prim.CreateTimeOffsetAttr(0.0)
 
     def add_differential_base(self, parent=None):
         if parent:
@@ -108,6 +111,25 @@ class RobotEngineBridgeMenu:
         prim.CreateProportionalGainAttr(100)
         prim.CreateBrakeTorqueAttr(100)
         prim.CreateAccelerationSmoothingAttr(1.0)
+        pass
+
+    def add_vehicle(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_Vehicle", False)
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Vehicle", True)
+
+        prim = REBSchema.RobotEngineVehicle.Define(self._stage, path)
+        self.setup_base_prim(prim)
+
+        prim.CreateInputComponentAttr("input")
+        prim.CreateInputChannelAttr("vehicle_command")
+
+        prim.CreateOutputComponentAttr("output")
+        prim.CreateOutputChannelAttr("vehicle_state")
+
+        prim.CreateVehiclePrimRel()
+
         pass
 
     def add_joint_control(self, parent=None):
@@ -272,10 +294,15 @@ class RobotEngineBridgeMenu:
         prim.CreateBoundingBox2DOutputChannelAttr("bbox")
         prim.CreateBoundingBox2DClassListAttr("")
 
+        prim.CreateBoundingBox3DOutputComponentAttr("output")
+        prim.CreateBoundingBox3DOutputChannelAttr("bbox3d")
+        prim.CreateBoundingBox3DClassListAttr("")
+
         prim.CreateRgbEnabledAttr(True)
         prim.CreateDepthEnabledAttr(False)
         prim.CreateSegmentationEnabledAttr(False)
         prim.CreateBoundingBox2DEnabledAttr(False)
+        prim.CreateBoundingBox3DEnabledAttr(False)
 
         pass
 
@@ -321,6 +348,8 @@ class RobotEngineBridgeMenu:
             self.add_differential_base(curr_prim)
         elif menu == ADD_HOLONOMICBASE_SCENE_MENU_ITEM:
             self.add_holonomic_base(curr_prim)
+        elif menu == ADD_VEHICLE_SCENE_MENU_ITEM:
+            self.add_vehicle(curr_prim)
         elif menu == ADD_JOINTCONTROL_SCENE_MENU_ITEM:
             self.add_joint_control(curr_prim)
         elif menu == ADD_SCISSORLIFT_SCENE_MENU_ITEM:

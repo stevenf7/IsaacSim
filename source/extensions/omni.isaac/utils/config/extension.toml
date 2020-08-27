@@ -4,6 +4,7 @@ display_name = "Isaac Utilities"
 "omni.kit.editor" = {}
 "omni.physx" = {}
 "omni.isaac.dynamic_control" = {}
+"omni.syntheticdata" = {}
 
 [[python.modules]]
 name = "omni.isaac.utils"
@@ -17,4 +18,19 @@ name = "omni.isaac.utils.scripts.semantics_ui"
 public = false
 
 [[python.modules]]
+name = "omni.isaac.utils.scripts.visualize_syntheticdata"
+public = false
+
+[[python.modules]]
+name = "omni.isaac.utils.scripts.syntheticdata_recorder"
+public = false
+
+[[python.modules]]
+name = "omni.isaac.utils.scripts.physics_inspector"
+
+[[python.modules]]
 name = "omni.isaac.utils.scripts.samples.surface_gripper"
+
+[[python.modules]]
+name = "omni.isaac.utils.scripts.merge_mesh_tool"
+public = false

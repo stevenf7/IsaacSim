@@ -167,7 +167,7 @@ function create_experience_runner(name, config_path, config, extra_args)
         f:write(string.format([[
 @echo off
 setlocal
-call "%%~dp0..\..\target-deps\kit_sdk_%s\_build\windows-x86_64\%s\omniverse-kit.exe" --config-path %%~dp0%s %s %%*
+call "%%~dp0..\..\target-deps\kit_sdk_%s\_build\windows-x86_64\%s\omniverse-kit.exe" --merge-config=%%~dp0%s %s %%*
         ]], config, config, config_path, extra_args))
     else
         local sh_file_path = root.."/_build/linux-x86_64/"..config.."/"..name..".sh"
@@ -175,8 +175,8 @@ call "%%~dp0..\..\target-deps\kit_sdk_%s\_build\windows-x86_64\%s\omniverse-kit.
         f:write(string.format([[
 #!/bin/bash
 set -e
-SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-"$SCRIPT_DIR/../../target-deps/kit_sdk_%s/_build/linux-x86_64/%s/omniverse-kit" --config-path "$SCRIPT_DIR/%s" %s $@
+SCRIPT_DIR=$(readlink -e $(dirname ${BASH_SOURCE}))
+"$SCRIPT_DIR/../../target-deps/kit_sdk_%s/_build/linux-x86_64/%s/omniverse-kit" --merge-config="$SCRIPT_DIR/%s" %s $@
         ]], config, config, config_path, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)
@@ -320,12 +320,14 @@ group "exts"
     include ("source/extensions/omni.isaac/samples")
     include ("source/extensions/omni.isaac/samples_internal")
     include ("source/extensions/omni.isaac/tests")
+    include ("source/extensions/omni.isaac/step_importer")
 
     -- Linux Only
     if os.target() == "linux" then
         include ("source/extensions/omni.isaac/motion_planning")
         include ("source/extensions/omni.isaac/robot_engine_bridge")
         include ("source/extensions/omni.isaac/ros_bridge")
+        include ("source/extensions/omni.isaac/occupancy_map")
     end
 
 -- Create a symlink for any data we need for tests

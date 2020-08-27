@@ -8,7 +8,11 @@
 //
 #pragma once
 
+#include "UrdfTypes.h"
+
 #include <carb/Defines.h>
+
+#include <pybind11/pybind11/pybind11.h>
 
 #include <stdint.h>
 
@@ -22,18 +26,35 @@ namespace urdf
 struct ImportConfig
 {
     bool mergeFixedJoints = false;
-    bool enableConvexDecomp = false;
-    bool forceZUp = true;
-    bool addDebugInfo = false;
-    float distanceScale = 100.0;
+    bool convexDecomp = false;
     bool importInertiaTensor = false;
+    bool fixBase = true;
+    bool selfCollision = false;
+    float density = 1000; // default density used for objects without mass/inertia
+    UrdfJointTargetType defaultDriveType = UrdfJointTargetType::POSITION;
+    float defaultDriveStiffness = 100000;
+    float distanceScale = 100;
+    UrdfAxis upVector = { 0, 0, 1 };
+    bool createPhysicsScene = true;
+    bool makeDefaultPrim = true;
 };
 
 
 struct Urdf
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::urdf::Urdf", 0, 1);
-    void(CARB_ABI* importUrdf)(std::string asset_path, const ImportConfig& importConfig);
+
+    // Parses a urdf file into a UrdfRobot data structure
+    UrdfRobot(CARB_ABI* parseUrdf)(const std::string& assetRoot,
+                                   const std::string& assetName,
+                                   const ImportConfig& importConfig);
+    // Imports a UrdfRobot into the stage
+    std::string(CARB_ABI* importRobot)(const std::string& assetRoot,
+                                       const std::string& assetName,
+                                       const UrdfRobot& robot,
+                                       const ImportConfig& importConfig);
+
+    pybind11::dict(CARB_ABI* getKinematicChain)(const UrdfRobot& robot);
 };
 }
 }

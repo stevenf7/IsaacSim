@@ -6,6 +6,7 @@
 
 #include "../Actuator/DifferentialBaseSimulator.h"
 #include "../Actuator/HolonomicBaseSimulator.h"
+#include "../Actuator/VehicleSimulator.h"
 #include "../Actuator/JointControl.h"
 #include "../Actuator/ScissorLiftSimulator.h"
 #include "../Actuator/SurfaceGripper.h"
@@ -174,6 +175,7 @@ auto TaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
     if (taskData->component->getEnabled())
     {
         taskData->component->publishAllMessages();
+        // taskData->component->tick();
     }
 };
 
@@ -199,7 +201,7 @@ void IsaacApplication::tick(double dt)
                 component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
             }
 
-
+#if 1
             // omni::isaac::utils::ScopedTimer TimerApp("  Publish");
             TaskData* taskArray = new TaskData[mComponents.size()];
             int index = 0;
@@ -226,6 +228,18 @@ void IsaacApplication::tick(double dt)
             mTasking->yieldUntilCounter(mTaskCounter);
             delete[] taskArray;
 
+#else
+
+            for (auto& component : mComponents)
+            {
+                if (component.second->getEnabled())
+                {
+                    component.second->publishAllMessages();
+                    component.second->tick();
+                }
+            }
+#endif
+
 
             mSceneLoaderComponent->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
             mSceneLoaderComponent->tick();
@@ -234,6 +248,16 @@ void IsaacApplication::tick(double dt)
     // TODO: do this before or after tick?
     mTimeSeconds += dt;
     mTimeNanoSeconds = mTimeSeconds * 1e9;
+}
+
+void IsaacApplication::onStop()
+{
+    utils::BridgeApplicationBase<IsaacComponent>::onStop();
+
+    for (auto& component : mComponents)
+    {
+        component.second->onStop();
+    }
 }
 
 void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
@@ -251,6 +275,11 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
         component = std::make_unique<HolonomicBaseSimulator>(mDynamicControlPtr);
         component->initialize(
             mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineHolonomicBase(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineVehicle>())
+    {
+        component = std::make_unique<VehicleSimulator>();
+        component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineVehicle(prim), mStage);
     }
     else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineLidar>())
     {

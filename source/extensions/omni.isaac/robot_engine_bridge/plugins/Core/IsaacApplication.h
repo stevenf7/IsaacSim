@@ -10,8 +10,8 @@
 #include <carb/tasking/ITasking.h>
 
 #include <RobotEngineBridgeSchema/robotEngineBridgeComponent.h>
-#include <engine/alice/c_api/isaac_c_api.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <packages/engine_c_api/isaac_c_api.h>
 
 #include <memory>
 #include <string>
@@ -89,6 +89,11 @@ public:
      * @param dt
      */
     void tick(double dt);
+    /**
+     * @brief Call stop on all components to do any cleanup
+     *
+     */
+    void onStop();
     /**
      * @brief Create a supported component in this application
      *

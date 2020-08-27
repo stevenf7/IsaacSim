@@ -79,7 +79,7 @@ std::unique_ptr<omni::isaac::lidar::LidarSensorManager> gLidarSensorManager;
 
 int CARB_ABI getNumCols(const char* primPath)
 {
-    if (gLidarSensorManager)
+    if (g_stage && gLidarSensorManager)
     {
         omni::isaac::lidar::LidarSensor* sensor =
             gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
@@ -102,7 +102,7 @@ int CARB_ABI getNumCols(const char* primPath)
 
 int CARB_ABI getNumRows(const char* primPath)
 {
-    if (gLidarSensorManager)
+    if (g_stage && gLidarSensorManager)
     {
         omni::isaac::lidar::LidarSensor* sensor =
             gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
@@ -126,7 +126,7 @@ int CARB_ABI getNumRows(const char* primPath)
 
 int CARB_ABI getNumColsTicked(const char* primPath)
 {
-    if (gLidarSensorManager)
+    if (g_stage && gLidarSensorManager)
     {
         omni::isaac::lidar::LidarSensor* sensor =
             gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
@@ -150,7 +150,7 @@ int CARB_ABI getNumColsTicked(const char* primPath)
 
 uint16_t* CARB_ABI getDepthData(const char* primPath)
 {
-    if (gLidarSensorManager)
+    if (g_stage && gLidarSensorManager)
     {
         omni::isaac::lidar::LidarSensor* sensor =
             gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
@@ -174,7 +174,7 @@ uint16_t* CARB_ABI getDepthData(const char* primPath)
 
 float* CARB_ABI getLinearDepthData(const char* primPath)
 {
-    if (gLidarSensorManager)
+    if (g_stage && gLidarSensorManager)
     {
         omni::isaac::lidar::LidarSensor* sensor =
             gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
@@ -197,7 +197,7 @@ float* CARB_ABI getLinearDepthData(const char* primPath)
 }
 uint8_t* CARB_ABI getIntensityData(const char* primPath)
 {
-    if (gLidarSensorManager)
+    if (g_stage && gLidarSensorManager)
     {
         omni::isaac::lidar::LidarSensor* sensor =
             gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
@@ -221,7 +221,7 @@ uint8_t* CARB_ABI getIntensityData(const char* primPath)
 
 float* CARB_ABI getZenithData(const char* primPath)
 {
-    if (gLidarSensorManager)
+    if (g_stage && gLidarSensorManager)
     {
         omni::isaac::lidar::LidarSensor* sensor =
             gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
@@ -245,7 +245,7 @@ float* CARB_ABI getZenithData(const char* primPath)
 
 float* CARB_ABI getAzimuthData(const char* primPath)
 {
-    if (gLidarSensorManager)
+    if (g_stage && gLidarSensorManager)
     {
         omni::isaac::lidar::LidarSensor* sensor =
             gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
@@ -269,7 +269,7 @@ float* CARB_ABI getAzimuthData(const char* primPath)
 
 bool CARB_ABI isLidar(const char* primPath)
 {
-    if (gLidarSensorManager)
+    if (g_stage && gLidarSensorManager)
     {
         omni::isaac::lidar::LidarSensor* sensor =
             gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
@@ -292,14 +292,13 @@ bool CARB_ABI isLidar(const char* primPath)
 // stage update
 void onAttach(long stageId, double metersPerUnit, void* data)
 {
-    pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
-    if (!stage)
+    g_stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    if (!g_stage)
     {
         CARB_LOG_ERROR("PhysX could not find USD stage");
         return;
     }
 
-    g_stage = stage;
     if (gLidarSensorManager)
     {
         gLidarSensorManager->initialize(g_stage);
@@ -340,31 +339,32 @@ void onStop(void* userData)
     }
 }
 
-void onPrimAdd(const char* primPath, void* userData)
+void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 {
     // CARB_LOG_INFO("++ Lidar: Prim Add: %s of type %s\n", primPath,
     //    g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
-    if (gLidarSensorManager)
+
+    if (g_stage && gLidarSensorManager)
     {
-        gLidarSensorManager->onComponentAdd(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        gLidarSensorManager->onComponentAdd(g_stage->GetPrimAtPath(primPath));
     }
 }
-void onComponentChange(const char* primPath, const omni::kit::PrimDirtyBits*, void* userData)
+void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
     // CARB_LOG_INFO("++ Lidar: Prim Change: %s of type %s\n", primPath,
     //    g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
     if (g_stage && gLidarSensorManager)
     {
-        gLidarSensorManager->onComponentChange(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        gLidarSensorManager->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
     }
 }
 
-void onPrimRemove(const char* primPath, void* userData)
+void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
     // CARB_LOG_INFO("++ Lidar: Prim Remove: %s\n", primPath);
     if (gLidarSensorManager)
     {
-        gLidarSensorManager->onComponentRemove(pxr::SdfPath(primPath));
+        gLidarSensorManager->onComponentRemove(primPath);
     }
 }
 
@@ -433,7 +433,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onUpdate = onUpdate;
     desc.onStop = onStop;
     desc.onPrimAdd = onPrimAdd;
-    desc.onPrimChange = onComponentChange;
+    desc.onPrimOrPropertyChange = onComponentChange;
     desc.onPrimRemove = onPrimRemove;
     desc.order = 50; // happens after physx, dc, but before robot engine bridge
 

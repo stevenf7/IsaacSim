@@ -43,12 +43,11 @@ void JointControl::tick()
 
     {
         MessageHeader header;
-        IsaacMessage<isaac_message::Composite> commandsComposite;
-        auto commands = commandsComposite.initProto();
-        std::vector<std::vector<uint8_t>> buffers;
-        if (receive(mInputComponent, mJointControlChannelName, header, commands, buffers))
+        IsaacMessage<isaac_message::Composite> commandComposite;
+        std::vector<IsaacHostBuffer> buffers;
+        if (checkErrorCode(receive(mInputComponent, mJointControlChannelName, header, commandComposite, buffers)))
         {
-
+            auto commands = commandComposite.getProto();
 
             std::vector<double> elements(buffers[0].size() / sizeof(double));
             std::memcpy(elements.data(), buffers[0].data(), elements.size() * sizeof(double));
@@ -56,7 +55,7 @@ void JointControl::tick()
             auto quantities = commands.getQuantities();
             if (elements.size() != quantities.size())
             {
-                CARB_LOG_ERROR("Element size is not same as quantities size");
+                CARB_LOG_ERROR("Element size is not same as quantities size %d %d", elements.size(), quantities.size());
                 return;
             }
 
@@ -103,7 +102,6 @@ void JointControl::tick()
     }
     {
         IsaacMessage<isaac_message::Composite> statusComposite;
-        std::vector<std::vector<uint8_t>> buffers(1);
         auto statusProto = statusComposite.initProto();
 
         int numDofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
@@ -137,10 +135,11 @@ void JointControl::tick()
         tensor.setScanlineStride(0);
         tensor.setDataBufferIndex(0);
         // copy actual buffer data
-        buffers[0].resize(elements.size() * sizeof(double));
-        std::memcpy(buffers[0].data(), elements.data(), elements.size() * sizeof(double));
+        std::vector<std::unique_ptr<IsaacBuffer>> buffers(1);
+        buffers[0] = std::make_unique<IsaacHostBuffer>(elements.size() * sizeof(double));
+        std::memcpy(buffers[0]->data(), elements.data(), elements.size() * sizeof(double));
 
-        publish(mOutputComponent, mJointStateChannelName, statusProto, isaac_message::CompositeProtoId, buffers);
+        publish(mOutputComponent, mJointStateChannelName, statusComposite, isaac_message::CompositeProtoId, buffers);
     }
 }
 

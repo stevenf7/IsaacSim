@@ -1,6 +1,7 @@
 import os
 import omni.ext
 from .. import _dr
+from . import commands  # populates commands list
 from .menu import DRMenu
 
 

@@ -7,8 +7,8 @@
 
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
-#include <carb/syntheticdata/SyntheticData.h>
 #include <carb/sensors/Sensors.h>
+#include <carb/syntheticdata/SyntheticData.h>
 #include <carb/profiler/Profile.h>
 #include <RobotEngineBridgeSchema/robotEngineCamera.h>
 
@@ -57,6 +57,12 @@ public:
      * @brief
      *
      */
+    virtual void onStop();
+
+    /**
+     * @brief
+     *
+     */
     virtual void onComponentChange();
 
 
@@ -87,6 +93,9 @@ private:
 
     carb::sensors::Sensor* mBoundingBox2DSensor = nullptr;
     void* mBoundingBox2DSensorData = nullptr;
+
+    carb::sensors::Sensor* mBoundingBox3DSensor = nullptr;
+    void* mBoundingBox3DSensorData = nullptr;
 
 
     /// <summary>
@@ -120,7 +129,20 @@ private:
     std::vector<std::string> mBoundingBox2DClassList;
     bool mEnableBoundingBox2D = false;
 
+    /// <summary>
+    /// The name of the channel where captured 3D bounding box data will be published
+    /// </summary>
+    std::string mBoundingBox3DOutputComponent = "output";
+    std::string mBoundingBox3DChannelName = "bbox3d";
+    std::vector<std::string> mBoundingBox3DClassList;
+    bool mEnableBoundingBox3D = false;
+
     double mUnitScale;
+
+    std::vector<std::unique_ptr<IsaacBuffer>> mRgbBuffers;
+    std::vector<std::unique_ptr<IsaacBuffer>> mDepthBuffers;
+    std::vector<std::unique_ptr<IsaacBuffer>> mSegmentationBuffers;
+    std::vector<std::unique_ptr<IsaacBuffer>> mSemanticBuffers;
 };
 }
 }

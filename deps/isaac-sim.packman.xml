@@ -1,22 +1,37 @@
 <project toolsVersion="5.6">
-  <dependency name="usd_ext_isaac_release" linkPath="../_build/target-deps/usd_ext_isaac/release">
-    <package name="usd_ext_isaac" version="19.11.97.b67ee492-win64_py36_release-master" platforms="windows-x86_64"/>
-    <package name="usd_ext_isaac" version="19.11.97.b67ee492-linux-x86_64_py36_release-master" platforms="linux-x86_64"/>
-  </dependency>
-  <dependency name="usd_ext_isaac_debug" linkPath="../_build/target-deps/usd_ext_isaac/debug">
-    <package name="usd_ext_isaac" version="19.11.97.b67ee492-win64_py36_debug-master" platforms="windows-x86_64"/>
-    <package name="usd_ext_isaac" version="19.11.97.b67ee492-linux-x86_64_py36_debug-master" platforms="linux-x86_64"/>
-  </dependency>
-  <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
-    <package name="nv_ros" version="melodic_20200605_045b485-linux64_boost_1.68.0_release-master" platforms="linux-x86_64"/>
-  </dependency>
-  <dependency name="lula" linkPath="../_build/target-deps/lula">
-    <package name="lula" version="linux_x64_linbuild_20200415_a36cb37" platforms="linux-x86_64"/>
-  </dependency>
-  <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
-    <package name="isaac_engine" version="linux_x64_20200617_9bde89b35" platforms="linux-x86_64"/>
-  </dependency>
-  <dependency name="robotimpsdk" linkPath="../_build/target-deps/robotimpsdk">
-    <package name="robotimpsdk" version="100-20200515-851a354c3fd"/>
-  </dependency>
+    <dependency name="usd_ext_isaac_release" linkPath="../_build/target-deps/usd_ext_isaac/release">
+        <package name="usd_ext_isaac" version="19.11.125.44247977-win64_py36_release-master" platforms="windows-x86_64"/>
+        <package name="usd_ext_isaac" version="19.11.125.44247977-linux-x86_64_py36_release-master" platforms="linux-x86_64"/>
+    </dependency>
+    <dependency name="usd_ext_isaac_debug" linkPath="../_build/target-deps/usd_ext_isaac/debug">
+        <package name="usd_ext_isaac" version="19.11.125.44247977-win64_py36_debug-master" platforms="windows-x86_64"/>
+        <package name="usd_ext_isaac" version="19.11.125.44247977-linux-x86_64_py36_debug-master" platforms="linux-x86_64"/>
+    </dependency>
+    <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
+        <package name="nv_ros" version="melodic_20200605_045b485-linux64_boost_1.68.0_release-master" platforms="linux-x86_64"/>
+    </dependency>
+    <dependency name="lula" linkPath="../_build/target-deps/lula">
+        <package name="lula" version="linux_x64_linbuild_20200415_a36cb37" platforms="linux-x86_64"/>
+    </dependency>
+    <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
+        <package name="isaac_engine" version="linux_x64_20200817_c0d4b3ead" platforms="linux-x86_64"/>
+    </dependency>
+    <dependency name="step_reader" linkPath="../_build/target-deps/stepreader">
+        <package name="step_reader" version="linux_x64_linbuild_20200814_88c7bed" platforms="linux-x86_64" />
+        <package name="step_reader" version="win_x64_winbuild_20200813_88c7bed" platforms="windows-x86_64" />
+    </dependency>
+    <dependency name="octomap" linkPath="../_build/target-deps/octomap">
+        <package name="octomap" version="linux_x64_20200720_a3f3809" platforms="linux-x86_64" />
+    </dependency>
+    <dependency name="tinyxml2" linkPath="../_build/target-deps/tinyxml2">
+        <package name="tinyxml2" version="linux_x64_20200823_2c5a6bf" platforms="linux-x86_64" />
+        <package name="tinyxml2" version="win_x64_20200824_2c5a6bf" platforms="windows-x86_64" />
+    </dependency>
+    <dependency name="assimp" linkPath="../_build/target-deps/assimp">
+        <package name="assimp" version="5.0.0.29.906d5a3b-windows-x86_64-release" platforms="windows-x86_64" />
+        <package name="assimp" version="5.0.0.29.906d5a3b-linux-x86_64-release" platforms="linux-x86_64" />
+        <package name="assimp" version="4.0.1-linux-aarch64" platforms="linux-aarch64" />
+    </dependency>
 </project>
+
+

@@ -4,15 +4,9 @@
 
 #include "DRComponentTexture.h"
 
-#include <AudioSchema/sound.h>
 #include <boost/algorithm/string.hpp>
-#include <carb/Framework.h>
 #include <carb/tokens/ITokens.h>
 #include <carb/tokens/TokensUtils.h>
-#include <carb/Types.h>
-#include <carb/InterfaceUtils.h>
-#include <carb/filesystem/IFileSystem.h>
-#include <DrSchema/textureComponent.h>
 
 #include <omni/kit/KitUtils.h>
 #include <omni/usd/UtilsIncludes.h>
@@ -29,13 +23,15 @@ namespace dr
 DRComponentTexture::DRComponentTexture(carb::tokens::ITokens* tokens) : DRComponentBase()
 {
     mTokens = tokens;
-    mDatasource = carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-file.plugin");
+    mDatasource =
+        carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-omniclient.plugin");
     mConnection = carb::datasource::connectAndWait(
         carb::datasource::ConnectionDesc{ carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/").c_str() },
         mDatasource);
     mIsIgnore = false;
     mIsGrouping = false;
     mDoOnce = true;
+    mEnableProjectUVW = false;
 }
 DRComponentTexture::~DRComponentTexture()
 {
@@ -75,11 +71,23 @@ void DRComponentTexture::onStart()
                     return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
                 });
         }
-        mTextureMaterialPrim = omni::usd::AssetUtils::createPrimFromAssetPath(
-            mStage, mOmniPBRMatPath.c_str(), ("/Textures/" + mCompName + "/" + urlPath.getStem()).getStringBuffer(),
-            "OmniPBR.mdl", mDatasource, mConnection);
-        pxr::UsdShadeMaterial materialShade(mTextureMaterialPrim);
-        mTextureMaterialShade = materialShade;
+        std::string textureMaterialPrimName =
+            mStage->GetDefaultPrim().GetPath().GetString() + textureCompMaterialPath + "/OmniPBR";
+        mTextureMaterialPrim =
+            mStage->DefinePrim(pxr::SdfPath(textureMaterialPrimName.c_str()), pxr::TfToken("Material"));
+        auto shadeMaterialPrim = pxr::UsdShadeMaterial(mTextureMaterialPrim);
+        auto shaderMtlPath =
+            mStage->DefinePrim(pxr::SdfPath(textureMaterialPrimName + "/Shader"), pxr::TfToken("Shader"));
+        auto shadeShaderPrim = pxr::UsdShadeShader(shaderMtlPath);
+        auto shaderOut = shadeShaderPrim.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+
+        shadeMaterialPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeMaterialPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeMaterialPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeShaderPrim.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
+        shadeShaderPrim.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
+        shadeShaderPrim.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
+        mTextureMaterialShade = shadeMaterialPrim;
     }
     pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
     mStage->SetEditTarget(editTarget);
@@ -104,6 +112,11 @@ void DRComponentTexture::update()
 
         if (mIncludeChild && prim)
         {
+            // Unbinding material for parent since strongerThanDescendants is used that will disable child material
+            // binding
+            mAllPrims.pop_back();
+            pxr::UsdShadeMaterialBindingAPI materialBinding(prim);
+            materialBinding.UnbindAllBindings();
             pxr::UsdPrimSubtreeRange range = prim.GetDescendants();
             for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
             {
@@ -121,7 +134,8 @@ void DRComponentTexture::update()
     mPrimClassMap.clear();
     for (auto& prim : mAllPrims)
     {
-        if (prim && prim.GetTypeName().GetString() == "Mesh")
+        auto primType = prim.GetTypeName().GetString();
+        if (prim && (primType == "Mesh" || primType == "Xform"))
         {
             pxr::UsdShadeMaterialBindingAPI materialBinding(prim);
             mPrimMaterialBindingsMap.insert(std::make_pair(prim.GetPath().GetString(), materialBinding));
@@ -174,10 +188,13 @@ void DRComponentTexture::onComponentChange()
     const pxr::DrSchemaTextureComponent& texturePrim = (pxr::DrSchemaTextureComponent)mPrim;
     texturePrim.GetCompNameAttr().Get(&mCompName);
     texturePrim.GetTextureListAttr().Get(&textureList);
+    texturePrim.GetEnableProjectUVWAttr().Get(&mEnableProjectUVW);
     texturePrim.GetIgnoredClassAttr().Get(&ignoredClass);
     texturePrim.GetGroupedClassAttr().Get(&groupedClass);
     texturePrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     texturePrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
+    texturePrim.GetSeedAttr().Get(&mSeed);
+    mRandomGenerator.seed(mSeed);
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = texturePrim.GetPrimPathsRel();
@@ -235,11 +252,17 @@ void DRComponentTexture::tick()
         unsigned int textureIndex = 0;
         for (auto materialPrim : mMaterialPrims)
         {
-            if (!materialPrim.HasAttribute(pxr::TfToken("inputs:diffuse_texture")))
+            auto materialShadePrim =
+                mStage->GetPrimAtPath(pxr::SdfPath(materialPrim.GetPrimPath().GetString() + "/Shader"));
+            pxr::UsdShadeMaterial materialShade(materialShadePrim);
+            auto primTexture = materialShade.GetInput(pxr::TfToken("diffuse_texture"));
+            auto primProjectUVW = materialShade.GetInput(pxr::TfToken("project_uvw"));
+            if (!primTexture || !primProjectUVW)
                 break;
-            pxr::UsdAttribute diffuseTextureAttr = materialPrim.GetAttribute(pxr::TfToken("inputs:diffuse_texture"));
-            if (diffuseTextureAttr)
-                diffuseTextureAttr.Set(pxr::SdfAssetPath(mTextureList[textureIndex].c_str()));
+            if (primTexture)
+                primTexture.Set(pxr::SdfAssetPath(mTextureList[textureIndex].c_str()));
+            if (primProjectUVW)
+                primProjectUVW.Set(mEnableProjectUVW);
             textureIndex++;
         }
         if (textureIndex == mMaterialPrims.size())
@@ -250,7 +273,7 @@ void DRComponentTexture::tick()
     {
         if (mTextureList.size() == 0 || mMaterialShades.size() == 0)
             return;
-        int randVal = int(randomRange(0.0f, mTextureList.size() * 1.0f));
+        int randVal = int(randomRangeFloat(0.0f, mTextureList.size() * 1.0f));
         pxr::UsdShadeMaterialBindingAPI materialBinding = primMaterialBinding.second;
         // Check for classes to be grouped
         if (mIsGrouping && mPrimClassMap.find(primMaterialBinding.first) != mPrimClassMap.end())

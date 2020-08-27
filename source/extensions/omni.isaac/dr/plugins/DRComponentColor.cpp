@@ -4,14 +4,9 @@
 
 #include "DRComponentColor.h"
 
-#include <AudioSchema/sound.h>
 #include <boost/algorithm/string.hpp>
-#include <carb/Framework.h>
 #include <carb/tokens/ITokens.h>
 #include <carb/tokens/TokensUtils.h>
-#include <carb/Types.h>
-#include <carb/InterfaceUtils.h>
-#include <carb/filesystem/IFileSystem.h>
 
 #include <omni/kit/KitUtils.h>
 #include <omni/usd/UtilsIncludes.h>
@@ -34,7 +29,8 @@ DRComponentColor::DRComponentColor(carb::tokens::ITokens* tokens) : DRComponentB
     mGRange.push_back(1);
     mBRange.push_back(0);
     mBRange.push_back(1);
-    mDatasource = carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-file.plugin");
+    mDatasource =
+        carb::getFramework()->acquireInterface<carb::datasource::IDataSource>("carb.datasource-omniclient.plugin");
     mConnection = carb::datasource::connectAndWait(
         carb::datasource::ConnectionDesc{ carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/").c_str() },
         mDatasource);
@@ -76,11 +72,21 @@ void DRComponentColor::onStart()
                     return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
                 });
         }
-        mColorMaterialPrim = omni::usd::AssetUtils::createPrimFromAssetPath(
-            mStage, mOmniPBRMatPath.c_str(), ("/Colors/" + mCompName + "/" + urlPath.getStem()).getStringBuffer(),
-            "OmniPBR.mdl", mDatasource, mConnection);
-        pxr::UsdShadeMaterial materialShade(mColorMaterialPrim);
-        mColorMaterialShade = materialShade;
+        std::string colorMaterialPrimName =
+            mStage->GetDefaultPrim().GetPath().GetString() + colorCompMaterialPath + "/OmniPBR";
+        mColorMaterialPrim = mStage->DefinePrim(pxr::SdfPath(colorMaterialPrimName.c_str()), pxr::TfToken("Material"));
+        auto shadeMaterialPrim = pxr::UsdShadeMaterial(mColorMaterialPrim);
+        auto shaderMtlPath = mStage->DefinePrim(pxr::SdfPath(colorMaterialPrimName + "/Shader"), pxr::TfToken("Shader"));
+        auto shadeShaderPrim = pxr::UsdShadeShader(shaderMtlPath);
+        auto shaderOut = shadeShaderPrim.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+
+        shadeMaterialPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeMaterialPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeMaterialPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+        shadeShaderPrim.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
+        shadeShaderPrim.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
+        shadeShaderPrim.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
+        mColorMaterialShade = shadeMaterialPrim;
     }
     pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
     mStage->SetEditTarget(editTarget);
@@ -144,8 +150,12 @@ void DRComponentColor::onComponentChange()
     colorPrim.GetCompNameAttr().Get(&mCompName);
     colorPrim.GetFirstColorAttr().Get(&firstColor);
     colorPrim.GetSecondColorAttr().Get(&secondColor);
+    colorPrim.GetRoughnessAttr().Get(&mRoughnessRange);
+    colorPrim.GetMetallicAttr().Get(&mMetallicRange);
     colorPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     colorPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
+    colorPrim.GetSeedAttr().Get(&mSeed);
+    mRandomGenerator.seed(mSeed);
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = colorPrim.GetPrimPathsRel();
@@ -195,21 +205,27 @@ void DRComponentColor::tick()
     unsigned int primIndex = 0;
     for (auto& prim : mAllPrims)
     {
-        if (mAllMaterialPrims[primIndex].HasAttribute(pxr::TfToken("inputs:diffuse_color_constant")))
+        auto materialShadePrim =
+            mStage->GetPrimAtPath(pxr::SdfPath(mAllMaterialPrims[primIndex].GetPrimPath().GetString() + "/Shader"));
+        pxr::UsdShadeMaterial materialShade(materialShadePrim);
+        auto primColor = materialShade.GetInput(pxr::TfToken("diffuse_color_constant"));
+        if (primColor)
         {
-            pxr::VtValue value;
-            // CARB_LOG_WARN("prim with color: %s", prim.GetPrimPath().GetString().c_str());
-            pxr::UsdAttribute primColor =
-                mAllMaterialPrims[primIndex].GetAttribute(pxr::TfToken("inputs:diffuse_color_constant"));
-            if (primColor)
-            {
-                // CARB_LOG_WARN("prim set color");
-                float r = randomRange(mRRange[0], mRRange[1]);
-                float g = randomRange(mGRange[0], mGRange[1]);
-                float b = randomRange(mBRange[0], mBRange[1]);
-                pxr::GfVec3f usdColor{ pxr::GfVec3f(r, g, b) };
-                primColor.Set(usdColor);
-            }
+            // CARB_LOG_WARN("prim set color");
+            float r = randomRangeFloat(mRRange[0], mRRange[1]);
+            float g = randomRangeFloat(mGRange[0], mGRange[1]);
+            float b = randomRangeFloat(mBRange[0], mBRange[1]);
+            primColor.Set(pxr::GfVec3f(r, g, b));
+        }
+        auto primRoughness = materialShade.GetInput(pxr::TfToken("reflection_roughness_constant"));
+        if (primRoughness)
+        {
+            primRoughness.Set(randomRangeFloat(mRoughnessRange[0], mRoughnessRange[1]));
+        }
+        auto primMetallic = materialShade.GetInput(pxr::TfToken("metallic_constant"));
+        if (primMetallic)
+        {
+            primMetallic.Set(randomRangeFloat(mMetallicRange[0], mMetallicRange[1]));
         }
         primIndex++;
     }

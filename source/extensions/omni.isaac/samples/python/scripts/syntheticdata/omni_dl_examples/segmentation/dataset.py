@@ -51,11 +51,23 @@ class RandomObjects(torch.utils.data.IterableDataset):
     This dataset is intended for use with ShapeNet but will function with any dataset of USD models
     structured as `root/category/**/*.usd. One note is that this is designed for assets without materials
     attached. This is to avoid requiring to compile MDLs and load textures while training.
+
+    Args:
+        categories (tuple of str): Tuple or list of categories. For ShapeNet, these will be the synset IDs.
+        max_asset_size (int): Maximum asset file size that will be loaded. This prevents out of memory errors
+            due to loading large meshes.
+        num_assets_min (int): Minimum number of assets populated in the scene.
+        num_assets_max (int): Maximum number of assets populated in the scene.
+        split (float): Fraction of the USDs found to use for training.
+        train (bool): If true, use the first training split and generate infinite random scenes.
     """
 
     def __init__(
         self, root, categories, max_asset_size=None, num_assets_min=3, num_assets_max=5, split=0.7, train=True
     ):
+        assert len(categories) > 1
+        assert (split > 0) and (split <= 1.0)
+
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
         self.sd_helper = SyntheticDataHelper()
         self.stage = self.kit.get_stage()
@@ -249,7 +261,12 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.populate_scene()
         self.randomize_camera()
         self.randomize_asset_material()
-
+        # step once and then wait for materials to load
+        self.kit.update()
+        print("waiting for materials to load...")
+        while self.kit.is_loading():
+            self.kit.update()
+        print("done")
         # Collect Groundtruth
         gt = self.sd_helper.get_groundtruth(["rgb", "boundingBox2DTight", "instanceSegmentation"])
 

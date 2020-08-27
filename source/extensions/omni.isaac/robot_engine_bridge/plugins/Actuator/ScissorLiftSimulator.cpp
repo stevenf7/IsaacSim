@@ -44,10 +44,9 @@ void ScissorLiftSimulator::tick()
 
     {
         MessageHeader header;
-        IsaacMessage<isaac_message::State> commandsState;
-        auto commands = commandsState.initProto();
-        std::vector<std::vector<uint8_t>> buffers;
-        if (receive(mInputComponent, mCommandChannelName, header, commands, buffers))
+        IsaacMessage<isaac_message::State> commandComposite;
+        std::vector<IsaacHostBuffer> buffers;
+        if (checkErrorCode(receive(mInputComponent, mCommandChannelName, header, commandComposite, buffers)))
         {
 
 
@@ -151,7 +150,6 @@ void ScissorLiftSimulator::tick()
         // message format as state/DifferentialBaseControl
         // (linear_speed, angular speed)
         IsaacMessage<isaac_message::State> statusComposite;
-        std::vector<std::vector<uint8_t>> buffers(1);
         auto statusProto = statusComposite.initProto();
         std::vector<double> elements{ stateVal, 0.0 };
         // set tensor proto to specify dimension of buffer
@@ -162,9 +160,10 @@ void ScissorLiftSimulator::tick()
         tensor.setScanlineStride(0);
         tensor.setDataBufferIndex(0);
         // copy actual buffer data
-        buffers[0].resize(elements.size() * sizeof(double));
-        std::memcpy(buffers[0].data(), elements.data(), elements.size() * sizeof(double));
-        publish(mOutputComponent, mStateChannelName, statusProto, isaac_message::StateProtoId, buffers);
+        std::vector<std::unique_ptr<IsaacBuffer>> buffers(1);
+        buffers[0] = std::make_unique<IsaacHostBuffer>(elements.size() * sizeof(double));
+        std::memcpy(buffers[0]->data(), elements.data(), elements.size() * sizeof(double));
+        publish(mOutputComponent, mStateChannelName, statusComposite, isaac_message::StateProtoId, buffers);
     }
 }
 

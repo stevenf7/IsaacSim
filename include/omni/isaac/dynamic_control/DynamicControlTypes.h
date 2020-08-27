@@ -145,6 +145,11 @@ enum class DcDofType : int32_t
     eTranslation, //!< The degrees of freedom correspond to a translation between bodies.
 };
 
+struct DcRigidBodyProperties
+{
+    float mass;
+    carb::Float3 moment;
+};
 /**
  * Properties of a degree-of-freedom
  */

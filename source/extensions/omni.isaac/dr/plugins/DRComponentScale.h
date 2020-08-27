@@ -36,6 +36,7 @@ private:
     std::vector<std::string> mPaths;
     pxr::GfVec2f mXRange, mYRange, mZRange;
     std::vector<pxr::UsdPrim> mAllPrims;
+    bool mEnableUniform;
 };
 
 }

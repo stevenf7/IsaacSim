@@ -41,7 +41,22 @@ files = []
 [isaac-sim]
 files = [
     ["_build/$platform/$config/experiences/isaac-sim*", "_build/$platform/$config/experiences"],
-    ["_build/$platform/$config/exts"],
+    ["_build/$platform/$config/exts/omni.isaac.about"],
+    ["_build/$platform/$config/exts/omni.isaac.decals"],
+    ["_build/$platform/$config/exts/omni.isaac.dr"],
+    ["_build/$platform/$config/exts/omni.isaac.dynamic_control"],
+    ["_build/$platform/$config/exts/omni.isaac.lidar"],
+    ["_build/$platform/$config/exts/omni.isaac.manip"],
+    ["_build/$platform/$config/exts/omni.isaac.motion_planning"],
+    ["_build/$platform/$config/exts/omni.isaac.occupancy_map"],
+    ["_build/$platform/$config/exts/omni.isaac.robot_engine_bridge"],
+    ["_build/$platform/$config/exts/omni.isaac.ros_bridge"],
+    ["_build/$platform/$config/exts/omni.isaac.samples"],
+    ["_build/$platform/$config/exts/omni.isaac.samples_internal"],
+    #["_build/$platform/$config/exts/omni.isaac.step_importer"],
+    ["_build/$platform/$config/exts/omni.isaac.tests"],
+    ["_build/$platform/$config/exts/omni.isaac.urdf"],
+    ["_build/$platform/$config/exts/omni.isaac.utils"],
     ["_build/$platform/$config/data", "_build/$platform/$config/data"],
     ["PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
     ["source/extensions/omni.isaac/dr/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
@@ -98,6 +113,9 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd"],
     #["_build/target-deps/kit_sdk_$config/omniverse-kit.bat", "_build/target-deps/kit_sdk_$config/omniverse-kit.bat"],
+
+    # HACK: For StartupTests
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts/omni.kit.pip_archive-0.1/pip_prebundle/numpy/.libs/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts/omni.kit.pip_archive-0.1/pip_prebundle/numpy/.libs"],
 ]
 
 [isaac-sim.windows-x86_64.debug]
@@ -126,6 +144,9 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins"],
     #["_build/target-deps/kit_sdk_$config/omniverse-kit.sh", "_build/target-deps/kit_sdk_$config/omniverse-kit.sh"],
+
+    # HACK: For StartupTests
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so.10.2"],
 ]
 
 [isaac-sim.linux.debug]
@@ -141,7 +162,22 @@ files = [
 files = [
     ["_build/$platform/$config/experiences/omniverse-kit-robotics*", "_build/$platform/$config/experiences"],
     ["_build/$platform/$config/experiences/test*", "_build/$platform/$config/experiences"],
-    ["_build/$platform/$config/exts"],
+    ["_build/$platform/$config/exts/omni.isaac.about"],
+    ["_build/$platform/$config/exts/omni.isaac.decals"],
+    ["_build/$platform/$config/exts/omni.isaac.dr"],
+    ["_build/$platform/$config/exts/omni.isaac.dynamic_control"],
+    ["_build/$platform/$config/exts/omni.isaac.lidar"],
+    ["_build/$platform/$config/exts/omni.isaac.manip"],
+    ["_build/$platform/$config/exts/omni.isaac.motion_planning"],
+    ["_build/$platform/$config/exts/omni.isaac.occupancy_map"],
+    ["_build/$platform/$config/exts/omni.isaac.robot_engine_bridge"],
+    ["_build/$platform/$config/exts/omni.isaac.ros_bridge"],
+    ["_build/$platform/$config/exts/omni.isaac.samples"],
+    ["_build/$platform/$config/exts/omni.isaac.samples_internal"],
+    ["_build/$platform/$config/exts/omni.isaac.step_importer"],
+    ["_build/$platform/$config/exts/omni.isaac.tests"],
+    ["_build/$platform/$config/exts/omni.isaac.urdf"],
+    ["_build/$platform/$config/exts/omni.isaac.utils"],
     ["_build/$platform/$config/data", "_build/$platform/$config/data"],
     ["PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
     ["source/extensions/omni.isaac/dr/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
@@ -198,6 +234,9 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/rtx"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/usd"],
     #["_build/target-deps/kit_sdk_$config/omniverse-kit.bat", "_build/target-deps/kit_sdk_$config/omniverse-kit.bat"],
+
+    # HACK: For StartupTests
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts/omni.kit.pip_archive-0.1/pip_prebundle/numpy/.libs/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/exts/omni.kit.pip_archive-0.1/pip_prebundle/numpy/.libs"],
 ]
 
 [omniverse-kit-robotics.windows-x86_64.debug]
@@ -226,6 +265,9 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins"],
     #["_build/target-deps/kit_sdk_$config/omniverse-kit.sh", "_build/target-deps/kit_sdk_$config/omniverse-kit.sh"],
+
+    # HACK: For StartupTests
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/libcudart.so.10.2"],
 ]
 
 [omniverse-kit-robotics.linux.debug]

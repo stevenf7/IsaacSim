@@ -108,27 +108,27 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
     }
 }
 
-void onPrimAdd(const char* primPath, void* userData)
+void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 {
     if (Manager && g_stage)
     {
-        Manager->onComponentAdd(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        Manager->onComponentAdd(g_stage->GetPrimAtPath(primPath));
     }
 }
 
-void onPrimChange(const char* primPath, const omni::kit::PrimDirtyBits*, void* userData)
+void onPrimOrPropertyChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
     if (Manager && g_stage)
     {
-        Manager->onComponentChange(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        Manager->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
     }
 }
 
-void onPrimRemove(const char* primPath, void* userData)
+void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
     if (Manager && g_stage)
     {
-        Manager->onComponentRemove(pxr::SdfPath(primPath));
+        Manager->onComponentRemove(primPath);
     }
 }
 
@@ -148,7 +148,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onDetach = onDetach;
     desc.onUpdate = onUpdate;
     desc.onPrimAdd = onPrimAdd;
-    desc.onPrimChange = onPrimChange;
+    desc.onPrimOrPropertyChange = onPrimOrPropertyChange;
     desc.onPrimRemove = onPrimRemove;
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
 }

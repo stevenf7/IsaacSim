@@ -25,7 +25,7 @@ RosLidar::RosLidar()
     mFramework = carb::getFramework();
     if (!mFramework)
     {
-        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
+        CARB_LOG_ERROR("Failed to get Carbonite framework");
         return;
     }
 
@@ -38,7 +38,7 @@ RosLidar::RosLidar()
 }
 RosLidar::~RosLidar()
 {
-    CARB_LOG_ERROR("RosLidar Destroyed");
+    CARB_LOG_INFO("RosLidar Destroyed");
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mLaserScanPubTopic);
 }
 
