@@ -18,9 +18,8 @@ import torch
 import numpy as np
 
 import omni
-import omni.isaac.DrSchema as DrSchema
-from omni.isaac.dr import _dr
 from omni_dl_examples.helpers import OmniKitHelper, SyntheticDataHelper, DataWriter
+from omni.isaac.dr import _dr
 
 # Default rendering parameters
 RENDER_CONFIG = {"width": 600, "height": 600, "renderer": "PathTracing", "samples_per_pixel_per_frame": 12}
