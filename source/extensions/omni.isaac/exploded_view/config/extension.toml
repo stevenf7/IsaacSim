@@ -1,0 +1,9 @@
+display_name = "Exploded View"
+
+[dependencies]
+"omni.kit.editor" = {}
+
+[[python.modules]]
+name = "omni.isaac.exploded_view"
+
+
