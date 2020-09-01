@@ -78,35 +78,21 @@ void ScenarioFromMessage::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
     isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mRequestChannelName);
 
-    std::string teleportInputComponent;
-    std::string teleportInputChannel;
+    std::string teleportInputComponent = "input";
+    std::string teleportInputChannel = "teleport";
 
-    std::string rigidBodySinkOutputComponent;
-    std::string rigidBodySinkOutputChannel;
+    std::string rigidBodySinkOutputComponent = "output";
+    std::string rigidBodySinkOutputChannel = "bodies";
 
     isaac::utils::safeGetAttribute(typedPrim.GetTeleportInputComponentAttr(), teleportInputComponent);
     isaac::utils::safeGetAttribute(typedPrim.GetTeleportInputChannelAttr(), teleportInputChannel);
 
     isaac::utils::safeGetAttribute(typedPrim.GetRigidBodySinkOutputComponentAttr(), rigidBodySinkOutputComponent);
     isaac::utils::safeGetAttribute(typedPrim.GetRigidBodySinkOutputChannelAttr(), rigidBodySinkOutputChannel);
-    {
-        const pxr::RobotEngineBridgeSchemaRobotEngineTeleport& typedPrim =
-            (pxr::RobotEngineBridgeSchemaRobotEngineTeleport)(mTeleport->getPrim());
 
-        typedPrim.CreateInputComponentAttr().Set(teleportInputComponent);
-        typedPrim.CreateInputChannelAttr().Set(teleportInputChannel);
-    }
-
-    {
-        const pxr::RobotEngineBridgeSchemaRobotEngineRigidBodySink& typedPrim =
-            (pxr::RobotEngineBridgeSchemaRobotEngineRigidBodySink)(mRigidBodiesSink->getPrim());
-        typedPrim.CreateOutputComponentAttr().Set(rigidBodySinkOutputComponent);
-        typedPrim.CreateOutputChannelAttr().Set(rigidBodySinkOutputChannel);
-    }
-
-    mTeleport->onComponentChange();
-    mRigidBodiesSink->onComponentChange();
-    mUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(mStage);
+    mTeleport->updateComponent(teleportInputComponent, teleportInputChannel);
+    mRigidBodiesSink->updateComponent(rigidBodySinkOutputComponent, rigidBodySinkOutputChannel);
+    mInvUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(mStage);
 }
 void ScenarioFromMessage::initSubComponents()
 {
@@ -147,7 +133,7 @@ void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Rea
                     pxr::GfVec4f pxBodyRotation(isaacBodyRotation.getX(), isaacBodyRotation.getY(),
                                                 isaacBodyRotation.getZ(), isaacBodyRotation.getW());
 
-                    setTransform(mDynamicControlPtr, prim, pxBodyTranslation * mUnitScale, pxBodyRotation);
+                    setTransform(mDynamicControlPtr, prim, pxBodyTranslation * mInvUnitScale, pxBodyRotation);
                 }
                 AddObject(actorName, prim);
             }

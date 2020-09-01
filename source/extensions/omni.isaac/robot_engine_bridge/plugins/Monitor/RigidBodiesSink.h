@@ -67,6 +67,14 @@ public:
      */
     void eraseObject(const std::string& actorName);
 
+    /**
+     * @brief Manual update call, only used by scenario from message
+     *
+     * @param outputComponent
+     * @param outputChannel
+     */
+    void updateComponent(const std::string& outputComponent, const std::string& outputChannel);
+
 private:
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     std::vector<pxr::GfVec3d> mLastLinearVelocity, mLastAngularVelocity;

@@ -125,12 +125,13 @@ class Extension(omni.ext.IExt):
             # LIDAR rays in the viewport.
             self.lidar.CreateHighLodAttr().Set(True)
             self.lidar.CreateDrawLidarPointsAttr().Set(False)
+            self.lidar.CreateDrawLidarLinesAttr().Set(False)
 
             # We set the attributes we created.  We could have just set the attributes at creation, but this was
             # more illustrative.  It's important to remember that attributes do not exist until you create them; even
             # if they are defined in the schema.
             self.lidar.GetRotationRateAttr().Set(0.5)
-            self.lidar.GetDrawLidarPointsAttr().Set(True)
+            self.lidar.CreateDrawLidarLinesAttr().Set(True)
             self.lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
             # we want to make sure we can see the lidar we made, so we set the camera position and look target

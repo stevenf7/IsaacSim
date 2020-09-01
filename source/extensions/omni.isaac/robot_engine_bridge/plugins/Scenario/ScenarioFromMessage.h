@@ -101,7 +101,7 @@ private:
     std::string mRequestChannelName = "scenario_actors";
 
     // Scale of stage
-    double mUnitScale;
+    double mInvUnitScale;
 };
 }
 }

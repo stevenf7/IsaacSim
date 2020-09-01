@@ -2,7 +2,7 @@ import carb
 import omni.kit.editor
 import omni.kit.commands
 import omni.kit.ui
-from pxr import Sdf
+from pxr import Sdf, UsdGeom, Gf
 import omni.isaac.LidarSchema as LidarSchema
 from .. import _lidar
 
@@ -43,6 +43,11 @@ class LidarMenu:
         lidar.CreateDrawLidarPointsAttr().Set(False)
         lidar.CreateDrawLidarLinesAttr().Set(False)
         lidar.CreateYawOffsetAttr().Set(0.0)
+        # rotate lidar to align correctly if stage is y up
+        if UsdGeom.GetStageUpAxis(stage) == UsdGeom.Tokens.y:
+            xform = UsdGeom.Xformable(lidar)
+            xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+            xform_op.Set(Gf.Matrix4d().SetRotate(Gf.Rotation(Gf.Vec3d(1, 0, 0), 270)))
 
         return lidar
 
