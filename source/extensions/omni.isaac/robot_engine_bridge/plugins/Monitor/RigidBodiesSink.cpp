@@ -215,6 +215,14 @@ void RigidBodiesSink::eraseObject(const std::string& actorName)
         }
     }
 }
+
+void RigidBodiesSink::updateComponent(const std::string& outputComponent, const std::string& outputChannel)
+{
+    mOutputComponent = outputComponent;
+    mRigidBodyChannelName = outputChannel;
+    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
+}
+
 }
 }
 }

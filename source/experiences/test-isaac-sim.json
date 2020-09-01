@@ -17,11 +17,12 @@
                 "omni.renderer-rtx",
                 "omni.kit.editor-full",
                 "omni.kit.builtin.file_menu",
-                "omni.kit.builtin.toolbar",
+                "omni.kit.window.toolbar",
                 "omni.kit.window.viewport",
                 "omni.utils.utilities_menu",
-                "omni.utils.usd_paths",
+                "omni.kit.window.usd_paths",
                 "omni.kit.context_menu",
+                "omni.kit.stage_templates",
                 "omni.physx",
                 "omni.isaac.dynamic_control",
                 "omni.isaac.dr",
@@ -50,8 +51,7 @@
             "includeTests": ["omni.isaac.tests.*"],
             "excludeTests": [
                 "omni.isaac.tests.domain_randomizer.*",
-                "omni.isaac.tests.samples.*",
-                "omni.isaac.tests.urdf.*"
+                "omni.isaac.tests.samples.*"
             ],
             "runTestsAndQuit": true
         }

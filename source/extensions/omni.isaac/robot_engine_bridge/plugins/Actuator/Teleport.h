@@ -62,6 +62,13 @@ public:
      */
     void eraseObject(const std::string& actorName);
 
+    /**
+     * @brief Manual update call, only used by scenario from message
+     *
+     * @param inputComponent
+     * @param inputChannel
+     */
+    void updateComponent(const std::string& inputComponent, const std::string& inputChannel);
 
 private:
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
