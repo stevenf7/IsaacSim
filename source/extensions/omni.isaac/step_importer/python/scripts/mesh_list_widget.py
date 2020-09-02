@@ -58,7 +58,7 @@ class MeshListDelegate(ui.AbstractItemDelegate):
                             item.mesh_props.name = m.get_value_as_string()
 
                     m.add_end_edit_fn(lambda b: mesh_name())
-                    ui.StringField(model=m)
+                    ui.StringField(model=m, style_type_name_override="TreeView.Edit", width=ui.Percent(90))
                 else:
                     text = str(value)
                     ui.Label(text, width=0, name=text, style_type_name_override="TreeView.Item")
@@ -168,7 +168,9 @@ class MeshListModel(ui.AbstractItemModel):
             for i in range(len(self.exporter.part.meshes_properties))
         ]
         self._childrenMap = {i.key: i for i in self._children if i.get_replacement_id() is None}
-        self._item_changed(None)
+        self._item_changed(
+            None
+        )  # pass individual item to update individual item. pass none to update all.  calls build_widget
 
     def toggle_edit_mode(self):
         self.edit_mode = not self.edit_mode

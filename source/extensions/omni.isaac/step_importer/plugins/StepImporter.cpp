@@ -31,7 +31,7 @@ namespace
 {
 
 carb::Framework* g_framework = nullptr;
-
+uint32_t g_importer_ref_count = 0;
 std::unique_ptr<omni::isaac::step_importer::StepImporter> g_stepImporter = nullptr;
 std::unique_ptr<omni::isaac::step_importer::SiContext> g_ctx = nullptr;
 
@@ -160,20 +160,29 @@ CARB_EXPORT void carbOnPluginStartup()
     g_framework = carb::getFramework();
     if (g_ctx.get() == nullptr)
         g_ctx = std::make_unique<omni::isaac::step_importer::SiContext>();
+
     if (g_stepImporter.get() == nullptr)
         g_stepImporter = std::make_unique<omni::isaac::step_importer::StepImporter>();
+
+    g_importer_ref_count++;
 }
 
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
     CARB_LOG_INFO("Shutting Down SI Interface");
+    if (g_importer_ref_count == 1)
+    {
+        if (g_ctx.get() != nullptr)
+            g_ctx.get()->clearStepReaders();
+        CARB_LOG_INFO("  Deleting SI Context");
+        g_ctx.reset(nullptr);
+        CARB_LOG_INFO("  Deleting interface");
+        g_stepImporter.reset(nullptr);
+    }
 
-    g_ctx.get()->clearStepReaders();
-    CARB_LOG_INFO("  Deleting SI Context");
-    // g_ctx.reset(nullptr);
-    CARB_LOG_INFO("  Deleting interface");
-    // g_stepImporter.reset(nullptr);
+    if (g_importer_ref_count > 0)
+        g_importer_ref_count--;
     CARB_LOG_INFO("Done");
 }
 
