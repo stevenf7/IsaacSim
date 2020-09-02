@@ -13,6 +13,11 @@ group ("extensions/"..ext_id)
         project "omni.isaac.urdf"
             kind "None"
             add_impl_folder("source/extensions/omni.isaac/urdf/python")
+        
+        repo_build.prebuild_copy {
+            { "%{root}/_build/target-deps/assimp/bin/*.dll", ext_bin_folder },
+            { "%{root}/_build/target-deps/tinyxml2/bin/*.dll", ext_bin_folder },
+        }
     end
 
     repo_build.prebuild_link {
