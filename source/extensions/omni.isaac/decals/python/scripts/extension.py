@@ -1,6 +1,6 @@
 import os
 
-from pxr import Usd, UsdGeom, Sdf, Gf, Tf, PhysicsSchemaTools
+from pxr import Usd, UsdGeom, Sdf, Gf, Tf
 
 import carb
 import omni.ext

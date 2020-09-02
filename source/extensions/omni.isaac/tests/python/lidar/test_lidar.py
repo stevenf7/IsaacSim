@@ -1,8 +1,9 @@
 import omni.kit.test
+import omni.kit.commands
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.lidar import _lidar
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysicsSchemaTools
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema
 import omni.isaac.LidarSchema as LidarSchema
 import asyncio
 import numpy as np
@@ -113,7 +114,15 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Tests a static lidar with a cube in front of it
     async def test_static_lidar(self):
         # Plane
-        PhysicsSchemaTools.addGroundPlane(self._stage, "/World/groundPlane", "Z", 1500.0, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
+        omni.kit.commands.execute(
+            "AddGroundPlaneCommand",
+            stage=self._stage,
+            planePath="/World/groundPlane",
+            axis="Z",
+            size=1500.0,
+            position=Gf.Vec3f(0),
+            color=Gf.Vec3f(0.5),
+        )
 
         # Add a cube
         cubePath = "/World/Cube"
@@ -142,8 +151,15 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Tests a lidar on a falling cube, with a cube in front of it after it lands
     async def test_dynamic_lidar(self):
         # Plane
-        PhysicsSchemaTools.addGroundPlane(self._stage, "/World/groundPlane", "Z", 1500.0, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
-
+        omni.kit.commands.execute(
+            "AddGroundPlaneCommand",
+            stage=self._stage,
+            planePath="/World/groundPlane",
+            axis="Z",
+            size=1500.0,
+            position=Gf.Vec3f(0),
+            color=Gf.Vec3f(0.5),
+        )
         # Add a cube
         cubePath = "/World/Cube"
         cubeGeom = self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
@@ -172,8 +188,15 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_parameter_ranges(self):
         # Plane
-        PhysicsSchemaTools.addGroundPlane(self._stage, "/World/groundPlane", "Z", 1500.0, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
-
+        omni.kit.commands.execute(
+            "AddGroundPlaneCommand",
+            stage=self._stage,
+            planePath="/World/groundPlane",
+            axis="Z",
+            size=1500.0,
+            position=Gf.Vec3f(0),
+            color=Gf.Vec3f(0.5),
+        )
         cubePath2 = "/World/Cube2"
         cubeGeom2 = self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
 

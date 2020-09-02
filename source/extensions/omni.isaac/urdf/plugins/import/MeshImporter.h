@@ -103,7 +103,8 @@ static aiMatrix4x4 GetLocalTransform(const aiNode* node)
     while (parent)
     {
         std::string name = parent->mName.data;
-        if (name.find(ASSIMP_INSERTED_NODE_PATTERN) != std::string::npos)
+        // ignore the root scene transform, if the parent has a parent then its not a root node
+        if (parent->mParent)
         {
             transform = parent->mTransformation * transform;
             parent = parent->mParent;
@@ -113,7 +114,6 @@ static aiMatrix4x4 GetLocalTransform(const aiNode* node)
             break;
         }
     }
-
     return transform;
 }
 static std::string MakeValidUSDIdentifier(const std::string& name)
@@ -143,6 +143,21 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         nodesToProcess.pop_back();
         // process any meshes in this node:
         aiMatrix4x4 transform = GetLocalTransform(node);
+
+        // if (normalizeScale)
+        // {
+        //     aiVector3D pos, scale;
+        //     aiQuaternion rot;
+        //     transform.Decompose(scale, rot, pos);
+
+        //     scale.x = (scale.x == 0) ? 1 : 1.0 / scale.x;
+        //     scale.y = (scale.y == 0) ? 1 : 1.0 / scale.y;
+        //     scale.z = (scale.z == 0) ? 1 : 1.0 / scale.z;
+
+        //     aiMatrix4x4 scale_mat;
+        //     transform = transform * aiMatrix4x4::Scaling(scale, scale_mat);
+        // }
+
         for (size_t i = 0; i < node->mNumMeshes; i++)
         {
             meshTransforms.push_back(std::pair<int, aiMatrix4x4>(node->mMeshes[i], transform));
@@ -153,7 +168,7 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
             nodesToProcess.push_back(node->mChildren[i]);
         }
     }
-
+    // printf("%s TOTAL MESHES: %d\n", path.c_str(), meshTransforms.size());
     mMeshPrims.resize(meshTransforms.size());
 
     for (size_t i = 0; i < meshTransforms.size(); i++)
@@ -162,10 +177,13 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         auto mesh = mScene->mMeshes[transformedMesh.first];
         // pxr::GfMatrix4d nodeMat = AiMatrixToGfMatrix(transformedMesh.second);
         // pxr::GfVec3d temp = nodeMat.ExtractTranslation();
-        // printf("%d %d  TRANS: %f %f %f\n", i, transformedMesh.first, temp[0], temp[1], temp[2]);
-        // Assimp will unweld all meshes by default. For FBX,
-        // it will keep original control points to avoid use
-        // unweld geometry.
+        // pxr::GfRotation rot = nodeMat.ExtractRotation();
+        // pxr::GfVec3d sc = pxr::GfTransform(nodeMat).GetScale();
+
+        // printf("%d %d  TRANS: [%f %f %f] SCALE: [%f %f %f] ROT: [%f] - [%f %f %f]\n", i, transformedMesh.first,
+        // temp[0],temp[1], temp[2], sc[0], sc[1], sc[2], rot.GetAngle(), rot.GetAxis()[0],
+        // rot.GetAxis()[1],rot.GetAxis()[2]); Assimp will unweld all meshes by default. For FBX, it will keep original
+        // control points to avoid use unweld geometry.
         if (!mesh->HasControlPoints())
         {
             // Gather all mesh points information to sort

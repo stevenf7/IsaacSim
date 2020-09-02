@@ -4,6 +4,7 @@
 import omni.kit.test
 import omni.kit.asyncapi
 import omni.kit.usd
+import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control as dc
 import carb.tokens
 import os
@@ -11,7 +12,7 @@ import carb
 import asyncio
 import numpy as np
 from omni.isaac.utils._isaac_utils import math as mu
-from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, PhysicsSchema, PhysicsSchemaTools
+from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, PhysicsSchema
 
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -50,8 +51,16 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         UsdGeom.SetStageMetersPerUnit(self.stage, 0.01)
         scene = PhysicsSchema.PhysicsScene.Define(self.stage, Sdf.Path("/physicsScene"))
         scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
-        PhysicsSchemaTools.addGroundPlane(self.stage, "/groundPlane", "Z", 100, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
 
+        omni.kit.commands.execute(
+            "AddGroundPlaneCommand",
+            stage=self.stage,
+            planePath="/groundPlane",
+            axis="Z",
+            size=100.0,
+            position=Gf.Vec3f(0),
+            color=Gf.Vec3f(0.5),
+        )
         self.assertFalse(self._dc.is_simulating())
 
         # Create two cubes and set them to be rigid bodies

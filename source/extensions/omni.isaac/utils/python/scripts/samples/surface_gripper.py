@@ -11,7 +11,7 @@ import carb
 import asyncio
 import numpy as np
 from omni.isaac.utils._isaac_utils import math as mu
-from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, PhysicsSchema, PhysicsSchemaTools
+from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, PhysicsSchema
 
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -162,8 +162,15 @@ class Extension(omni.ext.IExt):
             UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
             self.scene = PhysicsSchema.PhysicsScene.Define(self._stage, Sdf.Path("/physicsScene"))
             self.scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
-            PhysicsSchemaTools.addGroundPlane(self._stage, "/groundPlane", "Z", 1000, Gf.Vec3f(0.0), Gf.Vec3f(0.5))
-
+            omni.kit.commands.execute(
+                "AddGroundPlaneCommand",
+                stage=self._stage,
+                planePath="/groundPlane",
+                axis="Z",
+                size=1000.0,
+                position=Gf.Vec3f(0),
+                color=Gf.Vec3f(0.5),
+            )
             # Colors to represent when gripper is open or closed
             self.color_closed = Gf.Vec3f(1.0, 0.2, 0.2)
             self.color_open = Gf.Vec3f(0.2, 1.0, 0.2)
