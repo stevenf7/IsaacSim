@@ -6,7 +6,7 @@ import asyncio
 
 # from omni.physx import _physx
 from .common import import_robot, set_drive_parameters
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysicsSchemaTools, PhysxSchema
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysxSchema
 
 
 class Extension(omni.ext.IExt):
@@ -55,7 +55,15 @@ class Extension(omni.ext.IExt):
         stage = omni.usd.get_context().get_stage()
         scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/physicsScene"))
         scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
-        PhysicsSchemaTools.addGroundPlane(stage, "/groundPlane", "Z", 1500.0, Gf.Vec3f(0), Gf.Vec3f(0.5))
+        omni.kit.commands.execute(
+            "AddGroundPlaneCommand",
+            stage=stage,
+            planePath="/groundPlane",
+            axis="Z",
+            size=1500.0,
+            position=Gf.Vec3f(0),
+            color=Gf.Vec3f(0.5),
+        )
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
         distantLight.CreateIntensityAttr(500)
 

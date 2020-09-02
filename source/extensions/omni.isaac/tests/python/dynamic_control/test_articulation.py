@@ -416,26 +416,26 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         dof_target_new = self._dc.get_dof_position_target(dof_ptr)
         self.assertTrue(Gf.IsClose(dof_target_new, new_pos, 0.01))
 
-    async def test_articulation_load_gpu(self):
-        await self.test_articulation_load(True)
+    # async def test_articulation_load_gpu(self):
+    #     await self.test_articulation_load(True)
 
-    async def test_articulation_non_sim_gpu(self):
-        await self.test_articulation_non_sim(True)
+    # async def test_articulation_non_sim_gpu(self):
+    #     await self.test_articulation_non_sim(True)
 
-    async def test_articulation_teleport_gpu(self):
-        await self.test_articulation_teleport(True)
+    # async def test_articulation_teleport_gpu(self):
+    #     await self.test_articulation_teleport(True)
 
-    async def test_articulation_movement_gpu(self):
-        await self.test_articulation_movement(True)
+    # async def test_articulation_movement_gpu(self):
+    #     await self.test_articulation_movement(True)
 
-    async def test_articulation_wheeled_gpu(self):
-        await self.test_articulation_wheeled(True)
+    # async def test_articulation_wheeled_gpu(self):
+    #     await self.test_articulation_wheeled(True)
 
-    async def test_articulation_carter_gpu(self):
-        await self.test_articulation_carter(True)
+    # async def test_articulation_carter_gpu(self):
+    #     await self.test_articulation_carter(True)
 
-    async def test_articulation_position_franka_gpu(self):
-        await self.test_articulation_position_franka(True)
+    # async def test_articulation_position_franka_gpu(self):
+    #     await self.test_articulation_position_franka(True)
 
-    async def test_articulation_position_str_gpu(self):
-        await self.test_articulation_position_str(True)
+    # async def test_articulation_position_str_gpu(self):
+    #     await self.test_articulation_position_str(True)

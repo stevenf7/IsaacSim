@@ -151,7 +151,7 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
 
         pxr::GfMatrix4d mat;
         mat.SetIdentity();
-        mat.SetTranslateOnly(pxr::GfVec3d(transform.p.x, transform.p.y, transform.p.z));
+        mat.SetTranslateOnly(distanceScale * pxr::GfVec3d(transform.p.x, transform.p.y, transform.p.z));
         mat.SetRotateOnly(pxr::GfQuatd(transform.q.w, transform.q.x, transform.q.y, transform.q.z));
 
         pxr::GfMatrix4d scale;
@@ -171,7 +171,7 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
         pxr::UsdGeomXformable gprim = pxr::UsdGeomXformable(prim);
         gprim.ClearXformOpOrder();
         pxr::UsdGeomXformOp trans = gprim.AddTransformOp();
-        trans.Set(mat * scale, pxr::UsdTimeCode::Default());
+        trans.Set(scale * mat, pxr::UsdTimeCode::Default());
     }
     return prim;
 }
@@ -213,12 +213,17 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
             // scale from kg/m^2 to specified units
             massAPI.CreateDensityAttr().Set(double(config.density));
         }
-        if (link.inertial.hasInertia)
+        if (link.inertial.hasInertia && config.importInertiaTensor)
         {
             // input is meters, but convert to kit units
             massAPI.CreateDiagonalInertiaAttr().Set(
                 pxr::GfVec3d(link.inertial.inertia.ixx, link.inertial.inertia.iyy, link.inertial.inertia.izz) *
                 config.distanceScale * config.distanceScale);
+        }
+        if (link.inertial.hasOrigin)
+        {
+            massAPI.CreateCenterOfMassAttr().Set(
+                pxr::GfVec3d(link.inertial.origin.x, link.inertial.origin.y, link.inertial.origin.z));
         }
     }
     else
@@ -557,11 +562,12 @@ void UrdfImporter::addLinksAndJoints(pxr::UsdStageWeakPtr stage,
                                      const UrdfRobot& robot,
                                      pxr::UsdGeomXform robotPrim)
 {
-    const UrdfLink& urdfLink = robot.links.at(parentNode->linkName_);
-    addRigidBody(stage, urdfLink, poseParentToWorld, robotPrim, robot);
+
     // Create root joint only once
     if (parentNode->parentJointName_ == "")
     {
+        const UrdfLink& urdfLink = robot.links.at(parentNode->linkName_);
+        addRigidBody(stage, urdfLink, poseParentToWorld, robotPrim, robot);
         std::string rootJointPath = robotPrim.GetPath().GetString() + "/rootJoint";
         pxr::PhysicsSchemaPhysicsJoint rootJoint =
             pxr::PhysicsSchemaPhysicsJoint::Define(stage, pxr::SdfPath(rootJointPath));
