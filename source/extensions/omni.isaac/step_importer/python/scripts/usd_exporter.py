@@ -46,7 +46,9 @@ def createInMemoryStage(path):
 
 
 def create_material(stage, _mtl_path, props):
-    mat_prim = stage.DefinePrim(Sdf.Path(_mtl_path), "Material")
+    mat_prim = stage.GetPrimAtPath(Sdf.Path(_mtl_path))
+    if not mat_prim:
+        mat_prim = stage.DefinePrim(Sdf.Path(_mtl_path), "Material")
     material_prim = UsdShade.Material.Get(stage, mat_prim.GetPath())
     if material_prim:
         shader_path = stage.DefinePrim(Sdf.Path("{}/Shader".format(_mtl_path)), "Shader")
@@ -70,7 +72,7 @@ def create_material(stage, _mtl_path, props):
             omni.kit.usd.create_material_input(
                 mat_prim,
                 "emissive_color",
-                Gf.Vec3f(props.emmissive.r, props.emmissive.g, props.emmissive.b),
+                Gf.Vec3f(props.emissive.r, props.emissive.g, props.emissive.b),
                 Sdf.ValueTypeNames.Color3f,
             )
             omni.kit.usd.create_material_input(mat_prim, "metallic_constant", props.metallic, Sdf.ValueTypeNames.Float)
@@ -78,7 +80,10 @@ def create_material(stage, _mtl_path, props):
                 mat_prim, "reflection_roughness_constant", props.roughness, Sdf.ValueTypeNames.Float
             )
             omni.kit.usd.create_material_input(
-                mat_prim, "enable_emission", props.emmissive.a > 0, Sdf.ValueTypeNames.Bool
+                mat_prim, "enable_emission", props.emissive.a > 0, Sdf.ValueTypeNames.Bool
+            )
+            omni.kit.usd.create_material_input(
+                mat_prim, "emissive_intensity", props.emissive.a, Sdf.ValueTypeNames.Float
             )
             # mat_prim.SetInstanceable(True)
         else:
@@ -97,14 +102,14 @@ def get_all_prims_with_material(stage, material_name):
     return [x for x in stage.Traverse() if material_name == os.path.basename(get_material_path(x))]
 
 
-def export_material_list(material_list, path):
+def export_material_list(material_list, material_names, path):
     stage = createInMemoryStage(path)
     # root = UsdGeom.Xform.Define(stage, Sdf.Path("/Looks")).GetPrim()
     looks_prim = stage.DefinePrim(Sdf.Path("/Looks"), "Scope")
     stage.SetDefaultPrim(looks_prim)
     out_list = []  # List that contains all materials Path as they are in the stage.
     for i, mat in enumerate(material_list):
-        name = "/Looks/Material_{}".format(i)
+        name = "/Looks/{}".format(material_names[i])
         create_material(stage, name, mat)
         out_list.append(name)
     stage.Save()
@@ -135,12 +140,14 @@ class PartExporter:
         self._make_assembly_usd = assemblies_as_usds
         self.materials_path = ""
         self.material_list = []
+        self.material_names = []
         self.mesh_map = {}
         self.mesh_replacement_map = {}
         self.mesh_usd_paths = {}
         self.assemblies_prims = []
         self.assemblies_path = [None]
         self.stage = None
+        self.material_stage = None
         self.preview = True
         self.tempdir = tempfile.TemporaryDirectory(prefix=self.tmp_prefix).name
         self._temp_dir_to_clean = temp_dir_to_clean
@@ -163,7 +170,8 @@ class PartExporter:
 
             def delete_folder():
                 try:
-                    shutil.rmtree(tempdir)
+                    if os.path.exists(tempdir):
+                        shutil.rmtree(tempdir)
                 except Exception as e:
                     carb.log_error("Error trying to clean temp folder: " + str(e))
 
@@ -172,7 +180,8 @@ class PartExporter:
             )
         else:
             try:
-                shutil.rmtree(self.tempdir)
+                if os.path.exists(self.tempdir):
+                    shutil.rmtree(self.tempdir)
             except Exception as e:
                 carb.log_error("Error trying to clean temp folder: " + str(e))
 
@@ -230,10 +239,13 @@ class PartExporter:
                 os.remove(f)
         shutil.rmtree(os.path.join(part_path, "meshes"), True)
         materials_path = os.path.join(part_path, "materials").replace("\\", "/")
-        if not os.path.exists(os.path.join(materials_path, "colors.usd").replace("\\", "/")):
-            os.makedirs(materials_path)
-            self.materials_path = os.path.join(materials_path, "colors.usd").replace("\\", "/")
-            self.material_list = export_material_list(self.part.materials, self.materials_path)
+        self.materials_path = os.path.join(materials_path, "colors.usd").replace("\\", "/")
+        if os.path.exists(self.materials_path):
+            shutil.rmtree(materials_path)
+        os.makedirs(materials_path)
+        if len(self.part.materials) != len(self.material_names):
+            self.material_names = ["Material_{:02d}".format(i) for i in range(len(self.part.materials))]
+        self.material_list = export_material_list(self.part.materials, self.material_names, self.materials_path)
         meshes_path = os.path.join(part_path, "meshes")
         if not os.path.exists(meshes_path):
             os.makedirs(meshes_path)
@@ -269,7 +281,8 @@ class PartExporter:
         if self._make_assembly_usd:
             stage_path = self.assemblies_path[1]
 
-        omni.usd.get_context().open_stage(stage_path.strip(), lambda a, b: self._on_exported_fn())
+        if self._on_exported_fn:
+            omni.usd.get_context().open_stage(stage_path.strip(), lambda a, b: self._on_exported_fn())
 
     def get_assembly(self, index):
         if self._make_assembly_usd:
@@ -401,12 +414,8 @@ class PartExporter:
             stage = context.get_stage()
             layers = context.get_layers()
             # Makes the session layer the authoring layer to make a non-permanent change on material binding
-            session_layer = [
-                layers.get_layer_identifier_by_index(i)
-                for i in range(layers.get_total_layers_count())
-                if "anon:" in layers.get_layer_identifier_by_index(i)
-            ][0]
-            layers.set_authoring_layer_by_identifier(session_layer)
+            session_layer_id = layers.get_session_layer_global_id()
+            layers.set_authoring_layer_by_global_id(session_layer_id)
             for mat in self.material_list:
                 if stage.GetPrimAtPath(mat):
                     mat_name = mat.split("/")[-1]
@@ -414,6 +423,13 @@ class PartExporter:
                     bind_material(stage, prims, mat)
             # return to root layer
             layers.set_authoring_layer_by_identifier(stage.GetRootLayer().identifier)
+
+    def update_material(self, index):
+        self.set_material_authoring_layer()
+        context = omni.usd.get_context()
+        stage = context.get_stage()
+        create_material(stage, self.material_list[index], self.part.materials[index])
+        self.set_root_authoring_layer()
 
     def export_mesh_list(self, path, materials_stage, materials_list):
         mesh_names = []
@@ -431,7 +447,13 @@ class PartExporter:
                     carb.log_info("Converting " + meshprops.name)
                     if self._si.get_mesh(self.step_file, idx, props, mesh):
                         name = create_usd_mesh(
-                            [mesh], meshprops, path, materials_stage, materials_list, props.volumetric_center_meshes
+                            [mesh],
+                            meshprops,
+                            path,
+                            materials_stage,
+                            materials_list,
+                            self.material_names,
+                            props.volumetric_center_meshes,
                         )
                         self.mesh_usd_paths[idx] = name
                         self.mesh_map[idx] = [mesh]
@@ -440,7 +462,13 @@ class PartExporter:
                 else:
                     mesh = self.mesh_map[idx]
                     name = create_usd_mesh(
-                        mesh, meshprops, path, materials_stage, materials_list, props.volumetric_center_meshes
+                        mesh,
+                        meshprops,
+                        path,
+                        materials_stage,
+                        materials_list,
+                        self.material_names,
+                        props.volumetric_center_meshes,
                     )
                     self.mesh_usd_paths[idx] = name
 
@@ -481,6 +509,7 @@ class PartExporter:
             self.mesh_usd_paths[mesh_index],
             self.materials_path,
             self.part.materials,
+            self.material_names,
             props[0].volumetric_center_meshes,
         )
         # del mesh
@@ -509,7 +538,7 @@ def bind_material(stage, prims, mat_path):
         binding_api.Bind(material)
 
 
-def create_usd_mesh(meshes, mesh_props, path, materials_stage, materials_list, move_to_com):
+def create_usd_mesh(meshes, mesh_props, path, materials_stage, materials_list, materials_names, move_to_com):
     count = 0
     mesh_name = re.sub(r"[\W,_]+", "_", mesh_props.name).lower()
     if mesh_name[0].isdigit():
@@ -520,12 +549,12 @@ def create_usd_mesh(meshes, mesh_props, path, materials_stage, materials_list, m
         count += 1
         stage_path = os.path.join(path, "{}_{:02d}.usd".format(mesh_name, count))
     return create_usd_mesh_at_path(
-        meshes, mesh_name, mesh_props, path, stage_path, materials_stage, materials_list, move_to_com
+        meshes, mesh_name, mesh_props, path, stage_path, materials_stage, materials_list, materials_names, move_to_com
     )
 
 
 def create_usd_mesh_at_path(
-    meshes, mesh_name, mesh_props, path, stage_path, materials_stage, materials_list, move_to_com
+    meshes, mesh_name, mesh_props, path, stage_path, materials_stage, materials_list, materials_names, move_to_com
 ):
 
     # Create empty stage and create an XForm Root
@@ -541,6 +570,10 @@ def create_usd_mesh_at_path(
     mesh_prim = stage.GetPrimAtPath(Sdf.Path(mesh_name))
     model_api = Usd.ModelAPI(mesh_prim)
     model_api.SetKind(Kind.Tokens.model)
+
+    root_layer = stage.GetRootLayer()
+    if stage_path not in root_layer.subLayerPaths:
+        root_layer.subLayerPaths.append(os.path.relpath(materials_stage, path).replace("\\", "/"))
 
     pose = _step_importer.Transform()
     pose.p = mesh_props.com
@@ -615,11 +648,11 @@ def create_usd_mesh_at_path(
             mat_set = set(face_materials)
             # stage.DefinePrim("/Root/Looks", "Scope")
             for material in mat_set:
-                name = "/Root/Looks/Material_{}".format(material)
+                name = "/Root/Looks/{}".format(materials_names[material])
                 # create_material(stage, name, materials_list[material])
                 if len(mat_set) > 1:
                     face_indices = np.where(face_materials == material)[0]
-                    subset_name = "{}/Material_{}".format(mesh_name, material)
+                    subset_name = "{}/{}".format(mesh_name, materials_names[material])
                     geomSubset = UsdGeom.Subset.Define(stage, subset_name)
                     geomSubset.CreateElementTypeAttr("face")
                     geomSubset.CreateFamilyNameAttr("materialBind")
