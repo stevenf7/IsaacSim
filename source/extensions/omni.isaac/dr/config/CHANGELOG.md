@@ -27,6 +27,6 @@ Added
     - Mesh component
 - Invoke randomization manually (based on user request) or given duration
 - Specify seed to introduce consistency in the randomization process
-- Documentation: https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/text/Robotics_DR.html
+- Documentation: https://docs.omniverse.nvidia.com/robotics/text/Robotics_DR.html
 
 
