@@ -12,3 +12,6 @@ name = "omni.isaac.samples"
 
 [[python.modules]]
 name = "omni.isaac.samples.scripts.kaya_preview"
+
+[[python.modules]]
+name = "omni.isaac.samples.scripts.simple_navigation_preview"

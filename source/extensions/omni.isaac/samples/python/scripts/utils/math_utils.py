@@ -99,3 +99,26 @@ def lookAt(camera, target, up):
             s = 2.0 * math.sqrt(1.0 + F[2] - R[0] - U[1])
             q = Gf.Quatf((R[1] - U[0]) / s, Gf.Vec3f((F[0] + R[2]) / s, (F[1] + U[2]) / s, 0.25 * s))
     return q
+
+
+def quaternionToEulerAngles(q):
+    q_img = q.GetImaginary()
+    q_real = q.GetReal()
+    # roll (x-axis rotation)
+    sinr_cosp = 2 * (q_real * q_img[0] + q_img[1] * q_img[2])
+    cosr_cosp = 1 - 2 * (q_img[0] * q_img[0] + q_img[1] * q_img[1])
+    roll = math.atan2(sinr_cosp, cosr_cosp)
+
+    # pitch (y-axis rotation)
+    sinp = 2 * (q_real * q_img[1] - q_img[2] * q_img[0])
+    if abs(sinp) >= 1:
+        pitch = math.copysign(M_PI / 2, sinp)  # use 90 degrees if out of range
+    else:
+        pitch = math.asin(sinp)
+
+    # yaw (z-axis rotation)
+    siny_cosp = 2 * (q_real * q_img[2] + q_img[0] * q_img[1])
+    cosy_cosp = 1 - 2 * (q_img[1] * q_img[1] + q_img[2] * q_img[2])
+    yaw = math.atan2(siny_cosp, cosy_cosp)
+
+    return roll, pitch, yaw
