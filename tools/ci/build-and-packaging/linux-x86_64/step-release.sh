@@ -20,7 +20,7 @@ echo "##teamcity[blockOpened name='Full rebuild...']"
 echo "##teamcity[blockClosed name='Full rebuild...']"
 
 # Docs
-if [ ! -z "$TEAMCITY_VERSION" ]
+if [ -z "$TEAMCITY_VERSION" ]
 then
    echo "##teamcity[blockOpened name='Docs...']"
    "./tools/build_docs.sh" -c release
