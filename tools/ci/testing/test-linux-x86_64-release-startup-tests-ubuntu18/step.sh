@@ -4,7 +4,7 @@ set -e
 
 SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 
-if [ ! -z "$TEAMCITY_VERSION" ]
+if [ -n "$TEAMCITY_VERSION" ]
 then
     package="--from-package --clean"
 fi
@@ -15,7 +15,7 @@ echo "##teamcity[testSuiteStarted name='isaac-sim-startuptests']"
 echo "##teamcity[testSuiteFinished name='isaac-sim-startuptests']"
 
 
-if [ ! -z "$TEAMCITY_VERSION" ]
+if [ -n "$TEAMCITY_VERSION" ]
 then
     # Package shader cache
     echo "##teamcity[testSuiteStarted name='Packaging the shader cache...']"
@@ -26,7 +26,7 @@ then
     echo "##teamcity[publishArtifacts '_builtpackages/isaac-sim*.7z']"
 fi
 
-if [ ! -z "$TEAMCITY_VERSION" ]
+if [ -n "$TEAMCITY_VERSION" ]
 then
     export ARCHIVE_PATTERN="_builtpackages/omniverse-kit-robotics*.7z"
 
