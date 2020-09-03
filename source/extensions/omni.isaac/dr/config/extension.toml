@@ -7,7 +7,7 @@ desciption = "This extension randomizes domain parameters in Omniverse Kit"
 authors = ["Shoubhik Debnath <sdebnath@nvidia.com>", "Hammad Mazhar <hmazhar@nvidia.com>"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac/dr"
 keywords = ["kit", "domain", "randomizer"]
-changelog = "config/CHANGELOG.rst"
+changelog = "config/CHANGELOG.md"
 
 [dependencies]
 "omni.kit.editor" = {}
