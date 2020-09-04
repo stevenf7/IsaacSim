@@ -3,7 +3,7 @@
 #include <carb/cuda/CudaRuntime.h>
 #include <carb/logging/Log.h>
 
-// #include <capnp/compat/json.h>
+#include <capnp/compat/json.h>
 #include <capnp/serialize.h>
 #include <messages/actor_group.capnp.h>
 #include <messages/alice.capnp.h>
@@ -56,7 +56,7 @@ static const uint64_t StateProtoId = 13177870757040999364U;
 static const uint64_t Detections2ProtoId = 12576484744224273470U;
 static const uint64_t Detections3ProtoId = 16439473061879685265U;
 
-// static capnp::JsonCodec gJsonCodec;
+static capnp::JsonCodec gJsonCodec;
 
 /// "math.capnp".Vector2dProto
 typedef Vector2dProto Vector2d;
@@ -299,17 +299,12 @@ public:
         mCapnpMessageBuilder.reset(new ::capnp::MallocMessageBuilder());
         return mCapnpMessageBuilder->initRoot<Proto>();
     }
-#if 1
+
     typename Proto::Reader getProto()
     {
         return mCapnpMessageBuilder->getRoot<Proto>();
     }
-#else
-    typename Proto::Builder getProtoBuilder()
-    {
-        return mCapnpMessageBuilder->getRoot<Proto>();
-    }
-#endif
+
     void capnpSegmentsToFlatArray()
     {
         segments = mCapnpMessageBuilder->getSegmentsForOutput();
@@ -340,6 +335,11 @@ public:
         // Copy the data to a builder so it cannot go out of scope
         mCapnpMessageBuilder.reset(new ::capnp::MallocMessageBuilder());
         mCapnpMessageBuilder->setRoot(mCapnpSegmentMessageReader->getRoot<Proto>());
+    }
+    void printJson()
+    {
+        kj::String message_json = isaac_message::gJsonCodec.encode(getProto());
+        CARB_LOG_ERROR("Message json: %s", message_json.cStr());
     }
     std::vector<const uint8_t*> segment_ptrs;
     std::vector<uint64_t> segment_sizes;

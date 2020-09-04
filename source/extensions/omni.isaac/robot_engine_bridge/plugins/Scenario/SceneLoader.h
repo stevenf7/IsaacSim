@@ -6,6 +6,7 @@
 
 #include <RobotEngineBridgeSchema/robotEngineSceneLoader.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/kit/IEditor.h>
 
 #include <memory>
 #include <string>
@@ -61,11 +62,13 @@ public:
      *
      * @param inputComponent
      * @param requestChannelName
+     * @param cameraRequestChannelName,
      * @param outputComponent
      * @param replyChannelName
      */
     void initializeParams(std::string inputComponent,
                           std::string requestChannelName,
+                          std::string cameraRequestChannelName,
                           std::string outputComponent,
                           std::string replyChannelName);
 
@@ -90,10 +93,14 @@ private:
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     carb::dictionary::ISerializer* mJsonSerializer = nullptr;
     carb::dictionary::IDictionary* mIDict = nullptr;
+    carb::Framework* mFramework = nullptr;
+    omni::kit::IEditor* mEditorInterface = nullptr;
+
 
     // The name of the channel for receiving scenario commands
     std::string mInputComponent = "input";
     std::string mRequestChannelName = "scenario_control";
+    std::string mCameraRequestChannelName = "camera_switch";
 
     // The name of the channel for replying to scenario commands
     std::string mOutputComponent = "output";

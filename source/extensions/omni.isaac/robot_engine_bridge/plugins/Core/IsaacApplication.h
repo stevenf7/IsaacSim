@@ -128,6 +128,7 @@ public:
      */
     void initializeStageLoader(std::string inputComponent,
                                std::string requestChannelName,
+                               std::string cameraRequestChannelName,
                                std::string outputComponent,
                                std::string replyChannelName);
 
