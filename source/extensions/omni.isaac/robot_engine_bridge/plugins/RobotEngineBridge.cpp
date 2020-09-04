@@ -97,10 +97,12 @@ std::string const CARB_ABI getLastError()
 }
 void CARB_ABI initializeStageLoader(std::string inputComponent,
                                     std::string requestChannelName,
+                                    std::string cameraRequestChannelName,
                                     std::string outputComponent,
                                     std::string replyChannelName)
 {
-    g_application_handle->initializeStageLoader(inputComponent, requestChannelName, outputComponent, replyChannelName);
+    g_application_handle->initializeStageLoader(
+        inputComponent, requestChannelName, cameraRequestChannelName, outputComponent, replyChannelName);
 }
 
 void onAttach(long int stageId, double metersPerUnit, void* userData)

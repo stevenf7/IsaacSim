@@ -33,6 +33,19 @@ SceneLoader::SceneLoader(omni::isaac::dynamic_control::DynamicControl* dynamicCo
                          carb::dictionary::IDictionary* iDict)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr), mJsonSerializer(jsonSerializer), mIDict(iDict)
 {
+    mFramework = carb::getFramework();
+    if (!mFramework)
+    {
+        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
+        return;
+    }
+
+    mEditorInterface = mFramework->acquireInterface<omni::kit::IEditor>();
+    if (!mEditorInterface)
+    {
+        CARB_LOG_ERROR("Failed to acquire omni::kit::IEditor interface");
+        return;
+    }
 }
 
 void SceneLoader::setAppHandle(isaac_handle_t appHandle)
@@ -49,16 +62,18 @@ void SceneLoader::tick()
 {
     CARB_PROFILE_ZONE(0, "REB SceneLoader Tick");
 
-    IsaacMessage<isaac_message::Json> json;
     {
+        IsaacMessage<isaac_message::Json> json;
+
         // Receive current command
         MessageHeader header;
         if (checkErrorCode(receive(mInputComponent, mRequestChannelName, header, json)))
         {
             auto jsonProto = json.getProto();
 
-            CARB_LOG_INFO("SceneLoader got message");
             std::string jsonConfig = jsonProto.getSerialized();
+            CARB_LOG_INFO("SceneLoader got message %s", jsonConfig.c_str());
+
             carb::dictionary::Item* jsonBase = mJsonSerializer->createDictionaryFromStringBuffer(jsonConfig.c_str());
 
             const carb::dictionary::Item* requestDict = mIDict->getItem(jsonBase, "request");
@@ -74,16 +89,52 @@ void SceneLoader::tick()
             }
         }
     }
+
+    {
+        IsaacMessage<isaac_message::Json> json;
+        MessageHeader header;
+        std::vector<IsaacHostBuffer> buffers;
+        if (checkErrorCode(receive(mInputComponent, mCameraRequestChannelName, header, json, buffers)))
+        {
+            auto jsonProto = json.getProto();
+
+            std::string jsonConfig = jsonProto.getSerialized();
+
+            // CARB_LOG_ERROR("Camera got message [%s], [%d]", jsonConfig.c_str(), buffers.size());
+            carb::dictionary::Item* jsonBase = mJsonSerializer->createDictionaryFromStringBuffer(jsonConfig.c_str());
+            // currently only support camera switch request
+            const carb::dictionary::Item* requestDict = mIDict->getItem(jsonBase, "camera_name");
+            if (requestDict)
+            {
+                std::string cameraPath = mIDict->getStringBuffer(requestDict);
+
+                if (mStage->GetPrimAtPath(pxr::SdfPath(cameraPath)))
+                {
+                    mEditorInterface->setActiveCamera(cameraPath.c_str());
+                }
+                else
+                {
+                    CARB_LOG_ERROR("Camera %s not found", cameraPath.c_str());
+                }
+            }
+            else
+            {
+                CARB_LOG_ERROR("Camera switch json not valid");
+            }
+        }
+    }
 }
 
 void SceneLoader::initializeParams(std::string inputComponent,
                                    std::string requestChannelName,
+                                   std::string cameraRequestChannelName,
                                    std::string outputComponent,
                                    std::string replyChannelName)
 {
 
     mInputComponent = inputComponent;
     mRequestChannelName = requestChannelName;
+    mCameraRequestChannelName = cameraRequestChannelName;
     mOutputComponent = outputComponent;
     mReplyChannelName = replyChannelName;
 }

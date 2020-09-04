@@ -54,6 +54,9 @@ class Extension(omni.ext.IExt):
         stage_load_layout.add_child(omni.kit.ui.Label("Request Channel"))
         req_channel_txt = omni.kit.ui.TextBox("scenario_control")
         self._req_channel = stage_load_layout.add_child(req_channel_txt)
+        stage_load_layout.add_child(omni.kit.ui.Label("Camera Control"))
+        camera_channel_txt = omni.kit.ui.TextBox("camera_switch")
+        self._cam_channel = stage_load_layout.add_child(camera_channel_txt)
         stage_load_layout.add_child(omni.kit.ui.Label("Output Component"))
         out_txt = omni.kit.ui.TextBox("output")
         self._out_comp = stage_load_layout.add_child(out_txt)
@@ -88,7 +91,11 @@ class Extension(omni.ext.IExt):
 
     def _on_init_stage_load_fn(self, widget):
         self._re_bridge.initializeStageLoader(
-            self._inp_comp.value, self._req_channel.value, self._out_comp.value, self._rep_channel.value
+            self._inp_comp.value,
+            self._req_channel.value,
+            self._cam_channel.value,
+            self._out_comp.value,
+            self._rep_channel.value,
         )
 
     def _on_create_destroy_fn(self, widget):
@@ -98,7 +105,11 @@ class Extension(omni.ext.IExt):
             )
             self._re_bridge.createApplication(asset_path, self.application_path.value, [], [])
             self._re_bridge.initializeStageLoader(
-                self._inp_comp.value, self._req_channel.value, self._out_comp.value, self._rep_channel.value
+                self._inp_comp.value,
+                self._req_channel.value,
+                self._cam_channel.value,
+                self._out_comp.value,
+                self._rep_channel.value,
             )
             self._is_created = True
             widget.text = "Destroy Application"
