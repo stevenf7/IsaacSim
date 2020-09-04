@@ -150,12 +150,14 @@ isaac_error_t IsaacApplication::destroy()
 
 void IsaacApplication::initializeStageLoader(std::string inputComponent,
                                              std::string requestChannelName,
+                                             std::string cameraRequestChannelName,
                                              std::string outputComponent,
                                              std::string replyChannelName)
 {
     CARB_LOG_INFO("Initialize Stage Loader");
 
-    mSceneLoaderComponent->initializeParams(inputComponent, requestChannelName, outputComponent, replyChannelName);
+    mSceneLoaderComponent->initializeParams(
+        inputComponent, requestChannelName, cameraRequestChannelName, outputComponent, replyChannelName);
 }
 
 /**

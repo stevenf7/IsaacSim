@@ -105,6 +105,7 @@ class StepImporter(omni.ext.IExt):
                 "TreeView.Item": {"color": 0xFF8A8777},
                 "TreeView.Item::object_name_grey": {"color": 0xFF4D4B42},
                 "TreeView.Item:selected": {"color": 0xFF23211F},
+                "TreeView.Edit": {"background_color": 0xFF343432, "color": 0xFFBBBBBB, "border_radius": 5},
                 "TreeView:selected": {"background_color": 0xFF8A8777},
             }
             self.menu_button_style = {
@@ -125,11 +126,13 @@ class StepImporter(omni.ext.IExt):
             self._on_kit_selection_changed()
         if event.type == int(omni.usd.StageEventType.OPENED):
             if self.exporter:
-                if self.exporter.is_temp_stage_open():
-                    self.exporter.set_materials_to_color_layer()
+                self.exporter.set_materials_to_color_layer()
 
             if self._mesh_model:
                 self._mesh_model.update_prim_paths()
+
+            if self._assembly_model:
+                self._assembly_model.update()
 
     def _select_meshes_with_same_volume(self):
         selection = []
@@ -201,7 +204,14 @@ class StepImporter(omni.ext.IExt):
 
     def build_step_1(self, container):
         self._tp_delegate = TesselationPropsDelegate()
-        self._tp_model = TesselationPropertiesListModel([_step_importer.Tesselation_Properties()])
+        props = _step_importer.Tesselation_Properties()
+        props.max_linear_offset = 0.1
+        props.max_angular_offset = 1.0
+        props.min_surface = 0.2
+        props.use_relative_offset = False
+        props.use_internal_vertices = True
+        props.volumetric_center_meshes = True
+        self._tp_model = TesselationPropertiesListModel([props])
 
         self._mesh_delegate = MeshListDelegate()
         self._mesh_model = MeshListModel()
@@ -315,24 +325,42 @@ class StepImporter(omni.ext.IExt):
                                 #     ui.Label("Hide Mesh Duplicates")
                 ui.Spacer(height=10)
                 with ui.CollapsableFrame("Assembly Description", height=ui.Pixel(0)):
-                    self._sf = ui.ScrollingFrame(
-                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
-                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                        style_type_name_override="TreeView.ScrollingFrame",
-                        style=self.tree_style,
-                        height=ui.Pixel(100)
-                        # mouse_pressed_fn=lambda x, y, b, _: self._delegate.on_mouse_pressed(b, None, False),
-                    )
-                    with self._sf:
-                        self._treeView = ui.TreeView(
-                            self._assembly_model,
-                            column_widths=[ui.Fraction(1), 80],
-                            root_visible=False,
-                            header_visible=True,
-                            delegate=self._delegate,
-                            style=self.tree_style,
-                            height=ui.Percent(98),
-                        )
+                    with ui.VStack(height=ui.Pixel(200)):
+                        with ui.HStack():
+                            self._sf = ui.ScrollingFrame(
+                                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
+                                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                                style_type_name_override="TreeView.ScrollingFrame",
+                                style=self.tree_style,
+                                height=ui.Percent(98)
+                                # mouse_pressed_fn=lambda x, y, b, _: self._delegate.on_mouse_pressed(b, None, False),
+                            )
+
+                            with self._sf:
+                                self._treeView = ui.TreeView(
+                                    self._assembly_model,
+                                    column_widths=[ui.Fraction(1), 80],
+                                    root_visible=False,
+                                    header_visible=True,
+                                    delegate=self._delegate,
+                                    style=self.tree_style,
+                                    height=ui.Percent(98),
+                                )
+                            with ui.VStack(width=80):
+
+                                def on_edit_assembly_names(button):
+                                    self._assembly_model.toggle_edit_mode()
+                                    if self._assembly_model.edit_mode:
+                                        button.text = "Done Editing Names"
+                                    else:
+                                        button.text = "Edit Assembly Names"
+
+                                btn = ui.Button(
+                                    "Edit Assembly Names",
+                                    height=ui.Pixel(25),
+                                    tooltip="Allow editing assembly names and updates assemblies.",
+                                )
+                                btn.set_clicked_fn(lambda a=btn: on_edit_assembly_names(a))
                 self._finish_import_btn = ui.Button(
                     "Finish Import", clicked_fn=lambda: self._select_folder(self), height=ui.Pixel(25)
                 )
@@ -402,7 +430,6 @@ class StepImporter(omni.ext.IExt):
             self._mesh_model.reset()
             self._mesh_model = None
         self.exporter = None
-        self.part = None
 
     def show_window(self, menu, value):
         if self._window:

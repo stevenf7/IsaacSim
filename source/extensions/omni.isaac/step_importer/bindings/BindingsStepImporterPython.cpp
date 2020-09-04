@@ -89,9 +89,9 @@ PYBIND11_MODULE(_step_importer, m)
                         [](py::tuple t) {
                             step_reader::color c;
                             c.r = t[0].cast<float>();
-                            c.g = t[0].cast<float>();
-                            c.b = t[0].cast<float>();
-                            c.a = t[0].cast<float>();
+                            c.g = t[1].cast<float>();
+                            c.b = t[2].cast<float>();
+                            c.a = t[3].cast<float>();
                             return c;
                         }));
 
@@ -105,7 +105,7 @@ PYBIND11_MODULE(_step_importer, m)
         .def_readwrite("roughness", &step_reader::Visual_Material::roughness, "surface roughness")
         .def_readwrite("metallic", &step_reader::Visual_Material::metallic, "metallic reflection")
         .def_readwrite("rgba_color", &step_reader::Visual_Material::rgba_color, "surface base color")
-        .def_readwrite("emmissive", &step_reader::Visual_Material::emmissive, "emmissive RGB color and intensity")
+        .def_readwrite("emissive", &step_reader::Visual_Material::emmissive, "emissive RGB color and intensity")
         .def(py::pickle(
             [](const step_reader::Visual_Material& mat) {
                 return py::make_tuple(mat.roughness, mat.metallic, mat.rgba_color.r, mat.rgba_color.g, mat.rgba_color.b,

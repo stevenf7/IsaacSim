@@ -228,11 +228,10 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         root_body_ptr = self._dc.get_articulation_root_body(art)
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
-        print(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), ang_vel)
-        # TODO: Fix test when run from commandline
-        # self.assertAlmostEqual(0, np.linalg.norm(lin_vel), 1)
-        # self.assertGreater(ang_vel[2], 2.45)
-        # self.assertLess(ang_vel[2], 2.55)
+        # print(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), ang_vel)
+        self.assertAlmostEqual(0, np.linalg.norm(lin_vel), 1)
+        self.assertGreater(ang_vel[2], 2.45)
+        self.assertLess(ang_vel[2], 2.55)
         editor.stop()
 
     async def test_articulation_carter(self, gpu=False):

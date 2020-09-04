@@ -128,7 +128,7 @@ static void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRob
             for (auto& collision : urdfChildLink.collisions)
             {
                 Transform newOrigin = poseChildToParent * urdfOriginToTransform(collision.origin);
-                collision.origin = transformToUrdfOrigin(newOrigin);
+                collision.origin = transformToUrdfOrigin(newOrigin, true);
                 urdfParentLink.collisions.push_back(collision);
             }
             urdfChildLink.collisions.clear();
@@ -136,7 +136,7 @@ static void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRob
             for (auto& visual : urdfChildLink.visuals)
             {
                 Transform newOrigin = poseChildToParent * urdfOriginToTransform(visual.origin);
-                visual.origin = transformToUrdfOrigin(newOrigin);
+                visual.origin = transformToUrdfOrigin(newOrigin, true);
                 urdfParentLink.visuals.push_back(visual);
             }
             urdfChildLink.visuals.clear();

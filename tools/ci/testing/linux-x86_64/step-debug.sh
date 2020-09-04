@@ -4,7 +4,7 @@ set -e
 
 SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 
-if [ ! -z "$TEAMCITY_VERSION" ]
+if [ -n "$TEAMCITY_VERSION" ]
 then
     package="--from-package --clean"
 fi

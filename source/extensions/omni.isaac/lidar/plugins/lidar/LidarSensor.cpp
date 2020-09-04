@@ -326,8 +326,14 @@ void scan(int start,
     int i = start * rows;
     int j = start;
     float invMaxDepth = 1.0f / maxDepth;
-    physx::PxVec3 azimuthDir = zUp ? physx::PxVec3(0.0f, 0.0f, 1.0f) : physx::PxVec3(0.0f, 1.0f, 0.0f);
-    physx::PxVec3 zenithDir = zUp ? physx::PxVec3(0.0f, 1.0f, 0.0f) : physx::PxVec3(0.0f, 0.0f, 1.0f);
+    // This isn't correct because the same prim (like carter) would have a different lidar axis if it was in a Y up vs Z
+    // up stage. So commented this out and using the pure Z up rotation version
+    // physx::PxVec3 azimuthDir = zUp ? physx::PxVec3(0.0f, 0.0f, 1.0f) : physx::PxVec3(0.0f, 1.0f, 0.0f);
+    // physx::PxVec3 zenithDir = zUp ? physx::PxVec3(0.0f, 1.0f, 0.0f) : physx::PxVec3(0.0f, 0.0f, 1.0f);
+
+    physx::PxVec3 azimuthDir = physx::PxVec3(0.0f, 0.0f, 1.0f);
+    physx::PxVec3 zenithDir = physx::PxVec3(0.0f, 1.0f, 0.0f);
+
     for (int colPreMod = start; colPreMod < stop; colPreMod++)
     {
         int col = colPreMod % cols;
@@ -396,6 +402,33 @@ void scan(int start,
                 depth[i] = 65535;
                 linearDepth[i] = maxDepth * metersPerUnit; // in meters
                 intensity[i] = 0;
+
+                if (drawLidarPoints)
+                {
+                    physx::PxVec3 hitPos = origin + unitDir * (maxDepth + minDepth);
+                    omni::isaac::lidar::DebugData data;
+
+                    physx::PxVec3 diff = hitPos - origin;
+                    // TODO: replace lines with dots.
+
+                    data.startPos = { hitPos.x, hitPos.y, hitPos.z };
+                    auto temp = hitPos - diff.getNormalized();
+                    data.endPos = { temp.x, temp.y, temp.z };
+                    data.color = 255 + (255 << 8) + (255 << 16) + (255 << 24);
+                    debugLines.push_back(data);
+                }
+
+                if (drawLidarLines)
+                {
+                    physx::PxVec3 hitPos = origin + unitDir * (maxDepth + minDepth);
+                    omni::isaac::lidar::DebugData data;
+
+                    auto temp = origin + unitDir * minDepth;
+                    data.startPos = { temp.x, temp.y, temp.z };
+                    data.endPos = { hitPos.x, hitPos.y, hitPos.z };
+                    data.color = 255 + (255 << 8) + (255 << 16) + (50 << 24);
+                    debugLines.push_back(data);
+                }
             }
 
             if (zenith[row] == 0.0f)

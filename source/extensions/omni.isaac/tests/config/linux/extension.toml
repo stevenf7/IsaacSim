@@ -12,6 +12,7 @@ display_name = "Isaac Tests"
 "omni.isaac.urdf" = {}
 "omni.isaac.lidar" = {}
 "omni.isaac.dr" = {}
+"omni.isaac.step_importer" = {}
 
 [[python.modules]]
 name = "omni.isaac.tests"

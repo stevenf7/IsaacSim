@@ -150,7 +150,7 @@ public:
             mAppHandle, &uuid, reinterpret_cast<const void**>(data.segment_ptrs.data()),
             reinterpret_cast<int64_t*>(data.segment_sizes.data()), data.segment_ptrs.size()));
 #else
-        kj::String message_json = isaac_message::gJsonCodec.encode(data.getProtoBuilder());
+        kj::String message_json = isaac_message::gJsonCodec.encode(data.getProto());
         isaac_const_json_t json = { message_json.cStr(), message_json.size() };
         (mIsaacCApiPtr->isaac_write_message_json)(mAppHandle, &uuid, &json);
 #endif
@@ -283,6 +283,7 @@ public:
             message_json = kj::heapString(isaac_json.data, isaac_json.size);
 
             isaac_message::gJsonCodec.decode(message_json, data.initProto());
+            // CARB_LOG_ERROR("Message json: %s", message_json.cStr());
 #else
 
             uint64_t num_segments = 0;
@@ -299,6 +300,7 @@ public:
                     mAppHandle, &uuid, reinterpret_cast<const void**>(data.segment_ptrs.data()),
                     data.segment_sizes.data(), &num_segments);
                 data.flatArrayToCapnpBuffer();
+                // data.printJson();
             }
 #endif
         }

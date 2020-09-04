@@ -78,6 +78,7 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
     if (Manager)
     {
         Manager->initialize(g_stage, g_tokens);
+        Manager->initComponents();
     }
 }
 

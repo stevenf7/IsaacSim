@@ -32,6 +32,7 @@ struct RobotEngineBridge
     std::string const(CARB_ABI* getLastError)();
     void(CARB_ABI* initializeStageLoader)(std::string inputComponent,
                                           std::string requestChannelName,
+                                          std::string cameraRequestChannelName,
                                           std::string outputComponent,
                                           std::string replyChannelName);
 };

@@ -9,6 +9,8 @@
 #include <carb/tokens/ITokens.h>
 #include <carb/tokens/TokensUtils.h>
 #include <omni/usd/Layers.h>
+#include <omni/usd/UtilsIncludes.h>
+#include <omni/usd/LayerUtils.h>
 #include <omni/usd/UsdContext.h>
 #include <DrSchema/baseComponent.h>
 #include <DrSchema/colorComponent.h>
@@ -49,14 +51,6 @@ void DRManager::tick(double dt)
 {
     mTimeElapsed += dt;
     // CARB_LOG_WARN("Tick: %f - %f", mTimeElapsed, dt);
-    if (mLayer && mRootLayerIdentifier.compare(mLayer->getAuthoringLayerIdentifier()) == 0)
-        mLayer->setAuthoringLayerByIdentifier(mRootLayerIdentifier);
-
-    if (mDoOnce == false)
-    {
-        loadComponentFromUsd();
-        mDoOnce = true;
-    }
 
     if (mPrimDeleted)
     {
@@ -85,7 +79,14 @@ void DRManager::tick(double dt)
 
 void DRManager::initComponents()
 {
-    // Empty
+    if (mLayer && mRootLayerIdentifier.compare(mLayer->getAuthoringLayerIdentifier()) == 0)
+        mLayer->setAuthoringLayerByIdentifier(mRootLayerIdentifier);
+
+    if (mDoOnce == false)
+    {
+        loadComponentFromUsd();
+        mDoOnce = true;
+    }
 }
 
 void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
@@ -100,7 +101,11 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
         mLayer = omni::usd::UsdContext::getContext()->getLayers();
         const std::string layerPath = "";
         const std::string layerName = "DRLayer";
-        mDRLayerName = mLayer->addSublayer(mRootLayerIdentifier, 0, layerPath.c_str(), false, layerName.c_str());
+        size_t finalPosition;
+        auto newSubLayer = omni::usd::LayerUtils::createSublayer(
+            mStage, mStage->GetRootLayer(), 0, layerPath.c_str(), false, finalPosition);
+        mDRLayerName = newSubLayer->GetIdentifier();
+        // omni::usd::LayerUtils::setCustomLayerName(newSubLayer, mDRLayerName, pxr::TfToken(layerName.c_str()));
         pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
         mStage->SetEditTarget(editTarget);
     }

@@ -115,6 +115,13 @@ void Teleport::eraseObject(const std::string& actorName)
 {
     mObjects.erase(actorName);
 }
+
+void Teleport::updateComponent(const std::string& inputComponent, const std::string& inputChannel)
+{
+    mInputComponent = inputComponent;
+    mTeleportChannelName = inputChannel;
+    mInvUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(mStage);
+}
 }
 }
 }

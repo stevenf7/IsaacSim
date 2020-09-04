@@ -1,3 +1,5 @@
+#include <carb/logging/Log.h>
+
 #include <omni/isaac/step_importer/StepImporter.h>
 #include <step_reader/step_reader.hpp>
 
@@ -14,6 +16,7 @@ struct StepReader_Deleter
 {
     void operator()(step_reader::StepReader* r)
     {
+        // CARB_LOG_INFO("Destryoing file reader %ld", r);
         step_reader::DestroyReader(r);
     }
 };

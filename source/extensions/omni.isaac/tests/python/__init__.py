@@ -11,6 +11,8 @@ from .lidar.test_lidar import *
 
 from .domain_randomizer.test_domain_randomizer import *
 
+from .step_importer.test_step_importer import *
+
 # linux only for now
 from sys import platform
 

@@ -12,7 +12,7 @@ import os
 import asyncio
 import numpy as np
 from omni.isaac.utils._isaac_utils import math as mu
-from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, PhysicsSchema, PhysicsSchemaTools
+from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, PhysicsSchema
 from omni.physx import _physx as physx
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
