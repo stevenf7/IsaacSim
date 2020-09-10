@@ -162,6 +162,7 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
     cam_info_msg.header.stamp.fromSec(mTimeSeconds);
     cam_info_msg.height = imgInfo.tex.height;
     cam_info_msg.width = imgInfo.tex.width;
+    cam_info_msg.distortion_model = "plumb_bob";
 
     cam_info_msg.K = { imgInfo.tex.width * focalLength / horizontalAperture,
                        0,
