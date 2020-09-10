@@ -165,25 +165,26 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
 
     cam_info_msg.K = { imgInfo.tex.width * focalLength / horizontalAperture,
                        0,
-                       imgInfo.tex.width * 0.5f,
+                       imgInfo.tex.height * 0.5f,
                        0,
                        imgInfo.tex.height * focalLength / verticalAperture,
-                       imgInfo.tex.height * 0.5f,
+                       imgInfo.tex.width * 0.5f,
                        0,
                        0,
                        1 };
     cam_info_msg.P = { imgInfo.tex.width * focalLength / horizontalAperture,
                        0,
-                       imgInfo.tex.width * 0.5f,
+                       imgInfo.tex.height * 0.5f,
                        0,
                        0,
                        imgInfo.tex.height * focalLength / verticalAperture,
-                       imgInfo.tex.height * 0.5f,
+                       imgInfo.tex.width * 0.5f,
                        0,
                        0,
                        0,
                        1,
                        0 };
+    cam_info_msg.D = { 0, 0, 0, 0, 0 };
     pub->publish(cam_info_msg);
 }
 
