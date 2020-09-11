@@ -9,6 +9,7 @@
 #pragma once
 
 #include <carb/Defines.h>
+#include <carb/Types.h>
 
 namespace omni
 {
@@ -20,6 +21,12 @@ using LidarHandle = uint64_t;
 
 constexpr LidarHandle kLidarInvalidHandle = LidarHandle(0);
 
+struct LidarDebugData
+{
+    carb::Float3 startPos;
+    carb::Float3 endPos;
+    uint32_t color;
+};
 
 struct LidarInterface
 {
@@ -35,6 +42,7 @@ struct LidarInterface
     uint8_t*(CARB_ABI* getIntensityData)(const char* lidarPath);
     float*(CARB_ABI* getZenithData)(const char* lidarPath);
     float*(CARB_ABI* getAzimuthData)(const char* lidarPath);
+    carb::Float3*(CARB_ABI* getPointCloud)(const char* lidarPath);
     bool(CARB_ABI* isLidar)(const char* lidarPath);
 };
 

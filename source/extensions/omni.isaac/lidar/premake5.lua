@@ -119,3 +119,27 @@ group ("extensions/"..ext_id)
         define_bindings_python("_lidar")
         add_impl_folder("bindings")
         targetdir (target_dir.."/exts/"..ext_id.."/omni/isaac/lidar")
+        includedirs {
+            "%{root}/source/pch",
+            target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include",
+            target_deps_dir.."/carb_gfx_plugins/include",
+            target_deps_dir.."/rtx_plugins/include",
+        }
+
+        libdirs {   
+            target_deps_dir.."/python/libs", 
+            target_deps_dir.."/nv_usd/%{cfg.buildcfg}/lib",
+            target_deps_dir.."/nv_usd/release/lib",
+            "%{kit_sdk}/_build/%{platform}/%{cfg.buildcfg}/plugins" 
+        }
+        links {"gf", "sdf", "usdGeom", "tf", "usd", "omni.usd"}
+
+        filter { "system:linux", "platforms:x86_64" }
+            links {"tbb", "boost_python36" }
+        filter {}
+
+        filter { "configurations:debug" }
+            defines { "_DEBUG" }
+        filter { "configurations:release" }
+            defines { "NDEBUG" }
+        filter {}
