@@ -10,13 +10,13 @@
 
 
 #include "../core/SensorComponent.h"
-#include "LidarDebug.h"
 
 #include <carb/fastcache/FastCache.h>
 #include <carb/physx/physx.h>
 #include <carb/renderer/Renderer.h>
 
 #include <LidarSchema/lidar.h>
+#include <omni/isaac/lidar/LidarInterface.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
 
@@ -60,7 +60,7 @@ public:
         return mDrawLidarLines;
     }
 
-    std::vector<DebugData>& getDebugLines()
+    std::vector<LidarDebugData>& getDebugLines()
     {
         return mDebugLines;
     }
@@ -88,6 +88,11 @@ public:
     std::vector<uint16_t>& getDepthData()
     {
         return mLastDepth;
+    }
+
+    std::vector<carb::Float3>& getPointCloud()
+    {
+        return mLastHitPos;
     }
 
     std::vector<float>& getLinearDepthData()
@@ -143,6 +148,8 @@ private:
     float mRemainingTime = 0;
 
     std::vector<uint16_t> mDepth;
+    std::vector<carb::Float3> mHitPos;
+
     std::vector<float> mLinearDepth;
 
     std::vector<uint8_t> mIntensity;
@@ -151,6 +158,7 @@ private:
     std::vector<float> mAzimuth;
 
     std::vector<uint16_t> mLastDepth;
+    std::vector<carb::Float3> mLastHitPos;
     std::vector<float> mLastLinearDepth;
 
     std::vector<uint8_t> mLastIntensity;
@@ -159,7 +167,7 @@ private:
     std::set<int> mActiveDebugLines;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
 
-    std::vector<omni::isaac::lidar::DebugData> mDebugLines;
+    std::vector<omni::isaac::lidar::LidarDebugData> mDebugLines;
 
     carb::physics::PhysX* mPhysx = nullptr;
     physx::PxScene* mPxScene = nullptr;
