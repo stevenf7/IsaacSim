@@ -71,8 +71,12 @@ class DataWriter:
                 break
             filename = groundtruth["METADATA"]["image_id"]
             for gt_type, data in groundtruth["DATA"].items():
-                if gt_type in ["DEPTH", "RGB"]:
+                if gt_type == "RGB":
                     self.save_image(gt_type, data, filename)
+                elif gt_type == "DEPTH":
+                    np.save(self.depth_folder + filename + ".npy", data)
+                    if groundtruth["METADATA"]["COLORIZE"]:
+                        self.save_image(gt_type, data, filename)
                 elif gt_type == "INSTANCE":
                     self.save_segmentation(
                         gt_type,
@@ -80,7 +84,7 @@ class DataWriter:
                         filename,
                         groundtruth["METADATA"]["WIDTH"],
                         groundtruth["METADATA"]["HEIGHT"],
-                        False,
+                        groundtruth["METADATA"]["COLORIZE"],
                     )
                 elif gt_type == "SEMANTIC":
                     self.save_segmentation(
@@ -89,8 +93,10 @@ class DataWriter:
                         filename,
                         groundtruth["METADATA"]["WIDTH"],
                         groundtruth["METADATA"]["HEIGHT"],
-                        False,
+                        groundtruth["METADATA"]["COLORIZE"],
                     )
+                elif gt_type in ["BBOX2DTIGHT", "BBOX2DLOOSE"]:
+                    self.save_bbox(gt_type, data, filename)
                 else:
                     raise NotImplementedError
             self.q.task_done()
@@ -144,6 +150,13 @@ class DataWriter:
             depth_img = Image.fromarray((image_data * 255.0).astype(np.uint8))
             depth_img.save(f"{self.depth_folder}/{filename}.png")
 
+    def save_bbox(self, data_type, data, filename):
+        # Save ground truth data locally as npy
+        if data_type == "BBOX2DTIGHT":
+            np.save(self.bbox_2d_tight_folder + filename + ".npy", data)
+        if data_type == "BBOX2DLOOSE":
+            np.save(self.bbox_2d_loose_folder + filename + ".npy", data)
+
     def check_for_output_folder(self):
         if not os.path.exists(self.data_dir):
             os.mkdir(self.data_dir)
@@ -159,6 +172,12 @@ class DataWriter:
         self.semantic_folder = self.data_dir + "/semantic_segmentation/"
         if not os.path.exists(self.semantic_folder):
             os.mkdir(self.semantic_folder)
+        self.bbox_2d_tight_folder = self.data_dir + "/bbox_2d_tight/"
+        if not os.path.exists(self.bbox_2d_tight_folder):
+            os.mkdir(self.bbox_2d_tight_folder)
+        self.bbox_2d_loose_folder = self.data_dir + "/bbox_2d_loose/"
+        if not os.path.exists(self.bbox_2d_loose_folder):
+            os.mkdir(self.bbox_2d_loose_folder)
 
 
 class Extension(omni.ext.IExt):
@@ -186,31 +205,136 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     def _build_window_ui(self):
+        self._enable_depth_colorize = False
+        self._enable_instance_colorize = False
+        self._enable_semantic_colorize = False
         with self._window.frame:
-            with ui.CollapsableFrame("Settings"):
-                with ui.VStack(spacing=5):
-                    with ui.HStack():
-                        ui.Spacer(width=10)
-                        self._ui_dir_label = ui.Label("Output Directory:", width=100)
-                        default_dir = os.path.join(os.getcwd(), "output")
-                        self._ui_dir_name = ui.StringField(width=300)
-                        self._ui_dir_name.model.set_value(default_dir)
-                    with ui.HStack():
-                        ui.Spacer(width=10)
-                        self._ui_render_mode_label = ui.Label("Render Mode: ", width=100)
-                        self._ui_render_mode = ui.ComboBox(0, "Use Current", "RayTracing", "PathTracing", width=300)
-                    with ui.HStack():
-                        ui.Spacer(width=10)
-                        self._ui_dir_label = ui.Label("Capture period in seconds:", width=150)
-                        self._capture_period = ui.FloatField(width=250)
-                        # 0 means capture every frame
-                        self._capture_period.model.set_value(0.0)
-                    with ui.HStack():
-                        ui.Spacer(width=5)
-                        self._capture_btn = ui.Button("Start Recording", width=100)
-                        self._capture_btn.set_clicked_fn(self.generate_data_fn)
-                        self._reset_btn = ui.Button("Reset", width=50)
-                        self._reset_btn.set_clicked_fn(self.reset_counter_fn)
+            with ui.VStack(spacing=5):
+                with ui.CollapsableFrame("Sensor Settings"):
+                    with ui.VStack(spacing=5):
+
+                        def toggle_rgb_sensor(self, value):
+                            self._enable_rgb = value
+                            self._settings.set("/syntheticdata/sensors/rgbSensor", value)
+
+                        def toggle_depth_sensor(self, value):
+                            self._enable_depth = value
+                            self._settings.set("/syntheticdata/sensors/depthLinearSensor", value)
+
+                        def toggle_depth_colorize(self, value):
+                            self._enable_depth_colorize = value
+
+                        def toggle_instance_segmentation_sensor(self, value):
+                            self._enable_instance = value
+                            self._settings.set("/syntheticdata/sensors/instanceSegmentationSensor", value)
+
+                        def toggle_instance_colorize(self, value):
+                            self._enable_instance_colorize = value
+
+                        def toggle_semantic_segmentation_sensor(self, value):
+                            self._enable_semantic = value
+                            self._settings.set("/syntheticdata/sensors/semanticSegmentationSensor", value)
+
+                        def toggle_semantic_colorize(self, value):
+                            self._enable_semantic_colorize = value
+
+                        def toggle_bbox_2d_tight_sensor(self, value):
+                            self._enable_bbox_2d_tight = value
+                            self._settings.set("/syntheticdata/sensors/boundingBox2DTightSensor", value)
+
+                        def toggle_bbox_2d_loose_sensor(self, value):
+                            self._enable_bbox_2d_loose = value
+                            self._settings.set("/syntheticdata/sensors/boundingBox2DLooseSensor", value)
+
+                        with ui.HStack(height=30):
+                            ui.Spacer(width=10)
+                            ui.Label("Sensor Name", height=0, width=200)
+                            ui.Label("Status (On/Off)", height=0, width=100)
+                            ui.Label("Colorize (On/Off)", height=0, width=100)
+
+                        with ui.HStack(height=30):
+                            ui.Spacer(width=10)
+                            ui.Label("RGB", height=0, width=200)
+                            self.rgb_checkbox = ui.CheckBox()
+                            self.rgb_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_rgb_sensor(self, a.get_value_as_bool())
+                            )
+                        with ui.HStack(height=30):
+                            ui.Spacer(width=10)
+                            ui.Label("Depth", height=0, width=200)
+                            self.depth_checkbox = ui.CheckBox()
+                            self.depth_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_depth_sensor(self, a.get_value_as_bool())
+                            )
+                            self.depth_colorize_checkbox = ui.CheckBox()
+                            self.depth_colorize_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_depth_colorize(self, a.get_value_as_bool())
+                            )
+                        with ui.HStack(height=30):
+                            ui.Spacer(width=10)
+                            ui.Label("Semantic Segmentation", height=0, width=200)
+                            self.semantic_checkbox = ui.CheckBox()
+                            self.semantic_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_semantic_segmentation_sensor(self, a.get_value_as_bool())
+                            )
+                            self.semantic_colorize_checkbox = ui.CheckBox()
+                            self.semantic_colorize_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_semantic_colorize(self, a.get_value_as_bool())
+                            )
+                        with ui.HStack(height=30):
+                            ui.Spacer(width=10)
+                            ui.Label("Instance Segmentation", height=0, width=200)
+                            self.instance_checkbox = ui.CheckBox()
+                            self.instance_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_instance_segmentation_sensor(self, a.get_value_as_bool())
+                            )
+                            self.instance_colorize_checkbox = ui.CheckBox()
+                            self.instance_colorize_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_instance_colorize(self, a.get_value_as_bool())
+                            )
+                        with ui.HStack(height=30):
+                            ui.Spacer(width=10)
+                            ui.Label("2D Tight Bounding Box", height=0, width=200)
+                            self.bbox_2d_tight_checkbox = ui.CheckBox()
+                            self.bbox_2d_tight_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_bbox_2d_tight_sensor(self, a.get_value_as_bool())
+                            )
+                        with ui.HStack(height=30):
+                            ui.Spacer(width=10)
+                            ui.Label("2D Loose Bounding Box", height=0, width=200)
+                            self.bbox_2d_loose_checkbox = ui.CheckBox()
+                            self.bbox_2d_loose_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_bbox_2d_loose_sensor(self, a.get_value_as_bool())
+                            )
+                with ui.CollapsableFrame("Recorder Settings"):
+                    with ui.VStack(spacing=5):
+                        with ui.HStack():
+                            ui.Spacer(width=10)
+                            self._ui_dir_label = ui.Label("Output Directory:", width=100)
+                            default_dir = os.path.join(os.getcwd(), "output")
+                            self._ui_dir_name = ui.StringField(width=300)
+                            self._ui_dir_name.model.set_value(default_dir)
+                        with ui.HStack():
+                            ui.Spacer(width=10)
+                            self._ui_render_mode_label = ui.Label("Render Mode: ", width=100)
+                            self._ui_render_mode = ui.ComboBox(0, "Use Current", "RayTracing", "PathTracing", width=300)
+                        with ui.HStack():
+                            ui.Spacer(width=10)
+                            self._ui_spp_label = ui.Label("Samples per pixel: ", width=100)
+                            self._spp_value = ui.FloatField(width=250)
+                            self._spp_value.model.set_value(1.0)
+                        with ui.HStack():
+                            ui.Spacer(width=10)
+                            self._ui_dir_label = ui.Label("Capture period in seconds:", width=150)
+                            self._capture_period = ui.FloatField(width=250)
+                            # 0 means capture every frame
+                            self._capture_period.model.set_value(0.0)
+                        with ui.HStack():
+                            ui.Spacer(width=5)
+                            self._capture_btn = ui.Button("Start Recording", width=100)
+                            self._capture_btn.set_clicked_fn(self.generate_data_fn)
+                            self._reset_btn = ui.Button("Reset", width=50)
+                            self._reset_btn.set_clicked_fn(self.reset_counter_fn)
 
     def rename_button(self):
         if self._enable_record:
@@ -228,6 +352,7 @@ class Extension(omni.ext.IExt):
             carb.log_warn("Switching to RayTracing Mode")
         elif current_render_index == 2:
             self._settings.set_string("/rtx/rendermode", "PathTracing")
+            self._settings.set_float("/rtx/pathtracing/spp", self._spp_value.model.get_value_as_float())
             carb.log_warn("Switching to PathTracing Mode")
         else:
             carb.log_warn("Keeping current Render Mode")
@@ -264,6 +389,8 @@ class Extension(omni.ext.IExt):
         self._enable_depth = self._settings.get("/syntheticdata/sensors/depthLinearSensor")
         self._enable_instance = self._settings.get("/syntheticdata/sensors/instanceSegmentationSensor")
         self._enable_semantic = self._settings.get("/syntheticdata/sensors/semanticSegmentationSensor")
+        self._enable_bbox_2d_tight = self._settings.get("/syntheticdata/sensors/boundingBox2DTightSensor")
+        self._enable_bbox_2d_loose = self._settings.get("/syntheticdata/sensors/boundingBox2DLooseSensor")
 
         groundtruth = {"METADATA": {"image_id": str(self._counter)}, "DATA": {}}
         # RGB
@@ -279,7 +406,7 @@ class Extension(omni.ext.IExt):
             groundtruth["DATA"]["RGB"] = rgb_image_data
 
         # Depth
-        if self._enable_depth and "Ray" in self._render_mode:
+        if self._enable_depth:
             depth_sensor = gt.SensorType.DepthLinear
             depth_width = self._interface.get_sensor_width(depth_sensor)
             depth_height = self._interface.get_sensor_height(depth_sensor)
@@ -288,9 +415,10 @@ class Extension(omni.ext.IExt):
                 depth_sensor, depth_width, depth_height, depth_row_size
             )
             groundtruth["DATA"]["DEPTH"] = depth_data
+            groundtruth["METADATA"]["COLORIZE"] = self._enable_depth_colorize
 
         # Instance Segmentation
-        if self._enable_instance and "Ray" in self._render_mode:
+        if self._enable_instance:
             instance_sensor = gt.SensorType.InstanceSegmentation
             instance_width = self._interface.get_sensor_width(instance_sensor)
             instance_height = self._interface.get_sensor_height(instance_sensor)
@@ -302,9 +430,10 @@ class Extension(omni.ext.IExt):
             groundtruth["DATA"]["INSTANCE"] = instance_data
             groundtruth["METADATA"]["WIDTH"] = instance_width
             groundtruth["METADATA"]["HEIGHT"] = instance_height
+            groundtruth["METADATA"]["COLORIZE"] = self._enable_instance_colorize
 
         # Semantic Segmentation
-        if self._enable_semantic and "Ray" in self._render_mode:
+        if self._enable_semantic:
             semantic_sensor = gt.SensorType.SemanticSegmentation
             semantic_width = self._interface.get_sensor_width(semantic_sensor)
             semantic_height = self._interface.get_sensor_height(semantic_sensor)
@@ -316,6 +445,25 @@ class Extension(omni.ext.IExt):
             groundtruth["DATA"]["SEMANTIC"] = semantic_data
             groundtruth["METADATA"]["WIDTH"] = semantic_width
             groundtruth["METADATA"]["HEIGHT"] = semantic_height
+            groundtruth["METADATA"]["COLORIZE"] = self._enable_semantic_colorize
+
+        # 2D Tight BBox
+        if self._enable_bbox_2d_tight:
+            bboxes_2d_tight_sensor = gt.SensorType.BoundingBox2DTight
+            bboxes_2d_tight_size = self._interface.get_sensor_size(bboxes_2d_tight_sensor)
+            bboxes_2d_tight_data = self._interface.get_sensor_host_bounding_box_2d_buffer_array(
+                bboxes_2d_tight_sensor, bboxes_2d_tight_size
+            )
+            groundtruth["DATA"]["BBOX2DTIGHT"] = bboxes_2d_tight_data
+
+        # 2D Loose BBox
+        if self._enable_bbox_2d_loose:
+            bboxes_2d_loose_sensor = gt.SensorType.BoundingBox2DLoose
+            bboxes_2d_loose_size = self._interface.get_sensor_size(bboxes_2d_loose_sensor)
+            bboxes_2d_loose_data = self._interface.get_sensor_host_bounding_box_2d_buffer_array(
+                bboxes_2d_loose_sensor, bboxes_2d_loose_size
+            )
+            groundtruth["DATA"]["BBOX2DLOOSE"] = bboxes_2d_loose_data
 
         self.data_writer.q.put(groundtruth)
 
