@@ -110,7 +110,8 @@ class Extension(omni.ext.IExt):
         self._depth_enable = False
         self._semantic_enable = False
         self._instance_enable = False
-        self._bbox_2d_enable = False
+        self._bbox_2d_tight_enable = False
+        self._bbox_2d_loose_enable = False
         self._build_window_ui()
 
     def on_shutdown(self):
@@ -186,15 +187,29 @@ class Extension(omni.ext.IExt):
                             image_semantic_data, semantic_width, semantic_height
                         )
 
-                    # BBox 2D - Numpy
-                    if self._bbox_2d_enable and self._rgb_enable:
-                        bboxes_2d_sensor = gt.SensorType.BoundingBox2DTight
-                        bboxes_2d_size = interface.get_sensor_size(bboxes_2d_sensor)
-                        bboxes_2d_data = interface.get_sensor_host_bounding_box_2d_buffer_array(
-                            bboxes_2d_sensor, bboxes_2d_size
+                    # BBox 2D Tight - Numpy
+                    if self._bbox_2d_tight_enable and self._rgb_enable:
+                        bboxes_2d_tight_sensor = gt.SensorType.BoundingBox2DTight
+                        bboxes_2d_tight_size = interface.get_sensor_size(bboxes_2d_tight_sensor)
+                        bboxes_2d_tight_data = interface.get_sensor_host_bounding_box_2d_buffer_array(
+                            bboxes_2d_tight_sensor, bboxes_2d_tight_size
                         )
-                        bboxes_2d_rgb = np.frombuffer(rgb_data, dtype=np.uint8).reshape((rgb_height, rgb_width, 4))
-                        bboxes_2d_rgb = colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb)
+                        bboxes_2d_tight_rgb = np.frombuffer(rgb_data, dtype=np.uint8).reshape(
+                            (rgb_height, rgb_width, 4)
+                        )
+                        bboxes_2d_tight_rgb = colorize_bboxes(bboxes_2d_tight_data, bboxes_2d_tight_rgb)
+
+                    # BBox 2D Loose - Numpy
+                    if self._bbox_2d_loose_enable and self._rgb_enable:
+                        bboxes_2d_loose_sensor = gt.SensorType.BoundingBox2DLoose
+                        bboxes_2d_loose_size = interface.get_sensor_size(bboxes_2d_loose_sensor)
+                        bboxes_2d_loose_data = interface.get_sensor_host_bounding_box_2d_buffer_array(
+                            bboxes_2d_loose_sensor, bboxes_2d_loose_size
+                        )
+                        bboxes_2d_loose_rgb = np.frombuffer(rgb_data, dtype=np.uint8).reshape(
+                            (rgb_height, rgb_width, 4)
+                        )
+                        bboxes_2d_loose_rgb = colorize_bboxes(bboxes_2d_loose_data, bboxes_2d_loose_rgb)
 
                     # Visualize via omni.ui
                     if self._rgb_enable:
@@ -217,9 +232,17 @@ class Extension(omni.ext.IExt):
                             colorize_semantic_image, [semantic_width, semantic_height]
                         )
 
-                    if self._bbox_2d_enable:
-                        self._bbox_2d_byte_provider = omni.ui.ByteImageProvider()
-                        self._bbox_2d_byte_provider.set_data(bboxes_2d_rgb.tolist(), [rgb_width, rgb_height])
+                    if self._bbox_2d_tight_enable:
+                        self._bbox_2d_tight_byte_provider = omni.ui.ByteImageProvider()
+                        self._bbox_2d_tight_byte_provider.set_data(
+                            bboxes_2d_tight_rgb.tolist(), [rgb_width, rgb_height]
+                        )
+
+                    if self._bbox_2d_loose_enable:
+                        self._bbox_2d_loose_byte_provider = omni.ui.ByteImageProvider()
+                        self._bbox_2d_loose_byte_provider.set_data(
+                            bboxes_2d_loose_rgb.tolist(), [rgb_width, rgb_height]
+                        )
 
                     with window.frame:
                         with omni.ui.VStack():
@@ -249,11 +272,16 @@ class Extension(omni.ext.IExt):
                                         omni.ui.ImageWithProvider(self._instance_byte_provider)
                             with omni.ui.HStack(height=0):
                                 with omni.ui.VStack():
-                                    omni.ui.Label("BBox 2D", alignment=omni.ui.Alignment.CENTER)
+                                    omni.ui.Label("2D Tight BBox", alignment=omni.ui.Alignment.CENTER)
+                                with omni.ui.VStack():
+                                    omni.ui.Label("2D Loose BBox", alignment=omni.ui.Alignment.CENTER)
                             with omni.ui.HStack():
                                 with omni.ui.VStack():
-                                    if self._bbox_2d_enable:
-                                        omni.ui.ImageWithProvider(self._bbox_2d_byte_provider)
+                                    if self._bbox_2d_tight_enable:
+                                        omni.ui.ImageWithProvider(self._bbox_2d_tight_byte_provider)
+                                with omni.ui.VStack():
+                                    if self._bbox_2d_loose_enable:
+                                        omni.ui.ImageWithProvider(self._bbox_2d_loose_byte_provider)
 
                 def toggle_rgb_sensor(self, value):
                     self._rgb_enable = value
@@ -271,41 +299,58 @@ class Extension(omni.ext.IExt):
                     self._semantic_enable = value
                     self._settings.set("/syntheticdata/sensors/semanticSegmentationSensor", value)
 
-                def toggle_bbox_2d_sensor(self, value):
-                    self._bbox_2d_enable = value
+                def toggle_bbox_2d_tight_sensor(self, value):
+                    self._bbox_2d_tight_enable = value
                     self._settings.set("/syntheticdata/sensors/boundingBox2DTightSensor", value)
 
+                def toggle_bbox_2d_loose_sensor(self, value):
+                    self._bbox_2d_loose_enable = value
+                    self._settings.set("/syntheticdata/sensors/boundingBox2DLooseSensor", value)
+
                 with omni.ui.HStack(height=30):
-                    omni.ui.Label("RGB", height=0)
+                    omni.ui.Spacer(width=10)
+                    omni.ui.Label("RGB", height=0, width=200)
                     self.rgb_checkbox = omni.ui.CheckBox()
                     self.rgb_checkbox.model.add_value_changed_fn(
                         lambda a, this=self: toggle_rgb_sensor(self, a.get_value_as_bool())
                     )
                 with omni.ui.HStack(height=30):
-                    omni.ui.Label("Depth", height=0)
+                    omni.ui.Spacer(width=10)
+                    omni.ui.Label("Depth", height=0, width=200)
                     self.depth_checkbox = omni.ui.CheckBox()
                     self.depth_checkbox.model.add_value_changed_fn(
                         lambda a, this=self: toggle_depth_sensor(self, a.get_value_as_bool())
                     )
                 with omni.ui.HStack(height=30):
-                    omni.ui.Label("Semantic Segmentation", height=0)
+                    omni.ui.Spacer(width=10)
+                    omni.ui.Label("Semantic Segmentation", height=0, width=200)
                     self.semantic_checkbox = omni.ui.CheckBox()
                     self.semantic_checkbox.model.add_value_changed_fn(
                         lambda a, this=self: toggle_semantic_segmentation_sensor(self, a.get_value_as_bool())
                     )
                 with omni.ui.HStack(height=30):
-                    omni.ui.Label("Instance Segmentation", height=0)
+                    omni.ui.Spacer(width=10)
+                    omni.ui.Label("Instance Segmentation", height=0, width=200)
                     self.instance_checkbox = omni.ui.CheckBox()
                     self.instance_checkbox.model.add_value_changed_fn(
                         lambda a, this=self: toggle_instance_segmentation_sensor(self, a.get_value_as_bool())
                     )
                 with omni.ui.HStack(height=30):
-                    omni.ui.Label("BBox 2D", height=0)
-                    self.bbox_2d_checkbox = omni.ui.CheckBox()
-                    self.bbox_2d_checkbox.model.add_value_changed_fn(
-                        lambda a, this=self: toggle_bbox_2d_sensor(self, a.get_value_as_bool())
+                    omni.ui.Spacer(width=10)
+                    omni.ui.Label("2D Tight BBox", height=0, width=200)
+                    self.bbox_2d_tight_checkbox = omni.ui.CheckBox()
+                    self.bbox_2d_tight_checkbox.model.add_value_changed_fn(
+                        lambda a, this=self: toggle_bbox_2d_tight_sensor(self, a.get_value_as_bool())
+                    )
+                with omni.ui.HStack(height=30):
+                    omni.ui.Spacer(width=10)
+                    omni.ui.Label("2D Loose BBox", height=0, width=200)
+                    self.bbox_2d_loose_checkbox = omni.ui.CheckBox()
+                    self.bbox_2d_loose_checkbox.model.add_value_changed_fn(
+                        lambda a, this=self: toggle_bbox_2d_loose_sensor(self, a.get_value_as_bool())
                     )
                 with omni.ui.HStack():
+                    omni.ui.Spacer(width=6)
                     omni.ui.Button(
                         "Visualize",
                         width=70,
