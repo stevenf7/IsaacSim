@@ -54,7 +54,7 @@ files = [
     ["_build/$platform/$config/exts/omni.isaac.ros_bridge"],
     ["_build/$platform/$config/exts/omni.isaac.samples"],
     #["_build/$platform/$config/exts/omni.isaac.samples_internal"],
-    #["_build/$platform/$config/exts/omni.isaac.step_importer"],
+    ["_build/$platform/$config/exts/omni.isaac.step_importer"],
     ["_build/$platform/$config/exts/omni.isaac.tests"],
     ["_build/$platform/$config/exts/omni.isaac.urdf"],
     ["_build/$platform/$config/exts/omni.isaac.utils"],
