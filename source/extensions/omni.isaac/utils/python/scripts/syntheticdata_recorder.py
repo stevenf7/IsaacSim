@@ -23,7 +23,7 @@ import numpy as np
 
 from omni.kit.settings import get_settings_interface
 from omni.kit import pipapi
-from PIL import Image
+from PIL import Image, ImageDraw
 
 pipapi.install("pillow")
 pipapi.install("matplotlib")
@@ -96,16 +96,17 @@ class DataWriter:
                         groundtruth["METADATA"]["COLORIZE"],
                     )
                 elif gt_type in ["BBOX2DTIGHT", "BBOX2DLOOSE"]:
-                    self.save_bbox(gt_type, data, filename)
+                    self.save_bbox(
+                        gt_type, data, filename, groundtruth["METADATA"]["COLORIZE"], groundtruth["DATA"]["RGB"]
+                    )
                 else:
                     raise NotImplementedError
             self.q.task_done()
 
     def random_colours(self, N):
-        start = random.random()
+        start = 0
         hues = [(start + i / N) % 1.0 for i in range(N)]
         colours = [list(colorsys.hsv_to_rgb(h, 0.9, 1.0)) for i, h in enumerate(hues)]
-        random.shuffle(colours)
         return colours
 
     def colorize_segmentation(self, segmentation_image, width=1280, height=720):
@@ -120,6 +121,29 @@ class DataWriter:
             color_image[mask] = colour
         color_image_list = color_image * 255
         return np.array(color_image_list)
+
+    def colorize_bboxes(self, bboxes_2d_data, bboxes_2d_rgb):
+        semantic_id_list = []
+        bbox_2d_list = []
+        rgb_img = Image.fromarray(bboxes_2d_rgb)
+        rgb_img_draw = ImageDraw.Draw(rgb_img)
+        for bbox_2d in bboxes_2d_data:
+            if bbox_2d[1] > 0:
+                semantic_id_list.append(bbox_2d[1])
+                bbox_2d_list.append(bbox_2d)
+        semantic_id_list_np = np.unique(np.array(semantic_id_list))
+        color_list = self.random_colours(len(semantic_id_list_np.tolist()))
+        for bbox_2d in bbox_2d_list:
+            index = np.where(semantic_id_list_np == bbox_2d[1])[0][0]
+            bbox_color = color_list[index]
+            rgb_img_draw.rectangle(
+                [(bbox_2d[2], bbox_2d[3]), (bbox_2d[4], bbox_2d[5])],
+                outline=(int(255 * bbox_color[0]), int(255 * bbox_color[1]), int(255 * bbox_color[2])),
+                width=2,
+            )
+        bboxes_2d_rgb = np.array(rgb_img)
+        # bboxes_2d_rgb = bboxes_2d_rgb.reshape(bboxes_2d_rgb.size)
+        return bboxes_2d_rgb
 
     def save_segmentation(self, data_type, data, filename, width=1280, height=720, display_rgb=True):
         # Save ground truth data locally as npy
@@ -150,12 +174,19 @@ class DataWriter:
             depth_img = Image.fromarray((image_data * 255.0).astype(np.uint8))
             depth_img.save(f"{self.depth_folder}/{filename}.png")
 
-    def save_bbox(self, data_type, data, filename):
+    def save_bbox(self, data_type, data, filename, display_rgb=True, rgb_data=None):
         # Save ground truth data locally as npy
         if data_type == "BBOX2DTIGHT":
             np.save(self.bbox_2d_tight_folder + filename + ".npy", data)
         if data_type == "BBOX2DLOOSE":
             np.save(self.bbox_2d_loose_folder + filename + ".npy", data)
+        if display_rgb and rgb_data is not None:
+            color_image = self.colorize_bboxes(data, rgb_data)
+            color_image_rgb = Image.fromarray(color_image, "RGBA")
+            if data_type == "BBOX2DTIGHT":
+                color_image_rgb.save(f"{self.bbox_2d_tight_folder}/{filename}.png")
+            if data_type == "BBOX2DLOOSE":
+                color_image_rgb.save(f"{self.bbox_2d_loose_folder}/{filename}.png")
 
     def check_for_output_folder(self):
         if not os.path.exists(self.data_dir):
@@ -208,6 +239,8 @@ class Extension(omni.ext.IExt):
         self._enable_depth_colorize = False
         self._enable_instance_colorize = False
         self._enable_semantic_colorize = False
+        self._enable_bbox_2d_tight_colorize = False
+        self._enable_bbox_2d_loose_colorize = False
         with self._window.frame:
             with ui.VStack(spacing=5):
                 with ui.CollapsableFrame("Sensor Settings"):
@@ -242,9 +275,15 @@ class Extension(omni.ext.IExt):
                             self._enable_bbox_2d_tight = value
                             self._settings.set("/syntheticdata/sensors/boundingBox2DTightSensor", value)
 
+                        def toggle_bbox_2d_tight_colorize(self, value):
+                            self._enable_bbox_2d_tight_colorize = value
+
                         def toggle_bbox_2d_loose_sensor(self, value):
                             self._enable_bbox_2d_loose = value
                             self._settings.set("/syntheticdata/sensors/boundingBox2DLooseSensor", value)
+
+                        def toggle_bbox_2d_loose_colorize(self, value):
+                            self._enable_bbox_2d_loose_colorize = value
 
                         with ui.HStack(height=30):
                             ui.Spacer(width=10)
@@ -299,12 +338,20 @@ class Extension(omni.ext.IExt):
                             self.bbox_2d_tight_checkbox.model.add_value_changed_fn(
                                 lambda a, this=self: toggle_bbox_2d_tight_sensor(self, a.get_value_as_bool())
                             )
+                            self.bbox_2d_tight_colorize_checkbox = ui.CheckBox()
+                            self.bbox_2d_tight_colorize_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_bbox_2d_tight_colorize(self, a.get_value_as_bool())
+                            )
                         with ui.HStack(height=30):
                             ui.Spacer(width=10)
                             ui.Label("2D Loose Bounding Box", height=0, width=200)
                             self.bbox_2d_loose_checkbox = ui.CheckBox()
                             self.bbox_2d_loose_checkbox.model.add_value_changed_fn(
                                 lambda a, this=self: toggle_bbox_2d_loose_sensor(self, a.get_value_as_bool())
+                            )
+                            self.bbox_2d_loose_colorize_checkbox = ui.CheckBox()
+                            self.bbox_2d_loose_colorize_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_bbox_2d_loose_colorize(self, a.get_value_as_bool())
                             )
                 with ui.CollapsableFrame("Recorder Settings"):
                     with ui.VStack(spacing=5):
@@ -455,6 +502,7 @@ class Extension(omni.ext.IExt):
                 bboxes_2d_tight_sensor, bboxes_2d_tight_size
             )
             groundtruth["DATA"]["BBOX2DTIGHT"] = bboxes_2d_tight_data
+            groundtruth["METADATA"]["COLORIZE"] = self._enable_bbox_2d_tight_colorize
 
         # 2D Loose BBox
         if self._enable_bbox_2d_loose:
@@ -464,6 +512,7 @@ class Extension(omni.ext.IExt):
                 bboxes_2d_loose_sensor, bboxes_2d_loose_size
             )
             groundtruth["DATA"]["BBOX2DLOOSE"] = bboxes_2d_loose_data
+            groundtruth["METADATA"]["COLORIZE"] = self._enable_bbox_2d_loose_colorize
 
         self.data_writer.q.put(groundtruth)
 

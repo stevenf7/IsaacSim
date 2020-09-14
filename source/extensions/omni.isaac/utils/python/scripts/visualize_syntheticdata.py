@@ -23,12 +23,11 @@ EXTENSION_NAME = "Visualize Synthetic Data"
 
 # Helper functions
 def random_colours(N):
-    start = random.random()
+    start = 0
     hues = [(start + i / N) % 1.0 for i in range(N)]
     colours = [list(colorsys.hsv_to_rgb(h, 0.9, 1.0)) for i, h in enumerate(hues)]
     for color in colours:
         color.append(1.0)
-    random.shuffle(colours)
     return colours
 
 
