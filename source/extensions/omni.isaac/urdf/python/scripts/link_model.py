@@ -42,6 +42,18 @@ def create_xyz(labels, values):
                 ui.FloatField(name="transform", min=-1000000, max=1000000, step=0.01).model.set_value(values[axis])
 
 
+def create_wxyz(labels, values):
+    with ui.HStack():
+        all_axis = ["W", "X", "Y", "Z"]
+        labels = {"W": labels[0], "X": labels[1], "Y": labels[2], "Z": labels[3]}
+        values = {"W": values[0], "X": values[1], "Y": values[2], "Z": values[3]}
+        colors = {"W": 0xFF5555AA, "X": 0xFF5555AA, "Y": 0xFF76A371, "Z": 0xFFA07D4F}
+        for axis in all_axis:
+            with ui.HStack():
+                colored_block(colors[axis], labels[axis])
+                ui.FloatField(name="transform", min=-1000000, max=1000000, step=0.01).model.set_value(values[axis])
+
+
 def create_origin(origin):
     with ui.VStack():
         with ui.Frame(style={"border_color": 0xFF000000, "border_width": 1, "margin": 1}, height=ui.Percent(100)):
@@ -49,8 +61,8 @@ def create_origin(origin):
                 ui.Rectangle(style={"background_color": 0x00FFFFFF})
                 with ui.VStack():
                     ui.Label("Origin [m] [rad]")
-                    create_xyz([" X ", " Y ", " Z "], [origin.x, origin.y, origin.z])
-                    create_xyz([" R ", " P ", " Y "], [origin.roll, origin.pitch, origin.yaw])
+                    create_xyz([" X ", " Y ", " Z "], [origin.p.x, origin.p.y, origin.p.z])
+                    create_wxyz([" QW ", " QX ", " QY ", " QZ "], [origin.q.w, origin.q.x, origin.q.y, origin.q.z])
                     ui.Spacer(height=10)
 
 

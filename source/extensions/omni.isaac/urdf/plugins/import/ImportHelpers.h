@@ -2,13 +2,14 @@
 #pragma once
 
 #include "../core/PathUtils.h"
-#include "../core/maths.h"
 #include "../parse/UrdfParser.h"
 #include "MeshImporter.h"
 
 #include <carb/logging/Log.h>
 
 #include <omni/isaac/urdf/UrdfTypes.h>
+#include <omni/isaac/urdf/core/maths.h>
+
 namespace omni
 {
 namespace isaac
@@ -43,31 +44,6 @@ static void urdfToInertia(const UrdfInertia& urdfInertia, Matrix33& inertia)
     inertia.cols[2].z = urdfInertia.izz;
 }
 
-static Transform urdfOriginToTransform(const UrdfOrigin& origin)
-{
-    Quat q = rpy2quat(origin.roll, origin.pitch, origin.yaw);
-    Vec3 p{ origin.x, origin.y, origin.z };
-    return { p, q };
-}
-
-
-static UrdfOrigin transformToUrdfOrigin(const Transform& transform, bool local = false)
-{
-    UrdfOrigin origin;
-    origin.x = transform.p.x;
-    origin.y = transform.p.y;
-    origin.z = transform.p.z;
-    if (local)
-    {
-        zUpQuat2rpy(transform.q, origin.roll, origin.pitch, origin.yaw);
-    }
-    else
-    {
-        quat2rpy(transform.q, origin.roll, origin.yaw, origin.pitch);
-    }
-
-    return origin;
-}
 static void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRobot& robot)
 {
     // Child contribution to inertia
@@ -81,16 +57,15 @@ static void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRob
             auto& urdfParentLink = robot.links.at(parentNode.linkName_);
             auto& urdfChildLink = robot.links.at(childNode->linkName_);
             // The pose of the child with respect to the parent is defined at the joint connecting them
-            Transform poseChildToParent = urdfOriginToTransform(robot.joints.at(childNode->parentJointName_).origin);
+            Transform poseChildToParent = robot.joints.at(childNode->parentJointName_).origin;
 
             // At least one of the link masses has to be defined
             if ((urdfParentLink.inertial.hasMass || urdfChildLink.inertial.hasMass) &&
                 (urdfParentLink.inertial.mass > 0.0f || urdfParentLink.inertial.mass > 0.0f))
             {
                 // Move inertial parameters to parent
-                Transform parentInertialInParentFrame = urdfOriginToTransform(urdfParentLink.inertial.origin);
-                Transform childInertialInParentFrame =
-                    poseChildToParent * urdfOriginToTransform(urdfChildLink.inertial.origin);
+                Transform parentInertialInParentFrame = urdfParentLink.inertial.origin;
+                Transform childInertialInParentFrame = poseChildToParent * urdfChildLink.inertial.origin;
 
                 float totMass = urdfParentLink.inertial.mass + urdfChildLink.inertial.mass;
                 Vec3 com = (urdfParentLink.inertial.mass * parentInertialInParentFrame.p +
@@ -117,9 +92,9 @@ static void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRob
 
                 Matrix33 inertia = Transpose(rotParentOrigin) * (inertiaParent + inertiaChild) * rotParentOrigin;
 
-                urdfParentLink.inertial.origin.x = com.x;
-                urdfParentLink.inertial.origin.y = com.y;
-                urdfParentLink.inertial.origin.z = com.z;
+                urdfParentLink.inertial.origin.p.x = com.x;
+                urdfParentLink.inertial.origin.p.y = com.y;
+                urdfParentLink.inertial.origin.p.z = com.z;
                 urdfParentLink.inertial.mass = totMass;
                 inertiaToUrdf(inertia, urdfParentLink.inertial.inertia);
             }
@@ -127,16 +102,14 @@ static void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRob
             // Move collisions to parent
             for (auto& collision : urdfChildLink.collisions)
             {
-                Transform newOrigin = poseChildToParent * urdfOriginToTransform(collision.origin);
-                collision.origin = transformToUrdfOrigin(newOrigin, true);
+                collision.origin = poseChildToParent * collision.origin;
                 urdfParentLink.collisions.push_back(collision);
             }
             urdfChildLink.collisions.clear();
             // Move visuals to parent
             for (auto& visual : urdfChildLink.visuals)
             {
-                Transform newOrigin = poseChildToParent * urdfOriginToTransform(visual.origin);
-                visual.origin = transformToUrdfOrigin(newOrigin, true);
+                visual.origin = poseChildToParent * visual.origin;
                 urdfParentLink.visuals.push_back(visual);
             }
             urdfChildLink.visuals.clear();
@@ -144,9 +117,7 @@ static void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRob
             {
                 if (joint.second.parentLinkName == childNode->linkName_)
                 {
-                    joint.second.parentLinkName = parentNode.linkName_;
-                    Transform newOrigin = poseChildToParent * urdfOriginToTransform(joint.second.origin);
-                    joint.second.origin = transformToUrdfOrigin(newOrigin, true);
+                    joint.second.origin = poseChildToParent * joint.second.origin;
                 }
             }
 

@@ -9,6 +9,7 @@
 #include <carb/BindingsPythonUtils.h>
 
 #include <omni/isaac/urdf/Urdf.h>
+#include <omni/isaac/urdf/core/maths.h>
 #include <pybind11/pybind11/stl.h>
 #include <pybind11/pybind11/stl_bind.h>
 
@@ -105,13 +106,22 @@ PYBIND11_MODULE(_urdf, m)
              [](ImportConfig& config, const bool value) { config.createPhysicsScene = value; })
         .def("set_make_default_prim", [](ImportConfig& config, const bool value) { config.makeDefaultPrim = value; });
 
-    py::class_<UrdfOrigin>(m, "UrdfOrigin", "")
-        .def_readwrite("x", &UrdfOrigin::x, "")
-        .def_readwrite("y", &UrdfOrigin::y, "")
-        .def_readwrite("z", &UrdfOrigin::z, "")
-        .def_readwrite("roll", &UrdfOrigin::roll, "")
-        .def_readwrite("pitch", &UrdfOrigin::pitch, "")
-        .def_readwrite("yaw", &UrdfOrigin::yaw, "")
+    py::class_<Vec3>(m, "Position", "")
+        .def_readwrite("x", &Vec3::x, "")
+        .def_readwrite("y", &Vec3::y, "")
+        .def_readwrite("z", &Vec3::z, "")
+        .def(py::init<>());
+
+    py::class_<Quat>(m, "Orientation", "")
+        .def_readwrite("w", &Quat::w, "")
+        .def_readwrite("x", &Quat::x, "")
+        .def_readwrite("y", &Quat::y, "")
+        .def_readwrite("z", &Quat::z, "")
+        .def(py::init<>());
+
+    py::class_<Transform>(m, "UrdfOrigin", "")
+        .def_readwrite("p", &Transform::p, "")
+        .def_readwrite("q", &Transform::q, "")
         .def(py::init<>());
 
     py::class_<UrdfInertia>(m, "UrdfInertia", "")

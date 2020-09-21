@@ -34,11 +34,11 @@ static std::string makeValidUSDIdentifier(const std::string& name)
     return validName;
 }
 
-std::ostream& operator<<(std::ostream& out, const UrdfOrigin& origin)
+std::ostream& operator<<(std::ostream& out, const Transform& origin)
 {
     out << "Origin: ";
-    out << "x=" << origin.x << " y=" << origin.y << " z=" << origin.z;
-    out << " r=" << origin.roll << " p=" << origin.pitch << " y=" << origin.yaw;
+    out << "px=" << origin.p.x << " py=" << origin.p.y << " pz=" << origin.p.z;
+    out << " qx=" << origin.q.x << " qy=" << origin.q.y << " qz=" << origin.q.z << " qw=" << origin.q.w;
     return out;
 }
 
@@ -321,7 +321,7 @@ bool parseJointType(const char* str, UrdfJointType& type)
     return true;
 }
 
-bool parseOrigin(const XMLElement& element, UrdfOrigin& origin)
+bool parseOrigin(const XMLElement& element, Transform& origin)
 {
     auto originElement = element.FirstChildElement("origin");
     if (originElement)
@@ -329,7 +329,7 @@ bool parseOrigin(const XMLElement& element, UrdfOrigin& origin)
         auto attribute = originElement->Attribute("xyz");
         if (attribute)
         {
-            if (!parseXyz(attribute, origin.x, origin.y, origin.z))
+            if (!parseXyz(attribute, origin.p.x, origin.p.y, origin.p.z))
             {
                 return false;
             }
@@ -337,10 +337,16 @@ bool parseOrigin(const XMLElement& element, UrdfOrigin& origin)
         attribute = originElement->Attribute("rpy");
         if (attribute)
         {
-            if (!parseXyz(attribute, origin.roll, origin.pitch, origin.yaw))
+            // parse roll pitch yaw
+            float roll = 0.0f;
+            float pitch = 0.0f;
+            float yaw = 0.0f;
+            if (!parseXyz(attribute, roll, pitch, yaw))
             {
                 return false;
             }
+            // convert to transform quaternion:
+            origin.q = rpy2quat(roll, pitch, yaw);
         }
     }
     return true;
