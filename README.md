@@ -1,7 +1,7 @@
 # Omniverse Isaac Sim
 This is where the Robotics experiece for Omniverse is developed
 
-[Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Simulator)
+[Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Robotics+App+Home)
 
 [Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/releases)
 
@@ -11,7 +11,7 @@ This is where the Robotics experiece for Omniverse is developed
 
 ### Latest Documentation and Packages
 
-[Documentation](http://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim)
+[Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/robotics)
 
 [Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackaging_BuildLinuxX8664/.lastSuccessful/isaac-sim%40%7Bbuild.number%7D-linux-x86_64-release.7z)
 
