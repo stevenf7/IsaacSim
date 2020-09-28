@@ -29,6 +29,7 @@ public:
 
     virtual void onComponentChange();
     void pubCallback(ros::Publisher* pub);
+    void pointCloudPubCallback(ros::Publisher* pub);
 
 private:
     std::string mLaserScanPubTopic = "/laser_scan";
@@ -39,6 +40,11 @@ private:
     omni::isaac::lidar::LidarInterface* mLidarInterface = nullptr;
     pxr::LidarSchemaLidar mLidarPrim;
     std::string mFrameId = "/sim_lidar";
+
+    bool mEnablePointCloud = false;
+    std::string mPointCloudPubTopic = "/point_cloud";
+
+    double mUnitScale;
 };
 }
 }

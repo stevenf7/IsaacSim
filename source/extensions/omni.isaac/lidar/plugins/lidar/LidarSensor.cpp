@@ -365,7 +365,8 @@ void scan(int start,
                 //     continue;
                 // }
                 carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
-                hitPosition[i] = hitPos;
+                physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - origin);
+                hitPosition[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
                 if (drawLidarPoints)
                 {
                     omni::isaac::lidar::LidarDebugData data;
@@ -402,7 +403,8 @@ void scan(int start,
                 linearDepth[i] = maxDepth * metersPerUnit; // in meters
                 intensity[i] = 0;
                 physx::PxVec3 hitPos = origin + unitDir * (maxDepth + minDepth);
-                hitPosition[i] = { hitPos.x, hitPos.y, hitPos.z };
+                physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - origin);
+                hitPosition[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
                 if (drawLidarPoints)
                 {
 

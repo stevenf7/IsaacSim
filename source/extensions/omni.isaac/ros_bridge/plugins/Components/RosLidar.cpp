@@ -10,7 +10,9 @@
 #include "std_msgs/Int64.h"
 #include "std_msgs/UInt8.h"
 #include "std_srvs/Empty.h"
+#include "geometry_msgs/Point32.h"
 #include "sensor_msgs/LaserScan.h"
+#include "sensor_msgs/PointCloud.h"
 #include <time.h>
 
 namespace omni
@@ -35,11 +37,14 @@ RosLidar::RosLidar()
         CARB_LOG_ERROR("Failed to acquire omni::isaac::lidar interface");
         return;
     }
+
+    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
 }
 RosLidar::~RosLidar()
 {
     CARB_LOG_INFO("RosLidar Destroyed");
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mLaserScanPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mPointCloudPubTopic);
 }
 
 void RosLidar::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageWeakPtr stage)
@@ -56,12 +61,17 @@ void RosLidar::onComponentChange()
     const pxr::RosBridgeSchemaRosLidar& typedPrim = (pxr::RosBridgeSchemaRosLidar)mPrim;
     // Destroy the old message, in case the topic changes
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mLaserScanPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mPointCloudPubTopic);
 
     isaac::utils::safeGetAttribute(typedPrim.GetLaserScanPubTopicAttr(), mLaserScanPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
+    isaac::utils::safeGetAttribute(typedPrim.GetPointCloudPubTopicAttr(), mPointCloudPubTopic);
+    isaac::utils::safeGetAttribute(typedPrim.GetPointCloudEnabledAttr(), mEnablePointCloud);
 
     mRosNode->createPublisher<sensor_msgs::LaserScan>(
         mPrim.GetPath().GetString(), mLaserScanPubTopic, mQueueSize, &RosLidar::pubCallback, this);
+    mRosNode->createPublisher<sensor_msgs::PointCloud>(
+        mPrim.GetPath().GetString(), mPointCloudPubTopic, mQueueSize, &RosLidar::pointCloudPubCallback, this);
 
 
     pxr::SdfPathVector targets;
@@ -148,6 +158,33 @@ void RosLidar::pubCallback(ros::Publisher* pub)
 
     pub->publish(laser_msg);
 }
+
+void RosLidar::pointCloudPubCallback(ros::Publisher* pub)
+{
+    if (!mEnablePointCloud)
+    {
+        return;
+    }
+    sensor_msgs::PointCloud point_cloud_msg;
+    point_cloud_msg.header.seq = 0;
+    point_cloud_msg.header.frame_id = mFrameId;
+    point_cloud_msg.header.stamp.fromSec(mTimeSeconds);
+
+    carb::Float3* lidarData = mLidarInterface->getPointCloud(mLidarPath.GetString().c_str());
+    int rows = mLidarInterface->getNumRows(mLidarPath.GetString().c_str());
+    int numColsTicked = mLidarInterface->getNumColsTicked(mLidarPath.GetString().c_str());
+    for (int i = 0; i < rows * numColsTicked; i++)
+    {
+        geometry_msgs::Point32 points;
+        points.x = lidarData[i].x * mUnitScale;
+        points.y = lidarData[i].y * mUnitScale;
+        points.z = lidarData[i].z * mUnitScale;
+        point_cloud_msg.points.push_back(points);
+    }
+    pub->publish(point_cloud_msg);
+}
+
+
 }
 }
 }
