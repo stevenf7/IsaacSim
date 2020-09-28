@@ -33,6 +33,11 @@ public:
     void cameraInfoPubCallback(ros::Publisher* pub);
     void rgbPubCallback(ros::Publisher* pub);
     void depthPubCallback(ros::Publisher* pub);
+    void semanticPubCallback(ros::Publisher* pub);
+    void instancePubCallback(ros::Publisher* pub);
+    void labelPubCallback(ros::Publisher* pub);
+    void boundingbox2dPubCallback(ros::Publisher* pub);
+    void boundingbox3dPubCallback(ros::Publisher* pub);
 
 private:
     carb::Framework* mFramework = nullptr;
@@ -45,16 +50,44 @@ private:
     void* mRgbSensorData = nullptr;
     bool mEnableRgb = false;
 
-
     carb::sensors::Sensor* mDepthSensor = nullptr;
     void* mDepthSensorData = nullptr;
     bool mEnableDepth = false;
 
+    carb::sensors::Sensor* mInstanceSensor = nullptr;
+    void* mInstanceSensorData = nullptr;
+    bool mEnableInstance = false;
 
-    std::string mCameraInfoPubTopic = "/rgb";
+    carb::sensors::Sensor* mSegmentationSensor = nullptr;
+    void* mSegmentationSensorData = nullptr;
+    bool mEnableSegmentation = false;
+
+    carb::sensors::Sensor* mSemanticSensor = nullptr;
+    void* mSemanticSensorData = nullptr;
+    bool mEnableSemantic = false;
+
+    carb::sensors::Sensor* mBoundingBox2DSensor = nullptr;
+    void* mBoundingBox2DSensorData = nullptr;
+    bool mEnableBoundingBox2D = false;
+    std::vector<std::string> mBoundingBox2DClassList;
+
+    carb::sensors::Sensor* mBoundingBox3DSensor = nullptr;
+    void* mBoundingBox3DSensorData = nullptr;
+    bool mEnableBoundingBox3D = false;
+    std::vector<std::string> mBoundingBox3DClassList;
+
+
+    double mUnitScale;
+
+    std::string mCameraInfoPubTopic = "/camera_info";
     std::string mRgbPubTopic = "/rgb";
     std::string mDepthPubTopic = "/depth";
     std::string mFrameId = "/sim_camera";
+    std::string mInstancePubTopic = "/instance";
+    std::string mSemanticPubTopic = "/semantic";
+    std::string mLabelPubTopic = "/label";
+    std::string mBoundingBox2DPubTopic = "/bbox_2d";
+    std::string mBoundingBox3DPubTopic = "/bbox_3d";
     int mQueueSize = 10;
 };
 }
