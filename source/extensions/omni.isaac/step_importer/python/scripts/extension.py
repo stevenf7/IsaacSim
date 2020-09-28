@@ -474,15 +474,7 @@ class StepImporter(omni.ext.IExt):
                                     "Review Meshes", clicked_fn=lambda: self.select_step(1), height=ui.Pixel(20)
                                 )
                                 self._review_meshes_btn.enabled = False
-                                # self._review_assemblies_btn = ui.Button(
-                                #     "Review Assemblies", clicked_fn=lambda: self.select_step(2), height=ui.Pixel(20)
-                                # )
-                                # self._review_assemblies_btn.enabled = False
-                                self.step_btns = [
-                                    self._select_step_btn,
-                                    self._review_meshes_btn,
-                                ]  # , self._review_assemblies_btn]
-                            # with ui.ZStack():
+                                self.step_btns = [self._select_step_btn, self._review_meshes_btn]
                             for i in range(len(self.build_steps_fns) - 1):
                                 vstack = ui.VStack(spacing=10, alignment=ui.Alignment.TOP)
                                 self.build_steps_fns[i](vstack)
@@ -493,7 +485,6 @@ class StepImporter(omni.ext.IExt):
                         ui.Spacer(width=ui.Pixel(20))
             if menu:
                 self._select_file(self)
-                # self._select_picked_file_callback("/home/rgasoto/Downloads/as1-oc-214.stp")
 
     def on_shutdown(self):
         carb.log_info("Shutting down Step Importer")
@@ -523,8 +514,8 @@ class StepImporter(omni.ext.IExt):
         if self.step_file:
             self._si.release_step_file(self.step_file)
 
-        _step_importer.release_interface(self._si)
-        self._si = None
+        # _step_importer.release_interface(self._si)
+        # self._si = None
         print("done")
         carb.log_info("done")
 
