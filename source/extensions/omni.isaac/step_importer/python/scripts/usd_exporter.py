@@ -309,9 +309,7 @@ class PartExporter:
                     assembly_path = os.path.join(self.path, "{}_{:02d}.usd".format(assembly_name, count))
                 self.assemblies_path[index] = assembly_path
                 stage = createInMemoryStage(assembly_path)
-                root_layer = stage.GetRootLayer()
-                if assembly_path not in root_layer.subLayerPaths:
-                    root_layer.subLayerPaths.append(self.materials_path)
+
                 path = "/Root"
             else:
                 stage = self.stage
@@ -398,38 +396,39 @@ class PartExporter:
     def set_material_authoring_layer(self):
         if self.is_temp_stage_open():
             context = omni.usd.get_context()
-            layers = context.get_layers()
-            layers.set_authoring_layer_by_identifier(self.materials_path)
+            omni.kit.commands.execute("SetEditTargetCommand", layer_identifier=self.materials_path)
 
     def set_root_authoring_layer(self):
         if self.is_temp_stage_open():
             context = omni.usd.get_context()
             stage = context.get_stage()
-            layers = context.get_layers()
-            layers.set_authoring_layer_by_identifier(stage.GetRootLayer().identifier)
+            if stage:
+                edit_target = Usd.EditTarget(stage.GetRootLayer())
+                stage.SetEditTarget(edit_target)
 
     def set_materials_to_color_layer(self):
         if self.is_temp_stage_open():
             context = omni.usd.get_context()
             stage = context.get_stage()
-            layers = context.get_layers()
+            session_layer = stage.GetSessionLayer()
+            session_layer.subLayerPaths.append(self.materials_path)
             # Makes the session layer the authoring layer to make a non-permanent change on material binding
-            session_layer_id = layers.get_session_layer_global_id()
-            layers.set_authoring_layer_by_global_id(session_layer_id)
-            for mat in self.material_list:
-                if stage.GetPrimAtPath(mat):
-                    mat_name = mat.split("/")[-1]
-                    prims = get_all_prims_with_material(stage, mat_name)
-                    bind_material(stage, prims, mat)
+            with Usd.EditContext(stage, session_layer):
+                # layers.set_authoring_layer_by_identifier(session_layer_id)
+                for mat in self.material_list:
+                    if stage.GetPrimAtPath(mat):
+                        mat_name = mat.split("/")[-1]
+                        prims = get_all_prims_with_material(stage, mat_name)
+                        bind_material(stage, prims, mat)
             # return to root layer
-            layers.set_authoring_layer_by_identifier(stage.GetRootLayer().identifier)
 
     def update_material(self, index):
         self.set_material_authoring_layer()
         context = omni.usd.get_context()
         stage = context.get_stage()
-        create_material(stage, self.material_list[index], self.part.materials[index])
-        self.set_root_authoring_layer()
+        with Usd.EditContext(stage, Sdf.Layer.Find(self.materials_path)):
+            create_material(stage, self.material_list[index], self.part.materials[index])
+        Sdf.Layer.Find(self.materials_path).Save()
 
     def export_mesh_list(self, path, materials_stage, materials_list):
         mesh_names = []

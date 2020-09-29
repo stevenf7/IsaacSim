@@ -4,6 +4,7 @@ import omni.ext
 import omni.kit.commands
 import omni.ui as ui
 import os
+import re
 import asyncio
 import weakref
 from enum import Enum
@@ -94,7 +95,12 @@ class AssemblyDelegate(ui.AbstractItemDelegate):
                 if len(get_all_prims_with_material(stage, item.get_name())) == 0:
                     return
         row = ui.HStack(
-            spacing=4, height=20, mouse_double_clicked_fn=lambda x, y, b, c, i=item: self.on_mouse_double_clicked(item)
+            spacing=4,
+            height=20,
+            mouse_double_clicked_fn=(lambda x, y, b, c, i=item: self.on_mouse_double_clicked(item))
+            if item.type == itemType.Assembly
+            else None,
+            tooltip="Double click to open isolated Assembly" if item.type == itemType.Assembly else "",
         )
         with row:
             if column_id == 1:
@@ -122,52 +128,9 @@ class AssemblyDelegate(ui.AbstractItemDelegate):
                         ui.Label(text, width=0, name=text, style_type_name_override="TreeView.Item")
                 else:
                     if item.type == itemType.Color:
-                        widget = ui.ColorWidget(width=0)
-                        if not model.edit_mode:
-                            ui.Label(name, width=0, style_type_name_override="TreeView.Item")
-                        else:
-                            name_model = ui.SimpleStringModel(name)
-
-                            def assembly_name(name_model, item):
-                                if name != name_model.get_value_as_string():
-                                    item.set_name(name_model.get_value_as_string())
-
-                            name_model.add_end_edit_fn(lambda b, item=item: assembly_name(b, item))
-                            ui.StringField(
-                                model=name_model, style_type_name_override="TreeView.Edit", width=ui.Percent(90)
-                            )
-
-                        m = widget.model
-                        color = value_model.get_value_as_color()
-                        for i, item in enumerate(m.get_item_children()):
-                            item_model = m.get_item_value_model(item)
-                            item_model.set_value(color[i])
-                            # item_model.add_begin_edit_fn(lambda _: value_model.begin_edit())
-                            # item_model.add_end_edit_fn(lambda _: value_model.end_edit())
-                            item_model.add_value_changed_fn(
-                                lambda m, b=value_model, i=i: value_model.set_color(m.get_value_as_float(), i)
-                            )
+                        self.build_color_widget(model, name, item, value_model)
                     elif item.type == itemType.Color_emissive:
-                        enabled, emissive = value_model.get_value_as_emissive()
-                        ui.Label("Emissive", width=0, style_type_name_override="TreeView.Item")
-
-                        # cb.model.add_begin_edit_fn(lambda _: value_model.begin_edit())
-                        # cb.model.add_end_edit_fn(lambda _: value_model.end_edit())
-
-                        widget = ui.ColorWidget(width=0)
-                        em = widget.model
-
-                        for i, item in enumerate(em.get_item_children()):
-                            if i < 3:
-                                item_model = em.get_item_value_model(item)
-                                item_model.set_value(emissive[i])
-                                item_model.add_value_changed_fn(
-                                    lambda m, b=value_model, i=i: b.set_emissive_value(m.get_value_as_float(), i)
-                                )
-                        fd = ui.FloatDrag(min=0, max=10000.0, style_type_name_override="TreeView.Edit")
-                        fd.model.set_value(enabled)
-                        fd.model.add_value_changed_fn(lambda a, b=value_model: b.set_emissive(a.get_value_as_float()))
-
+                        self.build_emissive_widget(value_model)
                     elif item.type == itemType.Color_metallic:
                         ui.Label("Metallic", width=0, style_type_name_override="TreeView.Item")
                         fd = ui.FloatDrag(style_type_name_override="TreeView.Edit")
@@ -178,6 +141,52 @@ class AssemblyDelegate(ui.AbstractItemDelegate):
                         fd = ui.FloatDrag(style_type_name_override="TreeView.Edit")
                         fd.model.set_value(value_model.get_value_as_roughness())
                         fd.model.add_value_changed_fn(lambda m, b=value_model: b.set_roughness(m.get_value_as_float()))
+
+    def build_color_widget(self, model, name, item, value_model):
+        widget = ui.ColorWidget(width=0)
+        if not model.edit_mode:
+            ui.Label(name, width=0, style_type_name_override="TreeView.Item")
+        else:
+            name_model = ui.SimpleStringModel(name)
+
+            def assembly_name(name_model, item):
+                if name != name_model.get_value_as_string():
+                    item.set_name(name_model.get_value_as_string())
+
+            name_model.add_end_edit_fn(lambda b, item=item: assembly_name(b, item))
+            ui.StringField(model=name_model, style_type_name_override="TreeView.Edit", width=ui.Percent(90))
+
+        m = widget.model
+        color = value_model.get_value_as_color()
+        for i, item in enumerate(m.get_item_children()):
+            item_model = m.get_item_value_model(item)
+            item_model.set_value(color[i])
+            # item_model.add_begin_edit_fn(lambda _: value_model.begin_edit())
+            # item_model.add_end_edit_fn(lambda _: value_model.end_edit())
+            item_model.add_value_changed_fn(
+                lambda m, b=value_model, i=i: value_model.set_color(m.get_value_as_float(), i)
+            )
+
+    def build_emissive_widget(self, value_model):
+        enabled, emissive = value_model.get_value_as_emissive()
+        ui.Label("Emissive", width=0, style_type_name_override="TreeView.Item")
+
+        # cb.model.add_begin_edit_fn(lambda _: value_model.begin_edit())
+        # cb.model.add_end_edit_fn(lambda _: value_model.end_edit())
+
+        widget = ui.ColorWidget(width=0)
+        em = widget.model
+
+        for i, item in enumerate(em.get_item_children()):
+            if i < 3:
+                item_model = em.get_item_value_model(item)
+                item_model.set_value(emissive[i])
+                item_model.add_value_changed_fn(
+                    lambda m, b=value_model, i=i: b.set_emissive_value(m.get_value_as_float(), i)
+                )
+        fd = ui.FloatDrag(min=0, max=10000.0, style_type_name_override="TreeView.Edit")
+        fd.model.set_value(enabled)
+        fd.model.add_value_changed_fn(lambda a, b=value_model: b.set_emissive(a.get_value_as_float()))
 
         # else:
         #         # If highlighting disabled completley, all the items should be light
@@ -199,17 +208,25 @@ class MaterialModel(ui.AbstractItemModel):
         self.index = index
 
     def begin_edit(self):
-
-        carb.log_warn("begin edit")
+        pass
 
     def end_edit(self):
-
-        carb.log_warn("end edit")
+        pass
 
     def get_value_as_string(self):
         return self.exporter.material_names[self.index]
 
     def set_material_name(self, name):
+        name = re.sub(r"[\W,_]+", "_", name)
+        if name[0].isdigit():
+            name = "mat_{}".format(name)
+        base_name = name
+        count = 0
+        while name in self.exporter.material_names:
+            if self.exporter.material_names[self.index] == name:
+                break
+            count += 1
+            name = "{}_{}".format(base_name, count)
         self.exporter.material_names[self.index] = name
 
     def get_value_as_color(self):
@@ -302,7 +319,7 @@ class AssemblyItem(ui.AbstractItem):
         elif self.type == itemType.Mesh:
             pass
         else:
-            self.exporter.material_names[self.index] = name
+            self.name_model.set_material_name(name)
 
     def get_name(self):
         if self.type == itemType.Assembly:
