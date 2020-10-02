@@ -34,7 +34,7 @@
 #include "../parse/UrdfParser.h"
 #include "KinematicChain.h"
 #include <omni/isaac/urdf/UrdfTypes.h>
-#include "../core/maths.h"
+#include <omni/isaac/urdf/core/maths.h>
 #include "MeshImporter.h"
 #include <omni/isaac/urdf/Urdf.h>
 #include <carb/logging/Log.h>

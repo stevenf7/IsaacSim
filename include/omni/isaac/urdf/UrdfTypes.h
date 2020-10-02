@@ -8,11 +8,14 @@
 //
 #pragma once
 
+#include "core/maths.h"
+
 #include <float.h>
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
+
 namespace omni
 {
 namespace isaac
@@ -22,18 +25,6 @@ namespace urdf
 
 // The default values and data structures are mostly the same as defined in the official URDF documentation
 // http://wiki.ros.org/urdf/XML
-
-struct UrdfOrigin
-{
-    // Position
-    float x = 0.0f;
-    float y = 0.0f;
-    float z = 0.0f;
-    // Orientation
-    float roll = 0.0f;
-    float pitch = 0.0f;
-    float yaw = 0.0f;
-};
 
 struct UrdfInertia
 {
@@ -47,8 +38,8 @@ struct UrdfInertia
 
 struct UrdfInertial
 {
-    UrdfOrigin origin; // This is the pose of the inertial reference frame, relative to the link reference frame. The
-                       // origin of the inertial reference frame needs to be at the center of gravity
+    Transform origin; // This is the pose of the inertial reference frame, relative to the link reference frame. The
+                      // origin of the inertial reference frame needs to be at the center of gravity
     float mass = 0.0f;
     UrdfInertia inertia;
     bool hasOrigin = false;
@@ -157,7 +148,7 @@ struct UrdfMaterial
 struct UrdfVisual
 {
     std::string name;
-    UrdfOrigin origin; // The reference frame of the visual element with respect to the reference frame of the link
+    Transform origin; // The reference frame of the visual element with respect to the reference frame of the link
     UrdfGeometry geometry;
     UrdfMaterial material;
 };
@@ -165,7 +156,7 @@ struct UrdfVisual
 struct UrdfCollision
 {
     std::string name;
-    UrdfOrigin origin; // The reference frame of the collision element, relative to the reference frame of the link
+    Transform origin; // The reference frame of the collision element, relative to the reference frame of the link
     UrdfGeometry geometry;
 };
 
@@ -181,8 +172,8 @@ struct UrdfJoint
 {
     std::string name;
     UrdfJointType type;
-    UrdfOrigin origin; // This is the transform from the parent link to the child link. The joint is located at the
-                       // origin of the child link
+    Transform origin; // This is the transform from the parent link to the child link. The joint is located at the
+                      // origin of the child link
     std::string parentLinkName;
     std::string childLinkName;
     UrdfAxis axis;
