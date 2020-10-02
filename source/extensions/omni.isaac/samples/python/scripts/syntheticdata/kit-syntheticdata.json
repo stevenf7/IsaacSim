@@ -19,5 +19,10 @@
                 "omni.isaac.dr"
             ]
         }
+    },
+    "rtx": {
+        "hydra": {
+            "enableSemanticSchema": true
+        }
     }
 }
