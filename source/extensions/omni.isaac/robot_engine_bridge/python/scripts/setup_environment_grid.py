@@ -49,7 +49,12 @@ class Extension(omni.ext.IExt):
         extension_name = "Setup Environment Grid"
         menu_path = f"Window/Isaac/{extension_name}"
         self._window = omni.kit.ui.Window(
-            "Setup Environment Grid", 960, 300, menu_path=menu_path, dock=omni.kit.ui.DockPreference.LEFT_BOTTOM
+            "Setup Environment Grid",
+            960,
+            300,
+            menu_path=menu_path,
+            open=False,
+            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
         self._create_ui()
         pass
