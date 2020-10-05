@@ -32,8 +32,6 @@
 
 files = []
 
-
-
 ########################################################################################################################
 # isaac-sim package
 ########################################################################################################################
@@ -45,7 +43,7 @@ files = [
     ["_build/$platform/$config/exts/omni.isaac.decals"],
     ["_build/$platform/$config/exts/omni.isaac.dr"],
     ["_build/$platform/$config/exts/omni.isaac.dynamic_control"],
-    #["_build/$platform/$config/exts/omni.isaac.exploded_view"],
+    ["_build/$platform/$config/exts/omni.isaac.exploded_view"],
     ["_build/$platform/$config/exts/omni.isaac.lidar"],
     ["_build/$platform/$config/exts/omni.isaac.manip"],
     ["_build/$platform/$config/exts/omni.isaac.motion_planning"],
@@ -55,7 +53,7 @@ files = [
     ["_build/$platform/$config/exts/omni.isaac.samples"],
     #["_build/$platform/$config/exts/omni.isaac.samples_internal"],
     ["_build/$platform/$config/exts/omni.isaac.step_importer"],
-    ["_build/$platform/$config/exts/omni.isaac.tests"],
+    #["_build/$platform/$config/exts/omni.isaac.tests"],
     ["_build/$platform/$config/exts/omni.isaac.urdf"],
     ["_build/$platform/$config/exts/omni.isaac.utils"],
     ["_build/$platform/$config/data", "_build/$platform/$config/data"],
@@ -323,4 +321,6 @@ files = [
     ["tools"],
     ["_build/$platform/$config/experiences/test*", "_build/$platform/$config/experiences"],
     ["_build/$platform/$config/test*$shell_ext", "_build/$platform/$config"],
+    ["_build/$platform/$config/exts/omni.isaac.samples_internal"],
+    ["_build/$platform/$config/exts/omni.isaac.tests"],
 ]
