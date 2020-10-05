@@ -249,8 +249,9 @@ void DifferentialBaseSimulator::getWheelDesireSpeed(const pxr::GfVec2d& mCommand
 {
     mBrakeRequested =
         pxr::GfIsClose(mCommandedSpeed[0], 0.0f, FLT_EPSILON) && pxr::GfIsClose(mCommandedSpeed[1], 0.0f, FLT_EPSILON);
-    mWheelDesiredSpeed[0] = (mCommandedSpeed[0] - mCommandedSpeed[1] * mWheelBase);
-    mWheelDesiredSpeed[1] = (mCommandedSpeed[0] + mCommandedSpeed[1] * mWheelBase);
+    // mWheelBase is the total distance between wheels, but to compute wheel speed we need to use half of that distance
+    mWheelDesiredSpeed[0] = (mCommandedSpeed[0] - mCommandedSpeed[1] * mWheelBase * 0.5);
+    mWheelDesiredSpeed[1] = (mCommandedSpeed[0] + mCommandedSpeed[1] * mWheelBase * 0.5);
 }
 
 float DifferentialBaseSimulator::getVelocity(float target)

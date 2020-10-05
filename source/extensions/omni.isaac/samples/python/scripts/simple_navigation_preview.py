@@ -30,7 +30,12 @@ class Extension(omni.ext.IExt):
         extension_name = "Simple Robot Navigation"
         menu_path = f"Window/Isaac/{extension_name}"
         self._window = omni.kit.ui.Window(
-            "Simple Robot Navigation", 960, 300, menu_path=menu_path, dock=omni.kit.ui.DockPreference.LEFT_BOTTOM
+            "Simple Robot Navigation",
+            960,
+            300,
+            menu_path=menu_path,
+            open=False,
+            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._create_ui()
