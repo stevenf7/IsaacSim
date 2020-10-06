@@ -16,6 +16,8 @@ import platform
 
 
 import omni.isaac
+import omni.kit.commands
+import omni.kit.pipapi
 
 
 # -- Project information -----------------------------------------------------

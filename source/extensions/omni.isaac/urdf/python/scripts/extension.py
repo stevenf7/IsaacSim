@@ -14,7 +14,6 @@ from graphviz import Graph
 from graphviz import Digraph
 from .. import _urdf
 from pxr import UsdGeom
-from PIL import Image, ImageDraw
 import io
 
 EXTENSION_NAME = "URDF Importer"
@@ -281,6 +280,8 @@ class Extension(omni.ext.IExt):
             legend_graph.node("legend_continuous", "Continuous", color="orange", shape="rect", margin="0", height="0")
 
         try:
+            from PIL import Image
+
             self._create_graphviz_tree(robot_tree, robot, robot_graph)
             buffer = io.BytesIO(robot_graph.pipe(format="png"))
             buffer.seek(0)

@@ -5,7 +5,6 @@ from .. import _occupancy_map
 import omni
 import carb
 from pxr import UsdGeom, Gf
-from PIL import Image, ImageDraw
 import os
 import gc
 
@@ -172,6 +171,8 @@ class Extension(omni.ext.IExt):
         self.draw_voxel_btn.visible = True
 
     def _generate_image(self):
+        from PIL import Image, ImageDraw
+
         print(self._om.getMinBound())
         print(self._om.getMaxBound())
 
