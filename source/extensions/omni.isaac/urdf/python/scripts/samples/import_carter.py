@@ -27,7 +27,6 @@ class Extension(omni.ext.IExt):
         config_robot_btn.set_clicked_fn(self._on_config_robot)
 
     def on_shutdown(self):
-        _urdf.release_urdf_interface(self._urdf_interface)
         self._window = None
 
     def _on_load_robot(self, widget):
