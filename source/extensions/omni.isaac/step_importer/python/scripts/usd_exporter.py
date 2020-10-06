@@ -232,6 +232,8 @@ class PartExporter:
         base_folder = self.tempdir
         part_path = os.path.join(base_folder, self.part_name)
         self.path = part_path.replace("\\", "/")
+        if not os.path.isdir(self.path):
+            os.makedirs(self.path)
         carb.log_info("Creating assembly usd at " + self.path)
         files = glob.glob(os.path.join(self.path, "*"))
         for f in files:

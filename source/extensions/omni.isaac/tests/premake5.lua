@@ -38,4 +38,5 @@ group ("extensions/"..ext_id)
 
     repo_build.prebuild_copy {
         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/tests" },
+        { ext_source.."/data/*", ext_folder.."/omni/isaac/tests/data" },
     }

@@ -8,6 +8,8 @@ import carb
 import asyncio
 import weakref
 
+import platform
+
 from functools import wraps, partial
 from pathlib import Path
 
@@ -112,7 +114,6 @@ class StepImporter(omni.ext.IExt):
                 "Button": {"border_radius": 0, "margin": 0},
                 "Button:selected": {"background_color": 0xFF454545, "padding": 5},
                 ":disabled": {"color": 0xFF333333},
-                # "Button:hovered":{"background_color":0xFF9A9A9A},
             }
 
         self._delegate = AssemblyDelegate()
@@ -320,9 +321,6 @@ class StepImporter(omni.ext.IExt):
                                         "Selected", clicked_fn=lambda: self.reimport_meshes(), height=ui.Pixel(25)
                                     )
                                     ui.Spacer()
-                                # with ui.HStack():
-                                #     ui.CheckBox(model=ui.SimpleBoolModel(self._mesh_model.hide_duplicates), width=10)
-                                #     ui.Label("Hide Mesh Duplicates")
                 ui.Spacer(height=10)
                 with ui.CollapsableFrame("Assembly Description", height=ui.Pixel(0)):
                     with ui.VStack(height=ui.Pixel(200)):
@@ -332,8 +330,7 @@ class StepImporter(omni.ext.IExt):
                                 vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                                 style_type_name_override="TreeView.ScrollingFrame",
                                 style=self.tree_style,
-                                height=ui.Percent(98)
-                                # mouse_pressed_fn=lambda x, y, b, _: self._delegate.on_mouse_pressed(b, None, False),
+                                height=ui.Percent(98),
                             )
 
                             with self._sf:
@@ -365,8 +362,6 @@ class StepImporter(omni.ext.IExt):
                     "Finish Import", clicked_fn=lambda: self._select_folder(self), height=ui.Pixel(25)
                 )
 
-            # ui.Button("Review Assemblies", clicked_fn=lambda: self.select_step(2), height=ui.Pixel(25))
-
     def reimport_meshes(self, import_all=False):
         props = self._tp_model.get_props()
         if import_all:
@@ -378,7 +373,6 @@ class StepImporter(omni.ext.IExt):
             for item in items:
                 mesh_idx = item.id
                 self.exporter.export_mesh(mesh_idx, props, len(items) == 1)
-                # self.exporter.export() #regenerate USDs
 
             if len(items) > 1 or import_all:
                 self.exporter.export()
@@ -386,7 +380,6 @@ class StepImporter(omni.ext.IExt):
         omni.usd.get_context().new_stage(on_finish_fn=lambda a, b: export())
 
     def remove_selected_lod(self):
-        # print(self._tesselation_properties_list.selection)
         self._tp_model.remove_item(self._tesselation_properties_list.selection)
         self._tesselation_properties_list.clear_selection()
 
@@ -412,12 +405,7 @@ class StepImporter(omni.ext.IExt):
             self.asset_importer.on_shutdown()
             self.asset_importer = None
 
-            # omni.usd.get_context().close_stage(on_finish_fn= lambda a,b: omni.usd.get_context().open_stage(output_dir +"/"+self.exporter.part_name+ "/root.usd", None))
-
-        self.asset_importer._upload_future = asyncio.ensure_future(
-            import_file()
-            # self.asset_importer._start_upload_internal(output_dir, False, None)
-        )
+        self.asset_importer._upload_future = asyncio.ensure_future(import_file())
 
     def close_window(self):
         self._window = None
@@ -497,18 +485,22 @@ class StepImporter(omni.ext.IExt):
             self._mesh_model.reset()
             self._mesh_list = None
         if self.asset_importer:
-            # del self.asset_importer
             self.asset_importer = None
         self._sf = None
         self._mesh_model = None
         self._assembly_model = None
+
+        if self._tesselation_properties_list:
+            self._tp_model.reset()
+            self._tp_model = None
+            self._tesselation_properties_list = None
         if self._filepicker:
             self._filepicker.set_file_selected_fn(None)
-            # self._filepicker = None  # Why does that crash?
         if self.exporter:
             self.exporter = None
         if self.part:
             self.part = None
+        self.close_window()
         gc.collect()
         print("releasing interface")
         if self.step_file:
@@ -516,8 +508,6 @@ class StepImporter(omni.ext.IExt):
 
         # _step_importer.release_interface(self._si)
         # self._si = None
-        print("done")
-        carb.log_info("done")
 
     def _select_file(self, btn_widget):
 
