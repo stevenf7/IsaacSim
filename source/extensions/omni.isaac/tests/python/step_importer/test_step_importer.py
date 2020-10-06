@@ -28,8 +28,9 @@ class TestStepImporter(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.part = _step_importer.Part()
         self.exporter = None
         self.path = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve("${app}/../data/step_importer/tests/test.stp")
+            carb.tokens.get_tokens_interface().resolve(os.path.join(os.path.dirname(__file__), "../data/test.stp"))
         )
+        self.assertTrue(os.path.isfile(self.path))
         self.basename = "test"
         self.step_file = None
         pass
@@ -42,7 +43,9 @@ class TestStepImporter(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.exporter = None
         del self.part
         self.part = None
-        _step_importer.release_interface(self._si)
+        ## TODO: Fix release interface issue on windows.
+        # _step_importer.release_interface(self._si)
+        self._si = None
         pass
 
     async def test_start(self):
