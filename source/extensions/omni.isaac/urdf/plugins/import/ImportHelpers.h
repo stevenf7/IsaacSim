@@ -117,6 +117,7 @@ static void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRob
             {
                 if (joint.second.parentLinkName == childNode->linkName_)
                 {
+                    joint.second.parentLinkName = parentNode.linkName_;
                     joint.second.origin = poseChildToParent * joint.second.origin;
                 }
             }

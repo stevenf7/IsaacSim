@@ -103,14 +103,23 @@ static aiMatrix4x4 GetLocalTransform(const aiNode* node)
     while (parent)
     {
         std::string name = parent->mName.data;
-        // ignore the root scene transform, if the parent has a parent then its not a root node
+        // only take scale from root transform, if the parent has a parent then its not a root node
         if (parent->mParent)
         {
+            // parent has a parent, not a root note, use full transform
             transform = parent->mTransformation * transform;
             parent = parent->mParent;
         }
         else
         {
+            // this is a root node, only take scale
+            aiVector3D pos, scale;
+            aiQuaternion rot;
+            parent->mTransformation.Decompose(scale, rot, pos);
+
+            aiMatrix4x4 scale_mat;
+            transform = aiMatrix4x4::Scaling(scale, scale_mat) * transform;
+
             break;
         }
     }
