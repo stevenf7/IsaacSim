@@ -18,7 +18,8 @@ from omni.physx import _physx as physx
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.samples.scripts.ur10_scenarios.scenario import Scenario
 from omni.isaac.samples.scripts.ur10_scenarios import bin_stack
-from omni.isaac.samples_internal.scripts.bmw_fof import bmw_fof_demo
+
+# from omni.isaac.samples_internal.scripts.bmw_fof import bmw_fof_demo
 from omni.isaac.samples.scripts.ur10_scenarios import fill_bin
 
 
@@ -91,10 +92,10 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         print("done")
         pass
 
-    async def test_bwm_demo_run(self):
-        await self.load_bmw_demo_scene()
-        await self.execute_stack_scene()
-        pass
+    # async def test_bmw_demo_run(self):
+    #     await self.load_bmw_demo_scene()
+    #     await self.execute_stack_scene()
+    #     pass
 
     async def test_bin_stack_run(self):
         await self.load_bin_stack_scene()
@@ -204,43 +205,43 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._scenario.register_assets()
         pass
 
-    async def load_bmw_demo_scene(self):
+    # async def load_bmw_demo_scene(self):
 
-        self._scenario = bmw_fof_demo.AttachBody(self.editor, self._dc, self._mp)
-        # Make sure the stage loaded
-        self.assertTrue(self._scenario is not None)
+    #     self._scenario = bmw_fof_demo.AttachBody(self.editor, self._dc, self._mp)
+    #     # Make sure the stage loaded
+    #     self.assertTrue(self._scenario is not None)
 
-        self._physx.release_physics_objects()
+    #     self._physx.release_physics_objects()
 
-        self._scenario.create_UR10(False)
+    #     self._scenario.create_UR10(False)
 
-        self._physx.release_physics_objects()
-        self._physx.force_load_physics_from_usd()
+    #     self._physx.release_physics_objects()
+    #     self._physx.force_load_physics_from_usd()
 
-        self.editor.play()
-        await omni.kit.asyncapi.next_update()
-        self.assertTrue(self._dc.is_simulating())
-        self._scenario.register_assets()
+    #     self.editor.play()
+    #     await omni.kit.asyncapi.next_update()
+    #     self.assertTrue(self._dc.is_simulating())
+    #     self._scenario.register_assets()
 
-        self.upright_sequence = [
-            bmw_fof_demo.SM_states.STANDBY,
-            bmw_fof_demo.SM_states.PICKING,
-            bmw_fof_demo.SM_states.ATTACH,
-            bmw_fof_demo.SM_states.FLIPPING,
-            bmw_fof_demo.SM_states.DETACH,
-            bmw_fof_demo.SM_states.PICKING,
-            bmw_fof_demo.SM_states.ATTACH,
-            bmw_fof_demo.SM_states.PLACING,
-            bmw_fof_demo.SM_states.DETACH,
-        ]
-        self.default_sequence = [
-            bmw_fof_demo.SM_states.STANDBY,
-            bmw_fof_demo.SM_states.PICKING,
-            bmw_fof_demo.SM_states.ATTACH,
-            bmw_fof_demo.SM_states.PLACING,
-            bmw_fof_demo.SM_states.DETACH,
-        ]
-        pass
+    #     self.upright_sequence = [
+    #         bmw_fof_demo.SM_states.STANDBY,
+    #         bmw_fof_demo.SM_states.PICKING,
+    #         bmw_fof_demo.SM_states.ATTACH,
+    #         bmw_fof_demo.SM_states.FLIPPING,
+    #         bmw_fof_demo.SM_states.DETACH,
+    #         bmw_fof_demo.SM_states.PICKING,
+    #         bmw_fof_demo.SM_states.ATTACH,
+    #         bmw_fof_demo.SM_states.PLACING,
+    #         bmw_fof_demo.SM_states.DETACH,
+    #     ]
+    #     self.default_sequence = [
+    #         bmw_fof_demo.SM_states.STANDBY,
+    #         bmw_fof_demo.SM_states.PICKING,
+    #         bmw_fof_demo.SM_states.ATTACH,
+    #         bmw_fof_demo.SM_states.PLACING,
+    #         bmw_fof_demo.SM_states.DETACH,
+    #     ]
+    #     pass
 
     async def load_fill_bin_scene(self):
 

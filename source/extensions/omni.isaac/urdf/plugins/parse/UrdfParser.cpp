@@ -348,8 +348,9 @@ bool parseOrigin(const XMLElement& element, Transform& origin)
             // convert to transform quaternion:
             origin.q = rpy2quat(roll, pitch, yaw);
         }
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool parseAxis(const XMLElement& element, UrdfAxis& axis)

@@ -99,8 +99,6 @@ class Extension(omni.ext.IExt):
         self.ar = _dynamic_control.INVALID_HANDLE
 
     def on_shutdown(self):
-        _dynamic_control.release_dynamic_control_interface(self._dc)
-        _physx.release_physx_interface(self._physxIFace)
         self._sub_stage_event = None
         self._editor_event_subscription = None
         self._editor = None

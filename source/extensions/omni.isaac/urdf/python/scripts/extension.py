@@ -31,6 +31,7 @@ def on_filter_item(item: FileBrowserItem) -> bool:
     else:
         return False
 
+
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._urdf_interface = _urdf.acquire_urdf_interface()
@@ -99,6 +100,40 @@ class Extension(omni.ext.IExt):
                                 lambda m, config=self.config: config.set_import_inertia_tensor(m.get_value_as_bool())
                             )
                         ui.Spacer(height=5)
+                        ui.Label("Parser Defaults:")
+                        ui.Line(height=5)
+                        with ui.HStack():
+                            ui.Label(
+                                "Link Density:",
+                                tooltip="[kg/m^3] If a link doesn't have mass, use this density as backup",
+                            )
+                            model = ui.FloatField().model
+                            model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_density(m.get_value_as_float())
+                            )
+                            model.set_value(1000)
+                        ui.Spacer(height=5)
+                        with ui.HStack():
+                            ui.Label("Joint Drive Type:")
+                            model = ui.ComboBox(1, "None", "Position", "Velocity").model
+                            model.add_item_changed_fn(
+                                lambda m, i, config=self.config: config.set_default_drive_type(
+                                    m.get_item_value_model().as_int
+                                )
+                            )
+                        ui.Spacer(height=5)
+                        with ui.HStack():
+                            ui.Label(
+                                "Joint Drive Strength:",
+                                tooltip="Corresponds to stiffness for position or damping for velocity",
+                            )
+                            model = ui.FloatField().model
+                            model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_default_drive_strength(m.get_value_as_float())
+                            )
+                            model.set_value(100000)
+                        ui.Line(height=5)
+                        ui.Spacer(height=15)
                         ui.Label("Importer Settings:")
                         ui.Line(height=5)
                         with ui.HStack():
@@ -158,36 +193,7 @@ class Extension(omni.ext.IExt):
                             )
                             model.set_value(True)
                         ui.Spacer(height=5)
-                        ui.Label("Importer Defaults:")
-                        ui.Line(height=5)
-                        with ui.HStack():
-                            ui.Label(
-                                "Link Density:",
-                                tooltip="[kg/m^3] If a link doesn't have mass, use this density as backup",
-                            )
-                            model = ui.FloatField().model
-                            model.add_value_changed_fn(
-                                lambda m, config=self.config: config.set_density(m.get_value_as_float())
-                            )
-                            model.set_value(1000)
-                        ui.Spacer(height=5)
-                        with ui.HStack():
-                            ui.Label("Joint Drive Type:")
-                            model = ui.ComboBox(1, "None", "Position", "Velocity").model
-                            model.add_item_changed_fn(
-                                lambda m, i, config=self.config: config.set_default_drive_type(
-                                    m.get_item_value_model().as_int
-                                )
-                            )
-                        ui.Spacer(height=5)
-                        with ui.HStack():
-                            ui.Label("Joint Drive Stiffness:", tooltip="[N] for prismatic or [N*m] for revolute")
-                            model = ui.FloatField().model
-                            model.add_value_changed_fn(
-                                lambda m, config=self.config: config.set_default_drive_stiffness(m.get_value_as_float())
-                            )
-                            model.set_value(100000)
-                        ui.Line(height=5)
+
                         with ui.HStack():
                             ui.Label("Up Axis:")
                             self.models["up_axis"] = ui.MultiFloatField(0.0, 0.0, 1.0)
