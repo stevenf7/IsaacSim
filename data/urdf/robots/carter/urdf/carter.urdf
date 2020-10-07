@@ -31,7 +31,7 @@
       <collision>
          <origin rpy="1.57057 -1.57057 0" xyz="0 -0.05 0" />
          <geometry>
-            <cylinder radius = "0.240" length = "0.1"/>
+            <sphere radius = "0.240"/>
          </geometry>
       </collision>
       <inertial>
@@ -51,7 +51,7 @@
       <collision>
          <origin rpy="-1.57057 -1.57057 0" xyz="0 .05 0" />
          <geometry>
-            <cylinder radius = "0.240" length = "0.1"/>
+            <sphere radius = "0.240"/>
          </geometry>
       </collision>
       <inertial>
@@ -90,7 +90,7 @@
       <collision>
          <origin rpy="1.57057 0 0" xyz="0 0 0" />
          <geometry>
-            <cylinder radius=".076" length=".048" />
+            <sphere radius=".076"/>
          </geometry>
       </collision>
       <inertial>
@@ -100,29 +100,41 @@
       </inertial>
    </link>
    <link name="com_offset">
-      <visual>
-         <origin rpy="0 0 0" xyz="-.23 0 .02" />
-         <geometry>
-            <box size=".01 .01 .01"/>
-         </geometry>
-      </visual>
       <collision>
-         <origin rpy="0 0 0" xyz="-.23 0 .02" />
+         <origin rpy="0 0 0" xyz="0 0 0" />
          <geometry>
             <box size=".25 .25 .1"/>
          </geometry>
       </collision>
       <inertial>
-         <origin rpy="0 0 0" xyz="-.23 0 .02" />
+         <origin rpy="0 0 0" xyz="0 0 0" />
          <mass value="20.0" />
          <inertia ixx="1.208" ixy="0" ixz="0" iyy="1.208" iyz="0" izz="2.08" />
       </inertial>
    </link>
-   <joint name="com_link" type="fixed">
-      <origin rpy="0 0 0" xyz="0 0 0" />
+   <link name="imu">
+      <collision>
+         <origin rpy="0 0 0" xyz="0 0 0" />
+         <geometry>
+            <box size=".1 .1 .1"/>
+         </geometry>
+      </collision>
+      <inertial>
+         <origin rpy="0 0 0" xyz="0 0 0" />
+         <mass value=".1" />
+      </inertial>
+   </link>
+   <joint name="com_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="-.3 0 0" />
       <axis xyz="0 1 0" />
       <parent link="chassis_link" />
       <child link="com_offset" />
+   </joint>
+   <joint name="imu_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <axis xyz="0 1 0" />
+      <parent link="chassis_link" />
+      <child link="imu" />
    </joint>
    <joint name="left_wheel" type="continuous">
       <origin rpy="0 0 0" xyz="0 0.31420517 0" />

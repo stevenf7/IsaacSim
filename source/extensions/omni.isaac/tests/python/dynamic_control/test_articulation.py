@@ -308,7 +308,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.assertLess(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1.5)
         # the wheels are offset 5cm from the wheel mesh, need to account for that in wheelbase
-        self.assertAlmostEqual(drive_target * 24.0 / (31.613607 - 5), ang_vel[2], 1)
+        self.assertAlmostEqual(drive_target * 24.0 / (31.613607 - 5), ang_vel[2], delta=0.1)
 
         drive_target = 2.5
 

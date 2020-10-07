@@ -77,7 +77,6 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
-        _lidar.release_lidar_interface(self._li)
         self._editor = None
         self._window = None
 

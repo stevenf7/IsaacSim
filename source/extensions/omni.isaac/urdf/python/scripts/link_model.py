@@ -165,27 +165,42 @@ def create_joint(joint):
             ui.MultiFloatField(joint.limit.lower, joint.limit.upper)
         with ui.HStack():
             colored_block(0xFFA07D4F, "Max Effort")
-            ui.FloatField().model.set_value(joint.limit.effort)
+            model = ui.FloatField().model
+            model.set_value(joint.limit.effort)
+            model.add_value_changed_fn(lambda m, j=joint: j.limit.set_effort(m.get_value_as_float()))
         with ui.HStack():
             colored_block(0xFFA07D4F, "Max Velocity")
-            ui.FloatField().model.set_value(joint.limit.velocity)
+            model = ui.FloatField().model
+            model.set_value(joint.limit.velocity)
+            model.add_value_changed_fn(lambda m, j=joint: j.limit.set_velocity(m.get_value_as_float()))
         ui.Line(height=10)
         if joint.type is not omni.isaac.urdf._urdf.JOINT_FIXED:
             with ui.HStack():
                 colored_block(0xFFA07D4F, "Drive Type")
-                ui.ComboBox(int(joint.drive.target_type), "None", "Position", "Velocity")
+                model = ui.ComboBox(int(joint.drive.target_type), "None", "Position", "Velocity").model
+                model.add_item_changed_fn(
+                    lambda m, i, j=joint: j.drive.set_target_type(m.get_item_value_model().as_int)
+                )
             with ui.HStack():
                 colored_block(0xFFA07D4F, "Drive Target")
-                ui.FloatField(min=-1e12, max=1e12).model.set_value(joint.drive.target)
+                model = ui.FloatField(min=-1e12, max=1e12).model
+                model.set_value(joint.drive.target)
+                model.add_value_changed_fn(lambda m, j=joint: j.drive.set_target(m.get_value_as_float()))
             with ui.HStack():
                 colored_block(0xFFA07D4F, "Damping")
-                ui.FloatField(min=0, max=1e12).model.set_value(joint.dynamics.damping)
+                model = ui.FloatField(min=0, max=1e12).model
+                model.set_value(joint.dynamics.damping)
+                model.add_value_changed_fn(lambda m, j=joint: j.dynamics.set_damping(m.get_value_as_float()))
             with ui.HStack():
                 colored_block(0xFFA07D4F, "Stiffness")
-                ui.FloatField(min=0, max=1e12).model.set_value(joint.dynamics.stiffness)
+                model = ui.FloatField(min=0, max=1e12).model
+                model.set_value(joint.dynamics.stiffness)
+                model.add_value_changed_fn(lambda m, j=joint: j.dynamics.set_stiffness(m.get_value_as_float()))
             with ui.HStack():
                 colored_block(0xFFA07D4F, "Friction")
-                ui.FloatField(min=0, max=1e12).model.set_value(joint.dynamics.friction)
+                model = ui.FloatField(min=0, max=1e12).model
+                model.set_value(joint.dynamics.friction)
+                model.add_value_changed_fn(lambda m, j=joint: j.dynamics.set_friction(m.get_value_as_float()))
 
 
 def create_material(material):

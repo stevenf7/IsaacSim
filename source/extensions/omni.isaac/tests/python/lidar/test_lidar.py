@@ -4,6 +4,7 @@ import omni.kit.commands
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.lidar import _lidar
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema
+from omni.physx.scripts import utils
 import omni.isaac.LidarSchema as LidarSchema
 import asyncio
 import numpy as np
@@ -92,22 +93,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
-
-        physicsAPI = PhysicsSchema.PhysicsAPI.Apply(cubePrim)
-
-        physicsAPI.CreateBodyTypeAttr("rigid")
-
-        velocityAPI = PhysicsSchema.VelocityAPI.Apply(cubePrim)
-        velocityAPI.CreateVelocityAttr().Set((0.0, 0.0, 0.0))
-        velocityAPI.CreateAngularVelocityAttr().Set((0.0, 0.0, 0.0))
-
-        densityAPI = PhysicsSchema.MassAPI.Apply(cubePrim)
-
-        collisionAPI = PhysicsSchema.CollisionAPI.Apply(cubePrim)
-        collisionAPI.CreatePhysicsMaterialRel()
-        collisionAPI.CreateCollisionGroupRel()
-        if cubePrim.IsA(UsdGeom.Mesh):
-            collisionAPI.CreateApproximationShapeAttr().Set("convexHull")
+        utils.setRigidBody(cubePrim, "convexHull", False)
 
         return cubeGeom
 
@@ -206,17 +192,17 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._editor.play()
         lidar.GetHighLodAttr().Set(True)
         lidar.GetDrawLidarPointsAttr().Set(False)
-        await self.sweep_parameter(lidar.GetRotationRateAttr(), -1024, 1024, 32)
+        await self.sweep_parameter(lidar.GetRotationRateAttr(), -1024, 1024, 64)
         lidar.GetRotationRateAttr().Set(0)
-        await self.sweep_parameter(lidar.GetHorizontalFovAttr(), -1024, 1024, 32)
+        await self.sweep_parameter(lidar.GetHorizontalFovAttr(), -1024, 1024, 64)
         lidar.GetHorizontalFovAttr().Set(360)
-        await self.sweep_parameter(lidar.GetVerticalFovAttr(), -1024, 1024, 32)
+        await self.sweep_parameter(lidar.GetVerticalFovAttr(), -1024, 1024, 64)
         lidar.GetHorizontalFovAttr().Set(120)
         lidar.GetVerticalFovAttr().Set(30)
         await self.sweep_parameter(lidar.GetHorizontalResolutionAttr(), -0.1, 1.0, 0.1)
         await self.sweep_parameter(lidar.GetVerticalResolutionAttr(), -0.1, 1.0, 0.1)
-        await self.sweep_parameter(lidar.GetMinRangeAttr(), -1024, 1024, 32)
-        await self.sweep_parameter(lidar.GetMaxRangeAttr(), -1024, 1024, 32)
+        await self.sweep_parameter(lidar.GetMinRangeAttr(), -1024, 1024, 64)
+        await self.sweep_parameter(lidar.GetMaxRangeAttr(), -1024, 1024, 64)
         lidar.GetHighLodAttr().Set(False)
 
     async def test_carter_lidar(self):
@@ -224,7 +210,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._stage = omni.usd.get_context().get_stage()
 
         # Add a cube
-        cubePath = "/World/Cube"
+        cubePath = "/Cube"
         cubeGeom = self.add_cube(cubePath, 75.0, Gf.Vec3f(-200.0, 0.0, 50.0))
 
         # Add lidar

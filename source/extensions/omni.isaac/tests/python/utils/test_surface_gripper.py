@@ -113,7 +113,6 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.asyncapi.next_update()
         self.editor.stop()
         await omni.kit.asyncapi.next_update()
-        dc.release_dynamic_control_interface(self._dc)
         pass
 
     # Actual test, notice it is "async" function, so "await" can be used if needed

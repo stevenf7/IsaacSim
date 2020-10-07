@@ -103,8 +103,6 @@ class Extension(omni.ext.IExt):
         self._editor = omni.kit.editor.get_editor_interface()
 
     def on_shutdown(self):
-        _dynamic_control.release_dynamic_control_interface(self._dc)
-        _physx.release_physx_interface(self._physxIFace)
         self._editor = None
         self._window = None
 

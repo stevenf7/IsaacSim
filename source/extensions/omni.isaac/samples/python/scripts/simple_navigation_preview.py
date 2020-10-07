@@ -115,5 +115,4 @@ class Extension(omni.ext.IExt):
         self._rc.control_command(0, 0)
 
     def on_shutdown(self):
-        print("Shutting down environment grid setup")
-        _dynamic_control.release_dynamic_control_interface(self._dc)
+        pass

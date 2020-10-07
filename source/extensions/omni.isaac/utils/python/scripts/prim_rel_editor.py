@@ -192,4 +192,3 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         gc.collect()
-        print("Stopping Prim Relationship Editor")
