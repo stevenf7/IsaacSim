@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<robot name="UR10_CB3">
+<robot name="ur10">
     <material name="gray">
         <color rgba="0.25 0.25 0.25 1"/>
     </material>
