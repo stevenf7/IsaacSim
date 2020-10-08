@@ -331,7 +331,8 @@ bool parseOrigin(const XMLElement& element, Transform& origin)
         {
             if (!parseXyz(attribute, origin.p.x, origin.p.y, origin.p.z))
             {
-                return false;
+                // optional, use zero vector
+                origin.p = Vec3(0.0);
             }
         }
         attribute = originElement->Attribute("rpy");
@@ -343,7 +344,7 @@ bool parseOrigin(const XMLElement& element, Transform& origin)
             float yaw = 0.0f;
             if (!parseXyz(attribute, roll, pitch, yaw))
             {
-                return false;
+                roll = pitch = yaw = 0.0;
             }
             // convert to transform quaternion:
             origin.q = rpy2quat(roll, pitch, yaw);
@@ -363,6 +364,7 @@ bool parseAxis(const XMLElement& element, UrdfAxis& axis)
         {
             if (!parseXyz(attribute, axis.x, axis.y, axis.z))
             {
+                printf("*** xyz not specified for axis\n");
                 return false;
             }
         }
@@ -380,7 +382,8 @@ bool parseLimit(const XMLElement& element, UrdfLimit& limit)
         {
             if (!parseFloat(attribute, limit.lower))
             {
-                return false;
+                // optional, use zero if not specified
+                limit.lower = 0.0;
             }
         }
         attribute = limitElement->Attribute("upper");
@@ -388,7 +391,8 @@ bool parseLimit(const XMLElement& element, UrdfLimit& limit)
         {
             if (!parseFloat(attribute, limit.upper))
             {
-                return false;
+                // optional, use zero if not specified
+                limit.upper = 0.0;
             }
         }
         attribute = limitElement->Attribute("effort");
@@ -396,6 +400,7 @@ bool parseLimit(const XMLElement& element, UrdfLimit& limit)
         {
             if (!parseFloat(attribute, limit.effort))
             {
+                printf("*** effort not specified for limit\n");
                 return false;
             }
         }
@@ -404,6 +409,7 @@ bool parseLimit(const XMLElement& element, UrdfLimit& limit)
         {
             if (!parseFloat(attribute, limit.velocity))
             {
+                printf("*** velocity not specified for limit\n");
                 return false;
             }
         }
@@ -421,7 +427,8 @@ bool parseDynamics(const XMLElement& element, UrdfDynamics& dynamics)
         {
             if (!parseFloat(attribute, dynamics.damping))
             {
-                return false;
+                // optional
+                dynamics.damping = 0;
             }
         }
         attribute = dynamicsElement->Attribute("friction");
@@ -429,7 +436,8 @@ bool parseDynamics(const XMLElement& element, UrdfDynamics& dynamics)
         {
             if (!parseFloat(attribute, dynamics.friction))
             {
-                return false;
+                // optional
+                dynamics.friction = 0;
             }
         }
     }
@@ -446,6 +454,7 @@ bool parseMass(const XMLElement& element, float& mass)
         {
             if (!parseFloat(attribute, mass))
             {
+                printf("*** couldn't parse mass \n");
                 return false;
             }
             return true;
@@ -593,6 +602,7 @@ bool parseGeometry(const XMLElement& element, UrdfGeometry& geometry)
             {
                 if (!parseXyz(scale, geometry.scale_x, geometry.scale_y, geometry.scale_z))
                 {
+                    printf("*** scale is missing xyz \n");
                     return false;
                 }
             }
@@ -605,6 +615,7 @@ bool parseGeometry(const XMLElement& element, UrdfGeometry& geometry)
             {
                 if (!parseXyz(attribute, geometry.size_x, geometry.size_y, geometry.size_z))
                 {
+                    printf("*** couldn't parse xyz size \n");
                     return false;
                 }
             }
@@ -622,6 +633,7 @@ bool parseGeometry(const XMLElement& element, UrdfGeometry& geometry)
             {
                 if (!parseFloat(attribute, geometry.radius))
                 {
+                    printf("*** couldn't parse radius \n");
                     return false;
                 }
             }
@@ -636,6 +648,7 @@ bool parseGeometry(const XMLElement& element, UrdfGeometry& geometry)
             {
                 if (!parseFloat(attribute, geometry.length))
                 {
+                    printf("*** couldn't parse length \n");
                     return false;
                 }
             }
@@ -653,6 +666,7 @@ bool parseGeometry(const XMLElement& element, UrdfGeometry& geometry)
             {
                 if (!parseFloat(attribute, geometry.radius))
                 {
+                    printf("*** couldn't parse radius \n");
                     return false;
                 }
             }
@@ -749,7 +763,8 @@ bool parseMaterial(const XMLElement& element, UrdfMaterial& material)
                 if (!parseColor(materialElement->FirstChildElement("color")->Attribute("rgba"), material.color.r,
                                 material.color.g, material.color.b, material.color.a))
                 {
-                    return false;
+                    // optional
+                    material.color = UrdfColor();
                 }
             }
             if (materialElement->FirstChildElement("texture"))
@@ -850,17 +865,20 @@ bool parseLinks(const XMLElement& root, std::map<std::string, UrdfLink>& urdfLin
 
                     if (!parseOrigin(*visualElement, visual.origin))
                     {
-                        return false;
+                        // optional default to identity transform
+                        visual.origin = Transform();
                     }
 
                     if (!parseGeometry(*visualElement, visual.geometry))
                     {
+                        printf("*** Found visual without geometry \n");
                         return false;
                     }
 
                     if (!parseMaterial(*visualElement, visual.material))
                     {
-                        return false;
+                        // optional, use default if not specified
+                        visual.material = UrdfMaterial();
                     }
 
                     link.visuals.push_back(visual);
@@ -883,11 +901,13 @@ bool parseLinks(const XMLElement& root, std::map<std::string, UrdfLink>& urdfLin
 
                     if (!parseOrigin(*collisionElement, collision.origin))
                     {
-                        return false;
+                        // optional default to identity transform
+                        collision.origin = Transform();
                     }
 
                     if (!parseGeometry(*collisionElement, collision.geometry))
                     {
+                        printf("*** Found collision without geometry \n");
                         return false;
                     }
 
@@ -899,7 +919,8 @@ bool parseLinks(const XMLElement& root, std::map<std::string, UrdfLink>& urdfLin
             // inertia
             if (!parseInertial(*linkElement, link.inertial))
             {
-                return false;
+                // optional, use default if not specified
+                link.inertial = UrdfInertial();
             }
 
             // auto femElement = linkElement->FirstChildElement("fem");
@@ -984,22 +1005,30 @@ bool parseJoints(const XMLElement& root, std::map<std::string, UrdfJoint>& urdfJ
 
             if (!parseOrigin(*jointElement, joint.origin))
             {
-                return false;
+                // optional, default to identity
+                joint.origin = Transform();
             }
 
             if (!parseAxis(*jointElement, joint.axis))
             {
-                return false;
+                // optional, default to (1,0,0)
+                joint.axis = UrdfAxis();
             }
 
             if (!parseLimit(*jointElement, joint.limit))
             {
-                return false;
+                if (joint.type == UrdfJointType::REVOLUTE || joint.type == UrdfJointType::PRISMATIC)
+                {
+                    printf("*** limit must be specified for revolute and prismatic \n");
+                    return false;
+                }
+                joint.limit = UrdfLimit();
             }
 
             if (!parseDynamics(*jointElement, joint.dynamics))
             {
-                return false;
+                // optional
+                joint.dynamics = UrdfDynamics();
             }
 
             urdfJoints.emplace(joint.name, joint);

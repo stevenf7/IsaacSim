@@ -1,13 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <robot name="test_basic">
-  
- <link name="root_link"/>
 
- <joint name="root_to_base" type="fixed">
+  <link name="root_link"/>
+
+  <joint name="root_to_base" type="fixed">
     <parent link="root_link"/>
     <child link="base_link"/>
- </joint>
- 
- <link name="base_link">
+  </joint>
+
+  <link name="base_link">
     <visual>
       <geometry>
         <sphere radius="0.2"/>
@@ -54,18 +55,18 @@
     <child link="link_2"/>
     <limit effort="1000.0" lower="-0.6" upper="0.6" velocity="0.5"/>
     <origin xyz="0 0 0.4" rpy="1.571 0 0"/>
-    <axis xyz="1 0 0"/> 
- </joint>
-  
+    <axis xyz="1 0 0"/>
+  </joint>
+
   <link name="link_2">
     <visual>
       <geometry>
-        <capsule length="0.6" radius=".06"/>
+        <cylinder length="0.6" radius=".06"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <capsule length="0.6" radius=".06"/>
+        <cylinder length="0.6" radius=".06"/>
       </geometry>
     </collision>
     <inertial>
