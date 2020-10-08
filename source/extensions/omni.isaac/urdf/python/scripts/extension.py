@@ -8,15 +8,8 @@ import asyncio
 import textwrap
 from .link_model import *
 
-omni.kit.pipapi.install("graphviz")
-omni.kit.pipapi.install("psutil")
-# from .test_model import *
-from graphviz import Graph
-from graphviz import Digraph
 from .. import _urdf
 from pxr import UsdGeom
-import io
-import psutil
 from .filebrowser import *
 
 EXTENSION_NAME = "URDF Importer"
@@ -59,14 +52,7 @@ class Extension(omni.ext.IExt):
                     mouse_double_clicked_fn=lambda b, item: self._on_double_pressed(b, item),
                     filter_fn=lambda item: on_filter_item(item),
                 )
-                partitions = psutil.disk_partitions()
-                for p in partitions:
-                    if any(x in p.fstype for x in ["ext3", "ext4", "fuseblk", "NTFS", "removable", "fixed"]):
-                        mountpoint = p.mountpoint.strip("\\")
-                        self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
-                data_dir = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf"))
-                self._filebrowser.add_model_as_subtree(FileSystemModel("Built In URDFs", data_dir))
-                self._filebrowser.refresh_ui(None)
+
                 ui.Button("Open File", clicked_fn=self._on_open_selected, height=0)
 
         with self._window.frame:
@@ -301,8 +287,12 @@ class Extension(omni.ext.IExt):
             self._create_graphviz_tree(tree_item["B_node"], robot, graph)
 
     def _generate_robot_image(self, robot, vertical=True):
+        omni.kit.pipapi.install("graphviz")
+        from graphviz import Graph
+
         im = None
         robot_tree = self._urdf_interface.get_kinematic_chain(robot)
+
         robot_graph = Graph("robot_graph", strict=True, engine="dot")
         robot_graph.attr(splines="ortho")
         if vertical:
@@ -320,6 +310,7 @@ class Extension(omni.ext.IExt):
 
         try:
             from PIL import Image
+            import io
 
             self._create_graphviz_tree(robot_tree, robot, robot_graph)
             buffer = io.BytesIO(robot_graph.pipe(format="png"))
@@ -415,6 +406,17 @@ class Extension(omni.ext.IExt):
     def _parse_urdf(self):
         if self.models["clean_stage"].model.get_value_as_bool():
             asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        omni.kit.pipapi.install("psutil")
+        import psutil
+
+        partitions = psutil.disk_partitions()
+        for p in partitions:
+            if any(x in p.fstype for x in ["ext3", "ext4", "fuseblk", "NTFS", "removable", "fixed"]):
+                mountpoint = p.mountpoint.strip("\\")
+                self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
+        data_dir = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf"))
+        self._filebrowser.add_model_as_subtree(FileSystemModel("Built In URDFs", data_dir))
+        self._filebrowser.refresh_ui(None)
         self._file_window.visible = True
 
     def _load_robot(self):

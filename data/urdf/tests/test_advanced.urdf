@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <robot name="test_advanced">
   <gazebo>
     <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
@@ -22,17 +23,17 @@
   <material name="cyan">
     <color rgba="0 0.8 0.8 1"/>
   </material>
- 
 
-  
- <link name="root_link"/>
 
- <joint name="root_to_base" type="fixed">
+
+  <link name="root_link"/>
+
+  <joint name="root_to_base" type="fixed">
     <parent link="root_link"/>
     <child link="base_link"/>
- </joint>
- 
- <link name="base_link">
+  </joint>
+
+  <link name="base_link">
     <visual>
       <geometry>
         <box size="0.3 .3 .2"/>
@@ -80,13 +81,13 @@
     <parent link="link_1"/>
     <child link="link_2"/>
     <origin xyz="0 0 0.4" rpy="1.571 0 0"/>
-    <axis xyz="1 0 0"/> 
-    
+    <axis xyz="1 0 0"/>
+
     <calibration rising="0.0" falling="0.1"/>
     <dynamics damping="0.10" friction="0.1"/>
     <limit effort="1000.0" lower="-0.6" upper="0.6" velocity="0.5"/>
     <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5"/>
- 
+
   </joint>
 
   <transmission name="trans_1">
@@ -98,7 +99,7 @@
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       <mechanicalReduction>12</mechanicalReduction>
     </actuator>
-   </transmission>
+  </transmission>
 
   <link name="link_2">
     <visual>
@@ -144,13 +145,13 @@
   </link>
 
 
- <sensor name="my_camera_sensor" update_rate="20">
-   <parent link="palm_link"/>
-   <origin xyz="0 0 0" rpy="0 0 0"/>
-   <camera>
-     <image width="640" height="480" hfov="1.5708" format="RGB8" near="0.01" far="50.0"/>
-   </camera>
- </sensor>
+  <sensor name="my_camera_sensor" update_rate="20">
+    <parent link="palm_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <camera>
+      <image width="640" height="480" hfov="1.5708" format="RGB8" near="0.01" far="50.0"/>
+    </camera>
+  </sensor>
 
 
   <joint name="finger_1_joint" type="prismatic">
