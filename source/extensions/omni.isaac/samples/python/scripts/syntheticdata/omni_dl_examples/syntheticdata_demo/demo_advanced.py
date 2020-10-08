@@ -16,10 +16,10 @@ the results. This advanced sample also simulates physics and uses a custom mater
 import random
 import numpy as np
 from pxr import UsdGeom, Semantics
-from omni_dl_examples.helpers import visualization as vis
-from omni_dl_examples.helpers.camera import project_points
-from omni_dl_examples.helpers.omnikit import OmniKitHelper
-from omni_dl_examples.helpers.syntheticdata import SyntheticDataHelper
+from omni.isaac.synthetic_utils import visualization as vis
+from omni.isaac.synthetic_utils import camera
+from omni.isaac.synthetic_utils import OmniKitHelper
+from omni.isaac.synthetic_utils import SyntheticDataHelper
 import matplotlib.pyplot as plt
 
 from pxr import Gf, Sdf, UsdShade, PhysicsSchema, PhysxSchema, PhysicsSchemaTools
@@ -229,7 +229,7 @@ def main():
     height = gt_pt["camera"]["resolution"]["height"]
     view_proj_mat = gt_pt["camera"]["view_projection_matrix"]
     points = gt["boundingBox3D"].reshape(-1, 3)
-    projected = project_points(view_proj_mat, points)[..., :2] * np.array([[width, height]])
+    projected = camera.project_points(view_proj_mat, points)[..., :2] * np.array([[width, height]])
 
     face_idx_list = [[0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 7, 6], [0, 1, 5, 4], [0, 2, 6, 4], [1, 3, 7, 5]]
     colours = vis.random_colours(len(face_idx_list))

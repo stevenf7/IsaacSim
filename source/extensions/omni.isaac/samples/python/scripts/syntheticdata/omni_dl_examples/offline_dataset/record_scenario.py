@@ -18,7 +18,7 @@ import torch
 import numpy as np
 
 import omni
-from omni_dl_examples.helpers import OmniKitHelper, SyntheticDataHelper, DataWriter
+from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, DataWriter
 from omni.isaac.dr import _dr
 
 # Default rendering parameters

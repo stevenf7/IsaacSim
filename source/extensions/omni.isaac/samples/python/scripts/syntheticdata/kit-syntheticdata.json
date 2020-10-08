@@ -14,9 +14,11 @@
                 "omni.kit.window.toolbar",
                 "omni.kit.primitive.mesh",
                 "omni.kit.context_menu",
+                "omni.kit.stage_templates",
                 "omni.physx",
                 "omni.syntheticdata",
-                "omni.isaac.dr"
+                "omni.isaac.dr",
+                "omni.isaac.synthetic_utils"
             ]
         }
     },
@@ -24,5 +26,8 @@
         "hydra": {
             "enableSemanticSchema": true
         }
+    },
+    "ngx":{
+        "enabled": false
     }
 }

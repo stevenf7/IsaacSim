@@ -14,7 +14,7 @@ import pprint
 import omni.kit.pipapi
 import omni
 import omni.kit.app
-from omni_dl_examples.helpers import OmniKitHelper
+from .omnikit import OmniKitHelper
 
 
 """Convert ShapeNetCore V2 to USD without materials.
