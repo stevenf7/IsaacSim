@@ -32,7 +32,7 @@ import numpy as np
 try:
     import torch
     import torch_wrap
-    from omni_dl_examples.helpers.utils import torch_isin
+    from omni.isaac.synthetic_utils import utils
 
     use_torch = True
 except ImportError as err:
@@ -176,7 +176,7 @@ class SyntheticDataHelper:
 
         instance_masks = torch.zeros((len(instance_mappings), *instance_tex.shape), dtype=np.bool, device="cuda")
         for i, instances in enumerate(instances_list):
-            instance_masks[i] = torch_isin(instance_tex, torch.tensor(instances).to(instance_tex))
+            instance_masks[i] = utils.torch_isin(instance_tex, torch.tensor(instances).to(instance_tex))
         return instance_names, instance_masks
 
     def get_instance_segmentation_numpy(self):
@@ -217,7 +217,7 @@ class SyntheticDataHelper:
         semantic_labels = list(semantic_mappings.keys())
         semantic_masks = torch.zeros((len(semantic_labels), *instance_seg_texture.shape), dtype=np.bool)
         for i, (semantic_label, instances) in enumerate(semantic_mappings.items()):
-            semantic_masks[i] = torch_isin(instance_seg_texture, torch.tensor(instances).to(instance_seg_texture))
+            semantic_masks[i] = utils.torch_isin(instance_seg_texture, torch.tensor(instances).to(instance_seg_texture))
         return semantic_labels, semantic_masks
 
     def get_semantic_segmentation_numpy(self):
@@ -464,7 +464,7 @@ class SyntheticDataHelper:
 if __name__ == "__main__":
     # Example usage
     import random
-    from omni_dl_examples.helpers import OmniKitHelper
+    from omni.isaac.synthetic_utils import OmniKitHelper
 
     kit = OmniKitHelper()
 

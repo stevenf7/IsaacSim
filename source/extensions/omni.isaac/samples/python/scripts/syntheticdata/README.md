@@ -10,6 +10,13 @@ This repo contains simple examples of DL applications within Omniverse Kit.
 - six == 1.12.0
 
 ## Setup
+Create and activate the conda environment
+```
+conda env create -f environment.yml
+conda activate isaac-sim
+```
+
+install custom torch wrapper
 ```
 python setup.py install
 ```

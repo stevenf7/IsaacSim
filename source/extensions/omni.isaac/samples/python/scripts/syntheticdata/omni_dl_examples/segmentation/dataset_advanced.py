@@ -26,8 +26,11 @@ import numpy as np
 
 import omni
 from pxr import UsdGeom, UsdShade, Sdf, Semantics, Gf, PhysicsSchema, PhysxSchema, PhysicsSchemaTools
+import omni.isaac.synthetic_utils
 
-from omni_dl_examples.helpers import OmniKitHelper, SyntheticDataHelper, shapenet
+print(dir(omni.isaac.synthetic_utils))
+
+from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, shapenet
 
 
 # Setup default generation variables
@@ -408,7 +411,7 @@ if __name__ == "__main__":
     "Typical usage"
     import argparse
     import matplotlib.pyplot as plt
-    from omni_dl_examples.helpers import visualization as vis
+    from omni.isaac.synthetic_utils import visualization as vis
 
     parser = argparse.ArgumentParser("Dataset test")
     parser.add_argument("--categories", type=str, nargs="+", required=True, help="List of object classes to use")
