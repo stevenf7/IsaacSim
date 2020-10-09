@@ -17,9 +17,24 @@
                 "omni.kit.stage_templates",
                 "omni.physx",
                 "omni.syntheticdata",
+                "omni.isaac.utils",
+                "omni.isaac.lidar",
+                "omni.isaac.dynamic_control",
+                "omni.isaac.robot_engine_bridge",
                 "omni.isaac.dr",
                 "omni.isaac.synthetic_utils"
             ]
+        },
+        "renderer": {
+            "skipWhileMinimized": false,
+            "sleepMsOnFocus": 0,
+            "sleepMsOutOfFocus": 0
+        }
+    },
+    "persistent": {
+        "physics": {
+            "maxNumSteps": 4.0,
+            "updateToUsd": false
         }
     },
     "rtx": {

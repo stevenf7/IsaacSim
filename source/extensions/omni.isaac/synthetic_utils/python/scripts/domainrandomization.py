@@ -21,6 +21,12 @@ class DomainRandomization:
     def __init__(self):
         self.dr = _dr.acquire_dr_interface()
 
+    def randomize_once(self):
+        self.dr.randomize_once()
+
+    def toggle_manual_mode(self):
+        self.dr.toggle_manual_mode()
+
     def create_color_comp(
         self,
         prim_paths=[],
@@ -256,6 +262,27 @@ class DomainRandomization:
         for path in prim_paths:
             rel_paths.AddTarget(path)
         prim.CreateNumVisibleRangeAttr().Set(Gf.Vec2i(int(num_visible_range[0]), int(num_visible_range[1])))
+        prim.CreateDurationAttr().Set(float(duration))
+        prim.CreateIncludeChildrenAttr().Set(bool(include_children))
+        return prim
+
+    def create_mesh_comp(
+        self, path=None, prim_paths=[], mesh_list=[], mesh_range=(1, 1), duration=0.0, include_children=False
+    ):
+        """Create a mesh randomization component"""
+        stage = omni.usd.get_context().get_stage()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        if path is None:
+            path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
+        prim = DrSchema.MeshComponent.Define(stage, Sdf.Path(path))
+        path_split = path.split("/")
+        prim.CreateCompNameAttr().Set(str(path_split[len(path_split) - 1]))
+
+        rel_paths = prim.CreatePrimPathsRel()
+        for path in prim_paths:
+            rel_paths.AddTarget(path)
+        prim.CreateMeshListAttr().Set(str(",").join(mesh_list))
+        prim.CreateNumMeshRangeAttr().Set(Gf.Vec2i(mesh_range[0], mesh_range[1]))
         prim.CreateDurationAttr().Set(float(duration))
         prim.CreateIncludeChildrenAttr().Set(bool(include_children))
         return prim

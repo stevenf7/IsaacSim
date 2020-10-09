@@ -32,7 +32,7 @@ import numpy as np
 try:
     import torch
     import torch_wrap
-    from omni.isaac.synthetic_utils import utils
+    from . import utils
 
     use_torch = True
 except ImportError as err:
