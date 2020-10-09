@@ -66,6 +66,7 @@ class OmniKitHelper:
         # launch kit
         self.last_update_t = time.time()
         self.app = omni.kit.app.get_app_interface()
+        self.kit_settings = None
         setup_future = self._launch_kit()
         self._start_app()
 
@@ -80,6 +81,7 @@ class OmniKitHelper:
         async def setup():
             await omni.kit.asyncapi.new_stage()
             self.carb_settings = carb.settings.acquire_settings_interface()
+            self.kit_settings = omni.kit.settings.get_settings_interface()
             self.setup_renderer()
             self.set_setting("/rtx/rendermode", self.config["renderer"])
 
@@ -88,7 +90,7 @@ class OmniKitHelper:
     def _start_app(self):
         args = [
             os.path.abspath(__file__),
-            "--merge-config=kit-syntheticdata.json",
+            "--merge-config=isaac-sim-synthetic.json",
             "--/persistent/app/viewport/displayOptions=0",
             "--/persistent/physics/overrideGPUSettings=0",  # force CPU physx
             # "--/persistent/physics/updateToUsd=True",
@@ -108,7 +110,8 @@ class OmniKitHelper:
     def _cleanup(self):
         self.update()
         self.app.post_quit()
-        self.app.shutdown()
+        # self.app.shutdown()
+        self.app = None
 
     def get_stage(self):
         """Returns the current stage."""
@@ -130,11 +133,15 @@ class OmniKitHelper:
     def update(self, dt=0.0):
         """Render one frame. Optionally specify dt in seconds, specify None to use wallclock"""
         if dt is not None:
+            if self.kit_settings and dt > 0.0:
+                self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
             self.app.update(dt)
         else:
             time_now = time.time()
             dt = time_now - self.last_update_t
             self.last_update_t = time_now
+            if self.kit_settings and dt > 0.0:
+                self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
             self.app.update(dt)
 
     def play(self):
@@ -181,11 +188,67 @@ class OmniKitHelper:
         self.set_setting("/rtx/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
         self.set_setting("/rtx/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"])
 
+    def create_prim(
+        self, path, prim_type, translation=None, rotation=None, scale=None, ref=None, semantic_label=None, attributes={}
+    ):
+        """Create a prim, apply specified transforms, apply semantic label and
+        set specified attributes.
+
+        args:
+            path (str): The path of the new prim.
+            prim_type (str): Prim type name
+            translation (tuple(float, float, float), optional): prim translation (applied last)
+            rotation (tuple(float, float, float), optional): prim rotation in radians with rotation
+                order ZYX.
+            scale (tuple(float, float, float), optional): scaling factor in x, y, z.
+            ref (str, optional): Path to the USD that this prim will reference.
+            semantic_label (str, optional): Semantic label.
+            attributes (dict, optional): Key-value pairs of prim attributes to set.
+        """
+        prim = self.get_stage().DefinePrim(path, prim_type)
+
+        for k, v in attributes.items():
+            prim.GetAttribute(k).Set(v)
+        xform_api = UsdGeom.XformCommonAPI(prim)
+        if ref:
+            prim.GetReferences().AddReference(ref)
+        if semantic_label:
+            sem = Semantics.SemanticsAPI.Apply(prim, "Semantics")
+            sem.CreateSemanticTypeAttr()
+            sem.CreateSemanticDataAttr()
+            sem.GetSemanticTypeAttr().Set("class")
+            sem.GetSemanticDataAttr().Set(semantic_label)
+        if rotation:
+            xform_api.SetRotate(rotation, UsdGeom.XformCommonAPI.RotationOrderZYX)
+        if scale:
+            xform_api.SetScale(scale)
+        if translation:
+            xform_api.SetTranslate(translation)
+        return prim
+
 
 if __name__ == "__main__":
-    # Example usage
+    # Example usage, with step size test
     kit = OmniKitHelper()
 
     stage = kit.get_stage()
     cube = UsdGeom.Cube.Define(stage, "/World/cube")
     UsdGeom.XformCommonAPI(cube).SetScale([100, 100, 100])
+    # Create callbacks to print both editor and physics
+
+    def editor_update(dt):
+        print("kit update step:", dt, "seconds")
+
+    def physics_update(dt):
+        print("physics update step:", dt, "seconds")
+
+    kit.play()
+    update_sub = kit.editor.subscribe_to_update_events(editor_update)
+    physics_sub = omni.physx._physx.acquire_physx_interface().subscribe_physics_step_events(physics_update)
+    kit.update(1.0)
+    kit.update(2.0)
+    kit.update(1.0 / 60.0)
+    kit.update(1.0)
+    update_sub = None
+    physics_sub = None
+    kit.stop()
