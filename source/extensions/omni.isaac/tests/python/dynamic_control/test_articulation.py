@@ -78,8 +78,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
-        # Actual test, notice it is "async" function, so "await" can be used if needed
-
+    # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_articulation_teleport(self, gpu=False):
         await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/franka/franka.usd")
@@ -183,7 +182,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         await asyncio.sleep(1.0)
         await omni.kit.asyncapi.next_update()
         dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
-        self.assertAlmostEqual(dof_old, dof_states["pos"][3], delta=0.001)
+        self.assertAlmostEqual(dof_old, dof_states["pos"][3], delta=0.01)
 
         # change dof velocity: set one dof at a time
         dof_pos_old = self._dc.get_dof_position(dof_ptr)

@@ -46,6 +46,7 @@ DEFAULT_CONFIG = {
     "max_bounces": 4,
     "max_specular_transmission_bounces": 6,
     "max_volume_bounces": 4,
+    "config": "isaac-sim-synthetic.json",
 }
 
 
@@ -90,8 +91,8 @@ class OmniKitHelper:
     def _start_app(self):
         args = [
             os.path.abspath(__file__),
-            "--merge-config=isaac-sim-synthetic.json",
-            "--/persistent/app/viewport/displayOptions=0",
+            f'--merge-config={self.config["config"]}',
+            "--/persistent/app/viewport/displayOptions=0",  # hide extra stuff in viewport
             "--/persistent/physics/overrideGPUSettings=0",  # force CPU physx
             # "--/persistent/physics/updateToUsd=True",
             # "--/persistent/physics/useFastCache=True",
