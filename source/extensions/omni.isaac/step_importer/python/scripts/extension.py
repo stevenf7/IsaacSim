@@ -22,7 +22,28 @@ from .mesh_list_widget import *
 # from .. import _step_importer
 from omni.isaac.step_importer import _step_importer
 
+from omni.isaac.utils.scripts.filebrowser import *
+
+
 EXTENSION_NAME = "Step Importer"
+SETTING_SAVED_CONNECTIONS = "/persistent/app/omniverse/savedServers"
+
+
+def on_filter_item(item: FileBrowserItem) -> bool:
+    if not item or item.is_folder:
+        return isinstance(item, FileSystemItem)
+    _, ext = os.path.splitext(item.path)
+    if ext.lower() in [".stp", ".step"]:
+        return True
+    else:
+        return False
+
+
+def on_filter_folder(item: FileBrowserItem) -> bool:
+    if item and item.is_folder:
+        return True
+    else:
+        return False
 
 
 class StepImporter(omni.ext.IExt):
@@ -44,8 +65,44 @@ class StepImporter(omni.ext.IExt):
 
         self.asset_importer = None
 
-        self._filepicker = None
+        # self._filepicker = None
+        settings = carb.settings.acquire_settings_interface()
+        self._file_window = omni.ui.Window(
+            "Select File/Folder", width=600, height=400, visible=False, flags=ui.WINDOW_FLAGS_MODAL
+        )
+        with self._file_window.frame:
+            with ui.VStack():
+                self._filebrowser = FileBrowserWidget(
+                    "Omniverse",
+                    layout=LAYOUT_SINGLE_PANE_SLIM,
+                    allow_multi_selection=False,
+                    show_grid_view=False,
+                    tree_root_visible=False,
+                    mouse_double_clicked_fn=self._on_browser_double_pressed,
+                    filter_fn=on_filter_item,
+                )
+                saved_connections = settings.get_as_string(SETTING_SAVED_CONNECTIONS)
+                connections = {}
+                if saved_connections:
+                    names = saved_connections.split(";")
+                    connections = dict(zip(names, [f"omniverse://{name}" for name in names]))
+                for key, value in connections.items():
+                    self._filebrowser.add_model_as_subtree(NucleusModel(value, value))
 
+                omni.kit.pipapi.install("psutil")
+                import psutil
+
+                partitions = psutil.disk_partitions()
+                for p in partitions:
+                    if any(x in p.fstype for x in ["ext3", "ext4", "fuseblk", "NTFS", "removable", "fixed"]):
+                        mountpoint = p.mountpoint.strip("\\")
+                        self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
+                self._filebrowser.refresh_ui(None)
+                self.select_file_btn = ui.Button("Open File", clicked_fn=self._on_open_folder_selected, height=0)
+
+        self._tesselation_properties_list = None
+        self._treeView = None
+        self._mesh_list = None
         self.step_file = None
 
         self._usd_context = omni.usd.get_context()
@@ -151,9 +208,9 @@ class StepImporter(omni.ext.IExt):
             selection = selection + [i for i in item.prims if i not in selection]
         return [str(i.GetPath()) for i in selection]
 
-    def toggle_selected_visibility(self, source):
+    def toggle_selected_visibility(self):
         omni.kit.commands.execute(
-            "ToggleVisibilitySelectedPrimsCommand", selected_paths=self.get_selected_prim_paths(source)
+            "ToggleVisibilitySelectedPrimsCommand", selected_paths=self.get_selected_prim_paths(self._mesh_list)
         )
 
     def ReplaceDuplicatesSelected(self):
@@ -176,7 +233,6 @@ class StepImporter(omni.ext.IExt):
                 identifier = (prim.GetPrimStack()[-1]).layer.identifier
                 if "meshes" in identifier:
                     if self.exporter.path.lower() in identifier.lower():
-                        # print (identifier)
                         usd_path = os.path.relpath(identifier, self.exporter.path).replace("\\", "/")
                         if self._mesh_model._childrenMap[usd_path] not in selection:
                             selection.append(self._mesh_model._childrenMap[usd_path])
@@ -199,9 +255,32 @@ class StepImporter(omni.ext.IExt):
             self.build_steps[self.current_step].visible = True
             self.step_btns[self.current_step].selected = True
 
+    def select_step_0(self):
+        self.select_step(0)
+
+    def select_step_1(self):
+        self.select_step(1)
+
     def build_step_0(self, container):
         with container:
-            self._step_picker_button = ui.Button("load Preview", clicked_fn=lambda a=self: self._select_file(a))
+            self._step_picker_button = ui.Button("load Preview", clicked_fn=self._select_file)
+
+    def show_full_part(self):
+        self._delegate.on_mouse_double_clicked(self._assembly_model._root.children[0])
+
+    def on_edit_names(self, button):
+        self._mesh_model.toggle_edit_mode()
+        if self._mesh_model.edit_mode:
+            button.text = "Done Editing Names"
+        else:
+            button.text = "Edit Mesh Names"
+
+    def on_edit_assembly_names(self, button):
+        self._assembly_model.toggle_edit_mode()
+        if self._assembly_model.edit_mode:
+            button.text = "Done Editing Names"
+        else:
+            button.text = "Edit Assembly Names"
 
     def build_step_1(self, container):
         self._tp_delegate = TesselationPropsDelegate()
@@ -224,14 +303,11 @@ class StepImporter(omni.ext.IExt):
                         with ui.VStack(width=ui.Pixel(20)):
                             ui.Spacer(height=ui.Pixel(13))
                             self._add_lod = ui.Button(
-                                "+",
-                                clicked_fn=lambda: self._tp_model.add_prop(),
-                                height=ui.Pixel(20),
-                                width=ui.Pixel(20),
+                                "+", clicked_fn=self._tp_model.add_prop, height=ui.Pixel(20), width=ui.Pixel(20)
                             )
                             self._remove_lod = ui.Button(
                                 "-",
-                                clicked_fn=lambda: self.remove_selected_lod(),
+                                clicked_fn=self.remove_selected_lod,
                                 height=ui.Pixel(20),
                                 width=ui.Pixel(20),
                                 tooltip="Removes selected element from the list. if None is selected, removes last.",
@@ -273,42 +349,28 @@ class StepImporter(omni.ext.IExt):
                                 )
                                 self._mesh_list.set_selection_changed_fn(self._on_mesh_list_selection_changed)
                             with ui.VStack(width=80):
-                                ui.Button(
-                                    "Show Full Part",
-                                    clicked_fn=lambda: self._delegate.on_mouse_double_clicked(
-                                        self._assembly_model._root.children[0]
-                                    ),
-                                    height=ui.Pixel(25),
-                                )
+                                ui.Button("Show Full Part", clicked_fn=self.show_full_part, height=ui.Pixel(25))
                                 ui.Button(
                                     "Find Similar Meshes",
-                                    clicked_fn=lambda: self._select_meshes_with_same_volume(),
+                                    clicked_fn=self._select_meshes_with_same_volume,
                                     height=ui.Pixel(25),
                                     tooltip="Selects Potential duplicate meshes based on metadata",
                                 )
                                 ui.Button(
                                     "Toggle Visibility",
-                                    clicked_fn=lambda: self.toggle_selected_visibility(self._mesh_list),
+                                    clicked_fn=self.toggle_selected_visibility,
                                     height=ui.Pixel(25),
                                     tooltip="Show/Hide selected meshes",
                                 )
-
-                                def on_edit_names(button):
-                                    self._mesh_model.toggle_edit_mode()
-                                    if self._mesh_model.edit_mode:
-                                        button.text = "Done Editing Names"
-                                    else:
-                                        button.text = "Edit Mesh Names"
-
                                 btn = ui.Button(
                                     "Edit Mesh Names",
                                     height=ui.Pixel(25),
                                     tooltip="Allow editing mesh names and updates assemblies.",
                                 )
-                                btn.set_clicked_fn(lambda a=btn: on_edit_names(a))
+                                btn.set_clicked_fn(self.on_edit_names)
                                 ui.Button(
                                     "Remove selected duplicates",
-                                    clicked_fn=lambda: self.ReplaceDuplicatesSelected(),
+                                    clicked_fn=self.ReplaceDuplicatesSelected,
                                     height=ui.Pixel(25),
                                     tooltip="Replaces all selected meshes with a single instance (First selected)",
                                 )
@@ -316,10 +378,8 @@ class StepImporter(omni.ext.IExt):
                                     ui.Spacer(width=ui.Pixel(5))
                                     ui.Label("Re-Mesh", height=ui.Pixel(25), width=ui.Pixel(30))
                                     ui.Spacer()
-                                    ui.Button("All", clicked_fn=lambda: self.reimport_meshes(True), height=ui.Pixel(25))
-                                    ui.Button(
-                                        "Selected", clicked_fn=lambda: self.reimport_meshes(), height=ui.Pixel(25)
-                                    )
+                                    ui.Button("All", clicked_fn=self.reimport_all_meshes, height=ui.Pixel(25))
+                                    ui.Button("Selected", clicked_fn=self.reimport_selected_meshes, height=ui.Pixel(25))
                                     ui.Spacer()
                 ui.Spacer(height=10)
                 with ui.CollapsableFrame("Assembly Description", height=ui.Pixel(0)):
@@ -345,19 +405,12 @@ class StepImporter(omni.ext.IExt):
                                 )
                             with ui.VStack(width=80):
 
-                                def on_edit_assembly_names(button):
-                                    self._assembly_model.toggle_edit_mode()
-                                    if self._assembly_model.edit_mode:
-                                        button.text = "Done Editing Names"
-                                    else:
-                                        button.text = "Edit Assembly Names"
-
                                 btn = ui.Button(
                                     "Edit Assembly Names",
                                     height=ui.Pixel(25),
                                     tooltip="Allow editing assembly names and updates assemblies.",
                                 )
-                                btn.set_clicked_fn(lambda a=btn: on_edit_assembly_names(a))
+                                btn.set_clicked_fn(self.on_edit_assembly_names)
                 self._finish_import_btn = ui.Button(
                     "Finish Import", clicked_fn=lambda: self._select_folder(self), height=ui.Pixel(25)
                 )
@@ -379,35 +432,17 @@ class StepImporter(omni.ext.IExt):
 
         omni.usd.get_context().new_stage(on_finish_fn=lambda a, b: export())
 
+    def reimport_all_meshes(self):
+        self.reimport_meshes(True)
+
+    def reimport_selected_meshes(self):
+        self.reimport_meshes(False)
+
     def remove_selected_lod(self):
         self._tp_model.remove_item(self._tesselation_properties_list.selection)
         self._tesselation_properties_list.clear_selection()
 
-    def _finish_import(self, output_dir):
-        # setting asset importer parameters to upload
-        if not self.asset_importer:
-            from omni.assetimport import get_extension as get_asset_importer
-
-            self.asset_importer = get_asset_importer()
-            self.asset_importer.__dict__["_waiting_popup_upload"] = None
-            self.asset_importer.__dict__["_content_window"] = None
-        self.asset_importer._menu_upload_clicked = True
-        self.asset_importer._upload_absolute_paths, self.asset_importer._upload_relative_paths = (
-            self.exporter.get_abs_and_rel_paths()
-        )
-
-        async def import_file():
-            await self.asset_importer._start_upload_internal(output_dir, False, None)
-            omni.usd.get_context().open_stage(
-                output_dir + "/" + self.exporter.part_name + "/" + os.path.basename(self.exporter.assemblies_path[1]),
-                lambda a, b: self.close_window(),
-            )
-            self.asset_importer.on_shutdown()
-            self.asset_importer = None
-
-        self.asset_importer._upload_future = asyncio.ensure_future(import_file())
-
-    def close_window(self):
+    def close_window(self, a, b):
         self._window = None
         self.build_steps.clear()
         self.current_step = -1
@@ -419,7 +454,10 @@ class StepImporter(omni.ext.IExt):
             self._mesh_model = None
         self.exporter = None
 
-    def show_window(self, menu, value):
+    def on_visibility_change(self, a):
+        self.show_window(self._menu, False)
+
+    def show_window(self, menu, value=False):
         if self._window:
             self._window = None
             self.build_steps.clear()
@@ -437,7 +475,7 @@ class StepImporter(omni.ext.IExt):
                 open=value,
                 dock=ui.DockPreference.LEFT_BOTTOM,
             )
-            self._window.set_visibility_changed_fn(lambda a: self.show_window(self._menu, False))
+            self._window.set_visibility_changed_fn(self.show_window)
             self._assembly_model = AssemblyTreeModel()
             self.props = {}
             with self._window.frame:
@@ -456,10 +494,10 @@ class StepImporter(omni.ext.IExt):
                                 alignment=ui.Alignment.BOTTOM,
                             ):
                                 self._select_step_btn = ui.Button(
-                                    "Select Step File", clicked_fn=lambda: self.select_step(0), height=ui.Pixel(20)
+                                    "Select Step File", clicked_fn=self.select_step_0, height=ui.Pixel(20)
                                 )
                                 self._review_meshes_btn = ui.Button(
-                                    "Review Meshes", clicked_fn=lambda: self.select_step(1), height=ui.Pixel(20)
+                                    "Review Meshes", clicked_fn=self.select_step_1, height=ui.Pixel(20)
                                 )
                                 self._review_meshes_btn.enabled = False
                                 self.step_btns = [self._select_step_btn, self._review_meshes_btn]
@@ -471,58 +509,63 @@ class StepImporter(omni.ext.IExt):
                                 self.step_btns[i].selected = False
                             self.select_step(0)
                         ui.Spacer(width=ui.Pixel(20))
+            main_dockspace = ui.Workspace.get_window("DockSpace")
+            self._window.deferred_dock_in("DockSpace")
             if menu:
-                self._select_file(self)
+                self._select_file()
 
     def on_shutdown(self):
         carb.log_info("Shutting down Step Importer")
-        self._menu = None
-        if self._assembly_model:
-            self._assembly_model.reset()
-            self._assembly_model = None
-            self._treeView = None
-        if self._mesh_model:
-            self._mesh_model.reset()
-            self._mesh_list = None
-        if self.asset_importer:
-            self.asset_importer = None
-        self._sf = None
-        self._mesh_model = None
-        self._assembly_model = None
-
-        if self._tesselation_properties_list:
-            self._tp_model.reset()
-            self._tp_model = None
-            self._tesselation_properties_list = None
-        if self._filepicker:
-            self._filepicker.set_file_selected_fn(None)
+        if self.step_file:
+            self._si.release_step_file(self.step_file)
         if self.exporter:
             self.exporter = None
         if self.part:
+            del self.part
             self.part = None
-        self.close_window()
-        gc.collect()
-        print("releasing interface")
-        if self.step_file:
-            self._si.release_step_file(self.step_file)
+        if self._filebrowser:
+            self._filebrowser._mouse_double_clicked_fn = None
+            self._filebrowser._filter_fn = None
+            self._filebrowser = None
+        self._si = None
 
-        # _step_importer.release_interface(self._si)
-        # self._si = None
+    def _select_file(self):
 
-    def _select_file(self, btn_widget):
+        self._filebrowser._mouse_double_clicked_fn = self._on_browser_double_pressed
+        self._filebrowser._models._filter_fn = on_filter_item
+        self.select_file_btn.text = "Open File"
+        self.select_file_btn.set_clicked_fn(self._on_open_selected)
 
-        self._filepicker = omni.kit.ui.FilePicker("Select STEP File", file_type=omni.kit.ui.FileDialogSelectType.FILE)
-        self._filepicker.set_file_selected_fn(self._select_picked_file_callback)
-        self._filepicker.add_filter("STEP Files (*.step | *.stp)", r".*.step$|.*.stp$")
+        self._file_window.deferred_dock_in("Step Importer")
+        # self._file_window.width=600
+        # self._file_window.height=400
+        self._file_window.visible = True
+        self._filebrowser.refresh_ui(None)
+        # self._filebrowser._models._item_changed(None)
 
-        self._filepicker.show()
+        # self._filepicker = omni.kit.ui.FilePicker("Select STEP File", file_type=omni.kit.ui.FileDialogSelectType.FILE)
+        # self._filepicker.set_file_selected_fn(self._select_picked_file_callback)
+        # self._filepicker.add_filter("STEP Files (*.step | *.stp)", r".*.step$|.*.stp$")
+
+        # self._filepicker.show()
 
     def _select_folder(self, btn_widget):
-        self._filepicker = omni.kit.ui.FilePicker(
-            "Select Destination Folder", file_type=omni.kit.ui.FileDialogSelectType.DIRECTORY
-        )
-        self._filepicker.set_file_selected_fn(self._finish_import)
-        self._filepicker.show()
+        self._filebrowser._mouse_double_clicked_fn = self._on_finish_import_double_pressed
+        self._filebrowser._models._filter_fn = on_filter_folder
+        self.select_file_btn.set_clicked_fn(self._on_open_folder_selected)
+
+        self._file_window.visible = True
+        self._filebrowser.refresh_ui(None)
+        # self._filebrowser._models._item_changed(None)
+        self._file_window.width = 600
+        self._file_window.height = 400
+        self.select_file_btn.text = "Select Folder"
+        self._file_window.deferred_dock_in("Step Importer")
+        # self._filepicker = omni.kit.ui.FilePicker(
+        #     "Select Destination Folder", file_type=omni.kit.ui.FileDialogSelectType.DIRECTORY
+        # )
+        # self._filepicker.set_file_selected_fn(self._finish_import)
+        # self._filepicker.show()
 
     def _import_file(self, step_path):
         self.step_file = self._si.load_step_file(step_path)
@@ -553,6 +596,36 @@ class StepImporter(omni.ext.IExt):
         self._assembly_model.add_part(weakref.proxy(self.exporter))
         self._mesh_model.add_mesh_list(weakref.proxy(self.exporter))
 
+    def _on_open_selected(self):
+        if self._filebrowser:
+            if self._filebrowser.get_selections():
+                item = self._filebrowser.get_selections()[0]
+            else:
+                return
+        if item and not item.is_folder:
+            self._file_window.visible = False
+            self._select_picked_file_callback(item.path)
+
+    def _on_open_folder_selected(self):
+        if self._filebrowser:
+            if self._filebrowser.get_selections():
+                item = self._filebrowser.get_selections()[0]
+            else:
+                return
+        if item and item.is_folder:
+            self._file_window.visible = False
+            self._finish_import(item.path)
+
+    def _on_browser_double_pressed(self, button: ui.Button, item: FileBrowserItem):
+        if item and not item.is_folder:
+            self._file_window.visible = False
+            self._select_picked_file_callback(item.path)
+
+    def _on_finish_import_double_pressed(self, button: ui.Button, item: FileBrowserItem):
+        if item and item.is_folder:
+            self._file_window.visible = False
+            self._finish_import(item.path)
+
     def _select_picked_file_callback(self, path):
         if not path.startswith("omniverse://"):
             self.path = path
@@ -571,5 +644,34 @@ class StepImporter(omni.ext.IExt):
             self._assembly_model.reset()
             self._mesh_model.reset()
             self.path = ""
-            self._exporter_button.enabled = False
             carb.log_error("Only Local Paths supported")
+
+    def _finish_import(self, output_dir):
+        # setting asset importer parameters to upload
+        from omni.assetimport import get_extension as get_asset_importer
+
+        asset_importer = get_asset_importer()
+        asset_importer.__dict__["_waiting_popup_upload"] = None
+        asset_importer.__dict__["_content_window"] = None
+        asset_importer._menu_upload_clicked = True
+        asset_importer._upload_absolute_paths, asset_importer._upload_relative_paths = (
+            self.exporter.get_abs_and_rel_paths()
+        )
+
+        usd_context = omni.usd.get_context()
+        usd_context.enable_save_to_recent_files()
+        asset_importer._upload_future = asyncio.ensure_future(
+            import_file(
+                asset_importer,
+                output_dir,
+                "/" + self.exporter.part_name + "/" + os.path.basename(self.exporter.assemblies_path[1]),
+                weakref.proxy(self).close_window,
+            )
+        )
+
+
+async def import_file(asset_importer, output_dir, part_name, end_fn):
+    await asset_importer._start_upload_internal(output_dir, False, None)
+    omni.usd.get_context().open_stage(output_dir + part_name, end_fn)
+    asset_importer._upload_future = None
+    # asset_importer.on_shutdown()

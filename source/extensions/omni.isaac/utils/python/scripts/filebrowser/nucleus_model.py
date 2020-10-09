@@ -66,9 +66,9 @@ class NucleusItemFactory:
         name = name[:-1] if name.endswith("/") else name
 
         epoch_time = lambda: datetime.fromtimestamp(time.mktime(time.gmtime(0)))
-        modified_time = epoch_time() + entry.modified_time
+        modified_time = datetime.fromtimestamp(time.mktime(time.gmtime(0)) + entry.modified_time)
         fields = FileBrowserItemFields(name, modified_time, entry.size)
-        is_folder = (entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN) > 0
+        is_folder = (entry.flags & 4) > 0
         item = NucleusItem(path, fields, is_folder=is_folder)
 
         # POSIX Epoch time (Jan 1, 1970)

@@ -90,12 +90,17 @@ class TesselationPropertiesModel(ui.AbstractValueModel):
             ui.SimpleBoolModel(self.props.use_internal_vertices),
             ui.SimpleBoolModel(self.props.volumetric_center_meshes),
         ]
-        self.models[0].add_value_changed_fn(lambda m, b=self.props: lin_deflection(m, b))
-        self.models[1].add_value_changed_fn(lambda m, b=self.props: ang_deflection(m, b))
-        self.models[2].add_value_changed_fn(lambda m, b=self.props: min_surface(m, b))
-        self.models[3].add_value_changed_fn(lambda m, b=self.props: relative_offset(m, b))
-        self.models[4].add_value_changed_fn(lambda m, b=self.props: internal_vertices(m, b))
-        self.models[5].add_value_changed_fn(lambda m, b=self.props: recenter_mesh(m, b))
+        self.vcfn = [0 for i in self.models]
+        self.vcfn[0] = self.models[0].add_value_changed_fn(lambda m, b=self.props: lin_deflection(m, b))
+        self.vcfn[1] = self.models[1].add_value_changed_fn(lambda m, b=self.props: ang_deflection(m, b))
+        self.vcfn[2] = self.models[2].add_value_changed_fn(lambda m, b=self.props: min_surface(m, b))
+        self.vcfn[3] = self.models[3].add_value_changed_fn(lambda m, b=self.props: relative_offset(m, b))
+        self.vcfn[4] = self.models[4].add_value_changed_fn(lambda m, b=self.props: internal_vertices(m, b))
+        self.vcfn[5] = self.models[5].add_value_changed_fn(lambda m, b=self.props: recenter_mesh(m, b))
+
+    def __del__(self):
+        for i, m in enumerate(self.models):
+            m.remove_value_changed_fn(self.vcfn[i])
 
     def get_value(self):
         return self.props
@@ -134,12 +139,7 @@ class TesselationPropsDelegate(ui.AbstractItemDelegate):
         if not value_model:
             return
         if column_id < self.num_columns:
-            with ui.HStack(
-                spacing=4,
-                height=20,
-                mouse_pressed_fn=(lambda x, y, b, arg: self.on_mouse_pressed(b, item, expanded, arg)),
-                alignment=(ui.Alignment.CENTER),
-            ):
+            with ui.HStack(spacing=4, height=20, alignment=(ui.Alignment.CENTER)):
                 if column_id < 2:
                     ui.Spacer(width=3)
                     ui.FloatDrag(model=value_model, min=(mins[column_id]), max=(maxs[column_id]))
@@ -165,10 +165,6 @@ class TesselationPropsDelegate(ui.AbstractItemDelegate):
                         tooltip_fn=(self.tooltip_fns[column_id]),
                         tooltip_offset_y=15,
                     )
-
-    def on_mouse_pressed(self, button, item, expanded, arg):
-        """Called when the user press the mouse button on the item"""
-        pass
 
 
 class TesselationPropertiesItem(ui.AbstractItem):

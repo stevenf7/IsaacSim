@@ -10,7 +10,7 @@ from .link_model import *
 
 from .. import _urdf
 from pxr import UsdGeom
-from .filebrowser import *
+from omni.isaac.utils.scripts.filebrowser import *
 
 EXTENSION_NAME = "URDF Importer"
 
@@ -19,7 +19,7 @@ def on_filter_item(item: FileBrowserItem) -> bool:
     if not item or item.is_folder:
         return True
     _, ext = os.path.splitext(item.path)
-    if ext in [".urdf"]:
+    if ext.lower() in [".urdf"]:
         return True
     else:
         return False
@@ -49,8 +49,8 @@ class Extension(omni.ext.IExt):
                     allow_multi_selection=False,
                     show_grid_view=False,
                     tree_root_visible=False,
-                    mouse_double_clicked_fn=lambda b, item: self._on_double_pressed(b, item),
-                    filter_fn=lambda item: on_filter_item(item),
+                    mouse_double_clicked_fn=self._on_double_pressed,
+                    filter_fn=on_filter_item,
                 )
 
                 ui.Button("Open File", clicked_fn=self._on_open_selected, height=0)

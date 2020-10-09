@@ -167,6 +167,8 @@ class PartExporter:
         temp_path_name = os.path.split(self.tempdir)[1]
         if self.is_temp_stage_open():
             tempdir = self.tempdir
+            usd_context = omni.usd.get_context()
+            usd_context.enable_save_to_recent_files()
 
             def delete_folder():
                 try:
@@ -229,6 +231,8 @@ class PartExporter:
         Exports a preview version of the assembly with low quality meshes, to allow tweaking per mesh,
         removing duplicates, and reorg the assembly structure.
         """
+        usd_context = omni.usd.get_context()
+        usd_context.disable_save_to_recent_files()
         base_folder = self.tempdir
         part_path = os.path.join(base_folder, self.part_name)
         self.path = part_path.replace("\\", "/")
