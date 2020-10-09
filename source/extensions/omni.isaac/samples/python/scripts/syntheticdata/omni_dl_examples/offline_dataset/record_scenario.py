@@ -18,8 +18,7 @@ import torch
 import numpy as np
 
 import omni
-from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, DataWriter
-from omni.isaac.dr import _dr
+from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, DataWriter, DomainRandomization
 
 # Default rendering parameters
 RENDER_CONFIG = {"width": 600, "height": 600, "renderer": "PathTracing", "samples_per_pixel_per_frame": 12}
@@ -30,11 +29,11 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
         self.sd_helper = SyntheticDataHelper()
+        self.dr_helper = DomainRandomization()
+        self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
         self.scenario_path = scenario_path
         self.data_writer = None
-        self.dr = _dr.acquire_dr_interface()
-        self.dr.toggle_manual_mode()
 
         self._setup_world(scenario_path)
         self.cur_idx = 0
@@ -54,7 +53,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
     def __next__(self):
         # step once and then wait for materials to load
-        self.dr.randomize_once()
+        self.dr_helper.randomize_once()
         self.kit.update()
         while self.kit.is_loading():
             self.kit.update()

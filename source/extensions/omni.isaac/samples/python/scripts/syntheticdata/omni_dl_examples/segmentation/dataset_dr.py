@@ -71,7 +71,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
         self.sd_helper = SyntheticDataHelper()
         self.dr_helper = DomainRandomization()
-        self.dr_helper.dr.toggle_manual_mode()
+        self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
 
         self.categories = categories
@@ -283,7 +283,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.update_dr_comp(self.scale_comp)
 
         # randomize once
-        self.dr_helper.dr.randomize_once()
+        self.dr_helper.randomize_once()
 
         # step once and then wait for materials to load
         self.kit.update()

@@ -27,7 +27,7 @@ import omni.kit.editor
 import omni.kit.pipapi
 import omni.kit.asyncapi
 import omni.kit.commands
-from pxr import UsdGeom
+from pxr import UsdGeom, Semantics
 
 import os
 import time
