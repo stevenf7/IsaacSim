@@ -72,7 +72,11 @@ void DRComponentLight::onComponentChange()
     lightPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     lightPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
     lightPrim.GetSeedAttr().Get(&mSeed);
-    mRandomGenerator.seed(mSeed);
+    if (mCurrentSeed != mSeed)
+    {
+        mRandomGenerator.seed(mSeed);
+        mCurrentSeed = mSeed;
+    }
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = lightPrim.GetPrimPathsRel();

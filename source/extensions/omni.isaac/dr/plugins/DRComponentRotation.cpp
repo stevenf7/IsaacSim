@@ -66,7 +66,11 @@ void DRComponentRotation::onComponentChange()
     rotPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     rotPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
     rotPrim.GetSeedAttr().Get(&mSeed);
-    mRandomGenerator.seed(mSeed);
+    if (mCurrentSeed != mSeed)
+    {
+        mRandomGenerator.seed(mSeed);
+        mCurrentSeed = mSeed;
+    }
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = rotPrim.GetPrimPathsRel();

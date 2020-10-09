@@ -73,7 +73,11 @@ void DRComponentMovement::onComponentChange()
     movPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     movPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
     movPrim.GetSeedAttr().Get(&mSeed);
-    mRandomGenerator.seed(mSeed);
+    if (mCurrentSeed != mSeed)
+    {
+        mRandomGenerator.seed(mSeed);
+        mCurrentSeed = mSeed;
+    }
 
     mPaths.clear();
     mLookAtTargetPaths.clear();

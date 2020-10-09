@@ -153,7 +153,11 @@ void DRComponentMaterial::onComponentChange()
     materialPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     materialPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
     materialPrim.GetSeedAttr().Get(&mSeed);
-    mRandomGenerator.seed(mSeed);
+    if (mCurrentSeed != mSeed)
+    {
+        mRandomGenerator.seed(mSeed);
+        mCurrentSeed = mSeed;
+    }
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = materialPrim.GetPrimPathsRel();
