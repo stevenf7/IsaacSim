@@ -94,5 +94,8 @@
             "maxNumSteps": 3.0,
             "updateToUsd": false
         }
+    },
+    "ngx":{
+        "enabled": false
     }
 }
