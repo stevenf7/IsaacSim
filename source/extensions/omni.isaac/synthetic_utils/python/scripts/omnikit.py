@@ -27,7 +27,7 @@ import omni.kit.editor
 import omni.kit.pipapi
 import omni.kit.asyncapi
 import omni.kit.commands
-from pxr import UsdGeom
+from pxr import UsdGeom, Semantics
 
 import os
 import time
@@ -46,7 +46,8 @@ DEFAULT_CONFIG = {
     "max_bounces": 4,
     "max_specular_transmission_bounces": 6,
     "max_volume_bounces": 4,
-    "config": "isaac-sim-synthetic.json",
+    "sync_loads": False,
+    "experience": "isaac-sim-synthetic.json",
 }
 
 
@@ -91,11 +92,14 @@ class OmniKitHelper:
     def _start_app(self):
         args = [
             os.path.abspath(__file__),
-            f'--merge-config={self.config["config"]}',
+            f'--merge-config={self.config["experience"]}',
             "--/persistent/app/viewport/displayOptions=0",  # hide extra stuff in viewport
             "--/persistent/physics/overrideGPUSettings=0",  # force CPU physx
             # "--/persistent/physics/updateToUsd=True",
             # "--/persistent/physics/useFastCache=True",
+            # Experimental, forces kit to not render until all USD files are loaded
+            f'--/rtx/materialDb/syncLoads={self.config["sync_loads"]}',
+            f'--/omni.kit.plugin/syncUsdLoads={self.config["sync_loads"]}',
             "--/app/content/emptyStageOnStart=False",  # This is required due to a infinite loop but results in errors on launch
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',
@@ -106,6 +110,8 @@ class OmniKitHelper:
         if self.config.get("headless"):
             args.append("--no-window")
             args.append("--/app/window/hideUi=true")
+        if self.config.get("active_gpu"):
+            args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
         self.app.startup("omniverse-kit", os.environ["CARB_APP_PATH"], args)
 
     def _cleanup(self):
@@ -188,6 +194,10 @@ class OmniKitHelper:
         self.set_setting("/rtx/pathtracing/maxVolumeBounces", self.config["max_volume_bounces"])
         self.set_setting("/rtx/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
         self.set_setting("/rtx/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"])
+
+        # Experimental, forces kit to not render until all USD files are loaded
+        self.set_setting("/rtx/materialDb/syncLoads", self.config["sync_loads"])
+        self.set_setting("/omni.kit.plugin/syncUsdLoads", self.config["sync_loads"])
 
     def create_prim(
         self, path, prim_type, translation=None, rotation=None, scale=None, ref=None, semantic_label=None, attributes={}
