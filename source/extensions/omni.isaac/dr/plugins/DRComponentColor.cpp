@@ -155,7 +155,11 @@ void DRComponentColor::onComponentChange()
     colorPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     colorPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
     colorPrim.GetSeedAttr().Get(&mSeed);
-    mRandomGenerator.seed(mSeed);
+    if (mCurrentSeed != mSeed)
+    {
+        mRandomGenerator.seed(mSeed);
+        mCurrentSeed = mSeed;
+    }
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = colorPrim.GetPrimPathsRel();

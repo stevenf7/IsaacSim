@@ -64,7 +64,11 @@ void DRComponentVisibility::onComponentChange()
     visibilityPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     visibilityPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
     visibilityPrim.GetSeedAttr().Get(&mSeed);
-    mRandomGenerator.seed(mSeed);
+    if (mCurrentSeed != mSeed)
+    {
+        mRandomGenerator.seed(mSeed);
+        mCurrentSeed = mSeed;
+    }
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = visibilityPrim.GetPrimPathsRel();
