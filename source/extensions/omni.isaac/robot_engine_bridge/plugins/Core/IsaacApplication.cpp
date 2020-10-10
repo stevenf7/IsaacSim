@@ -185,7 +185,12 @@ void IsaacApplication::tick(double dt)
 {
     CARB_PROFILE_ZONE(0, "REB IsaacApplication Tick");
     // omni::isaac::utils::ScopedTimer TimerApp("IsaacApplication");
-    mError = (mIsaacCApiPtr->isaac_get_external_time_difference)(mAppHandle, mTimeSeconds, &mTimeDifferenceNanoSeconds);
+    // only update time difference to bridge app if the step size is greater than zero
+    if (dt > 0)
+    {
+        mError =
+            (mIsaacCApiPtr->isaac_get_external_time_difference)(mAppHandle, mTimeSeconds, &mTimeDifferenceNanoSeconds);
+    }
     if (mRunning)
     {
         if (mDoOnce == false)
