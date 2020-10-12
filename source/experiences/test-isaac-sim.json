@@ -51,7 +51,8 @@
             "includeTests": ["omni.isaac.tests.*"],
             "excludeTests": [
                 "omni.isaac.tests.domain_randomizer.*",
-                "omni.isaac.tests.samples.*"
+                "omni.isaac.tests.samples.*",
+                "omni.isaac.tests.step_importer.test_step_importer.TestStepImporter.test_export"
             ],
             "runTestsAndQuit": true
         }

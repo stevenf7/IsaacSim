@@ -5,7 +5,7 @@ import carb.tokens
 
 
 def get_data_file(file_name: str):
-    if os.path.isabs(file_name):
+    if file_name.startswith("omniverse://") or os.path.isabs(file_name):
         path_to_file = file_name
     else:
         path_to_file = os.path.abspath(

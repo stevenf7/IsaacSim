@@ -9,6 +9,7 @@
 #include <carb/BindingsPythonUtils.h>
 
 #include <omni/isaac/urdf/Urdf.h>
+#include <omni/isaac/urdf/core/maths.h>
 #include <pybind11/pybind11/stl.h>
 #include <pybind11/pybind11/stl_bind.h>
 
@@ -75,7 +76,7 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("density", &ImportConfig::density, "default density used for links")
         .def_readwrite("default_drive_type", &ImportConfig::defaultDriveType, "default drive type used for joints")
         .def_readwrite(
-            "default_drive_stiffness", &ImportConfig::defaultDriveStiffness, "default drive stiffness used for joints")
+            "default_drive_strength", &ImportConfig::defaultDriveStrength, "default drive stiffness used for joints")
         .def_readwrite("distance_scale", &ImportConfig::distanceScale,
                        "Set the unit scaling factor, 1.0 means meters, 100.0 means cm")
         .def_readwrite("up_vector", &ImportConfig::upVector, "Up vector used for import")
@@ -94,8 +95,8 @@ PYBIND11_MODULE(_urdf, m)
              [](ImportConfig& config, const int value) {
                  config.defaultDriveType = static_cast<UrdfJointTargetType>(value);
              })
-        .def("set_default_drive_stiffness",
-             [](ImportConfig& config, const float value) { config.defaultDriveStiffness = value; })
+        .def("set_default_drive_strength",
+             [](ImportConfig& config, const float value) { config.defaultDriveStrength = value; })
         .def("set_distance_scale", [](ImportConfig& config, const float value) { config.distanceScale = value; })
         .def("set_up_vector",
              [](ImportConfig& config, const float x, const float y, const float z) {
@@ -105,13 +106,22 @@ PYBIND11_MODULE(_urdf, m)
              [](ImportConfig& config, const bool value) { config.createPhysicsScene = value; })
         .def("set_make_default_prim", [](ImportConfig& config, const bool value) { config.makeDefaultPrim = value; });
 
-    py::class_<UrdfOrigin>(m, "UrdfOrigin", "")
-        .def_readwrite("x", &UrdfOrigin::x, "")
-        .def_readwrite("y", &UrdfOrigin::y, "")
-        .def_readwrite("z", &UrdfOrigin::z, "")
-        .def_readwrite("roll", &UrdfOrigin::roll, "")
-        .def_readwrite("pitch", &UrdfOrigin::pitch, "")
-        .def_readwrite("yaw", &UrdfOrigin::yaw, "")
+    py::class_<Vec3>(m, "Position", "")
+        .def_readwrite("x", &Vec3::x, "")
+        .def_readwrite("y", &Vec3::y, "")
+        .def_readwrite("z", &Vec3::z, "")
+        .def(py::init<>());
+
+    py::class_<Quat>(m, "Orientation", "")
+        .def_readwrite("w", &Quat::w, "")
+        .def_readwrite("x", &Quat::x, "")
+        .def_readwrite("y", &Quat::y, "")
+        .def_readwrite("z", &Quat::z, "")
+        .def(py::init<>());
+
+    py::class_<Transform>(m, "UrdfOrigin", "")
+        .def_readwrite("p", &Transform::p, "")
+        .def_readwrite("q", &Transform::q, "")
         .def(py::init<>());
 
     py::class_<UrdfInertia>(m, "UrdfInertia", "")
@@ -169,12 +179,20 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("damping", &UrdfDynamics::damping, "")
         .def_readwrite("friction", &UrdfDynamics::friction, "")
         .def_readwrite("stiffness", &UrdfDynamics::stiffness, "")
+        .def("set_damping", [](UrdfDynamics& drive, const float value) { drive.damping = value; })
+        .def("set_friction", [](UrdfDynamics& drive, const float value) { drive.friction = value; })
+        .def("set_stiffness", [](UrdfDynamics& drive, const float value) { drive.stiffness = value; })
         .def(py::init<>());
 
     py::class_<UrdfJointDrive>(m, "UrdfJointDrive", "")
         .def_readwrite("target", &UrdfJointDrive::target, "")
         .def_readwrite("target_type", &UrdfJointDrive::targetType, "")
         .def_readwrite("drive_type", &UrdfJointDrive::driveType, "")
+        .def("set_target", [](UrdfJointDrive& drive, const float value) { drive.target = value; })
+        .def("set_target_type",
+             [](UrdfJointDrive& drive, const int value) { drive.targetType = static_cast<UrdfJointTargetType>(value); })
+        .def("set_drive_type",
+             [](UrdfJointDrive& drive, const int value) { drive.driveType = static_cast<UrdfJointDriveType>(value); })
         .def(py::init<>());
 
     py::class_<UrdfLimit>(m, "UrdfLimit", "")
@@ -182,6 +200,10 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("upper", &UrdfLimit::upper, "")
         .def_readwrite("effort", &UrdfLimit::effort, "")
         .def_readwrite("velocity", &UrdfLimit::velocity, "")
+        .def("set_lower", [](UrdfLimit& limit, const float value) { limit.lower = value; })
+        .def("set_upper", [](UrdfLimit& limit, const float value) { limit.upper = value; })
+        .def("set_effort", [](UrdfLimit& limit, const float value) { limit.effort = value; })
+        .def("set_velocity", [](UrdfLimit& limit, const float value) { limit.velocity = value; })
         .def(py::init<>());
 
     py::enum_<UrdfGeometryType>(m, "UrdfGeometryType", py::arithmetic(), "")

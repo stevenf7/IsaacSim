@@ -23,8 +23,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from dataset import RandomObjects
-from omni_dl_examples.helpers import visualization as vis
-from omni_dl_examples.helpers import shapenet
+from omni.isaac.synthetic_utils import visualization as vis
+from omni.isaac.synthetic_utils import shapenet
 
 
 def main(args):

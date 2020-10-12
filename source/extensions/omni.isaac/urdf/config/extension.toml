@@ -16,6 +16,9 @@ name = "omni.isaac.urdf.scripts.samples.import_franka"
 [[python.modules]]
 name = "omni.isaac.urdf.scripts.samples.import_kaya"
 
+[[python.modules]]
+name = "omni.isaac.urdf.scripts.samples.import_ur10"
+
 [[native.plugins]]
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false

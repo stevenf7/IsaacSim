@@ -26,7 +26,7 @@ import numpy as np
 import omni
 from pxr import UsdGeom, UsdShade, Sdf, Semantics
 
-from omni_dl_examples.helpers import OmniKitHelper, SyntheticDataHelper, shapenet, DomainRandomization
+from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, shapenet, DomainRandomization
 
 
 # Setup default generation variables
@@ -71,7 +71,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
         self.sd_helper = SyntheticDataHelper()
         self.dr_helper = DomainRandomization()
-        self.dr_helper.dr.toggle_manual_mode()
+        self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
 
         self.categories = categories
@@ -85,32 +85,32 @@ class RandomObjects(torch.utils.data.IterableDataset):
         """Setup lights, walls, floor, ceiling and camera"""
         # In a practical setting, the room parameters should attempt to match those of the
         # target domain. Here, we insteady choose for simplicity.
-        self.create_prim(
+        self.kit.create_prim(
             "/World/Room", "Sphere", attributes={"radius": 1e3, "primvars:displayColor": [(1.0, 1.0, 1.0)]}
         )
-        self.create_prim(
+        self.kit.create_prim(
             "/World/Ground",
             "Cylinder",
             translation=(0.0, -0.5, 0.0),
             rotation=(90.0, 0.0, 0.0),
             attributes={"height": 1, "radius": 1e4, "primvars:displayColor": [(1.0, 1.0, 1.0)]},
         )
-        self.create_prim(
+        self.kit.create_prim(
             "/World/Light1",
             "SphereLight",
             translation=(-450, 350, 350),
             attributes={"radius": 100, "intensity": 30000.0, "color": (0.0, 0.365, 0.848)},
         )
-        self.create_prim(
+        self.kit.create_prim(
             "/World/Light2",
             "SphereLight",
             translation=(450, 350, 350),
             attributes={"radius": 100, "intensity": 30000.0, "color": (1.0, 0.278, 0.0)},
         )
-        self.create_prim("/World/Asset", "Xform")
+        self.kit.create_prim("/World/Asset", "Xform")
 
-        self.camera_rig = UsdGeom.Xformable(self.create_prim("/World/CameraRig", "Xform"))
-        self.camera = self.create_prim("/World/CameraRig/Camera", "Camera", translation=(0.0, 0.0, CAMERA_DISTANCE))
+        self.camera_rig = UsdGeom.Xformable(self.kit.create_prim("/World/CameraRig", "Xform"))
+        self.camera = self.kit.create_prim("/World/CameraRig/Camera", "Camera", translation=(0.0, 0.0, CAMERA_DISTANCE))
         vpi = omni.kit.viewport.get_viewport_interface()
         vpi.get_viewport_window().set_active_camera(str(self.camera.GetPath()))
 
@@ -150,44 +150,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
                 references[category] = assets_filtered[int(num_assets * split) :]
         return references
 
-    def create_prim(
-        self, path, prim_type, translation=None, rotation=None, scale=None, ref=None, semantic_label=None, attributes={}
-    ):
-        """Create a prim, apply specified transforms, apply semantic label and
-        set specified attributes.
-
-        args:
-            path (str): The path of the new prim.
-            prim_type (str): Prim type name
-            translation (tuple(float, float, float), optional): prim translation (applied last)
-            rotation (tuple(float, float, float), optional): prim rotation in radians with rotation
-                order ZYX.
-            scale (tuple(float, float, float), optional): scaling factor in x, y, z.
-            ref (str, optional): Path to the USD that this prim will reference.
-            semantic_label (str, optional): Semantic label.
-            attributes (dict, optional): Key-value pairs of prim attributes to set.
-        """
-        prim = self.stage.DefinePrim(path, prim_type)
-
-        for k, v in attributes.items():
-            prim.GetAttribute(k).Set(v)
-        xform_api = UsdGeom.XformCommonAPI(prim)
-        if ref:
-            prim.GetReferences().AddReference(ref)
-        if semantic_label:
-            sem = Semantics.SemanticsAPI.Apply(prim, "Semantics")
-            sem.CreateSemanticTypeAttr()
-            sem.CreateSemanticDataAttr()
-            sem.GetSemanticTypeAttr().Set("class")
-            sem.GetSemanticDataAttr().Set(semantic_label)
-        if rotation:
-            xform_api.SetRotate(rotation, UsdGeom.XformCommonAPI.RotationOrderZYX)
-        if scale:
-            xform_api.SetScale(scale)
-        if translation:
-            xform_api.SetTranslate(translation)
-        return prim
-
     def _add_preview_surface(self, prim, diffuse, roughness, metallic):
         """Add a preview surface material using the metallic workflow."""
         path = f"{prim.GetPath()}/mat"
@@ -212,7 +174,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         x = random.uniform(*RANDOM_TRANSLATION_X)
         z = random.uniform(*RANDOM_TRANSLATION_Z)
         rot_y = random.uniform(*RANDOM_ROTATION_Y)
-        asset = self.create_prim(
+        asset = self.kit.create_prim(
             f"/World/Asset/mesh{suffix}",
             "Xform",
             scale=(SCALE, SCALE, SCALE),
@@ -321,7 +283,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.update_dr_comp(self.scale_comp)
 
         # randomize once
-        self.dr_helper.dr.randomize_once()
+        self.dr_helper.randomize_once()
 
         # step once and then wait for materials to load
         self.kit.update()
@@ -378,7 +340,7 @@ if __name__ == "__main__":
     "Typical usage"
     import argparse
     import matplotlib.pyplot as plt
-    from omni_dl_examples.helpers import visualization as vis
+    from omni.isaac.synthetic_utils import visualization as vis
 
     parser = argparse.ArgumentParser("Dataset test")
     parser.add_argument("--categories", type=str, nargs="+", required=True, help="List of object classes to use")

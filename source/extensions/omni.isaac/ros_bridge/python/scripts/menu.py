@@ -55,10 +55,22 @@ class RosBridgeMenu:
         prim.CreateRgbPubTopicAttr("/rgb")
         prim.CreateDepthPubTopicAttr("/depth")
         prim.CreateFrameIdAttr("/sim_camera")
+        prim.CreateSemanticPubTopicAttr("/semantic")
+        prim.CreateInstancePubTopicAttr("/instance")
+        prim.CreateLabelPubTopicAttr("/label")
+        prim.CreateBoundingBox2DPubTopicAttr("/bbox_2d")
+        prim.CreateBoundingBox3DPubTopicAttr("/bbox_3d")
+
+        prim.CreateBoundingBox2DClassListAttr("")
+        prim.CreateBoundingBox3DClassListAttr("")
 
         prim.CreateRgbEnabledAttr(False)
         prim.CreateDepthEnabledAttr(False)
+        prim.CreateSegmentationEnabledAttr(False)
+        prim.CreateBoundingBox2DEnabledAttr(False)
+        prim.CreateBoundingBox3DEnabledAttr(False)
         prim.CreateQueueSizeAttr(10)
+
         pass
 
     def add_clock(self):
@@ -84,6 +96,9 @@ class RosBridgeMenu:
         prim.CreateLaserScanPubTopicAttr("/laser_scan")
         prim.CreateLidarPrimRel()
         prim.CreateFrameIdAttr("/sim_lidar")
+        prim.CreatePointCloudPubTopicAttr("/point_cloud")
+        prim.CreatePointCloudEnabledAttr(False)
+
         prim.CreateQueueSizeAttr(0)
         pass
 

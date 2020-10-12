@@ -22,7 +22,7 @@ namespace urdf
 
 bool parseJointType(const std::string& str, UrdfJointType& type);
 
-bool parseOrigin(const tinyxml2::XMLElement& element, UrdfOrigin& origin);
+bool parseOrigin(const tinyxml2::XMLElement& element, Transform& origin);
 
 bool parseAxis(const tinyxml2::XMLElement& element, UrdfAxis& axis);
 

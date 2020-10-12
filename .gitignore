@@ -91,3 +91,9 @@ symbols.txt
 slang-dump-*
 
 PACKAGE-LICENSES
+
+# files created when running setup.py
+source/extensions/omni.isaac/samples/python/scripts/syntheticdata/build/*
+source/extensions/omni.isaac/samples/python/scripts/syntheticdata/dist/*
+source/extensions/omni.isaac/samples/python/scripts/syntheticdata/omni_dl_examples.egg-info/*
+source/extensions/omni.isaac/samples/python/scripts/syntheticdata/torch_wrap.egg-info/*

@@ -85,7 +85,6 @@ class Extension(omni.ext.IExt):
         self._stage_id = -1
 
     def on_shutdown(self):
-        dc.release_dynamic_control_interface(self._dc)
         self._window = None
 
     def _on_update_ui(self, widget):

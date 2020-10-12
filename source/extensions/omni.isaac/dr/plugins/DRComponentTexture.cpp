@@ -194,7 +194,11 @@ void DRComponentTexture::onComponentChange()
     texturePrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     texturePrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
     texturePrim.GetSeedAttr().Get(&mSeed);
-    mRandomGenerator.seed(mSeed);
+    if (mCurrentSeed != mSeed)
+    {
+        mRandomGenerator.seed(mSeed);
+        mCurrentSeed = mSeed;
+    }
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = texturePrim.GetPrimPathsRel();

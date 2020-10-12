@@ -80,7 +80,7 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
                      std::string assetRoot,
                      std::string urdfPath,
                      std::string name,
-                     UrdfOrigin origin,
+                     Transform origin,
                      const bool loadMaterials,
                      const float distanceScale)
 {
@@ -147,7 +147,7 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
     pxr::UsdPrim prim = stage->GetPrimAtPath(path);
     if (prim)
     {
-        Transform transform = urdfOriginToTransform(origin);
+        Transform transform = origin;
 
         pxr::GfMatrix4d mat;
         mat.SetIdentity();
@@ -223,7 +223,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         if (link.inertial.hasOrigin)
         {
             massAPI.CreateCenterOfMassAttr().Set(
-                pxr::GfVec3d(link.inertial.origin.x, link.inertial.origin.y, link.inertial.origin.z));
+                pxr::GfVec3d(link.inertial.origin.p.x, link.inertial.origin.p.y, link.inertial.origin.p.z));
         }
     }
     else
@@ -586,7 +586,7 @@ void UrdfImporter::addLinksAndJoints(pxr::UsdStageWeakPtr stage,
             const UrdfLink& childLink = robot.links.at(childNode->linkName_);
             // const UrdfLink& parentLink = robot.links.at(parentNode->linkName_);
 
-            Transform poseJointToLink = urdfOriginToTransform(urdfJoint.origin);
+            Transform poseJointToLink = urdfJoint.origin;
             // According to URDF spec, the frame of a link coincides with its parent joint frame
             Transform poseLinkToWorld = poseParentToWorld * poseJointToLink;
             // if (!parentLink.softs.size() && !childLink.softs.size()) // rigid parent, rigid child

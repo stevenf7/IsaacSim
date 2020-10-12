@@ -8,16 +8,21 @@ import asyncio
 import textwrap
 from .link_model import *
 
-omni.kit.pipapi.install("graphviz")
-# from .test_model import *
-from graphviz import Graph
-from graphviz import Digraph
 from .. import _urdf
 from pxr import UsdGeom
-from PIL import Image, ImageDraw
-import io
+from omni.isaac.utils.scripts.filebrowser import *
 
 EXTENSION_NAME = "URDF Importer"
+
+
+def on_filter_item(item: FileBrowserItem) -> bool:
+    if not item or item.is_folder:
+        return True
+    _, ext = os.path.splitext(item.path)
+    if ext.lower() in [".urdf"]:
+        return True
+    else:
+        return False
 
 
 class Extension(omni.ext.IExt):
@@ -28,11 +33,27 @@ class Extension(omni.ext.IExt):
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/URDF Importer", self._menu_callback)
         self._file_picker = None
+
         self.models = {}
         self.config = _urdf.ImportConfig()
         self._rgb_byte_provider = None
         self._rgb_image_provider = None
         self._robot_graph_im = None
+
+        self._file_window = omni.ui.Window("Open URDF File", width=600, height=400, visible=False)
+        with self._file_window.frame:
+            with ui.VStack():
+                self._filebrowser = FileBrowserWidget(
+                    "Omniverse",
+                    layout=LAYOUT_SINGLE_PANE_SLIM,
+                    allow_multi_selection=False,
+                    show_grid_view=False,
+                    tree_root_visible=False,
+                    mouse_double_clicked_fn=self._on_double_pressed,
+                    filter_fn=on_filter_item,
+                )
+
+                ui.Button("Open File", clicked_fn=self._on_open_selected, height=0)
 
         with self._window.frame:
             with ui.ScrollingFrame(
@@ -65,6 +86,40 @@ class Extension(omni.ext.IExt):
                                 lambda m, config=self.config: config.set_import_inertia_tensor(m.get_value_as_bool())
                             )
                         ui.Spacer(height=5)
+                        ui.Label("Parser Defaults:")
+                        ui.Line(height=5)
+                        with ui.HStack():
+                            ui.Label(
+                                "Link Density:",
+                                tooltip="[kg/m^3] If a link doesn't have mass, use this density as backup",
+                            )
+                            model = ui.FloatField().model
+                            model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_density(m.get_value_as_float())
+                            )
+                            model.set_value(1000)
+                        ui.Spacer(height=5)
+                        with ui.HStack():
+                            ui.Label("Joint Drive Type:")
+                            model = ui.ComboBox(1, "None", "Position", "Velocity").model
+                            model.add_item_changed_fn(
+                                lambda m, i, config=self.config: config.set_default_drive_type(
+                                    m.get_item_value_model().as_int
+                                )
+                            )
+                        ui.Spacer(height=5)
+                        with ui.HStack():
+                            ui.Label(
+                                "Joint Drive Strength:",
+                                tooltip="Corresponds to stiffness for position or damping for velocity",
+                            )
+                            model = ui.FloatField().model
+                            model.add_value_changed_fn(
+                                lambda m, config=self.config: config.set_default_drive_strength(m.get_value_as_float())
+                            )
+                            model.set_value(100000)
+                        ui.Line(height=5)
+                        ui.Spacer(height=15)
                         ui.Label("Importer Settings:")
                         ui.Line(height=5)
                         with ui.HStack():
@@ -124,36 +179,7 @@ class Extension(omni.ext.IExt):
                             )
                             model.set_value(True)
                         ui.Spacer(height=5)
-                        ui.Label("Importer Defaults:")
-                        ui.Line(height=5)
-                        with ui.HStack():
-                            ui.Label(
-                                "Link Density:",
-                                tooltip="[kg/m^3] If a link doesn't have mass, use this density as backup",
-                            )
-                            model = ui.FloatField().model
-                            model.add_value_changed_fn(
-                                lambda m, config=self.config: config.set_density(m.get_value_as_float())
-                            )
-                            model.set_value(1000)
-                        ui.Spacer(height=5)
-                        with ui.HStack():
-                            ui.Label("Joint Drive Type:")
-                            model = ui.ComboBox(1, "None", "Position", "Velocity").model
-                            model.add_item_changed_fn(
-                                lambda m, i, config=self.config: config.set_default_drive_type(
-                                    m.get_item_value_model().as_int
-                                )
-                            )
-                        ui.Spacer(height=5)
-                        with ui.HStack():
-                            ui.Label("Joint Drive Stiffness:", tooltip="[N] for prismatic or [N*m] for revolute")
-                            model = ui.FloatField().model
-                            model.add_value_changed_fn(
-                                lambda m, config=self.config: config.set_default_drive_stiffness(m.get_value_as_float())
-                            )
-                            model.set_value(100000)
-                        ui.Line(height=5)
+
                         with ui.HStack():
                             ui.Label("Up Axis:")
                             self.models["up_axis"] = ui.MultiFloatField(0.0, 0.0, 1.0)
@@ -197,8 +223,6 @@ class Extension(omni.ext.IExt):
                 ).set_value(1)
             units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
             self.models["scale"].model.set_value(units_per_meter)
-
-        self._file_picker = None
 
     def _menu_callback(self, name, visible):
         self._window.visible = not self._window.visible
@@ -263,8 +287,12 @@ class Extension(omni.ext.IExt):
             self._create_graphviz_tree(tree_item["B_node"], robot, graph)
 
     def _generate_robot_image(self, robot, vertical=True):
+        omni.kit.pipapi.install("graphviz")
+        from graphviz import Graph
+
         im = None
         robot_tree = self._urdf_interface.get_kinematic_chain(robot)
+
         robot_graph = Graph("robot_graph", strict=True, engine="dot")
         robot_graph.attr(splines="ortho")
         if vertical:
@@ -281,6 +309,9 @@ class Extension(omni.ext.IExt):
             legend_graph.node("legend_continuous", "Continuous", color="orange", shape="rect", margin="0", height="0")
 
         try:
+            from PIL import Image
+            import io
+
             self._create_graphviz_tree(robot_tree, robot, robot_graph)
             buffer = io.BytesIO(robot_graph.pipe(format="png"))
             buffer.seek(0)
@@ -352,6 +383,18 @@ class Extension(omni.ext.IExt):
                             model = ui.ComboBox(1, "Horizontal", "Vertical").model
                             model.add_item_changed_fn(lambda m, i: (update_image(m.get_item_value_model().as_int)))
 
+    def _on_double_pressed(self, button: ui.Button, item: FileBrowserItem):
+        if item and not item.is_folder:
+            self._file_window.visible = False
+            self._select_picked_folder_callback(item.path)
+
+    def _on_open_selected(self):
+        if self._filebrowser:
+            item = self._filebrowser.get_selections()[0]
+        if item and not item.is_folder:
+            self._file_window.visible = False
+            self._select_picked_folder_callback(item.path)
+
     def _select_picked_folder_callback(self, path):
         if not path.startswith("omniverse:"):
             self.root_path, self.filename = os.path.split(os.path.abspath(path))
@@ -363,20 +406,29 @@ class Extension(omni.ext.IExt):
     def _parse_urdf(self):
         if self.models["clean_stage"].model.get_value_as_bool():
             asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        omni.kit.pipapi.install("psutil")
+        import psutil
 
-        self._filepicker = omni.kit.ui.FilePicker("Select URDF File", file_type=omni.kit.ui.FileDialogSelectType.FILE)
-        self._filepicker.set_file_selected_fn(self._select_picked_folder_callback)
-        self._filepicker.add_filter("URDF Files (*.urdf)", r".*.urdf$")
+        partitions = psutil.disk_partitions()
+        for p in partitions:
+            if any(x in p.fstype for x in ["ext3", "ext4", "fuseblk", "NTFS", "removable", "fixed"]):
+                mountpoint = p.mountpoint.strip("\\")
+                self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
         data_dir = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf"))
-        self._filepicker.set_current_directory(data_dir)
-        self._filepicker.show()
+        self._filebrowser.add_model_as_subtree(FileSystemModel("Built In URDFs", data_dir))
+        self._filebrowser.refresh_ui(None)
+        self._file_window.visible = True
 
     def _load_robot(self):
         self._urdf_interface.import_robot(self.root_path, self.filename, self._imported_robot, self.config)
 
     def on_shutdown(self):
-        print("Shutting down URDF Extension")
-        if self._file_picker is not None:
-            self._file_picker.set_file_selected_fn(None)
-            self._file_picker.set_dialog_cancelled_fn(None)
+        if self._filebrowser:
+            self._filebrowser._mouse_double_clicked_fn = None
+            self._filebrowser._filter_fn = None
+            self._filebrowser = None
+        if self._file_window:
+            self._file_window = None
+        if self._window:
+            self._window = None
         _urdf.release_urdf_interface(self._urdf_interface)

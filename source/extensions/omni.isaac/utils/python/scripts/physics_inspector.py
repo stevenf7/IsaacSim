@@ -68,6 +68,9 @@ class Extension(omni.ext.IExt):
                             self._add_plot(label="lin_acc", title="Linear Acceleration: [0.0, 0.0, 0.0] cm/s^2")
 
     def _on_stage_event(self, event):
+        if event.type == int(omni.usd.StageEventType.OPENED):
+            self._selected_handle = dc.INVALID_HANDLE
+            return
         if self._editor.is_playing() and self._window.visible:
             if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
                 selection = self._selection.get_selected_prim_paths()
@@ -198,6 +201,4 @@ class Extension(omni.ext.IExt):
             # )
 
     def on_shutdown(self):
-        dc.release_dynamic_control_interface(self._dc)
         gc.collect()
-        print("Stopping Physics Inspector")

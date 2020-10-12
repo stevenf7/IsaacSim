@@ -144,7 +144,11 @@ void DRComponentMesh::onComponentChange()
     meshPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     meshPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
     meshPrim.GetSeedAttr().Get(&mSeed);
-    mRandomGenerator.seed(mSeed);
+    if (mCurrentSeed != mSeed)
+    {
+        mRandomGenerator.seed(mSeed);
+        mCurrentSeed = mSeed;
+    }
 
     if (meshList != "")
         boost::split(mMeshList, meshList, [](char c) { return c == ','; });

@@ -83,6 +83,9 @@
     "rtx": {
         "raytracing": {
             "fractionalCutoutOpacity": false
+        },
+        "hydra": {
+            "enableSemanticSchema": true
         }
     },
     "persistent": {
@@ -91,5 +94,8 @@
             "maxNumSteps": 3.0,
             "updateToUsd": false
         }
+    },
+    "ngx":{
+        "enabled": false
     }
 }

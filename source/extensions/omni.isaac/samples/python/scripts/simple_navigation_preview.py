@@ -6,20 +6,37 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from pxr import Usd, UsdGeom
+from pxr import Usd, UsdGeom, Gf
 import omni.kit.editor
 import omni.usd
 import omni.ext
+import omni.ui as ui
+import asyncio
+import gc
 
 from omni.isaac.dynamic_control import _dynamic_control
 from .utils.simple_robot_controller import RobotController
+from omni.isaac.utils.scripts.scene_utils import setUpZAxis, SetupPhysics, CreateBackground
 
-# Utility function to specify the stage with the z axis as "up"
-def setUpZAxis(stage):
-    rootLayer = stage.GetRootLayer()
-    rootLayer.SetPermissionToEdit(True)
-    with Usd.EditContext(stage, rootLayer):
-        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
+EXTENSION_NAME = "Simple Robot Navigation"
+
+
+def create_xyz(init={"X": 100, "Y": 100, "Z": 0}):
+    all_axis = ["X", "Y", "Z"]
+    colors = {"X": 0xFF5555AA, "Y": 0xFF76A371, "Z": 0xFFA07D4F}
+    float_drags = {}
+    for axis in all_axis:
+        with ui.HStack():
+            with ui.ZStack(width=15):
+                ui.Rectangle(
+                    width=15,
+                    height=20,
+                    style={"background_color": colors[axis], "border_radius": 3, "corner_flag": ui.CornerFlag.LEFT},
+                )
+                ui.Label(axis, name="transform_label", alignment=ui.Alignment.CENTER)
+            float_drags[axis] = ui.FloatDrag(name="transform", min=-1000000, max=1000000, step=1, width=100)
+            float_drags[axis].model.set_value(init[axis])
+    return float_drags
 
 
 class Extension(omni.ext.IExt):
@@ -27,10 +44,9 @@ class Extension(omni.ext.IExt):
         self._editor = omni.kit.editor.get_editor_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        extension_name = "Simple Robot Navigation"
-        menu_path = f"Window/Isaac/{extension_name}"
-        self._window = omni.kit.ui.Window(
-            "Simple Robot Navigation", 960, 300, menu_path=menu_path, dock=omni.kit.ui.DockPreference.LEFT_BOTTOM
+        self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
+        self._menu_entry = omni.kit.ui.get_editor_menu().add_item(
+            f"Isaac Robotics/Samples/{EXTENSION_NAME}", self._menu_callback
         )
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._create_ui()
@@ -39,76 +55,138 @@ class Extension(omni.ext.IExt):
         self._settings.set("/persistent/physics/updateToUsd", False)
         self._settings.set("/persistent/physics/useFastCache", True)
 
+    def _menu_callback(self, a, b):
+        self._window.visible = not self._window.visible
+
     def _create_ui(self):
-        ui_layout = omni.kit.ui.RowColumnLayout(2, True)
-        self._window.layout.add_child(ui_layout)
-        ui_layout.set_column_width(0, 150)
-        ui_layout.set_column_width(1, 350)
-        ui_layout.add_child(omni.kit.ui.Label("Intialize: "))
-        self._capture_btn = ui_layout.add_child(omni.kit.ui.Button("Setup Robot"))
-        self._capture_btn.set_clicked_fn(self._on_setup_fn)
-        ui_layout.add_child(omni.kit.ui.Label("Move forward: "))
-        self._move_btn = ui_layout.add_child(omni.kit.ui.Button("Move Robot"))
-        self._move_btn.set_clicked_fn(self._on_move_fn)
-        ui_layout.add_child(omni.kit.ui.Label("Rotate in-place: "))
-        self._rotate_btn = ui_layout.add_child(omni.kit.ui.Button("Rotate Robot"))
-        self._rotate_btn.set_clicked_fn(self._on_rotate_fn)
-        ui_layout_new = omni.kit.ui.RowColumnLayout(4, True)
-        self._window.layout.add_child(ui_layout_new)
-        ui_layout_new.set_column_width(0, 150)
-        ui_layout_new.set_column_width(1, 150)
-        ui_layout_new.set_column_width(2, 150)
-        ui_layout_new.set_column_width(3, 150)
-        ui_layout_new.add_child(omni.kit.ui.Label("Goal: "))
-        self._goal_x = omni.kit.ui.FieldDouble("", -200)
-        self._goal_x.width = 100
-        ui_layout_new.add_child(self._goal_x)
-        self._goal_y = omni.kit.ui.FieldDouble("", -400)
-        self._goal_y.width = 100
-        ui_layout_new.add_child(self._goal_y)
-        self._goal_theta = omni.kit.ui.FieldDouble("", 0)
-        self._goal_theta.width = 100
-        ui_layout_new.add_child(self._goal_theta)
-        self._navigate_btn = ui_layout_new.add_child(omni.kit.ui.Button("Navigate Robot"))
-        self._navigate_btn.set_clicked_fn(self._on_navigate_fn)
-        self._stop_btn = ui_layout_new.add_child(omni.kit.ui.Button("Stop Robot"))
-        self._stop_btn.set_clicked_fn(self._on_navigate_stop_fn)
+        with self._window.frame:
+            with omni.ui.VStack():
+                with ui.HStack(height=5):
+                    ui.Spacer(width=7)
+                    self._robot_option = ui.ComboBox(0, "STR", "Carter", width=125)
+                with ui.HStack(height=5):
+                    ui.Spacer(width=5)
+                    self._load_btn = ui.Button("Load Environment", width=125)
+                    self._load_btn.set_clicked_fn(self._on_environment_setup)
+                with ui.HStack(height=5):
+                    ui.Spacer(width=9)
+                    self._motion_label = ui.Label("Primitive Tasks", width=100)
+                    self._motion_label.set_tooltip(
+                        "Perform simple tasks like moving robot forward or rotating in-place"
+                    )
+                    self._move_btn = ui.Button("Move Robot", width=100, enabled=False)
+                    self._move_btn.set_clicked_fn(self._on_move_fn)
+                    self._rotate_btn = ui.Button("Rotate Robot", width=100, enabled=False)
+                    self._rotate_btn.set_clicked_fn(self._on_rotate_fn)
+                with ui.HStack(height=5):
+                    ui.Spacer(width=9)
+                    self._goal_label = ui.Label("Set Robot Goal", width=100)
+                    self._goal_label.set_tooltip("Set robot target specified as (X, Y, theta)")
+                    self.goal_coord = create_xyz(init={"X": -200, "Y": -400, "Z": 0})
+                with ui.HStack(height=5):
+                    ui.Spacer(width=5)
+                    self._navigate_btn = ui.Button("Navigate Robot", width=100, enabled=False)
+                    self._navigate_btn.set_clicked_fn(self._on_navigate_fn)
+                    self._stop_btn = ui.Button("Stop Robot", width=100, enabled=False)
+                    self._stop_btn.set_clicked_fn(self._on_navigate_stop_fn)
 
-    def _on_setup_fn(self, widget):
-        print("Setup Started")
-        self._stage = self._usd_context.get_stage()
-        setUpZAxis(self._stage)
-        self._rc = RobotController(
-            self._stage,
-            self._dc,
-            "/World/STR_V4_Physics_Caster_Sensors",
-            "/World/STR_V4_Physics_Caster_Sensors/chassis",
-            ["left_wheel_joint", "right_wheel_joint"],
-            [3, 3],
-            [1, 0.05],
-        )
-        self._rc.control_setup()
-        # start stepping
-        self._editor_event_subscription = self._editor.subscribe_to_update_events(self._rc.update)
+    async def _create_robot(self, task):
+        done, pending = await asyncio.wait({task})
+        if task in done:
+            print("Loading Robot Enviornment")
+            self._editor.set_camera_position("/OmniverseKit_Persp", 300, 300, 100, True)
+            self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            self._stage = self._usd_context.get_stage()
 
-    def _on_move_fn(self, widget):
-        print("Move Started")
-        self._rc.control_command(5, 5)
+            current_robot_index = self._robot_option.model.get_item_value_model().as_int
+            self._robot_prim_path = "/robot"
+            if current_robot_index == 0:
+                asset_path = "omniverse://ov-isaac-dev/Isaac/Robots/STR"
+                robot_usd = asset_path + "/STR_V4_Physics_Caster.usd"
+                self._robot_chassis = self._robot_prim_path + "/chassis"
+                self._robot_wheels = ["left_wheel_joint", "right_wheel_joint"]
+                self._robot_wheels_speed = [3, 3]
+            elif current_robot_index == 1:
+                asset_path = "omniverse://ov-isaac-dev/Isaac/Robots/Carter"
+                robot_usd = asset_path + "/carter_sphere_wheels_lidar.usd"
+                self._robot_chassis = self._robot_prim_path + "/chassis_link"
+                self._robot_wheels = ["left_wheel", "right_wheel"]
+                self._robot_wheels_speed = [2, 2]
 
-    def _on_rotate_fn(self, widget):
-        print("Rotate Started")
+            setUpZAxis(self._stage)
+            SetupPhysics(self._stage)
+
+            CreateBackground(
+                self._stage,
+                "omniverse://ov-isaac-dev/Isaac/Environments/Grid/gridroom_curved.usd",
+                background_path="/background",
+                offset=Gf.Vec3d(0, 0, -9),
+            )
+
+            # setup high-level robot prim
+            self.prim = self._stage.DefinePrim(self._robot_prim_path, "Xform")
+            self.prim.GetReferences().AddReference(robot_usd)
+
+    async def _play(self, task):
+        done, pending = await asyncio.wait({task})
+        if task in done:
+            self._editor.play()
+            await asyncio.sleep(1)
+
+    async def _on_setup_fn(self, task):
+        done, pending = await asyncio.wait({task})
+        if task in done:
+            self._stage = self._usd_context.get_stage()
+            # setup simple robot controller
+            self._rc = RobotController(
+                self._stage,
+                self._dc,
+                self._robot_prim_path,
+                self._robot_chassis,
+                self._robot_wheels,
+                self._robot_wheels_speed,
+                [1, 0.05],
+            )
+            self._rc.control_setup()
+            # start stepping
+            self._editor_event_subscription = self._editor.subscribe_to_update_events(self._rc.update)
+
+    def _on_environment_setup(self):
+        # wait for new stage before creating robot
+        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        task1 = asyncio.ensure_future(self._create_robot(task))
+        # set editor to play before setting up robot controller
+        task2 = asyncio.ensure_future(self._play(task1))
+        asyncio.ensure_future(self._on_setup_fn(task2))
+
+        # self._load_btn.enabled=False
+        self._move_btn.enabled = True
+        self._rotate_btn.enabled = True
+        self._navigate_btn.enabled = True
+        self._stop_btn.enabled = True
+
+    def _on_move_fn(self):
+        print("Moving forward")
+        self._rc.control_command(3, 3)
+
+    def _on_rotate_fn(self):
+        print("Rotating in-place")
         self._rc.control_command(3, -3)
 
-    def _on_navigate_fn(self, widget):
-        print("Navigate Started")
-        self._rc.set_goal(float(self._goal_x.value), float(self._goal_y.value), float(self._goal_theta.value))
+    def _on_navigate_fn(self):
+        goal_x = self.goal_coord["X"].model.get_value_as_float()
+        goal_y = self.goal_coord["Y"].model.get_value_as_float()
+        goal_z = self.goal_coord["Z"].model.get_value_as_float()
+        print("Navigating to goal ({}, {}, {})".format(goal_x, goal_y, goal_z))
+        self._rc.set_goal(goal_x, goal_y, goal_z)
         self._rc.enable_navigation(True)
 
-    def _on_navigate_stop_fn(self, widget):
-        print("Navigate Stopped")
+    def _on_navigate_stop_fn(self):
+        print("Navigation Stopped")
         self._rc.enable_navigation(False)
         self._rc.control_command(0, 0)
 
     def on_shutdown(self):
-        print("Shutting down environment grid setup")
-        _dynamic_control.release_dynamic_control_interface()
+        self._editor.stop()
+        self._window = None
+        gc.collect()

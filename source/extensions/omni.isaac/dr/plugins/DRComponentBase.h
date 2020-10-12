@@ -27,6 +27,7 @@ public:
         mDRLayerName = "";
         mCompName = "";
         mSeed = 12345;
+        mCurrentSeed = 0;
     }
     virtual ~DRComponentBase()
     {
@@ -45,7 +46,7 @@ public:
     bool mIncludeChild;
     std::vector<std::string> mIgnoreClassList;
     std::string mDRLayerName, mCompName;
-    int mSeed;
+    int mSeed, mCurrentSeed;
     std::default_random_engine mRandomGenerator;
 
 protected:

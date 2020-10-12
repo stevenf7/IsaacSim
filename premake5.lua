@@ -319,6 +319,7 @@ group "exts"
     include ("source/extensions/omni.isaac/urdf")
     include ("source/extensions/omni.isaac/samples")
     include ("source/extensions/omni.isaac/samples_internal")
+    include ("source/extensions/omni.isaac/synthetic_utils")
     include ("source/extensions/omni.isaac/tests")
     include ("source/extensions/omni.isaac/step_importer")
     include ("source/extensions/omni.isaac/exploded_view")

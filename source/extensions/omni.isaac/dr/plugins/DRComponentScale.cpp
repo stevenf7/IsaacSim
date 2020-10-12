@@ -68,7 +68,11 @@ void DRComponentScale::onComponentChange()
     scalePrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     scalePrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
     scalePrim.GetSeedAttr().Get(&mSeed);
-    mRandomGenerator.seed(mSeed);
+    if (mCurrentSeed != mSeed)
+    {
+        mRandomGenerator.seed(mSeed);
+        mCurrentSeed = mSeed;
+    }
 
     mPaths.clear();
     pxr::UsdRelationship primPaths = scalePrim.GetPrimPathsRel();

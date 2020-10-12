@@ -78,8 +78,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
-        # Actual test, notice it is "async" function, so "await" can be used if needed
-
+    # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_articulation_teleport(self, gpu=False):
         await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/franka/franka.usd")
@@ -182,7 +181,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(self._dc.set_articulation_dof_position_targets(art, dof_pos))
         await asyncio.sleep(1.0)
         await omni.kit.asyncapi.next_update()
-        self.assertAlmostEqual(dof_old, dof_pos[3], 4)
+        dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+        self.assertAlmostEqual(dof_old, dof_states["pos"][3], delta=0.01)
 
         # change dof velocity: set one dof at a time
         dof_pos_old = self._dc.get_dof_position(dof_ptr)
@@ -308,7 +308,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.assertLess(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1.5)
         # the wheels are offset 5cm from the wheel mesh, need to account for that in wheelbase
-        self.assertAlmostEqual(drive_target * 24.0 / (31.613607 - 5), ang_vel[2], 1)
+        self.assertAlmostEqual(drive_target * 24.0 / (31.613607 - 5), ang_vel[2], delta=0.1)
 
         drive_target = 2.5
 
@@ -329,6 +329,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_articulation_position_franka(self, gpu=False):
         await omni.kit.asyncapi.new_stage()
         (result, error) = await load_test_file("assets/robots/franka/franka.usd")
+        # (result, error) = await load_test_file("omniverse://ov-isaac-dev/Isaac/Robots/Franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)
@@ -370,6 +371,34 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(Gf.IsClose(dof_pos_new, new_pos, 0.01))
         dof_target_new = self._dc.get_dof_position_target(dof_ptr)
         self.assertTrue(Gf.IsClose(dof_target_new, new_pos, 0.01))
+
+    async def test_articulation_position_ur10(self, gpu=False):
+        await omni.kit.asyncapi.new_stage()
+        (result, error) = await load_test_file("assets/robots/ur10/ur10.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+        set_scene_physics_type(gpu)
+        # Start Simulation and wait
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.play()
+        await omni.kit.asyncapi.next_update()
+        art = self._dc.get_articulation("/ur10")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+
+        dof_ptr = self._dc.find_articulation_dof(art, "wrist_1_joint")
+
+        new_pos_list = [4.0, 2.0, 0, -2, -4]  # over pi, under pi , zero, and inverse.
+        for new_pos in new_pos_list:
+            # set new dof pos target
+            self.assertTrue(self._dc.set_dof_position_target(dof_ptr, new_pos))
+            await asyncio.sleep(2.0)
+            await omni.kit.asyncapi.next_update()
+            dof_pos_new = self._dc.get_dof_position(dof_ptr)
+            self.assertAlmostEqual(dof_pos_new, new_pos, delta=0.02)
+            dof_target_new = self._dc.get_dof_position_target(dof_ptr)
+            self.assertAlmostEqual(dof_target_new, new_pos, delta=0.02)
+
+        pass
 
     async def test_articulation_position_str(self, gpu=False):
         await omni.kit.asyncapi.new_stage()

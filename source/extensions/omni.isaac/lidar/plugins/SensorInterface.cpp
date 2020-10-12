@@ -267,6 +267,30 @@ float* CARB_ABI getAzimuthData(const char* primPath)
     }
 }
 
+carb::Float3* CARB_ABI getPointCloud(const char* primPath)
+{
+    if (g_stage && gLidarSensorManager)
+    {
+        omni::isaac::lidar::LidarSensor* sensor =
+            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getPointCloud().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Lidar Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Lidar Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
 bool CARB_ABI isLidar(const char* primPath)
 {
     if (g_stage && gLidarSensorManager)
@@ -471,6 +495,6 @@ void fillInterface(omni::isaac::lidar::LidarInterface& iface)
     iface.getIntensityData = getIntensityData;
     iface.getZenithData = getZenithData;
     iface.getAzimuthData = getAzimuthData;
-
+    iface.getPointCloud = getPointCloud;
     iface.isLidar = isLidar;
 }
