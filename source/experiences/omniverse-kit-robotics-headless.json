@@ -86,5 +86,13 @@
             "maxNumSteps": 3.0,
             "updateToUsd": false
         }
+    },
+    "ngx": {
+        "enabled": false
+    },
+    "isaac": {
+        "nucleus": {
+            "default": "omniverse://ov-isaac-dev"
+        }
     }
 }
