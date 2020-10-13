@@ -229,10 +229,29 @@ class DomainRandomization:
         )
         return prim
 
+    def create_mesh_comp(
+        self, prim_paths=[], mesh_list=[], mesh_range=(1, 1), duration=0.0, include_children=False, seed=12345
+    ):
+        """Create a mesh randomization component"""
+        stage = omni.usd.get_context().get_stage()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
+        result, prim = omni.kit.commands.execute(
+            "CreateMeshComponentCommand",
+            path=path,
+            prim_paths=prim_paths,
+            mesh_list=mesh_list,
+            mesh_range=mesh_range,
+            duration=duration,
+            include_children=include_children,
+            seed=seed,
+        )
+        return prim
+
     def create_visibility_comp(
         self, prim_paths=[], num_visible_range=(1, 1), duration=0.0, include_children=False, seed=12345
     ):
-        """Create a material randomization component"""
+        """Create a visibility randomization component"""
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/visibility_component", False)
