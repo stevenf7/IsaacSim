@@ -49,6 +49,8 @@ class Extension(omni.ext.IExt):
         self._selected_scenario.add_item("Light")
         self._selected_scenario.add_item("Texture")
         self._selected_scenario.add_item("Material")
+        self._selected_scenario.add_item("Mesh")
+        self._selected_scenario.add_item("Visibility")
         self._selected_scenario.selected_index = 0
         clear_stage_btn = sublayout.add_child(omni.kit.ui.Button("Clear Stage"))
         clear_stage_btn.set_clicked_fn(self._on_clear_stage)
@@ -68,9 +70,12 @@ class Extension(omni.ext.IExt):
         omni.usd.get_context().new_stage(None)
 
     def _on_load_stage(self, widget):
-        omni.usd.get_context().open_stage(
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Props/simple_cube_with_light.usd", None
-        )
+        stage_path = "omniverse://ov-isaac-dev/Isaac/Samples/DR/Props/simple_cube_with_light.usd"
+        if self._selected_scenario.selected_index == 7:
+            stage_path = "omniverse://ov-isaac-dev/Isaac/Samples/DR/Props/only_light.usd"
+        elif self._selected_scenario.selected_index == 8:
+            stage_path = "omniverse://ov-isaac-dev/Isaac/Samples/DR/Props/multiple_cubes_with_light.usd"
+        omni.usd.get_context().open_stage(stage_path, None)
 
     def _on_load_component(self, widget):
         if self._selected_scenario.selected_index == 0:
@@ -87,6 +92,10 @@ class Extension(omni.ext.IExt):
             self.add_texture_menu()
         elif self._selected_scenario.selected_index == 6:
             self.add_material_menu()
+        elif self._selected_scenario.selected_index == 7:
+            self.add_mesh_menu()
+        elif self._selected_scenario.selected_index == 8:
+            self.add_visibility_menu()
 
     def add_color_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
@@ -236,6 +245,34 @@ class Extension(omni.ext.IExt):
             loaded_material_paths=[],
             duration=0.3,
             include_children=False,
+            seed=12345,
+        )
+
+    def add_mesh_menu(self, parent=None):
+        stage = omni.usd.get_context().get_stage()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        # Create DR mesh component
+        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
+        result, prim = omni.kit.commands.execute(
+            "CreateMeshComponentCommand",
+            mesh_list=[
+                "omniverse://ov-isaac-dev/Isaac/Props/Blocks/nvidia_cube.usd",
+                "omniverse://ov-isaac-dev/Isaac/Props/Rubiks_Cube/rubiks_cube.usd",
+            ],
+            mesh_range=[3, 5],
+            seed=12345,
+        )
+
+    def add_visibility_menu(self, parent=None):
+        stage = omni.usd.get_context().get_stage()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        # Create DR visibility component
+        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/visibility_component", False)
+        result, prim = omni.kit.commands.execute(
+            "CreateVisibilityComponentCommand",
+            prim_paths=["/World/Cube", "/World/Cube_01", "/World/Cube_02", "/World/Cube_03", "/World/Cube_04"],
+            num_visible_range=[1, 3],
+            duration=0.3,
             seed=12345,
         )
 

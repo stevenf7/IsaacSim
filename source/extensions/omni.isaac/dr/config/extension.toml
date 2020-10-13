@@ -20,6 +20,9 @@ name = "omni.isaac.dr"
 name = "omni.isaac.dr.scripts.samples"
 
 [[python.modules]]
+name = "omni.isaac.dr.scripts.random_room_sample"
+
+[[python.modules]]
 name = "omni.isaac.DrSchema"
 public = false
 
