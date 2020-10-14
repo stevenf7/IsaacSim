@@ -1,0 +1,397 @@
+import omni
+from omni.isaac.dynamic_control import _dynamic_control
+import omni.syntheticdata._syntheticdata as _synthetic_data
+
+from pxr import UsdGeom, Gf, Sdf, Usd, PhysxSchema, PhysicsSchema, PhysicsSchemaTools, Semantics
+from jetbot_city.road_map import *
+from jetbot_city.road_map_path_helper import *
+from jetbot_city.road_map_generator import *
+
+from omni.isaac.synthetic_utils import DomainRandomization
+
+HDR_TEX_PATH_LIST = [
+    "abandoned_games_room_01_2k",
+    "abandoned_games_room_02_2k",
+    "abandoned_hall_01_2k",
+    "adams_place_bridge_2k",
+    "aerodynamics_workshop_2k",
+    "aft_lounge_2k",
+    "aircraft_workshop_01_2k",
+    "anniversary_lounge_2k",
+    "artist_workshop_2k",
+    "art_studio_2k",
+    "autoshop_01_2k",
+    "ballroom_2k",
+    "bathroom_2k",
+    "birbeck_street_underpass_2k",
+    "blender_institute_2k",
+    "blinds_2k",
+    "boiler_room_2k",
+    "bush_restaurant_2k",
+    "cabin_2k",
+    "carpentry_shop_01_2k",
+    "carpentry_shop_02_2k",
+    "cave_wall_2k",
+    "cayley_interior_2k",
+    "childrens_hospital_2k",
+    "cinema_hall_2k",
+    "cinema_lobby_2k",
+    "circus_arena_2k",
+    "colorful_studio_2k",
+    "combination_room_2k",
+    "concrete_tunnel_2k",
+    "de_balie_2k",
+    "dresden_station_night_2k",
+    "en_suite_2k",
+    "entrance_hall_2k",
+    "fireplace_2k",
+    "floral_tent_2k",
+    "garage_2k",
+    "georgentor_2k",
+    "glass_passage_2k",
+    "graffiti_shelter_2k",
+    "gym_01_2k",
+    "gym_entrance_2k",
+    "hall_of_finfish_2k",
+    "hall_of_mammals_2k",
+    "hamburg_hbf_2k",
+    "hikers_cave_2k",
+    "hospital_room_2k",
+    "hotel_room_2k",
+    "indoor_pool_2k",
+    "industrial_pipe_and_valve_01_2k",
+    "industrial_pipe_and_valve_02_2k",
+    "kiara_interior_2k",
+    "lapa_2k",
+    "leadenhall_market_2k",
+    "lebombo_2k",
+    "lookout_2k",
+    "lythwood_lounge_2k",
+    "lythwood_room_2k",
+    "machine_shop_01_2k",
+    "machine_shop_02_2k",
+    "machine_shop_03_2k",
+    "missile_launch_facility_01_2k",
+    "mosaic_tunnel_2k",
+    "museum_of_ethnography_2k",
+    "music_hall_01_2k",
+    "music_hall_02_2k",
+    "mutianyu_2k",
+    "old_apartments_walkway_2k",
+    "old_bus_depot_2k",
+    "old_depot_2k",
+    "parking_garage_2k",
+    "paul_lobe_haus_2k",
+    "phone_shop_2k",
+    "photo_studio_01_2k",
+    "pillars_2k",
+    "pump_house_2k",
+    "reading_room_2k",
+    "royal_esplanade_2k",
+    "sculpture_exhibition_2k",
+    "short_tunnel_2k",
+    "skylit_garage_2k",
+    "small_cathedral_2k",
+    "small_cave_2k",
+    "small_empty_house_2k",
+    "small_hangar_01_2k",
+    "small_hangar_02_2k",
+    "storeroom_2k",
+    "studio_small_01_2k",
+    "studio_small_02_2k",
+    "studio_small_03_2k",
+    "studio_small_04_2k",
+    "studio_small_05_2k",
+    "studio_small_06_2k",
+    "studio_small_07_2k",
+    "subway_entrance_2k",
+    "surgery_2k",
+    "teufelsberg_inner_2k",
+    "teufelsberg_lookout_2k",
+    "theater_01_2k",
+    "theater_02_2k",
+    "tv_studio_2k",
+    "veranda_2k",
+    "vintage_measuring_lab_2k",
+    "vulture_hide_2k",
+    "whale_skeleton_2k",
+    "wooden_lounge_2k",
+    "yaris_interior_garage_2k",
+]
+
+
+class Environment:
+    def __init__(self, omni_kit, z_height=0):
+        self.omni_kit = omni_kit
+        # 1=I 2=L 3=T, 4=X
+        self.tile_usd = {
+            0: None,
+            1: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4336p01.usd", "offset": 90},
+            2: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4342p01.usd", "offset": 90},
+            3: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4341p01.usd", "offset": 90},
+            4: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4343p01.usd", "offset": 90},
+        }  # list of tiles that can be spawned
+        self.texture_list = [
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png",
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png",
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png",
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
+        ]
+        self.tile_size = [25.0, 25.0]
+
+        # 1=UP, 2 = DOWN, 3 = LEFT, 4= RIGHT
+        self.direction_map = {1: 180, 2: 0, 3: -90, 4: 90}
+
+        self.prims = []  # list of spawned tiles
+        self.height = z_height  # height of the ground tiles
+        self.tiles = None
+        self.state = None
+        # because the ground plane is what the robot drives on, we only do this once. We can then re-generate the road as often as we need without impacting physics
+        self.setup_physics()
+        self.road_map = None
+        self.road_path_helper = None
+        self.map_generator = LoopRoadMapGenerator()
+
+        contents = omni.client.list("omniverse://ov-isaac-dev/Isaac/Props/Sortbot_Housing/Materials/Textures/")[1]
+        for entry in contents:
+            self.texture_list.append(
+                "omniverse://ov-isaac-dev/Isaac/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
+            )
+
+        contents = omni.client.list("omniverse://ov-isaac-dev/Isaac/Props/YCB/Axis_Aligned/")[1]
+        names = []
+        loaded_paths = []
+
+        for entry in contents:
+            names.append("omniverse://ov-isaac-dev/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
+            loaded_paths.append("/World/Meshes/mesh_component/mesh_" + entry.relative_path[0:-4])
+        print(loaded_paths)
+
+        self.omni_kit.create_prim("/World/Floor", "Xform")
+
+        stage = omni.usd.get_context().get_stage()
+        cubeGeom = UsdGeom.Cube.Define(stage, "/World/Floor/thefloor")
+        cubeGeom.CreateSizeAttr(300)
+        offset = Gf.Vec3f(75, 75, -150.1)
+        cubeGeom.AddTranslateOp().Set(offset)
+
+        prims = []
+        self.dr = DomainRandomization()
+        self.dr.toggle_manual_mode()
+        self.dr.create_mesh_comp(prim_paths=prims, mesh_list=names, mesh_range=[1, 1])
+        self.omni_kit.update(1 / 60.0)
+        print("waiting for materials to load...")
+
+        while self.omni_kit.is_loading():
+            self.omni_kit.update(1 / 60.0)
+
+        lights = []
+        for i in range(5):
+            prim_path = "/World/Lights/light_" + str(i)
+            self.omni_kit.create_prim(
+                prim_path,
+                "SphereLight",
+                translation=(0, 0, 200),
+                rotation=(0, 0, 0),
+                attributes={"radius": 10, "intensity": 1000.0, "color": (1.0, 1.0, 1.0)},
+            )
+            lights.append(prim_path)
+
+        frames = 1
+        self.dr.create_movement_comp(prim_paths=loaded_paths, min_range=(0, 0, 15), max_range=(150, 150, 15))
+        self.dr.create_rotation_comp(prim_paths=loaded_paths)
+        self.dr.create_visibility_comp(prim_paths=loaded_paths, num_visible_range=(15, 15))
+
+        self.dr.create_light_comp(light_paths=lights)
+        self.dr.create_movement_comp(prim_paths=lights, min_range=(0, 0, 30), max_range=(150, 150, 30))
+
+        self.dr.create_texture_comp(
+            prim_paths=["/World/Floor"], enable_project_uvw=True, texture_list=self.texture_list
+        )
+
+    def generate_lights(self):
+        # TODO: center this onto the track
+        prim_path = omni.kit.utils.get_stage_next_free_path(self.omni_kit.get_stage(), "/World/Env/Light", False)
+        self.prims.append(prim_path)
+        self.omni_kit.create_prim(
+            prim_path,
+            "RectLight",
+            translation=(75, 75, 100),
+            rotation=(0, 0, 0),
+            attributes={"height": 150, "width": 150, "intensity": 2000.0, "color": (1.0, 1.0, 1.0)},
+        )
+
+    def reset(self, shape):
+        # print(self.prims)
+        # cmd = omni.kit.builtin.init.DeletePrimsCommand(self.prims)
+        # cmd.do()
+        stage = omni.usd.get_context().get_stage()
+        for layer in stage.GetLayerStack():
+            edit = Sdf.BatchNamespaceEdit()
+            for path in self.prims:
+                prim_spec = layer.GetPrimAtPath(path)
+                if prim_spec is None:
+                    continue
+                parent_spec = prim_spec.realNameParent
+                if parent_spec is not None:
+                    edit.Add(path, Sdf.Path.emptyPath)
+            layer.Apply(edit)
+
+        self.prims = []
+        # self.pxrImageable.MakeInvisible()
+        self.generate_road(shape)
+        self.dr.randomize_once()
+
+        """
+        img = random.choice(HDR_TEX_PATH_LIST[0:1])
+        prim = self.skyboxes[img]
+        prim.GetAttribute("color").Set((random.random(),random.random(),random.random()))
+        xform_api = UsdGeom.XformCommonAPI(prim)
+        xform_api.SetRotate((0, 0, random.random()*360), UsdGeom.XformCommonAPI.RotationOrderZYX)
+        self.pxrImageable = UsdGeom.Imageable(prim)
+        self.pxrImageable.MakeVisible()
+        """
+
+        prefix = "omniverse://ov-isaac-dev/Library/Materials/HDR/"
+        stage = omni.usd.get_context().get_stage()
+        prim = stage.DefinePrim("/World/Env/EnvLight", "DomeLight")
+        prim.GetAttribute("intensity").Set(800)
+        prim.GetAttribute("color").Set((random.random(), random.random(), random.random()))
+        xform_api = UsdGeom.XformCommonAPI(prim)
+        xform_api.SetTranslate((0, 0, 0))
+        xform_api.SetRotate((0, 0, random.random() * 360), UsdGeom.XformCommonAPI.RotationOrderZYX)
+        prim.GetAttribute("texture:file").Set(str(prefix + random.choice(HDR_TEX_PATH_LIST) + ".hdr"))
+        self.prims.append("/World/Env/EnvLight")
+
+    def generate_road(self, shape):
+        self.tiles, self.state, self.road_map = self.map_generator.generate(shape)
+        tiles = self.tiles
+        state = self.state
+
+        self.road_path_helper = RoadMapPathHelper(self.road_map)
+
+        if tiles.shape != state.shape:
+            print("tiles and state sizes don't match")
+            return
+        stage = self.omni_kit.get_stage()
+        rows, cols = tiles.shape
+
+        self.valid_tiles = []
+        for x in range(0, rows):
+            for y in range(0, cols):
+                if tiles[x, y] != 0:
+                    pos_x = x * self.tile_size[0] + 12.5
+                    pos_y = y * self.tile_size[1] + 12.5
+                    self.create_tile(
+                        stage,
+                        self.tile_usd[tiles[x, y]]["asset"],
+                        Gf.Vec3d(pos_x, pos_y, self.height),
+                        self.direction_map[state[x, y]] + self.tile_usd[tiles[x, y]]["offset"],
+                    )
+
+        for x in range(0, rows):
+            for y in range(0, cols):
+                # print(paths[x,y])
+                if tiles[x, y] != 0:
+                    self.valid_tiles.append([x, y])
+
+    def generate_road_from_numpy(self, tiles, state):
+        self.tiles = tiles
+        self.state = state
+        self.road_map = RoadMap.create_from_numpy(self.tiles, self.state)
+        self.road_path_helper = RoadMapPathHelper(self.road_map)
+
+        if tiles.shape != state.shape:
+            print("tiles and state sizes don't match")
+            return
+        stage = self.omni_kit.get_stage()
+        rows, cols = tiles.shape
+
+        self.valid_tiles = []
+        for x in range(0, rows):
+            for y in range(0, cols):
+                if tiles[x, y] != 0:
+                    pos_x = x * self.tile_size[0] + 12.5
+                    pos_y = y * self.tile_size[1] + 12.5
+                    self.create_tile(
+                        stage,
+                        self.tile_usd[tiles[x, y]]["asset"],
+                        Gf.Vec3d(pos_x, pos_y, self.height),
+                        self.direction_map[state[x, y]] + self.tile_usd[tiles[x, y]]["offset"],
+                    )
+
+        for x in range(0, rows):
+            for y in range(0, cols):
+                # print(paths[x,y])
+                if tiles[x, y] != 0:
+                    self.valid_tiles.append([x, y])
+
+    def create_tile(self, stage, path, location, rotation):
+        prefix = "/World/Env/Tiles/Tile"
+        prim_path = omni.kit.utils.get_stage_next_free_path(stage, prefix, False)
+        self.prims.append(prim_path)
+        tile_prim = stage.DefinePrim(prim_path, "Xform")
+        tile_prim.GetReferences().AddReference(path)
+        xform = UsdGeom.Xformable(tile_prim)
+        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+        mat = Gf.Matrix4d().SetTranslate(location)
+        mat.SetRotateOnly(Gf.Rotation(Gf.Vec3d(0, 0, 1), rotation))
+        xform_op.Set(mat)
+
+    def setup_physics(self):
+        stage = self.omni_kit.get_stage()
+        # Add physics scene
+        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))
+        # Set gravity vector
+        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
+        # Set physics scene to use cpu physics
+        PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/World/Env/PhysicsScene"))
+        physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/World/Env/PhysicsScene")
+        physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
+        physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
+        physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
+        physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
+        physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
+        # Create physics plane for the ground
+        PhysicsSchemaTools.addGroundPlane(
+            stage, "/World/Env/GroundPlane", "Z", 100.0, Gf.Vec3f(0, 0, self.height), Gf.Vec3f(1.0)
+        )
+        # Hide the visual geometry
+        imageable = UsdGeom.Imageable(stage.GetPrimAtPath("/World/Env/GroundPlane/geom"))
+        if imageable:
+            imageable.MakeInvisible()
+
+    def get_valid_location(self):
+        if self.tiles is None:
+            print("cannot provide valid location until road is generated")
+            return (0, 0)
+        i = np.random.choice(len(self.valid_tiles), 1)[0]
+        dist, point = self.road_path_helper.distance_to_path(self.valid_tiles[i])
+        x, y = point
+        print("get valid location called", self.valid_tiles[i], point)
+        return (x * self.tile_size[0], y * self.tile_size[1])
+
+    # Compute the x,y tile location from the robot pose
+    def get_tile_from_pose(self, pose):
+        return (pose[0] / self.tile_size[0], pose[1] / self.tile_size[1])
+
+    def distance_to_path(self, robot_pose):
+        if self.road_path_helper is not None:
+            distance, point = self.road_path_helper.distance_to_path(self.get_tile_from_pose(robot_pose))
+            return distance * self.tile_size[0]
+
+    def distance_to_path_in_tiles(self, robot_pose):
+        if self.road_path_helper is not None:
+            distance, point = self.road_path_helper.distance_to_path(self.get_tile_from_pose(robot_pose))
+            return distance
+
+    def distance_to_boundary(self, robot_pose):
+        if self.road_path_helper is not None:
+            distance = self.road_path_helper.distance_to_boundary(self.get_tile_from_pose(robot_pose))
+            return distance * self.tile_size[0]
+
+    def is_inside_path_boundary(self, robot_pose):
+        if self.road_path_helper is not None:
+            return self.road_path_helper.is_inside_path_boundary(self.get_tile_from_pose(robot_pose))
