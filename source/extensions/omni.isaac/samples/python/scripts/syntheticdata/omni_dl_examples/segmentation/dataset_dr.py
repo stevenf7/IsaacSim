@@ -73,6 +73,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.dr_helper = DomainRandomization()
         self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        self.asset_path = nucleus_server + "/Isaac"
 
         self.categories = categories
         self.range_num_assets = (num_assets_min, max(num_assets_min, num_assets_max))
@@ -228,20 +230,20 @@ class RandomObjects(torch.utils.data.IterableDataset):
         The asset list will be updated for each component in update_dr_comp()
         """
         texture_list = [
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
+            self.asset_path + "/Samples/DR/Materials/Textures/checkered.png",
+            self.asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            self.asset_path + "/Samples/DR/Materials/Textures/picture_a.png",
+            self.asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
+            self.asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+            self.asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
         ]
         material_list = [
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/checkered.mdl",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/checkered_color.mdl",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/marble_tile.mdl",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/picture_a.mdl",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/picture_b.mdl",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/textured_wall.mdl",
+            self.asset_path + "/Samples/DR/Materials/checkered.mdl",
+            self.asset_path + "/Samples/DR/Materials/checkered_color.mdl",
+            self.asset_path + "/Samples/DR/Materials/marble_tile.mdl",
+            self.asset_path + "/Samples/DR/Materials/picture_a.mdl",
+            self.asset_path + "/Samples/DR/Materials/picture_b.mdl",
+            self.asset_path + "/Samples/DR/Materials/textured_wall.mdl",
         ]
         light_list = ["World/Light1", "World/Light2"]
         self.texture_comp = self.dr_helper.create_texture_comp([], True, texture_list)

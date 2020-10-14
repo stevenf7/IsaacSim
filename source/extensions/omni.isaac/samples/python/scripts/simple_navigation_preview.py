@@ -97,17 +97,19 @@ class Extension(omni.ext.IExt):
             self._editor.set_camera_position("/OmniverseKit_Persp", 300, 300, 100, True)
             self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
             self._stage = self._usd_context.get_stage()
+            nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+            self._asset_path = nucleus_server + "/Isaac"
 
             current_robot_index = self._robot_option.model.get_item_value_model().as_int
             self._robot_prim_path = "/robot"
             if current_robot_index == 0:
-                asset_path = "omniverse://ov-isaac-dev/Isaac/Robots/STR"
+                asset_path = self._asset_path + "/Robots/STR"
                 robot_usd = asset_path + "/STR_V4_Physics_Caster.usd"
                 self._robot_chassis = self._robot_prim_path + "/chassis"
                 self._robot_wheels = ["left_wheel_joint", "right_wheel_joint"]
                 self._robot_wheels_speed = [3, 3]
             elif current_robot_index == 1:
-                asset_path = "omniverse://ov-isaac-dev/Isaac/Robots/Carter"
+                asset_path = self._asset_path + "/Robots/Carter"
                 robot_usd = asset_path + "/carter_sphere_wheels_lidar.usd"
                 self._robot_chassis = self._robot_prim_path + "/chassis_link"
                 self._robot_wheels = ["left_wheel", "right_wheel"]
@@ -118,7 +120,7 @@ class Extension(omni.ext.IExt):
 
             CreateBackground(
                 self._stage,
-                "omniverse://ov-isaac-dev/Isaac/Environments/Grid/gridroom_curved.usd",
+                self._asset_path + "/Environments/Grid/gridroom_curved.usd",
                 background_path="/background",
                 offset=Gf.Vec3d(0, 0, -9),
             )
