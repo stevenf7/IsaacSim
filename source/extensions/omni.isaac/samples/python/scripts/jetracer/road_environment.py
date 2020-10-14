@@ -1,0 +1,202 @@
+import omni
+from omni.isaac.dynamic_control import _dynamic_control
+import omni.syntheticdata._syntheticdata as _synthetic_data
+import random
+from pxr import UsdGeom, Gf, Sdf, Usd, PhysxSchema, PhysicsSchema, PhysicsSchemaTools, Semantics
+
+from omni.isaac.synthetic_utils import DomainRandomization
+from gtc2020_track_utils import *
+
+LANE_WIDTH = 0.7  # width of track is w = 1.22
+TRACK_DIMS = [671, 1066]  # the track is within (0, 0) to (671.1 cm, 1066.8 cm)
+
+
+class Environment:
+    def __init__(self, omni_kit, z_height=0):
+        self.omni_kit = omni_kit
+
+        self.texture_list = [
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png",
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png",
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png",
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
+            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
+        ]
+
+        self.prims = []  # list of spawned tiles
+        self.height = z_height  # height of the ground tiles
+        self.state = None
+        # because the ground plane is what the robot drives on, we only do this once. We can then re-generate the road as often as we need without impacting physics
+        self.setup_physics()
+
+        contents = omni.client.list("omniverse://ov-isaac-dev/Isaac/Props/Sortbot_Housing/Materials/Textures/")[1]
+        for entry in contents:
+            self.texture_list.append(
+                "omniverse://ov-isaac-dev/Isaac/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
+            )
+
+        contents = omni.client.list("omniverse://ov-isaac-dev/Isaac/Props/YCB/Axis_Aligned/")[1]
+        names = []
+        loaded_paths = []
+
+        for entry in contents:
+            names.append("omniverse://ov-isaac-dev/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
+            loaded_paths.append("/World/Meshes/mesh_component/mesh_" + entry.relative_path[0:-4])
+        print(loaded_paths)
+
+        self.omni_kit.create_prim("/World/Floor", "Xform")
+
+        stage = omni.usd.get_context().get_stage()
+        cubeGeom = UsdGeom.Cube.Define(stage, "/World/Floor/thefloor")
+        cubeGeom.CreateSizeAttr(300)
+        offset = Gf.Vec3f(75, 75, -150.1)
+        cubeGeom.AddTranslateOp().Set(offset)
+
+        prims = []
+        self.dr = DomainRandomization()
+        self.dr.toggle_manual_mode()
+        self.dr.create_mesh_comp(prim_paths=prims, mesh_list=names, mesh_range=[1, 1])
+        self.omni_kit.update(1 / 60.0)
+        print("waiting for materials to load...")
+
+        while self.omni_kit.is_loading():
+            self.omni_kit.update(1 / 60.0)
+
+        lights = []
+        for i in range(5):
+            prim_path = "/World/Lights/light_" + str(i)
+            self.omni_kit.create_prim(
+                prim_path,
+                "SphereLight",
+                translation=(0, 0, 200),
+                rotation=(0, 0, 0),
+                attributes={"radius": 10, "intensity": 1000.0, "color": (1.0, 1.0, 1.0)},
+            )
+            lights.append(prim_path)
+
+        frames = 1
+        self.dr.create_movement_comp(
+            prim_paths=loaded_paths, min_range=(0, 0, 15), max_range=(TRACK_DIMS[0], TRACK_DIMS[1], 15)
+        )
+        self.dr.create_rotation_comp(prim_paths=loaded_paths)
+        self.dr.create_visibility_comp(prim_paths=loaded_paths, num_visible_range=(15, 15))
+
+        self.dr.create_light_comp(light_paths=lights)
+        self.dr.create_movement_comp(
+            prim_paths=lights, min_range=(0, 0, 30), max_range=(TRACK_DIMS[0], TRACK_DIMS[1], 30)
+        )
+
+        self.dr.create_texture_comp(
+            prim_paths=["/World/Floor"], enable_project_uvw=True, texture_list=self.texture_list
+        )
+
+    def generate_lights(self):
+        # TODO: center this onto the track
+        prim_path = omni.kit.utils.get_stage_next_free_path(self.omni_kit.get_stage(), "/World/Env/Light", False)
+        # self.prims.append(prim_path)
+        # LOCMOD revisit (don't add so it won't be removed on reset)
+        self.omni_kit.create_prim(
+            prim_path,
+            "RectLight",
+            translation=(75, 75, 100),
+            rotation=(0, 0, 0),
+            attributes={"height": 150, "width": 150, "intensity": 2000.0, "color": (1.0, 1.0, 1.0)},
+        )
+
+    def reset(self, shape):
+        # print(self.prims)
+
+        stage = omni.usd.get_context().get_stage()
+        for layer in stage.GetLayerStack():
+            edit = Sdf.BatchNamespaceEdit()
+            for path in self.prims:
+                prim_spec = layer.GetPrimAtPath(path)
+                if prim_spec is None:
+                    continue
+                parent_spec = prim_spec.realNameParent
+                if parent_spec is not None:
+                    edit.Add(path, Sdf.Path.emptyPath)
+            layer.Apply(edit)
+
+        self.prims = []
+
+        # self.pxrImageable.MakeInvisible()
+        # LOCMOD revisit
+        # self.generate_road(shape)
+        self.dr.randomize_once()
+
+        """
+        img = random.choice(HDR_TEX_PATH_LIST[0:1])
+        prim = self.skyboxes[img]
+        prim.GetAttribute("color").Set((random.random(),random.random(),random.random()))
+        xform_api = UsdGeom.XformCommonAPI(prim)
+        xform_api.SetRotate((0, 0, random.random()*360), UsdGeom.XformCommonAPI.RotationOrderZYX)
+        self.pxrImageable = UsdGeom.Imageable(prim)
+        self.pxrImageable.MakeVisible()
+        """
+
+        # prefix = "omniverse://ov-isaac-dev/Library/Materials/HDR/"
+        # stage = omni.usd.get_context().get_stage()
+        # LOCMOD revisit to fix weird wheel rotation when these enabled
+        # prim = stage.DefinePrim("/World/Env/EnvLight", "DomeLight")
+        # prim.GetAttribute("intensity").Set(800)
+        # prim.GetAttribute("color").Set((random.random(), random.random(), random.random()))
+        # xform_api = UsdGeom.XformCommonAPI(prim)
+        # xform_api.SetTranslate((0, 0, 0))
+        # xform_api.SetRotate((0, 0, random.random() * 360), UsdGeom.XformCommonAPI.RotationOrderZYX)
+        # prim.GetAttribute("texture:file").Set(str(prefix + random.choice(HDR_TEX_PATH_LIST) + ".hdr"))
+        # self.prims.append("/World/Env/EnvLight")
+
+    def generate_road(self, shape):
+        stage = self.omni_kit.get_stage()
+        self.add_track(stage)
+
+    def add_track(self, stage):
+        path = "omniverse://ov-isaac-dev/Users/hllu/JetRacer/RealJetracer/Jetracer_track.usd"
+        prefix = "/World/Env/Track"
+        prim_path = omni.kit.utils.get_stage_next_free_path(stage, prefix, False)
+        # self.prims.append(prim_path) #LOCMOD revisit (don't add so it won't be removed on reset)
+        track_prim = stage.DefinePrim(prim_path, "Xform")
+        track_prim.GetReferences().AddReference(path)
+        # xform = UsdGeom.Xformable(track_prim)
+        # xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+        # mat = Gf.Matrix4d().SetTranslate(location)
+        # mat.SetRotateOnly(Gf.Rotation(Gf.Vec3d(0, 0, 1), rotation))
+        # xform_op.Set(mat)
+
+    def setup_physics(self):
+        stage = self.omni_kit.get_stage()
+        # Add physics scene
+        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))
+        # Set gravity vector
+        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
+        # Set physics scene to use cpu physics
+        PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/World/Env/PhysicsScene"))
+        physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/World/Env/PhysicsScene")
+        physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
+        physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
+        physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
+        physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
+        physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
+        # Create physics plane for the ground
+        PhysicsSchemaTools.addGroundPlane(
+            stage, "/World/Env/GroundPlane", "Z", 100.0, Gf.Vec3f(0, 0, self.height), Gf.Vec3f(1.0)
+        )
+        # Hide the visual geometry
+        imageable = UsdGeom.Imageable(stage.GetPrimAtPath("/World/Env/GroundPlane/geom"))
+        if imageable:
+            imageable.MakeInvisible()
+
+    def get_valid_location(self):
+        # keep try until within the center track
+        dist = 1
+        x = 4
+        y = 4
+        while dist > LANE_WIDTH:
+            x = random.randint(0, TRACK_DIMS[0])
+            y = random.randint(0, TRACK_DIMS[1])
+            dist = center_line_dist(np.array([x, y]))
+
+        print("get valid location called", x, y)
+        return (x, y)

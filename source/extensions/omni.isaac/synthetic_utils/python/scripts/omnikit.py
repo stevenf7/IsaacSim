@@ -41,7 +41,7 @@ DEFAULT_CONFIG = {
     "renderer": "PathTracing",
     "samples_per_pixel_per_frame": 64,
     "denoiser": True,
-    "subdiv_refinement_level": 2,
+    "subdiv_refinement_level": 0,
     "headless": True,
     "max_bounces": 4,
     "max_specular_transmission_bounces": 6,
