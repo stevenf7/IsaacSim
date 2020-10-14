@@ -25,7 +25,8 @@ class Extension(omni.ext.IExt):
         self._editor = omni.kit.editor.get_editor_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._asset_path = "omniverse://ov-isaac-dev/Isaac"
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        self._asset_path = nucleus_server + "/Isaac"
 
         self._window = omni.kit.ui.Window(
             "Domain Randomizer Component Samples",
