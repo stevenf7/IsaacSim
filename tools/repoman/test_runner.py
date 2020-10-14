@@ -113,6 +113,17 @@ def prepare_package(root: str, platform_host: str, config: str, clean: bool, cop
     if not os.path.exists(folder_to_extract):
         packmanapi.extract_archive7z_to_folder(archive_path, folder_to_extract)
 
+    # Remove carb.sdiio.plugin.dll and libcarb.sdiio.plugin.so
+    if platform_host == "windows-x86_64":
+        del_file = f"{folder_to_extract}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}/plugins/carb_gfx/carb.sdiio.plugin.dll"
+    else:
+        del_file = f"{folder_to_extract}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}/plugins/carb_gfx/libcarb.sdiio.plugin.so"
+    if os.path.isfile(del_file):
+        logger.info(f"Removing: {del_file}")
+        os.remove(del_file)
+    else:
+        logger.error(f"File doesn't exist: {del_file}")
+
     # Copy test files from test_runner package
     if copy_test_data:
         src = f"{root}/_build/{platform_host}/{config}"
