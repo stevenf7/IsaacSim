@@ -52,7 +52,7 @@ std::ostream& operator<<(std::ostream& out, const UrdfInertia& inertia)
 
 std::ostream& operator<<(std::ostream& out, const UrdfInertial& inertial)
 {
-    out << "Interial: " << std::endl;
+    out << "Inertial: " << std::endl;
     out << " \t \t" << inertial.origin << std::endl;
     if (inertial.hasMass)
     {
