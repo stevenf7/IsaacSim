@@ -4,6 +4,7 @@ display_name = "Isaac Utilities"
 "omni.kit.editor" = {}
 "omni.physx" = {}
 "omni.isaac.dynamic_control" = {}
+"omni.isaac.synthetic_utils" = {}
 "omni.syntheticdata" = {}
 
 [[python.modules]]

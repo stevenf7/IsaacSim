@@ -18,86 +18,9 @@ import omni.ui
 import omni.syntheticdata._syntheticdata as gt
 from omni.kit.settings import get_settings_interface
 from omni.kit import pipapi
-from PIL import Image, ImageDraw
+from omni.isaac.synthetic_utils import visualization as vis
 
 EXTENSION_NAME = "Visualize Synthetic Data"
-
-# Helper functions
-def random_colours(N):
-    start = 0
-    hues = [(start + i / N) % 1.0 for i in range(N)]
-    colours = [list(colorsys.hsv_to_rgb(h, 0.9, 1.0)) for i, h in enumerate(hues)]
-    for color in colours:
-        color.append(1.0)
-    return colours
-
-
-def interpolate(p, a, b):
-    p0 = 1.0 - p
-    return [int(p0 * a[0] + p * b[0]), int(p0 * a[1] + p * b[1]), int(p0 * a[2] + p * b[2]), 255]
-
-
-def colorize_depth(depth_image, width, height):
-    colorized_image = np.zeros((height, width, 4))
-    depth_image[depth_image == 0.0] = 1e-5
-    depth_image = np.clip(depth_image, 0, 255)
-    depth_image -= np.min(depth_image)
-    depth_image /= np.max(depth_image)
-    colorized_image[:, :, 0] = depth_image
-    colorized_image[:, :, 1] = depth_image
-    colorized_image[:, :, 2] = depth_image
-    colorized_image[:, :, 3] = 1
-    colorized_image = (colorized_image * 255).astype(int)
-    colorized_image = colorized_image.reshape(colorized_image.size)
-    return colorized_image.tolist()
-
-
-def colorize_instance(instance_image, width, height, num_colors=None):
-    instance_mappings = instance_image[:, :, 0]
-    instance_list = np.unique(instance_mappings)
-    if num_colors is None:
-        num_colors = np.max(instance_list) + 1
-    color_pixels = random_colours(num_colors)
-    instance_masks = np.zeros((len(instance_list), *instance_mappings.shape), dtype=np.bool)
-    index_list = []
-    for index, instance_id in enumerate(instance_list):
-        instance_masks[index] = instance_mappings == instance_id
-        index_list.append(instance_id)
-    color_image = np.zeros((height, width, 4))
-    for index, mask, colour in zip(index_list, instance_masks, color_pixels):
-        color_image[mask] = color_pixels[index]
-    color_image_list = (color_image * 255).astype(int)
-    color_image_list = color_image_list.reshape(color_image_list.size)
-    return color_image_list.tolist()
-
-
-def colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb):
-    semantic_id_list = []
-    bbox_2d_list = []
-    rgb_img = Image.fromarray(bboxes_2d_rgb)
-    rgb_img_draw = ImageDraw.Draw(rgb_img)
-    for bbox_2d in bboxes_2d_data:
-        if bbox_2d[1] > 0:
-            semantic_id_list.append(bbox_2d[1])
-            bbox_2d_list.append(bbox_2d)
-    semantic_id_list_np = np.unique(np.array(semantic_id_list))
-    color_list = random_colours(len(semantic_id_list_np.tolist()))
-    for bbox_2d in bbox_2d_list:
-        index = np.where(semantic_id_list_np == bbox_2d[1])[0][0]
-        bbox_color = color_list[index]
-        rgb_img_draw.rectangle(
-            [(bbox_2d[2], bbox_2d[3]), (bbox_2d[4], bbox_2d[5])],
-            outline=(
-                int(255 * bbox_color[0]),
-                int(255 * bbox_color[1]),
-                int(255 * bbox_color[2]),
-                int(255 * bbox_color[3]),
-            ),
-            width=2,
-        )
-    bboxes_2d_rgb = np.array(rgb_img)
-    bboxes_2d_rgb = bboxes_2d_rgb.reshape(bboxes_2d_rgb.size)
-    return bboxes_2d_rgb
 
 
 class Extension(omni.ext.IExt):
@@ -155,7 +78,8 @@ class Extension(omni.ext.IExt):
                         )
                         depth_data = (depth_data - np.min(depth_data)) * 255 / (np.max(depth_data) - np.min(depth_data))
                         depth_data = np.clip(depth_data, 0, 255)
-                        colorize_depth_image = colorize_depth(depth_data, depth_width, depth_height)
+                        colorize_depth_image = vis.colorize_depth(depth_data, depth_width, depth_height, num_channels=4)
+                        colorize_depth_image = colorize_depth_image.reshape(colorize_depth_image.size).tolist()
 
                     # Instance Segmentation - Numpy
                     if self._instance_enable:
@@ -170,9 +94,10 @@ class Extension(omni.ext.IExt):
                         image_instance_data = np.frombuffer(instance_data, dtype=np.uint8).reshape(
                             *instance_data.shape, -1
                         )
-                        colorize_instance_image = colorize_instance(
-                            image_instance_data, instance_width, instance_height
+                        colorize_instance_image = vis.colorize_segmentation(
+                            image_instance_data, instance_width, instance_height, num_channels=4
                         )
+                        colorize_instance_image = colorize_instance_image.reshape(colorize_instance_image.size).tolist()
 
                     # Semantic Segmentation - Numpy
                     if self._semantic_enable:
@@ -187,9 +112,10 @@ class Extension(omni.ext.IExt):
                         image_semantic_data = np.frombuffer(semantic_data, dtype=np.uint8).reshape(
                             *semantic_data.shape, -1
                         )
-                        colorize_semantic_image = colorize_instance(
-                            image_semantic_data, semantic_width, semantic_height, num_colors=20
+                        colorize_semantic_image = vis.colorize_segmentation(
+                            image_semantic_data, semantic_width, semantic_height, num_channels=4, num_colors=20
                         )
+                        colorize_semantic_image = colorize_semantic_image.reshape(colorize_semantic_image.size).tolist()
 
                     # BBox 2D Tight - Numpy
                     if self._bbox_2d_tight_enable and self._rgb_enable:
@@ -201,7 +127,10 @@ class Extension(omni.ext.IExt):
                         bboxes_2d_tight_rgb = np.frombuffer(rgb_data, dtype=np.uint8).reshape(
                             (rgb_height, rgb_width, 4)
                         )
-                        bboxes_2d_tight_rgb = colorize_bboxes(bboxes_2d_tight_data, bboxes_2d_tight_rgb)
+                        bboxes_2d_tight_rgb = vis.colorize_bboxes(
+                            bboxes_2d_tight_data, bboxes_2d_tight_rgb, num_channels=4
+                        )
+                        bboxes_2d_tight_rgb = bboxes_2d_tight_rgb.reshape(bboxes_2d_tight_rgb.size)
 
                     # BBox 2D Loose - Numpy
                     if self._bbox_2d_loose_enable and self._rgb_enable:
@@ -213,7 +142,10 @@ class Extension(omni.ext.IExt):
                         bboxes_2d_loose_rgb = np.frombuffer(rgb_data, dtype=np.uint8).reshape(
                             (rgb_height, rgb_width, 4)
                         )
-                        bboxes_2d_loose_rgb = colorize_bboxes(bboxes_2d_loose_data, bboxes_2d_loose_rgb)
+                        bboxes_2d_loose_rgb = vis.colorize_bboxes(
+                            bboxes_2d_loose_data, bboxes_2d_loose_rgb, num_channels=4
+                        )
+                        bboxes_2d_loose_rgb = bboxes_2d_loose_rgb.reshape(bboxes_2d_loose_rgb.size)
 
                     # Visualize via omni.ui
                     label_list = []
