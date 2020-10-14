@@ -8,6 +8,8 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        self._asset_path = nucleus_server + "/Isaac"
         self._window = ui.Window("Simple Room Python Sample", width=600, height=400)
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(
             ADD_SIMPLE_ROOM_PYTHON_SAMPLE_MENU, self._menu_callback
@@ -32,9 +34,7 @@ class Extension(omni.ext.IExt):
         self._stage = None
 
     def _on_load_stage(self):
-        omni.usd.get_context().open_stage(
-            "omniverse://ov-isaac-dev/Isaac/Environments/Simple_Room/simple_room.usd", None
-        )
+        omni.usd.get_context().open_stage(self._asset_path + "/Environments/Simple_Room/simple_room.usd", None)
 
     def _on_load_component(self):
         """Creates DR components with various attributes
@@ -42,12 +42,12 @@ class Extension(omni.ext.IExt):
 
         # List of textures to randomize from
         texture_list = [
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
+            self._asset_path + "/Samples/DR/Materials/Textures/checkered.png",
+            self._asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            self._asset_path + "/Samples/DR/Materials/Textures/picture_a.png",
+            self._asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
+            self._asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+            self._asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
         ]
 
         # Some prim paths to used for randomization
