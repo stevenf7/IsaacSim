@@ -82,8 +82,9 @@ class Extension(omni.ext.IExt):
             self._editor.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
             self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
             self._stage = self._usd_context.get_stage()
-            asset_path = "omniverse://ov-isaac-dev/Isaac/Robots/Kaya"
-            kaya_usd = asset_path + "/kaya.usd"
+            nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+            asset_path = nucleus_server + "/Isaac"
+            kaya_usd = asset_path + "/Robots/Kaya/kaya.usd"
             speed_gain = 10.0
 
             setUpZAxis(self._stage)
@@ -94,7 +95,7 @@ class Extension(omni.ext.IExt):
             )
             CreateBackground(
                 self._stage,
-                "omniverse://ov-isaac-dev/Isaac/Environments/Grid/gridroom_curved.usd",
+                asset_path + "/Environments/Grid/gridroom_curved.usd",
                 background_path="/background",
                 offset=Gf.Vec3d(0, 0, -9),
             )
