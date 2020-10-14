@@ -8,10 +8,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
-import torch
-import torch.nn.functional as F
-
-
 def torch_isin(tensor, test_elements):
     """PyTorch version of the numpy `is1d` function
     https://github.com/numpy/numpy/blob/v1.17.0/numpy/lib/arraysetops.py#L484
@@ -22,6 +18,9 @@ def torch_isin(tensor, test_elements):
         Bool array of same shape as `tensor` with values `True` if the
         corresponding tensor element is also found in `test_elements`.
     """
+
+    import torch
+    import torch.nn.functional as F
 
     ar1, rev_idx = torch.unique(tensor, return_inverse=True)
     ar2 = torch.unique(test_elements)

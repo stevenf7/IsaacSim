@@ -12,18 +12,25 @@ import random
 import colorsys
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image, ImageDraw
 
 
-def random_colours(N):
+def random_colours(N, enable_random=True, num_channels=3):
     """
     Generate random colors.
     Generate visually distinct colours by linearly spacing the hue 
     channel in HSV space and then convert to RGB space.
     """
-    start = random.random()
+    start = 0
+    if enable_random:
+        start = random.random()
     hues = [(start + i / N) % 1.0 for i in range(N)]
-    colours = [colorsys.hsv_to_rgb(h, 0.9, 1.0) for i, h in enumerate(hues)]
-    random.shuffle(colours)
+    colours = [list(colorsys.hsv_to_rgb(h, 0.9, 1.0)) for i, h in enumerate(hues)]
+    if num_channels == 4:
+        for color in colours:
+            color.append(1.0)
+    if enable_random:
+        random.shuffle(colours)
     return colours
 
 
@@ -61,3 +68,63 @@ def semantic_segmentation_to_rgb(semantic_segmentation):
     for mask, colour in zip(semantic_segmentation, colours):
         semantic_rgb[mask] = colour
     return semantic_rgb
+
+
+def colorize_depth(depth_image, width, height, num_channels=3):
+    colorized_image = np.zeros((height, width, num_channels))
+    depth_image[depth_image == 0.0] = 1e-5
+    depth_image = np.clip(depth_image, 0, 255)
+    depth_image -= np.min(depth_image)
+    depth_image /= np.max(depth_image)
+    colorized_image[:, :, 0] = depth_image
+    colorized_image[:, :, 1] = depth_image
+    colorized_image[:, :, 2] = depth_image
+    if num_channels == 4:
+        colorized_image[:, :, 3] = 1
+    colorized_image = (colorized_image * 255).astype(int)
+    return colorized_image
+
+
+def colorize_segmentation(segmentation_image, width, height, num_channels=3, num_colors=None):
+    segmentation_mappings = segmentation_image[:, :, 0]
+    segmentation_list = np.unique(segmentation_mappings)
+    if num_colors is None:
+        num_colors = np.max(segmentation_list) + 1
+    color_pixels = random_colours(num_colors, False, num_channels)
+    color_pixels = [[color_pixel[i] * 255 for i in range(num_channels)] for color_pixel in color_pixels]
+    segmentation_masks = np.zeros((len(segmentation_list), *segmentation_mappings.shape), dtype=np.bool)
+    index_list = []
+    for index, segmentation_id in enumerate(segmentation_list):
+        segmentation_masks[index] = segmentation_mappings == segmentation_id
+        index_list.append(segmentation_id)
+    color_image = np.zeros((height, width, num_channels), dtype=np.uint8)
+    for index, mask, colour in zip(index_list, segmentation_masks, color_pixels):
+        color_image[mask] = color_pixels[index]
+    return color_image
+
+
+def colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb, num_channels=3):
+    semantic_id_list = []
+    bbox_2d_list = []
+    rgb_img = Image.fromarray(bboxes_2d_rgb)
+    rgb_img_draw = ImageDraw.Draw(rgb_img)
+    for bbox_2d in bboxes_2d_data:
+        if bbox_2d[1] > 0:
+            semantic_id_list.append(bbox_2d[1])
+            bbox_2d_list.append(bbox_2d)
+    semantic_id_list_np = np.unique(np.array(semantic_id_list))
+    color_list = random_colours(len(semantic_id_list_np.tolist()), False, num_channels)
+    for bbox_2d in bbox_2d_list:
+        index = np.where(semantic_id_list_np == bbox_2d[1])[0][0]
+        bbox_color = color_list[index]
+        outline = (int(255 * bbox_color[0]), int(255 * bbox_color[1]), int(255 * bbox_color[2]))
+        if num_channels == 4:
+            outline = (
+                int(255 * bbox_color[0]),
+                int(255 * bbox_color[1]),
+                int(255 * bbox_color[2]),
+                int(255 * bbox_color[3]),
+            )
+        rgb_img_draw.rectangle([(bbox_2d[2], bbox_2d[3]), (bbox_2d[4], bbox_2d[5])], outline=outline, width=2)
+    bboxes_2d_rgb = np.array(rgb_img)
+    return bboxes_2d_rgb

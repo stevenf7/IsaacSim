@@ -24,6 +24,7 @@ import numpy as np
 from omni.kit.settings import get_settings_interface
 from omni.kit import pipapi
 from PIL import Image, ImageDraw
+from omni.isaac.synthetic_utils import visualization as vis
 
 pipapi.install("pillow")
 pipapi.install("matplotlib")
@@ -111,55 +112,6 @@ class DataWriter:
                     raise NotImplementedError
             self.q.task_done()
 
-    def random_colours(self, N):
-        start = 0
-        hues = [(start + i / N) % 1.0 for i in range(N)]
-        colours = [list(colorsys.hsv_to_rgb(h, 0.9, 1.0)) for i, h in enumerate(hues)]
-        return colours
-
-    def colorize_segmentation(self, segmentation_image, width=1280, height=720, num_colors=None):
-        segmentation_mappings = segmentation_image[:, :, 0]
-        segmentation_list = np.unique(segmentation_mappings)
-        if num_colors is None:
-            num_colors = np.max(segmentation_list) + 1
-        color_pixels = self.random_colours(num_colors)
-        color_pixels = [
-            [color_pixel[0] * 255, color_pixel[1] * 255, color_pixel[2] * 255] for color_pixel in color_pixels
-        ]
-        segmentation_masks = np.zeros((len(segmentation_list), *segmentation_mappings.shape), dtype=np.bool)
-        index_list = []
-        for index, segmentation_id in enumerate(segmentation_list):
-            segmentation_masks[index] = segmentation_mappings == segmentation_id
-            index_list.append(segmentation_id)
-        color_image = np.zeros((height, width, 3), dtype=np.uint8)
-        for index, mask, colour in zip(index_list, segmentation_masks, color_pixels):
-            color_image[mask] = color_pixels[index]
-        color_image_list = color_image
-        return np.array(color_image_list)
-
-    def colorize_bboxes(self, bboxes_2d_data, bboxes_2d_rgb):
-        semantic_id_list = []
-        bbox_2d_list = []
-        rgb_img = Image.fromarray(bboxes_2d_rgb)
-        rgb_img_draw = ImageDraw.Draw(rgb_img)
-        for bbox_2d in bboxes_2d_data:
-            if bbox_2d[1] > 0:
-                semantic_id_list.append(bbox_2d[1])
-                bbox_2d_list.append(bbox_2d)
-        semantic_id_list_np = np.unique(np.array(semantic_id_list))
-        color_list = self.random_colours(len(semantic_id_list_np.tolist()))
-        for bbox_2d in bbox_2d_list:
-            index = np.where(semantic_id_list_np == bbox_2d[1])[0][0]
-            bbox_color = color_list[index]
-            rgb_img_draw.rectangle(
-                [(bbox_2d[2], bbox_2d[3]), (bbox_2d[4], bbox_2d[5])],
-                outline=(int(255 * bbox_color[0]), int(255 * bbox_color[1]), int(255 * bbox_color[2])),
-                width=2,
-            )
-        bboxes_2d_rgb = np.array(rgb_img)
-        # bboxes_2d_rgb = bboxes_2d_rgb.reshape(bboxes_2d_rgb.size)
-        return bboxes_2d_rgb
-
     def save_segmentation(self, data_type, data, filename, width=1280, height=720, display_rgb=True, save_npy=True):
         # Save ground truth data locally as npy
         if data_type == "INSTANCE" and save_npy:
@@ -169,7 +121,7 @@ class DataWriter:
         if display_rgb:
             image_data = np.frombuffer(data, dtype=np.uint8).reshape(*data.shape, -1)
             num_colors = 20 if data_type == "SEMANTIC" else None
-            color_image = self.colorize_segmentation(image_data, width, height, num_colors)
+            color_image = vis.colorize_segmentation(image_data, width, height, 3, num_colors)
             color_image_rgb = Image.fromarray(color_image, "RGB")
             if data_type == "INSTANCE":
                 color_image_rgb.save(f"{self.instance_folder}/{filename}.png")
@@ -197,7 +149,7 @@ class DataWriter:
         if data_type == "BBOX2DLOOSE" and save_npy:
             np.save(self.bbox_2d_loose_folder + filename + ".npy", data)
         if display_rgb and rgb_data is not None:
-            color_image = self.colorize_bboxes(data, rgb_data)
+            color_image = vis.colorize_bboxes(data, rgb_data)
             color_image_rgb = Image.fromarray(color_image, "RGBA")
             if data_type == "BBOX2DTIGHT":
                 color_image_rgb.save(f"{self.bbox_2d_tight_folder}/{filename}.png")
