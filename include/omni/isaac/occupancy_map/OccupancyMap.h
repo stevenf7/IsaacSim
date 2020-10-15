@@ -22,23 +22,14 @@ namespace occupancy_map
 
 struct OccupancyMap
 {
-    // struct GeneratedData{
-    //     std::vector<carb::Float3> positions;
-    //     std::vector<carb::Float3> values;
-    //     carb::Float3 minPosition;
-    //     carb::Float3 maxPosition;
-    // };
 
 
     CARB_PLUGIN_INTERFACE("omni::isaac::occupancy_map::OccupancyMap", 0, 1);
 
-    void(CARB_ABI* generateMap)(carb::Float3 inputOrigin,
-                                carb::Float3 minPoint,
-                                carb::Float3 maxPoint,
-                                float gridResolution,
-                                float rayResolution,
-                                float minSearchDistance,
-                                float occupancyThreshold);
+    void(CARB_ABI* generateMap)(
+        float gridResolution, float rayResolution, float minSearchDistance, float occupancyThreshold, int maxRays);
+    void(CARB_ABI* update)();
+    void(CARB_ABI* setTransform)(carb::Float3 inputOrigin, carb::Float2 minPoint, carb::Float2 maxPoint);
     std::vector<carb::Float3>(CARB_ABI* getOccupiedPositions)();
     std::vector<carb::Float3>(CARB_ABI* getFreePositions)();
     carb::Float3(CARB_ABI* getMinBound)();
