@@ -29,6 +29,8 @@ class Extension(omni.ext.IExt):
         self._syntheticdata = gt.acquire_syntheticdata_interface()
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400)
         self._visualize_window = omni.ui.Window("Visualization", width=300, height=300)
+        self._window.deferred_dock_in("Details")
+        self._visualize_window.deferred_dock_in("Stage")
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/{EXTENSION_NAME}", self._menu_callback)
         self._settings = get_settings_interface()
         self._window.visible = False

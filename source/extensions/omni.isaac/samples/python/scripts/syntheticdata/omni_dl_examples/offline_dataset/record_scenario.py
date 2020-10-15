@@ -171,6 +171,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Dataset test")
     parser.add_argument("--scenario", type=str, help="Scenario to load from omniverse server")
+    parser.add_argument("--num_frames", type=int, default=10, help="Number of frames to record")
     args = parser.parse_args()
 
     dataset = RandomScenario(args.scenario)
@@ -179,3 +180,5 @@ if __name__ == "__main__":
     print("Loading materials. Will generate data soon...")
     for image in dataset:
         print("ID: ", dataset.cur_idx)
+        if dataset.cur_idx == args.num_frames:
+            break
