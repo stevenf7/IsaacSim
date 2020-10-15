@@ -190,6 +190,7 @@ class Extension(omni.ext.IExt):
         self._window = ui.Window(EXTENSION_NAME, width=600, height=400)
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/{EXTENSION_NAME}", self._menu_callback)
         self._window.visible = False
+        self._window.deferred_dock_in("Content")
         self.sub_update = self._editor.subscribe_to_update_events(self._update)
         self._settings = get_settings_interface()
         self._build_window_ui()
