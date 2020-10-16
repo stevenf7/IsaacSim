@@ -11,7 +11,6 @@ EXTENSION_NAME = "Lidar"
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        print("Starting Lidar extension")
         self._lidar = _lidar.acquire_lidar_interface()
         self._menu = LidarMenu()
 

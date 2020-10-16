@@ -138,4 +138,4 @@ class Extension(omni.ext.IExt):
                         contact_pub.GetRelationship("ignoredPrims").AddTarget(ignored_contact)
 
     def on_shutdown(self):
-        print("Shutting down environment grid setup")
+        pass

@@ -49,7 +49,7 @@ const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.occupancy_map.plug
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::occupancy_map::OccupancyMap)
-CARB_PLUGIN_IMPL_DEPS(carb::physics::PhysX, omni::kit::IStageUpdate)
+CARB_PLUGIN_IMPL_DEPS(carb::physics::PhysX, omni::kit::IStageUpdate, omni::renderer::IDebugDraw)
 
 // private stuff
 namespace

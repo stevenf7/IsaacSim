@@ -117,8 +117,8 @@ class Extension(omni.ext.IExt):
 
                     self.generate_image_btn = ui.Button("Generate Image", clicked_fn=self._generate_image)
                     self.generate_image_btn.visible = False
-                    self.draw_voxel_btn = ui.Button("Draw Voxels", clicked_fn=self._draw_instances)
-                    self.draw_voxel_btn.visible = False
+                    # self.draw_voxel_btn = ui.Button("Draw Voxels", clicked_fn=self._draw_instances)
+                    # self.draw_voxel_btn.visible = False
 
     def _menu_callback(self, name, visible):
         self._window.visible = not self._window.visible
@@ -184,7 +184,7 @@ class Extension(omni.ext.IExt):
             self.max_rays.model.get_value_as_int(),
         )
         self.generate_image_btn.visible = True
-        self.draw_voxel_btn.visible = True
+        # self.draw_voxel_btn.visible = True
 
     def _generate_image(self):
         from PIL import Image, ImageDraw

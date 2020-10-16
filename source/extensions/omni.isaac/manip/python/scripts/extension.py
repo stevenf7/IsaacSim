@@ -117,8 +117,6 @@ class Extension(omni.ext.IExt):
         return
 
     def on_startup(self):
-        print("Starting Manip Extension")
-
         self.manip = None
         self.editor = None
         self.usd_context = None

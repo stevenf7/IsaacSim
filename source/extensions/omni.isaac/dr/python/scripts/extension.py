@@ -12,7 +12,6 @@ class Extension(omni.ext.IExt):
         self._menu._build_dr_ui()
 
     def on_shutdown(self):
-        print("Shutting down Domain Randomizer")
         _dr.release_dr_interface(self._dr)
         self._menu.shutdown()
         self._menu = None

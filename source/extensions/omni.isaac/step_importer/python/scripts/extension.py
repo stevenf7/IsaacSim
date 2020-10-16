@@ -515,7 +515,6 @@ class StepImporter(omni.ext.IExt):
                 self._select_file()
 
     def on_shutdown(self):
-        carb.log_info("Shutting down Step Importer")
         if self.step_file:
             self._si.release_step_file(self.step_file)
         if self.exporter:

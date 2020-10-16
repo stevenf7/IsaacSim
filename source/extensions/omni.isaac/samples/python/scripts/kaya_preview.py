@@ -65,8 +65,6 @@ class Extension(omni.ext.IExt):
         self._gains = (4, 4, 0.5)
         self._vel_target = np.zeros(3)
 
-        print("Kaya Preview Startup Complete")
-
     def _on_gamepad_setup(self, widget):
         if self.kaya is None:
             print("Cannot start gamepad, kaya not valid")
@@ -132,7 +130,6 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         """Cleanup objects on extension shutdown
         """
-        print("Shutting down Kaya Preview")
 
         self._manip.unbind_gamepad()
         self._editor.stop()

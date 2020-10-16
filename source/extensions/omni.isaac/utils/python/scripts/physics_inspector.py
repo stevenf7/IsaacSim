@@ -11,7 +11,6 @@ import carb
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        print("Starting Physics Inspector")
         self._usd_context = omni.usd.get_context()
         self._dc = dc.acquire_dynamic_control_interface()
         self._editor = omni.kit.editor.get_editor_interface()
