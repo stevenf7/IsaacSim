@@ -11,3 +11,5 @@ name = "omni.isaac.step_importer"
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false
 
+[python.pipapi]
+requirements = ["numpy", "psutil"]

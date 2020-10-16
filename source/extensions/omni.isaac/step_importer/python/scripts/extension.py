@@ -89,7 +89,6 @@ class StepImporter(omni.ext.IExt):
                 for key, value in connections.items():
                     self._filebrowser.add_model_as_subtree(NucleusModel(value, value))
 
-                omni.kit.pipapi.install("psutil")
                 import psutil
 
                 partitions = psutil.disk_partitions()
