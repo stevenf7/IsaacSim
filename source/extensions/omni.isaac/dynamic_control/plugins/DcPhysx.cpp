@@ -286,7 +286,7 @@ DcContext* createContext()
     else
     {
         auto desc = physx->getInterfaceDesc();
-        printf("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
+        DC_LOG_INFO("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
     }
 
     ++g_dcCtxId;

@@ -36,9 +36,7 @@ try:
 
     use_torch = True
 except ImportError as err:
-    import warnings
-
-    warnings.warn(f"{err}", Warning)
+    carb.log_info(f"Torch could not be imported: {err}")
     use_torch = False
 
 from .camera import get_view_proj_mat

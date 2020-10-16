@@ -14,7 +14,6 @@ EXTENSION_NAME = "Robot Engine Bridge"
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        print("Starting Robot Engine Bridge Extension")
         self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
 
         menu_path = f"Window/Isaac/{EXTENSION_NAME}"
@@ -86,7 +85,6 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         self._menu.shutdown()
         self._menu = None
-        print("Shutting down Robot Engine Bridge")
         _robot_engine_bridge.release_robot_engine_bridge_interface(self._re_bridge)
 
     def _on_init_stage_load_fn(self, widget):

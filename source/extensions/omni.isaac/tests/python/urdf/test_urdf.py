@@ -16,13 +16,11 @@ from omni.isaac.urdf import _urdf
 class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
-        print("Starting URDF Importer")
         self._urdf_interface = _urdf.acquire_urdf_interface()
         pass
 
     # After running each test
     async def tearDown(self):
-        print("Shutting down URDF importer")
         # _urdf.release_urdf_interface(self._urdf_interface)
         pass
 
