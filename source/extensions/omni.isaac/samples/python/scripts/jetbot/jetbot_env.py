@@ -95,16 +95,6 @@ class JetbotEnv:
 
         return done
 
-    def to_numpy(self, data):
-        """Helper to ensure data is on the CPU as a numpy array.
-            """
-        if isinstance(data, np.ndarray):
-            return data
-        elif type(data).__name__ == "Tensor":
-            return data.cpu().numpy()
-        else:
-            raise ValueError(f"Unable to convert to numpy data of type {type(data)}.")
-
     def step(self, action):
         if self.initialized:
             self.previous_loc = self.current_loc

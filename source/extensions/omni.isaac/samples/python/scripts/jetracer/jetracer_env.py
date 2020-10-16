@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 from omni.isaac.synthetic_utils import visualization as vis
 from omni.isaac.synthetic_utils import OmniKitHelper
 from omni.isaac.synthetic_utils import SyntheticDataHelper
+from omni.isaac.synthetic_utils import utils as ut
 
 from jetracer import Jetracer
 from road_environment import Environment
@@ -99,16 +100,6 @@ class JetracerEnv:
     def translate_action(self, action):
         return action
 
-    def to_numpy(self, data):
-        """Helper to ensure data is on the CPU as a numpy array.
-            """
-        if isinstance(data, np.ndarray):
-            return data
-        elif type(data).__name__ == "Tensor":
-            return data.cpu().numpy()
-        else:
-            raise ValueError(f"Unable to convert to numpy data of type {type(data)}.")
-
     def reset(self):
         if self.numresets % self.maxresets == 0:
             self.roads.reset(self.shape)
@@ -170,7 +161,7 @@ class JetracerEnv:
 
         gt = self.sd_helper.get_groundtruth(["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "camera"])
         depth = np.expand_dims(gt["depth"], -1)
-        segmentation = vis.semantic_segmentation_to_rgb(self.to_numpy(gt["semanticSegmentation"][1]))
+        segmentation = vis.semantic_segmentation_to_rgb(ut.to_numpy(gt["semanticSegmentation"][1]))
         segmentation = segmentation
 
         currentState = gt["rgb"][:, :, :3]
