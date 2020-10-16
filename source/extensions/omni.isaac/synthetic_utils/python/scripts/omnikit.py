@@ -24,7 +24,6 @@ Launches and configures OmniKit and exposes useful functions.
 import carb
 import omni.kit.app
 import omni.kit.editor
-import omni.kit.pipapi
 import omni.kit.asyncapi
 import omni.kit.commands
 from pxr import UsdGeom, Semantics

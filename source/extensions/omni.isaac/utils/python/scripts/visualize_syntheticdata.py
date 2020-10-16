@@ -17,7 +17,6 @@ import omni.kit.editor
 import omni.ui
 import omni.syntheticdata._syntheticdata as gt
 from omni.kit.settings import get_settings_interface
-from omni.kit import pipapi
 from omni.isaac.synthetic_utils import visualization as vis
 
 EXTENSION_NAME = "Visualize Synthetic Data"

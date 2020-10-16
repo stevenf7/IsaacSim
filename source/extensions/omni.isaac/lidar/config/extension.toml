@@ -22,3 +22,6 @@ recursive = false
 
 [[libraries]]
 path = "bin/${platform}/${config}/${lib_prefix}lidarSchema${lib_ext}"
+
+[python.pipapi]
+requirements = ["numpy"]

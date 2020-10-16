@@ -22,12 +22,8 @@ import threading
 import numpy as np
 
 from omni.kit.settings import get_settings_interface
-from omni.kit import pipapi
 from PIL import Image, ImageDraw
 from omni.isaac.synthetic_utils import visualization as vis
-
-pipapi.install("pillow")
-pipapi.install("matplotlib")
 
 EXTENSION_NAME = "Synthetic Data Recorder"
 

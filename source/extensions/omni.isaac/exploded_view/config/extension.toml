@@ -6,4 +6,5 @@ display_name = "Exploded View"
 [[python.modules]]
 name = "omni.isaac.exploded_view"
 
-
+[python.pipapi]
+requirements = ["numpy"]
