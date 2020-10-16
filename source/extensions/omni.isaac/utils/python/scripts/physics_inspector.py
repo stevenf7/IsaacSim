@@ -11,7 +11,6 @@ import carb
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        print("Starting Physics Inspector")
         self._usd_context = omni.usd.get_context()
         self._dc = dc.acquire_dynamic_control_interface()
         self._editor = omni.kit.editor.get_editor_interface()
@@ -29,6 +28,7 @@ class Extension(omni.ext.IExt):
         self._plots = {}
         self._labels = {}
         self._frame = {}
+        self._selected_prim = None
 
         for axis in ["x", "y", "z"]:
             self._data[f"lin_vel_{axis}"] = collections.deque([0.0] * 360, maxlen=360)
@@ -39,62 +39,50 @@ class Extension(omni.ext.IExt):
 
         with self._window.frame:
             with ui.VStack(height=0):
-                with ui.CollapsableFrame("Config"):
+                with ui.VStack(height=0):
+                    with ui.HStack():
+                        ui.Label("Velocity Coordinate Frame: ", width=0, alignment=ui.Alignment.CENTER)
+                        self.velocity_combo = ui.ComboBox(0, "Global", "Local")
+                    # with ui.HStack():
+                    #     ui.Label("Units: ", width=0, alignment=ui.Alignment.CENTER)
+                    #     ui.ComboBox(0, "cm", "m")
+                with ui.HStack():
                     with ui.VStack(height=0):
-                        with ui.HStack():
-                            ui.Label("Velocity Coordinate Frame: ", width=0, alignment=ui.Alignment.CENTER)
-                            self.velocity_combo = ui.ComboBox(0, "Global", "Local")
-                        # with ui.HStack():
-                        #     ui.Label("Units: ", width=0, alignment=ui.Alignment.CENTER)
-                        #     ui.ComboBox(0, "cm", "m")
-                with ui.CollapsableFrame("Physical Properties"):
-                    with ui.HStack():
-                        with ui.VStack(height=0):
-                            self._labels["mass"] = ui.Label("Mass: 0.0 kg", width=0, alignment=ui.Alignment.CENTER)
-                            self._labels["moment"] = ui.Label(
-                                "Moment: [0.0, 0.0, 0.0] kg*cm^2", width=0, alignment=ui.Alignment.CENTER
-                            )
-                with ui.CollapsableFrame("Dynamic Properties"):
-                    with ui.HStack():
-                        with ui.VStack(height=0):
-                            self._labels["position"] = ui.Label("Position", width=0, alignment=ui.Alignment.CENTER)
-                            self._labels["rotation"] = ui.Label("Rotation", width=0, alignment=ui.Alignment.CENTER)
-                            # ui.MultiFloatField(0.0, 0.0, 0.0, h_spacing=5)
-                            ui.Spacer(height=10)
-                            self._add_plot(label="lin_vel", title="Linear Velocity: [0.0, 0.0, 0.0] cm/s")
-                            ui.Spacer(height=10)
-                            self._add_plot(label="ang_vel", title="Angular Velocity: [0.0, 0.0, 0.0] rad/s")
-                            ui.Spacer(height=10)
-                            self._add_plot(label="lin_acc", title="Linear Acceleration: [0.0, 0.0, 0.0] cm/s^2")
+                        self._labels["mass"] = ui.Label("Mass: 0.0 kg", width=0, alignment=ui.Alignment.CENTER)
+                        self._labels["moment"] = ui.Label(
+                            "Moment: [0.0, 0.0, 0.0] kg*cm^2", width=0, alignment=ui.Alignment.CENTER
+                        )
+                with ui.HStack():
+                    with ui.VStack(height=0):
+                        self._labels["position"] = ui.Label("Position", width=0, alignment=ui.Alignment.CENTER)
+                        self._labels["rotation"] = ui.Label("Rotation", width=0, alignment=ui.Alignment.CENTER)
+                        # ui.MultiFloatField(0.0, 0.0, 0.0, h_spacing=5)
+                        ui.Spacer(height=10)
+                        self._add_plot(label="lin_vel", title="Linear Velocity: [0.0, 0.0, 0.0] cm/s")
+                        ui.Spacer(height=10)
+                        self._add_plot(label="ang_vel", title="Angular Velocity: [0.0, 0.0, 0.0] rad/s")
+                        ui.Spacer(height=10)
+                        self._add_plot(label="lin_acc", title="Linear Acceleration: [0.0, 0.0, 0.0] cm/s^2")
+                        ui.Spacer(height=10)
 
     def _on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.OPENED):
+            self._selected_prim = None
             self._selected_handle = dc.INVALID_HANDLE
             return
-        if self._editor.is_playing() and self._window.visible:
-            if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
-                selection = self._selection.get_selected_prim_paths()
-                stage = self._usd_context.get_stage()
-                prim = None
-                if len(selection) == 0:
-                    pass
-                else:
-                    path = selection[0]
-                    prim = stage.GetPrimAtPath(path)
-                    objectType = self._dc.peek_object_type(path)
-                    print(objectType)
-                    self._selected_handle = dc.INVALID_HANDLE
-                    if objectType == dc.ObjectType.OBJECT_RIGIDBODY:
-                        self._selected_handle = self._dc.get_object(path)
-
-                        for value in self._data.values():
-                            for i in range(len(value)):
-                                value.append(0.0)
-
-                    if self._selected_handle != dc.INVALID_HANDLE:
-                        self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
-                    else:
-                        self._editor_event_subscription = None
+        if self._window.visible and event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
+            selection = self._selection.get_selected_prim_paths()
+            if len(selection) == 0:
+                self._selected_prim = None
+                self._selected_handle = dc.INVALID_HANDLE
+                return
+            else:
+                self._selected_prim = self._usd_context.get_stage().GetPrimAtPath(selection[0])
+                self._selected_handle = dc.INVALID_HANDLE
+            if self._selected_prim is not None:
+                self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+            else:
+                self._editor_event_subscription = None
 
     def _menu_callback(self, name, visible):
         self._window.visible = not self._window.visible
@@ -140,7 +128,20 @@ class Extension(omni.ext.IExt):
             self._plots[f"{label}_{axis}"].set_data(*self._data[f"{label}_{axis}"])
 
     def _on_editor_step(self, step):
+        if len(self._selection.get_selected_prim_paths()) == 0:
+            self._editor_event_subscription = None
+            return
         if self._editor.is_playing() and self._window.visible:
+            if self._selected_prim and self._selected_handle == dc.INVALID_HANDLE:
+                objectType = self._dc.peek_object_type(str(self._selected_prim.GetPath()))
+                if objectType == dc.ObjectType.OBJECT_RIGIDBODY:
+                    self._selected_handle = self._dc.get_object(str(self._selected_prim.GetPath()))
+                    for value in self._data.values():
+                        for i in range(len(value)):
+                            value.append(0.0)
+            if self._selected_handle == dc.INVALID_HANDLE:
+                self._editor_event_subscription = None
+                return
             rigid_body_props = self._dc.get_rigid_body_properties(self._selected_handle)
 
             self._labels["mass"].text = f"Mass: {round(rigid_body_props.mass,3)} kg"

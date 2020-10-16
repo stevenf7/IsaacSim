@@ -24,7 +24,6 @@ Launches and configures OmniKit and exposes useful functions.
 import carb
 import omni.kit.app
 import omni.kit.editor
-import omni.kit.pipapi
 import omni.kit.asyncapi
 import omni.kit.commands
 from pxr import UsdGeom, Semantics
@@ -41,7 +40,7 @@ DEFAULT_CONFIG = {
     "renderer": "PathTracing",
     "samples_per_pixel_per_frame": 64,
     "denoiser": True,
-    "subdiv_refinement_level": 2,
+    "subdiv_refinement_level": 0,
     "headless": True,
     "max_bounces": 4,
     "max_specular_transmission_bounces": 6,

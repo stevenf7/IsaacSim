@@ -45,10 +45,12 @@ PYBIND11_MODULE(_occupancy_map, m)
     defineInterfaceClass<OccupancyMap>(
         m, "OccupancyMap", "acquire_occupancy_map_interface", "release_occupancy_map_interface")
 
-        .def("generateMap", wrapInterfaceFunction(&OccupancyMap::generateMap))
-        .def("getOccupiedPositions", wrapInterfaceFunction(&OccupancyMap::getOccupiedPositions))
-        .def("getFreePositions", wrapInterfaceFunction(&OccupancyMap::getFreePositions))
-        .def("getMinBound", wrapInterfaceFunction(&OccupancyMap::getMinBound))
-        .def("getMaxBound", wrapInterfaceFunction(&OccupancyMap::getMaxBound));
+        .def("generate", wrapInterfaceFunction(&OccupancyMap::generateMap))
+        .def("update", wrapInterfaceFunction(&OccupancyMap::update))
+        .def("set_transform", wrapInterfaceFunction(&OccupancyMap::setTransform))
+        .def("get_occupied_positions", wrapInterfaceFunction(&OccupancyMap::getOccupiedPositions))
+        .def("get_free_positions", wrapInterfaceFunction(&OccupancyMap::getFreePositions))
+        .def("get_min_bound", wrapInterfaceFunction(&OccupancyMap::getMinBound))
+        .def("get_max_bound", wrapInterfaceFunction(&OccupancyMap::getMaxBound));
 }
 }

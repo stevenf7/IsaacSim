@@ -32,6 +32,10 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.dr_helper = DomainRandomization()
         self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        self.asset_path = nucleus_server + "/Isaac"
+        if scenario_path is None:
+            scenario_path = self.asset_path + "/Samples/Synthetic_Data/Stage/warehouse_with_sensors.usd"
         self.scenario_path = scenario_path
         self.data_writer = None
 
@@ -166,12 +170,8 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     parser = argparse.ArgumentParser("Dataset test")
-    parser.add_argument(
-        "--scenario",
-        type=str,
-        default="omniverse://ov-isaac-dev/Isaac/Samples/Synthetic_Data/Stage/warehouse_with_sensors.usd",
-        help="Scenario to load from omniverse server",
-    )
+    parser.add_argument("--scenario", type=str, help="Scenario to load from omniverse server")
+    parser.add_argument("--num_frames", type=int, default=10, help="Number of frames to record")
     args = parser.parse_args()
 
     dataset = RandomScenario(args.scenario)
@@ -180,3 +180,5 @@ if __name__ == "__main__":
     print("Loading materials. Will generate data soon...")
     for image in dataset:
         print("ID: ", dataset.cur_idx)
+        if dataset.cur_idx == args.num_frames:
+            break

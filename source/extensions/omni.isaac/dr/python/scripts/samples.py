@@ -25,6 +25,8 @@ class Extension(omni.ext.IExt):
         self._editor = omni.kit.editor.get_editor_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        self._asset_path = nucleus_server + "/Isaac"
 
         self._window = omni.kit.ui.Window(
             "Domain Randomizer Component Samples",
@@ -49,6 +51,8 @@ class Extension(omni.ext.IExt):
         self._selected_scenario.add_item("Light")
         self._selected_scenario.add_item("Texture")
         self._selected_scenario.add_item("Material")
+        self._selected_scenario.add_item("Mesh")
+        self._selected_scenario.add_item("Visibility")
         self._selected_scenario.selected_index = 0
         clear_stage_btn = sublayout.add_child(omni.kit.ui.Button("Clear Stage"))
         clear_stage_btn.set_clicked_fn(self._on_clear_stage)
@@ -68,9 +72,12 @@ class Extension(omni.ext.IExt):
         omni.usd.get_context().new_stage(None)
 
     def _on_load_stage(self, widget):
-        omni.usd.get_context().open_stage(
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Props/simple_cube_with_light.usd", None
-        )
+        stage_path = self._asset_path + "/Samples/DR/Props/simple_cube_with_light.usd"
+        if self._selected_scenario.selected_index == 7:
+            stage_path = self._asset_path + "/Samples/DR/Props/only_light.usd"
+        elif self._selected_scenario.selected_index == 8:
+            stage_path = self._asset_path + "/Samples/DR/Props/multiple_cubes_with_light.usd"
+        omni.usd.get_context().open_stage(stage_path, None)
 
     def _on_load_component(self, widget):
         if self._selected_scenario.selected_index == 0:
@@ -87,6 +94,10 @@ class Extension(omni.ext.IExt):
             self.add_texture_menu()
         elif self._selected_scenario.selected_index == 6:
             self.add_material_menu()
+        elif self._selected_scenario.selected_index == 7:
+            self.add_mesh_menu()
+        elif self._selected_scenario.selected_index == 8:
+            self.add_visibility_menu()
 
     def add_color_menu(self, parent=None):
         stage = omni.usd.get_context().get_stage()
@@ -199,12 +210,12 @@ class Extension(omni.ext.IExt):
             prim_paths=[cube_path],
             enable_project_uvw=False,
             texture_list=[
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png",
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png",
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png",
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
+                self._asset_path + "/Samples/DR/Materials/Textures/checkered.png",
+                self._asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+                self._asset_path + "/Samples/DR/Materials/Textures/picture_a.png",
+                self._asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
+                self._asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+                self._asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
             ],
             ignored_class_list=[],
             grouped_class_list=[],
@@ -224,12 +235,12 @@ class Extension(omni.ext.IExt):
             path=path,
             prim_paths=[cube_path],
             material_list=[
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/checkered.mdl",
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/checkered_color.mdl",
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/marble_tile.mdl",
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/picture_a.mdl",
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/picture_b.mdl",
-                "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/textured_wall.mdl",
+                self._asset_path + "/Samples/DR/Materials/checkered.mdl",
+                self._asset_path + "/Samples/DR/Materials/checkered_color.mdl",
+                self._asset_path + "/Samples/DR/Materials/marble_tile.mdl",
+                self._asset_path + "/Samples/DR/Materials/picture_a.mdl",
+                self._asset_path + "/Samples/DR/Materials/picture_b.mdl",
+                self._asset_path + "/Samples/DR/Materials/textured_wall.mdl",
             ],
             ignored_class_list=[],
             grouped_class_list=[],
@@ -239,14 +250,40 @@ class Extension(omni.ext.IExt):
             seed=12345,
         )
 
-    def add_simple_room_scene(self, parent=None):
-        omni.usd.get_context().open_stage(
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Stage/simple_room_sample.usda", None
+    def add_mesh_menu(self, parent=None):
+        stage = omni.usd.get_context().get_stage()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        # Create DR mesh component
+        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
+        result, prim = omni.kit.commands.execute(
+            "CreateMeshComponentCommand",
+            mesh_list=[
+                self._asset_path + "/Props/Blocks/nvidia_cube.usd",
+                self._asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd",
+            ],
+            mesh_range=[3, 5],
+            seed=12345,
         )
+
+    def add_visibility_menu(self, parent=None):
+        stage = omni.usd.get_context().get_stage()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        # Create DR visibility component
+        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/visibility_component", False)
+        result, prim = omni.kit.commands.execute(
+            "CreateVisibilityComponentCommand",
+            prim_paths=["/World/Cube", "/World/Cube_01", "/World/Cube_02", "/World/Cube_03", "/World/Cube_04"],
+            num_visible_range=[1, 3],
+            duration=0.3,
+            seed=12345,
+        )
+
+    def add_simple_room_scene(self, parent=None):
+        omni.usd.get_context().open_stage(self._asset_path + "/Samples/DR/Stage/simple_room_sample.usda", None)
 
     def add_warehouse_scene(self, parent=None):
         omni.usd.get_context().open_stage(
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Stage/simple_warehouse_material_sample.usda", None
+            self._asset_path + "/Samples/DR/Stage/simple_warehouse_material_sample.usda", None
         )
 
     def _on_dr_sample_menu_click(self, menu, value):

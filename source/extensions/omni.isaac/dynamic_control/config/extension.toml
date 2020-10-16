@@ -17,3 +17,5 @@ name = "omni.isaac.dynamic_control.scripts.samples.joint_monkey"
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false
 
+[python.pipapi]
+requirements = ["numpy"]

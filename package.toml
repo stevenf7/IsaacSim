@@ -44,7 +44,7 @@ files = [
     ["_build/$platform/$config/exts/omni.isaac.decals"],
     ["_build/$platform/$config/exts/omni.isaac.dr"],
     ["_build/$platform/$config/exts/omni.isaac.dynamic_control"],
-    ["_build/$platform/$config/exts/omni.isaac.exploded_view"],
+    #["_build/$platform/$config/exts/omni.isaac.exploded_view"],
     ["_build/$platform/$config/exts/omni.isaac.lidar"],
     ["_build/$platform/$config/exts/omni.isaac.manip"],
     ["_build/$platform/$config/exts/omni.isaac.motion_planning"],

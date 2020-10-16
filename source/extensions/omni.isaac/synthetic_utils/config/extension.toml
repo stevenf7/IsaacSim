@@ -6,3 +6,6 @@ display_name = "Isaac Synthetic Data Utilities"
 
 [[python.modules]]
 name = "omni.isaac.synthetic_utils"
+
+[python.pipapi]
+requirements = ["matplotlib"]

@@ -23,5 +23,8 @@ name = "omni.isaac.urdf.scripts.samples.import_ur10"
 search_path = "bin/${platform}/${config}/*.plugin"
 recursive = false
 
+[python.pipapi]
+requirements = ["psutil", "graphviz"]
+
 # [[libraries]]
 # path = "bin/${platform}/${config}/librobotimp${lib_ext}"

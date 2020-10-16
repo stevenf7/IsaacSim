@@ -287,7 +287,6 @@ class Extension(omni.ext.IExt):
             self._create_graphviz_tree(tree_item["B_node"], robot, graph)
 
     def _generate_robot_image(self, robot, vertical=True):
-        omni.kit.pipapi.install("graphviz")
         from graphviz import Graph
 
         im = None
@@ -406,7 +405,6 @@ class Extension(omni.ext.IExt):
     def _parse_urdf(self):
         if self.models["clean_stage"].model.get_value_as_bool():
             asyncio.ensure_future(omni.kit.asyncapi.new_stage())
-        omni.kit.pipapi.install("psutil")
         import psutil
 
         partitions = psutil.disk_partitions()

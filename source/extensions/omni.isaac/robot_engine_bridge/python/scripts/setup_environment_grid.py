@@ -65,7 +65,7 @@ class Extension(omni.ext.IExt):
         ui_layout.set_column_width(0, 250)
         ui_layout.set_column_width(1, 350)
         ui_layout.add_child(omni.kit.ui.Label("Environment USD Path"))
-        self._usd_env_txt = omni.kit.ui.TextBox("omniverse://ov-isaac-dev/Library/IsaacSDK/Stage/simple_rl_env.usd")
+        self._usd_env_txt = omni.kit.ui.TextBox("")
         self._usd_env_txt.width = -1
         ui_layout.add_child(self._usd_env_txt)
         ui_layout.add_child(omni.kit.ui.Label("Number of rows"))
@@ -138,4 +138,4 @@ class Extension(omni.ext.IExt):
                         contact_pub.GetRelationship("ignoredPrims").AddTarget(ignored_contact)
 
     def on_shutdown(self):
-        print("Shutting down environment grid setup")
+        pass

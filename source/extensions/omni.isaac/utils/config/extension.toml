@@ -4,6 +4,7 @@ display_name = "Isaac Utilities"
 "omni.kit.editor" = {}
 "omni.physx" = {}
 "omni.isaac.dynamic_control" = {}
+"omni.isaac.synthetic_utils" = {}
 "omni.syntheticdata" = {}
 
 [[python.modules]]
@@ -34,3 +35,6 @@ name = "omni.isaac.utils.scripts.samples.surface_gripper"
 [[python.modules]]
 name = "omni.isaac.utils.scripts.merge_mesh_tool"
 public = false
+
+[python.pipapi]
+requirements = ["matplotlib", "pillow"]

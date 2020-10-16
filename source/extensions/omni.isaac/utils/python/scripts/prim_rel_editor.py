@@ -67,7 +67,6 @@ class PrimRelModel(omni.kit.ui.Model):
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        print("Starting Prim Relationship Editor")
         self._usd_context = omni.usd.get_context()
         if self._usd_context is not None:
             self._selection = self._usd_context.get_selection()

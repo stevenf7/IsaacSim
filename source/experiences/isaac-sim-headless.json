@@ -95,7 +95,12 @@
             "updateToUsd": false
         }
     },
-    "ngx":{
+    "ngx": {
         "enabled": false
+    },
+    "isaac": {
+        "nucleus": {
+            "default": "omniverse://ov-isaac-dev"
+        }
     }
 }
