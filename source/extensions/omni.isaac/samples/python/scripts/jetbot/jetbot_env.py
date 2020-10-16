@@ -26,7 +26,7 @@ from gym import spaces
 class JetbotEnv:
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, omni_kit, z_height=0, max_resets=10, updates_per_step=3):
+    def __init__(self, omni_kit, z_height=0, max_resets=10, updates_per_step=3, steps_per_rollout=500):
         self.action_space = spaces.Box(low=-2.0, high=2.0, shape=(2,), dtype=np.float32)
         # IMPORTANT NOTE!  SB3 wraps all image spaces in a transposer.
         # it assumes the image outputed is of standard form
@@ -69,6 +69,7 @@ class JetbotEnv:
         self.numresets = 0
         self.maxresets = max_resets
         self.updates_per_step = updates_per_step
+        self.steps_per_rollout = steps_per_rollout
 
     def calculate_reward(self):
         # distance to nearest point on path in units of block.  [0,1]
@@ -82,7 +83,8 @@ class JetbotEnv:
         alive = self.roads.is_inside_path_boundary(self.current_pose)
         done = not alive
 
-        if self.numsteps > 500:
+        # kill the episode after 500 steps
+        if self.numsteps > self.steps_per_rollout:
             done = True
 
         if self.dist > 0.1:
@@ -102,6 +104,55 @@ class JetbotEnv:
             return data.cpu().numpy()
         else:
             raise ValueError(f"Unable to convert to numpy data of type {type(data)}.")
+
+    def step(self, action):
+        if self.initialized:
+            self.previous_loc = self.current_loc
+
+        self.jetbot.command(action)
+        frame = 0
+        total_reward = 0
+        reward = 0
+
+        # every time step is called we actually update the scene by updates_per_step.
+        while frame < self.updates_per_step:
+            self.omniverse_kit.update(self.dt)
+            obs = self.jetbot.observations()
+            self.current_pose = obs["pose"]
+            self.current_speed = np.linalg.norm(np.array(obs["linear_velocity"]))
+            self.current_forward_velocity = obs["local_linear_velocity"][0]
+            self.current_loc = self.roads.get_tile_from_pose(self.current_pose)
+            if not self.initialized:
+                self.previous_loc = self.roads.get_tile_from_pose(self.current_pose)
+
+            reward = self.calculate_reward()
+
+            # we accumulate the reward as the robot moves over the course of the step
+            total_reward += reward
+            frame = frame + 1
+
+        # the synthetic data helper is our way of grabbing the image data we need from the camera.  currently the SD helper
+        # only supports a single camera, however you can use it to access camera data as a cuda tensor directly on the
+        # device.  stable baselines 3 is expecting a numpy array, so we pull the data to the host
+        gt = self.sd_helper.get_groundtruth(["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "camera"])
+
+        # we only need the rgb channels of the rgb image
+        currentState = gt["rgb"][:, :, :3]
+
+        if not self.initialized:
+            self.previousState = currentState
+
+        img = np.concatenate((currentState, self.previousState), axis=2)
+
+        # the real camera will have noise on each pixel, so we add some uniform noise here to simulate thatsw
+        img = np.clip((255 * self.noise * np.random.randn(224, 224, 6) + img.astype(np.float)), 0, 255).astype(np.uint8)
+
+        self.previousState = currentState
+
+        self.numsteps += 1
+        done = self.is_dead()
+
+        return img, reward, done, {}
 
     def reset(self):
         # randomize the road configuration every self.maxresets resets.
@@ -143,47 +194,3 @@ class JetbotEnv:
         self.numresets += 1
 
         return img
-
-    def step(self, action):
-        if self.initialized:
-            self.previous_loc = self.current_loc
-
-        self.jetbot.command(action)
-        frame = 0
-        total_reward = 0
-        reward = 0
-
-        while frame < self.updates_per_step:
-            self.omniverse_kit.update(self.dt)
-            obs = self.jetbot.observations()
-            self.current_pose = obs["pose"]
-            self.current_speed = np.linalg.norm(np.array(obs["linear_velocity"]))
-            self.current_forward_velocity = obs["local_linear_velocity"][0]
-            self.current_loc = self.roads.get_tile_from_pose(self.current_pose)
-            if not self.initialized:
-                self.previous_loc = self.roads.get_tile_from_pose(self.current_pose)
-
-            reward = self.calculate_reward()
-
-            total_reward += reward
-            frame = frame + 1
-
-        gt = self.sd_helper.get_groundtruth(["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "camera"])
-        depth = np.expand_dims(gt["depth"], -1)
-        segmentation = vis.semantic_segmentation_to_rgb(self.to_numpy(gt["semanticSegmentation"][1]))
-        segmentation = segmentation
-
-        currentState = gt["rgb"][:, :, :3]
-
-        if not self.initialized:
-            self.previousState = currentState
-
-        img = np.concatenate((currentState, self.previousState), axis=2)
-        img = np.clip((255 * self.noise * np.random.randn(224, 224, 6) + img.astype(np.float)), 0, 255).astype(np.uint8)
-
-        self.previousState = currentState
-
-        self.numsteps += 1
-        done = self.is_dead()
-
-        return img, reward, done, {}

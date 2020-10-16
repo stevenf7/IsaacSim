@@ -10,12 +10,18 @@ This repo contains simple examples of DL applications within Omniverse Kit.
 - six == 1.12.0
 
 ## Setup
-- `cd to _build/linux-x86_64/release/exts/omni.isaac.samples/omni/isaac/samples/scripts/jetbot`
-- `conda create -n isaac python=3.6`
-- `conda activate isaac`
-- `pip install -r requirements.txt`
-Go into the syntheticdata folder and run (needed only once)
-- `python setup.py install`
-Then return back to jetbot and run
+- `cd to _build/linux-x86_64/release/exts/omni.isaac.samples/omni/isaac/samples/scripts/jetbot``
+- `conda env create -f environment.yml  --name isaac-sim`
+- `conda activate isaac-sim`
+- `cd ../syntheticdata`
+- `python setup.py install
+Then return back to jetbot
+- `cd ../jetbot`
+and run
 - Environment Variables in setenv.sh 
   - `source setenv.sh`
+
+## Usage
+To train a jetbot agent just 
+-  `python jetbot_train.py` 
+from `_build/linux-x86_64/release/exts/omni.isaac.samples/omni/isaac/samples/scripts/jetbot`
