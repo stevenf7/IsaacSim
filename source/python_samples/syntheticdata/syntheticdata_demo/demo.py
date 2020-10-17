@@ -9,44 +9,30 @@
 
 
 """Demonstration of using OmniKit to generate a scene, collect groundtruth and visualize
-the results. This advanced sample also simulates physics and uses a custom material
+the results.
 """
 
-
+import os
 import random
 import numpy as np
 from pxr import UsdGeom, Semantics
+from omni.isaac.synthetic_utils import OmniKitHelper
 from omni.isaac.synthetic_utils import visualization as vis
 from omni.isaac.synthetic_utils import camera
-from omni.isaac.synthetic_utils import OmniKitHelper
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.isaac.synthetic_utils import utils as ut
 import matplotlib.pyplot as plt
 
-from pxr import Gf, Sdf, UsdShade, PhysicsSchema, PhysxSchema, PhysicsSchemaTools
 
 TRANSLATION_RANGE = 300.0
 SCALE = 50.0
 
-# specify a custom config
-CUSTOM_CONFIG = {
-    "width": 1024,
-    "height": 1024,
-    "renderer": "PathTracing",
-    "samples_per_pixel_per_frame": 200,
-    "denoiser": True,
-    "subdiv_refinement_level": 2,
-    "headless": True,
-}
-
 
 def main():
-    kit = OmniKitHelper(CUSTOM_CONFIG)
-
+    kit = OmniKitHelper(
+        {"renderer": "RayTracedLighting", "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json'}
+    )
     sd_helper = SyntheticDataHelper()
-
-    from omni.physx.scripts import utils
-    import omni
 
     # SCENE SETUP
     # Get the current stage
@@ -55,32 +41,15 @@ def main():
     # Add a distant light
     stage.DefinePrim("/World/Light", "DistantLight")
 
-    # Add physics scene
-    scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/physicsScene"))
-    # Set gravity vector
-    scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, -981.0, 0))
-    # Set physics scene to use cpu physics
-    PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/World/physicsScene"))
-    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/World/physicsScene")
-    physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
-    physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
-    physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
-
-    # Create a ground plance
-    PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Y", 500, Gf.Vec3f(0, -100, 0), Gf.Vec3f(1.0))
-
     # Create 10 randomly positioned and coloured spheres and cube
     # We will assign each a semantic label based on their shape (sphere/cube)
-    prims = []
     for i in range(10):
         prim_type = random.choice(["Cube", "Sphere"])
         prim = stage.DefinePrim(f"/World/cube{i}", prim_type)
         translation = np.random.rand(3) * TRANSLATION_RANGE
         UsdGeom.XformCommonAPI(prim).SetTranslate(translation.tolist())
         UsdGeom.XformCommonAPI(prim).SetScale((SCALE, SCALE, SCALE))
-        # prim.GetAttribute("primvars:displayColor").Set([np.random.rand(3).tolist()])
+        prim.GetAttribute("primvars:displayColor").Set([np.random.rand(3).tolist()])
 
         # Add semantic label based on prim type
         sem = Semantics.SemanticsAPI.Apply(prim, "Semantics")
@@ -89,79 +58,19 @@ def main():
         sem.GetSemanticTypeAttr().Set("class")
         sem.GetSemanticDataAttr().Set(prim_type)
 
-        # Add physics to prims
-        utils.setRigidBody(prim, "convexHull", False)
-        # Set Mass to 1 kg
-        mass_api = PhysicsSchema.MassAPI.Apply(prim)
-        mass_api.CreateMassAttr(1)
-        # add prim reference to list
-        prims.append(prim)
-
-    # force RT mode for better performance while simulating physics
-    kit.set_setting("/rtx/rendermode", "RayTracedLighting")
-
-    # start simulation
-    kit.play()
-    # Step simulation so that objects fall to rest
-    # wait until all materials are loaded
-    frame = 0
-    print("simulating physics...")
-    while frame < 60 or kit.is_loading():
-        kit.update(1 / 60.0)
-        frame = frame + 1
-    print("done")
-
-    # pause simulation to capture frame
-    kit.pause()
-
-    # Return to user specified render mode
-    kit.set_setting("/rtx/rendermode", CUSTOM_CONFIG["renderer"])
-
-    # Get groundtruth using solid material
+    # Get groundtruth
     gt = sd_helper.get_groundtruth(
         [
+            "rgb",
             "depth",
             "boundingBox2DTight",
             "boundingBox2DLoose",
             "instanceSegmentation",
             "semanticSegmentation",
             "boundingBox3D",
+            "camera",
         ]
     )
-    # switch to glass material
-
-    for prim in prims:
-        # Create Glass material
-        mtl_created_list = []
-        kit.execute(
-            "CreateAndBindMdlMaterialFromLibrary",
-            mdl_name="OmniGlass.mdl",
-            mtl_name="OmniGlass",
-            mtl_created_list=mtl_created_list,
-        )
-        mtl_prim = stage.GetPrimAtPath(mtl_created_list[0])
-
-        # Set material inputs, these can be determined by looking at the .mdl file
-        # or by selecting the Shader attached to the Material in the stage window and looking at the details panel
-        color = Gf.Vec3f(random.random(), random.random(), random.random())
-        omni.kit.usd.create_material_input(mtl_prim, "glass_color", color, Sdf.ValueTypeNames.Color3f)
-        omni.kit.usd.create_material_input(mtl_prim, "glass_ior", 1.0, Sdf.ValueTypeNames.Float)
-        # Bind the material to the prim
-        prim_mat_shade = UsdShade.Material(mtl_prim)
-        UsdShade.MaterialBindingAPI(prim).Bind(prim_mat_shade, UsdShade.Tokens.strongerThanDescendants)
-
-    # step once and then for materials to load
-    kit.update()
-    print("waiting for materials to load...")
-    while kit.is_loading():
-        kit.update()
-    print("done")
-
-    # get rgb after we switch materials using path tracing
-    gt_pt = sd_helper.get_groundtruth(["rgb", "camera"])
-
-    # everything is captured, stop simulating
-    kit.stop()
 
     # GROUNDTRUTH VISUALIZATION
 
@@ -174,7 +83,7 @@ def main():
     # RGB
     axes[0].set_title("RGB")
     for ax in axes[:-1]:
-        ax.imshow(ut.to_numpy(gt_pt["rgb"]))
+        ax.imshow(ut.to_numpy(gt["rgb"]))
 
     # DEPTH
     axes[1].set_title("Depth")
@@ -205,21 +114,21 @@ def main():
     axes[4].set_title("Instance Segmentation")
     _, instance_seg = gt["instanceSegmentation"]
     instance_rgb = vis.instance_segmentation_to_rgb(ut.to_numpy(instance_seg))
-    axes[4].imshow(instance_rgb, alpha=1.0)
+    axes[4].imshow(instance_rgb, alpha=0.7)
 
     # SEMANTIC SEGMENTATION
     random.seed(1)
     axes[5].set_title("Semantic Segmentation")
     _, semantic_seg = gt["semanticSegmentation"]
     semantic_rgb = vis.semantic_segmentation_to_rgb(ut.to_numpy(semantic_seg))
-    axes[5].imshow(semantic_rgb, alpha=1.0)
+    axes[5].imshow(semantic_rgb, alpha=0.7)
 
     # BBOX 3D
     axes[6].set_title("BBox 3D")
 
-    width = gt_pt["camera"]["resolution"]["width"]
-    height = gt_pt["camera"]["resolution"]["height"]
-    view_proj_mat = gt_pt["camera"]["view_projection_matrix"]
+    width = gt["camera"]["resolution"]["width"]
+    height = gt["camera"]["resolution"]["height"]
+    view_proj_mat = gt["camera"]["view_projection_matrix"]
     points = gt["boundingBox3D"].reshape(-1, 3)
     projected = camera.project_points(view_proj_mat, points)[..., :2] * np.array([[width, height]])
 

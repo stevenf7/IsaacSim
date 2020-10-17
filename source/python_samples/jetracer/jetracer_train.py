@@ -1,7 +1,5 @@
 import torch
-import numpy as np
-
-import carb
+import os
 from omni.isaac.synthetic_utils import OmniKitHelper
 
 from jetracer_env import JetracerEnv
@@ -16,7 +14,7 @@ CUSTOM_CONFIG = {
     "height": 224,
     "renderer": "RayTracedLighting",
     "headless": False,
-    "experience": "isaac-sim-jetracer-training.json",
+    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
 }
 
 # LOCMOD cleanup

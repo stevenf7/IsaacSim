@@ -21,16 +21,12 @@ import os
 import glob
 import torch
 import random
-import asyncio
 import numpy as np
 
 import omni
-from pxr import UsdGeom, UsdShade, Sdf, Semantics, Gf, PhysicsSchema, PhysxSchema, PhysicsSchemaTools
-import omni.isaac.synthetic_utils
+from pxr import UsdGeom, UsdShade, Sdf, Semantics
 
-print(dir(omni.isaac.synthetic_utils))
-
-from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, shapenet
+from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, shapenet, DomainRandomization
 
 
 # Setup default generation variables
@@ -47,11 +43,8 @@ RENDER_CONFIG = {
     "width": 600,
     "height": 600,
     "renderer": "PathTracing",
-    "samples_per_pixel_per_frame": 32,
-    "headless": True,
-    "max_bounces": 10,
-    "max_specular_transmission_bounces": 6,
-    "max_volume_bounces": 4,
+    "samples_per_pixel_per_frame": 12,
+    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
 }
 
 
@@ -64,45 +57,52 @@ class RandomObjects(torch.utils.data.IterableDataset):
     This dataset is intended for use with ShapeNet but will function with any dataset of USD models
     structured as `root/category/**/*.usd. One note is that this is designed for assets without materials
     attached. This is to avoid requiring to compile MDLs and load textures while training.
+
+    Args:
+        categories (tuple of str): Tuple or list of categories. For ShapeNet, these will be the synset IDs.
+        max_asset_size (int): Maximum asset file size that will be loaded. This prevents out of memory errors
+            due to loading large meshes.
+        num_assets_min (int): Minimum number of assets populated in the scene.
+        num_assets_max (int): Maximum number of assets populated in the scene.
+        split (float): Fraction of the USDs found to use for training.
+        train (bool): If true, use the first training split and generate infinite random scenes.
     """
 
     def __init__(
-        self,
-        root,
-        categories,
-        max_asset_size=None,
-        num_assets_min=3,
-        num_assets_max=5,
-        split=0.7,
-        train=True,
-        save_usd=False,
+        self, root, categories, max_asset_size=None, num_assets_min=3, num_assets_max=5, split=0.7, train=True
     ):
+        assert len(categories) > 1
+        assert (split > 0) and (split <= 1.0)
+
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
         self.sd_helper = SyntheticDataHelper()
+        self.dr_helper = DomainRandomization()
+        self.dr_helper.toggle_manual_mode()
+        self.stage = self.kit.get_stage()
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        self.asset_path = nucleus_server + "/Isaac"
 
         self.categories = categories
         self.range_num_assets = (num_assets_min, max(num_assets_min, num_assets_max))
         self.references = self._find_usd_assets(root, categories, max_asset_size, split, train)
-        self.save_usd = save_usd
 
+        self._setup_world()
         self.cur_idx = 0
 
-    async def setup_world(self):
+    def _setup_world(self):
         """Setup lights, walls, floor, ceiling and camera"""
-        await omni.kit.asyncapi.new_stage()
-        self.stage = self.kit.get_stage()
         # In a practical setting, the room parameters should attempt to match those of the
         # target domain. Here, we insteady choose for simplicity.
         self.kit.create_prim(
             "/World/Room", "Sphere", attributes={"radius": 1e3, "primvars:displayColor": [(1.0, 1.0, 1.0)]}
         )
-        # self.kit.create_prim(
-        #     "/World/Ground",
-        #     "Cylinder",
-        #     translation=(0.0, -0.5, 0.0),
-        #     rotation=(90.0, 0.0, 0.0),
-        #     attributes={"height": 1, "radius": 1e4, "primvars:displayColor": [(1.0, 1.0, 1.0)]},
-        # )
+        self.kit.create_prim(
+            "/World/Ground",
+            "Cylinder",
+            translation=(0.0, -0.5, 0.0),
+            rotation=(90.0, 0.0, 0.0),
+            attributes={"height": 1, "radius": 1e4, "primvars:displayColor": [(1.0, 1.0, 1.0)]},
+        )
         self.kit.create_prim(
             "/World/Light1",
             "SphereLight",
@@ -121,25 +121,11 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.camera = self.kit.create_prim("/World/CameraRig/Camera", "Camera", translation=(0.0, 0.0, CAMERA_DISTANCE))
         vpi = omni.kit.viewport.get_viewport_interface()
         vpi.get_viewport_window().set_active_camera(str(self.camera.GetPath()))
-        self.kit.setup_renderer()
-        await omni.kit.asyncapi.next_update()
 
-    def setup_physics(self):
-        # Add physics scene
-        scene = PhysicsSchema.PhysicsScene.Define(self.stage, Sdf.Path("/World/physicsScene"))
-        # Set gravity vector
-        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, -981.0, 0))
-        # Set physics scene to use cpu physics
-        PhysxSchema.PhysxSceneAPI.Apply(self.stage.GetPrimAtPath("/World/physicsScene"))
-        physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(self.stage, "/World/physicsScene")
-        physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
-        physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
-        physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
-        physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
-        physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
+        # create DR components
+        self.create_dr_comp()
 
-        # Create a ground plance
-        PhysicsSchemaTools.addGroundPlane(self.stage, "/World/groundPlane", "Y", 500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(1.0))
+        self.kit.update()
 
     def _find_usd_assets(self, root, categories, max_asset_size, split, train=True):
         """Look for USD files under root/category for each category specified.
@@ -199,27 +185,19 @@ class RandomObjects(torch.utils.data.IterableDataset):
         asset = self.kit.create_prim(
             f"/World/Asset/mesh{suffix}",
             "Xform",
-            translation=(0, 50, 0),
             scale=(SCALE, SCALE, SCALE),
             rotation=(0.0, rot_y, 0.0),
             ref=ref,
             semantic_label=semantic_label,
         )
-        # bound = UsdGeom.Mesh(asset).ComputeWorldBound(0.0, "default")
-        # box_min_y = bound.GetBox().GetMin()[1]
-        # UsdGeom.XformCommonAPI(asset).SetTranslate((x, -box_min_y, z))
-
-        from omni.physx.scripts import utils
-
-        # Add physics to prims
-        utils.setRigidBody(asset, "convexHull", False)
-        # Set Mass to 1 kg
-        mass_api = PhysicsSchema.MassAPI.Apply(asset)
-        mass_api.CreateMassAttr(1)
+        bound = UsdGeom.Mesh(asset).ComputeWorldBound(0.0, "default")
+        box_min_y = bound.GetBox().GetMin()[1]
+        UsdGeom.XformCommonAPI(asset).SetTranslate((x, -box_min_y, z))
         return asset
 
     def populate_scene(self):
-        """populate scene with assets."""
+        """Clear the scene and populate it with assets."""
+        self.stage.RemovePrim("/World/Asset")
         self.assets = []
         num_assets = random.randint(*self.range_num_assets)
         for i in range(num_assets):
@@ -230,27 +208,14 @@ class RandomObjects(torch.utils.data.IterableDataset):
     def randomize_asset_material(self):
         """Ranomize asset material properties"""
         for asset in self.assets:
-            mtl_created_list = []
-            self.kit.execute(
-                "CreateAndBindMdlMaterialFromLibrary",
-                mdl_name="OmniGlass.mdl",
-                mtl_name="OmniGlass",
-                mtl_created_list=mtl_created_list,
-            )
-            mtl_prim = self.stage.GetPrimAtPath(mtl_created_list[0])
+            colour = (random.random(), random.random(), random.random())
 
-            # Set material inputs, these can be determined by looking at the .mdl file
-            # or by selecting the Shader attached to the Material in the stage window and looking at the details panel
-            color = Gf.Vec3f(random.random(), random.random(), random.random())
-            omni.kit.usd.create_material_input(mtl_prim, "glass_color", color, Sdf.ValueTypeNames.Color3f)
-            omni.kit.usd.create_material_input(mtl_prim, "glass_ior", 1.45, Sdf.ValueTypeNames.Float)
-            # This value is the volumetric light absorption scale, reduce to zero to make glass clearer
-            omni.kit.usd.create_material_input(mtl_prim, "depth", 0, Sdf.ValueTypeNames.Float)
-            # Enable for thin glass objects if needed
-            omni.kit.usd.create_material_input(mtl_prim, "thin_walled", False, Sdf.ValueTypeNames.Bool)
-            # Bind the material to the prim
-            prim_mat_shade = UsdShade.Material(mtl_prim)
-            UsdShade.MaterialBindingAPI(asset).Bind(prim_mat_shade, UsdShade.Tokens.strongerThanDescendants)
+            # Here we choose not to have materials unrealistically rough or reflective.
+            roughness = random.uniform(0.1, 0.9)
+
+            # Here we choose to have more metallic than non-metallic objects.
+            metallic = random.choices([0.0, 1.0], weights=(0.8, 0.2))[0]
+            self._add_preview_surface(asset, colour, roughness, metallic)
 
     def randomize_camera(self):
         """Randomize the camera position."""
@@ -264,67 +229,84 @@ class RandomObjects(torch.utils.data.IterableDataset):
         # Change elevation angle
         self.camera_rig.AddRotateXOp().Set(random.random() * -90)
 
+    def create_dr_comp(self):
+        """Creates DR components with various attributes
+        the asset prims to randomize is an empty list for most components
+        since we get a new list of assets every iteration.
+        The asset list will be updated for each component in update_dr_comp()
+        """
+        texture_list = [
+            self.asset_path + "/Samples/DR/Materials/Textures/checkered.png",
+            self.asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            self.asset_path + "/Samples/DR/Materials/Textures/picture_a.png",
+            self.asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
+            self.asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+            self.asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
+        ]
+        material_list = [
+            self.asset_path + "/Samples/DR/Materials/checkered.mdl",
+            self.asset_path + "/Samples/DR/Materials/checkered_color.mdl",
+            self.asset_path + "/Samples/DR/Materials/marble_tile.mdl",
+            self.asset_path + "/Samples/DR/Materials/picture_a.mdl",
+            self.asset_path + "/Samples/DR/Materials/picture_b.mdl",
+            self.asset_path + "/Samples/DR/Materials/textured_wall.mdl",
+        ]
+        light_list = ["World/Light1", "World/Light2"]
+        self.texture_comp = self.dr_helper.create_texture_comp([], True, texture_list)
+        self.color_comp = self.dr_helper.create_color_comp([])
+        self.material_comp = self.dr_helper.create_material_comp([], material_list)
+        self.movement_comp = self.dr_helper.create_movement_comp([])
+        self.rotation_comp = self.dr_helper.create_rotation_comp([])
+        self.scale_comp = self.dr_helper.create_scale_comp([], max_range=(50, 50, 50))
+        self.light_comp = self.dr_helper.create_light_comp(light_list)
+        self.visibility_comp = self.dr_helper.create_visibility_comp([])
+
+    def update_dr_comp(self, dr_comp):
+        """Updates DR component with the asset prim paths that will be randomized"""
+        comp_prim_paths_target = dr_comp.GetPrimPathsRel()
+        comp_prim_paths_target.ClearTargets(True)
+        for asset in self.assets:
+            comp_prim_paths_target.AddTarget(asset.GetPrimPath())
+
     def __iter__(self):
         return self
 
     def __next__(self):
         # Generate a new scene
-        setup_task = asyncio.ensure_future(self.setup_world())
-        # # Add objects in the scene
-        while not setup_task.done():
-            self.kit.update()
-
-        self.setup_physics()
         self.populate_scene()
         self.randomize_camera()
 
-        # force RT mode for better performance while simulating physics
-        self.kit.set_setting("/rtx/rendermode", "RayTracedLighting")
+        """The below update calls set the paths of prims that need to be randomized
+        with the settings provided in their corresponding DR create component
+        """
 
-        # start simulation
-        self.kit.play()
-        # Step simulation so that objects fall to rest
-        # wait until all materials are loaded
-        frame = 0
-        print("simulating physics...")
-        while frame < 60 or self.kit.is_loading():
-            self.kit.update(1 / 60.0)
-            frame = frame + 1
-        print("done")
+        # In this example, either update texture or color or material of assets
+        # self.update_dr_comp(self.color_comp)
+        # self.update_dr_comp(self.texture_comp)
+        self.update_dr_comp(self.material_comp)
 
-        # pause simulation to capture frame
-        self.kit.pause()
+        # Also update movement, rotation and scale components
+        # self.update_dr_comp(self.movement_comp)
+        self.update_dr_comp(self.rotation_comp)
+        self.update_dr_comp(self.scale_comp)
 
-        # Collect Groundtruth in RT mode
-        gt = self.sd_helper.get_groundtruth(["boundingBox2DTight", "instanceSegmentation", "semanticSegmentation"])
+        # randomize once
+        self.dr_helper.randomize_once()
 
-        # Once we have the ground truth captured, update materials and re-render to get final RGB image
-        self.randomize_asset_material()
         # step once and then wait for materials to load
         self.kit.update()
         print("waiting for materials to load...")
         while self.kit.is_loading():
             self.kit.update()
         print("done")
-
-        # store the usd for debugging, save while paused so physics state is preserved
-        if self.save_usd:
-            usd_path = os.path.join("usd", "{:03d}.usd".format(self.cur_idx))
-            omni.usd.get_context().export_as_stage(usd_path, None)
-
-        # Return to user specified render mode
-        self.kit.set_setting("/rtx/rendermode", RENDER_CONFIG["renderer"])
-        # Collect Groundtruth in PT mode for RGB only
-        gt_pt = self.sd_helper.get_groundtruth(["rgb"])
-
-        # everything is captured, stop simulating, this will also reset physics
-        self.kit.stop()
+        # Collect Groundtruth
+        gt = self.sd_helper.get_groundtruth(["rgb", "boundingBox2DTight", "instanceSegmentation"])
 
         # RGB
         # Drop alpha channel
-        image = gt_pt["rgb"][..., :3]
+        image = gt["rgb"][..., :3]
         # Cast to tensor if numpy array
-        if isinstance(gt_pt["rgb"], np.ndarray):
+        if isinstance(gt["rgb"], np.ndarray):
             image = torch.tensor(image, dtype=torch.float, device="cuda")
         # Normalize between 0. and 1. and change order to channel-first.
         image = image.float() / 255.0
@@ -343,23 +325,16 @@ class RandomObjects(torch.utils.data.IterableDataset):
         areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
         # Idenfiy invalid bounding boxes to filter final output
         valid_areas = (areas > 0.0) * (areas < (image.shape[1] * image.shape[2]))
-        print("valid_areas", valid_areas)
+
         # Instance Segmentation
         _, masks = gt["instanceSegmentation"]
-        print("masks", masks.shape)
         if isinstance(masks, np.ndarray):
             masks = torch.tensor(masks, device="cuda")
-        # Semantic Segmentation
-        _, classes = gt["semanticSegmentation"]
-        print("classes", classes.shape)
-        if isinstance(classes, np.ndarray):
-            classes = torch.tensor(classes, device="cuda")
 
         target = {
             "boxes": bboxes[valid_areas],
             "labels": labels[valid_areas],
             "masks": masks[valid_areas],
-            "classes": classes,
             "image_id": torch.LongTensor([self.cur_idx]),
             "area": areas[valid_areas],
             "iscrowd": torch.BoolTensor([False] * len(bboxes[valid_areas])),  # Assume no crowds
@@ -393,17 +368,17 @@ if __name__ == "__main__":
 
     # If root is not specified use the environment variable SHAPENET_LOCAL_DIR with the _nomat suffix as root
     if args.root is None:
-        args.root = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_nomat"
+        args.root = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_mat"
 
     # If ShapeNet categories are specified with their names, convert to synset ID
     # Remove this if using with a different dataset than ShapeNet
     args.categories = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
 
-    dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size, save_usd=False)
+    dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size)
 
     # Iterate through dataset and visualize the output
     plt.ion()
-    _, axes = plt.subplots(1, 3, figsize=(10, 5))
+    _, axes = plt.subplots(1, 2, figsize=(10, 5))
     plt.tight_layout()
     for image, target in dataset:
         for ax in axes:
@@ -412,7 +387,6 @@ if __name__ == "__main__":
 
         np_image = image.permute(1, 2, 0).cpu().numpy()
         axes[0].imshow(np_image)
-        axes[0].set_title("RGB")
 
         num_instances = len(target["boxes"])
         colours = vis.random_colours(num_instances)
@@ -421,20 +395,9 @@ if __name__ == "__main__":
             overlay[mask, :3] = colour
 
         axes[1].imshow(overlay)
-        axes[1].set_title("Instance Image with Tight BBox")
-
         mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
         labels = [shapenet.SYNSET_TO_LABEL[mapping[label.item()]] for label in target["labels"]]
-        vis.plot_boxes(axes[1], target["boxes"].tolist(), labels=labels, colours=colours)
-
-        num_classes = target["classes"].shape[0]
-        colours = vis.random_colours(num_classes)
-        overlay = np.zeros_like(np_image)
-        for mask, colour in zip(target["classes"].cpu().numpy(), colours):
-            overlay[mask, :3] = colour
-
-        axes[2].imshow(overlay)
-        axes[2].set_title("Semantic Image")
+        vis.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
 
         plt.draw()
         plt.pause(0.01)

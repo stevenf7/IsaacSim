@@ -21,7 +21,13 @@ import omni
 from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, DataWriter, DomainRandomization
 
 # Default rendering parameters
-RENDER_CONFIG = {"width": 600, "height": 600, "renderer": "PathTracing", "samples_per_pixel_per_frame": 12}
+RENDER_CONFIG = {
+    "width": 600,
+    "height": 600,
+    "renderer": "PathTracing",
+    "samples_per_pixel_per_frame": 12,
+    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+}
 
 
 class RandomScenario(torch.utils.data.IterableDataset):
