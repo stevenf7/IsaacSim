@@ -9,8 +9,8 @@ import numpy as np
 class Jetracer:
     def __init__(self, omni_kit):
         self.omni_kit = omni_kit
-        # self.usd_path = "omniverse://ov-isaac-dev/Users/hllu/JetRacer/RealJetracer/Jetracer_stage_flattened_new_vehicle.usd"
-        self.usd_path = "omniverse://ov-isaac-dev/Users/hllu/JetRacer/RealJetracer/JustJetracer.usd"
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        self.usd_path = nucleus_server + "/Isaac/Robots/Jetracer/jetracer.usd"
         self.robot_prim = None
         self.dc = _dynamic_control.acquire_dynamic_control_interface()
         self.ar = None

@@ -123,21 +123,23 @@ HDR_TEX_PATH_LIST = [
 class Environment:
     def __init__(self, omni_kit, z_height=0):
         self.omni_kit = omni_kit
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
         # 1=I 2=L 3=T, 4=X
         self.tile_usd = {
             0: None,
-            1: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4336p01.usd", "offset": 90},
-            2: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4342p01.usd", "offset": 90},
-            3: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4341p01.usd", "offset": 90},
-            4: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4343p01.usd", "offset": 90},
+            1: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4336p01.usd", "offset": 90},
+            2: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4342p01.usd", "offset": 90},
+            3: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4341p01.usd", "offset": 90},
+            4: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4343p01.usd", "offset": 90},
         }  # list of tiles that can be spawned
+
         self.texture_list = [
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/checkered.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/picture_a.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/picture_b.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
         ]
         self.tile_size = [25.0, 25.0]
 
@@ -154,18 +156,18 @@ class Environment:
         self.road_path_helper = None
         self.map_generator = LoopRoadMapGenerator()
 
-        contents = omni.client.list("omniverse://ov-isaac-dev/Isaac/Props/Sortbot_Housing/Materials/Textures/")[1]
+        contents = omni.client.list(nucleus_server + "/Isaac/Props/Sortbot_Housing/Materials/Textures/")[1]
         for entry in contents:
             self.texture_list.append(
-                "omniverse://ov-isaac-dev/Isaac/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
+                nucleus_server + "/Isaac/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
             )
 
-        contents = omni.client.list("omniverse://ov-isaac-dev/Isaac/Props/YCB/Axis_Aligned/")[1]
+        contents = omni.client.list(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/")[1]
         names = []
         loaded_paths = []
 
         for entry in contents:
-            names.append("omniverse://ov-isaac-dev/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
+            names.append(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
             loaded_paths.append("/World/Meshes/mesh_component/mesh_" + entry.relative_path[0:-4])
         print(loaded_paths)
 
@@ -240,30 +242,8 @@ class Environment:
             layer.Apply(edit)
 
         self.prims = []
-        # self.pxrImageable.MakeInvisible()
         self.generate_road(shape)
         self.dr.randomize_once()
-
-        """
-        img = random.choice(HDR_TEX_PATH_LIST[0:1])
-        prim = self.skyboxes[img]
-        prim.GetAttribute("color").Set((random.random(),random.random(),random.random()))
-        xform_api = UsdGeom.XformCommonAPI(prim)
-        xform_api.SetRotate((0, 0, random.random()*360), UsdGeom.XformCommonAPI.RotationOrderZYX)
-        self.pxrImageable = UsdGeom.Imageable(prim)
-        self.pxrImageable.MakeVisible()
-        """
-
-        prefix = "omniverse://ov-isaac-dev/Library/Materials/HDR/"
-        stage = omni.usd.get_context().get_stage()
-        prim = stage.DefinePrim("/World/Env/EnvLight", "DomeLight")
-        prim.GetAttribute("intensity").Set(800)
-        prim.GetAttribute("color").Set((random.random(), random.random(), random.random()))
-        xform_api = UsdGeom.XformCommonAPI(prim)
-        xform_api.SetTranslate((0, 0, 0))
-        xform_api.SetRotate((0, 0, random.random() * 360), UsdGeom.XformCommonAPI.RotationOrderZYX)
-        prim.GetAttribute("texture:file").Set(str(prefix + random.choice(HDR_TEX_PATH_LIST) + ".hdr"))
-        self.prims.append("/World/Env/EnvLight")
 
     def generate_road(self, shape):
         self.tiles, self.state, self.road_map = self.map_generator.generate(shape)
