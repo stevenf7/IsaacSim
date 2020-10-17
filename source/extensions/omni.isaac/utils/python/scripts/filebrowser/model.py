@@ -41,6 +41,16 @@ class FileBrowserItem(ui.AbstractItem):
         self._populate_func = None
         self._enable_sorting = True  # Enables children to be sorted
         self._icon = None
+        self._expanded = False
+
+    @property
+    def expanded(self) -> bool:
+        """bool: Item expanded status"""
+        return self._expanded
+
+    @expanded.setter
+    def expanded(self, value: bool):
+        self._expanded = value
 
     @property
     def name(self) -> str:
