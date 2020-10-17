@@ -26,7 +26,7 @@ import numpy as np
 import omni
 from pxr import UsdGeom, UsdShade, Sdf, Semantics
 
-from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, shapenet, DomainRandomization
+from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, shapenet
 
 
 # Setup default generation variables
@@ -39,7 +39,13 @@ CAMERA_DISTANCE = 300
 BBOX_AREA_THRESH = 16
 
 # Default rendering parameters
-RENDER_CONFIG = {"width": 600, "height": 600, "renderer": "PathTracing", "samples_per_pixel_per_frame": 12}
+RENDER_CONFIG = {
+    "width": 600,
+    "height": 600,
+    "renderer": "PathTracing",
+    "samples_per_pixel_per_frame": 12,
+    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+}
 
 
 class RandomObjects(torch.utils.data.IterableDataset):
@@ -70,11 +76,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
         self.sd_helper = SyntheticDataHelper()
-        self.dr_helper = DomainRandomization()
-        self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
-        self.asset_path = nucleus_server + "/Isaac"
 
         self.categories = categories
         self.range_num_assets = (num_assets_min, max(num_assets_min, num_assets_max))
@@ -115,10 +117,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.camera = self.kit.create_prim("/World/CameraRig/Camera", "Camera", translation=(0.0, 0.0, CAMERA_DISTANCE))
         vpi = omni.kit.viewport.get_viewport_interface()
         vpi.get_viewport_window().set_active_camera(str(self.camera.GetPath()))
-
-        # create DR components
-        self.create_dr_comp()
-
         self.kit.update()
 
     def _find_usd_assets(self, root, categories, max_asset_size, split, train=True):
@@ -223,45 +221,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
         # Change elevation angle
         self.camera_rig.AddRotateXOp().Set(random.random() * -90)
 
-    def create_dr_comp(self):
-        """Creates DR components with various attributes
-        the asset prims to randomize is an empty list for most components
-        since we get a new list of assets every iteration.
-        The asset list will be updated for each component in update_dr_comp()
-        """
-        texture_list = [
-            self.asset_path + "/Samples/DR/Materials/Textures/checkered.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/picture_a.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
-        ]
-        material_list = [
-            self.asset_path + "/Samples/DR/Materials/checkered.mdl",
-            self.asset_path + "/Samples/DR/Materials/checkered_color.mdl",
-            self.asset_path + "/Samples/DR/Materials/marble_tile.mdl",
-            self.asset_path + "/Samples/DR/Materials/picture_a.mdl",
-            self.asset_path + "/Samples/DR/Materials/picture_b.mdl",
-            self.asset_path + "/Samples/DR/Materials/textured_wall.mdl",
-        ]
-        light_list = ["World/Light1", "World/Light2"]
-        self.texture_comp = self.dr_helper.create_texture_comp([], True, texture_list)
-        self.color_comp = self.dr_helper.create_color_comp([])
-        self.material_comp = self.dr_helper.create_material_comp([], material_list)
-        self.movement_comp = self.dr_helper.create_movement_comp([])
-        self.rotation_comp = self.dr_helper.create_rotation_comp([])
-        self.scale_comp = self.dr_helper.create_scale_comp([], max_range=(50, 50, 50))
-        self.light_comp = self.dr_helper.create_light_comp(light_list)
-        self.visibility_comp = self.dr_helper.create_visibility_comp([])
-
-    def update_dr_comp(self, dr_comp):
-        """Updates DR component with the asset prim paths that will be randomized"""
-        comp_prim_paths_target = dr_comp.GetPrimPathsRel()
-        comp_prim_paths_target.ClearTargets(True)
-        for asset in self.assets:
-            comp_prim_paths_target.AddTarget(asset.GetPrimPath())
-
     def __iter__(self):
         return self
 
@@ -269,24 +228,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         # Generate a new scene
         self.populate_scene()
         self.randomize_camera()
-
-        """The below update calls set the paths of prims that need to be randomized
-        with the settings provided in their corresponding DR create component
-        """
-
-        # In this example, either update texture or color or material of assets
-        # self.update_dr_comp(self.color_comp)
-        # self.update_dr_comp(self.texture_comp)
-        self.update_dr_comp(self.material_comp)
-
-        # Also update movement, rotation and scale components
-        # self.update_dr_comp(self.movement_comp)
-        self.update_dr_comp(self.rotation_comp)
-        self.update_dr_comp(self.scale_comp)
-
-        # randomize once
-        self.dr_helper.randomize_once()
-
+        self.randomize_asset_material()
         # step once and then wait for materials to load
         self.kit.update()
         print("waiting for materials to load...")
@@ -362,7 +304,7 @@ if __name__ == "__main__":
 
     # If root is not specified use the environment variable SHAPENET_LOCAL_DIR with the _nomat suffix as root
     if args.root is None:
-        args.root = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_mat"
+        args.root = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_nomat"
 
     # If ShapeNet categories are specified with their names, convert to synset ID
     # Remove this if using with a different dataset than ShapeNet

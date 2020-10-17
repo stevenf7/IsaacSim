@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-
+import os
 import carb
 from omni.isaac.synthetic_utils import OmniKitHelper
 
@@ -16,7 +16,7 @@ CUSTOM_CONFIG = {
     "height": 224,
     "renderer": "RayTracedLighting",
     "headless": False,
-    "experience": "isaac-sim-jetbot-training.json",
+    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
 }
 
 if __name__ == "__main__":
