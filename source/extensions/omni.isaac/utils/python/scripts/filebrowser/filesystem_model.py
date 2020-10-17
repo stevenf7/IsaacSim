@@ -9,6 +9,7 @@
 import os, sys, stat
 import time
 from datetime import datetime
+import carb
 
 from omni import ui
 from .model import FileBrowserItem, FileBrowserItemFields, FileBrowserModel
@@ -37,15 +38,18 @@ class FileSystemItem(FileBrowserItem):
             return True
 
         item.children.clear()
-        with os.scandir(item.path) as it:
-            entries = {entry.name: entry for entry in it}
-            for name in sorted(entries):
-                entry = entries[name]
-                if not keep_entry(entry):
-                    continue
-                child_item = FileSystemItemFactory.create_entry_item(entry)
-                if child_item:
-                    item.children[child_item.name] = child_item
+        try:
+            with os.scandir(item.path) as it:
+                entries = {entry.name: entry for entry in it}
+                for name in sorted(entries):
+                    entry = entries[name]
+                    if not keep_entry(entry):
+                        continue
+                    child_item = FileSystemItemFactory.create_entry_item(entry)
+                    if child_item:
+                        item.children[child_item.name] = child_item
+        except PermissionError:
+            carb.log_error("Permission Denied: {}".format(item.path))
 
 
 class FileSystemItemFactory:
