@@ -25,7 +25,7 @@ def find_7za():
 
 
 def remove_folder(archive_path, folder_path):
-    args = [find_7za(), "d", archive_path, folder_path, "-r"]
+    args = [find_7za(), "d", archive_path, folder_path, "-r0"]
     p = subprocess.Popen(args)
     returncode = p.wait()
     if returncode != 0:
