@@ -13,9 +13,10 @@ do
     path="$(readlink -f "$path"/..)"
     
 done
-path=$path/_build
-export ISAAC_PATH=$path/linux-x86_64/release
-export KIT_PATH=$path/target-deps/kit_sdk_release/_build/linux-x86_64/release/
+build_path=$path/_build
+export EXP_PATH=$SCRIPT_DIR/experiences
+export ISAAC_PATH=$build_path/linux-x86_64/release
+export KIT_PATH=$build_path/target-deps/kit_sdk_release/_build/linux-x86_64/release/
 export ISAAC_PATH="$( cd ${ISAAC_PATH} && pwd )"
 export KIT_PATH="$( cd ${KIT_PATH} && pwd )"
 export CARB_APP_PATH=$KIT_PATH

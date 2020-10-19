@@ -414,6 +414,12 @@ class Extension(omni.ext.IExt):
                 self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
         data_dir = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf"))
         self._filebrowser.add_model_as_subtree(FileSystemModel("Built In URDFs", data_dir))
+        if len(self._filebrowser.get_selections()):
+            item = self._filebrowser.get_selections()[0]
+            item.parent.populated = False
+        else:
+            item = self._filebrowser._models.root
+            item.populated = False
         self._filebrowser.refresh_ui(None)
         self._file_window.visible = True
 

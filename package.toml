@@ -30,7 +30,10 @@
 # Common section:
 ########################################################################################################################
 
-files = []
+files = [
+    ["source/python_samples/**", "python_samples"],
+    ["source/apps/**", ""],
+]
 
 
 ########################################################################################################################
@@ -75,9 +78,8 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit.portable", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/omniverse-kit.portable"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*$shell_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
     
-
-    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/**/*$lib_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray"],
-    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl/**/*$lib_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl"],
 
     #["_build/target-deps/kit_sdk_$config/_build/assets/**", "_build/target-deps/kit_sdk_$config/_build/assets"],
     ["_build/target-deps/kit_sdk_$config/_build/library/**", "_build/target-deps/kit_sdk_$config/_build/library"],
@@ -199,8 +201,8 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/*$shell_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config"],
     
 
-    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/**/*$lib_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray"],
-    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl/**/*$lib_ext", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/iray"],
+    ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/libs/mdl"],
 
     #["_build/target-deps/kit_sdk_$config/_build/assets/**", "_build/target-deps/kit_sdk_$config/_build/assets"],
     ["_build/target-deps/kit_sdk_$config/_build/library/**", "_build/target-deps/kit_sdk_$config/_build/library"],

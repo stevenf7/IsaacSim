@@ -74,6 +74,7 @@ class FileBrowserTreeView(FileBrowserView):
         return self._tree_view
 
     def refresh_ui(self, item: FileBrowserItem = None):
+        self.set_expanded(self._model._root, False, True)
         if not self._visible:
             return
         if self._model:
@@ -196,6 +197,15 @@ class FileBrowserTreeViewDelegate(ui.AbstractItemDelegate):
 
             button.set_clicked_fn(lambda: on_column_clicked(column_id))
 
+    def refresh_item(self, item, model):
+        item.populated = False
+        try:
+            item.populate()
+        except:
+            item.populated = True
+        item.expanded = True
+        model._item_changed(item)
+
     def build_branch(self, model: FileBrowserModel, item: FileBrowserItem, column_id: int, level: int, expanded: bool):
         """Create a branch widget that opens or closes subtree"""
         if column_id == 0:
@@ -227,8 +237,11 @@ class FileBrowserTreeViewDelegate(ui.AbstractItemDelegate):
                     icon = "resources/glyphs/file.svg"
                 else:
                     if expanded:
+                        if not item.expanded:
+                            self.refresh_item(item, model)
                         icon = "resources/glyphs/folder_open.svg"
                     else:
+                        item.expanded = False
                         icon = "resources/glyphs/folder.svg"
             return icon
 

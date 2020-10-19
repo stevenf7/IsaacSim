@@ -213,10 +213,11 @@ class StepImporter(omni.ext.IExt):
         )
 
     def ReplaceDuplicatesSelected(self):
-        mesh_id = self._mesh_list.selection[0].id
-        for i in range(1, len(self._mesh_list.selection)):
-            self._mesh_list.selection[i].set_replacement_id(mesh_id)
-        self._mesh_model.export_model()
+        if len(self._mesh_list.selection):
+            mesh_id = self._mesh_list.selection[0].id
+            for i in range(1, len(self._mesh_list.selection)):
+                self._mesh_list.selection[i].set_replacement_id(mesh_id)
+            self._mesh_model.export_model()
 
     def _on_kit_selection_changed(self):
         """The selection in kit is changed"""
@@ -267,19 +268,19 @@ class StepImporter(omni.ext.IExt):
     def show_full_part(self):
         self._delegate.on_mouse_double_clicked(self._assembly_model._root.children[0])
 
-    def on_edit_names(self, button):
+    def on_edit_names(self):
         self._mesh_model.toggle_edit_mode()
         if self._mesh_model.edit_mode:
-            button.text = "Done Editing Names"
+            self.edit_meshes_btn.text = "Done Editing Names"
         else:
-            button.text = "Edit Mesh Names"
+            self.edit_meshes_btn.text = "Edit Mesh Names"
 
-    def on_edit_assembly_names(self, button):
+    def on_edit_assembly_names(self):
         self._assembly_model.toggle_edit_mode()
         if self._assembly_model.edit_mode:
-            button.text = "Done Editing Names"
+            self.edit_assembly_name_btn.text = "Done Editing Names"
         else:
-            button.text = "Edit Assembly Names"
+            self.edit_assembly_name_btn.text = "Edit Assembly Names"
 
     def build_step_1(self, container):
         self._tp_delegate = TesselationPropsDelegate()
@@ -361,12 +362,12 @@ class StepImporter(omni.ext.IExt):
                                     height=ui.Pixel(25),
                                     tooltip="Show/Hide selected meshes",
                                 )
-                                btn = ui.Button(
+                                self.edit_meshes_btn = ui.Button(
                                     "Edit Mesh Names",
                                     height=ui.Pixel(25),
                                     tooltip="Allow editing mesh names and updates assemblies.",
                                 )
-                                btn.set_clicked_fn(self.on_edit_names)
+                                self.edit_meshes_btn.set_clicked_fn(self.on_edit_names)
                                 ui.Button(
                                     "Remove selected duplicates",
                                     clicked_fn=self.ReplaceDuplicatesSelected,
@@ -404,12 +405,12 @@ class StepImporter(omni.ext.IExt):
                                 )
                             with ui.VStack(width=80):
 
-                                btn = ui.Button(
+                                self.edit_assembly_name_btn = ui.Button(
                                     "Edit Assembly Names",
                                     height=ui.Pixel(25),
                                     tooltip="Allow editing assembly names and updates assemblies.",
                                 )
-                                btn.set_clicked_fn(self.on_edit_assembly_names)
+                                self.edit_assembly_name_btn.set_clicked_fn(self.on_edit_assembly_names)
                 self._finish_import_btn = ui.Button(
                     "Finish Import", clicked_fn=lambda: self._select_folder(self), height=ui.Pixel(25)
                 )
@@ -435,7 +436,8 @@ class StepImporter(omni.ext.IExt):
         self.reimport_meshes(True)
 
     def reimport_selected_meshes(self):
-        self.reimport_meshes(False)
+        if len(self._mesh_list.selection):
+            self.reimport_meshes(False)
 
     def remove_selected_lod(self):
         self._tp_model.remove_item(self._tesselation_properties_list.selection)
@@ -538,8 +540,14 @@ class StepImporter(omni.ext.IExt):
         # self._file_window.width=600
         # self._file_window.height=400
         self._file_window.visible = True
-        self._filebrowser.refresh_ui(None)
-        # self._filebrowser._models._item_changed(None)
+        if len(self._filebrowser.get_selections()):
+            item = self._filebrowser.get_selections()[0]
+            item.parent.populated = False
+            self._filebrowser.refresh_ui(item.parent)
+        else:
+            item = self._filebrowser._models.root
+            item.populated = False
+            self._filebrowser.refresh_ui(item)
 
         # self._filepicker = omni.kit.ui.FilePicker("Select STEP File", file_type=omni.kit.ui.FileDialogSelectType.FILE)
         # self._filepicker.set_file_selected_fn(self._select_picked_file_callback)
@@ -553,8 +561,14 @@ class StepImporter(omni.ext.IExt):
         self.select_file_btn.set_clicked_fn(self._on_open_folder_selected)
 
         self._file_window.visible = True
-        self._filebrowser.refresh_ui(None)
-        # self._filebrowser._models._item_changed(None)
+        if len(self._filebrowser.get_selections()):
+            item = self._filebrowser.get_selections()[0]
+            item.parent.populated = False
+            self._filebrowser.refresh_ui(item.parent)
+        else:
+            item = self._filebrowser._models.root
+            item.populated = False
+            self._filebrowser.refresh_ui(item)  # self._filebrowser._models._item_changed(None)
         self._file_window.width = 600
         self._file_window.height = 400
         self.select_file_btn.text = "Select Folder"

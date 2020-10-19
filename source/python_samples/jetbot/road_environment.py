@@ -9,135 +9,27 @@ from jetbot_city.road_map_generator import *
 
 from omni.isaac.synthetic_utils import DomainRandomization
 
-HDR_TEX_PATH_LIST = [
-    "abandoned_games_room_01_2k",
-    "abandoned_games_room_02_2k",
-    "abandoned_hall_01_2k",
-    "adams_place_bridge_2k",
-    "aerodynamics_workshop_2k",
-    "aft_lounge_2k",
-    "aircraft_workshop_01_2k",
-    "anniversary_lounge_2k",
-    "artist_workshop_2k",
-    "art_studio_2k",
-    "autoshop_01_2k",
-    "ballroom_2k",
-    "bathroom_2k",
-    "birbeck_street_underpass_2k",
-    "blender_institute_2k",
-    "blinds_2k",
-    "boiler_room_2k",
-    "bush_restaurant_2k",
-    "cabin_2k",
-    "carpentry_shop_01_2k",
-    "carpentry_shop_02_2k",
-    "cave_wall_2k",
-    "cayley_interior_2k",
-    "childrens_hospital_2k",
-    "cinema_hall_2k",
-    "cinema_lobby_2k",
-    "circus_arena_2k",
-    "colorful_studio_2k",
-    "combination_room_2k",
-    "concrete_tunnel_2k",
-    "de_balie_2k",
-    "dresden_station_night_2k",
-    "en_suite_2k",
-    "entrance_hall_2k",
-    "fireplace_2k",
-    "floral_tent_2k",
-    "garage_2k",
-    "georgentor_2k",
-    "glass_passage_2k",
-    "graffiti_shelter_2k",
-    "gym_01_2k",
-    "gym_entrance_2k",
-    "hall_of_finfish_2k",
-    "hall_of_mammals_2k",
-    "hamburg_hbf_2k",
-    "hikers_cave_2k",
-    "hospital_room_2k",
-    "hotel_room_2k",
-    "indoor_pool_2k",
-    "industrial_pipe_and_valve_01_2k",
-    "industrial_pipe_and_valve_02_2k",
-    "kiara_interior_2k",
-    "lapa_2k",
-    "leadenhall_market_2k",
-    "lebombo_2k",
-    "lookout_2k",
-    "lythwood_lounge_2k",
-    "lythwood_room_2k",
-    "machine_shop_01_2k",
-    "machine_shop_02_2k",
-    "machine_shop_03_2k",
-    "missile_launch_facility_01_2k",
-    "mosaic_tunnel_2k",
-    "museum_of_ethnography_2k",
-    "music_hall_01_2k",
-    "music_hall_02_2k",
-    "mutianyu_2k",
-    "old_apartments_walkway_2k",
-    "old_bus_depot_2k",
-    "old_depot_2k",
-    "parking_garage_2k",
-    "paul_lobe_haus_2k",
-    "phone_shop_2k",
-    "photo_studio_01_2k",
-    "pillars_2k",
-    "pump_house_2k",
-    "reading_room_2k",
-    "royal_esplanade_2k",
-    "sculpture_exhibition_2k",
-    "short_tunnel_2k",
-    "skylit_garage_2k",
-    "small_cathedral_2k",
-    "small_cave_2k",
-    "small_empty_house_2k",
-    "small_hangar_01_2k",
-    "small_hangar_02_2k",
-    "storeroom_2k",
-    "studio_small_01_2k",
-    "studio_small_02_2k",
-    "studio_small_03_2k",
-    "studio_small_04_2k",
-    "studio_small_05_2k",
-    "studio_small_06_2k",
-    "studio_small_07_2k",
-    "subway_entrance_2k",
-    "surgery_2k",
-    "teufelsberg_inner_2k",
-    "teufelsberg_lookout_2k",
-    "theater_01_2k",
-    "theater_02_2k",
-    "tv_studio_2k",
-    "veranda_2k",
-    "vintage_measuring_lab_2k",
-    "vulture_hide_2k",
-    "whale_skeleton_2k",
-    "wooden_lounge_2k",
-    "yaris_interior_garage_2k",
-]
-
 
 class Environment:
     def __init__(self, omni_kit, z_height=0):
         self.omni_kit = omni_kit
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
         # 1=I 2=L 3=T, 4=X
         self.tile_usd = {
             0: None,
-            1: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4336p01.usd", "offset": 90},
-            2: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4342p01.usd", "offset": 90},
-            3: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4341p01.usd", "offset": 90},
-            4: {"asset": "omniverse://ov-isaac-dev/Library/Props/Lego/Parts/4343p01.usd", "offset": 90},
+            1: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4336p01.usd", "offset": 90},
+            2: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4342p01.usd", "offset": 90},
+            3: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4341p01.usd", "offset": 90},
+            4: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4343p01.usd", "offset": 90},
         }  # list of tiles that can be spawned
+
         self.texture_list = [
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/checkered.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/picture_a.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/picture_b.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
         ]
         self.tile_size = [25.0, 25.0]
 
@@ -154,18 +46,18 @@ class Environment:
         self.road_path_helper = None
         self.map_generator = LoopRoadMapGenerator()
 
-        contents = omni.client.list("omniverse://ov-isaac-dev/Isaac/Props/Sortbot_Housing/Materials/Textures/")[1]
+        contents = omni.client.list(nucleus_server + "/Isaac/Props/Sortbot_Housing/Materials/Textures/")[1]
         for entry in contents:
             self.texture_list.append(
-                "omniverse://ov-isaac-dev/Isaac/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
+                nucleus_server + "/Isaac/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
             )
 
-        contents = omni.client.list("omniverse://ov-isaac-dev/Isaac/Props/YCB/Axis_Aligned/")[1]
+        contents = omni.client.list(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/")[1]
         names = []
         loaded_paths = []
 
         for entry in contents:
-            names.append("omniverse://ov-isaac-dev/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
+            names.append(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
             loaded_paths.append("/World/Meshes/mesh_component/mesh_" + entry.relative_path[0:-4])
         print(loaded_paths)
 
@@ -240,30 +132,8 @@ class Environment:
             layer.Apply(edit)
 
         self.prims = []
-        # self.pxrImageable.MakeInvisible()
         self.generate_road(shape)
         self.dr.randomize_once()
-
-        """
-        img = random.choice(HDR_TEX_PATH_LIST[0:1])
-        prim = self.skyboxes[img]
-        prim.GetAttribute("color").Set((random.random(),random.random(),random.random()))
-        xform_api = UsdGeom.XformCommonAPI(prim)
-        xform_api.SetRotate((0, 0, random.random()*360), UsdGeom.XformCommonAPI.RotationOrderZYX)
-        self.pxrImageable = UsdGeom.Imageable(prim)
-        self.pxrImageable.MakeVisible()
-        """
-
-        prefix = "omniverse://ov-isaac-dev/Library/Materials/HDR/"
-        stage = omni.usd.get_context().get_stage()
-        prim = stage.DefinePrim("/World/Env/EnvLight", "DomeLight")
-        prim.GetAttribute("intensity").Set(800)
-        prim.GetAttribute("color").Set((random.random(), random.random(), random.random()))
-        xform_api = UsdGeom.XformCommonAPI(prim)
-        xform_api.SetTranslate((0, 0, 0))
-        xform_api.SetRotate((0, 0, random.random() * 360), UsdGeom.XformCommonAPI.RotationOrderZYX)
-        prim.GetAttribute("texture:file").Set(str(prefix + random.choice(HDR_TEX_PATH_LIST) + ".hdr"))
-        self.prims.append("/World/Env/EnvLight")
 
     def generate_road(self, shape):
         self.tiles, self.state, self.road_map = self.map_generator.generate(shape)

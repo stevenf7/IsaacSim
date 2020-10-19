@@ -7,6 +7,8 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import numpy as np
+
 
 def torch_isin(tensor, test_elements):
     """PyTorch version of the numpy `is1d` function
@@ -38,3 +40,14 @@ def torch_isin(tensor, test_elements):
     ret[order] = flag
 
     return ret[rev_idx]
+
+
+def to_numpy(data):
+    """Helper to ensure data is on the CPU as a numpy array.
+        """
+    if isinstance(data, np.ndarray):
+        return data
+    elif type(data).__name__ == "Tensor":
+        return data.cpu().numpy()
+    else:
+        raise ValueError(f"Unable to convert to numpy data of type {type(data)}.")

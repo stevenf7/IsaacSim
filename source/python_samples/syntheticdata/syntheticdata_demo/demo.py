@@ -12,7 +12,7 @@
 the results.
 """
 
-
+import os
 import random
 import numpy as np
 from pxr import UsdGeom, Semantics
@@ -20,6 +20,7 @@ from omni.isaac.synthetic_utils import OmniKitHelper
 from omni.isaac.synthetic_utils import visualization as vis
 from omni.isaac.synthetic_utils import camera
 from omni.isaac.synthetic_utils import SyntheticDataHelper
+from omni.isaac.synthetic_utils import utils as ut
 import matplotlib.pyplot as plt
 
 
@@ -28,7 +29,9 @@ SCALE = 50.0
 
 
 def main():
-    kit = OmniKitHelper({"renderer": "RayTracedLighting"})
+    kit = OmniKitHelper(
+        {"renderer": "RayTracedLighting", "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json'}
+    )
     sd_helper = SyntheticDataHelper()
 
     # SCENE SETUP
@@ -70,15 +73,6 @@ def main():
     )
 
     # GROUNDTRUTH VISUALIZATION
-    def to_numpy(data):
-        """Helper to ensure data is on the CPU as a numpy array.
-        """
-        if isinstance(data, np.ndarray):
-            return data
-        elif type(data).__name__ == "Tensor":
-            return data.cpu().numpy()
-        else:
-            raise ValueError(f"Unable to convert to numpy data of type {type(data)}.")
 
     # Setup a figure
     _, axes = plt.subplots(2, 4, figsize=(20, 7))
@@ -89,11 +83,11 @@ def main():
     # RGB
     axes[0].set_title("RGB")
     for ax in axes[:-1]:
-        ax.imshow(to_numpy(gt["rgb"]))
+        ax.imshow(ut.to_numpy(gt["rgb"]))
 
     # DEPTH
     axes[1].set_title("Depth")
-    axes[1].imshow(to_numpy(gt["depth"]))
+    axes[1].imshow(ut.to_numpy(gt["depth"]))
 
     # BBOX2D TIGHT
     random.seed(1)
@@ -119,14 +113,14 @@ def main():
     random.seed(1)
     axes[4].set_title("Instance Segmentation")
     _, instance_seg = gt["instanceSegmentation"]
-    instance_rgb = vis.instance_segmentation_to_rgb(to_numpy(instance_seg))
+    instance_rgb = vis.instance_segmentation_to_rgb(ut.to_numpy(instance_seg))
     axes[4].imshow(instance_rgb, alpha=0.7)
 
     # SEMANTIC SEGMENTATION
     random.seed(1)
     axes[5].set_title("Semantic Segmentation")
     _, semantic_seg = gt["semanticSegmentation"]
-    semantic_rgb = vis.semantic_segmentation_to_rgb(to_numpy(semantic_seg))
+    semantic_rgb = vis.semantic_segmentation_to_rgb(ut.to_numpy(semantic_seg))
     axes[5].imshow(semantic_rgb, alpha=0.7)
 
     # BBOX 3D

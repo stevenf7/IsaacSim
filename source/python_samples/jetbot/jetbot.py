@@ -9,7 +9,8 @@ import numpy as np
 class Jetbot:
     def __init__(self, omni_kit):
         self.omni_kit = omni_kit
-        self.usd_path = "omniverse://ov-isaac-dev/Library/Robots/Jetbot/waveshare_jetbot.usd"
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        self.usd_path = nucleus_server + "/Isaac/Robots/Jetbot/jetbot.usd"
         self.robot_prim = None
         self.dc = _dynamic_control.acquire_dynamic_control_interface()
         self.ar = None

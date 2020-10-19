@@ -14,14 +14,15 @@ TRACK_DIMS = [671, 1066]  # the track is within (0, 0) to (671.1 cm, 1066.8 cm)
 class Environment:
     def __init__(self, omni_kit, z_height=0):
         self.omni_kit = omni_kit
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
 
         self.texture_list = [
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/checkered.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/picture_a.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/picture_b.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
+            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
         ]
 
         self.prims = []  # list of spawned tiles
@@ -30,18 +31,18 @@ class Environment:
         # because the ground plane is what the robot drives on, we only do this once. We can then re-generate the road as often as we need without impacting physics
         self.setup_physics()
 
-        contents = omni.client.list("omniverse://ov-isaac-dev/Isaac/Props/Sortbot_Housing/Materials/Textures/")[1]
+        contents = omni.client.list(nucleus_server + "/Isaac/Props/Sortbot_Housing/Materials/Textures/")[1]
         for entry in contents:
             self.texture_list.append(
-                "omniverse://ov-isaac-dev/Isaac/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
+                nucleus_server + "/Isaac/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
             )
 
-        contents = omni.client.list("omniverse://ov-isaac-dev/Isaac/Props/YCB/Axis_Aligned/")[1]
+        contents = omni.client.list(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/")[1]
         names = []
         loaded_paths = []
 
         for entry in contents:
-            names.append("omniverse://ov-isaac-dev/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
+            names.append(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
             loaded_paths.append("/World/Meshes/mesh_component/mesh_" + entry.relative_path[0:-4])
         print(loaded_paths)
 
@@ -126,34 +127,13 @@ class Environment:
         # self.generate_road(shape)
         self.dr.randomize_once()
 
-        """
-        img = random.choice(HDR_TEX_PATH_LIST[0:1])
-        prim = self.skyboxes[img]
-        prim.GetAttribute("color").Set((random.random(),random.random(),random.random()))
-        xform_api = UsdGeom.XformCommonAPI(prim)
-        xform_api.SetRotate((0, 0, random.random()*360), UsdGeom.XformCommonAPI.RotationOrderZYX)
-        self.pxrImageable = UsdGeom.Imageable(prim)
-        self.pxrImageable.MakeVisible()
-        """
-
-        # prefix = "omniverse://ov-isaac-dev/Library/Materials/HDR/"
-        # stage = omni.usd.get_context().get_stage()
-        # LOCMOD revisit to fix weird wheel rotation when these enabled
-        # prim = stage.DefinePrim("/World/Env/EnvLight", "DomeLight")
-        # prim.GetAttribute("intensity").Set(800)
-        # prim.GetAttribute("color").Set((random.random(), random.random(), random.random()))
-        # xform_api = UsdGeom.XformCommonAPI(prim)
-        # xform_api.SetTranslate((0, 0, 0))
-        # xform_api.SetRotate((0, 0, random.random() * 360), UsdGeom.XformCommonAPI.RotationOrderZYX)
-        # prim.GetAttribute("texture:file").Set(str(prefix + random.choice(HDR_TEX_PATH_LIST) + ".hdr"))
-        # self.prims.append("/World/Env/EnvLight")
-
     def generate_road(self, shape):
         stage = self.omni_kit.get_stage()
         self.add_track(stage)
 
     def add_track(self, stage):
-        path = "omniverse://ov-isaac-dev/Users/hllu/JetRacer/RealJetracer/Jetracer_track.usd"
+        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        path = nucleus_server + "/Isaac/Environments/Jetracer/jetracer_track_solid.usd"
         prefix = "/World/Env/Track"
         prim_path = omni.kit.utils.get_stage_next_free_path(stage, prefix, False)
         # self.prims.append(prim_path) #LOCMOD revisit (don't add so it won't be removed on reset)
