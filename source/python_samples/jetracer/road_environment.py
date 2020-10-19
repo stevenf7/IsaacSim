@@ -1,8 +1,8 @@
+import carb
 import omni
-from omni.isaac.dynamic_control import _dynamic_control
-import omni.syntheticdata._syntheticdata as _synthetic_data
 import random
-from pxr import UsdGeom, Gf, Sdf, Usd, PhysxSchema, PhysicsSchema, PhysicsSchemaTools, Semantics
+from pxr import UsdGeom, Gf, Sdf, PhysxSchema, PhysicsSchema, PhysicsSchemaTools
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 from omni.isaac.synthetic_utils import DomainRandomization
 from gtc2020_track_utils import *
@@ -14,7 +14,10 @@ TRACK_DIMS = [671, 1066]  # the track is within (0, 0) to (671.1 cm, 1066.8 cm)
 class Environment:
     def __init__(self, omni_kit, z_height=0):
         self.omni_kit = omni_kit
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
 
         self.texture_list = [
             nucleus_server + "/Isaac/Samples/DR/Materials/Textures/checkered.png",
@@ -76,7 +79,6 @@ class Environment:
             )
             lights.append(prim_path)
 
-        frames = 1
         self.dr.create_movement_comp(
             prim_paths=loaded_paths, min_range=(0, 0, 15), max_range=(TRACK_DIMS[0], TRACK_DIMS[1], 15)
         )
@@ -132,7 +134,10 @@ class Environment:
         self.add_track(stage)
 
     def add_track(self, stage):
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
         path = nucleus_server + "/Isaac/Environments/Jetracer/jetracer_track_solid.usd"
         prefix = "/World/Env/Track"
         prim_path = omni.kit.utils.get_stage_next_free_path(stage, prefix, False)

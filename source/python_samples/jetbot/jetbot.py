@@ -1,15 +1,19 @@
+import carb
 import omni
+from pxr import UsdGeom, Gf
 from omni.isaac.dynamic_control import _dynamic_control
-import omni.syntheticdata._syntheticdata as _synthetic_data
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-from pxr import UsdGeom, Gf, Sdf, Usd, PhysxSchema, PhysicsSchema, PhysicsSchemaTools, Semantics
 import numpy as np
 
 
 class Jetbot:
     def __init__(self, omni_kit):
         self.omni_kit = omni_kit
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
         self.usd_path = nucleus_server + "/Isaac/Robots/Jetbot/jetbot.usd"
         self.robot_prim = None
         self.dc = _dynamic_control.acquire_dynamic_control_interface()

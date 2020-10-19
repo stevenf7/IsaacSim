@@ -23,11 +23,12 @@ import torch
 import random
 import numpy as np
 
+import carb
 import omni
-from pxr import UsdGeom, UsdShade, Sdf, Semantics
+from pxr import UsdGeom, UsdShade, Sdf
 
 from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, shapenet, DomainRandomization
-
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 # Setup default generation variables
 # Value are (min, max) ranges
@@ -79,7 +80,10 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.dr_helper = DomainRandomization()
         self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
         self.asset_path = nucleus_server + "/Isaac"
 
         self.categories = categories
