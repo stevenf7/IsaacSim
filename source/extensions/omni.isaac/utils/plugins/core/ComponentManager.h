@@ -98,6 +98,16 @@ public:
      */
     virtual void deleteAllComponents() = 0;
 
+    /**
+     * @brief Get the Stage object
+     *
+     * @return pxr::UsdStageWeakPtr
+     */
+    pxr::UsdStageWeakPtr getStage()
+    {
+        return mStage;
+    }
+
 protected:
     pxr::UsdStageWeakPtr mStage = nullptr;
 

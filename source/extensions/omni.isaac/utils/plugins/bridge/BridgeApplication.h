@@ -3,6 +3,10 @@
 #include "../core/Component.h"
 #include "../core/ComponentManager.h"
 
+#include <omni/usd/UtilsIncludes.h>
+//
+#include <omni/usd/UsdUtils.h>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -14,6 +18,59 @@ namespace isaac
 {
 namespace utils
 {
+
+// This custom Usd notice listener is required to clean up properly
+class UsdNoticeListener : public omni::usd::UsdUtils::UsdNoticeListener<pxr::UsdNotice::ObjectsChanged>
+
+{
+public:
+    UsdNoticeListener(ComponentManager* manager) : mManager(manager)
+    {
+        mStage = mManager->getStage();
+    }
+
+    virtual void handleNotice(const pxr::UsdNotice::ObjectsChanged& objectsChanged) override
+    {
+        if (mStage != objectsChanged.GetStage())
+        {
+            return;
+        }
+
+        for (auto& path : objectsChanged.GetResyncedPaths())
+        {
+            if (path.IsAbsoluteRootOrPrimPath())
+            {
+                // CARB_LOG_WARN("ResyncedPaths: %s", path.GetText());
+                auto primPath =
+                    mStage->GetPseudoRoot().GetPath() == path ? mStage->GetPseudoRoot().GetPath() : path.GetPrimPath();
+
+                // If prim is removed, remove it and its descendants from selection.
+                pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
+
+                // CARB_LOG_WARN("Prim valid %d", prim.IsValid());
+                if (prim.IsValid() == false) // remove prim
+                {
+                    mManager->onComponentRemove(primPath);
+                }
+            }
+        }
+        for (auto& path : objectsChanged.GetChangedInfoOnlyPaths())
+        {
+            auto primPath =
+                mStage->GetPseudoRoot().GetPath() == path ? mStage->GetPseudoRoot().GetPath() : path.GetPrimPath();
+
+            // Update the component attached to this prim, onComponentChange checks to see if the prim exists in
+            // this BridgeApplication
+            pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
+            mManager->onComponentChange(prim);
+        }
+    }
+
+private:
+    pxr::UsdStageWeakPtr mStage = nullptr;
+    ComponentManager* mManager = nullptr;
+};
+
 
 template <class ComponentType>
 class BridgeApplicationBase : public ComponentManager, public pxr::TfWeakBase
@@ -34,8 +91,8 @@ public:
 
     ~BridgeApplicationBase()
     {
+        mNoticeListener->revokeListener();
         deleteAllComponents();
-        pxr::TfNotice::Revoke(mNoticeListener);
     }
 
     /**
@@ -46,7 +103,8 @@ public:
     virtual void initialize(pxr::UsdStageWeakPtr stage)
     {
         mStage = stage;
-        mNoticeListener = pxr::TfNotice::Register(pxr::TfCreateWeakPtr(this), &BridgeApplicationBase::HandlePrimChanged);
+        mNoticeListener = std::make_unique<UsdNoticeListener>(this);
+        mNoticeListener->registerListener();
     }
 
     /**
@@ -112,7 +170,7 @@ public:
         // delete component for this prim
         if (mComponents.find(primPath.GetString()) != mComponents.end())
         {
-            CARB_LOG_WARN("Delete: Prim %s", primPath.GetString().c_str());
+            // CARB_LOG_WARN("Delete: Prim %s", primPath.GetString().c_str());
             mComponents[primPath.GetString()].reset();
             mComponents.erase(primPath.GetString());
         }
@@ -133,43 +191,7 @@ public:
 
 protected:
     std::unordered_map<std::string, std::unique_ptr<ComponentType>> mComponents;
-    pxr::TfNotice::Key mNoticeListener;
-    virtual void HandlePrimChanged(const class pxr::UsdNotice::ObjectsChanged& objectsChanged)
-    {
-        if (mStage != objectsChanged.GetStage())
-        {
-            return;
-        }
-
-        for (auto& path : objectsChanged.GetResyncedPaths())
-        {
-            if (path.IsAbsoluteRootOrPrimPath())
-            {
-                // CARB_LOG_WARN("ResyncedPaths: %s", path.GetText());
-                auto primPath =
-                    mStage->GetPseudoRoot().GetPath() == path ? mStage->GetPseudoRoot().GetPath() : path.GetPrimPath();
-
-                // If prim is removed, remove it and its descendants from selection.
-                pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
-
-                // CARB_LOG_WARN("Prim valid %d", prim.IsValid());
-                if (prim.IsValid() == false) // remove prim
-                {
-                    onComponentRemove(primPath);
-                }
-            }
-        }
-        for (auto& path : objectsChanged.GetChangedInfoOnlyPaths())
-        {
-            auto primPath =
-                mStage->GetPseudoRoot().GetPath() == path ? mStage->GetPseudoRoot().GetPath() : path.GetPrimPath();
-
-            // Update the component attached to this prim, onComponentChange checks to see if the prim exists in
-            // this BridgeApplication
-            pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
-            onComponentChange(prim);
-        }
-    }
+    std::unique_ptr<UsdNoticeListener> mNoticeListener;
 };
 
 typedef BridgeApplicationBase<Component> BridgeApplication;
