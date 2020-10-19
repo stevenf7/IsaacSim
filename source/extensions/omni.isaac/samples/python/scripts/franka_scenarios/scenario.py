@@ -7,12 +7,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import carb
 from pxr import Usd, UsdGeom, Sdf, Gf, PhysicsSchema, PhysxSchema
 import omni.usd
 import gc
 import omni.kit.connectionhub
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-# Wtility function to specify the stage with the z axis as "up"
+# Utility function to specify the stage with the z axis as "up"
 def setUpZAxis(stage):
     rootLayer = stage.GetRootLayer()
     rootLayer.SetPermissionToEdit(True)
@@ -141,7 +143,10 @@ class Scenario:
         self._created = False  # Is the robot created or not
         self._running = False  # Is the task running or not
 
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
         self.asset_path = nucleus_server + "/Isaac"
 
         # USD paths loaded by scenarios

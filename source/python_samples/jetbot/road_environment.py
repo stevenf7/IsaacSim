@@ -1,8 +1,9 @@
+import carb
 import omni
-from omni.isaac.dynamic_control import _dynamic_control
-import omni.syntheticdata._syntheticdata as _synthetic_data
+import numpy as np
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-from pxr import UsdGeom, Gf, Sdf, Usd, PhysxSchema, PhysicsSchema, PhysicsSchemaTools, Semantics
+from pxr import UsdGeom, Gf, Sdf, PhysxSchema, PhysicsSchema, PhysicsSchemaTools
 from jetbot_city.road_map import *
 from jetbot_city.road_map_path_helper import *
 from jetbot_city.road_map_generator import *
@@ -13,7 +14,10 @@ from omni.isaac.synthetic_utils import DomainRandomization
 class Environment:
     def __init__(self, omni_kit, z_height=0):
         self.omni_kit = omni_kit
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
         # 1=I 2=L 3=T, 4=X
         self.tile_usd = {
             0: None,

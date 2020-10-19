@@ -7,9 +7,11 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import carb
 from pxr import Usd, UsdGeom, Sdf, Gf, PhysicsSchema, PhysxSchema
 import omni.usd
 import omni.kit.connectionhub
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 import numpy as np
 import gc
@@ -139,7 +141,10 @@ class Scenario:
         self._created = False
         self._add_bin_enabled = True
 
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
         self.asset_path = nucleus_server + "/Isaac"
 
         self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd"

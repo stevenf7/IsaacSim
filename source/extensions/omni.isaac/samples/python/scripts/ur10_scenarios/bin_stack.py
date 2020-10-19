@@ -8,11 +8,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import random
-import time, sys, os, math
 import numpy as np
 
-from pxr import Sdf, Gf, PhysicsSchema, UsdGeom
-import concurrent.futures
+from pxr import Gf, UsdGeom
 from enum import Enum
 import omni
 import carb
@@ -21,17 +19,9 @@ from omni.isaac.utils._isaac_utils import math as math_utils
 from omni.isaac.samples.scripts.utils.world import World
 from omni.isaac.samples.scripts.utils.ur10 import UR10, default_config
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-from .scenario import (
-    setTranslate,
-    setRotate,
-    CreateSolidUR10,
-    Scenario,
-    CreateBackground,
-    CreateObjects,
-    SetupPhysics,
-    setCollisionGroup,
-)
+from .scenario import setTranslate, setRotate, CreateSolidUR10, Scenario, CreateBackground, CreateObjects, SetupPhysics
 from copy import copy
 
 from omni.physx import _physx
@@ -733,7 +723,10 @@ class BinStack(Scenario):
     def __init__(self, editor, dc, mp):
         super().__init__(editor, dc, mp)
 
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
         self.asset_path = nucleus_server + "/Isaac"
 
         self._paused = True

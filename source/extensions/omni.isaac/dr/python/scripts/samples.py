@@ -1,7 +1,9 @@
 import os
+import carb
 import carb.tokens
 import omni.kit
 import omni.usd
+from .nucleus_utils import find_nucleus_server
 
 from pxr import UsdGeom
 
@@ -25,7 +27,10 @@ class Extension(omni.ext.IExt):
         self._editor = omni.kit.editor.get_editor_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
         self._asset_path = nucleus_server + "/Isaac"
 
         self._window = omni.kit.ui.Window(
