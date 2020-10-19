@@ -36,6 +36,10 @@ DRManager::DRManager()
 
 DRManager::~DRManager()
 {
+    if (mNoticeListener.IsValid())
+    {
+        pxr::TfNotice::Revoke(mNoticeListener);
+    }
     deleteAllComponents();
 }
 

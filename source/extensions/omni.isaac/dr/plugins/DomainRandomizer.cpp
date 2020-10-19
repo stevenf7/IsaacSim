@@ -74,7 +74,6 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
         CARB_LOG_ERROR("Failed to acquire carb::tokens::ITokens interface");
         return;
     }
-    Manager = std::make_unique<omni::isaac::dr::DRManager>();
     if (Manager)
     {
         Manager->initialize(g_stage, g_tokens);
@@ -143,6 +142,8 @@ CARB_EXPORT void carbOnPluginStartup()
 
     g_stageUpdate = framework->acquireInterface<omni::kit::IStageUpdate>();
 
+    Manager = std::make_unique<omni::isaac::dr::DRManager>();
+
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Domain Randomizer";
     desc.onAttach = onAttach;
@@ -156,6 +157,10 @@ CARB_EXPORT void carbOnPluginStartup()
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
+    if (Manager)
+    {
+        Manager.reset();
+    }
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
 }
 
