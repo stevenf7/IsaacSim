@@ -417,7 +417,7 @@ class PartExporter:
             context = omni.usd.get_context()
             stage = context.get_stage()
             session_layer = stage.GetSessionLayer()
-            session_layer.subLayerPaths.append(self.materials_path)
+            session_layer.subLayerPaths.append(os.path.relpath(self.materials_path, self.path).replace("\\", "/"))
             # Makes the session layer the authoring layer to make a non-permanent change on material binding
             with Usd.EditContext(stage, session_layer):
                 # layers.set_authoring_layer_by_identifier(session_layer_id)
