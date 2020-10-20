@@ -178,18 +178,18 @@ class Extension(omni.ext.IExt):
                                 lambda m, config=self.config: config.set_make_default_prim(m.get_value_as_bool())
                             )
                             model.set_value(True)
-                        ui.Spacer(height=5)
+                        # ui.Spacer(height=5)
 
-                        with ui.HStack():
-                            ui.Label("Up Axis:")
-                            self.models["up_axis"] = ui.MultiFloatField(0.0, 0.0, 1.0)
-                            self.models["up_axis"].model.add_item_changed_fn(
-                                lambda m, n, config=self.config: config.set_up_vector(
-                                    m.get_item_value_model(m.get_item_children()[0]).get_value_as_float(),
-                                    m.get_item_value_model(m.get_item_children()[1]).get_value_as_float(),
-                                    m.get_item_value_model(m.get_item_children()[2]).get_value_as_float(),
-                                )
-                            )
+                        # with ui.HStack():
+                        #     ui.Label("Up Axis:")
+                        #     self.models["up_axis"] = ui.MultiFloatField(0.0, 0.0, 1.0)
+                        #     self.models["up_axis"].model.add_item_changed_fn(
+                        #         lambda m, n, config=self.config: config.set_up_vector(
+                        #             m.get_item_value_model(m.get_item_children()[0]).get_value_as_float(),
+                        #             m.get_item_value_model(m.get_item_children()[1]).get_value_as_float(),
+                        #             m.get_item_value_model(m.get_item_children()[2]).get_value_as_float(),
+                        #         )
+                        #     )
                         ui.Spacer(height=5)
                         with ui.HStack():
                             ui.Label("Stage Units Per Meter:")
@@ -202,25 +202,27 @@ class Extension(omni.ext.IExt):
         stage = self._usd_context.get_stage()
         if stage:
             if UsdGeom.GetStageUpAxis(stage) == UsdGeom.Tokens.y:
-                self.models["up_axis"].model.get_item_value_model(
-                    self.models["up_axis"].model.get_item_children()[0]
-                ).set_value(0)
-                self.models["up_axis"].model.get_item_value_model(
-                    self.models["up_axis"].model.get_item_children()[1]
-                ).set_value(1)
-                self.models["up_axis"].model.get_item_value_model(
-                    self.models["up_axis"].model.get_item_children()[2]
-                ).set_value(0)
+                # self.models["up_axis"].model.get_item_value_model(
+                #     self.models["up_axis"].model.get_item_children()[0]
+                # ).set_value(0)
+                # self.models["up_axis"].model.get_item_value_model(
+                #     self.models["up_axis"].model.get_item_children()[1]
+                # ).set_value(1)
+                # self.models["up_axis"].model.get_item_value_model(
+                #     self.models["up_axis"].model.get_item_children()[2]
+                # ).set_value(0)
+                self.config.set_up_vector(0, 1, 0)
             if UsdGeom.GetStageUpAxis(stage) == UsdGeom.Tokens.z:
-                self.models["up_axis"].model.get_item_value_model(
-                    self.models["up_axis"].model.get_item_children()[0]
-                ).set_value(0)
-                self.models["up_axis"].model.get_item_value_model(
-                    self.models["up_axis"].model.get_item_children()[1]
-                ).set_value(0)
-                self.models["up_axis"].model.get_item_value_model(
-                    self.models["up_axis"].model.get_item_children()[2]
-                ).set_value(1)
+                # self.models["up_axis"].model.get_item_value_model(
+                #     self.models["up_axis"].model.get_item_children()[0]
+                # ).set_value(0)
+                # self.models["up_axis"].model.get_item_value_model(
+                #     self.models["up_axis"].model.get_item_children()[1]
+                # ).set_value(0)
+                # self.models["up_axis"].model.get_item_value_model(
+                #     self.models["up_axis"].model.get_item_children()[2]
+                # ).set_value(1)
+                self.config.set_up_vector(0, 0, 1)
             units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
             self.models["scale"].model.set_value(units_per_meter)
 
