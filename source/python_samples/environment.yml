@@ -16,6 +16,8 @@ dependencies:
     - scipy==1.5.2
     - gym==0.17.3
     - stable-baselines3==0.8.0
-    - tensorflow
-    - tensorboard
-    - pillow
+    - tensorflow-gpu==2.3.0
+    - tensorflow-estimator==2.3.0
+    - tensorboard==2.3.0
+    - tensorboard-plugin-wit==1.7.0
+    - pillow==5.1.0
