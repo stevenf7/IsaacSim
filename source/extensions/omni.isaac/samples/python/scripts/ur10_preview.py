@@ -206,7 +206,7 @@ class Extension(omni.ext.IExt):
         self._is_playing = not is_stopped
 
         if self._editor.is_playing() or self._scenario.is_created():
-            self._perform_task_btn.enabled = True
+            self._perform_task_btn.enabled = self._scenario._paused
             self._add_new_bins_btn.enabled = self._scenario._add_bin_enabled
             self._perform_task_btn.text = "Perform Task"
             if not self._scenario.is_created():
