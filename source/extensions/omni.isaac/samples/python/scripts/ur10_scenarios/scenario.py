@@ -140,18 +140,8 @@ class Scenario:
         self._executor = None
         self._created = False
         self._add_bin_enabled = True
-
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
-        self.asset_path = nucleus_server + "/Isaac"
-
-        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd"
-        self.small_klt_usd = self.asset_path + "/Props/KLT_Bin/small_KLT.usd"
+        self.asset_path = None
         self.small_bin_scale = np.array([0.19, 0.296, 0.08])
-        self.background_usd = self.asset_path + "/Environments/Simple_Warehouse/warehouse.usd"
-        self.rubiks_cube_usd = self.asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
 
     def __del__(self):
         self.robot_created = False
@@ -180,6 +170,17 @@ class Scenario:
         pass
 
     def create_UR10(self, *args):
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
+        self.asset_path = nucleus_server + "/Isaac"
+
+        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd"
+        self.small_klt_usd = self.asset_path + "/Props/KLT_Bin/small_KLT.usd"
+        self.background_usd = self.asset_path + "/Environments/Simple_Warehouse/warehouse.usd"
+        self.rubiks_cube_usd = self.asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
+
         self._created = True
         self._stage = omni.usd.get_context().get_stage()
         setUpZAxis(self._stage)

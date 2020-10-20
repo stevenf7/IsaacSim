@@ -19,7 +19,6 @@ from omni.isaac.utils._isaac_utils import math as math_utils
 from omni.isaac.samples.scripts.utils.world import World
 from omni.isaac.samples.scripts.utils.ur10 import UR10, default_config
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 from .scenario import setTranslate, setRotate, CreateSolidUR10, Scenario, CreateBackground, CreateObjects, SetupPhysics
 from copy import copy
@@ -722,13 +721,6 @@ class BinStack(Scenario):
 
     def __init__(self, editor, dc, mp):
         super().__init__(editor, dc, mp)
-
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
-        self.asset_path = nucleus_server + "/Isaac"
-
         self._paused = True
         self._start = False
         self._reset = False
@@ -815,8 +807,11 @@ class BinStack(Scenario):
                 )
 
     def create_UR10(self, *args):
-        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_short_suction.usd"
         super().create_UR10()
+        if self.asset_path is None:
+            return
+        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_short_suction.usd"
+
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"
         self.env_path = "/environments/env"

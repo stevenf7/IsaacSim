@@ -3,7 +3,7 @@ import carb
 import carb.tokens
 import omni.kit
 import omni.usd
-from .nucleus_utils import find_nucleus_server
+from .nucleus_utils import get_server_path
 
 from pxr import UsdGeom
 
@@ -27,11 +27,7 @@ class Extension(omni.ext.IExt):
         self._editor = omni.kit.editor.get_editor_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
-        self._asset_path = nucleus_server + "/Isaac"
+        self._asset_path = None
 
         self._window = omni.kit.ui.Window(
             "Domain Randomizer Component Samples",
@@ -77,6 +73,11 @@ class Extension(omni.ext.IExt):
         omni.usd.get_context().new_stage(None)
 
     def _on_load_stage(self, widget):
+        if self._asset_path is None:
+            self._asset_path = get_server_path("/Isaac")
+        if self._asset_path is None:
+            return
+
         stage_path = self._asset_path + "/Samples/DR/Props/simple_cube_with_light.usd"
         if self._selected_scenario.selected_index == 7:
             stage_path = self._asset_path + "/Samples/DR/Props/only_light.usd"
@@ -85,6 +86,11 @@ class Extension(omni.ext.IExt):
         omni.usd.get_context().open_stage(stage_path, None)
 
     def _on_load_component(self, widget):
+        if self._asset_path is None:
+            self._asset_path = get_server_path("/Isaac")
+        if self._asset_path is None:
+            return
+
         if self._selected_scenario.selected_index == 0:
             self.add_color_menu()
         elif self._selected_scenario.selected_index == 1:
@@ -284,9 +290,17 @@ class Extension(omni.ext.IExt):
         )
 
     def add_simple_room_scene(self, parent=None):
+        if self._asset_path is None:
+            self._asset_path = get_server_path("/Isaac")
+        if self._asset_path is None:
+            return
         omni.usd.get_context().open_stage(self._asset_path + "/Samples/DR/Stage/simple_room_sample.usda", None)
 
     def add_warehouse_scene(self, parent=None):
+        if self._asset_path is None:
+            self._asset_path = get_server_path("/Isaac")
+        if self._asset_path is None:
+            return
         omni.usd.get_context().open_stage(
             self._asset_path + "/Samples/DR/Stage/simple_warehouse_material_sample.usda", None
         )
