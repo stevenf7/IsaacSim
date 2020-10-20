@@ -143,22 +143,6 @@ class Scenario:
         self._created = False  # Is the robot created or not
         self._running = False  # Is the task running or not
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
-        self.asset_path = nucleus_server + "/Isaac"
-
-        # USD paths loaded by scenarios
-        self.franka_table_usd = self.asset_path + "/Samples/Leonardo/Stage/franka_block_stacking.usd"
-        self.franka_ghost_usd = self.asset_path + "/Samples/Leonardo/Robots/franka_ghost.usd"
-        self.background_usd = self.asset_path + "/Environments/Grid/gridroom_curved.usd"
-        self.rubiks_cube_usd = self.asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
-        self.red_cube_usd = self.asset_path + "/Props/Blocks/red_block.usd"
-        self.yellow_cube_usd = self.asset_path + "/Props/Blocks/yellow_block.usd"
-        self.green_cube_usd = self.asset_path + "/Props/Blocks/green_block.usd"
-        self.blue_cube_usd = self.asset_path + "/Props/Blocks/blue_block.usd"
-
     # Cleanup scenario objects when deleted, force garbage collection
     def __del__(self):
         self.robot_created = False
@@ -182,6 +166,22 @@ class Scenario:
 
     # Create frana USD objects
     def create_franka(self, *args):
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
+        self.asset_path = nucleus_server + "/Isaac"
+
+        # USD paths loaded by scenarios
+        self.franka_table_usd = self.asset_path + "/Samples/Leonardo/Stage/franka_block_stacking.usd"
+        self.franka_ghost_usd = self.asset_path + "/Samples/Leonardo/Robots/franka_ghost.usd"
+        self.background_usd = self.asset_path + "/Environments/Grid/gridroom_curved.usd"
+        self.rubiks_cube_usd = self.asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
+        self.red_cube_usd = self.asset_path + "/Props/Blocks/red_block.usd"
+        self.yellow_cube_usd = self.asset_path + "/Props/Blocks/yellow_block.usd"
+        self.green_cube_usd = self.asset_path + "/Props/Blocks/green_block.usd"
+        self.blue_cube_usd = self.asset_path + "/Props/Blocks/blue_block.usd"
+
         self._created = True
         self._stage = omni.usd.get_context().get_stage()
         setUpZAxis(self._stage)
