@@ -75,24 +75,3 @@ class Extension(omni.ext.IExt):
         set_drive_parameters(joint_4, "position", 0, 20000, 2000, 56000)
         set_drive_parameters(joint_5, "position", 0, 20000, 2000, 56000)
         set_drive_parameters(joint_6, "position", 0, 20000, 2000, 56000)
-
-        # Set Max Joint velocity on all joints
-
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/ur10/base_link/shoulder_pan_joint"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(3.14 * 2.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/ur10/shoulder_link/shoulder_lift_joint"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(3.14 * 2.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/ur10/upper_arm_link/elbow_joint"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(3.14 * 2.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/ur10/forearm_link/wrist_1_joint"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(3.14 * 2.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/ur10/wrist_1_link/wrist_2_joint"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(3.14 * 2.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/ur10/wrist_2_link/wrist_3_joint"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(3.14 * 2.0)
