@@ -26,7 +26,7 @@ from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.isaac.synthetic_utils import utils as ut
 
 from jetracer import Jetracer
-from road_environment import Environment
+from track_environment import Environment
 from gtc2020_track_utils import *
 
 import gym
@@ -56,6 +56,8 @@ class JetracerEnv:
         self.jetracer = Jetracer(self.omniverse_kit)
         self.initial_loc = self.roads.get_valid_location()
         self.jetracer.spawn(Gf.Vec3d(self.initial_loc[0], self.initial_loc[1], 5), 0)
+        self.prev_pose = [0, 0, 0]
+        self.current_pose = [0, 0, 0]
 
         # switch kit camera to jetracer camera
         self.jetracer.activate_camera()
@@ -85,10 +87,14 @@ class JetracerEnv:
         # dist = self.roads.distance_to_path_in_tiles(self.current_pose)
         dist = center_line_dist(np.array([self.current_pose[0], self.current_pose[1]]))
         # print("Distance ", dist)
-
         self.dist = dist
 
-        reward = self.current_speed * np.exp(-dist ** 2 / 0.05 ** 2)
+        racing_forward = is_racing_forward(
+            np.array([self.prev_pose[0], self.prev_pose[1]]), np.array([self.current_pose[0], self.current_pose[1]])
+        )
+        print(racing_forward)
+
+        reward = racing_forward * self.current_speed * np.exp(-dist ** 2 / 0.05 ** 2)
         return reward
 
     def is_dead(self):
@@ -108,8 +114,12 @@ class JetracerEnv:
             state, reward, done, info, = self.step([0, 0])
             self.initialized = True
 
-        loc = self.roads.get_valid_location()
-        rot = random.uniform(-180, 180)
+        # loc = self.roads.get_valid_location()
+        # rot = random.uniform(-180, 180)
+        # start of the track
+        loc = (65, 110)
+        rot = 90
+
         self.jetracer.teleport(Gf.Vec3d(loc[0], loc[1], 5), rot, settle=True)
 
         obs = self.jetracer.observations()
@@ -149,6 +159,7 @@ class JetracerEnv:
         while frame < 3:
             self.omniverse_kit.update(self.dt)
             obs = self.jetracer.observations()
+            self.prev_pose = self.current_pose
             self.current_pose = obs["pose"]
             self.current_speed = np.linalg.norm(np.array(obs["linear_velocity"]))
             self.current_forward_velocity = obs["local_linear_velocity"][0]
@@ -191,7 +202,7 @@ class JetracerEnv:
             print("robot out of bounds. dist = ", self.dist)
             done = True
         # LOCMOD revisit
-        if self.current_forward_velocity <= -20:
+        if self.current_forward_velocity <= -35:
             print("robot was going backwards forward velocity = ", self.current_forward_velocity)
             done = True
 

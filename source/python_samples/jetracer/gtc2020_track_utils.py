@@ -121,6 +121,42 @@ def center_line_dist(p):
     return np.min([d0, d1, d2, d3, d4, d5, d6, d7])
 
 
+def is_racing_forward(prev_pose, curr_pose):
+    # LANE_WIDTH = 0.7 #width of track is w = 1.22
+    # TRACK_DIMS = [671, 1066] # the track is within (0, 0) to (671.1 cm, 1066.8 cm)
+    prev_pose = 0.01 * prev_pose
+    curr_pose = 0.01 * curr_pose
+
+    bottom_left_corner = np.array([0, 0])
+    top_left_corner = np.array([0, 10.668])
+    top_right_corner = np.array([6.711, 10.668])
+    bottom_right_corner = np.array([6.711, 0])
+
+    d0 = line_seg_distance(bottom_left_corner, top_left_corner, curr_pose)
+    d1 = line_seg_distance(top_left_corner, top_right_corner, curr_pose)
+    d2 = line_seg_distance(top_right_corner, bottom_right_corner, curr_pose)
+    d3 = line_seg_distance(bottom_right_corner, bottom_left_corner, curr_pose)
+
+    min_d = np.min([d0, d1, d2, d3])
+
+    which_side = np.array([0, 0])
+    if min_d == d0:
+        which_side = top_left_corner - bottom_left_corner
+    elif min_d == d1:
+        which_side = top_right_corner - top_left_corner
+    elif min_d == d2:
+        which_side = bottom_right_corner - top_right_corner
+    elif min_d == d3:
+        which_side = bottom_left_corner - bottom_right_corner
+
+    which_size_unit = which_side / np.linalg.norm(which_side)
+
+    curr_vel = curr_pose - prev_pose
+    curr_vel_unit = curr_vel / np.linalg.norm(curr_vel)
+
+    return np.dot(curr_vel_unit, which_size_unit)
+
+
 if __name__ == "__main__":
 
     # scale
