@@ -10,17 +10,7 @@
 
 import os
 import asyncio
-import pprint
-import omni.kit.pipapi
 import omni
-import omni.kit.app
-from .omnikit import OmniKitHelper
-
-
-"""Convert ShapeNetCore V2 to USD without materials.
-By only converting the ShapeNet geometry, we can more quickly load assets into scenes for the purpose of creating
-large datasets or for online training of Deep Learning models.
-"""
 
 
 LABEL_TO_SYNSET = {
@@ -95,8 +85,6 @@ async def convert(in_file, out_file, load_materials=False):
 
 def shapenet_convert(args):
 
-    OmniKitHelper()
-
     # This import needs to occur after kit is loaded so that physx can be discovered
     from omni.isaac import shapenet
 
@@ -134,38 +122,3 @@ def shapenet_convert(args):
                 if not status == omni.assetimport.assetconverter.OmniConverterStatus.eOK:
                     print(f"ERROR OmniConverterStatus is {status}")
                 print(f"---Added {out_path}")
-
-
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser("Convert ShapeNet assets to USD")
-    parser.add_argument(
-        "--categories",
-        type=str,
-        nargs="+",
-        default=None,
-        help="List of ShapeNet categories to convert (space seperated).",
-    )
-    parser.add_argument(
-        "--max-models", type=int, default=None, help="If specified, convert up to `max-models` per category."
-    )
-    parser.add_argument(
-        "--load-materials", action="store_true", help="If specified, materials will be loaded from shapenet meshes"
-    )
-    args = parser.parse_args()
-
-    if args.categories is None:
-        print("The following categories and id's are supported:")
-        pprint.pprint(LABEL_TO_SYNSET)
-        raise ValueError(f"No categories specified via --categories argument")
-    # Ensure all categories specified are valid
-    invalid_categories = []
-    for c in args.categories:
-        if c not in LABEL_TO_SYNSET.keys() and c not in LABEL_TO_SYNSET.values():
-            invalid_categories.append(c)
-
-    if invalid_categories:
-        raise ValueError(f"The following are not valid ShapeNet categories: {invalid_categories}")
-
-    shapenet_convert(args)
