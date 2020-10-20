@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import carb
 import omni.kit.commands
 import omni.kit.editor
 import omni.ext
@@ -18,13 +19,12 @@ import asyncio
 
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.manip import _manip
-from omni.physx import _physx
-from omni.physx.scripts.physicsUtils import add_ground_plane
 
-from pxr import Sdf, Gf, PhysicsSchema
+from pxr import Gf
 
 from .utils.kaya import Kaya
 from omni.isaac.utils.scripts.scene_utils import setUpZAxis, SetupPhysics, CreateBackground
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 EXTENSION_NAME = "Kaya Joystick"
 
@@ -80,7 +80,10 @@ class Extension(omni.ext.IExt):
             self._editor.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
             self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
             self._stage = self._usd_context.get_stage()
-            nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+            result, nucleus_server = find_nucleus_server()
+            if result is False:
+                carb.log_error("Could not find nucleus server with /Isaac folder")
+                return
             asset_path = nucleus_server + "/Isaac"
             kaya_usd = asset_path + "/Robots/Kaya/kaya.usd"
             speed_gain = 10.0

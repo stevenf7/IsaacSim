@@ -15,10 +15,11 @@
 import asyncio
 import os
 import torch
-import numpy as np
 
+import carb
 import omni
 from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, DataWriter, DomainRandomization
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 # Default rendering parameters
 RENDER_CONFIG = {
@@ -38,7 +39,10 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.dr_helper = DomainRandomization()
         self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
         self.asset_path = nucleus_server + "/Isaac"
         if scenario_path is None:
             scenario_path = self.asset_path + "/Samples/Synthetic_Data/Stage/warehouse_with_sensors.usd"
@@ -173,7 +177,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
 if __name__ == "__main__":
     "Typical usage"
     import argparse
-    import matplotlib.pyplot as plt
 
     parser = argparse.ArgumentParser("Dataset test")
     parser.add_argument("--scenario", type=str, help="Scenario to load from omniverse server")

@@ -6,7 +6,8 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from pxr import Usd, UsdGeom, Gf
+from pxr import Gf
+import carb
 import omni.kit.editor
 import omni.usd
 import omni.ext
@@ -17,6 +18,7 @@ import gc
 from omni.isaac.dynamic_control import _dynamic_control
 from .utils.simple_robot_controller import RobotController
 from omni.isaac.utils.scripts.scene_utils import setUpZAxis, SetupPhysics, CreateBackground
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 EXTENSION_NAME = "Simple Robot Navigation"
 
@@ -98,7 +100,10 @@ class Extension(omni.ext.IExt):
             self._editor.set_camera_position("/OmniverseKit_Persp", 300, 300, 100, True)
             self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
             self._stage = self._usd_context.get_stage()
-            nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+            result, nucleus_server = find_nucleus_server()
+            if result is False:
+                carb.log_error("Could not find nucleus server with /Isaac folder")
+                return
             self._asset_path = nucleus_server + "/Isaac"
 
             current_robot_index = self._robot_option.model.get_item_value_model().as_int

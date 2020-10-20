@@ -1,5 +1,7 @@
+import carb
 import omni.ui as ui
 import omni.usd
+from .nucleus_utils import get_server_path
 
 ADD_SIMPLE_ROOM_PYTHON_SAMPLE_MENU = "Isaac Robotics/Domain Randomizer/Simple Room Python Sample"
 
@@ -8,8 +10,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        nucleus_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
-        self._asset_path = nucleus_server + "/Isaac"
+        self._asset_path = None
         self._window = ui.Window("Simple Room Python Sample", width=600, height=400)
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(
             ADD_SIMPLE_ROOM_PYTHON_SAMPLE_MENU, self._menu_callback
@@ -34,12 +35,19 @@ class Extension(omni.ext.IExt):
         self._stage = None
 
     def _on_load_stage(self):
+        if self._asset_path is None:
+            self._asset_path = get_server_path("/Isaac")
+        if self._asset_path is None:
+            return
         omni.usd.get_context().open_stage(self._asset_path + "/Environments/Simple_Room/simple_room.usd", None)
 
     def _on_load_component(self):
         """Creates DR components with various attributes
         """
-
+        if self._asset_path is None:
+            self._asset_path = get_server_path("/Isaac")
+        if self._asset_path is None:
+            return
         # List of textures to randomize from
         texture_list = [
             self._asset_path + "/Samples/DR/Materials/Textures/checkered.png",
