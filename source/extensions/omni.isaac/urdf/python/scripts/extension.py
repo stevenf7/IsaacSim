@@ -52,8 +52,9 @@ class Extension(omni.ext.IExt):
                     mouse_double_clicked_fn=self._on_double_pressed,
                     filter_fn=on_filter_item,
                 )
-
-                ui.Button("Open File", clicked_fn=self._on_open_selected, height=0)
+                with ui.HStack(height=0):
+                    ui.Button("Refresh", clicked_fn=self._refresh_filebrowser, height=0, width=0)
+                    ui.Button("Open File", clicked_fn=self._on_open_selected, height=0)
 
         with self._window.frame:
             with ui.ScrollingFrame(
@@ -265,6 +266,18 @@ class Extension(omni.ext.IExt):
                 self.config.set_up_vector(0, 0, 1)
             units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
             self.models["scale"].model.set_value(units_per_meter)
+
+    def _refresh_filebrowser(self):
+        parent = None
+        if len(self._filebrowser.get_selections()):
+            parent = self._filebrowser.get_selections()[0].parent
+            selection_name = self._filebrowser.get_selections()[0].name
+
+        self._filebrowser.refresh_ui(parent)
+        if selection_name:
+            selection = [child for child in parent.children.values() if child.name == selection_name]
+            if len(selection):
+                self._filebrowser.select_and_center(selection[0])
 
     def _create_graphviz_tree(self, tree_item, robot, graph):
         if not tree_item:

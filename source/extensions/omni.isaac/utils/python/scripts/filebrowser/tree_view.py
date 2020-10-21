@@ -73,13 +73,26 @@ class FileBrowserTreeView(FileBrowserView):
     def tree_view(self):
         return self._tree_view
 
+    def refresh_item(self, item, recursive=False):
+        if item is None:
+            item = self._model._root
+        item.populated = False
+        try:
+            item.populate()
+        except:
+            item.populated = True
+        item.expanded = True
+
+        self._model._item_changed(item)
+
     def refresh_ui(self, item: FileBrowserItem = None):
         self.set_expanded(self._model._root, False, True)
         if not self._visible:
             return
         if self._model:
+            self.refresh_item(item)
             # NOTE: The following action is not publicized but is required for a proper redraw
-            self._model._item_changed(item)
+            # self._model._item_changed(item)
         if self._tree_view:
             self._tree_view.dirty_widgets()
 
