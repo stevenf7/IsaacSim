@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 SCRIPT_DIR=$(readlink -e $(dirname ${BASH_SOURCE}))
-"$SCRIPT_DIR/_build/$PLATFORM/$CONFIG/isaac-sim-headless.sh $@
+$SCRIPT_DIR/_build/linux-x86_64/release/isaac-sim-headless.sh $@
