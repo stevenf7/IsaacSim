@@ -98,10 +98,7 @@ class JetracerEnv:
         return reward
 
     def is_dead(self):
-        # alive = self.roads.is_inside_path_boundary(self.current_pose)
-        dist = center_line_dist(np.array([self.current_pose[0], self.current_pose[1]]))
-        alive = dist < 0.7  # the width of the track is w = 1.22 LOCMOD revisit hardcoded
-        return not alive
+        return not is_outside_track_boudary(np.array([self.current_pose[0], self.current_pose[1]]))
 
     def translate_action(self, action):
         return action
