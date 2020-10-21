@@ -87,7 +87,7 @@ class Jetracer:
 
             self.accelerator = stage.GetPrimAtPath(vehicle_path).GetAttribute("physxVehicleController:accelerator")
             self.left_steer = stage.GetPrimAtPath(vehicle_path).GetAttribute("physxVehicleController:steerLeft")
-            # LOCMOD add brake physxVehicleController:brake
+            # TODO add brake physxVehicleController:brake
 
         self.dc.wake_up_rigid_body(self.ar)
         accel_cmd = self.wheel_speed_from_motor_value(motor_value[0])

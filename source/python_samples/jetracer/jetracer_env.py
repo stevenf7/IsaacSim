@@ -79,7 +79,7 @@ class JetracerEnv:
         self.numresets = 0
         self.maxresets = 10
 
-        # LOCMOD set this to 1 after around 200k steps to randomnize less
+        # set this to 1 after around 200k steps to randomnize less
         # self.maxresets = 1
 
     def calculate_reward(self):
@@ -92,7 +92,6 @@ class JetracerEnv:
         racing_forward = is_racing_forward(
             np.array([self.prev_pose[0], self.prev_pose[1]]), np.array([self.current_pose[0], self.current_pose[1]])
         )
-        print(racing_forward)
 
         reward = racing_forward * self.current_speed * np.exp(-dist ** 2 / 0.05 ** 2)
         return reward
@@ -195,10 +194,10 @@ class JetracerEnv:
             done = True
             print("robot stepped 500 times")
 
-        if self.dist > 0.7:  # width of the track is w=1.22 LOCMOD revisit hardcoded
+        if self.dist > LANE_WIDTH:
             print("robot out of bounds. dist = ", self.dist)
             done = True
-        # LOCMOD revisit
+
         if self.current_forward_velocity <= -35:
             print("robot was going backwards forward velocity = ", self.current_forward_velocity)
             done = True

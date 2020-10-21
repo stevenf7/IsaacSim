@@ -7,9 +7,6 @@ from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from omni.isaac.synthetic_utils import DomainRandomization
 from gtc2020_track_utils import *
 
-LANE_WIDTH = 0.7  # width of track is w = 1.22
-TRACK_DIMS = [671, 1066]  # the track is within (0, 0) to (671.1 cm, 1066.8 cm)
-
 
 class Environment:
     def __init__(self, omni_kit, z_height=0):
@@ -141,7 +138,7 @@ class Environment:
         path = nucleus_server + "/Isaac/Environments/Jetracer/jetracer_track_solid.usd"
         prefix = "/World/Env/Track"
         prim_path = omni.kit.utils.get_stage_next_free_path(stage, prefix, False)
-        # self.prims.append(prim_path) #LOCMOD revisit (don't add so it won't be removed on reset)
+        # self.prims.append(prim_path) #(don't add so the jetracer track won't be removed on reset)
         track_prim = stage.DefinePrim(prim_path, "Xform")
         track_prim.GetReferences().AddReference(path)
         # xform = UsdGeom.Xformable(track_prim)
