@@ -310,6 +310,10 @@ class FileBrowserWidget:
             if src_model:
                 self._tree_view.set_root(src_model.root)
 
+    def refresh_item(self, item: FileBrowserItem = None, recursive=False):
+        if self._tree_view:
+            self._tree_view.refresh_item(item, recursive)
+
     def refresh_ui(self, item: FileBrowserItem = None):
         """
         Redraws the subtree rooted at the given item. If item is None, then redraws entire tree.
