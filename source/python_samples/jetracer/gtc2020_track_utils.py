@@ -121,8 +121,10 @@ def center_line_dist(p):
     return np.min([d0, d1, d2, d3, d4, d5, d6, d7])
 
 
+LANE_WIDTH = 0.7  # width of track is w = 1.22
+
+
 def is_racing_forward(prev_pose, curr_pose):
-    # LANE_WIDTH = 0.7 #width of track is w = 1.22
     # TRACK_DIMS = [671, 1066] # the track is within (0, 0) to (671.1 cm, 1066.8 cm)
     prev_pose = 0.01 * prev_pose
     curr_pose = 0.01 * curr_pose
@@ -152,9 +154,19 @@ def is_racing_forward(prev_pose, curr_pose):
     which_size_unit = which_side / np.linalg.norm(which_side)
 
     curr_vel = curr_pose - prev_pose
-    curr_vel_unit = curr_vel / np.linalg.norm(curr_vel)
+    curr_vel_norm = np.linalg.norm(curr_vel)
+
+    curr_vel_unit = np.array([0, 0])
+    # checking divide by zero
+    if curr_vel_norm:
+        curr_vel_unit = curr_vel / curr_vel_norm
 
     return np.dot(curr_vel_unit, which_size_unit)
+
+
+def is_outside_track_boudary(curr_pose):
+    dist = center_line_dist(curr_pose)
+    return dist < LANE_WIDTH
 
 
 if __name__ == "__main__":

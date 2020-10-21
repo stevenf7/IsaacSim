@@ -60,13 +60,13 @@ echo ##teamcity[progressMessage 'Packaging isaac-sim...']
 call "%~dp0..\..\..\package.bat" -m isaac-sim -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
-echo ##teamcity[progressMessage 'Packaging omniverse-kit-robotics...']
-call "%~dp0..\..\..\package.bat" -m omniverse-kit-robotics -c release
-if %errorlevel% neq 0 ( exit /b %errorlevel% )
+REM echo ##teamcity[progressMessage 'Packaging omniverse-kit-robotics...']
+REM call "%~dp0..\..\..\package.bat" -m omniverse-kit-robotics -c release
+REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
-echo ##teamcity[progressMessage 'Packaging omni_domain_randomization...']
-call "%~dp0..\..\..\package.bat" -m omni_domain_randomization -c release
-if %errorlevel% neq 0 ( exit /b %errorlevel% )
+REM echo ##teamcity[progressMessage 'Packaging omni_domain_randomization...']
+REM call "%~dp0..\..\..\package.bat" -m omni_domain_randomization -c release
+REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
 echo ##teamcity[blockClosed name='Build packages...']
 
 :: publish artifacts to teamcity

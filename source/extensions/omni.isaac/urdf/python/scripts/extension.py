@@ -305,17 +305,34 @@ class Extension(omni.ext.IExt):
 
         robot_graph.attr(packMode="node")
         with robot_graph.subgraph(name="cluster_legend") as legend_graph:
-            legend_graph.attr(label="legend")
-            legend_graph.node("legend_fixed", "Fixed", color="red", shape="rect", margin="0", height="0")
-            legend_graph.node("legend_revolute", "Revolute", color="green", shape="rect", margin="0", height="0")
-            legend_graph.node("legend_prismatic", "Prismatic", color="blue", shape="rect", margin="0", height="0")
-            legend_graph.node("legend_continuous", "Continuous", color="orange", shape="rect", margin="0", height="0")
+
+            legend_graph.attr(label="Legend")
+            legend_graph.node(
+                "legend_fixed", "Fixed", color="red", shape="rect", margin=".05", height="0", penwidth=str(3)
+            )
+            legend_graph.node(
+                "legend_revolute", "Revolute", color="green", shape="rect", margin="0.05", height="0", penwidth=str(3)
+            )
+            legend_graph.node("legend_empty", "", style="invis", margin="0", width="0", height="0")
+            legend_graph.node(
+                "legend_prismatic", "Prismatic", color="blue", shape="rect", margin="0.05", height="0", penwidth=str(3)
+            )
+            legend_graph.node(
+                "legend_continuous",
+                "Continuous",
+                color="orange",
+                shape="rect",
+                margin="0.05",
+                height="0",
+                penwidth=str(3),
+            )
 
         try:
             from PIL import Image
             import io
 
             self._create_graphviz_tree(robot_tree, robot, robot_graph)
+            robot_graph.edge("legend_empty", "Root", ltail="cluster_legend", style="invis")
             buffer = io.BytesIO(robot_graph.pipe(format="png"))
             buffer.seek(0)
             im = Image.open(buffer)

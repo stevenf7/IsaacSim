@@ -105,6 +105,7 @@ class StepImporter(omni.ext.IExt):
         self.step_file = None
 
         self._usd_context = omni.usd.get_context()
+        self._tesselation_properties_list = None
         self.stage = self._usd_context.get_stage()
         self._selection = self._usd_context.get_selection()
         self._events = self._usd_context.get_stage_event_stream()

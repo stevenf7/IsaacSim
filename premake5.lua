@@ -323,6 +323,7 @@ group "exts"
     include ("source/extensions/omni.isaac/tests")
     include ("source/extensions/omni.isaac/step_importer")
     include ("source/extensions/omni.isaac/exploded_view")
+    include ("source/extensions/omni.isaac/internal_tools")
 
     -- Linux Only
     if os.target() == "linux" then
