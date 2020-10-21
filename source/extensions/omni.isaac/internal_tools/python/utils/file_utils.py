@@ -104,3 +104,11 @@ def get_assets_ref_count(base_path):
                 items[name] += 1
     items = {k: v for k, v in sorted(items.items(), key=lambda item: item[1])}
     return items
+
+
+def check_if_exists(path):
+    result, entries = omni.client.stat(path)
+    if result == Result.OK:
+        return True
+    else:
+        return False

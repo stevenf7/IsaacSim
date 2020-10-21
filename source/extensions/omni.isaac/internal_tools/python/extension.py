@@ -1,3 +1,4 @@
+import carb
 import omni.ext
 from omni import ui
 from .utils.file_utils import *
@@ -27,6 +28,7 @@ class InternalTools(omni.ext.IExt):
                 ui.Button("Check for Absolute Path References", clicked_fn=self.check_for_abs_paths)
                 ui.Button("Check for References Outside base folder", clicked_fn=self.check_for_external_refs)
                 ui.Button("Assets not referenced by other assets", clicked_fn=self.get_assets_ref_count)
+                ui.Button("Check for assets that cannot be released", clicked_fn=self.get_unreleasable)
 
     def show_window(self, menu, value):
         self._window.visible = not self._window.visible
@@ -52,3 +54,18 @@ class InternalTools(omni.ext.IExt):
         for key, value in items.items():
             if value == 0:
                 print(value, ":", key)
+
+    def get_unreleasable(self):
+        asset_paths = [
+            "/Isaac/Robots/UR10/robotiq",
+            "/Isaac/Robots/UR10/ur10_robotiq.usd",
+            "/Isaac/Robots/UR10/ur10_schmalz.usd",
+            "/Isaac/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd",
+            "/Isaac/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd",
+        ]
+        for asset in asset_paths:
+            path = "{}{}".format(self.path_txt.model.get_value_as_string(), asset)
+            if check_if_exists(path):
+                carb.log_error("Asset {} should not exist on this server for release".format(path))
+            else:
+                print("Asset {} not found".format(path))
