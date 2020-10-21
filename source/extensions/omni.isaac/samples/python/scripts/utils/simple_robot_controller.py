@@ -15,9 +15,18 @@ from omni.isaac.dynamic_control import _dynamic_control
 
 class RobotController:
     def __init__(
-        self, stage, dc, articulation_path, odom_prim_path, wheel_joint_names, wheel_speed, goal_offset_threshold
+        self,
+        stage,
+        editor,
+        dc,
+        articulation_path,
+        odom_prim_path,
+        wheel_joint_names,
+        wheel_speed,
+        goal_offset_threshold,
     ):
         self._stage = stage
+        self._editor = editor
         self._dc = dc
         self._articulation_path = articulation_path
         self._odom_prim_path = odom_prim_path
@@ -39,8 +48,8 @@ class RobotController:
         self.current_robot_orientation = [roll, pitch, yaw]
 
     def update(self, step):
-        self._get_odom_data()
-        if self._enable_navigation:
+        if self._enable_navigation and self._editor.is_playing():
+            self._get_odom_data()
             inc_x = float(self._goal[0]) - self.current_robot_translation[0]
             inc_y = float(self._goal[1]) - self.current_robot_translation[1]
             angle_to_goal = math.atan2(inc_y, inc_x)
