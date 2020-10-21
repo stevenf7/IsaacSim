@@ -32,6 +32,7 @@
 
 files = [
     ["source/python_samples/**", "python_samples"],
+    ["source/ros_samples/**", "ros_samples"],
     ["source/apps/**", ""],
 ]
 
