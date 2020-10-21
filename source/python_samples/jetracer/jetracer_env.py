@@ -97,7 +97,7 @@ class JetracerEnv:
         return reward
 
     def is_dead(self):
-        return not is_outside_track_boudary(np.array([self.current_pose[0], self.current_pose[1]]))
+        return not is_outside_track_boundary(np.array([self.current_pose[0], self.current_pose[1]]))
 
     def translate_action(self, action):
         return action

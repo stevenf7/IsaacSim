@@ -164,7 +164,7 @@ def is_racing_forward(prev_pose, curr_pose):
     return np.dot(curr_vel_unit, which_size_unit)
 
 
-def is_outside_track_boudary(curr_pose):
+def is_outside_track_boundary(curr_pose):
     dist = center_line_dist(curr_pose)
     return dist < LANE_WIDTH
 
