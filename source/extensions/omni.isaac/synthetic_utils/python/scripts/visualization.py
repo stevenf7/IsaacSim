@@ -11,7 +11,6 @@
 import random
 import colorsys
 import numpy as np
-import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
 
 
@@ -35,6 +34,8 @@ def random_colours(N, enable_random=True, num_channels=3):
 
 
 def plot_boxes(ax, bboxes, labels=None, colours=None, label_size=10):
+    import matplotlib.pyplot as plt
+
     if colours is None:
         colours = random_colours(len(bboxes))
     if labels is None:
