@@ -57,9 +57,17 @@ class Extension(omni.ext.IExt):
         self._settings = omni.kit.settings.get_settings_interface()
         self._settings.set("/persistent/physics/updateToUsd", False)
         self._settings.set("/persistent/physics/useFastCache", True)
+        self._setup_done = False
+        self._rc = None
 
     def _menu_callback(self, a, b):
         self._window.visible = not self._window.visible
+        if self._window.visible:
+            self._sub_stage_event = self._usd_context.get_stage_event_stream().create_subscription_to_pop(
+                self._on_stage_event
+            )
+        else:
+            self._sub_stage_event = None
 
     def _create_ui(self):
         with self._window.frame:
@@ -135,6 +143,17 @@ class Extension(omni.ext.IExt):
             self.prim = self._stage.DefinePrim(self._robot_prim_path, "Xform")
             self.prim.GetReferences().AddReference(robot_usd)
 
+    def _on_stage_event(self, event):
+        self.stage = self._usd_context.get_stage()
+        if event.type == int(omni.usd.StageEventType.OPENED):
+            self._move_btn.enabled = self._setup_done
+            self._rotate_btn.enabled = self._setup_done
+            self._navigate_btn.enabled = self._setup_done
+            self._stop_btn.enabled = self._setup_done
+            if self._rc:
+                self._rc.enable_navigation(False)
+            self._setup_done = False
+
     async def _play(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
@@ -148,6 +167,7 @@ class Extension(omni.ext.IExt):
             # setup simple robot controller
             self._rc = RobotController(
                 self._stage,
+                self._editor,
                 self._dc,
                 self._robot_prim_path,
                 self._robot_chassis,
@@ -172,6 +192,7 @@ class Extension(omni.ext.IExt):
         self._rotate_btn.enabled = True
         self._navigate_btn.enabled = True
         self._stop_btn.enabled = True
+        self._setup_done = True
 
     def _on_move_fn(self):
         print("Moving forward")
@@ -195,6 +216,8 @@ class Extension(omni.ext.IExt):
         self._rc.control_command(0, 0)
 
     def on_shutdown(self):
+        self._rc = None
         self._editor.stop()
+        self._editor_event_subscription = None
         self._window = None
         gc.collect()
