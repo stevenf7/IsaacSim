@@ -136,18 +136,26 @@ class OmniKitHelper:
         else:
             raise ValueError(f"Value of type {type(value)} is not supported.")
 
-    def update(self, dt=0.0):
+    def update(self, dt=0.0, physics_dt=None, physics_substeps=None):
         """Render one frame. Optionally specify dt in seconds, specify None to use wallclock"""
+        if physics_substeps is not None and physics_substeps > 0:
+            self.kit_settings.set_setting("/physics/maxNumSteps", int(physics_substeps))
         if dt is not None:
             if self.kit_settings and dt > 0.0:
-                self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
+                if physics_dt is None or physics_dt <= 0.0:
+                    self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
+                else:
+                    self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / physics_dt))
             self.app.update(dt)
         else:
             time_now = time.time()
             dt = time_now - self.last_update_t
             self.last_update_t = time_now
             if self.kit_settings and dt > 0.0:
-                self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
+                if physics_dt is None or physics_dt <= 0.0:
+                    self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
+                else:
+                    self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / physics_dt))
             self.app.update(dt)
 
     def play(self):
