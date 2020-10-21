@@ -50,10 +50,10 @@ echo "##teamcity[progressMessage 'Packaging test_runner...']"
 "./tools/package.sh" -m test_runner -c release
 echo "##teamcity[progressMessage 'Packaging isaac-sim...']"
 "./tools/package.sh" -m isaac-sim -c release
-echo "##teamcity[progressMessage 'Packaging omniverse-kit-robotics...']"
-"./tools/package.sh" -m omniverse-kit-robotics -c release
-echo "##teamcity[progressMessage 'Packaging omni_domain_randomization...']"
-"./tools/package.sh" -m omni_domain_randomization -c release
+#echo "##teamcity[progressMessage 'Packaging omniverse-kit-robotics...']"
+#"./tools/package.sh" -m omniverse-kit-robotics -c release
+#echo "##teamcity[progressMessage 'Packaging omni_domain_randomization...']"
+#"./tools/package.sh" -m omni_domain_randomization -c release
 echo "##teamcity[blockClosed name='Build packages...']"
 
 # publish artifacts to teamcity
