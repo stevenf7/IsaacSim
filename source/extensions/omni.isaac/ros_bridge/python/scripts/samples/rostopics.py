@@ -20,6 +20,35 @@ from omni.isaac.utils.scripts.test_utils import load_test_file
 import asyncio
 
 
+def set_drive_parameters(drive, target_type, target_value, stiffness, damping, max_force):
+    """Enable velocity drive for a given joint"""
+
+    if not drive.GetTargetTypeAttr():
+        drive.CreateTargetTypeAttr(target_type)
+    else:
+        drive.GetTargetTypeAttr().Set(target_type)
+
+    if not drive.GetTargetAttr():
+        drive.CreateTargetAttr(target_value)
+    else:
+        drive.GetTargetAttr().Set(target_value)
+
+    if not drive.GetStiffnessAttr():
+        drive.CreateStiffnessAttr(stiffness)
+    else:
+        drive.GetStiffnessAttr().Set(stiffness)
+
+    if not drive.GetDampingAttr():
+        drive.CreateDampingAttr(damping)
+    else:
+        drive.GetDampingAttr().Set(damping)
+
+    if not drive.GetMaxForceAttr():
+        drive.CreateMaxForceAttr(max_force)
+    else:
+        drive.GetMaxForceAttr().Set(max_force)
+
+
 class Extension(omni.ext.IExt):
     def on_startup(self):
         # setting up the UI on the menu bar for this example
@@ -35,7 +64,16 @@ class Extension(omni.ext.IExt):
         load_robot_btn = sublayout.add_child(omni.kit.ui.Button("Load Robot"))
         load_robot_btn.set_clicked_fn(self._on_load_robot)
 
-        connect_js_btn = sublayout.add_child(omni.kit.ui.Button("Connect Joint State Topics"))
+        joint_state_layout = omni.kit.ui.RowColumnLayout(2, True)
+        sublayout.add_child(joint_state_layout)
+        joint_state_layout.set_column_width(0, 200)
+        joint_state_layout.set_column_width(1, 160)
+
+        self.control_mode = joint_state_layout.add_child(omni.kit.ui.ComboBox("Control Mode"))
+        self.control_mode.add_item("position control")
+        self.control_mode.add_item("velocity control")
+
+        connect_js_btn = joint_state_layout.add_child(omni.kit.ui.Button("Connect Joint State Topics"))
         connect_js_btn.set_clicked_fn(self._on_connect_js)
         connect_js_btn.tooltip = omni.kit.ui.Label(
             "start a joint_state and joint_command topic to publish and receive joint states"
@@ -74,7 +112,6 @@ class Extension(omni.ext.IExt):
         task = asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
         asyncio.ensure_future(self._setup_camera(task))
 
-    # Starting up the joint_state rostopics and connect it to the robot
     def _on_connect_js(self, widget):
 
         # check robot is loaded and articulation exist
@@ -86,12 +123,10 @@ class Extension(omni.ext.IExt):
         js_prim = ROSSchema.RosJointState.Define(self.stage, Sdf.Path("/ROS_JointState"))
 
         # adding prefix to the published /joint_state topic if needed
-        js_prim.CreateRosNodePrefixAttr("")
         js_prim.CreateEnabledAttr(True)
-
         # publisher topic
         js_prim.CreateJointStatePubTopicAttr("/joint_state")
-        # subscripber topic
+        # subscriber topic
         js_prim.CreateJointStateSubTopicAttr("/joint_command")
 
         js_prim.CreateArticulationPrimRel()
@@ -100,6 +135,55 @@ class Extension(omni.ext.IExt):
         # The joint_state rostopic must be connected to the root of the robot's articulation in order to publish its states
         ROS_prim = self.stage.GetPrimAtPath("/ROS_JointState")
         ROS_prim.GetRelationship("articulationPrim").SetTargets(["/panda"])
+        panda_joint1_drive = PhysicsSchema.DriveAPI.Get(
+            self.stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular"
+        )
+        panda_joint2_drive = PhysicsSchema.DriveAPI.Get(
+            self.stage.GetPrimAtPath("/panda/panda_link1/panda_joint2"), "angular"
+        )
+        panda_joint3_drive = PhysicsSchema.DriveAPI.Get(
+            self.stage.GetPrimAtPath("/panda/panda_link2/panda_joint3"), "angular"
+        )
+        panda_joint4_drive = PhysicsSchema.DriveAPI.Get(
+            self.stage.GetPrimAtPath("/panda/panda_link3/panda_joint4"), "angular"
+        )
+        panda_joint5_drive = PhysicsSchema.DriveAPI.Get(
+            self.stage.GetPrimAtPath("/panda/panda_link4/panda_joint5"), "angular"
+        )
+        panda_joint6_drive = PhysicsSchema.DriveAPI.Get(
+            self.stage.GetPrimAtPath("/panda/panda_link5/panda_joint6"), "angular"
+        )
+        panda_joint7_drive = PhysicsSchema.DriveAPI.Get(
+            self.stage.GetPrimAtPath("/panda/panda_link6/panda_joint7"), "angular"
+        )
+        panda_finger1_drive = PhysicsSchema.DriveAPI.Get(
+            self.stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint1"), "linear"
+        )
+        panda_finger2_drive = PhysicsSchema.DriveAPI.Get(
+            self.stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint2"), "linear"
+        )
+
+        if self.control_mode.selected_index == 1:
+            # set all joints to velocity control
+            set_drive_parameters(panda_joint1_drive, "velocity", 0.0, 0, 1e7, 1e8)
+            set_drive_parameters(panda_joint2_drive, "velocity", 0.0, 0, 1e7, 1e8)
+            set_drive_parameters(panda_joint3_drive, "velocity", 0.0, 0, 1e7, 1e8)
+            set_drive_parameters(panda_joint4_drive, "velocity", 0.0, 0, 1e7, 1e8)
+            set_drive_parameters(panda_joint5_drive, "velocity", 0.0, 0, 1e7, 1e8)
+            set_drive_parameters(panda_joint6_drive, "velocity", 0.0, 0, 1e7, 1e8)
+            set_drive_parameters(panda_joint7_drive, "velocity", 0.0, 0, 1e7, 1e8)
+
+        else:
+            # set all joints to position control
+            set_drive_parameters(panda_joint1_drive, "position", 0.0, 60000, 3000, 87000)
+            set_drive_parameters(panda_joint2_drive, "position", -1.3, 60000, 3000, 87000)
+            set_drive_parameters(panda_joint3_drive, "position", 0.0, 60000, 3000, 87000)
+            set_drive_parameters(panda_joint4_drive, "position", -2.87, 60000, 3000, 87000)
+            set_drive_parameters(panda_joint5_drive, "position", 0, 25000, 3000, 12000)
+            set_drive_parameters(panda_joint6_drive, "position", 2, 25000, 3000, 12000)
+            set_drive_parameters(panda_joint7_drive, "position", 0.75, 5000, 3000, 12000)
+            set_drive_parameters(panda_finger1_drive, "position", 0, 6000, 1000, 1200)
+            set_drive_parameters(panda_finger2_drive, "position", 0, 6000, 1000, 1200)
 
     # adding camera topic
     def _on_connect_camera(self, widget):

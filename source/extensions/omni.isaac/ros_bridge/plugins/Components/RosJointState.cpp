@@ -165,28 +165,68 @@ void RosJointState::subCallback(const sensor_msgs::JointState::ConstPtr& msg)
         }
     }
     const unsigned int num_actuators = msg->name.size();
-    if (msg->position.size() != num_actuators)
+    if (msg->position.size() != 0)
     {
-        return;
-    }
-
-    mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
-    for (unsigned int actuator_idx = 0; actuator_idx < num_actuators; actuator_idx++)
-    {
-        DcHandle dof = mDynamicControlPtr->findArticulationDof(mArticulationHandle, msg->name[actuator_idx].c_str());
-        if (dof)
+        if (msg->position.size() != num_actuators)
         {
-            DcDofProperties props;
-            mDynamicControlPtr->getDofProperties(dof, &props);
-            if (props.type == DcDofType::eTranslation)
+            CARB_LOG_ERROR("size of joint position array does not match number of joints");
+            return;
+        }
+        mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
+        for (unsigned int actuator_idx = 0; actuator_idx < num_actuators; actuator_idx++)
+        {
+            DcHandle dof = mDynamicControlPtr->findArticulationDof(mArticulationHandle, msg->name[actuator_idx].c_str());
+            if (dof)
             {
-                mDynamicControlPtr->setDofPositionTarget(dof, msg->position[actuator_idx] * mUnitScale);
+                DcDofProperties props;
+                mDynamicControlPtr->getDofProperties(dof, &props);
+                if (props.type == DcDofType::eTranslation)
+                {
+                    mDynamicControlPtr->setDofPositionTarget(dof, msg->position[actuator_idx] * mUnitScale);
+                }
+                else
+                {
+                    mDynamicControlPtr->setDofPositionTarget(dof, msg->position[actuator_idx]);
+                }
+            }
+        }
+    }
+    else if (msg->velocity.size() != 0)
+    {
+        if (msg->velocity.size() != num_actuators)
+        {
+            CARB_LOG_ERROR("size of joint velocity array does not match number of joints");
+            return;
+        }
+        mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
+        for (unsigned int actuator_idx = 0; actuator_idx < num_actuators; actuator_idx++)
+        {
+            DcHandle dof = mDynamicControlPtr->findArticulationDof(mArticulationHandle, msg->name[actuator_idx].c_str());
+            if (dof)
+            {
+                float velocityValue = static_cast<float>(msg->velocity[actuator_idx]);
+                DcDofProperties props;
+                if (props.hasLimits)
+                {
+                    velocityValue = std::min(velocityValue, props.maxVelocity);
+                }
+                mDynamicControlPtr->getDofProperties(dof, &props);
+                if (props.type == DcDofType::eTranslation)
+                {
+                    velocityValue *= mUnitScale;
+                }
+                mDynamicControlPtr->setDofVelocityTarget(dof, velocityValue);
             }
             else
             {
-                mDynamicControlPtr->setDofPositionTarget(dof, msg->position[actuator_idx]);
+                CARB_LOG_ERROR("Entity not found in articulation");
             }
         }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Only Position and Velocity Controls are supported");
+        return;
     }
 }
 
