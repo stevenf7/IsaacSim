@@ -1,9 +1,12 @@
-#!/usr/bin/env python
 import numpy as np
 from PIL import Image
 
+# TODO : This is custom, specific to the GTC2020 Jetracer course.
+#        Make a more general solution.
+
 
 def line_seg_closest_point(v0, v1, p0):
+    # Project p0 onto (v0, v1) line, then clamp to line segment
     d = v1 - v0
     q = p0 - v0
 
@@ -19,7 +22,7 @@ def line_seg_distance(v0, v1, p0):
     return np.linalg.norm(p0 - p)
 
 
-# centered at origin, arc starts at 0
+# Canonical arc is centered at origin, and goes from 0 to a0 radians
 def canonical_arc_distance(R, a0, x):
     a = np.arctan2(x[1], x[0])
 
@@ -31,6 +34,7 @@ def canonical_arc_distance(R, a0, x):
             a = a0
         else:
             a = 0
+
     p = R * np.array([np.cos(a), np.sin(a)])
 
     return np.linalg.norm(x - p)
@@ -50,6 +54,28 @@ def arc_distance(c, r, a0, a1, x):
     return canonical_arc_distance(r, a1 - a0, x0)
 
 
+def closest_point_arc(c, r, a0, a1, x):
+
+    # Direction to point
+    x0 = x - c
+    x0 = x0 / np.linalg.norm(x0)
+
+    # print(c, x0, r, c + x0 * r)
+
+    return c + x0 * r
+
+
+# The forward direction at the closest point on an arc
+def closest_point_arc_direction(c, r, a0, a1, x):
+
+    # Direction to point
+    x0 = x - c
+    x0 = x0 / np.linalg.norm(x0)
+
+    # The tangent is unit circle point rotated pi/2 radians
+    return np.array([-x0[1], x0[0]])
+
+
 def arc_endpoints(c, r, a0, a1):
 
     c0 = np.cos(a0)
@@ -60,7 +86,7 @@ def arc_endpoints(c, r, a0, a1):
     return c + r * np.array([[c0, s0], [c1, s1]])
 
 
-# measurements
+# Measurements (in meters)
 m0 = 7.620
 m1 = 10.668
 m2 = 5.491
@@ -68,57 +94,119 @@ m3 = 3.048
 m4 = 4.348
 m5 = 5.380
 
-# track width
+# Track width
 w = 1.22
 w_2 = w / 2
 
-# arcs
-# bottom left
-c0 = np.array([w, w])
-r0 = w_2
-a0 = [np.pi, np.pi * 1.5]
 
-# top left
-c1 = np.array([m3, m0])
-r1 = m3 - w_2
-a1 = [1.75 * np.pi, 3 * np.pi]
-ep1 = arc_endpoints(c1, r1, a1[0], a1[1])
+# Arc arrays
+arc_center = np.zeros((4, 2))
+arc_radius = np.zeros(4)
+arc_angles = np.zeros((4, 2))
 
+# Arcs
+# Bottom left
+arc_center[0] = np.array([w, w])
+arc_radius[0] = w_2
+arc_angles[0] = [np.pi, np.pi * 1.5]
 
-c2 = np.array([m5, m4])
-r2 = 0.5 * (2.134 + 0.914)
-a2 = [0.75 * np.pi, 1.25 * np.pi]
-ep2 = arc_endpoints(c2, r2, a2[0], a2[1])
+# Top left
+arc_center[1] = np.array([m3, m0])
+arc_radius[1] = m3 - w_2
+arc_angles[1] = [1.75 * np.pi, 3 * np.pi]
+ep1 = arc_endpoints(arc_center[1], arc_radius[1], arc_angles[1][0], arc_angles[1][1])
 
-c3 = np.array([m2, w])
-r3 = w_2
-a3 = [np.pi * 1.5, np.pi * 2.25]
-ep3 = arc_endpoints(c3, r3, a3[0], a3[1])
+# Others
+arc_center[2] = np.array([m5, m4])
+arc_radius[2] = 0.5 * (2.134 + 0.914)
+arc_angles[2] = [0.75 * np.pi, 1.25 * np.pi]
+ep2 = arc_endpoints(arc_center[2], arc_radius[2], arc_angles[2][0], arc_angles[2][1])
+
+arc_center[3] = np.array([m2, w])
+arc_radius[3] = w_2
+arc_angles[3] = [np.pi * 1.5, np.pi * 2.25]
+ep3 = arc_endpoints(arc_center[3], arc_radius[3], arc_angles[3][0], arc_angles[3][1])
 
 
 # line segment points
-v0 = np.array([w_2, w])
-v1 = np.array([w_2, m0])
-v2 = ep1[0]
-v3 = ep2[0]
-v4 = ep2[1]
-v5 = ep3[1]
-v6 = np.array([m2, w_2])
-v7 = np.array([w, w_2])
+line_verts = [
+    np.array([w_2, w]),
+    np.array([w_2, m0]),
+    ep1[0],
+    ep2[0],
+    ep2[1],
+    ep3[1],
+    np.array([m2, w_2]),
+    np.array([w, w_2]),
+]
+
+# Minimum distances to all segments of the track
+def track_segment_distance(p):
+
+    d = np.zeros(8)
+
+    d[0] = line_seg_distance(line_verts[0], line_verts[1], p)
+    d[1] = line_seg_distance(line_verts[2], line_verts[3], p)
+    d[2] = line_seg_distance(line_verts[4], line_verts[5], p)
+    d[3] = line_seg_distance(line_verts[6], line_verts[7], p)
+    d[4] = arc_distance(arc_center[0], arc_radius[0], arc_angles[0][0], arc_angles[0][1], p)
+    d[5] = arc_distance(arc_center[1], arc_radius[1], arc_angles[1][0], arc_angles[1][1], p)
+    d[6] = arc_distance(arc_center[2], arc_radius[2], arc_angles[2][0], arc_angles[2][1], p)
+    d[7] = arc_distance(arc_center[3], arc_radius[3], arc_angles[3][0], arc_angles[3][1], p)
+
+    return d
 
 
+def track_segment_closest_point(p):
+
+    d = track_segment_distance(p)
+
+    # If a line segment is the closest
+    if np.min(d[:4]) < np.min(d[4:]):
+        idx = np.argmin(d[:4], axis=0)
+
+        return line_seg_closest_point(line_verts[idx * 2], line_verts[idx * 2 + 1], p)
+
+    # If an arc is the closest
+    else:
+        idx = np.argmin(d[4:], axis=0)
+
+        return closest_point_arc(arc_center[idx], arc_radius[idx], arc_angles[idx][0], arc_angles[idx][1], p)
+
+
+# Distance to closest point on the track
 def center_line_dist(p):
-    p = 0.01 * p  # convert from m to cm
-    d0 = line_seg_distance(v0, v1, p)
-    d1 = line_seg_distance(v2, v3, p)
-    d2 = line_seg_distance(v4, v5, p)
-    d3 = line_seg_distance(v6, v7, p)
-    d4 = arc_distance(c0, r0, a0[0], a0[1], p)
-    d5 = arc_distance(c1, r1, a1[0], a1[1], p)
-    d6 = arc_distance(c2, r2, a2[0], a2[1], p)
-    d7 = arc_distance(c3, r3, a3[0], a3[1], p)
+    p = 0.01 * p  # Convert from m to cm
 
-    return np.min([d0, d1, d2, d3, d4, d5, d6, d7])
+    return np.min(track_segment_distance(p))
+
+
+# Forward vector at the closest point on the center line
+def closest_point_track_direction(p):
+    p = 0.01 * p  # Convert from m to cm
+
+    d = track_segment_distance(p)
+
+    # If a line segment is the closest
+    if np.min(d[:4]) < np.min(d[4:]):
+        idx = np.argmin(d[:4], axis=0)
+
+        v = line_verts[idx * 2 + 1] - line_verts[idx * 2]
+        return v / np.linalg.norm(v)
+
+    # If an arc is the closest
+    else:
+        idx = np.argmin(d[4:], axis=0)
+
+        v = closest_point_arc_direction(arc_center[idx], arc_radius[idx], arc_angles[idx][0], arc_angles[idx][1], p)
+
+        # TODO : All arcs are defined counter-clockwise,
+        #        but this doesn't always represent the forward direction on the track.
+        #        This is a hack to correct the tangent vector on all but one of the arcs.
+        if idx != 2:
+            v = -v
+
+        return v
 
 
 LANE_WIDTH = 0.7  # width of whole track is w = 1.22. To get out of bound is > 1.22/2, so around 0.7
@@ -171,6 +259,8 @@ def is_outside_track_boundary(curr_pose):
 
 if __name__ == "__main__":
 
+    print("Generating test PNGs")
+
     # scale
     s = 0.02
 
@@ -178,18 +268,66 @@ if __name__ == "__main__":
     W = int(6711 * s)
 
     d = np.zeros((H, W))
+    fwd = np.zeros((H, W, 3))
+
+    h = np.zeros((H, W))
+
+    print(H, W)
+
+    for _ in range(10000):
+
+        p_scaled = np.random.random(2) * [W, H]
+        p_meters = p_scaled / s / 1000.0
+
+        # p_proj = line_seg_closest_point(line_verts[6], line_verts[7], p_meters)
+        p_proj = track_segment_closest_point(p_meters)
+        # print(h.shape, p_scaled, p_meters, p_proj, p_proj * s)
+        p_proj = p_proj + np.random.normal([0, 0], 0.1)
+
+        idx = p_proj * s * 1000.0
+        idx = np.floor(idx)
+        idx = np.clip(idx, [0, 0], [W - 1, H - 1])  # HACK
+        idx = idx.astype("int")
+
+        h[idx[1], idx[0]] = h[idx[1], idx[0]] + 1
 
     for i in range(H):
-        y = ((i + 0.5) / s) / 1000.0
+        y = ((i + 0.5) / s) / 10.0
         if i % 10 == 0:
-            print(y)
+            print("{:0.1f}%".format(i / H * 100))
         for j in range(W):
-            x = ((j + 0.5) / s) / 1000.0
+            x = ((j + 0.5) / s) / 10.0
 
             p = np.array([x, y])
 
             d[i, j] = center_line_dist(p)
+            f = closest_point_track_direction(p)
+            fwd[i, j] = np.array([0.5 * (f[0] + 1), 0.5 * (f[1] + 1), 0])
 
-    im = Image.fromarray((np.flipud(d) * 255 / np.max(d)).astype("uint8"))
+    print("100.0%")
+
+    # Images have zero at the top, so we flip vertically
+    d = np.flipud(d)
+    fwd = np.flip(fwd, axis=0)
+    h = np.flipud(h)
+
+    # Distance function
+    im = Image.fromarray((d * 255 / np.max(d)).astype("uint8"))
     im.save("dist.png")
-    im.show()
+
+    # Track forward vector
+    im = Image.fromarray((fwd * 255).astype("uint8"), "RGB")
+    im.save("fwd.png")
+
+    # Track forward vector X
+    im = Image.fromarray((fwd[:, :, 0] * 255).astype("uint8"))
+    im.save("fwd_x.png")
+
+    # Track forward vector Y
+    im = Image.fromarray((fwd[:, :, 1] * 255).astype("uint8"))
+    im.save("fwd_y.png")
+
+    # H
+    h = h / np.max(h)
+    im = Image.fromarray((h * 255).astype("uint8"))
+    im.save("h.png")
