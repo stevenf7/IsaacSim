@@ -107,6 +107,7 @@ def shapenet_convert(args):
         model_dirs = os.listdir(os.path.join(local_shapenet, synset))
         for i, model_id in enumerate(model_dirs):
             if i >= args.max_models:
+                print(f"max models ({args.max_models}) reached, exiting conversion")
                 break
             local_path = os.path.join(local_shapenet, synset, model_id, "models/model_normalized.obj")
 

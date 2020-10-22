@@ -42,7 +42,7 @@
             "enableSemanticSchema": true
         }
     },
-    "ngx":{
+    "ngx": {
         "enabled": false
     },
     "isaac": {
