@@ -83,17 +83,29 @@ class JetracerEnv:
         # self.maxresets = 1
 
     def calculate_reward(self):
-        # distance to nearest point on path in units of block.  [0,1]
-        # dist = self.roads.distance_to_path_in_tiles(self.current_pose)
-        dist = center_line_dist(np.array([self.current_pose[0], self.current_pose[1]]))
-        # print("Distance ", dist)
+
+        # Current and last positions
+        pose = np.array([self.current_pose[0], self.current_pose[1]])
+        prev_pose = np.array([self.prev_pose[0], self.prev_pose[1]])
+
+        # Finite difference velocity calculation
+        vel = pose - prev_pose
+        vel_norm = vel
+        vel_magnitude = np.linalg.norm(vel)
+        if vel_magnitude > 0.0:
+            vel_norm = vel / vel_magnitude
+
+        # Distance from the center of the track
+        dist = center_line_dist(pose)
         self.dist = dist
 
-        racing_forward = is_racing_forward(
-            np.array([self.prev_pose[0], self.prev_pose[1]]), np.array([self.current_pose[0], self.current_pose[1]])
-        )
+        # racing_forward = is_racing_forward(prev_pose, pose)
+        # reward = racing_forward * self.current_speed * np.exp(-dist ** 2 / 0.05 ** 2)
 
-        reward = racing_forward * self.current_speed * np.exp(-dist ** 2 / 0.05 ** 2)
+        fwd_dir = closest_point_track_direction(pose)
+        fwd_dot = np.dot(fwd_dir, vel_norm)
+        reward = fwd_dot * self.current_speed * np.exp(-dist ** 2 / 0.05 ** 2)
+
         return reward
 
     def is_dead(self):
