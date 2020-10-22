@@ -36,7 +36,7 @@ extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "sphinx.ext.intersphi
 todo_include_todos = True
 
 autodoc_default_options = {"show-inheritance": True}
-autodoc_mock_imports = ["PIL", "matplotlib", "torch"]
+autodoc_mock_imports = ["PIL", "matplotlib", "torch", "numpy"]
 
 autoclass_content = "both"
 
