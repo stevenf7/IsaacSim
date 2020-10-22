@@ -456,6 +456,7 @@ class FillBin(Scenario):
         self.timeout_max = 8.0
         self.pick_and_place = None
         self._pending_disable = False
+        self._pending_stop = False
 
         self.max_bins = 36
 
@@ -478,7 +479,9 @@ class FillBin(Scenario):
 
     def step(self, step):
         if self._editor.is_playing():
-
+            if self._pending_stop:
+                self.stop_tasks()
+                return
             # Updates current references and locations for the robot.
             self.world.update()
             self.ur10_solid.update()
@@ -677,23 +680,27 @@ class FillBin(Scenario):
 
     def stop_tasks(self, *args):
         if self.pick_and_place is not None:
-            self.ur10_solid.stop()
-            self._reset = True
-            self._pending_disable = True
             if self._editor.is_playing():
-                self.ur10_solid.end_effector.gripper.open()
-            for i in range(self.max_objs):
+                self.ur10_solid.stop()
+                self._reset = True
+                self._pending_disable = True
+                if self._editor.is_playing():
+                    self.ur10_solid.end_effector.gripper.open()
+                for i in range(self.max_objs):
+                    tf = _dynamic_control.Transform()
+                    tf.p = [-500000 - 50 * i, 150, 0]
+                    self._dc.set_rigid_body_pose(self.objects_handles[i], tf)
+                    self._dc.set_rigid_body_linear_velocity(self.objects_handles[i], [0, 0, 0])
+                    self._dc.set_rigid_body_angular_velocity(self.objects_handles[i], [0, 0, 0])
+                bin = self._dc.get_rigid_body(self.bin_path)
                 tf = _dynamic_control.Transform()
-                tf.p = [-500000 - 50 * i, 150, 0]
-                self._dc.set_rigid_body_pose(self.objects_handles[i], tf)
-                self._dc.set_rigid_body_linear_velocity(self.objects_handles[i], [0, 0, 0])
-                self._dc.set_rigid_body_angular_velocity(self.objects_handles[i], [0, 0, 0])
-            bin = self._dc.get_rigid_body(self.bin_path)
-            tf = _dynamic_control.Transform()
-            tf.p = [0, 81, -43.0]
-            self._dc.set_rigid_body_pose(bin, tf)
-            self._dc.set_rigid_body_linear_velocity(bin, [0, 0, 0])
-            self._dc.set_rigid_body_angular_velocity(bin, [0, 0, 0])
+                tf.p = [0, 81, -43.0]
+                self._dc.set_rigid_body_pose(bin, tf)
+                self._dc.set_rigid_body_linear_velocity(bin, [0, 0, 0])
+                self._dc.set_rigid_body_angular_velocity(bin, [0, 0, 0])
+                self._pending_stop = False
+            else:
+                self._pending_stop = True
 
     def pause_tasks(self, *args):
         self._paused = not self._paused

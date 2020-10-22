@@ -737,12 +737,16 @@ class BinStack(Scenario):
 
         self._waypoints_backup = None
         self.stopped = True
+        self._pending_stop = False
 
     def on_startup(self):
         super().on_startup()
 
     def step(self, step):
         if self._editor.is_playing():
+            if self._pending_stop:
+                self.stop_tasks()
+                return
             # Disable requires a one simulation step after they have been moved
             # from their previous location to work.
             if self._pending_disable:
@@ -958,17 +962,21 @@ class BinStack(Scenario):
 
     def stop_tasks(self, *args):
         if self.pick_and_place is not None:
-            self.ur10_solid.stop()
-            self._reset = True
-            self.current_bin = 0
-            self.add_bin_timeout = -1
-            self._pending_disable = True
-            for i in range(self.max_bins):
-                tf = _dynamic_control.Transform()
-                tf.p = [-50000 - 50 * i, 150, 0]
-                self._dc.set_rigid_body_pose(self.bin_handles[i], tf)
-                self._dc.set_rigid_body_linear_velocity(self.bin_handles[i], [0, 0, 0])
-                self._dc.set_rigid_body_angular_velocity(self.bin_handles[i], [0, 0, 0])
+            if self._editor.is_playing():
+                self.ur10_solid.stop()
+                self._reset = True
+                self.current_bin = 0
+                self.add_bin_timeout = -1
+                self._pending_disable = True
+                for i in range(self.max_bins):
+                    tf = _dynamic_control.Transform()
+                    tf.p = [-50000 - 50 * i, 150, 0]
+                    self._dc.set_rigid_body_pose(self.bin_handles[i], tf)
+                    self._dc.set_rigid_body_linear_velocity(self.bin_handles[i], [0, 0, 0])
+                    self._dc.set_rigid_body_angular_velocity(self.bin_handles[i], [0, 0, 0])
+                self._pending_stop = False
+            else:
+                self._pending_stop = True
 
     def pause_tasks(self, *args):
         self._paused = not self._paused
