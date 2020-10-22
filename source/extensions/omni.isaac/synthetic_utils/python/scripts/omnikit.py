@@ -8,25 +8,12 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
-"""Helper class for launching OmniKit from a Python environment.
-
-Launches and configures OmniKit and exposes useful functions.
-
-    Typical usage example:
-
-    config = {'width': 800, 'height': 600, 'renderer': 'PathTracing'}
-    kit = OmniKitHelper(config)   # Start omniverse kit
-    # <Code to generate or load a scene>
-    kit.update()    # Render a single frame
-"""
-
-
 import carb
 import omni.kit.app
 import omni.kit.editor
 import omni.kit.asyncapi
 import omni.kit.commands
-from pxr import UsdGeom, Semantics
+from pxr import UsdGeom, Semantics, Usd
 
 import os
 import time
@@ -51,7 +38,38 @@ DEFAULT_CONFIG = {
 
 
 class OmniKitHelper:
-    def __init__(self, config=None):
+    """Helper class for launching OmniKit from a Python environment.
+
+Launches and configures OmniKit and exposes useful functions.
+
+    Typical usage example:
+
+    config = {'width': 800, 'height': 600, 'renderer': 'PathTracing'}
+
+    kit = OmniKitHelper(config)   # Start omniverse kit
+
+    # <Code to generate or load a scene>
+    
+    kit.update()    # Render a single frame
+"""
+
+    def __init__(self, config=DEFAULT_CONFIG):
+        """The config variable is a dictionary containing the following entries
+
+        Args:
+            width (int): Width of the viewport and generated images. Defaults to 1024
+            height (int): Height of the viewport and generated images. Defaults to 800
+            renderer (str): Rendering mode, can be  `RayTracedLighting` or `PathTracing`. Defaults to `PathTracing`
+            samples_per_pixel_per_frame (int): The number of samples to render per frame, used for `PathTracing` only. Defaults to 64
+            denoiser (bool):  Enable this to use AI denoising to improve image quality. Defaults to True
+            subdiv_refinement_level (int): Number of subdivisons to perform on supported geometry. Defaults to 0
+            headless (bool): Disable UI when running. Defaults to True
+            max_bounces (int): Maximum number of bounces, used for `PathTracing` only. Defaults to 4
+            max_specular_transmission_bounces(int): Maximum number of bounces for specular or transmission, used for `PathTracing` only. Defaults to 6
+            max_volume_bounces(int): Maximum number of bounces for volumetric, used for `PathTracing` only. Defaults to 4
+            sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
+            experience (str): The config json used to launch the application. 
+        """
         # initialize vars
         self._is_dirty_instance_mappings = True
         atexit.register(self._cleanup)
@@ -120,11 +138,16 @@ class OmniKitHelper:
         self.app = None
 
     def get_stage(self):
-        """Returns the current stage."""
+        """Returns the current USD stage."""
         return omni.usd.get_context().get_stage()
 
     def set_setting(self, setting, value):
-        """Convenience function to set settings."""
+        """Convenience function to set settings.
+
+        Args:
+            setting (str): string representing the setting being changed
+            value: new value for the setting being changed, the type of this value must match its repsective setting
+        """
         if isinstance(value, str):
             self.carb_settings.set_string(setting, value)
         elif isinstance(value, bool):
@@ -137,7 +160,19 @@ class OmniKitHelper:
             raise ValueError(f"Value of type {type(value)} is not supported.")
 
     def update(self, dt=0.0, physics_dt=None, physics_substeps=None):
-        """Render one frame. Optionally specify dt in seconds, specify None to use wallclock"""
+        """Render one frame. Optionally specify dt in seconds, specify None to use wallclock. 
+        Specify physics_dt and  physics_substeps to decouple the physics step size from rendering
+
+        For example: to render with a dt of 1/30 and simulate physics at 1/120 use:
+            - dt = 1/30.0
+            - physics_dt = 1/120.0
+            - physics_substeps = 4
+
+        Args:
+            dt (float): The step size used for the overall update, set to None to use wallclock
+            physics_dt (float, optional): If specified use this value for physics step
+            physics_substeps (int, optional): Maximum number of physics substeps to perform
+        """
         if physics_substeps is not None and physics_substeps > 0:
             self.kit_settings.set_setting("/physics/maxNumSteps", int(physics_substeps))
         if dt is not None:
@@ -181,16 +216,20 @@ class OmniKitHelper:
         return self.editor.get_current_renderer_status()
 
     def is_loading(self):
-        """convenience function to see if any files are being loaded"""
+        """convenience function to see if any files are being loaded
+        
+        Returns:
+            bool: True if loading, False otherwise
+        """
         time, message, loaded, loading = self.get_status()
         return loading > 0
 
     def execute(self, *args, **kwargs):
-        """allow use of kit command interface"""
+        """Allow use of omni.kit.commands interface"""
         omni.kit.commands.execute(*args, **kwargs)
 
     def setup_renderer(self):
-        """Set settings for renderer"""
+        """Reset render settings to those in config. This should be used in case a new stage is opened and the desired config needs to be re-applied"""
         self.set_setting("/rtx/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
         self.set_setting("/rtx/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"])
         self.set_setting("/rtx/pathtracing/clampSpp", self.config["samples_per_pixel_per_frame"])
@@ -243,6 +282,17 @@ class OmniKitHelper:
         if translation:
             xform_api.SetTranslate(translation)
         return prim
+
+    def set_up_axis(self, axis=UsdGeom.Tokens.z):
+        """Change the up axis of the current stage
+        
+        Args:
+            axis: valid values are `UsdGeom.Tokens.y`, or `UsdGeom.Tokens.z`
+        """
+        rootLayer = self.get_stage().GetRootLayer()
+        rootLayer.SetPermissionToEdit(True)
+        with Usd.EditContext(stage, rootLayer):
+            UsdGeom.SetStageUpAxis(stage, axis)
 
 
 if __name__ == "__main__":
