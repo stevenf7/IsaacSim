@@ -121,11 +121,11 @@ def center_line_dist(p):
     return np.min([d0, d1, d2, d3, d4, d5, d6, d7])
 
 
-LANE_WIDTH = 0.7  # width of track is w = 1.22
+LANE_WIDTH = 0.7  # width of whole track is w = 1.22. To get out of bound is > 1.22/2, so around 0.7
+TRACK_DIMS = [671, 1066]  # the track is within (0, 0) to (671.1 cm, 1066.8 cm)
 
 
 def is_racing_forward(prev_pose, curr_pose):
-    # TRACK_DIMS = [671, 1066] # the track is within (0, 0) to (671.1 cm, 1066.8 cm)
     prev_pose = 0.01 * prev_pose
     curr_pose = 0.01 * curr_pose
 
@@ -164,7 +164,7 @@ def is_racing_forward(prev_pose, curr_pose):
     return np.dot(curr_vel_unit, which_size_unit)
 
 
-def is_outside_track_boudary(curr_pose):
+def is_outside_track_boundary(curr_pose):
     dist = center_line_dist(curr_pose)
     return dist < LANE_WIDTH
 

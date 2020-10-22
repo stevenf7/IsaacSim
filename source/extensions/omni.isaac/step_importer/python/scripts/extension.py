@@ -97,7 +97,9 @@ class StepImporter(omni.ext.IExt):
                         mountpoint = p.mountpoint.strip("\\")
                         self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
                 self._filebrowser.refresh_ui(None)
-                self.select_file_btn = ui.Button("Open File", clicked_fn=self._on_open_folder_selected, height=0)
+                with ui.HStack(height=0):
+                    ui.Button("Refresh", clicked_fn=self._refresh_filebrowser, height=0, width=0)
+                    self.select_file_btn = ui.Button("Open File", clicked_fn=self._on_open_folder_selected, height=0)
 
         self._tesselation_properties_list = None
         self._treeView = None
@@ -219,6 +221,18 @@ class StepImporter(omni.ext.IExt):
             for i in range(1, len(self._mesh_list.selection)):
                 self._mesh_list.selection[i].set_replacement_id(mesh_id)
             self._mesh_model.export_model()
+
+    def _refresh_filebrowser(self):
+        parent = None
+        if len(self._filebrowser.get_selections()):
+            parent = self._filebrowser.get_selections()[0].parent
+            selection_name = self._filebrowser.get_selections()[0].name
+
+        self._filebrowser.refresh_ui(parent)
+        if selection_name:
+            selection = [child for child in parent.children.values() if child.name == selection_name]
+            if len(selection):
+                self._filebrowser.select_and_center(selection[0])
 
     def _on_kit_selection_changed(self):
         """The selection in kit is changed"""

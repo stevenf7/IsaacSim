@@ -21,10 +21,10 @@ class Environment:
         # 1=I 2=L 3=T, 4=X
         self.tile_usd = {
             0: None,
-            1: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4336p01.usd", "offset": 90},
-            2: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4342p01.usd", "offset": 90},
-            3: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4341p01.usd", "offset": 90},
-            4: {"asset": nucleus_server + "/Library/Props/Lego/Parts/4343p01.usd", "offset": 90},
+            1: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4336p01.usd", "offset": 180},
+            2: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4342p01.usd", "offset": 180},
+            3: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4341p01.usd", "offset": 180},
+            4: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4343p01.usd", "offset": 180},
         }  # list of tiles that can be spawned
 
         self.texture_list = [

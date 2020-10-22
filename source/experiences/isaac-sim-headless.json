@@ -77,7 +77,8 @@
             }
         },
         "livestream": {
-            "enabled": true
+            "enabled": true,
+            "allowResize": true
         }
     },
     "rtx": {
