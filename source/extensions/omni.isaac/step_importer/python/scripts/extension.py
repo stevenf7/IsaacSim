@@ -224,6 +224,7 @@ class StepImporter(omni.ext.IExt):
 
     def _refresh_filebrowser(self):
         parent = None
+        selection_name = None
         if len(self._filebrowser.get_selections()):
             parent = self._filebrowser.get_selections()[0].parent
             selection_name = self._filebrowser.get_selections()[0].name
