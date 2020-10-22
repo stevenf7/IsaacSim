@@ -24,7 +24,7 @@ segmentation (instance and semantic), and camera parameters.
 import math
 import carb
 import omni.kit.editor
-from pxr import UsdGeom, Semantics
+from pxr import UsdGeom, Semantics, Gf
 
 import numpy as np
 
@@ -43,7 +43,7 @@ from .camera import get_view_proj_mat
 
 
 # List of sensors requiring RayTracedLighting mode
-RT_ONLY_SENSORS = ["depth", "boundingBox2DTight", "boundingBox2DLoose", "instanceSegmentation", "semanticSegmentation"]
+RT_ONLY_SENSORS = []
 
 
 class SyntheticDataHelper:
@@ -317,24 +317,11 @@ class SyntheticDataHelper:
 
     def compute_3d_bounding_box_oobb(self):
         """Compute the 3D Object Oriented Bounding Box.
-        Uses the UsdGeom.Imageable module to compute local bounds
-        and transform and transforms the points accordingly.
 
         Returns:
             numpy.ndarray(dtype=float64, shape=(N, 8, 3))
         """
-        bounding_boxes = []
-        stage = omni.usd.get_context().get_stage()
-        for prim in stage.Traverse():
-            if prim.HasAPI(Semantics.SemanticsAPI):
-                imageable = UsdGeom.Imageable(prim)
-                bounds = imageable.ComputeLocalBound(0.0, "default")
-                box = bounds.GetBox()
-                bb = np.array([box.GetCorner(i) for i in range(8)])
-                bb = np.pad(bb, ((0, 0), (0, 1)), mode="constant", constant_values=1.0)
-                bb = np.dot(bb, np.array(bounds.GetMatrix()))[:, :3]
-                bounding_boxes.append(bb)
-        return np.array(bounding_boxes)
+        return np.array(self._get_bbox3d(self.sd.SensorType.BoundingBox3D))
 
     def _get_instance_mapping(self, cur_prim):
         instance_mappings = []
@@ -401,6 +388,42 @@ class SyntheticDataHelper:
         bboxes = self._reduce_bboxes(bboxes)
         return bboxes
 
+    def _get_bbox3d(self, sensor):
+        size = self.sd_interface.get_sensor_size(sensor)
+        bboxes = self.sd_interface.get_sensor_host_bounding_box_3d_buffer_array(sensor, size)
+
+        instance_mappings = self.get_instance_mappings()
+        reduced_bboxes = []
+        for im in instance_mappings:
+            if im[3]:  # if mapping has descendant instance ids
+                for box in bboxes:
+                    if box[0] == im[3]:
+                        local_range = Gf.Range3d(
+                            Gf.Vec3d(box[2].astype(float), box[3].astype(float), box[4].astype(float)),
+                            Gf.Vec3d(box[5].astype(float), box[6].astype(float), box[7].astype(float)),
+                        )
+                        bbox3d = Gf.BBox3d(local_range, Gf.Matrix4d(box[8].tolist()))
+                        aligned_range = bbox3d.ComputeAlignedBox()
+                        min_p = aligned_range.GetMin()
+                        max_p = aligned_range.GetMax()
+
+                        reduced_bboxes.append(
+                            np.array(
+                                [
+                                    [min_p[0], min_p[1], min_p[2]],
+                                    [min_p[0], min_p[1], max_p[2]],
+                                    [min_p[0], max_p[1], min_p[2]],
+                                    [min_p[0], max_p[1], max_p[2]],
+                                    [max_p[0], min_p[1], min_p[2]],
+                                    [max_p[0], min_p[1], max_p[2]],
+                                    [max_p[0], max_p[1], min_p[2]],
+                                    [max_p[0], max_p[1], max_p[2]],
+                                ]
+                            )
+                        )
+
+        return reduced_bboxes
+
     def get_groundtruth(self, gt_sensors):
         """Get groundtruth from specified gt_sensors.
         Enable syntheticdata sensors if required, render a frame and
@@ -444,18 +467,20 @@ class SyntheticDataHelper:
         for sensor in remaining_sensors:
             gt[sensor] = self.sensor_helpers[sensor]()
 
-        # If using a sensor incompatible with current render mode, change mode and re-render
-        cur_render_mode = self.carb_settings.get_as_string("/rtx/rendermode")
-        if cur_render_mode != "RayTracedLighting" and rt_sensors:
-            self.carb_settings.set_string("/rtx/rendermode", "RayTracedLighting")
-            self.app.update(0.0)
+        # Process only if we have sensors here
+        if rt_sensors:
+            # If using a sensor incompatible with current render mode, change mode and re-render
+            cur_render_mode = self.carb_settings.get_as_string("/rtx/rendermode")
+            if cur_render_mode != "RayTracedLighting":
+                self.carb_settings.set_string("/rtx/rendermode", "RayTracedLighting")
+                self.app.update(0.0)
 
-        # Populate gt dict based on selected sensors
-        for sensor in rt_sensors:
-            gt[sensor] = self.sensor_helpers[sensor]()
+            # Populate gt dict based on selected sensors
+            for sensor in rt_sensors:
+                gt[sensor] = self.sensor_helpers[sensor]()
 
-        # Set render mode back to user-specified mode
-        self.carb_settings.set_string("/rtx/rendermode", cur_render_mode)
+            # Set render mode back to user-specified mode
+            self.carb_settings.set_string("/rtx/rendermode", cur_render_mode)
         return gt
 
 

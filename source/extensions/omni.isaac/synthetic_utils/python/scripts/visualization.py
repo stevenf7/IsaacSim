@@ -7,7 +7,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-
+import struct
 import random
 import colorsys
 import numpy as np
@@ -41,15 +41,18 @@ def plot_boxes(ax, bboxes, labels=None, colours=None, label_size=10):
     if labels is None:
         labels = [""] * len(bboxes)
     for bb, label, colour in zip(bboxes, labels, colours):
-        x = bb[0]
-        y = bb[1]
-        w = bb[2] - x
-        h = bb[3] - y
-        box = plt.Rectangle((x, y), w, h, fill=False, edgecolor=colour)
-        ax.add_patch(box)
-        if label:
-            font = {"family": "sans-serif", "color": colour, "size": label_size}
-            ax.text(bb[0], bb[1], label, fontdict=font)
+        maxint = 2 ** (struct.Struct("i").size * 8 - 1) - 1
+        # if a bbox is not visible, do not draw
+        if bb[0] != maxint and bb[1] != maxint:
+            x = bb[0]
+            y = bb[1]
+            w = bb[2] - x
+            h = bb[3] - y
+            box = plt.Rectangle((x, y), w, h, fill=False, edgecolor=colour)
+            ax.add_patch(box)
+            if label:
+                font = {"family": "sans-serif", "color": colour, "size": label_size}
+                ax.text(bb[0], bb[1], label, fontdict=font)
 
 
 def instance_segmentation_to_rgb(instance_segmentation):

@@ -28,10 +28,7 @@ import omni
 from pxr import UsdGeom, UsdShade, Sdf, Gf, PhysicsSchema, PhysxSchema, PhysicsSchemaTools
 import omni.isaac.synthetic_utils
 
-print(dir(omni.isaac.synthetic_utils))
-
 from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, shapenet
-
 
 # Setup default generation variables
 # Value are (min, max) ranges
