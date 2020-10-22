@@ -44,6 +44,7 @@ group ("extensions/"..ext_id)
             target_deps_dir.."/nv_usd/%{cfg.buildcfg}/include/boost",
             target_deps_dir.."/lula/include",
             target_deps_dir.."/python/include/python3.6m",
+            target_deps_dir.."/rtx_plugins/include",
         }
 
         libdirs {   
