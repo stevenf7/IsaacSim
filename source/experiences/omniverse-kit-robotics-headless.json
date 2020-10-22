@@ -72,7 +72,8 @@
             "sleepMsOutOfFocus": 0
         },
         "livestream": {
-            "enabled": true
+            "enabled": true,
+            "allowResize": true
         }
     },
     "rtx": {
