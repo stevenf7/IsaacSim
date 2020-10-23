@@ -126,11 +126,17 @@ class JetracerEnv:
             state, reward, done, info, = self.step([0, 0])
             self.initialized = True
 
-        # loc = self.roads.get_valid_location()
-        # rot = random.uniform(-180, 180)
-        # start of the track
-        loc = (65, 110)
-        rot = 90
+        # Random track point in cm, with a 10 cm stddev gaussian offset
+        loc = random_track_point()
+        loc = loc + np.random.normal([0.0, 0.0], 10.0)
+
+        # Forward direction at that point
+        fwd = closest_point_track_direction(loc)
+
+        # Forward angle in degrees, with a 10 degree stddev gaussian offset
+        rot = np.arctan2(fwd[1], fwd[0])
+        rot = rot * 180.0 / np.pi
+        rot = rot + np.random.normal(10.0)
 
         self.jetracer.teleport(Gf.Vec3d(loc[0], loc[1], 5), rot, settle=True)
 

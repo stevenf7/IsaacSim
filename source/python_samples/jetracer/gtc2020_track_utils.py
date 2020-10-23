@@ -140,6 +140,17 @@ line_verts = [
     np.array([w, w_2]),
 ]
 
+
+def random_track_point():
+
+    # TODO : Refactor these dimensions, which show up in multiple places
+    p = np.random.random(2) * [6.711, 10.668]
+
+    result = track_segment_closest_point(p)
+
+    return result * 100  # convert to cm. TODO standardize all entry points to cm
+
+
 # Minimum distances to all segments of the track
 def track_segment_distance(p):
 

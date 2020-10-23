@@ -19,7 +19,11 @@ CUSTOM_CONFIG = {
     "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
 }
 
-if __name__ == "__main__":
+# use this to switch from training to evaluation
+TRAINING_MODE = True
+
+
+def train():
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
 
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
@@ -43,3 +47,30 @@ if __name__ == "__main__":
         reset_num_timesteps=False,
     )
     model.save("checkpoint_25k")
+
+
+def runEval():
+    # load a zip file to evaluate here
+    agent = PPO.load("eval_log/best_model.zip", device="cuda")
+
+    omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
+
+    # we disable all anti aliasing in the render because we want to train on the raw camera image.
+    omniverse_kit.set_setting("/rtx/post/aa/op", 0)
+
+    env = JetbotEnv(omniverse_kit)
+    obs = env.reset()
+
+    while True:
+        action = agent.predict(obs)
+        print(action)
+        obs, rew, done, infos = env.step(action[0])
+        if done:
+            obs = env.reset()
+
+
+if __name__ == "__main__":
+    if TRAINING_MODE:
+        train()
+    else:
+        runEval()
