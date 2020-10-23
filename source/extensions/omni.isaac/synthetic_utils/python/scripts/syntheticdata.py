@@ -68,6 +68,7 @@ class SyntheticDataHelper:
         self.sensor_helpers = {
             "rgb": getattr(self, f"get_rgb_{mode}"),
             "depth": getattr(self, f"get_depth_{mode}"),
+            "depthLinear": getattr(self, f"get_depth_linear_{mode}"),
             "instanceSegmentation": getattr(self, f"get_instance_segmentation_{mode}"),
             "semanticSegmentation": getattr(self, f"get_semantic_segmentation_{mode}"),
             "boundingBox2DTight": self.get_bbox2d_tight,
@@ -133,6 +134,24 @@ class SyntheticDataHelper:
         """
         depth = self._get_sensor_data(self.sd.SensorType.Depth, "float")
         return depth
+
+    def get_depth_linear_cuda(self):
+        """Get Linear Depth groundtruth data
+
+        Returns:
+            Tensor(dtype=float32, shape=(H, W))
+        """
+        depthLinear = self._get_sensor_cuda_tensor(self.sd.SensorType.DepthLinear, "float")
+        return depthLinear
+
+    def get_depth_linear_numpy(self):
+        """Get Linear Depth groundtruth data
+
+        Returns:
+            numpy.ndarray(dtype=float32, shape=(H, W))
+        """
+        depthLinear = self._get_sensor_data(self.sd.SensorType.DepthLinear, "float")
+        return depthLinear
 
     def _get_sensor_data(self, sensor, dtype):
         width = self.sd_interface.get_sensor_width(sensor)

@@ -79,7 +79,7 @@ def colorize_depth(depth_image, width, height, num_channels=3):
     depth_image[depth_image == 0.0] = 1e-5
     depth_image = np.clip(depth_image, 0, 255)
     depth_image -= np.min(depth_image)
-    depth_image /= np.max(depth_image)
+    depth_image /= np.max(depth_image) - np.min(depth_image)
     colorized_image[:, :, 0] = depth_image
     colorized_image[:, :, 1] = depth_image
     colorized_image[:, :, 2] = depth_image

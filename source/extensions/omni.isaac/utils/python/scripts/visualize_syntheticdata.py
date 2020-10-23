@@ -77,8 +77,6 @@ class Extension(omni.ext.IExt):
                         depth_data = interface.get_sensor_host_float_texture_array(
                             depth_sensor, depth_width, depth_height, depth_row_size
                         )
-                        depth_data = (depth_data - np.min(depth_data)) * 255 / (np.max(depth_data) - np.min(depth_data))
-                        depth_data = np.clip(depth_data, 0, 255)
                         colorize_depth_image = vis.colorize_depth(depth_data, depth_width, depth_height, num_channels=4)
                         colorize_depth_image = colorize_depth_image.reshape(colorize_depth_image.size).tolist()
 
