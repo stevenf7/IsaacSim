@@ -13,11 +13,13 @@
 import os
 import sys
 import platform
-
+import omni.kit.pipapi
 
 import omni.isaac
 import omni.kit.commands
 
+
+omni.kit.pipapi.install("numpy")
 # -- Project information -----------------------------------------------------
 
 project = "Omniverse Robotics"
@@ -36,7 +38,7 @@ extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "sphinx.ext.intersphi
 todo_include_todos = True
 
 autodoc_default_options = {"show-inheritance": True}
-autodoc_mock_imports = ["PIL", "matplotlib", "torch", "numpy"]
+autodoc_mock_imports = ["PIL", "matplotlib", "torch"]
 
 autoclass_content = "both"
 

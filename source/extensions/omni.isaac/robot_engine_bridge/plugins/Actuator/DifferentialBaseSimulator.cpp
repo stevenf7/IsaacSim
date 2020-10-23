@@ -29,13 +29,13 @@ namespace robot_engine_bridge
 DifferentialBaseSimulator::DifferentialBaseSimulator(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
-    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
 }
 
 
 void DifferentialBaseSimulator::onStart()
 {
     mZUp = UsdGeomGetStageUpAxis(mStage) == "Z" ? true : false;
+    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
     onComponentChange();
 }
 

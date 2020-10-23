@@ -102,7 +102,6 @@ static void cacheWheelIndices(std::vector<T>& wheelCacheList, const size_t vehic
 
 VehicleSimulator::VehicleSimulator() : IsaacComponent()
 {
-    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
 
     mPhysxPtr = carb::getFramework()->acquireInterface<carb::physics::PhysX>();
     if (!mPhysxPtr)
@@ -123,6 +122,7 @@ VehicleSimulator::VehicleSimulator() : IsaacComponent()
 void VehicleSimulator::onStart()
 {
     // mZUp = UsdGeomGetStageUpAxis(mStage) == "Z" ? true : false;
+    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
     onComponentChange();
 }
 

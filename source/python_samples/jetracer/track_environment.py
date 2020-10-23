@@ -13,7 +13,9 @@ class Environment:
         self.omni_kit = omni_kit
         result, nucleus_server = find_nucleus_server()
         if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+            carb.log_error(
+                "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in experiences/isaac-sim-python.json"
+            )
             return
 
         self.texture_list = [
