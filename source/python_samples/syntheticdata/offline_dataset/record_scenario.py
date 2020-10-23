@@ -74,7 +74,14 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # Collect Groundtruth
         gt = self.sd_helper.get_groundtruth(
-            ["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "boundingBox2DTight", "boundingBox2DLoose"]
+            [
+                "rgb",
+                "depthLinear",
+                "instanceSegmentation",
+                "semanticSegmentation",
+                "boundingBox2DTight",
+                "boundingBox2DLoose",
+            ]
         )
 
         # RGB
@@ -122,7 +129,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # Depth
         if self._enable_depth:
-            groundtruth["DATA"]["DEPTH"] = gt["depth"]
+            groundtruth["DATA"]["DEPTH"] = gt["depthLinear"]
             groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self._enable_depth_colorize
             groundtruth["METADATA"]["DEPTH"]["NPY"] = self._enable_depth_npy
 
