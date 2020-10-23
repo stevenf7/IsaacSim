@@ -48,6 +48,10 @@ class JetracerEnv:
         self.sd_helper = SyntheticDataHelper()
         self.roads = Environment(self.omniverse_kit)
 
+        # make environment z up
+        self.omniverse_kit.set_up_axis(UsdGeom.Tokens.z)
+
+        # generate roads
         self.shape = [6, 6]
         self.roads.generate_road(self.shape)
         self.roads.generate_lights()

@@ -7,4 +7,4 @@ omni.isaac.dynamic_control:  Dynamic Control Extension
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: Float2
+    :exclude-members: 

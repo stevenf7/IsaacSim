@@ -39,6 +39,9 @@ class JetbotEnv:
         self.sd_helper = SyntheticDataHelper()
         self.roads = Environment(self.omniverse_kit)
 
+        # make environment z up
+        self.omniverse_kit.set_up_axis(UsdGeom.Tokens.z)
+
         # we are going to train on a randomized loop that fits in a 6x6 tile area.
         self.shape = [6, 6]
         self.roads.generate_road(self.shape)

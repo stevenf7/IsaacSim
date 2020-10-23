@@ -289,7 +289,8 @@ Launches and configures OmniKit and exposes useful functions.
         Args:
             axis: valid values are `UsdGeom.Tokens.y`, or `UsdGeom.Tokens.z`
         """
-        rootLayer = self.get_stage().GetRootLayer()
+        stage = self.get_stage()
+        rootLayer = stage.GetRootLayer()
         rootLayer.SetPermissionToEdit(True)
         with Usd.EditContext(stage, rootLayer):
             UsdGeom.SetStageUpAxis(stage, axis)
