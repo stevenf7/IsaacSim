@@ -20,4 +20,4 @@ dependencies:
     - tensorflow-estimator==2.3.0
     - tensorboard==2.3.0
     - tensorboard-plugin-wit==1.7.0
-    - pillow==5.1.0
+    - pillow==8.0.0
