@@ -15,6 +15,7 @@
 import asyncio
 import os
 import torch
+import signal
 
 import carb
 import omni
@@ -51,6 +52,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         self._setup_world(scenario_path)
         self.cur_idx = 0
+        self.exiting = False
+
+        signal.signal(signal.SIGINT, self._handle_exit)
+
+    def _handle_exit(self, *args, **kwargs):
+        print("exiting dataset generation...")
+        self.exiting = True
 
     async def load_stage(self, path):
         await omni.kit.asyncapi.open_stage(path)
@@ -197,4 +205,6 @@ if __name__ == "__main__":
     for image in dataset:
         print("ID: ", dataset.cur_idx)
         if dataset.cur_idx == args.num_frames:
+            break
+        if dataset.exiting:
             break
