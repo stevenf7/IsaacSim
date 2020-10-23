@@ -39,6 +39,7 @@ class Extension(omni.ext.IExt):
         self._rgb_byte_provider = None
         self._rgb_image_provider = None
         self._robot_graph_im = None
+        self.root_path = None
 
         self._file_window = omni.ui.Window("Open URDF File", width=600, height=400, visible=False)
         with self._file_window.frame:
@@ -64,7 +65,8 @@ class Extension(omni.ext.IExt):
                 with ui.HStack():
                     with ui.VStack(width=ui.Percent(30), height=0):
                         ui.Button("Parse URDF", clicked_fn=self._parse_urdf)
-                        ui.Button("Load Robot", clicked_fn=self._load_robot)
+                        self.load_robot_btn = ui.Button("Load Robot", clicked_fn=self._load_robot)
+                        self.load_robot_btn.enabled = False
                         ui.Label("Parser Settings (Set before Parsing URDF):")
                         ui.Line(height=5)
                         with ui.HStack():
@@ -269,6 +271,7 @@ class Extension(omni.ext.IExt):
 
     def _refresh_filebrowser(self):
         parent = None
+        selection_name = None
         if len(self._filebrowser.get_selections()):
             parent = self._filebrowser.get_selections()[0].parent
             selection_name = self._filebrowser.get_selections()[0].name
@@ -433,6 +436,7 @@ class Extension(omni.ext.IExt):
             self.root_path, self.filename = os.path.split(os.path.abspath(path))
             self._imported_robot = self._urdf_interface.parse_urdf(self.root_path, self.filename, self.config)
             self._create_ui(self._imported_robot)
+            self.load_robot_btn.enabled = True
         else:
             print("Omniverse Paths not Supported, Only local paths can be imported")
 
@@ -458,7 +462,8 @@ class Extension(omni.ext.IExt):
         self._file_window.visible = True
 
     def _load_robot(self):
-        self._urdf_interface.import_robot(self.root_path, self.filename, self._imported_robot, self.config)
+        if self.root_path:
+            self._urdf_interface.import_robot(self.root_path, self.filename, self._imported_robot, self.config)
 
     def on_shutdown(self):
         if self._filebrowser:
