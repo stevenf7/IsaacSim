@@ -16,7 +16,15 @@ class Environment:
         self.omni_kit = omni_kit
         result, nucleus_server = find_nucleus_server()
         if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+            carb.log_error(
+                "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in experiences/isaac-sim-python.json"
+            )
+            return
+        result, nucleus_server = find_nucleus_server("/Library/Props/Lego/Parts/")
+        if result is False:
+            carb.log_error(
+                "Could not find nucleus server with /Library/Props/Lego/Parts/ folder. Please refer to the documentation to aquire the Lego road tile assets"
+            )
             return
         # 1=I 2=L 3=T, 4=X
         self.tile_usd = {
