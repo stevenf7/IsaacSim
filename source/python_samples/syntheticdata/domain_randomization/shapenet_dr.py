@@ -162,20 +162,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
                 references[category] = assets_filtered[int(num_assets * split) :]
         return references
 
-    def _add_preview_surface(self, prim, diffuse, roughness, metallic):
-        """Add a preview surface material using the metallic workflow."""
-        path = f"{prim.GetPath()}/mat"
-        material = UsdShade.Material.Define(self.stage, path)
-        pbrShader = UsdShade.Shader.Define(self.stage, f"{path}/shader")
-        pbrShader.CreateIdAttr("UsdPreviewSurface")
-        pbrShader.CreateInput("diffuseColor", Sdf.ValueTypeNames.Float3).Set(diffuse)
-        pbrShader.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(roughness)
-        pbrShader.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(metallic)
-
-        material.CreateSurfaceOutput().ConnectToSource(pbrShader, "surface")
-
-        UsdShade.MaterialBindingAPI(prim).Bind(material)
-
     def load_single_asset(self, ref, semantic_label, suffix=""):
         """Load a USD asset with random pose.
         args
@@ -209,18 +195,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
             ref = random.choice(self.references[category])
             self.assets.append(self.load_single_asset(ref, category, i))
 
-    def randomize_asset_material(self):
-        """Ranomize asset material properties"""
-        for asset in self.assets:
-            colour = (random.random(), random.random(), random.random())
-
-            # Here we choose not to have materials unrealistically rough or reflective.
-            roughness = random.uniform(0.1, 0.9)
-
-            # Here we choose to have more metallic than non-metallic objects.
-            metallic = random.choices([0.0, 1.0], weights=(0.8, 0.2))[0]
-            self._add_preview_surface(asset, colour, roughness, metallic)
-
     def randomize_camera(self):
         """Randomize the camera position."""
         # By simply rotating a camera "rig" instead repositioning the camera
@@ -234,8 +208,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.camera_rig.AddRotateXOp().Set(random.random() * -90)
 
     def create_dr_comp(self):
-        """Creates DR components with various attributes
-        the asset prims to randomize is an empty list for most components
+        """Creates DR components with various attributes.
+        The asset prims to randomize is an empty list for most components
         since we get a new list of assets every iteration.
         The asset list will be updated for each component in update_dr_comp()
         """
@@ -285,14 +259,14 @@ class RandomObjects(torch.utils.data.IterableDataset):
         """
 
         # In this example, either update texture or color or material of assets
-        # self.update_dr_comp(self.color_comp)
+        self.update_dr_comp(self.color_comp)
         # self.update_dr_comp(self.texture_comp)
-        self.update_dr_comp(self.material_comp)
+        # self.update_dr_comp(self.material_comp)
 
         # Also update movement, rotation and scale components
         # self.update_dr_comp(self.movement_comp)
         self.update_dr_comp(self.rotation_comp)
-        self.update_dr_comp(self.scale_comp)
+        # self.update_dr_comp(self.scale_comp)
 
         # randomize once
         self.dr_helper.randomize_once()
