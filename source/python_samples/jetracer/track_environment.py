@@ -108,8 +108,7 @@ class Environment:
         )
 
     def reset(self, shape):
-        # print(self.prims)
-
+        # this deletes objects in self.prims
         stage = omni.usd.get_context().get_stage()
         for layer in stage.GetLayerStack():
             edit = Sdf.BatchNamespaceEdit()
