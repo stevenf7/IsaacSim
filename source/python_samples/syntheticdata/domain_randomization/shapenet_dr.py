@@ -259,14 +259,14 @@ class RandomObjects(torch.utils.data.IterableDataset):
         """
 
         # In this example, either update texture or color or material of assets
-        self.update_dr_comp(self.color_comp)
-        # self.update_dr_comp(self.texture_comp)
+        # self.update_dr_comp(self.color_comp)
+        self.update_dr_comp(self.texture_comp)
         # self.update_dr_comp(self.material_comp)
 
         # Also update movement, rotation and scale components
         # self.update_dr_comp(self.movement_comp)
-        self.update_dr_comp(self.rotation_comp)
-        # self.update_dr_comp(self.scale_comp)
+        # self.update_dr_comp(self.rotation_comp)
+        self.update_dr_comp(self.scale_comp)
 
         # randomize once
         self.dr_helper.randomize_once()
