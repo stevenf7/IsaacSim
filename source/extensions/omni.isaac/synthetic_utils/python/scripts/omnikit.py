@@ -71,6 +71,7 @@ Launches and configures OmniKit and exposes useful functions.
             experience (str): The config json used to launch the application. 
         """
         # initialize vars
+        self._exiting = False
         self._is_dirty_instance_mappings = True
         atexit.register(self._cleanup)
         self.config = DEFAULT_CONFIG
@@ -132,10 +133,18 @@ Launches and configures OmniKit and exposes useful functions.
         self.app.startup("omniverse-kit", os.environ["CARB_APP_PATH"], args)
 
     def _cleanup(self):
-        self.update()
-        self.app.post_quit()
-        # self.app.shutdown()
-        self.app = None
+        print("Exiting OmniKitHelper")
+        if self.app:
+            self.set_setting("/app/file/ignoreUnsavedOnExit", True)
+            self.update()
+            self.app.post_quit()
+            # self.app.shutdown()
+            self.app = None
+
+    def exit(self):
+        """Sets is_exiting Flag to True and tells omniverse app to exit"""
+        self._exiting = True
+        self._cleanup()
 
     def get_stage(self):
         """Returns the current USD stage."""
@@ -173,6 +182,9 @@ Launches and configures OmniKit and exposes useful functions.
             physics_dt (float, optional): If specified use this value for physics step
             physics_substeps (int, optional): Maximum number of physics substeps to perform
         """
+        # dont update if exit was called
+        if self._exiting:
+            return
         if physics_substeps is not None and physics_substeps > 0:
             self.kit_settings.set_setting("/physics/maxNumSteps", int(physics_substeps))
         if dt is not None:
@@ -223,6 +235,13 @@ Launches and configures OmniKit and exposes useful functions.
         """
         time, message, loaded, loading = self.get_status()
         return loading > 0
+
+    def is_exiting(self):
+        """get current exit status for this object
+        Returns:
+            bool: True if exit() was called previously, False otherwise
+        """
+        return self._exiting
 
     def execute(self, *args, **kwargs):
         """Allow use of omni.kit.commands interface"""

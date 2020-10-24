@@ -2,6 +2,8 @@ import torch
 import numpy as np
 import os
 import carb
+import signal
+
 from omni.isaac.synthetic_utils import OmniKitHelper
 
 from jetbot_env import JetbotEnv
@@ -70,6 +72,13 @@ def runEval():
 
 
 if __name__ == "__main__":
+
+    def handle_exit(*args, **kwargs):
+        print("Exiting training...")
+        quit()
+
+    signal.signal(signal.SIGINT, handle_exit)
+
     if TRAINING_MODE:
         train()
     else:
