@@ -1,5 +1,7 @@
 import torch
 import os
+import signal
+
 from omni.isaac.synthetic_utils import OmniKitHelper
 
 from jetracer_env import JetracerEnv
@@ -72,6 +74,13 @@ def runEval():
 
 
 if __name__ == "__main__":
+
+    def handle_exit(*args, **kwargs):
+        print("Exiting training...")
+        quit()
+
+    signal.signal(signal.SIGINT, handle_exit)
+
     if TRAINING_MODE:
         train()
     else:
