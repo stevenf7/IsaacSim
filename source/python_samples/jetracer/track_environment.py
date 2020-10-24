@@ -13,7 +13,9 @@ class Environment:
         self.omni_kit = omni_kit
         result, nucleus_server = find_nucleus_server()
         if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+            carb.log_error(
+                "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in experiences/isaac-sim-python.json"
+            )
             return
 
         self.texture_list = [
@@ -42,8 +44,9 @@ class Environment:
         loaded_paths = []
 
         for entry in contents:
-            names.append(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
-            loaded_paths.append("/World/Meshes/mesh_component/mesh_" + entry.relative_path[0:-4])
+            if not entry.flags & omni.client.Flags.CAN_HAVE_CHILDREN:
+                names.append(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
+                loaded_paths.append("/World/Meshes/mesh_component/mesh_" + entry.relative_path[0:-4])
         print(loaded_paths)
 
         self.omni_kit.create_prim("/World/Floor", "Xform")
@@ -105,8 +108,7 @@ class Environment:
         )
 
     def reset(self, shape):
-        # print(self.prims)
-
+        # this deletes objects in self.prims
         stage = omni.usd.get_context().get_stage()
         for layer in stage.GetLayerStack():
             edit = Sdf.BatchNamespaceEdit()

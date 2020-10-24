@@ -22,6 +22,7 @@ import glob
 import torch
 import random
 import numpy as np
+import signal
 
 import carb
 import omni
@@ -92,6 +93,13 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         self._setup_world()
         self.cur_idx = 0
+        self.exiting = False
+
+        signal.signal(signal.SIGINT, self._handle_exit)
+
+    def _handle_exit(self, *args, **kwargs):
+        print("exiting dataset generation...")
+        self.exiting = True
 
     def _setup_world(self):
         """Setup lights, walls, floor, ceiling and camera"""
@@ -259,14 +267,14 @@ class RandomObjects(torch.utils.data.IterableDataset):
         """
 
         # In this example, either update texture or color or material of assets
-        self.update_dr_comp(self.color_comp)
-        # self.update_dr_comp(self.texture_comp)
+        # self.update_dr_comp(self.color_comp)
+        self.update_dr_comp(self.texture_comp)
         # self.update_dr_comp(self.material_comp)
 
         # Also update movement, rotation and scale components
         # self.update_dr_comp(self.movement_comp)
-        self.update_dr_comp(self.rotation_comp)
-        # self.update_dr_comp(self.scale_comp)
+        # self.update_dr_comp(self.rotation_comp)
+        self.update_dr_comp(self.scale_comp)
 
         # randomize once
         self.dr_helper.randomize_once()
@@ -379,3 +387,5 @@ if __name__ == "__main__":
 
         plt.draw()
         plt.pause(0.01)
+        if dataset.exiting:
+            break

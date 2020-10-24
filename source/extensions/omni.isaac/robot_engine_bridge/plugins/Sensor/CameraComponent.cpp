@@ -50,8 +50,6 @@ CameraComponent::CameraComponent() : IsaacComponent()
         CARB_LOG_ERROR("Failed to acquire carb::sensors::Sensors interface");
         return;
     }
-
-    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
 }
 
 CameraComponent::~CameraComponent()
@@ -407,6 +405,7 @@ void CameraComponent::tick()
 }
 void CameraComponent::onStart()
 {
+    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
     onComponentChange();
 }
 void CameraComponent::onStop()

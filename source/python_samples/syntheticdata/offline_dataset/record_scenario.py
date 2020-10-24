@@ -15,6 +15,7 @@
 import asyncio
 import os
 import torch
+import signal
 
 import carb
 import omni
@@ -51,6 +52,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         self._setup_world(scenario_path)
         self.cur_idx = 0
+        self.exiting = False
+
+        signal.signal(signal.SIGINT, self._handle_exit)
+
+    def _handle_exit(self, *args, **kwargs):
+        print("exiting dataset generation...")
+        self.exiting = True
 
     async def load_stage(self, path):
         await omni.kit.asyncapi.open_stage(path)
@@ -74,7 +82,14 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # Collect Groundtruth
         gt = self.sd_helper.get_groundtruth(
-            ["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "boundingBox2DTight", "boundingBox2DLoose"]
+            [
+                "rgb",
+                "depthLinear",
+                "instanceSegmentation",
+                "semanticSegmentation",
+                "boundingBox2DTight",
+                "boundingBox2DLoose",
+            ]
         )
 
         # RGB
@@ -122,7 +137,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # Depth
         if self._enable_depth:
-            groundtruth["DATA"]["DEPTH"] = gt["depth"]
+            groundtruth["DATA"]["DEPTH"] = gt["depthLinear"]
             groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self._enable_depth_colorize
             groundtruth["METADATA"]["DEPTH"]["NPY"] = self._enable_depth_npy
 
@@ -190,4 +205,6 @@ if __name__ == "__main__":
     for image in dataset:
         print("ID: ", dataset.cur_idx)
         if dataset.cur_idx == args.num_frames:
+            break
+        if dataset.exiting:
             break

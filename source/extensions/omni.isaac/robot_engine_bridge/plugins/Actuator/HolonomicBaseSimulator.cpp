@@ -29,13 +29,13 @@ namespace robot_engine_bridge
 HolonomicBaseSimulator::HolonomicBaseSimulator(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
-    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
 }
 
 
 void HolonomicBaseSimulator::onStart()
 {
     mZUp = UsdGeomGetStageUpAxis(mStage) == "Z" ? true : false;
+    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
     onComponentChange();
 }
 
