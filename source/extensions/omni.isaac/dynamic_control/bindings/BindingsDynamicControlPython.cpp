@@ -6,7 +6,7 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-#include <carb/BindingsPythonUtils.h>
+#include <carb/BindingsUtils.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <pybind11/pybind11/functional.h>
@@ -21,30 +21,42 @@ namespace isaac
 {
 namespace dynamic_control
 {
-/*
-// pacify pybind11 about undefined types
-struct DcContext
-{
-};
-struct DcArticulation
-{
-};
-struct DcRigidBody
-{
-};
-struct DcDof
-{
-};
-struct DcAttractor
-{
-};
-*/
+
 }
 }
 }
 
 namespace
 {
+
+namespace py = pybind11;
+
+template <typename InterfaceType>
+py::class_<InterfaceType> defineInterfaceClass(py::module& m,
+                                               const char* className,
+                                               const char* acquireFuncName,
+                                               const char* releaseFuncName = nullptr,
+                                               const char* docString = "")
+{
+    m.def(
+        acquireFuncName,
+        [](const char* pluginName, const char* libraryPath) {
+            return libraryPath ? carb::acquireInterfaceFromLibraryForBindings<InterfaceType>(libraryPath) :
+                                 carb::acquireInterfaceForBindings<InterfaceType>(pluginName);
+        },
+        py::arg("plugin_name") = nullptr, py::arg("library_path") = nullptr, py::return_value_policy::reference,
+        "Acquire dynamic control interface. This is the base object that all of the dynamic control functions are defined on");
+
+    if (releaseFuncName)
+    {
+        m.def(
+            releaseFuncName, [](InterfaceType* iface) { carb::getFramework()->releaseInterface(iface); },
+            "Release dynamic control interface. Generally this does not need to be called, the dynamic control interface is released on extension shutdown");
+    }
+
+    return py::class_<InterfaceType>(m, className, docString);
+}
+
 PYBIND11_MODULE(_dynamic_control, m)
 {
     using namespace carb;
@@ -53,7 +65,36 @@ PYBIND11_MODULE(_dynamic_control, m)
     // We use carb data types, must import bindings for them
     auto carb_module = py::module::import("carb");
 
-    m.doc() = "Dynamic Control bindings";
+    m.doc() =
+        R"pbdoc(
+        The Dynamic Control extension provides a set of utilities to control physics objects. 
+        It provides opaque handles for different physics objects that remain valid between PhysX scene resets, which occur whenever play or stop is pressed.
+        
+        Attributes:
+            INVALID_HANDLE: This value is returned when trying to acquire a dynamic control handle for an invalid usd path
+
+        The following attributes correspond to states that can be get/set from Degrees of Freedom and Rigid Bodies  
+        
+        Attributes:
+            STATE_NONE:  No state selected
+            STATE_POS: Position states
+            STATE_VEL: Velocity states
+            STATE_ALL:  All states
+        
+        The following attributes correspond to joint axes when specifying a 6 Dof (D6) Joint
+        
+        Attributes:
+            AXIS_NONE: No axis selected
+            AXIS_X: Corresponds to translation around the body x-axis
+            AXIS_Y: Corresponds to translation around the body y-axis
+            AXIS_Z: Corresponds to translation around the body z-axis
+            AXIS_TWIST: Corresponds to rotation around the body x-axis
+            AXIS_SWING_1: Corresponds to rotation around the body y-axis
+            AXIS_SWING_2: Corresponds to rotation around the body z-axis
+            AXIS_ALL_TRANSLATION: Corresponds to all Translation axes
+            AXIS_ALL_ROTATION: Corresponds to all Rotation axes
+            AXIS_ALL: Corresponds to all axes
+        )pbdoc";
 
     m.attr("INVALID_HANDLE") = py::int_(kDcInvalidHandle);
 
@@ -75,12 +116,12 @@ PYBIND11_MODULE(_dynamic_control, m)
     m.attr("AXIS_ALL_ROTATION") = py::int_(kDcAxisAllRotation);
     m.attr("AXIS_ALL") = py::int_(kDcAxisAll);
 
-    py::enum_<DcJointType>(m, "JointType", py::arithmetic(), "Types of joint")
+    py::enum_<DcJointType>(m, "JointType", py::arithmetic(), "Joint Types that can be specified")
         .value("JOINT_NONE", DcJointType::eNone, "invalid/unknown/uninitialized joint type")
-        .value("JOINT_FIXED", DcJointType::eFixed)
-        .value("JOINT_REVOLUTE", DcJointType::eRevolute)
-        .value("JOINT_PRISMATIC", DcJointType::ePrismatic)
-        .value("JOINT_SPHERICAL", DcJointType::eSpherical)
+        .value("JOINT_FIXED", DcJointType::eFixed, "Fixed Joint")
+        .value("JOINT_REVOLUTE", DcJointType::eRevolute, "Revolute Joint")
+        .value("JOINT_PRISMATIC", DcJointType::ePrismatic, "Prismatic Joint")
+        .value("JOINT_SPHERICAL", DcJointType::eSpherical, "Spherical Joint")
         .export_values();
 
     py::enum_<DcDofType>(m, "DofType", py::arithmetic(), "Types of degree of freedom")
@@ -97,14 +138,15 @@ PYBIND11_MODULE(_dynamic_control, m)
         //.value("DRIVE_EFFORT", DcDriveMode::eEffort, "Effort drive")
         .export_values();
 
-    py::enum_<DcObjectType>(m, "ObjectType", py::arithmetic(), "Types of Object")
-        .value("OBJECT_NONE", DcObjectType::eDcObjectNone, "invalid/unknown/uninitialized object type")
-        .value("OBJECT_RIGIDBODY", DcObjectType::eDcObjectRigidBody)
-        .value("OBJECT_JOINT", DcObjectType::eDcObjectJoint)
-        .value("OBJECT_DOF", DcObjectType::eDcObjectDof)
-        .value("OBJECT_ARTICULATION", DcObjectType::eDcObjectArticulation)
-        .value("OBJECT_ATTRACTOR", DcObjectType::eDcObjectAttractor)
-        .value("OBJECT_D6JOINT", DcObjectType::eDcObjectD6Joint)
+    py::enum_<DcObjectType>(m, "ObjectType", py::arithmetic(), "Types of Objects")
+        .value("OBJECT_NONE", DcObjectType::eDcObjectNone, "Invalid/unknown/uninitialized object type")
+        .value("OBJECT_RIGIDBODY", DcObjectType::eDcObjectRigidBody,
+               "The object is a rigid body or a link on an articulation")
+        .value("OBJECT_JOINT", DcObjectType::eDcObjectJoint, "The object is a joint")
+        .value("OBJECT_DOF", DcObjectType::eDcObjectDof, "The object is a degree of freedon")
+        .value("OBJECT_ARTICULATION", DcObjectType::eDcObjectArticulation, "The object is an articulation")
+        .value("OBJECT_ATTRACTOR", DcObjectType::eDcObjectAttractor, "The object is an attractor")
+        .value("OBJECT_D6JOINT", DcObjectType::eDcObjectD6Joint, "The object is a generic D6 joint")
         .export_values();
 
     // opaque types
@@ -261,23 +303,21 @@ PYBIND11_MODULE(_dynamic_control, m)
             }));
 #endif
 
-    py::class_<DcTransform>(m, "Transform", "Represents a transform in the system")
-        .def_readwrite("p", &DcTransform::p, "Position, in meters")
+    py::class_<DcTransform>(m, "Transform", "Represents a 3D transform in the system")
+        .def_readwrite("p", &DcTransform::p, "Position (:obj:`carb._carb.Float3`)")
         .def_readwrite(
             "r", &DcTransform::r,
-            R"pbdoc(Rotation Quaternion, represented in the format :math:`x\hat{i} + y\hat{j} + z\hat{k} + w`)pbdoc")
+            R"pbdoc(Rotation Quaternion, represented in the format :math:`x\hat{i} + y\hat{j} + z\hat{k} + w` (:obj:`carb._carb.Float4`))pbdoc")
         .def(py::init([](const carb::Float3& p, const carb::Float4& r) {
                  DcTransform transform;
                  transform.p = p;
                  transform.r = r;
                  return transform;
              }),
-             py::arg("p") = nullptr, py::arg("r") = nullptr)
-        .def(py::init<>())
-        .def_property_readonly_static("dtype",
-                                      [](const py::object&) {
-                                          return py::dtype::of<DcTransform>(); // return the numpy structured dtype
-                                      })
+             py::arg("p") = nullptr, py::arg("r") = nullptr, "Initialize from a position and a rotation quaternion")
+        .def(py::init<>(), "Initialize from another Transform object")
+        .def_property_readonly_static("dtype", [](const py::object&) { return py::dtype::of<DcTransform>(); },
+                                      "return the numpy structured dtype")
         .def_static("from_buffer",
                     [](py::buffer buf) -> py::object {
                         py::buffer_info info = buf.request();
@@ -294,7 +334,8 @@ PYBIND11_MODULE(_dynamic_control, m)
                             }
                         }
                         return py::none();
-                    })
+                    },
+                    "assign a transform from an array of 7 values [p.x, p.y, p.z, r.x, r.y, r.z, r.w]")
         /*
         .def("__mul__",
              [](const DcTransform& self, const DcTransform& other) {
@@ -393,21 +434,23 @@ PYBIND11_MODULE(_dynamic_control, m)
             }));
 
     py::class_<DcVelocity>(m, "Velocity", "Linear and angular velocity")
-        .def_readwrite("linear", &DcVelocity::linear, "Linear velocity")
-        .def_readwrite("angular", &DcVelocity::angular, "Angular velocity")
+        .def_readwrite("linear", &DcVelocity::linear, "Linear velocity, (:obj:`carb._carb.Float3`)")
+        .def_readwrite("angular", &DcVelocity::angular, "Angular velocity, (:obj:`carb._carb.Float3`)")
         .def(py::init([](const carb::Float3& linear, const carb::Float3& angular) {
                  DcVelocity vel;
                  vel.linear = linear;
                  vel.angular = angular;
                  return vel;
              }),
-             py::arg("linear") = nullptr, py::arg("angular") = nullptr)
-        .def(py::init<>())
+             py::arg("linear") = nullptr, py::arg("angular") = nullptr,
+             "initialize from a linear velocity and angular velocity")
+        .def(py::init<>(), "initialize from another Velocity Object")
         .def_property_readonly_static("dtype",
                                       [](const py::object&) {
                                           // return the numpy structured dtype
                                           return py::dtype::of<DcVelocity>();
-                                      })
+                                      },
+                                      "return the numpy structured dtype")
         .def(py::pickle(
             [](const DcVelocity& v) {
                 return py::make_tuple(v.linear.x, v.linear.y, v.linear.z, v.angular.x, v.angular.y, v.angular.z);
@@ -420,20 +463,22 @@ PYBIND11_MODULE(_dynamic_control, m)
             }));
 
     py::class_<DcRigidBodyState>(m, "RigidBodyState", "Containing states to get/set for a rigid body in the simulation")
-        .def_readwrite("pose", &DcRigidBodyState::pose, "Transform with position and orientation of rigid body")
-        .def_readwrite("vel", &DcRigidBodyState::vel, "Linear and angular velocities of rigid body")
+        .def_readwrite(
+            "pose", &DcRigidBodyState::pose,
+            "Transform with position and orientation of rigid body (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`)")
+        .def_readwrite(
+            "vel", &DcRigidBodyState::vel,
+            "Linear and angular velocities of rigid body (:obj:`omni.isaac.dynamic_control._dynamic_control.Velocity`)")
         .def(py::init([](const DcTransform& pose, const DcVelocity& vel) {
                  DcRigidBodyState state;
                  state.pose = pose;
                  state.vel = vel;
                  return state;
              }),
-             py::arg("pose") = nullptr, py::arg("vel") = nullptr)
-        .def(py::init<>())
-        .def_property_readonly_static("dtype",
-                                      [](const py::object&) {
-                                          return py::dtype::of<DcRigidBodyState>(); // return the numpy structured dtype
-                                      })
+             py::arg("pose") = nullptr, py::arg("vel") = nullptr, "Initialize rigid body state from pose and velocity")
+        .def(py::init<>(), "initialize from another RigidBodyState")
+        .def_property_readonly_static("dtype", [](const py::object&) { return py::dtype::of<DcRigidBodyState>(); },
+                                      "return the numpy structured dtype")
         .def(py::pickle(
             [](const DcRigidBodyState& s) {
                 return py::make_tuple(s.pose.p.x, s.pose.p.y, s.pose.p.z, s.pose.r.x, s.pose.r.y, s.pose.r.z,
@@ -450,10 +495,12 @@ PYBIND11_MODULE(_dynamic_control, m)
             }));
 
     py::class_<DcDofState>(m, "DofState", "States of a Degree of Freedom in the Asset architecture")
-        .def_readwrite("pos", &DcDofState::pos,
-                       "DOF position, in radians if it's a revolute DOF, or meters, if it's a prismatic DOF")
-        .def_readwrite("vel", &DcDofState::vel,
-                       "DOF velocity, in radians/s if it's a revolute DOF, or m/s, if it's a prismatic DOF")
+        .def_readwrite(
+            "pos", &DcDofState::pos,
+            "DOF position, in radians if it's a revolute DOF, or stage_units (m, cm, etc), if it's a prismatic DOF (:obj:`float`)")
+        .def_readwrite(
+            "vel", &DcDofState::vel,
+            "DOF velocity, in radians/s if it's a revolute DOF, or stage_units/s (m/s, cm/s, etc), if it's a prismatic DOF (:obj:`float`)")
         .def(py::init([](const float& pos, const float& vel) {
                  DcDofState state;
                  state.pos = pos;
@@ -462,19 +509,17 @@ PYBIND11_MODULE(_dynamic_control, m)
              }),
              py::arg("pos") = nullptr, py::arg("vel") = nullptr)
         .def(py::init<>())
-        .def_property_readonly_static("dtype",
-                                      [](const py::object&) {
-                                          return py::dtype::of<DcDofState>(); // return the numpy structured dtype
-                                      })
+        .def_property_readonly_static(
+            "dtype", [](const py::object&) { return py::dtype::of<DcDofState>(); }, "return the numpy structured dtype")
         .def(py::pickle([](const DcDofState& s) { return py::make_tuple(s.pos, s.vel); },
                         [](py::tuple t) {
                             return DcDofState{ t[0].cast<float>(), t[1].cast<float>() };
                         }));
 
-    py::class_<DcRigidBodyProperties>(m, "RigidBodyProperties")
+    py::class_<DcRigidBodyProperties>(m, "RigidBodyProperties", "Rigid Body Properties")
         .def(py::init<>())
-        .def_readwrite("mass", &DcRigidBodyProperties::mass)
-        .def_readwrite("moment", &DcRigidBodyProperties::moment)
+        .def_readwrite("mass", &DcRigidBodyProperties::mass, "Mass of rigid body (:obj:`float`)")
+        .def_readwrite("moment", &DcRigidBodyProperties::moment, "Diagonal moment of inertia (:obj:`carb._carb.Float3`)")
 
         .def(py::pickle(
             [](const DcRigidBodyProperties& props) {
@@ -487,18 +532,22 @@ PYBIND11_MODULE(_dynamic_control, m)
                 return props;
             }));
 
-    py::class_<DcDofProperties>(m, "DofProperties")
+    py::class_<DcDofProperties>(m, "DofProperties", "Properties of a degree-of-freedom")
         .def(py::init<>())
-        //.def_readonly("type", &DcDofProperties::type)
-        .def_readwrite("type", &DcDofProperties::type)
-        .def_readwrite("has_limits", &DcDofProperties::hasLimits)
-        .def_readwrite("lower", &DcDofProperties::lower)
-        .def_readwrite("upper", &DcDofProperties::upper)
-        .def_readwrite("drive_mode", &DcDofProperties::driveMode)
-        .def_readwrite("max_velocity", &DcDofProperties::maxVelocity)
-        .def_readwrite("max_effort", &DcDofProperties::maxEffort)
-        .def_readwrite("stiffness", &DcDofProperties::stiffness)
-        .def_readwrite("damping", &DcDofProperties::damping)
+        .def_readwrite("type", &DcDofProperties::type,
+                       R"pbdoc(
+                           Type of joint (:obj:`omni.isaac.dynamic_control._dynamic_control.DofType`))pbdoc")
+        .def_readwrite("has_limits", &DcDofProperties::hasLimits, "Flags whether the DOF has limits (bool)")
+        .def_readwrite("lower", &DcDofProperties::lower, "lower limit of DOF. In radians or meters (:obj:`float`)")
+        .def_readwrite("upper", &DcDofProperties::upper, "upper limit of DOF. In radians or meters (:obj:`float`)")
+        .def_readwrite("drive_mode", &DcDofProperties::driveMode,
+                       "Drive mode for the DOF (:obj:`omni.isaac.dynamic_control._dynamic_control.DriveMode`)")
+        .def_readwrite("max_velocity", &DcDofProperties::maxVelocity,
+                       "Maximum velocity of DOF. In Radians/s, or stage_units/s (:obj:`float`)")
+        .def_readwrite(
+            "max_effort", &DcDofProperties::maxEffort, "Maximum effort of DOF. in N or N*stage_units (:obj:`float`)")
+        .def_readwrite("stiffness", &DcDofProperties::stiffness, "Stiffness of DOF (:obj:`float`)")
+        .def_readwrite("damping", &DcDofProperties::damping, "Damping of DOF (:obj:`float`)")
         .def(py::pickle(
             [](const DcDofProperties& props) {
                 return py::make_tuple(props.type, props.hasLimits, props.lower, props.upper, props.driveMode,
@@ -526,14 +575,18 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def_readwrite(
             "axes", &DcAttractorProperties::axes,
             "Axes to set the attractor, using DcAxisFlags. Multiple axes can be selected using bitwise combination of each axis flag. if axis flag is set to zero, the attractor will be disabled and won't impact in solver computational complexity.")
-        .def_readwrite("target", &DcAttractorProperties::target, "Target pose to attract to.")
+        .def_readwrite("target", &DcAttractorProperties::target,
+                       "Target pose to attract to. (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`)")
         .def_readwrite(
-            "offset", &DcAttractorProperties::offset, "Offset from rigid body origin to set the attractor pose.")
+            "offset", &DcAttractorProperties::offset,
+            "Offset from rigid body origin to set the attractor pose. (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`)")
         .def_readwrite(
             "stiffness", &DcAttractorProperties::stiffness,
-            "Stiffness to be used on attraction for solver. Stiffness value should be larger than the largest agent kinematic chain stifness")
-        .def_readwrite("damping", &DcAttractorProperties::damping, "Damping to be used on attraction solver.")
-        .def_readwrite("force_limit", &DcAttractorProperties::forceLimit, "Maximum force to be applied by drive.")
+            "Stiffness to be used on attraction for solver. Stiffness value should be larger than the largest agent kinematic chain stifness (:obj:`float`)")
+        .def_readwrite(
+            "damping", &DcAttractorProperties::damping, "Damping to be used on attraction solver. (:obj:`float`)")
+        .def_readwrite(
+            "force_limit", &DcAttractorProperties::forceLimit, "Maximum force to be applied by drive. (:obj:`float`)")
         .def(py::pickle(
             [](const DcAttractorProperties& props) {
                 return py::make_tuple(props.rigidBody, props.axes, props.target.p.x, props.target.p.y, props.target.p.z,
@@ -559,25 +612,29 @@ PYBIND11_MODULE(_dynamic_control, m)
 
     py::class_<DcD6JointProperties>(m, "D6JointProperties", "Creates  a general D6 Joint between two rigid Bodies.")
         .def(py::init<>())
-        .def_readwrite("name", &DcD6JointProperties::name, "Joint Name")
+        .def_readwrite("name", &DcD6JointProperties::name, "Joint Name (:obj:`str`)")
         .def_readwrite("body0", &DcD6JointProperties::body0, "parent body")
-        .def_readwrite("body1", &DcD6JointProperties::body1, "parent body")
+        .def_readwrite("body1", &DcD6JointProperties::body1, "child body")
         .def_readwrite(
             "axes", &DcD6JointProperties::axes,
             "Axes to set the attractor, using DcAxisFlags. Multiple axes can be selected using bitwise combination of each axis flag. if axis flag is set to zero, the attractor will be disabled and won't impact in solver computational complexity.")
-        .def_readwrite("pose0", &DcD6JointProperties::pose0, "Transform from body 0 to joint.")
-        .def_readwrite("pose1", &DcD6JointProperties::pose1, "Transform from body 1 to joint.")
-        .def_readwrite("stiffness", &DcD6JointProperties::stiffness,
-                       "Joint Stiffness. Stiffness value should be larger than the largest agent kinematic chain stifness")
-        .def_readwrite("damping", &DcD6JointProperties::damping, "Joint Damping.")
-        .def_readwrite("force_limit", &DcD6JointProperties::forceLimit, "Maximum force to be applied by drive.")
+        .def_readwrite("pose0", &DcD6JointProperties::pose0,
+                       "Transform from body 0 to joint. (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`)")
+        .def_readwrite("pose1", &DcD6JointProperties::pose1,
+                       "Transform from body 1 to joint. (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`)")
+        .def_readwrite(
+            "stiffness", &DcD6JointProperties::stiffness,
+            "Joint Stiffness. Stiffness value should be larger than the largest agent kinematic chain stifness (:obj:`float`)")
+        .def_readwrite("damping", &DcD6JointProperties::damping, "Joint Damping. (:obj:`float`)")
+        .def_readwrite("force_limit", &DcD6JointProperties::forceLimit, "Joint Breaking Force. (:obj:`float`)")
+        .def_readwrite("torque_limit", &DcD6JointProperties::torqueLimit, "Joint Breaking torque. (:obj:`float`)")
         .def(py::pickle(
             [](const DcD6JointProperties& props) {
-                return py::make_tuple(props.name, props.body0, props.body1, props.axes, props.pose0.p.x,
-                                      props.pose0.p.y, props.pose0.p.z, props.pose0.r.x, props.pose0.r.y,
-                                      props.pose0.r.z, props.pose0.r.w, props.pose1.p.x, props.pose1.p.y,
-                                      props.pose1.p.z, props.pose1.r.x, props.pose1.r.y, props.pose1.r.z,
-                                      props.pose1.r.w, props.stiffness, props.damping, props.forceLimit);
+                return py::make_tuple(props.name, props.body0, props.body1, props.axes, props.pose0.p.x, props.pose0.p.y,
+                                      props.pose0.p.z, props.pose0.r.x, props.pose0.r.y, props.pose0.r.z,
+                                      props.pose0.r.w, props.pose1.p.x, props.pose1.p.y, props.pose1.p.z,
+                                      props.pose1.r.x, props.pose1.r.y, props.pose1.r.z, props.pose1.r.w,
+                                      props.stiffness, props.damping, props.forceLimit, props.torqueLimit);
             },
             [](py::tuple t) {
                 DcD6JointProperties props;
@@ -594,6 +651,7 @@ PYBIND11_MODULE(_dynamic_control, m)
                 props.stiffness = t[18].cast<float>();
                 props.damping = t[19].cast<float>();
                 props.forceLimit = t[20].cast<float>();
+                props.torqueLimit = t[21].cast<float>();
                 return props;
             }));
 
@@ -609,16 +667,16 @@ PYBIND11_MODULE(_dynamic_control, m)
         DcDofProperties, type, hasLimits, lower, upper, driveMode, maxVelocity, maxEffort, stiffness, damping);
     PYBIND11_NUMPY_DTYPE(DcRigidBodyProperties, mass, moment);
 
-    defineInterfaceClass<DynamicControl>(
-        m, "DynamicControl", "acquire_dynamic_control_interface", "release_dynamic_control_interface")
-
-        .def("hello", wrapInterfaceFunction(&DynamicControl::hello))
+    defineInterfaceClass<DynamicControl>(m, "DynamicControl", "acquire_dynamic_control_interface",
+                                         "release_dynamic_control_interface",
+                                         "The following functions are provided on the dynamic control interface")
+        .def("hello", wrapInterfaceFunction(&DynamicControl::hello), "test function to makes sure interface is working")
 
         //.def("create_context", wrapInterfaceFunction(&DynamicControl::createContext),
         // py::return_value_policy::reference) .def("destroy_context",
         // wrapInterfaceFunction(&DynamicControl::destroyContext)) .def("update_context",
         // wrapInterfaceFunction(&DynamicControl::updateContext))
-        .def("is_simulating", wrapInterfaceFunction(&DynamicControl::isSimulating))
+        .def("is_simulating", wrapInterfaceFunction(&DynamicControl::isSimulating), "Return true if simulating")
         .def("get_rigid_body", wrapInterfaceFunction(&DynamicControl::getRigidBody))
         .def("get_joint", wrapInterfaceFunction(&DynamicControl::getJoint))
         .def("get_dof", wrapInterfaceFunction(&DynamicControl::getDof))
