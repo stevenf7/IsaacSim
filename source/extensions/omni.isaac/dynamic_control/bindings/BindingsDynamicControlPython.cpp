@@ -676,32 +676,71 @@ PYBIND11_MODULE(_dynamic_control, m)
         // py::return_value_policy::reference) .def("destroy_context",
         // wrapInterfaceFunction(&DynamicControl::destroyContext)) .def("update_context",
         // wrapInterfaceFunction(&DynamicControl::updateContext))
-        .def("is_simulating", wrapInterfaceFunction(&DynamicControl::isSimulating), "Return true if simulating")
-        .def("get_rigid_body", wrapInterfaceFunction(&DynamicControl::getRigidBody))
-        .def("get_joint", wrapInterfaceFunction(&DynamicControl::getJoint))
-        .def("get_dof", wrapInterfaceFunction(&DynamicControl::getDof))
-        .def("get_articulation", wrapInterfaceFunction(&DynamicControl::getArticulation))
-        .def("get_d6_joint", wrapInterfaceFunction(&DynamicControl::getD6Joint))
+        .def("is_simulating", wrapInterfaceFunction(&DynamicControl::isSimulating), R"pbdoc(
+            Returns:
+                bool: True if simulating, False otherwise)pbdoc")
+        .def("get_rigid_body", wrapInterfaceFunction(&DynamicControl::getRigidBody), R"pbdoc(
+            Returns:
+                handle: Handle to the rigid body, INVALID_HANDLE otherwise)pbdoc")
+        .def("get_joint", wrapInterfaceFunction(&DynamicControl::getJoint), R"pbdoc(
+            Returns:
+                handle: Handle to the joint, INVALID_HANDLE otherwise)pbdoc")
+        .def("get_dof", wrapInterfaceFunction(&DynamicControl::getDof), R"pbdoc(
+            Returns:
+                handle: Handle to the degree of freedom, INVALID_HANDLE otherwise
+        )pbdoc")
+        .def("get_articulation", wrapInterfaceFunction(&DynamicControl::getArticulation), R"pbdoc(
+            Returns:
+                handle: Handle to the articulation, INVALID_HANDLE otherwise
+        )pbdoc")
+        .def("get_d6_joint", wrapInterfaceFunction(&DynamicControl::getD6Joint), R"pbdoc(
+            Returns:
+                handle: Handle to the d6 joint, INVALID_HANDLE otherwise
+        )pbdoc")
 
-        .def("get_object", wrapInterfaceFunction(&DynamicControl::getObject))
-        .def("get_object_type", wrapInterfaceFunction(&DynamicControl::getObjectType))
+        .def("get_object", wrapInterfaceFunction(&DynamicControl::getObject), R"pbdoc(
+            Returns:
+                handle: Handle to the physics object defined by the usd path, INVALID_HANDLE otherwise
+        )pbdoc")
+        .def("get_object_type", wrapInterfaceFunction(&DynamicControl::getObjectType), R"pbdoc(\
+            Returns:
+                :obj:`omni.isaac.dynamic_control._dynamic_control.ObjectType`: Type of object returned by get_object)pbdoc")
         .def("get_object_type_name", wrapInterfaceFunction(&DynamicControl::getObjectTypeName),
-             py::return_value_policy::reference)
-        .def("peek_object_type", wrapInterfaceFunction(&DynamicControl::peekObjectType))
+             py::return_value_policy::reference, R"pbdoc(
+            Returns:
+                string: The object type name as a string
+             )pbdoc")
+        .def("peek_object_type", wrapInterfaceFunction(&DynamicControl::peekObjectType), R"pbdoc(
+            Returns:
+                string: The object type name as a string
+        )pbdoc")
 
-        .def("wake_up_rigid_body", wrapInterfaceFunction(&DynamicControl::wakeUpRigidBody))
-        .def("wake_up_articulation", wrapInterfaceFunction(&DynamicControl::wakeUpArticulation))
+        .def("wake_up_rigid_body", wrapInterfaceFunction(&DynamicControl::wakeUpRigidBody),
+             R"pbdoc(Enable physics for a rigid body)pbdoc")
+        .def("wake_up_articulation", wrapInterfaceFunction(&DynamicControl::wakeUpArticulation),
+             R"pbdoc(Enable physics for a articulation)pbdoc")
 
         .def("get_articulation_name", wrapInterfaceFunction(&DynamicControl::getArticulationName),
-             py::return_value_policy::reference)
+             py::return_value_policy::reference, R"pbdoc(
+                 Returns:
+                    string: The name of the articulation
+                    )pbdoc")
         .def("get_articulation_path", wrapInterfaceFunction(&DynamicControl::getArticulationPath),
-             py::return_value_policy::reference)
+             py::return_value_policy::reference, R"pbdoc(
+                 Returns:
+                    string: The path to the articulation
+                    )pbdoc")
 
-        .def("get_articulation_body_count", wrapInterfaceFunction(&DynamicControl::getArticulationBodyCount))
-        .def("get_articulation_body", wrapInterfaceFunction(&DynamicControl::getArticulationBody))
-        .def("find_articulation_body", wrapInterfaceFunction(&DynamicControl::findArticulationBody))
-        .def("find_articulation_body_index", wrapInterfaceFunction(&DynamicControl::findArticulationBodyIndex))
-        .def("get_articulation_root_body", wrapInterfaceFunction(&DynamicControl::getArticulationRootBody))
+        .def("get_articulation_body_count", wrapInterfaceFunction(&DynamicControl::getArticulationBodyCount),
+             "Gets number of rigid bodies for an actor")
+        .def("get_articulation_body", wrapInterfaceFunction(&DynamicControl::getArticulationBody),
+             "Gets actor rigid body given its index")
+        .def("find_articulation_body", wrapInterfaceFunction(&DynamicControl::findArticulationBody),
+             "Finds actor rigid body given its name")
+        .def("find_articulation_body_index", wrapInterfaceFunction(&DynamicControl::findArticulationBodyIndex),
+             "Find index in articulation body array, -1 on error")
+        .def("get_articulation_root_body", wrapInterfaceFunction(&DynamicControl::getArticulationRootBody),
+             "Get the root rigid body of an actor")
 
         .def("get_articulation_body_states",
              [](const DynamicControl* dc, DcHandle artHandle, DcStateFlags flags) -> py::object {
@@ -716,7 +755,8 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return py::none();
-             })
+             },
+             "Get array of an actor's rigid body states")
 
         .def("set_articulation_body_states",
              [](const DynamicControl* dc, DcHandle artHandle,
@@ -729,18 +769,24 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return false;
-             })
+             },
+             "Sets states for an actor's rigid bodies.")
 
-        .def("get_articulation_joint_count", wrapInterfaceFunction(&DynamicControl::getArticulationJointCount))
-        .def("get_articulation_joint", wrapInterfaceFunction(&DynamicControl::getArticulationJoint))
-        .def("find_articulation_joint", wrapInterfaceFunction(&DynamicControl::findArticulationJoint))
+        .def("get_articulation_joint_count", wrapInterfaceFunction(&DynamicControl::getArticulationJointCount),
+             "Get the number of joints in an articulation")
+        .def("get_articulation_joint", wrapInterfaceFunction(&DynamicControl::getArticulationJoint),
+             "Gets the joint from an articulation given an index ")
+        .def("find_articulation_joint", wrapInterfaceFunction(&DynamicControl::findArticulationJoint),
+             "Get the joint from an atriculation given their name")
 
-        .def("get_articulation_dof_count", wrapInterfaceFunction(&DynamicControl::getArticulationDofCount))
+        .def("get_articulation_dof_count", wrapInterfaceFunction(&DynamicControl::getArticulationDofCount),
+             "Gets number of degrees-of-freedom for an actor")
         .def("get_articulation_dof", wrapInterfaceFunction(&DynamicControl::getArticulationDof),
-             py::return_value_policy::reference)
+             py::return_value_policy::reference, "Gets actor degree-of-freedom given its index")
         .def("find_articulation_dof", wrapInterfaceFunction(&DynamicControl::findArticulationDof),
-             py::return_value_policy::reference)
-        .def("find_articulation_dof_index", wrapInterfaceFunction(&DynamicControl::findArticulationDofIndex))
+             py::return_value_policy::reference, "Finds actor degree-of-freedom given its name")
+        .def("find_articulation_dof_index", wrapInterfaceFunction(&DynamicControl::findArticulationDofIndex),
+             "get index in articulation DOF array, -1 on error")
 
         .def("get_articulation_dof_properties",
              [](const DynamicControl* dc, DcHandle artHandle) -> py::object {
@@ -757,7 +803,8 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return py::none();
-             })
+             },
+             "Get array of an actor's degree-of-freedom properties")
 
         .def("set_articulation_dof_properties",
              [](const DynamicControl* dc, DcHandle artHandle,
@@ -770,7 +817,8 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return false;
-             })
+             },
+             "Sets properties for an actor's degrees-of-freedom.")
 
         .def("get_articulation_dof_states",
              [](const DynamicControl* dc, DcHandle artHandle, DcStateFlags flags) -> py::object {
@@ -788,7 +836,8 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return py::none();
-             })
+             },
+             "Get array of an actor's degree-of-freedom states")
 
         .def("get_articulation_dof_state_derivatives",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<DcDofState, py::array::c_style>& states,
@@ -809,7 +858,8 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return py::none();
-             })
+             },
+             "Get array of an actor's degree-of-freedom state derivatives (dstate / dt)")
 
         .def("set_articulation_dof_states",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<DcDofState, py::array::c_style>& states,
@@ -822,7 +872,8 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return false;
-             })
+             },
+             "Sets states for an actor's degrees-of-freedom.")
 
         .def("set_articulation_dof_position_targets",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& targets) {
@@ -834,7 +885,8 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return false;
-             })
+             },
+             "Sets an actor's degree-of-freedom position targets.")
 
         .def("set_articulation_dof_velocity_targets",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& targets) {
@@ -846,7 +898,8 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return false;
-             })
+             },
+             "Sets an actor's degree-of-freedom velocity targets.")
 
         .def("apply_articulation_dof_efforts",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& efforts) {
@@ -858,36 +911,52 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return false;
-             })
+             },
+             "Applies efforts to an actor's degrees-of-freedom.")
 
         // rigid bodies
 
         .def("get_rigid_body_name", wrapInterfaceFunction(&DynamicControl::getRigidBodyName),
-             py::return_value_policy::reference)
+             py::return_value_policy::reference, "Gets the rigid body name given a handle")
         .def("get_rigid_body_path", wrapInterfaceFunction(&DynamicControl::getRigidBodyPath),
-             py::return_value_policy::reference)
-        .def("get_rigid_body_parent_joint", wrapInterfaceFunction(&DynamicControl::getRigidBodyParentJoint))
-        .def("get_rigid_body_child_joint_count", wrapInterfaceFunction(&DynamicControl::getRigidBodyChildJointCount))
-        .def("get_rigid_body_child_joint", wrapInterfaceFunction(&DynamicControl::getRigidBodyChildJoint))
-        .def("get_rigid_body_pose", wrapInterfaceFunction(&DynamicControl::getRigidBodyPose))
-        .def("set_rigid_body_pose", wrapInterfaceFunction(&DynamicControl::setRigidBodyPose))
-        .def("set_rigid_body_disable_gravity", wrapInterfaceFunction(&DynamicControl::setRigidBodyDisableGravity))
-        .def("set_rigid_body_disable_simulation", wrapInterfaceFunction(&DynamicControl::setRigidBodyDisableSimulation))
-        .def("get_rigid_body_linear_velocity", wrapInterfaceFunction(&DynamicControl::getRigidBodyLinearVelocity))
+             py::return_value_policy::reference, "Gets the path to a rigid body given its handle")
+        .def("get_rigid_body_parent_joint", wrapInterfaceFunction(&DynamicControl::getRigidBodyParentJoint),
+             "Gets parent joint to a rigid body")
+        .def("get_rigid_body_child_joint_count", wrapInterfaceFunction(&DynamicControl::getRigidBodyChildJointCount),
+             "Gets the number of joints that are children to this rigid body")
+        .def("get_rigid_body_child_joint", wrapInterfaceFunction(&DynamicControl::getRigidBodyChildJoint),
+             "Get the child joint of a rigid body given its index")
+        .def("get_rigid_body_pose", wrapInterfaceFunction(&DynamicControl::getRigidBodyPose),
+             "Get the pose of a rigid body")
+        .def("set_rigid_body_pose", wrapInterfaceFunction(&DynamicControl::setRigidBodyPose),
+             "Set the pose of a rigid body")
+        .def("set_rigid_body_disable_gravity", wrapInterfaceFunction(&DynamicControl::setRigidBodyDisableGravity),
+             "enables or disables the force of gravity from the given body")
+        .def("set_rigid_body_disable_simulation", wrapInterfaceFunction(&DynamicControl::setRigidBodyDisableSimulation),
+             "enables or disables Simulation of a given rigid body")
+        .def("get_rigid_body_linear_velocity", wrapInterfaceFunction(&DynamicControl::getRigidBodyLinearVelocity),
+             "Get the linear velocity of this rigid body in global coordinates")
         .def("get_rigid_body_local_linear_velocity",
-             wrapInterfaceFunction(&DynamicControl::getRigidBodyLocalLinearVelocity))
-        .def("set_rigid_body_linear_velocity", wrapInterfaceFunction(&DynamicControl::setRigidBodyLinearVelocity))
-        .def("get_rigid_body_angular_velocity", wrapInterfaceFunction(&DynamicControl::getRigidBodyAngularVelocity))
-        .def("set_rigid_body_angular_velocity", wrapInterfaceFunction(&DynamicControl::setRigidBodyAngularVelocity))
-        .def("apply_body_force", wrapInterfaceFunction(&DynamicControl::applyBodyForce))
+             wrapInterfaceFunction(&DynamicControl::getRigidBodyLocalLinearVelocity),
+             "Get the linear velocity of this rigid body in local coordinates")
+        .def("set_rigid_body_linear_velocity", wrapInterfaceFunction(&DynamicControl::setRigidBodyLinearVelocity),
+             "Set the linear velocity of the rigid body")
+        .def("get_rigid_body_angular_velocity", wrapInterfaceFunction(&DynamicControl::getRigidBodyAngularVelocity),
+             "Get the angular velocity of this rigid body")
+        .def("set_rigid_body_angular_velocity", wrapInterfaceFunction(&DynamicControl::setRigidBodyAngularVelocity),
+             "Set the angular velocity of this rigid body")
+        .def("apply_body_force", wrapInterfaceFunction(&DynamicControl::applyBodyForce),
+             "Apply a force to a rigid bopdy at a position")
         .def("get_relative_body_poses",
              [](const DynamicControl* dc, DcHandle parentHandle, const std::vector<DcHandle>& bodyHandles) {
                  const size_t numBodies = bodyHandles.size();
                  std::vector<DcTransform> outputTransforms(numBodies);
                  dc->getRelativeBodyPoses(parentHandle, numBodies, bodyHandles.data(), outputTransforms.data());
                  return outputTransforms;
-             })
-        .def("get_rigid_body_properties", wrapInterfaceFunction(&DynamicControl::getRigidBodyProperties))
+             },
+             "given a list of body handles, return poses relative to the parent")
+        .def("get_rigid_body_properties", wrapInterfaceFunction(&DynamicControl::getRigidBodyProperties),
+             "Get Properties for a rigid body")
         .def("get_rigid_body_properties",
              [](const DynamicControl* dc, DcHandle attHandle) -> py::object {
                  if (dc)
@@ -899,46 +968,73 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return py::none();
-             })
+             },
+             "Get Properties for a rigid body")
         // joints
 
-        .def("get_joint_name", wrapInterfaceFunction(&DynamicControl::getJointName), py::return_value_policy::reference)
-        .def("get_joint_path", wrapInterfaceFunction(&DynamicControl::getJointPath), py::return_value_policy::reference)
-        .def("get_joint_type", wrapInterfaceFunction(&DynamicControl::getJointType))
-        .def("get_joint_dof_count", wrapInterfaceFunction(&DynamicControl::getJointDofCount))
-        .def("get_joint_dof", wrapInterfaceFunction(&DynamicControl::getJointDof))
-        .def("get_joint_parent_body", wrapInterfaceFunction(&DynamicControl::getJointParentBody))
-        .def("get_joint_child_body", wrapInterfaceFunction(&DynamicControl::getJointChildBody))
+        .def("get_joint_name", wrapInterfaceFunction(&DynamicControl::getJointName), py::return_value_policy::reference,
+             "Get name of joint")
+        .def("get_joint_path", wrapInterfaceFunction(&DynamicControl::getJointPath), py::return_value_policy::reference,
+             "Get path for joint")
+        .def("get_joint_type", wrapInterfaceFunction(&DynamicControl::getJointType), "Get joint type")
+        .def("get_joint_dof_count", wrapInterfaceFunction(&DynamicControl::getJointDofCount),
+             "Get number of degrees of freedon constrained by joint")
+        .def("get_joint_dof", wrapInterfaceFunction(&DynamicControl::getJointDof),
+             "Get a degree of freedom for joint give its index")
+        .def("get_joint_parent_body", wrapInterfaceFunction(&DynamicControl::getJointParentBody),
+             "Get parent rigid body for joint")
+        .def("get_joint_child_body", wrapInterfaceFunction(&DynamicControl::getJointChildBody),
+             "Get child rigid body for joint")
 
         // dofs
 
-        .def("get_dof_name", wrapInterfaceFunction(&DynamicControl::getDofName), py::return_value_policy::reference)
-        .def("get_dof_path", wrapInterfaceFunction(&DynamicControl::getDofPath), py::return_value_policy::reference)
-        .def("get_dof_type", wrapInterfaceFunction(&DynamicControl::getDofType))
-        .def("get_dof_joint", wrapInterfaceFunction(&DynamicControl::getDofJoint))
-        .def("get_dof_parent_body", wrapInterfaceFunction(&DynamicControl::getDofParentBody))
-        .def("get_dof_child_body", wrapInterfaceFunction(&DynamicControl::getDofChildBody))
-        .def("get_dof_state", wrapInterfaceFunction(&DynamicControl::getDofState))
-        .def("set_dof_state", wrapInterfaceFunction(&DynamicControl::setDofState))
-        .def("get_dof_position", wrapInterfaceFunction(&DynamicControl::getDofPosition))
-        .def("set_dof_position", wrapInterfaceFunction(&DynamicControl::setDofPosition))
-        .def("get_dof_velocity", wrapInterfaceFunction(&DynamicControl::getDofVelocity))
-        .def("set_dof_velocity", wrapInterfaceFunction(&DynamicControl::setDofVelocity))
-        .def("get_dof_properties", wrapInterfaceFunction(&DynamicControl::getDofProperties))
-        .def("set_dof_properties", wrapInterfaceFunction(&DynamicControl::setDofProperties))
-        .def("set_dof_position_target", wrapInterfaceFunction(&DynamicControl::setDofPositionTarget))
-        .def("set_dof_velocity_target", wrapInterfaceFunction(&DynamicControl::setDofVelocityTarget))
-        .def("get_dof_position_target", wrapInterfaceFunction(&DynamicControl::getDofPositionTarget))
-        .def("get_dof_velocity_target", wrapInterfaceFunction(&DynamicControl::getDofVelocityTarget))
-        .def("apply_dof_effort", wrapInterfaceFunction(&DynamicControl::applyDofEffort))
+        .def("get_dof_name", wrapInterfaceFunction(&DynamicControl::getDofName), py::return_value_policy::reference,
+             "Get Name of this degree of freedom")
+        .def("get_dof_path", wrapInterfaceFunction(&DynamicControl::getDofPath), py::return_value_policy::reference,
+             "Get path to degree of freedom")
+        .def("get_dof_type", wrapInterfaceFunction(&DynamicControl::getDofType), "Get type of degree of freedom")
+        .def("get_dof_joint", wrapInterfaceFunction(&DynamicControl::getDofJoint),
+             "Get joint associated with the degree of freedom")
+        .def("get_dof_parent_body", wrapInterfaceFunction(&DynamicControl::getDofParentBody),
+             "Get parent rigid body for degree of freedom")
+        .def("get_dof_child_body", wrapInterfaceFunction(&DynamicControl::getDofChildBody),
+             "Get child rigid body for degree of freedom")
+        .def("get_dof_state", wrapInterfaceFunction(&DynamicControl::getDofState),
+             "Get current state for degree of freedom")
+        .def("set_dof_state", wrapInterfaceFunction(&DynamicControl::setDofState), "Set degree of freedom state")
+        .def("get_dof_position", wrapInterfaceFunction(&DynamicControl::getDofPosition),
+             "Get position/rotation for this degree of freedom")
+        .def("set_dof_position", wrapInterfaceFunction(&DynamicControl::setDofPosition),
+             "Set position/rotation for this degree of freedom")
+        .def("get_dof_velocity", wrapInterfaceFunction(&DynamicControl::getDofVelocity),
+             "Get linear/angular velocity of degree of freedom")
+        .def("set_dof_velocity", wrapInterfaceFunction(&DynamicControl::setDofVelocity),
+             "Set linear angular velocity of degree of freedom")
+        .def("get_dof_properties", wrapInterfaceFunction(&DynamicControl::getDofProperties),
+             "Get degree of freedom properties")
+        .def("set_dof_properties", wrapInterfaceFunction(&DynamicControl::setDofProperties),
+             "Set degree of freedom properties")
+        .def("set_dof_position_target", wrapInterfaceFunction(&DynamicControl::setDofPositionTarget),
+             "Set position target for degree of freedom")
+        .def("set_dof_velocity_target", wrapInterfaceFunction(&DynamicControl::setDofVelocityTarget),
+             "Set velocity target for degree of freedom")
+        .def("get_dof_position_target", wrapInterfaceFunction(&DynamicControl::getDofPositionTarget),
+             "Get position target for degree of freedom")
+        .def("get_dof_velocity_target", wrapInterfaceFunction(&DynamicControl::getDofVelocityTarget),
+             "Get velocity target for degree of freedom")
+        .def("apply_dof_effort", wrapInterfaceFunction(&DynamicControl::applyDofEffort),
+             "Apply effort to degree of freedom")
 
         // attractors
 
         .def("create_rigid_body_attractor", wrapInterfaceFunction(&DynamicControl::createRigidBodyAttractor),
-             py::return_value_policy::reference)
-        .def("destroy_rigid_body_attractor", wrapInterfaceFunction(&DynamicControl::destroyRigidBodyAttractor))
-        .def("set_attractor_properties", wrapInterfaceFunction(&DynamicControl::setAttractorProperties))
-        .def("set_attractor_target", wrapInterfaceFunction(&DynamicControl::setAttractorTarget))
+             py::return_value_policy::reference, "Greate an attractor for ridig body")
+        .def("destroy_rigid_body_attractor", wrapInterfaceFunction(&DynamicControl::destroyRigidBodyAttractor),
+             "Destroy attractor")
+        .def("set_attractor_properties", wrapInterfaceFunction(&DynamicControl::setAttractorProperties),
+             "Set properties for this attractor")
+        .def("set_attractor_target", wrapInterfaceFunction(&DynamicControl::setAttractorTarget),
+             "Set target pose for attractor")
         .def("get_attractor_properties",
              [](const DynamicControl* dc, DcHandle attHandle) -> py::object {
                  if (dc)
@@ -950,13 +1046,17 @@ PYBIND11_MODULE(_dynamic_control, m)
                      }
                  }
                  return py::none();
-             })
+             },
+             "Get properties for attractor")
 
-        .def("create_d6_joint", wrapInterfaceFunction(&DynamicControl::createD6Joint), py::return_value_policy::reference)
-        .def("destroy_d6_joint", wrapInterfaceFunction(&DynamicControl::destroyD6Joint))
-        .def("set_d6_joint_properties", wrapInterfaceFunction(&DynamicControl::setD6JointProperties))
+        .def("create_d6_joint", wrapInterfaceFunction(&DynamicControl::createD6Joint),
+             py::return_value_policy::reference, "Create a D6 joint")
+        .def("destroy_d6_joint", wrapInterfaceFunction(&DynamicControl::destroyD6Joint), "Destroy D6 joint")
+        .def("set_d6_joint_properties", wrapInterfaceFunction(&DynamicControl::setD6JointProperties),
+             "Modifies properties of the selected joint.")
 
-        .def("set_origin_offset", wrapInterfaceFunction(&DynamicControl::setOriginOffset))
+        .def("set_origin_offset", wrapInterfaceFunction(&DynamicControl::setOriginOffset),
+             "Offset origin for a rigid body")
 
         ;
 }
