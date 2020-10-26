@@ -7,7 +7,7 @@ omni.isaac.lidar: LIDAR Simulation
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: 
+    :exclude-members: LidarVisualizer
 
 Generated USD Schema API
 ========================
