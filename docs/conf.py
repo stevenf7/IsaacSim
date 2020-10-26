@@ -42,6 +42,13 @@ autodoc_mock_imports = ["PIL", "matplotlib", "torch"]
 
 autoclass_content = "both"
 
+napoleon_use_rtype = False
+# napoleon_type_aliases = {
+#     "CustomType": "mypackage.CustomType",
+#     "dict-like": ":term:`dict-like <mapping>`",
+# }
+
+
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 
 # Add any paths that contain templates here, relative to this directory.
@@ -87,6 +94,8 @@ html_theme_options = {
 html_static_path = ["pk_scripts.js"]
 
 html_last_updated_fmt = ""
+
+html_show_sourcelink = False
 
 
 def setup(app):
