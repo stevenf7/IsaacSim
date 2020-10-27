@@ -40,12 +40,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.dr_helper = DomainRandomization()
         self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
-        self.asset_path = nucleus_server + "/Isaac"
+        self.result = True
         if scenario_path is None:
+            self.result, nucleus_server = find_nucleus_server()
+            if self.result is False:
+                carb.log_error("Could not find nucleus server with /Isaac folder")
+                return
+            self.asset_path = nucleus_server + "/Isaac"
             scenario_path = self.asset_path + "/Samples/Synthetic_Data/Stage/warehouse_with_sensors.usd"
         self.scenario_path = scenario_path
         self.data_writer = None
@@ -200,11 +201,12 @@ if __name__ == "__main__":
 
     dataset = RandomScenario(args.scenario)
 
-    # Iterate through dataset and visualize the output
-    print("Loading materials. Will generate data soon...")
-    for image in dataset:
-        print("ID: ", dataset.cur_idx)
-        if dataset.cur_idx == args.num_frames:
-            break
-        if dataset.exiting:
-            break
+    if dataset.result:
+        # Iterate through dataset and visualize the output
+        print("Loading materials. Will generate data soon...")
+        for image in dataset:
+            print("ID: ", dataset.cur_idx)
+            if dataset.cur_idx == args.num_frames:
+                break
+            if dataset.exiting:
+                break
