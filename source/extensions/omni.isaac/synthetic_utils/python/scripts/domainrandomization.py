@@ -240,7 +240,7 @@ class DomainRandomization:
 
         args:
             prim_paths (list(str)): List of path of prims to be used for randomization.
-            enable_project_uvw (bool, optional): Enable to all UVW texture mapping.
+            enable_project_uvw (bool, optional): Enable it to allow UVW texture mapping.
             texture_list (list(str), optional): List of texture files to be used for randomization.
             ignored_class_list (list(str), optional): List of class labels. Prim paths that contain these class labels will be ignored during randomization.
             grouped_class_list (list(str), optional): List of class labels. Prim paths that contain these class labels will be grouped with similar textures during randomization. 
