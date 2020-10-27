@@ -60,7 +60,30 @@ PYBIND11_MODULE(_urdf, m)
     using namespace carb;
     using namespace omni::isaac::urdf;
 
-    m.doc() = "Isaac URDF Utils bindings";
+    m.doc() = R"pbdoc(
+        This extension provides an interface to the URDF importer. 
+        
+        Example:
+            Setup the configuration parameters before importing.
+            Files must be parsed before imported.
+
+            ::
+
+                from omni.isaac.urdf import _urdf
+                urdf_interface = _urdf.acquire_urdf_interface()
+
+                # setup config params
+                import_config = _urdf.ImportConfig()
+                import_config.merge_fixed_joints = False
+                import_config.fix_base = True
+
+                # parse and import file
+                imported_robot = urdf_interface.parse_urdf(robot_path, filename, import_config)
+                urdf_interface.import_robot(robot_path, filename, imported_robot, import_config)
+            
+        
+        Refer to the sample documentation for more examples and usage
+                )pbdoc";
 
 
     py::class_<ImportConfig>(m, "ImportConfig")
@@ -280,8 +303,50 @@ PYBIND11_MODULE(_urdf, m)
 
 
     defineInterfaceClass<Urdf>(m, "Urdf", "acquire_urdf_interface", "release_urdf_interface")
-        .def("parse_urdf", wrapInterfaceFunction(&Urdf::parseUrdf))
-        .def("import_robot", wrapInterfaceFunction(&Urdf::importRobot))
-        .def("get_kinematic_chain", wrapInterfaceFunction(&Urdf::getKinematicChain));
+        .def("parse_urdf", wrapInterfaceFunction(&Urdf::parseUrdf),
+             R"pbdoc(
+                Parse URDF file into the internal data structure, which is displayed in the importer window for inspection.
+
+                Args: 
+                    arg0 (:obj:`str`): The absolute path to where the urdf file is
+
+                    arg1 (:obj:`str`): The name of the urdf file
+
+                    arg2 (:obj:`omni.isaac.urdf._urdf.ImportConfig`): Import configuration parameters 
+                
+                Returns:
+                    :obj:`omni.isaac.urdf._urdf.UrdfRobot`: Parsed URDF stored in an internal structure.
+
+                )pbdoc")
+
+        .def("import_robot", wrapInterfaceFunction(&Urdf::importRobot),
+             R"pbdoc(
+                Importing the robot, from the already parsed URDF file. 
+
+                Args: 
+                    arg0 (:obj:`str`): The absolute path to where the urdf file is
+
+                    arg1 (:obj:`str`): The name of the urdf file
+
+                    arg2 (:obj:`omni.isaac.urdf._urdf.UrdfRobot`): The parsed URDF file, the output from :obj:`parse_urdf`
+
+                    arg3 (:obj:`omni.isaac.urdf._urdf.ImportConfig`): Import configuration parameters 
+                
+                Returns:
+                    :obj:`str`: Path to the robot on the USD stage. 
+
+                )pbdoc")
+
+        .def("get_kinematic_chain", wrapInterfaceFunction(&Urdf::getKinematicChain),
+             R"pbdoc(
+                Get the kinematic chain of the robot. Mostly used for graphic display of the kinematic tree.
+
+                Args: 
+                    arg0 (:obj:`omni.isaac.urdf._urdf.UrdfRobot`): The parsed URDF, the output from :obj:`parse_urdf`
+
+                Returns:
+                    :obj:`dict`: A dictionary with information regarding the parent-child relationship between all the links and joints
+
+                )pbdoc");
 }
 }
