@@ -6,6 +6,24 @@ import omni.usd
 
 
 class CreateColorComponentCommand(omni.kit.commands.Command):
+    """Commands class to create a color randomization component.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "CreateColorComponentCommand",
+                prim_paths=["/World/Cube", "/World/Cube1"],
+                first_color_range=(0.0, 0.0, 0.0),
+                second_color_range=(1.0, 1.0, 1.0),
+                roughness_range=(0.0, 1.0),
+                metallic_range=(0.0, 1.0),
+                duration=1.0,
+                include_children=False,
+            )
+    """
+
     def __init__(
         self,
         path=None,
@@ -56,6 +74,22 @@ class CreateColorComponentCommand(omni.kit.commands.Command):
 
 
 class CreateMovementComponentCommand(omni.kit.commands.Command):
+    """Commands class to create a movement randomization component.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "CreateMovementComponentCommand",
+                prim_paths=["/World/Cube", "/World/Cube1"],
+                min_range=(0.0, 0.0, 0.0),
+                max_range=(100.0, 100.0, 100.0),
+                duration=1.0,
+                include_children=False,
+            )
+    """
+
     def __init__(
         self,
         path=None,
@@ -115,6 +149,22 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
 
 
 class CreateRotationComponentCommand(omni.kit.commands.Command):
+    """Commands class to create a rotation randomization component.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "CreateRotationComponentCommand",
+                prim_paths=["/World/Cube", "/World/Cube1"],
+                min_range=(0.0, 0.0, 0.0),
+                max_range=(360.0, 360.0, 360.0),
+                duration=1.0,
+                include_children=False,
+            )
+    """
+
     def __init__(
         self,
         path=None,
@@ -158,6 +208,22 @@ class CreateRotationComponentCommand(omni.kit.commands.Command):
 
 
 class CreateScaleComponentCommand(omni.kit.commands.Command):
+    """Commands class to create a scale randomization component.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "CreateScaleComponentCommand",
+                prim_paths=["/World/Cube", "/World/Cube1"],
+                min_range=(1.0, 1.0, 1.0),
+                max_range=(5.0, 5.0, 5.0),
+                duration=1.0,
+                include_children=False,
+            )
+    """
+
     def __init__(
         self,
         path=None,
@@ -202,6 +268,25 @@ class CreateScaleComponentCommand(omni.kit.commands.Command):
 
 
 class CreateLightComponentCommand(omni.kit.commands.Command):
+    """Commands class to create a light randomization component.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "CreateLightComponentCommand",
+                light_paths=["/World/RectLight"],
+                first_color_range=(0.9, 0.9, 0.9),
+                second_color_range=(1.0, 1.0, 1.0),
+                intensity_range=(40000.0, 70000.0),
+                temperature_range=(1500.0, 6500.0),
+                enable_temperature=True,
+                duration=1.0,
+                include_children=False,
+            )
+    """
+
     def __init__(
         self,
         path=None,
@@ -256,6 +341,26 @@ class CreateLightComponentCommand(omni.kit.commands.Command):
 
 
 class CreateTextureComponentCommand(omni.kit.commands.Command):
+    """Commands class to create a texture randomization component.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            texture_list = [
+                <server_path> + "/texture1.png",
+                <server_path> + "/texture2.png",
+            ]
+            result, prim = omni.kit.commands.execute(
+                "CreateTextureComponentCommand",
+                prim_paths=["/World/Room"],
+                enable_project_uvw=False,
+                texture_list=texture_list,
+                duration=1.0,
+                include_children=True,
+            )
+    """
+
     def __init__(
         self,
         path=None,
@@ -304,6 +409,25 @@ class CreateTextureComponentCommand(omni.kit.commands.Command):
 
 
 class CreateMaterialComponentCommand(omni.kit.commands.Command):
+    """Commands class to create a material randomization component.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            material_list = [
+                <server_path> + "/material1.mdl",
+                <server_path> + "/material2.mdl",
+            ]
+            result, prim = omni.kit.commands.execute(
+                "CreateMaterialComponentCommand",
+                prim_paths=["/World/Room"],
+                material_list=material_list,
+                duration=1.0,
+                include_children=True,
+            )
+    """
+
     def __init__(
         self,
         path=None,
@@ -356,6 +480,23 @@ class CreateMaterialComponentCommand(omni.kit.commands.Command):
 
 
 class CreateMeshComponentCommand(omni.kit.commands.Command):
+    """Commands class to create a mesh randomization component.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            mesh_list = [
+                <server_path> + "/mesh1.mdl",
+                <server_path> + "/mesh2.mdl",
+            ]
+            result, prim = omni.kit.commands.execute(
+                "CreateMeshComponentCommand",
+                mesh_list=mesh_list,
+                mesh_range=[3, 5],
+            )
+    """
+
     def __init__(
         self,
         path=None,
@@ -396,6 +537,20 @@ class CreateMeshComponentCommand(omni.kit.commands.Command):
 
 
 class CreateVisibilityComponentCommand(omni.kit.commands.Command):
+    """Commands class to create a visibility randomization component.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "CreateVisibilityComponentCommand",
+                prim_paths=["/World/Cube", "/World/Cube1", "/World/Cube2", "/World/Cube3", "/World/Cube4"],
+                num_visible_range=[1, 3],
+                duration=1.0,
+            )
+    """
+
     def __init__(
         self, path=None, prim_paths=[], num_visible_range=(1, 1), duration=0.0, include_children=False, seed=12345
     ):
