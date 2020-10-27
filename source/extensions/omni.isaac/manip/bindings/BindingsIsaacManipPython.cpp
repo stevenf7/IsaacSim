@@ -75,16 +75,15 @@ PYBIND11_MODULE(_manip, m)
                 Args: 
                     arg0 (:obj:`arg0: Callable[[int, float], None]`): The callback function, where the input arguments of this function is an ``int`` representing an axis of the gamepad and a ``float`` value detected on that axis".
 
-                )pbdoc"
-             )
+                )pbdoc")
 
-        .def("unbind_gamepad", [](Input* iface) {
-            s_gamepad_binding_fn = nullptr;
-            iface->unbind_gamepad();
-        },
-        R"pbdoc(
+        .def("unbind_gamepad",
+             [](Input* iface) {
+                 s_gamepad_binding_fn = nullptr;
+                 iface->unbind_gamepad();
+             },
+             R"pbdoc(
             Unbind gamepad, called to release gamepad connection properly.
-            )pbdoc"
-        );
+            )pbdoc");
 }
 }
