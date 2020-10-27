@@ -43,14 +43,13 @@ class OmniKitHelper:
 Launches and configures OmniKit and exposes useful functions.
 
     Typical usage example:
-
-    config = {'width': 800, 'height': 600, 'renderer': 'PathTracing'}
-
-    kit = OmniKitHelper(config)   # Start omniverse kit
-
-    # <Code to generate or load a scene>
     
-    kit.update()    # Render a single frame
+    ::
+
+        config = {'width': 800, 'height': 600, 'renderer': 'PathTracing'}
+        kit = OmniKitHelper(config)   # Start omniverse kit
+        # <Code to generate or load a scene>
+        kit.update()    # Render a single frame
 """
 
     def __init__(self, config=DEFAULT_CONFIG):
