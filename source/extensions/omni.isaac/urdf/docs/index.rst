@@ -1,10 +1,13 @@
 omni.isaac.urdf: URDF Import Extension
 ######################################
 
-.. automodule:: omni.isaac.urdf._urdf
-    :platform: Windows-x86_64, Linux-x86_64
+.. autoclass:: omni.isaac.urdf._urdf.Urdf
     :members:
     :undoc-members:
-    :show-inheritance:
-    :imported-members:
-    :exclude-members: 
+    :no-show-inheritance:
+
+.. autoclass:: omni.isaac.urdf._urdf.ImportConfig
+    :members:
+    :undoc-members:
+    :no-show-inheritance:
+

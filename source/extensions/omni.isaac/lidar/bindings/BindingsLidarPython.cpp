@@ -115,7 +115,22 @@ PYBIND11_MODULE(_lidar, m)
     using namespace carb;
     using namespace omni::isaac::lidar;
 
-    m.doc() = "Isaac Lidar bindings";
+    m.doc() = R"pbdoc(
+        This extension provides an interface to a `omni.isaac.LidarSchema.Lidar` prim defined in a stage. 
+        
+        Example:
+            To use this interface you must first call the acquire interface function.
+            It is also recommended to use the `is_lidar` function to check if a given USD path is valid
+            
+            ::
+
+                import omni.isaac.lidar._lidar.acquire_lidar_interface
+                lidar_interface = acquire_lidar_interface()
+                if lidar_interface.is_lidar("/World/Lidar"):
+                    print("lidar is valid")
+        
+        Refer to the sample documentation for more examples and usage
+                )pbdoc";
 
     auto lidar_visualizer = py::class_<LidarVisualizer>(m, "LidarVisualizer")
                                 .def(py::init<const std::string&, const carb::Float3&, const float>())
@@ -124,10 +139,25 @@ PYBIND11_MODULE(_lidar, m)
 
     defineInterfaceClass<LidarInterface>(m, "LidarInterface", "acquire_lidar_interface", "release_lidar_interface")
         .def("get_num_cols", wrapInterfaceFunction(&LidarInterface::getNumCols),
-             "get the number of vertical scans of the lidar")
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to lidar prim as a string
+                
+                Returns:
+                    :obj:`int`: The number of vertical scans of the lidar, 0 if error occurred)pbdoc")
         .def("get_num_rows", wrapInterfaceFunction(&LidarInterface::getNumRows),
-             "get the number of horizontal scans of the lidar")
-        .def("get_num_cols_ticked", wrapInterfaceFunction(&LidarInterface::getNumColsTicked))
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to lidar prim as a string
+                
+                Returns:
+                     :obj:`int`: The number of horizontal scans of the lidar, 0 if error occurred)pbdoc")
+        .def("get_num_cols_ticked", wrapInterfaceFunction(&LidarInterface::getNumColsTicked), R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to lidar prim as a string
+                
+                Returns:
+                     :obj:`int`: The number of vertical scans the lidar completed in the last simulation step, 0 if error occurred. Generally only useful for lidars with a non-zero rotation speed)pbdoc")
 
         .def("get_depth_data",
              [](const LidarInterface* li, const char* lidarPath) -> py::object {
@@ -139,7 +169,12 @@ PYBIND11_MODULE(_lidar, m)
                  return py::array(py::buffer_info(data, sizeof(uint16_t), py::format_descriptor<uint16_t>::value, 2,
                                                   { numColsTicked, rows }, { sizeof(uint16_t) * rows, sizeof(uint16_t) }));
              },
-             "get the distance from the lidar to the hit for each beam in uint16 and scaled by min and max distance")
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to lidar prim as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The distance from the lidar to the hit for each beam in uint16 and scaled by min and max distance)pbdoc")
 
         .def("get_linear_depth_data",
              [](const LidarInterface* li, const char* lidarPath) -> py::object {
@@ -151,7 +186,12 @@ PYBIND11_MODULE(_lidar, m)
                  return py::array(py::buffer_info(data, sizeof(float), py::format_descriptor<float>::value, 2,
                                                   { numColsTicked, rows }, { sizeof(float) * rows, sizeof(float) }));
              },
-             "get the distance from the lidar to the hit for each beam in meters")
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to lidar prim as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The distance from the lidar to the hit for each beam in meters)pbdoc")
 
 
         .def("get_intensity_data",
@@ -164,7 +204,12 @@ PYBIND11_MODULE(_lidar, m)
                  return py::array(py::buffer_info(data, sizeof(uint8_t), py::format_descriptor<uint8_t>::value, 2,
                                                   { numColsTicked, rows }, { sizeof(uint8_t) * rows, sizeof(uint8_t) }));
              },
-             "get the observed specular intensity of each beam")
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to lidar prim as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The observed specular intensity of each beam, 255 if hit, 0 if not)pbdoc")
 
         .def("get_zenith_data",
              [](const LidarInterface* li, const char* lidarPath) -> py::object {
@@ -175,7 +220,12 @@ PYBIND11_MODULE(_lidar, m)
                  return py::array(py::buffer_info(
                      data, sizeof(float), py::format_descriptor<float>::value, 1, { rows }, { sizeof(float) }));
              },
-             "get the zenith angle in radians for each row")
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to lidar prim as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The zenith angle in radians for each row)pbdoc")
 
         .def("get_azimuth_data",
              [](const LidarInterface* li, const char* lidarPath) -> py::object {
@@ -186,9 +236,19 @@ PYBIND11_MODULE(_lidar, m)
                  return py::array(py::buffer_info(data, sizeof(float), py::format_descriptor<float>::value, 1,
                                                   { numColsTicked }, { sizeof(float) }));
              },
-             "get the azimuth data for each column")
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to lidar prim as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The azimuth angle in radians for each column)pbdoc")
 
         .def("is_lidar", wrapInterfaceFunction(&LidarInterface::isLidar),
-             "check a lidar sensor exists at the given path");
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to lidar prim as a string
+                
+                Returns:
+                :obj:`bool`: True if a lidar exists at the give path, False otherwise)pbdoc");
 }
 }

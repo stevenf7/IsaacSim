@@ -23,9 +23,11 @@ class DomainRandomization:
         self.dr = _dr.acquire_dr_interface()
 
     def randomize_once(self):
+        """Randomizes the scene once. This is mainly executed while in manual mode."""
         self.dr.randomize_once()
 
     def toggle_manual_mode(self):
+        """Toggles mode between manual and non-manual. In manual mode, user can control when scene randomization occur whereas in non-manual mode scene randomization is controlled via the duration parameter in various DR components."""
         self.dr.toggle_manual_mode()
 
     def create_color_comp(
@@ -39,7 +41,18 @@ class DomainRandomization:
         include_children=False,
         seed=12345,
     ):
-        """Create a color randomization component"""
+        """Create a color randomization component
+
+        args:
+            prim_paths (list(str)): List of path of prims to be used for randomization.
+            first_color_range (tuple(float, float, float), optional): Specify the minimum R, G, B values. The scale is from 0 to 1.
+            second_color_range (tuple(float, float, float), optional): Specify the maximum R, G, B values. The scale is from 0 to 1.
+            roughness_range (tuple(float, float), optional): Specify the range for roughness property. The scale is from 0 to 1.
+            metallic_range (tuple(float, float), optional): Specify the range for metallic property. The scale is from 0 to 1.
+            duration (float, optional):  Time interval in seconds between subsequent randomization.
+            include_children (bool, optional): Enable if only the child prims need to be included for randomization.
+            seed (int, optional): Value to initialize the pseudorandom number generator.
+        """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/color_component", False)
@@ -68,7 +81,18 @@ class DomainRandomization:
         include_children=False,
         seed=12345,
     ):
-        """Create a movement randomization component, if target position or paths are specified the object will point towards that target"""
+        """Create a movement randomization component, if target position or paths are specified the object will point towards that target
+
+        args:
+            prim_paths (list(str)): List of path of prims to be used for randomization.
+            min_range (tuple(float, float, float), optional): Specify the minimum X, Y, Z values for movement along all three axes.
+            max_range (tuple(float, float, float), optional): Specify the maximum X, Y, Z values for movement along all three axes.
+            target_position (tuple(float, float, float), optional): If target prim is not specified, this value is used as the target to look at, if a prim is specified this acts like an offset.
+            target_paths (list(str), optional): Specify path of the target prim to look at. If multiple target paths are specified, the average of all of their prim's location is used to determine target location to look at.
+            duration (float, optional):  Time interval in seconds between subsequent randomization.
+            include_children (bool, optional): Enable if only the child prims need to be included for randomization.
+            seed (int, optional): Value to initialize the pseudorandom number generator.
+        """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/movement_component", False)
@@ -95,7 +119,16 @@ class DomainRandomization:
         include_children=False,
         seed=12345,
     ):
-        """Create a rotation randomization component"""
+        """Create a rotation randomization component
+
+        args:
+            prim_paths (list(str)): List of path of prims to be used for randomization.
+            min_range (tuple(float, float, float), optional): Specify the minimum X, Y, Z values for rotation along all three axes.
+            max_range (tuple(float, float, float), optional): Specify the maximum X, Y, Z values for rotation along all three axes.
+            duration (float, optional):  Time interval in seconds between subsequent randomization.
+            include_children (bool, optional): Enable if only the child prims need to be included for randomization.
+            seed (int, optional): Value to initialize the pseudorandom number generator.
+        """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/rotation_component", False)
@@ -121,7 +154,17 @@ class DomainRandomization:
         include_children=False,
         seed=12345,
     ):
-        """Create a scale randomization component"""
+        """Create a scale randomization component
+
+        args:
+            prim_paths (list(str)): List of path of prims to be used for randomization.
+            min_range (tuple(float, float, float), optional): Specify the minimum X, Y, Z values for scale along all three axes.
+            max_range (tuple(float, float, float), optional): Specify the maximum X, Y, Z values for scale along all three axes.
+            uniform_scaling (bool, optional): Enable it to scale uniformly along all three axes.
+            duration (float, optional):  Time interval in seconds between subsequent randomization.
+            include_children (bool, optional): Enable if only the child prims need to be included for randomization.
+            seed (int, optional): Value to initialize the pseudorandom number generator.
+        """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/scale_component", False)
@@ -150,7 +193,19 @@ class DomainRandomization:
         include_children=False,
         seed=12345,
     ):
-        """Create a light randomization component"""
+        """Create a light randomization component
+
+        args:
+            prim_paths (list(str)): List of path of prims to be used for randomization.
+            first_color_range (tuple(float, float, float), optional): Specify the minimum R, G, B values. The scale is from 0 to 1.
+            second_color_range (tuple(float, float, float), optional): Specify the maximum R, G, B values. The scale is from 0 to 1.
+            intensity_range (tuple(float, float), optional): Specify the range for intensity property.
+            temperature_range (tuple(float, float), optional): Specify the range for temperature property.
+            enable_temperature (bool, optional): Enable if temperature property needs to randomized.
+            duration (float, optional):  Time interval in seconds between subsequent randomization.
+            include_children (bool, optional): Enable if only the child prims need to be included for randomization.
+            seed (int, optional): Value to initialize the pseudorandom number generator.
+        """
 
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
@@ -181,7 +236,18 @@ class DomainRandomization:
         include_children=False,
         seed=12345,
     ):
-        """Create a texture randomization component"""
+        """Create a texture randomization component
+
+        args:
+            prim_paths (list(str)): List of path of prims to be used for randomization.
+            enable_project_uvw (bool, optional): Enable it to allow UVW texture mapping.
+            texture_list (list(str), optional): List of texture files to be used for randomization.
+            ignored_class_list (list(str), optional): List of class labels. Prim paths that contain these class labels will be ignored during randomization.
+            grouped_class_list (list(str), optional): List of class labels. Prim paths that contain these class labels will be grouped with similar textures during randomization. 
+            duration (float, optional):  Time interval in seconds between subsequent randomization.
+            include_children (bool, optional): Enable if only the child prims of type Mesh need to be included for randomization.
+            seed (int, optional): Value to initialize the pseudorandom number generator.
+        """
 
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
@@ -210,7 +276,17 @@ class DomainRandomization:
         include_children=False,
         seed=12345,
     ):
-        """Create a material randomization component"""
+        """Create a material randomization component
+
+        args:
+            prim_paths (list(str)): List of path of prims to be used for randomization.
+            material_list (list(str), optional): List of material files(.mdl) to be used for randomization.
+            ignored_class_list (list(str), optional): List of class labels. Prim paths that contain these class labels will be ignored during randomization.
+            grouped_class_list (list(str), optional): List of class labels. Prim paths that contain these class labels will be grouped with similar textures during randomization. 
+            duration (float, optional):  Time interval in seconds between subsequent randomization.
+            include_children (bool, optional): Enable if only the child prims of type Mesh need to be included for randomization.
+            seed (int, optional): Value to initialize the pseudorandom number generator.
+        """
 
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
@@ -232,7 +308,16 @@ class DomainRandomization:
     def create_mesh_comp(
         self, prim_paths=[], mesh_list=[], mesh_range=(1, 1), duration=0.0, include_children=False, seed=12345
     ):
-        """Create a mesh randomization component"""
+        """Create a mesh randomization component
+
+        args:
+            prim_paths (list(str), optional): List of path of prims to be used for randomization.
+            mesh_list (list(str), optional): List of mesh files(.usd) to be spawned.
+            mesh_range (tuple(float, float), optional): Specify the range for number of mesh copies to spawn.
+            duration (float, optional):  Time interval in seconds between subsequent randomization.
+            include_children (bool, optional): Enable if only the child prims of type Mesh need to be included for randomization.
+            seed (int, optional): Value to initialize the pseudorandom number generator.
+        """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
@@ -251,7 +336,15 @@ class DomainRandomization:
     def create_visibility_comp(
         self, prim_paths=[], num_visible_range=(1, 1), duration=0.0, include_children=False, seed=12345
     ):
-        """Create a visibility randomization component"""
+        """Create a visibility randomization component
+
+        args:
+            prim_paths (list(str), optional): List of path of prims to be used for randomization.
+            num_visible_range (tuple(float, float), optional): Specify the range for number of assets that needs to be visible.
+            duration (float, optional):  Time interval in seconds between subsequent randomization.
+            include_children (bool, optional): Enable if only the child prims of type Mesh need to be included for randomization.
+            seed (int, optional): Value to initialize the pseudorandom number generator.
+        """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/visibility_component", False)

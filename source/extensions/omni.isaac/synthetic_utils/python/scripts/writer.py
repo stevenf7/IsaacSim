@@ -33,13 +33,14 @@ class DataWriter:
         self.check_for_output_folder()
 
     def start_threads(self):
-        # Start worker threads
+        """Start worker threads."""
         for _ in range(self.num_worker_threads):
             t = threading.Thread(target=self.worker, daemon=True)
             t.start()
             self.threads.append(t)
 
     def stop_threads(self):
+        """Waits for all tasks to be completed before stopping worker threads."""
         print(f"Finish writing data...")
 
         # Block until all tasks are done
@@ -54,6 +55,7 @@ class DataWriter:
         print(f"Done.")
 
     def worker(self):
+        """Processes task from queue. Each tasks contains groundtruth data and metadata which is used to transform the output and write it to disk."""
         while True:
             groundtruth = self.q.get()
             if groundtruth is None:
@@ -197,6 +199,7 @@ class DataWriter:
                 color_image_rgb.save(f"{self.bbox_2d_loose_folder}/{filename}.png")
 
     def check_for_output_folder(self):
+        """Checks if the output folders are created. If not, it creates them."""
         if not os.path.exists(self.data_dir):
             os.mkdir(self.data_dir)
         self.rgb_folder = self.data_dir + "/rgb/"

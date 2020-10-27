@@ -54,8 +54,9 @@ def train():
 
 
 def runEval():
-    # load a zip file to evaluate here
-    agent = PPO.load("params/rl_model_125999_steps.zip", device="cuda")
+    # load a zip file to evaluate here. PPO also saves the best model so far in the eval_log folder.
+    # You can evaluate those zip files in the params folder as well (i.e params/rl_model_125999_steps.zip)
+    agent = PPO.load("eval_log/best_model.zip", device="cuda")
 
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
 
