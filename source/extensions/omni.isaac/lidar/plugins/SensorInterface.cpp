@@ -359,7 +359,7 @@ void onStop(void* userData)
 {
     if (gLidarSensorManager)
     {
-        gLidarSensorManager->stop();
+        gLidarSensorManager->onStop();
     }
 }
 

@@ -114,8 +114,6 @@ protected:
     double mTimeSeconds = 0; // current time in seconds
     int64_t mTimeNanoSeconds = 0; // current time in nano seconds
     double mTimeDelta = 0; // delta time for current tick
-
-    bool mDoOnce = false;
 };
 }
 }

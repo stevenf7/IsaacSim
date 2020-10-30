@@ -107,44 +107,43 @@ public:
         }
         // omni::isaac::utils::ScopedTimer T("LIDAR");
 
-        if (mDoOnce == false)
+        for (auto& component : mComponents)
         {
-            for (auto& component : mComponents)
+            if (component.second->mDoStart == true)
             {
                 component.second->onStart();
+                component.second->mDoStart = false;
             }
-            mDoOnce = true;
         }
-        else
-        {
-#if 1
-            LidarTaskData* taskArray = new LidarTaskData[mComponents.size()];
-            int index = 0;
-            for (auto& component : mComponents)
-            {
-                taskArray[index].timeSeconds = this->mTimeSeconds;
-                taskArray[index].timeNanoSeconds = this->mTimeNanoSeconds;
-                taskArray[index].dt = dt;
-                taskArray[index].lidar = component.second.get();
 
-                carb::tasking::TaskDesc bigTask{};
-                bigTask.priority = carb::tasking::Priority::eHigh;
-                bigTask.task = lidarTaskFunction;
-                bigTask.taskArg = (void*)(taskArray + index);
-                mTasking->addTask(bigTask, mTaskCounter);
-                index++;
-            }
-            mTasking->yieldUntilCounter(mTaskCounter);
-            delete[] taskArray;
+#if 1
+        LidarTaskData* taskArray = new LidarTaskData[mComponents.size()];
+        int index = 0;
+        for (auto& component : mComponents)
+        {
+            taskArray[index].timeSeconds = this->mTimeSeconds;
+            taskArray[index].timeNanoSeconds = this->mTimeNanoSeconds;
+            taskArray[index].dt = dt;
+            taskArray[index].lidar = component.second.get();
+
+            carb::tasking::TaskDesc bigTask{};
+            bigTask.priority = carb::tasking::Priority::eHigh;
+            bigTask.task = lidarTaskFunction;
+            bigTask.taskArg = (void*)(taskArray + index);
+            mTasking->addTask(bigTask, mTaskCounter);
+            index++;
+        }
+        mTasking->yieldUntilCounter(mTaskCounter);
+        delete[] taskArray;
 
 #else
-            for (auto& component : mComponents)
-            {
-                component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
-                component.second->tick();
-            }
-#endif
+        for (auto& component : mComponents)
+        {
+            component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
+            component.second->tick();
         }
+#endif
+
 
         size_t mShapeDebugIndex = 0;
         bool shouldDraw = false;
@@ -186,10 +185,13 @@ public:
      * @brief Run once the scene is stopped
      *
      */
-    void stop()
+    void onStop()
     {
-        // PxScene can change after stop is pressed so reset DoOnce bool to force OnStart to run
-        mDoOnce = false;
+        // PxScene can change after stop is pressed so reset mDoStart bool to force OnStart to run
+        for (auto& component : mComponents)
+        {
+            component.second->mDoStart = true;
+        }
         releaseDebugLineList();
     }
     /**
@@ -207,7 +209,6 @@ public:
                 CARB_LOG_INFO("Create Lidar at %s", child.GetPath().GetString().c_str());
                 component->initialize(mPhysxPtr, mFastCachePtr, pxr::LidarSchemaLidar(child), mStage);
                 mComponents[child.GetPath().GetString()] = std::move(component);
-                mDoOnce = false;
             }
         }
 
@@ -217,7 +218,6 @@ public:
             CARB_LOG_INFO("Create Lidar at %s", prim.GetPath().GetString().c_str());
             component->initialize(mPhysxPtr, mFastCachePtr, pxr::LidarSchemaLidar(prim), mStage);
             mComponents[prim.GetPath().GetString()] = std::move(component);
-            mDoOnce = false;
         }
     }
     LidarSensor* getSensor(const pxr::UsdPrim& prim)
