@@ -193,64 +193,64 @@ void IsaacApplication::tick(double dt)
     }
     if (mRunning)
     {
-        if (mDoOnce == false)
+
+        for (auto& component : mComponents)
         {
-            for (auto& component : mComponents)
+            if (component.second->mDoStart == true)
             {
                 component.second->onStart();
+                component.second->mDoStart = false;
             }
-            mDoOnce = true;
         }
-        else
+
+
+        for (auto& component : mComponents)
         {
-            for (auto& component : mComponents)
-            {
-                component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
-            }
+            component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
+        }
 
 #if 1
-            // omni::isaac::utils::ScopedTimer TimerApp("  Publish");
-            TaskData* taskArray = new TaskData[mComponents.size()];
-            int index = 0;
-            for (auto& component : mComponents)
+        // omni::isaac::utils::ScopedTimer TimerApp("  Publish");
+        TaskData* taskArray = new TaskData[mComponents.size()];
+        int index = 0;
+        for (auto& component : mComponents)
+        {
+            taskArray[index].component = component.second.get();
+
+            carb::tasking::TaskDesc bigTask{};
+            bigTask.priority = carb::tasking::Priority::eHigh;
+            bigTask.task = TaskFunction;
+            bigTask.taskArg = (void*)(taskArray + index);
+            mTasking->addTask(bigTask, mTaskCounter);
+            index++;
+        }
+
+        for (auto& component : mComponents)
+        {
+            if (component.second->getEnabled())
             {
-                taskArray[index].component = component.second.get();
-
-                carb::tasking::TaskDesc bigTask{};
-                bigTask.priority = carb::tasking::Priority::eHigh;
-                bigTask.task = TaskFunction;
-                bigTask.taskArg = (void*)(taskArray + index);
-                mTasking->addTask(bigTask, mTaskCounter);
-                index++;
+                component.second->tick();
             }
+        }
 
-            for (auto& component : mComponents)
-            {
-                if (component.second->getEnabled())
-                {
-                    component.second->tick();
-                }
-            }
-
-            mTasking->yieldUntilCounter(mTaskCounter);
-            delete[] taskArray;
+        mTasking->yieldUntilCounter(mTaskCounter);
+        delete[] taskArray;
 
 #else
 
-            for (auto& component : mComponents)
+        for (auto& component : mComponents)
+        {
+            if (component.second->getEnabled())
             {
-                if (component.second->getEnabled())
-                {
-                    component.second->publishAllMessages();
-                    component.second->tick();
-                }
+                component.second->publishAllMessages();
+                component.second->tick();
             }
+        }
 #endif
 
 
-            mSceneLoaderComponent->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
-            mSceneLoaderComponent->tick();
-        }
+        mSceneLoaderComponent->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
+        mSceneLoaderComponent->tick();
     }
     // TODO: do this before or after tick?
     mTimeSeconds += dt;
@@ -259,11 +259,11 @@ void IsaacApplication::tick(double dt)
 
 void IsaacApplication::onStop()
 {
-    utils::BridgeApplicationBase<IsaacComponent>::onStop();
 
     for (auto& component : mComponents)
     {
         component.second->onStop();
+        component.second->mDoStart = true;
     }
 }
 

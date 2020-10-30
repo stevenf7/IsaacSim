@@ -29,6 +29,7 @@ public:
     {
         mPrim = prim;
         mStage = stage;
+        mDoStart = true;
     }
 
     /**
@@ -68,6 +69,8 @@ public:
     {
         return mEnabled;
     }
+
+    bool mDoStart = true; // whether start should be called on this component
 
 protected:
     // USD reference to prim that stores settings for this component

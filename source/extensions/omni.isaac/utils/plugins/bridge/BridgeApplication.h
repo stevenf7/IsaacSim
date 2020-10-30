@@ -127,17 +127,8 @@ public:
             pxr::UsdPrim prim = *iter;
             onComponentAdd(prim);
         }
-        mDoOnce = false;
     }
 
-    /**
-     * @brief Function that runs after stop is pressed
-     *
-     */
-    virtual void onStop()
-    {
-        mDoOnce = false;
-    }
 
     /**
      * @brief Create a supported component in this application
