@@ -35,6 +35,7 @@ void DRComponentMesh::initialize(const pxr::DrSchemaMeshComponent& prim, pxr::Us
 void DRComponentMesh::onStart()
 {
     CARB_LOG_INFO("DR Mesh Component Started");
+    onComponentChange();
     // Get DR layer and switch USD context
     auto layers = mStage->GetLayerStack();
     for (auto&& layer : layers)

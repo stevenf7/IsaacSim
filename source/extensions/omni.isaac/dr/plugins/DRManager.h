@@ -10,7 +10,7 @@
 #include "DRComponentScale.h"
 #include "DRComponentTexture.h"
 #include "DRComponentVisibility.h"
-#include "plugins/core/ComponentManager.h"
+#include "plugins/bridge/BridgeApplication.h"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
@@ -32,7 +32,7 @@ namespace isaac
 namespace dr
 {
 
-class DRManager : public utils::ComponentManager, public pxr::TfWeakBase
+class DRManager : public utils::BridgeApplicationBase<DRComponentBase<pxr::DrSchemaBaseComponent>>
 {
 
 public:
@@ -40,24 +40,14 @@ public:
     ~DRManager();
     void initialize(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* tokens);
     void tick(double dt);
-    void initComponents();
     void onComponentAdd(const pxr::UsdPrim& prim);
-    void onComponentChange(const pxr::UsdPrim& prim);
-    void onComponentRemove(const pxr::SdfPath& primPath);
-    void deleteAllComponents();
-    void loadComponentFromUsd();
     void tickManual();
 
 private:
-    void handlePrimChanged(const class pxr::UsdNotice::ObjectsChanged& objectsChanged);
-
-    std::unordered_map<std::string, std::unique_ptr<DRComponentBase<pxr::DrSchemaBaseComponent>>> mAllComponents;
     carb::tokens::ITokens* mTokens;
-    pxr::TfNotice::Key mNoticeListener;
     omni::usd::Layers* mLayer = nullptr;
     std::string mDRLayerName = "";
     double mTimeElapsed = 0.0f;
-    bool mDoOnce = false, mPrimDeleted = false;
     std::string mRootLayerIdentifier = "";
 };
 }

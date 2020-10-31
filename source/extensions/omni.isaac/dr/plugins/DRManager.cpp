@@ -3,6 +3,7 @@
 // clang-format on
 
 #include "DRManager.h"
+#include "plugins/bridge/BridgeApplication.h"
 
 #include <boost/algorithm/string.hpp>
 #include <carb/settings/ISettings.h>
@@ -36,19 +37,14 @@ DRManager::DRManager()
 
 DRManager::~DRManager()
 {
-    if (mNoticeListener.IsValid())
-    {
-        pxr::TfNotice::Revoke(mNoticeListener);
-    }
-    deleteAllComponents();
 }
 
 void DRManager::initialize(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* tokens)
 {
-    utils::ComponentManager::initialize(stage);
+    utils::BridgeApplicationBase<DRComponentBase<pxr::DrSchemaBaseComponent>>::initialize(stage);
     mTokens = tokens;
     mRootLayerIdentifier = mStage->GetRootLayer()->GetIdentifier();
-    mNoticeListener = pxr::TfNotice::Register(pxr::TfCreateWeakPtr(this), &DRManager::handlePrimChanged);
+    mDRLayerName = "";
 }
 
 void DRManager::tick(double dt)
@@ -56,20 +52,16 @@ void DRManager::tick(double dt)
     mTimeElapsed += dt;
     // CARB_LOG_WARN("Tick: %f - %f", mTimeElapsed, dt);
 
-    if (mPrimDeleted)
+    for (auto& component : mComponents)
     {
-        // reload remaining components
-        for (auto& component : mAllComponents)
+        if (component.second->mDoStart == true)
         {
-            if (component.second)
-            {
-                component.second->onComponentChange();
-            }
+            component.second->onStart();
+            component.second->mDoStart = false;
         }
-        mPrimDeleted = false;
     }
 
-    for (auto& component : mAllComponents)
+    for (auto& component : mComponents)
     {
         if (component.second &&
             (component.second->mRandomizationDurationInterval == -1 ||
@@ -78,18 +70,6 @@ void DRManager::tick(double dt)
             component.second->mLastTickTime = mTimeElapsed;
             component.second->tick();
         }
-    }
-}
-
-void DRManager::initComponents()
-{
-    if (mLayer && mRootLayerIdentifier.compare(mLayer->getAuthoringLayerIdentifier()) == 0)
-        mLayer->setAuthoringLayerByIdentifier(mRootLayerIdentifier);
-
-    if (mDoOnce == false)
-    {
-        loadComponentFromUsd();
-        mDoOnce = true;
     }
 }
 
@@ -113,7 +93,7 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
         pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
         mStage->SetEditTarget(editTarget);
     }
-    if (mAllComponents.find(primPath) != mAllComponents.end())
+    if (mComponents.find(primPath) != mComponents.end())
         return;
 
     if (prim.IsA<pxr::DrSchemaColorComponent>())
@@ -161,89 +141,11 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
         component = std::make_unique<DRComponentVisibility>();
         component->initialize(pxr::DrSchemaVisibilityComponent(prim), mStage);
     }
-    component->onComponentChange();
-    component->onStart();
-    mAllComponents[primPath] = std::move(component);
-    CARB_LOG_WARN("Create: Prim %s", prim.GetPath().GetString().c_str());
-}
-
-void DRManager::onComponentChange(const pxr::UsdPrim& prim)
-{
-    if (!prim.IsA<pxr::DrSchemaBaseComponent>())
-        return;
-
-    std::string primPath = prim.GetPath().GetString();
-    if (prim.IsA<pxr::DrSchemaColorComponent>())
+    if (component)
     {
-        mAllComponents[primPath]->onComponentChange();
-    }
-    else if (prim.IsA<pxr::DrSchemaTextureComponent>())
-    {
-        mAllComponents[primPath]->onComponentChange();
-    }
-    else if (prim.IsA<pxr::DrSchemaMaterialComponent>())
-    {
-        mAllComponents[primPath]->onComponentChange();
-    }
-    else if (prim.IsA<pxr::DrSchemaMovementComponent>())
-    {
-        mAllComponents[primPath]->onComponentChange();
-    }
-    else if (prim.IsA<pxr::DrSchemaRotationComponent>())
-    {
-        mAllComponents[primPath]->onComponentChange();
-    }
-    else if (prim.IsA<pxr::DrSchemaScaleComponent>())
-    {
-        mAllComponents[primPath]->onComponentChange();
-    }
-    else if (prim.IsA<pxr::DrSchemaLightComponent>())
-    {
-        mAllComponents[primPath]->onComponentChange();
-    }
-    else if (prim.IsA<pxr::DrSchemaMeshComponent>())
-    {
-        mAllComponents[primPath]->onComponentChange();
-    }
-    else if (prim.IsA<pxr::DrSchemaVisibilityComponent>())
-    {
-        mAllComponents[primPath]->onComponentChange();
-    }
-}
-
-void DRManager::onComponentRemove(const pxr::SdfPath& primPath)
-{
-    // delete component for this prim
-    if (mAllComponents.find(primPath.GetString()) != mAllComponents.end())
-    {
-        CARB_LOG_WARN("Delete: Prim %s", primPath.GetString().c_str());
-        mAllComponents[primPath.GetString()].reset();
-        mAllComponents.erase(primPath.GetString());
-        mPrimDeleted = true;
-    }
-}
-
-void DRManager::deleteAllComponents()
-{
-    for (auto& component : mAllComponents)
-    {
-        if (component.second)
-        {
-            component.second.reset();
-        }
-    }
-    mAllComponents.clear();
-    mDoOnce = false;
-}
-
-void DRManager::loadComponentFromUsd()
-{
-    pxr::UsdPrimRange range = mStage->Traverse();
-    for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
-    {
-        pxr::UsdPrim childPrim = *iter;
-        onComponentAdd(childPrim);
-        onComponentChange(childPrim);
+        component->mDRLayerName = mDRLayerName;
+        mComponents[primPath] = std::move(component);
+        CARB_LOG_INFO("Create: Prim %s", prim.GetPath().GetString().c_str());
     }
 }
 
@@ -252,43 +154,18 @@ void DRManager::tickManual()
     if (mLayer && mRootLayerIdentifier.compare(mLayer->getAuthoringLayerIdentifier()) == 0)
         mLayer->setAuthoringLayerByIdentifier(mRootLayerIdentifier);
 
-    if (mDoOnce == false)
+    for (auto& component : mComponents)
     {
-        loadComponentFromUsd();
-        mDoOnce = true;
-    }
-
-    for (auto& component : mAllComponents)
-        if (component.second)
-            component.second->tick();
-}
-
-void DRManager::handlePrimChanged(const class pxr::UsdNotice::ObjectsChanged& objectsChanged)
-{
-    if (mStage != objectsChanged.GetStage())
-    {
-        return;
-    }
-
-    for (auto& path : objectsChanged.GetResyncedPaths())
-    {
-        if (path.IsAbsoluteRootOrPrimPath())
+        if (component.second->mDoStart == true)
         {
-            // CARB_LOG_WARN("ResyncedPaths: %s", path.GetText());
-            auto primPath =
-                mStage->GetPseudoRoot().GetPath() == path ? mStage->GetPseudoRoot().GetPath() : path.GetPrimPath();
-
-            // If prim is removed, remove it and its descendants from selection.
-            pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
-
-            // CARB_LOG_WARN("Prim valid %d", prim.IsValid());
-            if (prim.IsValid() == false) // remove prim
-            {
-                // CARB_LOG_WARN("Removing: %s", primPath.GetString().c_str());
-                onComponentRemove(primPath);
-            }
+            component.second->onStart();
+            component.second->mDoStart = false;
         }
     }
+
+    for (auto& component : mComponents)
+        if (component.second)
+            component.second->tick();
 }
 
 }

@@ -37,6 +37,7 @@ void DRComponentLight::initialize(const pxr::DrSchemaLightComponent& prim, pxr::
 void DRComponentLight::onStart()
 {
     CARB_LOG_INFO("DR Light Component Started");
+    onComponentChange();
 }
 void DRComponentLight::update()
 {

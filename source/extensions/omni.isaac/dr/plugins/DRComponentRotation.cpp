@@ -35,6 +35,7 @@ void DRComponentRotation::initialize(const pxr::DrSchemaRotationComponent& prim,
 void DRComponentRotation::onStart()
 {
     CARB_LOG_INFO("DR Rotation Component Started");
+    onComponentChange();
 }
 void DRComponentRotation::update()
 {

@@ -35,6 +35,7 @@ void DRComponentVisibility::initialize(const pxr::DrSchemaVisibilityComponent& p
 void DRComponentVisibility::onStart()
 {
     CARB_LOG_INFO("DR Visibility Component Started");
+    onComponentChange();
 }
 void DRComponentVisibility::update()
 {

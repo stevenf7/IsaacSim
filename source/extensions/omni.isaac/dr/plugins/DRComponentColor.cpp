@@ -46,6 +46,7 @@ void DRComponentColor::initialize(const pxr::DrSchemaColorComponent& prim, pxr::
 void DRComponentColor::onStart()
 {
     CARB_LOG_INFO("DR Color Component Started");
+    onComponentChange();
     // Get DR layer and switch USD context
     auto layers = mStage->GetLayerStack();
     for (auto&& layer : layers)
@@ -56,6 +57,7 @@ void DRComponentColor::onStart()
     if (mColorLayer)
     {
         pxr::UsdEditContext context(mStage, mColorLayer);
+        mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
         carb::extras::Path urlPath(mOmniPBRMatPath.c_str());
         // Check for /Colors prim and if base OmniPBR material is loaded
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Colors"))
@@ -144,7 +146,6 @@ void DRComponentColor::update()
 void DRComponentColor::onComponentChange()
 {
     pxr::GfVec3f firstColor, secondColor;
-    mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
 
     const pxr::DrSchemaColorComponent& colorPrim = (pxr::DrSchemaColorComponent)mPrim;
     colorPrim.GetCompNameAttr().Get(&mCompName);
