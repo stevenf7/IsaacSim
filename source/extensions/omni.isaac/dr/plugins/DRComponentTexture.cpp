@@ -44,6 +44,7 @@ void DRComponentTexture::initialize(const pxr::DrSchemaTextureComponent& prim, p
 void DRComponentTexture::onStart()
 {
     CARB_LOG_INFO("DR Texture Component Started");
+    onComponentChange();
     // Get DR layer and switch USD context
     auto layers = mStage->GetLayerStack();
     for (auto&& layer : layers)
@@ -54,6 +55,7 @@ void DRComponentTexture::onStart()
     if (mTextureLayer)
     {
         pxr::UsdEditContext context(mStage, mTextureLayer);
+        mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
         carb::extras::Path urlPath(mOmniPBRMatPath.c_str());
         // Check for /Textures prim and if base OmniPBR material is loaded
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Textures"))
@@ -183,7 +185,6 @@ void DRComponentTexture::update()
 void DRComponentTexture::onComponentChange()
 {
     std::string textureList, ignoredClass, groupedClass;
-    mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
 
     const pxr::DrSchemaTextureComponent& texturePrim = (pxr::DrSchemaTextureComponent)mPrim;
     texturePrim.GetCompNameAttr().Get(&mCompName);

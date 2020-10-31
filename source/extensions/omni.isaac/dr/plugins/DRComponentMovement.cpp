@@ -35,6 +35,7 @@ void DRComponentMovement::initialize(const pxr::DrSchemaMovementComponent& prim,
 void DRComponentMovement::onStart()
 {
     CARB_LOG_INFO("DR Movement Component Started");
+    onComponentChange();
     mEnableLookAtTarget = false;
     if (pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z)
         mUpUsd = { 0.0, 0.0, 1.0 };

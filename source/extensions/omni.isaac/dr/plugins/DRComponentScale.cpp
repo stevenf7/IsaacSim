@@ -36,6 +36,7 @@ void DRComponentScale::initialize(const pxr::DrSchemaScaleComponent& prim, pxr::
 void DRComponentScale::onStart()
 {
     CARB_LOG_INFO("DR Scale Component Started");
+    onComponentChange();
 }
 void DRComponentScale::update()
 {

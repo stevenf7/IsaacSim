@@ -37,6 +37,7 @@ void DRComponentMaterial::initialize(const pxr::DrSchemaMaterialComponent& prim,
 void DRComponentMaterial::onStart()
 {
     CARB_LOG_INFO("DR Material Component Started");
+    onComponentChange();
     // Get DR layer and switch USD context
     auto layers = mStage->GetLayerStack();
     for (auto&& layer : layers)

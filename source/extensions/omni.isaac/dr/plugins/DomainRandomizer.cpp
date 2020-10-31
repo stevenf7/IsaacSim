@@ -164,14 +164,6 @@ CARB_EXPORT void carbOnPluginShutdown()
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
 }
 
-void loadComponentFromUsd()
-{
-    if (Manager)
-    {
-        Manager->loadComponentFromUsd();
-    }
-}
-
 void randomizeOnce()
 {
     if (Manager && manualMode)
@@ -187,7 +179,6 @@ void toggleManualMode()
 
 void fillInterface(omni::isaac::dr::DomainRandomizer& iface)
 {
-    iface.loadComponentFromUsd = loadComponentFromUsd;
     iface.randomizeOnce = randomizeOnce;
     iface.toggleManualMode = toggleManualMode;
 }
