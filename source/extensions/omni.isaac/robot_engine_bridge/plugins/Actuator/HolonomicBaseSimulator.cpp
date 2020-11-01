@@ -84,7 +84,7 @@ void HolonomicBaseSimulator::tick()
     }
     else
     {
-        CARB_LOG_ERROR("mArticulationHandle Invalid");
+        CARB_LOG_ERROR("Holonomic Base Articulation Handle Is Invalid");
         return;
     }
     // Apply velocities
@@ -94,7 +94,7 @@ void HolonomicBaseSimulator::tick()
     }
     else
     {
-        CARB_LOG_ERROR("mWheel1Handle Invalid");
+        CARB_LOG_ERROR("Holonomic Base Wheel 1 Handle Invalid");
         return;
     }
     if (mWheel2Handle)
@@ -103,7 +103,7 @@ void HolonomicBaseSimulator::tick()
     }
     else
     {
-        CARB_LOG_ERROR("mWheel2Handle Invalid");
+        CARB_LOG_ERROR("Holonomic Base Wheel 1 Handle Invalid");
         return;
     }
 
@@ -113,7 +113,7 @@ void HolonomicBaseSimulator::tick()
     }
     else
     {
-        CARB_LOG_ERROR("mWheel3Handle Invalid");
+        CARB_LOG_ERROR("Holonomic Base Wheel 1 Handle Invalid");
         return;
     }
     IsaacMessage<isaac_message::State> stateMessage;

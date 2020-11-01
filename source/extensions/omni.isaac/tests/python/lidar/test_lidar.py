@@ -192,17 +192,17 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._editor.play()
         lidar.GetHighLodAttr().Set(True)
         lidar.GetDrawLidarPointsAttr().Set(False)
-        await self.sweep_parameter(lidar.GetRotationRateAttr(), -1024, 1024, 64)
+        await self.sweep_parameter(lidar.GetRotationRateAttr(), -1024, 1024, 256)
         lidar.GetRotationRateAttr().Set(0)
-        await self.sweep_parameter(lidar.GetHorizontalFovAttr(), -1024, 1024, 64)
+        await self.sweep_parameter(lidar.GetHorizontalFovAttr(), -1024, 1024, 256)
         lidar.GetHorizontalFovAttr().Set(360)
-        await self.sweep_parameter(lidar.GetVerticalFovAttr(), -1024, 1024, 64)
+        await self.sweep_parameter(lidar.GetVerticalFovAttr(), -1024, 1024, 256)
         lidar.GetHorizontalFovAttr().Set(120)
         lidar.GetVerticalFovAttr().Set(30)
         await self.sweep_parameter(lidar.GetHorizontalResolutionAttr(), -0.1, 1.0, 0.1)
         await self.sweep_parameter(lidar.GetVerticalResolutionAttr(), -0.1, 1.0, 0.1)
-        await self.sweep_parameter(lidar.GetMinRangeAttr(), -1024, 1024, 64)
-        await self.sweep_parameter(lidar.GetMaxRangeAttr(), -1024, 1024, 64)
+        await self.sweep_parameter(lidar.GetMinRangeAttr(), -1024, 1024, 256)
+        await self.sweep_parameter(lidar.GetMaxRangeAttr(), -1024, 1024, 256)
         lidar.GetHighLodAttr().Set(False)
 
     async def test_carter_lidar(self):
@@ -230,3 +230,50 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         depth = self._lidar.get_depth_data(lidarPath)
         self.assertLess(depth[0, 0], 2000)
         self.assertEqual(depth[450, 0], 65535)
+
+    # test currently not working
+    # async def test_raycast_targets(self):
+
+    #     # Add lidar
+    #     lidarPath = "/World/Lidar"
+    #     lidar = self.add_lidar(lidarPath)
+
+    #     lidar.GetRotationRateAttr().Set(0.0)
+    #     lidar.GetHighLodAttr().Set(True)
+
+    #     vFOV = 45
+    #     hFOV = 360
+    #     vRes = 3
+    #     hRes = 3
+
+    #     vFOV = float(np.clip(vFOV, 0, 180))
+    #     hFOV = float(np.clip(hFOV, 0, 360))
+
+    #     azimuth = np.arange(-hFOV / 2, hFOV / 2, hRes)
+    #     zenith = np.arange(90 - vFOV / 2, 90 + vFOV / 2, vRes)
+
+    #     lidar.GetHorizontalFovAttr().Set(hFOV)
+    #     lidar.GetVerticalFovAttr().Set(vFOV)
+    #     lidar.GetHorizontalResolutionAttr().Set(hRes)
+    #     lidar.GetVerticalResolutionAttr().Set(vRes)
+
+    #     # Run for a second
+    #     self._editor.play()
+    #     await asyncio.sleep(1)
+    #     self._editor.pause()
+
+    #     kitZenith = self._lidar.get_zenith_data(lidarPath)
+    #     kitAzimuth = self._lidar.get_azimuth_data(lidarPath)
+
+    #     self.assertEqual(len(list(zenith.flatten())), len(kitZenith))
+    #     self.assertEqual(len(list(azimuth.flatten())), len(kitAzimuth))
+
+    #     for (a, b) in zip(list(zenith.flatten()), kitZenith):
+    #         epsilon = vRes / 10.0
+    #         self.assertTrue(a <= b + epsilon)
+    #         self.assertTrue(a >= b - epsilon)
+
+    #     for (a, b) in zip(list(azimuth.flatten()), kitAzimuth):
+    #         epsilon = hRes / 10.0
+    #         self.assertTrue(a <= b + epsilon)
+    #         self.assertTrue(a >= b - epsilon)

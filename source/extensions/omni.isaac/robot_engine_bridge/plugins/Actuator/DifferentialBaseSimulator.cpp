@@ -83,7 +83,7 @@ void DifferentialBaseSimulator::tick()
     }
     else
     {
-        CARB_LOG_ERROR("mArticulationHandle Invalid");
+        CARB_LOG_ERROR("Differential Base Articulation Handle Is Invalid");
         return;
     }
     // Apply velocities
@@ -93,7 +93,7 @@ void DifferentialBaseSimulator::tick()
     }
     else
     {
-        CARB_LOG_ERROR("mWheelFLHandle Invalid");
+        CARB_LOG_ERROR("Differential Base Left Wheel Invalid");
         return;
     }
     if (mWheelFRHandle)
@@ -102,7 +102,7 @@ void DifferentialBaseSimulator::tick()
     }
     else
     {
-        CARB_LOG_ERROR("mWheelFRHandle Invalid");
+        CARB_LOG_ERROR("Differential Base Right Wheel Invalid");
         return;
     }
 

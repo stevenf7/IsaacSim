@@ -52,7 +52,7 @@ void TwoFingerGripper::tick()
             }
             else
             {
-                CARB_LOG_ERROR("mArticulationHandle Invalid");
+                CARB_LOG_ERROR("Two Finger Gripper Articulation Handle Is Invalid");
                 return;
             }
 
@@ -69,13 +69,13 @@ void TwoFingerGripper::tick()
             {
                 if (elements[0] == 1)
                 {
-                    CARB_LOG_WARN("Gripper Closed");
+                    CARB_LOG_INFO("Gripper Closed");
                     setDistance(mLeftFingerHandle, mClosedDistance);
                     setDistance(mRightFingerHandle, mClosedDistance);
                 }
                 else
                 {
-                    CARB_LOG_WARN("Gripper Open");
+                    CARB_LOG_INFO("Gripper Open");
                     setDistance(mLeftFingerHandle, mOpenDistance);
                     setDistance(mRightFingerHandle, mOpenDistance);
                 }

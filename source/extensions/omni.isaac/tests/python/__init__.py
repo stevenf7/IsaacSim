@@ -20,3 +20,4 @@ from sys import platform
 if platform == "linux" or platform == "linux2":
     from .motion_planning.test_motion_planning import *
     from .samples.test_ur10_samples import *
+    from .robot_engine_bridge.test_core import *
