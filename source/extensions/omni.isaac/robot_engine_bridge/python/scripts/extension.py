@@ -88,7 +88,7 @@ class Extension(omni.ext.IExt):
         _robot_engine_bridge.release_robot_engine_bridge_interface(self._re_bridge)
 
     def _on_init_stage_load_fn(self, widget):
-        self._re_bridge.initializeStageLoader(
+        self._re_bridge.initialize_stage_loader(
             self._inp_comp.value,
             self._req_channel.value,
             self._cam_channel.value,
@@ -101,8 +101,8 @@ class Extension(omni.ext.IExt):
             asset_path = os.path.abspath(
                 carb.tokens.get_tokens_interface().resolve("${app}/../exts/omni.isaac.robot_engine_bridge/")
             )
-            self._re_bridge.createApplication(asset_path, self.application_path.value, [], [])
-            self._re_bridge.initializeStageLoader(
+            self._re_bridge.create_application(asset_path, self.application_path.value, [], [])
+            self._re_bridge.initialize_stage_loader(
                 self._inp_comp.value,
                 self._req_channel.value,
                 self._cam_channel.value,
@@ -112,6 +112,6 @@ class Extension(omni.ext.IExt):
             self._is_created = True
             widget.text = "Destroy Application"
         else:
-            self._re_bridge.destroyApplication()
+            self._re_bridge.destroy_application()
             self._is_created = False
             widget.text = "Create Application"

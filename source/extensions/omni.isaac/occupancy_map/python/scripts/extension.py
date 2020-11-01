@@ -189,22 +189,31 @@ class Extension(omni.ext.IExt):
     def _generate_image(self):
         from PIL import Image, ImageDraw
 
-        print("min bound: ", self._om.get_min_bound())
-        print("max bound: ", self._om.get_max_bound())
+        points = self._om.get_occupied_positions()
+        if len(points) == 0:
+            print("No occupied points, cannot generate image")
+            return
+
+        # print("min bound: ", self._om.get_min_bound())
+        # print("max bound: ", self._om.get_max_bound())
 
         min_b = self._om.get_min_bound()
         max_b = self._om.get_max_bound()
+        scale = self.cell_size.model.get_value_as_float()
+        half_w = scale * 0.5
+        print("World coordinates for image in stage units:")
+        print("Top left: ", max_b[0] - half_w, min_b[1] + half_w)
+        print("Top right: ", min_b[0] + half_w, min_b[1] + half_w)
+
+        print("Bottom left: ", max_b[0] - half_w, max_b[1] - half_w)
+        print("Bottom right: ", min_b[0] + half_w, max_b[1] - half_w)
+
         size = [0, 0, 0]
 
         size[0] = max_b[0] - min_b[0]
         size[1] = max_b[1] - min_b[1]
         size[2] = max_b[2] - min_b[2]
 
-        points = self._om.get_occupied_positions()
-        if len(points) == 0:
-            print("No occupied points, cannot generate image")
-            return
-        scale = self.cell_size.model.get_value_as_float()
         occupied_col = []
         for item in self.occupied_color_model.get_item_children():
             component = self.occupied_color_model.get_item_value_model(item)
@@ -266,7 +275,15 @@ class Extension(omni.ext.IExt):
             self._rgb_byte_provider = omni.ui.ByteImageProvider()
             self._rgb_byte_provider.set_data(image, [int(size[0] / scale), int(size[1] / scale)])
             with ui.VStack():
+                with ui.VStack(height=0):
+                    ui.Label(
+                        f"Coordinates in stage units: \n Top Left: [{max_b[0]-half_w}, {min_b[1]+half_w}]\t\t Top Right: {min_b[0]+half_w}, {min_b[1]+half_w}\n Bottom Left: {max_b[0]-half_w}, {max_b[1]-half_w}\t\t Bottom Right: {min_b[0]+half_w}, {max_b[1]-half_w}",
+                        alignment=ui.Alignment.LEFT,
+                    )
+                ui.Spacer(height=5)
                 omni.ui.ImageWithProvider(self._rgb_byte_provider)
+                with ui.VStack(height=0):
+                    ui.Label(f"Image size in pixels: {int(size[0] / scale)}, {int(size[1] / scale)}")
                 ui.Button("Save Image", clicked_fn=save_file, height=0)
 
     def on_shutdown(self):

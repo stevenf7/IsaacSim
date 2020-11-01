@@ -36,9 +36,9 @@ PYBIND11_MODULE(_robot_engine_bridge, m)
     defineInterfaceClass<RobotEngineBridge>(
         m, "RobotEngineBridge", "acquire_robot_engine_bridge_interface", "release_robot_engine_bridge_interface")
 
-        .def("createApplication", wrapInterfaceFunction(&RobotEngineBridge::createApplication))
-        .def("destroyApplication", wrapInterfaceFunction(&RobotEngineBridge::destroyApplication))
-        .def("getLastError", wrapInterfaceFunction(&RobotEngineBridge::getLastError))
-        .def("initializeStageLoader", wrapInterfaceFunction(&RobotEngineBridge::initializeStageLoader));
+        .def("create_application", wrapInterfaceFunction(&RobotEngineBridge::createApplication))
+        .def("destroy_application", wrapInterfaceFunction(&RobotEngineBridge::destroyApplication))
+        .def("get_last_error", wrapInterfaceFunction(&RobotEngineBridge::getLastError))
+        .def("initialize_stage_loader", wrapInterfaceFunction(&RobotEngineBridge::initializeStageLoader));
 }
 }

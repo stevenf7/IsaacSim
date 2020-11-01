@@ -471,34 +471,41 @@ void VehicleSimulator::fillCache()
         CARB_LOG_ERROR("Vehicle Mass: %f kg", mCache.totalMass);
         if (success)
             mCache.state |= CacheStateFlag::eUSD;
-    }
 
-    mCache.vehicleId = mPhysxPtr->getObjectId(mVehiclePath, carb::physics::PhysXType::ePTVehicle);
-    mCache.mVehiclePtr = (physx::PxVehicleWheels*)mPhysxPtr->getPhysXPtrFast(mCache.vehicleId);
 
-    if (mCache.driveType != DriveType::eBASIC)
-    {
-        cacheWheelIndices(*mCache.wheels, mCache.vehicleId, mPhysxPtr);
+        mCache.vehicleId = mPhysxPtr->getObjectId(mVehiclePath, carb::physics::PhysXType::ePTVehicle);
+        mCache.mVehiclePtr = (physx::PxVehicleWheels*)mPhysxPtr->getPhysXPtrFast(mCache.vehicleId);
+
+        if (mCache.driveType != DriveType::eBASIC)
+        {
+            cacheWheelIndices(*mCache.wheels, mCache.vehicleId, mPhysxPtr);
+        }
+        else
+        {
+            cacheWheelIndices(*mCache.wheelsDriveBasic, mCache.vehicleId, mPhysxPtr);
+        }
+
+        mCache.state = CacheStateFlag::eVALID;
+
+
+        auto& wheelCacheList = *mCache.wheelsDriveBasic;
+        physx::PxVehicleWheelQueryResult* wheelQueryResult =
+            (physx::PxVehicleWheelQueryResult*)(mPhysxPtr->getWheelQueryResult(mCache.vehicleId));
+        // Distance between left and right rear wheels
+        mCache.rearWidth =
+            (wheelQueryResult->wheelQueryResults[2].localPose.p - wheelQueryResult->wheelQueryResults[3].localPose.p)
+                .magnitude();
+        // distance between front and rear axles
+        mCache.axleSeparation =
+            (wheelQueryResult->wheelQueryResults[0].localPose.p - wheelQueryResult->wheelQueryResults[2].localPose.p)
+                .magnitude();
+
+        CARB_LOG_INFO("mRearWidth: %f, mAxleSeparation: %f", mCache.rearWidth, mCache.axleSeparation);
     }
     else
     {
-        cacheWheelIndices(*mCache.wheelsDriveBasic, mCache.vehicleId, mPhysxPtr);
+        CARB_LOG_ERROR("Vehicle Prim is not valid");
     }
-
-    mCache.state = CacheStateFlag::eVALID;
-
-
-    auto& wheelCacheList = *mCache.wheelsDriveBasic;
-    physx::PxVehicleWheelQueryResult* wheelQueryResult =
-        (physx::PxVehicleWheelQueryResult*)(mPhysxPtr->getWheelQueryResult(mCache.vehicleId));
-    // Distance between left and right rear wheels
-    mCache.rearWidth =
-        (wheelQueryResult->wheelQueryResults[2].localPose.p - wheelQueryResult->wheelQueryResults[3].localPose.p).magnitude();
-    // distance between front and rear axles
-    mCache.axleSeparation =
-        (wheelQueryResult->wheelQueryResults[0].localPose.p - wheelQueryResult->wheelQueryResults[2].localPose.p).magnitude();
-
-    CARB_LOG_ERROR("mRearWidth: %f, mAxleSeparation: %f", mCache.rearWidth, mCache.axleSeparation);
 }
 
 void VehicleSimulator::onComponentChange()

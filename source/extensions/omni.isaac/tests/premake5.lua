@@ -34,6 +34,7 @@ group ("extensions/"..ext_id)
         { ext_source.."/python/step_importer", ext_folder.."/omni/isaac/tests/step_importer" },
         { ext_source.."/python/lidar", ext_folder.."/omni/isaac/tests/lidar" },
         { ext_source.."/python/domain_randomizer", ext_folder.."/omni/isaac/tests/domain_randomizer" },
+        { ext_source.."/python/robot_engine_bridge", ext_folder.."/omni/isaac/tests/robot_engine_bridge" },
     }
 
     repo_build.prebuild_copy {
