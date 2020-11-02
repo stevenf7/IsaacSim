@@ -61,12 +61,12 @@ void DifferentialBaseSimulator::tick()
             {
                 CARB_LOG_ERROR("Wrong number of elements: %d", elements.size());
             }
-            mCommandedSpeed[0] = pxr::GfClamp(elements[0], -mMaximumSpeed[0], mMaximumSpeed[0]);
+            mCommandedSpeed[0] = pxr::GfClamp(elements[0], -mMaximumSpeed[0], mMaximumSpeed[0]) / mUnitScale;
             mCommandedSpeed[1] = pxr::GfClamp(elements[1], -mMaximumSpeed[1], mMaximumSpeed[1]);
 
             mLastCommandTime = mTimeSeconds;
 
-            // CARB_LOG_ERROR("Received %f %f %d %d", elements[0], elements[1], buffers.size(), elements.size());
+            CARB_LOG_ERROR("Received %f %f %d %d", elements[0], elements[1], buffers.size(), elements.size());
         }
         // Use latest command only for a certain period of time in case no new command arrives
         if (mTimeSeconds - mLastCommandTime > mMaximumTimeWithoutCommand)
@@ -89,7 +89,7 @@ void DifferentialBaseSimulator::tick()
     // Apply velocities
     if (mWheelFLHandle)
     {
-        mDynamicControlPtr->setDofVelocityTarget(mWheelFLHandle, getVelocity(static_cast<float>(mWheelDesiredSpeed[0])));
+        mDynamicControlPtr->setDofVelocityTarget(mWheelFLHandle, mWheelDesiredSpeed[0]);
     }
     else
     {
@@ -98,7 +98,7 @@ void DifferentialBaseSimulator::tick()
     }
     if (mWheelFRHandle)
     {
-        mDynamicControlPtr->setDofVelocityTarget(mWheelFRHandle, getVelocity(static_cast<float>(mWheelDesiredSpeed[1])));
+        mDynamicControlPtr->setDofVelocityTarget(mWheelFRHandle, mWheelDesiredSpeed[1]);
     }
     else
     {
@@ -151,7 +151,6 @@ void DifferentialBaseSimulator::tick()
 void DifferentialBaseSimulator::onComponentChange()
 {
     IsaacComponent::onComponentChange();
-    double stageUnits = UsdGeomGetStageMetersPerUnit(mStage);
 
     const pxr::RobotEngineBridgeSchemaRobotEngineDifferentialBase& typedPrim =
         (pxr::RobotEngineBridgeSchemaRobotEngineDifferentialBase)mPrim;
@@ -167,11 +166,12 @@ void DifferentialBaseSimulator::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetRobotFrontAttr(), mRobotFront);
     isaac::utils::safeGetAttribute(typedPrim.GetMaxSpeedAttr(), mMaximumSpeed);
     isaac::utils::safeGetAttribute(typedPrim.GetMaxTimeWithoutCommandAttr(), mMaximumTimeWithoutCommand);
-    isaac::utils::safeGetAttribute(typedPrim.GetMaxMotorTorqueAttr(), mMaxMotorTorque);
-    isaac::utils::safeGetAttribute(typedPrim.GetUseProportionalDriverAttr(), mUseProprotionalDriver);
-    isaac::utils::safeGetAttribute(typedPrim.GetProportionalGainAttr(), mProportionalGain);
-    isaac::utils::safeGetAttribute(typedPrim.GetBrakeTorqueAttr(), mBrakeTorque);
     isaac::utils::safeGetAttribute(typedPrim.GetAccelerationSmoothingAttr(), mAccelerationSmoothing);
+    isaac::utils::safeGetAttribute(typedPrim.GetWheelRadiusAttr(), mWheelRadius);
+    mWheelRadius = mWheelRadius / mUnitScale;
+
+    isaac::utils::safeGetAttribute(typedPrim.GetWheelBaseAttr(), mWheelBase);
+    mWheelBase = mWheelBase / mUnitScale;
 
     pxr::SdfPath chassisPath;
     std::string wheelFLName;
@@ -225,38 +225,37 @@ void DifferentialBaseSimulator::onComponentChange()
     }
 
 
-    auto leftWheel = mDynamicControlPtr->getDofChildBody(mWheelFLHandle);
-    auto rightWheel = mDynamicControlPtr->getDofChildBody(mWheelFRHandle);
+    // auto leftWheel = mDynamicControlPtr->getDofChildBody(mWheelFLHandle);
+    // auto rightWheel = mDynamicControlPtr->getDofChildBody(mWheelFRHandle);
 
-    if (leftWheel && rightWheel)
-    {
-        omni::isaac::dynamic_control::DcTransform poseLeft = mDynamicControlPtr->getRigidBodyPose(leftWheel);
-        omni::isaac::dynamic_control::DcTransform poseRight = mDynamicControlPtr->getRigidBodyPose(rightWheel);
+    // if (leftWheel && rightWheel)
+    // {
+    //     omni::isaac::dynamic_control::DcTransform poseLeft = mDynamicControlPtr->getRigidBodyPose(leftWheel);
+    //     omni::isaac::dynamic_control::DcTransform poseRight = mDynamicControlPtr->getRigidBodyPose(rightWheel);
 
-        pxr::GfVec3d wheelFL_0_world(poseLeft.p.x, poseLeft.p.y, poseLeft.p.z);
-        pxr::GfVec3d wheelRL_0_world(poseRight.p.x, poseRight.p.y, poseRight.p.z);
-        mWheelBase = pxr::GfGetLength(wheelFL_0_world - wheelRL_0_world);
-        mWheelBase *= stageUnits;
-        CARB_LOG_INFO("DifferentialBaseSimulator Wheelbase %f", mWheelBase);
-    }
-    else
-    {
-        CARB_LOG_ERROR("Wheel rigid body not valid");
-    }
+    //     pxr::GfVec3d wheelFL_0_world(poseLeft.p.x, poseLeft.p.y, poseLeft.p.z);
+    //     pxr::GfVec3d wheelRL_0_world(poseRight.p.x, poseRight.p.y, poseRight.p.z);
+    //     mWheelBase = pxr::GfGetLength(wheelFL_0_world - wheelRL_0_world);
+    //     CARB_LOG_INFO("DifferentialBaseSimulator Wheelbase %f", mWheelBase);
+    // }
+    // else
+    // {
+    //     CARB_LOG_ERROR("Wheel rigid body not valid");
+    // }
 }
 
 void DifferentialBaseSimulator::getWheelDesireSpeed(const pxr::GfVec2d& mCommandedSpeed)
 {
     mBrakeRequested =
         pxr::GfIsClose(mCommandedSpeed[0], 0.0f, FLT_EPSILON) && pxr::GfIsClose(mCommandedSpeed[1], 0.0f, FLT_EPSILON);
-    // mWheelBase is the total distance between wheels, but to compute wheel speed we need to use half of that distance
-    mWheelDesiredSpeed[0] = (mCommandedSpeed[0] - mCommandedSpeed[1] * mWheelBase * 0.5);
-    mWheelDesiredSpeed[1] = (mCommandedSpeed[0] + mCommandedSpeed[1] * mWheelBase * 0.5);
-}
+    // mCommandedSpeed[0] is in stageunits/s
+    // mCommandedSpeed[1] is in rad/s
+    // mWheelBase is in stageunits
+    // mWheelRadius is in stageunits
+    // mWheelDesiredSpeed is in rad/s
 
-float DifferentialBaseSimulator::getVelocity(float target)
-{
-    return pxr::GfClamp(target * mProportionalGain, -mMaxMotorTorque, mMaxMotorTorque);
+    mWheelDesiredSpeed[0] = (mCommandedSpeed[0] - mCommandedSpeed[1] * mWheelBase) / mWheelRadius;
+    mWheelDesiredSpeed[1] = (mCommandedSpeed[0] + mCommandedSpeed[1] * mWheelBase) / mWheelRadius;
 }
 
 float DifferentialBaseSimulator::timedSmoothingFactor(float dt, float lambda)

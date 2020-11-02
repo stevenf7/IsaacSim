@@ -118,19 +118,6 @@ private:
     /// command in the absence of speed commands.
     float mMaximumTimeWithoutCommand = 0.2f;
 
-    /// The maximal motorTorque apply to the driving wheels.
-    /// This determines the maximum acceleration.
-    float mMaxMotorTorque = 10.0f;
-
-    /// Whether to use a proportional driver (true) or always apply mMaxMotorTorque (false)
-    bool mUseProprotionalDriver = true;
-
-    /// Proportional controller gain
-    float mProportionalGain = 100.0f;
-
-    /// brakeTorque applied when braking is requested
-    float mBrakeTorque = 100.0f;
-
     /// A smoothing factor for the estimated acceleration. Smoothing the acceleration is important
     /// as acceleration is estimated via finite differences and can be very noisy. The higher the
     /// value the more smoothing will be applied. If set to 0 smoothing will not be used.
