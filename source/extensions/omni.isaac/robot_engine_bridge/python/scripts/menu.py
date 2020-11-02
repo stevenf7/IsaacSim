@@ -70,14 +70,12 @@ class RobotEngineBridgeMenu:
         prim.CreateRightWheelJointNameAttr("")
 
         prim.CreateRobotFrontAttr((1, 0, 0))
+        prim.CreateWheelRadiusAttr(0.1)
+        prim.CreateWheelBaseAttr(0.5)
         prim.CreateMaxSpeedAttr((1.5, 1.0))
         prim.CreateMaxTimeWithoutCommandAttr(0.2)
-        prim.CreateMaxMotorTorqueAttr(10)
-        prim.CreateUseProportionalDriverAttr(True)
-
-        prim.CreateProportionalGainAttr(100)
-        prim.CreateBrakeTorqueAttr(100)
         prim.CreateAccelerationSmoothingAttr(1.0)
+
         pass
 
     def add_holonomic_base(self, parent=None):
@@ -105,11 +103,6 @@ class RobotEngineBridgeMenu:
         prim.CreateWheelBaseAttr(0.125)
         prim.CreateMaxSpeedAttr((1.5, 1.0))
         prim.CreateMaxTimeWithoutCommandAttr(0.2)
-        prim.CreateMaxMotorTorqueAttr(10)
-        prim.CreateUseProportionalDriverAttr(True)
-
-        prim.CreateProportionalGainAttr(100)
-        prim.CreateBrakeTorqueAttr(100)
         prim.CreateAccelerationSmoothingAttr(1.0)
         pass
 

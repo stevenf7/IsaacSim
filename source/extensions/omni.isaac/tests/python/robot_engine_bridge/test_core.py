@@ -12,6 +12,7 @@ import asyncio
 import omni.isaac.RobotEngineBridgeSchema as REBSchema
 from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 from omni.isaac.utils.scripts.test_utils import load_test_file
+from .common import setup_base_prim
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREB(omni.kit.test.AsyncTestCase):
@@ -27,11 +28,6 @@ class TestREB(omni.kit.test.AsyncTestCase):
     # After running each test
     async def tearDown(self):
         pass
-
-    def setup_base_prim(self, prim):
-        prim.CreateNodeNameAttr("interface")
-        prim.CreateEnabledAttr(True)
-        prim.CreateTimeOffsetAttr(0.0)
 
     def create_application(self):
         json_path = os.path.abspath(
@@ -70,51 +66,51 @@ class TestREB(omni.kit.test.AsyncTestCase):
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_DifferentialBase", True)
         prim = REBSchema.RobotEngineDifferentialBase.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_HolonomicBase", True)
         prim = REBSchema.RobotEngineHolonomicBase.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Vehicle", True)
         prim = REBSchema.RobotEngineVehicle.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_JointControl", True)
         prim = REBSchema.RobotEngineJointControl.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_ScissorLiftSimulator", True)
         prim = REBSchema.RobotEngineScissorLift.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_SurfaceGripper", True)
         prim = REBSchema.RobotEngineSurfaceGripper.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_TwoFingerGripper", True)
         prim = REBSchema.RobotEngineTwoFingerGripper.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_RigidBodiesSink", True)
         prim = REBSchema.RobotEngineRigidBodySink.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Teleport", True)
         prim = REBSchema.RobotEngineTeleport.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_ScenarioFromMessage", True)
         prim = REBSchema.RobotEngineScenarioFromMessage.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Camera", True)
         prim = REBSchema.RobotEngineCamera.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Lidar", True)
         prim = REBSchema.RobotEngineLidar.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
         self.create_application()
         self._editor.play()
         await asyncio.sleep(0.125)
@@ -129,51 +125,51 @@ class TestREB(omni.kit.test.AsyncTestCase):
         self._editor.play()
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_DifferentialBase", True)
         prim = REBSchema.RobotEngineDifferentialBase.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_HolonomicBase", True)
         prim = REBSchema.RobotEngineHolonomicBase.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Vehicle", True)
         prim = REBSchema.RobotEngineVehicle.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_JointControl", True)
         prim = REBSchema.RobotEngineJointControl.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_ScissorLiftSimulator", True)
         prim = REBSchema.RobotEngineScissorLift.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_SurfaceGripper", True)
         prim = REBSchema.RobotEngineSurfaceGripper.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_TwoFingerGripper", True)
         prim = REBSchema.RobotEngineTwoFingerGripper.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_RigidBodiesSink", True)
         prim = REBSchema.RobotEngineRigidBodySink.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Teleport", True)
         prim = REBSchema.RobotEngineTeleport.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_ScenarioFromMessage", True)
         prim = REBSchema.RobotEngineScenarioFromMessage.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Camera", True)
         prim = REBSchema.RobotEngineCamera.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Lidar", True)
         prim = REBSchema.RobotEngineLidar.Define(self._stage, path)
-        self.setup_base_prim(prim)
+        setup_base_prim(prim)
 
         await asyncio.sleep(2)
         await omni.kit.asyncapi.next_update()

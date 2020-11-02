@@ -13,6 +13,7 @@ group ("extensions/"..ext_id)
         { ext_source.."/python/scripts", ext_folder.."/omni/isaac/robot_engine_bridge/scripts" },
         { "%{root}/_build/target-deps/isaac_engine/data/", ext_folder.."/resources/isaac_engine/" },
         { "%{root}/_build/target-deps/isaac_engine/packages/", ext_folder.."/packages/" },
+        { "%{root}/_build/target-deps/isaac_engine/packages/pyalice/", ext_folder.."/omni/isaac/pyalice" },
     }
 
     repo_build.prebuild_copy {

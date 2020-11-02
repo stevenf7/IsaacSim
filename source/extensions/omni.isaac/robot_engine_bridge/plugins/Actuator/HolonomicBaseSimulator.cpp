@@ -194,12 +194,7 @@ void HolonomicBaseSimulator::onComponentChange()
     // CARB_LOG_ERROR("forward %f %f %f", mRobotFront[0], mRobotFront[1], mRobotFront[2]);
     isaac::utils::safeGetAttribute(typedPrim.GetMaxSpeedAttr(), mMaximumSpeed);
     isaac::utils::safeGetAttribute(typedPrim.GetMaxTimeWithoutCommandAttr(), mMaximumTimeWithoutCommand);
-    isaac::utils::safeGetAttribute(typedPrim.GetMaxMotorTorqueAttr(), mMaxMotorTorque);
-    isaac::utils::safeGetAttribute(typedPrim.GetUseProportionalDriverAttr(), mUseProprotionalDriver);
-    isaac::utils::safeGetAttribute(typedPrim.GetProportionalGainAttr(), mProportionalGain);
-    isaac::utils::safeGetAttribute(typedPrim.GetBrakeTorqueAttr(), mBrakeTorque);
     isaac::utils::safeGetAttribute(typedPrim.GetAccelerationSmoothingAttr(), mAccelerationSmoothing);
-
     isaac::utils::safeGetAttribute(typedPrim.GetWheelBaseAttr(), mWheelBase);
     isaac::utils::safeGetAttribute(typedPrim.GetWheelRadiusAttr(), mWheelRadius);
 

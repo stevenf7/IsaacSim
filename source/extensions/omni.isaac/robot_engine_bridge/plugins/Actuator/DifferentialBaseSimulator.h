@@ -48,14 +48,6 @@ private:
     void getWheelDesireSpeed(const pxr::GfVec2d& mCommandedSpeed);
 
     /**
-     * @brief Scales target wheel velocity
-     *
-     * @param target
-     * @return float
-     */
-    float getVelocity(float target);
-
-    /**
      * @brief
      *
      * @param dt
@@ -81,8 +73,7 @@ private:
 
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
 
-    // half length between FL and FR wheel
-    float mWheelBase;
+
     bool mZUp = true;
     float mLastCommandTime;
     bool mBrakeRequested = false;
@@ -115,23 +106,16 @@ private:
     /// command in the absence of speed commands.
     float mMaximumTimeWithoutCommand = 0.2f;
 
-    /// The maximal motorTorque apply to the driving wheels.
-    /// This determines the maximum acceleration.
-    float mMaxMotorTorque = 10.0f;
-
-    /// Whether to use a proportional driver (true) or always apply mMaxMotorTorque (false)
-    bool mUseProprotionalDriver = true;
-
-    /// Proportional controller gain
-    float mProportionalGain = 100.0f;
-
-    /// brakeTorque applied when braking is requested
-    float mBrakeTorque = 100.0f;
-
     /// A smoothing factor for the estimated acceleration. Smoothing the acceleration is important
     /// as acceleration is estimated via finite differences and can be very noisy. The higher the
     /// value the more smoothing will be applied. If set to 0 smoothing will not be used.
     float mAccelerationSmoothing = 1.0f;
+
+    /// Wheel radius to scale linear velocity by
+    float mWheelRadius = 1.0f;
+
+    /// half length between FL and FR wheel
+    float mWheelBase;
 };
 }
 }

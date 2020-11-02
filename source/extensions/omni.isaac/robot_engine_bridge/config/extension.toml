@@ -13,6 +13,10 @@ name = "omni.isaac.robot_engine_bridge"
 name = "omni.isaac.RobotEngineBridgeSchema"
 public = false
 
+# [[python.modules]]
+# name = "omni.isaac.pyalice"
+# public = false
+
 [[python.modules]]
 name = "omni.isaac.robot_engine_bridge.scripts.setup_environment_grid"
 public = false
@@ -24,5 +28,9 @@ recursive = false
 [[libraries]]
 path = "bin/${platform}/${config}/${lib_prefix}robotEngineBridgeSchema${lib_ext}"
 
+# [[libraries]]
+# path = "omni/isaac/pyalice/bindings${lib_ext}"
+
 [python.pipapi]
-requirements = ["numpy"]
+requirements = ["numpy", "numpy-quaternion"]
+
