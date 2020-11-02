@@ -66,7 +66,7 @@ void DifferentialBaseSimulator::tick()
 
             mLastCommandTime = mTimeSeconds;
 
-            CARB_LOG_ERROR("Received %f %f %d %d", elements[0], elements[1], buffers.size(), elements.size());
+            // CARB_LOG_ERROR("Received %f %f %d %d", elements[0], elements[1], buffers.size(), elements.size());
         }
         // Use latest command only for a certain period of time in case no new command arrives
         if (mTimeSeconds - mLastCommandTime > mMaximumTimeWithoutCommand)
