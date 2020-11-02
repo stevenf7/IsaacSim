@@ -87,7 +87,7 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
         const std::string layerName = "DRLayer";
         size_t finalPosition;
         auto newSubLayer = omni::usd::LayerUtils::createSublayer(
-            mStage, mStage->GetRootLayer(), 0, layerPath.c_str(), false, finalPosition);
+            mStage, mStage->GetSessionLayer(), 0, layerPath.c_str(), false, finalPosition);
         mDRLayerName = newSubLayer->GetIdentifier();
         // omni::usd::LayerUtils::setCustomLayerName(newSubLayer, mDRLayerName, pxr::TfToken(layerName.c_str()));
         pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
