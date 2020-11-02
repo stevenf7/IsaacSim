@@ -152,6 +152,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onPrimAdd = onPrimAdd;
     desc.onPrimOrPropertyChange = onPrimOrPropertyChange;
     desc.onPrimRemove = onPrimRemove;
+    desc.order = 120;
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
 }
 
