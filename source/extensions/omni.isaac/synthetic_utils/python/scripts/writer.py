@@ -21,13 +21,14 @@ from PIL import Image, ImageDraw
 
 
 class DataWriter:
-    def __init__(self, data_dir, num_worker_threads):
+    def __init__(self, data_dir, num_worker_threads, max_queue_size=500):
         atexit.register(self.stop_threads)
         self.data_dir = data_dir
 
         # Threading for multiple scenes
         self.num_worker_threads = num_worker_threads
-        self.q = queue.Queue()
+        # Initialize queue with a specified size
+        self.q = queue.Queue(max_queue_size)
         self.threads = []
 
         self.check_for_output_folder()
