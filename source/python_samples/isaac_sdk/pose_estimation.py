@@ -1,21 +1,31 @@
-import time
 import random
 import os
 from pxr import UsdGeom, Usd, Gf
 from omni.isaac.synthetic_utils import OmniKitHelper
 from omni.isaac.synthetic_utils import DomainRandomization
 from omni.isaac.synthetic_utils import SyntheticDataHelper
-from omni.isaac.synthetic_utils import visualization as vis
+
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+
 import omni.physx
 import carb.tokens
 
-CONFIG = {"experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json', "sync_loads": True, "headless": True}
+CONFIG = {
+    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+    "width": 1280,
+    "height": 720,
+    "sync_loads": True,
+    "headless": True,
+    "renderer": "RayTracedLighting",
+}
 
 # D435
 FOCAL_LEN = 1.93
 HORIZONTAL_APERTURE = 2.682
 VERTICAL_APERTURE = 1.509
 FOCUS_DIST = 400
+
+RANDOMIZE_SCENE_EVERY_N_STEPS = 10
 
 
 class DualCameraSample:
@@ -38,7 +48,7 @@ class DualCameraSample:
         self._re_bridge.destroy_application()
 
     def create_stage(self):
-        # open base stage
+        # open base stage and set up axis to Z
         stage = self.kit.get_stage()
         rootLayer = stage.GetRootLayer()
         rootLayer.SetPermissionToEdit(True)
@@ -49,13 +59,20 @@ class DualCameraSample:
         self._environment = stage.DefinePrim("/environment", "Xform")
 
         self._room = stage.DefinePrim("/environment/room", "Xform")
-        self._room.GetReferences().AddReference(
-            "omniverse://ov-isaac-dev/Isaac/Environments/Simple_Room/simple_room.usd"
-        )
+
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return False
+        self._asset_path = nucleus_server + "/Isaac"
+        stage_path = self._asset_path + "/Environments/Simple_Room/simple_room.usd"
+
+        self._room.GetReferences().AddReference(stage_path)
 
         self._target_prim = self.kit.create_prim(
             "/objects/cube", "Cube", translation=(0, 0, 100), scale=(10, 10, 50), semantic_label="target"
         )
+        return True
 
     def create_camera(self):
         self._camera = self.kit.create_prim(
@@ -137,7 +154,7 @@ class DualCameraSample:
         self.unoccluded_provider.CreateBoundingBox2DEnabledAttr(False)
         self.unoccluded_provider.CreateBoundingBox3DEnabledAttr(False)
 
-        # create rigid body sink
+        # create rigid body sink to publish ground truth pose information
         self.rbs_provider = REBSchema.RobotEngineRigidBodySink.Define(stage, "/World/REB_RigidBodiesSink")
         setup_base_component(self.rbs_provider, 0.0)
         self.rbs_provider.CreateOutputComponentAttr("output")
@@ -164,20 +181,12 @@ class DualCameraSample:
 
     def configure_randomization(self):
         texture_list = [
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_a.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/picture_b.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
-        ]
-        material_list = [
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/checkered.mdl",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/checkered_color.mdl",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/marble_tile.mdl",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/picture_a.mdl",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/picture_b.mdl",
-            "omniverse://ov-isaac-dev/Isaac/Samples/DR/Materials/textured_wall.mdl",
+            self._asset_path + "/Samples/DR/Materials/Textures/checkered.png",
+            self._asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            self._asset_path + "/Samples/DR/Materials/Textures/picture_a.png",
+            self._asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
+            self._asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+            self._asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
         ]
         base_path = str(self._room.GetPath())
         self.texture_comp = self.dr_helper.create_texture_comp([base_path], False, texture_list)
@@ -204,12 +213,11 @@ class DualCameraSample:
         )
 
         # get target pose and point camera at it
-        # can specify an offset on target position
         pose = omni.kit.usd.utils.get_world_transform_matrix(self._target_prim)
+        # can specify an offset on target position
         target = pose.ExtractTranslation() + Gf.Vec3d(0, 0, 0)
 
         self.kit.editor.set_camera_target(str(self._camera.GetPath()), target[0], target[1], target[2], True)
-        pass
 
     def randomize_scene(self):
         self.dr_helper.randomize_once()
@@ -225,8 +233,7 @@ class DualCameraSample:
         # randomize camera every frame
         self.randomize_camera()
         # randomize textures every 10 frames
-        # TODO: make configurable
-        if self.frame % 10 == 0:
+        if self.frame % RANDOMIZE_SCENE_EVERY_N_STEPS == 0:
             self.randomize_scene()
 
         # turn both cameras off so that we don't send an image when time is stepped
@@ -251,9 +258,7 @@ class DualCameraSample:
         self.rbs_provider.GetEnabledAttr().Set(True)
         self.kit.update(0)
 
-        # input("step")
         # output fps every 100 frames
-        # TODO, change this to every second wall clock time
         if self.frame % 100 == 0:
             print("FPS: ", self.kit.editor.get_fps_from_drawable())
         self.frame = self.frame + 1
@@ -261,19 +266,20 @@ class DualCameraSample:
 
 if __name__ == "__main__":
     sample = DualCameraSample()
-    sample.create_stage()
-    sample.create_camera()
-    sample.configure_randomization()
-    # wait for stage to load
-    while sample.kit.is_loading():
-        sample.kit.update(0)
+    # On start if state creation was successful
+    if sample.create_stage():
+        sample.create_camera()
+        sample.configure_randomization()
+        # wait for stage to load
+        while sample.kit.is_loading():
+            sample.kit.update(0)
 
-    sample.create_bridge_components()
-    sample.configure_bridge()
+        sample.create_bridge_components()
+        sample.configure_bridge()
 
-    sample.start()
+        sample.start()
 
-    while sample.kit.app.is_running():
-        sample.step()
+        while sample.kit.app.is_running():
+            sample.step()
 
-    sample.stop()
+        sample.stop()

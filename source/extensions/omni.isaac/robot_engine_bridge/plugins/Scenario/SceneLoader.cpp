@@ -85,7 +85,7 @@ void SceneLoader::tick()
                 const carb::dictionary::Item* scenarioDict = mIDict->getItem(jsonBase, "scenario");
                 int scenarioIndex = mIDict->getAsInt(scenarioDict);
                 available = false;
-                LoadSceneAndScenario(sceneName, scenarioIndex, request);
+                loadSceneAndScenario(sceneName, scenarioIndex, request);
             }
         }
     }
@@ -139,7 +139,7 @@ void SceneLoader::initializeParams(std::string inputComponent,
     mReplyChannelName = replyChannelName;
 }
 
-void SceneLoader::SendResponse(int status, std::string request)
+void SceneLoader::sendResponse(int status, std::string request)
 {
     IsaacMessage<isaac_message::Json> jsonMessage;
     auto jsonReplyProto = jsonMessage.initProto();
@@ -161,22 +161,43 @@ void SceneLoader::SendResponse(int status, std::string request)
     publish(mOutputComponent, mReplyChannelName, jsonMessage, isaac_message::JsonProtoId, buffers);
 }
 
-void SceneLoader::LoadSceneAndScenario(std::string sceneName, int scenarioIndex, std::string request)
+bool endsWith(std::string const& fullString, std::string const& ending)
+{
+    if (fullString.length() >= ending.length())
+    {
+        return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void SceneLoader::loadSceneAndScenario(std::string sceneName, int scenarioIndex, std::string request)
 {
     // handle loading scene request
-    CARB_LOG_WARN("Loading scene: %s", sceneName.c_str());
-    bool result =
-        omni::usd::UsdContext::getContext()->openStage(sceneName.c_str(), [this](bool success, const char* err) {
-            if (!success)
-            {
-                CARB_LOG_ERROR("Open USD error: %s", err);
-            }
-            else
-            {
-                CARB_LOG_INFO("Open USD complete");
-            }
-        });
-    SendResponse(1, request);
+    CARB_LOG_INFO("Loading scene: %s", sceneName.c_str());
+
+    if (endsWith(sceneName, ".usd") || endsWith(sceneName, ".usda"))
+    {
+        bool result =
+            omni::usd::UsdContext::getContext()->openStage(sceneName.c_str(), [this](bool success, const char* err) {
+                if (!success)
+                {
+                    CARB_LOG_ERROR("Open USD error: %s", err);
+                }
+                else
+                {
+                    CARB_LOG_INFO("Open USD complete");
+                }
+            });
+        sendResponse(1, request);
+    }
+    else
+    {
+        CARB_LOG_WARN("Scene %s is not a valid usd file", sceneName.c_str());
+        sendResponse(1, request);
+    }
 }
 }
 }

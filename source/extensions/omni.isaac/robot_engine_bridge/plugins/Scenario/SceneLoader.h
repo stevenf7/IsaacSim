@@ -80,7 +80,7 @@ private:
      * @param status
      * @param request
      */
-    void SendResponse(int status, std::string request);
+    void sendResponse(int status, std::string request);
     /**
      * @brief Load scene and scenario from robot engine message
      *
@@ -88,7 +88,7 @@ private:
      * @param scenarioIndex
      * @param request
      */
-    void LoadSceneAndScenario(std::string sceneName, int scenarioIndex, std::string request);
+    void loadSceneAndScenario(std::string sceneName, int scenarioIndex, std::string request);
 
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     carb::dictionary::ISerializer* mJsonSerializer = nullptr;
