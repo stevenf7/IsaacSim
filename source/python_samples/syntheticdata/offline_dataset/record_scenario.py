@@ -33,7 +33,7 @@ RENDER_CONFIG = {
 
 
 class RandomScenario(torch.utils.data.IterableDataset):
-    def __init__(self, scenario_path):
+    def __init__(self, scenario_path, max_queue_size):
 
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
         self.sd_helper = SyntheticDataHelper()
@@ -49,6 +49,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             self.asset_path = nucleus_server + "/Isaac"
             scenario_path = self.asset_path + "/Samples/Synthetic_Data/Stage/warehouse_with_sensors.usd"
         self.scenario_path = scenario_path
+        self.max_queue_size = max_queue_size
         self.data_writer = None
 
         self._setup_world(scenario_path)
@@ -118,7 +119,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # Write to disk
         if self.data_writer is None:
-            self.data_writer = DataWriter(self._output_folder, self._num_worker_threads)
+            self.data_writer = DataWriter(self._output_folder, self._num_worker_threads, self.max_queue_size)
             self.data_writer.start_threads()
 
         groundtruth = {
@@ -197,9 +198,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Dataset test")
     parser.add_argument("--scenario", type=str, help="Scenario to load from omniverse server")
     parser.add_argument("--num_frames", type=int, default=10, help="Number of frames to record")
+    parser.add_argument("--max_queue_size", type=int, default=500, help="Max size of queue to store and process data")
     args = parser.parse_args()
 
-    dataset = RandomScenario(args.scenario)
+    dataset = RandomScenario(args.scenario, args.max_queue_size)
 
     if dataset.result:
         # Iterate through dataset and visualize the output

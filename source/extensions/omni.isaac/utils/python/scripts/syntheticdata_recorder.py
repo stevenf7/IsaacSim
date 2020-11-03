@@ -29,13 +29,14 @@ EXTENSION_NAME = "Synthetic Data Recorder"
 
 
 class DataWriter:
-    def __init__(self, data_dir, num_worker_threads):
+    def __init__(self, data_dir, num_worker_threads, max_queue_size=500):
         atexit.register(self.stop_threads)
         self.data_dir = data_dir
 
         # Threading for multiple scenes
         self.num_worker_threads = num_worker_threads
-        self.q = queue.Queue()
+        # Initialize queue with a specified size
+        self.q = queue.Queue(max_queue_size)
         self.threads = []
 
         self.check_for_output_folder()
@@ -421,6 +422,11 @@ class Extension(omni.ext.IExt):
                             self._num_threads = ui.IntField(width=250)
                             self._num_threads.model.set_value(4)
                         with ui.HStack():
+                            ui.Spacer(width=10)
+                            self._ui_queue_label = ui.Label("Size of queue:", width=150)
+                            self._max_queue_size = ui.IntField(width=250)
+                            self._max_queue_size.model.set_value(500)
+                        with ui.HStack():
                             ui.Spacer(width=5)
                             self._capture_btn = ui.Button("Start Recording", width=100)
                             self._capture_btn.set_clicked_fn(self.generate_data_fn)
@@ -472,7 +478,9 @@ class Extension(omni.ext.IExt):
         data_dir = str(self._ui_dir_name.model.get_value_as_string())
 
         if self.data_writer is None:
-            self.data_writer = DataWriter(data_dir, self._num_threads.model.get_value_as_int())
+            self.data_writer = DataWriter(
+                data_dir, self._num_threads.model.get_value_as_int(), self._max_queue_size.model.get_value_as_int()
+            )
             self.data_writer.start_threads()
 
         self._render_mode = str(self._settings.get("/rtx/rendermode"))
