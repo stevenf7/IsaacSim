@@ -24,7 +24,7 @@ import asyncio
 DEFAULT_CONFIG = {
     "width": 1024,
     "height": 800,
-    "renderer": "PathTracing",
+    "renderer": "PathTracing",  # Can also be RayTracedLighting
     "samples_per_pixel_per_frame": 64,
     "denoiser": True,
     "subdiv_refinement_level": 0,
@@ -185,7 +185,7 @@ Launches and configures OmniKit and exposes useful functions.
         if self._exiting:
             return
         if physics_substeps is not None and physics_substeps > 0:
-            self.kit_settings.set_setting("/physics/maxNumSteps", int(physics_substeps))
+            self.kit_settings.set("/physics/maxNumSteps", int(physics_substeps))
         if dt is not None:
             if self.kit_settings and dt > 0.0:
                 if physics_dt is None or physics_dt <= 0.0:
