@@ -3,9 +3,7 @@ import omni.ui as ui
 import omni.kit.ui
 from .. import _occupancy_map
 import omni
-import carb
-from pxr import UsdGeom, Gf, Sdf, Usd
-import os
+from pxr import UsdGeom, Gf
 import gc
 
 
@@ -188,6 +186,7 @@ class Extension(omni.ext.IExt):
 
     def _generate_image(self):
         from PIL import Image, ImageDraw
+        import numpy as np
 
         points = self._om.get_occupied_positions()
         if len(points) == 0:
@@ -201,13 +200,23 @@ class Extension(omni.ext.IExt):
         max_b = self._om.get_max_bound()
         scale = self.cell_size.model.get_value_as_float()
         half_w = scale * 0.5
+        top_left = (max_b[0] - half_w, min_b[1] + half_w)
+        top_right = (min_b[0] + half_w, min_b[1] + half_w)
+        bottom_left = (max_b[0] - half_w, max_b[1] - half_w)
+        bottom_right = (min_b[0] + half_w, max_b[1] - half_w)
+
+        image_coords = np.matrix([[0, 1], [-1, 0]]) * np.matrix([[-top_left[0]], [-top_left[1]]])
+
         print("World coordinates for image in stage units:")
-        print("Top left: ", max_b[0] - half_w, min_b[1] + half_w)
-        print("Top right: ", min_b[0] + half_w, min_b[1] + half_w)
+        print("Top left: ", top_left)
+        print("Top right: ", top_right)
 
-        print("Bottom left: ", max_b[0] - half_w, max_b[1] - half_w)
-        print("Bottom right: ", min_b[0] + half_w, max_b[1] - half_w)
+        print("Bottom left: ", bottom_left)
+        print("Bottom right: ", bottom_right)
 
+        print(
+            f"Coordinates of top left of image (pixel 0,0) as origin, + X down, + Y right:\n{float(image_coords[0][0]), float(image_coords[1][0])}"
+        )
         size = [0, 0, 0]
 
         size[0] = max_b[0] - min_b[0]
@@ -277,7 +286,12 @@ class Extension(omni.ext.IExt):
             with ui.VStack():
                 with ui.VStack(height=0):
                     ui.Label(
-                        f"Coordinates in stage units: \n Top Left: [{max_b[0]-half_w}, {min_b[1]+half_w}]\t\t Top Right: {min_b[0]+half_w}, {min_b[1]+half_w}\n Bottom Left: {max_b[0]-half_w}, {max_b[1]-half_w}\t\t Bottom Right: {min_b[0]+half_w}, {max_b[1]-half_w}",
+                        f"Coordinates in stage space: \nTop Left: {top_left}\t\t Top Right: {top_right}\n Bottom Left: {bottom_left}\t\t Bottom Right: {bottom_right}",
+                        alignment=ui.Alignment.LEFT,
+                    )
+                    ui.Spacer(height=5)
+                    ui.Label(
+                        f"Coordinates of top left of image (pixel 0,0) as origin, + X down, + Y right:\n{float(image_coords[0][0]), float(image_coords[1][0])}",
                         alignment=ui.Alignment.LEFT,
                     )
                 ui.Spacer(height=5)
