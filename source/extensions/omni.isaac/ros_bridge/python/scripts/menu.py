@@ -77,7 +77,6 @@ class RosBridgeMenu:
         prim = ROSSchema.RosClock.Define(self._stage, self.get_path("/ROS_Clock"))
         self.setup_base_prim(prim)
         prim.CreateClockPubTopicAttr("/clock")
-        prim.CreateSimTimeAttr(True)
         prim.CreateQueueSizeAttr(0)
         pass
 

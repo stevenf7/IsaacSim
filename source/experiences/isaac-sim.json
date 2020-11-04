@@ -87,7 +87,12 @@
         }
     },
     "persistent": {
-        "app": { "stage": { "upAxis": "Z" } },
+        "app": {
+            "stage": { "upAxis": "Z" },
+            "viewport": {
+                "displayOptions": 3807
+            }
+        },
         "physics": {
             "maxNumSteps": 3.0,
             "updateToUsd": false
