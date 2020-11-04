@@ -81,8 +81,9 @@ void JointControl::tick()
                     }
                     if (props.hasLimits)
                     {
-                        elementValue =
-                            std::max(props.lower + mLimitOffset, std::min(elementValue, props.upper - mLimitOffset));
+                        // Joints become unstable if we get close to 2*pi limit. Artificially limit as a workaround
+                        elementValue = CARB_CLAMP(elementValue, props.lower, props.upper);
+                        elementValue = CARB_CLAMP(elementValue, -6.25, 6.25);
                     }
                     if (measure == isaac_message::Composite::Measure::POSITION)
                     {

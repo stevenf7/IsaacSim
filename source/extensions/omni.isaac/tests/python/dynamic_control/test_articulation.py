@@ -285,7 +285,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         root_body_ptr = self._dc.get_articulation_root_body(art)
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
-        self.assertAlmostEqual(drive_target * 24.0, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1)
+        self.assertAlmostEqual(drive_target * 24.0, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), delta=0.2)
         self.assertAlmostEqual(0, np.linalg.norm([ang_vel.x, ang_vel.y, ang_vel.z]), 1)
 
         self._dc.set_dof_velocity_target(left_wheel_ptr, 0)
