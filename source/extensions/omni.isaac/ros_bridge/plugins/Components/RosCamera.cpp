@@ -63,8 +63,6 @@ RosCamera::RosCamera()
         CARB_LOG_ERROR("Failed to acquire carb::sensors::Sensors interface");
         return;
     }
-
-    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
 }
 RosCamera::~RosCamera()
 {
@@ -82,6 +80,8 @@ RosCamera::~RosCamera()
 void RosCamera::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
+    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
+
     onComponentChange();
 }
 

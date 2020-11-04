@@ -37,8 +37,6 @@ RosLidar::RosLidar()
         CARB_LOG_ERROR("Failed to acquire omni::isaac::lidar interface");
         return;
     }
-
-    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
 }
 RosLidar::~RosLidar()
 {
@@ -50,6 +48,8 @@ RosLidar::~RosLidar()
 void RosLidar::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
+    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
+
     onComponentChange();
 }
 
@@ -67,6 +67,7 @@ void RosLidar::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
     isaac::utils::safeGetAttribute(typedPrim.GetPointCloudPubTopicAttr(), mPointCloudPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetPointCloudEnabledAttr(), mEnablePointCloud);
+    isaac::utils::safeGetAttribute(typedPrim.GetFrameIdAttr(), mFrameId);
 
     mRosNode->createPublisher<sensor_msgs::LaserScan>(
         mPrim.GetPath().GetString(), mLaserScanPubTopic, mQueueSize, &RosLidar::pubCallback, this);
