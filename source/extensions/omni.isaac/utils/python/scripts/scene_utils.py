@@ -1,7 +1,7 @@
 from pxr import Usd, UsdGeom, Gf, PhysxSchema, PhysicsSchema
 
 
-def setUpZAxis(stage):
+def set_up_z_axis(stage):
     rootLayer = stage.GetRootLayer()
     rootLayer.SetPermissionToEdit(True)
     with Usd.EditContext(stage, rootLayer):
@@ -9,7 +9,7 @@ def setUpZAxis(stage):
 
 
 # Set default physics parameters
-def SetupPhysics(stage):
+def setup_physics(stage):
     # Specify gravity
     metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
     gravityScale = 9.81 / metersPerUnit
@@ -27,7 +27,7 @@ def SetupPhysics(stage):
 
 
 # Specify position of a given prim, reuse any existing transform ops when possible
-def setTranslate(prim, new_loc):
+def set_translate(prim, new_loc):
     properties = prim.GetPropertyNames()
     if "xformOp:translate" in properties:
         translate_attr = prim.GetAttribute("xformOp:translate")
@@ -47,9 +47,9 @@ def setTranslate(prim, new_loc):
 
 
 # Create background stage
-def CreateBackground(stage, background_stage, background_path="/background", offset=Gf.Vec3d(0, 0, -104)):
+def create_background(stage, background_stage, background_path="/background", offset=Gf.Vec3d(0, 0, -104)):
     if not stage.GetPrimAtPath(background_path):
         backPrim = stage.DefinePrim(background_path, "Xform")
         backPrim.GetReferences().AddReference(background_stage)
         # Move the stage down -104cm so that the floor is below the table wheels
-        setTranslate(backPrim, offset)
+        set_translate(backPrim, offset)

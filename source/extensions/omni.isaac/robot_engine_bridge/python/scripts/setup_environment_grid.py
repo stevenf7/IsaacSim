@@ -7,14 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from pxr import Usd, UsdGeom, Sdf, Gf
+from pxr import Usd, UsdGeom, Gf
 import omni.kit.editor
 import omni.usd
 import omni.ext
 
 
 # Utility function to specify the stage with the z axis as "up"
-def setUpZAxis(stage):
+def set_up_z_axis(stage):
     rootLayer = stage.GetRootLayer()
     rootLayer.SetPermissionToEdit(True)
     with Usd.EditContext(stage, rootLayer):
@@ -22,7 +22,7 @@ def setUpZAxis(stage):
 
 
 # Specify position of a given prim, reuse any existing transform ops when possible
-def setTranslate(prim, new_loc):
+def set_translate(prim, new_loc):
     properties = prim.GetPropertyNames()
     if "xformOp:translate" in properties:
         translate_attr = prim.GetAttribute("xformOp:translate")
@@ -98,7 +98,7 @@ class Extension(omni.ext.IExt):
     def _on_setup_fn(self, widget):
         print("Setup Started")
         self._stage = self._usd_context.get_stage()
-        setUpZAxis(self._stage)
+        set_up_z_axis(self._stage)
 
         self._num_rows = int(self._num_env_rows_int.value)
         self._num_cols = int(self._num_env_cols_int.value)
@@ -113,7 +113,7 @@ class Extension(omni.ext.IExt):
                 path = env_path + "/env_" + str(row_idx) + "_" + str(col_idx)
                 envPrim = self._stage.DefinePrim(path, "Xform")
                 envPrim.GetReferences().AddReference(self._usd_path)
-                setTranslate(
+                set_translate(
                     envPrim,
                     Gf.Vec3d(row_idx * self._row_width, col_idx * self._row_width, self._height_offset_dbl.value),
                 )

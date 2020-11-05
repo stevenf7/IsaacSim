@@ -8,11 +8,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import random
-import time, sys, os, math
 import numpy as np
 
-from pxr import Sdf, Gf, PhysicsSchema, UsdGeom
-import concurrent.futures
+from pxr import Gf, UsdGeom
 from enum import Enum
 import omni
 import carb
@@ -23,14 +21,13 @@ from omni.isaac.samples.scripts.utils.ur10 import UR10, default_config
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
 
 from omni.isaac.samples.scripts.ur10_scenarios.scenario import (
-    setTranslate,
-    setRotate,
-    CreateSolidUR10,
+    set_translate,
+    set_rotate,
+    create_ur10,
     Scenario,
-    CreateBackground,
-    CreateObjects,
-    SetupPhysics,
-    setCollisionGroup,
+    create_background,
+    create_objects,
+    setup_physics,
 )
 from copy import copy
 
@@ -766,15 +763,15 @@ class AttachBody(Scenario):
                     self._time = 0
                     p = self.default_position.p
                     r = self.default_position.r
-                    setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
-                    setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+                    set_translate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                    set_rotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
 
                 else:
                     state = self.ur10_solid.end_effector.status.current_target
                     state_1 = self.pick_and_place.target_position
                     tr = state["orig"] * 100.0
-                    setTranslate(target, Gf.Vec3d(tr[0], tr[1], tr[2]))
-                    setRotate(target, Gf.Matrix3d(Gf.Quatd(state_1.r.w, state_1.r.x, state_1.r.y, state_1.r.z)))
+                    set_translate(target, Gf.Vec3d(tr[0], tr[1], tr[2]))
+                    set_rotate(target, Gf.Matrix3d(Gf.Quatd(state_1.r.w, state_1.r.x, state_1.r.y, state_1.r.z)))
                 self._start = False
                 self._reset = False
                 if self.add_bin_timeout > 0:
@@ -809,12 +806,12 @@ class AttachBody(Scenario):
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"
         self.env_path = "/environments/env"
-        CreateSolidUR10(self._stage, self.env_path, self.ur10_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
+        create_ur10(self._stage, self.env_path, self.ur10_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
 
         a = [self.small_klt_usd for i in range(self.max_bins)]
         b = [self.env_path + "/bins/bin_{}".format(i) for i in range(self.max_bins)]
         c = [Gf.Vec3d(-50000 - 50 * i, 150, 0) for i in range(self.max_bins)]
-        CreateObjects(self._stage, a, b, c)
+        create_objects(self._stage, a, b, c)
 
         # robot end effector default pose
         orig = [0, 0.75, 0.42]
@@ -825,10 +822,10 @@ class AttachBody(Scenario):
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
         p = self.default_position.p
         r = self.default_position.r
-        setTranslate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
-        setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+        set_translate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+        set_rotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
 
-        CreateBackground(
+        create_background(
             self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
         )
 
@@ -837,7 +834,7 @@ class AttachBody(Scenario):
         imageable.MakeInvisible()
 
         # Setup physics simulation
-        SetupPhysics(self._stage)
+        setup_physics(self._stage)
 
     def add_bin(self, *args):
         self.create_new_bin(args)
@@ -973,8 +970,8 @@ class AttachBody(Scenario):
             if np.linalg.norm(translate_attr) < 0.01:
                 p = self.default_position.p
                 r = self.default_position.r
-                setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
-                setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+                set_translate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                set_rotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
 
         return self._paused
 
@@ -986,7 +983,6 @@ class AttachBody(Scenario):
             self.ur10_solid.end_effector.gripper.close()
             self.pick_and_place._closed = True
         state = self.ur10_solid.end_effector.status.current_target
-        state_1 = self.pick_and_place.target_position
         tr = state["orig"] * 100.0
         print(tr[0], tr[1], tr[2])
 

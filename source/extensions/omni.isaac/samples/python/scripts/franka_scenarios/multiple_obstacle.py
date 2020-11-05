@@ -7,22 +7,20 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import random
-import time, sys, os, math
+import math
 import numpy as np
-from pxr import Sdf, Gf, PhysicsSchema
-import concurrent.futures
+from pxr import Gf
 
 from omni.isaac.samples.scripts.utils.franka import Franka, default_config
 from omni.isaac.samples.scripts.utils.world import World
 from omni.isaac.samples.scripts.utils.state_machine import *
-from .scenario import *
+from .scenario import Scenario, create_solid_franka, create_rubiks_cube, create_background, setup_physics
 
 
 class MultipleObstacle(Scenario):
     """ Defines an obstacle avoidance scenario
 
-    Scenarios define the life cycle within kit and handle init, startup, shutdown etc. 
+    Scenarios define the life cycle within kit and handle init, startup, shutdown etc.
     """
 
     def __init__(self, editor, dc, mp):
@@ -63,15 +61,15 @@ class MultipleObstacle(Scenario):
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"
         env_path = "/environments/env"
-        CreateSolidFranka(self._stage, env_path, self.franka_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
+        create_solid_franka(self._stage, env_path, self.franka_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
         # Load first rubiks cube and set its transform
-        CreateRubiksCube(self._stage, self.rubiks_cube_usd, env_path + "/Rubiks_cube", Gf.Vec3d(-10, -30, 12))
+        create_rubiks_cube(self._stage, self.rubiks_cube_usd, env_path + "/Rubiks_cube", Gf.Vec3d(-10, -30, 12))
         # Load second rubiks cube and set its transform
-        CreateRubiksCube(self._stage, self.rubiks_cube_usd, env_path + "/Rubiks_cube1", Gf.Vec3d(-10, 30, 12))
+        create_rubiks_cube(self._stage, self.rubiks_cube_usd, env_path + "/Rubiks_cube1", Gf.Vec3d(-10, 30, 12))
         # Load background
-        CreateBackground(self._stage, self.background_usd)
+        create_background(self._stage, self.background_usd)
         # Setup physics simulation
-        SetupPhysics(self._stage)
+        setup_physics(self._stage)
 
     def register_assets(self, *args):
         # Retrieve two rubiks cubes path in the scene

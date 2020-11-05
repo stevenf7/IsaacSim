@@ -23,7 +23,7 @@ from omni.isaac.manip import _manip
 from pxr import Gf
 
 from .utils.kaya import Kaya
-from omni.isaac.utils.scripts.scene_utils import setUpZAxis, SetupPhysics, CreateBackground
+from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics, create_background
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 EXTENSION_NAME = "Kaya Joystick"
@@ -88,13 +88,13 @@ class Extension(omni.ext.IExt):
             kaya_usd = asset_path + "/Robots/Kaya/kaya.usd"
             speed_gain = 10.0
 
-            setUpZAxis(self._stage)
-            SetupPhysics(self._stage)
+            set_up_z_axis(self._stage)
+            setup_physics(self._stage)
 
             self.kaya = Kaya(
                 stage=self._stage, dc=self._dc, usd_path=kaya_usd, prim_path="/kaya", speed_gain=speed_gain
             )
-            CreateBackground(
+            create_background(
                 self._stage,
                 asset_path + "/Environments/Grid/gridroom_curved.usd",
                 background_path="/background",

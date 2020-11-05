@@ -20,7 +20,7 @@ from omni.isaac.samples.scripts.utils.world import World
 from omni.isaac.samples.scripts.utils.ur10 import UR10, default_config
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
 
-from .scenario import setTranslate, setRotate, CreateSolidUR10, Scenario, CreateObjects, SetupPhysics
+from .scenario import set_translate, set_rotate, create_ur10, Scenario, create_objects, setup_physics
 from copy import copy
 
 from omni.physx import _physx
@@ -499,14 +499,14 @@ class FillBin(Scenario):
                     self._start_time = 0
                     p = self.default_position.p
                     r = self.default_position.r
-                    setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
-                    setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+                    set_translate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                    set_rotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
                 else:
                     state = self.ur10_solid.end_effector.status.current_target
                     state_1 = self.pick_and_place.target_position
                     tr = state["orig"] * 100.0
-                    setTranslate(target, Gf.Vec3d(tr[0], tr[1], tr[2]))
-                    setRotate(target, Gf.Matrix3d(Gf.Quatd(state_1.r.w, state_1.r.x, state_1.r.y, state_1.r.z)))
+                    set_translate(target, Gf.Vec3d(tr[0], tr[1], tr[2]))
+                    set_rotate(target, Gf.Matrix3d(Gf.Quatd(state_1.r.w, state_1.r.x, state_1.r.y, state_1.r.z)))
                 self._start = False
                 self._reset = False
                 if self.add_objects_timeout > 0:
@@ -561,7 +561,7 @@ class FillBin(Scenario):
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"
         self.env_path = "/environments/env"
-        CreateSolidUR10(self._stage, self.env_path, self.ur10_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
+        create_ur10(self._stage, self.env_path, self.ur10_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
 
         # Set robot end effector Target
         orig = [0, 0.75, 0.42]
@@ -572,18 +572,18 @@ class FillBin(Scenario):
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
         p = self.default_position.p
         r = self.default_position.r
-        setTranslate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
-        setRotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+        set_translate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+        set_rotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
 
         num_objs = self.max_objs
         a = [self.objects[random.randint(0, len(self.objects) - 1)] for i in range(num_objs)]
         b = [self.env_path + "/objects/object_{}".format(self.current_obj + i) for i in range(num_objs)]
         c = [Gf.Vec3d(-50000, 0, -50000 + 5 * i) for i in range(num_objs)]
-        CreateObjects(self._stage, a, b, c)
+        create_objects(self._stage, a, b, c)
         self.current_obj = 0
 
         # Setup physics simulation
-        SetupPhysics(self._stage)
+        setup_physics(self._stage)
 
     def add_bin(self, *args):
         self.create_new_objects(args)
@@ -713,8 +713,8 @@ class FillBin(Scenario):
             if np.linalg.norm(translate_attr) < 0.01:
                 p = self.default_position.p
                 r = self.default_position.r
-                setTranslate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
-                setRotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
+                set_translate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                set_rotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
         return self._paused
 
     def open_gripper(self):
