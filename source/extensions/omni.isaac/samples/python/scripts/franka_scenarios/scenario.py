@@ -14,8 +14,9 @@ import gc
 import omni.kit.connectionhub
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
+
 # Utility function to specify the stage with the z axis as "up"
-def setUpZAxis(stage):
+def set_up_z_axis(stage):
     rootLayer = stage.GetRootLayer()
     rootLayer.SetPermissionToEdit(True)
     with Usd.EditContext(stage, rootLayer):
@@ -23,7 +24,7 @@ def setUpZAxis(stage):
 
 
 # Specify position of a given prim, reuse any existing transform ops when possible
-def setTranslate(prim, new_loc):
+def set_translate(prim, new_loc):
     properties = prim.GetPropertyNames()
     if "xformOp:translate" in properties:
         translate_attr = prim.GetAttribute("xformOp:translate")
@@ -43,7 +44,7 @@ def setTranslate(prim, new_loc):
 
 
 # Specify collision group for a prim
-def setCollisionGroup(stage, path, group):
+def set_collision_group(stage, path, group):
     collisionAPI = PhysicsSchema.CollisionAPI.Get(stage, path)
     if collisionAPI:
         rel = collisionAPI.CreateCollisionGroupRel()
@@ -55,23 +56,23 @@ def setCollisionGroupFranka(stage, prim_path, group_path, is_ghost):
     franka_prim = stage.GetPrimAtPath(prim_path)
 
     for p in Usd.PrimRange(franka_prim):
-        setCollisionGroup(stage, p.GetPath(), group_path)
+        set_collision_group(stage, p.GetPath(), group_path)
 
 
 # Instantiate a solid franka usd in the stage at a given path
-def CreateSolidFranka(stage, env_path, franka_stage, solid_robot, location):
+def create_solid_franka(stage, env_path, franka_stage, solid_robot, location):
     envPrim = stage.DefinePrim(env_path, "Xform")  # create an empty Xform at the given path
     envPrim.GetReferences().AddReference(franka_stage)  # attach the franka table USD to the given path
-    setTranslate(envPrim, location)  # set pose of the franka table usd
+    set_translate(envPrim, location)  # set pose of the franka table usd
     setCollisionGroupFranka(stage, env_path + "/Franka/panda", solid_robot, False)  # Set the collision group to solid
 
 
 # Instantiates a ghost franka in the stage at the given path
-def CreateGhostFranka(stage, env_path, franka_ghost_usd, ghost_robot, ghost_index):
+def create_ghost_franka(stage, env_path, franka_ghost_usd, ghost_robot, ghost_index):
     ghost_path = env_path + "/Ghost/robot_{}".format(ghost_index)
     ghostPrim = stage.DefinePrim(ghost_path, "Xform")
     ghostPrim.GetReferences().AddReference(franka_ghost_usd)
-    setTranslate(ghostPrim, Gf.Vec3d(0, 0, 0))
+    set_translate(ghostPrim, Gf.Vec3d(0, 0, 0))
     imageable = UsdGeom.Imageable(ghostPrim)  # Hide the ghost franka when spawned
     if imageable:
         imageable.MakeInvisible()
@@ -81,35 +82,35 @@ def CreateGhostFranka(stage, env_path, franka_ghost_usd, ghost_robot, ghost_inde
 
 # Spawn N blocks given a list of paths in the stage
 # All 3 lists must be the same length
-def CreateBlocks(stage, asset_paths, env_paths, poses):
+def create_blocks(stage, asset_paths, env_paths, poses):
     if (len(asset_paths) != len(env_paths)) and len(asset_paths) != len(poses):
         print("Error: asset paths, env paths and poses must be same length")
         return
     for (asset, path, pose) in zip(*[asset_paths, env_paths, poses]):
         cubePrim = stage.DefinePrim(path, "Xform")
         cubePrim.GetReferences().AddReference(asset)
-        setTranslate(cubePrim, pose)
+        set_translate(cubePrim, pose)
 
 
 # Spawn  rubiks cube usd at specified path
-def CreateRubiksCube(stage, asset_path, prim_path, location):
+def create_rubiks_cube(stage, asset_path, prim_path, location):
     obstaclePrim = stage.DefinePrim(prim_path, "Xform")
     obstaclePrim.GetReferences().AddReference(asset_path)
-    setTranslate(obstaclePrim, location)
+    set_translate(obstaclePrim, location)
 
 
 # Create background stage
-def CreateBackground(stage, background_stage):
+def create_background(stage, background_stage):
     background_path = "/background"
     if not stage.GetPrimAtPath(background_path):
         backPrim = stage.DefinePrim(background_path, "Xform")
         backPrim.GetReferences().AddReference(background_stage)
         # Move the stage down -104cm so that the floor is below the table wheels, move in y axis to get light closer
-        setTranslate(backPrim, Gf.Vec3d(0, -400, -104))
+        set_translate(backPrim, Gf.Vec3d(0, -400, -104))
 
 
 # Set default physics parameters
-def SetupPhysics(stage):
+def setup_physics(stage):
     # Specify gravity
     metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
     gravityScale = 9.81 / metersPerUnit
@@ -129,7 +130,7 @@ def SetupPhysics(stage):
 class Scenario:
     """ Defines a block stacking scenario
 
-    Scenarios define the life cycle within kit and handle init, startup, shutdown etc. 
+    Scenarios define the life cycle within kit and handle init, startup, shutdown etc.
     """
 
     def __init__(self, editor, dc, mp):
@@ -184,7 +185,7 @@ class Scenario:
 
         self._created = True
         self._stage = omni.usd.get_context().get_stage()
-        setUpZAxis(self._stage)
+        set_up_z_axis(self._stage)
         self.stop_tasks()
         pass
 

@@ -17,7 +17,7 @@ import gc
 
 from omni.isaac.dynamic_control import _dynamic_control
 from .utils.simple_robot_controller import RobotController
-from omni.isaac.utils.scripts.scene_utils import setUpZAxis, SetupPhysics, CreateBackground
+from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics, create_background
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 EXTENSION_NAME = "Simple Robot Navigation"
@@ -129,10 +129,10 @@ class Extension(omni.ext.IExt):
                 self._robot_wheels = ["left_wheel", "right_wheel"]
                 self._robot_wheels_speed = [2, 2]
 
-            setUpZAxis(self._stage)
-            SetupPhysics(self._stage)
+            set_up_z_axis(self._stage)
+            setup_physics(self._stage)
 
-            CreateBackground(
+            create_background(
                 self._stage,
                 self._asset_path + "/Environments/Grid/gridroom_curved.usd",
                 background_path="/background",

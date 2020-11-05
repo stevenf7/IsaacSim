@@ -9,6 +9,8 @@
 
 import random
 import time
+import os
+import sys
 from pxr import Sdf, Gf, PhysicsSchema
 import concurrent.futures
 from omni.isaac.samples.scripts.utils.franka import Franka, default_config, alternate_config
@@ -16,7 +18,15 @@ from omni.isaac.samples.scripts.utils.world import World
 from omni.isaac.samples.scripts.utils.state_machine import *
 from omni.isaac.samples.scripts.utils.behavior_states import *
 from omni.isaac.samples.scripts.utils.behavior_helpers import *
-from .scenario import *
+from .scenario import (
+    Scenario,
+    create_rubiks_cube,
+    create_solid_franka,
+    create_blocks,
+    create_ghost_franka,
+    create_background,
+    setup_physics,
+)
 
 
 class GhostScenario(Scenario):
@@ -98,13 +108,13 @@ class GhostScenario(Scenario):
 
                 env_path = "/environments/env_{}_{}".format(i, j)
                 if not self._stage.GetPrimAtPath(env_path):
-                    CreateRubiksCube(
+                    create_rubiks_cube(
                         self._stage, self.rubiks_cube_usd, env_path + "/Rubiks_cube", Gf.Vec3d(-10, -30, 12)
                     )
-                    CreateSolidFranka(
+                    create_solid_franka(
                         self._stage, env_path, self.franka_table_usd, solid_robot, Gf.Vec3d(-i * 200, j * 200, 0)
                     )
-                    CreateBlocks(
+                    create_blocks(
                         self._stage,
                         [self.red_cube_usd, self.yellow_cube_usd, self.green_cube_usd, self.blue_cube_usd],
                         [
@@ -116,12 +126,12 @@ class GhostScenario(Scenario):
                         [Gf.Vec3d(40, 15, 12), Gf.Vec3d(40, -15, 12), Gf.Vec3d(60, 15, 12), Gf.Vec3d(60, -15, 12)],
                     )
                     for ghost_index in range(0, self.num_ghosts):
-                        CreateGhostFranka(self._stage, env_path, self.franka_ghost_usd, ghost_robot, ghost_index)
+                        create_ghost_franka(self._stage, env_path, self.franka_ghost_usd, ghost_robot, ghost_index)
 
                 index = index + 1
 
-        CreateBackground(self._stage, self.background_usd)
-        SetupPhysics(self._stage)
+        create_background(self._stage, self.background_usd)
+        setup_physics(self._stage)
 
     def register_assets(self, *args):
         self._domains = []

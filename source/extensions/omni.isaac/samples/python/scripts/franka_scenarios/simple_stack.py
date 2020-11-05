@@ -7,17 +7,18 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import random
-import time, sys, os
-from pxr import Sdf, Gf, PhysicsSchema
+import sys
+import os
+from pxr import Gf
 import concurrent.futures
+import numpy as np
 
 from omni.isaac.samples.scripts.utils.franka import Franka, default_config
 from omni.isaac.samples.scripts.utils.world import World
 from omni.isaac.samples.scripts.utils.state_machine import *
 from omni.isaac.samples.scripts.utils.behavior_states import *
 from omni.isaac.samples.scripts.utils.behavior_helpers import *
-from .scenario import *
+from .scenario import create_solid_franka, create_background, setup_physics, create_blocks, Scenario
 
 
 class PickAndPlaceSimple(HierarchicalState):
@@ -83,7 +84,7 @@ class StackBlocksSimple(HierarchicalState):
 class SimpleStack(Scenario):
     """ Defines a block stacking scenario
 
-    Scenarios define the life cycle within kit and handle init, startup, shutdown etc. 
+    Scenarios define the life cycle within kit and handle init, startup, shutdown etc.
     """
 
     def __init__(self, editor, dc, mp):
@@ -113,17 +114,17 @@ class SimpleStack(Scenario):
         # Load robot environment and set its transform
         solid_robot = "/physics/scene/solid"
         env_path = "/environments/env"
-        CreateSolidFranka(self._stage, "/environments/env", self.franka_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
-        CreateBlocks(
+        create_solid_franka(self._stage, "/environments/env", self.franka_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
+        create_blocks(
             self._stage,
             [self.green_cube_usd, self.blue_cube_usd],
             [env_path + "/Blocks/block_01", env_path + "/Blocks/block_02"],
             [Gf.Vec3d(60, 15, 12), Gf.Vec3d(60, -15, 12)],
         )
         # Load background
-        CreateBackground(self._stage, self.background_usd)
+        create_background(self._stage, self.background_usd)
         # Setup physics simulation
-        SetupPhysics(self._stage)
+        setup_physics(self._stage)
 
     def register_assets(self, *args):
         self._domains = []

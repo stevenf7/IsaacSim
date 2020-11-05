@@ -147,7 +147,7 @@ class Extension(omni.ext.IExt):
         press 1 to perform tasks
         press 2 to stop tasks
         press 3 to toggle obstacle
-        
+
         Args:
             event (int): keyboard event type
         """
@@ -163,7 +163,7 @@ class Extension(omni.ext.IExt):
 
     def _on_editor_step(self, step):
         """This function is called every timestep in the editor
-        
+
         Arguments:
             step (float): elapsed time between steps
         """
@@ -173,7 +173,7 @@ class Extension(omni.ext.IExt):
         """This function is called when stage events occur.
         Enables UI elements when stage is opened.
         Prevents tasks from being started until all assets are loaded
-        
+
         Arguments:
             event (int): event type
         """

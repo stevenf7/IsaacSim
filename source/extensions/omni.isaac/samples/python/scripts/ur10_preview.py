@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import carb.input
-from pxr import Usd, UsdGeom
 import omni.kit.commands
 import omni.kit.editor
 import omni.ext
@@ -95,7 +94,7 @@ class Extension(omni.ext.IExt):
 
     def _on_clear_scenario(self, widget):
         # wait for new stage before creating franka
-        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        asyncio.ensure_future(omni.kit.asyncapi.new_stage())
         self._create_UR10_btn.text = "Create Scenario"
         self._create_UR10_btn.set_clicked_fn(self._on_environment_setup)
         self._selected_scenario.enabled = True

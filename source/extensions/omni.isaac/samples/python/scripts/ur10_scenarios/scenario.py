@@ -17,7 +17,7 @@ import numpy as np
 import gc
 
 
-def setTranslate(prim, new_loc):
+def set_translate(prim, new_loc):
     properties = prim.GetPropertyNames()
     if "xformOp:translate" in properties:
         translate_attr = prim.GetAttribute("xformOp:translate")
@@ -37,7 +37,7 @@ def setTranslate(prim, new_loc):
         xform_op.Set(Gf.Matrix4d().SetTranslate(new_loc))
 
 
-def setRotate(prim, rot_mat):
+def set_rotate(prim, rot_mat):
     properties = prim.GetPropertyNames()
     if "xformOp:rotate" in properties:
         rotate_attr = prim.GetAttribute("xformOp:rotate")
@@ -53,27 +53,27 @@ def setRotate(prim, rot_mat):
         xform_op.Set(Gf.Matrix4d().SetRotate(rot_mat))
 
 
-def setCollisionGroup(prim, group):
+def set_collision_group(prim, group):
     collisionAPI = PhysicsSchema.CollisionAPI.Apply(prim)
     rel = collisionAPI.CreateCollisionGroupRel()
     rel.AddTarget(Sdf.Path(group))
 
 
-def setUpZAxis(stage):
+def set_up_z_axis(stage):
     rootLayer = stage.GetRootLayer()
     rootLayer.SetPermissionToEdit(True)
     with Usd.EditContext(stage, rootLayer):
         UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
 
 
-def CreateSolidUR10(stage, env_path, UR10_stage, solid_robot, location):
+def create_ur10(stage, env_path, UR10_stage, solid_robot, location):
     envPrim = stage.DefinePrim(env_path, "Xform")
     envPrim.GetReferences().AddReference(UR10_stage)
-    setTranslate(envPrim, location)
+    set_translate(envPrim, location)
     print(env_path + "/ur10", solid_robot)
 
 
-def CreateObjects(stage, asset_paths, env_paths, translations, rotations=None):
+def create_objects(stage, asset_paths, env_paths, translations, rotations=None):
     if rotations is None:
         rotations = [None for i in range(len(asset_paths))]
     if (
@@ -88,27 +88,27 @@ def CreateObjects(stage, asset_paths, env_paths, translations, rotations=None):
         if not prim:
             prim = stage.DefinePrim(path, "Xform")
         prim.GetReferences().AddReference(asset)
-        setTranslate(prim, translation)
+        set_translate(prim, translation)
         if rotation is not None:
-            setRotate(prim, rotation)
+            set_rotate(prim, rotation)
 
 
-def CreateRubiksCube(stage, asset_path, prim_path, location):
+def create_rubiks_cube(stage, asset_path, prim_path, location):
     obstaclePrim = stage.DefinePrim(prim_path, "Xform")
     obstaclePrim.GetReferences().AddReference(asset_path)
-    setTranslate(obstaclePrim, location)
+    set_translate(obstaclePrim, location)
 
 
-def CreateBackground(stage, background_stage, pos, rot):
+def create_background(stage, background_stage, pos, rot):
     background_path = "/background"
     if not stage.GetPrimAtPath(background_path):
         backPrim = stage.DefinePrim(background_path, "Xform")
         backPrim.GetReferences().AddReference(background_stage)
-        setTranslate(backPrim, Gf.Vec3d(pos[0], pos[1], pos[2]))
-        setRotate(backPrim, Gf.Matrix3d(rot))
+        set_translate(backPrim, Gf.Vec3d(pos[0], pos[1], pos[2]))
+        set_rotate(backPrim, Gf.Matrix3d(rot))
 
 
-def SetupPhysics(stage):
+def setup_physics(stage):
     metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
     gravityScale = 9.81 / metersPerUnit
     gravity = Gf.Vec3f(0.0, 0.0, -gravityScale)
@@ -127,7 +127,7 @@ def SetupPhysics(stage):
 class Scenario:
     """ Defines a block stacking scenario
 
-    Scenarios define the life cycle within kit and handle init, startup, shutdown etc. 
+    Scenarios define the life cycle within kit and handle init, startup, shutdown etc.
     """
 
     def __init__(self, editor, dc, mp):
@@ -183,7 +183,7 @@ class Scenario:
 
         self._created = True
         self._stage = omni.usd.get_context().get_stage()
-        setUpZAxis(self._stage)
+        set_up_z_axis(self._stage)
         self.stop_tasks()
         pass
 
