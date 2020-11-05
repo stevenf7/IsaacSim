@@ -13,9 +13,9 @@ This is where the Robotics experiece for Omniverse is developed
 
 [Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/robotics)
 
-[Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackaging_BuildLinuxX8664/.lastSuccessful/isaac-sim%40%7Bbuild.number%7D-linux-x86_64-release.7z)
+[Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Master_BuildAndPackagingValidation/.lastSuccessful/isaac-sim%40%7Bbuild.number%7D-linux-x86_64-release.7z)
 
-[Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Carbon_Isaac_OmniIsaacSim_Develop_BuildAndPackaging_BuildLinuxX8664Release/.lastSuccessful/isaac-sim%40%7Bbuild.number%7D-linux-x86_64-release.7z)
+[Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndPackagingValidation/.lastSuccessful/isaac-sim%40%7Bbuild.number%7D-linux-x86_64-release.7z)
 
 
 ### Filing Bugs and Feature Requests
@@ -43,9 +43,9 @@ Use the links below to create a new bug/feature request
 
 
 ### TeamCity Pipelines
-Master: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation&tab=buildTypeHistoryList&Carbon_Isaac_OmniIsaacSim_Master_BuildAndPackagingValidation=%3Cdefault%3E&branch_Carbon_Isaac_OmniIsaacSim_Master=%3Cdefault%3E)
+Master: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Master_BuildAndPackagingValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Master_BuildAndPackagingValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Master_BuildAndPackagingValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Master=%3Cdefault%3E)
 
-Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Carbon_Isaac_OmniIsaacSim_Develop_BuildAndPackagingValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Carbon_Isaac_OmniIsaacSim_Develop_BuildAndPackagingValidation&tab=buildTypeHistoryList&Carbon_Isaac_OmniIsaacSim_Develop_BuildAndPackagingValidation=%3Cdefault%3E&branch_Carbon_Isaac_OmniIsaacSim_Develop=%3Cdefault%3E)
+Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Develop_BuildAndPackagingValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Develop_BuildAndPackagingValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Develop_BuildAndPackagingValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Develop=%3Cdefault%3E)
 
 ## Prerequisites
 #### Hardware
