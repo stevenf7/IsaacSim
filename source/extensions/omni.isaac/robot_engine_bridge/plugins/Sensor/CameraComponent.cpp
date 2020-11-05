@@ -66,6 +66,12 @@ void CameraComponent::tick()
 {
     CARB_PROFILE_ZONE(0, "CameraComponent Tick");
 
+    if (mSkipFirstFrame)
+    {
+        mSkipFirstFrame = false;
+        return;
+    }
+
     if (!mRgbSensor && !mDepthSensor && !mSegmentationSensor && !mSemanticSensor && !mBoundingBox2DSensor)
         return;
 
@@ -406,6 +412,8 @@ void CameraComponent::tick()
 void CameraComponent::onStart()
 {
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
+    mSkipFirstFrame = true;
+
     onComponentChange();
 }
 void CameraComponent::onStop()
