@@ -137,10 +137,13 @@ void DRComponentColor::update()
             mStage->SetEditTarget(editTarget);
         }
         auto mCopyColorMaterialPrim = mStage->GetPrimAtPath(pxr::SdfPath(mCopyColorMaterialPrimName.c_str()));
-        mAllMaterialPrims.push_back(mCopyColorMaterialPrim);
-        pxr::UsdShadeMaterial materialShade(mCopyColorMaterialPrim);
-        pxr::UsdShadeMaterialBindingAPI materialBinding(prim);
-        materialBinding.Bind(materialShade, pxr::UsdShadeTokens->strongerThanDescendants);
+        if (mCopyColorMaterialPrim)
+        {
+            mAllMaterialPrims.push_back(mCopyColorMaterialPrim);
+            pxr::UsdShadeMaterial materialShade(mCopyColorMaterialPrim);
+            pxr::UsdShadeMaterialBindingAPI materialBinding(prim);
+            materialBinding.Bind(materialShade, pxr::UsdShadeTokens->strongerThanDescendants);
+        }
     }
 }
 void DRComponentColor::onComponentChange()

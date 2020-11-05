@@ -56,6 +56,10 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._editor.stop()
         pass
 
+    def is_loading(self):
+        time, message, loaded, loading = self._editor.get_current_renderer_status()
+        return loading > 0
+
     # Unit test for color component
     async def test_color_component(self):
         root_layer = self._stage.GetRootLayer()
@@ -87,17 +91,20 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         color_comp = self._stage.GetPrimAtPath(color_comp_path)
         self.assertTrue(color_comp)
         # Let the material load
-        await asyncio.sleep(10.0)
+        await omni.kit.asyncapi.next_update()
+        while self.is_loading():
+            await omni.kit.asyncapi.next_update()
+        await omni.kit.asyncapi.next_update()
         # Validate color material prim
-        color_mat_path = default_prim_path + "/Colors/color_component/OmniPBR_2"
+        color_mat_path = default_prim_path + "/Colors/color_component/OmniPBR_2/Shader"
         color_mat = self._stage.GetPrimAtPath(color_mat_path)
         self.assertTrue(color_mat)
         # Validate attribute for randomizing color
         color_attr = color_mat.GetAttribute("inputs:diffuse_color_constant")
         self.assertIsNotNone(color_attr)
-        color_value_1 = Gf.Vec3f(color_attr.Get())
+        color_value_1 = color_attr.Get()
         await omni.kit.asyncapi.next_update()
-        color_value_2 = Gf.Vec3f(color_attr.Get())
+        color_value_2 = color_attr.Get()
         # Check if color values are different after one frame
         self.assertFalse(Gf.IsClose(color_value_1, color_value_2, 0.00001))
         pass
@@ -112,8 +119,6 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         cube_path = default_prim_path + "/Cube"
         cube = self._stage.GetPrimAtPath(cube_path)
         self.assertTrue(cube)
-        # Start Simulation
-        self._editor.play()
         # Get initial transform matrix
         xformable = UsdGeom.Xformable(cube)
         transform_matrix_1 = xformable.GetLocalTransformation()
@@ -134,9 +139,11 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         mov_comp = self._stage.GetPrimAtPath(mov_comp_path)
         self.assertTrue(mov_comp)
         # Enable manual mode and execute DR once
+        await omni.kit.asyncapi.next_update()
         self._dr.toggle_manual_mode()
         self._dr.randomize_once()
         self._dr.toggle_manual_mode()
+        await omni.kit.asyncapi.next_update()
         # Get new transform matrix
         transform_matrix_2 = xformable.GetLocalTransformation()
         # Check if rotation components are same and translation components are different
@@ -175,9 +182,11 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         rot_comp = self._stage.GetPrimAtPath(rot_comp_path)
         self.assertTrue(rot_comp)
         # Enable manual mode and execute DR once
+        await omni.kit.asyncapi.next_update()
         self._dr.toggle_manual_mode()
         self._dr.randomize_once()
         self._dr.toggle_manual_mode()
+        await omni.kit.asyncapi.next_update()
         # Get new transform matrix
         transform_matrix_2 = xformable.GetLocalTransformation()
         # Check if rotation components are different and translation components are same
@@ -217,9 +226,11 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         scale_comp = self._stage.GetPrimAtPath(scale_comp_path)
         self.assertTrue(scale_comp)
         # Enable manual mode and execute DR once
+        await omni.kit.asyncapi.next_update()
         self._dr.toggle_manual_mode()
         self._dr.randomize_once()
         self._dr.toggle_manual_mode()
+        await omni.kit.asyncapi.next_update()
         # Get new transform matrix
         transform_matrix_2 = xformable.GetLocalTransformation()
         # Check if transformation matrices are different
