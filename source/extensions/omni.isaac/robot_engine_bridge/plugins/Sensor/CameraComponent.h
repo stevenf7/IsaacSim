@@ -143,6 +143,7 @@ private:
     std::vector<std::unique_ptr<IsaacBuffer>> mDepthBuffers;
     std::vector<std::unique_ptr<IsaacBuffer>> mSegmentationBuffers;
     std::vector<std::unique_ptr<IsaacBuffer>> mSemanticBuffers;
+    bool mSkipFirstFrame = true;
 };
 }
 }
