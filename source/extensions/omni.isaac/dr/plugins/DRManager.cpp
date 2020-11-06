@@ -45,30 +45,53 @@ void DRManager::initialize(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* to
     mTokens = tokens;
     mRootLayerIdentifier = mStage->GetRootLayer()->GetIdentifier();
     mDRLayerName = "";
+    mNewSublayer = nullptr;
+}
+
+void removePrimSpecFromLayer(const std::string& layerIdentifier, const std::string& primPath)
+{
+    auto layerHandle = omni::usd::LayerUtils::findOrOpen(layerIdentifier);
+    if (layerHandle)
+    {
+        const auto& primSpec = layerHandle->GetPrimAtPath(PXR_NS::SdfPath(primPath));
+        if (primSpec)
+        {
+            auto parent = primSpec->GetRealNameParent();
+            if (parent)
+            {
+                parent->RemoveNameChild(primSpec);
+            }
+        }
+    }
 }
 
 void DRManager::tick(double dt)
 {
+
     mTimeElapsed += dt;
     // CARB_LOG_WARN("Tick: %f - %f", mTimeElapsed, dt);
 
-    for (auto& component : mComponents)
+    if (mNewSublayer)
     {
-        if (component.second->mDoStart == true)
+        pxr::UsdEditContext context(mStage, mNewSublayer);
+        for (auto& component : mComponents)
         {
-            component.second->onStart();
-            component.second->mDoStart = false;
+            if (component.second->mDoStart == true)
+            {
+                component.second->onStart();
+                component.second->mDoStart = false;
+            }
         }
-    }
 
-    for (auto& component : mComponents)
-    {
-        if (component.second &&
-            (component.second->mRandomizationDurationInterval == -1 ||
-             ((mTimeElapsed - component.second->mLastTickTime) >= component.second->mRandomizationDurationInterval)))
+        for (auto& component : mComponents)
         {
-            component.second->mLastTickTime = mTimeElapsed;
-            component.second->tick();
+            if (component.second &&
+                (component.second->mRandomizationDurationInterval == -1 ||
+                 ((mTimeElapsed - component.second->mLastTickTime) >= component.second->mRandomizationDurationInterval)))
+            {
+                component.second->mLastTickTime = mTimeElapsed;
+                component.second->tick();
+            }
         }
     }
 }
@@ -86,12 +109,10 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
         const std::string layerPath = "";
         const std::string layerName = "DRLayer";
         size_t finalPosition;
-        auto newSubLayer = omni::usd::LayerUtils::createSublayer(
+        mNewSublayer = omni::usd::LayerUtils::createSublayer(
             mStage, mStage->GetSessionLayer(), 0, layerPath.c_str(), false, finalPosition);
-        mDRLayerName = newSubLayer->GetIdentifier();
-        // omni::usd::LayerUtils::setCustomLayerName(newSubLayer, mDRLayerName, pxr::TfToken(layerName.c_str()));
-        pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
-        mStage->SetEditTarget(editTarget);
+        mDRLayerName = mNewSublayer->GetIdentifier();
+        // omni::usd::LayerUtils::setCustomLayerName(mNewSublayer, mDRLayerName, pxr::TfToken(layerName.c_str()));
     }
     if (mComponents.find(primPath) != mComponents.end())
         return;
@@ -151,21 +172,36 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
 
 void DRManager::tickManual()
 {
-    if (mLayer && mRootLayerIdentifier.compare(mLayer->getAuthoringLayerIdentifier()) == 0)
-        mLayer->setAuthoringLayerByIdentifier(mRootLayerIdentifier);
 
-    for (auto& component : mComponents)
+    if (mNewSublayer)
     {
-        if (component.second->mDoStart == true)
+        pxr::UsdEditContext context(mStage, mNewSublayer);
+        for (auto& component : mComponents)
         {
-            component.second->onStart();
-            component.second->mDoStart = false;
+            if (component.second->mDoStart == true)
+            {
+                component.second->onStart();
+                component.second->mDoStart = false;
+            }
         }
-    }
 
-    for (auto& component : mComponents)
-        if (component.second)
-            component.second->tick();
+        for (auto& component : mComponents)
+            if (component.second)
+                component.second->tick();
+    }
+}
+
+void DRManager::onStop()
+{
+    std::string authoringLayerId = omni::usd::LayerUtils::getAuthoringLayerIdentifier(mStage);
+    auto authlayer = omni::usd::LayerUtils::findOrOpen(authoringLayerId);
+
+    // Delete delta in the authoring layer
+    auto primSpec = authlayer->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR"));
+    if (primSpec)
+    {
+        removePrimSpecFromLayer(authoringLayerId, mStage->GetDefaultPrim().GetPath().GetString() + "/DR");
+    }
 }
 
 }

@@ -119,14 +119,13 @@ void DRComponentMaterial::update()
         {
             std::string mdlDataSourcePath = url;
             carb::extras::Path urlPath(url.c_str());
-            if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Materials"))
+            if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/DR"))
             {
-                omni::usd::UsdUtils::createPrim(
-                    mStage, "/Materials", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
-                        return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
-                    });
+                omni::usd::UsdUtils::createPrim(mStage, "/DR", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
+                    return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
+                });
             }
-            std::string materialPrimPath = "/Materials/" + urlPath.getStem();
+            std::string materialPrimPath = "/DR/" + urlPath.getStem();
             if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, materialPrimPath))
             {
                 omni::usd::AssetUtils::createPrimFromAssetPath(
@@ -139,8 +138,6 @@ void DRComponentMaterial::update()
             mMaterialShades.push_back(material);
         }
     }
-    pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
-    mStage->SetEditTarget(editTarget);
 }
 void DRComponentMaterial::onComponentChange()
 {
@@ -193,7 +190,7 @@ void DRComponentMaterial::stop()
                 omni::usd::UsdUtils::removePrim(materialPrim);
         }
         pxr::UsdPrim materialPrim =
-            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/Materials"));
+            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR"));
         if (materialPrim)
             if (materialPrim.GetChildren().empty())
                 omni::usd::UsdUtils::removePrim(materialPrim);
