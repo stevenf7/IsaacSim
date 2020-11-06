@@ -106,7 +106,7 @@ class Extension(omni.ext.IExt):
         if event.type == carb.input.KeyboardEventType.KEY_RELEASE:
             self._vel_target = np.zeros(2)
 
-            return True
+        return True
 
     def _on_reset(self, widget):
         self._dc.wake_up_articulation(self._ar)
@@ -128,7 +128,7 @@ class Extension(omni.ext.IExt):
                 carb.log_error("Could not find nucleus server with /Isaac folder")
                 return
             asset_path = nucleus_server + "/Isaac"
-            jetbot_usd = asset_path + "/Robots/Jetbot/jetbot_new.usd"
+            jetbot_usd = asset_path + "/Robots/Jetbot/jetbot.usd"
 
             prim_path = "/jetbot"
             self.prim = self._stage.DefinePrim(prim_path, "Xform")

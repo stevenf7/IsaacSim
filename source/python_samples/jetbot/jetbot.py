@@ -69,8 +69,8 @@ class Jetbot:
         if self.ar is None:
             self.ar = self.dc.get_articulation(self.robot_prim.GetPath().pathString)
             self.chassis = self.dc.get_articulation_root_body(self.ar)
-            self.wheel_left = self.dc.find_articulation_dof(self.ar, "left_wheel")
-            self.wheel_right = self.dc.find_articulation_dof(self.ar, "right_wheel")
+            self.wheel_left = self.dc.find_articulation_dof(self.ar, "left_wheel_joint")
+            self.wheel_right = self.dc.find_articulation_dof(self.ar, "right_wheel_joint")
         self.dc.wake_up_articulation(self.ar)
         left_speed = self.wheel_speed_from_motor_value(motor_value[0])
         right_speed = self.wheel_speed_from_motor_value(motor_value[1])
