@@ -61,7 +61,6 @@ class InternalTools(omni.ext.IExt):
             "/Isaac/Robots/UR10/ur10_robotiq.usd",
             "/Isaac/Robots/UR10/ur10_schmalz.usd",
             "/Isaac/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd",
-            "/Isaac/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd",
         ]
         for asset in asset_paths:
             path = "{}{}".format(self.path_txt.model.get_value_as_string(), asset)

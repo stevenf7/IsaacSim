@@ -67,7 +67,7 @@ Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildTyp
     * Reboot your machine after installation.
     * Execute `git lfs install` once to enable LFS features after installation.
         * If you cloned the repo before above steps, you have to fetch the data with `git lfs pull` in the repo.
-- [Fork omniverse isaac sim repository](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/forks/new)
+- [Fork omniverse isaac sim repository](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/forks/new)
 - Go to your newly created fork in GitLab, select
     * go to "Settings->Repository->Mirroring repositories"
         * set "Git repository URL" to https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim.git

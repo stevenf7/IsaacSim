@@ -79,7 +79,7 @@ def check_for_abs_paths(base_path):
 def is_external(path, base_path):
     # if not isabs(path):
     #     path = os.path.join(parent, path)
-    return len(os.path.commonpath(path, base_path)) != len(base_path)
+    return len(os.path.commonpath([path, base_path])) != len(base_path)
 
 
 def check_for_external_refs(base_path):
