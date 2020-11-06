@@ -25,3 +25,6 @@ name = "omni.isaac.samples.scripts.ur10_preview"
 
 [[python.modules]]
 name = "omni.isaac.samples.scripts.simple_navigation_preview"
+
+[[python.modules]]
+name = "omni.isaac.samples.scripts.rmp_sample"
