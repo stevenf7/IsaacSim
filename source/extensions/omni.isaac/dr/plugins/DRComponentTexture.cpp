@@ -57,15 +57,14 @@ void DRComponentTexture::onStart()
         pxr::UsdEditContext context(mStage, mTextureLayer);
         mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
         carb::extras::Path urlPath(mOmniPBRMatPath.c_str());
-        // Check for /Textures prim and if base OmniPBR material is loaded
-        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Textures"))
+        // Check for /DR prim and if base OmniPBR material is loaded
+        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/DR"))
         {
-            omni::usd::UsdUtils::createPrim(
-                mStage, "/Textures", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
-                    return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
-                });
+            omni::usd::UsdUtils::createPrim(mStage, "/DR", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
+                return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
+            });
         }
-        std::string textureCompMaterialPath = "/Textures/" + mCompName;
+        std::string textureCompMaterialPath = "/DR/" + mCompName;
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, textureCompMaterialPath))
         {
             omni::usd::UsdUtils::createPrim(
@@ -91,8 +90,6 @@ void DRComponentTexture::onStart()
         shadeShaderPrim.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
         mTextureMaterialShade = shadeMaterialPrim;
     }
-    pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
-    mStage->SetEditTarget(editTarget);
     onComponentChange();
 }
 void DRComponentTexture::update()
@@ -163,14 +160,12 @@ void DRComponentTexture::update()
         for (std::string& url : mTextureList)
         {
             textureIndex++;
-            std::string mTextureCompPathName = mStage->GetDefaultPrim().GetPath().GetString() + "/Textures/" + mCompName;
+            std::string mTextureCompPathName = mStage->GetDefaultPrim().GetPath().GetString() + "/DR/" + mCompName;
             std::string mCopyTextureMaterialPrimName = mTextureCompPathName + "/OmniPBR_" + std::to_string(textureIndex);
             if (mTextureMaterialPrim && !omni::usd::UsdUtils::hasPrimAtPath(mStage, mCopyTextureMaterialPrimName, false))
             {
                 pxr::UsdEditContext context(mStage, mTextureLayer);
                 omni::usd::UsdUtils::copyPrim(mTextureMaterialPrim, nullptr, false, false);
-                pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
-                mStage->SetEditTarget(editTarget);
             }
             auto mCopyTextureMaterialPrim = mStage->GetPrimAtPath(pxr::SdfPath(mCopyTextureMaterialPrimName.c_str()));
             mMaterialPrims.push_back(mCopyTextureMaterialPrim);
@@ -179,8 +174,6 @@ void DRComponentTexture::update()
         }
         mDoOnce = true;
     }
-    pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
-    mStage->SetEditTarget(editTarget);
 }
 void DRComponentTexture::onComponentChange()
 {
@@ -232,13 +225,13 @@ void DRComponentTexture::stop()
         if (mTextureMaterialPrim)
             omni::usd::UsdUtils::removePrim(mTextureMaterialPrim);
         // Remove component level Texture prim
-        pxr::UsdPrim textureCompPrim = mStage->GetPrimAtPath(
-            pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/Textures/" + mCompName));
+        pxr::UsdPrim textureCompPrim =
+            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR/" + mCompName));
         if (textureCompPrim)
             omni::usd::UsdUtils::removePrim(textureCompPrim);
         // Remove top-level Texture prim
         pxr::UsdPrim texturePrim =
-            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/Textures"));
+            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR"));
         if (texturePrim && texturePrim.GetChildren().empty())
             omni::usd::UsdUtils::removePrim(texturePrim);
 

@@ -42,6 +42,7 @@ public:
     void tick(double dt);
     void onComponentAdd(const pxr::UsdPrim& prim);
     void tickManual();
+    void onStop();
 
 private:
     carb::tokens::ITokens* mTokens;
@@ -49,6 +50,7 @@ private:
     std::string mDRLayerName = "";
     double mTimeElapsed = 0.0f;
     std::string mRootLayerIdentifier = "";
+    pxr::SdfLayerRefPtr mNewSublayer;
 };
 }
 }

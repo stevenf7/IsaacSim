@@ -59,14 +59,14 @@ void DRComponentColor::onStart()
         pxr::UsdEditContext context(mStage, mColorLayer);
         mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
         carb::extras::Path urlPath(mOmniPBRMatPath.c_str());
-        // Check for /Colors prim and if base OmniPBR material is loaded
-        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Colors"))
+        // Check for /DR prim and if base OmniPBR material is loaded
+        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/DR"))
         {
-            omni::usd::UsdUtils::createPrim(mStage, "/Colors", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
+            omni::usd::UsdUtils::createPrim(mStage, "/DR", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
                 return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
             });
         }
-        std::string colorCompMaterialPath = "/Colors/" + mCompName;
+        std::string colorCompMaterialPath = "/DR/" + mCompName;
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, colorCompMaterialPath))
         {
             omni::usd::UsdUtils::createPrim(
@@ -90,8 +90,6 @@ void DRComponentColor::onStart()
         shadeShaderPrim.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
         mColorMaterialShade = shadeMaterialPrim;
     }
-    pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
-    mStage->SetEditTarget(editTarget);
     onComponentChange();
 }
 void DRComponentColor::update()
@@ -127,14 +125,12 @@ void DRComponentColor::update()
     for (auto& prim : mAllPrims)
     {
         primIndex++;
-        std::string mColorCompPathName = mStage->GetDefaultPrim().GetPath().GetString() + "/Colors/" + mCompName;
+        std::string mColorCompPathName = mStage->GetDefaultPrim().GetPath().GetString() + "/DR/" + mCompName;
         std::string mCopyColorMaterialPrimName = mColorCompPathName + "/OmniPBR_" + std::to_string(primIndex);
         if (mColorMaterialPrim && !omni::usd::UsdUtils::hasPrimAtPath(mStage, mCopyColorMaterialPrimName, false))
         {
             pxr::UsdEditContext context(mStage, mColorLayer);
             omni::usd::UsdUtils::copyPrim(mColorMaterialPrim, nullptr, false, false);
-            pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
-            mStage->SetEditTarget(editTarget);
         }
         auto mCopyColorMaterialPrim = mStage->GetPrimAtPath(pxr::SdfPath(mCopyColorMaterialPrimName.c_str()));
         if (mCopyColorMaterialPrim)
@@ -198,12 +194,12 @@ void DRComponentColor::stop()
             omni::usd::UsdUtils::removePrim(mColorMaterialPrim);
         // Remove component level Color prim
         pxr::UsdPrim colorCompPrim =
-            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/Colors/" + mCompName));
+            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR/" + mCompName));
         if (colorCompPrim)
             omni::usd::UsdUtils::removePrim(colorCompPrim);
         // Remove top-level Color prim
         pxr::UsdPrim colorPrim =
-            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/Colors"));
+            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR"));
         if (colorPrim && colorPrim.GetChildren().empty())
             omni::usd::UsdUtils::removePrim(colorPrim);
     }

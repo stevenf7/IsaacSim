@@ -46,14 +46,14 @@ void DRComponentMesh::onStart()
     if (mMeshLayer)
     {
         pxr::UsdEditContext context(mStage, mMeshLayer);
-        // Check for /Meshes prim and if base OmniPBR material is loaded
-        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/Meshes"))
+        // Check for /DR prim and if base OmniPBR material is loaded
+        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/DR"))
         {
-            omni::usd::UsdUtils::createPrim(mStage, "/Meshes", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
+            omni::usd::UsdUtils::createPrim(mStage, "/DR", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
                 return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
             });
         }
-        std::string meshCompPath = "/Meshes/" + mCompName;
+        std::string meshCompPath = "/DR/" + mCompName;
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, meshCompPath))
         {
             omni::usd::UsdUtils::createPrim(
@@ -62,8 +62,6 @@ void DRComponentMesh::onStart()
                 });
         }
     }
-    pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
-    mStage->SetEditTarget(editTarget);
     onComponentChange();
 }
 void DRComponentMesh::update()
@@ -80,7 +78,7 @@ void DRComponentMesh::update()
         {
             // Load main mesh
             carb::extras::Path urlPath(mMeshList[i].c_str());
-            std::string meshPrimPath = "/Meshes/" + mCompName + "/mesh_" + urlPath.getStem().getString();
+            std::string meshPrimPath = "/DR/" + mCompName + "/mesh_" + urlPath.getStem().getString();
             // CARB_LOG_WARN("Loading main mesh: %s", meshPrimPath.c_str());
             if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, meshPrimPath))
             {
@@ -130,8 +128,6 @@ void DRComponentMesh::update()
                 }
             }
         }
-        pxr::UsdEditTarget editTarget(mStage->GetRootLayer());
-        mStage->SetEditTarget(editTarget);
     }
 }
 void DRComponentMesh::onComponentChange()
@@ -178,12 +174,12 @@ void DRComponentMesh::stop()
         }
         // Remove component level Mesh prim
         pxr::UsdPrim meshCompPrim =
-            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/Meshes/" + mCompName));
+            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR/" + mCompName));
         if (meshCompPrim)
             omni::usd::UsdUtils::removePrim(meshCompPrim);
         // Remove top-level Mesh prim
         pxr::UsdPrim meshPrim =
-            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/Meshes"));
+            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR"));
         if (meshPrim && meshPrim.GetChildren().empty())
             omni::usd::UsdUtils::removePrim(meshPrim);
     }

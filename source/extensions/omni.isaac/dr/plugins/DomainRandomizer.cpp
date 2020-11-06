@@ -116,6 +116,14 @@ void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
     }
 }
 
+void onStop(void* userData)
+{
+    if (Manager && g_stage)
+    {
+        Manager->onStop();
+    }
+}
+
 void onPrimOrPropertyChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
     if (Manager && g_stage)
@@ -150,6 +158,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onDetach = onDetach;
     desc.onUpdate = onUpdate;
     desc.onPrimAdd = onPrimAdd;
+    desc.onStop = onStop;
     desc.onPrimOrPropertyChange = onPrimOrPropertyChange;
     desc.onPrimRemove = onPrimRemove;
     desc.order = 120;
