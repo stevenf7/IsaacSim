@@ -110,6 +110,7 @@ class Extension(omni.ext.IExt):
         self._termination_criteria = FrameTerminationCriteria(orig_thresh=0.001)
 
         self._first_step = True
+        self._robot = None
 
         ## unit conversions: RMP is in meters, kit is by default in cm
         self._meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
@@ -131,7 +132,6 @@ class Extension(omni.ext.IExt):
 
         self._editor.stop()
 
-        self._created = True
         set_up_z_axis(self._stage)
         add_ground_plane(self._stage, "/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0), Gf.Vec3f(1.0))
         setup_physics(self._stage)
@@ -148,9 +148,6 @@ class Extension(omni.ext.IExt):
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()
 
-        ## register world with RMP
-        self._world = World(self._dc, self._mp)
-
         self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()
@@ -162,7 +159,15 @@ class Extension(omni.ext.IExt):
         light_prim = UsdLux.DistantLight.Define(self._stage, Sdf.Path("/World/defaultLight"))
         light_prim.CreateIntensityAttr(500)
 
+        self._first_step = True
+        self._following = False
+        self._robot = None
+        self._created = True
+
     def _register_assets(self):
+        ## register world with RMP
+        self._world = World(self._dc, self._mp)
+
         ## register robot with RMP
         robot_path = "/scene/robot"
         self._robot = Franka(
@@ -252,24 +257,25 @@ class Extension(omni.ext.IExt):
         Arguments:
             step (float): elapsed time between steps
         """
-        if self._editor.is_playing():
+        if self._created and self._editor.is_playing():
             if self._first_step:
                 self._register_assets()
                 self._first_step = False
             if self._following:
-                # update RMP's world and robot states to sync with Kit
-                self._world.update()
-                self._robot.update()
                 target_pos = self._target_prim.GetAttribute("xformOp:translate").Get()
                 self._target = {"orig": np.array([target_pos[0], target_pos[1], target_pos[2]]) * self._meters_per_unit}
                 self._robot.end_effector.go_local(target=self._target, use_default_config=True, wait_for_target=True)
+            # update RMP's world and robot states to sync with Kit
+            self._world.update()
+            self._robot.update()
 
     def _on_get_states(self, widget):
-        # get block pose
-        block_handle = self._dc.get_rigid_body(self._block_path)
-        block_pose = self._dc.get_rigid_body_pose(block_handle)
-        print("\nblock pose:\n \tposition:( {}, {}, {})".format(block_pose.p.x, block_pose.p.y, block_pose.p.z))
-        print("\trotation: ({},{},{},{})".format(block_pose.r.x, block_pose.r.y, block_pose.r.z, block_pose.r.w))
+        if self._block_prim:
+            # get block pose
+            block_handle = self._dc.get_rigid_body(self._block_path)
+            block_pose = self._dc.get_rigid_body_pose(block_handle)
+            print("\nblock pose:\n \tposition:( {}, {}, {})".format(block_pose.p.x, block_pose.p.y, block_pose.p.z))
+            print("\trotation: ({},{},{},{})".format(block_pose.r.x, block_pose.r.y, block_pose.r.z, block_pose.r.w))
 
         # get end effector pose
         if not self._editor.is_playing():
@@ -314,6 +320,15 @@ class Extension(omni.ext.IExt):
             block_handle = self._dc.get_rigid_body(self._block_path)
             self._dc.set_rigid_body_pose(block_handle, start_pose)
 
+        self._robot = None
+        self._first_step = True
+
+    def _stop_tasks(self):
+        self._following = False
+        self._robot = None
+        self._created = False
+        gc.collect()
+
     def _on_stage_event(self, event):
         """This function is called when stage events occur.
         Enables UI elements when stage is opened.
@@ -330,12 +345,13 @@ class Extension(omni.ext.IExt):
             self._gripper_btn.enabled = False
             self._reset_btn.enabled = False
             self._editor.stop()
+            self._stop_tasks()
 
     def _on_update_ui(self, widget):
         """Callback that updates UI elements every frame
         """
         if self._created:
-            self._create_robot_btn.enabled = False
+            self._create_robot_btn.enabled = True
             self._target_following_btn.enabled = False
             self._add_obstacle_btn.enabled = False
             self._toggle_obstacle_btn.enabled = False
@@ -346,14 +362,15 @@ class Extension(omni.ext.IExt):
                 self._target_following_btn.enabled = True
                 self._target_following_btn.text = "Follow Target"
                 self._add_obstacle_btn.enabled = True
-                self._toggle_obstacle_btn.enabled = True
                 self._gripper_btn.enabled = True
                 self._get_states_btn.enabled = True
                 self._reset_btn.enabled = True
-                if self._obstacle_on:
-                    self._toggle_obstacle_btn.text = "Press to Suppress Block"
-                else:
-                    self._toggle_obstacle_btn.text = "Press to Unsuppress Block"
+                if self._block_prim:
+                    self._toggle_obstacle_btn.enabled = True
+                    if self._obstacle_on:
+                        self._toggle_obstacle_btn.text = "Press to Suppress Block"
+                    else:
+                        self._toggle_obstacle_btn.text = "Press to Unsuppress Block"
                 if self._gripper_open:
                     self._gripper_btn.text = "Press to Close Gripper"
                 else:
@@ -369,8 +386,10 @@ class Extension(omni.ext.IExt):
         """Cleanup objects on extension shutdown
         """
         self._editor.stop()
+        self._stop_tasks()
         self._editor_event_subscription = None
         self._window.set_update_fn(None)
+        gc.collect()
         print("Shutting down RMP Sample")
 
     def has_arrived(self):
