@@ -65,6 +65,7 @@ files = [
     ["_build/$platform/$config/data", "_build/$platform/$config/data"],
     ["PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
     ["source/extensions/omni.isaac/dr/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
+    ["_build/target-deps/kit_sdk_release/_build/licenses/**", "PACKAGE-LICENSES"],
 
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/cache/**", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/cache"],
     ["_build/target-deps/kit_sdk_$config/_build/$platform/$config/config", "_build/target-deps/kit_sdk_$config/_build/$platform/$config/config"],
@@ -87,6 +88,8 @@ files = [
     ["_build/target-deps/kit_sdk_$config/_build/manuals/py", "_build/target-deps/kit_sdk_$config/_build/manuals/py"],
     ["_build/target-deps/kit_sdk_$config/_build/mdl", "_build/target-deps/kit_sdk_$config/_build/mdl"],
     #["_build/target-deps/kit_sdk_$config/_build/shaders", "_build/target-deps/kit_sdk_$config/_build/shaders"],
+    #["_build/target-deps/kit_sdk_$config/_build/target-deps/pip_archive/**", "_build/target-deps/kit_sdk_$config/_build/target-deps/pip_archive"],
+    #["_build/target-deps/kit_sdk_$config/_build/target-deps/pip_prebundle/**", "_build/target-deps/kit_sdk_$config/_build/target-deps/pip_prebundle"],
     ["_build/target-deps/kit_sdk_$config/_build/target-deps/python/**", "_build/target-deps/kit_sdk_$config/_build/target-deps/python"],
     #["_build/target-deps/kit_sdk_$config/data/**", "_build/target-deps/kit_sdk_$config/data"],    
     #["_build/target-deps/kit_sdk_$config/deps/**", "_build/target-deps/kit_sdk_$config/deps"],

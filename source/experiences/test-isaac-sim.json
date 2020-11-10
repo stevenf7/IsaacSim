@@ -31,6 +31,7 @@
                 "omni.isaac.utils",
                 "omni.isaac.urdf",
                 "omni.isaac.samples",
+                "omni.isaac.step_importer",
                 "omni.isaac.tests"
             ]
         },
