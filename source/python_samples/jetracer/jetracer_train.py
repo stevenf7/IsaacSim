@@ -1,5 +1,7 @@
 import torch
 import os
+import sys
+import json
 import signal
 
 from omni.isaac.synthetic_utils import OmniKitHelper
@@ -19,8 +21,15 @@ CUSTOM_CONFIG = {
     "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
 }
 
-# use this to switch from training to evaluation
+# Use this to switch from training to evaluation
 TRAINING_MODE = True
+
+# RL environment and agent JSON config files
+ENV_CONFIG = None
+AGENT_CONFIG = None
+
+# All outputs for the experiment, go in the experiment dir
+EXP_DIR = "."
 
 
 def train():
@@ -29,15 +38,22 @@ def train():
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
 
-    env = JetracerEnv(omniverse_kit)
+    env = JetracerEnv(omniverse_kit, ENV_CONFIG)
 
-    checkpoint_callback = CheckpointCallback(save_freq=1000, save_path="./params/", name_prefix="rl_model")
+    checkpoint_callback = CheckpointCallback(save_freq=1000, save_path=EXP_DIR + "/params/", name_prefix="rl_model")
 
     net_arch = [512, 256, dict(pi=[128, 64, 32], vf=[128, 64, 32])]
     policy_kwargs = {"net_arch": net_arch, "features_extractor_class": CustomCNN, "activation_fn": torch.nn.ReLU}
 
     # create a new model
-    model = PPO("CnnPolicy", env, verbose=1, tensorboard_log="tensorboard", policy_kwargs=policy_kwargs, device="cuda")
+    model = PPO(
+        "CnnPolicy",
+        env,
+        verbose=1,
+        tensorboard_log=EXP_DIR + "/tensorboard",
+        policy_kwargs=policy_kwargs,
+        device="cuda",
+    )
 
     # load an existing model and continue training
     # model = PPO.load("params/rl_model_125999_steps.zip", env)
@@ -47,7 +63,7 @@ def train():
         callback=checkpoint_callback,
         eval_env=env,
         eval_freq=1000,
-        eval_log_path="./eval_log/",
+        eval_log_path=EXP_DIR + "/eval_log/",
         reset_num_timesteps=False,
     )
     model.save("checkpoint_1900k")
@@ -63,7 +79,7 @@ def runEval():
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
 
-    env = JetracerEnv(omniverse_kit)
+    env = JetracerEnv(omniverse_kit, ENV_CONFIG)
     obs = env.reset()
 
     while True:
@@ -75,6 +91,26 @@ def runEval():
 
 
 if __name__ == "__main__":
+
+    # Check the command line usage
+    if len(sys.argv) > 2:
+        print("Usage : python jetracer_train.py [EXP_DIR]")
+        exit(1)
+
+    # Grab EXP_DIR from the command line
+    if len(sys.argv) == 2:
+        EXP_DIR = sys.argv[1]
+
+    # Parse the experimetn JSON
+    exp_json_path = EXP_DIR + "/exp.json"
+    if os.path.exists(exp_json_path):
+        with open(exp_json_path) as f:
+            exp_data = json.load(f)
+            ENV_CONFIG = EXP_DIR + "/" + exp_data["env_config"]
+
+    print("TRAINING_MODE = {}".format(TRAINING_MODE))
+    print("ENV_CONFIG = {}".format(ENV_CONFIG))
+    print("AGENT_CONFIG = {}".format(AGENT_CONFIG))
 
     def handle_exit(*args, **kwargs):
         print("Exiting training...")
