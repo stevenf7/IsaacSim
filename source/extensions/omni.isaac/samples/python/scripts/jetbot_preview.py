@@ -96,10 +96,10 @@ class Extension(omni.ext.IExt):
                 self._vel_target = np.ones(2) * -10
                 self._accel = np.array([-1.0, -1.0])
             if event.input == carb.input.KeyboardInput.A:
-                self._vel_target = np.array([-2.0, 2.0])  # starting turn speed
+                self._vel_target = np.array([-4.0, 4.0])  # starting turn speed
                 self._accel = np.array([-1, 1]) * 0.1  # let it turn slower
             if event.input == carb.input.KeyboardInput.D:
-                self._vel_target = np.array([2.0, -2.0])
+                self._vel_target = np.array([4.0, -4.0])
                 self._accel = np.array([1, -1]) * 0.1
         if event.type == carb.input.KeyboardEventType.KEY_REPEAT:
             self._vel_target += self._accel
@@ -163,11 +163,15 @@ class Extension(omni.ext.IExt):
         Arguments:
             event (int): event type
         """
-        self.stage = self._usd_context.get_stage()
         if event.type == int(omni.usd.StageEventType.OPENED):
             self._load_jetbot_btn.enabled = True
             self._reset_btn.enabled = False
             self._editor.stop()
+            self._stop_tasks()
+
+    def _stop_tasks(self):
+        self._jetbot = None
+        gc.collect()
 
     def _on_editor_step(self, step):
         """Update jetbot physics once per step
@@ -180,13 +184,14 @@ class Extension(omni.ext.IExt):
             self._control_setup()
 
         # Wake up articulation every move command to ensure commands are applied
-        self._dc.wake_up_articulation(self._ar)
-        self._dc.set_dof_velocity_target(
-            self._wheel_right, np.clip(self._vel_target[0], -self._max_velocity, self._max_velocity)
-        )
-        self._dc.set_dof_velocity_target(
-            self._wheel_left, np.clip(self._vel_target[1], -self._max_velocity, self._max_velocity)
-        )
+        if self._jetbot:
+            self._dc.wake_up_articulation(self._ar)
+            self._dc.set_dof_velocity_target(
+                self._wheel_right, np.clip(self._vel_target[0], -self._max_velocity, self._max_velocity)
+            )
+            self._dc.set_dof_velocity_target(
+                self._wheel_left, np.clip(self._vel_target[1], -self._max_velocity, self._max_velocity)
+            )
 
     def _control_setup(self):
         """ set up velocity control on the joints
@@ -225,7 +230,8 @@ class Extension(omni.ext.IExt):
         self._editor.stop()
         self._window = None
         self._editor_event_subscription = None
-
+        self._stop_tasks()
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
+        self._window.set_update_fn(None)
 
         gc.collect()
