@@ -1,0 +1,28 @@
+[test]
+
+[test.results]
+# BLOCK and fetch the results from OVAT to display in your CI/CD directly?
+fetch = true
+# How long to wait (in seconds) for results before erroring out?
+fetch_timeout = 900
+# publish results to OVAT Metrics?
+publish = false
+
+# Inputs can be overridden (compared to their defaults in gcn.yml or task_architect.yml)
+# by declaring an [inputs.COMPONENT_NAME] block where COMPONENT_NAME is the name of a
+# component in your Task Architect YAML or GCN YAML
+# These are in the format Name = Value, where Name is the descriptive name
+# of your @input() declared in your OVAT script
+# We can specify inputs for development/debugging running from local artifacts
+# An auto-generated gcn_local.yml file will be created with these values
+[inputs.create_runner.dev.release]
+"Absolute EXE Path" = ["ResolvePath", "../../_build/windows-x86_64/release/omni.create.bat"]
+
+[inputs.create_runner.dev.debug]
+"Absolute EXE Path" = ["ResolvePath", "../../_build/windows-x86_64/debug/omni.create.bat"]
+
+# We can also specify inputs overrides for specific CI/CD platforms
+# Here is an example for Teamcity taking advantage of Teamcity parameters
+# eoinm: Note sure how to derive this parameter exactly?
+[inputs.create_runner.teamcity]
+"Teamcity Build ID" = "%dep.Omniverse_OvCreate_Master_GenerateBuildNumber.teamcity.build.id%"

@@ -1,0 +1,36 @@
+entrypoints:
+
+## EXECUTION EP
+- component: test
+  debug_info:
+    environment:
+      environment_type: python
+      config:
+        python_version: 3.7
+    entrypoint_path: create_startup_test.py
+  entrypoint_script:
+    origin: src
+  entrypoint_type: execution
+  inputs:
+    Kit Timeout: 300
+
+## CREATE RUNNER SERVICE
+- component: create_runner
+  entrypoint_script:
+    origin: gtl://build/5131586
+  entrypoint_type: setup
+
+## Testing Create Runner on local disk
+# - component: create_runner
+#   debug_info:
+#     environment:
+#       environment_type: python
+#       config:
+#         python_version: 3.7
+#     entrypoint_path: createrunnerservice.py
+#   entrypoint_script:
+#     origin: ..\..\..\..\ovat\services\kit-runner-service\src
+#   entrypoint_type: setup
+
+
+

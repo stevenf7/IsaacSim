@@ -1,0 +1,2 @@
+dssim-py==0.2.6
+ovat_outputs==0.8.2
