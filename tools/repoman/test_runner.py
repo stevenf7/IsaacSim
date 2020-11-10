@@ -29,7 +29,7 @@ SEPARATOR = "=" * 80
 STARTUP_TESTS = [
     {
         # Run only mini for now:
-        "include": ["omni.create.mini*${shell_ext}"],
+        "include": ["isaac-sim.mini*${shell_ext}"],
         "exclude": [],
         "args": ["--carb/app/quitAfter=10"],  # Quit after 10 updates
     }

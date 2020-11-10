@@ -59,7 +59,7 @@ vscode.python_env.PATH= ["$$$${PATH}", "$root/_build/$platform/$config",
 ]
 
 
-msbuild.sln_file = "ov-create.sln"
+msbuild.sln_file = "isaac-sim.sln"
 msbuild.vs_version = "vs2017"
 
 stage_files.error_if_missing = true
@@ -101,12 +101,12 @@ enabled = true
 
 [repo_package]
 
-[repo_package.packages.create]
+[repo_package.packages.isaac-sim]
 omniverse_flow_version_scheme = true
 ziponly = false
 package_per_config = true
 
-[repo_package.packages.create-launcher]
+[repo_package.packages.isaac-sim-launcher]
 omniverse_flow_version_scheme = true
 ziponly = true
 package_per_config = true
@@ -119,4 +119,4 @@ append_config = true
 [repo_publish]
 enabled = true
 
-packages = ["create"]
+packages = ["isaac-sim"]

@@ -1,15 +1,15 @@
 #displayed application name
-name = "Create"
+name = "Isaac Sim"
 #displayed before application name in launcher
 productArea = "Omniverse"
 version = "2020.3"
 
 #unique identifier for component, all lower case, persists between versions
-slug = "create"
+slug = "isaac-sim"
 ## install and launch instructions by environment
 [defaults.windows-x86_64]
 url = ""
-entrypoint = "${productRoot}/_build/windows-x86_64/release/omni.create.bat"
+entrypoint = "${productRoot}/_build/windows-x86_64/release/isaac-sim.bat"
 args = []
 
 [defaults.windows-x86_64.environment]
@@ -32,7 +32,7 @@ post-uninstall-args = []
 
 [defaults.linux-x86_64]
 url = ""
-entrypoint = "${productRoot}/_build/linux-x86_64/release/omni.create.sh"
+entrypoint = "${productRoot}/_build/linux-x86_64/release/isaac-sim.sh"
 args = []
 [defaults.linux-x86_64.environment]
 

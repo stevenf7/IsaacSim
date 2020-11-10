@@ -192,27 +192,27 @@ end
 
 
 group "apps"
-    for _, config in ipairs(ALL_CONFIGS) do
-        -- Direct shortcur to kit executable for convenience:
-        create_experience_runner("kit", nil, config, "")
+    -- for _, config in ipairs(ALL_CONFIGS) do
+    --     -- Direct shortcur to kit executable for convenience:
+    --     create_experience_runner("kit", nil, config, "")
 
-        -- Put build version file into build directories
-        write_version_file(config)
-    end
+    --     -- Put build version file into build directories
+    --     write_version_file(config)
+    -- end
 
-    define_local_experience("omni.create")
-    define_local_experience("omni.create.xr")
-    define_local_experience("omni.create.mgpu")
-    define_local_experience("omni.create.next")
-    define_local_experience("omni.create.mini")
-    define_local_experience("omni.create.testing")
+    define_local_experience("isaac-sim")
+    -- define_local_experience("omni.create.xr")
+    define_local_experience("isaac-sim.headless")
+    -- define_local_experience("omni.create.next")
+    define_local_experience("isaac-sim.mini")
+    -- define_local_experience("omni.create.testing")
 
-    -- Test runner experience:
-    args = {
-        "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
-        "--/exts/omni.kit.test/includeTests/0='omni.create.app.*'", -- Only include tests from the python module
-    }
-    define_local_experience("tests-create-mini", "omni.create.mini", table.concat(args, " "))
+    -- -- Test runner experience:
+    -- args = {
+    --     "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
+    --     "--/exts/omni.kit.test/includeTests/0='omni.create.app.*'", -- Only include tests from the python module
+    -- }
+    -- define_local_experience("tests-create-mini", "omni.create.mini", table.concat(args, " "))
 
 
 
@@ -229,34 +229,36 @@ group "apps"
 group "exts"
     -- Isaac Extensions
     -- Windows and Linux
-    include ("source/extensions/omni.isaac/about")
-    -- include ("source/extensions/omni.isaac/decals")
-    include ("source/extensions/omni.isaac/dr")
-    include ("source/extensions/omni.isaac/dynamic_control")
-    include ("source/extensions/omni.isaac/lidar")
-    include ("source/extensions/omni.isaac/manip")
+    include ("source/extensions/omni.isaac.about")
+    -- include ("source/extensions/omni.isaac.decals")
+    include ("source/extensions/omni.isaac.dr")
+    include ("source/extensions/omni.isaac.dynamic_control")
+    include ("source/extensions/omni.isaac.lidar")
+    include ("source/extensions/omni.isaac.manip")
 --     -- Shapenet is disabled as its part of kit package
---     -- include ("source/extensions/omni.isaac/shapenet")
-    include ("source/extensions/omni.isaac/utils")
-    include ("source/extensions/omni.isaac/urdf")
-    include ("source/extensions/omni.isaac/samples")
-    include ("source/extensions/omni.isaac/samples_internal")
-    include ("source/extensions/omni.isaac/synthetic_utils")
-    include ("source/extensions/omni.isaac/tests")
-    include ("source/extensions/omni.isaac/step_importer")
-    include ("source/extensions/omni.isaac/exploded_view")
-    include ("source/extensions/omni.isaac/internal_tools")
+--     -- include ("source/extensions/omni.isaac.shapenet")
+    include ("source/extensions/omni.isaac.utils")
+    include ("source/extensions/omni.isaac.urdf")
+    include ("source/extensions/omni.isaac.samples")
+    include ("source/extensions/omni.isaac.samples_internal")
+    include ("source/extensions/omni.isaac.synthetic_utils")
+    include ("source/extensions/omni.isaac.tests")
+    include ("source/extensions/omni.isaac.step_importer")
+    include ("source/extensions/omni.isaac.exploded_view")
+    include ("source/extensions/omni.isaac.internal_tools")
+    include ("source/extensions/omni.isaac.app.setup")
+    include ("source/extensions/omni.isaac.splash")
 
     -- Linux Only
     if os.target() == "linux" then
-        include ("source/extensions/omni.isaac/motion_planning")
-        include ("source/extensions/omni.isaac/robot_engine_bridge")
-        include ("source/extensions/omni.isaac/ros_bridge")
-        include ("source/extensions/omni.isaac/occupancy_map")
+        include ("source/extensions/omni.isaac.motion_planning")
+        include ("source/extensions/omni.isaac.robot_engine_bridge")
+        include ("source/extensions/omni.isaac.ros_bridge")
+        include ("source/extensions/omni.isaac.occupancy_map")
     end
 
--- Create a symlink for any data we need for tests
-group "tests"
-    -- Automated Testing
-    define_experience("test-isaac-sim")
-    repo_build.prebuild_link {{"data", "%{root}/_build/$platform/$config/data" }}
+-- -- Create a symlink for any data we need for tests
+-- group "tests"
+--     -- Automated Testing
+--     define_experience("test-isaac-sim")
+--     repo_build.prebuild_link {{"data", "%{root}/_build/$platform/$config/data" }}

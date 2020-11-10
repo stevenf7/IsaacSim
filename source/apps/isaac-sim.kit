@@ -1,0 +1,199 @@
+[package]
+title = "Isaac Sim"
+description = "An Authoring application for USD and Omniverse Content"
+version = "2020.3"
+
+# That makes it browsable in UI with "experience" filter
+keywords = ["experience", "app", "usd"]
+
+[dependencies]
+# Good old Editor...
+"omni.kit.editor" = { tag=  "full" }
+
+# Status Bar
+"omni.kit.window.status_bar" = {}
+
+"omni.isaac.app.setup" = {}
+"omni.kit.splash" = {}
+
+"omni.stats" = {}
+
+"omni.kit.menu.utils" = {}
+"omni.kit.menu.file" = {}
+"omni.kit.window.file" = {}
+"omni.kit.context_menu" = {}
+
+"omni.kit.selection" = {}
+"omni.kit.stage_templates" = {}
+
+## PhysX
+"omni.physx.core" = {}
+"omni.kit.search.service" = {}
+
+"omni.kit.primitive.mesh" = {}
+
+# Isaac Sim Windows 
+"omni.kit.window.title" = {} 
+"omni.kit.widget.live" = {}
+"omni.kit.window.stage" = {}
+"omni.kit.widget.layers" = {}
+
+"omni.kit.window.toolbar" = {}
+
+# Viewport and Renderer 
+"omni.kit.window.viewport" = {}
+"omni.renderer" = { tag = "rtx" }
+"omni.hydra.rtx" = {}
+"omni.rtx.render_settings" = {}
+
+# utils window
+"omni.kit.window.about" = {}
+"omni.kit.window.provide_feedback" = {}
+
+"omni.kit.material.library" = {}
+
+# Content Browser
+"omni.kit.window.content" = {}
+# Getting latest version from Nucleus instead of SDK for now 
+"omni.kit.widget.filebrowser" = { }  
+"omni.kit.window.filepicker" = { } 
+"omni.kit.window.content_browser" = { }
+
+"omni.kit.window.stats" = {}
+"omni.kit.window.tagging" = {}
+
+"omni.kit.window.script_editor" = {}
+"omni.kit.window.console" = {}
+
+"omni.kit.window.extensions" = {}
+
+"omni.kit.window.usd_paths" = {}
+"omni.kit.window.preferences" = {}
+
+"omni.kit.thumbnails.usd" = {}
+"omni.kit.thumbnails.images" = {}
+
+# bring all the property Widgets and Window
+"omni.kit.window.property" = {}
+"omni.kit.property.bundle" = {}
+"omni.kit.property.layer" = {}
+
+# tool
+"omni.kit.tool.asset_importer" = {}
+"omni.kit.tool.collect" = {}
+
+[settings]
+exts."omni.kit.window.file".useNewFilePicker = true
+exts."omni.kit.tool.asset_importer".useNewFilePicker = true
+exts."omni.kit.tool.collect".useNewFilePicker = true
+
+[settings.app.settings]
+persistent = true
+dev_build = false
+
+[settings.app.window]
+title = "Isaac Sim 2020.3   | Kit"
+width = 1700
+height = 900
+# x = -1
+# y = -1
+
+# Fonts 
+[setting.app.font]
+file = "${fonts}/OpenSans-SemiBold.ttf"
+size = 16
+
+# [setting.app.runLoops.main]
+# rateLimitEnabled = false
+# rateLimitFrequency = 60
+# rateLimitUseBusyLoop = false
+
+[settings.exts.'omni.kit.window.extensions']
+featuredExts = [
+    "omni.kit.usda_edit",
+    "omni.kit.window.stageviewer",
+    "omni.kit.window.imageviewer",
+
+    "omni.flowusd",
+    "omni.blast",
+
+    "omni.anim.pinConstraint",
+    "omni.anim.xform_constraints",
+    "omni.anim.timesample_editor",
+    "omni.anim.clips",
+
+    "omni.kit.window.movie_maker",
+    "omni.kit.tool.paint",
+    "omni.kit.window.sunstudy",
+    
+    ## Omni Graph
+    "omni.graph.core",
+    "omni.graph.ui",
+
+    #Animation Interpolation ??
+
+    # Hydra Storm
+    # Iray
+    # Cloud XR
+    # Streaming
+
+    # "omni.kit.tool.surface_instancer"
+
+    # Kit Copy Service
+    # Omni Documentation
+]
+
+
+[settings]
+
+# Basic Kit App
+################################
+app.versionFile = "${app}/../VERSION"
+
+# Splash Setup 
+################################
+exts."omni.kit.window.splash".imagePath = "${app}/../exts/omni.isaac.splash/data/create_splash_screen@1x.png"
+exts.'omni.kit.splash'.splash_app = "${app}/omni.isaac.app.splash.kit"
+
+
+# Misc Settings 
+###############################
+persistent.app.viewport.snapToSurface = false
+persistent.app.stage.movePrimInPlace = false
+persistent.app.file.recentFiles = []
+
+# Gray Viewport Default
+###############################
+# [setting.rtx.post.backgroundZeroAlpha]
+# enabled = true
+# backgroundDefaultColor = [0.2, 0.2, 0.2] 
+
+# Content Browser
+###############################
+[settings.exts."omni.kit.window.content_browser"]
+enable_thumbnail_generation_images = true
+
+# Extensions
+###############################
+[settings.app.extensions]
+skipPublishVerification = false
+
+folders2 = ["${kit}/exts" ]            
+enabledDeprecated = [
+        "omni.kit.builtin.init",
+        "omni.kit.builtin.menu",
+        "omni.kit.builtin.profiler",
+    ]
+
+# RTX Settings
+###############################
+[settings.rtx]
+ReLAX.enable = false
+
+pathtracing.stochasticLCRefresh = false
+pathtracing.lightcache.voxelCache.enabled = false
+pathtracing.ris.enableSpatioTemporalRis = false
+
+raytracing.cached.enabled = false
+
+realtime.mgpu.masterPostProcessOnly = false

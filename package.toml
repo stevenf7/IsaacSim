@@ -33,10 +33,10 @@
 files = []
 
 ########################################################################################################################
-# create package
+# isaac-sim package
 ########################################################################################################################
 
-[create]
+[isaac-sim]
 files = [
     ["_build/$platform/$config"],
     ["deps"],
@@ -44,13 +44,13 @@ files = [
     ["tools/autopull"]
 ]
 
-[create.windows-x86_64]
+[isaac-sim.windows-x86_64]
 files = []
 
-[create.linux-x86_64]
+[isaac-sim.linux-x86_64]
 files = []
 
-[create-launcher.release]
+[isaac-sim-launcher.release]
 files = [
     ["_build/$platform/$config"],
     ["_build/kit-exts"],
@@ -84,7 +84,7 @@ files_exclude = [
     ["_build/kit-exts/omni.particle.system/**"],
 ]
 
-[create-launcher.linux-x86_64]
+[isaac-sim-launcher.linux-x86_64]
 files_exclude = [
     ["_build/target-deps/kit_sdk_release/_build/target-deps/python/lib/importlib_metadata/tests/data/**"],
     ["_build/target-deps/kit_sdk_release/_build/target-deps/python/lib/python3.6/test/test_warnings/data/**"],
@@ -95,9 +95,9 @@ files_exclude = [
     ["_build/target-deps/kit_sdk_release/_build/target-deps/python/lib/python3.6/test/test_importlib/source/**"],
 ]
 
-[create-launcher.windows-x86_64]
+[isaac-sim-launcher.windows-x86_64]
 files_exclude = [
 ]
 
-[create-launcher.debug]
+[isaac-sim-launcher.debug]
 files = []
