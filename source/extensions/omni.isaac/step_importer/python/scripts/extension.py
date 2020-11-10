@@ -95,7 +95,8 @@ class StepImporter(omni.ext.IExt):
                 for p in partitions:
                     if any(x in p.fstype for x in ["ext3", "ext4", "fuseblk", "NTFS", "removable", "fixed"]):
                         mountpoint = p.mountpoint.strip("\\")
-                        self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
+                        if os.path.isdir(mountpoint):
+                            self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
 
                 data_dir = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../data/step"))
                 self._filebrowser.add_model_as_subtree(FileSystemModel("Built In Step Files", data_dir))

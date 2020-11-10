@@ -449,7 +449,8 @@ class Extension(omni.ext.IExt):
         for p in partitions:
             if any(x in p.fstype for x in ["ext3", "ext4", "fuseblk", "NTFS", "removable", "fixed"]):
                 mountpoint = p.mountpoint.strip("\\")
-                self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
+                if os.path.isdir(mountpoint):
+                    self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
         data_dir = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf"))
         self._filebrowser.add_model_as_subtree(FileSystemModel("Built In URDFs", data_dir))
         if len(self._filebrowser.get_selections()):
