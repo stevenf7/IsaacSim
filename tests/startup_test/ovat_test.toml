@@ -16,10 +16,10 @@ publish = false
 # We can specify inputs for development/debugging running from local artifacts
 # An auto-generated gcn_local.yml file will be created with these values
 [inputs.create_runner.dev.release]
-"Absolute EXE Path" = ["ResolvePath", "../../_build/windows-x86_64/release/omni.create.bat"]
+"Absolute EXE Path" = ["ResolvePath", "../../_build/windows-x86_64/release/omni.create.testing.bat"]
 
 [inputs.create_runner.dev.debug]
-"Absolute EXE Path" = ["ResolvePath", "../../_build/windows-x86_64/debug/omni.create.bat"]
+"Absolute EXE Path" = ["ResolvePath", "../../_build/windows-x86_64/debug/omni.create.testing.bat"]
 
 # We can also specify inputs overrides for specific CI/CD platforms
 # Here is an example for Teamcity taking advantage of Teamcity parameters

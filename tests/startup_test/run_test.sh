@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-TOOLS=$(dirname $(readlink -m $BASH_SOURCE))/../../../tools
+THIS_SCRIPT_LOCATION=$(dirname $(readlink -m $BASH_SOURCE))
+TOOLS=$(dirname $(readlink -m $BASH_SOURCE))/tools
+PACKMAN=${TOOLS}/packman
 
-
-exec $TOOLS/packman/python.sh $TOOLS/ovat/run_test.py $*
+cd $THIS_SCRIPT_LOCATION
+exec ${PACKMAN}/python.sh $TOOLS/ovat/run_test.py $*

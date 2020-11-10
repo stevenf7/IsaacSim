@@ -17,7 +17,7 @@ components:
   test: mandatory
   # Each component that you would like to overwrite the inputs for
   # from automation must have its own unique name, and set to mandatory
-  kit_runner: mandatory
+  create_runner: mandatory
   # A driver is required to run Kit
   driver: optional
 
@@ -27,14 +27,16 @@ add:
   # app: is the name of the GTL application
   app: PYScript Create Render Test
   # version: is the GTL build version, and branch gets added to that
-  branch: master
+  branch: dev
+  version: 0.1.2
+
 
 # The Create Runner Service provides a nice interface to dealing with Kit
 add:
   component: create_runner
   app: PYScript Create Runner Service
-  branch: master
-  version: 1.0.36
+  branch: dev
+  version: 1.0.2
 #inputs:
 #  Teamcity Build ID: 4932998
 

@@ -1,8 +1,11 @@
 @echo off
 setlocal
 
-:: Modify this to suit your case
-:: Fill in the folder with the packman and ovat tools
+:: Modify TOOLS and/or PACKMAN to suit your case
+:: Fill in the folder with the packman or/and ovat tools
 set TOOLS=%~dp0\..\..\tools
+set PACKMAN=%TOOLS%\packman
 
-call %TOOLS%\packman\python.bat %TOOLS%\ovat\run_test.py %*
+pushd %~dp0
+call %PACKMAN%\python.bat %TOOLS%\ovat\run_test.py %*
+popd

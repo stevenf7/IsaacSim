@@ -72,22 +72,40 @@ def _set_settings_value(name, value, type):
         settings_interface.set_bool(name, value)  # noqa
 
 
+async def capture_next_frame(app, capture_file_path: str):
+    """
+    capture that works with old (editor-based) capture and new Kit 2.0 approach also
+    """
+
+    _editor = None
+    _renderer = None
+    _viewport_interface = None
+    try:
+        import omni.kit.editor
+
+        _editor = omni.kit.editor.get_editor_interface()
+    except ImportError:
+        import omni.renderer_capture
+        import omni.kit.viewport
+
+        _renderer = omni.renderer_capture.acquire_renderer_capture_interface()
+        _viewport_interface = omni.kit.viewport.acquire_viewport_interface()
+
+    if _editor:
+        _editor.capture_next_frame(capture_file_path)
+        await app.next_update_async()
+    else:
+        viewport_ldr_rp = _viewport_interface.get_viewport_window(None).get_drawable_ldr_resource()
+        _renderer.capture_next_frame_rp_resource(capture_file_path, viewport_ldr_rp)
+        await app.next_update_async()
+        _renderer.wait_async_capture()
+
+
 async def main(args):
     global settings_interface
 
-    LEGACY = False
-    try:
-        # 2020.3+
-        app = omni.kit.app.get_app()
-        settings_interface = carb.settings.get_settings()
-    except AttributeError:
-        # 2020.1 and 2020.2
-        app = omni.kit.app.get_app_interface()
-        settings_interface = omni.kit.settings.get_settings_interface()
-
-    if not hasattr(omni, "client"):
-        # 2020.1 only
-        LEGACY = True
+    app = omni.kit.app.get_app()
+    settings_interface = carb.settings.get_settings()
 
     # set various settings that we require
     carb.log_info("*** screenshot.py: Setting app/renderer settings")
@@ -111,14 +129,8 @@ async def main(args):
         "/omni.kit.plugin/syncUsdLoads"
     )
 
-    # in <=2020.1 we need to login ourselves to Omniverse
     _stage = args.stage
-    if LEGACY and not os.path.exists(_stage):
-        _host, _user, _pass, _path = omni_url_parser(args.stage)
-        _stage = f"omni:{_path}"
-        carb.log_error(f"*** screenshot.py: Connecting to {_host} {_user} {_pass} {_stage}")
-        await omni.kit.asyncapi.connect(_host, _user, _pass)
-    elif not os.path.exists(_stage):
+    if not os.path.exists(_stage):
         # in >=2020.2 there is no explicit connect call, so lets stat a file
         # to force the connection if it is a remote file
         res = await omni.client.stat_async(_stage)
@@ -149,14 +161,10 @@ async def main(args):
         restore_persistent_settings()
         app.post_quit()
         return
-
     carb.log_info(f"*** screenshot.py: scene loaded in {load_time}s")
 
-    # ugly hack for backwards compat on 2020.2 / 2020.1
-    viewport_window = omni.kit.editor.get_editor_interface()
-    if not hasattr(viewport_window, "set_active_camera"):
-        # 2020.3 (at some point)+
-        viewport_window = omni.kit.viewport.get_default_viewport_window()
+    # 2020.3 (at some point)+
+    viewport_window = omni.kit.viewport.get_default_viewport_window()
 
     if args.camera:
         viewport_window.set_active_camera(args.camera)
@@ -178,10 +186,10 @@ async def main(args):
     carb.log_info(f"*** screenshot.py: waiting {args.wait_after_load}s for the scene to settle")
     await asyncio.sleep(args.wait_after_load)
 
-    # PNG and EXR extensions are supported
-    omni.kit.editor.get_editor_interface().capture_next_frame(args.output)
+    await capture_next_frame(app, args.output)
+
     # need to wait a second or two for the screenshot to get written
-    await asyncio.sleep(1)
+    # await asyncio.sleep(1)
     carb.log_info(f"*** screenshot.py: screenshot captured to: {args.output}")
 
     # if we should measure FPS, lets do it now

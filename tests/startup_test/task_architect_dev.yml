@@ -35,7 +35,8 @@ add:
 add:
   component: create_runner
   app: PYScript Create Runner Service
-# inputs:
+  inputs:
+    
 #   Local Kit Directory: "D:\\kit_devel\\kit"
 #   Teamcity Build ID: 4932998
 

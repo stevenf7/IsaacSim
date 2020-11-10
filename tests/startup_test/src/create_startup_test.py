@@ -3,7 +3,6 @@ import shutil
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
 
 import dssim_py
 from nv_benchflow.client import Benchmark, script
@@ -47,7 +46,12 @@ SCREENSHOT_SCRIPT = Path(__file__).parent / "kit-screenshot" / "screenshot.py"
 
 
 def prepare_app():
-    """Finds the service, sets it up and warms shaders"""
+    """
+    Finds the service, sets it up and warms shaders
+    Note this just needs to trigger shader compilation so we should work out a way of having it
+    load an empty kit with just the RTX plugin/viewport (whatever is needed to trigger shader compilation)
+
+    """
     create_runner = Benchmark.services.find_service("CreateRunner", "1.0")
     create_runner.prepare()
     create_runner.set_env("OMNI_USER", "test")
