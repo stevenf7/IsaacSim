@@ -1,7 +1,7 @@
-<project toolsVersion="5.6">
+<project toolsVersion="5.0">
   <dependency name="premake" linkPath="../_build/host-deps/premake">
-    <package name="premake" version="5.0.0.10-900e4b0d-windows-x86_64" platforms="windows-x86_64" />
-    <package name="premake" version="5.0.0.10-900e4b0d-linux-x86_64" platforms="linux-x86_64" />
+    <package name="premake" version="5.0.0#0010-6e380c02-windows-x86_64" platforms="windows-x86_64" />
+    <package name="premake" version="5.0.0#0013-6e380c02-linux-x86_64" platforms="linux-x86_64" />
     <package name="premake" version="5.0.0.13-53e4f813-linux-aarch64" platforms="linux-aarch64" />
   </dependency>
   <dependency name="msvc" linkPath="../_build/host-deps/msvc">
@@ -10,8 +10,8 @@
   <dependency name="winsdk" linkPath="../_build/host-deps/winsdk">
     <package name="winsdk" version="10.17763" platforms="windows-x86_64"/>
   </dependency>
-  <dependency name="linbuild" linkPath="../_build/host-deps/linbuild" tags="non-redist">
+  <dependency name="linbuild" linkPath="../_build/host-deps/linbuild">
     <package name="linbuild" version="1.9.71-461fa81-aarch64" platforms="linux-aarch64" />
-    <package name="linbuild" version="1.9.83-9680693-x86_64" platforms="linux-x86_64" />
+    <package name="linbuild" version="1.9.71-461fa81-x86_64" platforms="linux-x86_64" />
   </dependency>
 </project>
