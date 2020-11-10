@@ -1,0 +1,7 @@
+--extra-index-url https://pypi.perflab.nvidia.com/simple
+ovat-client>=0.17.0-rc.4
+benchmark-kit
+task-architect
+gcn-cli
+gtl-tools
+psutil

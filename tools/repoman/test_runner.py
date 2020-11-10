@@ -1,32 +1,55 @@
+"""RepoMan command to run different test suites.
+
+Example:
+    > tools/test_runner.bat --help
+    > tools/test_runner.sh --suite kittests
+    > tools/test_runner.bat --suite pythontests -c release -e='-p test_battle*.py'
+
+Attributes:
+    TEST_SUITES (Dict): Specifies supported test suites and functions to run them.
+"""
+
 import os
-import sys
-import glob
-import shutil
 import logging
 import fnmatch
 import argparse
-import base64
-import hashlib
+import sys
+import glob
 import time
-from typing import List
+from typing import List, Dict
+from string import Template
 
-import packmanapi
-import repoman
 
-repoman.bootstrap()
 import omni.repo.man
-import omni.repo.package
 
 logger = logging.getLogger(os.path.basename(__file__))
+
+SEPARATOR = "=" * 80
+
+STARTUP_TESTS = [
+    {
+        # Run only mini for now:
+        "include": ["omni.create.mini*${shell_ext}"],
+        "exclude": [],
+        "args": ["--carb/app/quitAfter=10"],  # Quit after 10 updates
+    }
+]
+
+PYTHON_TESTS = [
+    {
+        # Run all tests experiences (ones that start with "tests-")
+        "include": ["tests-*${shell_ext}"],
+        "exclude": [],
+        "args": [],
+        "tc_report_enabled": False,  # Python tests have builtin reporting
+    }
+]
+
+_ONLY_LIST = False
 
 
 def is_running_under_teamcity():
     return bool(os.getenv("TEAMCITY_VERSION"))
-
-
-def short_hash(name: str, length: int = 5) -> str:
-    hasher = hashlib.sha1(name.encode("utf-8"))
-    return base64.urlsafe_b64encode(hasher.digest()[:length]).decode("ascii").rstrip("=")
 
 
 def get_exe_ext(platform: str) -> str:
@@ -81,202 +104,111 @@ def teamcity_stop_test(test_id):
     teamcity_message("testFinished", name=test_id)
 
 
-def prepare_package(root: str, platform_host: str, config: str, clean: bool, copy_test_data: bool) -> str:
-    """Find and extract a package, return path to a folder"""
-
-    archive_pattern = os.getenv("ARCHIVE_PATTERN")
-    if not archive_pattern:
-        archive_pattern = "_builtpackages/isaac-sim*-{config}.7z"
-
-    candidates = list(glob.glob(os.path.join(root, archive_pattern.format(config=config))))
-    if len(candidates) == 0:
-        logger.error(f"No archive files found.")
-        sys.exit(-1)
-
-    archive_path = candidates[0]
-    if len(candidates) > 1:
-        logger.warn(f"Multiple candidates for archive file, selecting first: {archive_path}")
-
-    if not os.path.exists(archive_path):
-        logger.error(f"Archive file doesn't exist: {archive_path}")
-        sys.exit(-1)
-
-    # Shorten folder name to workaround "too long path issue on TC"
-    filename, _ = os.path.splitext(os.path.basename(archive_path))
-    folder_to_extract = os.path.join(os.path.dirname(archive_path), short_hash(filename))
-
-    if clean:
-        if os.path.exists(folder_to_extract):
-            logger.info(f"Cleaning folder: {folder_to_extract}")
-            shutil.rmtree(folder_to_extract)
-
-    if not os.path.exists(folder_to_extract):
-        packmanapi.extract_archive7z_to_folder(archive_path, folder_to_extract)
-
-    # Remove carb.sdiio.plugin.dll and libcarb.sdiio.plugin.so
-    if platform_host == "windows-x86_64":
-        del_file = f"{folder_to_extract}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}/plugins/carb_gfx/carb.sdiio.plugin.dll"
-    else:
-        del_file = f"{folder_to_extract}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}/plugins/carb_gfx/libcarb.sdiio.plugin.so"
-    if os.path.isfile(del_file):
-        logger.info(f"Removing: {del_file}")
-        os.remove(del_file)
-    else:
-        logger.error(f"File doesn't exist: {del_file}")
-
-    # Copy test files from test_runner package
-    if copy_test_data:
-        src = f"{root}/_build/{platform_host}/{config}"
-        dst = f"{folder_to_extract}/_build/{platform_host}/{config}"
-        logger.info(f"Copying test data: {src}")
-        omni.repo.package.repo_fileutils.copy_files(src, dst)
-
-    return folder_to_extract, archive_path
-
-
 def run_unittests(root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []):
     executable = f"test.unit{get_exe_ext(platform_host)}"
-    exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
 
     args = []
     if is_running_under_teamcity():
         args.append("-r teamcity")
     args.extend(extra_args)
 
-    proc_arglist = exec_prefix + [f"{root}/_build/{platform_host}/{config}/plugins/{executable}"] + args
-    omni.repo.man.run_process(proc_arglist, exit_on_error=True)
+    omni.repo.man.run_process([f"{root}/_build/{platform_host}/{config}/{executable}"] + args, exit_on_error=True)
 
 
-def run_pythontests(root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []):
-    """Run python tests suite inside of Kit"""
+def glob_files(path: str, config: Dict, platform_host: str):
+    mapping = omni.repo.man.get_platform_file_mapping(platform_host)
+    includes = [Template(p).substitute(mapping) for p in config.get("include", [])]
+    excludes = [Template(p).substitute(mapping) for p in config.get("exclude", [])]
 
-    executable = f"test-isaac-sim{get_shell_ext(platform_host)}"
-    exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
-    # args = ["--exec", '"run_tests.py"']
-    args = []
-    args.extend(extra_args)
+    def match(s, patterns):
+        return any(fnmatch.fnmatch(s, p) for p in patterns)
 
-    proc_arglist = exec_prefix + [f"{root}/_build/{platform_host}/{config}/{executable}"] + args
-    omni.repo.man.run_process(proc_arglist, exit_on_error=True)
+    files = []
+    for f in glob.glob(path + "/*"):
+        filename = os.path.basename(f)
+        if match(filename, includes) and not match(filename, excludes):
+            files.append(f)
+
+    return files
 
 
-def run_startuptest(root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []):
-    """Start and quit Kit"""
-
-    # kit_folder = f"{root}/_build/target-deps/kit_sdk_{config}/_build/{platform_host}/{config}"
-    app_folder = f"{root}/_build/{platform_host}/{config}"
-
-    # Search for all .bat/.sh files
-    executable_files = [os.path.basename(f) for f in glob.glob(app_folder + "/*" + get_shell_ext(platform_host))]
-
-    # Explicitly add default kit:
-    # executable_files.insert(0, f"omniverse-kit{get_exe_ext(platform_host)}")
-
-    # Ignore some runners:
-    IGNORE_LIST = [
-        # "*-headless*",
-        "python*",
-        "mpirun*",
-        "setup_python_env*",
-        "example.python*",
-        "tests-omni.kit.default*",
-        "kit-default*",
-        "kit-profile*",
-        "kit-nonrtx*",
-        "test-isaac-sim*",
-    ]
-    executable_files = [f for f in executable_files if not any(fnmatch.fnmatch(f, p) for p in IGNORE_LIST)]
-
-    print(f"Found those executable files to run startup tests on: {executable_files}")
-
-    exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
-    args = [
-        "--exec",
-        f"open {app_folder}/data/usd/assets/robots/franka/franka.usd",
-        "--carb/rtx/materialDb/syncLoads=true",
-        "--carb/omni.kit.plugin/syncUsdLoads=true",
-        "--carb/app/quitAfter=60",  # Quit after 10 updates
-        "-v",
-    ]
-    args.extend(extra_args)
+def _run_cmd_tests(
+    tests: List[Dict], root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []
+):
+    bin_folder = f"{root}/_build/{platform_host}/{config}"
 
     os.environ["PYTHONPATH"] = ""  # Don't propagagate current ENV into the test (e.g. packman path is set there)
 
     # We will run all tests regardless of failure
-    failure = False
+    fail_count = 0
+    total = 0
 
-    for executable_file in executable_files:
-        # TC reporting
-        extra_args_str = "_".join(extra_args)
-        test_id = f"StartupTest:{executable_file}_{extra_args_str}"
-        teamcity_start_test(test_id)
+    exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
+    mapping = omni.repo.man.get_platform_file_mapping(platform_host)
+    mapping["root"] = root.replace("\\", "/")
 
-        # Run process
-        proc_arglist = exec_prefix + [f"{app_folder}/{executable_file}"] + args
-        returncode = omni.repo.man.run_process(proc_arglist, exit_on_error=False)
+    for test in tests:
 
-        # Report failure and mark overall run as failure
-        if returncode != 0:
-            teamcity_report_fail(test_id, "Error", f"Exit code: {returncode}")
-            failure = True
+        tc_report_enabled = test.get("tc_report_enabled", True) and not _ONLY_LIST
 
-        teamcity_stop_test(test_id)
+        for file in glob_files(bin_folder, test, platform_host):
+            total = total + 1
 
-        # Override the command line options after the first execution to just launch and quit
-        args = ["--carb/app/quitAfter=60", "-v"]  # Quit git after 10 updates
+            # Allow tokens (like ${root}) in args too:
+            args = [Template(arg).substitute(mapping) for arg in test.get("args", [])]
+            cmd = exec_prefix + [file] + args + extra_args
+
+            # TC reporting
+            test_id = "StartupTest:" + ("_".join(cmd))
+            if tc_report_enabled:
+                teamcity_start_test(test_id)
+
+            if _ONLY_LIST:
+                print(f"> " + (" ".join(cmd)))
+                continue
+
+            # Run process
+            print(SEPARATOR)
+            returncode = omni.repo.man.run_process(cmd, exit_on_error=False)
+
+            # Report failure and mark overall run as failure
+            if returncode != 0:
+                if tc_report_enabled:
+                    teamcity_report_fail(test_id, "Error", f"Exit code: {returncode}")
+                fail_count = fail_count + 1
+            else:
+                print("Process exited successfully.")
+            print(SEPARATOR)
+
+            if tc_report_enabled:
+                teamcity_stop_test(test_id)
 
     # Exit with non-zero code on failure
-    if failure:
+    if fail_count > 0:
+        print(f"[ERROR] {fail_count} tests processes failed out of {total}.")
         sys.exit(1)
+    else:
+        if _ONLY_LIST:
+            print(f"Found {total} tests processes to run.")
+        else:
+            print(f"[Ok] All {total} tests processes returned 0.")
 
 
-def run_qatests(root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []):
-    executable = f"omniverse-kit{get_exe_ext(platform_host)}"
-    exec_prefix = get_execution_prefix(root, platform_host, linbuild_profile)
-
-    args = ["--exec", f"qa_test.py", "--carb/app/omniverse/showLoginOnStart=false"]
-    args.extend(extra_args)
-
-    proc_arglist = exec_prefix + [f"{root}/_build/{platform_host}/{config}/{executable}"] + args
-    omni.repo.man.run_process(proc_arglist, exit_on_error=True)
+def run_startuptests(root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []):
+    return _run_cmd_tests(STARTUP_TESTS, root, platform_host, config, linbuild_profile, extra_args)
 
 
-def run_qatest_mirror(root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []):
-    extra_args.append("--carb/qatest/testType=mirror")
-    run_qatests(root, platform_host, config, linbuild_profile, extra_args)
+def run_pythontests(root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []):
+    return _run_cmd_tests(PYTHON_TESTS, root, platform_host, config, linbuild_profile, extra_args)
 
 
-def run_qatest_nucleus_samples(
-    root: str, platform_host: str, config: str, linbuild_profile: str, extra_args: List = []
-):
-    extra_args.append("--carb/qatest/testType=nucleusSamples")
-    run_qatests(root, platform_host, config, linbuild_profile, extra_args)
+TEST_SUITES = {"unittests": run_unittests, "pythontests": run_pythontests, "startuptests": run_startuptests}
 
 
-TEST_SUITES = {
-    "unittests": run_unittests,
-    "pythontests": run_pythontests,
-    "startuptest": run_startuptest,
-    "qatests": run_qatests,
-    "qatestmirror": run_qatest_mirror,
-    "qatestnucleussamples": run_qatest_nucleus_samples,
-}
-
-
-def main():
+def setup_repo_tool(parser, config):
     platform_host = omni.repo.man.get_and_validate_host_platform(["windows-x86_64", "linux-x86_64"])
     repo_folders = omni.repo.man.get_repo_paths()
-
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.name = "Universal Test Runner"
-    parser.add_argument(
-        "-p",
-        "--from-package",
-        dest="from_package",
-        default=False,
-        action="store_true",
-        help=f"Use package instead of a root folder.",
-    )
     parser.add_argument(
         "-x",
         "--clean",
@@ -302,32 +234,24 @@ def main():
         action="append",
         dest="extra_args",
         default=[],
-        help="Extra argument to pass. Can be specified multiple times.",
+        help='Extra argument to pass. Can be specified multiple times. E.g. -e="--help"',
     )
     parser.add_argument(
-        "--linbuild-profile",
-        dest="linbuild_profile",
-        required=False,
-        default=None,
-        help="linbuild profile within which to run tests.",
+        "-l",
+        "--list",
+        action="store_true",
+        dest="list",
+        default=False,
+        help="List tests and exit without running them.",
     )
 
-    options = parser.parse_args()
+    def run_tool(options, config):
+        global _ONLY_LIST
+        _ONLY_LIST = options.list
 
-    root_folder = repo_folders["root"]
+        root_folder = repo_folders["root"]
 
-    copy_test_data = False
-    if options.suite != "startuptest":
-        copy_test_data = True
-    if options.from_package:
-        root_folder, _ = prepare_package(root_folder, platform_host, options.config, options.clean, copy_test_data)
+        logger.info(f"Running test suite: {options.suite}...")
+        TEST_SUITES[options.suite](root_folder, platform_host, options.config, None, options.extra_args)
 
-    if options.linbuild_profile is not None:
-        packmanapi.pull(os.path.join(repo_folders["deps_xml_folder"], "linbuild.packman.xml"), platform=platform_host)
-
-    logger.info(f"Running test suite: {options.suite}...")
-    TEST_SUITES[options.suite](root_folder, platform_host, options.config, options.linbuild_profile, options.extra_args)
-
-
-if __name__ == "__main__":
-    main()
+    return run_tool
