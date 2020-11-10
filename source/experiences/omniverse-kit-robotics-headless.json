@@ -63,6 +63,7 @@
                 "omni.isaac.dynamic_control",
                 "omni.isaac.motion_planning",
                 "omni.isaac.samples",
+                "omni.isaac.step_importer",
                 "omni.isaac.dr"
             ]
         },
