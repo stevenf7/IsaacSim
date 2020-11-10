@@ -1,0 +1,29 @@
+[package]
+title = "Isaac Sim Setup Extension"
+description = "This Extension does the final setup of the Isaac Sim Apps"
+
+authors = ["Damien Fagnou <dfagnou@nvidia.com>"]
+slackids  = ["@UMQS40ZE1"]
+
+repository = "https://gitlab-master.nvidia.com/omniverse/ov-create"
+
+[dependencies]
+"omni.usd" = {}
+"omni.ui" = {}
+
+# Isaac Sim Core Extensions 
+"omni.kit.search.service" = {}
+"omni.kit.context_menu" = {}
+"omni.kit.selection" = {}
+"omni.kit.stage_templates" = {}
+
+[[python.module]]
+name = "omni.isaac.app.setup"
+
+[[python.module]]
+name = "omni.isaac.app.setup.tests"
+
+# Settings. They are applied on the root of global settings. In case of conflict original settings are kept.
+[settings]
+persistent.exts."omni.isaac.app".foo = true
+persistent.exts."omni.isaac.app".bar = true

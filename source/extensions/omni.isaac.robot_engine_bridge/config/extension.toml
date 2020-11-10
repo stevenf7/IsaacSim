@@ -1,0 +1,33 @@
+display_name = "Robot Engine Bridge"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.lidar" = {}
+"omni.syntheticdata" = {}
+
+[[python.modules]]
+name = "omni.isaac.robot_engine_bridge"
+
+[[python.modules]]
+name = "omni.isaac.RobotEngineBridgeSchema"
+public = false
+
+# [[python.modules]]
+# name = "omni.isaac.pyalice"
+# public = false
+
+[[python.modules]]
+name = "omni.isaac.robot_engine_bridge.scripts.setup_environment_grid"
+public = false
+
+[[native.plugins]]
+search_path = "bin/*.plugin"
+recursive = false
+
+[[libraries]]
+path = "bin/${lib_prefix}robotEngineBridgeSchema${lib_ext}"
+
+[python.pipapi]
+requirements = ["numpy", "numpy-quaternion"]
+

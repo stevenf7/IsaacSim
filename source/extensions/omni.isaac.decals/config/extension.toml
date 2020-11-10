@@ -1,0 +1,12 @@
+display_name = "Decals"
+
+[dependencies]
+"omni.kit.editor" = {}
+
+[[python.modules]]
+name = "omni.isaac.decals"
+
+[[native.plugins]]
+search_path = "bin/*.plugin"
+recursive = false
+

@@ -1,0 +1,27 @@
+display_name = "Lidar"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.physx" = {} 
+"omni.debugdraw" = {}
+
+[[python.modules]]
+name = "omni.isaac.lidar"
+
+
+[[python.modules]]
+name = "omni.isaac.lidar.scripts.samples.lidar_info"
+
+[[python.modules]]
+name = "omni.isaac.LidarSchema"
+public = false
+
+[[native.plugins]]
+search_path = "bin/*.plugin"
+recursive = false
+
+[[libraries]]
+path = "bin/${lib_prefix}lidarSchema${lib_ext}"
+
+[python.pipapi]
+requirements = ["numpy"]

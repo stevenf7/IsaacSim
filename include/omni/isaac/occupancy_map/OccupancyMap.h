@@ -27,7 +27,7 @@ struct OccupancyMap
     CARB_PLUGIN_INTERFACE("omni::isaac::occupancy_map::OccupancyMap", 0, 1);
 
     void(CARB_ABI* generateMap)(
-        float gridResolution, float rayResolution, float minSearchDistance, float occupancyThreshold, int maxRays);
+        float gridResolution, float rayResolution, float minSearchDistance, float occupancyThreshold, size_t maxRays);
     void(CARB_ABI* update)();
     void(CARB_ABI* setTransform)(carb::Float3 inputOrigin, carb::Float2 minPoint, carb::Float2 maxPoint);
     std::vector<carb::Float3>(CARB_ABI* getOccupiedPositions)();

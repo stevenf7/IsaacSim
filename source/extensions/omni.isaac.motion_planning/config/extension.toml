@@ -1,0 +1,14 @@
+display_name = "Motion Planning"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.kit.test" = {}
+"omni.isaac.dynamic_control" = {}
+
+[[python.modules]]
+name = "omni.isaac.motion_planning"
+
+[[native.plugins]]
+search_path = "bin/*.plugin"
+recursive = false
+

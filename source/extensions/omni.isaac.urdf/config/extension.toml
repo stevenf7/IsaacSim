@@ -1,0 +1,27 @@
+display_name = "URDF Import and Utils"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.isaac.utils" = {}
+
+[[python.modules]]
+name = "omni.isaac.urdf"
+
+[[python.modules]]
+name = "omni.isaac.urdf.scripts.samples.import_carter"
+
+[[python.modules]]
+name = "omni.isaac.urdf.scripts.samples.import_franka"
+
+[[python.modules]]
+name = "omni.isaac.urdf.scripts.samples.import_kaya"
+
+[[python.modules]]
+name = "omni.isaac.urdf.scripts.samples.import_ur10"
+
+[[native.plugins]]
+search_path = "bin/*.plugin"
+recursive = false
+
+[python.pipapi]
+requirements = ["psutil", "graphviz"]

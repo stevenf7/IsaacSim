@@ -1,0 +1,56 @@
+#pragma once
+
+#include "DRComponentBase.h"
+
+#include <carb/datasource/IDataSource.h>
+#include <carb/logging/Log.h>
+#include <carb/settings/ISettings.h>
+#include <carb/tokens/ITokens.h>
+
+#include <drSchema/baseComponent.h>
+#include <drSchema/textureComponent.h>
+
+#include <functional>
+#include <random>
+#include <unordered_map>
+
+
+namespace omni
+{
+namespace isaac
+{
+namespace dr
+{
+
+class DRComponentTexture : public DRComponentBase<pxr::DrSchemaBaseComponent>
+{
+public:
+    DRComponentTexture(carb::tokens::ITokens* tokens);
+    ~DRComponentTexture();
+    virtual void initialize(const pxr::DrSchemaTextureComponent& prim, pxr::UsdStageWeakPtr stage);
+    virtual void onStart();
+    virtual void tick();
+    virtual void onComponentChange();
+
+private:
+    void update();
+    void stop();
+
+    std::string mOmniPBRMatPath;
+    std::vector<std::string> mPaths, mTextureList, mGroupClassList;
+    std::vector<pxr::UsdPrim> mMaterialPrims, mAllPrims;
+    std::vector<pxr::UsdShadeMaterial> mMaterialShades;
+    std::unordered_map<std::string, std::string> mPrimClassMap;
+    std::unordered_map<std::string, int> mClassTextureMap;
+    std::unordered_map<std::string, pxr::UsdShadeMaterialBindingAPI> mPrimMaterialBindingsMap;
+    bool mIsIgnore, mIsGrouping, mDoOnce, mEnableProjectUVW;
+    pxr::SdfLayerHandle mTextureLayer;
+    pxr::UsdShadeMaterial mTextureMaterialShade;
+    pxr::UsdPrim mTextureMaterialPrim;
+    carb::tokens::ITokens* mTokens;
+    carb::datasource::IDataSource* mDatasource;
+    carb::datasource::Connection* mConnection;
+};
+}
+}
+}
