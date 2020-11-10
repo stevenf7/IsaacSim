@@ -15,7 +15,7 @@ import pkg_resources
 from setuptools._vendor.packaging import version
 
 # Bump this before you tag :)
-VERSION = "1.2.7"
+VERSION = "2.0.0"
 # Flag to understad if we are on windows or not
 IS_WINDOWS = os.name == "nt"
 # User home folder
