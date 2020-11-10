@@ -52,9 +52,51 @@ files = []
 
 [create-launcher.release]
 files = [
-    ["_build/$platform/release/_build", "_build"],
+    ["_build/$platform/$config"],
+    ["_build/kit-exts"],
+    ["_build/kit-extsPhysics"],
     ["_build/target-deps/kit_sdk_release"],
     ["launcher.toml"],
+
+    # WAR: repo_fileutils fails to package folder starting with dot on windows unless specified explicitly. The reason is that 
+    # python's std glob module doesn't support finding them. Fixing that turned out to be quite hard.
+    ["_build/kit-exts/omni.kit.pip_archive/pip_prebundle/numpy/.libs"],
+]
+files_exclude = [
+    ["**/*.pdb"],
+    ["**/*.exp"],
+    ["_build/target-deps/kit_sdk_release/_build/$platform/release/omniverse-kit.portable"],
+    ["_build/target-deps/kit_sdk_release/_build/$platform/release/kit.portable"],
+    ["_build/target-deps/kit_sdk_release/_build/$platform/release/exts/**"],
+    ["_build/target-deps/kit_sdk_release/_build/$platform/release/extsPhysics/**"],
+    ["_build/target-deps/kit_sdk_release/_build/$platform/release/plugins/test.unit${exe_ext}"],
+    ["_build/target-deps/kit_sdk_release/_build/$platform/release/example.*${exe_ext}"],
+    ["_build/target-deps/kit_sdk_release/_build/shaders/**"],
+    ["_build/target-deps/kit_sdk_release/_build/library/mdl/Aperture/**"],
+    ["_build/target-deps/kit_sdk_release/_build/assets/**"],
+    ["_build/target-deps/kit_sdk_release/data/**"],
+    ["_build/target-deps/kit_sdk_release/deps/**"],
+    ["_build/target-deps/kit_sdk_release/tools/**"],
+    ["_build/target-deps/kit_sdk_release/source/**"],
+    ["_build/target-deps/kit_sdk_release/include/**"],
+    ["_build/target-deps/kit_sdk_release/PACKAGE-LICENSES/*readme.txt*"],
+    ["_build/kit-exts/omni.kit.widget.webview/**"],
+    ["_build/kit-exts/omni.particle.system/**"],
+]
+
+[create-launcher.linux-x86_64]
+files_exclude = [
+    ["_build/target-deps/kit_sdk_release/_build/target-deps/python/lib/importlib_metadata/tests/data/**"],
+    ["_build/target-deps/kit_sdk_release/_build/target-deps/python/lib/python3.6/test/test_warnings/data/**"],
+    ["_build/target-deps/kit_sdk_release/_build/target-deps/python/lib/python3.6/test/test_import/data/**"],
+    ["_build/target-deps/kit_sdk_release/_build/target-deps/python/lib/python3.6/test/data/**"],
+    ["_build/target-deps/kit_sdk_release/_build/target-deps/python/lib/python3.6/test/test_email/data/**"],
+    ["_build/target-deps/kit_sdk_release/_build/target-deps/python/lib/python3.6/lib2to3/tests/data/**"],
+    ["_build/target-deps/kit_sdk_release/_build/target-deps/python/lib/python3.6/test/test_importlib/source/**"],
+]
+
+[create-launcher.windows-x86_64]
+files_exclude = [
 ]
 
 [create-launcher.debug]

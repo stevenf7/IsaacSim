@@ -1,18 +1,18 @@
 <project toolsVersion="5.0">
   <dependency name="repo_man" linkPath="../_repo/deps/repo_man">
-    <package name="repo_man" version="0.3.6" />
+    <package name="repo_man" version="0.3.8" />
   </dependency>
   <dependency name="repo_build" linkPath="../_repo/deps/repo_build">
-    <package name="repo_build" version="0.11.1" />
+    <package name="repo_build" version="0.12.0" />
   </dependency>
   <dependency name="repo_format" linkPath="../_repo/deps/repo_format">
     <package name="repo_format" version="0.3.4" />
   </dependency>
   <dependency name="repo_package" linkPath="../_repo/deps/repo_package">
-    <package name="repo_package" version="5.2.9" />
+    <package name="repo_package" version="5.2.14" />
   </dependency>
   <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing" tags="non-redist">
-    <package name="repo_licensing" version="0.3.6" />
+    <package name="repo_licensing" version="0.3.9" />
   </dependency>
   <dependency name="repo_codesign" linkPath="../_repo/deps/repo_codesign">
     <package name="repo_codesign" version="1.4" />
