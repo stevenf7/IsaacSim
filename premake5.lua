@@ -158,6 +158,7 @@ call "%%~dp0%s\omniverse-kit.exe" %s %s %%*
         local sh_file_dir = root.."/_build/linux-x86_64/"..config
         local sh_file_path = sh_file_dir.."/"..name..".sh"
         local kit_bin_relative = path.getrelative(sh_file_dir, KIT_SDK_RESOLVED[config].."/_build/linux-x86_64/"..config)
+        local usd_ext_isaac_schema_path = root.."/_build/target-deps/usd_ext_isaac/"..config.."/share/usd/plugins/*/resources/"
         kit_bin_relative = path.normalize(kit_bin_relative)
         config_path = (config_path == nil and "") or "\"$SCRIPT_DIR/"..config_path.."\""
         f = io.open(sh_file_path, 'w')
@@ -169,8 +170,9 @@ AUTOPULL="./$SCRIPT_DIR/../../../tools/autopull/autopull.sh"
 if [ -e $AUTOPULL ]; then
 $AUTOPULL --config %s
 fi
+export PXR_PLUGINPATH_NAME="%s":$PXR_PLUGINPATH_NAME
 exec "$SCRIPT_DIR/%s/kit" %s %s $@
-        ]], config, kit_bin_relative, config_path, extra_args))
+        ]], config,usd_ext_isaac_schema_path,  kit_bin_relative, config_path, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)
     end
@@ -262,3 +264,22 @@ group "exts"
 --     -- Automated Testing
 --     define_experience("test-isaac-sim")
 --     repo_build.prebuild_link {{"data", "%{root}/_build/$platform/$config/data" }}
+
+
+-- -- copy usd ext isaac binaries into kit sdk bin directory
+-- group "usd_ext_isaac"
+--     local usd_bin_path = "_build/%{platform}/%{config}/plugins"
+--     local target_bindings_folder = usd_bin_path.."/bindings-python"
+--     local usd_folder_path = usd_bin_path.."/usd"
+
+--     repo_build.prebuild_copy {  
+--         { "%{root}/_build/target-deps/usd_ext_isaac/$config/share/usd/plugins/**", usd_folder_path},
+--         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/**", target_bindings_folder.."/pxr"},
+--     }
+--     repo_build.prebuild_copy ({
+--         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/*.dll", usd_bin_path },
+--     }, "windows-x86_64")
+
+--     repo_build.prebuild_copy ({
+--         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/*.so", usd_bin_path },
+--     }, "linux-x86_64")
