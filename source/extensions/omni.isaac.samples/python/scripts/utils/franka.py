@@ -250,7 +250,7 @@ class Franka:
             self.world.rmp_handle = self.rmp_handle
             self.world.register_parent(self.base, self.prim, "panda_link0")
 
-        settings = omni.kit.settings.get_settings_interface()
+        settings = carb.settings.get_settings()
         self.mp.setFrequency(self.rmp_handle, settings.get("/physics/timeStepsPerSecond"), True)
 
         self.end_effector = EndEffector(self.dc, self.mp, self.ar, self.rmp_handle)

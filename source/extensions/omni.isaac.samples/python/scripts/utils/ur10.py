@@ -214,7 +214,7 @@ class UR10:
             "ee_suction_link",
             True,
         )
-        settings = omni.kit.settings.get_settings_interface()
+        settings = carb.settings.get_settings()
         self.mp.setFrequency(self.rmp_handle, settings.get("/physics/timeStepsPerSecond"), True)
         print("UR10 rmp handle", self.rmp_handle)
         if world is not None:

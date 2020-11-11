@@ -1,4 +1,4 @@
-from pxr import Usd, UsdGeom, Gf, PhysxSchema, PhysicsSchema
+from pxr import Usd, UsdGeom, Gf, PhysxSchema, UsdPhysics
 
 
 def set_up_z_axis(stage):
@@ -14,7 +14,7 @@ def setup_physics(stage):
     metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
     gravityScale = 9.81 / metersPerUnit
     gravity = Gf.Vec3f(0.0, 0.0, -gravityScale)
-    scene = PhysicsSchema.PhysicsScene.Define(stage, "/physics/scene")
+    scene = UsdPhysics.Scene.Define(stage, "/physics/scene")
     scene.CreateGravityAttr().Set(gravity)
 
     PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physics/scene"))

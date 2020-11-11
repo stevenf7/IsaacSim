@@ -21,7 +21,7 @@ import os
 import threading
 import numpy as np
 
-from omni.kit.settings import get_settings_interface
+from carb.settings import get_settings
 from PIL import Image, ImageDraw
 from omni.isaac.synthetic_utils import visualization as vis
 
@@ -192,7 +192,7 @@ class Extension(omni.ext.IExt):
         self._window.visible = False
         self._window.deferred_dock_in("Content")
         self.sub_update = self._editor.subscribe_to_update_events(self._update)
-        self._settings = get_settings_interface()
+        self._settings = get_settings()
         self._build_window_ui()
         self._accumulated_time = 0
         self.data_writer = None

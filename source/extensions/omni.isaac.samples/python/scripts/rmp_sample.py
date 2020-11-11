@@ -98,7 +98,7 @@ class Extension(omni.ext.IExt):
         self._reset_btn.enabled = False
         self._reset_btn.tooltip = omni.kit.ui.Label("Reset Robot to default position")
 
-        self._settings = omni.kit.settings.get_settings_interface()
+        self._settings = carb.settings.get_settings()
 
         self._settings.set("/persistent/physics/updateToUsd", False)
         self._settings.set("/persistent/physics/useFastCache", True)

@@ -70,7 +70,7 @@ class Extension(omni.ext.IExt):
             self._on_stage_event
         )
 
-        self._settings = omni.kit.settings.get_settings_interface()
+        self._settings = carb.settings.get_settings()
         self._settings.set("/persistent/physics/updateToUsd", False)
         self._settings.set("/persistent/physics/useFastCache", True)
 

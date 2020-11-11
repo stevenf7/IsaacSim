@@ -8,7 +8,7 @@ def find_nucleus_server(suffix="/Isaac"):
     Attempts to determine best nucleus server to use based on existing savedServers setting and the default server specied in json config at "/isaac/nucleus/default"
     """
 
-    default_server = omni.kit.settings.get_settings_interface().get("/isaac/nucleus/default")
+    default_server = carb.settings.get_settings().get("/isaac/nucleus/default")
     if default_server:
         result, entries = omni.client.list("{}{}".format(default_server, suffix))
         if result == Result.OK:
@@ -21,7 +21,7 @@ def find_nucleus_server(suffix="/Isaac"):
     )
     carb.log_warn("Attempting to locate server from previously saved servers...")
 
-    saved_servers = omni.kit.settings.get_settings_interface().get("/persistent/app/omniverse/savedServers")
+    saved_servers = carb.settings.get_settings().get("/persistent/app/omniverse/savedServers")
 
     if saved_servers:
         server_list = saved_servers.split(";")

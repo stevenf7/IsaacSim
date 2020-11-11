@@ -77,7 +77,7 @@ class Extension(omni.ext.IExt):
         self._add_new_bins_btn.set_clicked_fn(self._on_add_bin)
         self._add_new_bins_btn.enabled = False
 
-        self._settings = omni.kit.settings.get_settings_interface()
+        self._settings = carb.settings.get_settings()
 
         self._settings.set("/persistent/physics/updateToUsd", False)
         self._settings.set("/persistent/physics/useFastCache", True)

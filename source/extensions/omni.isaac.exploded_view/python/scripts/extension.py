@@ -176,8 +176,8 @@ class Exploded_view_manager:
 
         self.explode_base = None
 
-        self.current_update_to_usd = omni.kit.settings.get_settings_interface().get("/persistent/physics/updateToUsd")
-        self.current_use_fast_cache = omni.kit.settings.get_settings_interface().get("/persistent/physics/useFastCache")
+        self.current_update_to_usd = carb.settings.get_settings().get("/persistent/physics/updateToUsd")
+        self.current_use_fast_cache = carb.settings.get_settings().get("/persistent/physics/useFastCache")
 
     def _on_stage_event(self, event):
         """Called with omni.usd.context when stage event"""
@@ -232,14 +232,14 @@ class Exploded_view_manager:
         if self.xview_layer:
             self._layers.mute_layer(self.xview_layer.identifier)
         self.enabled = False
-        omni.kit.settings.get_settings_interface().set("/persistent/physics/updateToUsd", self.current_update_to_usd)
-        omni.kit.settings.get_settings_interface().set("/persistent/physics/useFastCache", self.current_use_fast_cache)
+        carb.settings.get_settings().set("/persistent/physics/updateToUsd", self.current_update_to_usd)
+        carb.settings.get_settings().set("/persistent/physics/useFastCache", self.current_use_fast_cache)
 
     def enable(self):
         if self.xview_layer:
             self._layers.unmute_layer(self.xview_layer.identifier)
-            omni.kit.settings.get_settings_interface().set("/persistent/physics/updateToUsd", True)
-            omni.kit.settings.get_settings_interface().set("/persistent/physics/useFastCache", False)
+            carb.settings.get_settings().set("/persistent/physics/updateToUsd", True)
+            carb.settings.get_settings().set("/persistent/physics/useFastCache", False)
             self.enabled = True
             return
 
@@ -293,8 +293,8 @@ class Exploded_view_manager:
                 imageable = UsdGeom.Imageable(prim)
                 imageable.MakeInvisible()
         # Ready to start explode views!
-        omni.kit.settings.get_settings_interface().set("/persistent/physics/updateToUsd", True)
-        omni.kit.settings.get_settings_interface().set("/persistent/physics/useFastCache", False)
+        carb.settings.get_settings().set("/persistent/physics/updateToUsd", True)
+        carb.settings.get_settings().set("/persistent/physics/useFastCache", False)
 
     def add_explode_view_item(self, prim: Usd.Prim, explode_direction=None):
         if self.enabled:
