@@ -56,7 +56,7 @@ class Extension(omni.ext.IExt):
         self._gamepad_setup_btn.tooltip = omni.kit.ui.Label("Connect the gamepad to the robot and begin simulation")
         self.kaya = None
 
-        self._settings = omni.kit.settings.get_settings_interface()
+        self._settings = carb.settings.get_settings()
         self._settings.set("/persistent/physics/updateToUsd", False)
         self._settings.set("/persistent/physics/useFastCache", True)
 

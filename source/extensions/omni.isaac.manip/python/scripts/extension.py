@@ -135,7 +135,7 @@ class Extension(omni.ext.IExt):
         self.load_bindings()
         self.stage_sub = self.usd_context.get_stage_event_stream().create_subscription_to_pop(self.stage_event_fn)
 
-        self._settings = omni.kit.settings.get_settings_interface()
+        self._settings = carb.settings.get_settings()
         self._settings.set("/persistent/app/omniverse/gamepadCameraControl", False)
 
     def on_shutdown(self):

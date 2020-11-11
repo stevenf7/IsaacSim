@@ -16,7 +16,7 @@ import omni.usd
 import omni.kit.editor
 import omni.ui
 import omni.syntheticdata._syntheticdata as gt
-from omni.kit.settings import get_settings_interface
+from carb.settings import get_settings
 from omni.isaac.synthetic_utils import visualization as vis
 
 EXTENSION_NAME = "Visualize Synthetic Data"
@@ -31,7 +31,7 @@ class Extension(omni.ext.IExt):
         self._window.deferred_dock_in("Details")
         self._visualize_window.deferred_dock_in("Stage")
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/{EXTENSION_NAME}", self._menu_callback)
-        self._settings = get_settings_interface()
+        self._settings = get_settings()
         self._window.visible = False
         self._visualize_window.visible = False
         self._rgb_enable = False

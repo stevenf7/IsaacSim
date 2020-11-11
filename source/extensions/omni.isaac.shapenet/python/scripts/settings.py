@@ -21,7 +21,7 @@ class ShapenetSettings:
     def __init__(self):
         self._window = omni.kit.ui.Window(EXTENSION_NAME, 800, 600, menu_path="Window/" + EXTENSION_NAME)
 
-        self._settings = get_settings_interface()
+        self._settings = get_settings()
 
         # note: Not sure this is the best place to set default values.
         self._settings.set("/isaac/shapenet/synsetId", "random")

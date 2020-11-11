@@ -11,7 +11,7 @@
 import carb
 import omni.kit.app
 import omni.kit.editor
-import omni.kit.asyncapi
+import omni.kit
 import omni.kit.commands
 from pxr import UsdGeom, Semantics, Usd
 
@@ -100,7 +100,7 @@ Launches and configures OmniKit and exposes useful functions.
         async def setup():
             await omni.kit.asyncapi.new_stage()
             self.carb_settings = carb.settings.acquire_settings_interface()
-            self.kit_settings = omni.kit.settings.get_settings_interface()
+            self.kit_settings = carb.settings.get_settings()
             self.setup_renderer()
             self.set_setting("/rtx/rendermode", self.config["renderer"])
 

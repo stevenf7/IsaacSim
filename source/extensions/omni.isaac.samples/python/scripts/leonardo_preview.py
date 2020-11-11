@@ -71,7 +71,7 @@ class Extension(omni.ext.IExt):
         self._toggle_obstacle_btn.set_clicked_fn(self._on_toggle_obstacle)
         self._toggle_obstacle_btn.enabled = False
 
-        self._settings = omni.kit.settings.get_settings_interface()
+        self._settings = carb.settings.get_settings()
 
         self._settings.set("/persistent/physics/updateToUsd", False)
         self._settings.set("/persistent/physics/useFastCache", True)

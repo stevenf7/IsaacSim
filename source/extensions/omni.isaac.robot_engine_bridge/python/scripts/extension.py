@@ -24,7 +24,7 @@ class Extension(omni.ext.IExt):
             EXTENSION_NAME, 960, 300, menu_path=menu_path, dock=omni.kit.ui.DockPreference.LEFT_BOTTOM
         )
 
-        self._settings = omni.kit.settings.get_settings_interface()
+        self._settings = carb.settings.get_settings()
         json_path_input = self._settings.get("/isaac/robot_engine_bridge/json")
 
         # The default app json is copied to the resources folder as part of the build process
