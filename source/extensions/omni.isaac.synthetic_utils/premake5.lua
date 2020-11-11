@@ -8,11 +8,10 @@ project_ext (ext)
 --         add_impl_folder("source/extensions/omni.isaac/synthetic_utils/python")
 -- end
 
--- repo_build.prebuild_link {
---     { ext_source.."/config", ext_folder.."/config" },
---     { ext_source.."/python/scripts", ext_folder.."/omni/isaac/synthetic_utils/scripts" },
--- }
+repo_build.prebuild_link {
+    { "python/scripts", ext.target_dir.."/omni/isaac/synthetic_utils/scripts" },
+}
 
--- repo_build.prebuild_copy {
---     { ext_source.."/python/*.py", ext_folder.."/omni/isaac/synthetic_utils" },
--- }
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/synthetic_utils" },
+}

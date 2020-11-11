@@ -12,10 +12,9 @@ project_ext (ext)
 --     }
 -- end
 
---     repo_build.prebuild_link {
---         { ext_source.."/python/scripts", ext_folder.."/omni/isaac/samples_internal/scripts" },
---     }
-
+repo_build.prebuild_link {
+    { "python/scripts", ext.target_dir.."/omni/isaac/samples_internal/scripts" },
+}
 --     repo_build.prebuild_copy {
 --         { ext_source.."/python/*.py", ext_folder.."/omni/isaac/samples_internal" },
 --     }

@@ -6,7 +6,6 @@ project_ext_plugin(ext, "omni.isaac.decals.plugin")
     staticruntime "Off"
     rtti "On"
     exceptionhandling "On"
-    local plugin_name = "omni.isaac.decals"
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/decals/**")

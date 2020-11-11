@@ -7,7 +7,6 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
     rtti "On"
     exceptionhandling "On"
     disablewarnings {"error=pragmas"}
-    local plugin_name = ("omni.isaac.occupancy_map")
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/occupancy_map/**")
@@ -114,5 +113,9 @@ repo_build.prebuild_link {
 }
 
 repo_build.prebuild_copy {
-    { "%{root}/_build/target-deps/octomap/lib/**", ext.target_dir.."/bin/$platform/$config" },
+    { "%{root}/_build/target-deps/octomap/lib/**", ext.target_dir.."/bin" },
+}
+
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/occupancy_map" },
 }

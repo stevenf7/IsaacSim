@@ -3,7 +3,6 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.urdf.plugin")
-    local plugin_name = "omni.isaac.urdf"
 
     removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
     staticruntime "Off"
@@ -62,6 +61,10 @@ repo_build.prebuild_link {
 }
 
 repo_build.prebuild_copy {
-    { "%{root}/_build/target-deps/assimp/lib/lib**", ext.target_dir.."/bin/$platform/$config" },
-    { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext.target_dir.."/bin/$platform/$config" },
+    { "%{root}/_build/target-deps/assimp/lib/lib**", ext.target_dir.."/bin" },
+    { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext.target_dir.."/bin" },
+}
+
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/urdf" },
 }

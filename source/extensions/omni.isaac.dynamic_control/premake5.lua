@@ -5,8 +5,6 @@ project_ext (ext)
 project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
     staticruntime "Off"
     exceptionhandling "On"
-    local plugin_name = "omni.isaac.dynamic_control"
-
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/dynamic_control/**")
@@ -74,4 +72,7 @@ project_ext_bindings {
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/dynamic_control/scripts" },
 }
-    
+
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/dynamic_control" },
+}
