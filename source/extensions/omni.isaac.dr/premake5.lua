@@ -6,7 +6,6 @@ project_ext_plugin(ext, "omni.isaac.dr.plugin")
     staticruntime "Off"
     rtti "On"
     exceptionhandling "On"
-    local plugin_name = "omni.isaac.dr"
     disablewarnings {"error=unused-variable"}
 
     add_files("impl", "plugins")
@@ -49,7 +48,11 @@ project_ext_bindings {
 }
 
 repo_build.prebuild_link {
-    { "python", ext.target_dir.."/omni/isaac/dr" },
+    { "python/scripts", ext.target_dir.."/omni/isaac/dr/scripts" },
+}
+
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/dr" },
 }
 
 repo_build.prebuild_copy {

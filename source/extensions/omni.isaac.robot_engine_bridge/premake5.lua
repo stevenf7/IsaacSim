@@ -6,7 +6,6 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
     staticruntime "Off"
     rtti "On"
     exceptionhandling "On"
-    local plugin_name = "omni.isaac.robot_engine_bridge"
     disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable", "error=unused-function"}
 
     add_files("impl", "plugins")
@@ -107,4 +106,8 @@ project_ext_bindings {
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/robot_engine_bridge/scripts" },
+}
+
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/robot_engine_bridge" },
 }

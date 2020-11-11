@@ -3,7 +3,6 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.utils.plugin")
-    local plugin_name = "omni.isaac.utils"
 
     removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
     staticruntime "Off"
@@ -49,5 +48,9 @@ project_ext_bindings ({
 
 
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir.."/omni/isaac/urdf/scripts" },
+    { "python/scripts", ext.target_dir.."/omni/isaac/utils/scripts" },
+}
+
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/utils" },
 }

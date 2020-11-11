@@ -6,7 +6,6 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
     staticruntime "Off"
     rtti "On"
     exceptionhandling "On"
-    local plugin_name = "omni.isaac.ros_bridge"
     disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
 
     add_files("impl", "plugins")
@@ -62,4 +61,8 @@ project_ext_bindings {
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/ros_bridge/scripts" },
+}
+
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/ros_bridge" },
 }

@@ -6,7 +6,6 @@ project_ext_plugin(ext, "omni.isaac.manip.plugin")
     staticruntime "Off"
     rtti "On"
     exceptionhandling "On"
-    local plugin_name = "omni.isaac.manip"
     disablewarnings {"error=unused-variable"}
 
     add_files("impl", "plugins")
@@ -44,4 +43,8 @@ project_ext_bindings {
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/manip/scripts" },
+}
+
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/manip" },
 }

@@ -5,7 +5,6 @@ project_ext_plugin(ext, "omni.isaac.step_importer.plugin")
     staticruntime "Off"
     exceptionhandling "On"
     disablewarnings {"error=sign-compare"}
-    local plugin_name = "omni.isaac.step_importer"
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/step_importer/**")
@@ -52,6 +51,14 @@ project_ext_bindings ({
         "%{root}/_build/target-deps/stepreader/include",
     }
 
+repo_build.prebuild_link {
+    { "python/scripts", ext.target_dir.."/omni/isaac/step_importer/scripts" },
+}
+
 repo_build.prebuild_copy {
-    { "%{root}/_build/target-deps/stepreader/bin/**", ext.target_dir.."/bin/$platform/$config" },
+    { "%{root}/_build/target-deps/stepreader/bin/**", ext.target_dir.."/bin" },
+}
+
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/step_importer" },
 }

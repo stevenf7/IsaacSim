@@ -6,7 +6,6 @@ project_ext_plugin(ext, "omni.isaac.lidar.plugin")
     staticruntime "Off"
     rtti "On"
     exceptionhandling "On"
-    local plugin_name = "omni.isaac.lidar"
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/lidar/**")
@@ -75,4 +74,8 @@ project_ext_bindings {
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/lidar/scripts" },
+}
+
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/lidar" },
 }

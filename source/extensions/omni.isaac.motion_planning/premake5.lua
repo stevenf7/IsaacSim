@@ -6,7 +6,6 @@ project_ext (ext)
 project_ext_plugin(ext, "omni.isaac.motion_planning.plugin")
     staticruntime "Off"
     exceptionhandling "On"
-    local plugin_name = "omni.isaac.motion_planning"
     removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
     cppdialect "C++17"
 
@@ -78,7 +77,10 @@ project_ext_bindings (  {ext = ext,
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/motion_planning/scripts" },
 }
-
 repo_build.prebuild_link {
-    { "%{root}/_build/target-deps/lula/data/", ext.target_dir.."/omni/isaac/motion_planning/resources/lula/" },
+    { "%{root}/_build/target-deps/lula/data", ext.target_dir.."/omni/isaac/motion_planning/resources/lula/" },
+}
+
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/isaac/motion_planning" },
 }
