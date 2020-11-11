@@ -32,7 +32,7 @@ class Jetbot:
         mat.SetRotateOnly(Gf.Rotation(Gf.Vec3d(0, 0, 1), rotation))
         xform_op.Set(mat)
 
-        self.camera_path = prim_path + "/chassis/jetbot_camera"
+        self.camera_path = prim_path + "/chassis/rgb_camera/jetbot_camera"
 
     def teleport(self, location, rotation, settle=False):
         if self.ar is None:
