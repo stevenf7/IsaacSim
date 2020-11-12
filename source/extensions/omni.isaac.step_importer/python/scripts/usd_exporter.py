@@ -51,7 +51,9 @@ def create_material(stage, _mtl_path, props):
         mat_prim = stage.DefinePrim(Sdf.Path(_mtl_path), "Material")
     material_prim = UsdShade.Material.Get(stage, mat_prim.GetPath())
     if material_prim:
-        shader_path = stage.DefinePrim(Sdf.Path("{}/Shader".format(_mtl_path)), "Shader")
+        shader_path = stage.GetPrimAtPath(Sdf.Path("{}/Shader".format(_mtl_path)))
+        if not shader_path:
+            shader_path = stage.DefinePrim(Sdf.Path("{}/Shader".format(_mtl_path)), "Shader")
         shader_prim = UsdShade.Shader.Get(stage, shader_path.GetPath())
         if shader_prim:
 
@@ -417,11 +419,12 @@ class PartExporter:
             # Makes the session layer the authoring layer to make a non-permanent change on material binding
             with Usd.EditContext(stage, session_layer):
                 # layers.set_authoring_layer_by_identifier(session_layer_id)
-                for mat in self.material_list:
-                    if stage.GetPrimAtPath(mat):
-                        mat_name = mat.split("/")[-1]
-                        prims = get_all_prims_with_material(stage, mat_name)
-                        bind_material(stage, prims, mat)
+                with Sdf.ChangeBlock():
+                    for mat in self.material_list:
+                        if stage.GetPrimAtPath(mat):
+                            mat_name = mat.split("/")[-1]
+                            prims = get_all_prims_with_material(stage, mat_name)
+                            bind_material(stage, prims, mat)
             # return to root layer
 
     def update_material(self, index):
@@ -518,6 +521,42 @@ class PartExporter:
         if open_stage:
             carb.log_info("Opening " + self.mesh_usd_paths[mesh_index])
             omni.usd.get_context().open_stage(self.mesh_usd_paths[mesh_index], None)
+
+    def save_flattened(self, path, on_finish_fn=None):
+        if self.is_temp_stage_open():
+            omni.usd.get_context().get_stage().Save()
+        path = "{}/{}.usd".format(path, self.part_name)
+        omni.usd.get_context().open_stage(
+            self.assemblies_path[1], lambda a, b, c=path, d=on_finish_fn: self._saved_flattened(c, d)
+        )
+
+    def _saved_flattened(self, path, on_finish_fn):
+        self.set_materials_to_color_layer()
+        move_dict = {}
+        move_dict["/Looks"] = "/Root/Looks"
+        omni.kit.commands.execute("MovePrimsCommand", paths_to_move=move_dict)
+        omni.usd.get_context().export_as_stage(path, lambda a, b, c=path, d=on_finish_fn: self._open_flattened(c, d))
+
+    def _open_flattened(self, path, on_finish_fn):
+
+        stage = pxr.Usd.Stage.Open(path)
+        materials = [i.GetPath().pathString for i in stage.GetPrimAtPath("/Root/Looks").GetChildren()]
+        for material in materials:
+            mat_name = os.path.basename(material)
+            prims = get_all_prims_with_material(stage, mat_name)
+            bind_material(stage, prims, material)
+
+        prims = [
+            i.GetChild("Looks").GetPath()
+            for i in stage.Traverse()
+            if i.GetChild("Looks") and i.GetPath().pathString != "/Root"
+        ]
+        for prim in prims:
+            stage.RemovePrim(prim)
+        stage.Save()
+        if self._on_exported_fn:
+            self._on_exported_fn()
+        omni.usd.get_context().close_stage(lambda a, b: omni.usd.get_context().open_stage(path, on_finish_fn))
 
 
 def set_pose(prim, pose):
