@@ -57,10 +57,6 @@ files = [
     ["_build/kit-extsPhysics"],
     ["_build/target-deps/kit_sdk_release"],
     ["launcher.toml"],
-
-    # WAR: repo_fileutils fails to package folder starting with dot on windows unless specified explicitly. The reason is that 
-    # python's std glob module doesn't support finding them. Fixing that turned out to be quite hard.
-    ["_build/kit-exts/omni.kit.pip_archive/pip_prebundle/numpy/.libs"],
 ]
 files_exclude = [
     ["**/*.pdb"],
@@ -96,7 +92,10 @@ files_exclude = [
 ]
 
 [isaac-sim-launcher.windows-x86_64]
-files_exclude = [
+files = [
+    # WAR: repo_fileutils fails to package folder starting with dot on windows unless specified explicitly. The reason is that 
+    # python's std glob module doesn't support finding them. Fixing that turned out to be quite hard.
+    ["_build/kit-exts/omni.kit.pip_archive/pip_prebundle/numpy/.libs"],
 ]
 
 [isaac-sim-launcher.debug]

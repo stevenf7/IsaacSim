@@ -15,7 +15,7 @@ import pkg_resources
 from setuptools._vendor.packaging import version
 
 # Bump this before you tag :)
-VERSION = "2.0.0"
+VERSION = "3.0.0"
 # Flag to understad if we are on windows or not
 IS_WINDOWS = os.name == "nt"
 # User home folder
@@ -185,7 +185,7 @@ def ensure_gcn_daemon():
 
 
 def run_gcn_test(mode: str) -> int:
-    subprocess.run(["ovat", "dev", "create-from-file", "-m", mode])
+    subprocess.run(["ovat", "dev", "create", "-m", mode])
 
     ovat_ouputs_re = re.compile(r".*__OVAT_OUTPUTS_JSON.txt.*gtl:\/\/file\/([0-9A-Z-]+)", re.M)
     args = f"gcn_cli run --node {platform.node()} .\\gcn_local.yml".split(" ")

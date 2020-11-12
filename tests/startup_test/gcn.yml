@@ -17,7 +17,7 @@ entrypoints:
 ## CREATE RUNNER SERVICE
 - component: create_runner
   entrypoint_script:
-    origin: gtl://build/5131586
+    origin: gtl://build/5140240
   entrypoint_type: setup
 
 ## Testing Create Runner on local disk

@@ -3,6 +3,7 @@ setlocal
 
 :: Where are the tools located in relation to this script
 set TOOLS=%~dp0..
+set OVAT_CLIENT_VERSION=ovat-client~=0.18.0
 
 echo Current directory: %cd%
 
@@ -15,14 +16,15 @@ if %errorlevel% neq 0 goto :error
 
 python -m pip install -U pip
 pip config set --site global.extra-index-url https://pypi.perflab.nvidia.com/simple
-pip install -U "ovat-client>=0.17.0"
+pip install -U "%OVAT_CLIENT_VERSION%"
 
 echo Running tests
-ovat jobs create-from-file -e teamcity
+ovat jobs create -e teamcity
 if %errorlevel% neq 0 goto :error
 goto :end
 
 :error
+echo Error %errorlevel% in teamcity.bat
 exit /b %errorlevel%
 
 :end
