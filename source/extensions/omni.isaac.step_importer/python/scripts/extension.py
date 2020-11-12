@@ -96,9 +96,15 @@ class StepImporter(omni.ext.IExt):
                     if any(x in p.fstype for x in ["ext3", "ext4", "fuseblk", "NTFS", "removable", "fixed"]):
                         mountpoint = p.mountpoint.strip("\\")
                         self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
+                data_dir = str(Path(__file__).parent.joinpath("data/step"))
+                print(data_dir)
+                self._filebrowser.add_model_as_subtree(FileSystemModel("Built In Step Files", data_dir))
                 self._filebrowser.refresh_ui(None)
                 with ui.HStack(height=0):
                     ui.Button("Refresh", clicked_fn=self._refresh_filebrowser, height=0, width=0)
+                    self.save_flattened_button = ui.Button(
+                        "Save Flattened", clicked_fn=self._on_save_flattened, height=0
+                    )
                     self.select_file_btn = ui.Button("Open File", clicked_fn=self._on_open_folder_selected, height=0)
 
         self._tesselation_properties_list = None
@@ -186,7 +192,10 @@ class StepImporter(omni.ext.IExt):
             self._on_kit_selection_changed()
         if event.type == int(omni.usd.StageEventType.OPENED):
             if self.exporter:
-                self.exporter.set_materials_to_color_layer()
+                try:
+                    self.exporter.set_materials_to_color_layer()
+                except:
+                    pass
 
             if self._mesh_model:
                 self._mesh_model.update_prim_paths()
@@ -446,7 +455,7 @@ class StepImporter(omni.ext.IExt):
             if len(items) > 1 or import_all:
                 self.exporter.export()
 
-        omni.usd.get_context().new_stage(on_finish_fn=lambda a, b: export())
+        omni.usd.get_context().close_stage_with_callback(on_finish_fn=lambda a, b: export())
 
     def reimport_all_meshes(self):
         self.reimport_meshes(True)
@@ -459,7 +468,7 @@ class StepImporter(omni.ext.IExt):
         self._tp_model.remove_item(self._tesselation_properties_list.selection)
         self._tesselation_properties_list.clear_selection()
 
-    def close_window(self, a, b):
+    def close_window(self, a=None, b=None):
         self._window = None
         self.build_steps.clear()
         self.current_step = -1
@@ -526,8 +535,8 @@ class StepImporter(omni.ext.IExt):
                                 self.step_btns[i].selected = False
                             self.select_step(0)
                         ui.Spacer(width=ui.Pixel(20))
-            main_dockspace = ui.Workspace.get_window("DockSpace")
-            self._window.deferred_dock_in("DockSpace")
+            # main_dockspace = ui.Workspace.get_window("DockSpace")
+            # self._window.deferred_dock_in("DockSpace")
             if menu:
                 self._select_file()
 
@@ -552,9 +561,10 @@ class StepImporter(omni.ext.IExt):
         self._filebrowser._mouse_double_clicked_fn = self._on_browser_double_pressed
         self._filebrowser._models._filter_fn = on_filter_item
         self.select_file_btn.text = "Open File"
+        self.save_flattened_button.visible = False
         self.select_file_btn.set_clicked_fn(self._on_open_selected)
 
-        self._file_window.deferred_dock_in("Step Importer")
+        # self._file_window.deferred_dock_in("Step Importer")
         # self._file_window.width=600
         # self._file_window.height=400
         self._file_window.visible = True
@@ -578,6 +588,12 @@ class StepImporter(omni.ext.IExt):
         self._filebrowser._models._filter_fn = on_filter_folder
         self.select_file_btn.set_clicked_fn(self._on_open_folder_selected)
 
+        self._file_window.width = 600
+        self._file_window.height = 400
+        self.select_file_btn.text = "Select Folder"
+        self.save_flattened_button.visible = True
+        self._file_window.deferred_dock_in("Step Importer")
+
         self._file_window.visible = True
         if len(self._filebrowser.get_selections()):
             item = self._filebrowser.get_selections()[0]
@@ -587,10 +603,6 @@ class StepImporter(omni.ext.IExt):
             item = self._filebrowser._models.root
             item.populated = False
             self._filebrowser.refresh_ui(item)  # self._filebrowser._models._item_changed(None)
-        self._file_window.width = 600
-        self._file_window.height = 400
-        self.select_file_btn.text = "Select Folder"
-        self._file_window.deferred_dock_in("Step Importer")
         # self._filepicker = omni.kit.ui.FilePicker(
         #     "Select Destination Folder", file_type=omni.kit.ui.FileDialogSelectType.DIRECTORY
         # )
@@ -635,6 +647,15 @@ class StepImporter(omni.ext.IExt):
         if item and not item.is_folder:
             self._file_window.visible = False
             self._select_picked_file_callback(item.path)
+
+    def _on_save_flattened(self):
+        item = None
+        if self.exporter and self._filebrowser:
+            if self._filebrowser.get_selections():
+                item = self._filebrowser.get_selections()[0]
+            if item and item.is_folder:
+                self._file_window.visible = False
+                self.exporter.save_flattened(item.path, self.close_window)
 
     def _on_open_folder_selected(self):
         if self._filebrowser:
@@ -696,29 +717,3 @@ class StepImporter(omni.ext.IExt):
             )
 
         asyncio.ensure_future(upload())
-
-        # self.close_window(None, None)
-        # asset_importer.__dict__["_waiting_popup_upload"] = None
-        # asset_importer.__dict__["_content_window"] = None
-        # asset_importer._menu_upload_clicked = True
-        # asset_importer._upload_absolute_paths, asset_importer._upload_relative_paths = (
-        #     self.exporter.get_abs_and_rel_paths()
-        # )
-
-        # usd_context = omni.usd.get_context()
-        # usd_context.enable_save_to_recent_files()
-        # asset_importer._upload_future = asyncio.ensure_future(
-        #     import_file(
-        #         asset_importer,
-        #         output_dir,
-        #         "/" + self.exporter.part_name + "/" + os.path.basename(self.exporter.assemblies_path[1]),
-        #         weakref.proxy(self).close_window,
-        #     )
-        # )
-
-
-async def import_file(asset_importer, output_dir, part_name, end_fn):
-    await asset_importer._start_upload_internal(output_dir, False, None)
-
-    asset_importer._upload_future = None
-    # asset_importer.on_shutdown()
