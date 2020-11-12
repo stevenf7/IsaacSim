@@ -81,6 +81,9 @@ void DRComponentColor::onStart()
         auto shaderMtlPath = mStage->DefinePrim(pxr::SdfPath(colorMaterialPrimName + "/Shader"), pxr::TfToken("Shader"));
         auto shadeShaderPrim = pxr::UsdShadeShader(shaderMtlPath);
         auto shaderOut = shadeShaderPrim.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+        shadeShaderPrim.CreateInput(pxr::TfToken("diffuse_color_constant"), pxr::SdfValueTypeNames->Color3f);
+        shadeShaderPrim.CreateInput(pxr::TfToken("reflection_roughness_constant"), pxr::SdfValueTypeNames->Float);
+        shadeShaderPrim.CreateInput(pxr::TfToken("metallic_constant"), pxr::SdfValueTypeNames->Float);
 
         shadeMaterialPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
         shadeMaterialPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);

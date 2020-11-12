@@ -1,3 +1,4 @@
+import asyncio
 import os
 import carb
 import carb.tokens
@@ -70,7 +71,7 @@ class Extension(omni.ext.IExt):
         self._stage = None
 
     def _on_clear_stage(self, widget):
-        omni.usd.get_context().new_stage(None)
+        omni.usd.get_context().close_stage_with_callback(lambda a, b: omni.usd.get_context().new_stage(None))
 
     def _on_load_stage(self, widget):
         if self._asset_path is None:
@@ -83,7 +84,9 @@ class Extension(omni.ext.IExt):
             stage_path = self._asset_path + "/Samples/DR/Props/only_light.usd"
         elif self._selected_scenario.selected_index == 8:
             stage_path = self._asset_path + "/Samples/DR/Props/multiple_cubes_with_light.usd"
-        omni.usd.get_context().open_stage(stage_path, None)
+        omni.usd.get_context().close_stage_with_callback(
+            lambda a, b: omni.usd.get_context().open_stage(stage_path, None)
+        )
 
     def _on_load_component(self, widget):
         if self._asset_path is None:
@@ -294,15 +297,21 @@ class Extension(omni.ext.IExt):
             self._asset_path = get_server_path("/Isaac")
         if self._asset_path is None:
             return
-        omni.usd.get_context().open_stage(self._asset_path + "/Samples/DR/Stage/simple_room_sample.usda", None)
+        omni.usd.get_context().close_stage_with_callback(
+            lambda a, b: omni.usd.get_context().open_stage(
+                self._asset_path + "/Samples/DR/Stage/simple_room_sample.usda", None
+            )
+        )
 
     def add_warehouse_scene(self, parent=None):
         if self._asset_path is None:
             self._asset_path = get_server_path("/Isaac")
         if self._asset_path is None:
             return
-        omni.usd.get_context().open_stage(
-            self._asset_path + "/Samples/DR/Stage/simple_warehouse_material_sample.usda", None
+        omni.usd.get_context().close_stage_with_callback(
+            lambda a, b: omni.usd.get_context().open_stage(
+                self._asset_path + "/Samples/DR/Stage/simple_warehouse_material_sample.usda", None
+            )
         )
 
     def _on_dr_sample_menu_click(self, menu, value):
