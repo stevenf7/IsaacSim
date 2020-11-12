@@ -30,7 +30,7 @@ def train(args):
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
     env = JetbotEnv(omniverse_kit, max_resets=args.rand_freq, updates_per_step=3)
-    checkpoint_callback = CheckpointCallback(save_freq=args.save_freq, save_path="./params/", name_prefix=args.name)
+    checkpoint_callback = CheckpointCallback(save_freq=args.save_freq, save_path="./params/", name_prefix=args.checkpointName)
     net_arch = [512, 256, dict(pi=[128, 64, 32], vf=[128, 64, 32])]
     policy_kwargs = {"net_arch": net_arch, "features_extractor_class": CustomCNN, "activation_fn": torch.nn.ReLU}
     if args.loadedCheckpoint=="":
@@ -45,7 +45,7 @@ def train(args):
         eval_log_path=args.evaluationDir,
         reset_num_timesteps=args.resetNumTimesteps,
     )
-    model.save(args.name+".zip")
+    model.save(args.checkpointName+".zip")
 
 
 def runEval(args):
@@ -84,19 +84,19 @@ if __name__ == "__main__":
                         nargs='?', 
                         type=str)
     
-    parser.add_argument("-e", "--eval", 
+    parser.add_argument("-E", "--eval", 
                         help="evaluate checkpoint", 
                         action="store_true")
 
-    parser.add_argument("-r", "--resetNumTimesteps", 
+    parser.add_argument("-R", "--resetNumTimesteps", 
                         help="reset the current timestep number (used in logging)", 
                         action="store_true")
 
-    parser.add_argument("-d", "--headless", 
+    parser.add_argument("-H", "--headless", 
                         help="run in headless mode (no GUI)", 
                         action="store_true")
 
-    parser.add_argument("--name", 
+    parser.add_argument("--checkpointName", 
                         help="name of checkpoint file (no suffix)", 
                         default="checkpoint_25k", 
                         type=str)
