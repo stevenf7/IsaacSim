@@ -7,6 +7,6 @@ display_name = "Joystick Manipulation"
 name = "omni.isaac.manip"
 
 [[native.plugins]]
-search_path = "bin/*.plugin"
+path = "bin/*.plugin"
 recursive = false
 

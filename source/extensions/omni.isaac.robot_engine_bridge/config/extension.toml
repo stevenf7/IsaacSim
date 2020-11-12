@@ -22,7 +22,7 @@ name = "omni.isaac.robot_engine_bridge.scripts.setup_environment_grid"
 public = false
 
 [[native.plugins]]
-search_path = "bin/*.plugin"
+path = "bin/*.plugin"
 recursive = false
 
 [[libraries]]

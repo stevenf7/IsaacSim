@@ -119,12 +119,12 @@ def main():
         # Set material inputs, these can be determined by looking at the .mdl file
         # or by selecting the Shader attached to the Material in the stage window and looking at the details panel
         color = Gf.Vec3f(random.random(), random.random(), random.random())
-        omni.kit.usd.create_material_input(mtl_prim, "glass_color", color, Sdf.ValueTypeNames.Color3f)
-        omni.kit.usd.create_material_input(mtl_prim, "glass_ior", 1.25, Sdf.ValueTypeNames.Float)
+        omni.usd.create_material_input(mtl_prim, "glass_color", color, Sdf.ValueTypeNames.Color3f)
+        omni.usd.create_material_input(mtl_prim, "glass_ior", 1.25, Sdf.ValueTypeNames.Float)
         # This value is the volumetric light absorption scale, reduce to zero to make glass clearer
-        omni.kit.usd.create_material_input(mtl_prim, "depth", 0.001, Sdf.ValueTypeNames.Float)
+        omni.usd.create_material_input(mtl_prim, "depth", 0.001, Sdf.ValueTypeNames.Float)
         # Enable for thin glass objects if needed
-        omni.kit.usd.create_material_input(mtl_prim, "thin_walled", False, Sdf.ValueTypeNames.Bool)
+        omni.usd.create_material_input(mtl_prim, "thin_walled", False, Sdf.ValueTypeNames.Bool)
         # Bind the material to the prim
         prim_mat_shade = UsdShade.Material(mtl_prim)
         UsdShade.MaterialBindingAPI(prim).Bind(prim_mat_shade, UsdShade.Tokens.strongerThanDescendants)

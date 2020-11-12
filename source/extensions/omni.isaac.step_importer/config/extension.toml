@@ -2,13 +2,14 @@ display_name = "STEP Importer"
 
 [dependencies]
 "omni.kit.editor" = {}
+"omni.kit.tool.asset_importer" = {}
 "omni.isaac.utils" = {}
 
 [[python.modules]]
 name = "omni.isaac.step_importer"
 
 [[native.plugins]]
-search_path = "bin/*.plugin"
+path = "bin/*.plugin"
 recursive = false
 
 [python.pipapi]

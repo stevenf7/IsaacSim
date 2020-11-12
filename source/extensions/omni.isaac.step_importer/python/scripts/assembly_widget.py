@@ -69,8 +69,8 @@ class AssemblyDelegate(ui.AbstractItemDelegate):
 
                 async def save_and_open(path):
                     if omni.usd.get_context().has_pending_edit():
-                        await omni.kit.asyncapi.save_stage()
-                    result = await omni.kit.asyncapi.open_stage(path)
+                        await omni.usd.get_context().save_stage_async()
+                    result = await omni.usd.get_context().open_stage_async(path)
                     return result
 
                 asyncio.ensure_future(save_and_open(item.usd_path.strip()))

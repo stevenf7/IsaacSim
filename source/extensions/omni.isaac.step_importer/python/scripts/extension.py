@@ -532,6 +532,8 @@ class StepImporter(omni.ext.IExt):
                 self._select_file()
 
     def on_shutdown(self):
+        if self.asset_importer:
+            self.asset_importer.on_shutdown()
         if self.step_file:
             self._si.release_step_file(self.step_file)
         if self.exporter:
@@ -676,30 +678,47 @@ class StepImporter(omni.ext.IExt):
 
     def _finish_import(self, output_dir):
         # setting asset importer parameters to upload
-        from omni.assetimport import get_extension as get_asset_importer
+        if self.asset_importer is None:
+            from omni.kit.tool.asset_importer import importer
 
-        asset_importer = get_asset_importer()
-        asset_importer.__dict__["_waiting_popup_upload"] = None
-        asset_importer.__dict__["_content_window"] = None
-        asset_importer._menu_upload_clicked = True
-        asset_importer._upload_absolute_paths, asset_importer._upload_relative_paths = (
-            self.exporter.get_abs_and_rel_paths()
-        )
+            self.asset_importer = importer.Importer()
+            self.asset_importer.on_startup()
 
-        usd_context = omni.usd.get_context()
-        usd_context.enable_save_to_recent_files()
-        asset_importer._upload_future = asyncio.ensure_future(
-            import_file(
-                asset_importer,
-                output_dir,
-                "/" + self.exporter.part_name + "/" + os.path.basename(self.exporter.assemblies_path[1]),
+        upload_absolute_paths, upload_relative_paths = self.exporter.get_abs_and_rel_paths()
+
+        async def upload():
+            await self.asset_importer.create_import_task(
+                False, upload_absolute_paths, upload_relative_paths, output_dir, None
+            )
+            omni.usd.get_context().open_stage_with_callback(
+                output_dir + "/" + self.exporter.part_name + "/" + os.path.basename(self.exporter.assemblies_path[1]),
                 weakref.proxy(self).close_window,
             )
-        )
+
+        asyncio.ensure_future(upload())
+
+        # self.close_window(None, None)
+        # asset_importer.__dict__["_waiting_popup_upload"] = None
+        # asset_importer.__dict__["_content_window"] = None
+        # asset_importer._menu_upload_clicked = True
+        # asset_importer._upload_absolute_paths, asset_importer._upload_relative_paths = (
+        #     self.exporter.get_abs_and_rel_paths()
+        # )
+
+        # usd_context = omni.usd.get_context()
+        # usd_context.enable_save_to_recent_files()
+        # asset_importer._upload_future = asyncio.ensure_future(
+        #     import_file(
+        #         asset_importer,
+        #         output_dir,
+        #         "/" + self.exporter.part_name + "/" + os.path.basename(self.exporter.assemblies_path[1]),
+        #         weakref.proxy(self).close_window,
+        #     )
+        # )
 
 
 async def import_file(asset_importer, output_dir, part_name, end_fn):
     await asset_importer._start_upload_internal(output_dir, False, None)
-    omni.usd.get_context().open_stage(output_dir + part_name, end_fn)
+
     asset_importer._upload_future = None
     # asset_importer.on_shutdown()

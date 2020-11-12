@@ -14,7 +14,7 @@ name = "omni.isaac.dynamic_control.scripts.samples.articulation"
 name = "omni.isaac.dynamic_control.scripts.samples.joint_monkey"
 
 [[native.plugins]]
-search_path = "bin/*.plugin"
+path = "bin/*.plugin"
 recursive = false
 
 [python.pipapi]
