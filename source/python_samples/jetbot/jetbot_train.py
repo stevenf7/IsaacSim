@@ -3,7 +3,9 @@ import numpy as np
 import os
 import carb
 import signal
+import json
 import argparse
+from argparse import Namespace
 
 from omni.isaac.synthetic_utils import OmniKitHelper
 
@@ -12,9 +14,6 @@ from jetbot_model import CustomCNN
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
-
-# use this to switch from training to evaluation
-TRAINING_MODE = True
 
 
 def train(args):
@@ -136,8 +135,26 @@ if __name__ == "__main__":
                         default=25000, 
                         type=int)
     
+    parser.add_argument("--experimentFile",
+                        help="specify configuration via JSON.  Overrides commandline",
+                        default="",
+                        type=str)
+
     args = parser.parse_args()
-    print(args)
+
+    if args.experimentFile != "":
+        args_dict = vars(args)
+        if os.path.exists(args.experimentFile):
+            with open(args.experimentFile) as f:
+                json_args_dict = json.load(f)
+
+                args_dict.update(json_args_dict)
+                args = Namespace(**args_dict)
+    
+
+    print("running with args: ", args)
+    
+
     def handle_exit(*args, **kwargs):
         print("Exiting training...")
         quit()
