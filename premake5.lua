@@ -20,11 +20,13 @@ KIT_SDK_RESOLVED = {
 kit_sdk = "%{root}/_build/target-deps/kit_sdk_%{config}"
 kit_sdk_bin_dir = kit_sdk.."/_build/%{platform}/%{config}"
 
--- Which physx library type to use
-physx_libs = "profile"
 
 -- Include Kit SDK public premake, it defines few global variables and helper functions. Look inside to get more info.
 include("_build/target-deps/kit_sdk_release/premake5-public.lua")
+
+
+-- Shared build scripts from isaac sim
+include("isaac_sim_premake5.lua")
 
 -- Setup where to write generate prebuild.toml file
 repo_build.set_prebuild_file('_build/generated/prebuild.toml')
@@ -72,7 +74,7 @@ workspace "ov-create"
 
     -- Default compilation settings
     symbols "On"
-    exceptionhandling "Off"
+    exceptionhandling "On"
     rtti "On"
     staticruntime "On"
     flags { "FatalCompileWarnings", "MultiProcessorCompile", "NoPCH", "NoIncrementalLink" }

@@ -3,9 +3,7 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
-    staticruntime "Off"
-    rtti "On"
-    exceptionhandling "On"
+
     disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
 
     add_files("impl", "plugins")

@@ -5,8 +5,7 @@ project_ext (ext)
 project_ext_plugin(ext, "omni.isaac.urdf.plugin")
 
     removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
-    staticruntime "Off"
-    exceptionhandling "On"
+
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/urdf/**")
 

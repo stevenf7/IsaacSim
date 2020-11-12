@@ -2,8 +2,7 @@ local ext = get_current_extension_info()
 project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.step_importer.plugin")
-    staticruntime "Off"
-    exceptionhandling "On"
+
     disablewarnings {"error=sign-compare"}
 
     add_files("impl", "plugins")
