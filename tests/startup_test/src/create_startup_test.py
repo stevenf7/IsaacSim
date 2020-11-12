@@ -56,7 +56,7 @@ def prepare_app():
     create_runner.prepare()
     create_runner.set_env("OMNI_USER", "test")
     # Warm up shaders
-    create_runner.run_kit(args=f'--exec "{SCREENSHOT_SCRIPT} --quit"', timeout=240)
+    create_runner.run_kit(args=f'--exec "{SCREENSHOT_SCRIPT} --quit"')
     return create_runner
 
 
