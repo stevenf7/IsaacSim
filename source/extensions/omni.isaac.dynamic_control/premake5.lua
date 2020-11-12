@@ -3,29 +3,11 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
-    staticruntime "Off"
-    exceptionhandling "On"
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/dynamic_control/**")
 
-    -- physx libs
-    filter { "system:windows", "platforms:x86_64", "configurations:debug" }
-    libdirs { 
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/debug", 
-            "%{root}/_build/target-deps/vhacd/bin/win.x86_64.vc141.md/debug" 
-        }
-        defines {  "PX_PHYSX_STATIC_LIB", "_DEBUG" }
-    filter { "system:windows", "platforms:x86_64", "configurations:release" }
-        libdirs { 
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/"..physx_libs, 
-            "%{root}/_build/target-deps/vhacd/bin/win.x86_64.vc141.md/release" 
-        }
-        defines {  "PX_PHYSX_STATIC_LIB", "NDEBUG" }
-    filter { "system:windows", "platforms:x86_64" }
-        libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
-        links { "nvToolsExt64_1","PhysXExtensions_static_64", "PhysX_static_64", "PhysXPvdSDK_static_64","PhysXCooking_static_64","PhysXCommon_static_64", "PhysXFoundation_static_64"}
-    filter {}
+    include_physx()   
 
     includedirs {
         "%{root}/source/pch",

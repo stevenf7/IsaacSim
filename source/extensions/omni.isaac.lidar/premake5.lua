@@ -3,28 +3,11 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.lidar.plugin")
-    staticruntime "Off"
-    rtti "On"
-    exceptionhandling "On"
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/lidar/**")
-    filter { "system:windows", "platforms:x86_64", "configurations:debug" }
-    libdirs { 
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/debug", 
-            "%{root}/_build/target-deps/vhacd/bin/win.x86_64.vc141.md/debug" 
-        }
-        defines {  "PX_PHYSX_STATIC_LIB", "_DEBUG" }
-    filter { "system:windows", "platforms:x86_64", "configurations:release" }
-        libdirs { 
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/"..physx_libs, 
-            "%{root}/_build/target-deps/vhacd/bin/win.x86_64.vc141.md/release" 
-        }
-        defines {  "PX_PHYSX_STATIC_LIB", "NDEBUG" }
-    filter { "system:windows", "platforms:x86_64" }
-        libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
-        links { "nvToolsExt64_1","PhysXExtensions_static_64", "PhysX_static_64", "PhysXPvdSDK_static_64","PhysXCooking_static_64","PhysXCommon_static_64", "PhysXFoundation_static_64"}
-    filter {}
+
+    include_physx()
 
     includedirs {
         "%{root}/source/pch",
@@ -40,11 +23,15 @@ project_ext_plugin(ext, "omni.isaac.lidar.plugin")
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
+        "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
+        "%{kit_sdk_bin_dir}/plugins",
     }
 
-    links {"gf", "sdf", "usd", "usdGeom","usdUtils"}
+    links {
+        "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
+        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "lidarSchema", "omni.usd", "usdPhysics",
+    }
 
     filter { "system:linux" }
         includedirs {
@@ -78,4 +65,9 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/lidar" },
+}
+
+repo_build.prebuild_copy {
+    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/LidarSchema/**", ext.target_dir.."/omni/isaac/LidarSchema" },
+    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}lidarSchema${lib_ext}", ext.target_dir.."/bin"},
 }

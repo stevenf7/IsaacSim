@@ -3,59 +3,13 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
-    staticruntime "Off"
-    rtti "On"
-    exceptionhandling "On"
+
     disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable", "error=unused-function"}
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/robot_engine_bridge/**")
 
-    filter { "system:windows", "platforms:x86_64", "configurations:debug" }
-    libdirs { 
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/debug", 
-            "%{root}/_build/target-deps/vhacd/bin/win.x86_64.vc141.md/debug" 
-        }
-        defines {  "PX_PHYSX_STATIC_LIB", "_DEBUG" }
-    filter { "system:windows", "platforms:x86_64", "configurations:release" }
-        libdirs { 
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/"..physx_libs, 
-            "%{root}/_build/target-deps/vhacd/bin/win.x86_64.vc141.md/release" 
-        }
-        defines {  "PX_PHYSX_STATIC_LIB", "NDEBUG" }
-    filter { "system:windows", "platforms:x86_64" }
-        libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
-        links { "nvToolsExt64_1","PhysXExtensions_static_64", "PhysX_static_64", "PhysXPvdSDK_static_64","PhysXCooking_static_64","PhysXCommon_static_64", "PhysXFoundation_static_64"}
-    filter {}
-
-    filter { "system:windows", "platforms:x86_64", "configurations:debug" }
-    libdirs { 
-        "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/debug", 
-        "%{root}/_build/target-deps/vhacd/bin/win.x86_64.vc141.md/debug" 
-    }
-    filter { "system:windows", "platforms:x86_64", "configurations:release" }
-        libdirs { 
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/"..physx_libs, 
-            "%{root}/_build/target-deps/vhacd/bin/win.x86_64.vc141.md/release" 
-        }
-    filter { "system:windows", "platforms:x86_64" }
-        libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
-        links { "nvToolsExt64_1"}
-    filter { "system:linux", "platforms:x86_64", "configurations:debug" }
-        libdirs { 
-            "%{root}/_build/target-deps/physx/bin/linux.clang/debug", 
-            "%{root}/_build/target-deps/vhacd/bin/linux.clang/debug" 
-        }
-    filter { "system:linux", "platforms:x86_64", "configurations:release" }
-        libdirs { 
-            "%{root}/_build/target-deps/physx/bin/linux.clang/"..physx_libs, 
-            "%{root}/_build/target-deps/vhacd/bin/linux.clang/release" 
-        }
-    filter { "system:linux", "platforms:x86_64" }
-        libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
-        links { "nvToolsExt"}
-    filter {}
-    defines {  "PX_PHYSX_STATIC_LIB"}
+    include_physx()
 
     includedirs {
         "%{root}/source/pch",

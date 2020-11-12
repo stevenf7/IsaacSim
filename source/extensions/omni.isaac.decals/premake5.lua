@@ -3,9 +3,6 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.decals.plugin")
-    staticruntime "Off"
-    rtti "On"
-    exceptionhandling "On"
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/decals/**")
