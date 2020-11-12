@@ -20,7 +20,7 @@ name = "omni.isaac.urdf.scripts.samples.import_kaya"
 name = "omni.isaac.urdf.scripts.samples.import_ur10"
 
 [[native.plugins]]
-search_path = "bin/*.plugin"
+path = "bin/*.plugin"
 recursive = false
 
 [python.pipapi]

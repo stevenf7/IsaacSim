@@ -22,8 +22,9 @@ class MeshListDelegate(ui.AbstractItemDelegate):
 
             async def save_and_open(path):
                 if omni.usd.get_context().has_pending_edit():
-                    await omni.kit.asyncapi.save_stage()
-                omni.usd.get_context().close_stage(lambda a, b: omni.usd.get_context().open_stage(path, None))
+                    await omni.usd.get_context().save_stage_async()
+                result = await omni.usd.get_context().open_stage_async(path)
+                return result
 
             asyncio.ensure_future(save_and_open(item.get_usd_path().strip()))
 

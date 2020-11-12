@@ -63,28 +63,24 @@ def create_material(stage, _mtl_path, props):
             shader_prim.SetSourceAsset(Sdf.AssetPath("OmniPBR.mdl"), "mdl")
             shader_prim.SetSourceAssetSubIdentifier("OmniPBR", "mdl")
 
-            omni.kit.usd.create_material_input(
+            omni.usd.create_material_input(
                 mat_prim,
                 "diffuse_color_constant",
                 Gf.Vec3f(props.rgba_color.r, props.rgba_color.g, props.rgba_color.b),
                 Sdf.ValueTypeNames.Color3f,
             )
-            omni.kit.usd.create_material_input(
+            omni.usd.create_material_input(
                 mat_prim,
                 "emissive_color",
                 Gf.Vec3f(props.emissive.r, props.emissive.g, props.emissive.b),
                 Sdf.ValueTypeNames.Color3f,
             )
-            omni.kit.usd.create_material_input(mat_prim, "metallic_constant", props.metallic, Sdf.ValueTypeNames.Float)
-            omni.kit.usd.create_material_input(
+            omni.usd.create_material_input(mat_prim, "metallic_constant", props.metallic, Sdf.ValueTypeNames.Float)
+            omni.usd.create_material_input(
                 mat_prim, "reflection_roughness_constant", props.roughness, Sdf.ValueTypeNames.Float
             )
-            omni.kit.usd.create_material_input(
-                mat_prim, "enable_emission", props.emissive.a > 0, Sdf.ValueTypeNames.Bool
-            )
-            omni.kit.usd.create_material_input(
-                mat_prim, "emissive_intensity", props.emissive.a, Sdf.ValueTypeNames.Float
-            )
+            omni.usd.create_material_input(mat_prim, "enable_emission", props.emissive.a > 0, Sdf.ValueTypeNames.Bool)
+            omni.usd.create_material_input(mat_prim, "emissive_intensity", props.emissive.a, Sdf.ValueTypeNames.Float)
             # mat_prim.SetInstanceable(True)
         else:
             carb.log_warn(f"failed to create shader {shader_path}")
@@ -288,7 +284,7 @@ class PartExporter:
             stage_path = self.assemblies_path[1]
 
         if self._on_exported_fn:
-            omni.usd.get_context().open_stage(stage_path.strip(), lambda a, b: self._on_exported_fn())
+            omni.usd.get_context().open_stage_with_callback(stage_path.strip(), lambda a, b: self._on_exported_fn())
 
     def get_assembly(self, index):
         if self._make_assembly_usd:

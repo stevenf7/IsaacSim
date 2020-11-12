@@ -16,7 +16,7 @@ name = "omni.isaac.ros_bridge.scripts.samples.rostopics"
 name = "omni.isaac.ros_bridge.scripts.samples.rosservices"
 
 [[native.plugins]]
-search_path = "bin/*.plugin"
+path = "bin/*.plugin"
 recursive = false
 
 [[python.modules]]

@@ -9,6 +9,6 @@ display_name = "Motion Planning"
 name = "omni.isaac.motion_planning"
 
 [[native.plugins]]
-search_path = "bin/*.plugin"
+path = "bin/*.plugin"
 recursive = false
 

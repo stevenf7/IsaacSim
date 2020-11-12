@@ -27,7 +27,7 @@ name = "omni.isaac.DrSchema"
 public = false
 
 [[native.plugins]]
-search_path = "bin/*.plugin"
+path = "bin/*.plugin"
 recursive = false
 
 [[libraries]]

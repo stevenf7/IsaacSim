@@ -7,6 +7,6 @@ display_name = "Decals"
 name = "omni.isaac.decals"
 
 [[native.plugins]]
-search_path = "bin/*.plugin"
+path = "bin/*.plugin"
 recursive = false
 

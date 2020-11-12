@@ -10,6 +10,6 @@ display_name = "Occupancy Map"
 name = "omni.isaac.occupancy_map"
 
 [[native.plugins]]
-search_path = "bin/*.plugin"
+path = "bin/*.plugin"
 recursive = false
 
