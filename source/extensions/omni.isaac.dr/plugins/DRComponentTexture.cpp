@@ -81,6 +81,8 @@ void DRComponentTexture::onStart()
             mStage->DefinePrim(pxr::SdfPath(textureMaterialPrimName + "/Shader"), pxr::TfToken("Shader"));
         auto shadeShaderPrim = pxr::UsdShadeShader(shaderMtlPath);
         auto shaderOut = shadeShaderPrim.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+        shadeShaderPrim.CreateInput(pxr::TfToken("diffuse_texture"), pxr::SdfValueTypeNames->Asset);
+        shadeShaderPrim.CreateInput(pxr::TfToken("project_uvw"), pxr::SdfValueTypeNames->Bool);
 
         shadeMaterialPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
         shadeMaterialPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
