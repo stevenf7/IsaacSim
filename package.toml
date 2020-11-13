@@ -91,6 +91,17 @@ files_exclude = [
     ["_build/target-deps/kit_sdk_release/_build/target-deps/python/lib/python3.6/test/test_importlib/source/**"],
 ]
 
+files_strip = [
+    ["**/*.so"],
+    ["_build/target-deps/kit_sdk_release/_build/$platform/release/omniverse-kit"],
+    ["_build/target-deps/kit_sdk_release/_build/$platform/release/kit"],
+    ["_build/target-deps/kit_sdk_release/_build/$platform/release/plugins/test.benchmarks"],
+    ["_build/target-deps/kit_sdk_release/_build/$platform/release/plugins/test.unit"],
+    ["_build/target-deps/kit_sdk_release/_build/target-deps/python/bin/python3"],
+    ["_build/target-deps/kit_sdk_release/_build/target-deps/python/bin/python3.6"],
+    ["_build/target-deps/kit_sdk_release/_build/target-deps/python/bin/python3.6m"],
+]
+
 [isaac-sim-launcher.windows-x86_64]
 files = [
     # WAR: repo_fileutils fails to package folder starting with dot on windows unless specified explicitly. The reason is that 
