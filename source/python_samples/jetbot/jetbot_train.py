@@ -28,12 +28,16 @@ def train(args):
 
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
+
     env = JetbotEnv(omniverse_kit, max_resets=args.rand_freq, updates_per_step=3)
+
     checkpoint_callback = CheckpointCallback(
         save_freq=args.save_freq, save_path="./params/", name_prefix=args.checkpointName
     )
+
     net_arch = [512, 256, dict(pi=[128, 64, 32], vf=[128, 64, 32])]
     policy_kwargs = {"net_arch": net_arch, "features_extractor_class": CustomCNN, "activation_fn": torch.nn.ReLU}
+
     if args.loadedCheckpoint == "":
         model = PPO(
             "CnnPolicy",
@@ -44,8 +48,10 @@ def train(args):
             device="cuda",
             n_steps=args.step_freq,
         )
+
     else:
         model = PPO.load(args.loadedCheckpoint, env)
+
     model.learn(
         total_timesteps=args.total_steps,
         callback=checkpoint_callback,
@@ -54,7 +60,7 @@ def train(args):
         eval_log_path=args.evaluationDir,
         reset_num_timesteps=args.resetNumTimesteps,
     )
-    model.save(args.checkpointName + ".zip")
+    model.save(args.checkpointName)
 
 
 def runEval(args):
