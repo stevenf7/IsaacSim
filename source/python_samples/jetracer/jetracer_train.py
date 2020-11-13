@@ -13,26 +13,14 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
 
 
-CUSTOM_CONFIG = {
-    "width": 224,
-    "height": 224,
-    "renderer": "RayTracedLighting",
-    "headless": False,
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
-}
-
-# Use this to switch from training to evaluation
-TRAINING_MODE = True
-
-# RL environment and agent JSON config files
-ENV_CONFIG = None
-AGENT_CONFIG = None
-
-# All outputs for the experiment, go in the experiment dir
-EXP_DIR = "."
-
-
 def train():
+    CUSTOM_CONFIG = {
+        "width": 224,
+        "height": 224,
+        "renderer": "RayTracedLighting",
+        "headless": False,
+        "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+    }
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
 
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
@@ -70,6 +58,13 @@ def train():
 
 
 def runEval():
+    CUSTOM_CONFIG = {
+        "width": 224,
+        "height": 224,
+        "renderer": "RayTracedLighting",
+        "headless": False,
+        "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+    }
     # load a zip file to evaluate here. PPO also saves the best model so far in the eval_log folder.
     # You can evaluate those zip files in the params folder as well (i.e params/rl_model_125999_steps.zip)
     agent = PPO.load("eval_log/best_model.zip", device="cuda")
