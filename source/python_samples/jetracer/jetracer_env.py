@@ -39,7 +39,7 @@ class JetracerEnv:
 
     # TODO : Extract more training options
 
-    def __init__(self, omni_kit, mirror_mode=False,  backwards_term_mode=0, reward_mode=0, z_height=0):
+    def __init__(self, omni_kit, z_height=0, max_resets=10, updates_per_step=3, steps_per_rollout=500, mirror_mode=False,  backwards_term_mode=0, reward_mode=0):
 
         self.MIRROR_MODE = mirror_mode
         self.BACKWARDS_TERMINATION_MODE = backwards_term_mode

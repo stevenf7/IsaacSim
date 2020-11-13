@@ -13,12 +13,12 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
 
 
-def train():
+def train(args):
     CUSTOM_CONFIG = {
         "width": 224,
         "height": 224,
         "renderer": "RayTracedLighting",
-        "headless": False,
+        "headless": args.headless,
         "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
     }
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
@@ -26,9 +26,13 @@ def train():
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
 
-    env = JetracerEnv(omniverse_kit, ENV_CONFIG)
+    env = JetracerEnv(omniverse_kit, 
+                      mirror_mode=args.mirror_mode, 
+                      backwards_term_mode=args.backwards_termination_mode, 
+                      reward_mode=args.reward_mode,
+                      max_resets=args.rand_freq)
 
-    checkpoint_callback = CheckpointCallback(save_freq=1000, save_path=EXP_DIR + "/params/", name_prefix="rl_model")
+    checkpoint_callback = CheckpointCallback(save_freq=args.save_freq, save_path="./params/", name_prefix="rl_model")
 
     net_arch = [512, 256, dict(pi=[128, 64, 32], vf=[128, 64, 32])]
     policy_kwargs = {"net_arch": net_arch, "features_extractor_class": CustomCNN, "activation_fn": torch.nn.ReLU}
@@ -38,26 +42,28 @@ def train():
         "CnnPolicy",
         env,
         verbose=1,
-        tensorboard_log=EXP_DIR + "/tensorboard",
+        tensorboard_log=args.tensorboardDir,
         policy_kwargs=policy_kwargs,
         device="cuda",
+        n_steps=args.step_freq,
     )
 
     # load an existing model and continue training
     # model = PPO.load("params/rl_model_125999_steps.zip", env)
 
     model.learn(
-        total_timesteps=450000,
+        total_timesteps=args.total_steps,
         callback=checkpoint_callback,
         eval_env=env,
-        eval_freq=1000,
-        eval_log_path=EXP_DIR + "/eval_log/",
-        reset_num_timesteps=False,
+        eval_freq=args.eval_freq,
+        eval_log_path=args.evaluationDir,
+        reset_num_timesteps=args.resetNumTimesteps,
+
     )
     model.save("checkpoint_1900k")
 
 
-def runEval():
+def runEval(args):
     CUSTOM_CONFIG = {
         "width": 224,
         "height": 224,
