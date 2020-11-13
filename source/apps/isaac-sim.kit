@@ -32,8 +32,8 @@ keywords = ["experience", "app", "usd"]
 
 ## PhysX
 "omni.physx.core" = {}
-"omni.kit.search.service" = {}
 
+"omni.kit.search.service" = {}
 "omni.kit.primitive.mesh" = {}
 
 # Create Windows
@@ -46,9 +46,11 @@ keywords = ["experience", "app", "usd"]
 
 # Viewport and Renderer
 "omni.kit.window.viewport" = {}
-"omni.renderer" = { tag = "rtx", order = -100 }
-"omni.hydra.rtx" = { order = -100 }
+"omni.renderer" = { tag = "rtx" }
+"omni.hydra.rtx" = { }
 "omni.rtx.render_settings" = {}
+
+"omni.kit.window.profiler" = {}
 
 # utils window
 "omni.kit.window.about" = {}
@@ -57,7 +59,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.material.library" = {}
 
 # Content Browser
-# "omni.kit.window.content" = {}
+"omni.kit.window.content" = {} # But it is hidden / just trying to clear some dependency 
 # Getting latest version from Nucleus instead of SDK for now
 "omni.kit.widget.filebrowser" = { }
 "omni.kit.window.filepicker" = { }
@@ -153,7 +155,7 @@ featuredExts = [
 
 # Basic Kit App
 ################################
-app.versionFile = "${app}/../VERSION"
+#app.versionFile = "${app}/../VERSION"
 persistent.app.window.uiStyle = "NvidiaDark"
 
 # Splash Setup
@@ -188,13 +190,11 @@ folders2 = ["${kit}/exts" ]
 enabledDeprecated = [
         "omni.kit.builtin.init",
         "omni.kit.builtin.menu",
-        "omni.kit.builtin.profiler",
     ]
 
 # RTX Settings
 ###############################
 [settings.rtx]
-pathtracing.clampSpp = 0
 ReLAX.enable = false
 
 pathtracing.stochasticLCRefresh = false
