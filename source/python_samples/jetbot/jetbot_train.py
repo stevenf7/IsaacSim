@@ -29,13 +29,23 @@ def train(args):
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
     env = JetbotEnv(omniverse_kit, max_resets=args.rand_freq, updates_per_step=3)
-    checkpoint_callback = CheckpointCallback(save_freq=args.save_freq, save_path="./params/", name_prefix=args.checkpointName)
+    checkpoint_callback = CheckpointCallback(
+        save_freq=args.save_freq, save_path="./params/", name_prefix=args.checkpointName
+    )
     net_arch = [512, 256, dict(pi=[128, 64, 32], vf=[128, 64, 32])]
     policy_kwargs = {"net_arch": net_arch, "features_extractor_class": CustomCNN, "activation_fn": torch.nn.ReLU}
-    if args.loadedCheckpoint=="":
-        model = PPO("CnnPolicy", env, verbose=1, tensorboard_log=args.tensorboardDir, policy_kwargs=policy_kwargs, device="cuda", n_steps=args.step_freq)
+    if args.loadedCheckpoint == "":
+        model = PPO(
+            "CnnPolicy",
+            env,
+            verbose=1,
+            tensorboard_log=args.tensorboardDir,
+            policy_kwargs=policy_kwargs,
+            device="cuda",
+            n_steps=args.step_freq,
+        )
     else:
-        model = PPO.load(args.loadedCheckpoint,env)
+        model = PPO.load(args.loadedCheckpoint, env)
     model.learn(
         total_timesteps=args.total_steps,
         callback=checkpoint_callback,
@@ -44,7 +54,7 @@ def train(args):
         eval_log_path=args.evaluationDir,
         reset_num_timesteps=args.resetNumTimesteps,
     )
-    model.save(args.checkpointName+".zip")
+    model.save(args.checkpointName + ".zip")
 
 
 def runEval(args):
@@ -56,7 +66,7 @@ def runEval(args):
         "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
     }
     # load a zip file to evaluate here
-    agent = PPO.load(args.evaluationDir+"/best_model.zip", device="cuda")
+    agent = PPO.load(args.evaluationDir + "/best_model.zip", device="cuda")
 
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
 
@@ -77,68 +87,44 @@ def runEval(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("loadedCheckpoint", 
-                        help="path to checkpoint to be loaded", 
-                        default="",
-                        nargs='?', 
-                        type=str)
-    
-    parser.add_argument("-E", "--eval", 
-                        help="evaluate checkpoint", 
-                        action="store_true")
+    parser.add_argument("loadedCheckpoint", help="path to checkpoint to be loaded", default="", nargs="?", type=str)
 
-    parser.add_argument("-R", "--resetNumTimesteps", 
-                        help="reset the current timestep number (used in logging)", 
-                        action="store_true")
+    parser.add_argument("-E", "--eval", help="evaluate checkpoint", action="store_true")
 
-    parser.add_argument("-H", "--headless", 
-                        help="run in headless mode (no GUI)", 
-                        action="store_true")
+    parser.add_argument(
+        "-R", "--resetNumTimesteps", help="reset the current timestep number (used in logging)", action="store_true"
+    )
 
-    parser.add_argument("--checkpointName", 
-                        help="name of checkpoint file (no suffix)", 
-                        default="checkpoint_25k", 
-                        type=str)
+    parser.add_argument("-H", "--headless", help="run in headless mode (no GUI)", action="store_true")
 
-    parser.add_argument("--tensorboardDir", 
-                        help="path to tensorboard log directory", 
-                        default="tensorboard", 
-                        type=str)
+    parser.add_argument(
+        "--checkpointName", help="name of checkpoint file (no suffix)", default="checkpoint_25k", type=str
+    )
 
-    parser.add_argument("--evaluationDir", 
-                        help="path to evaluation log directory", 
-                        default="eval_log", 
-                        type=str)
+    parser.add_argument("--tensorboardDir", help="path to tensorboard log directory", default="tensorboard", type=str)
 
-    parser.add_argument("--save_freq", 
-                        help="number of steps before saving a checkpoint", 
-                        default=1000, 
-                        type=int)
+    parser.add_argument("--evaluationDir", help="path to evaluation log directory", default="eval_log", type=str)
 
-    parser.add_argument("--eval_freq", 
-                        help="number of steps before running an evaluation", 
-                        default=1000, 
-                        type=int)
+    parser.add_argument("--save_freq", help="number of steps before saving a checkpoint", default=1000, type=int)
 
-    parser.add_argument("--step_freq", 
-                        help="number of steps before executing a PPO update", 
-                        default=1000, 
-                        type=int)
+    parser.add_argument("--eval_freq", help="number of steps before running an evaluation", default=1000, type=int)
 
-    parser.add_argument("--rand_freq", 
-                        help="number of environment resets before domain randomization", 
-                        default=10, 
-                        type=int)
+    parser.add_argument("--step_freq", help="number of steps before executing a PPO update", default=1000, type=int)
 
-    parser.add_argument("--total_steps", 
-                        help="the total number of steps before exiting and saving a final checkpoint", 
-                        default=25000, 
-                        type=int)
-    
-    parser.add_argument("--experimentFile",
-                        help="specify configuration via JSON.  Overrides commandline",
-                        default="",
-                        type=str)
+    parser.add_argument(
+        "--rand_freq", help="number of environment resets before domain randomization", default=10, type=int
+    )
+
+    parser.add_argument(
+        "--total_steps",
+        help="the total number of steps before exiting and saving a final checkpoint",
+        default=25000,
+        type=int,
+    )
+
+    parser.add_argument(
+        "--experimentFile", help="specify configuration via JSON.  Overrides commandline", default="", type=str
+    )
 
     args = parser.parse_args()
 
@@ -150,10 +136,8 @@ if __name__ == "__main__":
 
                 args_dict.update(json_args_dict)
                 args = Namespace(**args_dict)
-    
 
     print("running with args: ", args)
-    
 
     def handle_exit(*args, **kwargs):
         print("Exiting training...")
