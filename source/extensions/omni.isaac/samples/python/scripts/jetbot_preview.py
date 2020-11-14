@@ -228,7 +228,6 @@ class Extension(omni.ext.IExt):
         """
 
         self._editor.stop()
-        self._window = None
         self._editor_event_subscription = None
         self._stop_tasks()
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
