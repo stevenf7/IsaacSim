@@ -390,7 +390,6 @@ class Extension(omni.ext.IExt):
         self._editor_event_subscription = None
         self._window.set_update_fn(None)
         gc.collect()
-        print("Shutting down RMP Sample")
 
     def has_arrived(self):
         """if multiple targets are sent, the later one will overwrite the earlier one. 
