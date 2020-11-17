@@ -6,7 +6,7 @@ import asyncio
 
 # from omni.physx import _physx
 from .common import import_robot, set_drive_parameters, remove_all_schema_multiple_attributes
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysxSchema
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 
 
 class Extension(omni.ext.IExt):
@@ -30,7 +30,7 @@ class Extension(omni.ext.IExt):
         self._window = None
 
     def _on_load_robot(self, widget):
-        load_stage = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        load_stage = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._load_carter(load_stage))
 
     async def _load_carter(self, task):
@@ -50,7 +50,7 @@ class Extension(omni.ext.IExt):
 
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
-        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/physicsScene"))
+        scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
         scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
         omni.kit.commands.execute(
             "AddGroundPlaneCommand",
@@ -65,23 +65,21 @@ class Extension(omni.ext.IExt):
         distantLight.CreateIntensityAttr(500)
 
         carter_prim = stage.GetPrimAtPath("/carter")
-        physicsArticulationAPI = PhysicsSchema.ArticulationAPI.Get(stage, carter_prim.GetPath())
+        physicsArticulationAPI = UsdPhysics.ArticulationAPI.Get(stage, carter_prim.GetPath())
         physicsArticulationAPI.GetFixBaseAttr().Set(False)
 
-        left_wheel_drive = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/left_wheel"), "angular")
+        left_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/left_wheel"), "angular")
 
-        right_wheel_drive = PhysicsSchema.DriveAPI.Get(
-            stage.GetPrimAtPath("/carter/chassis_link/right_wheel"), "angular"
-        )
+        right_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/right_wheel"), "angular")
         # Drive forward
         set_drive_parameters(left_wheel_drive, "velocity", 2.5, 0, 1000000, 1e8)
         set_drive_parameters(right_wheel_drive, "velocity", 2.5, 0, 1000000, 1e8)
 
         # Remove drive from rear wheel and pivot
         prim = stage.GetPrimAtPath("/carter/chassis_link/rear_pivot")
-        remove_all_schema_multiple_attributes(PhysicsSchema.DriveAPI, prim, "drive", "angular")
-        PhysicsSchema.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")
+        remove_all_schema_multiple_attributes(UsdPhysics.DriveAPI, prim, "drive", "angular")
+        UsdPhysics.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")
 
         prim = stage.GetPrimAtPath("/carter/rear_pivot_link/rear_axle")
-        remove_all_schema_multiple_attributes(PhysicsSchema.DriveAPI, prim, "drive", "angular")
-        PhysicsSchema.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")
+        remove_all_schema_multiple_attributes(UsdPhysics.DriveAPI, prim, "drive", "angular")
+        UsdPhysics.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")

@@ -3,7 +3,7 @@ import omni.kit.commands
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.lidar import _lidar
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 from omni.physx.scripts import utils
 import omni.isaac.LidarSchema as LidarSchema
 import asyncio
@@ -30,7 +30,7 @@ async def load_test_file(test_file_name: str):
 
     usd_context = omni.usd.get_context()
     usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.kit.asyncapi.open_stage(path_to_file)
+    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
     usd_context.enable_save_to_recent_files()
     return (result, error)
 
@@ -41,7 +41,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def setUp(self):
         self._lidar = _lidar.acquire_lidar_interface()
         self._timeline = omni.timeline.get_timeline_interface()
-        await omni.kit.asyncapi.new_stage()
+        await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
 
         # light
@@ -55,7 +55,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
 
         # Physics scene
-        scene = PhysicsSchema.PhysicsScene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+        scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
         scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
 
     # After running each test
@@ -68,8 +68,8 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         for value in np.arange(min_v, max_v, step):
             # print(value)
             parameter.Set(float(value))
-            await omni.kit.asyncapi.next_update()
-            await omni.kit.asyncapi.next_update()
+            await omni.kit.app.get_app().next_update_async()
+            await omni.kit.app.get_app().next_update_async()
 
     def add_lidar(self, lidarPath):
 

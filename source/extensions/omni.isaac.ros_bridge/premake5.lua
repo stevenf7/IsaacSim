@@ -8,6 +8,18 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/ros_bridge/**")
+
+    filter { "files:**.cu", "system:linux", "configurations:debug"}
+        make_nvcc_command("-fPIC -g", "-g")
+    filter { "files:**.cu", "system:linux", "configurations:release" }
+        make_nvcc_command("-fPIC", "")
+    filter {}
+
+    filter { "system:linux", "platforms:x86_64" }
+        libdirs { "%{root}/_build/target-deps/cuda/lib64" }
+        links { "cudart_static" }
+    filter {}
+
     includedirs {
         "%{root}/source/pch",
         "%{root}/source/extensions/omni.isaac.utils", 
@@ -63,4 +75,10 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/ros_bridge" },
+}
+
+repo_build.prebuild_copy {
+    { "%{root}/_build/target-deps/nv_ros/lib/lib**", ext.target_dir.."/bin" },
+    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RosBridgeSchema/**", ext.target_dir.."/omni/isaac/RosBridgeSchema" },
+    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}rosBridgeSchema${lib_ext}", ext.target_dir.."/bin"},
 }

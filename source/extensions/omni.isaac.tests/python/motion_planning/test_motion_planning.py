@@ -2,7 +2,7 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni.kit.asyncapi
+
 import carb.tokens
 import os
 import asyncio
@@ -31,7 +31,7 @@ async def load_test_file(test_file_name: str):
 
     usd_context = omni.usd.get_context()
     usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.kit.asyncapi.open_stage(path_to_file)
+    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
     usd_context.enable_save_to_recent_files()
     return (result, error)
 

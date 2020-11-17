@@ -2,7 +2,7 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni.kit.asyncapi
+
 import omni.kit.usd
 from omni.isaac.dynamic_control import _dynamic_control as dc
 from omni.isaac.motion_planning import _motion_planning as mp
@@ -11,7 +11,7 @@ import os
 import asyncio
 import numpy as np
 from omni.isaac.utils._isaac_utils import math as mu
-from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, PhysicsSchema
+from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics
 from omni.physx import _physx as physx
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -29,7 +29,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc = dc.acquire_dynamic_control_interface()
         self._mp = mp.acquire_motion_planning_interface()
         self._physx = physx.acquire_physx_interface()
-        await omni.kit.asyncapi.new_stage()
+        await omni.usd.get_context().new_stage_async()
 
         self.assertFalse(self._dc.is_simulating())
         # Start Simulation and wait
@@ -64,7 +64,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         print("tear down")
         if self.timeline.is_playing():
             self._timeline.stop()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self.assertFalse(self._dc.is_simulating())
         self._dc = None
         self._mp = None
@@ -84,11 +84,11 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.load_bin_stack_scene()
         await self.execute_stack_scene(True)
         self._timeline.stop()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self._scenario.stop_tasks()
         self._scenario.step(None)
         self._timeline.play()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self._scenario.step(None)
         await self.execute_stack_scene()
         pass
@@ -102,7 +102,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.state_idx = 0
         while self.total_pass < 1:
             while self._scenario.pick_and_place.current_state == self.current_state:
-                await omni.kit.asyncapi.next_update()
+                await omni.kit.app.get_app().next_update_async()
                 self.assertTrue(self._dc.is_simulating())
                 self._scenario.step(None)
             next_state = (self.state_idx + 1) % len(self.default_sequence)
@@ -139,7 +139,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         while self.total_pass < 4 or self.upright_pass < 1 or self.down_pass < 1:
             while self._scenario.pick_and_place.current_state == self.current_state and timeout < timeout_max:
                 timeout += 1
-                await omni.kit.asyncapi.next_update()
+                await omni.kit.app.get_app().next_update_async()
                 self.assertTrue(self._dc.is_simulating())
                 self._scenario.step(None)
             self.assertLess(timeout, timeout_max)
@@ -183,7 +183,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physx.force_load_physics_from_usd()
 
         self._timeline.play()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._dc.is_simulating())
         self._scenario.register_assets()
         pass
@@ -202,7 +202,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     self._physx.force_load_physics_from_usd()
 
     #     self._timeline.play()
-    #     await omni.kit.asyncapi.next_update()
+    #     await omni.kit.app.get_app().next_update_async()
     #     self.assertTrue(self._dc.is_simulating())
     #     self._scenario.register_assets()
 
@@ -240,7 +240,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physx.force_load_physics_from_usd()
 
         self._timeline.play()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._dc.is_simulating())
         self._scenario.register_assets()
 

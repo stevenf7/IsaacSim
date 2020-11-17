@@ -442,7 +442,7 @@ class Extension(omni.ext.IExt):
 
     def _parse_urdf(self):
         if self.models["clean_stage"].model.get_value_as_bool():
-            asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+            asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         import psutil
 
         partitions = psutil.disk_partitions()

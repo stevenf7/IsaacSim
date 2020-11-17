@@ -266,7 +266,7 @@ async def load_stage(stage_path: str, syncloads: bool, num_assets_loaded: int = 
     if hasattr(usd_context, "open_stage_async"):
         open_stage_fn = omni.usd.get_context().open_stage_async
     else:
-        open_stage_fn = omni.kit.asyncapi.open_stage
+        open_stage_fn = omni.usd.get_context().open_stage_async
 
     # open_stage(_async) will wait for the stage to open, but will return
     # without waiting for MDLs to be loaded!

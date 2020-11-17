@@ -184,7 +184,7 @@ class Extension(omni.ext.IExt):
 
     def _on_environment_setup(self):
         # wait for new stage before creating robot
-        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         task1 = asyncio.ensure_future(self._create_robot(task))
         # set editor to play before setting up robot controller
         task2 = asyncio.ensure_future(self._play(task1))

@@ -2,7 +2,7 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni.kit.asyncapi
+
 import carb.tokens
 import os
 from pxr import Sdf, Gf, UsdShade
@@ -27,7 +27,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # basic urdf test: joints and links are imported correctly
     async def test_urdf_basic(self):
-        await omni.kit.asyncapi.new_stage()
+        await omni.usd.get_context().new_stage_async()
         urdf_path = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf/tests/test_basic.urdf")
         )
@@ -63,7 +63,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Start Simulation and wait
         self._timeline.play()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         await asyncio.sleep(1.0)
         # nothing crashes
         self._timeline.stop()
@@ -71,7 +71,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # advanced urdf test: test for all the categories of inputs that an urdf can hold
     async def test_urdf_advanced(self):
-        await omni.kit.asyncapi.new_stage()
+        await omni.usd.get_context().new_stage_async()
         urdf_path = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf/tests/test_advanced.urdf")
         )
@@ -108,7 +108,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Start Simulation and wait
         self._timeline.play()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         await asyncio.sleep(1.0)
         # nothing crashes
         self._timeline.stop()
@@ -116,7 +116,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # test for importing urdf where fixed joints are merged
     async def test_urdf_merge_joints(self):
-        await omni.kit.asyncapi.new_stage()
+        await omni.usd.get_context().new_stage_async()
         urdf_path = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf/tests/test_merge_joints.urdf")
         )

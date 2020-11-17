@@ -10,7 +10,7 @@
 # This is an example script showing how to use rosbridge to publish joint_states of an articulated robot
 
 import carb
-from pxr import PhysicsSchema, Sdf, Gf, UsdGeom
+from pxr import UsdPhysics, Sdf, Gf, UsdGeom
 import omni.usd
 import omni
 import omni.kit.ui
@@ -117,7 +117,7 @@ class Extension(omni.ext.IExt):
         # check robot is loaded and articulation exist
         self.stage = omni.usd.get_context().get_stage()
         robot_prim = self.stage.GetPrimAtPath("/panda")
-        assert robot_prim.HasAPI(PhysicsSchema.ArticulationAPI)
+        assert robot_prim.HasAPI(UsdPhysics.ArticulationAPI)
 
         # setup Rostopic to publish and receive joint state info
         js_prim = ROSSchema.RosJointState.Define(self.stage, Sdf.Path("/ROS_JointState"))
@@ -135,31 +135,31 @@ class Extension(omni.ext.IExt):
         # The joint_state rostopic must be connected to the root of the robot's articulation in order to publish its states
         ROS_prim = self.stage.GetPrimAtPath("/ROS_JointState")
         ROS_prim.GetRelationship("articulationPrim").SetTargets(["/panda"])
-        panda_joint1_drive = PhysicsSchema.DriveAPI.Get(
+        panda_joint1_drive = UsdPhysics.DriveAPI.Get(
             self.stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular"
         )
-        panda_joint2_drive = PhysicsSchema.DriveAPI.Get(
+        panda_joint2_drive = UsdPhysics.DriveAPI.Get(
             self.stage.GetPrimAtPath("/panda/panda_link1/panda_joint2"), "angular"
         )
-        panda_joint3_drive = PhysicsSchema.DriveAPI.Get(
+        panda_joint3_drive = UsdPhysics.DriveAPI.Get(
             self.stage.GetPrimAtPath("/panda/panda_link2/panda_joint3"), "angular"
         )
-        panda_joint4_drive = PhysicsSchema.DriveAPI.Get(
+        panda_joint4_drive = UsdPhysics.DriveAPI.Get(
             self.stage.GetPrimAtPath("/panda/panda_link3/panda_joint4"), "angular"
         )
-        panda_joint5_drive = PhysicsSchema.DriveAPI.Get(
+        panda_joint5_drive = UsdPhysics.DriveAPI.Get(
             self.stage.GetPrimAtPath("/panda/panda_link4/panda_joint5"), "angular"
         )
-        panda_joint6_drive = PhysicsSchema.DriveAPI.Get(
+        panda_joint6_drive = UsdPhysics.DriveAPI.Get(
             self.stage.GetPrimAtPath("/panda/panda_link5/panda_joint6"), "angular"
         )
-        panda_joint7_drive = PhysicsSchema.DriveAPI.Get(
+        panda_joint7_drive = UsdPhysics.DriveAPI.Get(
             self.stage.GetPrimAtPath("/panda/panda_link6/panda_joint7"), "angular"
         )
-        panda_finger1_drive = PhysicsSchema.DriveAPI.Get(
+        panda_finger1_drive = UsdPhysics.DriveAPI.Get(
             self.stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint1"), "linear"
         )
-        panda_finger2_drive = PhysicsSchema.DriveAPI.Get(
+        panda_finger2_drive = UsdPhysics.DriveAPI.Get(
             self.stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint2"), "linear"
         )
 

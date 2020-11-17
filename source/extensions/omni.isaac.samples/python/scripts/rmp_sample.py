@@ -118,7 +118,7 @@ class Extension(omni.ext.IExt):
         self._units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(self._stage)
 
     def _on_environment_setup(self, widget):
-        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._on_create_robot(task))
 
     async def _on_create_robot(self, task):

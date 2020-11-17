@@ -2,7 +2,7 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni.kit.asyncapi
+
 import omni.kit.usd
 
 
@@ -11,7 +11,7 @@ import os
 import asyncio
 import numpy as np
 import weakref
-from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, PhysicsSchema, PhysicsSchemaTools
+from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics, PhysicsSchemaTools
 from omni.physx import _physx as physx
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)

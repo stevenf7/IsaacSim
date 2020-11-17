@@ -2,7 +2,7 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni.kit.asyncapi
+
 import omni.kit.usd
 import carb.tokens
 import os
@@ -22,7 +22,7 @@ from omni.isaac.pyalice import Codelet
 class TestREBPyalice(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        await omni.kit.asyncapi.new_stage()
+        await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
@@ -90,7 +90,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         self.create_application()
         self._timeline.play()
         ELEMENT_TYPE_F64 = 3
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         art = self._dc.get_articulation("/carter")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         root_body_ptr = self._dc.get_articulation_root_body(art)
@@ -175,7 +175,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         self.create_application()
         self._timeline.play()
         ELEMENT_TYPE_F64 = 3
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         art = self._dc.get_articulation("/World")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         root_body_ptr = self._dc.get_articulation_root_body(art)

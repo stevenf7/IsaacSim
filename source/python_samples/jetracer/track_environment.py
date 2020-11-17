@@ -152,7 +152,7 @@ class Environment:
     def setup_physics(self):
         stage = self.omni_kit.get_stage()
         # Add physics scene
-        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))
+        scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))
         # Set gravity vector
         scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
         # Set physics scene to use cpu physics

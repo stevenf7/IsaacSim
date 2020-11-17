@@ -161,7 +161,7 @@ class Extension(omni.ext.IExt):
             # Set up stage with Z up, treat units as cm, set up gravity and ground plane
             UsdGeom.SetStageUpAxis(self._stage, UsdGeom.Tokens.z)
             UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
-            self.scene = PhysicsSchema.PhysicsScene.Define(self._stage, Sdf.Path("/physicsScene"))
+            self.scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/physicsScene"))
             self.scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
             omni.kit.commands.execute(
                 "AddGroundPlaneCommand",
@@ -220,7 +220,7 @@ class Extension(omni.ext.IExt):
 
     def _on_create_scenario_button_clicked(self, button):
         # wait for new stage before creating scenario
-        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._create_scenario(task))
 
     def _on_toggle_gripper_button_clicked(self, button):
@@ -250,11 +250,11 @@ class Extension(omni.ext.IExt):
         bodyGeom.AddScaleOp().Set(scale)
         bodyGeom.CreateDisplayColorAttr().Set([color])
 
-        PhysicsSchema.CollisionAPI.Apply(bodyPrim)
+        UsdPhysics.CollisionAPI.Apply(bodyPrim)
         if mass > 0:
-            massAPI = PhysicsSchema.MassAPI.Apply(bodyPrim)
+            massAPI = UsdPhysics.MassAPI.Apply(bodyPrim)
             massAPI.CreateMassAttr(mass)
-        physicsAPI = PhysicsSchema.PhysicsAPI.Apply(bodyPrim)
+        physicsAPI = UsdPhysics.PhysicsAPI.Apply(bodyPrim)
         physicsAPI.CreateBodyTypeAttr("rigid")
         print(bodyPrim.GetPath().pathString)
         return bodyGeom

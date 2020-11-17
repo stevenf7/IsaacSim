@@ -11,6 +11,17 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
 
     include_physx()
 
+    filter { "files:**.cu", "system:linux", "configurations:debug"}
+        make_nvcc_command("-fPIC -g", "-g")
+    filter { "files:**.cu", "system:linux", "configurations:release" }
+        make_nvcc_command("-fPIC", "")
+    filter {}
+
+    filter { "system:linux", "platforms:x86_64" }
+        libdirs { "%{root}/_build/target-deps/cuda/lib64" }
+        links { "cudart_static" }
+    filter {}
+
     includedirs {
         "%{root}/source/pch",
         "%{root}/source/extensions/omni.isaac.utils", 
@@ -38,10 +49,13 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
 
     }
 
-     links {
+    links {
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-            "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "capnp", "omni.usd", "lidarSchema", "robotEngineBridgeSchema", "physxSchema", "PhysXVehicle_static_64"
+        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "capnp", "omni.usd", 
+        "lidarSchema", "robotEngineBridgeSchema", "physxSchema",
     }
+
+    linkoptions{"-Wl,--whole-archive %{root}/_build/target-deps/isaac_engine/lib/libkj.a -Wl,--no-whole-archive"}
 
     filter { "configurations:debug" }
         defines { "_DEBUG" }
@@ -64,4 +78,10 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/robot_engine_bridge" },
+}
+
+repo_build.prebuild_copy {
+    { "%{root}/_build/target-deps/isaac_engine/lib/**", ext.target_dir.."/bin" },
+    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RobotEngineBridgeSchema/**", ext.target_dir.."/omni/isaac/RobotEngineBridgeSchema" },
+    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}robotEngineBridgeSchema${lib_ext}", ext.target_dir.."/bin"},
 }

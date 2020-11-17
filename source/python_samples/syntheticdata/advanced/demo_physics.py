@@ -23,7 +23,7 @@ from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.isaac.synthetic_utils import utils as ut
 import matplotlib.pyplot as plt
 
-from pxr import Gf, Sdf, UsdShade, PhysicsSchema, PhysxSchema, PhysicsSchemaTools
+from pxr import Gf, Sdf, UsdShade, PhysxSchema, PhysicsSchemaTools
 
 TRANSLATION_RANGE = 300.0
 SCALE = 50.0
@@ -63,7 +63,7 @@ def main():
     )
 
     # Add physics scene
-    scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/physicsScene"))
+    scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
     # Set gravity vector
     scene.CreateGravityAttr().Set(Gf.Vec3f(0, -981.0, 0))
     # Set physics scene to use cpu physics
@@ -99,7 +99,7 @@ def main():
         # Add physics to prims
         utils.setRigidBody(prim, "convexHull", False)
         # Set Mass to 1 kg
-        mass_api = PhysicsSchema.MassAPI.Apply(prim)
+        mass_api = UsdPhysics.MassAPI.Apply(prim)
         mass_api.CreateMassAttr(1)
         # add prim reference to list
         prims.append(prim)

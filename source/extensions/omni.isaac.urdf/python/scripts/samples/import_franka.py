@@ -6,7 +6,7 @@ import asyncio
 
 # from omni.physx import _physx
 from .common import import_robot, set_drive_parameters
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysxSchema
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 
 
 class Extension(omni.ext.IExt):
@@ -30,7 +30,7 @@ class Extension(omni.ext.IExt):
         self._window = None
 
     def _on_load_robot(self, widget):
-        load_stage = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        load_stage = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._load_franka(load_stage))
 
     async def _load_franka(self, task):
@@ -52,7 +52,7 @@ class Extension(omni.ext.IExt):
 
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
-        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/physicsScene"))
+        scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
         scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
         omni.kit.commands.execute(
             "AddGroundPlaneCommand",
@@ -68,18 +68,18 @@ class Extension(omni.ext.IExt):
 
         franka_prim = stage.GetDefaultPrim()
         # Set articulation base parameters
-        physicsArticulationAPI = PhysicsSchema.ArticulationAPI.Get(stage, franka_prim.GetPath())
+        physicsArticulationAPI = UsdPhysics.ArticulationAPI.Get(stage, franka_prim.GetPath())
         physicsArticulationAPI.GetFixBaseAttr().Set(True)
 
-        joint_1 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular")
-        joint_2 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link1/panda_joint2"), "angular")
-        joint_3 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link2/panda_joint3"), "angular")
-        joint_4 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link3/panda_joint4"), "angular")
-        joint_5 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link4/panda_joint5"), "angular")
-        joint_6 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link5/panda_joint6"), "angular")
-        joint_7 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link6/panda_joint7"), "angular")
-        finger_1 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint1"), "linear")
-        finger_2 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint2"), "linear")
+        joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular")
+        joint_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link1/panda_joint2"), "angular")
+        joint_3 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link2/panda_joint3"), "angular")
+        joint_4 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link3/panda_joint4"), "angular")
+        joint_5 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link4/panda_joint5"), "angular")
+        joint_6 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link5/panda_joint6"), "angular")
+        joint_7 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link6/panda_joint7"), "angular")
+        finger_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint1"), "linear")
+        finger_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint2"), "linear")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
         set_drive_parameters(joint_1, "position", 0.012, 60000, 3000, 8700)
