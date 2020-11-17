@@ -20,7 +20,6 @@ KIT_SDK_RESOLVED = {
 kit_sdk = "%{root}/_build/target-deps/kit_sdk_%{config}"
 kit_sdk_bin_dir = kit_sdk.."/_build/%{platform}/%{config}"
 
-
 -- Include Kit SDK public premake, it defines few global variables and helper functions. Look inside to get more info.
 include("_build/target-deps/kit_sdk_release/premake5-public.lua")
 
@@ -45,7 +44,7 @@ function write_version_file(config)
 end
 
 -- Starting from here we define a structure of actual solution to be generated. Starting with solution name.
-workspace "ov-create"
+workspace "isaac-sim"
     configurations { "debug", "release" }
 
     -- Project selected by default to run
@@ -133,48 +132,63 @@ workspace "ov-create"
     filter {}
 
 
--- -- Include all extensions
--- for _, ext in ipairs(os.matchdirs("source/extensions/*")) do
---     include (ext)
--- end
 
-
--- TODO(anov): Copied that function as is from Kit SDK to add 'autopull' call. Generalize and reuse it from kit SDK:
+-- Isaac Sim needs this redefined here because we have a custom PXR_PLUGINPATH_NAME export to handle runtime USD
+-- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
 function create_experience_runner(name, config_path, config, extra_args)
     if os.target() == "windows" then
         local bat_file_dir = root.."/_build/windows-x86_64/"..config
         local bat_file_path = bat_file_dir.."/"..name..".bat"
         local kit_bin_relative = path.getrelative(bat_file_dir, KIT_SDK_RESOLVED[config].."/_build/windows-x86_64/"..config)
         kit_bin_relative = path.normalize(kit_bin_relative):gsub("/", "\\")
-        config_path = (config_path == nil and "") or "\"%%~dp0"..config_path.."\""
-        f = io.open(bat_file_path, 'w')
+        local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
+        local f = io.open(bat_file_path, 'w')
         f:write(string.format([[
 @echo off
-if exist "%%~dp0\..\..\..\tools\autopull\autopull.bat" (
-call "%%~dp0\..\..\..\tools\autopull\autopull.bat" --config %s
-)
 setlocal
 call "%%~dp0%s\omniverse-kit.exe" %s %s %%*
-        ]], config, kit_bin_relative, config_path, extra_args))
+        ]], kit_bin_relative, config_path, extra_args))
+        f:close()
     else
         local sh_file_dir = root.."/_build/linux-x86_64/"..config
         local sh_file_path = sh_file_dir.."/"..name..".sh"
         local kit_bin_relative = path.getrelative(sh_file_dir, KIT_SDK_RESOLVED[config].."/_build/linux-x86_64/"..config)
         local usd_ext_isaac_schema_path = root.."/_build/target-deps/usd_ext_isaac/"..config.."/share/usd/plugins/*/resources/"
         kit_bin_relative = path.normalize(kit_bin_relative)
-        config_path = (config_path == nil and "") or "\"$SCRIPT_DIR/"..config_path.."\""
+        local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
+        local f = io.open(sh_file_path, 'w')
+        f:write(string.format([[
+#!/bin/bash
+set -e
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+export PXR_PLUGINPATH_NAME="%s":$PXR_PLUGINPATH_NAME
+"$SCRIPT_DIR/%s/kit" %s %s $@
+        ]], usd_ext_isaac_schema_path, kit_bin_relative, config_path, extra_args))
+        f:close()
+        os.chmod(sh_file_path, 755)
+    end
+end
+
+function create_app_shortcut(app_name, config)
+    if os.target() == "windows" then
+        local bat_file_path = root.."/_build/windows-x86_64/"..config.."/appshortcuts/"..app_name..".bat"
+        local app_path = "_build/windows-x86_64/"..config.."/"..app_name..".bat"
+        f = io.open(bat_file_path, 'w')
+        f:write(string.format([[
+@echo off
+setlocal
+call "%%~dp0/%s %%*
+        ]], app_path))
+    else
+        local sh_file_path = root.."/_build/linux-x86_64/"..config.."/appshortcuts/"..app_name..".sh"
+        local app_path = "_build/linux-x86_64/"..config.."/"..app_name..".sh"
         f = io.open(sh_file_path, 'w')
         f:write(string.format([[
 #!/bin/bash
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-AUTOPULL="./$SCRIPT_DIR/../../../tools/autopull/autopull.sh"
-if [ -e $AUTOPULL ]; then
-$AUTOPULL --config %s
-fi
-export PXR_PLUGINPATH_NAME="%s":$PXR_PLUGINPATH_NAME
-exec "$SCRIPT_DIR/%s/kit" %s %s $@
-        ]], config,usd_ext_isaac_schema_path,  kit_bin_relative, config_path, extra_args))
+exec "$SCRIPT_DIR/%s" $@
+        ]], app_path))
         f:close()
         os.chmod(sh_file_path, 755)
     end
@@ -192,6 +206,10 @@ function define_local_experience(app_name, kit_file, extra_args)
                         .."--ext-folder \""..script_dir_token.."/../../kit-extsPhysics\" "
                         ..extra_args  
     })
+
+    for _, config in ipairs(ALL_CONFIGS) do
+        create_app_shortcut(app_name, config)
+    end
 end
 
 
@@ -218,17 +236,6 @@ group "apps"
     -- }
     -- define_local_experience("tests-create-mini", "omni.create.mini", table.concat(args, " "))
 
-
-
--- group "experiences"
---     -- Robotics default experience
---     define_experience("omniverse-kit-robotics")
---     -- Robotics headless experience
---     define_experience("omniverse-kit-robotics-headless", "--no-window")
---     -- Isaac sim default experience
---     define_experience("isaac-sim")
---     -- Isaac sim headless experience
---     define_experience("isaac-sim-headless", "--no-window")
 
 group "exts"
     -- Isaac Extensions

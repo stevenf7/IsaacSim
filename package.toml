@@ -33,10 +33,10 @@
 files = []
 
 ########################################################################################################################
-# isaac-sim package
+# create package
 ########################################################################################################################
 
-[isaac-sim]
+[create]
 files = [
     ["_build/$platform/$config"],
     ["deps"],
@@ -57,10 +57,12 @@ files = [
     ["_build/kit-extsPhysics"],
     ["_build/target-deps/kit_sdk_release"],
     ["launcher.toml"],
+    ["_build/$platform/$config/appshortcuts/*", "."],
 ]
 files_exclude = [
     ["**/*.pdb"],
     ["**/*.exp"],
+    ["_build/$platform/$config/appshortcuts"],
     ["_build/target-deps/kit_sdk_release/_build/$platform/release/omniverse-kit.portable"],
     ["_build/target-deps/kit_sdk_release/_build/$platform/release/kit.portable"],
     ["_build/target-deps/kit_sdk_release/_build/$platform/release/exts/**"],
