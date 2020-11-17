@@ -11,7 +11,7 @@ import random
 import time
 import os
 import sys
-from pxr import Sdf, Gf, PhysicsSchema
+from pxr import Sdf, Gf, UsdPhysics
 import concurrent.futures
 from omni.isaac.samples.scripts.utils.franka import Franka, default_config, alternate_config
 from omni.isaac.samples.scripts.utils.world import World
@@ -43,7 +43,7 @@ class GhostScenario(Scenario):
         self.num_ghosts = 2  # two ghost robots are spawned alongisde the solid robot
 
     def reset_blocks(self, *args):
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             for domain in self._domains:
                 xnum = [70, 40]
                 ynum = [20, -20]
@@ -69,7 +69,7 @@ class GhostScenario(Scenario):
         self.on_stop = self.on_start = 0
 
     def step(self, step):
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             for domain in self._domains:
                 for ghost_domain in domain.ghost_domains:
                     ghost_domain.block_locations.update()
@@ -96,8 +96,8 @@ class GhostScenario(Scenario):
             for j in range(0, 1):
                 solid_robot = "/physics/scene/solid_" + str(index)
                 ghost_robot = "/physics/scene/ghost_" + str(index)
-                collisionGroupSolidRobot = PhysicsSchema.CollisionGroup.Define(self._stage, solid_robot)
-                collisionGroupGhostRobot = PhysicsSchema.CollisionGroup.Define(self._stage, ghost_robot)
+                collisionGroupSolidRobot = UsdPhysics.CollisionGroup.Define(self._stage, solid_robot)
+                collisionGroupGhostRobot = UsdPhysics.CollisionGroup.Define(self._stage, ghost_robot)
 
                 filteredRel = collisionGroupSolidRobot.CreateFilteredGroupsRel()
                 filteredRel.AddTarget(ghost_robot)
@@ -154,27 +154,27 @@ class GhostScenario(Scenario):
             solid_robot = "/physics/scene/solid_" + str(index)
             ghost_robot = "/physics/scene/ghost_" + str(index)
 
-            collisionAPI = PhysicsSchema.CollisionAPI.Apply(self._stage.GetPrimAtPath(yellow_path))
+            collisionAPI = UsdPhysics.CollisionAPI.Apply(self._stage.GetPrimAtPath(yellow_path))
             rel = collisionAPI.CreateCollisionGroupRel()
             rel.AddTarget(Sdf.Path(solid_robot))
 
-            collisionAPI = PhysicsSchema.CollisionAPI.Apply(self._stage.GetPrimAtPath(red_path))
+            collisionAPI = UsdPhysics.CollisionAPI.Apply(self._stage.GetPrimAtPath(red_path))
             rel = collisionAPI.CreateCollisionGroupRel()
             rel.AddTarget(Sdf.Path(solid_robot))
 
-            collisionAPI = PhysicsSchema.CollisionAPI.Apply(self._stage.GetPrimAtPath(green_path))
+            collisionAPI = UsdPhysics.CollisionAPI.Apply(self._stage.GetPrimAtPath(green_path))
             rel = collisionAPI.CreateCollisionGroupRel()
             rel.AddTarget(Sdf.Path(solid_robot))
 
-            collisionAPI = PhysicsSchema.CollisionAPI.Apply(self._stage.GetPrimAtPath(blue_path))
+            collisionAPI = UsdPhysics.CollisionAPI.Apply(self._stage.GetPrimAtPath(blue_path))
             rel = collisionAPI.CreateCollisionGroupRel()
             rel.AddTarget(Sdf.Path(solid_robot))
 
-            collisionAPI = PhysicsSchema.CollisionAPI.Apply(self._stage.GetPrimAtPath(obstacle_path))
+            collisionAPI = UsdPhysics.CollisionAPI.Apply(self._stage.GetPrimAtPath(obstacle_path))
             rel = collisionAPI.CreateCollisionGroupRel()
             rel.AddTarget(Sdf.Path(solid_robot))
 
-            collisionAPI = PhysicsSchema.CollisionAPI.Apply(
+            collisionAPI = UsdPhysics.CollisionAPI.Apply(
                 self._stage.GetPrimAtPath(str(prim.GetPath()) + "/DemoTable/simple_table/CollisionCube")
             )
             rel = collisionAPI.CreateCollisionGroupRel()

@@ -183,6 +183,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         """Caled to load the extension"""
         self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
         self._display_paths = []
         self._interface = gt.acquire_syntheticdata_interface()
         self._enable_record = False
@@ -462,7 +463,7 @@ class Extension(omni.ext.IExt):
         if self._enable_record == False:
             return
 
-        if not self._editor.is_playing():
+        if not self._timeline.is_playing():
             print("Cannot Generate Data! Editor is not playing.")
             self._enable_record = False
             self.rename_button()

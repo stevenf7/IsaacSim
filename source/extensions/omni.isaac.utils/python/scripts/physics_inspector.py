@@ -14,6 +14,7 @@ class Extension(omni.ext.IExt):
         self._usd_context = omni.usd.get_context()
         self._dc = dc.acquire_dynamic_control_interface()
         self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
         if self._usd_context is not None:
             self._selection = self._usd_context.get_selection()
             self._events = self._usd_context.get_stage_event_stream()
@@ -131,7 +132,7 @@ class Extension(omni.ext.IExt):
         if len(self._selection.get_selected_prim_paths()) == 0:
             self._editor_event_subscription = None
             return
-        if self._editor.is_playing() and self._window.visible:
+        if self._timeline.is_playing() and self._window.visible:
             if self._selected_prim and self._selected_handle == dc.INVALID_HANDLE:
                 objectType = self._dc.peek_object_type(str(self._selected_prim.GetPath()))
                 if objectType == dc.ObjectType.OBJECT_RIGIDBODY:

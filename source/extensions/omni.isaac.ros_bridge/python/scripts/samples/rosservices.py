@@ -43,10 +43,10 @@ class Extension(omni.ext.IExt):
         add_cone_btn.set_clicked_fn(self._on_add_cone)
         add_cone_btn.tooltip = omni.kit.ui.Label("Add a Cone and start a second pose service")
 
-        self._editor_event_subscription = None
-        self._editor = omni.kit.editor.get_editor_interface()
-        self._editor.set_camera_position("/OmniverseKit_Persp", 103.4, 13.8, 19.8, True)
-        self._editor.set_camera_target("/OmniverseKit_Persp", -225.0, -23.78, -26.17, True)
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport.set_camera_position("/OmniverseKit_Persp", 103.4, 13.8, 19.8, True)
+        self._viewport.set_camera_target("/OmniverseKit_Persp", -225.0, -23.78, -26.17, True)
+        self._timeline = omni.timeline.get_timeline_interface()
 
     def on_shutdown(self):
         self._window = None
@@ -62,8 +62,8 @@ class Extension(omni.ext.IExt):
             # create some lighting
             distantLight = UsdLux.DistantLight.Define(self._stage, Sdf.Path("/World/defaultLight"))
             distantLight.CreateIntensityAttr(500)
-            self._editor.set_camera_position("/OmniverseKit_Persp", 103.4, 13.8, 19.8, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", -225.0, -23.78, -26.17, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 103.4, 13.8, 19.8, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", -225.0, -23.78, -26.17, True)
 
     # add cube
     def _on_add_cube(self, widget):
@@ -90,8 +90,8 @@ class Extension(omni.ext.IExt):
         ROS_prim.GetRelationship("teleportPrims").AddTarget(Sdf.Path("/Cube"))
 
         # make sure editor is playing for sending and receiving ros messages
-        if not self._editor.is_playing():
-            self._editor.play()
+        if not self._timeline.is_playing():
+            self._timeline.play()
 
     # add cone
     def _on_add_cone(self, widget):
@@ -118,5 +118,5 @@ class Extension(omni.ext.IExt):
         ROS_prim.GetRelationship("teleportPrims").AddTarget(Sdf.Path("/Cone"))
 
         # make sure editor is playing for sending and receiving ros messages
-        if not self._editor.is_playing():
-            self._editor.play()
+        if not self._timeline.is_playing():
+            self._timeline.play()

@@ -30,7 +30,7 @@ class MultipleObstacle(Scenario):
         self.mid = [200, 1000]
 
     def step(self, step):
-        if self._editor.is_playing() and self._running:
+        if self._timeline.is_playing() and self._running:
             # Logic for generating motion of both rubiks cubes
             new_loc_y = (self.editor_step_count[0] - self.mid[0]) / self.mid[0] * math.pi * 0.5
             new_loc_z = (self.editor_step_count[1] - self.mid[1]) / self.mid[1] * math.pi * 0.5

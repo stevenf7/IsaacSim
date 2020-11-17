@@ -49,11 +49,12 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.asyncapi.new_stage()
         self._stage = omni.usd.get_context().get_stage()
         self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
         pass
 
     # After running each test
     async def tearDown(self):
-        self._editor.stop()
+        self._timeline.stop()
         pass
 
     def is_loading(self):
@@ -71,7 +72,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         cube = self._stage.GetPrimAtPath(cube_path)
         self.assertTrue(cube)
         # Start Simulation
-        self._editor.play()
+        self._timeline.play()
         # Make cube Xformable
         xformable = UsdGeom.Xformable(cube)
         # Create DR component and check if it exists
@@ -248,7 +249,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(light)
         # Start Simulation
 
-        self._editor.play()
+        self._timeline.play()
         # Create DR component and check if it exists
         path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/light_component", False)
         result, prim = omni.kit.commands.execute(

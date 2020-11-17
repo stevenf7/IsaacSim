@@ -31,6 +31,8 @@ class Extension(omni.ext.IExt):
         """Initialize extension and UI elements
         """
         self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = omni.kit.ui.Window(
@@ -120,8 +122,8 @@ class Extension(omni.ext.IExt):
         done, pending = await asyncio.wait({task})
         if task in done:
             print("Loading Jetbot Enviornment")
-            self._editor.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
             self._stage = self._usd_context.get_stage()
             result, nucleus_server = find_nucleus_server()
             if result is False:
@@ -167,12 +169,12 @@ class Extension(omni.ext.IExt):
         if event.type == int(omni.usd.StageEventType.OPENED):
             self._load_jetbot_btn.enabled = True
             self._reset_btn.enabled = False
-            self._editor.stop()
+            self._timeline.stop()
 
     def _on_editor_step(self, step):
         """Update jetbot physics once per step
         """
-        if not self._editor.is_playing():
+        if not self._timeline.is_playing():
             return
         if not self._dc.is_simulating():
             return
@@ -208,7 +210,7 @@ class Extension(omni.ext.IExt):
 
     def _on_update_ui(self, widget):
         if self._jetbot:
-            if not self._editor.is_playing():
+            if not self._timeline.is_playing():
                 self._reset_btn.text = "Press Play to Enable Controller"
                 self._reset_btn.enabled = False
             else:
@@ -222,7 +224,7 @@ class Extension(omni.ext.IExt):
         """Cleanup objects on extension shutdown
         """
 
-        self._editor.stop()
+        self._timeline.stop()
         self._window = None
         self._editor_event_subscription = None
 

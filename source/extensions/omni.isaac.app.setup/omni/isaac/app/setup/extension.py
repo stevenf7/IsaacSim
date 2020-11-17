@@ -15,6 +15,7 @@ import omni.kit.commands
 import carb.imgui as _imgui
 
 import omni.kit.app
+import omni.kit.ui
 
 from omni.kit.window.title import get_main_window_title
 
@@ -94,9 +95,9 @@ class CreateSetupExtension(omni.ext.IExt):
         )
 
     async def __dock_windows(self):
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
+        render_settings = ui.Workspace.get_window("RTX Settings")
+        if render_settings:
+            render_settings.visible = False
 
         stage = ui.Workspace.get_window("Stage")
         stage.dock_order = 0
@@ -121,8 +122,14 @@ class CreateSetupExtension(omni.ext.IExt):
         content.dock_order = 0
         content.focus()
 
+        if render_settings:
+            stage = ui.Workspace.get_window("Stage")
+            render_settings.dock_in(stage, ui.DockPosition.SAME)
+            render_settings.visible = True
+            await omni.kit.app.get_app().next_update_async()
+            stage.focus()
+
     async def __property_window(self):
-        await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         import omni.kit.window.property as property_window_ext
 
@@ -132,14 +139,12 @@ class CreateSetupExtension(omni.ext.IExt):
         )
 
     async def __menu_update(self):
-        # need to awit (More)
-        await omni.kit.app.get_app().next_update_async()
-
         # Remove some Menu Items
-        import omni.kit.ui
-
         editor_menu = omni.kit.ui.get_editor_menu()
         editor_menu.remove_item("Window/New Viewport Window")
+
+        editor_menu.set_priority("Rendering/Render Settings 2.0", -100)
+        editor_menu.set_priority("Rendering/Movie Capture", 100)
 
     def on_shutdown(self):
         pass

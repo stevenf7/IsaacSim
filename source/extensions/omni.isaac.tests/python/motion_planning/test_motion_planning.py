@@ -46,6 +46,7 @@ class TestMotionPlanning(omni.kit.test.AsyncTestCaseFailOnLogError):
                 "${app}/../exts/omni.isaac.motion_planning/resources/lula/lula_franka"
             )
         )
+        self._timeline = omni.timeline.get_timeline_interface()
         pass
 
     # After running each test
@@ -63,8 +64,7 @@ class TestMotionPlanning(omni.kit.test.AsyncTestCaseFailOnLogError):
         # make sure the prim exists
         self.assertNotEqual(str(prim.GetPath()), "")
         # Start Simulation and wait
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         await asyncio.sleep(0.125)
         # Create RMP for franka
         rmp_handle = self._mp.registerRmp(

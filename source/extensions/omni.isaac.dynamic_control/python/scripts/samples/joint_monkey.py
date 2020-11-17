@@ -96,6 +96,8 @@ class Extension(omni.ext.IExt):
         self._physxIFace = _physx.acquire_physx_interface()
         self._editor_event_subscription = None
         self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
         self.ar = _dynamic_control.INVALID_HANDLE
 
     def on_shutdown(self):
@@ -107,8 +109,8 @@ class Extension(omni.ext.IExt):
     async def _setup_camera(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            self._editor.set_camera_position("/OmniverseKit_Persp", 150, -150, 150, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 150, -150, 150, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
 
     def _on_load_robot(self, widget):
         task = asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
@@ -117,7 +119,7 @@ class Extension(omni.ext.IExt):
     def _on_move_joints(self, widget):
         self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
         self._physxIFace.force_load_physics_from_usd()
-        self._editor.play()
+        self._timeline.play()
         self._sub_stage_event = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
         )
@@ -195,7 +197,7 @@ class Extension(omni.ext.IExt):
         self.current_dof = 0
 
     def _on_editor_step(self, step):
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             if self.ar == _dynamic_control.INVALID_HANDLE:
                 self._on_first_step()
             dof = self.current_dof

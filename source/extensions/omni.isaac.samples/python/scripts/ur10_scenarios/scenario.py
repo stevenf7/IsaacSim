@@ -8,9 +8,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import carb
-from pxr import Usd, UsdGeom, Sdf, Gf, PhysicsSchema, PhysxSchema
+from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics, PhysxSchema
 import omni.usd
-import omni.kit.connectionhub
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 import numpy as np
@@ -54,7 +53,7 @@ def set_rotate(prim, rot_mat):
 
 
 def set_collision_group(prim, group):
-    collisionAPI = PhysicsSchema.CollisionAPI.Apply(prim)
+    collisionAPI = UsdPhysics.CollisionAPI.Apply(prim)
     rel = collisionAPI.CreateCollisionGroupRel()
     rel.AddTarget(Sdf.Path(group))
 
@@ -112,7 +111,7 @@ def setup_physics(stage):
     metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
     gravityScale = 9.81 / metersPerUnit
     gravity = Gf.Vec3f(0.0, 0.0, -gravityScale)
-    scene = PhysicsSchema.PhysicsScene.Define(stage, "/physics/scene")
+    scene = UsdPhysics.Scene.Define(stage, "/physics/scene")
     scene.CreateGravityAttr().Set(gravity)
 
     PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physics/scene"))
@@ -132,6 +131,7 @@ class Scenario:
 
     def __init__(self, editor, dc, mp):
         self._editor = editor
+        self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
         self._dc = dc
         self._mp = mp

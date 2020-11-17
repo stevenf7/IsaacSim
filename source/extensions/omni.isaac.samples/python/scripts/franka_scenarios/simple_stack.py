@@ -91,7 +91,7 @@ class SimpleStack(Scenario):
         super().__init__(editor, dc, mp)
 
     def reset_blocks(self, *args):
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             for domain in self._domains:
                 domain.block_locations.reset([("00_block_blue", (60, 20, 12)), ("00_block_green", (60, -20, 12))])
 
@@ -102,7 +102,7 @@ class SimpleStack(Scenario):
         self.reset_blocks()
 
     def step(self, step):
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             for domain in self._domains:
                 domain.block_locations.update()
                 domain.franka.update()

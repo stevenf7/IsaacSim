@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import carb
-from pxr import Usd, UsdGeom, Gf, PhysicsSchema, PhysxSchema, Sdf, UsdLux
+from pxr import Usd, UsdGeom, Gf, UsdPhysics, PhysxSchema, Sdf, UsdLux
 import omni.kit.editor
 import omni.ext
 import omni.usd
@@ -44,6 +44,8 @@ class Extension(omni.ext.IExt):
         """Initialize extension and UI elements
         """
         self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = omni.kit.ui.Window(
@@ -129,7 +131,7 @@ class Extension(omni.ext.IExt):
         self._stage = self._usd_context.get_stage()
         self._create_robot_btn.enabled = False
 
-        self._editor.stop()
+        self._timeline.stop()
 
         self._created = True
         set_up_z_axis(self._stage)
@@ -156,8 +158,8 @@ class Extension(omni.ext.IExt):
         self._physxIFace.force_load_physics_from_usd()
         self._reset_btn.enabled = True
 
-        self._editor.set_camera_position("/OmniverseKit_Persp", 142, -127, 56, True)
-        self._editor.set_camera_target("/OmniverseKit_Persp", -180, 234, -27, True)
+        self._viewport.set_camera_position("/OmniverseKit_Persp", 142, -127, 56, True)
+        self._viewport.set_camera_target("/OmniverseKit_Persp", -180, 234, -27, True)
 
         light_prim = UsdLux.DistantLight.Define(self._stage, Sdf.Path("/World/defaultLight"))
         light_prim.CreateIntensityAttr(500)
@@ -208,9 +210,8 @@ class Extension(omni.ext.IExt):
         self._block_prim = self._stage.GetPrimAtPath(self._block_path)
 
         ## make this obstacle a rigid body with physics and collision properties
-        physicsAPI = PhysicsSchema.PhysicsAPI.Apply(self._block_prim)
-        physicsAPI.CreateBodyTypeAttr("rigid")
-        PhysicsSchema.CollisionAPI.Apply(self._block_prim)
+        UsdPhysics.RigidBodyAPI.Apply(self._block_prim)
+        UsdPhysics.CollisionAPI.Apply(self._block_prim)
 
         ## set the block as an obstacle in RMP
         self._world.register_object(0, self._block_path, "block")
@@ -252,7 +253,7 @@ class Extension(omni.ext.IExt):
         Arguments:
             step (float): elapsed time between steps
         """
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             if self._first_step:
                 self._register_assets()
                 self._first_step = False
@@ -272,9 +273,9 @@ class Extension(omni.ext.IExt):
         print("\trotation: ({},{},{},{})".format(block_pose.r.x, block_pose.r.y, block_pose.r.z, block_pose.r.w))
 
         # get end effector pose
-        if not self._editor.is_playing():
+        if not self._timeline.is_playing():
             print("editor must be playing to get robot state")
-            self._editor.play()
+            self._timeline.play()
 
         ee_state = self._robot.end_effector.status.current_frame
         print(
@@ -329,7 +330,7 @@ class Extension(omni.ext.IExt):
             self._toggle_obstacle_btn.enabled = False
             self._gripper_btn.enabled = False
             self._reset_btn.enabled = False
-            self._editor.stop()
+            self._timeline.stop()
 
     def _on_update_ui(self, widget):
         """Callback that updates UI elements every frame
@@ -342,7 +343,7 @@ class Extension(omni.ext.IExt):
             self._gripper_btn.enabled = False
             self._get_states_btn.enabled = False
             self._reset_btn.enabled = False
-            if self._editor.is_playing():
+            if self._timeline.is_playing():
                 self._target_following_btn.enabled = True
                 self._target_following_btn.text = "Follow Target"
                 self._add_obstacle_btn.enabled = True
@@ -368,7 +369,7 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         """Cleanup objects on extension shutdown
         """
-        self._editor.stop()
+        self._timeline.stop()
         self._editor_event_subscription = None
         self._window.set_update_fn(None)
         print("Shutting down RMP Sample")

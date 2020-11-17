@@ -23,7 +23,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.kit.asyncapi.new_stage()
-        self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
@@ -49,7 +49,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         self._re_bridge.create_application(self._asset_path, json_path, [], [])
 
     async def test_pyalice_init(self):
-        self._editor.play()
+        self._timeline.play()
 
         test_app = PyaliceApp()
         test_app.app.load_module("sight")
@@ -57,7 +57,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         test_app.start()
 
         await asyncio.sleep(2)
-        self._editor.stop()
+        self._timeline.stop()
 
         test_app.stop()
         pass
@@ -88,7 +88,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         prim.CreateWheelRadiusAttr(0.24)
         prim.CreateWheelBaseAttr(0.26613607)
         self.create_application()
-        self._editor.play()
+        self._timeline.play()
         ELEMENT_TYPE_F64 = 3
         await omni.kit.asyncapi.next_update()
         art = self._dc.get_articulation("/carter")
@@ -143,7 +143,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
         self.assertAlmostEqual(control.config.rotation, ang_vel[2], delta=0.1)
         print(lin_vel, ang_vel)
-        self._editor.stop()
+        self._timeline.stop()
         test_app.stop()
         self._re_bridge.destroy_application()
         pass
@@ -173,7 +173,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         prim.CreateWheelRadiusAttr(0.08)
         prim.CreateWheelBaseAttr(0.28963)
         self.create_application()
-        self._editor.play()
+        self._timeline.play()
         ELEMENT_TYPE_F64 = 3
         await omni.kit.asyncapi.next_update()
         art = self._dc.get_articulation("/World")
@@ -228,7 +228,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
         print(ang_vel)
         self.assertAlmostEqual(control.config.rotation, ang_vel[2], delta=0.1)
-        self._editor.stop()
+        self._timeline.stop()
         test_app.stop()
         self._re_bridge.destroy_application()
         pass

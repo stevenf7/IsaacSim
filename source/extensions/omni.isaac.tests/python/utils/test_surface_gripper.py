@@ -99,7 +99,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         await omni.kit.asyncapi.new_stage()
         self.stage = omni.usd.get_context().get_stage()
-        self.editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
 
         pass
 
@@ -111,7 +111,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         # then call stop and then cleanup dc
         self.surface_gripper = None
         await omni.kit.asyncapi.next_update()
-        self.editor.stop()
+        self._timeline.stop()
         await omni.kit.asyncapi.next_update()
         pass
 
@@ -128,7 +128,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.setup_physics(self.box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
-        self.editor.play()
+        self._timeline.play()
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
         self.assertTrue(self._dc.is_simulating())
@@ -143,7 +143,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.setup_physics(self.box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
-        self.editor.play()
+        self._timeline.play()
 
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
@@ -174,10 +174,10 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertGreater(tr.p.z, 200)
 
         # Check to make sure that pause and then play does not break joint
-        self.editor.pause()
+        self._timeline.pause()
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
-        self.editor.play()
+        self._timeline.play()
         await asyncio.sleep(0.5)
         await omni.kit.asyncapi.next_update()
         self.surface_gripper.update()
@@ -188,11 +188,11 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_close_stop_close(self):
         await self.test_close_surface_gripper()
-        self.editor.stop()
+        self._timeline.stop()
         await asyncio.sleep(0.5)
         await omni.kit.asyncapi.next_update()
 
-        self.editor.play()
+        self._timeline.play()
         await omni.kit.asyncapi.next_update()
         box0 = self._dc.get_rigid_body(self.box0)
         box1 = self._dc.get_rigid_body(self.box1)
@@ -215,10 +215,10 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertGreater(tr.p.z, 200)
 
         # Check to make sure that pause and then play does not break joint
-        self.editor.pause()
+        self._timeline.pause()
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
-        self.editor.play()
+        self._timeline.play()
         await asyncio.sleep(0.5)
         await omni.kit.asyncapi.next_update()
         self.surface_gripper.update()
@@ -236,7 +236,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
-        self.editor.play()
+        self._timeline.play()
 
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
@@ -296,7 +296,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
-        self.editor.play()
+        self._timeline.play()
 
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
@@ -339,10 +339,10 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertLess(tr.p.z, 200)
 
         # Check to make sure that pause and then play does not close joint
-        self.editor.pause()
+        self._timeline.pause()
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
-        self.editor.play()
+        self._timeline.play()
         await asyncio.sleep(0.5)
         await omni.kit.asyncapi.next_update()
         tr = self._dc.get_rigid_body_pose(box1)
@@ -357,7 +357,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
-        self.editor.play()
+        self._timeline.play()
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
         self.assertTrue(self._dc.is_simulating())
@@ -397,7 +397,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
-        self.editor.play()
+        self._timeline.play()
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
         self.assertTrue(self._dc.is_simulating())
@@ -447,7 +447,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
-        self.editor.play()
+        self._timeline.play()
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
         self.assertTrue(self._dc.is_simulating())

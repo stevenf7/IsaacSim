@@ -17,7 +17,7 @@ class TestCore(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-
+        self._timeline = omni.timeline.get_timeline_interface()
         pass
 
     # After running each test
@@ -30,12 +30,11 @@ class TestCore(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.assertFalse(self._dc.is_simulating())
         # Start Simulation and wait
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
         self.assertTrue(self._dc.is_simulating())
-        editor.stop()
+        self._timeline.stop()
         await asyncio.sleep(0.125)
         await omni.kit.asyncapi.next_update()
         self.assertFalse(self._dc.is_simulating())

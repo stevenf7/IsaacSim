@@ -33,6 +33,8 @@ class Extension(omni.ext.IExt):
         """Initialize extension and UI elements
         """
         self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = omni.kit.ui.Window(
@@ -110,7 +112,7 @@ class Extension(omni.ext.IExt):
         self._create_franka_btn.enabled = False
         self._selected_scenario.enabled = False
 
-        self._editor.stop()
+        self._timeline.stop()
         self._physxIFace.release_physics_objects()
 
         self._settings.set("/rtx/reflections/halfRes", True)
@@ -130,8 +132,8 @@ class Extension(omni.ext.IExt):
         self._stop_task_btn.enabled = True
         self._toggle_obstacle_btn.enabled = True
 
-        self._editor.set_camera_position("/OmniverseKit_Persp", 142, -127, 56, True)
-        self._editor.set_camera_target("/OmniverseKit_Persp", -180, 234, -27, True)
+        self._viewport.set_camera_position("/OmniverseKit_Persp", 142, -127, 56, True)
+        self._viewport.set_camera_target("/OmniverseKit_Persp", -180, 234, -27, True)
 
         light_prim = self._stage.GetPrimAtPath("/World/defaultLight")
         if light_prim:
@@ -184,7 +186,7 @@ class Extension(omni.ext.IExt):
             self._perform_task_btn.enabled = False
             self._stop_task_btn.enabled = False
             self._toggle_obstacle_btn.enabled = False
-            self._editor.stop()
+            self._timeline.stop()
             self._on_stop_tasks()
             self._scenario = Scenario(self._editor, self._dc, self._mp)
 
@@ -213,7 +215,7 @@ class Extension(omni.ext.IExt):
             self._create_franka_btn.enabled = False
             self._perform_task_btn.enabled = False
             self._stop_task_btn.enabled = False
-            if self._editor.is_playing():
+            if self._timeline.is_playing():
                 self._perform_task_btn.enabled = True
                 self._perform_task_btn.text = "Perform Task"
                 if self._scenario._running is True:
@@ -236,7 +238,7 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         """Cleanup objects on extension shutdown
         """
-        self._editor.stop()
+        self._timeline.stop()
         self._on_stop_tasks()
         self._scenario = None
         self._editor_event_subscription = None

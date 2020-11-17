@@ -89,9 +89,9 @@ class Extension(omni.ext.IExt):
         add_cube_btn.set_clicked_fn(self._on_add_cube)
         add_cube_btn.tooltip = omni.kit.ui.Label("Add a Cube to the scene and append to TF tree")
 
-        self._editor_event_subscription = None
         self.stage = omni.usd.get_context().get_stage()
-        self._editor = omni.kit.editor.get_editor_interface()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._timeline = omni.timeline.get_timeline_interface()
 
     def on_shutdown(self):
         self._window = None
@@ -100,12 +100,12 @@ class Extension(omni.ext.IExt):
     async def _setup_camera(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            self._editor.set_camera_position("/OmniverseKit_Persp", 59, 120, 164, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", -190, -346, -263, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 59, 120, 164, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", -190, -346, -263, True)
 
             # editor must be playing for articulation to work, so start it now
-            if not self._editor.is_playing():
-                self._editor.play()
+            if not self._timeline.is_playing():
+                self._timeline.play()
 
     # load robot
     def _on_load_robot(self, widget):
@@ -208,8 +208,8 @@ class Extension(omni.ext.IExt):
         camera_prim.CreateQueueSizeAttr(10)
 
         # make sure editor is playing for sending and receiving ros messages
-        if not self._editor.is_playing():
-            self._editor.play()
+        if not self._timeline.is_playing():
+            self._timeline.play()
 
         # use image_view to view the published image:
         # rosrun image_view image_view image:=/rgb
@@ -242,8 +242,8 @@ class Extension(omni.ext.IExt):
             ROS_prim.GetRelationship("targetPrims").AddTarget(Sdf.Path("/panda"))
 
         # editor must be playing for messages to be published and received
-        if not self._editor.is_playing():
-            self._editor.play()
+        if not self._timeline.is_playing():
+            self._timeline.play()
 
     def _on_add_cube(self, widget):
         # first create a cube

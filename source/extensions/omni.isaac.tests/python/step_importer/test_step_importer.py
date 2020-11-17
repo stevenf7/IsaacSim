@@ -4,7 +4,6 @@
 import omni.kit.test
 import omni.kit.asyncapi
 import omni.kit.usd
-import omni.kit.connectionhub
 
 
 import carb.tokens
