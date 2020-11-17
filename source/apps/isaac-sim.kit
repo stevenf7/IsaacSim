@@ -14,7 +14,7 @@ keywords = ["experience", "app", "usd"]
 # Status Bar
 "omni.kit.window.status_bar" = {}
 
-"omni.isaac.app.setup" = {}
+"omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
 "omni.kit.splash" = {}
 
 "omni.stats" = {}
@@ -191,16 +191,3 @@ enabledDeprecated = [
         "omni.kit.builtin.init",
         "omni.kit.builtin.menu",
     ]
-
-# RTX Settings
-###############################
-[settings.rtx]
-ReLAX.enable = false
-
-pathtracing.stochasticLCRefresh = false
-pathtracing.lightcache.voxelCache.enabled = false
-pathtracing.ris.enableSpatioTemporalRis = false
-
-raytracing.cached.enabled = false
-
-realtime.mgpu.masterPostProcessOnly = false
