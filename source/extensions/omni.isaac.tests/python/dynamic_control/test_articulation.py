@@ -24,7 +24,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def setUp(self):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._physxIFace = _physx.acquire_physx_interface()
-
+        self._timeline = omni.timeline.get_timeline_interface()
         pass
 
     # After running each test
@@ -40,8 +40,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         set_scene_physics_type(gpu)
 
         # Start Simulation and wait
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         await omni.kit.asyncapi.next_update()
         obj_type = self._dc.peek_object_type("/panda")
         self.assertEqual(obj_type, _dynamic_control.ObjectType.OBJECT_ARTICULATION)
@@ -86,8 +85,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(result)
         set_scene_physics_type(gpu)
         # Start Simulation and wait
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         await asyncio.sleep(1.0)
         await omni.kit.asyncapi.next_update()
         art = self._dc.get_articulation("/panda")
@@ -164,8 +162,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(result)
         set_scene_physics_type(gpu)
         # Start Simulation and wait
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         await omni.kit.asyncapi.next_update()
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
@@ -210,8 +207,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         # wait for robot to fall
         await asyncio.sleep(1.0)
         await omni.kit.asyncapi.next_update()
@@ -241,8 +237,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(result)
         set_scene_physics_type(gpu)
 
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         # wait for robot to fall
         await asyncio.sleep(1.0)
         await omni.kit.asyncapi.next_update()
@@ -334,8 +329,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(result)
         set_scene_physics_type(gpu)
         # Start Simulation and wait
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         await omni.kit.asyncapi.next_update()
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
@@ -407,8 +401,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(result)
         set_scene_physics_type(gpu)
         # await asyncio.sleep(1.0)
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         await omni.kit.asyncapi.next_update()
         art = self._dc.get_articulation("/World")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)

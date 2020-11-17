@@ -66,4 +66,5 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/motion_planning" },
+    { "%{root}/_build/target-deps/lula/lib/**", ext.target_dir.."/bin" },
 }

@@ -34,6 +34,8 @@ class Extension(omni.ext.IExt):
         """Initialize extension and UI elements
         """
         self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = omni.kit.ui.Window(
@@ -70,15 +72,15 @@ class Extension(omni.ext.IExt):
             print("Cannot start gamepad, kaya not valid")
             return
         # must start editor before setting up gamepad to move
-        self._editor.play()
+        self._timeline.play()
         self._manip.bind_gamepad(self._on_event_fn)
 
     async def _create_kaya(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
             print("Loading Kaya Enviornment")
-            self._editor.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
             self._stage = self._usd_context.get_stage()
             result, nucleus_server = find_nucleus_server()
             if result is False:
@@ -135,7 +137,7 @@ class Extension(omni.ext.IExt):
         """
 
         self._manip.unbind_gamepad()
-        self._editor.stop()
+        self._timeline.stop()
         self.kaya = None
         self._window = None
         gc.collect()

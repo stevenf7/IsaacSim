@@ -18,6 +18,7 @@ class RobotController:
         self,
         stage,
         editor,
+        timeline,
         dc,
         articulation_path,
         odom_prim_path,
@@ -27,6 +28,7 @@ class RobotController:
     ):
         self._stage = stage
         self._editor = editor
+        self._timeline = timeline
         self._dc = dc
         self._articulation_path = articulation_path
         self._odom_prim_path = odom_prim_path
@@ -48,7 +50,7 @@ class RobotController:
         self.current_robot_orientation = [roll, pitch, yaw]
 
     def update(self, step):
-        if self._enable_navigation and self._editor.is_playing():
+        if self._enable_navigation and self._timeline.is_playing():
             self._get_odom_data()
             inc_x = float(self._goal[0]) - self.current_robot_translation[0]
             inc_y = float(self._goal[1]) - self.current_robot_translation[1]

@@ -17,6 +17,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         self._urdf_interface = _urdf.acquire_urdf_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
         pass
 
     # After running each test
@@ -61,12 +62,11 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(fingerLink.GetAttribute("mass").Get(), 3)
 
         # Start Simulation and wait
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         await omni.kit.asyncapi.next_update()
         await asyncio.sleep(1.0)
         # nothing crashes
-        editor.stop()
+        self._timeline.stop()
         pass
 
     # advanced urdf test: test for all the categories of inputs that an urdf can hold
@@ -107,12 +107,11 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(Gf.IsClose(joint_pos, Gf.Vec3f(0, 0, 40), 1e-5))
 
         # Start Simulation and wait
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         await omni.kit.asyncapi.next_update()
         await asyncio.sleep(1.0)
         # nothing crashes
-        editor.stop()
+        self._timeline.stop()
         pass
 
     # test for importing urdf where fixed joints are merged

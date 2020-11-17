@@ -8,10 +8,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import carb
-from pxr import Usd, UsdGeom, Sdf, Gf, PhysicsSchema, PhysxSchema
+from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics, PhysxSchema
 import omni.usd
 import gc
-import omni.kit.connectionhub
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 
@@ -45,7 +44,7 @@ def set_translate(prim, new_loc):
 
 # Specify collision group for a prim
 def set_collision_group(stage, path, group):
-    collisionAPI = PhysicsSchema.CollisionAPI.Get(stage, path)
+    collisionAPI = UsdPhysics.CollisionAPI.Get(stage, path)
     if collisionAPI:
         rel = collisionAPI.CreateCollisionGroupRel()
         rel.AddTarget(Sdf.Path(group))
@@ -115,7 +114,7 @@ def setup_physics(stage):
     metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
     gravityScale = 9.81 / metersPerUnit
     gravity = Gf.Vec3f(0.0, 0.0, -gravityScale)
-    scene = PhysicsSchema.PhysicsScene.Define(stage, "/physics/scene")
+    scene = UsdPhysics.Scene.Define(stage, "/physics/scene")
     scene.CreateGravityAttr().Set(gravity)
 
     PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physics/scene"))
@@ -135,6 +134,7 @@ class Scenario:
 
     def __init__(self, editor, dc, mp):
         self._editor = editor  # Reference to the Kit editor
+        self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()  # Reference to the current USD stage
         self._dc = dc  # Reference to the dynamic control plugin
         self._mp = mp  # Reference to the motion planning plugin

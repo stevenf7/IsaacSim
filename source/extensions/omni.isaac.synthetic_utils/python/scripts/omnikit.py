@@ -94,6 +94,7 @@ Launches and configures OmniKit and exposes useful functions.
             self.update()
 
         self.editor = omni.kit.editor.get_editor_interface()
+        self.timeline = omni.timeline.get_timeline_interface()
 
     def _launch_kit(self):
         # Set up the renderer
@@ -207,19 +208,19 @@ Launches and configures OmniKit and exposes useful functions.
     def play(self):
         """Starts the editor physics simulation"""
         self.update()
-        self.editor.play()
+        self.timeline.play()
         self.update()
 
     def pause(self):
         """Pauses the editor physics simulation"""
         self.update()
-        self.editor.pause()
+        self.timeline.pause()
         self.update()
 
     def stop(self):
         """Stops the editor physics simulation"""
         self.update()
-        self.editor.stop()
+        self.timeline.stop()
         self.update()
 
     def get_status(self):

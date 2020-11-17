@@ -29,6 +29,8 @@ class Extension(omni.ext.IExt):
 
         # Loads Editor and DC interfaces
         self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._dc = dc.acquire_dynamic_control_interface()
         self._usd_context = omni.usd.get_context()
         # Creates UI window with default size of 600x300
@@ -88,10 +90,10 @@ class Extension(omni.ext.IExt):
         self._window = None
 
     def _on_update_ui(self, widget):
-        self._create_scenario_button.enabled = self._editor.is_playing()
-        self._toggle_gripper_button.enabled = self._editor.is_playing()
-        self._force_button.enabled = self._editor.is_playing()
-        self._speed_button.enabled = self._editor.is_playing()
+        self._create_scenario_button.enabled = self._timeline.is_playing()
+        self._toggle_gripper_button.enabled = self._timeline.is_playing()
+        self._force_button.enabled = self._timeline.is_playing()
+        self._speed_button.enabled = self._timeline.is_playing()
         # If the scene has been reloaded, reset UI to create Scenario
         if self._usd_context.get_stage_id() != self._stage_id:
             self._create_scenario_button.enabled = True
@@ -112,7 +114,7 @@ class Extension(omni.ext.IExt):
 
     def _on_editor_step(self, step):
         # Checks if the editor is playing, and if the stage has been loaded
-        if self._editor.is_playing() and self._stage_id != -1:
+        if self._timeline.is_playing() and self._stage_id != -1:
             # Check if the handles for cone and box have been loaded
             if self.cone is None:
                 self.cone = self._dc.get_rigid_body("/GripperCone")
@@ -148,7 +150,7 @@ class Extension(omni.ext.IExt):
             # Get Handle for stage and stage ID to check if stage was reloaded
             self._stage = self._usd_context.get_stage()
             self._stage_id = self._usd_context.get_stage_id()
-            self._editor.stop()
+            self._timeline.stop()
             self._create_scenario_button.set_clicked_fn(self._on_reset_scenario_button_clicked)
 
             # Adds a light to the scene
@@ -211,8 +213,8 @@ class Extension(omni.ext.IExt):
             self.surface_gripper.initialize(self.sgp)
 
             # Set camera to a nearby pose and looking directly at the Gripper cone
-            self._editor.set_camera_position("/OmniverseKit_Persp", 400, 400, 400, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", *self.gripper_start_pose.p, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 400, 400, 400, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", *self.gripper_start_pose.p, True)
 
             self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
 
@@ -222,18 +224,18 @@ class Extension(omni.ext.IExt):
         asyncio.ensure_future(self._create_scenario(task))
 
     def _on_toggle_gripper_button_clicked(self, button):
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             if self.surface_gripper.is_closed():
                 self.surface_gripper.open()
             else:
                 self.surface_gripper.close()
 
     def _on_speed_button_clicked(self, button):
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             self._dc.set_rigid_body_linear_velocity(self.cone, [0, 0, self._speed_control.value])
 
     def _on_force_button_clicked(self, button):
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             self._dc.apply_body_force(self.cone, [0, 0, self._force_control.value], [0, 0, 0])
 
     def createRigidBody(self, bodyType, boxActorPath, mass, scale, position, rotation, color):

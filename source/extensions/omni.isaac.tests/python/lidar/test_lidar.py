@@ -40,7 +40,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         self._lidar = _lidar.acquire_lidar_interface()
-        self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
         await omni.kit.asyncapi.new_stage()
         self._stage = omni.usd.get_context().get_stage()
 
@@ -60,7 +60,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # After running each test
     async def tearDown(self):
-        self._editor.stop()
+        self._timeline.stop()
         pass
 
     async def sweep_parameter(self, parameter, min_v, max_v, step):
@@ -123,16 +123,16 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
         # Run for a second
-        self._editor.play()
+        self._timeline.play()
         await asyncio.sleep(1)
-        self._editor.pause()
+        self._timeline.pause()
 
         # Get depth, and check that we hit the cube in front, and hit nothing in back
         depth = self._lidar.get_depth_data(lidarPath)
 
         self.assertLess(depth[0, 0], 2000)
         self.assertEqual(depth[450, 0], 65535)
-        self._editor.play()
+        self._timeline.play()
 
     # Tests a lidar on a falling cube, with a cube in front of it after it lands
     async def test_dynamic_lidar(self):
@@ -164,9 +164,9 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Run for two seconds
 
-        self._editor.play()
+        self._timeline.play()
         await asyncio.sleep(2)
-        self._editor.pause()
+        self._timeline.pause()
         # Get depth, and check that we hit the cube in front, and hit nothing in back
         depth = self._lidar.get_depth_data(lidarPath)
         self.assertLess(depth[0, 0], 2000)
@@ -189,7 +189,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         lidarPath = "/World/Cube2/Lidar"
         lidar = self.add_lidar(lidarPath)
 
-        self._editor.play()
+        self._timeline.play()
         lidar.GetHighLodAttr().Set(True)
         lidar.GetDrawLidarPointsAttr().Set(False)
         await self.sweep_parameter(lidar.GetRotationRateAttr(), -1024, 1024, 256)
@@ -223,9 +223,9 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Run for two seconds
 
-        self._editor.play()
+        self._timeline.play()
         await asyncio.sleep(2)
-        self._editor.pause()
+        self._timeline.pause()
         # Get depth, and check that we hit the cube in front, and hit nothing in back
         depth = self._lidar.get_depth_data(lidarPath)
         self.assertLess(depth[0, 0], 2000)
@@ -258,9 +258,9 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     lidar.GetVerticalResolutionAttr().Set(vRes)
 
     #     # Run for a second
-    #     self._editor.play()
+    #     self._timeline.play()
     #     await asyncio.sleep(1)
-    #     self._editor.pause()
+    #     self._timeline.pause()
 
     #     kitZenith = self._lidar.get_zenith_data(lidarPath)
     #     kitAzimuth = self._lidar.get_azimuth_data(lidarPath)

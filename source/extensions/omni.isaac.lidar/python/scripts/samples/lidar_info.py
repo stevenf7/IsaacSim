@@ -1,7 +1,7 @@
 import omni
 from omni.isaac.lidar import _lidar
 import omni.isaac.LidarSchema as LidarSchema
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import asyncio
 
 
@@ -16,8 +16,8 @@ class Extension(omni.ext.IExt):
         # in lidar/bindings
         self._li = _lidar.acquire_lidar_interface()
 
-        # We also need an interface to the editor to do things like set and get camera positions
-        self._editor = omni.kit.editor.get_editor_interface()
+        # We also need an interface to the viewport to do things like set and get camera positions
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
 
         # This just defines the window we will use to access the lidar_info GUI.  Note that clicking on the menu item
         # does not create an instance of lidar_info; that is done by the extension when it is loaded by kit.  All this
@@ -77,7 +77,6 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
-        self._editor = None
         self._window = None
 
     async def _spawn_lidar_function(self, task):
@@ -94,7 +93,7 @@ class Extension(omni.ext.IExt):
             # Create the PhysicsScene.  The lidar is going to execute line trace calls in PhysX, and return a value based
             # on how far it travels before colliding with an object that is using the PhysX collision API.  Because of this,
             # to use the LIDAR extension, you MUST have a physics scene defined
-            scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/physicsScene"))
+            scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
 
             # create the LIDAR.  Before we can set any attributes on our LIDAR, we must first create the prim using our
             # LIDAR schema, and then populate it with the parameters we will be manipulating.  If you try to manipulate
@@ -134,8 +133,8 @@ class Extension(omni.ext.IExt):
             self.lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
             # we want to make sure we can see the lidar we made, so we set the camera position and look target
-            self._editor.set_camera_position("/OmniverseKit_Persp", 500, 500, 500, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 500, 500, 500, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
 
     def _on_spawn_lidar_button(self, widget):
         # wait for new stage before creating lidar

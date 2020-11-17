@@ -44,6 +44,8 @@ def create_xyz(init={"X": 100, "Y": 100, "Z": 0}):
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
@@ -105,8 +107,8 @@ class Extension(omni.ext.IExt):
         done, pending = await asyncio.wait({task})
         if task in done:
             print("Loading Robot Enviornment")
-            self._editor.set_camera_position("/OmniverseKit_Persp", 300, 300, 100, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 300, 300, 100, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
             self._stage = self._usd_context.get_stage()
             result, nucleus_server = find_nucleus_server()
             if result is False:
@@ -157,7 +159,7 @@ class Extension(omni.ext.IExt):
     async def _play(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            self._editor.play()
+            self._timeline.play()
             await asyncio.sleep(1)
 
     async def _on_setup_fn(self, task):
@@ -168,6 +170,7 @@ class Extension(omni.ext.IExt):
             self._rc = RobotController(
                 self._stage,
                 self._editor,
+                self._timeline,
                 self._dc,
                 self._robot_prim_path,
                 self._robot_chassis,
@@ -217,7 +220,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         self._rc = None
-        self._editor.stop()
+        self._timeline.stop()
         self._editor_event_subscription = None
         self._window = None
         gc.collect()

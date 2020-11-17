@@ -4,7 +4,6 @@
 import omni.kit.test
 import omni.kit.asyncapi
 import omni.kit.usd
-import omni.kit.connectionhub
 from omni.isaac.dynamic_control import _dynamic_control as dc
 from omni.isaac.motion_planning import _motion_planning as mp
 import carb.tokens
@@ -27,20 +26,6 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Before running each test
     async def setUp(self):
-        self.connection_handle = None
-        for i in range(0, 10):
-            print("connection attempt:", i)
-            event, self.connection_handle = await omni.kit.asyncapi.connect("ov-isaac-dev:3009", "testing", "testing")
-            print(event, self.connection_handle)
-            await omni.kit.asyncapi.next_update()
-            await asyncio.sleep(1.0)
-            await omni.kit.asyncapi.next_update()
-            connections = omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()
-            if len(connections) > 0:
-                print("connected")
-                break
-        self.assertEqual(len(connections), 1)
-
         self._dc = dc.acquire_dynamic_control_interface()
         self._mp = mp.acquire_motion_planning_interface()
         self._physx = physx.acquire_physx_interface()
@@ -48,7 +33,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.assertFalse(self._dc.is_simulating())
         # Start Simulation and wait
-        self.editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
         self.upright_sequence = [
             bin_stack.SM_states.STANDBY,
             bin_stack.SM_states.PICKING,
@@ -77,8 +62,8 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
     # After running each test
     async def tearDown(self):
         print("tear down")
-        if self.editor.is_playing():
-            self.editor.stop()
+        if self.timeline.is_playing():
+            self._timeline.stop()
         await omni.kit.asyncapi.next_update()
         self.assertFalse(self._dc.is_simulating())
         self._dc = None
@@ -87,8 +72,6 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         if self._scenario is not None:
             self._scenario.stop_tasks()
             self._scenario = None
-        if self.connection_handle is not None:
-            await omni.kit.asyncapi.disconnect(self.connection_handle)
         print("done")
         pass
 
@@ -100,11 +83,11 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_bin_stack_run(self):
         await self.load_bin_stack_scene()
         await self.execute_stack_scene(True)
-        self.editor.stop()
+        self._timeline.stop()
         await omni.kit.asyncapi.next_update()
         self._scenario.stop_tasks()
         self._scenario.step(None)
-        self.editor.play()
+        self._timeline.play()
         await omni.kit.asyncapi.next_update()
         self._scenario.step(None)
         await self.execute_stack_scene()
@@ -199,7 +182,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physx.release_physics_objects()
         self._physx.force_load_physics_from_usd()
 
-        self.editor.play()
+        self._timeline.play()
         await omni.kit.asyncapi.next_update()
         self.assertTrue(self._dc.is_simulating())
         self._scenario.register_assets()
@@ -218,7 +201,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     self._physx.release_physics_objects()
     #     self._physx.force_load_physics_from_usd()
 
-    #     self.editor.play()
+    #     self._timeline.play()
     #     await omni.kit.asyncapi.next_update()
     #     self.assertTrue(self._dc.is_simulating())
     #     self._scenario.register_assets()
@@ -256,7 +239,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physx.release_physics_objects()
         self._physx.force_load_physics_from_usd()
 
-        self.editor.play()
+        self._timeline.play()
         await omni.kit.asyncapi.next_update()
         self.assertTrue(self._dc.is_simulating())
         self._scenario.register_assets()

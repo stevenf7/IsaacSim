@@ -79,8 +79,8 @@ PYBIND11_MODULE(_dr, m)
                 dr_interface.toggle_manual_mode()
                 # Python equivalent of pressing play in editor
                 editor = omni.kit.editor.get_editor_interface()
-                if not editor.is_playing():
-                    editor.play()
+                if not timeline.is_playing():
+                    timeline.play()
 
         
         Refer to the sample documentation for more examples and usage

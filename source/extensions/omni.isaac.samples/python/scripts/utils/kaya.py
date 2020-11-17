@@ -1,4 +1,3 @@
-from pxr import Usd, UsdGeom, Gf, PhysxSchema, PhysicsSchema
 import math
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
@@ -12,7 +11,7 @@ class Kaya:
         self.usd_path = usd_path
         self.prim_path = prim_path
         self.speed_gain = speed_gain
-        self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
 
         # setup high-level kaya prim
         self.prim = self._stage.DefinePrim(prim_path, "Xform")
@@ -58,7 +57,7 @@ class Kaya:
         return wheel_speed
 
     def move(self, vel_target):
-        if not self._editor.is_playing():
+        if not self._timeline.is_playing():
             return
         if not self._dc.is_simulating():
             return

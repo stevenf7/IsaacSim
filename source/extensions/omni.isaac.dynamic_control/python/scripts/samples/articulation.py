@@ -100,19 +100,19 @@ class Extension(omni.ext.IExt):
             omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
         )
         self._physxIFace = _physx.acquire_physx_interface()
-        self._editor = omni.kit.editor.get_editor_interface()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._timeline = omni.timeline.get_timeline_interface()
 
     def on_shutdown(self):
-        self._editor = None
         self._window = None
 
     async def _setup_camera(self, task):
         # wait for the stage load task to finish before setting camera and starting simulation
         done, pending = await asyncio.wait({task})
         if task in done:
-            self._editor.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
-            self._editor.set_camera_target("/OmniverseKit_Persp", 0, 0, 50, True)
-            self._editor.play()
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 50, True)
+            self._timeline.play()
 
     def _on_load_robot(self, widget):
         task = asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))

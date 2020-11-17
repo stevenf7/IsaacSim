@@ -743,7 +743,7 @@ class BinStack(Scenario):
         super().on_startup()
 
     def step(self, step):
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             if self._pending_stop:
                 self.stop_tasks()
                 return
@@ -962,7 +962,7 @@ class BinStack(Scenario):
 
     def stop_tasks(self, *args):
         if self.pick_and_place is not None:
-            if self._editor.is_playing():
+            if self._timeline.is_playing():
                 self.ur10_solid.stop()
                 self._reset = True
                 self.current_bin = 0

@@ -29,6 +29,8 @@ EXTENSION_NAME = "UR10 Factory of Future"
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = omni.kit.ui.Window(
@@ -107,13 +109,13 @@ class Extension(omni.ext.IExt):
         self._stage = self._usd_context.get_stage()
 
         self._scenario = bmw_fof_demo.AttachBody(self._editor, self._dc, self._mp)
-        self._editor.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)
-        self._editor.set_camera_target("/OmniverseKit_Persp", -83.41, -126.78, -80.28, True)
+        self._viewport.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)
+        self._viewport.set_camera_target("/OmniverseKit_Persp", -83.41, -126.78, -80.28, True)
 
         self._first_step = True
         self._create_UR10_btn.enabled = False
 
-        self._editor.stop()
+        self._timeline.stop()
         self._physxIFace.release_physics_objects()
 
         self._settings.set("/rtx/reflections/halfRes", True)
@@ -157,7 +159,7 @@ class Extension(omni.ext.IExt):
         return True
 
     def _on_editor_step(self, step):
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             if self._first_step:
                 self._scenario.register_assets()
                 self._first_step = False
@@ -172,7 +174,7 @@ class Extension(omni.ext.IExt):
             self._pause_task_btn.enabled = False
             self._open_gripper_btn.enabled = False
             self._add_new_bins_btn.enabled = False
-            self._editor.stop()
+            self._timeline.stop()
             self._on_stop_tasks()
             self._scenario = Scenario(self._editor, self._dc, self._mp)
 
@@ -184,12 +186,12 @@ class Extension(omni.ext.IExt):
         self._scenario.perform_tasks()
 
     def _on_update_ui(self, widget):
-        is_stopped = self._editor.is_stopped()
+        is_stopped = self._timeline.is_stopped()
         if is_stopped and self._is_playing:
             self._on_stop_tasks()
         self._is_playing = not is_stopped
 
-        if self._editor.is_playing() or self._scenario.is_created():
+        if self._timeline.is_playing() or self._scenario.is_created():
             self._create_UR10_btn.enabled = False
             self._perform_task_btn.enabled = True
             self._add_new_bins_btn.enabled = True
@@ -197,7 +199,7 @@ class Extension(omni.ext.IExt):
             if not self._scenario.is_created():
                 self._perform_task_btn.enabled = False
                 self._perform_task_btn.text = "Press Create To Enable"
-        if not self._editor.is_playing():
+        if not self._timeline.is_playing():
             self._perform_task_btn.enabled = False
             self._open_gripper_btn.enabled = False
             self._add_new_bins_btn.enabled = False
@@ -207,7 +209,7 @@ class Extension(omni.ext.IExt):
                 self._perform_task_btn.text = "Press Create To Enable"
 
     def on_shutdown(self):
-        self._editor.stop()
+        self._timeline.stop()
         self._on_stop_tasks()
         self._scenario = None
         self._editor_event_subscription = None

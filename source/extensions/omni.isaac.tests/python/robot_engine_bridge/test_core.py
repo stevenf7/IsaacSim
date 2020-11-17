@@ -19,7 +19,7 @@ class TestREB(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.kit.asyncapi.new_stage()
-        self._editor = omni.kit.editor.get_editor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
@@ -48,18 +48,18 @@ class TestREB(omni.kit.test.AsyncTestCase):
         self._re_bridge.destroy_application()
 
         # Create after play
-        self._editor.play()
+        self._timeline.play()
         self.create_application()
         await asyncio.sleep(0.5)
-        self._editor.stop()
+        self._timeline.stop()
         self._re_bridge.destroy_application()
 
         # Create before play
         self.create_application()
-        self._editor.play()
+        self._timeline.play()
         await asyncio.sleep(0.5)
         self._re_bridge.destroy_application()
-        self._editor.stop()
+        self._timeline.stop()
 
     # This test spawns all REB components and then runs simulation
     async def test_spawn_reb_stopped(self):
@@ -112,17 +112,17 @@ class TestREB(omni.kit.test.AsyncTestCase):
         prim = REBSchema.RobotEngineLidar.Define(self._stage, path)
         setup_base_prim(prim)
         self.create_application()
-        self._editor.play()
+        self._timeline.play()
         await asyncio.sleep(0.125)
         # await omni.kit.asyncapi.next_update()
-        self._editor.stop()
+        self._timeline.stop()
         self._re_bridge.destroy_application()
 
         pass
 
     async def test_spawn_reb_active(self):
         self.create_application()
-        self._editor.play()
+        self._timeline.play()
         path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_DifferentialBase", True)
         prim = REBSchema.RobotEngineDifferentialBase.Define(self._stage, path)
         setup_base_prim(prim)
@@ -173,7 +173,7 @@ class TestREB(omni.kit.test.AsyncTestCase):
 
         await asyncio.sleep(2)
         await omni.kit.asyncapi.next_update()
-        self._editor.stop()
+        self._timeline.stop()
         self._re_bridge.destroy_application()
         await asyncio.sleep(2)
         await omni.kit.asyncapi.next_update()

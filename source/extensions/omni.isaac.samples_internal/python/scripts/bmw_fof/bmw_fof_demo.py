@@ -739,7 +739,7 @@ class AttachBody(Scenario):
         super().on_startup()
 
     def step(self, step):
-        if self._editor.is_playing():
+        if self._timeline.is_playing():
             # Disable requires a one simulation step after they have been moved
             # from their previous location to work.
             if self._pending_disable:
