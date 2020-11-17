@@ -2,7 +2,7 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni.kit.asyncapi
+
 import omni.kit.usd
 import carb.tokens
 import os
@@ -18,7 +18,7 @@ from .common import setup_base_prim
 class TestREB(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        await omni.kit.asyncapi.new_stage()
+        await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
@@ -114,7 +114,7 @@ class TestREB(omni.kit.test.AsyncTestCase):
         self.create_application()
         self._timeline.play()
         await asyncio.sleep(0.125)
-        # await omni.kit.asyncapi.next_update()
+        # await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
         self._re_bridge.destroy_application()
 
@@ -172,9 +172,9 @@ class TestREB(omni.kit.test.AsyncTestCase):
         setup_base_prim(prim)
 
         await asyncio.sleep(2)
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
         self._re_bridge.destroy_application()
         await asyncio.sleep(2)
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         pass

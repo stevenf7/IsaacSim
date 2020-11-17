@@ -3,7 +3,7 @@ import omni
 import numpy as np
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-from pxr import UsdGeom, Gf, Sdf, PhysxSchema, PhysicsSchema, PhysicsSchemaTools
+from pxr import UsdGeom, Gf, Sdf, PhysxSchema, UsdPhysics, PhysicsSchemaTools
 from jetbot_city.road_map import *
 from jetbot_city.road_map_path_helper import *
 from jetbot_city.road_map_generator import *
@@ -226,7 +226,7 @@ class Environment:
     def setup_physics(self):
         stage = self.omni_kit.get_stage()
         # Add physics scene
-        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))
+        scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))
         # Set gravity vector
         scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
         # Set physics scene to use cpu physics

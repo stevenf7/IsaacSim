@@ -6,7 +6,7 @@ import asyncio
 
 # from omni.physx import _physx
 from .common import import_robot, set_drive_parameters
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysxSchema
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 
 
 class Extension(omni.ext.IExt):
@@ -30,7 +30,7 @@ class Extension(omni.ext.IExt):
         self._window = None
 
     def _on_load_robot(self, widget):
-        load_stage = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        load_stage = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._load_robot(load_stage))
 
     async def _load_robot(self, task):
@@ -50,7 +50,7 @@ class Extension(omni.ext.IExt):
 
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
-        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/physicsScene"))
+        scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
         scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
 
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
@@ -58,15 +58,15 @@ class Extension(omni.ext.IExt):
 
         robot_prim = stage.GetDefaultPrim()
         # Set articulation base parameters
-        physicsArticulationAPI = PhysicsSchema.ArticulationAPI.Get(stage, robot_prim.GetPath())
+        physicsArticulationAPI = UsdPhysics.ArticulationAPI.Get(stage, robot_prim.GetPath())
         physicsArticulationAPI.GetFixBaseAttr().Set(True)
 
-        joint_1 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/ur10/base_link/shoulder_pan_joint"), "angular")
-        joint_2 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/ur10/shoulder_link/shoulder_lift_joint"), "angular")
-        joint_3 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/ur10/upper_arm_link/elbow_joint"), "angular")
-        joint_4 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/ur10/forearm_link/wrist_1_joint"), "angular")
-        joint_5 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_1_link/wrist_2_joint"), "angular")
-        joint_6 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_2_link/wrist_3_joint"), "angular")
+        joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/base_link/shoulder_pan_joint"), "angular")
+        joint_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/shoulder_link/shoulder_lift_joint"), "angular")
+        joint_3 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/upper_arm_link/elbow_joint"), "angular")
+        joint_4 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/forearm_link/wrist_1_joint"), "angular")
+        joint_5 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_1_link/wrist_2_joint"), "angular")
+        joint_6 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_2_link/wrist_3_joint"), "angular")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
         set_drive_parameters(joint_1, "position", 0, 20000, 2000, 330000)

@@ -1,6 +1,6 @@
 import omni
 import carb
-from pxr import Gf, UsdGeom, Usd, Sdf, PhysicsSchema
+from pxr import Gf, UsdGeom, Usd, Sdf, UsdPhysics
 from enum import Enum
 
 
@@ -155,15 +155,12 @@ class Exploded_view_manager:
         self._layers = self._context.get_layers()
 
         self._physicsApis = {
-            PhysicsSchema.PhysicsAPI: [
-                lambda a: a.GetPhysicsEnabledAttr(),
-                lambda a: a.CreatePhysicsEnabledAttr(False),
-            ],
-            PhysicsSchema.CollisionAPI: [
+            UsdPhysics.PhysicsAPI: [lambda a: a.GetPhysicsEnabledAttr(), lambda a: a.CreatePhysicsEnabledAttr(False)],
+            UsdPhysics.CollisionAPI: [
                 lambda a: a.GetCollisionEnabledAttr(),
                 lambda a: a.CreateCollisionEnabledAttr(False),
             ],
-            PhysicsSchema.PhysicsJoint: [lambda a: a.GetJointEnabledAttr(), lambda a: a.CreateJointEnabledAttr(False)],
+            UsdPhysics.PhysicsJoint: [lambda a: a.GetJointEnabledAttr(), lambda a: a.CreateJointEnabledAttr(False)],
         }
 
         self.xview_layer = None

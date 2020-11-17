@@ -6,7 +6,7 @@ import asyncio
 
 # from omni.physx import _physx
 from .common import import_robot, set_drive_parameters, remove_all_schema_multiple_attributes
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, PhysicsSchema, PhysxSchema
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 
 
 class Extension(omni.ext.IExt):
@@ -30,7 +30,7 @@ class Extension(omni.ext.IExt):
         self._window = None
 
     def _on_load_robot(self, widget):
-        load_stage = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        load_stage = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._load_kaya(load_stage))
 
     async def _load_kaya(self, task):
@@ -52,7 +52,7 @@ class Extension(omni.ext.IExt):
 
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
-        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/physicsScene"))
+        scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
         scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
 
         omni.kit.commands.execute(
@@ -69,7 +69,7 @@ class Extension(omni.ext.IExt):
         distantLight.CreateIntensityAttr(500)
 
         kaya_prim = stage.GetPrimAtPath("/kaya")
-        physicsArticulationAPI = PhysicsSchema.ArticulationAPI.Get(stage, kaya_prim.GetPath())
+        physicsArticulationAPI = UsdPhysics.ArticulationAPI.Get(stage, kaya_prim.GetPath())
         physicsArticulationAPI.GetFixBaseAttr().Set(False)
         # Make all rollers spin freely by removing extra drive API
         for axle in range(0, 2 + 1):
@@ -87,13 +87,13 @@ class Extension(omni.ext.IExt):
                         + "_joint"
                     )
                     prim = stage.GetPrimAtPath(prim_path)
-                    remove_all_schema_multiple_attributes(PhysicsSchema.DriveAPI, prim, "drive", "angular")
-                    PhysicsSchema.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")
+                    remove_all_schema_multiple_attributes(UsdPhysics.DriveAPI, prim, "drive", "angular")
+                    UsdPhysics.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")
 
         # set each axis to spin at a rate of 1 rad/s
-        axle_0 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_0_joint"), "angular")
-        axle_1 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_1_joint"), "angular")
-        axle_2 = PhysicsSchema.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_2_joint"), "angular")
+        axle_0 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_0_joint"), "angular")
+        axle_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_1_joint"), "angular")
+        axle_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_2_joint"), "angular")
 
         set_drive_parameters(axle_0, "velocity", 2, 0, 1e8, 1e10)
         set_drive_parameters(axle_1, "velocity", 2, 0, 1e8, 1e10)

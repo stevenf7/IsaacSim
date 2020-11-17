@@ -2,7 +2,7 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni.kit.asyncapi
+
 import omni.kit.commands
 import carb.tokens
 import os
@@ -32,7 +32,7 @@ async def load_test_file(test_file_name: str):
 
     usd_context = omni.usd.get_context()
     usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.kit.asyncapi.open_stage(path_to_file)
+    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
     usd_context.enable_save_to_recent_files()
     return (result, error)
 
@@ -46,7 +46,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
             carb.tokens.get_tokens_interface().resolve("${kit}/../../library/mdl/Base/OmniPBR.mdl")
         )
         await omni.kit.asyncapi.connect("ov-isaac-dev:3009", "testing", "testing")
-        await omni.kit.asyncapi.new_stage()
+        await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
         self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -92,10 +92,10 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         color_comp = self._stage.GetPrimAtPath(color_comp_path)
         self.assertTrue(color_comp)
         # Let the material load
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         while self.is_loading():
-            await omni.kit.asyncapi.next_update()
-        await omni.kit.asyncapi.next_update()
+            await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         # Validate color material prim
         color_mat_path = default_prim_path + "/Colors/color_component/OmniPBR_2/Shader"
         color_mat = self._stage.GetPrimAtPath(color_mat_path)
@@ -104,7 +104,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         color_attr = color_mat.GetAttribute("inputs:diffuse_color_constant")
         self.assertIsNotNone(color_attr)
         color_value_1 = color_attr.Get()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         color_value_2 = color_attr.Get()
         # Check if color values are different after one frame
         self.assertFalse(Gf.IsClose(color_value_1, color_value_2, 0.00001))
@@ -140,11 +140,11 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         mov_comp = self._stage.GetPrimAtPath(mov_comp_path)
         self.assertTrue(mov_comp)
         # Enable manual mode and execute DR once
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self._dr.toggle_manual_mode()
         self._dr.randomize_once()
         self._dr.toggle_manual_mode()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         # Get new transform matrix
         transform_matrix_2 = xformable.GetLocalTransformation()
         # Check if rotation components are same and translation components are different
@@ -183,11 +183,11 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         rot_comp = self._stage.GetPrimAtPath(rot_comp_path)
         self.assertTrue(rot_comp)
         # Enable manual mode and execute DR once
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self._dr.toggle_manual_mode()
         self._dr.randomize_once()
         self._dr.toggle_manual_mode()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         # Get new transform matrix
         transform_matrix_2 = xformable.GetLocalTransformation()
         # Check if rotation components are different and translation components are same
@@ -227,11 +227,11 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         scale_comp = self._stage.GetPrimAtPath(scale_comp_path)
         self.assertTrue(scale_comp)
         # Enable manual mode and execute DR once
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self._dr.toggle_manual_mode()
         self._dr.randomize_once()
         self._dr.toggle_manual_mode()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         # Get new transform matrix
         transform_matrix_2 = xformable.GetLocalTransformation()
         # Check if transformation matrices are different
@@ -277,7 +277,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         light_color_value_1 = light_color_attr.Get()
         light_color_temp_value_1 = light_color_temp_attr.Get()
         light_color_intensity_value_1 = light_color_intensity_attr.Get()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         light_color_value_2 = light_color_attr.Get()
         light_color_temp_value_2 = light_color_temp_attr.Get()
         light_color_intensity_value_2 = light_color_intensity_attr.Get()

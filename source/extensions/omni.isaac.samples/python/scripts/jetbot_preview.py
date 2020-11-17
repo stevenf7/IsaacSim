@@ -154,7 +154,7 @@ class Extension(omni.ext.IExt):
         # wait for new stage before creating jetbot
         self._wheel_check = False
         self._ar = _dynamic_control.INVALID_HANDLE
-        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._create_jetbot(task))
 
     def _on_stage_event(self, event):

@@ -63,7 +63,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.exiting = True
 
     async def load_stage(self, path):
-        await omni.kit.asyncapi.open_stage(path)
+        await omni.usd.get_context().open_stage_async(path)
 
     def _setup_world(self, scenario_path):
         # Load scenario

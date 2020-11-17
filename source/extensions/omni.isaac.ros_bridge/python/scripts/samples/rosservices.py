@@ -52,7 +52,7 @@ class Extension(omni.ext.IExt):
         self._window = None
 
     def _on_clean_stage(self, widget):
-        load_stage = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        load_stage = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._load_stage(load_stage))
 
     async def _load_stage(self, task):

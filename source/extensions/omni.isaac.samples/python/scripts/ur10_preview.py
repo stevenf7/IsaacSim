@@ -96,14 +96,14 @@ class Extension(omni.ext.IExt):
 
     def _on_clear_scenario(self, widget):
         # wait for new stage before creating franka
-        asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         self._create_UR10_btn.text = "Create Scenario"
         self._create_UR10_btn.set_clicked_fn(self._on_environment_setup)
         self._selected_scenario.enabled = True
 
     def _on_environment_setup(self, widget):
         # wait for new stage before creating franka
-        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._on_create_UR10(task))
         self._create_UR10_btn.text = "Clear Scenario"
         self._create_UR10_btn.set_clicked_fn(self._on_clear_scenario)

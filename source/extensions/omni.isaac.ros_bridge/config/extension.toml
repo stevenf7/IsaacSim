@@ -5,6 +5,7 @@ display_name = "ROS Bridge"
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.lidar" = {}
 "omni.syntheticdata" = {}
+"omni.isaac.utils" = {}
 
 [[python.modules]]
 name = "omni.isaac.ros_bridge"

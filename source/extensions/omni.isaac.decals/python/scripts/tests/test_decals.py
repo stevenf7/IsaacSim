@@ -1,5 +1,5 @@
 import omni.kit.test
-import omni.kit.asyncapi
+
 import omni.kit.undo
 import omni.kit.commands
 import carb.tokens
@@ -28,7 +28,7 @@ class TestDecals(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_all(self):
         # first pass at a test.  should probabbly break this into many, smaller tests
 
-        await omni.kit.asyncapi.new_stage()
+        await omni.usd.get_context().new_stage_async()
         stage = omni.usd.get_context().get_stage()
         root_layer = stage.GetRootLayer()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())

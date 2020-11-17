@@ -99,7 +99,7 @@ Launches and configures OmniKit and exposes useful functions.
     def _launch_kit(self):
         # Set up the renderer
         async def setup():
-            await omni.kit.asyncapi.new_stage()
+            await omni.usd.get_context().new_stage_async()
             self.carb_settings = carb.settings.acquire_settings_interface()
             self.kit_settings = carb.settings.get_settings()
             self.setup_renderer()

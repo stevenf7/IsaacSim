@@ -1,5 +1,5 @@
 import omni.kit.test
-import omni.kit.asyncapi
+
 import omni.kit.usd
 import omni.kit.commands
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server

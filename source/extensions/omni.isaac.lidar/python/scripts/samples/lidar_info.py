@@ -93,7 +93,7 @@ class Extension(omni.ext.IExt):
             # Create the PhysicsScene.  The lidar is going to execute line trace calls in PhysX, and return a value based
             # on how far it travels before colliding with an object that is using the PhysX collision API.  Because of this,
             # to use the LIDAR extension, you MUST have a physics scene defined
-            scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
+            UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
 
             # create the LIDAR.  Before we can set any attributes on our LIDAR, we must first create the prim using our
             # LIDAR schema, and then populate it with the parameters we will be manipulating.  If you try to manipulate
@@ -138,7 +138,7 @@ class Extension(omni.ext.IExt):
 
     def _on_spawn_lidar_button(self, widget):
         # wait for new stage before creating lidar
-        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._spawn_lidar_function(task))
 
     def _on_spawn_obstacles_button(self, widget):
@@ -166,7 +166,7 @@ class Extension(omni.ext.IExt):
 
         # In order for our cube to interact with the LIDAR, it needs to be able to colide with our physX line traces.
         # to do this, we give our cube the collision API, and set it's material and collision group.
-        collisionAPI = PhysicsSchema.CollisionAPI.Apply(cubePrim)
+        collisionAPI = UsdPhysics.CollisionAPI.Apply(cubePrim)
         collisionAPI.CreatePhysicsMaterialRel()
         collisionAPI.CreateCollisionGroupRel()
 

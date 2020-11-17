@@ -110,7 +110,7 @@ class Extension(omni.ext.IExt):
 
     def _on_environment_setup(self, widget):
         # wait for new stage before creating kaya
-        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._create_kaya(task))
 
     def _on_event_fn(self, axis, signal):

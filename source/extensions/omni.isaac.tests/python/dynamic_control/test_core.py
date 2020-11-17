@@ -2,7 +2,7 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni.kit.asyncapi
+
 import omni.kit.usd
 import carb.tokens
 import os
@@ -26,16 +26,16 @@ class TestCore(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_is_simulating(self):
-        await omni.kit.asyncapi.new_stage()
+        await omni.usd.get_context().new_stage_async()
 
         self.assertFalse(self._dc.is_simulating())
         # Start Simulation and wait
         self._timeline.play()
         await asyncio.sleep(0.125)
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._dc.is_simulating())
         self._timeline.stop()
         await asyncio.sleep(0.125)
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self.assertFalse(self._dc.is_simulating())
         pass

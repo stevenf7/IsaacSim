@@ -90,7 +90,7 @@ class Extension(omni.ext.IExt):
 
     def _on_environment_setup(self, widget):
         # wait for new stage before creating franka
-        task = asyncio.ensure_future(omni.kit.asyncapi.new_stage())
+        task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._on_create_franka(task))
 
     async def _on_create_franka(self, task):
