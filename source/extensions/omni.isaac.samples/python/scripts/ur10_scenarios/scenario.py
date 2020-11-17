@@ -110,9 +110,9 @@ def create_background(stage, background_stage, pos, rot):
 def setup_physics(stage):
     metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
     gravityScale = 9.81 / metersPerUnit
-    gravity = Gf.Vec3f(0.0, 0.0, -gravityScale)
     scene = UsdPhysics.Scene.Define(stage, "/physics/scene")
-    scene.CreateGravityAttr().Set(gravity)
+    scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+    scene.CreateGravityMagnitudeAttr().Set(gravityScale)
 
     PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physics/scene"))
     physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/physics/scene")

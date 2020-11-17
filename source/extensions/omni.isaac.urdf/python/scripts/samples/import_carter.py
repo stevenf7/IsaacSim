@@ -51,7 +51,8 @@ class Extension(omni.ext.IExt):
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
         scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
-        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        scene.CreateGravityMagnitudeAttr().Set(981.0)
         omni.kit.commands.execute(
             "AddGroundPlaneCommand",
             stage=stage,

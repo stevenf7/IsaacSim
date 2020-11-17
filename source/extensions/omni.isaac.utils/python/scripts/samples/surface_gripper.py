@@ -162,7 +162,8 @@ class Extension(omni.ext.IExt):
             UsdGeom.SetStageUpAxis(self._stage, UsdGeom.Tokens.z)
             UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
             self.scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/physicsScene"))
-            self.scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
+            self.scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+            self.scene.CreateGravityMagnitudeAttr().Set(981.0)
             omni.kit.commands.execute(
                 "AddGroundPlaneCommand",
                 stage=self._stage,

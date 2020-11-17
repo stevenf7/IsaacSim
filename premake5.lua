@@ -268,11 +268,11 @@ group "exts"
         include ("source/extensions/omni.isaac.occupancy_map")
     end
 
--- -- Create a symlink for any data we need for tests
--- group "tests"
---     -- Automated Testing
---     define_experience("test-isaac-sim")
---     repo_build.prebuild_link {{"data", "%{root}/_build/$platform/$config/data" }}
+-- Create a symlink for any data we need for tests
+group "tests"
+    -- Automated Testing
+    -- define_experience("test-isaac-sim")
+    repo_build.prebuild_link {{"data", "%{root}/_build/$platform/$config/data" }}
 
 
 -- -- copy usd ext isaac binaries into kit sdk bin directory

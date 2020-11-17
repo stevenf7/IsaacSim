@@ -50,7 +50,8 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         UsdGeom.SetStageUpAxis(self.stage, UsdGeom.Tokens.z)
         UsdGeom.SetStageMetersPerUnit(self.stage, 0.01)
         scene = UsdPhysics.Scene.Define(self.stage, Sdf.Path("/physicsScene"))
-        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        scene.CreateGravityMagnitudeAttr().Set(981.0)
 
         omni.kit.commands.execute(
             "AddGroundPlaneCommand",

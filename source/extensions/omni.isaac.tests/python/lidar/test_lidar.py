@@ -56,7 +56,8 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Physics scene
         scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
-        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -1000.0))
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        scene.CreateGravityMagnitudeAttr().Set(981.0)
 
     # After running each test
     async def tearDown(self):
