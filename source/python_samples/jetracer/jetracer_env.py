@@ -38,30 +38,12 @@ class JetracerEnv:
     metadata = {"render.modes": ["human"]}
 
     # TODO : Extract more training options
-    # Training options, configurable with Environment JSON :
 
-    # Implicitly mirrors the environment, by mirroring observations and actions horizontally
-    MIRROR_MODE = False
+    def __init__(self, omni_kit, z_height=0, max_resets=10, updates_per_step=3, steps_per_rollout=500, mirror_mode=False,  backwards_term_mode=0, reward_mode=0):
 
-    # Backwards driving detection modes
-    # 0 : Current_forward_velocity <= -35
-    # 1 : Driving backwards more than 3*pi/8 radians
-    BACKWARDS_TERMINATION_MODE = 0
-
-    # Reward modes
-    # 0 : reward = fwd_dot * self.current_speed * np.exp(-dist ** 2 / 0.05 ** 2)
-    # 1 : reward = fwd_dot * self.current_speed
-    REWARD_MODE = 0
-
-    def __init__(self, omni_kit, env_config, z_height=0):
-
-        # Parse config
-        if env_config:
-            with open(env_config) as f:
-                env_data = json.load(f)
-                self.MIRROR_MODE = env_data["mirror_mode"]
-                self.BACKWARDS_TERMINATION_MODE = env_data["backwards_termination_mode"]
-                self.REWARD_MODE = env_data["reward_mode"]
+        self.MIRROR_MODE = mirror_mode
+        self.BACKWARDS_TERMINATION_MODE = backwards_term_mode
+        self.REWARD_MODE = reward_mode
 
         print("MIRROR_MODE = {}".format(self.MIRROR_MODE))
         print("BACKWARDS_TERMINATION_MODE = {}".format(self.BACKWARDS_TERMINATION_MODE))
