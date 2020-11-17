@@ -658,7 +658,7 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
         // Create physics scene
         pxr::UsdPhysicsScene scene = pxr::UsdPhysicsScene::Define(stage, pxr::SdfPath("/physicsScene"));
         scene.CreateGravityDirectionAttr().Set(pxr::GfVec3f(0.0f, 0.0f, 1));
-        scene.CreateGravityMagnitudeAttr().Set(9.80f * config.distanceScale);
+        scene.CreateGravityMagnitudeAttr().Set(9.81f * config.distanceScale);
 
         pxr::PhysxSchemaPhysxSceneAPI physxSceneAPI =
             pxr::PhysxSchemaPhysxSceneAPI::Apply(stage->GetPrimAtPath(pxr::SdfPath("/physicsScene")));

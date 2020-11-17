@@ -1,7 +1,7 @@
 import carb
 import omni
 import random
-from pxr import UsdGeom, Gf, Sdf, PhysxSchema, PhysicsSchema, PhysicsSchemaTools
+from pxr import UsdGeom, Gf, Sdf, PhysxSchema, PhysicsSchemaTools
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 from omni.isaac.synthetic_utils import DomainRandomization
@@ -154,7 +154,8 @@ class Environment:
         # Add physics scene
         scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))
         # Set gravity vector
-        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        scene.CreateGravityMagnitudeAttr().Set(981.0)
         # Set physics scene to use cpu physics
         PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/World/Env/PhysicsScene"))
         physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/World/Env/PhysicsScene")
