@@ -411,7 +411,7 @@ class AssemblyTreeModel(ui.AbstractItemModel):
                 if item_Changed:
                     self._item_changed(item)
 
-        omni.usd.get_context().new_stage(lambda a, b: omni.usd.get_context().close_stage(lambda a, b: export()))
+        omni.usd.get_context().close_stage_with_callback(lambda a, b: export())
 
     def make_sub_tree(self, child):
         for a in self.exporter.part.assemblies[child.index].sub_assemblies:
