@@ -28,11 +28,13 @@ def train(args):
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
 
-    env = JetracerEnv(omniverse_kit, 
-                      mirror_mode=args.mirror_mode, 
-                      backwards_term_mode=args.backwards_termination_mode, 
-                      reward_mode=args.reward_mode,
-                      max_resets=args.rand_freq)
+    env = JetracerEnv(
+        omniverse_kit,
+        mirror_mode=args.mirror_mode,
+        backwards_term_mode=args.backwards_termination_mode,
+        reward_mode=args.reward_mode,
+        max_resets=args.rand_freq,
+    )
 
     checkpoint_callback = CheckpointCallback(save_freq=args.save_freq, save_path="./params/", name_prefix="rl_model")
 
@@ -40,7 +42,7 @@ def train(args):
     policy_kwargs = {"net_arch": net_arch, "features_extractor_class": CustomCNN, "activation_fn": torch.nn.ReLU}
 
     # create a new model
-    if args.loaded_checkpoint=="":
+    if args.loaded_checkpoint == "":
 
         model = PPO(
             "CnnPolicy",
@@ -76,18 +78,20 @@ def runEval(args):
     }
     # load a zip file to evaluate here. PPO also saves the best model so far in the eval_log folder.
     # You can evaluate those zip files in the params folder as well (i.e params/rl_model_125999_steps.zip)
-    agent = PPO.load(args.evaluation_dir+"/best_model.zip", device="cuda")
+    agent = PPO.load(args.evaluation_dir + "/best_model.zip", device="cuda")
 
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
 
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
 
-    env = JetracerEnv(omniverse_kit, 
-                      mirror_mode=args.mirror_mode, 
-                      backwards_term_mode=args.backwards_termination_mode, 
-                      reward_mode=args.reward_mode,
-                      max_resets=args.rand_freq)
+    env = JetracerEnv(
+        omniverse_kit,
+        mirror_mode=args.mirror_mode,
+        backwards_term_mode=args.backwards_termination_mode,
+        reward_mode=args.reward_mode,
+        max_resets=args.rand_freq,
+    )
     obs = env.reset()
 
     while True:
@@ -109,9 +113,7 @@ if __name__ == "__main__":
         "-R", "--reset_num_timesteps", help="reset the current timestep number (used in logging)", action="store_true"
     )
 
-    parser.add_argument(
-        "-M", "--mirror_mode", help="reflect images horizontally durring training", action="store_true"
-    )
+    parser.add_argument("-M", "--mirror_mode", help="reflect images horizontally durring training", action="store_true")
 
     parser.add_argument("-H", "--headless", help="run in headless mode (no GUI)", action="store_true")
 
@@ -140,13 +142,9 @@ if __name__ == "__main__":
         type=int,
     )
 
-    parser.add_argument(
-        "--backwards_termination_mode", help="???", default=0, type=int
-    )
+    parser.add_argument("--backwards_termination_mode", help="???", default=0, type=int)
 
-    parser.add_argument(
-        "--reward_mode", help="???", default=0, type=int
-    )
+    parser.add_argument("--reward_mode", help="???", default=0, type=int)
 
     parser.add_argument(
         "--experimentFile", help="specify configuration via JSON.  Overrides commandline", default="", type=str
