@@ -175,9 +175,10 @@ class PartExporter:
                 except Exception as e:
                     carb.log_error("Error trying to clean temp folder: " + str(e))
 
-            omni.usd.get_context().close_stage(
-                on_finish_fn=lambda a, b: omni.usd.get_context().new_stage(on_finish_fn=lambda a, b: delete_folder())
-            )
+            omni.usd.get_context().new_stage_with_callback(on_finish_fn=lambda a, b: delete_folder())
+            # omni.usd.get_context().close_stage(
+            #     on_finish_fn=lambda a, b: omni.usd.get_context().new_stage(on_finish_fn=lambda a, b: delete_folder())
+            # )
         else:
             try:
                 if os.path.exists(self.tempdir):
@@ -556,7 +557,7 @@ class PartExporter:
         stage.Save()
         if self._on_exported_fn:
             self._on_exported_fn()
-        omni.usd.get_context().close_stage(lambda a, b: omni.usd.get_context().open_stage(path, on_finish_fn))
+        omni.usd.get_context().open_stage(path, on_finish_fn)
 
 
 def set_pose(prim, pose):

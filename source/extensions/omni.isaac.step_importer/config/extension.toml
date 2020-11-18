@@ -3,7 +3,8 @@ display_name = "STEP Importer"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.kit.tool.asset_importer" = {}
-"omni.isaac.utils" = {}
+"omni.kit.window.content_browser" = {}
+"omni.kit.window.filepicker" = {}
 
 [[python.modules]]
 name = "omni.isaac.step_importer"
