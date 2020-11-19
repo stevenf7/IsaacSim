@@ -13,7 +13,7 @@
 
 #include <carb/Types.h>
 
-#include <omni/isaac/lidar/LidarInterface.h>
+#include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <robotEngineBridgeSchema/robotEngineLidar.h>
 
 #include <string>
@@ -69,7 +69,7 @@ public:
 
 private:
     carb::Framework* framework = nullptr;
-    omni::isaac::lidar::LidarInterface* mLidarInterface = nullptr;
+    omni::isaac::range_sensor::LidarSensorInterface* mLidarSensorInterface = nullptr;
 
 
     /// The name of the channel on which state informations is published
@@ -77,7 +77,7 @@ private:
     std::string mScanChannelName = "rangescan";
     pxr::SdfPath mLidarPath = pxr::SdfPath("/");
 
-    omni::isaac::lidar::LidarHandle mLidarHandle = omni::isaac::lidar::kLidarInvalidHandle;
+    omni::isaac::range_sensor::RangeSensorHandle mLidarSensorHandle = omni::isaac::range_sensor::kInvalidHandle;
     bool mSkipFirstFrame = true;
 };
 }

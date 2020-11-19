@@ -16,7 +16,7 @@
 
 #include <omni/isaac/ros_bridge/RosBridge.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/lidar/LidarInterface.h>
+#include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <carb/sensors/Sensors.h>
 #include <carb/syntheticdata/SyntheticData.h>
 
@@ -47,7 +47,7 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::isaac::dynamic_control::DynamicControl,
                       omni::kit::IStageUpdate,
                       omni::kit::IEditor,
-                      omni::isaac::lidar::LidarInterface,
+                      omni::isaac::range_sensor::LidarSensorInterface,
                       carb::syntheticdata::SyntheticData,
                       omni::physx::IPhysx,
                       carb::sensors::Sensors,

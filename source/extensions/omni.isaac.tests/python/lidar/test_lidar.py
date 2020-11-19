@@ -2,10 +2,10 @@ import omni.kit.test
 import omni.kit.commands
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.lidar import _lidar
+from omni.isaac.range_sensor import _range_sensor
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 from omni.physx.scripts import utils
-import omni.isaac.LidarSchema as LidarSchema
+import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import asyncio
 import numpy as np
 import os
@@ -39,7 +39,7 @@ async def load_test_file(test_file_name: str):
 class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
-        self._lidar = _lidar.acquire_lidar_interface()
+        self._lidar = _range_sensor.acquire_lidar_sensor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
@@ -74,7 +74,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     def add_lidar(self, lidarPath):
 
-        lidar = LidarSchema.Lidar.Define(self._stage, Sdf.Path(lidarPath))
+        lidar = RangeSensorSchema.Lidar.Define(self._stage, Sdf.Path(lidarPath))
         lidar.CreateHorizontalFovAttr().Set(360.0)
         lidar.CreateVerticalFovAttr().Set(30.0)
         lidar.CreateRotationRateAttr().Set(20.0)
@@ -83,7 +83,10 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         lidar.CreateMinRangeAttr().Set(0.4)
         lidar.CreateMaxRangeAttr().Set(100.0)
         lidar.CreateHighLodAttr().Set(True)
-        lidar.CreateDrawLidarPointsAttr().Set(True)
+        lidar.CreateDrawPointsAttr().Set(True)
+
+        xform = UsdGeom.Xformable(lidar)
+        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
 
         return lidar
 
@@ -192,7 +195,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._timeline.play()
         lidar.GetHighLodAttr().Set(True)
-        lidar.GetDrawLidarPointsAttr().Set(False)
+        lidar.GetDrawPointsAttr().Set(False)
         await self.sweep_parameter(lidar.GetRotationRateAttr(), -1024, 1024, 256)
         lidar.GetRotationRateAttr().Set(0)
         await self.sweep_parameter(lidar.GetHorizontalFovAttr(), -1024, 1024, 256)

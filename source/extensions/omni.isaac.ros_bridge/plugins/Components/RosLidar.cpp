@@ -40,10 +40,10 @@ RosLidar::RosLidar()
         return;
     }
 
-    mLidarInterface = mFramework->acquireInterface<omni::isaac::lidar::LidarInterface>();
-    if (!mLidarInterface)
+    mLidarSensorInterface = mFramework->acquireInterface<omni::isaac::range_sensor::LidarSensorInterface>();
+    if (!mLidarSensorInterface)
     {
-        CARB_LOG_ERROR("Failed to acquire omni::isaac::lidar interface");
+        CARB_LOG_ERROR("Failed to acquire omni::isaac::range_sensor interface");
         return;
     }
 }
@@ -94,13 +94,13 @@ void RosLidar::onComponentChange()
     mLidarPath = targets[0];
 
     pxr::UsdPrim prim = mStage->GetPrimAtPath(targets[0]);
-    if (!prim.IsA<pxr::LidarSchemaLidar>())
+    if (!prim.IsA<pxr::RangeSensorSchemaLidar>())
     {
         CARB_LOG_ERROR("Prim is not a Lidar Prim");
         return;
     }
-    mLidarPrim = pxr::LidarSchemaLidar(prim);
-    if (!mLidarInterface->isLidar(targets[0].GetString().c_str()))
+    mLidarPrim = pxr::RangeSensorSchemaLidar(prim);
+    if (!mLidarSensorInterface->isLidarSensor(targets[0].GetString().c_str()))
     {
         CARB_LOG_ERROR("Prim is not registered with Lidar extension");
         return;
@@ -116,7 +116,7 @@ void RosLidar::pubCallback(ros::Publisher* pub)
             "No Lidar prim reference assigned, Please Create->Isaac->Sensors->Lidar and then assign the relationship to this prim");
         return;
     }
-    if (!mLidarInterface->isLidar(mLidarPath.GetString().c_str()))
+    if (!mLidarSensorInterface->isLidarSensor(mLidarPath.GetString().c_str()))
     {
         CARB_LOG_ERROR("Invalid Lidar Reference, Prim is not registered with Lidar extension");
         return;
@@ -133,17 +133,17 @@ void RosLidar::pubCallback(ros::Publisher* pub)
     laser_msg.header.frame_id = mFrameId;
     laser_msg.header.stamp.fromSec(mTimeSeconds);
 
-    int numColsTicked = mLidarInterface->getNumColsTicked(mLidarPath.GetString().c_str());
-    int numRows = mLidarInterface->getNumRows(mLidarPath.GetString().c_str()); // should be 1
+    int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
+    int numRows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str()); // should be 1
     if (numRows > 1)
     {
         CARB_LOG_ERROR("High LOD not supported, only 2D Lidar Supported");
     }
     int numBeams = numColsTicked * numRows;
 
-    float* theta = mLidarInterface->getAzimuthData(mLidarPath.GetString().c_str());
-    float* phi = mLidarInterface->getZenithData(mLidarPath.GetString().c_str()); // should have one entry
-    float* ranges = mLidarInterface->getLinearDepthData(mLidarPath.GetString().c_str());
+    float* theta = mLidarSensorInterface->getAzimuthData(mLidarPath.GetString().c_str());
+    float* phi = mLidarSensorInterface->getZenithData(mLidarPath.GetString().c_str()); // should have one entry
+    float* ranges = mLidarSensorInterface->getLinearDepthData(mLidarPath.GetString().c_str());
 
     float maxRange = 100;
     float minRange = 0.4;
@@ -180,9 +180,9 @@ void RosLidar::pointCloudPubCallback(ros::Publisher* pub)
     point_cloud_msg.header.frame_id = mFrameId;
     point_cloud_msg.header.stamp.fromSec(mTimeSeconds);
 
-    carb::Float3* lidarData = mLidarInterface->getPointCloud(mLidarPath.GetString().c_str());
-    int rows = mLidarInterface->getNumRows(mLidarPath.GetString().c_str());
-    int numColsTicked = mLidarInterface->getNumColsTicked(mLidarPath.GetString().c_str());
+    carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(mLidarPath.GetString().c_str());
+    int rows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str());
+    int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
     for (int i = 0; i < rows * numColsTicked; i++)
     {
         geometry_msgs::Point32 points;

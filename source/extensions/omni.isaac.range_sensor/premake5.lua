@@ -2,10 +2,10 @@ local ext = get_current_extension_info()
 project_ext (ext)
 
 -- C++ Carbonite plugin
-project_ext_plugin(ext, "omni.isaac.lidar.plugin")
+project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
 
     add_files("impl", "plugins")
-    add_files("iface", "%{root}/include/omni/isaac/lidar/**")
+    add_files("iface", "%{root}/include/omni/isaac/range_sensor/**")
 
     include_physx()
 
@@ -30,7 +30,7 @@ project_ext_plugin(ext, "omni.isaac.lidar.plugin")
 
     links {
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "lidarSchema", "omni.usd", "usdPhysics",
+        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "rangeSensorSchema", "omni.usd", "usdPhysics",
     }
 
     filter { "system:linux" }
@@ -53,21 +53,21 @@ project_ext_plugin(ext, "omni.isaac.lidar.plugin")
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings {
     ext = ext,
-    project_name = "omni.isaac.lidar.python",
-    module = "_lidar",
+    project_name = "omni.isaac.range_sensor.python",
+    module = "_range_sensor",
     src = "bindings",
-    target_subdir = "omni/isaac/lidar"
+    target_subdir = "omni/isaac/range_sensor"
 }
 
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir.."/omni/isaac/lidar/scripts" },
+    { "python/scripts", ext.target_dir.."/omni/isaac/range_sensor/scripts" },
 }
 
 repo_build.prebuild_copy {
-    { "python/*.py", ext.target_dir.."/omni/isaac/lidar" },
+    { "python/*.py", ext.target_dir.."/omni/isaac/range_sensor" },
 }
 
 repo_build.prebuild_copy {
-    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/LidarSchema/**", ext.target_dir.."/omni/isaac/LidarSchema" },
-    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}lidarSchema${lib_ext}", ext.target_dir.."/bin"},
+    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RangeSensorSchema/**", ext.target_dir.."/omni/isaac/RangeSensorSchema" },
+    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}rangeSensorSchema${lib_ext}", ext.target_dir.."/bin"},
 }

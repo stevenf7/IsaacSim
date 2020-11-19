@@ -1,4 +1,4 @@
-display_name = "Lidar"
+display_name = "Range Sensor"
 
 [dependencies]
 "omni.kit.editor" = {}
@@ -6,14 +6,14 @@ display_name = "Lidar"
 "omni.debugdraw" = {}
 
 [[python.modules]]
-name = "omni.isaac.lidar"
+name = "omni.isaac.range_sensor"
 
 
 [[python.modules]]
-name = "omni.isaac.lidar.scripts.samples.lidar_info"
+name = "omni.isaac.range_sensor.scripts.samples.lidar_info"
 
 [[python.modules]]
-name = "omni.isaac.LidarSchema"
+name = "omni.isaac.RangeSensorSchema"
 public = false
 
 [[native.plugins]]
@@ -21,7 +21,7 @@ path = "bin/*.plugin"
 recursive = false
 
 [[libraries]]
-path = "bin/${lib_prefix}lidarSchema${lib_ext}"
+path = "bin/${lib_prefix}rangeSensorSchema${lib_ext}"
 
 [python.pipapi]
 requirements = ["numpy"]

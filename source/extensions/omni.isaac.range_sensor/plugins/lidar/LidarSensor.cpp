@@ -21,8 +21,6 @@
 
 #include <carb/InterfaceUtils.h>
 
-#include <usdPhysics/scene.h>
-
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
@@ -36,7 +34,7 @@ namespace omni
 {
 namespace isaac
 {
-namespace lidar
+namespace range_sensor
 {
 
 // taken from https://stackoverflow.com/questions/40629345/fill-array-dynamicly-with-gradient-color-c
@@ -90,113 +88,38 @@ uint32_t dist_to_color(double ratio, bool bigEndian)
 }
 
 
-LidarSensor::LidarSensor()
+LidarSensor::LidarSensor(omni::physx::IPhysx* physxPtr, carb::fastcache::FastCache* fastCachePtr)
+    : RangeSensorComponent(physxPtr, fastCachePtr)
 {
 }
 
 LidarSensor::~LidarSensor()
 {
-    mDebugLines.clear();
 }
-
-void LidarSensor::initialize(omni::physx::IPhysx* physxPtr,
-                             carb::fastcache::FastCache* fastCachePtr,
-                             const pxr::LidarSchemaLidar& prim,
-                             pxr::UsdStageWeakPtr stage)
-{
-    SensorComponent::initialize(prim, stage);
-    mPhysx = physxPtr;
-    mFastCachePtr = fastCachePtr;
-    onComponentChange();
-}
-
 
 void LidarSensor::onStart()
 {
-    onComponentChange();
-
-    pxr::UsdPrimRange range = mStage->Traverse();
-
-    mPxScene = nullptr;
-    for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
-    {
-        pxr::UsdPrim prim = *iter;
-
-        if (prim.IsA<pxr::UsdPhysicsScene>())
-        {
-
-            mPxScene =
-                static_cast<::physx::PxScene*>(mPhysx->getPhysXPtr(prim.GetPrimPath(), omni::physx::PhysXType::ePTScene));
-
-            if (mPxScene)
-            {
-                break;
-            }
-        }
-    }
+    RangeSensorComponent::onStart();
 }
 
 void LidarSensor::onComponentChange()
 {
-    mParentPrim = mStage->GetPrimAtPath(mPrim.GetPath()).GetParent();
 
-    SensorComponent::onComponentChange();
-    mMetersPerUnit = UsdGeomGetStageMetersPerUnit(mStage);
+    RangeSensorComponent::onComponentChange();
 
-    if (mPrim.GetHorizontalFovAttr().HasValue())
+    const pxr::RangeSensorSchemaLidar& typedPrim = (pxr::RangeSensorSchemaLidar)mPrim;
+
+
+    if (typedPrim.GetRotationRateAttr().HasValue())
     {
-        mPrim.GetHorizontalFovAttr().Get(&mHorizontalFov);
+        typedPrim.GetRotationRateAttr().Get(&mRotationRate);
     }
 
-    if (mPrim.GetVerticalFovAttr().HasValue())
+    if (typedPrim.GetHighLodAttr().HasValue())
     {
-        mPrim.GetVerticalFovAttr().Get(&mVerticalFov);
+        typedPrim.GetHighLodAttr().Get(&mHighLod);
     }
 
-    if (mPrim.GetRotationRateAttr().HasValue())
-    {
-        mPrim.GetRotationRateAttr().Get(&mRotationRate);
-    }
-
-    if (mPrim.GetHorizontalResolutionAttr().HasValue())
-    {
-        mPrim.GetHorizontalResolutionAttr().Get(&mHorizontalResolution);
-    }
-
-    if (mPrim.GetVerticalResolutionAttr().HasValue())
-    {
-        mPrim.GetVerticalResolutionAttr().Get(&mVerticalResolution);
-    }
-
-    if (mPrim.GetMinRangeAttr().HasValue())
-    {
-        mPrim.GetMinRangeAttr().Get(&mMinRange);
-    }
-
-    if (mPrim.GetMaxRangeAttr().HasValue())
-    {
-        mPrim.GetMaxRangeAttr().Get(&mMaxRange);
-    }
-
-    if (mPrim.GetHighLodAttr().HasValue())
-    {
-        mPrim.GetHighLodAttr().Get(&mHighLod);
-    }
-
-    if (mPrim.GetDrawLidarPointsAttr().HasValue())
-    {
-        mPrim.GetDrawLidarPointsAttr().Get(&mDrawLidarPoints);
-    }
-
-    if (mPrim.GetDrawLidarLinesAttr().HasValue())
-    {
-        mPrim.GetDrawLidarLinesAttr().Get(&mDrawLidarLines);
-    }
-
-    if (mPrim.GetYawOffsetAttr().HasValue())
-    {
-        mPrim.GetYawOffsetAttr().Get(&mYawOffset);
-    }
 
     // we have to have atleast one beam so the FOV can never be smaller than resolution
     mHorizontalResolution = pxr::GfClamp(mHorizontalResolution, 0.005f, 1024);
@@ -207,19 +130,6 @@ void LidarSensor::onComponentChange()
     mRotationRate = pxr::GfClamp(mRotationRate, 0, 1024);
     mMinRange = pxr::GfClamp(mMinRange, 0, 1e9f);
     mMaxRange = pxr::GfClamp(mMaxRange, mMinRange, 1e9f);
-
-
-    // CARB_LOG_INFO("%f %f %f %f %f %f %f %d %d\n",
-    //        mHorizontalFov,
-    //        mVerticalFov,
-    //        mRotationRate,
-    //        mHorizontalResolution,
-    //        mVerticalResolution,
-    //        mMinRange,
-    //        mMaxRange,
-    //        mHighLod,
-    //        mDrawLidarPoints);
-
 
     mMinDepth = mMinRange / mMetersPerUnit;
     mMaxDepth = mMaxRange / mMetersPerUnit;
@@ -266,8 +176,6 @@ void LidarSensor::onComponentChange()
     mLastCol = 0;
     mLastNumColsTicked = 0;
     mRemainingTime = 0.0f;
-
-    mDebugLines.clear();
 }
 
 
@@ -303,7 +211,7 @@ bool raycastClosest(const ::physx::PxVec3& pos,
     // }
     return ret;
 }
-template <bool drawLidarPoints, bool drawLidarLines>
+template <bool drawPoints, bool drawLines>
 void scan(int start,
           int stop,
           int rows,
@@ -312,8 +220,7 @@ void scan(int start,
           const ::physx::PxQuat& worldRotation,
           omni::physx::IPhysx* physxPtr,
           ::physx::PxScene* physxScenePtr,
-          pxr::LidarSchemaLidar& prim,
-          std::vector<omni::isaac::lidar::LidarDebugData>& debugLines,
+          std::vector<omni::isaac::range_sensor::DebugData>& debugLines,
           std::vector<uint16_t>& depth,
           std::vector<carb::Float3>& hitPosition,
           std::vector<float>& linearDepth,
@@ -368,9 +275,9 @@ void scan(int start,
                 carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
                 ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - origin);
                 hitPosition[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
-                if (drawLidarPoints)
+                if (drawPoints)
                 {
-                    omni::isaac::lidar::LidarDebugData data;
+                    omni::isaac::range_sensor::DebugData data;
 
                     ::physx::PxVec3 diff = raycastHit.position - origin;
                     // TODO: replace lines with dots.
@@ -384,9 +291,9 @@ void scan(int start,
                     debugLines.push_back(data);
                 }
 
-                if (drawLidarLines)
+                if (drawLines)
                 {
-                    omni::isaac::lidar::LidarDebugData data;
+                    omni::isaac::range_sensor::DebugData data;
 
                     ::physx::PxVec3 diff = raycastHit.position - origin;
                     auto temp = origin + diff.getNormalized() * minDepth;
@@ -406,10 +313,10 @@ void scan(int start,
                 ::physx::PxVec3 hitPos = origin + unitDir * (maxDepth + minDepth);
                 ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - origin);
                 hitPosition[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
-                if (drawLidarPoints)
+                if (drawPoints)
                 {
 
-                    omni::isaac::lidar::LidarDebugData data;
+                    omni::isaac::range_sensor::DebugData data;
 
                     ::physx::PxVec3 diff = hitPos - origin;
                     // TODO: replace lines with dots.
@@ -421,9 +328,9 @@ void scan(int start,
                     debugLines.push_back(data);
                 }
 
-                if (drawLidarLines)
+                if (drawLines)
                 {
-                    omni::isaac::lidar::LidarDebugData data;
+                    omni::isaac::range_sensor::DebugData data;
 
                     auto temp = origin + unitDir * minDepth;
                     data.startPos = { temp.x, temp.y, temp.z };
@@ -491,15 +398,18 @@ void LidarSensor::tick()
     }
 
     carb::fastcache::Transform parentTrans;
-    mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
-
+    parentTrans.orientation = { 0, 0, 0, 1 };
     auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
-
-    ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
-    ::physx::PxVec3 finalTranslation =
-        utils::conversions::asPxVec3(parentTrans.position) +
-        parentRot.rotate(utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation()));
-    ::physx::PxQuat finalRotation = parentRot * utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
+    ::physx::PxVec3 finalTranslation = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
+    ::physx::PxQuat finalRotation = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
+    // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
+    if (mParentPrim.IsA<pxr::UsdGeomXformable>())
+    {
+        mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
+        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
+        finalTranslation = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(finalTranslation);
+        finalRotation = parentRot * finalRotation;
+    }
 
     float elapsedTime = mTimeDelta;
     mDebugLines.clear();
@@ -509,23 +419,23 @@ void LidarSensor::tick()
     if (mRotationRate == 0.0f)
     {
         mLastNumColsTicked = mCols;
-        if (mDrawLidarLines)
+        if (mDrawLines)
         {
-            scan<false, true>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mPrim,
-                              mDebugLines, mDepth, mHitPos, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth,
-                              mMinDepth, mMetersPerUnit, zUp);
+            scan<false, true>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mDebugLines,
+                              mDepth, mHitPos, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMinDepth,
+                              mMetersPerUnit, zUp);
         }
-        else if (mDrawLidarPoints)
+        else if (mDrawPoints)
         {
-            scan<true, false>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mPrim,
-                              mDebugLines, mDepth, mHitPos, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth,
-                              mMinDepth, mMetersPerUnit, zUp);
+            scan<true, false>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mDebugLines,
+                              mDepth, mHitPos, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMinDepth,
+                              mMetersPerUnit, zUp);
         }
         else
         {
-            scan<false, false>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mPrim,
-                               mDebugLines, mDepth, mHitPos, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth,
-                               mMinDepth, mMetersPerUnit, zUp);
+            scan<false, false>(0, mCols, mRows, mCols, finalTranslation, finalRotation, mPhysx, mPxScene, mDebugLines,
+                               mDepth, mHitPos, mLinearDepth, mIntensity, mZenith, mAzimuth, mMaxDepth, mMinDepth,
+                               mMetersPerUnit, zUp);
         }
         dumpData(0, mCols, elapsedTime);
 
@@ -552,22 +462,22 @@ void LidarSensor::tick()
         mRemainingTime = std::fmod(mRemainingTime, mMaxStepSize);
 
         // Now scan the columns and dump the data
-        if (mDrawLidarLines)
+        if (mDrawLines)
         {
             scan<false, true>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation,
-                              mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mHitPos, mLinearDepth, mIntensity, mZenith,
+                              mPhysx, mPxScene, mDebugLines, mDepth, mHitPos, mLinearDepth, mIntensity, mZenith,
                               mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
-        else if (mDrawLidarPoints)
+        else if (mDrawPoints)
         {
             scan<true, false>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation,
-                              mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mHitPos, mLinearDepth, mIntensity, mZenith,
+                              mPhysx, mPxScene, mDebugLines, mDepth, mHitPos, mLinearDepth, mIntensity, mZenith,
                               mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
         else
         {
             scan<false, false>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation,
-                               mPhysx, mPxScene, mPrim, mDebugLines, mDepth, mHitPos, mLinearDepth, mIntensity, mZenith,
+                               mPhysx, mPxScene, mDebugLines, mDepth, mHitPos, mLinearDepth, mIntensity, mZenith,
                                mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
         dumpData(mLastCol, mLastCol + mLastNumColsTicked, simulateTime);

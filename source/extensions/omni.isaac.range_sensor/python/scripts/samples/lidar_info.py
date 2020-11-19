@@ -1,6 +1,6 @@
 import omni
-from omni.isaac.lidar import _lidar
-import omni.isaac.LidarSchema as LidarSchema
+from omni.isaac.range_sensor import _range_sensor
+import omni.isaac.RangeSensorSchema as RangeSensorSchema
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import asyncio
 
@@ -14,7 +14,7 @@ class Extension(omni.ext.IExt):
         # The extension acquires the LIDAR interface at startup.  It will be released during extension shutdown.  We
         # create a LIDAR prim using our schema, and then we interact with / query that prim using the python API found
         # in lidar/bindings
-        self._li = _lidar.acquire_lidar_interface()
+        self._li = _range_sensor.acquire_lidar_sensor_interface()
 
         # We also need an interface to the viewport to do things like set and get camera positions
         self._viewport = omni.kit.viewport.get_default_viewport_window()
@@ -99,7 +99,7 @@ class Extension(omni.ext.IExt):
             # LIDAR schema, and then populate it with the parameters we will be manipulating.  If you try to manipulate
             # a parameter before creating it, you will get a runtime error
             self.lidarPath = "/World/Lidar"
-            self.lidar = LidarSchema.Lidar.Define(stage, Sdf.Path(self.lidarPath))
+            self.lidar = RangeSensorSchema.Lidar.Define(stage, Sdf.Path(self.lidarPath))
 
             # Horizontal and vertical field of view in degrees
             self.lidar.CreateHorizontalFovAttr().Set(360.0)
@@ -122,14 +122,14 @@ class Extension(omni.ext.IExt):
             # all rays.  If false it will only draw horizontal rays.  Draw Lidar Points = True will draw the actual
             # LIDAR rays in the viewport.
             self.lidar.CreateHighLodAttr().Set(True)
-            self.lidar.CreateDrawLidarPointsAttr().Set(False)
-            self.lidar.CreateDrawLidarLinesAttr().Set(False)
+            self.lidar.CreateDrawPointsAttr().Set(False)
+            self.lidar.CreateDrawLinesAttr().Set(False)
 
             # We set the attributes we created.  We could have just set the attributes at creation, but this was
             # more illustrative.  It's important to remember that attributes do not exist until you create them; even
             # if they are defined in the schema.
             self.lidar.GetRotationRateAttr().Set(0.5)
-            self.lidar.CreateDrawLidarLinesAttr().Set(True)
+            self.lidar.GetDrawLinesAttr().Set(True)
             self.lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
             # we want to make sure we can see the lidar we made, so we set the camera position and look target

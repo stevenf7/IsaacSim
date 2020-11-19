@@ -3,7 +3,7 @@ display_name = "Robot Engine Bridge"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.lidar" = {}
+"omni.isaac.range_sensor" = {}
 "omni.syntheticdata" = {}
 
 [[python.modules]]

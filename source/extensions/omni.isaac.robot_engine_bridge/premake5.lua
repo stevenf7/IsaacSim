@@ -52,7 +52,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
     links {
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
         "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "capnp", "omni.usd", 
-        "lidarSchema", "robotEngineBridgeSchema", "physxSchema",
+        "rangeSensorSchema", "robotEngineBridgeSchema", "physxSchema",
     }
 
     linkoptions{"-Wl,--whole-archive %{root}/_build/target-deps/isaac_engine/lib/libkj.a -Wl,--no-whole-archive"}
