@@ -3,7 +3,7 @@ display_name = "ROS Bridge"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.lidar" = {}
+"omni.isaac.range_sensor" = {}
 "omni.syntheticdata" = {}
 "omni.isaac.utils" = {}
 

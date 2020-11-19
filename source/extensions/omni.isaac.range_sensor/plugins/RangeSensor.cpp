@@ -17,12 +17,12 @@
 // clang-format on
 
 #include <omni/kit/IStageUpdate.h>
-#include <omni/isaac/lidar/LidarInterface.h>
+#include <omni/isaac/range_sensor/RangeSensorInterface.h>
 
-#include "lidar/LidarSensorManager.h"
+#include "core/RangeSensorManager.h"
 #include "lidar/LidarSensor.h"
-
-#include <lidarSchema/lidar.h>
+#include "ultrasonic/UltrasonicSensor.h"
+#include "radar/RadarSensor.h"
 
 #include <carb/imgui/ImGui.h>
 
@@ -45,10 +45,15 @@
 #include <map>
 #include <vector>
 
-const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.lidar.plugin", "Isaac Lidar", "NVIDIA",
+const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.range_sensor.plugin", "Isaac Range Sensor", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
-CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::lidar::LidarInterface)
+CARB_PLUGIN_IMPL(kPluginImpl,
+                 omni::isaac::range_sensor::LidarSensorInterface,
+                 omni::isaac::range_sensor::UltrasonicSensorInterface,
+                 omni::isaac::range_sensor::RadarSensorInterface)
+
+
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       carb::imgui::ImGui,
                       omni::kit::IEditor,
@@ -73,16 +78,19 @@ pxr::UsdStageWeakPtr g_stage = nullptr;
 carb::tasking::ITasking* gTasking = nullptr;
 
 
-std::unique_ptr<omni::isaac::lidar::LidarSensorManager> gLidarSensorManager;
+std::unique_ptr<omni::isaac::range_sensor::RangeSensorManager> gRangeSensorManager;
 
 } // end of anonymous namespace
 
+namespace lidar
+{
+
 int CARB_ABI getNumCols(const char* primPath)
 {
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        omni::isaac::lidar::LidarSensor* sensor =
-            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return sensor->getNumCols();
@@ -102,10 +110,10 @@ int CARB_ABI getNumCols(const char* primPath)
 
 int CARB_ABI getNumRows(const char* primPath)
 {
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        omni::isaac::lidar::LidarSensor* sensor =
-            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -126,10 +134,10 @@ int CARB_ABI getNumRows(const char* primPath)
 
 int CARB_ABI getNumColsTicked(const char* primPath)
 {
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        omni::isaac::lidar::LidarSensor* sensor =
-            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -150,10 +158,10 @@ int CARB_ABI getNumColsTicked(const char* primPath)
 
 uint16_t* CARB_ABI getDepthData(const char* primPath)
 {
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        omni::isaac::lidar::LidarSensor* sensor =
-            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -174,10 +182,10 @@ uint16_t* CARB_ABI getDepthData(const char* primPath)
 
 float* CARB_ABI getLinearDepthData(const char* primPath)
 {
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        omni::isaac::lidar::LidarSensor* sensor =
-            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -197,10 +205,10 @@ float* CARB_ABI getLinearDepthData(const char* primPath)
 }
 uint8_t* CARB_ABI getIntensityData(const char* primPath)
 {
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        omni::isaac::lidar::LidarSensor* sensor =
-            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -221,10 +229,10 @@ uint8_t* CARB_ABI getIntensityData(const char* primPath)
 
 float* CARB_ABI getZenithData(const char* primPath)
 {
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        omni::isaac::lidar::LidarSensor* sensor =
-            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -245,10 +253,10 @@ float* CARB_ABI getZenithData(const char* primPath)
 
 float* CARB_ABI getAzimuthData(const char* primPath)
 {
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        omni::isaac::lidar::LidarSensor* sensor =
-            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -269,10 +277,10 @@ float* CARB_ABI getAzimuthData(const char* primPath)
 
 carb::Float3* CARB_ABI getPointCloud(const char* primPath)
 {
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        omni::isaac::lidar::LidarSensor* sensor =
-            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -291,12 +299,12 @@ carb::Float3* CARB_ABI getPointCloud(const char* primPath)
     }
 }
 
-bool CARB_ABI isLidar(const char* primPath)
+bool CARB_ABI isLidarSensor(const char* primPath)
 {
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        omni::isaac::lidar::LidarSensor* sensor =
-            gLidarSensorManager->getSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return true;
@@ -313,7 +321,63 @@ bool CARB_ABI isLidar(const char* primPath)
         return false;
     }
 }
-// stage update
+
+}
+
+namespace ultrasonic
+{
+bool CARB_ABI isUltrasonicSensor(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return true;
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return false;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return false;
+    }
+}
+
+}
+
+namespace radar
+{
+bool CARB_ABI isRadarSensor(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::RadarSensor* sensor =
+            gRangeSensorManager->getRadarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return true;
+        }
+        else
+        {
+            CARB_LOG_ERROR("Radar Sensor does not exist");
+            return false;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Radar Sensor Manager does not exist");
+        return false;
+    }
+}
+
+}
+
 void onAttach(long stageId, double metersPerUnit, void* data)
 {
     g_stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
@@ -323,43 +387,38 @@ void onAttach(long stageId, double metersPerUnit, void* data)
         return;
     }
 
-    if (gLidarSensorManager)
+    if (gRangeSensorManager)
     {
-        gLidarSensorManager->initialize(g_stage);
-        gLidarSensorManager->initComponents();
+        gRangeSensorManager->initialize(g_stage);
+        gRangeSensorManager->initComponents();
     }
-
-    // CARB_LOG_INFO("++ LidarInterface: Stage Attach: stageId %ld\n", stageId);
 }
 
 void onDetach(void* data)
 {
-    if (gLidarSensorManager)
+    if (gRangeSensorManager)
     {
-        gLidarSensorManager->deleteAllComponents();
+        gRangeSensorManager->deleteAllComponents();
     }
-    // CARB_LOG_INFO("++ LidarInterface: Stage Detach\n");
 }
 
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
 {
-
     if (!settings->isPlaying)
     {
         return;
     }
-    // CARB_LOG_INFO("++ LidarInterface: Stage Update %f\n", elapsedSecs);
 
-    if (gLidarSensorManager)
+    if (gRangeSensorManager)
     {
-        gLidarSensorManager->tick(elapsedSecs);
+        gRangeSensorManager->tick(elapsedSecs);
     }
 }
 void onStop(void* userData)
 {
-    if (gLidarSensorManager)
+    if (gRangeSensorManager)
     {
-        gLidarSensorManager->onStop();
+        gRangeSensorManager->onStop();
     }
 }
 
@@ -368,27 +427,41 @@ void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
     // CARB_LOG_INFO("++ Lidar: Prim Add: %s of type %s\n", primPath,
     //    g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
 
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        gLidarSensorManager->onComponentAdd(g_stage->GetPrimAtPath(primPath));
+        pxr::UsdPrim addedPrim = g_stage->GetPrimAtPath(primPath);
+        if (!addedPrim)
+        {
+            return;
+        }
+        // Add the root prim
+        gRangeSensorManager->onComponentAdd(addedPrim);
+
+        // Check if it has any descendants that need to be added
+        pxr::UsdPrimSubtreeRange range = addedPrim.GetDescendants();
+        for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
+        {
+            pxr::UsdPrim prim = *iter;
+            gRangeSensorManager->onComponentAdd(prim);
+        }
     }
 }
 void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
     // CARB_LOG_INFO("++ Lidar: Prim Change: %s of type %s\n", primPath,
     //    g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
-    if (g_stage && gLidarSensorManager)
+    if (g_stage && gRangeSensorManager)
     {
-        gLidarSensorManager->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
+        gRangeSensorManager->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
     }
 }
 
 void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
     // CARB_LOG_INFO("++ Lidar: Prim Remove: %s\n", primPath);
-    if (gLidarSensorManager)
+    if (gRangeSensorManager)
     {
-        gLidarSensorManager->onComponentRemove(primPath);
+        gRangeSensorManager->onComponentRemove(primPath);
     }
 }
 
@@ -447,11 +520,11 @@ CARB_EXPORT void carbOnPluginStartup()
     gTasking = framework->acquireInterface<carb::tasking::ITasking>();
 
 
-    gLidarSensorManager =
-        std::make_unique<omni::isaac::lidar::LidarSensorManager>(g_debugDraw, g_physx, g_FastCache, gTasking);
+    gRangeSensorManager =
+        std::make_unique<omni::isaac::range_sensor::RangeSensorManager>(g_debugDraw, g_physx, g_FastCache, gTasking);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
-    desc.displayName = "Lidar Interface";
+    desc.displayName = "Range Sensor Interface";
     desc.onAttach = onAttach;
     desc.onDetach = onDetach;
     desc.onUpdate = onUpdate;
@@ -472,7 +545,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
-    gLidarSensorManager.reset();
+    gRangeSensorManager.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
 
     g_physx = nullptr;
@@ -481,20 +554,35 @@ CARB_EXPORT void carbOnPluginShutdown()
 }
 
 
-void fillInterface(omni::isaac::lidar::LidarInterface& iface)
+void fillInterface(omni::isaac::range_sensor::LidarSensorInterface& iface)
 {
-    using namespace omni::isaac::lidar;
+    using namespace omni::isaac::range_sensor;
 
     memset(&iface, 0, sizeof(iface));
-    iface.getNumCols = getNumCols;
-    iface.getNumRows = getNumRows;
-    iface.getNumColsTicked = getNumColsTicked;
+    iface.getNumCols = lidar::getNumCols;
+    iface.getNumRows = lidar::getNumRows;
+    iface.getNumColsTicked = lidar::getNumColsTicked;
+    iface.getDepthData = lidar::getDepthData;
+    iface.getLinearDepthData = lidar::getLinearDepthData;
+    iface.getIntensityData = lidar::getIntensityData;
+    iface.getZenithData = lidar::getZenithData;
+    iface.getAzimuthData = lidar::getAzimuthData;
+    iface.getPointCloud = lidar::getPointCloud;
+    iface.isLidarSensor = lidar::isLidarSensor;
+}
 
-    iface.getDepthData = getDepthData;
-    iface.getLinearDepthData = getLinearDepthData;
-    iface.getIntensityData = getIntensityData;
-    iface.getZenithData = getZenithData;
-    iface.getAzimuthData = getAzimuthData;
-    iface.getPointCloud = getPointCloud;
-    iface.isLidar = isLidar;
+
+void fillInterface(omni::isaac::range_sensor::UltrasonicSensorInterface& iface)
+{
+    using namespace omni::isaac::range_sensor;
+    memset(&iface, 0, sizeof(iface));
+    iface.isUltrasonicSensor = ultrasonic::isUltrasonicSensor;
+}
+
+
+void fillInterface(omni::isaac::range_sensor::RadarSensorInterface& iface)
+{
+    using namespace omni::isaac::range_sensor;
+    memset(&iface, 0, sizeof(iface));
+    iface.isRadarSensor = radar::isRadarSensor;
 }

@@ -7,7 +7,7 @@ display_name = "Isaac Isaac Tests"
 "omni.isaac.utils" = {}
 "omni.isaac.manip" = {}
 "omni.isaac.urdf" = {}
-"omni.isaac.lidar" = {}
+"omni.isaac.range_sensor" = {}
 "omni.isaac.dr" = {}
 "omni.isaac.step_importer" = {}
 

@@ -51,7 +51,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
     }
 
      links {
-        "gf", "sdf", "usdGeom", "usdUtils", "actionlib", "tf2", "tf2_ros", "roscpp" , "rosBridgeSchema", "cudart_static", "lidarSchema"
+        "gf", "sdf", "usdGeom", "usdUtils", "actionlib", "tf2", "tf2_ros", "roscpp" , "rosBridgeSchema", "cudart_static", "rangeSensorSchema"
     }
 
     filter { "configurations:debug" }

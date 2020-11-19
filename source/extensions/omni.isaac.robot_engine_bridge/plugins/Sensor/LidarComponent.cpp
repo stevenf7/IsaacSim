@@ -11,12 +11,12 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include <omni/isaac/lidar/LidarInterface.h>
+#include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <carb/Framework.h>
 #include <carb/Types.h>
 #include <vector>
 #include <string>
-#include <lidarSchema/lidar.h>
+#include <rangeSensorSchema/lidar.h>
 
 #include "../Core/IsaacComponent.h"
 #include "LidarComponent.h"
@@ -40,17 +40,17 @@ LidarComponent::LidarComponent() : IsaacComponent()
         return;
     }
 
-    mLidarInterface = framework->acquireInterface<omni::isaac::lidar::LidarInterface>();
-    if (!mLidarInterface)
+    mLidarSensorInterface = framework->acquireInterface<omni::isaac::range_sensor::LidarSensorInterface>();
+    if (!mLidarSensorInterface)
     {
-        CARB_LOG_ERROR("Failed to acquire omni::isaac::lidar interface");
+        CARB_LOG_ERROR("Failed to acquire omni::isaac::range_sensor interface");
         return;
     }
 }
 
 LidarComponent::~LidarComponent()
 {
-    framework->releaseInterface(mLidarInterface);
+    framework->releaseInterface(mLidarSensorInterface);
 }
 
 void LidarComponent::onStart()
@@ -72,13 +72,13 @@ void LidarComponent::publishAllMessages()
     CARB_PROFILE_ZONE(0, "REB LidarComponent Tick");
 
     pxr::UsdPrim prim = mStage->GetPrimAtPath(mLidarPath);
-    if (!prim.IsA<pxr::LidarSchemaLidar>())
+    if (!prim.IsA<pxr::RangeSensorSchemaLidar>())
     {
         CARB_LOG_ERROR("Prim is not a Lidar Prim");
         return;
     }
-    pxr::LidarSchemaLidar lidarPrim = pxr::LidarSchemaLidar(prim);
-    if (!mLidarInterface->isLidar(mLidarPath.GetString().c_str()))
+    pxr::RangeSensorSchemaLidar lidarPrim = pxr::RangeSensorSchemaLidar(prim);
+    if (!mLidarSensorInterface->isLidarSensor(mLidarPath.GetString().c_str()))
     {
         CARB_LOG_ERROR("Prim is not registered with Lidar extension");
         return;
@@ -89,8 +89,8 @@ void LidarComponent::publishAllMessages()
 
     auto scanMessageProto = scanMessage.initProto();
 
-    int numColsTicked = mLidarInterface->getNumColsTicked(mLidarPath.GetString().c_str());
-    int numRows = mLidarInterface->getNumRows(mLidarPath.GetString().c_str());
+    int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
+    int numRows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str());
     int numBeams = numColsTicked * numRows;
 
     // Initialize the ranges tensor
@@ -109,9 +109,9 @@ void LidarComponent::publishAllMessages()
     intensities.setScanlineStride(0);
     intensities.setDataBufferIndex(1);
 
-    float* theta = mLidarInterface->getAzimuthData(mLidarPath.GetString().c_str());
-    float* phi = mLidarInterface->getZenithData(mLidarPath.GetString().c_str());
-    uint16_t* ranges = mLidarInterface->getDepthData(mLidarPath.GetString().c_str());
+    float* theta = mLidarSensorInterface->getAzimuthData(mLidarPath.GetString().c_str());
+    float* phi = mLidarSensorInterface->getZenithData(mLidarPath.GetString().c_str());
+    uint16_t* ranges = mLidarSensorInterface->getDepthData(mLidarPath.GetString().c_str());
 
     float maxRange = 100;
     if (lidarPrim.GetMaxRangeAttr().HasValue())

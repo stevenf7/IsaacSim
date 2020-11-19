@@ -13,8 +13,8 @@
 #include "../Core/IsaacComponent.h"
 #include "../Core/RosNode.h"
 
-#include <lidarSchema/lidar.h>
-#include <omni/isaac/lidar/LidarInterface.h>
+#include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <rangeSensorSchema/lidar.h>
 #include <rosBridgeSchema/rosLidar.h>
 
 namespace omni
@@ -44,10 +44,10 @@ private:
     std::string mLaserScanPubTopic = "/laser_scan";
     int mQueueSize = 0;
     pxr::SdfPath mLidarPath = pxr::SdfPath("/");
-    omni::isaac::lidar::LidarHandle mLidarHandle = omni::isaac::lidar::kLidarInvalidHandle;
+    omni::isaac::range_sensor::RangeSensorHandle mRangeSensorHandle = omni::isaac::range_sensor::kInvalidHandle;
     carb::Framework* mFramework = nullptr;
-    omni::isaac::lidar::LidarInterface* mLidarInterface = nullptr;
-    pxr::LidarSchemaLidar mLidarPrim;
+    omni::isaac::range_sensor::LidarSensorInterface* mLidarSensorInterface = nullptr;
+    pxr::RangeSensorSchemaLidar mLidarPrim;
     std::string mFrameId = "/sim_lidar";
 
     bool mEnablePointCloud = false;

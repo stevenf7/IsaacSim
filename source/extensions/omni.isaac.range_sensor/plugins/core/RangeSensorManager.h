@@ -9,8 +9,10 @@
 
 #pragma once
 
-#include "../core/SensorComponent.h"
-#include "LidarSensor.h"
+#include "../lidar/LidarSensor.h"
+#include "../radar/RadarSensor.h"
+#include "../ultrasonic/UltrasonicSensor.h"
+#include "RangeSensorComponent.h"
 #include "plugins/bridge/BridgeApplication.h"
 #include "plugins/core/ScopedTimer.h"
 
@@ -40,32 +42,32 @@ namespace omni
 {
 namespace isaac
 {
-namespace lidar
+namespace range_sensor
 {
 
 /**
  * @brief Data used by a lidar task thread
  *
  */
-struct LidarTaskData
+struct RangeSensorTaskData
 {
     double timeSeconds;
     double timeNanoSeconds;
     double dt;
-    LidarSensor* lidar;
+    RangeSensorComponent* sensor;
 };
 
 /**
  * @brief Function called by each lidar task thread
  *
  */
-auto lidarTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
-    LidarTaskData* taskData = reinterpret_cast<LidarTaskData*>(taskArg);
-    taskData->lidar->updateTimestamp(taskData->timeSeconds, taskData->dt, taskData->timeNanoSeconds);
-    taskData->lidar->tick();
+auto rangeSensorTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
+    RangeSensorTaskData* taskData = reinterpret_cast<RangeSensorTaskData*>(taskArg);
+    taskData->sensor->updateTimestamp(taskData->timeSeconds, taskData->dt, taskData->timeNanoSeconds);
+    taskData->sensor->tick();
 };
 
-class LidarSensorManager : public utils::BridgeApplicationBase<LidarSensor>
+class RangeSensorManager : public utils::BridgeApplicationBase<RangeSensorComponent>
 {
 public:
     /**
@@ -73,7 +75,7 @@ public:
      *
      * @param physxPtr
      */
-    LidarSensorManager(omni::renderer::IDebugDraw* debugDrawPtr,
+    RangeSensorManager(omni::renderer::IDebugDraw* debugDrawPtr,
                        omni::physx::IPhysx* physxPtr,
                        carb::fastcache::FastCache* fastCachePtr,
                        carb::tasking::ITasking* taskingPtr)
@@ -85,17 +87,13 @@ public:
         mTaskCounter = mTasking->createCounter();
         mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
         mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
-
-        // mViewportUiEventSub = carb::events::createSubscriptionToPop(
-        //     carb::getCachedInterface<omni::kit::IViewport>()->getViewportWindow(nullptr)->getUiDrawEventStream().get(),
-        //     [this](carb::events::IEvent* e) { onUIDraw(e, omni::kit::getImGui()); }, 0, "Lidar viewport ui update");
     }
 
     /**
      * @brief Destroy the Sensor Manager object
      *
      */
-    ~LidarSensorManager()
+    ~RangeSensorManager()
     {
         mViewportUiEventSub = nullptr;
         mTasking->yieldUntilCounter(mTaskCounter);
@@ -114,7 +112,6 @@ public:
         {
             return;
         }
-        // omni::isaac::utils::ScopedTimer T("LIDAR");
 
         for (auto& component : mComponents)
         {
@@ -126,18 +123,18 @@ public:
         }
 
 #if 1
-        LidarTaskData* taskArray = new LidarTaskData[mComponents.size()];
+        RangeSensorTaskData* taskArray = new RangeSensorTaskData[mComponents.size()];
         int index = 0;
         for (auto& component : mComponents)
         {
             taskArray[index].timeSeconds = this->mTimeSeconds;
             taskArray[index].timeNanoSeconds = this->mTimeNanoSeconds;
             taskArray[index].dt = dt;
-            taskArray[index].lidar = component.second.get();
+            taskArray[index].sensor = component.second.get();
 
             carb::tasking::TaskDesc bigTask{};
             bigTask.priority = carb::tasking::Priority::eHigh;
-            bigTask.task = lidarTaskFunction;
+            bigTask.task = rangeSensorTaskFunction;
             bigTask.taskArg = (void*)(taskArray + index);
             mTasking->addTask(bigTask, mTaskCounter);
             index++;
@@ -159,7 +156,7 @@ public:
         size_t count = 0;
         for (auto& component : mComponents)
         {
-            if (component.second.get()->getDrawLidarPoints() || component.second.get()->getDrawLidarLines())
+            if (component.second.get()->getDrawPoints() || component.second.get()->getDrawLines())
             {
                 auto& debugLines = component.second.get()->getDebugLines();
                 if (debugLines.size() > 0)
@@ -175,7 +172,7 @@ public:
             createDebugLineList(count);
             for (auto& component : mComponents)
             {
-                if (component.second.get()->getDrawLidarPoints() || component.second.get()->getDrawLidarLines())
+                if (component.second.get()->getDrawPoints() || component.second.get()->getDrawLines())
                 {
                     auto& debugLines = component.second.get()->getDebugLines();
                     for (const auto& line : debugLines)
@@ -210,44 +207,65 @@ public:
      */
     void onComponentAdd(const pxr::UsdPrim& prim)
     {
-        for (auto&& child : prim.GetAllDescendants())
+        std::unique_ptr<RangeSensorComponent> component;
+
+        if (prim.IsA<pxr::RangeSensorSchemaLidar>())
         {
-            if (child.IsA<pxr::LidarSchemaLidar>())
-            {
-                std::unique_ptr<LidarSensor> component = std::make_unique<LidarSensor>();
-                CARB_LOG_INFO("Create Lidar at %s", child.GetPath().GetString().c_str());
-                component->initialize(mPhysxPtr, mFastCachePtr, pxr::LidarSchemaLidar(child), mStage);
-                mComponents[child.GetPath().GetString()] = std::move(component);
-            }
+            component = std::make_unique<LidarSensor>(mPhysxPtr, mFastCachePtr);
+            component->initialize(pxr::RangeSensorSchemaLidar(prim), mStage);
+        }
+        else if (prim.IsA<pxr::RangeSensorSchemaUltrasonic>())
+        {
+            component = std::make_unique<UltrasonicSensor>(mPhysxPtr, mFastCachePtr);
+            component->initialize(pxr::RangeSensorSchemaUltrasonic(prim), mStage);
+        }
+        else if (prim.IsA<pxr::RangeSensorSchemaRadar>())
+        {
+            component = std::make_unique<RadarSensor>(mPhysxPtr, mFastCachePtr);
+            component->initialize(pxr::RangeSensorSchemaRadar(prim), mStage);
         }
 
-        if (prim.IsA<pxr::LidarSchemaLidar>())
+        if (component)
         {
-            std::unique_ptr<LidarSensor> component = std::make_unique<LidarSensor>();
-            CARB_LOG_INFO("Create Lidar at %s", prim.GetPath().GetString().c_str());
-            component->initialize(mPhysxPtr, mFastCachePtr, pxr::LidarSchemaLidar(prim), mStage);
+            CARB_LOG_INFO("Create: Range Sensor %s with type: %s", prim.GetPath().GetString().c_str(),
+                          component->getPrim().GetPrim().GetTypeName().GetString().c_str());
             mComponents[prim.GetPath().GetString()] = std::move(component);
         }
     }
-    LidarSensor* getSensor(const pxr::UsdPrim& prim)
+    LidarSensor* getLidarSensor(const pxr::UsdPrim& prim)
     {
         if (prim)
         {
             if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
             {
-                return mComponents[prim.GetPath().GetString()].get();
-            }
-            else
-            {
-                return nullptr;
+                return dynamic_cast<LidarSensor*>(mComponents[prim.GetPath().GetString()].get());
             }
         }
-        else
-        {
-            return nullptr;
-        }
+        return nullptr;
     }
 
+    UltrasonicSensor* getUltrasonicSensor(const pxr::UsdPrim& prim)
+    {
+        if (prim)
+        {
+            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            {
+                return dynamic_cast<UltrasonicSensor*>(mComponents[prim.GetPath().GetString()].get());
+            }
+        }
+        return nullptr;
+    }
+    RadarSensor* getRadarSensor(const pxr::UsdPrim& prim)
+    {
+        if (prim)
+        {
+            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            {
+                return dynamic_cast<RadarSensor*>(mComponents[prim.GetPath().GetString()].get());
+            }
+        }
+        return nullptr;
+    }
 
 private:
     void createDebugLineList(size_t size)
