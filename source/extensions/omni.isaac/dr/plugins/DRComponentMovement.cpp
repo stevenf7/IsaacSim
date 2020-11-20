@@ -21,7 +21,12 @@ namespace isaac
 namespace dr
 {
 
-DRComponentMovement::DRComponentMovement() : DRComponentBase()
+using omni::isaac::dynamic_control::DcHandle;
+using omni::isaac::dynamic_control::DcObjectType;
+using omni::isaac::dynamic_control::DcTransform;
+
+DRComponentMovement::DRComponentMovement(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
+    : DRComponentBase(), mDynamicControlPtr(dynamicControlPtr)
 {
 }
 DRComponentMovement::~DRComponentMovement()
@@ -144,7 +149,34 @@ void DRComponentMovement::tick()
             scaleMat.SetScale(currentTr.GetScale());
             // Multiply current scale with random pose
             scaledTransformMat = scaleMat * finalTransformMat;
-            omni::usd::UsdUtils::setLocalTransformMatrix(prim, scaledTransformMat);
+
+            DcObjectType primType = mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
+            if (primType == omni::isaac::dynamic_control::eDcObjectArticulation ||
+                primType == omni::isaac::dynamic_control::eDcObjectRigidBody)
+            {
+                DcHandle rigidBodyHandle;
+                if (primType == omni::isaac::dynamic_control::eDcObjectArticulation)
+                {
+                    DcHandle artculationHandle = mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
+                    mDynamicControlPtr->wakeUpArticulation(artculationHandle);
+                    rigidBodyHandle = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
+                }
+                else if (primType == omni::isaac::dynamic_control::eDcObjectRigidBody)
+                {
+                    rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
+                }
+                auto newTranslation = scaledTransformMat.ExtractTranslation();
+                auto pxBodyRotation = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
+                DcTransform t;
+                t.p = { newTranslation[0], newTranslation[1], newTranslation[2] };
+                t.r = pxBodyRotation.r;
+                mDynamicControlPtr->wakeUpRigidBody(rigidBodyHandle);
+                mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
+            }
+            else
+            {
+                omni::usd::UsdUtils::setLocalTransformMatrix(prim, scaledTransformMat);
+            }
         }
     }
 }

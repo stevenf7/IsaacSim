@@ -7,6 +7,7 @@
 
 #include <DrSchema/baseComponent.h>
 #include <DrSchema/movementComponent.h>
+#include <omni/isaac/dynamic_control/DynamicControl.h>
 
 #include <functional>
 #include <random>
@@ -22,7 +23,7 @@ namespace dr
 class DRComponentMovement : public DRComponentBase<pxr::DrSchemaBaseComponent>
 {
 public:
-    DRComponentMovement();
+    DRComponentMovement(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr);
     ~DRComponentMovement();
     virtual void initialize(const pxr::DrSchemaMovementComponent& prim, pxr::UsdStageWeakPtr stage);
     virtual void onStart();
@@ -33,6 +34,7 @@ private:
     void update();
     void stop();
 
+    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
     std::vector<std::string> mPaths, mLookAtTargetPaths;
     pxr::GfVec2f mXRange, mYRange, mZRange;
     std::vector<pxr::UsdPrim> mAllPrims;

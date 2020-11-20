@@ -31,8 +31,9 @@ namespace isaac
 namespace dr
 {
 
-DRManager::DRManager()
+DRManager::DRManager(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
 {
+    mDynamicControlPtr = dynamicControlPtr;
 }
 
 DRManager::~DRManager()
@@ -134,7 +135,7 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
     }
     else if (prim.IsA<pxr::DrSchemaMovementComponent>())
     {
-        component = std::make_unique<DRComponentMovement>();
+        component = std::make_unique<DRComponentMovement>(mDynamicControlPtr);
         component->initialize(pxr::DrSchemaMovementComponent(prim), mStage);
     }
     else if (prim.IsA<pxr::DrSchemaRotationComponent>())
