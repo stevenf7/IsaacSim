@@ -165,7 +165,7 @@ void DRComponentMovement::tick()
                 {
                     rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
                 }
-                auto newTranslation = scaledTransformMat.ExtractTranslation();
+                auto newTranslation = pxr::GfVec3f(scaledTransformMat.ExtractTranslation());
                 auto pxBodyRotation = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
                 DcTransform t;
                 t.p = { newTranslation[0], newTranslation[1], newTranslation[2] };
