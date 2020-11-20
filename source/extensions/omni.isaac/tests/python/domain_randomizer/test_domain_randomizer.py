@@ -7,34 +7,14 @@ import omni.kit.commands
 import carb.tokens
 import os
 import asyncio
+import numpy as np
 from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dr import _dr
 from omni.kit.builtin.commands.usd_commands import *
-
-
-def get_data_file(file_name: str):
-    if os.path.isabs(file_name):
-        path_to_file = file_name
-    else:
-        path_to_file = os.path.abspath(
-            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
-        )
-    return path_to_file
-
-
-async def load_test_file(test_file_name: str):
-    if not Usd.Stage.IsSupportedFile(test_file_name):
-        raise ValueError("Only USD files can be loaded with this method")
-
-    path_to_file = get_data_file(test_file_name)
-
-    usd_context = omni.usd.get_context()
-    usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.kit.asyncapi.open_stage(path_to_file)
-    usd_context.enable_save_to_recent_files()
-    return (result, error)
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.utils.scripts.test_utils import load_test_file, set_scene_physics_type
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -42,6 +22,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         self._dr = _dr.acquire_dr_interface()
+        self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._omni_pbr_data = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${kit}/../../library/mdl/Base/OmniPBR.mdl")
         )
@@ -53,7 +34,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # After running each test
     async def tearDown(self):
-        self._editor.stop()
+        # self._editor.stop()
         pass
 
     def is_loading(self):
@@ -96,7 +77,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
             await omni.kit.asyncapi.next_update()
         await omni.kit.asyncapi.next_update()
         # Validate color material prim
-        color_mat_path = default_prim_path + "/Colors/color_component/OmniPBR_2/Shader"
+        color_mat_path = default_prim_path + "/DR/color_component/OmniPBR_2/Shader"
         color_mat = self._stage.GetPrimAtPath(color_mat_path)
         self.assertTrue(color_mat)
         # Validate attribute for randomizing color
@@ -152,6 +133,120 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         self.assertFalse(
             Gf.IsClose(transform_matrix_1.ExtractTranslation(), transform_matrix_2.ExtractTranslation(), 0.00001)
+        )
+        pass
+
+    # Unit test for movement component for articulated robots
+    async def test_movement_component_franka(self):
+        await omni.kit.asyncapi.new_stage()
+        (result, error) = await load_test_file("assets/robots/franka/franka.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+        set_scene_physics_type(gpu=False)
+        # Start Simulation and wait
+        editor = omni.kit.editor.get_editor_interface()
+        editor.play()
+        await asyncio.sleep(1.0)
+        await omni.kit.asyncapi.next_update()
+        art = self._dc.get_articulation("/panda")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+        # Get initial transform matrix
+        self._dc.wake_up_articulation(art)
+        root_body = self._dc.get_articulation_root_body(art)
+
+        pos = self._dc.get_rigid_body_pose(root_body).p
+        rot = self._dc.get_rigid_body_pose(root_body).r
+        self.assertTupleEqual(
+            tuple(np.round(np.array([pos.x, pos.y, pos.z]), 3)), tuple(np.round(np.array([0, 0, 0]), 3))
+        )
+        self.assertTupleEqual(
+            tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)), tuple(np.round(np.array([0, 0, 0, 1]), 3))
+        )
+        # Create DR component and check if it exists
+        result, prim = omni.kit.commands.execute(
+            "CreateMovementComponentCommand",
+            path="/movement_component",
+            prim_paths=["/panda"],
+            min_range=(50.0, 50.0, 10.0),
+            max_range=(100.0, 100.0, 10.0),
+            target_position=None,
+            target_paths=None,
+            duration=0.0,
+            include_children=False,
+        )
+        # Enable manual mode and execute DR once
+        await omni.kit.asyncapi.next_update()
+        self._dr.toggle_manual_mode()
+        self._dr.randomize_once()
+        self._dr.toggle_manual_mode()
+        await omni.kit.asyncapi.next_update()
+        # Check if rotation components are same and translation components are different
+        new_pose_p = (88.2894, 79.2465, 10)
+        pos = self._dc.get_rigid_body_pose(root_body).p
+        rot = self._dc.get_rigid_body_pose(root_body).r
+        self.assertTupleEqual(
+            tuple(np.round(np.array([pos.x, pos.y, pos.z]), 3)), tuple(np.round(np.array(new_pose_p), 3))
+        )
+        self.assertTupleEqual(
+            tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)), tuple(np.round(np.array([0, 0, 0, 1]), 3))
+        )
+        pass
+
+    # Unit test for movement component for articulated robots
+    async def test_movement_component_carter(self):
+        await omni.kit.asyncapi.new_stage()
+        (result, error) = await load_test_file("assets/robots/carter/carter.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+        set_scene_physics_type(gpu=False)
+        # Start Simulation and wait
+        editor = omni.kit.editor.get_editor_interface()
+        editor.play()
+        await asyncio.sleep(1.0)
+        await omni.kit.asyncapi.next_update()
+        art = self._dc.get_articulation("/carter")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+        # Get initial transform matrix
+        self._dc.wake_up_articulation(art)
+        root_body = self._dc.get_articulation_root_body(art)
+
+        pos = self._dc.get_rigid_body_pose(root_body).p
+        rot = self._dc.get_rigid_body_pose(root_body).r
+        self.assertTupleEqual(
+            tuple(np.round(np.array([pos.x, pos.y, pos.z]), 3)), tuple(np.round(np.array([0.105, -0.0, -26.0]), 3))
+        )
+        self.assertTupleEqual(
+            tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)),
+            tuple(np.round(np.array([0.0, 0.002, -0.0, 1.0]), 3)),
+        )
+        # Create DR component and check if it exists
+        result, prim = omni.kit.commands.execute(
+            "CreateMovementComponentCommand",
+            path="/movement_component",
+            prim_paths=["/carter"],
+            min_range=(50.0, 50.0, 10.0),
+            max_range=(100.0, 100.0, 10.0),
+            target_position=None,
+            target_paths=None,
+            duration=0.0,
+            include_children=False,
+        )
+        # Enable manual mode and execute DR once
+        await omni.kit.asyncapi.next_update()
+        self._dr.toggle_manual_mode()
+        self._dr.randomize_once()
+        self._dr.toggle_manual_mode()
+        await omni.kit.asyncapi.next_update()
+        # Check if rotation components are same and translation components are different
+        new_pose_p = (88.2894, 79.2465, 10)
+        pos = self._dc.get_rigid_body_pose(root_body).p
+        rot = self._dc.get_rigid_body_pose(root_body).r
+        self.assertTupleEqual(
+            tuple(np.round(np.array([pos.x, pos.y, pos.z]), 3)), tuple(np.round(np.array(new_pose_p), 3))
+        )
+        self.assertTupleEqual(
+            tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)),
+            tuple(np.round(np.array([0.0, 0.002, -0.0, 1.0]), 3)),
         )
         pass
 
