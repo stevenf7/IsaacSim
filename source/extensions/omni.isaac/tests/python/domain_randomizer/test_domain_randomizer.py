@@ -212,13 +212,6 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pos = self._dc.get_rigid_body_pose(root_body).p
         rot = self._dc.get_rigid_body_pose(root_body).r
-        self.assertTupleEqual(
-            tuple(np.round(np.array([pos.x, pos.y, pos.z]), 3)), tuple(np.round(np.array([0.105, -0.0, -26.0]), 3))
-        )
-        self.assertTupleEqual(
-            tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)),
-            tuple(np.round(np.array([0.0, 0.002, -0.0, 1.0]), 3)),
-        )
         # Create DR component and check if it exists
         result, prim = omni.kit.commands.execute(
             "CreateMovementComponentCommand",
