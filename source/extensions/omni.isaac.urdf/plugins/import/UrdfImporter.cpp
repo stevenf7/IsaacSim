@@ -112,6 +112,14 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
             };
             auto sceneRAII = std::shared_ptr<const aiScene>(assimpScene, sceneDeleter);
             // Add visuals
+            if (!sceneRAII || sceneRAII->mRootNode->mNumChildren == 0)
+            {
+                CARB_LOG_INFO("Asset convert failed as asset cannot be loaded.");
+            }
+            if (!sceneRAII->mRootNode)
+            {
+                CARB_LOG_INFO("Asset convert failed as asset file is broken.");
+            }
             path = SimpleImport(stage, name, sceneRAII.get(), loadMaterials);
         }
     }
@@ -209,24 +217,24 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         pxr::UsdPhysicsMassAPI massAPI = pxr::UsdPhysicsMassAPI::Apply(linkPrim.GetPrim());
         if (link.inertial.hasMass)
         {
-            massAPI.CreateMassAttr().Set(double(link.inertial.mass));
+            massAPI.CreateMassAttr().Set(link.inertial.mass);
         }
         else
         {
             // scale from kg/m^2 to specified units
-            massAPI.CreateDensityAttr().Set(double(config.density));
+            massAPI.CreateDensityAttr().Set(config.density);
         }
         if (link.inertial.hasInertia && config.importInertiaTensor)
         {
             // input is meters, but convert to kit units
             massAPI.CreateDiagonalInertiaAttr().Set(
-                pxr::GfVec3d(link.inertial.inertia.ixx, link.inertial.inertia.iyy, link.inertial.inertia.izz) *
+                pxr::GfVec3f(link.inertial.inertia.ixx, link.inertial.inertia.iyy, link.inertial.inertia.izz) *
                 config.distanceScale * config.distanceScale);
         }
         if (link.inertial.hasOrigin)
         {
             massAPI.CreateCenterOfMassAttr().Set(
-                pxr::GfVec3d(link.inertial.origin.p.x, link.inertial.origin.p.y, link.inertial.origin.p.z));
+                pxr::GfVec3f(link.inertial.origin.p.x, link.inertial.origin.p.y, link.inertial.origin.p.z));
         }
     }
     else
@@ -405,7 +413,8 @@ void AddSingleJoint(const UrdfJoint& joint,
     // Set the limits if the joint is anything except a continuous joint
     if (joint.type != UrdfJointType::CONTINUOUS)
     {
-        float scale = 1.0f;
+        // Angular limits are in degrees so scale accordingly
+        float scale = 180.0 / M_PI;
         if (joint.type == UrdfJointType::PRISMATIC)
         {
             scale = distanceScale;
@@ -463,7 +472,7 @@ void AddSingleJoint(const UrdfJoint& joint,
         }
     }
     pxr::PhysxSchemaPhysxJointAPI physxJoint = pxr::PhysxSchemaPhysxJointAPI::Apply(jointPrim.GetPrim());
-    physxJoint.GetMaxJointVelocityAttr().Set(joint.limit.velocity);
+    physxJoint.CreateMaxJointVelocityAttr().Set(joint.limit.velocity);
     physxJoint.CreateJointFrictionAttr().Set(joint.dynamics.friction);
 }
 
@@ -569,13 +578,13 @@ void UrdfImporter::addLinksAndJoints(pxr::UsdStageWeakPtr stage,
     {
         const UrdfLink& urdfLink = robot.links.at(parentNode->linkName_);
         addRigidBody(stage, urdfLink, poseParentToWorld, robotPrim, robot);
-        std::string rootJointPath = robotPrim.GetPath().GetString() + "/rootJoint";
-        pxr::UsdPhysicsJoint rootJoint = pxr::UsdPhysicsJoint::Define(stage, pxr::SdfPath(rootJointPath));
-        auto linkAPI = pxr::UsdPhysicsArticulationRootAPI::Apply(stage->GetPrimAtPath(pxr::SdfPath(rootJointPath)));
-        // linkAPI.CreateArticulationTypeAttr().Set(pxr::TfToken("articulatedRoot"));
-
-        pxr::SdfPathVector val0{ pxr::SdfPath(robotPrim.GetPath().GetString() + "/" + urdfLink.name) };
-        rootJoint.CreateBody0Rel().SetTargets(val0);
+        if (config.fixBase)
+        {
+            std::string rootJointPath = robotPrim.GetPath().GetString() + "/rootJoint";
+            pxr::UsdPhysicsFixedJoint rootJoint = pxr::UsdPhysicsFixedJoint::Define(stage, pxr::SdfPath(rootJointPath));
+            pxr::SdfPathVector val1{ pxr::SdfPath(robotPrim.GetPath().GetString() + "/" + urdfLink.name) };
+            rootJoint.CreateBody1Rel().SetTargets(val1);
+        }
     }
 
     if (!parentNode->childNodes_.empty())
@@ -640,12 +649,12 @@ void UrdfImporter::addMaterials(pxr::UsdStageWeakPtr stage, const UrdfRobot& rob
                 }
                 else
                 {
-                    CARB_LOG_WARN("Couldn't create shader at: %s", shaderPath.GetString());
+                    CARB_LOG_WARN("Couldn't create shader at: %s", shaderPath.GetString().c_str());
                 }
             }
             else
             {
-                CARB_LOG_WARN("Couldn't create material at: %s", shaderPath.GetString());
+                CARB_LOG_WARN("Couldn't create material at: %s", shaderPath.GetString().c_str());
             }
         }
     }
@@ -658,7 +667,7 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
     {
         // Create physics scene
         pxr::UsdPhysicsScene scene = pxr::UsdPhysicsScene::Define(stage, pxr::SdfPath("/physicsScene"));
-        scene.CreateGravityDirectionAttr().Set(pxr::GfVec3f(0.0f, 0.0f, 1));
+        scene.CreateGravityDirectionAttr().Set(pxr::GfVec3f(0.0f, 0.0f, -1.0));
         scene.CreateGravityMagnitudeAttr().Set(9.81f * config.distanceScale);
 
         pxr::PhysxSchemaPhysxSceneAPI physxSceneAPI =
@@ -683,9 +692,8 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
     pxr::UsdGeomXform robotPrim = pxr::UsdGeomXform::Define(stage, primPath);
     pxr::UsdPhysicsArticulationRootAPI physicsSchema = pxr::UsdPhysicsArticulationRootAPI::Apply(robotPrim.GetPrim());
 
-    // TODO: Fix this
-    // physicsSchema.CreateFixBaseAttr().Set(config.fixBase);
-    // physicsSchema.CreateEnableSelfCollisionsAttr().Set(config.selfCollision);
+    pxr::PhysxSchemaPhysxArticulationAPI physxSchema = pxr::PhysxSchemaPhysxArticulationAPI::Apply(robotPrim.GetPrim());
+    physxSchema.CreateEnabledSelfCollisionsAttr().Set(config.selfCollision);
 
     if (config.makeDefaultPrim)
     {

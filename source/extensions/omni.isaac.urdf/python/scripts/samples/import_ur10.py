@@ -36,17 +36,14 @@ class Extension(omni.ext.IExt):
     async def _load_robot(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            stage = omni.usd.get_context().get_stage()
-            prim = stage.GetDefaultPrim()
-            prim.SetActive(False)
-
             import_config = _urdf.ImportConfig()
             import_config.merge_fixed_joints = False
+            import_config.fix_base = True
             import_robot(self._urdf_interface, "data/urdf/robots/ur10/urdf/ur10_base.urdf", import_config)
 
-            editor = omni.kit.editor.get_editor_interface()
-            editor.set_camera_position("/OmniverseKit_Persp", 122, -124, 113, True)
-            editor.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
+            viewport = omni.kit.viewport.get_default_viewport_window()
+            viewport.set_camera_position("/OmniverseKit_Persp", 122, -124, 113, True)
+            viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
 
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
@@ -56,11 +53,6 @@ class Extension(omni.ext.IExt):
 
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
         distantLight.CreateIntensityAttr(500)
-
-        robot_prim = stage.GetDefaultPrim()
-        # Set articulation base parameters
-        physicsArticulationAPI = UsdPhysics.ArticulationAPI.Get(stage, robot_prim.GetPath())
-        physicsArticulationAPI.GetFixBaseAttr().Set(True)
 
         joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/base_link/shoulder_pan_joint"), "angular")
         joint_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/shoulder_link/shoulder_lift_joint"), "angular")

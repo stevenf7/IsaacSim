@@ -3,6 +3,7 @@ import omni
 from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.urdf import _urdf
 import asyncio
+import math
 
 # from omni.physx import _physx
 from .common import import_robot, set_drive_parameters
@@ -36,19 +37,16 @@ class Extension(omni.ext.IExt):
     async def _load_franka(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            stage = omni.usd.get_context().get_stage()
-            prim = stage.GetDefaultPrim()
-            prim.SetActive(False)
-
             import_config = _urdf.ImportConfig()
             import_config.merge_fixed_joints = False
+            import_config.fix_base = True
             import_robot(
                 self._urdf_interface, "data/urdf/robots/franka_description/robots/panda_arm_hand.urdf", import_config
             )
 
-            editor = omni.kit.editor.get_editor_interface()
-            editor.set_camera_position("/OmniverseKit_Persp", 122, -124, 113, True)
-            editor.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
+            viewport = omni.kit.viewport.get_default_viewport_window()
+            viewport.set_camera_position("/OmniverseKit_Persp", 122, -124, 113, True)
+            viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
 
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
@@ -68,9 +66,6 @@ class Extension(omni.ext.IExt):
         distantLight.CreateIntensityAttr(500)
 
         franka_prim = stage.GetDefaultPrim()
-        # Set articulation base parameters
-        physicsArticulationAPI = UsdPhysics.ArticulationAPI.Get(stage, franka_prim.GetPath())
-        physicsArticulationAPI.GetFixBaseAttr().Set(True)
 
         joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular")
         joint_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link1/panda_joint2"), "angular")
@@ -83,42 +78,24 @@ class Extension(omni.ext.IExt):
         finger_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint2"), "linear")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
-        set_drive_parameters(joint_1, "position", 0.012, 60000, 3000, 8700)
-        set_drive_parameters(joint_2, "position", -0.57, 60000, 3000, 8700)
-        set_drive_parameters(joint_3, "position", 0, 60000, 3000, 8700)
-        set_drive_parameters(joint_4, "position", -2.81, 60000, 3000, 8700)
-        set_drive_parameters(joint_5, "position", 0, 25000, 3000, 1200)
-        set_drive_parameters(joint_6, "position", 3.037, 15000, 3000, 1200)
-        set_drive_parameters(joint_7, "position", 0.741, 5000, 3000, 1200)
+        set_drive_parameters(joint_1, "position", math.degrees(0.012), 60000, 3000, 8700)
+        set_drive_parameters(joint_2, "position", math.degrees(-0.57), 60000, 3000, 8700)
+        set_drive_parameters(joint_3, "position", math.degrees(0), 60000, 3000, 8700)
+        set_drive_parameters(joint_4, "position", math.degrees(-2.81), 60000, 3000, 8700)
+        set_drive_parameters(joint_5, "position", math.degrees(0), 25000, 3000, 1200)
+        set_drive_parameters(joint_6, "position", math.degrees(3.037), 15000, 3000, 1200)
+        set_drive_parameters(joint_7, "position", math.degrees(0.741), 5000, 3000, 1200)
         set_drive_parameters(finger_1, "position", 4, 6000, 1000, 1200)
         set_drive_parameters(finger_2, "position", 4, 6000, 1000, 1200)
 
         # Set Max Joint velocity on all joints
 
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/panda/panda_link0/panda_joint1"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/panda/panda_link1/panda_joint2"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/panda/panda_link2/panda_joint3"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/panda/panda_link3/panda_joint4"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/panda/panda_link4/panda_joint5"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/panda/panda_link5/panda_joint6"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/panda/panda_link6/panda_joint7"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/panda/panda_hand/panda_finger_joint1"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxArticulationJointAPI.Get(
-            stage, "/panda/panda_hand/panda_finger_joint2"
-        ).CreatePhysxArticulationJointMaxJointVelocityAttr(10.0)
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link0/panda_joint1").CreateMaxJointVelocityAttr(10.0)
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link1/panda_joint2").CreateMaxJointVelocityAttr(10.0)
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link2/panda_joint3").CreateMaxJointVelocityAttr(10.0)
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link3/panda_joint4").CreateMaxJointVelocityAttr(10.0)
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link4/panda_joint5").CreateMaxJointVelocityAttr(10.0)
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link5/panda_joint6").CreateMaxJointVelocityAttr(10.0)
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link6/panda_joint7").CreateMaxJointVelocityAttr(10.0)
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_hand/panda_finger_joint1").CreateMaxJointVelocityAttr(10.0)
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_hand/panda_finger_joint2").CreateMaxJointVelocityAttr(10.0)

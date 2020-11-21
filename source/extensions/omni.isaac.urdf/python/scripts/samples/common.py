@@ -12,28 +12,19 @@ def import_robot(urdf_interface, path, import_config, relative=True):
     return path
 
 
-def remove_all_schema_multiple_attributes(api, prim, schemaAPI, apiName):
-    """For a given prim, remove all properties attached to a schema"""
-    names = api.GetSchemaAttributeNames(False, apiName)
-    schemaName = schemaAPI + ":" + apiName
-    for name in names:
-        attrRemove = schemaName + ":" + str(name)
-        prim.RemoveProperty(attrRemove)
-    pass
-
-
 def set_drive_parameters(drive, target_type, target_value, stiffness, damping, max_force):
     """Enable velocity drive for a given joint"""
 
-    if not drive.GetTargetTypeAttr():
-        drive.CreateTargetTypeAttr(target_type)
-    else:
-        drive.GetTargetTypeAttr().Set(target_type)
-
-    if not drive.GetTargetAttr():
-        drive.CreateTargetAttr(target_value)
-    else:
-        drive.GetTargetAttr().Set(target_value)
+    if target_type == "position":
+        if not drive.GetTargetPositionAttr():
+            drive.CreateTargetPositionAttr(target_value)
+        else:
+            drive.GetTargetPositionAttr().Set(target_value)
+    elif target_type == "velocity":
+        if not drive.GetTargetVelocityAttr():
+            drive.CreateTargetVelocityAttr(target_value)
+        else:
+            drive.GetTargetVelocityAttr().Set(target_value)
 
     if not drive.GetStiffnessAttr():
         drive.CreateStiffnessAttr(stiffness)
