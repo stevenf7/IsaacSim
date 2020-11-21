@@ -158,6 +158,11 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
     {
         // remove the node
         aiNode* node = nodesToProcess.back();
+        if (!node)
+        {
+            printf("INVALID NODE\n");
+            continue;
+        }
         nodesToProcess.pop_back();
         // process any meshes in this node:
         aiMatrix4x4 transform = GetLocalTransform(node);
@@ -186,7 +191,7 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
             nodesToProcess.push_back(node->mChildren[i]);
         }
     }
-    // printf("%s TOTAL MESHES: %d\n", path.c_str(), meshTransforms.size());
+    printf("%s TOTAL MESHES: %d\n", path.c_str(), meshTransforms.size());
     mMeshPrims.resize(meshTransforms.size());
 
     for (size_t i = 0; i < meshTransforms.size(); i++)
@@ -200,9 +205,7 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
 
         // printf("%d %d  TRANS: [%f %f %f] SCALE: [%f %f %f] ROT: [%f] - [%f %f %f]\n", i, transformedMesh.first,
         // temp[0],temp[1], temp[2], sc[0], sc[1], sc[2], rot.GetAngle(), rot.GetAxis()[0],
-        // rot.GetAxis()[1],rot.GetAxis()[2]); Assimp will unweld all meshes by default. For FBX, it will keep original
-        // control points to avoid use unweld geometry.
-        if (!mesh->HasControlPoints())
+        // rot.GetAxis()[1],rot.GetAxis()[2]);
         {
             // Gather all mesh points information to sort
             std::vector<MeshPoint> meshPoints;
@@ -326,157 +329,93 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         size_t numUVChannels = mesh->GetNumUVChannels();
         size_t numColorChannels = mesh->GetNumColorChannels();
 
-        if (mesh->HasControlPoints())
+        for (size_t j = 0; j < mesh->mNumFaces; j++)
         {
-            for (size_t j = 0; j < mesh->mNumControlPoints; j++)
+            aiFace face = mesh->mFaces[j];
+
+            size_t facePointsCounts = 3;
+            if (face.mNumIndices == 1)
             {
-                auto vertex = mesh->mControlPoints[j];
+                size_t v0 = meshPrim.indexRemapping[face.mIndices[0]];
+                faceVertexIndices.push_back(v0);
+                faceVertexIndices.push_back(v0);
+                faceVertexIndices.push_back(v0);
+            }
+            else if (face.mNumIndices == 2)
+            {
+                size_t v0 = meshPrim.indexRemapping[face.mIndices[0]];
+                size_t v1 = meshPrim.indexRemapping[face.mIndices[1]];
+                faceVertexIndices.push_back(v0);
+                faceVertexIndices.push_back(v1);
+                faceVertexIndices.push_back(v1);
+            }
+            else
+            {
+                for (size_t i = 0; i < face.mNumIndices; i++)
+                {
+                    size_t v = meshPrim.indexRemapping[face.mIndices[i]];
+                    faceVertexIndices.push_back(v);
+                }
+                facePointsCounts = face.mNumIndices;
+            }
+            faceVertexCounts.push_back(facePointsCounts);
+        }
+
+        pxr::VtArray<pxr::GfVec3f> vertexNormals;
+        pxr::VtArray<pxr::GfVec2f> vertexUv[AI_MAX_NUMBER_OF_TEXTURECOORDS];
+        pxr::VtArray<pxr::GfVec3f> vertexColor[AI_MAX_NUMBER_OF_COLOR_SETS];
+
+        // Keep only unique points
+        for (size_t j = 0; j < mesh->mNumVertices; j++)
+        {
+            if (meshPrim.keepPoints[j])
+            {
+                auto vertex = mesh->mVertices[j];
                 vertex *= transformedMesh.second;
                 points.push_back(pxr::GfVec3f(vertex.x, vertex.y, vertex.z));
-            }
-
-            // Face varying data
-            for (size_t j = 0; j < mesh->mNumVertices; j++)
-            {
                 if (mesh->mNormals)
                 {
-                    normals.push_back(pxr::GfVec3f(mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z));
+                    vertexNormals.push_back(pxr::GfVec3f(mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z));
                 }
 
                 for (size_t k = 0; k < numUVChannels; k++)
                 {
-                    uv[k].push_back(pxr::GfVec2f(mesh->mTextureCoords[k][j].x, mesh->mTextureCoords[k][j].y));
+                    vertexUv[k].push_back(pxr::GfVec2f(mesh->mTextureCoords[k][j].x, mesh->mTextureCoords[k][j].y));
                 }
 
                 for (size_t k = 0; k < numColorChannels; k++)
                 {
-                    color[k].push_back(pxr::GfVec3f(mesh->mColors[k][j].r, mesh->mColors[k][j].g, mesh->mColors[k][j].b));
+                    vertexColor[k].push_back(
+                        pxr::GfVec3f(mesh->mColors[k][j].r, mesh->mColors[k][j].g, mesh->mColors[k][j].b));
                 }
-            }
-
-            for (size_t j = 0; j < mesh->mNumFaces; j++)
-            {
-                aiFace face = mesh->mFaces[j];
-
-                size_t facePointsCounts = 3;
-                if (face.mNumIndices == 1)
-                {
-                    int v0 = mesh->mVertexIndices[face.mIndices[0]];
-                    faceVertexIndices.push_back(v0);
-                    faceVertexIndices.push_back(v0);
-                    faceVertexIndices.push_back(v0);
-                }
-                else if (face.mNumIndices == 2)
-                {
-                    int v0 = mesh->mVertexIndices[face.mIndices[0]];
-                    int v1 = mesh->mVertexIndices[face.mIndices[1]];
-                    faceVertexIndices.push_back(v0);
-                    faceVertexIndices.push_back(v1);
-                    faceVertexIndices.push_back(v1);
-                }
-                else
-                {
-                    for (size_t i = 0; i < face.mNumIndices; i++)
-                    {
-                        int v = mesh->mVertexIndices[face.mIndices[i]];
-                        faceVertexIndices.push_back(v);
-                    }
-                    facePointsCounts = face.mNumIndices;
-                }
-                faceVertexCounts.push_back(facePointsCounts);
             }
         }
-        else
+
+        // Convert to face varying data
+        if (!vertexNormals.empty())
         {
-            for (size_t j = 0; j < mesh->mNumFaces; j++)
+            for (size_t j = 0; j < faceVertexIndices.size(); j++)
             {
-                aiFace face = mesh->mFaces[j];
-
-                size_t facePointsCounts = 3;
-                if (face.mNumIndices == 1)
-                {
-                    size_t v0 = meshPrim.indexRemapping[face.mIndices[0]];
-                    faceVertexIndices.push_back(v0);
-                    faceVertexIndices.push_back(v0);
-                    faceVertexIndices.push_back(v0);
-                }
-                else if (face.mNumIndices == 2)
-                {
-                    size_t v0 = meshPrim.indexRemapping[face.mIndices[0]];
-                    size_t v1 = meshPrim.indexRemapping[face.mIndices[1]];
-                    faceVertexIndices.push_back(v0);
-                    faceVertexIndices.push_back(v1);
-                    faceVertexIndices.push_back(v1);
-                }
-                else
-                {
-                    for (size_t i = 0; i < face.mNumIndices; i++)
-                    {
-                        size_t v = meshPrim.indexRemapping[face.mIndices[i]];
-                        faceVertexIndices.push_back(v);
-                    }
-                    facePointsCounts = face.mNumIndices;
-                }
-                faceVertexCounts.push_back(facePointsCounts);
+                auto vertexIndex = faceVertexIndices[j];
+                normals.push_back(vertexNormals[vertexIndex]);
             }
+        }
 
-            pxr::VtArray<pxr::GfVec3f> vertexNormals;
-            pxr::VtArray<pxr::GfVec2f> vertexUv[AI_MAX_NUMBER_OF_TEXTURECOORDS];
-            pxr::VtArray<pxr::GfVec3f> vertexColor[AI_MAX_NUMBER_OF_COLOR_SETS];
-
-            // Keep only unique points
-            for (size_t j = 0; j < mesh->mNumVertices; j++)
+        for (size_t k = 0; k < numUVChannels; k++)
+        {
+            for (size_t j = 0; j < faceVertexIndices.size(); j++)
             {
-                if (meshPrim.keepPoints[j])
-                {
-                    auto vertex = mesh->mVertices[j];
-                    vertex *= transformedMesh.second;
-                    points.push_back(pxr::GfVec3f(vertex.x, vertex.y, vertex.z));
-                    if (mesh->mNormals)
-                    {
-                        vertexNormals.push_back(
-                            pxr::GfVec3f(mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z));
-                    }
-
-                    for (size_t k = 0; k < numUVChannels; k++)
-                    {
-                        vertexUv[k].push_back(pxr::GfVec2f(mesh->mTextureCoords[k][j].x, mesh->mTextureCoords[k][j].y));
-                    }
-
-                    for (size_t k = 0; k < numColorChannels; k++)
-                    {
-                        vertexColor[k].push_back(
-                            pxr::GfVec3f(mesh->mColors[k][j].r, mesh->mColors[k][j].g, mesh->mColors[k][j].b));
-                    }
-                }
+                auto vertexIndex = faceVertexIndices[j];
+                uv[k].push_back(vertexUv[k][vertexIndex]);
             }
+        }
 
-            // Convert to face varying data
-            if (!vertexNormals.empty())
+        for (size_t k = 0; k < numColorChannels; k++)
+        {
+            for (size_t j = 0; j < faceVertexIndices.size(); j++)
             {
-                for (size_t j = 0; j < faceVertexIndices.size(); j++)
-                {
-                    auto vertexIndex = faceVertexIndices[j];
-                    normals.push_back(vertexNormals[vertexIndex]);
-                }
-            }
-
-            for (size_t k = 0; k < numUVChannels; k++)
-            {
-                for (size_t j = 0; j < faceVertexIndices.size(); j++)
-                {
-                    auto vertexIndex = faceVertexIndices[j];
-                    uv[k].push_back(vertexUv[k][vertexIndex]);
-                }
-            }
-
-            for (size_t k = 0; k < numColorChannels; k++)
-            {
-                for (size_t j = 0; j < faceVertexIndices.size(); j++)
-                {
-                    auto vertexIndex = faceVertexIndices[j];
-                    color[k].push_back(vertexColor[k][vertexIndex]);
-                }
+                auto vertexIndex = faceVertexIndices[j];
+                color[k].push_back(vertexColor[k][vertexIndex]);
             }
         }
 

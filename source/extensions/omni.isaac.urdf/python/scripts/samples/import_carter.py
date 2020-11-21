@@ -1,11 +1,13 @@
 import carb
 import omni
+import math
+import omni.kit.commands
 from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.urdf import _urdf
 import asyncio
 
 # from omni.physx import _physx
-from .common import import_robot, set_drive_parameters, remove_all_schema_multiple_attributes
+from .common import import_robot, set_drive_parameters
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 
 
@@ -36,17 +38,14 @@ class Extension(omni.ext.IExt):
     async def _load_carter(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            stage = omni.usd.get_context().get_stage()
-            prim = stage.GetDefaultPrim()
-            prim.SetActive(False)
-
             import_config = _urdf.ImportConfig()
             import_config.merge_fixed_joints = True
+            import_config.fix_base = False
             import_robot(self._urdf_interface, "data/urdf/robots/carter/urdf/carter.urdf", import_config)
 
-            editor = omni.kit.editor.get_editor_interface()
-            editor.set_camera_position("/OmniverseKit_Persp", 300, -350, 113, True)
-            editor.set_camera_target("/OmniverseKit_Persp", -96, 108, -20, True)
+            viewport = omni.kit.viewport.get_default_viewport_window()
+            viewport.set_camera_position("/OmniverseKit_Persp", 300, -350, 113, True)
+            viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, -20, True)
 
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
@@ -66,21 +65,29 @@ class Extension(omni.ext.IExt):
         distantLight.CreateIntensityAttr(500)
 
         carter_prim = stage.GetPrimAtPath("/carter")
-        physicsArticulationAPI = UsdPhysics.ArticulationAPI.Get(stage, carter_prim.GetPath())
-        physicsArticulationAPI.GetFixBaseAttr().Set(False)
 
         left_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/left_wheel"), "angular")
 
         right_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/right_wheel"), "angular")
         # Drive forward
-        set_drive_parameters(left_wheel_drive, "velocity", 2.5, 0, 1000000, 1e8)
-        set_drive_parameters(right_wheel_drive, "velocity", 2.5, 0, 1000000, 1e8)
+        set_drive_parameters(left_wheel_drive, "velocity", math.degrees(2.5), 0, 1000000, 1e8)
+        set_drive_parameters(right_wheel_drive, "velocity", math.degrees(2.5), 0, 1000000, 1e8)
 
         # Remove drive from rear wheel and pivot
         prim = stage.GetPrimAtPath("/carter/chassis_link/rear_pivot")
-        remove_all_schema_multiple_attributes(UsdPhysics.DriveAPI, prim, "drive", "angular")
-        UsdPhysics.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")
+        omni.kit.commands.execute(
+            "UnapplyAPISchemaCommand",
+            api=UsdPhysics.DriveAPI,
+            prim=prim,
+            api_prefix="PhysicsDrive",
+            multiple_api_token="angular",
+        )
 
         prim = stage.GetPrimAtPath("/carter/rear_pivot_link/rear_axle")
-        remove_all_schema_multiple_attributes(UsdPhysics.DriveAPI, prim, "drive", "angular")
-        UsdPhysics.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")
+        omni.kit.commands.execute(
+            "UnapplyAPISchemaCommand",
+            api=UsdPhysics.DriveAPI,
+            prim=prim,
+            api_prefix="PhysicsDrive",
+            multiple_api_token="angular",
+        )

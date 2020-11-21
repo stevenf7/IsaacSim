@@ -1,11 +1,13 @@
 import carb
 import omni
+import omni.kit.commands
 from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.urdf import _urdf
 import asyncio
+import math
 
 # from omni.physx import _physx
-from .common import import_robot, set_drive_parameters, remove_all_schema_multiple_attributes
+from .common import import_robot, set_drive_parameters
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 
 
@@ -36,19 +38,16 @@ class Extension(omni.ext.IExt):
     async def _load_kaya(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            stage = omni.usd.get_context().get_stage()
-            prim = stage.GetDefaultPrim()
-            prim.SetActive(False)
-
             import_config = _urdf.ImportConfig()
             import_config.merge_fixed_joints = True
             import_config.import_inertia_tensor = True
             import_config.distance_scale = 10
+            import_config.fix_base = False
             import_robot(self._urdf_interface, "data/urdf/robots/kaya/urdf/kaya.urdf", import_config)
 
-            editor = omni.kit.editor.get_editor_interface()
-            editor.set_camera_position("/OmniverseKit_Persp", -51, 63, 25, True)
-            editor.set_camera_target("/OmniverseKit_Persp", 220, -218, -160, True)
+            viewport = omni.kit.viewport.get_default_viewport_window()
+            viewport.set_camera_position("/OmniverseKit_Persp", -51, 63, 25, True)
+            viewport.set_camera_target("/OmniverseKit_Persp", 220, -218, -160, True)
 
     def _on_config_robot(self, widget):
         stage = omni.usd.get_context().get_stage()
@@ -70,8 +69,7 @@ class Extension(omni.ext.IExt):
         distantLight.CreateIntensityAttr(500)
 
         kaya_prim = stage.GetPrimAtPath("/kaya")
-        physicsArticulationAPI = UsdPhysics.ArticulationAPI.Get(stage, kaya_prim.GetPath())
-        physicsArticulationAPI.GetFixBaseAttr().Set(False)
+
         # Make all rollers spin freely by removing extra drive API
         for axle in range(0, 2 + 1):
             for ring in range(0, 1 + 1):
@@ -88,17 +86,22 @@ class Extension(omni.ext.IExt):
                         + "_joint"
                     )
                     prim = stage.GetPrimAtPath(prim_path)
-                    remove_all_schema_multiple_attributes(UsdPhysics.DriveAPI, prim, "drive", "angular")
-                    UsdPhysics.PhysicsSchemaMultipleAPI.UnapplyAPISchema(prim, "DriveAPI:angular")
+                    omni.kit.commands.execute(
+                        "UnapplyAPISchemaCommand",
+                        api=UsdPhysics.DriveAPI,
+                        prim=prim,
+                        api_prefix="PhysicsDrive",
+                        multiple_api_token="angular",
+                    )
 
         # set each axis to spin at a rate of 1 rad/s
         axle_0 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_0_joint"), "angular")
         axle_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_1_joint"), "angular")
         axle_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_2_joint"), "angular")
 
-        set_drive_parameters(axle_0, "velocity", 2, 0, 1e8, 1e10)
-        set_drive_parameters(axle_1, "velocity", 2, 0, 1e8, 1e10)
-        set_drive_parameters(axle_2, "velocity", 2, 0, 1e8, 1e10)
+        set_drive_parameters(axle_0, "velocity", math.degrees(1), 0, 1e4, 1e10)
+        set_drive_parameters(axle_1, "velocity", math.degrees(1), 0, 1e4, 1e10)
+        set_drive_parameters(axle_2, "velocity", math.degrees(1), 0, 1e4, 1e10)
 
         usd_context = omni.usd.get_context()
         selection = usd_context.get_selection()
