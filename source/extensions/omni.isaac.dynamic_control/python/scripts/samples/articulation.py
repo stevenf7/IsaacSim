@@ -4,7 +4,7 @@ import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
 import os
-from omni.physx import _physx
+import omni.physx as _physx
 
 
 def get_data_file(file_name: str):

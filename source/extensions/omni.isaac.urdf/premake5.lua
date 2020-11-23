@@ -60,7 +60,7 @@ repo_build.prebuild_link {
 }
 
 repo_build.prebuild_copy {
-    { "%{root}/_build/target-deps/assimp/lib/lib**", ext.target_dir.."/bin" },
+    { "%{root}/_build/target-deps/assimp/lib64/lib**", ext.target_dir.."/bin" },
     { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext.target_dir.."/bin" },
 }
 
