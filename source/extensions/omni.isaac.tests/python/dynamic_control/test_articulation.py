@@ -11,7 +11,7 @@ import os
 import asyncio
 import numpy as np
 from pxr import Gf, PhysxSchema
-from omni.physx import _physx
+import omni.physx as _physx
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control

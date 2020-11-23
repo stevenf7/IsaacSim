@@ -33,10 +33,10 @@ fetch.pip_files_to_pull = [
 fetch.enable_exclude_configs_tags = false
 
 
-stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/target-deps/kit_sdk_debug"
-stage_files.extra_mapping.kit_sdk_release = "${root}/_build/target-deps/kit_sdk_release"
+stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/kit_debug"
+stage_files.extra_mapping.kit_sdk_release = "${root}/_build/kit_release"
 
-vscode.python = "${root}/_build/target-deps/kit_sdk_debug/_build/target-deps/python"
+vscode.python = "${root}/_build/kit_debug/_build/target-deps/python"
 
 vscode.python_env.PYTHONPATH= [
   "$$$${PYTHONPATH}",
@@ -54,8 +54,8 @@ vscode.python_env.PYTHONPATH= [
 ]
 
 vscode.python_env.PATH= ["$$$${PATH}", "$root/_build/$platform/$config",
-  "$root/_build/target-deps/kit_sdk_$config/_build/$platform/$config",
-  "$root/_build/target-deps/kit_sdk_$config/_build/$platform/$config/plugins",
+  "$root/_build/kit_$config/_build/$platform/$config",
+  "$root/_build/kit_$config/_build/$platform/$config/plugins",
 ]
 
 
@@ -77,7 +77,7 @@ licensing.fail_on_missing = true
 enabled = true
 
 # Use python from kit sdk
-python_path =  "${root}/_build/target-deps/kit_sdk_${config}/_build/${platform}/${config}/python${shell_ext}"
+python_path =  "${root}/_build/kit_${config}/_build/${platform}/${config}/python${shell_ext}"
 
 # differentiate debug/release docs
 enable_build_config_choice = true
@@ -109,8 +109,10 @@ package_per_config = true
 [repo_package.packages.isaac-sim-launcher]
 omniverse_flow_version_scheme = true
 ziponly = true
+"platform:linux-x86_64".ziponly = false # Use .7z on linux
 package_per_config = true
 append_config = true
+replace_authors_in_kit_extensions = true
 
 ########################################################################################################################
 # Package publishing to packman
@@ -119,4 +121,4 @@ append_config = true
 [repo_publish]
 enabled = true
 
-packages = ["isaac-sim"]
+packages = ["*"]

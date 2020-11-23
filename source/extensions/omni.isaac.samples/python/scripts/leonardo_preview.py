@@ -18,7 +18,7 @@ import asyncio
 
 from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.physx import _physx
+import omni.physx as _physx
 
 from .franka_scenarios.scenario import Scenario
 from .franka_scenarios.ghost_scenario import GhostScenario

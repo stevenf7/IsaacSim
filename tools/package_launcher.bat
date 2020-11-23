@@ -1,2 +1,2 @@
 @echo off
-call "%~dp0..\repo.bat" package -m create-launcher %*
+call "%~dp0packman\python.bat" "%~dp0repoman\package_launcher.py"

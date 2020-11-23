@@ -6,20 +6,33 @@ import omni.ui as ui
 import carb.tokens
 import asyncio
 import textwrap
-from .link_model import *
+import weakref
+import gc
 
+from .link_model import *
 from .. import _urdf
 from pxr import UsdGeom
-from omni.isaac.utils.scripts.filebrowser import *
+
+from omni.kit.widget.filebrowser import FileBrowserItem, FileSystemItem
+from omni.kit.window.filepicker import FilePickerDialog
+from omni.kit.window.content_browser import get_content_window
 
 EXTENSION_NAME = "URDF Importer"
 
 
-def on_filter_item(item: FileBrowserItem) -> bool:
+def is_urdf_file(path: str):
+    _, ext = os.path.splitext(path.lower())
+    return ext in [".urdf", ".URDF"]
+
+
+def on_filter_item(item) -> bool:
     if not item or item.is_folder:
-        return True
-    _, ext = os.path.splitext(item.path)
-    if ext.lower() in [".urdf"]:
+        return not (item.name == "Omniverse" or isinstance(item, omni.kit.widget.filebrowser.nucleus_model.NucleusItem))
+    return is_urdf_file(item.path)
+
+
+def on_filter_folder(item) -> bool:
+    if item and item.is_folder:
         return True
     else:
         return False
@@ -41,21 +54,30 @@ class Extension(omni.ext.IExt):
         self._robot_graph_im = None
         self.root_path = None
 
-        self._file_window = omni.ui.Window("Open URDF File", width=600, height=400, visible=False)
-        with self._file_window.frame:
-            with ui.VStack():
-                self._filebrowser = FileBrowserWidget(
-                    "Omniverse",
-                    layout=LAYOUT_SINGLE_PANE_SLIM,
-                    allow_multi_selection=False,
-                    show_grid_view=False,
-                    tree_root_visible=False,
-                    mouse_double_clicked_fn=self._on_double_pressed,
-                    filter_fn=on_filter_item,
-                )
-                with ui.HStack(height=0):
-                    ui.Button("Refresh", clicked_fn=self._refresh_filebrowser, height=0, width=0)
-                    ui.Button("Open File", clicked_fn=self._on_open_selected, height=0)
+        self._content_browser = get_content_window()
+        self._init_context_menu()
+
+        self._filepicker = FilePickerDialog(
+            "Import URDF",
+            allow_multi_selection=False,
+            apply_button_label="Import",
+            click_apply_handler=weakref.proxy(self)._select_picked_file_callback,
+            click_cancel_handler=weakref.proxy(self)._on_picker_cancel,
+            item_filter_fn=on_filter_item,
+        )
+
+        self._folder_picker = FilePickerDialog(
+            "Select output",
+            allow_multi_selection=False,
+            apply_button_label="Select folder",
+            click_apply_handler=weakref.proxy(self)._on_open_folder_selected,
+            click_cancel_handler=weakref.proxy(self)._on_picker_cancel,
+            item_filter_fn=on_filter_folder,
+        )
+
+        self._filepicker.hide()
+
+        self._folder_picker.hide()
 
         with self._window.frame:
             with ui.ScrollingFrame(
@@ -419,18 +441,6 @@ class Extension(omni.ext.IExt):
                             model = ui.ComboBox(1, "Horizontal", "Vertical").model
                             model.add_item_changed_fn(lambda m, i: (update_image(m.get_item_value_model().as_int)))
 
-    def _on_double_pressed(self, button: ui.Button, item: FileBrowserItem):
-        if item and not item.is_folder:
-            self._file_window.visible = False
-            self._select_picked_folder_callback(item.path)
-
-    def _on_open_selected(self):
-        if self._filebrowser:
-            item = self._filebrowser.get_selections()[0]
-        if item and not item.is_folder:
-            self._file_window.visible = False
-            self._select_picked_folder_callback(item.path)
-
     def _select_picked_folder_callback(self, path):
         if not path.startswith("omniverse:"):
             self.root_path, self.filename = os.path.split(os.path.abspath(path))
@@ -441,37 +451,78 @@ class Extension(omni.ext.IExt):
             print("Omniverse Paths not Supported, Only local paths can be imported")
 
     def _parse_urdf(self):
-        if self.models["clean_stage"].model.get_value_as_bool():
-            asyncio.ensure_future(omni.usd.get_context().new_stage_async())
-        import psutil
-
-        partitions = psutil.disk_partitions()
-        for p in partitions:
-            if any(x in p.fstype for x in ["ext3", "ext4", "fuseblk", "NTFS", "removable", "fixed"]):
-                mountpoint = p.mountpoint.strip("\\")
-                self._filebrowser.add_model_as_subtree(FileSystemModel(mountpoint, mountpoint))
-        data_dir = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf"))
-        self._filebrowser.add_model_as_subtree(FileSystemModel("Built In URDFs", data_dir))
-        if len(self._filebrowser.get_selections()):
-            item = self._filebrowser.get_selections()[0]
-            item.parent.populated = False
-        else:
-            item = self._filebrowser._models.root
-            item.populated = False
-        self._filebrowser.refresh_ui(None)
-        self._file_window.visible = True
+        self._filepicker.show()
 
     def _load_robot(self):
         if self.root_path:
             self._urdf_interface.import_robot(self.root_path, self.filename, self._imported_robot, self.config)
 
+    def _on_open_folder_selected(self, menu, path):
+        self._folder_picker.hide()
+
+    def _parse_and_import(self, path=None):
+        self.root_path, self.filename = os.path.split(os.path.abspath(path))
+        self._imported_robot = self._urdf_interface.parse_urdf(self.root_path, self.filename, self.config)
+        self._urdf_interface.import_robot(self.root_path, self.filename, self._imported_robot, self.config)
+
+    def _select_picked_file_callback(self, filename=None, path=None):
+        print(filename, path)
+        if not path.startswith("omniverse://"):
+            self.root_path = path
+            self.filename = filename
+            if self.root_path and self.filename:
+
+                def import_file():
+                    gc.collect()
+                    self._imported_robot = self._urdf_interface.parse_urdf(self.root_path, self.filename, self.config)
+                    self._create_ui(self._imported_robot)
+                    self.load_robot_btn.enabled = True
+
+                if self.models["clean_stage"].model.get_value_as_bool():
+                    omni.usd.get_context().close_stage_with_callback(on_finish_fn=lambda a, b: import_file())
+                else:
+                    import_file()
+            else:
+                carb.log_error("path and filename not specified")
+        else:
+            self.root_path = ""
+            self.filename = ""
+            carb.log_error("Only Local Paths supported")
+        if self._filepicker:
+            self._filepicker.hide()
+
+    def _on_picker_cancel(self, a, b):
+        if self._filepicker:
+            self._filepicker.hide()
+        if self._folder_picker:
+            self._folder_picker.hide()
+
+    def _init_context_menu(self):
+        self._context_menu = self._content_browser.add_context_menu(
+            "Convert URDF to USD",
+            "upload.svg",
+            lambda menu, path: weakref.proxy(self)._parse_and_import(path=path),
+            is_urdf_file,
+        )
+
+    def _unregister_menus(self):
+        self._content_browser.delete_context_menu("Convert STEP to USD")
+
     def on_shutdown(self):
-        if self._filebrowser:
-            self._filebrowser._mouse_double_clicked_fn = None
-            self._filebrowser._filter_fn = None
-            self._filebrowser = None
-        if self._file_window:
-            self._file_window = None
+        self._unregister_menus()
+        if self._filepicker:
+            self._filepicker._widget._file_bar._click_apply_handler = None
+            self._filepicker._widget._click_apply_handler = None
+            self._filepicker._widget._file_bar._click_cancel_handler = None
+            self._filepicker._widget._click_cancel_handler = None
+            self._filepicker = None
+
+        if self._folder_picker:
+            self._folder_picker._widget._file_bar._click_apply_handler = None
+            self._folder_picker._widget._click_apply_handler = None
+            self._folder_picker._widget._file_bar._click_cancel_handler = None
+            self._folder_picker._widget._click_cancel_handler = None
+            self._folder_picker = None
         if self._window:
             self._window = None
         _urdf.release_urdf_interface(self._urdf_interface)

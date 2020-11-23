@@ -6,7 +6,7 @@ from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.urdf import _urdf
 import asyncio
 
-# from omni.physx import _physx
+# import omni.physx as _physx
 from .common import import_robot, set_drive_parameters
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 

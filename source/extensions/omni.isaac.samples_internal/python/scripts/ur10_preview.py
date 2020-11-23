@@ -16,7 +16,7 @@ import omni.kit.settings
 
 from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.physx import _physx
+import omni.physx as _physx
 
 from omni.isaac.samples.scripts.ur10_scenarios.scenario import Scenario
 from .bmw_fof import bmw_fof_demo

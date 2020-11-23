@@ -12,16 +12,16 @@ root = repo_build.get_abs_path(".")
 
 -- Resolved path to kit SDK (without %{} tokens), for creating experiences
 KIT_SDK_RESOLVED = {
-    ["debug"] = root.."/_build/target-deps/kit_sdk_debug",
-    ["release"] = root.."/_build/target-deps/kit_sdk_release",
+    ["debug"] = root.."/_build/kit_debug",
+    ["release"] = root.."/_build/kit_release",
 }
 
 -- Path to kit sdk
-kit_sdk = "%{root}/_build/target-deps/kit_sdk_%{config}"
+kit_sdk = "%{root}/_build/kit_%{config}"
 kit_sdk_bin_dir = kit_sdk.."/_build/%{platform}/%{config}"
 
 -- Include Kit SDK public premake, it defines few global variables and helper functions. Look inside to get more info.
-include("_build/target-deps/kit_sdk_release/premake5-public.lua")
+include("_build/kit_release/premake5-public.lua")
 
 
 -- Shared build scripts from isaac sim
@@ -83,9 +83,6 @@ workspace "isaac-sim"
     repo_build.prebuild_link {
         -- Link app configs in target dir for easier edit
         { "source/apps", bin_dir.."/apps" },
-        -- Link kit exts into shorter path to WAR windows path length restriction
-        { kit_sdk_bin_dir.."/exts", "_build/kit-exts" },
-        { kit_sdk_bin_dir.."/extsPhysics", "_build/kit-extsPhysics" },
     }
 
     -- Windows platform settings
@@ -169,6 +166,7 @@ export PXR_PLUGINPATH_NAME="%s":$PXR_PLUGINPATH_NAME
     end
 end
 
+
 function create_app_shortcut(app_name, config)
     if os.target() == "windows" then
         local bat_file_path = root.."/_build/windows-x86_64/"..config.."/appshortcuts/"..app_name..".bat"
@@ -202,8 +200,6 @@ function define_local_experience(app_name, kit_file, extra_args)
     define_experience(app_name, { config_path = "apps/"..kit_file..".kit", 
                      extra_args = "--ext-folder \""..script_dir_token.."/exts\" "
                         .."--ext-folder \""..script_dir_token.."/apps\" "
-                        .."--ext-folder \""..script_dir_token.."/../../kit-exts\" "
-                        .."--ext-folder \""..script_dir_token.."/../../kit-extsPhysics\" "
                         ..extra_args  
     })
 

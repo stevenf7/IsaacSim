@@ -170,7 +170,7 @@ class CreateSetupExtension(omni.ext.IExt):
         editor_menu.set_priority("Rendering/Movie Capture", 100)
 
         # set omnu.ui Help Menu
-        self._ui_doc_menu_path = f"Help/Omni UI Docs"
+        self._ui_doc_menu_path = "Help/Omni UI Docs"
         self._ui_doc_menu_item = editor_menu.add_item(self._ui_doc_menu_path, lambda *_: self._show_ui_docs())
         editor_menu.set_priority(self._ui_doc_menu_path, -10)
 

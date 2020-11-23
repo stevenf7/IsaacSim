@@ -23,7 +23,7 @@ class Extension(omni.ext.IExt):
             )
         self._window = omni.ui.Window("Inspect Physics", width=600, height=400, visible=False)
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/Inspect Physics", self._menu_callback)
-        self._physx = omni.physx._physx.acquire_physx_interface()
+        self._physx = omni.physx.acquire_physx_interface()
 
         self._data = {}
         self._plots = {}

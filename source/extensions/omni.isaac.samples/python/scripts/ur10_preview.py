@@ -15,7 +15,7 @@ import omni.kit.settings
 
 from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.physx import _physx
+import omni.physx as _physx
 
 from .ur10_scenarios.scenario import Scenario
 from .ur10_scenarios import bin_stack
