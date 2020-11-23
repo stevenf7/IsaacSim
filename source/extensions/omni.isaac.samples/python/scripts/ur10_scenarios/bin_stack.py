@@ -23,7 +23,7 @@ from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Prope
 from .scenario import set_translate, set_rotate, create_ur10, Scenario, create_background, create_objects, setup_physics
 from copy import copy
 
-from omni.physx import _physx
+import omni.physx as _physx
 from collections import deque
 
 

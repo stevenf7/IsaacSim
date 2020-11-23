@@ -12,7 +12,6 @@ import asyncio
 import numpy as np
 import weakref
 from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics, PhysicsSchemaTools
-from omni.physx import _physx as physx
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.step_importer.scripts import usd_exporter

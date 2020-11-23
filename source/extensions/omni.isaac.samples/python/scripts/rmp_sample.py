@@ -17,7 +17,7 @@ import asyncio
 
 from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.physx import _physx
+import omni.physx as _physx
 
 from omni.physx.scripts.physicsUtils import add_ground_plane
 from omni.isaac.samples.scripts.utils.franka import Franka, default_config

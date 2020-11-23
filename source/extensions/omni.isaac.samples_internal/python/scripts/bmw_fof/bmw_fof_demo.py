@@ -31,7 +31,7 @@ from omni.isaac.samples.scripts.ur10_scenarios.scenario import (
 )
 from copy import copy
 
-from omni.physx import _physx
+import omni.physx as _physx
 from collections import deque
 
 
