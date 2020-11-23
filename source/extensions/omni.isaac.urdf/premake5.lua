@@ -26,7 +26,7 @@ project_ext_plugin(ext, "omni.isaac.urdf.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_usd/release/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/assimp/lib",
+        "%{root}/_build/target-deps/assimp/lib64",
         "%{root}/_build/target-deps/tinyxml2/lib",
         "%{kit_sdk_bin_dir}/plugins",
     }
