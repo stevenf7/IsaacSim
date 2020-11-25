@@ -8,38 +8,47 @@ import random
 import json
 import sys
 from pxr import Usd, UsdGeom, Sdf, Gf, Tf
-from .shape import addShapePrim
 import omni.isaac.shapenet
 import asyncio
+from .login import ShapenetLogin
 from .settings import ShapenetSettings
-from .shape import convert
 from .globals import *
 
-SETTINGS_MENU_ITEM = "Shapenet Menu/Settings"
-ADD_SHAPE_SETTINGS_MENU_ITEM = "Shapenet Menu/Add Shape/From Settings"
-ADD_SHAPE_RANDOM_MENU_ITEM = "Shapenet Menu/Add Shape/Random"
-HELP_MENU_ITEM = "Shapenet Menu/Help"
+CREATE_DATABASE_MENU_ITEM = "ShapeNet/Create Model ID Database"
+SETTINGS_MENU_ITEM = "ShapeNet/Add a model"
+HELP_MENU_ITEM = "ShapeNet/Help"
+SHAPENET_MENU_ITEM = "ShapeNet"
+#   "Keep Help text the width of this line or shorter -------------------------------",
+ADD_DB_TEXT = [
+    "    Please register an account at https://www.shapenet.org/ so you can make the",
+    "database of ShapeNetCore.V1 csv files necessary to run this extension.  Once you",
+    "have a validate shapenet.org login, use the menu to create the database.  You",
+    "should only have to do this once.",
+]
+
 HELP_TEXT = [
-    "This omni.isaac.shapenet plugin allows you to add models from shapenet.org to",
-    "your stage in kit.",
+    "    This omni.isaac.shapenet plugin allows you to add ShapeNetCore.V2 models ",
+    "from shapenet.org to your stage in Omniverse Kit.",
     "",
-    "You can use an external python session to send json formatted commands via http",
-    "and load shapes with comm_kit.py.",
+    "You can use the ShapeNet menu to add shapes.",
+    "",
+    "You can also use an external python session to send json formatted commands via",
+    "http and load shapes with comm_kit.py.",
     "",
     "See comm_kit.test_comm() or run:",
     "\t>  jupyter notebook ShapeNet Python Example.ipynb",
     "for examples.",
     "",
-    "You can also use the menu to add shapes.",
-    "",
-    "If you already have ShapeNetCore V2 installed locally, this plugin can use that",
-    "instead of downloading models from the web.  Use the env var SHAPENET_LOCAL_DIR",
-    "to set that location (IMPORTANT NOTE: Make sure there are no periods, ., in the",
-    "path name).  Otherwise, omni.isaac.shapenet will use the ${data}/shapenet folder.",
-    "",
+    "If you already have ShapeNetCore V2 installed locally, this plugin can use the",
+    "local files.  Use the env var SHAPENET_LOCAL_DIR to set that location (IMPORTANT",
+    "NOTE: Make sure there are no periods, ., in the path name), otherwise, ",
+    "omni.isaac.shapenet will use the default ${data}/shapenet folder.  By using",
+    "local folders, you can edit shapenet models before their conversion to usd.  If",
+    "you want to keep the original file, just save the modified file as ",
+    ' "models/modified/model.obj" in that shape\'s /models folder.' "",
     "If the shape is already on the omniverse server at g_omni_shape_loc (defaults to",
-    "omni:/Projects/shapenet), then that model will be used instead of the original",
-    "shapenet obj file.",
+    "/Projects/shapenet), then that model will be used instead of the downloaded",
+    "original or locally saved or modified shapenet obj file.",
     "",
     "The plugin python code lives in: ",
     "\t\tsource\\extensions\\omni.isaac\\shapenet\\python\\scripts",
@@ -51,24 +60,26 @@ class ShapenetMenu:
         self._editor = omni.kit.editor.get_editor_interface()
         self._input = carb.input.acquire_input_interface()
         self._settings = None
-
+        self._editor_menu = omni.kit.ui.get_editor_menu()
+        self._login_window = None
         global g_shapenet_db
         g_shapenet_db = get_database()
 
         self.menus = []
-        editor_menu = omni.kit.ui.get_editor_menu()
 
-        self.menus.append(editor_menu.add_item(SETTINGS_MENU_ITEM, self._on_settings_menu_click))
-        self.menus.append(editor_menu.add_item(ADD_SHAPE_SETTINGS_MENU_ITEM, self._on_add_from_settings_menu_click))
-        self.menus.append(editor_menu.add_item(ADD_SHAPE_RANDOM_MENU_ITEM, self._on_add_random_menu_click))
+        if pickle_file_exists():
+            self.menus.append(self._editor_menu.add_item(SETTINGS_MENU_ITEM, self._on_settings_menu_click))
+        else:
+            self.menus.append(self._editor_menu.add_item(CREATE_DATABASE_MENU_ITEM, self._on_create_database_click))
 
-        with open(os.path.dirname(os.path.realpath(__file__)) + "/menu_tree.json", "r") as read_file:
-            self._menu_list = json.load(read_file)
+        self.menus.append(self._editor_menu.add_item(HELP_MENU_ITEM, self._on_help_menu_click))
 
-        for menu_item in self._menu_list:
-            self.menus.append(editor_menu.add_item(menu_item, self._on_add_random_menu_click))
-
-        self.menus.append(editor_menu.add_item(HELP_MENU_ITEM, self._on_help_menu_click))
+    def _on_create_database_click(self, menu, value):
+        if menu == CREATE_DATABASE_MENU_ITEM:
+            if self._login_window != None:
+                self._login_window._window.show()
+            else:
+                self._login_window = ShapenetLogin(self)
 
     def _on_settings_menu_click(self, menu, value):
         if menu == SETTINGS_MENU_ITEM:
@@ -76,48 +87,6 @@ class ShapenetMenu:
                 self._settings._window.show()
             else:
                 self._settings = ShapenetSettings()
-
-    def _on_add_from_settings_menu_click(self, menu, value):
-
-        if self._settings == None:
-            self._settings = ShapenetSettings()
-            self._settings._window.hide()
-
-        pos = self._settings.getPos()
-        rot = self._settings.getRot()
-        scale = self._settings.getScale()
-        synsetId = self._settings.getSynsetId()
-        global g_shapenet_db
-        g_shapenet_db = get_database()
-        if synsetId not in g_shapenet_db:
-            synsetId = random.choice(list(g_shapenet_db))
-
-        modelId = self._settings.getModelId()
-        if modelId not in g_shapenet_db[synsetId]:
-            modelId = random.choice(list(g_shapenet_db[synsetId]))
-
-        return addShapePrim(False, synsetId, modelId, pos, rot, scale)
-
-    def _on_add_random_menu_click(self, menu, value):
-        stage = omni.usd.get_context().get_stage()
-        prims = omni.usd.get_context().get_selection().get_selected_prim_paths()
-        upAxis = UsdGeom.GetStageUpAxis(stage)
-
-        if menu == ADD_SHAPE_RANDOM_MENU_ITEM:
-            synsetId = random.choice(list(g_shapenet_db))
-        elif menu in self._menu_list:
-            synsetId = self._menu_list[menu]
-
-        modelId = random.choice(list(g_shapenet_db[synsetId]))
-
-        if self._settings == None:
-            self._settings = ShapenetSettings()
-            self._settings._window.hide()
-
-        pos = self._settings.getPos()
-        rot = self._settings.getRot()
-        scale = self._settings.getScale()
-        return addShapePrim(False, synsetId, modelId, pos, rot, scale)
 
     def _on_help_menu_click(self, menu, value):
         self._window = omni.kit.ui.Window(
@@ -129,9 +98,19 @@ class ShapenetMenu:
             dock=omni.kit.ui.DockPreference.DISABLED,
             is_toggle_menu=False,
         )
+        if not pickle_file_exists():
+            for line in ADD_DB_TEXT:
+                self._window.layout.add_child(omni.kit.ui.Label(line))
+
         for line in HELP_TEXT:
             self._window.layout.add_child(omni.kit.ui.Label(line))
         self._window.show()
+
+    def _hide_db_show_add(self):
+        # hide the CREATE_DATABASE_MENU_ITEM, show the add model menu
+        if pickle_file_exists():
+            self._editor_menu.remove_item(CREATE_DATABASE_MENU_ITEM)
+            self.menus.append(self._editor_menu.add_item(SETTINGS_MENU_ITEM, self._on_settings_menu_click))
 
     def shutdown(self):
         self.menus = []

@@ -242,8 +242,7 @@ group "exts"
     include ("source/extensions/omni.isaac.dynamic_control")
     include ("source/extensions/omni.isaac.range_sensor")
     include ("source/extensions/omni.isaac.manip")
---     -- Shapenet is disabled as its part of kit package
---     -- include ("source/extensions/omni.isaac.shapenet")
+    include ("source/extensions/omni.isaac.shapenet")
     include ("source/extensions/omni.isaac.utils")
     include ("source/extensions/omni.isaac.urdf")
     include ("source/extensions/omni.isaac.samples")

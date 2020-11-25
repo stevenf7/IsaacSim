@@ -1,6 +1,5 @@
-import omni.assetimport
-from omni.connection import OmniverseConnection
-import omni.kit.connectionhub
+import omni.kit.tool.asset_importer.native_bindings as assetimport
+import omni.client
 import omni.kit.editor
 import omni.usd
 
@@ -9,9 +8,9 @@ import json
 import os
 from pxr import UsdGeom, Gf, Tf
 from queue import Queue
+from omni.physx.scripts import physicsUtils, utils
 
-omni.kit.pipapi.install("requests")
-import requests
+import urllib.request
 import shutil
 import sys
 import threading
@@ -31,9 +30,9 @@ def get_links(html):
 
 
 def download_file(local_filename, url):
-    with requests.get(url, stream=True) as r:
+    with urllib.request.urlopen(url) as response:
         with open(local_filename, "wb") as f:
-            shutil.copyfileobj(r.raw, f)
+            f.write(response.read())
 
 
 # download all the files at url, which should be a director
@@ -54,28 +53,43 @@ def download_folder(local_folder, url):
                     download_file(local_folder + href, url + href)
 
 
-def file_exists_on_omni(omni_path):
-    if omni.assetimport.file_exists_on_omni(omni_path):
+def file_exists_on_omni(file_path):
+    result, _ = omni.client.stat(file_path)
+    if result == omni.client.Result.OK:
         return True
+
     return False
 
 
+async def create_folder_on_omni(folder_path):
+    if not await file_exists_on_omni(folder_path):
+        result = await omni.client.create_folder_async(path)
+        return result == omni.client.Result.OK
+
+
 async def convert(in_file, out_file):
+    # Folders must be created first through usd_ext of omni won't be able to create the files creted in them in the current session.
+    out_folder = out_file[0 : out_file.rfind("/") + 1]
+
+    # only call create_folder_on_omni if it's connected to an omni server
+    if out_file.startswith("omniverse://"):
+        await create_folder_on_omni(out_folder + "materials")
+
     # You really should only call this from the MainThread because there will be a deadlock on the GIL when this
     # calls C++ code from python.
     # flags can be OMNI_CONVERTER_FLAGS_IGNORE_ANIMATION, OMNI_CONVERTER_FLAGS_IGNORE_MATERIALS,
     #              OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE, or OMNI_CONVERTER_FLAGS_GEN_SMOOTH_NORMALS
     # print(in_file, " is being converted and saved as ", out_file, ", please standby, and remember to tip your waitress." )
-    future = omni.assetimport.assetconverter.omniConverterCreateUSD(
+    future = assetimport.omniConverterCreateUSD(
         in_file,
         out_file,
-        omni.assetimport.assetconverter.OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE
-        | omni.assetimport.assetconverter.OMNI_CONVERTER_FLAGS_EXPORT_AS_SHAPENET,
+        assetimport.OMNI_CONVERTER_FLAGS_EXPORT_AS_SHAPENET | assetimport.OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE,
     )
-    status = omni.assetimport.assetconverter.OmniConverterStatus.eOK
+
+    status = assetimport.OmniConverterStatus.eOK
     while True:
-        status = omni.assetimport.assetconverter.omniConverterCheckFutureStatus(future)
-        if status == omni.assetimport.assetconverter.OmniConverterStatus.eInProgress:
+        status = assetimport.omniConverterCheckFutureStatus(future)
+        if status == assetimport.OmniConverterStatus.eInProgress:
             await asyncio.sleep(0.1)
         else:
             break
@@ -86,25 +100,43 @@ async def convert(in_file, out_file):
 # This is the main entry point for any function that wants to add a shape to the scene.
 # Care must be taken when running this on a seperate thread from the main thread because
 # it calls c++ modules from python which hold the GIL.
-def addShapePrim(use_async, synsetId, modelId, pos, rot, scale, do_not_place=False):
+def addShapePrim(
+    use_async,
+    omniverseServer,
+    synsetId,
+    modelId,
+    pos,
+    rot,
+    scale,
+    auto_add_physics=False,
+    use_convex_decomp=False,
+    do_not_place=False,
+):
+    # use shapenet v2 for models
+    shape_url = g_shapenet_url + "2/" + synsetId + "/" + modelId + "/"
     # Get the local file system path and the omni server path
-    shape_url = g_shapenet_url + synsetId + "/" + modelId + "/"
     local_folder = get_local_shape_loc() + "/" + synsetId + "/" + modelId + "/"
     local_path = local_folder + "models/model_normalized.obj"
     local_modified_path = local_folder + "models/modified/model.obj"
-    omni_path = (
-        g_omni_shape_loc + "/n" + synsetId + "/i" + modelId + "/"
-    )  # don't forget to add the name at the end and .usd
-    omni_modified_path = g_omni_shape_loc + "/n" + synsetId + "/i" + modelId + "/modified/"
 
-    # Know we want to intorduce an instance of the shapenet model onto the stage.
+    global g_omni_shape_loc
+    omni_shape_loc = "omniverse://" + omniverseServer + g_omni_shape_loc
+
+    (result, entry) = asyncio.new_event_loop().run_until_complete(omni.client.stat_async(omni_shape_loc))
+    if not result == omni.client.Result.OK:
+        print("Saving converted files locally since omniverse server is not connected")
+        omni_shape_loc = get_local_shape_loc() + "/local-converted-USDs"
+
+    omni_path = (
+        omni_shape_loc + "/n" + synsetId + "/i" + modelId + "/"
+    )  # don't forget to add the name at the end and .usd
+    omni_modified_path = omni_shape_loc + "/n" + synsetId + "/i" + modelId + "/modified/"
+
+    # Know we want to introduce an instance of the shapenet model onto the stage.
     # Before we do that, we may have some work to do.
     editor_interface = omni.kit.editor.get_editor_interface()
     if not editor_interface:
         return "ERROR Could not get the editor interface from kit."
-    if len(omni.kit.connectionhub.get_connection_hub_interface().get_connection_handles()) == 0:
-        print("Kit must be connected to omniverse, and it is not.")
-        return "ERROR Not Connected to Omniverse."
 
     stage = omni.usd.get_context().get_stage()
     if not stage:
@@ -119,9 +151,12 @@ def addShapePrim(use_async, synsetId, modelId, pos, rot, scale, do_not_place=Fal
     # instance of the reference to the omniverse file which was converted to local disk after
     global g_shapenet_db
     g_shapenet_db = get_database()
-    shape_name = Tf.MakeValidIdentifier(g_shapenet_db[synsetId][modelId][4])
+    if g_shapenet_db == None:
+        print("Please create an Shapenet ID Database with the menu.")
+    else:
+        shape_name = Tf.MakeValidIdentifier(g_shapenet_db[synsetId][modelId][4])
     if shape_name == "":
-        shape_name = "mcarlson"
+        shape_name = "empty_shape_name"
     prim_path = str(stage.GetDefaultPrim().GetPath()) + "/" + shape_name
     prim_path_len = len(prim_path)
     shape_name_len = len(shape_name)
@@ -155,14 +190,14 @@ def addShapePrim(use_async, synsetId, modelId, pos, rot, scale, do_not_place=Fal
                 omni_path = omni_modified_path
             if not os.path.exists(local_path):
                 # Pull the shapenet files to the local drive for conversion to omni:usd
-                print(f"--Downloading {local_path} from {g_shapenet_url}.")
+                print(f"--Downloading {local_folder} from {shape_url}.")
                 download_folder(local_folder, shape_url)
             # Add The file to omniverse here, if you add them asyncronously, then you have to do the
             # rest of the scene adding later.
             print(f"---Converting {shape_name}...")
             if g_converters.empty() or not use_async:
                 status = asyncio.get_event_loop().run_until_complete(convert(local_path, omni_path))
-                if not status == omni.assetimport.assetconverter.OmniConverterStatus.eOK:
+                if not status == assetimport.OmniConverterStatus.eOK:
                     return f"ERROR OmniConverterStatus is {status}"
                 print(f"---Added to Omniverse as {omni_path}.")
             else:
@@ -186,9 +221,18 @@ def addShapePrim(use_async, synsetId, modelId, pos, rot, scale, do_not_place=Fal
         metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
         scaled_scale = scale / metersPerUnit
         addobject_fn(prim.GetPath(), pos, rot, scaled_scale)
-        return "Added object."
 
-    return "Didn't add object."
+        # add physics
+        if auto_add_physics:
+            print("Adding PHYSICS to ShapeNet model")
+            shape_approximation = "convexHull"
+            if use_convex_decomp:
+                shape_approximation = "convexDecomposition"
+            utils.setRigidBody(prim, shape_approximation, False)
+
+        return prim
+
+    return None
 
 
 def get_min_max_vert(obj_file_name):

@@ -7,12 +7,21 @@ from .shape import addShapePrim
 
 def process_request_in_thread(thread_type, responses_queue, menu, request):
     response = {"success": True, "message": ""}
+
+    if "omniverseServer" not in request:
+        response["message"] += "No omniverseServer requested. "
+        response["success"] = False
+    else:
+        omniverseServer = request["omniverseServer"]
+        response["message"] += "omniverseServer = " + omniverseServer + ". "
+
     if "synsetId" not in request:
         response["message"] += "No synsetId requested. "
         response["success"] = False
     else:
         synsetId = request["synsetId"]
         response["message"] += "synsetId = " + synsetId + ". "
+
     if "modelId" not in request:
         response["message"] += "No modelId requested. "
         response["success"] = False
@@ -74,10 +83,20 @@ def process_request_in_thread(thread_type, responses_queue, menu, request):
     if response["success"]:
         try:
             # This is where all the work is done once the message is decoded.
-            addShapePrimReturnMessage = addShapePrim(
-                use_async, request["synsetId"], request["modelId"], pos, rot, scale, do_not_place
+            added_prim = addShapePrim(
+                use_async,
+                request["omniverseServer"],
+                request["synsetId"],
+                request["modelId"],
+                pos,
+                rot,
+                scale,
+                do_not_place,
             )
-            response["message"] += addShapePrimReturnMessage
+            if added_prim is None:
+                response["message"] += "Didn't add object."
+            else:
+                response["message"] += "Added object: " + added_prim.GetPath()
         except:
             response["message"] += " had Error, so ould not run addShapePrim."
             response["success"] = False

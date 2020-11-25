@@ -1,10 +1,12 @@
 import carb
-from omni.kit.settings import create_setting_widget, create_setting_widget_combo, SettingType, get_settings_interface
+from omni.kit.settings import create_setting_widget, create_setting_widget_combo, SettingType
 import omni.kit.ui
 import omni.kit.commands
 from pxr import Gf
 from collections import OrderedDict
-
+from .shape import addShapePrim
+from .globals import *
+import random
 
 EXTENSION_NAME = "Shapenet Settings"
 EXTENSION_DESC = "Adjust shapenet settings"
@@ -21,9 +23,10 @@ class ShapenetSettings:
     def __init__(self):
         self._window = omni.kit.ui.Window(EXTENSION_NAME, 800, 600, menu_path="Window/" + EXTENSION_NAME)
 
-        self._settings = get_settings()
+        self._settings = carb.settings.get_settings()
 
         # note: Not sure this is the best place to set default values.
+        self._settings.set("/isaac/shapenet/omniverseServer", "user_server")
         self._settings.set("/isaac/shapenet/synsetId", "random")
         self._settings.set("/isaac/shapenet/modelId", "random")
         self._settings.set("/isaac/shapenet/posx", 0.0)
@@ -34,6 +37,8 @@ class ShapenetSettings:
         self._settings.set("/isaac/shapenet/rotz", 0.0)
         self._settings.set("/isaac/shapenet/rotangle", 0.0)
         self._settings.set("/isaac/shapenet/scale", 1.0)
+        self._settings.set("/isaac/shapenet/auto_add_physics", False)
+        self._settings.set("/isaac/shapenet/use_convex_decomp", False)
 
         self._build_window_ui()
 
@@ -53,6 +58,7 @@ class ShapenetSettings:
         """ Add Shape Settings """
         layout = omni.kit.ui.RowColumnLayout(2, True)
         # Could not get double3 to work with values of 1 or 0.
+        self._add_setting(layout, SettingType.STRING, "Omniverse Server", "/isaac/shapenet/omniverseServer")
         self._add_setting(layout, SettingType.STRING, "synsetId to add", "/isaac/shapenet/synsetId")
         self._add_setting(layout, SettingType.STRING, "modelId to add", "/isaac/shapenet/modelId")
         self._add_setting(layout, SettingType.FLOAT, "X Position of add", "/isaac/shapenet/posx")
@@ -63,7 +69,44 @@ class ShapenetSettings:
         self._add_setting(layout, SettingType.FLOAT, "Z Axis of Rotation of add", "/isaac/shapenet/rotz")
         self._add_setting(layout, SettingType.FLOAT, "Angle of Rotation of add", "/isaac/shapenet/rotangle")
         self._add_setting(layout, SettingType.FLOAT, "Scale of add", "/isaac/shapenet/scale")
+        self._add_setting(layout, SettingType.BOOL, "Automatically add physics", "/isaac/shapenet/auto_add_physics")
+        self._add_setting(layout, SettingType.BOOL, "Use convex decomponsition", "/isaac/shapenet/use_convex_decomp")
+
+        self._add_model_btn = layout.add_child(omni.kit.ui.Button("Add a model"))
+        self._add_model_btn.set_clicked_fn(self._on_add_model_fn)
+
         self._add_frame(layout, "Shapenet Add Values")
+
+    def _on_add_model_fn(self, widget):
+        pos = self.getPos()
+        rot = self.getRot()
+        scale = self.getScale()
+
+        global g_shapenet_db
+        g_shapenet_db = get_database()
+        if g_shapenet_db == None:
+            print("Please create an Shapenet ID Database with the menu.")
+            return
+
+        synsetId = self.getSynsetId()
+        if synsetId == None or synsetId == "random":
+            synsetId = random.choice(list(g_shapenet_db))
+
+        modelId = self.getModelId()
+        if modelId == None or modelId == "random":
+            modelId = random.choice(list(g_shapenet_db[synsetId]))
+
+        return addShapePrim(
+            False,
+            self._settings.get("/isaac/shapenet/omniverseServer"),
+            synsetId,
+            modelId,
+            pos,
+            rot,
+            scale,
+            self._settings.get("/isaac/shapenet/auto_add_physics"),
+            self._settings.get("/isaac/shapenet/use_convex_decomp"),
+        )
 
     def getPos(self):
         x = self._settings.get("/isaac/shapenet/posx")
