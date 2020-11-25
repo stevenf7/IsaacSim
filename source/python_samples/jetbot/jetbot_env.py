@@ -3,7 +3,7 @@ import numpy as np
 
 import carb
 
-from pxr import UsdGeom, Gf, Sdf, Usd, PhysxSchema, UsdPhysics, PhysicsSchemaTools, Semantics
+from pxr import UsdGeom, Gf
 
 import os
 import time

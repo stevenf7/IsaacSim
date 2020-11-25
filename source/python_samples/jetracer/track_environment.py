@@ -1,7 +1,7 @@
 import carb
 import omni
 import random
-from pxr import UsdGeom, Gf, Sdf, PhysxSchema, PhysicsSchemaTools
+from pxr import UsdGeom, Gf, Sdf, UsdPhysics, PhysxSchema, PhysicsSchemaTools
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 from omni.isaac.synthetic_utils import DomainRandomization
@@ -44,7 +44,7 @@ class Environment:
         loaded_paths = []
 
         for entry in contents:
-            if not entry.flags & omni.client.Flags.CAN_HAVE_CHILDREN:
+            if not entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN:
                 names.append(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
                 loaded_paths.append("/World/Meshes/mesh_component/mesh_" + entry.relative_path[0:-4])
         print(loaded_paths)
@@ -159,11 +159,11 @@ class Environment:
         # Set physics scene to use cpu physics
         PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/World/Env/PhysicsScene"))
         physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/World/Env/PhysicsScene")
-        physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
-        physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
-        physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
-        physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
-        physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
+        physxSceneAPI.CreateEnableCCDAttr(True)
+        physxSceneAPI.CreateEnableStabilizationAttr(True)
+        physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+        physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+        physxSceneAPI.CreateSolverTypeAttr("TGS")
         # Create physics plane for the ground
         PhysicsSchemaTools.addGroundPlane(
             stage, "/World/Env/GroundPlane", "Z", 100.0, Gf.Vec3f(0, 0, self.height), Gf.Vec3f(1.0)

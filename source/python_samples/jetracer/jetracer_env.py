@@ -7,11 +7,7 @@ import carb
 import omni.kit.app
 import omni.kit.editor
 
-import omni.kit.commands
-from omni.isaac.dynamic_control import _dynamic_control
-import omni.syntheticdata._syntheticdata as _synthetic_data
-
-from pxr import UsdGeom, Gf, Sdf, Usd, PhysxSchema, Semantics
+from pxr import UsdGeom, Gf, Sdf, Usd, Semantics
 
 import os
 import time

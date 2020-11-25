@@ -12,7 +12,6 @@
 """
 
 import omni
-import omni.kit.commands
 from pxr import Gf, Sdf
 
 
