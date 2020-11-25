@@ -24,8 +24,6 @@ from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 # Default rendering parameters
 RENDER_CONFIG = {
-    "width": 600,
-    "height": 600,
     "renderer": "PathTracing",
     "samples_per_pixel_per_frame": 12,
     "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',

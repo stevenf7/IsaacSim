@@ -151,19 +151,19 @@ class Extension(omni.ext.IExt):
                     byte_provider_list = []
                     if self._rgb_enable:
                         self._rgb_byte_provider = omni.ui.ByteImageProvider()
-                        self._rgb_byte_provider.set_data(rgb_image.tolist(), [rgb_width, rgb_height])
+                        self._rgb_byte_provider.set_bytes_data(rgb_image.tolist(), [rgb_width, rgb_height])
                         label_list.append("RGB")
                         byte_provider_list.append(self._rgb_byte_provider)
 
                     if self._depth_enable:
                         self._depth_byte_provider = omni.ui.ByteImageProvider()
-                        self._depth_byte_provider.set_data(colorize_depth_image, [depth_width, depth_height])
+                        self._depth_byte_provider.set_bytes_data(colorize_depth_image, [depth_width, depth_height])
                         label_list.append("Depth")
                         byte_provider_list.append(self._depth_byte_provider)
 
                     if self._instance_enable:
                         self._instance_byte_provider = omni.ui.ByteImageProvider()
-                        self._instance_byte_provider.set_data(
+                        self._instance_byte_provider.set_bytes_data(
                             colorize_instance_image, [instance_width, instance_height]
                         )
                         label_list.append("Instance Segmentation")
@@ -171,7 +171,7 @@ class Extension(omni.ext.IExt):
 
                     if self._semantic_enable:
                         self._semantic_byte_provider = omni.ui.ByteImageProvider()
-                        self._semantic_byte_provider.set_data(
+                        self._semantic_byte_provider.set_bytes_data(
                             colorize_semantic_image, [semantic_width, semantic_height]
                         )
                         label_list.append("Semantic Segmentation")
@@ -179,7 +179,7 @@ class Extension(omni.ext.IExt):
 
                     if self._bbox_2d_tight_enable:
                         self._bbox_2d_tight_byte_provider = omni.ui.ByteImageProvider()
-                        self._bbox_2d_tight_byte_provider.set_data(
+                        self._bbox_2d_tight_byte_provider.set_bytes_data(
                             bboxes_2d_tight_rgb.tolist(), [rgb_width, rgb_height]
                         )
                         label_list.append("2D Tight BBox")
@@ -187,7 +187,7 @@ class Extension(omni.ext.IExt):
 
                     if self._bbox_2d_loose_enable:
                         self._bbox_2d_loose_byte_provider = omni.ui.ByteImageProvider()
-                        self._bbox_2d_loose_byte_provider.set_data(
+                        self._bbox_2d_loose_byte_provider.set_bytes_data(
                             bboxes_2d_loose_rgb.tolist(), [rgb_width, rgb_height]
                         )
                         label_list.append("2D Loose BBox")

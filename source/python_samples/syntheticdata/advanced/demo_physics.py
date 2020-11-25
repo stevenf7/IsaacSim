@@ -23,7 +23,7 @@ from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.isaac.synthetic_utils import utils as ut
 import matplotlib.pyplot as plt
 
-from pxr import Gf, Sdf, UsdShade, PhysxSchema, PhysicsSchemaTools
+from pxr import Gf, Sdf, UsdShade
 
 TRANSLATION_RANGE = 300.0
 SCALE = 50.0
@@ -48,6 +48,7 @@ def main():
     sd_helper = SyntheticDataHelper()
 
     from omni.physx.scripts import utils
+    from pxr import UsdPhysics, PhysxSchema, PhysicsSchemaTools
     import omni
 
     # SCENE SETUP
@@ -70,11 +71,11 @@ def main():
     # Set physics scene to use cpu physics
     PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/World/physicsScene"))
     physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/World/physicsScene")
-    physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
-    physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
-    physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
+    physxSceneAPI.CreateEnableCCDAttr(True)
+    physxSceneAPI.CreateEnableStabilizationAttr(True)
+    physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+    physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+    physxSceneAPI.CreateSolverTypeAttr("TGS")
 
     # Create a ground plane
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Y", 1000, Gf.Vec3f(0, -100, 0), Gf.Vec3f(1.0))
@@ -148,6 +149,7 @@ def main():
     kit.set_setting("/rtx/rendermode", CUSTOM_CONFIG["renderer"])
     print("capturing...")
     # Get groundtruth using glass material
+    kit.update()
     gt = sd_helper.get_groundtruth(
         [
             "rgb",

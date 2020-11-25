@@ -58,6 +58,7 @@ class SyntheticDataHelper:
 
         self.sd_interface = self.sd.acquire_syntheticdata_interface()
         self.editor = omni.kit.editor.get_editor_interface()
+        self.viewport = omni.kit.viewport.get_viewport_interface()
         self.carb_settings = carb.settings.acquire_settings_interface()
 
         # mode = 'cuda' if use_torch else 'numpy'
@@ -97,7 +98,7 @@ class SyntheticDataHelper:
                 self.carb_settings.set_bool(f"/syntheticdata/sensors/{sensor}Sensor", True)
                 self.sensor_state[sensor] = True
                 for _ in range(2):
-                    self.app.update(0.0)  # sensor buffers need two frames to be correctly populated.
+                    self.app.update()  # sensor buffers need two frames to be correctly populated.
 
     def get_rgb_cuda(self):
         """Get RGB groundtruth data
@@ -300,7 +301,7 @@ class SyntheticDataHelper:
             clipping_range (tuple(float, float)): Near and Far clipping values.
         """
         stage = omni.usd.get_context().get_stage()
-        prim = stage.GetPrimAtPath(self.editor.get_active_camera())
+        prim = stage.GetPrimAtPath(self.viewport.get_viewport_window().get_active_camera())
         prim_tf = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(0.0)
         focal_length = prim.GetAttribute("focalLength").Get()
         horiz_aperture = prim.GetAttribute("horizontalAperture").Get()
@@ -479,7 +480,7 @@ class SyntheticDataHelper:
         self.enable_sensors(gt_sensors)
 
         # Render frame
-        self.app.update(0.0)
+        self.app.update()
 
         gt = {}
         # Process non-RT-only sensors
@@ -492,7 +493,7 @@ class SyntheticDataHelper:
             cur_render_mode = self.carb_settings.get_as_string("/rtx/rendermode")
             if cur_render_mode != "RayTracedLighting":
                 self.carb_settings.set_string("/rtx/rendermode", "RayTracedLighting")
-                self.app.update(0.0)
+                self.app.update()
 
             # Populate gt dict based on selected sensors
             for sensor in rt_sensors:

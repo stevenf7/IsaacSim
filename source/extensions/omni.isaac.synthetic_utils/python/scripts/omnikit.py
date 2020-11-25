@@ -12,7 +12,6 @@ import carb
 import omni.kit.app
 import omni.kit.editor
 import omni.kit
-import omni.kit.commands
 from pxr import UsdGeom, Semantics, Usd
 
 import os
@@ -84,7 +83,7 @@ Launches and configures OmniKit and exposes useful functions.
 
         # launch kit
         self.last_update_t = time.time()
-        self.app = omni.kit.app.get_app_interface()
+        self.app = omni.kit.app.get_app()
         self.kit_settings = None
         setup_future = self._launch_kit()
         self._start_app()
@@ -121,16 +120,16 @@ Launches and configures OmniKit and exposes useful functions.
             "--/app/content/emptyStageOnStart=False",  # This is required due to a infinite loop but results in errors on launch
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',
-            f'--carb/app/extensions/folders2/0="{os.environ["KIT_PATH"]}/exts"',  # adding to json doesn't work
-            f'--carb/app/extensions/folders2/1="{os.environ["KIT_PATH"]}/extsPhysics"',  # adding to json doesn't work
-            f'--carb/app/extensions/folders2/2="{os.environ["ISAAC_PATH"]}/exts"',  # adding to json doesn't work
+            f'--/app/extensions/folders2/0="{os.environ["KIT_PATH"]}/exts"',  # adding to json doesn't work
+            f'--/app/extensions/folders2/1="{os.environ["KIT_PATH"]}/extsPhysics"',  # adding to json doesn't work
+            f'--/app/extensions/folders2/2="{os.environ["ISAAC_PATH"]}/exts"',  # adding to json doesn't work
         ]
         if self.config.get("headless"):
             args.append("--no-window")
-            args.append("--/app/window/hideUi=true")
+            # args.append("--/app/window/hideUi=true")
         if self.config.get("active_gpu"):
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
-        self.app.startup("omniverse-kit", os.environ["CARB_APP_PATH"], args)
+        self.app.startup("kit", os.environ["CARB_APP_PATH"], args)
 
     def _cleanup(self):
         print("Exiting OmniKitHelper")
@@ -193,7 +192,7 @@ Launches and configures OmniKit and exposes useful functions.
                     self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
                 else:
                     self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / physics_dt))
-            self.app.update(dt)
+            self.app.update()
         else:
             time_now = time.time()
             dt = time_now - self.last_update_t
@@ -203,7 +202,7 @@ Launches and configures OmniKit and exposes useful functions.
                     self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
                 else:
                     self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / physics_dt))
-            self.app.update(dt)
+            self.app.update()
 
     def play(self):
         """Starts the editor physics simulation"""
