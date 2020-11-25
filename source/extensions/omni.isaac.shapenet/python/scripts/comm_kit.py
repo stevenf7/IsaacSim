@@ -1,4 +1,4 @@
-import requests
+import urllib.request
 
 
 def setup():
@@ -7,17 +7,20 @@ def setup():
 
 
 class KitCommunication(object):
-    def __init__(self, url="127.0.0.1", port="8080"):
+    def __init__(self, url="127.0.0.1", port="7011"):
         self._address = "http://" + url + ":" + port
 
     def post_command(self, request_dict):
         try:
             # print("POST_COMMAND Trying: ", request_dict)
-            resp = requests.post(self._address, json=request_dict)
-            # print ("POST_COMMAND Response: ", resp.status_code)
-            if resp.status_code != requests.codes.ok:
-                raise KitEngineException(resp.status_code, resp.json())
-            return resp.json()
+
+            url = f"{self._address}?{request_dict}"
+            request = urllib.request.Request(url, method="POST")
+            r = urllib.request.urlopen(request)
+
+            if r.getcode() != 200:
+                raise KitEngineException(r.getcode(), r.read())
+            return r.read()
         except requests.exceptions.RequestException as e:
             raise KitCommunicationException(str(e))
 
