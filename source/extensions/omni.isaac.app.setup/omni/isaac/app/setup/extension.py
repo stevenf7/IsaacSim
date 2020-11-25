@@ -8,7 +8,7 @@
 #
 
 import asyncio
-from os import terminal_size
+from os import terminal_size, path
 import omni.ext
 import omni.ui as ui
 import carb.settings
@@ -32,14 +32,13 @@ class CreateSetupExtension(omni.ext.IExt):
         # Adjust the Window Title to show the Create Version
         window_title = get_main_window_title()
 
-        # I don't think "/app/version" should include all the build info
-        # here because we use - in the version it will not be predicatable especially there can be - in the branch name
-        # app_version = self._settings.get("/app/version")
-        # if not app_version:
-        #    app_version = open(carb.tokens.get_tokens_interface().resolve("${app}/../VERSION")).read()
-        # app_version, _ = app_version.split("+")
-        app_version = "2020.3"
-        window_title.set_app_version(app_version)
+        app_version = self._settings.get("/app/version")
+        if not app_version:
+            app_version = open(path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../VERSION"))).read()
+
+        if app_version:
+            app_version, _ = app_version.split("+")
+            window_title.set_app_version(app_version)
 
         # setup some imgui Style overide
         imgui = _imgui.acquire_imgui()

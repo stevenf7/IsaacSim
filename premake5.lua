@@ -30,7 +30,7 @@ include("isaac_sim_premake5.lua")
 -- Setup where to write generate prebuild.toml file
 repo_build.set_prebuild_file('_build/generated/prebuild.toml')
 
--- 
+--
 function write_version_file(config)
     local cmd
     if os.target() == "windows" then
@@ -57,14 +57,14 @@ workspace "isaac-sim"
     targetdir (bin_dir)
 
     -- Setup include paths. Add kit SDK include paths too.
-    includedirs { 
-        "include", 
-        "_build/target-deps", 
+    includedirs {
+        "include",
+        "_build/target-deps",
         "_build/target-deps/carb_sdk_plugins/include",
         "%{kit_sdk}/include",
         "%{kit_sdk}/_build/target-deps/",
     }
-    
+
     -- Carbonite carb lib
     libdirs { "%{root}/_build/target-deps/carb_sdk_plugins/_build/%{platform}/%{config}" }
 
@@ -110,7 +110,7 @@ workspace "isaac-sim"
 
         -- Add library origin directory to dlopen() search path
         linkoptions { "-Wl,-rpath,'$$ORIGIN' -Wl,--export-dynamic" }
-        
+
         enablewarnings { "all" }
 
     filter { "platforms:x86_64" }
@@ -175,7 +175,7 @@ function create_app_shortcut(app_name, config)
         f:write(string.format([[
 @echo off
 setlocal
-call "%%~dp0/%s %%*
+call "%%~dp0/%s" %%*
         ]], app_path))
     else
         local sh_file_path = root.."/_build/linux-x86_64/"..config.."/appshortcuts/"..app_name..".sh"
@@ -197,10 +197,10 @@ function define_local_experience(app_name, kit_file, extra_args)
     local script_dir_token = (os.target() == "windows") and "%~dp0" or "$SCRIPT_DIR"
     local extra_args = extra_args or ""
     local kit_file = kit_file or app_name
-    define_experience(app_name, { config_path = "apps/"..kit_file..".kit", 
+    define_experience(app_name, { config_path = "apps/"..kit_file..".kit",
                      extra_args = "--ext-folder \""..script_dir_token.."/exts\" "
                         .."--ext-folder \""..script_dir_token.."/apps\" "
-                        ..extra_args  
+                        ..extra_args
     })
 
     for _, config in ipairs(ALL_CONFIGS) do
@@ -210,13 +210,13 @@ end
 
 
 group "apps"
-    -- for _, config in ipairs(ALL_CONFIGS) do
-    --     -- Direct shortcur to kit executable for convenience:
-    --     create_experience_runner("kit", nil, config, "")
+    for _, config in ipairs(ALL_CONFIGS) do
+        -- Direct shortcur to kit executable for convenience:
+        -- create_experience_runner("kit", nil, config, "")
 
-    --     -- Put build version file into build directories
-    --     write_version_file(config)
-    -- end
+        -- Put build version file into build directories
+        write_version_file(config)
+    end
 
     define_local_experience("isaac-sim")
     -- define_local_experience("omni.create.xr")

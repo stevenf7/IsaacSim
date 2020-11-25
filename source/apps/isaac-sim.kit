@@ -48,7 +48,11 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.viewport" = {}
 "omni.renderer" = { tag = "rtx" }
 "omni.hydra.rtx" = { }
-"omni.rtx.render_settings" = {}
+
+#"omni.rtx.render_settings" = {} # this will be deprecated in few release 
+"omni.rtx.settings.core" = {} # this is the new Render Settings 2.0
+
+"omni.kit.window.movie_maker" = {}
 
 "omni.kit.window.profiler" = {}
 
@@ -60,13 +64,15 @@ keywords = ["experience", "app", "usd"]
 
 # Content Browser
 "omni.kit.window.content" = {} # But it is hidden / just trying to clear some dependency 
-# Getting latest version from Nucleus instead of SDK for now
+
 "omni.kit.widget.filebrowser" = { }
 "omni.kit.window.filepicker" = { }
 "omni.kit.window.content_browser" = { }
 
+"omni.kit.tagging" = {order = -10 } # should be a dependency of below 
+"omni.kit.filebrowser_column.tags" = {}
+
 "omni.kit.window.stats" = {}
-"omni.kit.window.tagging" = {}
 
 "omni.kit.window.script_editor" = {}
 "omni.kit.window.console" = {}
@@ -83,7 +89,9 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.property" = {}
 "omni.kit.property.bundle" = {}
 "omni.kit.property.layer" = {}
+"omni.kit.property.tagging" = {}
 
+#
 # tool
 "omni.kit.tool.asset_importer" = {}
 "omni.kit.tool.collect" = {}
@@ -93,6 +101,7 @@ exts."omni.kit.window.file".useNewFilePicker = true
 exts."omni.kit.tool.asset_importer".useNewFilePicker = true
 exts."omni.kit.tool.collect".useNewFilePicker = true
 exts."omni.kit.widget.layers".useNewFilePicker = true
+exts."omni.kit.renderer.core".imgui.enableMips = true
 
 [settings.app.settings]
 persistent = true
@@ -122,14 +131,11 @@ featuredExts = [
     "omni.kit.window.stageviewer",
     "omni.kit.window.imageviewer",
 
-    "omni.rtx.settings.core",
-
     "omni.flowusd",
     "omni.blast",
 
     "omni.anim.timesample_editor",
 
-    "omni.kit.window.movie_maker",
     "omni.kit.tool.paint",
     "omni.kit.window.sunstudy",
 
@@ -137,17 +143,7 @@ featuredExts = [
     "omni.graph.core",
     "omni.graph.ui",
 
-    #Animation Interpolation ??
-
-    # Hydra Storm
-    # Iray
-    # Cloud XR
-    # Streaming
-
     # "omni.kit.tool.surface_instancer"
-
-    # Kit Copy Service
-    # Omni Documentation
 ]
 
 
@@ -156,6 +152,7 @@ featuredExts = [
 # Basic Kit App
 ################################
 #app.versionFile = "${app}/../VERSION"
+app.name = "Isaac Sim"
 persistent.app.window.uiStyle = "NvidiaDark"
 
 # Splash Setup
