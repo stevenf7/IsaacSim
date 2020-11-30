@@ -29,6 +29,7 @@
 #include <carb/settings/ISettings.h>
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/physx/physx.h>
+#include <carb/fastcache/FastCache.h>
 
 #include <unordered_map>
 #include <string>
@@ -58,7 +59,8 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::syntheticdata::SyntheticData,
                       carb::physics::PhysX,
                       carb::sensors::Sensors,
-                      carb::tasking::ITasking)
+                      carb::tasking::ITasking,
+                      carb::fastcache::FastCache)
 
 // private stuff
 namespace
