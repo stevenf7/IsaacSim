@@ -17,6 +17,7 @@
 #include "../Sensor/LidarComponent.h"
 #include "../Sensor/CameraComponent.h"
 #include "../Monitor/ContactMonitor.h"
+#include "../Visualizer/Plan2Visualizer.h"
 #include "plugins/core/ScopedTimer.h"
 
 namespace omni
@@ -344,6 +345,12 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
         component = std::make_unique<TwoFingerGripper>(mDynamicControlPtr);
         component->initialize(
             mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineTwoFingerGripper(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEnginePlan2Visualizer>())
+    {
+        component = std::make_unique<Plan2Visualizer>();
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEnginePlan2Visualizer(prim), mStage);
     }
     if (component)
     {

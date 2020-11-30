@@ -20,6 +20,7 @@ ADD_SCENARIOFROMMESSAGE_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Scenario Fr
 ADD_LIDAR_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Lidar"
 ADD_CAMERA_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Camera"
 ADD_CONTACTMONITOR_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Contact Monitor"
+ADD_PLAN2VISUALIZER_SCENE_MENU_ITEM = "Create/Isaac/Robot Engine/Plan2 Visualizer"
 
 
 class RobotEngineBridgeMenu:
@@ -44,6 +45,7 @@ class RobotEngineBridgeMenu:
         self._menus.append(editor_menu.add_item(ADD_LIDAR_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_CAMERA_SCENE_MENU_ITEM, self._on_scene_menu_click))
         self._menus.append(editor_menu.add_item(ADD_CONTACTMONITOR_SCENE_MENU_ITEM, self._on_scene_menu_click))
+        self._menus.append(editor_menu.add_item(ADD_PLAN2VISUALIZER_SCENE_MENU_ITEM, self._on_scene_menu_click))
 
     def setup_base_prim(self, prim):
         prim.CreateNodeNameAttr("interface")
@@ -327,6 +329,22 @@ class RobotEngineBridgeMenu:
         prim.CreateForceThresholdAttr(1000.0)
         pass
 
+    def add_plan2_visualizer(self, parent=None):
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, parent + "/REB_Plan2Visualizer", False)
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(self._stage, "/REB_Plan2Visualizer", True)
+
+        prim = REBSchema.RobotEnginePlan2Visualizer.Define(self._stage, path)
+        self.setup_base_prim(prim)
+        prim.CreateInputComponentAttr("input")
+        prim.CreateInputChannelAttr("plan")
+        prim.CreateParentPrimRel()
+        prim.CreateWidthAttr(0.1)
+        prim.CreateColorAttr().Set((float(1), float(1), float(1), float(1)))
+        prim.CreateOffsetAttr().Set((float(0), float(0), float(0)))
+        pass
+
     def _on_scene_menu_click(self, menu, value):
         self._stage = self._usd_context.get_stage()
         selectedPrims = self._usd_context.get_selection().get_selected_prim_paths()
@@ -363,6 +381,8 @@ class RobotEngineBridgeMenu:
             self.add_camera(curr_prim)
         elif menu == ADD_CONTACTMONITOR_SCENE_MENU_ITEM:
             self.add_contact_monitor(curr_prim)
+        elif menu == ADD_PLAN2VISUALIZER_SCENE_MENU_ITEM:
+            self.add_plan2_visualizer(curr_prim)
 
     def shutdown(self):
         self._menus = None
