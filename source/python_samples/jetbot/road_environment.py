@@ -22,19 +22,19 @@ class Environment:
                 "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in experiences/isaac-sim-python.json"
             )
             return
-        result, nucleus_server = find_nucleus_server("/Library/Props/Lego/Parts/")
+        result, nucleus_server = find_nucleus_server("/Library/Props/Road_Tiles/Parts/")
         if result is False:
             carb.log_error(
-                "Could not find nucleus server with /Library/Props/Lego/Parts/ folder. Please refer to the documentation to aquire the Lego road tile assets"
+                "Could not find nucleus server with /Library/Props/Road_Tiles/Parts/ folder. Please refer to the documentation to aquire the road tile assets"
             )
             return
         # 1=I 2=L 3=T, 4=X
         self.tile_usd = {
             0: None,
-            1: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4336p01.usd", "offset": 180},
-            2: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4342p01.usd", "offset": 180},
-            3: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4341p01.usd", "offset": 180},
-            4: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4343p01.usd", "offset": 180},
+            1: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4336p01.usd", "offset": 180},
+            2: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4342p01.usd", "offset": 180},
+            3: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4341p01.usd", "offset": 180},
+            4: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4343p01.usd", "offset": 180},
         }  # list of tiles that can be spawned
 
         self.texture_list = [

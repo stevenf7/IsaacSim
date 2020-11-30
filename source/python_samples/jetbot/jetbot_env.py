@@ -126,7 +126,9 @@ class JetbotEnv:
         # the synthetic data helper is our way of grabbing the image data we need from the camera.  currently the SD helper
         # only supports a single camera, however you can use it to access camera data as a cuda tensor directly on the
         # device.  stable baselines 3 is expecting a numpy array, so we pull the data to the host
-        gt = self.sd_helper.get_groundtruth(["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "camera"])
+        # additional sensors that could be of interest and can be added to this list:
+        # "depth", "instanceSegmentation", "semanticSegmentation"
+        gt = self.sd_helper.get_groundtruth(["rgb", "camera"])
 
         # we only need the rgb channels of the rgb image
         currentState = gt["rgb"][:, :, :3]
@@ -175,7 +177,7 @@ class JetbotEnv:
             while self.omniverse_kit.is_loading():
                 self.omniverse_kit.update(self.dt)
 
-        gt = self.sd_helper.get_groundtruth(["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "camera"])
+        gt = self.sd_helper.get_groundtruth(["rgb", "camera"])
         currentState = gt["rgb"][:, :, :3]
 
         img = np.concatenate((currentState, currentState), axis=2)
