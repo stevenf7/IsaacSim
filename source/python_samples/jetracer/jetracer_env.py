@@ -78,6 +78,12 @@ class JetracerEnv:
         self.roads.generate_road(self.shape)
         self.roads.generate_lights()
 
+        # randomize once to initialize stage
+        # the following two lines must be called prior to Jetracer initialization
+        # any DR related setup calls should occur before this point
+        self.omniverse_kit.update(1 / 60.0)
+        self.roads.dr.randomize_once()
+
         # spawn robot
         self.jetracer = Jetracer(self.omniverse_kit)
         self.initial_loc = self.roads.get_valid_location()
