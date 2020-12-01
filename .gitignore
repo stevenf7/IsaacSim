@@ -36,7 +36,6 @@ Makefile
 # binaries
 *.ico
 *.bmp
-*.png
 *.gif
 *.jpg
 *.jpeg
@@ -88,3 +87,10 @@ symbols.txt
 output.txt
 
 PACKAGE-LICENSES/
+
+# OVAT files 
+gcn_local.yml
+_venv/
+venv/
+.venv/
+outputs.yml

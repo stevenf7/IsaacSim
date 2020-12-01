@@ -29,7 +29,10 @@ class CreateSetupExtension(omni.ext.IExt):
         """ setup the window layout, menu, final configuration of the extensions etc """
         self._settings = carb.settings.get_settings()
 
-        # Adjust the Window Title to show the Create Version
+        # this is a work around as some Extensions don't properly setup their default setting in time
+        self._set_defaults()
+
+        # Adjust the Window Title to show the Isaac Sim Version
         window_title = get_main_window_title()
 
         app_version = self._settings.get("/app/version")
@@ -51,14 +54,33 @@ class CreateSetupExtension(omni.ext.IExt):
         self.__setup_window_task = asyncio.ensure_future(self.__dock_windows())
         self.__setup_property_window = asyncio.ensure_future(self.__property_window())
 
-    def _show_ui_docs(self):
-        """ show the omniverse ui documentation as an external Application """
+    def _set_defaults(self):
+        """ this is trying to setup some defaults for extensions to avoid warning """
+        self._settings.set_default("/persistent/app/omniverse/bookmarks", {})
+        self._settings.set_default("/persistent/app/stage/timeCodeRange", [0, 100])
+
+        self._settings.set_default("/persistent/audio/context/closeAudioPlayerOnStop", False)
+
+        self._settings.set_default("/persistent/app/primCreation/PrimCreationWithDefaultXformOps", True)
+        self._settings.set_default("/persistent/app/primCreation/DefaultXformOpType", "Scale, Rotate, Translate")
+        self._settings.set_default("/persistent/app/primCreation/DefaultRotationOrder", "ZYX")
+        self._settings.set_default("/persistent/app/primCreation/DefaultXformOpPrecision", "Double")
+
+        # omni.kit.property.tagging
+        self._settings.set_default("/persistent/exts/omni.kit.property.tagging/showAdvancedTagView", False)
+        self._settings.set_default("/persistent/exts/omni.kit.property.tagging/showHiddenTags", False)
+        self._settings.set_default("/persistent/exts/omni.kit.property.tagging/modifyHiddenTags", False)
+
+    def _launch_app(self, app_id, console=True, custom_args=None):
+        """launch an other Kit app with the same settings"""
         import sys
         import subprocess
         import platform
 
         launch_args = [sys.argv[0]]
-        launch_args.append("omni.app.uidoc.kit")
+        launch_args.append(app_id)
+        if custom_args:
+            launch_args.extend(custom_args)
 
         # Pass all exts folders
         exts_folders = self._settings.get("/app/exts/folders")
@@ -66,11 +88,26 @@ class CreateSetupExtension(omni.ext.IExt):
             for folder in exts_folders:
                 launch_args.extend(["--ext-folder", folder])
 
+        # subprocess don't get the ${app} token somehow we push it into a settings
+        app_path = carb.tokens.get_tokens_interface().resolve("${app}")
+        launch_args.append(f"--/app/folder='{app_path}'")
+
         kwargs = {"close_fds": False}
         if platform.system().lower() == "windows":
-            kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE | subprocess.CREATE_NEW_PROCESS_GROUP
+            if console:
+                kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE | subprocess.CREATE_NEW_PROCESS_GROUP
+            else:
+                kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
 
         subprocess.Popen(launch_args, **kwargs)
+
+    def _show_ui_docs(self):
+        """ show the omniverse ui documentation as an external Application """
+        self._launch_app("omni.app.uidoc.kit")
+
+    def _show_launcher(self):
+        """ show the omniverse ui documentation as an external Application """
+        self._launch_app("omni.isaac.launcher.kit", console=False, custom_args={"--/app/auto_launch=false"})
 
     def __set_background_color(self):
         # there is some issue with DLSS and alpha/bg color, when it is fix we can bring that back
@@ -172,6 +209,10 @@ class CreateSetupExtension(omni.ext.IExt):
         self._ui_doc_menu_path = "Help/Omni UI Docs"
         self._ui_doc_menu_item = editor_menu.add_item(self._ui_doc_menu_path, lambda *_: self._show_ui_docs())
         editor_menu.set_priority(self._ui_doc_menu_path, -10)
+
+        launcher_menu_path = "Help/App Launcher"
+        self._launcher_menu = editor_menu.add_item(launcher_menu_path, lambda *_: self._show_launcher())
+        editor_menu.set_priority(launcher_menu_path, -5)
 
     def on_shutdown(self):
         pass

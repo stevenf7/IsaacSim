@@ -219,6 +219,7 @@ group "apps"
     end
 
     define_local_experience("isaac-sim")
+    define_local_experience("isaac-sim.launcher")
     -- define_local_experience("omni.create.xr")
     define_local_experience("isaac-sim.headless")
     -- define_local_experience("omni.create.next")
@@ -253,6 +254,7 @@ group "exts"
     include ("source/extensions/omni.isaac.exploded_view")
     include ("source/extensions/omni.isaac.internal_tools")
     include ("source/extensions/omni.isaac.app.setup")
+    include ("source/extensions/omni.isaac.app.launcher")
     include ("source/extensions/omni.isaac.splash")
 
     -- Linux Only
