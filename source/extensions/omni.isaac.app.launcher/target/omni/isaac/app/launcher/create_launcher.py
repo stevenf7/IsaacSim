@@ -7,10 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import asyncio
-import sys
-import os
-import platform
-import subprocess
 
 import carb
 import carb.settings
@@ -22,7 +18,9 @@ import omni.ext
 import omni.kit.app
 
 from .launcher_window import LauncherWindow
-from typing import List, Dict, Any
+from .settings import AUTO_LAUNCH_SETTING, DEFAULT_APP_SETTING, PERSISTENT_LAUNCHER_SETTING
+
+from .launch_app import launch_app
 
 
 class CreateLauncherExtension(omni.ext.IExt):
@@ -34,19 +32,19 @@ class CreateLauncherExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         # if we are in auto_launch mode and the extensions is also setup we start immediatly the default app
         # this avoid going to the App Window
-        user_auto_launch = self._settings.get("/persistent/ext/omni.isaac.launcher/auto_launch")
+        user_auto_launch = self._settings.get(AUTO_LAUNCH_SETTING)
         # first startup
         if user_auto_launch is None:
-            self._settings.set("/persistent/ext/omni.isaac.launcher/auto_launch", True)
+            self._settings.set(AUTO_LAUNCH_SETTING, True)
 
         # if user_auto_launch is still None ( not set ) then we are auto-starting
         if self._settings.get("/app/auto_launch") and (user_auto_launch or user_auto_launch is None):
-            default_app = self._settings.get("/persistent/ext/omni.isaac.launcher/default_app")
+            default_app = self._settings.get(DEFAULT_APP_SETTING)
             if not default_app:
-                default_app = self._settings.get("/ext/omni.isaac.launcher/default_app")
+                default_app = self._settings.get(DEFAULT_APP_SETTING)
 
-            self._launch_app(default_app)
-            os._exit(os.F_OK)
+            close_on_launch = not self._settings.get(PERSISTENT_LAUNCHER_SETTING)
+            launch_app(app_id=default_app, app_become_new_default=False, close_on_launch=close_on_launch)
 
         # We only load the UI App if we have not auto-started
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -73,17 +71,6 @@ class CreateLauncherExtension(omni.ext.IExt):
 
         self._launcher_window = LauncherWindow(extension_path)
         self.__build_task = asyncio.ensure_future(self.__build_layout())
-
-    def _launch_app(self, app_id: str):
-        """ show the omniverse ui documentation as an external Application """
-        app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
-        launch_args = [f"{app_folder}/../{app_id}.bat"]
-
-        kwargs: Dict[str, Any] = {"close_fds": False}
-        if platform.system().lower() == "windows":
-            kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE | subprocess.CREATE_NEW_PROCESS_GROUP
-
-        subprocess.Popen(launch_args, **kwargs)
 
     async def __build_layout(self):
         await omni.kit.app.get_app().next_update_async()
