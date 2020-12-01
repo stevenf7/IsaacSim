@@ -2,6 +2,16 @@
 CHANGELOG
 **********
 
+
+[0.1.1] - 2020-11-25
+========================
+
+Added
+-------
+- Improved python APIs based on omni.kit.commads
+- Added more samples
+- Updated documentation: https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/domain-randomization.html
+
 [0.1.0] - 2020-07-29
 ========================
 
@@ -27,6 +37,6 @@ Added
     - Mesh component
 - Invoke randomization manually (based on user request) or given duration
 - Specify seed to introduce consistency in the randomization process
-- Documentation: https://docs.omniverse.nvidia.com/robotics/text/Robotics_DR.html
+- Documentation: https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/domain-randomization.html
 
 
