@@ -148,10 +148,13 @@ featuredExts = [
 
 
 [settings]
+# MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you 
+# only want to use a single GPU on your MGPU system
+renderer.multiGpu.enabled = false
 
 # Basic Kit App
 ################################
-#app.versionFile = "${app}/../VERSION"
+app.versionFile = "${app}/../VERSION"
 app.name = "Isaac Sim"
 persistent.app.window.uiStyle = "NvidiaDark"
 
@@ -188,44 +191,3 @@ enabledDeprecated = [
         "omni.kit.builtin.init",
         "omni.kit.builtin.menu",
     ]
-
-
-# Isaac Sim Settings
-###############################
-[settings.app.renderer]
-skipWhileMinimized = false
-sleepMsOnFocus = 0
-sleepMsOutOfFocus = 0
-resolution.width=1280
-resolution.height=720
-
-[settings.rtx]
-raytracing.fractionalCutoutOpacity = false
-hydra.enableSemanticSchema = true
-
-[settings.persistent]
-app.stage.upAxis = "Z"
-app.viewport.displayOptions = 3807
-physics.maxNumSteps = 3
-physics.updateToUsd = false
-
-[settings.ngx]
-enabled=false
-
-[settings.isaac]
-nucleus.default = "omniverse://ov-isaac-dev"
-
-# Isaac Sim Extensions
-###############################
-[dependencies]
-# "omni.isaac.about" = {}
-"omni.isaac.urdf" = {}
-"omni.isaac.utils" = {}
-"omni.isaac.range_sensor" = {}
-# "omni.isaac.manip" = {}
-"omni.isaac.dynamic_control" = {}
-"omni.isaac.motion_planning" = {}
-# "omni.isaac.samples" = {}
-"omni.isaac.step_importer" = {}
-"omni.isaac.robot_engine_bridge" = {}
-"omni.isaac.dr" = {}

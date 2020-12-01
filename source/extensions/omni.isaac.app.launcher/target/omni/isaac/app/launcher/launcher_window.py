@@ -2,18 +2,23 @@ import sys
 
 import carb.settings
 import carb.tokens
-
 import omni.kit.app
 
-from typing import List, Dict, Any
-
+from typing import List
 from pathlib import Path
+
+from .launch_app import launch_app
+from .settings import (
+    APPS_SETTING,
+    EXPERIMENTAL_APPS_SETTING,
+    AUTO_LAUNCH_SETTING,
+    DEFAULT_APP_SETTING,
+    SHOW_CONSOLE_SETTING,
+    PERSISTENT_LAUNCHER_SETTING,
+)
 
 CURRENT_PATH = Path(__file__).parent
 ICON_PATH = CURRENT_PATH.parent.parent.parent.parent.joinpath("icons")
-
-SHOW_CONSOLE_SETTING = "/persistent/ext/omni.isaac.launcher/show_console"
-PERSISTENT_LAUNCHER_SETTING = "/persistent/ext/omni.isaac.launcher/persistent_launcher"
 
 GRAY = 0xFF444444
 LIGHT_GRAY = 0xFFBBBBBB
@@ -42,9 +47,11 @@ class LauncherWindow:
 
         self._auto_launch = None
         self._app_as_default = None
-        self._apps: List[str] = self._settings.get("/ext/omni.isaac.launcher/apps")
-        self._auto_launch = self._settings.get("/persistent/ext/omni.isaac.launcher/auto_launch")
-        self._default_app = self._settings.get("/persistent/ext/omni.isaac.launcher/default_app")
+        self._apps: List[str] = self._settings.get(APPS_SETTING)
+        self._experimental_apps: List[str] = self._settings.get(EXPERIMENTAL_APPS_SETTING)
+
+        self._auto_launch = self._settings.get(AUTO_LAUNCH_SETTING)
+        self._default_app = self._settings.get(DEFAULT_APP_SETTING)
 
         self._app_list_frame = None  # the frame for the application list
         self._detail_label = None  # label of the active app
@@ -52,36 +59,30 @@ class LauncherWindow:
         self._window = None
         self._build_window()
 
+    def _get_all_apps(self):
+        """ get the list of apps and experimental apps """
+        all_apps: list[str] = self._settings.get(APPS_SETTING)
+        all_apps.extend(self._settings.get(EXPERIMENTAL_APPS_SETTING))
+        return all_apps
+
     def _launch_app(self, app_id: str):
-        """ show the omniverse ui documentation as an external Application """
-        # update default
-        if self._app_as_default.get_value_as_bool():
-            self._settings.set("/persistent/ext/omni.isaac.launcher/default_app", app_id)
-
-        import subprocess
-        import platform
-
-        app_folder = self._settings.get_as_string("/app/folder")
-        if app_folder == "":
-            app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
-
-        launch_args = [f"{app_folder}/../{app_id}.bat"]
-
-        kwargs: Dict[str, Any] = {"close_fds": False}
-        if platform.system().lower() == "windows":
-            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
-            if self._settings.get(SHOW_CONSOLE_SETTING):
-                kwargs["creationflags"] |= subprocess.CREATE_NEW_CONSOLE
-
-        subprocess.Popen(launch_args, **kwargs)
+        """ wrapper function to help collecting the right settings to be used in the class """
+        launch_app(
+            app_id=app_id,
+            app_become_new_default=self._app_as_default.get_value_as_bool(),
+            close_on_launch=not self._persistent_launcher.get_value_as_bool(),
+        )
 
     def _launch_selected_app(self):
         application_index = self._radio_collection.model.get_value_as_int()
-        self._launch_app(self._apps[application_index])
+        all_apps = self._get_all_apps()
 
-        # update the default app display if needed
-        self._default_app = self._settings.get("/persistent/ext/omni.isaac.launcher/default_app")
-        self._build_app_list()
+        app_id = all_apps[application_index]
+        self._launch_app(app_id=app_id)
+        if self._persistent_launcher.get_value_as_bool():
+            # update the default app display if needed
+            self._default_app = self._settings.get(DEFAULT_APP_SETTING)
+            self._build_app_list()
 
     def _close(self):
         sys.exit()
@@ -98,6 +99,30 @@ class LauncherWindow:
     def _exit(self):
         omni.kit.app.get_app().post_quit()
 
+    def _build_app_widget(self, app_id):
+        import omni.ui as ui
+
+        with ui.VStack(width=0):
+            with ui.ZStack(style={"ZStack": {"margin": 10}}):
+                bg_color = "gray_bg"
+                if app_id == self._default_app:
+                    bg_color = "active_bg"
+                ui.Rectangle(name=bg_color)
+                ui.RadioButton(
+                    text=".",
+                    style={"Button": {"padding": 20}, "Button.Image": {"alignment": ui.Alignment.CENTER}},
+                    # image_url=f"{ICON_PATH}/{an_app}.png",
+                    name="app",
+                    height=175,
+                    width=175,
+                    clicked_fn=lambda app=app_id: self._show_details(app),
+                    mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._launch_app(app),
+                    radio_collection=self._radio_collection,
+                )
+            app_title = self._appid_to_title(app_id)
+            ui.Label(app_title, name="app_label", height=0, alignment=ui.Alignment.CENTER)
+            ui.Spacer(height=20)
+
     def _build_app_list(self):
         import omni.ui as ui
 
@@ -108,35 +133,25 @@ class LauncherWindow:
             self._app_list_frame.clear()
 
         with self._app_list_frame:
-
             self._radio_collection = ui.RadioCollection()
-            with ui.VGrid(column_count=3, row_height=230):
-                for an_app in self._apps:
-                    with ui.VStack():
-                        with ui.ZStack(style={"ZStack": {"margin": 10}}):
-                            bg_color = "gray_bg"
-                            if an_app == self._default_app:
-                                bg_color = "active_bg"
-                            ui.Rectangle(name=bg_color)
-                            ui.RadioButton(
-                                text=".",
-                                style={"Button": {"padding": 20}, "Button.Image": {"alignment": ui.Alignment.CENTER}},
-                                # image_url=f"{ICON_PATH}/{an_app}.png",
-                                name="app",
-                                height=175,
-                                width=175,
-                                clicked_fn=lambda app=an_app: self._show_details(app),
-                                mouse_double_clicked_fn=lambda x, y, m, b, app=an_app: self._launch_app(app),
-                                radio_collection=self._radio_collection,
-                            )
-                        app_title = self._appid_to_title(an_app)
-                        ui.Label(app_title, name="app_label", height=0, alignment=ui.Alignment.CENTER)
-                        ui.Spacer(height=20)
+
+            with ui.VStack():
+                ui.Label("   Main Apps", height=0, style={"font_size": 20})
+                with ui.HStack(height=230):
+                    for an_app in self._apps:
+                        self._build_app_widget(an_app)
+
+                ui.Spacer(height=10)
+                ui.Label("   Experimental Apps", height=0, style={"font_size": 20})
+                with ui.VGrid(column_count=3, row_height=230):
+                    for an_app in self._experimental_apps:
+                        self._build_app_widget(an_app)
 
             default_index = 0
             if self._default_app:
                 try:
-                    default_index = self._apps.index(self._default_app)
+                    all_apps = self._get_all_apps()
+                    default_index = all_apps.index(self._default_app)
                 except:
                     default_index = 0
 
@@ -227,7 +242,7 @@ class LauncherWindow:
 
                 def on_value_changed(model):
                     value = model.get_value_as_bool()
-                    self._settings.set("/persistent/ext/omni.isaac.launcher/auto_launch", value)
+                    self._settings.set(AUTO_LAUNCH_SETTING, value)
 
                 self._auto_launch_chk = ui.CheckBox(height=10, width=30).model
                 self._auto_launch_chk.set_value(self._auto_launch)
@@ -272,7 +287,6 @@ class LauncherWindow:
         self._window.frame.set_style(launcher_style)
         with self._window.frame:
             with ui.VStack():
-                ui.Spacer(height=20)
                 with ui.HStack():
                     # app List
                     self._build_app_list()
