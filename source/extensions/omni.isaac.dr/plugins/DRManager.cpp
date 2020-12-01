@@ -107,7 +107,13 @@ void DRManager::tick(double dt)
 
 void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
 {
-    if (!prim.IsA<pxr::DrSchemaBaseComponent>())
+    if (!(prim.GetTypeName().GetString() == "ColorComponent") && !(prim.GetTypeName().GetString() == "TextureComponent") &&
+        !(prim.GetTypeName().GetString() == "MaterialComponent") &&
+        !(prim.GetTypeName().GetString() == "MovementComponent") &&
+        !(prim.GetTypeName().GetString() == "RotationComponent") &&
+        !(prim.GetTypeName().GetString() == "ScaleComponent") &&
+        !(prim.GetTypeName().GetString() == "LightComponent") && !(prim.GetTypeName().GetString() == "MeshComponent") &&
+        !(prim.GetTypeName().GetString() == "VisibilityComponent"))
         return;
 
     std::string primPath = prim.GetPath().GetString();
@@ -126,47 +132,47 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
     if (mComponents.find(primPath) != mComponents.end())
         return;
 
-    if (prim.IsA<pxr::DrSchemaColorComponent>())
+    if (prim.GetTypeName().GetString() == "ColorComponent")
     {
         component = std::make_unique<DRComponentColor>(mTokens);
         component->initialize(pxr::DrSchemaColorComponent(prim), mStage);
     }
-    else if (prim.IsA<pxr::DrSchemaTextureComponent>())
+    else if (prim.GetTypeName().GetString() == "TextureComponent")
     {
         component = std::make_unique<DRComponentTexture>(mTokens);
         component->initialize(pxr::DrSchemaTextureComponent(prim), mStage);
     }
-    else if (prim.IsA<pxr::DrSchemaMaterialComponent>())
+    else if (prim.GetTypeName().GetString() == "MaterialComponent")
     {
         component = std::make_unique<DRComponentMaterial>();
         component->initialize(pxr::DrSchemaMaterialComponent(prim), mStage);
     }
-    else if (prim.IsA<pxr::DrSchemaMovementComponent>())
+    else if (prim.GetTypeName().GetString() == "MovementComponent")
     {
         component = std::make_unique<DRComponentMovement>();
         component->initialize(pxr::DrSchemaMovementComponent(prim), mStage);
     }
-    else if (prim.IsA<pxr::DrSchemaRotationComponent>())
+    else if (prim.GetTypeName().GetString() == "RotationComponent")
     {
         component = std::make_unique<DRComponentRotation>();
         component->initialize(pxr::DrSchemaRotationComponent(prim), mStage);
     }
-    else if (prim.IsA<pxr::DrSchemaScaleComponent>())
+    else if (prim.GetTypeName().GetString() == "ScaleComponent")
     {
         component = std::make_unique<DRComponentScale>();
         component->initialize(pxr::DrSchemaScaleComponent(prim), mStage);
     }
-    else if (prim.IsA<pxr::DrSchemaLightComponent>())
+    else if (prim.GetTypeName().GetString() == "LightComponent")
     {
         component = std::make_unique<DRComponentLight>();
         component->initialize(pxr::DrSchemaLightComponent(prim), mStage);
     }
-    else if (prim.IsA<pxr::DrSchemaMeshComponent>())
+    else if (prim.GetTypeName().GetString() == "MeshComponent")
     {
         component = std::make_unique<DRComponentMesh>();
         component->initialize(pxr::DrSchemaMeshComponent(prim), mStage);
     }
-    else if (prim.IsA<pxr::DrSchemaVisibilityComponent>())
+    else if (prim.GetTypeName().GetString() == "VisibilityComponent")
     {
         component = std::make_unique<DRComponentVisibility>();
         component->initialize(pxr::DrSchemaVisibilityComponent(prim), mStage);
