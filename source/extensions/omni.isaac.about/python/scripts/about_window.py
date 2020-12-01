@@ -47,6 +47,9 @@ class Extension(omni.ext.IExt):
         button.set_clicked_fn(lambda *_: self._window.hide())
         self._window.layout.add_child(button)
 
+    def get_name(self):
+        return f"{WINDOW_NAME} Window"
+
     def set_versions_label(self):
         self.versions_label.text = (
             f"Omniverse Kit {self.kit_version}\n"
