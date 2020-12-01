@@ -84,9 +84,13 @@ async def capture_next_frame(app, capture_file_path: str):
         import omni.kit.editor
 
         _editor = omni.kit.editor.get_editor_interface()
-    except ImportError:
-        import omni.renderer_capture
-        import omni.kit.viewport
+    except ImportError as ie:
+
+        try:
+            import omni.renderer_capture
+            import omni.kit.viewport
+        except ImportError as ie:
+            carb.log_error(f"*** screenshot: capture_next_frame: can't load {ie}")
 
         _renderer = omni.renderer_capture.acquire_renderer_capture_interface()
         _viewport_interface = omni.kit.viewport.acquire_viewport_interface()
@@ -266,7 +270,7 @@ async def load_stage(stage_path: str, syncloads: bool, num_assets_loaded: int = 
     if hasattr(usd_context, "open_stage_async"):
         open_stage_fn = omni.usd.get_context().open_stage_async
     else:
-        open_stage_fn = omni.usd.get_context().open_stage_async
+        open_stage_fn = omni.kit.asyncapi.open_stage
 
     # open_stage(_async) will wait for the stage to open, but will return
     # without waiting for MDLs to be loaded!

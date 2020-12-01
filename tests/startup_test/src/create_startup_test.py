@@ -14,6 +14,7 @@ from ovat_outputs import FileOutput, Outputs, TestOutput
 class ImageTest:
     """Holds information about a test case"""
 
+    experience_name: str
     name: str
     output_filename: str
     stage_path: str
@@ -30,10 +31,74 @@ class ImageTest:
     stats_file: str = ""
     timeout: int = 200
 
+    def get_output_path(self) -> str:
+        return f"{self.experience_name}_{self.output_filename}"
+
+    def get_name(self) -> str:
+        return f"{self.name}_{self.experience_name}"
+
 
 # Test cases to be executed in this OVAT test
-TEST_LIST = (
+kitchen_sink_path = "omniverse://sandbox.ov.nvidia.com:3009/Users/Eoinm/Collected_Kitchen_set/Kitchen_set.usd"
+
+
+imageTests = (
     ImageTest(
+        experience_name="create.testing",
+        name="Kitchen_Set",
+        golden_filename="create.testing_kitchen_set_golden.png",
+        output_filename="kitchen_set.png",
+        stage_path=kitchen_sink_path,
+        camera_path="/Kitchen_set/Camera",
+        wait_after_load=15,
+    ),
+    ImageTest(
+        experience_name="create",
+        name="Kitchen_Set",
+        golden_filename="create_kitchen_set_golden.png",
+        output_filename="kitchen_set.png",
+        stage_path=kitchen_sink_path,
+        camera_path="/Kitchen_set/Camera",
+        wait_after_load=15,
+    ),
+    ImageTest(
+        experience_name="create.hydra",
+        name="Kitchen_Set",
+        golden_filename="create.hydra_kitchen_set_golden.png",
+        output_filename="kitchen_set.png",
+        stage_path=kitchen_sink_path,
+        camera_path="/Kitchen_set/Camera",
+        wait_after_load=15,
+    ),
+    ImageTest(
+        experience_name="create.hydraEngines",
+        name="Kitchen_Set",
+        golden_filename="create.hydraEngines_kitchen_set_golden.png",
+        output_filename="kitchen_set.png",
+        stage_path=kitchen_sink_path,
+        camera_path="/Kitchen_set/Camera",
+        wait_after_load=15,
+    ),
+    ImageTest(
+        experience_name="create.iray",
+        name="Kitchen_Set",
+        golden_filename="create.iray_kitchen_set_golden.png",
+        output_filename="kitchen_set.png",
+        stage_path=kitchen_sink_path,
+        camera_path="/Kitchen_set/Camera",
+        wait_after_load=15,
+    ),
+    # ImageTest(
+    #     experience_name="create.mini",
+    #     name="Kitchen_Set",
+    #     golden_filename="kitchen_set_golden.png",
+    #     output_filename='kitchen_set.png',
+    #     stage_path=kitchen_sink_path,
+    #     camera_path="/Kitchen_set/Camera",
+    #     wait_after_load=15,
+    # ),
+    ImageTest(
+        experience_name="create.next",
         name="Astronaut",
         golden_filename="astronaut_golden.png",
         output_filename="astronaut.png",
@@ -42,6 +107,8 @@ TEST_LIST = (
         wait_after_load=15,
     ),
 )
+
+
 SCREENSHOT_SCRIPT = Path(__file__).parent / "kit-screenshot" / "screenshot.py"
 
 
@@ -66,18 +133,19 @@ def run_image_tests(create_runner) -> Outputs:
     # For each test we will add two outputs to the Outputs collection
     outputs = Outputs()
 
-    for test in TEST_LIST:
-        Benchmark.log_info(f"Running test: {test.name}")
+    for test in imageTests:
+
+        Benchmark.log_info(f"Running test: {test.get_name()}")
 
         # get a handle to each TestOutput we measure
-        _render_test = outputs.add(TestOutput(name=f"{test.name} Render Test"))
-        _exit_test = outputs.add(TestOutput(name=f"{test.name} Exit Test"))
+        _render_test = outputs.add(TestOutput(name=f"{test.get_name()} Render Test"))
+        _exit_test = outputs.add(TestOutput(name=f"{test.get_name()} Exit Test"))
 
         # the generated image
         _golden_file = None
         if test.golden_filename:
             _golden_file = Path(__file__).parent / "golden" / test.golden_filename
-        _outfile = output_dir / test.output_filename
+        _outfile = output_dir / test.get_output_path()
 
         # build args list for script
         screenshot_args = f"-s {test.stage_path} -o {_outfile} --res_x {test.image_width} --res_y {test.image_height}"
@@ -97,6 +165,7 @@ def run_image_tests(create_runner) -> Outputs:
         screenshot_args = f"{screenshot_args} --stats_file {stats_file}"
 
         screenshot_args = f"{screenshot_args} --stats_file {stats_file}"
+        screenshot_args = f"{screenshot_args} --capture_app"
         args = f'--exec "{SCREENSHOT_SCRIPT} {screenshot_args}"'
         if test.enabled_renderers:
             args = f"{args} --/renderer/enabled={test.enabled_renderers}"
@@ -104,8 +173,9 @@ def run_image_tests(create_runner) -> Outputs:
         # Run the render test
         with _render_test.timer:
             # careful, stdout and stderr can be bytes!
+            create_runner.set_exe(test.experience_name)
             return_code, stdout, stderr, timed_out = create_runner.run_kit(args=args, timeout=test.timeout)
-        Benchmark.log_info(f"Kit ran {test.name} in {_render_test.timer.duration}s")
+        Benchmark.log_info(f"Kit ran {test.get_name()} in {_render_test.timer.duration}s")
 
         # Check for a clean exit
         if timed_out:
@@ -113,11 +183,11 @@ def run_image_tests(create_runner) -> Outputs:
                 f"Kit timed out, that means it hung during the render test. Return code: {return_code}"
             )
             Benchmark.log_warn(
-                f"Kit timed out. Got return code {return_code} (instead of 0), {test.name} exit test failed."
+                f"Kit timed out. Got return code {return_code} (instead of 0), {test.get_name()} exit test failed."
             )
         elif return_code != 0:
             _exit_test.set_failed(f"Kit crashed on exit. Return code: {return_code}")
-            Benchmark.log_warn(f"Kit crashed on exit. Return code: {return_code}, {test.name} exit test failed.")
+            Benchmark.log_warn(f"Kit crashed on exit. Return code: {return_code}, {test.get_name()} exit test failed.")
 
         # Store Kit's logfile for each image
         kit_log = create_runner.get_log_path()
@@ -134,7 +204,7 @@ def run_image_tests(create_runner) -> Outputs:
         # Now check the render output
         if not _outfile.exists():
             _render_test.set_failed("Kit did not render an image at all")
-            Benchmark.log_warn(f"Kit did not render an image at all, {test.name} render test failed.")
+            Benchmark.log_warn(f"Kit did not render an image at all, {test.get_name()} render test failed.")
             continue
         else:
             _render_test.add_image_metadata("Generated Image", str(_outfile))
@@ -146,7 +216,7 @@ def run_image_tests(create_runner) -> Outputs:
             # dssim_py throws an error if the images differ in size
             try:
                 ssim = dssim_py.compare(str(_golden_file), str(_outfile), diff_output=str(_diff_img))
-                Benchmark.log_info(f"{test.name} SSIM score: {ssim}")
+                Benchmark.log_info(f"{test.get_name()} SSIM score: {ssim}")
 
                 _render_test.add_number_metadata("SSIM Value", ssim)
                 _render_test.add_image_metadata("Differences", _diff_img)
@@ -160,14 +230,16 @@ def run_image_tests(create_runner) -> Outputs:
                     try:
                         stats = json.loads(stats_file.read_text())
                         load_time = stats["load_time"]
-                        Benchmark.log_info(f"{test.name} Load Time: {load_time}")
+                        Benchmark.log_info(f"{test.get_name()} Load Time: {load_time}")
                         _render_test.add_number_metadata("Load Time", load_time)
                     except Exception as e:
                         Benchmark.log_warn(f"Stats decoding failed: {e}")
                         pass
 
             except ValueError as e:
-                Benchmark.log_error(f"Kit generated an image with an invalid size. {test.name} render test failed.")
+                Benchmark.log_error(
+                    f"Kit generated an image with an invalid size. {test.get_name()} render test failed."
+                )
                 Benchmark.log_error(str(e))
                 _render_test.set_failed("Generated image size is invalid", details=str(e))
 

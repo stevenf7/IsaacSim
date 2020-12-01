@@ -14,17 +14,10 @@ publish_results = true
 # of your @input() declared in your OVAT script
 # We can specify inputs for development/debugging running from local artifacts
 # An auto-generated gcn_local.yml file will be created with these values
-[inputs.create_runner.local.release]
+[inputs.create_runner.release]
 #"Absolute EXE Path" = ["ResolvePath", "../../_build/windows-x86_64/release/omni.create.bat"]
 #"Absolute EXE Path" = ["ResolvePath", "C:/Users/eoinm/.ovat/GCN/Work/Temp/task_api_17_11_2020/ovat-kit.ith5amm4/create/_build/windows-x86_64/release/omni.create.bat"]
 "Realtime stdout and stderr" = true
-#"Kit Build ID" = "100.1.39496-84fdbba2-release"
 
-#[inputs.create_runner.local.debug]
-#"Absolute EXE Path" = ["ResolvePath", "../../_build/windows-x86_64/debug/omni.create.testing.bat"]
-
-# We can also specify inputs overrides for specific CI/CD platforms
-# Here is an example for Teamcity taking advantage of Teamcity parameters
-# This is the build ID of the Create artefact..
 [inputs.create_runner.teamcity]
-"Teamcity Build ID" = "%dep.Omniverse_OvCreate_Master_WindowsX8664.teamcity.build.id%"
+"Kit Build ID" = "%dep.Omniverse_Kit_Releases_1001_Kit_BuildAndPackaging_BuildLinuxX8664ReleaseOnly.build.number%"
