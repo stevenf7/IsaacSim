@@ -57,6 +57,8 @@ project_ext_bindings {
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/urdf/scripts" },
+    { "docs", ext.target_dir.."/docs" },
+    { "data", ext.target_dir.."/data" },
 }
 
 repo_build.prebuild_copy {

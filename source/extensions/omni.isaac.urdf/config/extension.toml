@@ -1,27 +1,42 @@
-display_name = "URDF Import and Utils"
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "URDF Importer"
+description = "URDF Importer for Omniverse"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.urdf"
+keywords = ["isaac", "urdf", "import"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.editor" = {}
 "omni.isaac.utils" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.urdf"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.urdf.scripts.samples.import_carter"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.urdf.scripts.samples.import_franka"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.urdf.scripts.samples.import_kaya"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.urdf.scripts.samples.import_ur10"
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 
 [python.pipapi]
-requirements = ["psutil", "graphviz"]
+requirements = ["graphviz"]
