@@ -113,7 +113,9 @@ if __name__ == "__main__":
         "-R", "--reset_num_timesteps", help="reset the current timestep number (used in logging)", action="store_true"
     )
 
-    parser.add_argument("-M", "--mirror_mode", help="reflect images horizontally durring training", action="store_true")
+    parser.add_argument(
+        "-M", "--mirror_mode", help="reflect images and actions horizontally during training", action="store_true"
+    )
 
     parser.add_argument("-H", "--headless", help="run in headless mode (no GUI)", action="store_true")
 

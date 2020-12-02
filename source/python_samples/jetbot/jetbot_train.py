@@ -29,7 +29,7 @@ def train(args):
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
 
-    env = JetbotEnv(omniverse_kit, max_resets=args.rand_freq, updates_per_step=3)
+    env = JetbotEnv(omniverse_kit, max_resets=args.rand_freq, updates_per_step=3, mirror_mode=args.mirror_mode)
 
     checkpoint_callback = CheckpointCallback(
         save_freq=args.save_freq, save_path="./params/", name_prefix=args.checkpoint_name
@@ -79,7 +79,7 @@ def runEval(args):
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
 
-    env = JetbotEnv(omniverse_kit)
+    env = JetbotEnv(omniverse_kit, mirror_mode=args.mirror_mode)
     obs = env.reset()
 
     while True:
@@ -99,6 +99,10 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "-R", "--reset_num_timesteps", help="reset the current timestep number (used in logging)", action="store_true"
+    )
+
+    parser.add_argument(
+        "-M", "--mirror_mode", help="reflect images and actions horizontally during training", action="store_true"
     )
 
     parser.add_argument("-H", "--headless", help="run in headless mode (no GUI)", action="store_true")
@@ -124,7 +128,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--total_steps",
         help="the total number of steps before exiting and saving a final checkpoint",
-        default=25000,
+        default=250000,
         type=int,
     )
 
