@@ -4,35 +4,35 @@ display_name = "Domain Randomization"
 version = "0.1.1"
 title = "Domain Randomization"
 description = "This extension randomizes domain parameters in Omniverse Kit"
-authors = ["Shoubhik Debnath <sdebnath@nvidia.com>", "Hammad Mazhar <hmazhar@nvidia.com>"]
+authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac/dr"
-keywords = ["kit", "domain", "randomizer"]
+keywords = ["isaac", "domain", "randomizer", "dr"]
 changelog = "docs/CHANGELOG.md"
-category = "Isaac Sim"
+category = "Simulation"
 readme = "docs/README.md"
-preview_image = "package/preview.png"
-icon = "package/icon.png"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.editor" = {}
 "omni.client" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.dr"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.dr.scripts.samples"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.dr.scripts.random_room_sample"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.DrSchema"
 public = false
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 
-[[libraries]]
+[[native.library]]
 path = "bin/${lib_prefix}drSchema${lib_ext}"
