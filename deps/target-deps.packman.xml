@@ -50,4 +50,26 @@
   <dependency name="physxdevice" linkPath="../_build/target-deps/physxdevice" />
   <dependency name="usd_ext_physics_release" linkPath="../_build/target-deps/usd_ext_physics/release" />
   <dependency name="usd_ext_physics_debug" linkPath="../_build/target-deps/usd_ext_physics/debug" />
+
+  <!-- Extensions from View -->
+  <dependency name="omni.kit.widgets.custom.debug" linkPath="../_build/windows-x86_64/debug/exts/omni.kit.widgets.custom">
+    <package name="omni.kit.widgets.custom" version="0.3.5"/>
+  </dependency>
+  <dependency name="omni.kit.widgets.custom.release" linkPath="../_build/windows-x86_64/release/exts/omni.kit.widgets.custom">
+    <package name="omni.kit.widgets.custom" version="0.3.5"/>
+  </dependency>  <dependency name="omni.kit.tool.paint.debug" linkPath="../_build/windows-x86_64/debug/exts/omni.kit.tool.paint">
+    <package name="omni.kit.tool.paint" version="0.3.0+${platform}.debug"/>
+  </dependency>
+  <dependency name="omni.kit.tool.paint.release" linkPath="../_build/windows-x86_64/release/exts/omni.kit.tool.paint">
+    <package name="omni.kit.tool.paint" version="0.3.0+${platform}.release"/>
+  </dependency>
+  <dependency name="omni.kit.window.sunstudy.debug" linkPath="../_build/windows-x86_64/debug/exts/omni.kit.window.sunstudy">
+    <package name="omni.kit.window.sunstudy" version="0.4.2"/>
+  </dependency>
+  <dependency name="omni.kit.window.sunstudy.release" linkPath="../_build/windows-x86_64/release/exts/omni.kit.window.sunstudy">
+    <package name="omni.kit.window.sunstudy" version="0.4.2"/>
+  </dependency>
+  <dependency name="omni.kit.utility.icon_modifier.release" linkPath="../_build/windows-x86_64/release/exts/omni.kit.utility.icon_modifier">
+    <package name="omni.kit.utility.icon_modifier" version="0.1.0+${platform}.release" platforms="windows-x86_64" />
+  </dependency>
 </project>

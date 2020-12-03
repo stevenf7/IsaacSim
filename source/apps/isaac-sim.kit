@@ -63,7 +63,9 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.material.library" = {}
 
 # Content Browser
-"omni.kit.window.content" = {} # But it is hidden / just trying to clear some dependency 
+#"omni.kit.window.content" = {} # But it is hidden / just trying to clear some dependency 
+
+"omni.kit.window.imageviewer" = {}
 
 "omni.kit.widget.filebrowser" = { }
 "omni.kit.window.filepicker" = { }
@@ -129,7 +131,6 @@ size = 16
 featuredExts = [
     "omni.kit.usda_edit",
     "omni.kit.window.stageviewer",
-    "omni.kit.window.imageviewer",
 
     "omni.flowusd",
     "omni.blast",
@@ -163,6 +164,8 @@ persistent.app.window.uiStyle = "NvidiaDark"
 exts."omni.kit.window.splash".imagePath = "${app}/../exts/omni.isaac.splash/data/create_splash_screen@1x.png"
 exts.'omni.kit.splash'.splash_app = "${app}/omni.isaac.app.splash.kit"
 
+# hide NonToggleable Exts 
+exts."omni.kit.window.extensions".hideNonToggleableExts = true
 
 # Misc Settings
 ###############################

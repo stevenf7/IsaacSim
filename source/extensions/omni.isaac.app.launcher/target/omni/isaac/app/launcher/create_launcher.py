@@ -41,7 +41,7 @@ class CreateLauncherExtension(omni.ext.IExt):
         if self._settings.get("/app/auto_launch") and (user_auto_launch or user_auto_launch is None):
             default_app = self._settings.get(DEFAULT_APP_SETTING)
             if not default_app:
-                default_app = self._settings.get(DEFAULT_APP_SETTING)
+                default_app = self._settings.get("/ext/omni.isaac.launcher/default_app")
 
             close_on_launch = not self._settings.get(PERSISTENT_LAUNCHER_SETTING)
             launch_app(app_id=default_app, app_become_new_default=False, close_on_launch=close_on_launch)
