@@ -76,6 +76,7 @@ CON
 # allow anything in data and docs/images (both under Git LFS management)
 !data/**
 !docs/images/**
+!source/extensions/**/data/**
 
 # ignore the cache
 data/cache

@@ -20,20 +20,23 @@ from .settings import (
 CURRENT_PATH = Path(__file__).parent
 ICON_PATH = CURRENT_PATH.parent.parent.parent.parent.joinpath("icons")
 
-GRAY = 0xFF444444
-LIGHT_GRAY = 0xFFBBBBBB
-DARK_GRAY = 0xFF2A2A2A
+GRAY = 0xFF4A4A4A
+LIGHT_GRAY = 0xFFA8A8A8
+DARK_GRAY = 0xFF363636
 GREEN = 0xFF00B976
 BLACK = 0xFF000000
+BLUE = 0xFFF6A66B
+LIGHT_BLUE = 0xFF8A8777
 
 launcher_style = {
     "Rectangle::gray_bg": {"background_color": GRAY},
     "Rectangle::active_bg": {"background_color": GREEN},
     "ScrollingFrame": {"background_color": DARK_GRAY, "padding": 15},
-    "RadioButton::app": {"color": 0x0, "background_color": BLACK, "margin": 10},
-    "RadioButton.Label": {"color": 0x0},
-    "RadioButton:checked": {"background_color": GREEN},
+    "RadioButton::app": {"background_color": GRAY, "margin": 10},
+    "RadioButton.Label": {"font_size": 22},
+    "RadioButton:checked": {"background_color": LIGHT_BLUE},
     "Label::app_label": {"font_size": 20, "color": LIGHT_GRAY},
+    # "CheckBox::checked": {"color": BLACK, "background_color": LIGHT_GRAY},
 }
 
 
@@ -57,7 +60,9 @@ class LauncherWindow:
         self._detail_label = None  # label of the active app
         self._detail_description = None  # label of the active app
         self._window = None
-        self._build_window()
+
+        # currently only building the compact window
+        self._build_compact_window()
 
     def _get_all_apps(self):
         """ get the list of apps and experimental apps """
@@ -82,7 +87,7 @@ class LauncherWindow:
         if self._persistent_launcher.get_value_as_bool():
             # update the default app display if needed
             self._default_app = self._settings.get(DEFAULT_APP_SETTING)
-            self._build_app_list()
+            self._build_compact_app_list()
 
     def _close(self):
         sys.exit()
@@ -94,6 +99,9 @@ class LauncherWindow:
         app_title = app_id.replace("omni.", "")
         app_title = app_title.replace(".", " ")
         app_title = app_title.capitalize()
+        if app_id in self._experimental_apps:
+            app_title = f"{app_title} [Experimental]"
+
         return app_title
 
     def _exit(self):
@@ -123,6 +131,54 @@ class LauncherWindow:
             ui.Label(app_title, name="app_label", height=0, alignment=ui.Alignment.CENTER)
             ui.Spacer(height=20)
 
+    def _build_compact_app_widget(self, app_id):
+        import omni.ui as ui
+
+        with ui.HStack(width=480, height=40):
+            with ui.ZStack(style={"ZStack": {"margin": 5}}):
+                bg_color = "gray_bg"
+                if app_id == self._default_app:
+                    bg_color = "active_bg"
+                ui.Rectangle(name=bg_color)
+                app_title = self._appid_to_title(app_id)
+                ui.RadioButton(
+                    text=app_title,
+                    image_width=ui.Pixel(40),
+                    image_height=ui.Pixel(32),
+                    style={
+                        ":": {
+                            "margin": 0,
+                            "stack_direction": ui.Direction.LEFT_TO_RIGHT,
+                            "alignment": ui.Alignment.LEFT_CENTER,
+                        },
+                        "Label": {"alignment": ui.Alignment.LEFT},
+                    },
+                    image_url=f"{ICON_PATH}/{app_id}.png",
+                    name="app",
+                    # clicked_fn=lambda app=app_id: self._show_details(app),
+                    mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._launch_app(app),
+                    radio_collection=self._radio_collection,
+                )
+            with ui.ZStack(style={"ZStack": {"margin": 14}}, width=40):
+                ui.Rectangle(style={"background_color": BLUE, "border_radius": 3})
+
+                ext_manager = omni.kit.app.get_app().get_extension_manager()
+                ext_dict = ext_manager.get_extension_dict(f"{app_id}-2020.3.0")
+
+                description = "Desciptions To Come"
+                # if ext_dict:
+                #     description = ext_dict["package"]["description"]
+                #     if "details_description" in ext_dict["package"]:
+                #         description = ext_dict["package"]["details_description"]
+
+                ui.Label(
+                    " ? ",
+                    style={"color": BLACK, "font_size": 20},
+                    height=0,
+                    alignment=ui.Alignment.CENTER,
+                    tooltip=description,
+                )
+
     def _build_app_list(self):
         import omni.ui as ui
 
@@ -146,6 +202,37 @@ class LauncherWindow:
                 with ui.VGrid(column_count=3, row_height=230):
                     for an_app in self._experimental_apps:
                         self._build_app_widget(an_app)
+
+            default_index = 0
+            if self._default_app:
+                try:
+                    all_apps = self._get_all_apps()
+                    default_index = all_apps.index(self._default_app)
+                except:
+                    default_index = 0
+
+            self._radio_collection.model.set_value(default_index)
+
+    def _build_compact_app_list(self):
+        import omni.ui as ui
+
+        # Application Column
+        if not self._app_list_frame:
+            self._app_list_frame = ui.ScrollingFrame(width=500)
+        else:
+            self._app_list_frame.clear()
+
+        with self._app_list_frame:
+            self._radio_collection = ui.RadioCollection()
+
+            with ui.VStack():
+                for an_app in self._apps:
+                    self._build_compact_app_widget(an_app)
+
+                ui.Line(height=20, style={"color": GREEN, "border_width": 2})
+
+                for an_app in self._experimental_apps:
+                    self._build_compact_app_widget(an_app)
 
             default_index = 0
             if self._default_app:
@@ -203,34 +290,14 @@ class LauncherWindow:
                     style={"font_size": 18, "color": 0xFFBBBBBB, "alignment": ui.Alignment.LEFT},
                 )
 
-            with ui.HStack(height=0):
-                ui.Spacer(width=10)
-                self._show_app_console = ui.CheckBox(height=10, width=30).model
+            self._build_launch_controls()
 
-                def on_console_value_changed(model):
-                    value = model.get_value_as_bool()
-                    self._settings.set(SHOW_CONSOLE_SETTING, value)
+    def _build_launch_controls(self):
+        import omni.ui as ui
 
-                self._show_app_console.set_value(self._settings.get(SHOW_CONSOLE_SETTING))
-                self._show_app_console.add_value_changed_fn(on_console_value_changed)
+        ui.Spacer(height=20)
+        with ui.VStack(height=0, style={"VStack": {"margin": 10}}):
 
-                ui.Label("Show startup console", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
-
-            ui.Spacer(height=5)
-            with ui.HStack(height=0):
-                ui.Spacer(width=10)
-                self._persistent_launcher = ui.CheckBox(height=10, width=30).model
-
-                def on_persistent_launcher_value_changed(model):
-                    value = model.get_value_as_bool()
-                    self._settings.set(PERSISTENT_LAUNCHER_SETTING, value)
-
-                self._persistent_launcher.set_value(self._settings.get(PERSISTENT_LAUNCHER_SETTING))
-                self._persistent_launcher.add_value_changed_fn(on_persistent_launcher_value_changed)
-
-                ui.Label("Keep Launcher Open on App Launch", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
-
-            ui.Spacer(height=5)
             with ui.HStack(height=0):
                 ui.Spacer(width=10)
                 self._app_as_default = ui.CheckBox(height=10, width=30).model
@@ -251,7 +318,36 @@ class LauncherWindow:
                 ui.Label("Automaticly launch default app", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
 
             ui.Spacer(height=5)
-            with ui.HStack(height=50, style={"font_size": 20, "margin": 4}):
+            with ui.HStack(height=0):
+                ui.Spacer(width=10)
+                self._persistent_launcher = ui.CheckBox(height=10, width=30).model
+
+                def on_persistent_launcher_value_changed(model):
+                    value = model.get_value_as_bool()
+                    self._settings.set(PERSISTENT_LAUNCHER_SETTING, value)
+
+                self._persistent_launcher.set_value(self._settings.get(PERSISTENT_LAUNCHER_SETTING))
+                self._persistent_launcher.add_value_changed_fn(on_persistent_launcher_value_changed)
+
+                ui.Label("Keep Launcher Open on App Launch", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
+
+            ui.Spacer(height=5)
+            with ui.HStack(height=0):
+                ui.Spacer(width=10)
+                self._show_app_console = ui.CheckBox(height=10, width=30).model
+
+                def on_console_value_changed(model):
+                    value = model.get_value_as_bool()
+                    self._settings.set(SHOW_CONSOLE_SETTING, value)
+
+                self._show_app_console.set_value(self._settings.get(SHOW_CONSOLE_SETTING))
+                self._show_app_console.add_value_changed_fn(on_console_value_changed)
+
+                ui.Label("Show startup console", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
+
+            ui.Spacer(height=5)
+            with ui.HStack(height=45, style={"font_size": 18, "margin": 4}):
+                ui.Spacer(width=200)
                 ui.Button(
                     "LAUNCH",
                     clicked_fn=self._launch_selected_app,
@@ -266,7 +362,6 @@ class LauncherWindow:
                     clicked_fn=lambda: self._exit(),
                     style={"background_color": 0xFFBBBBBB, "color": 0xFF444444},
                 )
-            ui.Spacer(height=5)
 
     def _build_nvidia_status_bar(self):
         import omni.ui as ui
@@ -280,7 +375,20 @@ class LauncherWindow:
                     ui.Image(f"{self._ext_path}/icons/NVIDIA_logo.png", height=18, width=150)
                     ui.Spacer()
 
-    def _build_window(self):
+    def _build_compact_window(self):
+        import omni.ui as ui
+
+        self._window = ui.Window("Launcher", padding_x=0, padding_y=0, style={"Window": {"pading": 0}})
+        self._window.frame.set_style(launcher_style)
+        with self._window.frame:
+            with ui.VStack():
+                self._build_compact_app_list()
+
+                self._build_launch_controls()
+
+                self._build_nvidia_status_bar()
+
+    def _build_large_window(self):
         import omni.ui as ui
 
         self._window = ui.Window("Launcher", padding_x=0, padding_y=0, style={"Window": {"pading": 0}})
