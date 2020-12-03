@@ -26,7 +26,12 @@ from gym import spaces
 class JetbotEnv:
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, omni_kit, z_height=0, max_resets=10, updates_per_step=3, steps_per_rollout=500):
+    def __init__(
+        self, omni_kit, z_height=0, max_resets=10, updates_per_step=3, steps_per_rollout=500, mirror_mode=False
+    ):
+
+        self.MIRROR_MODE = mirror_mode
+
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float32)
         # IMPORTANT NOTE!  SB3 wraps all image spaces in a transposer.
         # it assumes the image outputed is of standard form
@@ -74,6 +79,13 @@ class JetbotEnv:
         self.updates_per_step = updates_per_step
         self.steps_per_rollout = steps_per_rollout
 
+        # Randomly mirror horizontally
+        self.update_mirror_mode()
+
+    def update_mirror_mode(self):
+        # Mirror if mode is enabled and we randomly sample True
+        self.mirror_mode = self.MIRROR_MODE & random.choice([False, True])
+
     def calculate_reward(self):
         # distance to nearest point on path in units of block.  [0,1]
         dist = self.roads.distance_to_path_in_tiles(self.current_pose)
@@ -98,11 +110,28 @@ class JetbotEnv:
 
         return done
 
+    def transform_action(self, action):
+
+        # If mirrored, swap wheel controls
+        if self.mirror_mode:
+            action = action[::-1]
+
+        return action
+
+    def transform_state_image(self, im):
+
+        # If enabled, mirror image horizontally
+        if self.mirror_mode:
+            return np.flip(im, axis=1)
+
+        return im
+
     def step(self, action):
         if self.initialized:
             self.previous_loc = self.current_loc
 
-        self.jetbot.command(action)
+        transformed_action = self.transform_action(action)
+        self.jetbot.command(transformed_action)
         frame = 0
         reward = 0
 
@@ -132,6 +161,7 @@ class JetbotEnv:
 
         # we only need the rgb channels of the rgb image
         currentState = gt["rgb"][:, :, :3]
+        currentState = self.transform_state_image(currentState)
 
         if not self.initialized:
             self.previousState = currentState
@@ -150,6 +180,10 @@ class JetbotEnv:
         return img, reward, done, {}
 
     def reset(self):
+
+        # Randomly mirror horizontally
+        self.update_mirror_mode()
+
         # randomize the road configuration every self.maxresets resets.
         if self.numresets % self.maxresets == 0:
             self.roads.reset(self.shape)
@@ -179,6 +213,7 @@ class JetbotEnv:
 
         gt = self.sd_helper.get_groundtruth(["rgb", "camera"])
         currentState = gt["rgb"][:, :, :3]
+        currentState = self.transform_state_image(currentState)
 
         img = np.concatenate((currentState, currentState), axis=2)
         # uncomment below to add noise to image
