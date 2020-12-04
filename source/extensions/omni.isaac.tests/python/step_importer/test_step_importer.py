@@ -26,7 +26,7 @@ class TestStepImporter(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.part = _step_importer.Part()
         self.exporter = None
         self.path = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve(os.path.join(os.path.dirname(__file__), "../data/test.stp"))
+            carb.tokens.get_tokens_interface().resolve(os.path.join(os.path.dirname(__file__), "../data/step/test.stp"))
         )
         self.assertTrue(os.path.isfile(self.path))
         self.basename = "test"

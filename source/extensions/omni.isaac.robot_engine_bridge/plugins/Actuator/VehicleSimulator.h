@@ -83,7 +83,8 @@ struct Cache
 
     size_t vehicleId;
     ::physx::PxVehicleWheels* mVehiclePtr = nullptr;
-    union {
+    union
+    {
         std::vector<WheelCache>* wheels;
         std::vector<WheelCacheDriveBasic>* wheelsDriveBasic;
     };

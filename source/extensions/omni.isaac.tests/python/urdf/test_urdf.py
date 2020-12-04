@@ -18,6 +18,8 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def setUp(self):
         self._urdf_interface = _urdf.acquire_urdf_interface()
         self._timeline = omni.timeline.get_timeline_interface()
+
+        self._data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
         pass
 
     # After running each test
@@ -28,9 +30,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     # basic urdf test: joints and links are imported correctly
     async def test_urdf_basic(self):
         await omni.usd.get_context().new_stage_async()
-        urdf_path = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf/tests/test_basic.urdf")
-        )
+        urdf_path = os.path.abspath(self._data_path + "/data/urdf/tests/test_basic.urdf")
         print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
         import_config = _urdf.ImportConfig()
@@ -72,9 +72,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     # advanced urdf test: test for all the categories of inputs that an urdf can hold
     async def test_urdf_advanced(self):
         await omni.usd.get_context().new_stage_async()
-        urdf_path = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf/tests/test_advanced.urdf")
-        )
+        urdf_path = os.path.abspath(self._data_path + "/data/urdf/tests/test_advanced.urdf")
         print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
 
@@ -117,9 +115,8 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     # test for importing urdf where fixed joints are merged
     async def test_urdf_merge_joints(self):
         await omni.usd.get_context().new_stage_async()
-        urdf_path = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve("${app}/../data/urdf/tests/test_merge_joints.urdf")
-        )
+        urdf_path = os.path.abspath(self._data_path + "/data/urdf/tests/test_merge_joints.urdf")
+
         print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
 
