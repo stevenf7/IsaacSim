@@ -26,18 +26,6 @@ icon = "data/icon.png"
 name = "omni.isaac.utils"
 
 [[python.module]]
-name = "omni.isaac.utils.scripts.prim_rel_editor"
-public = false
-
-[[python.module]]
-name = "omni.isaac.utils.scripts.semantics_ui"
-public = false
-
-[[python.module]]
-name = "omni.isaac.utils.scripts.visualize_syntheticdata"
-public = false
-
-[[python.module]]
 name = "omni.isaac.utils.scripts.syntheticdata_recorder"
 public = false
 

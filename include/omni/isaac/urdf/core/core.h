@@ -98,7 +98,8 @@ inline bool IsAligned(void* p, uint32_t alignment)
 template <typename To, typename From>
 To UnionCast(From in)
 {
-    union {
+    union
+    {
         To t;
         From f;
     };

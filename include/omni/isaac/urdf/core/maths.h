@@ -837,7 +837,8 @@ inline Colour XYZToLinear(float x, float y, float z)
 
 inline uint32_t ColourToRGBA8(const Colour& c)
 {
-    union SmallColor {
+    union SmallColor
+    {
         uint8_t u8[4];
         uint32_t u32;
     };
