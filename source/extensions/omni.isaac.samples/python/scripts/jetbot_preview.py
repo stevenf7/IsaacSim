@@ -72,10 +72,6 @@ class Extension(omni.ext.IExt):
             self._on_stage_event
         )
 
-        self._settings = carb.settings.get_settings()
-        self._settings.set("/persistent/physics/updateToUsd", False)
-        self._settings.set("/persistent/physics/useFastCache", True)
-
         self._max_velocity = 20
         self._wheel_check = None
 

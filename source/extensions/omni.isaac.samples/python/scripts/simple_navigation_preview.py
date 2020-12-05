@@ -56,9 +56,6 @@ class Extension(omni.ext.IExt):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._create_ui()
 
-        self._settings = carb.settings.get_settings()
-        self._settings.set("/persistent/physics/updateToUsd", False)
-        self._settings.set("/persistent/physics/useFastCache", True)
         self._setup_done = False
         self._rc = None
 
