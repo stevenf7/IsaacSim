@@ -10,6 +10,8 @@ from jetbot_city.road_map_generator import *
 
 from omni.isaac.synthetic_utils import DomainRandomization
 
+import math
+
 
 class Environment:
     def __init__(self, omni_kit, z_height=0):
@@ -20,19 +22,19 @@ class Environment:
                 "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in experiences/isaac-sim-python.json"
             )
             return
-        result, nucleus_server = find_nucleus_server("/Library/Props/Lego/Parts/")
+        result, nucleus_server = find_nucleus_server("/Library/Props/Road_Tiles/Parts/")
         if result is False:
             carb.log_error(
-                "Could not find nucleus server with /Library/Props/Lego/Parts/ folder. Please refer to the documentation to aquire the Lego road tile assets"
+                "Could not find nucleus server with /Library/Props/Road_Tiles/Parts/ folder. Please refer to the documentation to aquire the road tile assets"
             )
             return
         # 1=I 2=L 3=T, 4=X
         self.tile_usd = {
             0: None,
-            1: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4336p01.usd", "offset": 180},
-            2: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4342p01.usd", "offset": 180},
-            3: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4341p01.usd", "offset": 180},
-            4: {"asset": nucleus_server + "/Library/Props/Lego/Parts/p4343p01.usd", "offset": 180},
+            1: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4336p01.usd", "offset": 180},
+            2: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4342p01.usd", "offset": 180},
+            3: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4341p01.usd", "offset": 180},
+            4: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4343p01.usd", "offset": 180},
         }  # list of tiles that can be spawned
 
         self.texture_list = [
@@ -71,7 +73,7 @@ class Environment:
         for entry in contents:
             if not entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN:
                 names.append(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
-                loaded_paths.append("/World/Meshes/mesh_component/mesh_" + entry.relative_path[0:-4])
+                loaded_paths.append("/World/DR/mesh_component/mesh_" + entry.relative_path[0:-4])
         print(loaded_paths)
 
         self.omni_kit.create_prim("/World/Floor", "Xform")
@@ -81,6 +83,9 @@ class Environment:
         cubeGeom.CreateSizeAttr(300)
         offset = Gf.Vec3f(75, 75, -150.1)
         cubeGeom.AddTranslateOp().Set(offset)
+
+        # Create a sphere room so the world is not black
+        self.omni_kit.create_prim("/World/Room", "Sphere", attributes={"radius": 1e3})
 
         prims = []
         self.dr = DomainRandomization()
@@ -105,6 +110,8 @@ class Environment:
             lights.append(prim_path)
 
         frames = 1
+
+        # enable randomization for environment
         self.dr.create_movement_comp(prim_paths=loaded_paths, min_range=(0, 0, 15), max_range=(150, 150, 15))
         self.dr.create_rotation_comp(prim_paths=loaded_paths)
         self.dr.create_visibility_comp(prim_paths=loaded_paths, num_visible_range=(15, 15))
@@ -116,8 +123,9 @@ class Environment:
             prim_paths=["/World/Floor"], enable_project_uvw=True, texture_list=self.texture_list
         )
 
+        self.dr.create_color_comp(prim_paths=["/World/Room"])
+
     def generate_lights(self):
-        # TODO: center this onto the track
         prim_path = omni.kit.utils.get_stage_next_free_path(self.omni_kit.get_stage(), "/World/Env/Light", False)
         self.prims.append(prim_path)
         self.omni_kit.create_prim(
@@ -256,6 +264,15 @@ class Environment:
         x, y = point
         print("get valid location called", self.valid_tiles[i], point)
         return (x * self.tile_size[0], y * self.tile_size[1])
+
+    # Computes an approximate forward vector based on the current spawn point and nearby valid path point
+    def get_forward_direction(self, loc):
+        if self.road_path_helper is not None:
+            k = 20
+            dists, pts = self.road_path_helper.get_k_nearest_path_points(np.array([self.get_tile_from_pose(loc)]), k)
+            pointa = pts[0][0]
+            pointb = pts[0][k - 1]
+            return math.degrees(math.atan2(pointb[1] - pointa[1], pointb[0] - pointa[0]))
 
     # Compute the x,y tile location from the robot pose
     def get_tile_from_pose(self, pose):

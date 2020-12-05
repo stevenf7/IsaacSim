@@ -3,6 +3,9 @@ import numpy as np
 import os
 import carb
 import signal
+import json
+import argparse
+from argparse import Namespace
 
 from omni.isaac.synthetic_utils import OmniKitHelper
 
@@ -13,54 +16,70 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
 
 
-CUSTOM_CONFIG = {
-    "width": 224,
-    "height": 224,
-    "renderer": "RayTracedLighting",
-    "headless": False,
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
-}
-
-# use this to switch from training to evaluation
-TRAINING_MODE = True
-
-
-def train():
+def train(args):
+    CUSTOM_CONFIG = {
+        "width": 224,
+        "height": 224,
+        "renderer": "RayTracedLighting",
+        "headless": args.headless,
+        "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+    }
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
 
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
 
-    env = JetbotEnv(omniverse_kit, max_resets=10, updates_per_step=3)
+    env = JetbotEnv(omniverse_kit, max_resets=args.rand_freq, updates_per_step=3, mirror_mode=args.mirror_mode)
 
-    checkpoint_callback = CheckpointCallback(save_freq=1000, save_path="./params/", name_prefix="rl_model")
+    checkpoint_callback = CheckpointCallback(
+        save_freq=args.save_freq, save_path="./params/", name_prefix=args.checkpoint_name
+    )
 
     net_arch = [512, 256, dict(pi=[128, 64, 32], vf=[128, 64, 32])]
     policy_kwargs = {"net_arch": net_arch, "features_extractor_class": CustomCNN, "activation_fn": torch.nn.ReLU}
 
-    model = PPO("CnnPolicy", env, verbose=1, tensorboard_log="tensorboard", policy_kwargs=policy_kwargs, device="cuda")
-    # model = PPO.load("checkpoint_25k.zip",env)
+    if args.loaded_checkpoint == "":
+        model = PPO(
+            "CnnPolicy",
+            env,
+            verbose=1,
+            tensorboard_log=args.tensorboard_dir,
+            policy_kwargs=policy_kwargs,
+            device="cuda",
+            n_steps=args.step_freq,
+        )
+
+    else:
+        model = PPO.load(args.loaded_checkpoint, env)
+
     model.learn(
-        total_timesteps=25000,
+        total_timesteps=args.total_steps,
         callback=checkpoint_callback,
         eval_env=env,
-        eval_freq=1000,
-        eval_log_path="./eval_log/",
-        reset_num_timesteps=False,
+        eval_freq=args.eval_freq,
+        eval_log_path=args.evaluation_dir,
+        reset_num_timesteps=args.reset_num_timesteps,
     )
-    model.save("checkpoint_25k")
+    model.save(args.checkpoint_name)
 
 
-def runEval():
+def runEval(args):
+    CUSTOM_CONFIG = {
+        "width": 224,
+        "height": 224,
+        "renderer": "RayTracedLighting",
+        "headless": args.headless,
+        "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+    }
     # load a zip file to evaluate here
-    agent = PPO.load("eval_log/best_model.zip", device="cuda")
+    agent = PPO.load(args.evaluation_dir + "/best_model.zip", device="cuda")
 
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
 
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
 
-    env = JetbotEnv(omniverse_kit)
+    env = JetbotEnv(omniverse_kit, mirror_mode=args.mirror_mode)
     obs = env.reset()
 
     while True:
@@ -73,13 +92,70 @@ def runEval():
 
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("loaded_checkpoint", help="path to checkpoint to be loaded", default="", nargs="?", type=str)
+
+    parser.add_argument("-E", "--eval", help="evaluate checkpoint", action="store_true")
+
+    parser.add_argument(
+        "-R", "--reset_num_timesteps", help="reset the current timestep number (used in logging)", action="store_true"
+    )
+
+    parser.add_argument(
+        "-M", "--mirror_mode", help="reflect images and actions horizontally during training", action="store_true"
+    )
+
+    parser.add_argument("-H", "--headless", help="run in headless mode (no GUI)", action="store_true")
+
+    parser.add_argument(
+        "--checkpoint_name", help="name of checkpoint file (no suffix)", default="checkpoint_25k", type=str
+    )
+
+    parser.add_argument("--tensorboard_dir", help="path to tensorboard log directory", default="tensorboard", type=str)
+
+    parser.add_argument("--evaluation_dir", help="path to evaluation log directory", default="eval_log", type=str)
+
+    parser.add_argument("--save_freq", help="number of steps before saving a checkpoint", default=1000, type=int)
+
+    parser.add_argument("--eval_freq", help="number of steps before running an evaluation", default=1000, type=int)
+
+    parser.add_argument("--step_freq", help="number of steps before executing a PPO update", default=1000, type=int)
+
+    parser.add_argument(
+        "--rand_freq", help="number of environment resets before domain randomization", default=10, type=int
+    )
+
+    parser.add_argument(
+        "--total_steps",
+        help="the total number of steps before exiting and saving a final checkpoint",
+        default=250000,
+        type=int,
+    )
+
+    parser.add_argument(
+        "--experimentFile", help="specify configuration via JSON.  Overrides commandline", default="", type=str
+    )
+
+    args = parser.parse_args()
+
+    if args.experimentFile != "":
+        args_dict = vars(args)
+        if os.path.exists(args.experimentFile):
+            with open(args.experimentFile) as f:
+                json_args_dict = json.load(f)
+
+                args_dict.update(json_args_dict)
+                args = Namespace(**args_dict)
+
+    print("running with args: ", args)
+
     def handle_exit(*args, **kwargs):
         print("Exiting training...")
         quit()
 
     signal.signal(signal.SIGINT, handle_exit)
 
-    if TRAINING_MODE:
-        train()
+    if args.eval:
+        runEval(args)
     else:
-        runEval()
+        train(args)

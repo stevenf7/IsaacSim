@@ -28,6 +28,7 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 #include <carb/dictionary/DictionaryUtils.h>
+#include <carb/fastcache/FastCache.h>
 #include <omni/physx/IPhysx.h>
 
 #include <unordered_map>
@@ -58,7 +59,8 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::syntheticdata::SyntheticData,
                       omni::physx::IPhysx,
                       carb::sensors::Sensors,
-                      carb::tasking::ITasking)
+                      carb::tasking::ITasking,
+                      carb::fastcache::FastCache)
 
 // private stuff
 namespace
