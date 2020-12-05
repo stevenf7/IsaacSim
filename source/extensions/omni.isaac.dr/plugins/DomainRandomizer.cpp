@@ -13,6 +13,7 @@
 
 #define CARB_EXPORTS
 #include <omni/isaac/dr/DomainRandomizer.h>
+#include <omni/isaac/dynamic_control/DynamicControl.h>
 
 #include "DRManager.h"
 
@@ -49,6 +50,7 @@ namespace
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 carb::tokens::ITokens* g_tokens = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
+omni::isaac::dynamic_control::DynamicControl* g_dynamicControl = nullptr;
 static pxr::UsdStageWeakPtr g_stage = nullptr;
 std::unique_ptr<omni::isaac::dr::DRManager> Manager;
 bool manualMode = false;
@@ -149,8 +151,15 @@ CARB_EXPORT void carbOnPluginStartup()
     carb::Framework* framework = carb::getFramework();
 
     g_stageUpdate = framework->acquireInterface<omni::kit::IStageUpdate>();
+    g_dynamicControl = framework->acquireInterface<omni::isaac::dynamic_control::DynamicControl>();
 
-    Manager = std::make_unique<omni::isaac::dr::DRManager>();
+    if (!g_dynamicControl)
+    {
+        CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
+        return;
+    }
+
+    Manager = std::make_unique<omni::isaac::dr::DRManager>(g_dynamicControl);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Domain Randomizer";

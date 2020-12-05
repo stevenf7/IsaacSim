@@ -1,9 +1,20 @@
 import carb
 import omni
-from pxr import UsdGeom, Gf
+from pxr import UsdGeom, Gf, PhysicsSchema
+from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 import numpy as np
+
+# Camera parameters
+FOCAL_LENGTH = 3.150
+HORIZONTAL_APERTURE = 2.350
+VERTICAL_APERTURE = 2.350
+
+# Drive Parameters
+DRIVE_STIFFNESS = 10000.0
+# The amount the camera points down at, decrease to raise camera angle
+CAMERA_PIVOT = 40.0
 
 
 class Jetbot:
@@ -34,7 +45,19 @@ class Jetbot:
         mat.SetRotateOnly(Gf.Rotation(Gf.Vec3d(0, 0, 1), rotation))
         xform_op.Set(mat)
 
-        self.camera_path = prim_path + "/chassis/jetbot_camera"
+        self.camera_path = prim_path + "/chassis/rgb_camera/jetbot_camera"
+        self.camera_pivot = prim_path + "/chassis/rgb_camera"
+
+        # Set joint drive parameters
+        left_wheel_joint = PhysicsSchema.DriveAPI.Get(
+            stage.GetPrimAtPath(f"{prim_path}/chassis/left_wheel_joint"), "angular"
+        )
+        left_wheel_joint.GetDampingAttr().Set(DRIVE_STIFFNESS)
+
+        right_wheel_joint = PhysicsSchema.DriveAPI.Get(
+            stage.GetPrimAtPath(f"{prim_path}/chassis/right_wheel_joint"), "angular"
+        )
+        right_wheel_joint.GetDampingAttr().Set(DRIVE_STIFFNESS)
 
     def teleport(self, location, rotation, settle=False):
         if self.ar is None:
@@ -51,19 +74,31 @@ class Jetbot:
         self.dc.set_rigid_body_linear_velocity(self.chassis, [0, 0, 0])
         self.dc.set_rigid_body_angular_velocity(self.chassis, [0, 0, 0])
         self.command((0, 0))
+        # Settle the robot onto the ground
         if settle:
             frame = 0
             velocity = 1
-            print("Settling robot...")
             while velocity > 0.1 and frame < 120:
                 self.omni_kit.update(1.0 / 60.0)
                 lin_vel = self.dc.get_rigid_body_linear_velocity(self.chassis)
                 velocity = np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z])
-                print("velocity magnitude is: ", velocity)
                 frame = frame + 1
-            print("done after frame: ", frame)
 
     def activate_camera(self):
+        # Set camera parameters
+        stage = self.omni_kit.get_stage()
+        cameraPrim = UsdGeom.Camera(stage.GetPrimAtPath(self.camera_path))
+        cameraPrim.GetFocalLengthAttr().Set(FOCAL_LENGTH)
+        cameraPrim.GetHorizontalApertureAttr().Set(HORIZONTAL_APERTURE)
+        cameraPrim.GetVerticalApertureAttr().Set(VERTICAL_APERTURE)
+
+        # Point camera down at road
+        pivot_prim = stage.GetPrimAtPath(self.camera_pivot)
+        transform_attr = pivot_prim.GetAttribute("xformOp:transform")
+        transform_attr.Set(
+            transform_attr.Get().SetRotateOnly(Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0, 1, 0), CAMERA_PIVOT)))
+        )
+
         vpi = omni.kit.viewport.get_viewport_interface()
         vpi.get_viewport_window().set_active_camera(str(self.camera_path))
 
@@ -79,19 +114,9 @@ class Jetbot:
         self.dc.set_dof_velocity_target(self.wheel_left, np.clip(left_speed, -10, 10))
         self.dc.set_dof_velocity_target(self.wheel_right, np.clip(right_speed, -10, 10))
 
-    # idealized motor model that converts a pwm value to a velocity
+    # idealized motor model
     def wheel_speed_from_motor_value(self, input):
-        threshold = 0.05
-        if input >= 0:
-            if input > threshold:
-                return 1.604 * input - 0.05
-            else:
-                return 0
-        elif input < 0:
-            if input < -threshold:
-                return 1.725 * input + 0.0757
-            else:
-                return 0
+        return input * 2.0
 
     def observations(self):
         if self.ar is None:

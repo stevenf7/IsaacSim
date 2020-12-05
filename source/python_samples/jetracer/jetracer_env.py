@@ -10,6 +10,7 @@ import omni.kit.editor
 from pxr import UsdGeom, Gf, Sdf, Usd, Semantics
 
 import os
+import json
 import time
 import atexit
 import asyncio
@@ -32,7 +33,28 @@ from gym import spaces
 class JetracerEnv:
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, omni_kit, z_height=0):
+    # TODO : Extract more training options
+
+    def __init__(
+        self,
+        omni_kit,
+        z_height=0,
+        max_resets=10,
+        updates_per_step=3,
+        steps_per_rollout=500,
+        mirror_mode=False,
+        backwards_term_mode=0,
+        reward_mode=0,
+    ):
+
+        self.MIRROR_MODE = mirror_mode
+        self.BACKWARDS_TERMINATION_MODE = backwards_term_mode
+        self.REWARD_MODE = reward_mode
+
+        print("MIRROR_MODE = {}".format(self.MIRROR_MODE))
+        print("BACKWARDS_TERMINATION_MODE = {}".format(self.BACKWARDS_TERMINATION_MODE))
+        print("REWARD_MODE = {}".format(self.REWARD_MODE))
+
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float32)
         self.observation_space = spaces.Box(low=0, high=255, shape=(224, 224, 6), dtype=np.uint8)
 
@@ -51,6 +73,12 @@ class JetracerEnv:
         self.shape = [6, 6]
         self.roads.generate_road(self.shape)
         self.roads.generate_lights()
+
+        # randomize once to initialize stage
+        # the following two lines must be called prior to Jetracer initialization
+        # any DR related setup calls should occur before this point
+        self.omniverse_kit.update(1 / 60.0)
+        self.roads.dr.randomize_once()
 
         # spawn robot
         self.jetracer = Jetracer(self.omniverse_kit)
@@ -82,6 +110,13 @@ class JetracerEnv:
         # set this to 1 after around 200k steps to randomnize less
         # self.maxresets = 1
 
+        # Randomly mirror horizontally
+        self.update_mirror_mode()
+
+    def update_mirror_mode(self):
+        # Mirror if mode is enabled and we randomly sample True
+        self.mirror_mode = self.MIRROR_MODE & random.choice([False, True])
+
     def calculate_reward(self):
 
         # Current and last positions
@@ -104,17 +139,38 @@ class JetracerEnv:
 
         fwd_dir = closest_point_track_direction(pose)
         fwd_dot = np.dot(fwd_dir, vel_norm)
-        reward = fwd_dot * self.current_speed * np.exp(-dist ** 2 / 0.05 ** 2)
+
+        if self.REWARD_MODE == 0:
+            reward = fwd_dot * self.current_speed * np.exp(-dist ** 2 / 0.05 ** 2)
+        elif self.REWARD_MODE == 1:
+            reward = fwd_dot * self.current_speed
 
         return reward
 
     def is_dead(self):
         return not is_outside_track_boundary(np.array([self.current_pose[0], self.current_pose[1]]))
 
-    def translate_action(self, action):
+    def transform_action(self, action):
+
+        # If mirrored, swap steering direction
+        if self.mirror_mode:
+            action[1] = -action[1]
+
         return action
 
+    def transform_state_image(self, im):
+
+        # If enabled, mirror image horizontally
+        if self.mirror_mode:
+            return np.flip(im, axis=1)
+
+        return im
+
     def reset(self):
+
+        # Randomly mirror horizontally
+        self.update_mirror_mode()
+
         if self.numresets % self.maxresets == 0:
             self.roads.reset(self.shape)
 
@@ -149,7 +205,7 @@ class JetracerEnv:
 
         gt = self.sd_helper.get_groundtruth(["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "camera"])
         currentState = gt["rgb"][:, :, :3]
-        # print(currentState.shape)
+        currentState = self.transform_state_image(currentState)
 
         img = np.concatenate((currentState, currentState), axis=2)
         img = np.clip((255 * self.noise * np.random.randn(224, 224, 6) + img.astype(np.float)), 0, 255).astype(np.uint8)
@@ -160,13 +216,39 @@ class JetracerEnv:
 
         return img
 
+    def is_driving_backwards(self):
+        # TODO : Refactor, the bulk of this code is shared with the reward function.
+        #        Also, find out at what point in an iteration this is called,
+        #        compared to the reward, physics and stuff.
+        #        If off by a timestep it's close enough, probably won't cause any issues.
+
+        # Current and last positions
+        pose = np.array([self.current_pose[0], self.current_pose[1]])
+        prev_pose = np.array([self.prev_pose[0], self.prev_pose[1]])
+
+        # Finite difference velocity calculation
+        vel = pose - prev_pose
+        vel_norm = vel
+        vel_magnitude = np.linalg.norm(vel)
+        if vel_magnitude > 0.0:
+            vel_norm = vel / vel_magnitude
+
+        # Forward direction on the track
+        fwd_dir = closest_point_track_direction(pose)
+
+        # Normalized velocity projected onto the forward direction
+        fwd_dot = np.dot(fwd_dir, vel_norm)
+
+        # Going backwards more than 3*pi/8 radians
+        return fwd_dot < np.cos(7.0 * np.pi / 8.0)
+
     def step(self, action):
         print("Number of steps ", self.numsteps)
 
         # print("Action ", action)
 
-        translated_action = self.translate_action(action)
-        self.jetracer.command(translated_action)
+        transformed_action = self.transform_action(action)
+        self.jetracer.command(transformed_action)
         frame = 0
         total_reward = 0
         reward = 0
@@ -185,11 +267,15 @@ class JetracerEnv:
             frame = frame + 1
 
         gt = self.sd_helper.get_groundtruth(["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "camera"])
+
         depth = np.expand_dims(gt["depth"], -1)
+        depth = self.transform_state_image(depth)
+
         segmentation = vis.semantic_segmentation_to_rgb(ut.to_numpy(gt["semanticSegmentation"][1]))
-        segmentation = segmentation
+        segmentation = self.transform_state_image(segmentation)
 
         currentState = gt["rgb"][:, :, :3]
+        currentState = self.transform_state_image(currentState)
 
         if not self.initialized:
             self.previousState = currentState
@@ -216,8 +302,14 @@ class JetracerEnv:
             print("robot out of bounds. dist = ", self.dist)
             done = True
 
-        if self.current_forward_velocity <= -35:
-            print("robot was going backwards forward velocity = ", self.current_forward_velocity)
-            done = True
+        if self.BACKWARDS_TERMINATION_MODE == 0:
+            if self.current_forward_velocity <= -35:
+                print("robot was going backwards forward velocity = ", self.current_forward_velocity)
+                done = True
+
+        elif self.BACKWARDS_TERMINATION_MODE == 1:
+            if self.is_driving_backwards():
+                print("Robot was driving backwards")
+                done = True
 
         return img, reward, done, {}

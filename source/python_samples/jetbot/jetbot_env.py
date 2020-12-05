@@ -26,8 +26,13 @@ from gym import spaces
 class JetbotEnv:
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, omni_kit, z_height=0, max_resets=10, updates_per_step=3, steps_per_rollout=500):
-        self.action_space = spaces.Box(low=-2.0, high=2.0, shape=(2,), dtype=np.float32)
+    def __init__(
+        self, omni_kit, z_height=0, max_resets=10, updates_per_step=3, steps_per_rollout=500, mirror_mode=False
+    ):
+
+        self.MIRROR_MODE = mirror_mode
+
+        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float32)
         # IMPORTANT NOTE!  SB3 wraps all image spaces in a transposer.
         # it assumes the image outputed is of standard form
         self.observation_space = spaces.Box(low=0, high=255, shape=(224, 224, 6), dtype=np.uint8)
@@ -74,6 +79,13 @@ class JetbotEnv:
         self.updates_per_step = updates_per_step
         self.steps_per_rollout = steps_per_rollout
 
+        # Randomly mirror horizontally
+        self.update_mirror_mode()
+
+    def update_mirror_mode(self):
+        # Mirror if mode is enabled and we randomly sample True
+        self.mirror_mode = self.MIRROR_MODE & random.choice([False, True])
+
     def calculate_reward(self):
         # distance to nearest point on path in units of block.  [0,1]
         dist = self.roads.distance_to_path_in_tiles(self.current_pose)
@@ -98,47 +110,67 @@ class JetbotEnv:
 
         return done
 
+    def transform_action(self, action):
+
+        # If mirrored, swap wheel controls
+        if self.mirror_mode:
+            action = action[::-1]
+
+        return action
+
+    def transform_state_image(self, im):
+
+        # If enabled, mirror image horizontally
+        if self.mirror_mode:
+            return np.flip(im, axis=1)
+
+        return im
+
     def step(self, action):
         if self.initialized:
             self.previous_loc = self.current_loc
 
-        self.jetbot.command(action)
+        transformed_action = self.transform_action(action)
+        self.jetbot.command(transformed_action)
         frame = 0
-        total_reward = 0
         reward = 0
 
         # every time step is called we actually update the scene by updates_per_step.
         while frame < self.updates_per_step:
-            self.omniverse_kit.update(self.dt)
-            obs = self.jetbot.observations()
-            self.current_pose = obs["pose"]
-            self.current_speed = np.linalg.norm(np.array(obs["linear_velocity"]))
-            self.current_forward_velocity = obs["local_linear_velocity"][0]
-            self.current_loc = self.roads.get_tile_from_pose(self.current_pose)
-            if not self.initialized:
-                self.previous_loc = self.roads.get_tile_from_pose(self.current_pose)
-
-            reward = self.calculate_reward()
-
-            # we accumulate the reward as the robot moves over the course of the step
-            total_reward += reward
+            # render at 1/30, simulate at 1/60, which means 2 substeps per frame
+            self.omniverse_kit.update(self.dt, 1.0 / 60.0, 2.0)
             frame = frame + 1
+
+        # compute reward once simulation is complete
+        obs = self.jetbot.observations()
+        self.current_pose = obs["pose"]
+        self.current_speed = np.linalg.norm(np.array(obs["linear_velocity"]))
+        self.current_forward_velocity = obs["local_linear_velocity"][0]
+        self.current_loc = self.roads.get_tile_from_pose(self.current_pose)
+        if not self.initialized:
+            self.previous_loc = self.roads.get_tile_from_pose(self.current_pose)
+
+        reward = self.calculate_reward()
 
         # the synthetic data helper is our way of grabbing the image data we need from the camera.  currently the SD helper
         # only supports a single camera, however you can use it to access camera data as a cuda tensor directly on the
         # device.  stable baselines 3 is expecting a numpy array, so we pull the data to the host
-        gt = self.sd_helper.get_groundtruth(["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "camera"])
+        # additional sensors that could be of interest and can be added to this list:
+        # "depth", "instanceSegmentation", "semanticSegmentation"
+        gt = self.sd_helper.get_groundtruth(["rgb", "camera"])
 
         # we only need the rgb channels of the rgb image
         currentState = gt["rgb"][:, :, :3]
+        currentState = self.transform_state_image(currentState)
 
         if not self.initialized:
             self.previousState = currentState
 
         img = np.concatenate((currentState, self.previousState), axis=2)
 
-        # the real camera will have noise on each pixel, so we add some uniform noise here to simulate thatsw
-        img = np.clip((255 * self.noise * np.random.randn(224, 224, 6) + img.astype(np.float)), 0, 255).astype(np.uint8)
+        # the real camera will have noise on each pixel, so we add some uniform noise here to simulate thats
+        # uncomment below to add noise to image
+        # img = np.clip((255 * self.noise * np.random.randn(224, 224, 6) + img.astype(np.float)), 0, 255).astype(np.uint8)
 
         self.previousState = currentState
 
@@ -148,6 +180,10 @@ class JetbotEnv:
         return img, reward, done, {}
 
     def reset(self):
+
+        # Randomly mirror horizontally
+        self.update_mirror_mode()
+
         # randomize the road configuration every self.maxresets resets.
         if self.numresets % self.maxresets == 0:
             self.roads.reset(self.shape)
@@ -156,9 +192,10 @@ class JetbotEnv:
             state, reward, done, info, = self.step([0, 0])
             self.initialized = True
 
-        # every time we reset, we move the robot to a random location, with a random rotation in the horizontal plane
+        # every time we reset, we move the robot to a random location, and pointing along the direction of the road
         loc = self.roads.get_valid_location()
-        rot = random.uniform(-180, 180)
+        # the random angle offset can be increased here
+        rot = self.roads.get_forward_direction(loc) + random.uniform(-1, 1)
         self.jetbot.teleport(Gf.Vec3d(loc[0], loc[1], 5), rot, settle=True)
 
         obs = self.jetbot.observations()
@@ -171,16 +208,16 @@ class JetbotEnv:
 
         # wait for loading
         if self.numresets % self.maxresets == 0:
-            frame = 0
             while self.omniverse_kit.is_loading():
                 self.omniverse_kit.update(self.dt)
-                frame += 1
 
-        gt = self.sd_helper.get_groundtruth(["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "camera"])
+        gt = self.sd_helper.get_groundtruth(["rgb", "camera"])
         currentState = gt["rgb"][:, :, :3]
+        currentState = self.transform_state_image(currentState)
 
         img = np.concatenate((currentState, currentState), axis=2)
-        img = np.clip((255 * self.noise * np.random.randn(224, 224, 6) + img.astype(np.float)), 0, 255).astype(np.uint8)
+        # uncomment below to add noise to image
+        # img = np.clip((255 * self.noise * np.random.randn(224, 224, 6) + img.astype(np.float)), 0, 255).astype(np.uint8)
 
         self.numsteps = 0
         self.previousState = currentState
