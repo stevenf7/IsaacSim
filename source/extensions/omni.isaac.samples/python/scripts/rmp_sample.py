@@ -47,7 +47,7 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
-        self._stage = self._usd_context.get_stage()
+
         self._window = omni.kit.ui.Window(
             EXTENSION_NAME,
             300,
@@ -100,12 +100,6 @@ class Extension(omni.ext.IExt):
         self._reset_btn.enabled = False
         self._reset_btn.tooltip = omni.kit.ui.Label("Reset Robot to default position")
 
-        self._settings = carb.settings.get_settings()
-
-        self._settings.set("/persistent/physics/updateToUsd", False)
-        self._settings.set("/persistent/physics/useFastCache", True)
-        self._settings.set("/persistent/physics/numThreads", 8)
-
         self._sub_stage_event = self._usd_context.get_stage_event_stream().create_subscription_to_pop(
             self._on_stage_event
         )
@@ -113,10 +107,6 @@ class Extension(omni.ext.IExt):
 
         self._first_step = True
         self._robot = None
-
-        ## unit conversions: RMP is in meters, kit is by default in cm
-        self._meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
-        self._units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(self._stage)
 
     def _on_environment_setup(self, widget):
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
@@ -130,6 +120,11 @@ class Extension(omni.ext.IExt):
             return
 
         self._stage = self._usd_context.get_stage()
+
+        ## unit conversions: RMP is in meters, kit is by default in cm
+        self._meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
+        self._units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(self._stage)
+
         self._create_robot_btn.enabled = False
 
         self._timeline.stop()

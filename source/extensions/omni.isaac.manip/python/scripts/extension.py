@@ -132,7 +132,6 @@ class Extension(omni.ext.IExt):
         self.manip.bind_gamepad(self.on_gamepad_event_fn)
         self.update_sub = self.editor.subscribe_to_update_events(self.on_update)
         self.build_window_ui()
-        self.load_bindings()
         self.stage_sub = self.usd_context.get_stage_event_stream().create_subscription_to_pop(self.stage_event_fn)
 
         self._settings = carb.settings.get_settings()

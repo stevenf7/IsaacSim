@@ -58,10 +58,6 @@ class Extension(omni.ext.IExt):
         self._gamepad_setup_btn.tooltip = omni.kit.ui.Label("Connect the gamepad to the robot and begin simulation")
         self.kaya = None
 
-        self._settings = carb.settings.get_settings()
-        self._settings.set("/persistent/physics/updateToUsd", False)
-        self._settings.set("/persistent/physics/useFastCache", True)
-
         self._manip = _manip.acquire()
         self._joystick_deadzone = 0.2
         self._gains = (4, 4, 0.5)

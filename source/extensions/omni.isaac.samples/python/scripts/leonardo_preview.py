@@ -75,10 +75,6 @@ class Extension(omni.ext.IExt):
 
         self._settings = carb.settings.get_settings()
 
-        self._settings.set("/persistent/physics/updateToUsd", False)
-        self._settings.set("/persistent/physics/useFastCache", True)
-        self._settings.set("/persistent/physics/numThreads", 8)
-
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()

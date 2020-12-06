@@ -67,9 +67,9 @@ class Extension(omni.ext.IExt):
         joint_6 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_2_link/wrist_3_joint"), "angular")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
-        set_drive_parameters(joint_1, "position", 0, 20000, 2000, 330000)
-        set_drive_parameters(joint_2, "position", 0, 20000, 2000, 330000)
-        set_drive_parameters(joint_3, "position", 0, 20000, 2000, 150000)
-        set_drive_parameters(joint_4, "position", 0, 20000, 2000, 56000)
-        set_drive_parameters(joint_5, "position", 0, 20000, 2000, 56000)
-        set_drive_parameters(joint_6, "position", 0, 20000, 2000, 56000)
+        set_drive_parameters(joint_1, "position", 45, 20000, 2000)
+        set_drive_parameters(joint_2, "position", 45, 20000, 2000)
+        set_drive_parameters(joint_3, "position", 45, 20000, 2000)
+        set_drive_parameters(joint_4, "position", 45, 20000, 2000)
+        set_drive_parameters(joint_5, "position", 45, 20000, 2000)
+        set_drive_parameters(joint_6, "position", 45, 20000, 2000)

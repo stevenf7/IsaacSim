@@ -191,7 +191,7 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
             nodesToProcess.push_back(node->mChildren[i]);
         }
     }
-    printf("%s TOTAL MESHES: %d\n", path.c_str(), meshTransforms.size());
+    // printf("%s TOTAL MESHES: %d\n", path.c_str(), meshTransforms.size());
     mMeshPrims.resize(meshTransforms.size());
 
     for (size_t i = 0; i < meshTransforms.size(); i++)

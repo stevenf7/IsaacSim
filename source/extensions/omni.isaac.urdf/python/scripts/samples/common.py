@@ -9,7 +9,7 @@ def import_robot(urdf_interface, urdf_path, import_config):
     return path
 
 
-def set_drive_parameters(drive, target_type, target_value, stiffness, damping, max_force):
+def set_drive_parameters(drive, target_type, target_value, stiffness, damping, max_force=None):
     """Enable velocity drive for a given joint"""
 
     if target_type == "position":
@@ -33,7 +33,8 @@ def set_drive_parameters(drive, target_type, target_value, stiffness, damping, m
     else:
         drive.GetDampingAttr().Set(damping)
 
-    if not drive.GetMaxForceAttr():
-        drive.CreateMaxForceAttr(max_force)
-    else:
-        drive.GetMaxForceAttr().Set(max_force)
+    if max_force is not None:
+        if not drive.GetMaxForceAttr():
+            drive.CreateMaxForceAttr(max_force)
+        else:
+            drive.GetMaxForceAttr().Set(max_force)
