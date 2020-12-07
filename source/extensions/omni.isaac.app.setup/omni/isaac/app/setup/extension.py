@@ -8,7 +8,7 @@
 #
 
 import asyncio
-from os import terminal_size, path
+import sys
 import omni.ext
 import omni.ui as ui
 import carb.settings
@@ -25,23 +25,34 @@ from omni.kit.window.title import get_main_window_title
 class CreateSetupExtension(omni.ext.IExt):
     """Create Final Configuration"""
 
-    def on_startup(self):
+    def on_startup(self, ext_id):
         """ setup the window layout, menu, final configuration of the extensions etc """
         self._settings = carb.settings.get_settings()
 
         # this is a work around as some Extensions don't properly setup their default setting in time
         self._set_defaults()
 
-        # Adjust the Window Title to show the Isaac Sim Version
+        # adjust couple of viewport settings
+        self._settings.set("/app/viewport/grid/enabled", True)
+        self._settings.set("/app/viewport/outline/enabled", True)
+        self._settings.set("/app/viewport/boundingBoxes/enabled", True)
+
+        # Adjust the Window Title to show the Create Version
         window_title = get_main_window_title()
 
         app_version = self._settings.get("/app/version")
         if not app_version:
-            app_version = open(path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../VERSION"))).read()
+            app_version = open(carb.tokens.get_tokens_interface().resolve("${app}/../VERSION")).read()
 
         if app_version:
             app_version, _ = app_version.split("+")
             window_title.set_app_version(app_version)
+
+        # icon (windows only!)
+        if sys.platform == "win32":
+            ext_manager = omni.kit.app.get_app().get_extension_manager()
+            ext_manager.set_extension_enabled_immediate("omni.kit.utility.icon_modifier", True)
+            self._setup_icon(f"{ext_manager.get_extension_path(ext_id)}/data/nvidia-omniverse-create.ico")
 
         # setup some imgui Style overide
         imgui = _imgui.acquire_imgui()
@@ -53,6 +64,12 @@ class CreateSetupExtension(omni.ext.IExt):
 
         self.__setup_window_task = asyncio.ensure_future(self.__dock_windows())
         self.__setup_property_window = asyncio.ensure_future(self.__property_window())
+
+    def _setup_icon(self, icon_path):
+        import omni.kit.utility.icon_modifier
+
+        modifier = omni.kit.utility.icon_modifier.acquire_interface()
+        modifier.set_app_icon(icon_path, 128)
 
     def _set_defaults(self):
         """ this is trying to setup some defaults for extensions to avoid warning """
@@ -131,41 +148,13 @@ class CreateSetupExtension(omni.ext.IExt):
 
     async def __dock_windows(self):
         """ setup all the docking properly for create """
-        content = ui.Workspace.get_window("Content 2.0")
+        content = ui.Workspace.get_window("Content")
         stage = ui.Workspace.get_window("Stage")
         console = ui.Workspace.get_window("Console")
-        layer = ui.Workspace.get_window("Layer")
         toolbar = ui.Workspace.get_window("Toolbar")
-        property = ui.Workspace.get_window("Property")
-
-        hide_while_wait = False
-        if hide_while_wait:
-            content.visible = False
-            stage.visible = False
-            console.visible = False
-            layer.visible = False
-            property.visible = False
-            toolbar.visible = False
-
-            await omni.kit.app.get_app().next_update_async()
-            await omni.kit.app.get_app().next_update_async()
-            await omni.kit.app.get_app().next_update_async()
-
-            content.visible = True
-            stage.visible = True
-            console.visible = True
-            layer.visible = True
-            property.visible = True
-            toolbar.visible = True
 
         stage.dock_order = 0
         stage.focus()
-
-        # # setup the docking Space
-        content_old = ui.Workspace.get_window("Content")
-        if content_old:
-            content_old.dock_order = 1
-            content_old.visible = False
 
         # dock with the console
         if console:
@@ -173,13 +162,10 @@ class CreateSetupExtension(omni.ext.IExt):
         else:
             print("failed to get console")
 
-        # we need some way to better predict when this is gonna be possible
-        for i in range(5):
-            await omni.kit.app.get_app().next_update_async()
-
         render_settings = ui.Workspace.get_window("RTX Settings")
         if render_settings:
             render_settings.visible = True
+            render_settings.dock_in(stage, ui.DockPosition.SAME)
             await omni.kit.app.get_app().next_update_async()
             render_settings.dock_in(stage, ui.DockPosition.SAME)
             await omni.kit.app.get_app().next_update_async()
