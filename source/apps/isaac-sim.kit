@@ -105,6 +105,20 @@ exts."omni.kit.tool.collect".useNewFilePicker = true
 exts."omni.kit.widget.layers".useNewFilePicker = true
 exts."omni.kit.renderer.core".imgui.enableMips = true
 
+[settings.exts."omni.kit.registry.nucleus"]
+# URL where to store archives and index of extensions (can be local filesystem too). They are being pulled in order, 
+# so if multiple registries have a package with the same name the one that specified first is prioritized.
+# registries = [
+#     { name = "NVIDIA/published", url = "omniverse://kit-extensions.ov.nvidia.com:3009/exts/NVIDIA/published/" },
+# ]
+
+# Notify slack about published extensions
+postToSlack = false
+
+#[settings]
+#app.extensions.registryPublishDefault = ""
+
+
 [settings.app.settings]
 persistent = true
 dev_build = false
@@ -137,9 +151,6 @@ featuredExts = [
 
     "omni.anim.timesample_editor",
 
-    "omni.kit.tool.paint",
-    "omni.kit.window.sunstudy",
-
     ## Omni Graph
     "omni.graph.core",
     "omni.graph.ui",
@@ -151,7 +162,7 @@ featuredExts = [
 [settings]
 # MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you 
 # only want to use a single GPU on your MGPU system
-renderer.multiGpu.enabled = false
+renderer.multiGpu.enabled = true
 
 # Basic Kit App
 ################################

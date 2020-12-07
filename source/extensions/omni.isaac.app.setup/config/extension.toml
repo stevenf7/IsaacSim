@@ -4,8 +4,6 @@ description = "This Extension does the final setup of the Isaac Sim Apps"
 
 authors = ["Isaac Sim Team"]
 
-repository = "https://gitlab-master.nvidia.com/isaac/omni_isaac_sim"
-
 [dependencies]
 "omni.usd" = {}
 "omni.ui" = {}
