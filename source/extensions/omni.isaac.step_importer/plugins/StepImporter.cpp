@@ -66,11 +66,11 @@ void fromStepReader(step_reader::Part& p, omni::isaac::step_importer::Part& out)
 {
     out.assemblies.resize(p.num_assemblies);
     out.meshes_properties.resize(p.num_meshes);
-    for (int i = 0; i < p.num_meshes; ++i)
+    for (size_t i = 0; i < p.num_meshes; ++i)
     {
         fromStepReader(p.meshProperties[i], out.meshes_properties[i]);
     }
-    for (int i = 0; i < p.num_assemblies; ++i)
+    for (size_t i = 0; i < p.num_assemblies; ++i)
     {
 
         fromStepReader(p.assemblies[i], out.assemblies[i]);
