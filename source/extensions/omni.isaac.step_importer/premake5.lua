@@ -3,7 +3,6 @@ project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.step_importer.plugin")
 
-    disablewarnings {"error=sign-compare"}
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/step_importer/**")
