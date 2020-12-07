@@ -62,7 +62,7 @@ imageTests = (
         wait_after_load=15,
     ),
     ImageTest(
-        experience_name="create.hydra",
+        experience_name="create.hdstorm",
         name="Kitchen_Set",
         golden_filename="create.hydra_kitchen_set_golden.png",
         output_filename="kitchen_set.png",
@@ -70,15 +70,15 @@ imageTests = (
         camera_path="/Kitchen_set/Camera",
         wait_after_load=15,
     ),
-    ImageTest(
-        experience_name="create.hydraEngines",
-        name="Kitchen_Set",
-        golden_filename="create.hydraEngines_kitchen_set_golden.png",
-        output_filename="kitchen_set.png",
-        stage_path=kitchen_sink_path,
-        camera_path="/Kitchen_set/Camera",
-        wait_after_load=15,
-    ),
+    # ImageTest(
+    #     experience_name="create.hydraEngines",
+    #     name="Kitchen_Set",
+    #     golden_filename="create.hydraEngines_kitchen_set_golden.png",
+    #     output_filename="kitchen_set.png",
+    #     stage_path=kitchen_sink_path,
+    #     camera_path="/Kitchen_set/Camera",
+    #     wait_after_load=15,
+    # ),
     ImageTest(
         experience_name="create.iray",
         name="Kitchen_Set",
@@ -97,15 +97,15 @@ imageTests = (
     #     camera_path="/Kitchen_set/Camera",
     #     wait_after_load=15,
     # ),
-    ImageTest(
-        experience_name="create.next",
-        name="Astronaut",
-        golden_filename="astronaut_golden.png",
-        output_filename="astronaut.png",
-        stage_path=f"omniverse://ov-sandbox/NVIDIA/Samples/Astronaut/Astro_USD.usd",
-        camera_path="/Root/Camera",
-        wait_after_load=15,
-    ),
+    # ImageTest(
+    #     experience_name="create.next",
+    #     name="Astronaut",
+    #     golden_filename="astronaut_golden.png",
+    #     output_filename="astronaut.png",
+    #     stage_path=f"omniverse://ov-sandbox/NVIDIA/Samples/Astronaut/Astro_USD.usd",
+    #     camera_path="/Root/Camera",
+    #     wait_after_load=15,
+    # ),
 )
 
 

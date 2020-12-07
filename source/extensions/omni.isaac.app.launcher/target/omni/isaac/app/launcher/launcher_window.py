@@ -78,11 +78,14 @@ class LauncherWindow:
             close_on_launch=not self._persistent_launcher.get_value_as_bool(),
         )
 
-    def _launch_selected_app(self):
+    def _get_selected_app_id(self):
         application_index = self._radio_collection.model.get_value_as_int()
         all_apps = self._get_all_apps()
-
         app_id = all_apps[application_index]
+        return app_id
+
+    def _launch_selected_app(self):
+        app_id = self._get_selected_app_id()
         self._launch_app(app_id=app_id)
         if self._persistent_launcher.get_value_as_bool():
             # update the default app display if needed
@@ -302,6 +305,14 @@ class LauncherWindow:
                 ui.Spacer(width=10)
                 self._app_as_default = ui.CheckBox(height=10, width=30).model
                 ui.Label("Set selection as new default", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
+
+                def on_selection_as_default_changed(model):
+                    value = model.get_value_as_bool()
+                    if value:
+                        app_id = self._get_selected_app_id()
+                        self._settings.set(DEFAULT_APP_SETTING, app_id)
+
+                self._app_as_default.add_value_changed_fn(on_selection_as_default_changed)
 
             ui.Spacer(height=5)
             with ui.HStack(height=0):
