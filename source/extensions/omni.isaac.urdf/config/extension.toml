@@ -5,8 +5,8 @@ order = 0
 [package]
 version = "0.1.2"
 category = "Simulation"
-title = "URDF Importer"
-description = "URDF Importer for Omniverse"
+title = "Isaac Sim URDF Importer"
+description = "URDF Importer for Isaac Sim"
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.urdf"
 keywords = ["isaac", "urdf", "import"]
