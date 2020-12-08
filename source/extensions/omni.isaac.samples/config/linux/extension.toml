@@ -1,4 +1,19 @@
-display_name = "Isaac Preview Samples"
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Samples"
+description = "Sample extensions for Isaac Sim"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.samples"
+keywords = ["isaac", "samples", "manipulation"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.editor" = {}

@@ -61,13 +61,12 @@ project_ext_bindings {
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/range_sensor/scripts" },
+    { "docs", ext.target_dir.."/docs" },
+    { "data", ext.target_dir.."/data" },
 }
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/range_sensor" },
-}
-
-repo_build.prebuild_copy {
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RangeSensorSchema/**", ext.target_dir.."/omni/isaac/RangeSensorSchema" },
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}rangeSensorSchema${lib_ext}", ext.target_dir.."/bin"},
 }

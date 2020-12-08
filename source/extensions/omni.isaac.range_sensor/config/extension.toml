@@ -1,4 +1,19 @@
-display_name = "Range Sensor"
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Range Sensor"
+description = "Range based sensor simulation using physx"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.range_sensor"
+keywords = ["isaac", "physics", "sensor", "lidar"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.editor" = {}
@@ -7,7 +22,6 @@ display_name = "Range Sensor"
 
 [[python.modules]]
 name = "omni.isaac.range_sensor"
-
 
 [[python.modules]]
 name = "omni.isaac.range_sensor.scripts.samples.lidar_info"

@@ -220,11 +220,8 @@ group "apps"
 
     define_local_experience("isaac-sim")
     define_local_experience("isaac-sim.launcher")
-    -- define_local_experience("omni.create.xr")
     define_local_experience("isaac-sim.headless")
-    -- define_local_experience("omni.create.next")
-    define_local_experience("isaac-sim.mini")
-    -- define_local_experience("omni.create.testing")
+    -- define_local_experience("isaac-sim.testing")
 
     -- -- Test runner experience:
     -- args = {
