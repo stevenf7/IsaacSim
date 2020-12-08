@@ -14,29 +14,7 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.kit.builtin.commands.usd_commands import *
-
-
-def get_data_file(file_name: str):
-    if os.path.isabs(file_name):
-        path_to_file = file_name
-    else:
-        path_to_file = os.path.abspath(
-            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
-        )
-    return path_to_file
-
-
-async def load_test_file(test_file_name: str):
-    if not Usd.Stage.IsSupportedFile(test_file_name):
-        raise ValueError("Only USD files can be loaded with this method")
-
-    path_to_file = get_data_file(test_file_name)
-
-    usd_context = omni.usd.get_context()
-    usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
-    usd_context.enable_save_to_recent_files()
-    return (result, error)
+from omni.isaac.utils.scripts.test_utils import load_test_file, set_scene_physics_type
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -48,7 +26,9 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._omni_pbr_data = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${kit}/../../library/mdl/Base/OmniPBR.mdl")
         )
-        await omni.kit.asyncapi.connect("ov-isaac-dev:3009", "testing", "testing")
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.tests")
+        self._extension_path = ext_manager.get_extension_path(ext_id)
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
         self._editor = omni.kit.editor.get_editor_interface()
@@ -161,16 +141,15 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for movement component for articulated robots
     async def test_movement_component_franka(self):
-        await omni.kit.asyncapi.new_stage()
-        (result, error) = await load_test_file("assets/robots/franka/franka.usd")
+        await omni.usd.get_context().new_stage_async()
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu=False)
         # Start Simulation and wait
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         await asyncio.sleep(1.0)
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         # Get initial transform matrix
@@ -198,11 +177,11 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
             include_children=False,
         )
         # Enable manual mode and execute DR once
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self._dr.toggle_manual_mode()
         self._dr.randomize_once()
         self._dr.toggle_manual_mode()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         # Check if rotation components are same and translation components are different
         new_pose_p = (88.2894, 79.2465, 10)
         pos = self._dc.get_rigid_body_pose(root_body).p
@@ -217,16 +196,15 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for movement component for articulated robots
     async def test_movement_component_carter(self):
-        await omni.kit.asyncapi.new_stage()
-        (result, error) = await load_test_file("assets/robots/carter/carter.usd")
+        await omni.usd.get_context().new_stage_async()
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/carter/carter.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu=False)
         # Start Simulation and wait
-        editor = omni.kit.editor.get_editor_interface()
-        editor.play()
+        self._timeline.play()
         await asyncio.sleep(1.0)
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         art = self._dc.get_articulation("/carter")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         # Get initial transform matrix
@@ -248,11 +226,11 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
             include_children=False,
         )
         # Enable manual mode and execute DR once
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         self._dr.toggle_manual_mode()
         self._dr.randomize_once()
         self._dr.toggle_manual_mode()
-        await omni.kit.asyncapi.next_update()
+        await omni.kit.app.get_app().next_update_async()
         # Check if rotation components are same and translation components are different
         new_pose_p = (88.2894, 79.2465, 10)
         pos = self._dc.get_rigid_body_pose(root_body).p
