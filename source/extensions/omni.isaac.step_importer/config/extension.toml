@@ -6,7 +6,7 @@ display_name = "STEP Importer"
 "omni.kit.window.content_browser" = {}
 "omni.kit.window.filepicker" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.step_importer"
 
 [[native.plugins]]

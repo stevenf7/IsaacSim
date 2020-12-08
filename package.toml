@@ -61,6 +61,7 @@ files_exclude = [
     ["**/*.pdb"],
     ["**/*.exp"],
     ["_build/$platform/$config/appshortcuts"],
+    ["_build/kit_release/_exts/omni.kit.window.content"],
 ]
 
 [isaac-sim-launcher.linux-x86_64]
@@ -70,6 +71,11 @@ files_exclude = [
 files_strip = [
     ["**/*.so"],
 ]
+
+files_strip_exclude = [
+    ["_build/kit_release/_exts/omni.kit.pip_archive/pip_prebundle/PIL/**"],
+]
+
 
 [isaac-sim-launcher.windows-x86_64]
 files = [

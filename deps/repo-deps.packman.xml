@@ -9,7 +9,7 @@
     <package name="repo_format" version="0.4.2" />
   </dependency>
   <dependency name="repo_package" linkPath="../_repo/deps/repo_package">
-    <package name="repo_package" version="5.2.18" />
+    <package name="repo_package" version="5.2.20" />
   </dependency>
   <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing" tags="non-redist">
     <package name="repo_licensing" version="0.3.9" />

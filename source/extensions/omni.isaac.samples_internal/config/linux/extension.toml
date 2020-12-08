@@ -9,5 +9,5 @@ display_name = "Isaac Preview Samples"
 "omni.isaac.manip" = {}
 "omni.isaac.samples" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.samples_internal.scripts.ur10_preview"

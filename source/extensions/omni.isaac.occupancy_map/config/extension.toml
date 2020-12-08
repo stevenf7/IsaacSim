@@ -20,7 +20,7 @@ icon = "data/icon.png"
 "omni.physx" = {} 
 "omni.debugdraw" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.occupancy_map"
 
 [[native.plugins]]

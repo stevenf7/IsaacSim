@@ -3,5 +3,5 @@ display_name = "Isaac About Window"
 [dependencies]
 "omni.kit.editor" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.about"

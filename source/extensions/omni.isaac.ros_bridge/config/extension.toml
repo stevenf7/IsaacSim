@@ -7,20 +7,20 @@ display_name = "ROS Bridge"
 "omni.syntheticdata" = {}
 "omni.isaac.utils" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.ros_bridge"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.ros_bridge.scripts.samples.rostopics"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.ros_bridge.scripts.samples.rosservices"
 
 [[native.plugins]]
 path = "bin/*.plugin"
 recursive = false
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.RosBridgeSchema"
 public = false
 

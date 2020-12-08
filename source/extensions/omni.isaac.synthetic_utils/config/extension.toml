@@ -19,7 +19,7 @@ icon = "data/icon.png"
 "omni.kit.editor" = {}
 "omni.syntheticdata" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.synthetic_utils"
 
 [python.pipapi]

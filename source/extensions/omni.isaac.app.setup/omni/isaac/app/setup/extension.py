@@ -9,6 +9,7 @@
 
 import asyncio
 import sys
+import os
 import omni.ext
 import omni.ui as ui
 import carb.settings
@@ -42,7 +43,7 @@ class CreateSetupExtension(omni.ext.IExt):
 
         app_version = self._settings.get("/app/version")
         if not app_version:
-            app_version = open(carb.tokens.get_tokens_interface().resolve("${app}/../VERSION")).read()
+            app_version = open(os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../VERSION"))).read()
 
         if app_version:
             app_version, _ = app_version.split("+")
@@ -126,32 +127,11 @@ class CreateSetupExtension(omni.ext.IExt):
         """ show the omniverse ui documentation as an external Application """
         self._launch_app("omni.isaac.launcher.kit", console=False, custom_args={"--/app/auto_launch=false"})
 
-    def __set_background_color(self):
-        # there is some issue with DLSS and alpha/bg color, when it is fix we can bring that back
-        # settings up default Color for Background
-        self._settings.set("/rtx-defaults/post/backgroundZeroAlpha/enabled", True)
-        self._settings.set("/rtx-defaults/post/backgroundZeroAlpha/backgroundDefaultColor", (0.2, 0.2, 0.2))
-        self.__background_color = asyncio.ensure_future(self.__bg_color())
-
-    async def __bg_color(self):
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-
-        self._settings.set(
-            "/rtx/post/backgroundZeroAlpha/enabled", self._settings.get("/rtx/post/backgroundZeroAlpha/enabled")
-        )
-        self._settings.set(
-            "/rtx/post/backgroundZeroAlpha/backgroundDefaultColor",
-            self._settings.get("/rtx/post/backgroundZeroAlpha/backgroundDefaultColor"),
-        )
-
     async def __dock_windows(self):
         """ setup all the docking properly for create """
         content = ui.Workspace.get_window("Content")
         stage = ui.Workspace.get_window("Stage")
         console = ui.Workspace.get_window("Console")
-        toolbar = ui.Workspace.get_window("Toolbar")
 
         stage.dock_order = 0
         stage.focus()
