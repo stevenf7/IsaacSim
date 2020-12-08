@@ -218,8 +218,7 @@ void DRComponentColor::stop()
 }
 void DRComponentColor::tick()
 {
-    unsigned int primIndex = 0;
-    for (auto& prim : mAllPrims)
+    for (size_t primIndex = 0; primIndex < mAllPrims.size(); primIndex++)
     {
         auto materialShadePrim =
             mStage->GetPrimAtPath(pxr::SdfPath(mAllMaterialPrims[primIndex].GetPrimPath().GetString() + "/Shader"));
@@ -243,7 +242,6 @@ void DRComponentColor::tick()
         {
             primMetallic.Set(randomRangeFloat(mMetallicRange[0], mMetallicRange[1]));
         }
-        primIndex++;
     }
 }
 
