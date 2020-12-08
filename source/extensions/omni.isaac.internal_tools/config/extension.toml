@@ -4,5 +4,5 @@ display_name = "Internal Tools"
 "omni.kit.editor" = {}
 
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.internal_tools"

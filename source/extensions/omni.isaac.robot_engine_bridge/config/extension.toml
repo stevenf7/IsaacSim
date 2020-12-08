@@ -6,18 +6,18 @@ display_name = "Robot Engine Bridge"
 "omni.isaac.range_sensor" = {}
 "omni.syntheticdata" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.robot_engine_bridge"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.RobotEngineBridgeSchema"
 public = false
 
-# [[python.modules]]
+# [[python.module]]
 # name = "omni.isaac.pyalice"
 # public = false
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.robot_engine_bridge.scripts.setup_environment_grid"
 public = false
 

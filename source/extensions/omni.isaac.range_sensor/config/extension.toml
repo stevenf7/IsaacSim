@@ -20,13 +20,13 @@ icon = "data/icon.png"
 "omni.physx" = {} 
 "omni.debugdraw" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.range_sensor"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.range_sensor.scripts.samples.lidar_info"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.RangeSensorSchema"
 public = false
 

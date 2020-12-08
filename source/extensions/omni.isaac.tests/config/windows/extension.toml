@@ -11,5 +11,5 @@ display_name = "Isaac Isaac Tests"
 "omni.isaac.dr" = {}
 "omni.isaac.step_importer" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.tests"

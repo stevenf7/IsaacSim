@@ -3,7 +3,7 @@ display_name = "Decals"
 [dependencies]
 "omni.kit.editor" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.decals"
 
 [[native.plugins]]

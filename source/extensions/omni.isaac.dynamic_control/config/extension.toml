@@ -19,13 +19,13 @@ icon = "data/icon.png"
 "omni.kit.editor" = {}
 "omni.physx" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.dynamic_control"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.dynamic_control.scripts.samples.articulation"
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.dynamic_control.scripts.samples.joint_monkey"
 
 [[native.plugins]]
