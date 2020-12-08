@@ -145,6 +145,7 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         prim.CreateDurationAttr().Set(float(self._duration))
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateSeedAttr().Set(int(self._seed))
+        prim.CreatePolygonPointsAttr().Set([])
         return prim
 
 

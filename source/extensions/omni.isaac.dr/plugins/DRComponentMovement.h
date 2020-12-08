@@ -42,6 +42,8 @@ public:
 private:
     void update();
     void stop();
+    pxr::GfVec3f randomPointTriangle(std::vector<pxr::GfVec3f>& samplePoints);
+    pxr::GfVec3f randomPointPolygon(std::vector<pxr::GfVec3f>& samplePoints);
 
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
     std::vector<std::string> mPaths, mLookAtTargetPaths;
@@ -50,6 +52,7 @@ private:
     bool mEnableLookAtTarget;
     pxr::GfVec3d mLookAtTargetOffset = pxr::GfVec3d(0.0, 0.0, 0.0);
     pxr::GfVec3d mUpUsd;
+    std::vector<pxr::GfVec3f> mPolygonPoints;
 };
 
 }

@@ -39,5 +39,9 @@ name = "omni.isaac.utils.scripts.samples.surface_gripper"
 name = "omni.isaac.utils.scripts.merge_mesh_tool"
 public = false
 
+[[python.modules]]
+name = "omni.isaac.utils.scripts.array_editor"
+public = false
+
 [python.pipapi]
 requirements = ["matplotlib", "pillow"]
