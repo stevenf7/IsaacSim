@@ -28,7 +28,7 @@ class Extension(omni.ext.IExt):
         config_robot_btn.set_clicked_fn(self._on_config_robot)
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self.extension_path = ext_manager.get_extension_path(ext_id)
+        self._extension_path = ext_manager.get_extension_path(ext_id)
 
     def on_shutdown(self):
         self._window = None
@@ -45,7 +45,7 @@ class Extension(omni.ext.IExt):
             import_config.fix_base = True
             import_robot(
                 self._urdf_interface,
-                self.extension_path + "/data/urdf/robots/franka_description/robots/panda_arm_hand.urdf",
+                self._extension_path + "/data/urdf/robots/franka_description/robots/panda_arm_hand.urdf",
                 import_config,
             )
 

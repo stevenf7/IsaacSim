@@ -61,30 +61,30 @@ def set_scene_physics_type(gpu=False, scene_path="/physicsScene"):
     stage = omni.usd.get_context().get_stage()
     physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, scene_path)
 
-    if physxSceneAPI.GetPhysxSceneEnableCCDAttr().HasValue():
-        physxSceneAPI.GetPhysxSceneEnableCCDAttr().Set(True)
+    if physxSceneAPI.GetEnableCCDAttr().HasValue():
+        physxSceneAPI.GetEnableCCDAttr().Set(True)
     else:
         physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
 
-    if physxSceneAPI.GetPhysxSceneEnableStabilizationAttr().HasValue():
-        physxSceneAPI.GetPhysxSceneEnableStabilizationAttr().Set(True)
+    if physxSceneAPI.GetEnableStabilizationAttr().HasValue():
+        physxSceneAPI.GetEnableStabilizationAttr().Set(True)
     else:
         physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
 
-    if physxSceneAPI.GetPhysxSceneSolverTypeAttr().HasValue():
-        physxSceneAPI.GetPhysxSceneSolverTypeAttr().Set("TGS")
+    if physxSceneAPI.GetSolverTypeAttr().HasValue():
+        physxSceneAPI.GetSolverTypeAttr().Set("TGS")
     else:
         physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
 
-    if not physxSceneAPI.GetPhysxSceneEnableGPUDynamicsAttr().HasValue():
+    if not physxSceneAPI.GetEnableGPUDynamicsAttr().HasValue():
         physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
 
-    if not physxSceneAPI.GetPhysxSceneBroadphaseTypeAttr().HasValue():
+    if not physxSceneAPI.GetBroadphaseTypeAttr().HasValue():
         physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
 
     if gpu:
-        physxSceneAPI.GetPhysxSceneEnableGPUDynamicsAttr().Set(True)
-        physxSceneAPI.GetPhysxSceneBroadphaseTypeAttr().Set("GPU")
+        physxSceneAPI.GetEnableGPUDynamicsAttr().Set(True)
+        physxSceneAPI.GetBroadphaseTypeAttr().Set("GPU")
     else:
-        physxSceneAPI.GetPhysxSceneEnableGPUDynamicsAttr().Set(False)
-        physxSceneAPI.GetPhysxSceneBroadphaseTypeAttr().Set("MBP")
+        physxSceneAPI.GetEnableGPUDynamicsAttr().Set(False)
+        physxSceneAPI.GetBroadphaseTypeAttr().Set("MBP")

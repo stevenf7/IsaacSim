@@ -8,7 +8,7 @@ from .dynamic_control.test_core import *
 
 from .urdf.test_urdf import *
 
-from .lidar.test_lidar import *
+from .range_sensor.test_lidar import *
 
 from .domain_randomizer.test_domain_randomizer import *
 

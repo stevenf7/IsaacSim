@@ -25,6 +25,10 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._physxIFace = _physx.acquire_physx_interface()
         self._timeline = omni.timeline.get_timeline_interface()
+
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.tests")
+        self._extension_path = ext_manager.get_extension_path(ext_id)
         pass
 
     # After running each test
@@ -34,7 +38,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_articulation_load(self, gpu=False):
         await omni.usd.get_context().new_stage_async()
-        (result, error) = await load_test_file("assets/robots/franka/franka.usd")
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)
@@ -54,7 +58,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_articulation_non_sim(self, gpu=False):
         await omni.usd.get_context().new_stage_async()
-        (result, error) = await load_test_file("assets/robots/franka/franka.usd")
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)
@@ -80,7 +84,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_articulation_teleport(self, gpu=False):
         await omni.usd.get_context().new_stage_async()
-        (result, error) = await load_test_file("assets/robots/franka/franka.usd")
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)
@@ -157,7 +161,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_movement(self, gpu=False):
         await omni.usd.get_context().new_stage_async()
-        (result, error) = await load_test_file("assets/robots/franka/franka.usd")
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)
@@ -203,7 +207,9 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_wheeled(self, gpu=False):
         await omni.usd.get_context().new_stage_async()
-        (result, error) = await load_test_file("tests/robots/differential_base/differential_base.usd")
+        (result, error) = await load_test_file(
+            self._extension_path + "/data/usd/robots/differential_base/differential_base.usd"
+        )
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)
@@ -228,11 +234,11 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(0, np.linalg.norm(lin_vel), 1)
         self.assertGreater(ang_vel[2], 2.45)
         self.assertLess(ang_vel[2], 2.55)
-        editor.stop()
+        self._timeline.stop()
 
     async def test_articulation_carter(self, gpu=False):
         await omni.usd.get_context().new_stage_async()
-        (result, error) = await load_test_file("assets/robots/carter/carter.usd")
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/carter/carter.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)
@@ -323,7 +329,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_position_franka(self, gpu=False):
         await omni.usd.get_context().new_stage_async()
-        (result, error) = await load_test_file("assets/robots/franka/franka.usd")
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # (result, error) = await load_test_file("omniverse://ov-isaac-dev/Isaac/Robots/Franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
@@ -368,7 +374,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_position_ur10(self, gpu=False):
         await omni.usd.get_context().new_stage_async()
-        (result, error) = await load_test_file("assets/robots/ur10/ur10.usd")
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/ur10/ur10.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)
@@ -384,6 +390,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         new_pos_list = [4.0, 2.0, 0, -2, -4]  # over pi, under pi , zero, and inverse.
         for new_pos in new_pos_list:
             # set new dof pos target
+            self._dc.wake_up_articulation(art)
             self.assertTrue(self._dc.set_dof_position_target(dof_ptr, new_pos))
             await asyncio.sleep(2.0)
             await omni.kit.app.get_app().next_update_async()
@@ -396,7 +403,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_position_str(self, gpu=False):
         await omni.usd.get_context().new_stage_async()
-        (result, error) = await load_test_file("tests/robots/str/str_physics.usd")
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/str/str_physics.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)
