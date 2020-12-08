@@ -60,7 +60,7 @@ private:
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
     omni::usd::Layers* mLayer = nullptr;
     std::string mDRLayerName = "";
-    double mTimeElapsed = 0.0f;
+    double mTimeElapsed = 0.0;
     std::string mRootLayerIdentifier = "";
     pxr::SdfLayerRefPtr mNewSublayer;
 };

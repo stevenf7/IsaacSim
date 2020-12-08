@@ -223,7 +223,7 @@ void DRComponentMovement::tick()
                         pxr::GfMatrix4d targetPrimTransformMat = omni::usd::UsdUtils::getLocalTransformMatrix(targetPrim);
                         averagelookAtTarget += targetPrimTransformMat.ExtractTranslation();
                     }
-                    averagelookAtTarget /= mLookAtTargetPaths.size();
+                    averagelookAtTarget /= static_cast<double>(mLookAtTargetPaths.size());
                 }
                 averagelookAtTarget += mLookAtTargetOffset;
                 matrix.SetLookAt(eyeUsd, averagelookAtTarget, mUpUsd);

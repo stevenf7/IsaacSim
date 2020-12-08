@@ -127,8 +127,8 @@ void DRComponentMesh::update()
             // Or make the extra ones invisible
             else if (numMesh < mCopiedMeshPrims[meshPrimPath].size() + 1)
             {
-                unsigned int numMeshDelete = mCopiedMeshPrims[meshPrimPath].size() + 1 - numMesh;
-                for (unsigned int idx = 1; idx <= numMeshDelete; idx++)
+                size_t numMeshDelete = mCopiedMeshPrims[meshPrimPath].size() + 1 - numMesh;
+                for (size_t idx = 1; idx <= numMeshDelete; idx++)
                 {
                     auto newPrim = mCopiedMeshPrims[meshPrimPath].back();
                     // CARB_LOG_WARN("Setting visibility to false : %s", newPrim.GetPrimPath().GetString().c_str());
