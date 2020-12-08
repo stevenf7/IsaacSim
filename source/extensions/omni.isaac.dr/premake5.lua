@@ -4,8 +4,6 @@ project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.dr.plugin")
 
-    disablewarnings {"error=unused-variable"}
-
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/dr/**")
     includedirs {

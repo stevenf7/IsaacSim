@@ -43,7 +43,8 @@ CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate,
                       carb::tokens::ITokens,
                       carb::datasource::IDataSource,
                       carb::settings::ISettings,
-                      carb::filesystem::IFileSystem)
+                      carb::filesystem::IFileSystem,
+                      omni::isaac::dynamic_control::DynamicControl)
 
 namespace
 {

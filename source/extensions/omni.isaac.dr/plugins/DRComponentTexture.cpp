@@ -166,13 +166,12 @@ void DRComponentTexture::update()
     {
         mMaterialPrims.clear();
         mMaterialShades.clear();
-        unsigned int textureIndex = 1;
         pxr::UsdEditContext context(mStage, mTextureLayer);
-        for (std::string& url : mTextureList)
+        for (size_t textureIndex = 0; textureIndex < mTextureList.size(); textureIndex++)
         {
-            textureIndex++;
             std::string mTextureCompPathName = mStage->GetDefaultPrim().GetPath().GetString() + "/DR/" + mCompName;
-            std::string mCopyTextureMaterialPrimName = mTextureCompPathName + "/OmniPBR_" + std::to_string(textureIndex);
+            std::string mCopyTextureMaterialPrimName =
+                mTextureCompPathName + "/OmniPBR_" + std::to_string(textureIndex + 2);
             if (mTextureMaterialPrim && !omni::usd::UsdUtils::hasPrimAtPath(mStage, mCopyTextureMaterialPrimName, false))
             {
                 pxr::UsdEditContext context(mStage, mTextureLayer);
