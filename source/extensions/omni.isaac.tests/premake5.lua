@@ -20,11 +20,11 @@ repo_build.prebuild_link {
     { "python/samples", ext.target_dir.."/omni/isaac/tests/samples" },
     { "python/urdf", ext.target_dir.."/omni/isaac/tests/urdf" },
     { "python/step_importer", ext.target_dir.."/omni/isaac/tests/step_importer" },
-    { "python/lidar", ext.target_dir.."/omni/isaac/tests/lidar" },
+    { "python/range_sensor", ext.target_dir.."/omni/isaac/tests/range_sensor" },
     { "python/domain_randomizer", ext.target_dir.."/omni/isaac/tests/domain_randomizer" },
+    { "data", ext.target_dir.."/data" },
 }
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/tests" },
-    { "data/**", ext.target_dir.."/omni/isaac/tests/data" },
 }

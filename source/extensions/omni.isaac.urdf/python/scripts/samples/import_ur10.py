@@ -27,7 +27,7 @@ class Extension(omni.ext.IExt):
         config_robot_btn.set_clicked_fn(self._on_config_robot)
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self.extension_path = ext_manager.get_extension_path(ext_id)
+        self._extension_path = ext_manager.get_extension_path(ext_id)
 
     def on_shutdown(self):
         self._window = None
@@ -43,7 +43,7 @@ class Extension(omni.ext.IExt):
             import_config.merge_fixed_joints = False
             import_config.fix_base = True
             import_robot(
-                self._urdf_interface, self.extension_path + "/data/urdf/robots/ur10/urdf/ur10_base.urdf", import_config
+                self._urdf_interface, self._extension_path + "/data/urdf/robots/ur10/urdf/ur10_base.urdf", import_config
             )
 
             viewport = omni.kit.viewport.get_default_viewport_window()

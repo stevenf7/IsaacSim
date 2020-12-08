@@ -68,7 +68,7 @@ def _print_body_rec(dc, body, indent_level=0):
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._window = omni.kit.ui.Window(
             "Joint Monkey",
@@ -100,6 +100,9 @@ class Extension(omni.ext.IExt):
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self.ar = _dynamic_control.INVALID_HANDLE
 
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._extension_path = ext_manager.get_extension_path(ext_id)
+
     def on_shutdown(self):
         self._sub_stage_event = None
         self._editor_event_subscription = None
@@ -113,7 +116,7 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
 
     def _on_load_robot(self, widget):
-        task = asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
+        task = asyncio.ensure_future(load_test_file(self._extension_path + "/data/assets/usd/franka/franka.usd"))
         asyncio.ensure_future(self._setup_camera(task))
 
     def _on_move_joints(self, widget):

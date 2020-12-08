@@ -59,6 +59,10 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
         scene.CreateGravityMagnitudeAttr().Set(981.0)
 
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.tests")
+        self._extension_path = ext_manager.get_extension_path(ext_id)
+
     # After running each test
     async def tearDown(self):
         self._timeline.stop()
@@ -210,7 +214,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         lidar.GetHighLodAttr().Set(False)
 
     async def test_carter_lidar(self):
-        (result, error) = await load_test_file("assets/robots/carter/carter.usd")
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/carter/carter.usd")
         self._stage = omni.usd.get_context().get_stage()
 
         # Add a cube
@@ -223,7 +227,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         lidar.GetRotationRateAttr().Set(0.0)
         lidar.GetHighLodAttr().Set(False)
-        lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 50.0))
+        lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 37.0))
 
         # Run for two seconds
 

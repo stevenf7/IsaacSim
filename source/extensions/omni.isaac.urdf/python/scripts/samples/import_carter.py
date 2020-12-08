@@ -28,7 +28,7 @@ class Extension(omni.ext.IExt):
         config_robot_btn = self._window.layout.add_child(omni.kit.ui.Button("Configure Robot"))
         config_robot_btn.set_clicked_fn(self._on_config_robot)
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self.extension_path = ext_manager.get_extension_path(ext_id)
+        self._extension_path = ext_manager.get_extension_path(ext_id)
 
     def on_shutdown(self):
         self._window = None
@@ -44,7 +44,7 @@ class Extension(omni.ext.IExt):
             import_config.merge_fixed_joints = True
             import_config.fix_base = False
             import_robot(
-                self._urdf_interface, self.extension_path + "/data/urdf/robots/carter/urdf/carter.urdf", import_config
+                self._urdf_interface, self._extension_path + "/data/urdf/robots/carter/urdf/carter.urdf", import_config
             )
 
             viewport = omni.kit.viewport.get_default_viewport_window()
