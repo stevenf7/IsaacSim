@@ -67,7 +67,7 @@ class CreateColorComponentCommand(omni.kit.commands.Command):
         )
         prim.CreateRoughnessAttr().Set((float(self._roughness_range[0]), float(self._roughness_range[1])))
         prim.CreateMetallicAttr().Set(((float(self._metallic_range[0]), float(self._metallic_range[1]))))
-        prim.CreateDurationAttr().Set(float(self._duration))
+        prim.CreateDurationAttr().Set(self._duration)
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateSeedAttr().Set(int(self._seed))
         return prim
@@ -142,7 +142,7 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         # if no target prim is specified, this value used as the target, if a prim is specified this acts like an offset.
         if self._target_position is not None:
             prim.CreateLookAtTargetOffsetAttr().Set(self._target_position)
-        prim.CreateDurationAttr().Set(float(self._duration))
+        prim.CreateDurationAttr().Set(self._duration)
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateSeedAttr().Set(int(self._seed))
         prim.CreatePolygonPointsAttr().Set([])
@@ -202,7 +202,7 @@ class CreateRotationComponentCommand(omni.kit.commands.Command):
         prim.CreateXRangeAttr().Set((float(self._min_range[0]), float(self._max_range[0])))
         prim.CreateYRangeAttr().Set((float(self._min_range[1]), float(self._max_range[1])))
         prim.CreateZRangeAttr().Set((float(self._min_range[2]), float(self._max_range[2])))
-        prim.CreateDurationAttr().Set(float(self._duration))
+        prim.CreateDurationAttr().Set(self._duration)
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateSeedAttr().Set(int(self._seed))
         return prim
@@ -262,7 +262,7 @@ class CreateScaleComponentCommand(omni.kit.commands.Command):
         prim.CreateYRangeAttr().Set((float(self._min_range[1]), float(self._max_range[1])))
         prim.CreateZRangeAttr().Set((float(self._min_range[2]), float(self._max_range[2])))
         prim.CreateEnableUniformAttr().Set(bool(self._uniform_scaling))
-        prim.CreateDurationAttr().Set(float(self._duration))
+        prim.CreateDurationAttr().Set(self._duration)
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateSeedAttr().Set(int(self._seed))
         return prim
@@ -335,7 +335,7 @@ class CreateLightComponentCommand(omni.kit.commands.Command):
         prim.CreateIntensityRangeAttr().Set((float(self._intensity_range[0]), float(self._intensity_range[1])))
         prim.CreateTemperatureRangeAttr().Set((float(self._temperature_range[0]), float(self._temperature_range[1])))
         prim.CreateEnableTemperatureAttr().Set(bool(self._enable_temperature))
-        prim.CreateDurationAttr().Set(float(self._duration))
+        prim.CreateDurationAttr().Set(self._duration)
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateSeedAttr().Set(int(self._seed))
         return prim
@@ -404,7 +404,7 @@ class CreateTextureComponentCommand(omni.kit.commands.Command):
         prim.CreateIgnoredClassAttr().Set(str(",").join(self._ignored_class_list))
         prim.CreateGroupedClassAttr().Set(str(",").join(self._grouped_class_list))
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
-        prim.CreateDurationAttr().Set(float(self._duration))
+        prim.CreateDurationAttr().Set(self._duration)
         prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
@@ -475,7 +475,7 @@ class CreateMaterialComponentCommand(omni.kit.commands.Command):
         for path in self._loaded_material_paths:
             mat_paths.AddTarget(path)
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
-        prim.CreateDurationAttr().Set(float(self._duration))
+        prim.CreateDurationAttr().Set(self._duration)
         prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
@@ -531,7 +531,7 @@ class CreateMeshComponentCommand(omni.kit.commands.Command):
             rel_paths.AddTarget(path)
         prim.CreateMeshListAttr().Set(str(",").join(self._mesh_list))
         prim.CreateNumMeshRangeAttr().Set(Gf.Vec2i(self._mesh_range[0], self._mesh_range[1]))
-        prim.CreateDurationAttr().Set(float(self._duration))
+        prim.CreateDurationAttr().Set(self._duration)
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateSeedAttr().Set(int(self._seed))
         return prim
@@ -579,7 +579,7 @@ class CreateVisibilityComponentCommand(omni.kit.commands.Command):
         for path in self._prim_paths:
             rel_paths.AddTarget(path)
         prim.CreateNumVisibleRangeAttr().Set(Gf.Vec2i(int(self._num_visible_range[0]), int(self._num_visible_range[1])))
-        prim.CreateDurationAttr().Set(float(self._duration))
+        prim.CreateDurationAttr().Set(self._duration)
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateSeedAttr().Set(int(self._seed))
         return prim

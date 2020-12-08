@@ -50,8 +50,8 @@ public:
     virtual void tick() = 0;
     virtual void onComponentChange() = 0;
 
-    float mRandomizationDurationInterval;
-    float mLastTickTime = 0.0f;
+    double mRandomizationDurationInterval;
+    double mLastTickTime = 0.0;
     bool mIncludeChild;
     std::vector<std::string> mIgnoreClassList;
     std::string mDRLayerName, mCompName;

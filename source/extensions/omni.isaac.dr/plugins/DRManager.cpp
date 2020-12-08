@@ -79,7 +79,7 @@ void DRManager::tick(double dt)
 {
 
     mTimeElapsed += dt;
-    // CARB_LOG_WARN("Tick: %f - %f", mTimeElapsed, dt);
+    // CARB_LOG_WARN("Tick: %lf - %lf", mTimeElapsed, dt);
 
     if (mNewSublayer)
     {
