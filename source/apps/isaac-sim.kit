@@ -49,7 +49,7 @@ keywords = ["experience", "app", "usd"]
 "omni.renderer" = { tag = "rtx" }
 "omni.hydra.rtx" = { }
 
-#"omni.rtx.render_settings" = {} # this will be deprecated in few release 
+#"omni.rtx.render_settings" = {} # this will be deprecated in few release
 "omni.rtx.settings.core" = {} # this is the new Render Settings 2.0
 
 "omni.kit.window.movie_maker" = {}
@@ -63,7 +63,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.material.library" = {}
 
 # Content Browser
-#"omni.kit.window.content" = {} # But it is hidden / just trying to clear some dependency 
+#"omni.kit.window.content" = {} # But it is hidden / just trying to clear some dependency
 
 "omni.kit.window.imageviewer" = {}
 
@@ -71,7 +71,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.filepicker" = { }
 "omni.kit.window.content_browser" = { }
 
-"omni.kit.tagging" = {order = -10 } # should be a dependency of below 
+"omni.kit.tagging" = {order = -10 } # should be a dependency of below
 "omni.kit.filebrowser_column.tags" = {}
 
 "omni.kit.window.stats" = { order = 1000 }
@@ -108,9 +108,9 @@ exts."omni.kit.renderer.core".imgui.enableMips = true
 [settings.exts."omni.kit.registry.nucleus"]
 # URL where to store archives and index of extensions (can be local filesystem too). They are being pulled in order, 
 # so if multiple registries have a package with the same name the one that specified first is prioritized.
-# registries = [
-#     { name = "NVIDIA/published", url = "omniverse://kit-extensions.ov.nvidia.com:3009/exts/NVIDIA/published/" },
-# ]
+registries = [
+    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+]
 
 # Notify slack about published extensions
 postToSlack = false
@@ -160,7 +160,7 @@ featuredExts = [
 
 
 [settings]
-# MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you 
+# MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you
 # only want to use a single GPU on your MGPU system
 renderer.multiGpu.enabled = true
 
@@ -175,7 +175,7 @@ persistent.app.window.uiStyle = "NvidiaDark"
 exts."omni.kit.window.splash".imagePath = "${app}/../exts/omni.isaac.splash/data/create_splash_screen@1x.png"
 exts.'omni.kit.splash'.splash_app = "${app}/omni.isaac.app.splash.kit"
 
-# hide NonToggleable Exts 
+# hide NonToggleable Exts
 exts."omni.kit.window.extensions".hideNonToggleableExts = true
 
 # Misc Settings
@@ -205,6 +205,10 @@ enabledDeprecated = [
         "omni.kit.builtin.init",
         "omni.kit.builtin.menu",
     ]
+
+# Isaac Sim: disabling this for now
+# [settings.crashreporter.data]
+# experience = "Isaac Sim"
 
 # Isaac Sim Settings
 ###############################
