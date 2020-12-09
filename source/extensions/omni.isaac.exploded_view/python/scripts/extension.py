@@ -57,7 +57,7 @@ def getExplodeDirection(prim, dir_base: ExplodeDirection):
         ExplodeDirection.GlobalAxisY,
         ExplodeDirection.GlobalAxisZ,
     ]:
-        pose = omni.kit.usd.utils.get_world_transform_matrix(prim)
+        pose = omni.usd.utils.get_world_transform_matrix(prim)
         r = Gf.Matrix4d().SetRotate(pose.ExtractRotation())
         out = pose.ExtractTranslation()
         out[0] = out[0] if dir_base in [ExplodeDirection.GlobalOrigin, ExplodeDirection.GlobalAxisX] else 0
@@ -65,7 +65,7 @@ def getExplodeDirection(prim, dir_base: ExplodeDirection):
         out[2] = out[2] if dir_base in [ExplodeDirection.GlobalOrigin, ExplodeDirection.GlobalAxisZ] else 0
         return r.Transform(out)
     else:
-        pose = omni.kit.usd.utils.get_local_transform_matrix(prim)
+        pose = omni.usd.utils.get_local_transform_matrix(prim)
         out = pose.ExtractTranslation()
         out[0] = out[0] if dir_base in [ExplodeDirection.LocalOrigin, ExplodeDirection.LocalAxisX] else 0
         out[1] = out[1] if dir_base in [ExplodeDirection.LocalOrigin, ExplodeDirection.LocalAxisY] else 0

@@ -61,7 +61,7 @@ repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/motion_planning/scripts" },
 }
 repo_build.prebuild_link {
-    { "%{root}/_build/target-deps/lula/data", ext.target_dir.."/omni/isaac/motion_planning/resources/lula/" },
+    { "%{root}/_build/target-deps/lula/data", ext.target_dir.."/resources/lula/" },
 }
 
 repo_build.prebuild_copy {
