@@ -52,7 +52,7 @@ namespace range_sensor
 struct RangeSensorTaskData
 {
     double timeSeconds;
-    double timeNanoSeconds;
+    int64_t timeNanoSeconds;
     double dt;
     RangeSensorComponent* sensor;
 };
@@ -185,7 +185,7 @@ public:
             }
         }
         this->mTimeSeconds += dt;
-        this->mTimeNanoSeconds = mTimeSeconds * 1e9;
+        this->mTimeNanoSeconds = static_cast<int64_t>(mTimeSeconds * 1e9);
     }
     /**
      * @brief Run once the scene is stopped

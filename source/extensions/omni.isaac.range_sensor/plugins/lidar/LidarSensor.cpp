@@ -347,7 +347,7 @@ void scan(int start,
     }
 }
 
-void LidarSensor::dumpData(int start, int stop, float dt)
+void LidarSensor::dumpData(int start, int stop, double dt)
 {
 
     // Size of mLastDepth and mLastIntensity == mRows * mLastNumColsTicked
@@ -411,7 +411,7 @@ void LidarSensor::tick()
         finalRotation = parentRot * finalRotation;
     }
 
-    float elapsedTime = mTimeDelta;
+    double elapsedTime = mTimeDelta;
     mDebugLines.clear();
     bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
 

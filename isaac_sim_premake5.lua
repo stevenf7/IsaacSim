@@ -1,33 +1,40 @@
 
 function include_physx()
-    -- Which physx library type to use in release mode
-    physx_libs = "profile"
     
-    if configuration == "debug" then
-        physx_libs = "debug"
-    end
+    defines {  "PX_PHYSX_STATIC_LIB"}
+    libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
 
     filter { "configurations:debug" }
-        defines {  "PX_PHYSX_STATIC_LIB", "_DEBUG" }
+        defines { "_DEBUG" }
     filter { "configurations:release" }
-        defines {  "PX_PHYSX_STATIC_LIB", "NDEBUG" }
-
-    filter { "system:windows", "platforms:x86_64" }
-        libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
-        libdirs { 
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/"..physx_libs, 
-            "%{root}/_build/target-deps/vhacd/bin/win.x86_64.vc141.md/%{config}" 
-        }
-        links { "nvToolsExt64_1"}
+        defines { "NDEBUG" }
     filter {}
 
+    filter { "system:windows", "platforms:x86_64" }
+        links { "nvToolsExt64_1"}
     filter { "system:linux", "platforms:x86_64" }
-        libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
         links { "nvToolsExt"}
+    filter {}
+
+    filter { "system:windows", "platforms:x86_64", "configurations:debug" }
         libdirs { 
-            "%{root}/_build/target-deps/physx/bin/linux.clang/"..physx_libs, 
-            "%{root}/_build/target-deps/vhacd/bin/linux.clang/%{config}" 
+            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/debug", 
         }
+    filter { "system:windows", "platforms:x86_64", "configurations:release" }
+        libdirs { 
+            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/checked",
+        }
+    filter {}
+
+    filter { "system:linux", "platforms:x86_64","configurations:debug" }
+        libdirs { 
+            "%{root}/_build/target-deps/physx/bin/linux.clang/debug", 
+        }
+    filter { "system:linux", "platforms:x86_64","configurations:release" }
+        libdirs { 
+            "%{root}/_build/target-deps/physx/bin/linux.clang/checked", 
+        }
+    filter {}
 
     links { "PhysXExtensions_static_64", "PhysX_static_64", "PhysXPvdSDK_static_64","PhysXCooking_static_64","PhysXCommon_static_64", "PhysXFoundation_static_64"}
 
