@@ -23,7 +23,7 @@ from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Prope
 from .scenario import set_translate, set_rotate, create_ur10, Scenario, create_background, create_objects, setup_physics
 from copy import copy
 
-import omni.physx as _physx
+import omni.physx
 from collections import deque
 
 
@@ -153,7 +153,7 @@ class PickAndPlaceStateMachine(object):
 
         self.current_state = SM_states.STANDBY
         self.previous_state = -1
-        self._physxIFace = _physx.acquire_physx_interface()
+        self._physx_query_interface = omni.physx.get_physx_scene_query_interface()
 
         x = [100, 79, 58]
         y = [-62, -31, 0]
@@ -266,7 +266,7 @@ class PickAndPlaceStateMachine(object):
         raycast_tf = math_utils.mul(tr, offset)
         origin = raycast_tf.p
         rayDir = math_utils.get_basis_vector_x(raycast_tf.r)
-        hit = self._physxIFace.raycast_closest(origin, rayDir, 100.0)
+        hit = self._physx_query_interface.raycast_closest(origin, rayDir, 100.0)
         if hit["hit"]:
             usdGeom = UsdGeom.Mesh.Get(self._stage, hit["rigidBody"])
             distance = hit["distance"]
@@ -280,7 +280,7 @@ class PickAndPlaceStateMachine(object):
         """
         origin = (-36.0, 44.0, -50.0)
         rayDir = (1, 0, 0)
-        hit = self._physxIFace.raycast_closest(origin, rayDir, 100.0)
+        hit = self._physx_query_interface.raycast_closest(origin, rayDir, 100.0)
         if hit["hit"]:
             self.current = hit["rigidBody"]
             return True

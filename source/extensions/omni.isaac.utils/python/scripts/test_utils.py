@@ -64,23 +64,23 @@ def set_scene_physics_type(gpu=False, scene_path="/physicsScene"):
     if physxSceneAPI.GetEnableCCDAttr().HasValue():
         physxSceneAPI.GetEnableCCDAttr().Set(True)
     else:
-        physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
+        physxSceneAPI.CreateEnableCCDAttr(True)
 
     if physxSceneAPI.GetEnableStabilizationAttr().HasValue():
         physxSceneAPI.GetEnableStabilizationAttr().Set(True)
     else:
-        physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
+        physxSceneAPI.CreateEnableStabilizationAttr(True)
 
     if physxSceneAPI.GetSolverTypeAttr().HasValue():
         physxSceneAPI.GetSolverTypeAttr().Set("TGS")
     else:
-        physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
+        physxSceneAPI.CreateSolverTypeAttr("TGS")
 
     if not physxSceneAPI.GetEnableGPUDynamicsAttr().HasValue():
-        physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
+        physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
 
     if not physxSceneAPI.GetBroadphaseTypeAttr().HasValue():
-        physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
+        physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
 
     if gpu:
         physxSceneAPI.GetEnableGPUDynamicsAttr().Set(True)

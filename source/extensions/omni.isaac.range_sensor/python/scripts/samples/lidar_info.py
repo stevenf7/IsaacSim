@@ -168,7 +168,6 @@ class Extension(omni.ext.IExt):
         # to do this, we give our cube the collision API, and set it's material and collision group.
         collisionAPI = UsdPhysics.CollisionAPI.Apply(cubePrim)
         collisionAPI.CreatePhysicsMaterialRel()
-        collisionAPI.CreateCollisionGroupRel()
 
     def _get_info_function(self, widget):
         maxDepth = self.lidar.GetMaxRangeAttr().Get()

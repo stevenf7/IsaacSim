@@ -112,9 +112,8 @@ class SimpleStack(Scenario):
         super().create_franka()
 
         # Load robot environment and set its transform
-        solid_robot = "/physics/scene/solid"
         env_path = "/environments/env"
-        create_solid_franka(self._stage, "/environments/env", self.franka_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
+        create_solid_franka(self._stage, "/environments/env", self.franka_table_usd, Gf.Vec3d(0, 0, 0))
         create_blocks(
             self._stage,
             [self.green_cube_usd, self.blue_cube_usd],
@@ -140,7 +139,6 @@ class SimpleStack(Scenario):
         handle_4 = self._dc.get_rigid_body(blue_path)
 
         # Create world and robot object
-        solid_robot = "/physics/scene/solid"
         world = World(self._dc, self._mp)
         franka_solid = Franka(
             self._stage,
@@ -148,7 +146,6 @@ class SimpleStack(Scenario):
             self._dc,
             self._mp,
             world,
-            solid_robot,
             default_config,
         )
 

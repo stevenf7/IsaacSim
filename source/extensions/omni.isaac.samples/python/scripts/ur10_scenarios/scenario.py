@@ -52,12 +52,6 @@ def set_rotate(prim, rot_mat):
         xform_op.Set(Gf.Matrix4d().SetRotate(rot_mat))
 
 
-def set_collision_group(prim, group):
-    collisionAPI = UsdPhysics.CollisionAPI.Apply(prim)
-    rel = collisionAPI.CreateCollisionGroupRel()
-    rel.AddTarget(Sdf.Path(group))
-
-
 def set_up_z_axis(stage):
     rootLayer = stage.GetRootLayer()
     rootLayer.SetPermissionToEdit(True)
@@ -116,11 +110,11 @@ def setup_physics(stage):
 
     PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physics/scene"))
     physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/physics/scene")
-    physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
-    physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
-    physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
+    physxSceneAPI.CreateEnableCCDAttr(True)
+    physxSceneAPI.CreateEnableStabilizationAttr(True)
+    physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+    physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+    physxSceneAPI.CreateSolverTypeAttr("TGS")
 
 
 class Scenario:

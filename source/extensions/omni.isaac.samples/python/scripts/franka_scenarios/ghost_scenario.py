@@ -94,26 +94,12 @@ class GhostScenario(Scenario):
         index = 0
         for i in range(0, 1):
             for j in range(0, 1):
-                solid_robot = "/physics/scene/solid_" + str(index)
-                ghost_robot = "/physics/scene/ghost_" + str(index)
-                collisionGroupSolidRobot = UsdPhysics.CollisionGroup.Define(self._stage, solid_robot)
-                collisionGroupGhostRobot = UsdPhysics.CollisionGroup.Define(self._stage, ghost_robot)
-
-                filteredRel = collisionGroupSolidRobot.CreateFilteredGroupsRel()
-                filteredRel.AddTarget(ghost_robot)
-
-                filteredRel = collisionGroupGhostRobot.CreateFilteredGroupsRel()
-                filteredRel.AddTarget(solid_robot)
-                filteredRel.AddTarget(ghost_robot)
-
                 env_path = "/environments/env_{}_{}".format(i, j)
                 if not self._stage.GetPrimAtPath(env_path):
                     create_rubiks_cube(
                         self._stage, self.rubiks_cube_usd, env_path + "/Rubiks_cube", Gf.Vec3d(-10, -30, 12)
                     )
-                    create_solid_franka(
-                        self._stage, env_path, self.franka_table_usd, solid_robot, Gf.Vec3d(-i * 200, j * 200, 0)
-                    )
+                    create_solid_franka(self._stage, env_path, self.franka_table_usd, Gf.Vec3d(-i * 200, j * 200, 0))
                     create_blocks(
                         self._stage,
                         [self.red_cube_usd, self.yellow_cube_usd, self.green_cube_usd, self.blue_cube_usd],
@@ -126,7 +112,7 @@ class GhostScenario(Scenario):
                         [Gf.Vec3d(40, 15, 12), Gf.Vec3d(40, -15, 12), Gf.Vec3d(60, 15, 12), Gf.Vec3d(60, -15, 12)],
                     )
                     for ghost_index in range(0, self.num_ghosts):
-                        create_ghost_franka(self._stage, env_path, self.franka_ghost_usd, ghost_robot, ghost_index)
+                        create_ghost_franka(self._stage, env_path, self.franka_ghost_usd, ghost_index)
 
                 index = index + 1
 
@@ -151,34 +137,6 @@ class GhostScenario(Scenario):
             handle_2 = self._dc.get_rigid_body(red_path)
             handle_3 = self._dc.get_rigid_body(green_path)
             handle_4 = self._dc.get_rigid_body(blue_path)
-            solid_robot = "/physics/scene/solid_" + str(index)
-            ghost_robot = "/physics/scene/ghost_" + str(index)
-
-            collisionAPI = UsdPhysics.CollisionAPI.Apply(self._stage.GetPrimAtPath(yellow_path))
-            rel = collisionAPI.CreateCollisionGroupRel()
-            rel.AddTarget(Sdf.Path(solid_robot))
-
-            collisionAPI = UsdPhysics.CollisionAPI.Apply(self._stage.GetPrimAtPath(red_path))
-            rel = collisionAPI.CreateCollisionGroupRel()
-            rel.AddTarget(Sdf.Path(solid_robot))
-
-            collisionAPI = UsdPhysics.CollisionAPI.Apply(self._stage.GetPrimAtPath(green_path))
-            rel = collisionAPI.CreateCollisionGroupRel()
-            rel.AddTarget(Sdf.Path(solid_robot))
-
-            collisionAPI = UsdPhysics.CollisionAPI.Apply(self._stage.GetPrimAtPath(blue_path))
-            rel = collisionAPI.CreateCollisionGroupRel()
-            rel.AddTarget(Sdf.Path(solid_robot))
-
-            collisionAPI = UsdPhysics.CollisionAPI.Apply(self._stage.GetPrimAtPath(obstacle_path))
-            rel = collisionAPI.CreateCollisionGroupRel()
-            rel.AddTarget(Sdf.Path(solid_robot))
-
-            collisionAPI = UsdPhysics.CollisionAPI.Apply(
-                self._stage.GetPrimAtPath(str(prim.GetPath()) + "/DemoTable/simple_table/CollisionCube")
-            )
-            rel = collisionAPI.CreateCollisionGroupRel()
-            rel.AddTarget(Sdf.Path(solid_robot))
 
             world = World(self._dc, self._mp)
             franka_solid = Franka(
@@ -187,7 +145,6 @@ class GhostScenario(Scenario):
                 self._dc,
                 self._mp,
                 world,
-                solid_robot,
                 default_config,
             )
             franka_ghosts = []
@@ -201,7 +158,6 @@ class GhostScenario(Scenario):
                     self._dc,
                     self._mp,
                     ghost_world,
-                    ghost_robot,
                     alternate_config[i % 2],
                     True,  # this is a ghost
                 )

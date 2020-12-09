@@ -214,7 +214,7 @@ class Franka:
     """Franka objects that contains implementation details for robot control
     """
 
-    def __init__(self, stage, prim, dc, mp, world=None, group_path="", default_config=None, is_ghost=False):
+    def __init__(self, stage, prim, dc, mp, world=None, default_config=None, is_ghost=False):
         self.dc = dc
         self.mp = mp
         self.prim = prim

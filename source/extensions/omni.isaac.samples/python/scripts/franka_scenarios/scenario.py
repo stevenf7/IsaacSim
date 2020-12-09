@@ -42,32 +42,15 @@ def set_translate(prim, new_loc):
         xform_op.Set(Gf.Matrix4d().SetTranslate(new_loc))
 
 
-# Specify collision group for a prim
-def set_collision_group(stage, path, group):
-    collisionAPI = UsdPhysics.CollisionAPI.Get(stage, path)
-    if collisionAPI:
-        rel = collisionAPI.CreateCollisionGroupRel()
-        rel.AddTarget(Sdf.Path(group))
-
-
-# Specify collision group for franka USD and franka ghost USD
-def setCollisionGroupFranka(stage, prim_path, group_path, is_ghost):
-    franka_prim = stage.GetPrimAtPath(prim_path)
-
-    for p in Usd.PrimRange(franka_prim):
-        set_collision_group(stage, p.GetPath(), group_path)
-
-
 # Instantiate a solid franka usd in the stage at a given path
-def create_solid_franka(stage, env_path, franka_stage, solid_robot, location):
-    envPrim = stage.DefinePrim(env_path, "Xform")  # create an empty Xform at the given path
-    envPrim.GetReferences().AddReference(franka_stage)  # attach the franka table USD to the given path
-    set_translate(envPrim, location)  # set pose of the franka table usd
-    setCollisionGroupFranka(stage, env_path + "/Franka/panda", solid_robot, False)  # Set the collision group to solid
+def create_solid_franka(stage, env_path, franka_stage, location):
+    envPrim = stage.DefinePrim(env_path, "Xform")
+    envPrim.GetReferences().AddReference(franka_stage)
+    set_translate(envPrim, location)
 
 
 # Instantiates a ghost franka in the stage at the given path
-def create_ghost_franka(stage, env_path, franka_ghost_usd, ghost_robot, ghost_index):
+def create_ghost_franka(stage, env_path, franka_ghost_usd, ghost_index):
     ghost_path = env_path + "/Ghost/robot_{}".format(ghost_index)
     ghostPrim = stage.DefinePrim(ghost_path, "Xform")
     ghostPrim.GetReferences().AddReference(franka_ghost_usd)
@@ -75,8 +58,6 @@ def create_ghost_franka(stage, env_path, franka_ghost_usd, ghost_robot, ghost_in
     imageable = UsdGeom.Imageable(ghostPrim)  # Hide the ghost franka when spawned
     if imageable:
         imageable.MakeInvisible()
-    # set the ghost collision for this prim
-    setCollisionGroupFranka(stage, ghost_path + "/Franka/panda", ghost_robot, True)
 
 
 # Spawn N blocks given a list of paths in the stage
@@ -119,11 +100,11 @@ def setup_physics(stage):
 
     PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physics/scene"))
     physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/physics/scene")
-    physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
-    physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
-    physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
+    physxSceneAPI.CreateEnableCCDAttr(True)
+    physxSceneAPI.CreateEnableStabilizationAttr(True)
+    physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+    physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+    physxSceneAPI.CreateSolverTypeAttr("TGS")
 
 
 class Scenario:

@@ -59,9 +59,8 @@ class MultipleObstacle(Scenario):
         super().create_franka()
 
         # Load robot environment and set its transform
-        solid_robot = "/physics/scene/solid"
         env_path = "/environments/env"
-        create_solid_franka(self._stage, env_path, self.franka_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
+        create_solid_franka(self._stage, env_path, self.franka_table_usd, Gf.Vec3d(0, 0, 0))
         # Load first rubiks cube and set its transform
         create_rubiks_cube(self._stage, self.rubiks_cube_usd, env_path + "/Rubiks_cube", Gf.Vec3d(-10, -30, 12))
         # Load second rubiks cube and set its transform
@@ -85,7 +84,6 @@ class MultipleObstacle(Scenario):
             self._dc,
             self._mp,
             self.world,
-            "/physics/scene/solid",
             default_config,
         )
 

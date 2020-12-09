@@ -36,6 +36,10 @@ class Extension(omni.ext.IExt):
         with self._window.frame:
             with ui.HStack():
                 with ui.VStack(height=0):
+                    with ui.HStack():
+                        omni.ui.Label("Clear Parent Transform", height=0)
+                        self.parent_xform = omni.ui.CheckBox()
+                        self.parent_xform.model.set_value(False)
                     ui.Label("Input")
                     ui.Line(height=10)
                     with ui.HStack():
@@ -125,7 +129,7 @@ class Extension(omni.ext.IExt):
         else:
             curr_prim_path = None
         curr_prim = stage.GetPrimAtPath(curr_prim_path)
-        prim_transform = omni.kit.usd.utils.get_world_transform_matrix(curr_prim, Usd.TimeCode.Default())
+        prim_transform = omni.usd.utils.get_world_transform_matrix(curr_prim, Usd.TimeCode.Default())
         count = 0
         meshes = []
         for child_prim in Usd.PrimRange(curr_prim):
@@ -135,8 +139,11 @@ class Extension(omni.ext.IExt):
                 usdMesh = UsdGeom.Mesh(child_prim)
                 mesh = {}
                 mesh["points"] = usdMesh.GetPointsAttr().Get()
-                world_mtx = omni.kit.usd.utils.get_world_transform_matrix(child_prim, Usd.TimeCode.Default())
-                world_mtx = world_mtx * prim_transform.GetInverse()
+                world_mtx = omni.usd.utils.get_world_transform_matrix(child_prim, Usd.TimeCode.Default())
+                if self.parent_xform.model.get_value_as_bool():
+                    world_mtx = prim_transform * world_mtx * prim_transform.GetInverse()
+                else:
+                    world_mtx = world_mtx * prim_transform.GetInverse()
                 # print(world_mtx)
                 mesh["points"][:] = [world_mtx.TransformAffine(x) for x in mesh["points"]]
                 mesh["normals"] = usdMesh.GetNormalsAttr().Get()
@@ -196,7 +203,8 @@ class Extension(omni.ext.IExt):
         merged_mesh = UsdGeom.Mesh.Define(stage, merged_path)
         xform = UsdGeom.Xformable(merged_mesh)
         xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-        xform_op.Set(prim_transform)
+        if not self.parent_xform.model.get_value_as_bool():
+            xform_op.Set(prim_transform)
         # merged_mesh.CreateSubdivisionSchemeAttr("none")
         # merged_mesh.CreateTriangleSubdivisionRuleAttr("smooth")
         merged_mesh.CreatePointsAttr(all_points)
