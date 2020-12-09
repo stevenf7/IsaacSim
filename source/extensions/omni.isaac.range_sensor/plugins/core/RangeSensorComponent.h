@@ -161,7 +161,7 @@ public:
         }
         mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
         // printf("PARENT: %s\n", mParentPrim.GetPath().GetString().c_str());
-        mMetersPerUnit = UsdGeomGetStageMetersPerUnit(this->mStage);
+        mMetersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->mStage));
         mDebugLines.clear();
     }
 

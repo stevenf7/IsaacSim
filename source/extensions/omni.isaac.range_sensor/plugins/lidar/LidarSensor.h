@@ -80,7 +80,7 @@ public:
 
 
 private:
-    void dumpData(int start, int stop, float elapsedTime);
+    void dumpData(int start, int stop, double elapsedTime);
 
     // From the prim
     float mRotationRate = 20.0f;
@@ -93,7 +93,7 @@ private:
     int mMaxColsPerTick = 0;
     int mLastCol = 0;
     float mColScanSpeed = 0;
-    float mRemainingTime = 0;
+    double mRemainingTime = 0;
 
 
     int mRows = 0, mCols = 0;

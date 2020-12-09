@@ -76,8 +76,6 @@ void GamePadBinding::onGamepadConnectionEvent(const carb::input::GamepadConnecti
         return;
 
     // Setup gamepad control
-    carb::input::IInput* input = carb::getFramework()->acquireInterface<carb::input::IInput>();
-
     if (evt.type == carb::input::GamepadConnectionEventType::eConnected)
     {
         m_gamepad = evt.gamepad;
