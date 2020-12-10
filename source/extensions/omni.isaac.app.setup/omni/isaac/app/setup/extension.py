@@ -131,6 +131,7 @@ class CreateSetupExtension(omni.ext.IExt):
         """ setup all the docking properly for create """
         content = ui.Workspace.get_window("Content")
         stage = ui.Workspace.get_window("Stage")
+        layer = ui.Workspace.get_window("Layer")
         console = ui.Workspace.get_window("Console")
 
         stage.dock_order = 0
@@ -151,6 +152,8 @@ class CreateSetupExtension(omni.ext.IExt):
             await omni.kit.app.get_app().next_update_async()
             stage.focus()
 
+        layer.dock_order = 1
+        
         content.dock_order = 0
         content.focus()
 
