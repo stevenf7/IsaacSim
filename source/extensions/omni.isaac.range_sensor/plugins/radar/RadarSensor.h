@@ -40,6 +40,7 @@ public:
 
 
 private:
+    float mRotationRate = 0.0f;
 };
 
 

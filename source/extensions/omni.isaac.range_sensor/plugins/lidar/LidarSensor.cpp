@@ -110,6 +110,26 @@ void LidarSensor::onComponentChange()
     const pxr::RangeSensorSchemaLidar& typedPrim = (pxr::RangeSensorSchemaLidar)mPrim;
 
 
+    if (typedPrim.GetHorizontalFovAttr().HasValue())
+    {
+        typedPrim.GetHorizontalFovAttr().Get(&mHorizontalFov);
+    }
+
+    if (typedPrim.GetVerticalFovAttr().HasValue())
+    {
+        typedPrim.GetVerticalFovAttr().Get(&mVerticalFov);
+    }
+
+    if (typedPrim.GetHorizontalResolutionAttr().HasValue())
+    {
+        typedPrim.GetHorizontalResolutionAttr().Get(&mHorizontalResolution);
+    }
+
+    if (typedPrim.GetVerticalResolutionAttr().HasValue())
+    {
+        typedPrim.GetVerticalResolutionAttr().Get(&mVerticalResolution);
+    }
+
     if (typedPrim.GetRotationRateAttr().HasValue())
     {
         typedPrim.GetRotationRateAttr().Get(&mRotationRate);

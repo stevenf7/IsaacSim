@@ -85,6 +85,10 @@ private:
     // From the prim
     float mRotationRate = 20.0f;
     bool mHighLod = true;
+    float mHorizontalFov = 360.0f;
+    float mVerticalFov = 30.0f;
+    float mHorizontalResolution = 0.4f;
+    float mVerticalResolution = 4.0f;
 
     // Ranges converted to proper units
     float mMinDepth = 0;
