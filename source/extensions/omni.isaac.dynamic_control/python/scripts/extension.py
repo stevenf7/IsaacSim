@@ -1,6 +1,5 @@
 import omni.ext
 import omni.kit.commands
-import omni.kit.editor
 import omni.kit.ui
 import gc
 from .. import _dynamic_control

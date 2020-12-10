@@ -1,5 +1,4 @@
 import carb
-import omni.kit.editor
 import omni.kit.commands
 import omni.kit.ui
 from pxr import Sdf, UsdGeom, Gf
