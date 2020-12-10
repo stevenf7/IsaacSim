@@ -94,8 +94,7 @@ class Extension(omni.ext.IExt):
             omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
         )
         self._physxIFace = _physx.acquire_physx_interface()
-        self._editor_event_subscription = None
-        self._editor = omni.kit.editor.get_editor_interface()
+        self._physx_subscription = None
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self.ar = _dynamic_control.INVALID_HANDLE
@@ -105,8 +104,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         self._sub_stage_event = None
-        self._editor_event_subscription = None
-        self._editor = None
+        self._physx_subscription = None
         self._window = None
 
     async def _setup_camera(self, task):
@@ -120,7 +118,7 @@ class Extension(omni.ext.IExt):
         asyncio.ensure_future(self._setup_camera(task))
 
     def _on_move_joints(self, widget):
-        self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+        self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
         self._physxIFace.force_load_physics_from_usd()
         self._timeline.play()
         self._sub_stage_event = (
@@ -130,7 +128,7 @@ class Extension(omni.ext.IExt):
     def _on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.OPENED) or event.type == int(omni.usd.StageEventType.CLOSED):
             # stage was opened or closed, cleanup
-            self._editor_event_subscription = None
+            self._physx_subscription = None
             self.ar = _dynamic_control.INVALID_HANDLE
 
     def _on_first_step(self):
@@ -199,7 +197,7 @@ class Extension(omni.ext.IExt):
         self.anim_state = ANIM_SEEK_LOWER
         self.current_dof = 0
 
-    def _on_editor_step(self, step):
+    def _on_physics_step(self, step):
         if self._timeline.is_playing():
             if self.ar == _dynamic_control.INVALID_HANDLE:
                 self._on_first_step()

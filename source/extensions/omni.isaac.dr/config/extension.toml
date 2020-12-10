@@ -16,6 +16,8 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.client" = {}
+"omni.ui" = {}
+"omni.isaac.dynamic_control" = {}
 
 [[python.module]]
 name = "omni.isaac.dr"

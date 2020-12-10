@@ -99,9 +99,9 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         num_joints = self._dc.get_articulation_joint_count(art)
         num_dofs = self._dc.get_articulation_dof_count(art)
         num_bodies = self._dc.get_articulation_body_count(art)
-        self.assertEqual(num_joints, 10)
+        self.assertEqual(num_joints, 11)
         self.assertEqual(num_dofs, 9)
-        self.assertEqual(num_bodies, 11)
+        self.assertEqual(num_bodies, 12)
 
         # difference between joint and dof
         fixed_joint_ptr = self._dc.find_articulation_joint(art, "panda_hand_joint")

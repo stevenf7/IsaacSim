@@ -78,3 +78,26 @@ function make_nvcc_command(nvccHostCompilerFlags, nvccFlags)
         buildoutputs { "%{cfg.objdir}/%{file.basename}"..ext }
     end
 end
+
+
+-- Define experience to test one particular extension.
+-- @ext_name: Extension name.
+-- @python_module: Python module name, if different from extension name. (optional)
+function define_ext_test_experience(ext_name, python_module)
+    local python_module = python_module or ext_name
+    local script_dir_token = (os.target() == "windows") and "%~dp0" or "$SCRIPT_DIR"
+    local args = {
+        "--empty", -- Start empty kit
+        "--enable omni.kit.test", -- We always need omni.kit.test extension as testing framework
+        "--enable "..ext_name, -- Enable actual extension to test
+        "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
+        "--/exts/omni.kit.test/includeTests/0='"..python_module..".*'", -- Only include tests from the python module
+        "--ext-folder \""..script_dir_token.."/exts\" ",
+        "--ext-folder \""..script_dir_token.."/apps\" ",
+    }
+    define_experience("tests-"..ext_name, {
+        config_path = "",
+        extra_args = table.concat(args, " "),
+        define_project = false
+    })
+end

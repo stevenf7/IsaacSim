@@ -42,8 +42,8 @@ class CreateSetupExtension(omni.ext.IExt):
         window_title = get_main_window_title()
 
         app_version = self._settings.get("/app/version")
-        if not app_version:
-            app_version = open(os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../VERSION"))).read()
+        # if not app_version:
+        #     app_version = open(os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../VERSION"))).read()
 
         if app_version:
             app_version, _ = app_version.split("+")
