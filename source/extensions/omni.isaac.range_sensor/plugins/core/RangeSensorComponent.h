@@ -115,26 +115,6 @@ public:
     virtual void onComponentChange()
     {
 
-        if (this->mPrim.GetHorizontalFovAttr().HasValue())
-        {
-            this->mPrim.GetHorizontalFovAttr().Get(&mHorizontalFov);
-        }
-
-        if (this->mPrim.GetVerticalFovAttr().HasValue())
-        {
-            this->mPrim.GetVerticalFovAttr().Get(&mVerticalFov);
-        }
-
-        if (this->mPrim.GetHorizontalResolutionAttr().HasValue())
-        {
-            this->mPrim.GetHorizontalResolutionAttr().Get(&mHorizontalResolution);
-        }
-
-        if (this->mPrim.GetVerticalResolutionAttr().HasValue())
-        {
-            this->mPrim.GetVerticalResolutionAttr().Get(&mVerticalResolution);
-        }
-
         if (this->mPrim.GetMinRangeAttr().HasValue())
         {
             this->mPrim.GetMinRangeAttr().Get(&mMinRange);
@@ -219,11 +199,6 @@ protected:
     std::vector<carb::Float3> mLastHitPos;
 
     float mYawOffset = 0.0f;
-    float mHorizontalFov = 360.0f;
-    float mVerticalFov = 30.0f;
-    float mRotationRate = 20.0f;
-    float mHorizontalResolution = 0.4f;
-    float mVerticalResolution = 4.0f;
     float mMinRange = 0.4f;
     float mMaxRange = 100.0f;
 
