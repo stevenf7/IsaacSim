@@ -100,7 +100,7 @@ public:
 
     ~BridgeApplicationBase()
     {
-        mNoticeListener->revokeListener();
+        mNoticeListener.reset();
         deleteAllComponents();
     }
 
