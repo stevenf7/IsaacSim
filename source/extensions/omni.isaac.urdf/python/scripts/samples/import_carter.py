@@ -18,7 +18,7 @@ class Extension(omni.ext.IExt):
             "Import Carter",
             300,
             200,
-            menu_path="Isaac Robotics/URDF/Carter",
+            menu_path="Isaac/URDF/Carter",
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )

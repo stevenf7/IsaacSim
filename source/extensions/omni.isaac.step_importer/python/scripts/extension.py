@@ -449,7 +449,7 @@ class StepImporter(omni.ext.IExt):
                 EXTENSION_NAME,
                 width=800,
                 height=400,
-                menu_path="Isaac Robotics/Importers/" + EXTENSION_NAME,
+                menu_path="Isaac/Importers/" + EXTENSION_NAME,
                 open=value,
                 dock=ui.DockPreference.LEFT_BOTTOM,
             )

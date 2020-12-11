@@ -8,9 +8,9 @@ from .nucleus_utils import get_server_path
 
 from pxr import UsdGeom
 
-ADD_COMPONENT_SAMPLE_MENU = "Isaac Robotics/Domain Randomizer/Component Sample"
-ADD_SIMPLE_ROOM_SAMPLE_MENU = "Isaac Robotics/Domain Randomizer/Simple Room Sample"
-ADD_WAREHOUSE_SAMPLE_MENU = "Isaac Robotics/Domain Randomizer/Warehouse Sample"
+ADD_COMPONENT_SAMPLE_MENU = "Isaac/Domain Randomizer/Component Sample"
+ADD_SIMPLE_ROOM_SAMPLE_MENU = "Isaac/Domain Randomizer/Simple Room Sample"
+ADD_WAREHOUSE_SAMPLE_MENU = "Isaac/Domain Randomizer/Warehouse Sample"
 
 
 def get_data_file(file_name: str):
