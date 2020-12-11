@@ -56,7 +56,7 @@ class Extension(omni.ext.IExt):
             "Rostopics",
             300,
             200,
-            menu_path="Isaac Robotics/ROS/Rostopics",
+            menu_path="Isaac/ROS/Rostopics",
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )

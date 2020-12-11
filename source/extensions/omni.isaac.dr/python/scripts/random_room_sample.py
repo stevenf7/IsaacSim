@@ -3,7 +3,7 @@ import omni.ui as ui
 import omni.usd
 from .nucleus_utils import get_server_path
 
-ADD_SIMPLE_ROOM_PYTHON_SAMPLE_MENU = "Isaac Robotics/Domain Randomizer/Simple Room Python Sample"
+ADD_SIMPLE_ROOM_PYTHON_SAMPLE_MENU = "Isaac/Domain Randomizer/Simple Room Python Sample"
 
 
 class Extension(omni.ext.IExt):

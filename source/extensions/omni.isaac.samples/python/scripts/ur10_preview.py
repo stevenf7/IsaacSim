@@ -37,7 +37,7 @@ class Extension(omni.ext.IExt):
             EXTENSION_NAME,
             300,
             200,
-            menu_path="Isaac Robotics/Samples/" + EXTENSION_NAME,
+            menu_path="Isaac/Samples/" + EXTENSION_NAME,
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )

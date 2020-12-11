@@ -26,7 +26,7 @@ class Extension(omni.ext.IExt):
             "LIDAR Info",
             300,
             200,
-            menu_path="Isaac Robotics/LIDAR/LIDAR info",
+            menu_path="Isaac/LIDAR/LIDAR info",
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )

@@ -62,7 +62,7 @@ class Extension(omni.ext.IExt):
             "Articulation Info",
             300,
             200,
-            menu_path="Isaac Robotics/Dynamic Control/Articulation info",
+            menu_path="Isaac/Dynamic Control/Articulation info",
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )

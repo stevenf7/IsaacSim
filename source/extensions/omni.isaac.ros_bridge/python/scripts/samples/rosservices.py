@@ -25,7 +25,7 @@ class Extension(omni.ext.IExt):
             "Rosservices",
             300,
             200,
-            menu_path="Isaac Robotics/ROS/Rosservices",
+            menu_path="Isaac/ROS/Rosservices",
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )

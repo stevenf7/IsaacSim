@@ -17,7 +17,7 @@ class Extension(omni.ext.IExt):
             "Import UR10",
             300,
             200,
-            menu_path="Isaac Robotics/URDF/UR10",
+            menu_path="Isaac/URDF/UR10",
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )

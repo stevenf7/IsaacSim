@@ -74,7 +74,7 @@ class Extension(omni.ext.IExt):
             "Joint Monkey",
             300,
             200,
-            menu_path="Isaac Robotics/Dynamic Control/Joint Monkey",
+            menu_path="Isaac/Dynamic Control/Joint Monkey",
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )

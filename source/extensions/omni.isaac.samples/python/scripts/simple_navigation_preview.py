@@ -51,7 +51,7 @@ class Extension(omni.ext.IExt):
         self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
         self._window.deferred_dock_in("Content")
         self._menu_entry = omni.kit.ui.get_editor_menu().add_item(
-            f"Isaac Robotics/Samples/{EXTENSION_NAME}", self._menu_callback
+            f"Isaac/Samples/{EXTENSION_NAME}", self._menu_callback
         )
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._create_ui()
