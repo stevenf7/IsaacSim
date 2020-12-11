@@ -41,8 +41,8 @@ class CreateSetupExtension(omni.ext.IExt):
         window_title = get_main_window_title()
 
         app_version = self._settings.get("/app/version")
-        if not app_version:
-            app_version = open(carb.tokens.get_tokens_interface().resolve("${app}/../VERSION")).read()
+        # if not app_version:
+        #     app_version = open(carb.tokens.get_tokens_interface().resolve("${app}/../VERSION")).read()
 
         if app_version:
             app_version, _ = app_version.split("+")
@@ -124,7 +124,7 @@ class CreateSetupExtension(omni.ext.IExt):
 
     def _show_launcher(self):
         """ show the omniverse ui documentation as an external Application """
-        self._launch_app("omni.create.launcher.kit", console=False, custom_args={"--/app/auto_launch=false"})
+        self._launch_app("omni.isaac.launcher.kit", console=False, custom_args={"--/app/auto_launch=false"})
 
     async def __dock_windows(self):
         """ setup all the docking properly for create """
