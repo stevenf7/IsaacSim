@@ -62,6 +62,7 @@ files_exclude = [
     ["**/*.exp"],
     ["_build/$platform/$config/appshortcuts"],
     ["_build/kit_release/_exts/omni.kit.window.content"],
+    ["_build/kit_release/_exts/omni.rtx.settings.dev"]
 ]
 
 [isaac-sim-launcher.linux-x86_64]
