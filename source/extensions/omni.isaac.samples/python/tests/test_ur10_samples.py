@@ -33,6 +33,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.assertFalse(self._dc.is_simulating())
         # Start Simulation and wait
+        self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         self.upright_sequence = [
             bin_stack.SM_states.STANDBY,
@@ -62,7 +63,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
     # After running each test
     async def tearDown(self):
         print("tear down")
-        if self.timeline.is_playing():
+        if self._timeline.is_playing():
             self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         self.assertFalse(self._dc.is_simulating())
@@ -171,7 +172,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def load_bin_stack_scene(self):
 
-        self._scenario = bin_stack.BinStack(self.editor, self._dc, self._mp)
+        self._scenario = bin_stack.BinStack(self._editor, self._dc, self._mp)
         # Make sure the stage loaded
         self.assertTrue(self._scenario is not None)
 
@@ -190,7 +191,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # async def load_bmw_demo_scene(self):
 
-    #     self._scenario = bmw_fof_demo.AttachBody(self.editor, self._dc, self._mp)
+    #     self._scenario = bmw_fof_demo.AttachBody(self._editor, self._dc, self._mp)
     #     # Make sure the stage loaded
     #     self.assertTrue(self._scenario is not None)
 
@@ -228,7 +229,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def load_fill_bin_scene(self):
 
-        self._scenario = fill_bin.FillBin(self.editor, self._dc, self._mp)
+        self._scenario = fill_bin.FillBin(self._editor, self._dc, self._mp)
         # Make sure the stage loaded
         self.assertTrue(self._scenario is not None)
 

@@ -7,13 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import time
-import os
+import omni
+import carb
 import numpy as np
 from pxr import Usd, UsdGeom, Gf
-import omni.kit.settings
 from omni.isaac.motion_planning import _motion_planning
-from omni.isaac.dynamic_control import _dynamic_control
-import carb.tokens
 
 from . import math_utils
 
@@ -200,16 +198,16 @@ class UR10:
 
         self.base = self.dc.get_articulation_root_body(self.ar)
 
-        exec_folder = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve(
-                "${app}/../exts/omni.isaac.motion_planning/resources/lula/lula_ur10"
-            )
-        )
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_planning")
+        self._mp_extension_path = ext_manager.get_extension_path(ext_id)
+
+        self._rmp_data = self._mp_extension_path + "/resources/lula/lula_ur10"
 
         self.rmp_handle = self.mp.registerRmp(
-            exec_folder + urdf,
-            exec_folder + "/config/robot_descriptor.yaml",
-            exec_folder + "/config/ur10_rmpflow_common.yaml",
+            self._rmp_data + urdf,
+            self._rmp_data + "/config/robot_descriptor.yaml",
+            self._rmp_data + "/config/ur10_rmpflow_common.yaml",
             prim.GetPath().pathString,
             "ee_suction_link",
             True,
