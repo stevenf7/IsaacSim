@@ -153,7 +153,7 @@ class CreateSetupExtension(omni.ext.IExt):
             stage.focus()
 
         layer.dock_order = 1
-        
+
         content.dock_order = 0
         content.focus()
 

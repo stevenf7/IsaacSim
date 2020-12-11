@@ -14,7 +14,7 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.kit.builtin.commands.usd_commands import *
-from omni.isaac.utils.scripts.test_utils import load_test_file, set_scene_physics_type
+from .common import load_test_file, set_scene_physics_type
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -27,7 +27,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
             carb.tokens.get_tokens_interface().resolve("${kit}/../../library/mdl/Base/OmniPBR.mdl")
         )
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.tests")
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dr")
         self._extension_path = ext_manager.get_extension_path(ext_id)
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
@@ -141,7 +141,6 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for movement component for articulated robots
     async def test_movement_component_franka(self):
-        await omni.usd.get_context().new_stage_async()
         (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
@@ -196,7 +195,6 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for movement component for articulated robots
     async def test_movement_component_carter(self):
-        await omni.usd.get_context().new_stage_async()
         (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/carter/carter.usd")
         # Make sure the stage loaded
         self.assertTrue(result)

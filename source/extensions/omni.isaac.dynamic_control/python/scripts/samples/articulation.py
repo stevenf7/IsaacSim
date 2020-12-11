@@ -118,7 +118,7 @@ class Extension(omni.ext.IExt):
             self._timeline.play()
 
     def _on_load_robot(self, widget):
-        task = asyncio.ensure_future(load_test_file(self._extension_path + "/data/assets/usd/franka/franka.usd"))
+        task = asyncio.ensure_future(load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd"))
         asyncio.ensure_future(self._setup_camera(task))
 
     def _on_print_info(self, widget):

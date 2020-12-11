@@ -109,7 +109,7 @@ class Extension(omni.ext.IExt):
 
     # load robot
     def _on_load_robot(self, widget):
-        task = asyncio.ensure_future(load_test_file("assets/robots/franka/franka.usd"))
+        task = asyncio.ensure_future(load_test_file("data/usd/robots/franka/franka.usd"))
         asyncio.ensure_future(self._setup_camera(task))
 
     def _on_connect_js(self, widget):

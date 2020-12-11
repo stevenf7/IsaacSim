@@ -3,13 +3,6 @@ display_name = "Isaac Isaac Tests"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.physx" = {}
-"omni.isaac.dynamic_control" = {}
-"omni.isaac.utils" = {}
-"omni.isaac.manip" = {}
-"omni.isaac.urdf" = {}
-"omni.isaac.range_sensor" = {}
-"omni.isaac.dr" = {}
-"omni.isaac.step_importer" = {}
 
 [[python.module]]
 name = "omni.isaac.tests"

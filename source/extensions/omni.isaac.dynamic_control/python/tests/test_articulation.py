@@ -15,8 +15,7 @@ import omni.physx as _physx
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.utils.scripts.test_utils import load_test_file, set_scene_physics_type
-
+from .common import load_test_file, set_scene_physics_type
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -27,7 +26,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.tests")
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._extension_path = ext_manager.get_extension_path(ext_id)
         pass
 
@@ -37,7 +36,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_articulation_load(self, gpu=False):
-        await omni.usd.get_context().new_stage_async()
+
         (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
@@ -57,7 +56,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_articulation_non_sim(self, gpu=False):
-        await omni.usd.get_context().new_stage_async()
+
         (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
@@ -83,7 +82,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_articulation_teleport(self, gpu=False):
-        await omni.usd.get_context().new_stage_async()
+
         (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
@@ -160,7 +159,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_articulation_movement(self, gpu=False):
-        await omni.usd.get_context().new_stage_async()
+
         (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
@@ -206,7 +205,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_articulation_wheeled(self, gpu=False):
-        await omni.usd.get_context().new_stage_async()
+
         (result, error) = await load_test_file(
             self._extension_path + "/data/usd/robots/differential_base/differential_base.usd"
         )
@@ -237,7 +236,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.stop()
 
     async def test_articulation_carter(self, gpu=False):
-        await omni.usd.get_context().new_stage_async()
+
         (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/carter/carter.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
@@ -252,52 +251,59 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         left_wheel_ptr = self._dc.find_articulation_dof(art, "left_wheel")
         right_wheel_ptr = self._dc.find_articulation_dof(art, "right_wheel")
-        self._dc.wake_up_articulation(art)
-        drive_target = 0.05
+        left_dof_idx = self._dc.find_articulation_dof_index(art, "left_wheel")
+        right_dof_idx = self._dc.find_articulation_dof_index(art, "left_wheel")
+        root_body_ptr = self._dc.get_articulation_root_body(art)
+        # the wheels are offset 5cm from the wheel mesh, need to account for that in wheelbase
+        wheel_base = 31.613607 - 5.0  # in cm
+        wheel_radius = 24.0  # in cm
 
+        # Set drive target to a small linearvalue
+        drive_target = 0.05
+        self._dc.wake_up_articulation(art)
         self._dc.set_dof_velocity_target(left_wheel_ptr, drive_target)
         self._dc.set_dof_velocity_target(right_wheel_ptr, drive_target)
         await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        left_dof_idx = self._dc.find_articulation_dof_index(art, "left_wheel")
-        right_dof_idx = self._dc.find_articulation_dof_index(art, "left_wheel")
         dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
-
-        self.assertAlmostEqual(drive_target, dof_states["vel"][left_dof_idx], 2)
-        self.assertAlmostEqual(drive_target, dof_states["vel"][right_dof_idx], 2)
-        root_body_ptr = self._dc.get_articulation_root_body(art)
+        # Check that the current velocity is close to target
+        self.assertAlmostEqual(drive_target, dof_states["vel"][left_dof_idx], delta=0.01)
+        self.assertAlmostEqual(drive_target, dof_states["vel"][right_dof_idx], delta=0.01)
+        # check chassis linear velocity, angular should be zero
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
-        self.assertAlmostEqual(drive_target * 24.0, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1)
+        self.assertAlmostEqual(drive_target * wheel_radius, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1)
         self.assertAlmostEqual(0, np.linalg.norm([ang_vel.x, ang_vel.y, ang_vel.z]), 1)
+
+        # Set drive target to large linear value
         self._dc.wake_up_articulation(art)
         drive_target = 2.5
-
         self._dc.set_dof_velocity_target(left_wheel_ptr, drive_target)
         self._dc.set_dof_velocity_target(right_wheel_ptr, drive_target)
         await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        left_dof_idx = self._dc.find_articulation_dof_index(art, "left_wheel")
-        right_dof_idx = self._dc.find_articulation_dof_index(art, "left_wheel")
         dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
 
-        self.assertAlmostEqual(drive_target, dof_states["vel"][left_dof_idx], 2)
-        self.assertAlmostEqual(drive_target, dof_states["vel"][right_dof_idx], 2)
-        root_body_ptr = self._dc.get_articulation_root_body(art)
+        self.assertAlmostEqual(drive_target, dof_states["vel"][left_dof_idx], delta=0.01)
+        self.assertAlmostEqual(drive_target, dof_states["vel"][right_dof_idx], delta=0.01)
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
-        self.assertAlmostEqual(drive_target * 24.0, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), delta=0.2)
+        self.assertAlmostEqual(
+            drive_target * wheel_radius, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), delta=0.2
+        )
         self.assertAlmostEqual(0, np.linalg.norm([ang_vel.x, ang_vel.y, ang_vel.z]), 1)
 
+        # stop moving
         self._dc.set_dof_velocity_target(left_wheel_ptr, 0)
         self._dc.set_dof_velocity_target(right_wheel_ptr, 0)
         await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
-        self.assertAlmostEqual(0, dof_states["vel"][left_dof_idx], 2)
-        self.assertAlmostEqual(0, dof_states["vel"][right_dof_idx], 2)
-        drive_target = 0.05
+        self.assertAlmostEqual(0, dof_states["vel"][left_dof_idx], delta=0.01)
+        self.assertAlmostEqual(0, dof_states["vel"][right_dof_idx], delta=0.01)
 
+        # spin at slow velocity
+        drive_target = 0.05
         self._dc.wake_up_articulation(art)
         self._dc.set_dof_velocity_target(left_wheel_ptr, -drive_target)
         self._dc.set_dof_velocity_target(right_wheel_ptr, drive_target)
@@ -309,26 +315,26 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.assertLess(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1.5)
         # the wheels are offset 5cm from the wheel mesh, need to account for that in wheelbase
-        self.assertAlmostEqual(drive_target * 24.0 / (31.613607 - 5), ang_vel[2], delta=0.1)
+        self.assertAlmostEqual(drive_target * wheel_radius / wheel_base, ang_vel[2], delta=0.1)
 
+        # spin at large velocity
         drive_target = 2.5
 
         self._dc.wake_up_articulation(art)
         self._dc.set_dof_velocity_target(left_wheel_ptr, -drive_target)
         self._dc.set_dof_velocity_target(right_wheel_ptr, drive_target)
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
         # print(np.linalg.norm(lin_vel), ang_vel)
 
         self.assertLess(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1.5)
-        # the wheels are offset 5cm from the wheel mesh, need to account for that in wheelbase
-        self.assertAlmostEqual(drive_target * 24.0 / (31.613607 - 5), ang_vel[2], 1)
-        editor.stop()
+        self.assertAlmostEqual(drive_target * wheel_radius / wheel_base, ang_vel[2], 1)
+        self._timeline.stop()
 
     async def test_articulation_position_franka(self, gpu=False):
-        await omni.usd.get_context().new_stage_async()
+
         (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
         # (result, error) = await load_test_file("omniverse://ov-isaac-dev/Isaac/Robots/Franka/franka.usd")
         # Make sure the stage loaded
@@ -373,7 +379,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(Gf.IsClose(dof_target_new, new_pos, 0.01))
 
     async def test_articulation_position_ur10(self, gpu=False):
-        await omni.usd.get_context().new_stage_async()
+
         (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/ur10/ur10.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
@@ -402,7 +408,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_articulation_position_str(self, gpu=False):
-        await omni.usd.get_context().new_stage_async()
+
         (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/str/str_physics.usd")
         # Make sure the stage loaded
         self.assertTrue(result)

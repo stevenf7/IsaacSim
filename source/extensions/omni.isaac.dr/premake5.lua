@@ -45,6 +45,7 @@ project_ext_bindings {
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/dr/scripts" },
+    { "python/tests", ext.target_dir.."/omni/isaac/dr/tests" },
     { "data", ext.target_dir.."/data" },
     { "docs", ext.target_dir.."/docs" },
 }

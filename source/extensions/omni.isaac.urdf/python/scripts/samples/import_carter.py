@@ -41,7 +41,7 @@ class Extension(omni.ext.IExt):
         done, pending = await asyncio.wait({task})
         if task in done:
             import_config = _urdf.ImportConfig()
-            import_config.merge_fixed_joints = True
+            import_config.merge_fixed_joints = False
             import_config.fix_base = False
             import_robot(
                 self._urdf_interface, self._extension_path + "/data/urdf/robots/carter/urdf/carter.urdf", import_config
@@ -74,8 +74,8 @@ class Extension(omni.ext.IExt):
 
         right_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/right_wheel"), "angular")
         # Drive forward
-        set_drive_parameters(left_wheel_drive, "velocity", math.degrees(2.5), 0, 1000000, 1e8)
-        set_drive_parameters(right_wheel_drive, "velocity", math.degrees(2.5), 0, 1000000, 1e8)
+        set_drive_parameters(left_wheel_drive, "velocity", math.degrees(2.5), 0, math.radians(1000000), 1e8)
+        set_drive_parameters(right_wheel_drive, "velocity", math.degrees(2.5), 0, math.radians(1000000), 1e8)
 
         # Remove drive from rear wheel and pivot
         prim = stage.GetPrimAtPath("/carter/chassis_link/rear_pivot")

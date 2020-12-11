@@ -59,8 +59,9 @@ project_ext_bindings (  {ext = ext,
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/motion_planning/scripts" },
-}
-repo_build.prebuild_link {
+    { "python/tests", ext.target_dir.."/omni/isaac/motion_planning/tests" },
+    { "docs", ext.target_dir.."/docs" },
+    { "data", ext.target_dir.."/data" },
     { "%{root}/_build/target-deps/lula/data", ext.target_dir.."/resources/lula/" },
 }
 

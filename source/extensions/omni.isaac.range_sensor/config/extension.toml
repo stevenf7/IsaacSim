@@ -19,6 +19,7 @@ icon = "data/icon.png"
 "omni.kit.editor" = {}
 "omni.physx" = {} 
 "omni.debugdraw" = {}
+"omni.kit.window.toolbar" = {}
 
 [[python.module]]
 name = "omni.isaac.range_sensor"
@@ -39,3 +40,7 @@ path = "bin/${lib_prefix}rangeSensorSchema${lib_ext}"
 
 [python.pipapi]
 requirements = ["numpy"]
+
+# We need to enable fastcache for this extension because thats how the sensor pose is acquired
+[settings]
+persistent.physics.useFastCache = true

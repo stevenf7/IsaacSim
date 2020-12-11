@@ -13,6 +13,9 @@ end
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/samples/scripts" },
+    { "python/tests", ext.target_dir.."/omni/isaac/samples/tests" },
+    { "docs", ext.target_dir.."/docs" },
+    { "data", ext.target_dir.."/data" },
 }
 
 repo_build.prebuild_copy {

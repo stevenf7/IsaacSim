@@ -31,3 +31,6 @@ path = "bin/${lib_prefix}robotEngineBridgeSchema${lib_ext}"
 [python.pipapi]
 requirements = ["numpy", "numpy-quaternion"]
 
+# We need to enable fastcache for this extension for plan visualizer
+[settings]
+persistent.physics.useFastCache = true
