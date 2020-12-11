@@ -14,6 +14,8 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
+#include <omni/renderer/IDebugDraw.h>
+
 #include <functional>
 #include <random>
 
@@ -57,6 +59,8 @@ public:
     std::string mDRLayerName, mCompName;
     int mSeed, mCurrentSeed;
     std::default_random_engine mRandomGenerator;
+    omni::renderer::LineBuffer mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
+    omni::renderer::RenderInstanceBuffer mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
 
 protected:
     float randomRangeFloat(float low, float high)
@@ -88,6 +92,33 @@ protected:
             return true;
         }
         return false;
+    }
+
+    void createDebugLineList(size_t size, omni::renderer::IDebugDraw* mDebugDrawPtr)
+    {
+        if (mShapeDebugLineBuffer == omni::renderer::IDebugDraw::eInvalidBuffer)
+        {
+            mShapeDebugLineBuffer = mDebugDrawPtr->allocateLineBuffer(size);
+            mShapeDebugRenderInstanceBuffer = mDebugDrawPtr->allocateRenderInstanceBuffer(mShapeDebugLineBuffer, 1);
+            float transform[16] = {};
+            transform[0] = 1.f;
+            transform[1 + 4] = 1.f;
+            transform[2 + 8] = 1.f;
+            transform[3 + 12] = 1.f;
+
+            mDebugDrawPtr->setRenderInstance(mShapeDebugRenderInstanceBuffer, 0, &transform[0], 0);
+        }
+    }
+
+    void releaseDebugLineList(omni::renderer::IDebugDraw* mDebugDrawPtr)
+    {
+        if (mShapeDebugLineBuffer != omni::renderer::IDebugDraw::eInvalidBuffer)
+        {
+            mDebugDrawPtr->deallocateLineBuffer(mShapeDebugLineBuffer);
+            mDebugDrawPtr->deallocateRenderInstanceBuffer(mShapeDebugRenderInstanceBuffer);
+            mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
+            mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
+        }
     }
 };
 }

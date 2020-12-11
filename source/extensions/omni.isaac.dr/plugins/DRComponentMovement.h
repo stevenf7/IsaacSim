@@ -32,7 +32,8 @@ namespace dr
 class DRComponentMovement : public DRComponentBase<pxr::DrSchemaBaseComponent>
 {
 public:
-    DRComponentMovement(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr);
+    DRComponentMovement(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
+                        omni::renderer::IDebugDraw* debugDrawPtr);
     ~DRComponentMovement();
     virtual void initialize(const pxr::DrSchemaMovementComponent& prim, pxr::UsdStageWeakPtr stage);
     virtual void onStart();
@@ -49,10 +50,11 @@ private:
     std::vector<std::string> mPaths, mLookAtTargetPaths;
     pxr::GfVec2f mXRange, mYRange, mZRange;
     std::vector<pxr::UsdPrim> mAllPrims;
-    bool mEnableLookAtTarget;
+    bool mEnableLookAtTarget, mDrawPolygon;
     pxr::GfVec3d mLookAtTargetOffset = pxr::GfVec3d(0.0, 0.0, 0.0);
     pxr::GfVec3d mUpUsd;
     std::vector<pxr::GfVec3f> mPolygonPoints;
+    omni::renderer::IDebugDraw* mDebugDrawPtr;
 };
 
 }
