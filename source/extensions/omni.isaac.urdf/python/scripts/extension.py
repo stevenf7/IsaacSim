@@ -1,10 +1,6 @@
 import os
 import omni.ext
-import omni.kit.commands
-import omni.kit.editor
 import omni.ui as ui
-import carb.tokens
-import asyncio
 import textwrap
 import weakref
 import gc
@@ -13,7 +9,6 @@ from .link_model import *
 from .. import _urdf
 from pxr import UsdGeom
 
-from omni.kit.widget.filebrowser import FileBrowserItem, FileSystemItem
 from omni.kit.window.filepicker import FilePickerDialog
 from omni.kit.window.content_browser import get_content_window
 

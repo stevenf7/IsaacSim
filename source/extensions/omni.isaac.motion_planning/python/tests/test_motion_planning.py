@@ -13,21 +13,9 @@ from pxr import Usd
 from omni.isaac.motion_planning import _motion_planning
 
 
-def get_data_file(file_name: str):
-    if os.path.isabs(file_name):
-        path_to_file = file_name
-    else:
-        path_to_file = os.path.abspath(
-            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
-        )
-    return path_to_file
-
-
-async def load_test_file(test_file_name: str):
-    if not Usd.Stage.IsSupportedFile(test_file_name):
+async def load_test_file(path_to_file: str):
+    if not Usd.Stage.IsSupportedFile(path_to_file):
         raise ValueError("Only USD files can be loaded with this method")
-
-    path_to_file = get_data_file(test_file_name)
 
     usd_context = omni.usd.get_context()
     usd_context.disable_save_to_recent_files()
@@ -41,12 +29,15 @@ class TestMotionPlanning(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         self._mp = _motion_planning.acquire_motion_planning_interface()
-        self._rmp_data = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve(
-                "${app}/../exts/omni.isaac.motion_planning/resources/lula/lula_franka"
-            )
-        )
         self._timeline = omni.timeline.get_timeline_interface()
+
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
+        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_planning")
+        self._mp_extension_path = ext_manager.get_extension_path(ext_id)
+
+        self._rmp_data = self._mp_extension_path + "/resources/lula/lula_franka"
         pass
 
     # After running each test
@@ -55,7 +46,7 @@ class TestMotionPlanning(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_motion_planning(self):
-        (result, error) = await load_test_file("assets/robots/franka/franka.usd")
+        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
 

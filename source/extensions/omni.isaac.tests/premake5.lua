@@ -12,9 +12,10 @@ else
     }
 end
 
-repo_build.prebuild_link {
-    { "data", ext.target_dir.."/data" },
-}
+-- no data exists currently, need to add back once we have multi-extension unit tests here. 
+-- repo_build.prebuild_link {
+--     { "data", ext.target_dir.."/data" },
+-- }
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/tests" },

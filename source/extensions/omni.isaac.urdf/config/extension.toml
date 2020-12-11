@@ -18,12 +18,14 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.isaac.utils" = {}
-"omni.kit.widget.filebrowser" = {}
 "omni.kit.window.filepicker" = {}
 "omni.kit.window.content_browser" = {}
 
 [[python.module]]
 name = "omni.isaac.urdf"
+
+[[python.module]]
+name = "omni.isaac.urdf.tests"
 
 [[python.module]]
 name = "omni.isaac.urdf.scripts.samples.import_carter"
