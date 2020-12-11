@@ -8,7 +8,7 @@
     <filter include="nvtx" />
     <filter include="usd_audio_schema_release" />
     <filter include="usd_audio_schema_debug" />
-  </import>  
+  </import>
 
   <!-- Import Rtx plugins deps -->
   <import path="../_build/target-deps/rtx_plugins/deps/target-deps.packman.xml">
@@ -19,8 +19,8 @@
     <filter include="client_library" />
   </import>
 
-<!-- Import Physics plugins deps -->
-<import path="../_build/target-deps/omni_physics/deps/target-deps.packman.xml">
+  <!-- Import Physics plugins deps -->
+  <import path="../_build/target-deps/omni_physics/deps/target-deps.packman.xml">
     <filter include="pxshared" />
     <filter include="physx" />
     <filter include="vhacd" />
@@ -56,7 +56,7 @@
     <package name="omni.kit.utility.icon_modifier" version="0.1.0+${platform}.release" platforms="windows-x86_64" />
   </dependency>
 
-   <!-- Miscellaneous Extensions-->
+  <!-- Miscellaneous Extensions-->
   <dependency name="omni.kit.tools.surface_instancer" linkPath="../_build/${platform}/release/exts/omni.kit.tools.surface_instancer">
     <package name="omni.kit.tools.surface_instancer" version="0.1.12" platforms="windows-x86_64 linux-x86_64"/>
   </dependency>
@@ -65,7 +65,8 @@
     <package name="omni.kit.tools.mergemesh" version="0.1.3" platforms="windows-x86_64 linux-x86_64"/>
   </dependency>
 
-  <!-- <dependency name="omni_blast" linkPath="../_build/${platform}/release/exts/omni_blast">
-    <package name="omni_blast" version="0.4.9.193-85ce4ad9-${platform}" platforms="windows-x86_64 linux-x86_64" />
-  </dependency> -->
+  <dependency name="omni_blast" linkPath="../_build/${platform}/release/exts/omni_blast">
+    <package name="omni_blast" version="0.4.10.211-095c7ff0-${platform}" platforms="windows-x86_64 linux-x86_64" />
+  </dependency>
 </project>
+

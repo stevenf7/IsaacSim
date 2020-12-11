@@ -233,8 +233,9 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         }
         if (link.inertial.hasOrigin)
         {
-            massAPI.CreateCenterOfMassAttr().Set(
-                pxr::GfVec3f(link.inertial.origin.p.x, link.inertial.origin.p.y, link.inertial.origin.p.z));
+            massAPI.CreateCenterOfMassAttr().Set(pxr::GfVec3f(config.distanceScale * link.inertial.origin.p.x,
+                                                              config.distanceScale * link.inertial.origin.p.y,
+                                                              config.distanceScale * link.inertial.origin.p.z));
         }
     }
     else
@@ -422,6 +423,8 @@ void AddSingleJoint(const UrdfJoint& joint,
         jointPrim.CreateLowerLimitAttr().Set(scale * joint.limit.lower);
         jointPrim.CreateUpperLimitAttr().Set(scale * joint.limit.upper);
     }
+    pxr::PhysxSchemaPhysxJointAPI physxJoint = pxr::PhysxSchemaPhysxJointAPI::Apply(jointPrim.GetPrim());
+    physxJoint.CreateJointFrictionAttr().Set(joint.dynamics.friction);
     if (joint.drive.targetType != UrdfJointTargetType::NONE)
     {
         if (joint.type == UrdfJointType::PRISMATIC)
@@ -446,6 +449,7 @@ void AddSingleJoint(const UrdfJoint& joint,
 
             driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
             driveAPI.CreateStiffnessAttr().Set(joint.dynamics.stiffness);
+            physxJoint.CreateMaxJointVelocityAttr().Set(static_cast<float>(joint.limit.velocity));
         }
         // continuous and revolute are identical except for setting limits
         else if (joint.type == UrdfJointType::REVOLUTE || joint.type == UrdfJointType::CONTINUOUS)
@@ -469,11 +473,9 @@ void AddSingleJoint(const UrdfJoint& joint,
             }
             driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
             driveAPI.CreateStiffnessAttr().Set(joint.dynamics.stiffness);
+            physxJoint.CreateMaxJointVelocityAttr().Set(static_cast<float>(180.0f / M_PI * joint.limit.velocity));
         }
     }
-    pxr::PhysxSchemaPhysxJointAPI physxJoint = pxr::PhysxSchemaPhysxJointAPI::Apply(jointPrim.GetPrim());
-    physxJoint.CreateMaxJointVelocityAttr().Set(joint.limit.velocity);
-    physxJoint.CreateJointFrictionAttr().Set(joint.dynamics.friction);
 }
 
 

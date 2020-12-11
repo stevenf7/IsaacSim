@@ -60,7 +60,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         scene.CreateGravityMagnitudeAttr().Set(981.0)
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.tests")
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.range_sensor")
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
     # After running each test

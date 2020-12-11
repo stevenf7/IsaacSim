@@ -51,6 +51,7 @@ project_ext_bindings ({
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/step_importer/scripts" },
+    { "python/tests", ext.target_dir.."/omni/isaac/step_importer/tests" },
 }
 
 repo_build.prebuild_copy {

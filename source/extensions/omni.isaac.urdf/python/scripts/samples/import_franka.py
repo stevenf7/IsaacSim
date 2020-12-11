@@ -83,24 +83,42 @@ class Extension(omni.ext.IExt):
         finger_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint2"), "linear")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
-        set_drive_parameters(joint_1, "position", math.degrees(0.012), 60000, 3000)
-        set_drive_parameters(joint_2, "position", math.degrees(-0.57), 60000, 3000)
-        set_drive_parameters(joint_3, "position", math.degrees(0), 60000, 3000)
-        set_drive_parameters(joint_4, "position", math.degrees(-2.81), 60000, 3000)
-        set_drive_parameters(joint_5, "position", math.degrees(0), 25000, 3000)
-        set_drive_parameters(joint_6, "position", math.degrees(3.037), 15000, 3000)
-        set_drive_parameters(joint_7, "position", math.degrees(0.741), 5000, 3000)
-        set_drive_parameters(finger_1, "position", 4, 6000, 1000)
-        set_drive_parameters(finger_2, "position", 4, 6000, 1000)
+        set_drive_parameters(joint_1, "position", math.degrees(0.012), math.radians(60000), math.radians(3000))
+        set_drive_parameters(joint_2, "position", math.degrees(-0.57), math.radians(60000), math.radians(3000))
+        set_drive_parameters(joint_3, "position", math.degrees(0), math.radians(60000), math.radians(3000))
+        set_drive_parameters(joint_4, "position", math.degrees(-2.81), math.radians(60000), math.radians(3000))
+        set_drive_parameters(joint_5, "position", math.degrees(0), math.radians(25000), math.radians(3000))
+        set_drive_parameters(joint_6, "position", math.degrees(3.037), math.radians(15000), math.radians(3000))
+        set_drive_parameters(joint_7, "position", math.degrees(0.741), math.radians(5000), math.radians(3000))
+        set_drive_parameters(finger_1, "position", 4, math.radians(6000), math.radians(1000))
+        set_drive_parameters(finger_2, "position", 4, math.radians(6000), math.radians(1000))
 
         # Set Max Joint velocity on all joints
 
-        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link0/panda_joint1").CreateMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link1/panda_joint2").CreateMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link2/panda_joint3").CreateMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link3/panda_joint4").CreateMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link4/panda_joint5").CreateMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link5/panda_joint6").CreateMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link6/panda_joint7").CreateMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_hand/panda_finger_joint1").CreateMaxJointVelocityAttr(10.0)
-        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_hand/panda_finger_joint2").CreateMaxJointVelocityAttr(10.0)
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link0/panda_joint1").CreateMaxJointVelocityAttr(
+            math.degrees(10.0)
+        )
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link1/panda_joint2").CreateMaxJointVelocityAttr(
+            math.degrees(10.0)
+        )
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link2/panda_joint3").CreateMaxJointVelocityAttr(
+            math.degrees(10.0)
+        )
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link3/panda_joint4").CreateMaxJointVelocityAttr(
+            math.degrees(10.0)
+        )
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link4/panda_joint5").CreateMaxJointVelocityAttr(
+            math.degrees(10.0)
+        )
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link5/panda_joint6").CreateMaxJointVelocityAttr(
+            math.degrees(10.0)
+        )
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_link6/panda_joint7").CreateMaxJointVelocityAttr(
+            math.degrees(10.0)
+        )
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_hand/panda_finger_joint1").CreateMaxJointVelocityAttr(
+            math.degrees(10.0)
+        )
+        PhysxSchema.PhysxJointAPI.Get(stage, "/panda/panda_hand/panda_finger_joint2").CreateMaxJointVelocityAttr(
+            math.degrees(10.0)
+        )

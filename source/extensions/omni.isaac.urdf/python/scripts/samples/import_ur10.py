@@ -3,6 +3,7 @@ import omni
 from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.urdf import _urdf
 import asyncio
+import math
 
 # import omni.physx as _physx
 from .common import import_robot, set_drive_parameters
@@ -67,9 +68,16 @@ class Extension(omni.ext.IExt):
         joint_6 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_2_link/wrist_3_joint"), "angular")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
-        set_drive_parameters(joint_1, "position", 45, 20000, 2000)
-        set_drive_parameters(joint_2, "position", 45, 20000, 2000)
-        set_drive_parameters(joint_3, "position", 45, 20000, 2000)
-        set_drive_parameters(joint_4, "position", 45, 20000, 2000)
-        set_drive_parameters(joint_5, "position", 45, 20000, 2000)
-        set_drive_parameters(joint_6, "position", 45, 20000, 2000)
+        set_drive_parameters(joint_1, "position", 45, math.radians(20000), math.radians(2000))
+        set_drive_parameters(joint_2, "position", 45, math.radians(20000), math.radians(2000))
+        set_drive_parameters(joint_3, "position", 45, math.radians(20000), math.radians(2000))
+        set_drive_parameters(joint_4, "position", 45, math.radians(20000), math.radians(2000))
+        set_drive_parameters(joint_5, "position", 45, math.radians(20000), math.radians(2000))
+        set_drive_parameters(joint_6, "position", 45, math.radians(20000), math.radians(2000))
+
+        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/base_link/shoulder_pan_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))
+        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/shoulder_link/shoulder_lift_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))
+        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/upper_arm_link/elbow_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))
+        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/forearm_link/wrist_1_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))
+        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/wrist_1_link/wrist_2_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))
+        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/wrist_2_link/wrist_3_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))

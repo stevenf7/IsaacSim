@@ -101,7 +101,9 @@ class LauncherWindow:
     def _appid_to_title(self, app_id: str):
         app_title = app_id.replace("omni.", "")
         app_title = app_title.replace(".", " ")
-        app_title = app_title.capitalize()
+        title_words = app_title.split(" ")
+        cap_words = [w.capitalize() for w in title_words]
+        app_title = " ".join(cap_words)
         if app_id in self._experimental_apps:
             app_title = f"{app_title} [Experimental]"
 

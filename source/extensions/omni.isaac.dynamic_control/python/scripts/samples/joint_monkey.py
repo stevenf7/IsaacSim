@@ -114,7 +114,7 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
 
     def _on_load_robot(self, widget):
-        task = asyncio.ensure_future(load_test_file(self._extension_path + "/data/assets/usd/franka/franka.usd"))
+        task = asyncio.ensure_future(load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd"))
         asyncio.ensure_future(self._setup_camera(task))
 
     def _on_move_joints(self, widget):
