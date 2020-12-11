@@ -49,10 +49,11 @@ DRManager::~DRManager()
 {
 }
 
-void DRManager::initialize(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* tokens)
+void DRManager::initialize(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* tokens, omni::renderer::IDebugDraw* debugDraw)
 {
     utils::BridgeApplicationBase<DRComponentBase<pxr::DrSchemaBaseComponent>>::initialize(stage);
     mTokens = tokens;
+    mDebugDrawPtr = debugDraw;
     mRootLayerIdentifier = mStage->GetRootLayer()->GetIdentifier();
     mDRLayerName = "";
     mNewSublayer = nullptr;
@@ -150,7 +151,7 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
     }
     else if (prim.GetTypeName().GetString() == "MovementComponent")
     {
-        component = std::make_unique<DRComponentMovement>(mDynamicControlPtr);
+        component = std::make_unique<DRComponentMovement>(mDynamicControlPtr, mDebugDrawPtr);
         component->initialize(pxr::DrSchemaMovementComponent(prim), mStage);
     }
     else if (prim.GetTypeName().GetString() == "RotationComponent")

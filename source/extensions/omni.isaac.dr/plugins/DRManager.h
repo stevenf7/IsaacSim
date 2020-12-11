@@ -27,6 +27,7 @@
 #include <carb/tokens/ITokens.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/renderer/IDebugDraw.h>
 
 // clang-format off
 #include <omni/usd/UsdContextIncludes.h>
@@ -49,7 +50,7 @@ class DRManager : public utils::BridgeApplicationBase<DRComponentBase<pxr::DrSch
 public:
     DRManager(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr);
     ~DRManager();
-    void initialize(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* tokens);
+    void initialize(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* tokens, omni::renderer::IDebugDraw* debugDraw);
     void tick(double dt);
     void onComponentAdd(const pxr::UsdPrim& prim);
     void tickManual();
@@ -57,6 +58,7 @@ public:
 
 private:
     carb::tokens::ITokens* mTokens;
+    omni::renderer::IDebugDraw* mDebugDrawPtr;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
     omni::usd::Layers* mLayer = nullptr;
     std::string mDRLayerName = "";

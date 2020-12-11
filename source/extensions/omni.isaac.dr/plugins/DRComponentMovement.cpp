@@ -34,8 +34,9 @@ using omni::isaac::dynamic_control::DcHandle;
 using omni::isaac::dynamic_control::DcObjectType;
 using omni::isaac::dynamic_control::DcTransform;
 
-DRComponentMovement::DRComponentMovement(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
-    : DRComponentBase(), mDynamicControlPtr(dynamicControlPtr)
+DRComponentMovement::DRComponentMovement(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
+                                         omni::renderer::IDebugDraw* debugDrawPtr)
+    : DRComponentBase(), mDynamicControlPtr(dynamicControlPtr), mDebugDrawPtr(debugDrawPtr)
 {
 }
 DRComponentMovement::~DRComponentMovement()
@@ -112,12 +113,32 @@ void DRComponentMovement::onComponentChange()
     for (unsigned int ind = 0; ind < polygonPoints.size(); ind++)
         mPolygonPoints.push_back(polygonPoints[ind]);
 
+    movPrim.GetDrawPolygonAttr().Get(&mDrawPolygon);
+    releaseDebugLineList(mDebugDrawPtr);
+    if (mDrawPolygon && mPolygonPoints.size() > 2)
+    {
+        createDebugLineList(mPolygonPoints.size(), mDebugDrawPtr);
+        uint32_t color = 255 + (255 << 8) + (255 << 16) + (255 << 24);
+        for (unsigned int ind = 0; ind < mPolygonPoints.size() - 1; ind++)
+        {
+            mDebugDrawPtr->setLine(
+                mShapeDebugLineBuffer, ind, { mPolygonPoints[ind][0], mPolygonPoints[ind][1], mPolygonPoints[ind][2] },
+                color, { mPolygonPoints[ind + 1][0], mPolygonPoints[ind + 1][1], mPolygonPoints[ind + 1][2] }, color);
+            if (ind == mPolygonPoints.size() - 2)
+                mDebugDrawPtr->setLine(
+                    mShapeDebugLineBuffer, ind + 1,
+                    { mPolygonPoints[ind + 1][0], mPolygonPoints[ind + 1][1], mPolygonPoints[ind + 1][2] }, color,
+                    { mPolygonPoints[0][0], mPolygonPoints[0][1], mPolygonPoints[0][2] }, color);
+        }
+    }
+
     update();
     CARB_LOG_INFO("Movement Update: %s", mCompName.c_str());
 }
 void DRComponentMovement::stop()
 {
     CARB_LOG_INFO("DR Movement Component Stopped");
+    releaseDebugLineList(mDebugDrawPtr);
 }
 pxr::GfVec3f DRComponentMovement::randomPointTriangle(std::vector<pxr::GfVec3f>& samplePoints)
 {

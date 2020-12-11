@@ -98,6 +98,8 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         max_range=(100.0, 100.0, 100.0),
         target_position=None,
         target_paths=None,
+        polygon_points=[],
+        draw_polygon=False,
         duration=0.0,
         include_children=False,
         seed=12345,
@@ -108,6 +110,8 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         self._max_range = max_range
         self._target_position = target_position
         self._target_paths = target_paths
+        self._polygon_points = polygon_points
+        self._draw_polygon = draw_polygon
         self._duration = duration
         self._include_children = include_children
         self._seed = seed
@@ -145,7 +149,8 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         prim.CreateDurationAttr().Set(self._duration)
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateSeedAttr().Set(int(self._seed))
-        prim.CreatePolygonPointsAttr().Set([])
+        prim.CreatePolygonPointsAttr().Set(self._polygon_points)
+        prim.CreateDrawPolygonAttr().Set(self._draw_polygon)
         return prim
 
 

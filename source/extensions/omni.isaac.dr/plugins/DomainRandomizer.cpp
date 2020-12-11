@@ -22,6 +22,7 @@
 #include <carb/tokens/ITokens.h>
 
 #include <omni/kit/IStageUpdate.h>
+#include <omni/renderer/IDebugDraw.h>
 
 #include <inttypes.h> // print 64 bit pointers
 #include <random>
@@ -50,6 +51,7 @@ namespace
 {
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 carb::tokens::ITokens* g_tokens = nullptr;
+omni::renderer::IDebugDraw* g_debugDraw = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 omni::isaac::dynamic_control::DynamicControl* g_dynamicControl = nullptr;
 static pxr::UsdStageWeakPtr g_stage = nullptr;
@@ -77,9 +79,15 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
         CARB_LOG_ERROR("Failed to acquire carb::tokens::ITokens interface");
         return;
     }
+    g_debugDraw = carb::getFramework()->acquireInterface<omni::renderer::IDebugDraw>();
+    if (!g_debugDraw)
+    {
+        CARB_LOG_ERROR("Failed to acquire debugdraw interface");
+        return;
+    }
     if (Manager)
     {
-        Manager->initialize(g_stage, g_tokens);
+        Manager->initialize(g_stage, g_tokens, g_debugDraw);
         Manager->initComponents();
     }
 }
