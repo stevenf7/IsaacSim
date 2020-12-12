@@ -134,6 +134,9 @@ append_config = true
 replace_authors_in_kit_extensions = true
 strip_package_infos = true
 
+# to generate test runner package for isaac sim
+[repo_package.packages.test_runner]
+omniverse_flow_version_scheme = true
 
 ########################################################################################################################
 # Package publishing to packman

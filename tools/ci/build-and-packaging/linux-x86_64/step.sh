@@ -13,6 +13,9 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 # Package
 "$SCRIPT_DIR/../../../package.sh"
 
+# Packaging test_runner
+"$SCRIPT_DIR/../../../package.sh" --mode test_runner
+
 # publish artifacts to teamcity
 echo "##teamcity[publishArtifacts '_build/packages']"
 
