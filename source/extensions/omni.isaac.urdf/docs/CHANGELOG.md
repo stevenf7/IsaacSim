@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2020-12-11
+========================
+
+Added
+-------
+- Unit tests to extension
+- Add test urdf files
+- Fix unit issues with samples
+- Fix unit conversion issue with import
 
 [0.1.1] - 2020-12-03
 ========================

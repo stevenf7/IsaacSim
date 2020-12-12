@@ -8,4 +8,4 @@ CHANGELOG
 
 Added
 -------
-- Initial version of Isaac Sim Samples Extension
+- Initial version of Isaac Sim Manip Extension

@@ -64,12 +64,11 @@ project_ext_bindings {
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/occupancy_map/scripts" },
-}
-
-repo_build.prebuild_copy {
-    { "%{root}/_build/target-deps/octomap/lib/**", ext.target_dir.."/bin" },
+    { "docs", ext.target_dir.."/docs" },
+    { "data", ext.target_dir.."/data" },
 }
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/occupancy_map" },
+    { "%{root}/_build/target-deps/octomap/lib/**", ext.target_dir.."/bin" },
 }

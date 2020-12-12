@@ -66,11 +66,18 @@ repo_build.prebuild_link {
     { "data", ext.target_dir.."/data" },
 }
 
-repo_build.prebuild_copy {
-    { "%{root}/_build/target-deps/assimp/lib64/lib**", ext.target_dir.."/bin" },
-    { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext.target_dir.."/bin" },
-}
+
+if os.target() == "linux" then
+    repo_build.prebuild_copy {
+        { "%{root}/_build/target-deps/assimp/lib64/lib**", ext.target_dir.."/bin" },
+    }
+else
+    repo_build.prebuild_copy {
+        { "%{root}/_build/target-deps/assimp/lib/lib**", ext.target_dir.."/bin" },
+    }
+end
 
 repo_build.prebuild_copy {
+    { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext.target_dir.."/bin" },
     { "python/*.py", ext.target_dir.."/omni/isaac/urdf" },
 }

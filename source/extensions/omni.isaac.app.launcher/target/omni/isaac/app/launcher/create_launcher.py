@@ -70,6 +70,7 @@ class CreateLauncherExtension(omni.ext.IExt):
 
         if app_version:
             app_version, _ = app_version.split("+")
+            app_version, _ = app_version.split("-")
             window_title.set_app_version(app_version)
 
         self._launcher_window = LauncherWindow(extension_path)
