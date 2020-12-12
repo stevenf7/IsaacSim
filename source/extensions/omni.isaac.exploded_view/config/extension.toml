@@ -1,0 +1,11 @@
+display_name = "Exploded View"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.ui" = {}
+
+[[python.module]]
+name = "omni.isaac.exploded_view"
+
+[python.pipapi]
+requirements = ["numpy"]

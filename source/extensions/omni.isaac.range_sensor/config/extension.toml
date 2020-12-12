@@ -1,0 +1,46 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Range Sensor"
+description = "Range based sensor simulation using physx"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.range_sensor"
+keywords = ["isaac", "physics", "sensor", "lidar"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.physx" = {} 
+"omni.debugdraw" = {}
+"omni.kit.window.toolbar" = {}
+
+[[python.module]]
+name = "omni.isaac.range_sensor"
+
+[[python.module]]
+name = "omni.isaac.range_sensor.scripts.samples.lidar_info"
+
+[[python.module]]
+name = "omni.isaac.RangeSensorSchema"
+public = false
+
+[[native.plugins]]
+path = "bin/*.plugin"
+recursive = false
+
+[[libraries]]
+path = "bin/${lib_prefix}rangeSensorSchema${lib_ext}"
+
+[python.pipapi]
+requirements = ["numpy"]
+
+# We need to enable fastcache for this extension because thats how the sensor pose is acquired
+[settings]
+persistent.physics.useFastCache = true

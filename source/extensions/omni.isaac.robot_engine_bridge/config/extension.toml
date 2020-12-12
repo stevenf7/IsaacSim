@@ -1,0 +1,36 @@
+display_name = "Robot Engine Bridge"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.range_sensor" = {}
+"omni.syntheticdata" = {}
+
+[[python.module]]
+name = "omni.isaac.robot_engine_bridge"
+
+[[python.module]]
+name = "omni.isaac.RobotEngineBridgeSchema"
+public = false
+
+# [[python.module]]
+# name = "omni.isaac.pyalice"
+# public = false
+
+[[python.module]]
+name = "omni.isaac.robot_engine_bridge.scripts.setup_environment_grid"
+public = false
+
+[[native.plugins]]
+path = "bin/*.plugin"
+recursive = false
+
+[[libraries]]
+path = "bin/${lib_prefix}robotEngineBridgeSchema${lib_ext}"
+
+[python.pipapi]
+requirements = ["numpy", "numpy-quaternion"]
+
+# We need to enable fastcache for this extension for plan visualizer
+[settings]
+persistent.physics.useFastCache = true

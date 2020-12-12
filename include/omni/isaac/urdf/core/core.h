@@ -1,4 +1,4 @@
-// Copyright (c) 2020, NVIDIA CORPORATION.  All rights reserved.
+// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -98,7 +98,8 @@ inline bool IsAligned(void* p, uint32_t alignment)
 template <typename To, typename From>
 To UnionCast(From in)
 {
-    union {
+    union
+    {
         To t;
         From f;
     };

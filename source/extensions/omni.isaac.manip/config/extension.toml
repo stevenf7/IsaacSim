@@ -1,0 +1,13 @@
+display_name = "Joystick Manipulation"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.ui" = {}
+
+[[python.module]]
+name = "omni.isaac.manip"
+
+[[native.plugins]]
+path = "bin/*.plugin"
+recursive = false
+

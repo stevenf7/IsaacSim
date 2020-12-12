@@ -16,7 +16,7 @@ done
 build_path=$path/_build
 export EXP_PATH=$SCRIPT_DIR/experiences
 export ISAAC_PATH=$build_path/linux-x86_64/release
-export KIT_PATH=$build_path/target-deps/kit_sdk_release/_build/linux-x86_64/release/
+export KIT_PATH=$build_path/kit_release/_build/linux-x86_64/release/
 export ISAAC_PATH="$( cd ${ISAAC_PATH} && pwd )"
 export KIT_PATH="$( cd ${KIT_PATH} && pwd )"
 export CARB_APP_PATH=$KIT_PATH

@@ -1,0 +1,7 @@
+[package]
+title = "Isaac Sim App Launcher"
+description = "Create a Launch Pad app for Isaac Sim Sub Apps"
+version = "1.0.0"
+
+[[python.module]]
+name = "omni.isaac.app.launcher"

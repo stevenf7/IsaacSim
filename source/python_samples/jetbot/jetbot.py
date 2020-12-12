@@ -19,6 +19,8 @@ CAMERA_PIVOT = 40.0
 
 class Jetbot:
     def __init__(self, omni_kit):
+        from omni.isaac.dynamic_control import _dynamic_control
+
         self.omni_kit = omni_kit
         result, nucleus_server = find_nucleus_server()
         if result is False:
@@ -26,6 +28,7 @@ class Jetbot:
             return
         self.usd_path = nucleus_server + "/Isaac/Robots/Jetbot/jetbot.usd"
         self.robot_prim = None
+        self._dynamic_control = _dynamic_control
         self.dc = _dynamic_control.acquire_dynamic_control_interface()
         self.ar = None
 
@@ -63,7 +66,7 @@ class Jetbot:
         self.dc.wake_up_articulation(self.ar)
         rot_quat = Gf.Rotation(Gf.Vec3d(0, 0, 1), rotation).GetQuaternion()
 
-        tf = _dynamic_control.Transform(
+        tf = self._dynamic_control.Transform(
             location,
             (rot_quat.GetImaginary()[0], rot_quat.GetImaginary()[1], rot_quat.GetImaginary()[2], rot_quat.GetReal()),
         )

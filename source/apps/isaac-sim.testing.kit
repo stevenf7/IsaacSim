@@ -1,0 +1,33 @@
+[package]
+title = "Isaac Sim Testing"
+description = "A minimal setup for testing - load Pixar Kitchen Set, render in viewport"
+version = "2020.3"
+
+# That makes it browsable in UI with "experience" filter
+keywords = ["experience", "extensions"]
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"omni.kit.window.viewport" = {}
+"omni.kit.window.filepicker" = {}
+"omni.kit.menu.file" = {}
+"omni.kit.window.file" = {}
+"omni.kit.renderer.capture" = {} # Needed for viewport capture
+"omni.kit.window.status_bar" = {} # Needed to trigger ASSETS_LOADED  event
+
+
+[settings]
+exts."omni.kit.window.file".useNewFilePicker = true
+
+[settings.app.window]
+title = "Isaac Sim Testing"
+width = 1000
+height = 900
+
+# window properties
+fullscreen = false
+noDecorations = true
+alwaysOnTop = false
+
+# faster load time as not need for RTX
+exts."omni.kit.renderer".compatibilityMode = true

@@ -245,3 +245,10 @@ Windows Tests ``tools\ci\testing\test-windows-x86_64\step.bat``
 ### Debugging in vscode on linux
 
 press Ctrl-Shift-D and then select the configuration you would like to run from the dropdown. Then Press the green arrow to the left of the dropdown to start debugging. 
+
+## OVAT 
+OVAT is our infrastructure for running large scale tests (e.g integration tests). See [Ovat Docs](https://ovat.gitlab-master-pages.nvidia.com/documentation/)
+OVAT tests for Omniverse Create are in [tests](tests) folder.
+Normally it is run against TC builds, but you can run them against a local create build.- see the folders inside tests e.g [tests/startup_test](tests/startup_test). 
+Run the "run_test" script (.bat or .sh for windows/linux respectively). This will set up all of the infrastructure (gcn daemon, virtualenv etc) to run the test locally with your local create build. Before running the test, you must build it locally. You can run the test against release or debug (defaults to release), see --help on run-test.
+The code for creating all of the infrastructure common to all tests is in [tools\ovat](tools\ovat)

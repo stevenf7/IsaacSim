@@ -1,0 +1,57 @@
+[package]
+title = "Isaac Sim App Launcher"
+description = "Launch Any Isaac Sim App"
+version = "2020.3"
+
+# That makes it browsable in UI with "experience" filter
+keywords = ["app", "isaac-sim"]
+
+[dependencies]
+"omni.isaac.app.launcher" = {}
+
+[settings]
+# OS Window default settings:
+app.window.title = "Isaac Sim Launcher"
+
+# this is a Kit Mini App
+app.extensions.enabledCore = []
+app.settings.persistent = true
+
+ext.'omni.isaac.launcher'.apps = [
+    "isaac-sim" ]
+
+ext.'omni.isaac.launcher'.experimental_apps = [
+    "isaac-sim.headless",
+]
+
+# Some default for the Launcher Flow 
+ext.'omni.isaac.launcher'.default_app = "isaac-sim"
+
+# enable to disable auto-launch for when this App is started from Isaac Sim
+app.auto_launch = true
+# then the app is launcher from Isaac Sim it doesn't have $app token 
+app.folder = ""
+
+# persistent settings that enable constant auto-launch
+# persistent.ext.'omni.isaac.launcher'.auto_launch = true
+
+# controled update rate
+app.runLoops.main.rateLimitEnabled = true
+app.runLoops.main.rateLimitFrequency = 60
+app.runLoops.main.rateLimitUseBusyLoop = false
+
+# setup size
+app.window.width = 500
+app.window.height = 500
+# center position
+app.window.x = -1
+app.window.y = -1
+
+# window properties
+app.window.fullscreen = false
+app.window.noDecorations = false
+app.window.alwaysOnTop = false
+app.window.scaleToMonitor = true
+
+# faster load time as not need for RTX
+exts."omni.kit.renderer.core".compatibilityMode = true

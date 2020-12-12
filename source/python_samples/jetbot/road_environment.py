@@ -3,7 +3,7 @@ import omni
 import numpy as np
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-from pxr import UsdGeom, Gf, Sdf, PhysxSchema, PhysicsSchema, PhysicsSchemaTools
+from pxr import UsdGeom, Gf, Sdf, UsdPhysics, PhysxSchema, PhysicsSchemaTools
 from jetbot_city.road_map import *
 from jetbot_city.road_map_path_helper import *
 from jetbot_city.road_map_generator import *
@@ -71,7 +71,7 @@ class Environment:
         loaded_paths = []
 
         for entry in contents:
-            if not entry.flags & omni.client.Flags.CAN_HAVE_CHILDREN:
+            if not entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN:
                 names.append(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
                 loaded_paths.append("/World/DR/mesh_component/mesh_" + entry.relative_path[0:-4])
         print(loaded_paths)
@@ -234,17 +234,18 @@ class Environment:
     def setup_physics(self):
         stage = self.omni_kit.get_stage()
         # Add physics scene
-        scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))
+        scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))
         # Set gravity vector
-        scene.CreateGravityAttr().Set(Gf.Vec3f(0.0, 0.0, -981.0))
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        scene.CreateGravityMagnitudeAttr().Set(981.0)
         # Set physics scene to use cpu physics
         PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/World/Env/PhysicsScene"))
         physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/World/Env/PhysicsScene")
-        physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
-        physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
-        physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
-        physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
-        physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
+        physxSceneAPI.CreateEnableCCDAttr(True)
+        physxSceneAPI.CreateEnableStabilizationAttr(True)
+        physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+        physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+        physxSceneAPI.CreateSolverTypeAttr("TGS")
         # Create physics plane for the ground
         PhysicsSchemaTools.addGroundPlane(
             stage, "/World/Env/GroundPlane", "Z", 100.0, Gf.Vec3f(0, 0, self.height), Gf.Vec3f(1.0)
