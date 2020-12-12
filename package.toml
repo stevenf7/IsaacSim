@@ -47,8 +47,8 @@ files = [
 [isaac-sim.windows-x86_64]
 files = []
 
-[isaac-sim.linux-x86_64]
-files = []
+[create.linux-x86_64]
+files_exclude = []
 
 [isaac-sim-launcher.release]
 files = [

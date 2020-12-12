@@ -4,6 +4,8 @@ from .settings import DEFAULT_APP_SETTING, SHOW_CONSOLE_SETTING
 from typing import Dict, Any
 import carb.settings
 
+import omni.kit.app
+
 
 def launch_app(app_id: str, app_become_new_default=False, close_on_launch=False):
     """ show the omniverse ui documentation as an external Application """
@@ -31,4 +33,4 @@ def launch_app(app_id: str, app_become_new_default=False, close_on_launch=False)
     subprocess.Popen(launch_args, **kwargs)
 
     if close_on_launch:
-        os._exit(os.F_OK)
+        omni.kit.app.get_app().post_quit()
