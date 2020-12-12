@@ -65,3 +65,4 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         carb.settings.get_settings().set("/isaac/nucleus/default", "")
         result, nucleus_server = find_nucleus_server()
         self.assertFalse(result)
+        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "")

@@ -128,6 +128,12 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.assertAlmostEqual(dof_state_v1.pos, dof_state_v2)
 
+        # initial position
+        body_states = self._dc.get_articulation_body_states(art, _dynamic_control.STATE_ALL)
+        body_idx = self._dc.find_articulation_body_index(art, "panda_hand")
+        expected_pos = body_states["pose"]["p"][body_idx]
+        expected_pos_tuple = tuple(np.round(np.array(expected_pos.tolist()), 2))
+
         # teleport the whole robot
         self._dc.wake_up_articulation(art)
         root_body = self._dc.get_articulation_root_body(art)
@@ -151,10 +157,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         body_states = self._dc.get_articulation_body_states(art, _dynamic_control.STATE_ALL)
         body_idx = self._dc.find_articulation_body_index(art, "panda_hand")
         body_pos = body_states["pose"]["p"][body_idx]
-        expected_pos = (19.78094, 15.03849, 54.69755)
-        self.assertTupleEqual(
-            tuple(np.round(np.array(body_pos.tolist()), 2)), tuple(np.round(np.array(expected_pos), 2))
-        )
+        body_pos_tuple = tuple(np.round(np.array(body_pos.tolist()), 2))
+        self.assertNotEqual(body_pos_tuple, expected_pos_tuple)
 
         pass
 
