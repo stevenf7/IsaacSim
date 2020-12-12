@@ -25,9 +25,11 @@ class TestStepImporter(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._si = _step_importer.acquire_interface()
         self.part = _step_importer.Part()
         self.exporter = None
-        self.path = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve(os.path.join(os.path.dirname(__file__), "../data/step/test.stp"))
-        )
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.step_importer")
+        self._extension_path = ext_manager.get_extension_path(ext_id)
+        self.path = os.path.abspath(self._extension_path + "/data/step/test.stp")
+        print(self.path)
         self.assertTrue(os.path.isfile(self.path))
         self.basename = "test"
         self.step_file = None

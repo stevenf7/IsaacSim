@@ -155,14 +155,8 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.wake_up_articulation(art)
         root_body = self._dc.get_articulation_root_body(art)
 
-        pos = self._dc.get_rigid_body_pose(root_body).p
-        rot = self._dc.get_rigid_body_pose(root_body).r
-        self.assertTupleEqual(
-            tuple(np.round(np.array([pos.x, pos.y, pos.z]), 3)), tuple(np.round(np.array([0, 0, 0]), 3))
-        )
-        self.assertTupleEqual(
-            tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)), tuple(np.round(np.array([0, 0, 0, 1]), 3))
-        )
+        initial_pos = self._dc.get_rigid_body_pose(root_body).p
+        initial_rot = self._dc.get_rigid_body_pose(root_body).r
         # Create DR component and check if it exists
         result, prim = omni.kit.commands.execute(
             "CreateMovementComponentCommand",
@@ -189,7 +183,8 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
             tuple(np.round(np.array([pos.x, pos.y, pos.z]), 3)), tuple(np.round(np.array(new_pose_p), 3))
         )
         self.assertTupleEqual(
-            tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)), tuple(np.round(np.array([0, 0, 0, 1]), 3))
+            tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)),
+            tuple(np.round(np.array([initial_rot.x, initial_rot.y, initial_rot.z, initial_rot.w]), 3)),
         )
         pass
 
@@ -209,8 +204,8 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.wake_up_articulation(art)
         root_body = self._dc.get_articulation_root_body(art)
 
-        pos = self._dc.get_rigid_body_pose(root_body).p
-        rot = self._dc.get_rigid_body_pose(root_body).r
+        initial_pos = self._dc.get_rigid_body_pose(root_body).p
+        initial_rot = self._dc.get_rigid_body_pose(root_body).r
         # Create DR component and check if it exists
         result, prim = omni.kit.commands.execute(
             "CreateMovementComponentCommand",
@@ -238,7 +233,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         self.assertTupleEqual(
             tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)),
-            tuple(np.round(np.array([0.0, 0.002, 0.001, 1.0]), 3)),
+            tuple(np.round(np.array([initial_rot.x, initial_rot.y, initial_rot.z, initial_rot.w]), 3)),
         )
         pass
 

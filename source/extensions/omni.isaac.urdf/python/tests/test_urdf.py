@@ -19,7 +19,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._urdf_interface = _urdf.acquire_urdf_interface()
         self._timeline = omni.timeline.get_timeline_interface()
 
-        self._data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.urdf")
+        self._extension_path = ext_manager.get_extension_path(ext_id)
         pass
 
     # After running each test
@@ -30,7 +32,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     # basic urdf test: joints and links are imported correctly
     async def test_urdf_basic(self):
         await omni.usd.get_context().new_stage_async()
-        urdf_path = os.path.abspath(self._data_path + "/data/urdf/tests/test_basic.urdf")
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.urdf")
         print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
         import_config = _urdf.ImportConfig()
@@ -50,16 +52,16 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         wristJoint = stage.GetPrimAtPath("/test_basic/link_2/wrist_joint")
         self.assertNotEqual(wristJoint.GetPath(), Sdf.Path.emptyPath)
-        self.assertEqual(wristJoint.GetTypeName(), "RevolutePhysicsJoint")
+        self.assertEqual(wristJoint.GetTypeName(), "PhysicsRevoluteJoint")
 
         fingerJoint = stage.GetPrimAtPath("/test_basic/palm_link/finger_1_joint")
         self.assertNotEqual(fingerJoint.GetPath(), Sdf.Path.emptyPath)
-        self.assertEqual(fingerJoint.GetTypeName(), "PrismaticPhysicsJoint")
-        self.assertAlmostEqual(fingerJoint.GetAttribute("upperLimit").Get(), 8)
+        self.assertEqual(fingerJoint.GetTypeName(), "PhysicsPrismaticJoint")
+        self.assertAlmostEqual(fingerJoint.GetAttribute("physics:upperLimit").Get(), 8)
 
         fingerLink = stage.GetPrimAtPath("/test_basic/finger_link_2")
-        self.assertAlmostEqual(fingerLink.GetAttribute("diagonalInertia").Get()[0], 20000.0)
-        self.assertAlmostEqual(fingerLink.GetAttribute("mass").Get(), 3)
+        self.assertAlmostEqual(fingerLink.GetAttribute("physics:diagonalInertia").Get()[0], 20000.0)
+        self.assertAlmostEqual(fingerLink.GetAttribute("physics:mass").Get(), 3)
 
         # Start Simulation and wait
         self._timeline.play()
@@ -72,7 +74,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     # advanced urdf test: test for all the categories of inputs that an urdf can hold
     async def test_urdf_advanced(self):
         await omni.usd.get_context().new_stage_async()
-        urdf_path = os.path.abspath(self._data_path + "/data/urdf/tests/test_advanced.urdf")
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_advanced.urdf")
         print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
 
@@ -97,11 +99,11 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         # check joint properties
         elbowPrim = stage.GetPrimAtPath("/test_advanced/link_1/elbow_joint")
         self.assertNotEqual(elbowPrim.GetPath(), Sdf.Path.emptyPath)
-        self.assertAlmostEqual(elbowPrim.GetAttribute("jointFriction").Get(), 0.1)
-        self.assertAlmostEqual(elbowPrim.GetAttribute("drive:angular:damping").Get(), 0.1)
+        self.assertAlmostEqual(elbowPrim.GetAttribute("physxJoint:jointFriction").Get(), 0.1)
+        self.assertAlmostEqual(elbowPrim.GetAttribute("drive:angular:physics:damping").Get(), 0.1)
 
         # check position of a link
-        joint_pos = elbowPrim.GetAttribute("localPos0").Get()
+        joint_pos = elbowPrim.GetAttribute("physics:localPos0").Get()
         self.assertTrue(Gf.IsClose(joint_pos, Gf.Vec3f(0, 0, 40), 1e-5))
 
         # Start Simulation and wait
@@ -115,7 +117,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     # test for importing urdf where fixed joints are merged
     async def test_urdf_merge_joints(self):
         await omni.usd.get_context().new_stage_async()
-        urdf_path = os.path.abspath(self._data_path + "/data/urdf/tests/test_merge_joints.urdf")
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_merge_joints.urdf")
 
         print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
