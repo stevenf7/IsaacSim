@@ -1,6 +1,5 @@
 import os
 from omni.isaac.synthetic_utils import OmniKitHelper
-import omni.physx
 
 CONFIG = {
     "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
@@ -11,6 +10,7 @@ CONFIG = {
 if __name__ == "__main__":
     # Example usage, with step size test
     kit = OmniKitHelper(config=CONFIG)
+    import omni.physx
 
     # Create callbacks to both editor and physics step callbacks
     def editor_update(dt):
@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     # assign callbacks
     update_sub = kit.editor.subscribe_to_update_events(editor_update)
-    physics_sub = omni.physx._physx.acquire_physx_interface().subscribe_physics_step_events(physics_update)
+    physics_sub = omni.physx.acquire_physx_interface().subscribe_physics_step_events(physics_update)
 
     # perform step experiments
     print("Rendering and Physics with 1 second step size:")

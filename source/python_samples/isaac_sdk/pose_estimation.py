@@ -1,5 +1,6 @@
 import random
 import os
+import omni
 from pxr import UsdGeom, Usd, Gf
 from omni.isaac.synthetic_utils import OmniKitHelper
 from omni.isaac.synthetic_utils import DomainRandomization
@@ -7,7 +8,6 @@ from omni.isaac.synthetic_utils import SyntheticDataHelper
 
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-import omni.physx
 import carb.tokens
 
 CONFIG = {
@@ -31,6 +31,7 @@ RANDOMIZE_SCENE_EVERY_N_STEPS = 10
 class DualCameraSample:
     def __init__(self):
         self.kit = OmniKitHelper(config=CONFIG)
+        import omni.physx
         from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 
         self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
@@ -204,7 +205,7 @@ class DualCameraSample:
 
     def randomize_camera(self):
         # randomize camera position
-        self.kit.editor.set_camera_position(
+        self._viewport.get_viewport_window().set_camera_position(
             str(self._camera.GetPath()),
             random.randrange(-250, 250),
             random.randrange(-250, 250),
@@ -213,11 +214,13 @@ class DualCameraSample:
         )
 
         # get target pose and point camera at it
-        pose = omni.kit.usd.utils.get_world_transform_matrix(self._target_prim)
+        pose = omni.usd.get_world_transform_matrix(self._target_prim)
         # can specify an offset on target position
         target = pose.ExtractTranslation() + Gf.Vec3d(0, 0, 0)
 
-        self.kit.editor.set_camera_target(str(self._camera.GetPath()), target[0], target[1], target[2], True)
+        self._viewport.get_viewport_window().set_camera_target(
+            str(self._camera.GetPath()), target[0], target[1], target[2], True
+        )
 
     def randomize_scene(self):
         self.dr_helper.randomize_once()
@@ -260,7 +263,7 @@ class DualCameraSample:
 
         # output fps every 100 frames
         if self.frame % 100 == 0:
-            print("FPS: ", self.kit.editor.get_fps_from_drawable())
+            print("FPS: ", self.kit.editor.get_fps())
         self.frame = self.frame + 1
 
 

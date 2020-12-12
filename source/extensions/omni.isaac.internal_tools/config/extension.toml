@@ -1,0 +1,8 @@
+display_name = "Internal Tools"
+
+[dependencies]
+"omni.kit.editor" = {}
+
+
+[[python.module]]
+name = "omni.isaac.internal_tools"

@@ -1,4 +1,4 @@
-// Copyright (c) 2020, NVIDIA CORPORATION.  All rights reserved.
+// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -837,7 +837,8 @@ inline Colour XYZToLinear(float x, float y, float z)
 
 inline uint32_t ColourToRGBA8(const Colour& c)
 {
-    union SmallColor {
+    union SmallColor
+    {
         uint8_t u8[4];
         uint32_t u32;
     };

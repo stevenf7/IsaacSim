@@ -1,0 +1,143 @@
+########################################################################################################################
+# Repo tool base settings
+########################################################################################################################
+
+[repo]
+logging = "warn"
+
+
+########################################################################################################################
+# Build tool setup
+########################################################################################################################
+
+[repo_build]
+
+# List of packman projects to pull (in order)
+fetch.packman_host_files_to_pull = [
+    "${root}/deps/host-deps.packman.xml",
+]
+
+fetch.packman_target_files_to_pull = [
+    "${root}/deps/kit-sdk.packman.xml",
+    "${root}/deps/rtx-plugins.packman.xml",
+    "${root}/deps/omni-physics.packman.xml",
+    "${root}/deps/target-deps.packman.xml",
+    "${root}/deps/isaac-sim.packman.xml",
+]
+
+# List of pip files to pip install from (in order)
+fetch.pip_files_to_pull = [
+    "${root}/deps/pip.toml"
+]
+
+fetch.enable_exclude_configs_tags = false
+
+
+stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/kit_debug"
+stage_files.extra_mapping.kit_sdk_release = "${root}/_build/kit_release"
+
+vscode.python = "${root}/_build/kit_debug/_build/target-deps/python"
+
+vscode.python_env.PYTHONPATH= [
+  "$$$${PYTHONPATH}",
+  "${env:PYTHONPATH}",
+  "$root/_build/pip-packages",
+  "$repo_deps/repo_man",
+  "$repo_deps/repo_build",
+  "$repo_deps/repo_fileutils",
+  "$repo_deps/repo_format",
+  "$repo_deps/repo_package",
+  "$root/tools/repoman",
+  "$root/_build/$platform/$config/extensions",
+  "$root/_build/$platform/$config/exts",
+  "$root/_build/$platform/$config/bindings-python",
+  "$root/_build/$platform/$config/exts/*",
+  "$root/_build/kit_$config/_build/$platform/$config/exts/*/",
+  "$root/_build/kit_$config/_build/$platform/$config/extsPhysics/*/",
+  "$root/_build/kit_$config/_build/$platform/$config/extensions/extensions-bundled",
+  "$root/_build/kit_$config/_build/$platform/$config/plugins/bindings-python",
+]
+
+vscode.python_env.PATH= ["$$$${PATH}", "$root/_build/$platform/$config",
+  "$root/_build/kit_$config/_build/$platform/$config",
+  "$root/_build/kit_$config/_build/$platform/$config/plugins",
+  "$root/_build/kit_$config/_build/$platform/$config/exts/*/bin",
+  "$root/_build/kit_$config/_build/$platform/$config/extsPhysics/*/bin",
+  "$root/_build/kit_$config/_build/$platform/$config/extensions/extensions-bundled/bin",
+  "$root/_build/kit_$config/_build/$platform/$config/plugins/bindings-python/bin",
+  "$root/_build/$platform/$config/exts/omni.isaac.dr/bin",
+  "$root/_build/$platform/$config/exts/omni.isaac.urdf/bin",
+  "$root/_build/$platform/$config/exts/omni.isaac.motion_planning/bin",
+  "$root/_build/$platform/$config/exts/omni.isaac.range_sensor/bin",
+  "$root/_build/$platform/$config/exts/omni.isaac.ros_bridge/bin",
+  "$root/_build/$platform/$config/exts/omni.isaac.dynamic_control/bin",
+  "$root/_build/$platform/$config/exts/omni.isaac.occupancy_map/bin",
+  "$root/_build/$platform/$config/exts/omni.isaac.step_importer/bin",
+  "$root/_build/$platform/$config/exts/omni.isaac.manip/bin",
+  "$root/_build/$platform/$config/exts/omni.isaac.utils/bin",
+]
+
+
+msbuild.sln_file = "isaac-sim.sln"
+msbuild.vs_version = "vs2017"
+
+stage_files.error_if_missing = true
+
+licensing.enabled = true
+licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/target-deps.packman.xml"]
+licensing.fail_on_missing = true
+
+
+########################################################################################################################
+# Documentation building
+########################################################################################################################
+
+[repo_build_docs]
+enabled = true
+
+# Use python from kit sdk
+python_path =  "${root}/_build/kit_${config}/_build/${platform}/${config}/python${shell_ext}"
+
+# differentiate debug/release docs
+enable_build_config_choice = true
+
+# Add all extensions to docs sys.path
+extra_sys_paths = [
+    "${root}/_build/${platform}/${config}/exts/*"
+]
+
+########################################################################################################################
+# Build Number 
+########################################################################################################################
+
+[repo_build_number]
+enabled = true
+
+
+########################################################################################################################
+# Packaging 
+########################################################################################################################
+
+[repo_package]
+
+[repo_package.packages.isaac-sim]
+omniverse_flow_version_scheme = true
+ziponly = false
+package_per_config = true
+
+[repo_package.packages.isaac-sim-launcher]
+omniverse_flow_version_scheme = true
+ziponly = true
+"platform:linux-x86_64".ziponly = false # Use .7z on linux
+package_per_config = true
+append_config = true
+replace_authors_in_kit_extensions = true
+
+########################################################################################################################
+# Package publishing to packman
+########################################################################################################################
+
+[repo_publish]
+enabled = true
+
+packages = ["*"]

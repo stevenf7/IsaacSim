@@ -1,0 +1,30 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Motion Planning"
+description = "Extension that provides support for RMPs"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.motion_planning"
+keywords = ["isaac", "motion planning", "rmp"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.isaac.dynamic_control" = {}
+
+[[python.module]]
+name = "omni.isaac.motion_planning"
+
+[[python.module]]
+name = "omni.isaac.motion_planning.tests"
+
+[[native.plugins]]
+path = "bin/*.plugin"
+recursive = false
+

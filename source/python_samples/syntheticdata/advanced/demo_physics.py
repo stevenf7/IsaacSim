@@ -23,7 +23,7 @@ from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.isaac.synthetic_utils import utils as ut
 import matplotlib.pyplot as plt
 
-from pxr import Gf, Sdf, UsdShade, PhysicsSchema, PhysxSchema, PhysicsSchemaTools
+from pxr import Gf, Sdf, UsdShade
 
 TRANSLATION_RANGE = 300.0
 SCALE = 50.0
@@ -48,6 +48,7 @@ def main():
     sd_helper = SyntheticDataHelper()
 
     from omni.physx.scripts import utils
+    from pxr import UsdPhysics, PhysxSchema, PhysicsSchemaTools
     import omni
 
     # SCENE SETUP
@@ -63,17 +64,18 @@ def main():
     )
 
     # Add physics scene
-    scene = PhysicsSchema.PhysicsScene.Define(stage, Sdf.Path("/World/physicsScene"))
+    scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
     # Set gravity vector
-    scene.CreateGravityAttr().Set(Gf.Vec3f(0, -981.0, 0))
+    scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, -1.0, 0.0))
+    scene.CreateGravityMagnitudeAttr().Set(981.0)
     # Set physics scene to use cpu physics
     PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/World/physicsScene"))
     physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/World/physicsScene")
-    physxSceneAPI.CreatePhysxSceneEnableCCDAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableStabilizationAttr(True)
-    physxSceneAPI.CreatePhysxSceneEnableGPUDynamicsAttr(False)
-    physxSceneAPI.CreatePhysxSceneBroadphaseTypeAttr("MBP")
-    physxSceneAPI.CreatePhysxSceneSolverTypeAttr("TGS")
+    physxSceneAPI.CreateEnableCCDAttr(True)
+    physxSceneAPI.CreateEnableStabilizationAttr(True)
+    physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+    physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+    physxSceneAPI.CreateSolverTypeAttr("TGS")
 
     # Create a ground plane
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Y", 1000, Gf.Vec3f(0, -100, 0), Gf.Vec3f(1.0))
@@ -99,7 +101,7 @@ def main():
         # Add physics to prims
         utils.setRigidBody(prim, "convexHull", False)
         # Set Mass to 1 kg
-        mass_api = PhysicsSchema.MassAPI.Apply(prim)
+        mass_api = UsdPhysics.MassAPI.Apply(prim)
         mass_api.CreateMassAttr(1)
         # add prim reference to list
         prims.append(prim)
@@ -119,12 +121,12 @@ def main():
         # Set material inputs, these can be determined by looking at the .mdl file
         # or by selecting the Shader attached to the Material in the stage window and looking at the details panel
         color = Gf.Vec3f(random.random(), random.random(), random.random())
-        omni.kit.usd.create_material_input(mtl_prim, "glass_color", color, Sdf.ValueTypeNames.Color3f)
-        omni.kit.usd.create_material_input(mtl_prim, "glass_ior", 1.25, Sdf.ValueTypeNames.Float)
+        omni.usd.create_material_input(mtl_prim, "glass_color", color, Sdf.ValueTypeNames.Color3f)
+        omni.usd.create_material_input(mtl_prim, "glass_ior", 1.25, Sdf.ValueTypeNames.Float)
         # This value is the volumetric light absorption scale, reduce to zero to make glass clearer
-        omni.kit.usd.create_material_input(mtl_prim, "depth", 0.001, Sdf.ValueTypeNames.Float)
+        omni.usd.create_material_input(mtl_prim, "depth", 0.001, Sdf.ValueTypeNames.Float)
         # Enable for thin glass objects if needed
-        omni.kit.usd.create_material_input(mtl_prim, "thin_walled", False, Sdf.ValueTypeNames.Bool)
+        omni.usd.create_material_input(mtl_prim, "thin_walled", False, Sdf.ValueTypeNames.Bool)
         # Bind the material to the prim
         prim_mat_shade = UsdShade.Material(mtl_prim)
         UsdShade.MaterialBindingAPI(prim).Bind(prim_mat_shade, UsdShade.Tokens.strongerThanDescendants)
@@ -147,6 +149,7 @@ def main():
     kit.set_setting("/rtx/rendermode", CUSTOM_CONFIG["renderer"])
     print("capturing...")
     # Get groundtruth using glass material
+    kit.update()
     gt = sd_helper.get_groundtruth(
         [
             "rgb",

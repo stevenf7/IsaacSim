@@ -16,6 +16,11 @@
 
 set -e
 
-source "$(dirname "${BASH_SOURCE}")/packman" init
+PACKMAN_CMD="$(dirname "${BASH_SOURCE}")/packman"
+if [ ! -f "$PACKMAN_CMD" ]; then
+    PACKMAN_CMD="${PACKMAN_CMD}.sh"
+fi
+source "$PACKMAN_CMD" init
 export PYTHONPATH="${PM_MODULE_DIR}:${PYTHONPATH}"
+export PYTHONNOUSERSITE=1
 "${PM_PYTHON}" -u "$@"

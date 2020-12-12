@@ -1,0 +1,23 @@
+[package]
+title = "Isaac Sim Setup Extension"
+description = "This Extension does the final setup of the Isaac Sim Apps"
+
+authors = ["Isaac Sim Team"]
+
+[dependencies]
+"omni.usd" = {}
+"omni.ui" = {}
+
+# Isaac Sim Core Extensions 
+"omni.kit.search.service" = {}
+"omni.kit.context_menu" = {}
+"omni.kit.selection" = {}
+"omni.kit.stage_templates" = {}
+"omni.kit.window.title" = {}
+
+[[python.module]]
+name = "omni.isaac.app.setup"
+
+[[python.module]]
+name = "omni.isaac.app.setup.tests"
+

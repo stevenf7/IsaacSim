@@ -1,0 +1,37 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Dynamic Control"
+description = "Dynamic Control"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.dynamic_control"
+keywords = ["isaac", "physics"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.physx" = {}
+"omni.kit.window.toolbar" = {}
+
+[[python.module]]
+name = "omni.isaac.dynamic_control"
+
+[[python.module]]
+name = "omni.isaac.dynamic_control.scripts.samples.articulation"
+
+[[python.module]]
+name = "omni.isaac.dynamic_control.scripts.samples.joint_monkey"
+
+[[native.plugins]]
+path = "bin/*.plugin"
+recursive = false
+
+[python.pipapi]
+requirements = ["numpy"]

@@ -42,8 +42,6 @@ BBOX_AREA_THRESH = 16
 
 # Default rendering parameters
 RENDER_CONFIG = {
-    "width": 600,
-    "height": 600,
     "renderer": "PathTracing",
     "samples_per_pixel_per_frame": 12,
     "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
@@ -260,7 +258,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
     def __next__(self):
         # Generate a new scene
         self.populate_scene()
-        self.randomize_camera()
 
         """The below update calls set the paths of prims that need to be randomized
         with the settings provided in their corresponding DR create component

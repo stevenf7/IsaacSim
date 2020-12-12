@@ -1,4 +1,4 @@
-// Copyright (c) 2020, NVIDIA CORPORATION.  All rights reserved.
+// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -213,91 +213,91 @@ inline carb::Float4 asCarbFloat4(const pxr::GfQuatd& v)
  * @brief convert carb::Float3 into PxVec3
  *
  * @param v
- * @return physx::PxVec3
+ * @return ::physx::PxVec3
  */
-inline physx::PxVec3 asPxVec3(const carb::Float3& v)
+inline ::physx::PxVec3 asPxVec3(const carb::Float3& v)
 {
-    return physx::PxVec3{ v.x, v.y, v.z };
+    return ::physx::PxVec3{ v.x, v.y, v.z };
 }
 
 /**
  * @brief convert pxr::GfVec3f into PxVec3
  *
  * @param v
- * @return physx::PxVec3
+ * @return ::physx::PxVec3
  */
-inline physx::PxVec3 asPxVec3(const pxr::GfVec3f& v)
+inline ::physx::PxVec3 asPxVec3(const pxr::GfVec3f& v)
 {
-    return physx::PxVec3{ v[0], v[1], v[2] };
+    return ::physx::PxVec3{ v[0], v[1], v[2] };
 }
 
 /**
  * @brief convert pxr::GfVec3d into PxVec3
  *
  * @param v
- * @return physx::PxVec3
+ * @return ::physx::PxVec3
  */
-inline physx::PxVec3 asPxVec3(const pxr::GfVec3d& v)
+inline ::physx::PxVec3 asPxVec3(const pxr::GfVec3d& v)
 {
-    return physx::PxVec3{ static_cast<float>(v[0]), static_cast<float>(v[1]), static_cast<float>(v[2]) };
+    return ::physx::PxVec3{ static_cast<float>(v[0]), static_cast<float>(v[1]), static_cast<float>(v[2]) };
 }
 
 /**
  * @brief Convert carb::Float4 into PxQuat
  *
  * @param q
- * @return physx::PxQuat
+ * @return ::physx::PxQuat
  */
-inline physx::PxQuat asPxQuat(const carb::Float4& q)
+inline ::physx::PxQuat asPxQuat(const carb::Float4& q)
 {
-    return physx::PxQuat{ q.x, q.y, q.z, q.w };
+    return ::physx::PxQuat{ q.x, q.y, q.z, q.w };
 }
 
 /**
  * @brief Convert pxr::GfQuatf into PxQuat
  *
  * @param q
- * @return physx::PxQuat
+ * @return ::physx::PxQuat
  */
-inline physx::PxQuat asPxQuat(const pxr::GfQuatf& v)
+inline ::physx::PxQuat asPxQuat(const pxr::GfQuatf& v)
 {
     const pxr::GfVec3f& imag = v.GetImaginary();
-    return physx::PxQuat{ imag[0], imag[1], imag[2], v.GetReal() };
+    return ::physx::PxQuat{ imag[0], imag[1], imag[2], v.GetReal() };
 }
 
 /**
  * @brief Convert pxr::GfQuatd into PxQuat
  *
  * @param q
- * @return physx::PxQuat
+ * @return ::physx::PxQuat
  */
-inline physx::PxQuat asPxQuat(const pxr::GfQuatd& v)
+inline ::physx::PxQuat asPxQuat(const pxr::GfQuatd& v)
 {
     const pxr::GfVec3d& imag = v.GetImaginary();
-    return physx::PxQuat{ static_cast<float>(imag[0]), static_cast<float>(imag[1]), static_cast<float>(imag[2]),
-                          static_cast<float>(v.GetReal()) };
+    return ::physx::PxQuat{ static_cast<float>(imag[0]), static_cast<float>(imag[1]), static_cast<float>(imag[2]),
+                            static_cast<float>(v.GetReal()) };
 }
 
 /**
  * @brief  Convert a DcTransform into a pxTransform
  *
  * @param pose
- * @return physx::PxTransform
+ * @return ::physx::PxTransform
  */
-inline physx::PxTransform asPxTransform(const omni::isaac::dynamic_control::DcTransform& pose)
+inline ::physx::PxTransform asPxTransform(const omni::isaac::dynamic_control::DcTransform& pose)
 {
-    return physx::PxTransform{ asPxVec3(pose.p), asPxQuat(pose.r) };
+    return ::physx::PxTransform{ asPxVec3(pose.p), asPxQuat(pose.r) };
 }
 
 /**
  * @brief Convert GfTransform to PxTransform
  *
  * @param trans
- * @return physx::PxTransform
+ * @return ::physx::PxTransform
  */
-inline physx::PxTransform asPxTransform(const pxr::GfTransform& trans)
+inline ::physx::PxTransform asPxTransform(const pxr::GfTransform& trans)
 {
-    physx::PxTransform p;
+    ::physx::PxTransform p;
     const pxr::GfVec3d& pos = trans.GetTranslation();
     const pxr::GfQuatd& rot = trans.GetRotation().GetQuat();
 

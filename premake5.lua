@@ -7,211 +7,44 @@ newoption {
 -- Shared build scripts from repo_build package
 repo_build = require("omni/repo/build")
 
--- Enable /sourcelink flag for VS
-repo_build.enable_vstudio_sourcelink()
+-- Repo root
+root = repo_build.get_abs_path(".")
 
--- Remove /JMC parameter for visual studio
-repo_build.remove_vstudio_jmc()
+-- Resolved path to kit SDK (without %{} tokens), for creating experiences
+KIT_SDK_RESOLVED = {
+    ["debug"] = root.."/_build/kit_debug",
+    ["release"] = root.."/_build/kit_release",
+}
+
+-- Path to kit sdk
+kit_sdk = "%{root}/_build/kit_%{config}"
+kit_sdk_bin_dir = kit_sdk.."/_build/%{platform}/%{config}"
+
+-- Include Kit SDK public premake, it defines few global variables and helper functions. Look inside to get more info.
+include("_build/kit_release/premake5-public.lua")
+
+
+-- Shared build scripts from isaac sim
+include("isaac_sim_premake5.lua")
 
 -- Setup where to write generate prebuild.toml file
 repo_build.set_prebuild_file('_build/generated/prebuild.toml')
 
--- Setup all msvc and winsdk paths. That later can be moved to actual msvc and sdk packages 
-function setup_msvc_toolchain()
-        systemversion "10.0.17763.0"
-
-        local host_deps = "_build/host-deps"
-
-        -- system include dirs:
-        local msvcInclude = host_deps.."/msvc/VC/Tools/MSVC/14.16.27023/include"
-        local sdkInclude = { 
-            host_deps.."/winsdk/include/winrt", 
-            host_deps.."/winsdk/include/um", 
-            host_deps.."/winsdk/include/ucrt", 
-            host_deps.."/winsdk/include/shared" 
-        }
-        sysincludedirs { msvcInclude, sdkInclude }
-
-        -- system lib dirs:
-        local msvcLibs = host_deps.."/msvc/VC/Tools/MSVC/14.16.27023/lib/onecore/x64"
-        local sdkLibs = { host_deps.."/winsdk/lib/ucrt/x64", host_deps.."/winsdk/lib/um/x64" }
-        syslibdirs { msvcLibs, sdkLibs }
-
-        -- system binary dirs:
-        bindirs { 
-            host_deps.."/msvc/VC/Tools/MSVC/14.16.27023/bin/HostX64/x64", 
-            host_deps.."/msvc/MSBuild/15.0/bin", host_deps.."/winsdk/bin/x64" 
-        }
-end
-
--- Add folder with source files to solution under impl/ virtual group (helper)
-function add_impl_folder(path)
-    files { path.."/**" }
-    vpaths {
-        ["impl/*"] = path.."/*"
-    }
-end
-
--- Add folder with interface headers to solution under iface/ virtual group (helper)
-function add_iface_folder(path)
-    files { path.."/**" }
-    vpaths {
-        ["iface/*"] = path.."/*"
-    }
-end
-
--- Repo root
-root = repo_build.get_abs_path(".")
-
--- Folder to store solution in. _ACTION is compilation target, e.g.: vs2017, make etc.
-workspace_dir = "%{root}/_compiler/".._ACTION
-
--- Target platform name, e.g. windows-x86_64
-platform = "%{cfg.system}-%{cfg.platform}"
-
--- Target config, e.g. debug, release
-config = "%{cfg.buildcfg}"
-
--- Constant with all configurations we build
-ALL_CONFIGS = { "debug", "release" }
-
--- Target directory
-target_dir = "%{root}/_build/%{platform}/%{config}"
-
--- Path to kit sdk
-kit_sdk = "%{root}/_build/target-deps/kit_sdk_%{config}"
-
--- Path to dependencies
-target_deps_dir = "%{root}/_build/target-deps"
-
--- Which physx library type to use
-physxLibs = "profile"
-
--- nvcc host compiler
-nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc");
-nvccHostCompilerVS =  path.getabsolute("_build/host-deps/msvc/VC");
-
-function get_include_string(includes)
-    cmdString =" ";
-    for k, v in ipairs(includes) do
-        cmdString = cmdString.." -I "..tostring(v);
-    end
-    return cmdString
-end
-
-function commaficate(options)
-    local result = "";
-    local sep = "";
-    for option in string.gmatch(options, "-%w+") do
-        result = result..sep..tostring(option);
-        sep = ","
-    end
-    return result;
-end
-
-function make_nvcc_command(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, nvccFlags)
+--
+function write_version_file(config)
+    local cmd
     if os.target() == "windows" then
-        ext = ".obj"
-        local compilerBindir = " --compiler-bindir "..nvccHostCompilerVS
-        local buildString =  "\""..nvccPath.."\"".." "..nvccFlags..compilerBindir.." -Xcompiler="..nvccHostCompilerFlags.." -c %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
-        buildmessage (buildString)
-        buildcommands { buildString }
-        buildoutputs { "%{cfg.objdir}/%{file.basename}"..ext }
-    end
-    if os.target() == "linux" then
-        ext = ".o"
-        local buildString =  "\""..nvccPath.."\" -std=c++14 "..nvccFlags.." -Xcompiler="..commaficate(nvccHostCompilerFlags).." -c %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
-        buildcommands { "{MKDIR} %{cfg.objdir} ", buildString }
-        buildoutputs { "%{cfg.objdir}/%{file.basename}"..ext }
-    end
-end
-
-function apply_pch()
-    filter { "system:linux" }
-        dependson { "omni.usdpch" }
-        buildoptions { "-pthread" }
-        rtti "On"
-        exceptionhandling "On"
-    filter {}
-end
-
--- Common plugins settings
-function define_plugin()
-    kind "SharedLib"
-    location (workspace_dir.."/%{prj.name}")
-    filter {}
-end
-
-
--- Common python bindings settings
-function define_bindings_python(name)
-    local python_folder = "%{kit_sdk}/_build/target-deps/python"
-
-    -- Carbonite carb lib
-    libdirs { "%{root}/_build/target-deps/carb_sdk_plugins/_build/%{platform}/%{config}" }
-    links {"carb" }
-
-    -- pybind11 defines macros like PYBIND11_HAS_OPTIONAL for C++17, which are undefined otherwise, ignore warning:
-    removeflags { "UndefinedIdentifiers" }
-
-    location (workspace_dir.."/%{prj.name}")
-
-    repo_build.define_bindings_python(name, python_folder)
-end
-
--- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
-function create_experience_runner(name, config_path, config, extra_args)
-    if os.target() == "windows" then
-        local bat_file_path = root.."/_build/windows-x86_64/"..config.."/"..name..".bat"
-        f = io.open(bat_file_path, 'w')
-        f:write(string.format([[
-@echo off
-setlocal
-call "%%~dp0..\..\target-deps\kit_sdk_%s\_build\windows-x86_64\%s\omniverse-kit.exe" --merge-config=%%~dp0%s %s %%*
-        ]], config, config, config_path, extra_args))
+        local dir = root.."/_build/windows-x86_64/"..config
+        cmd = "repo.bat build_number -o "..dir.."/VERSION"
     else
-        local sh_file_path = root.."/_build/linux-x86_64/"..config.."/"..name..".sh"
-        f = io.open(sh_file_path, 'w')
-        f:write(string.format([[
-#!/bin/bash
-set -e
-SCRIPT_DIR=$(readlink -e $(dirname ${BASH_SOURCE}))
-"$SCRIPT_DIR/../../target-deps/kit_sdk_%s/_build/linux-x86_64/%s/omniverse-kit" --merge-config="$SCRIPT_DIR/%s" %s $@
-        ]], config, config, config_path, extra_args))
-        f:close()
-        os.chmod(sh_file_path, 755)
+        local dir = root.."/_build/linux-x86_64/"..config
+        cmd = "./repo.sh build_number -o "..dir.."/VERSION"
     end
+    os.execute(get_current_lua_file_dir().."/"..cmd)
 end
-
-
--- Define Kit experience. Different ways to run kit with particular config
-function define_experience(name, cmdExtraArgs)
-    local config_path = "/experiences/"..name..".json"
-    local extra_args = cmdExtraArgs or ""
-
-    -- Create a VS project on windows to make debugging and running from VS easier:
-    if os.target() == "windows" then
-        group "experiences"
-        project(name)
-            kind "Utility"
-            location ("%{root}/_compiler/".._ACTION.."/%{prj.name}")
-            debugcommand ("%{kit_sdk}/_build/%{platform}/%{config}/omniverse-kit.exe")
-            local config_abs_path = target_dir..config_path
-            debugargs ("--config-path \""..config_abs_path.."\" "..extra_args)
-            files { config_abs_path }
-            vpaths { [""] = "**.json" }
-    end
-
-    -- Write bat and sh files as another way to run them:
-    for _, config in ipairs(ALL_CONFIGS) do
-        create_experience_runner(name, config_path, config, extra_args)
-    end
-end
-
-
 
 -- Starting from here we define a structure of actual solution to be generated. Starting with solution name.
-workspace "omni_isaac_sim"
+workspace "isaac-sim"
     configurations { "debug", "release" }
 
     -- Project selected by default to run
@@ -221,27 +54,36 @@ workspace "omni_isaac_sim"
     location (workspace_dir)
 
     -- Set default target dir, later projects overwrite it
-    targetdir (target_dir)
+    targetdir (bin_dir)
 
     -- Setup include paths. Add kit SDK include paths too.
-    includedirs { 
-        "include", 
-        "_build/target-deps", 
+    includedirs {
+        "include",
+        "_build/target-deps",
         "_build/target-deps/carb_sdk_plugins/include",
         "%{kit_sdk}/include",
         "%{kit_sdk}/_build/target-deps/",
     }
-    
+
+    -- Carbonite carb lib
+    libdirs { "%{root}/_build/target-deps/carb_sdk_plugins/_build/%{platform}/%{config}" }
+
     -- Location for intermediate  files
     objdir ("_build/intermediate/%{platform}/%{prj.name}")
 
     -- Default compilation settings
     symbols "On"
-    exceptionhandling "Off"
-    rtti "Off"
+    exceptionhandling "On"
+    rtti "On"
     staticruntime "On"
-    flags { "FatalCompileWarnings", "MultiProcessorCompile", "NoPCH", "UndefinedIdentifiers", "NoIncrementalLink" }
+    flags { "FatalCompileWarnings", "MultiProcessorCompile", "NoPCH", "NoIncrementalLink" }
     cppdialect "C++14"
+
+    -- Generic folder linking and file copy setup:
+    repo_build.prebuild_link {
+        -- Link app configs in target dir for easier edit
+        { "source/apps", bin_dir.."/apps" },
+    }
 
     -- Windows platform settings
     filter { "system:windows" }
@@ -268,7 +110,7 @@ workspace "omni_isaac_sim"
 
         -- Add library origin directory to dlopen() search path
         linkoptions { "-Wl,-rpath,'$$ORIGIN' -Wl,--export-dynamic" }
-        
+
         enablewarnings { "all" }
 
     filter { "platforms:x86_64" }
@@ -286,55 +128,154 @@ workspace "omni_isaac_sim"
 
     filter {}
 
--- A workaround to generate compile commands at the root level of the project
--- this forces concatenation of all child compile commands files for each extension
-project "compile_commands"
-    kind "Utility"
-    location (workspace_dir.."/%{prj.name}")
-    filter {}
-    add_impl_folder("source")
 
-group "experiences"
-    -- Robotics default experience
-    define_experience("omniverse-kit-robotics")
-    -- Robotics headless experience
-    define_experience("omniverse-kit-robotics-headless", "--no-window")
-    -- Isaac sim default experience
-    define_experience("isaac-sim")
-    -- Isaac sim headless experience
-    define_experience("isaac-sim-headless", "--no-window")
+
+-- Isaac Sim needs this redefined here because we have a custom PXR_PLUGINPATH_NAME export to handle runtime USD
+-- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
+function create_experience_runner(name, config_path, config, extra_args)
+    if os.target() == "windows" then
+        local bat_file_dir = root.."/_build/windows-x86_64/"..config
+        local bat_file_path = bat_file_dir.."/"..name..".bat"
+        local kit_bin_relative = path.getrelative(bat_file_dir, KIT_SDK_RESOLVED[config].."/_build/windows-x86_64/"..config)
+        kit_bin_relative = path.normalize(kit_bin_relative):gsub("/", "\\")
+        local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
+        local f = io.open(bat_file_path, 'w')
+        f:write(string.format([[
+@echo off
+setlocal
+call "%%~dp0%s\omniverse-kit.exe" %s %s %%*
+        ]], kit_bin_relative, config_path, extra_args))
+        f:close()
+    else
+        local sh_file_dir = root.."/_build/linux-x86_64/"..config
+        local sh_file_path = sh_file_dir.."/"..name..".sh"
+        local kit_bin_relative = path.getrelative(sh_file_dir, KIT_SDK_RESOLVED[config].."/_build/linux-x86_64/"..config)
+        local usd_ext_isaac_schema_path = root.."/_build/target-deps/usd_ext_isaac/"..config.."/share/usd/plugins/*/resources/"
+        kit_bin_relative = path.normalize(kit_bin_relative)
+        local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
+        local f = io.open(sh_file_path, 'w')
+        f:write(string.format([[
+#!/bin/bash
+set -e
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+export PXR_PLUGINPATH_NAME="%s":$PXR_PLUGINPATH_NAME
+"$SCRIPT_DIR/%s/kit" %s %s $@
+        ]], usd_ext_isaac_schema_path, kit_bin_relative, config_path, extra_args))
+        f:close()
+        os.chmod(sh_file_path, 755)
+    end
+end
+
+
+function create_app_shortcut(app_name, config)
+    if os.target() == "windows" then
+        local bat_file_path = root.."/_build/windows-x86_64/"..config.."/appshortcuts/"..app_name..".bat"
+        local app_path = "_build/windows-x86_64/"..config.."/"..app_name..".bat"
+        f = io.open(bat_file_path, 'w')
+        f:write(string.format([[
+@echo off
+setlocal
+call "%%~dp0/%s" %%*
+        ]], app_path))
+    else
+        local sh_file_path = root.."/_build/linux-x86_64/"..config.."/appshortcuts/"..app_name..".sh"
+        local app_path = "_build/linux-x86_64/"..config.."/"..app_name..".sh"
+        f = io.open(sh_file_path, 'w')
+        f:write(string.format([[
+#!/bin/bash
+set -e
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+exec "$SCRIPT_DIR/%s" $@
+        ]], app_path))
+        f:close()
+        os.chmod(sh_file_path, 755)
+    end
+end
+
+-- Helper to create bat/sh files to run local kit files
+function define_local_experience(app_name, kit_file, extra_args)
+    local script_dir_token = (os.target() == "windows") and "%~dp0" or "$SCRIPT_DIR"
+    local extra_args = extra_args or ""
+    local kit_file = kit_file or app_name
+    define_experience(app_name, { config_path = "apps/"..kit_file..".kit",
+                     extra_args = "--ext-folder \""..script_dir_token.."/exts\" "
+                        .."--ext-folder \""..script_dir_token.."/apps\" "
+                        ..extra_args
+    })
+
+    for _, config in ipairs(ALL_CONFIGS) do
+        create_app_shortcut(app_name, config)
+    end
+end
+
+
+group "apps"
+    for _, config in ipairs(ALL_CONFIGS) do
+        -- Direct shortcur to kit executable for convenience:
+        -- create_experience_runner("kit", nil, config, "")
+
+        -- Put build version file into build directories
+        write_version_file(config)
+    end
+
+    define_local_experience("isaac-sim")
+    define_local_experience("isaac-sim.launcher")
+    define_local_experience("isaac-sim.headless")
+    -- define_local_experience("isaac-sim.testing")
+
+    -- -- Test runner experience:
+    -- args = {
+    --     "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
+    --     "--/exts/omni.kit.test/includeTests/0='omni.create.app.*'", -- Only include tests from the python module
+    -- }
+    -- define_local_experience("tests-create-mini", "omni.create.mini", table.concat(args, " "))
+
 
 group "exts"
     -- Isaac Extensions
     -- Windows and Linux
-    include ("source/extensions/omni.isaac/about")
-    include ("source/extensions/omni.isaac/decals")
-    include ("source/extensions/omni.isaac/dr")
-    include ("source/extensions/omni.isaac/dynamic_control")
-    include ("source/extensions/omni.isaac/lidar")
-    include ("source/extensions/omni.isaac/manip")
-    -- Shapenet is disabled as its part of kit package
-    -- include ("source/extensions/omni.isaac/shapenet")
-    include ("source/extensions/omni.isaac/utils")
-    include ("source/extensions/omni.isaac/urdf")
-    include ("source/extensions/omni.isaac/samples")
-    include ("source/extensions/omni.isaac/samples_internal")
-    include ("source/extensions/omni.isaac/synthetic_utils")
-    include ("source/extensions/omni.isaac/tests")
-    include ("source/extensions/omni.isaac/step_importer")
-    include ("source/extensions/omni.isaac/exploded_view")
-    include ("source/extensions/omni.isaac/internal_tools")
+    include ("source/extensions/omni.isaac.about")
+    -- include ("source/extensions/omni.isaac.decals")
+    include ("source/extensions/omni.isaac.dr")
+    include ("source/extensions/omni.isaac.dynamic_control")
+    include ("source/extensions/omni.isaac.range_sensor")
+    include ("source/extensions/omni.isaac.manip")
+    include ("source/extensions/omni.isaac.shapenet")
+    include ("source/extensions/omni.isaac.utils")
+    include ("source/extensions/omni.isaac.urdf")
+    include ("source/extensions/omni.isaac.samples")
+    include ("source/extensions/omni.isaac.samples_internal")
+    include ("source/extensions/omni.isaac.synthetic_utils")
+    include ("source/extensions/omni.isaac.tests")
+    include ("source/extensions/omni.isaac.step_importer")
+    include ("source/extensions/omni.isaac.exploded_view")
+    include ("source/extensions/omni.isaac.internal_tools")
+    include ("source/extensions/omni.isaac.app.setup")
+    include ("source/extensions/omni.isaac.app.launcher")
+    include ("source/extensions/omni.isaac.splash")
 
     -- Linux Only
     if os.target() == "linux" then
-        include ("source/extensions/omni.isaac/motion_planning")
-        include ("source/extensions/omni.isaac/robot_engine_bridge")
-        include ("source/extensions/omni.isaac/ros_bridge")
-        include ("source/extensions/omni.isaac/occupancy_map")
+        include ("source/extensions/omni.isaac.motion_planning")
+        include ("source/extensions/omni.isaac.robot_engine_bridge")
+        include ("source/extensions/omni.isaac.ros_bridge")
+        include ("source/extensions/omni.isaac.occupancy_map")
     end
 
--- Create a symlink for any data we need for tests
-group "tests"
-    -- Automated Testing
-    define_experience("test-isaac-sim")
-    repo_build.prebuild_link {{"data", "%{root}/_build/$platform/$config/data" }}
+-- -- copy usd ext isaac binaries into kit sdk bin directory
+-- group "usd_ext_isaac"
+--     local usd_bin_path = "_build/%{platform}/%{config}/plugins"
+--     local target_bindings_folder = usd_bin_path.."/bindings-python"
+--     local usd_folder_path = usd_bin_path.."/usd"
+
+--     repo_build.prebuild_copy {  
+--         { "%{root}/_build/target-deps/usd_ext_isaac/$config/share/usd/plugins/**", usd_folder_path},
+--         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/**", target_bindings_folder.."/pxr"},
+--     }
+--     repo_build.prebuild_copy ({
+--         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/*.dll", usd_bin_path },
+--     }, "windows-x86_64")
+
+--     repo_build.prebuild_copy ({
+--         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/*.so", usd_bin_path },
+--     }, "linux-x86_64")

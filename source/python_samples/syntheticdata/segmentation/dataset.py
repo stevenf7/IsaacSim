@@ -41,8 +41,6 @@ BBOX_AREA_THRESH = 16
 
 # Default rendering parameters
 RENDER_CONFIG = {
-    "width": 600,
-    "height": 600,
     "renderer": "PathTracing",
     "samples_per_pixel_per_frame": 12,
     "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
@@ -243,6 +241,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         while self.kit.is_loading():
             self.kit.update()
         print("done")
+        self.kit.update()
         # Collect Groundtruth
         gt = self.sd_helper.get_groundtruth(["rgb", "boundingBox2DTight", "instanceSegmentation"])
 
