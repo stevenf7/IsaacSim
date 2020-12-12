@@ -28,6 +28,7 @@ class CreateLauncherExtension(omni.ext.IExt):
 
     def __init__(self):
         self._settings = carb.settings.get_settings()
+        self._launcher_window = None
 
     def on_startup(self, ext_id: str):
         # if we are in auto_launch mode and the extensions is also setup we start immediatly the default app
@@ -45,6 +46,8 @@ class CreateLauncherExtension(omni.ext.IExt):
 
             close_on_launch = not self._settings.get(PERSISTENT_LAUNCHER_SETTING)
             launch_app(app_id=default_app, app_become_new_default=False, close_on_launch=close_on_launch)
+            if close_on_launch:
+                return
 
         # We only load the UI App if we have not auto-started
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -89,5 +92,6 @@ class CreateLauncherExtension(omni.ext.IExt):
         await omni.kit.app.get_app().next_update_async()
 
     def on_shutdown(self):
-        self._launcher_window.destroy()
-        self._launcher_window = None
+        if self._launcher_window:
+            self._launcher_window.destroy()
+            self._launcher_window = None
