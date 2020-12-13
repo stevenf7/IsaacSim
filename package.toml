@@ -100,6 +100,7 @@ files = [
     ["repo.sh"],
     ["repo.bat"],
     ["repo.toml"],
+    ["repo_tools.toml"],
     ["package.toml"],
     ["PACKAGE-INFO.yaml"],
     ["VERSION.md"],
