@@ -8,7 +8,11 @@ if %errorlevel% neq 0 ( exit /b %errorlevel% )
 call "%~dp0..\..\..\package_launcher.bat"
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
+:: Package test runner for TC
+call "%~dp0..\..\..\package.bat" --mode test_runner
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
+
 :: publish artifacts to teamcity
-echo ##teamcity[publishArtifacts '_build/packages/*.release.zip']
+echo ##teamcity[publishArtifacts '_build/packages']
 
 
