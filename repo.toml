@@ -128,7 +128,8 @@ package_per_config = true
 [repo_package.packages.isaac-sim-launcher]
 omniverse_flow_version_scheme = true
 ziponly = true
-"platform:linux-x86_64".archive_format = "tar.xz" # Use tar on linux
+# isaac sim, commenting this because TC cannot extract
+# "platform:linux-x86_64".archive_format = "tar.xz" # Use tar on linux
 package_per_config = true
 append_config = true
 replace_authors_in_kit_extensions = true
@@ -144,5 +145,4 @@ omniverse_flow_version_scheme = true
 
 [repo_publish]
 enabled = true
-
 packages = ["*"]
