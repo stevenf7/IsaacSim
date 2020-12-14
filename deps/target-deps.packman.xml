@@ -65,8 +65,8 @@
     <package name="omni.kit.tools.mergemesh" version="0.1.3" platforms="windows-x86_64 linux-x86_64"/>
   </dependency>
 
-  <dependency name="omni_blast" linkPath="../_build/${platform}/release/exts/omni_blast">
-    <package name="omni_blast" version="0.4.10.211-095c7ff0-${platform}" platforms="windows-x86_64 linux-x86_64" />
+  <dependency name="omni.blast" linkPath="../_build/${platform}/release/exts/omni.blast">
+    <package name="omni_blast" version="0.4.10.212-1d37441b-${platform}" platforms="windows-x86_64 linux-x86_64" />
   </dependency>
 </project>
 
