@@ -6,7 +6,6 @@ import omni.kit.test
 import omni.kit.usd
 from omni.isaac.dynamic_control import _dynamic_control as dc
 from omni.isaac.motion_planning import _motion_planning as mp
-import carb.tokens
 import os
 import asyncio
 import numpy as np
