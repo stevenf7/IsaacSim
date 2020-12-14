@@ -12,7 +12,7 @@ import numpy as np
 from pxr import Usd, UsdGeom, Gf
 import omni.kit.settings
 from omni.isaac.motion_planning import _motion_planning
-import carb.tokens
+import carb
 
 from . import math_utils
 
@@ -230,16 +230,16 @@ class Franka:
             body = self.dc.get_articulation_body(self.ar, bodyIdx)
             self.dc.set_rigid_body_disable_gravity(body, True)
 
-        exec_folder = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve(
-                "${app}/../exts/omni.isaac.motion_planning/resources/lula/lula_franka"
-            )
-        )
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_planning")
+        self._mp_extension_path = ext_manager.get_extension_path(ext_id)
+
+        self._rmp_data = self._mp_extension_path + "/resources/lula/lula_franka"
 
         self.rmp_handle = self.mp.registerRmp(
-            exec_folder + "/urdf/lula_franka_gen.urdf",
-            exec_folder + "/config/robot_descriptor.yaml",
-            exec_folder + "/config/franka_rmpflow_common.yaml",
+            self._rmp_data + "/urdf/lula_franka_gen.urdf",
+            self._rmp_data + "/config/robot_descriptor.yaml",
+            self._rmp_data + "/config/franka_rmpflow_common.yaml",
             prim.GetPath().pathString,
             "right_gripper",
             True,
