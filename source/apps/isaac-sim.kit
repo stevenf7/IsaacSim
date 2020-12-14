@@ -49,7 +49,6 @@ keywords = ["experience", "app", "usd"]
 "omni.renderer" = { tag = "rtx" }
 "omni.hydra.rtx" = { }
 
-#"omni.rtx.render_settings" = {} # this will be deprecated in few release
 "omni.rtx.settings.core" = {} # this is the new Render Settings 2.0
 
 "omni.kit.window.movie_maker" = {}
@@ -61,9 +60,6 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.provide_feedback" = {}
 
 "omni.kit.material.library" = {}
-
-# Content Browser
-#"omni.kit.window.content" = {} # But it is hidden / just trying to clear some dependency
 
 "omni.kit.window.imageviewer" = {}
 
@@ -106,8 +102,6 @@ exts."omni.kit.widget.layers".useNewFilePicker = true
 exts."omni.kit.renderer.core".imgui.enableMips = true
 
 [settings.exts."omni.kit.registry.nucleus"]
-# URL where to store archives and index of extensions (can be local filesystem too). They are being pulled in order, 
-# so if multiple registries have a package with the same name the one that specified first is prioritized.
 registries = [
     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
 ]
@@ -136,10 +130,11 @@ height = 900
 file = "${fonts}/OpenSans-SemiBold.ttf"
 size = 16
 
-# [setting.app.runLoops.main]
-# rateLimitEnabled = false
-# rateLimitFrequency = 60
-# rateLimitUseBusyLoop = false
+# [setting.app.runLoops]
+# main.rateLimitEnabled = false
+# main.rateLimitFrequency = 60
+# main.rateLimitUseBusyLoop = false
+# rendering_0.rateLimitEnabled = false
 
 [settings.exts.'omni.kit.window.extensions']
 featuredExts = [
@@ -147,7 +142,7 @@ featuredExts = [
     "omni.kit.window.stageviewer",
 
     "omni.flowusd",
-    "omni_blast",
+    "omni.blast",
 
     "omni.anim.timesample_editor",
 
@@ -184,11 +179,6 @@ persistent.app.viewport.snapToSurface = false
 persistent.app.stage.movePrimInPlace = false
 persistent.app.file.recentFiles = []
 
-# Gray Viewport Default
-###############################
-# [setting.rtx.post.backgroundZeroAlpha]
-# enabled = true
-# backgroundDefaultColor = [0.2, 0.2, 0.2]
 
 # Content Browser
 ###############################
@@ -199,6 +189,9 @@ enable_thumbnail_generation_images = true
 ###############################
 [settings.app.extensions]
 skipPublishVerification = false
+
+# Need this for registry to load
+registryEnabled = true
 
 folders2 = ["${kit}/exts" ]
 enabledDeprecated = [
@@ -255,5 +248,5 @@ nucleus.default = "omniverse://ov-isaac-qa"
 
 # Non Isaac Sim Extensions
 ######################
-"syntheticdata.viz" = {}
-"semantics.schema.editor" = {}
+"syntheticdata.viz" = { optional = true }
+"semantics.schema.editor" = { optional = true }
