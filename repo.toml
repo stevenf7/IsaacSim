@@ -122,14 +122,14 @@ enabled = true
 
 [repo_package.packages.isaac-sim]
 omniverse_flow_version_scheme = true
-ziponly = true
+ziponly = false
 package_per_config = true
+"platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
 
 [repo_package.packages.isaac-sim-launcher]
 omniverse_flow_version_scheme = true
-ziponly = true
-# isaac sim, commenting this because TC cannot extract
-# "platform:linux-x86_64".archive_format = "tar.xz" # Use tar on linux
+ziponly = false
+"platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
 package_per_config = true
 append_config = true
 replace_authors_in_kit_extensions = true
@@ -138,7 +138,8 @@ strip_package_infos = true
 # to generate test runner package for isaac sim
 [repo_package.packages.test_runner]
 omniverse_flow_version_scheme = true
-ziponly = true
+ziponly = false
+"platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
 ########################################################################################################################
 # Package publishing to packman
 ########################################################################################################################
