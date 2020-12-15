@@ -45,8 +45,8 @@ class CreateSetupExtension(omni.ext.IExt):
         #     app_version = open(carb.tokens.get_tokens_interface().resolve("${app}/../VERSION")).read()
 
         if app_version:
-            app_version, _ = app_version.split("+")
-            app_version, _ = app_version.split("-")
+            app_version = app_version.split("+")[0]
+            app_version = app_version.split("-")[0]
             window_title.set_app_version(app_version)
 
         # icon (windows only!)
