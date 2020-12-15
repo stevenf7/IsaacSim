@@ -74,6 +74,12 @@ project_ext_bindings {
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/robot_engine_bridge/scripts" },
+    { "python/tests", ext.target_dir.."/omni/isaac/robot_engine_bridge/tests" },
+    { "docs", ext.target_dir.."/docs" },
+    { "data", ext.target_dir.."/data" },
+    { "%{root}/_build/target-deps/isaac_engine/data", ext.target_dir.."/resources/isaac_engine/" },
+    { "%{root}/_build/target-deps/isaac_engine/packages", ext.target_dir.."/packages/" },
+    { "%{root}/_build/target-deps/isaac_engine/packages/pyalice", ext.target_dir.."/omni/isaac/pyalice" },
 }
 
 repo_build.prebuild_copy {
