@@ -1,8 +1,6 @@
 import omni.ext
 import omni.kit.editor
 import omni.kit.ui
-import omni.kit.settings
-import carb.windowing
 import carb.settings
 from .. import _manip
 from enum import IntEnum
@@ -70,12 +68,12 @@ class GamePadBinding:
 
 class Extension(omni.ext.IExt):
     def update_binding(self, binding, input):
-        if binding.attr == None:
+        if binding.attr is None:
             return
         input_range = binding.input_max - binding.input_min
         if input_range == 0.0:
             input_range = 1.0
-        if binding.use_speed.value == False:
+        if binding.use_speed.value is False:
             binding.attr.Set(
                 (input - binding.input_min) * (binding.value_max.value - binding.value_min.value) / input_range
                 + binding.value_min.value
@@ -88,7 +86,7 @@ class Extension(omni.ext.IExt):
         if axis < 0 or axis >= len(self.bindings):
             return
         binding = self.bindings[axis]
-        if binding.use_speed.value == True:
+        if binding.use_speed.value is True:
             if abs(input) < joystick_deadzone:
                 input = 0.0
         self.update_binding(binding, input)
@@ -104,9 +102,9 @@ class Extension(omni.ext.IExt):
 
     def on_update(self, dt):
         for binding in self.bindings:
-            if binding.use_speed.value and binding.attr != None:
+            if binding.use_speed.value and binding.attr is not None:
                 current = binding.attr.Get()
-                if current != None:
+                if current is not None:
                     binding.attr.Set(
                         clamp(current + dt * binding.vel, binding.value_min.value, binding.value_max.value)
                     )
@@ -128,7 +126,9 @@ class Extension(omni.ext.IExt):
 
         self.editor = omni.kit.editor.get_editor_interface()
         self.usd_context = omni.usd.get_context()
-        self.window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600)
+        self.window = omni.kit.ui.Window(
+            EXTENSION_NAME, 960, 600, menu_path=f"Window/Isaac/{EXTENSION_NAME}", open=False
+        )
         self.manip.bind_gamepad(self.on_gamepad_event_fn)
         self.update_sub = self.editor.subscribe_to_update_events(self.on_update)
         self.build_window_ui()
@@ -140,7 +140,7 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         self.stage_sub = None
         self.update_sub = None
-        if self.manip != None:
+        if self.manip is not None:
             self.manip.unbind_gamepad()
             _manip.release(self.manip)
             self.manip = None
