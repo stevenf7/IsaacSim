@@ -4,6 +4,7 @@ display_name = "Robot Engine Bridge"
 "omni.kit.editor" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.range_sensor" = {}
+"omni.isaac.utils" = {}
 "omni.syntheticdata" = {}
 
 [[python.module]]
@@ -13,9 +14,13 @@ name = "omni.isaac.robot_engine_bridge"
 name = "omni.isaac.RobotEngineBridgeSchema"
 public = false
 
-# [[python.module]]
-# name = "omni.isaac.pyalice"
-# public = false
+[[python.module]]
+name = "omni.isaac.pyalice"
+public = false
+
+[[python.module]]
+name = "omni.isaac.robot_engine_bridge.tests"
+public = false
 
 [[python.module]]
 name = "omni.isaac.robot_engine_bridge.scripts.setup_environment_grid"
@@ -29,7 +34,8 @@ recursive = false
 path = "bin/${lib_prefix}robotEngineBridgeSchema${lib_ext}"
 
 [python.pipapi]
-requirements = ["numpy", "numpy-quaternion"]
+requirements = ["numpy", "numpy-quaternion", "pycapnp", "numba"]
+archiveDirs = ["pip-packages"]
 
 # We need to enable fastcache for this extension for plan visualizer
 [settings]

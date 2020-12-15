@@ -84,10 +84,8 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/robot_engine_bridge" },
-}
-
-repo_build.prebuild_copy {
     { "%{root}/_build/target-deps/isaac_engine/lib/**", ext.target_dir.."/bin" },
+    { "%{root}/_build/target-deps/isaac_engine/*.whl", ext.target_dir.."/pip-packages/" },
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RobotEngineBridgeSchema/**", ext.target_dir.."/omni/isaac/RobotEngineBridgeSchema" },
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}robotEngineBridgeSchema${lib_ext}", ext.target_dir.."/bin"},
 }

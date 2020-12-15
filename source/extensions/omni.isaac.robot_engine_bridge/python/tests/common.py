@@ -1,5 +1,4 @@
-import carb.tokens
-import os
+import omni
 
 
 def setup_base_prim(prim):
@@ -8,24 +7,15 @@ def setup_base_prim(prim):
     prim.CreateTimeOffsetAttr(0.0)
 
 
-def get_json_data_path(filename):
-    output = os.path.abspath(
-        carb.tokens.get_tokens_interface().resolve(
-            "${app}/../exts/omni.isaac.tests/omni/isaac/tests/data/robot_engine_bridge/" + filename
-        )
-    )
-    print("OUTPUT", output)
-    return output
-
-
 class PyaliceApp:
     def __init__(self):
         from omni.isaac.pyalice import Application
 
-        self._asset_path = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve("${app}/../exts/omni.isaac.robot_engine_bridge/")
-        )
-        self.app = Application(name="test", asset_path=self._asset_path)
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
+        self._reb_extension_path = ext_manager.get_extension_path(ext_id)
+
+        self.app = Application(name="test", asset_path=self._reb_extension_path)
         self._stopped = True
 
     def run(self, duration: float = 1.0):
