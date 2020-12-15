@@ -62,7 +62,7 @@ class Extension(omni.ext.IExt):
             planePath="/groundPlane",
             axis="Z",
             size=1500.0,
-            position=Gf.Vec3f(-50),
+            position=Gf.Vec3f(0, 0, -50),
             color=Gf.Vec3f(0.5),
         )
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
@@ -83,7 +83,7 @@ class Extension(omni.ext.IExt):
             "UnapplyAPISchemaCommand",
             api=UsdPhysics.DriveAPI,
             prim=prim,
-            api_prefix="PhysicsDrive",
+            api_prefix="drive",
             multiple_api_token="angular",
         )
 
@@ -92,6 +92,6 @@ class Extension(omni.ext.IExt):
             "UnapplyAPISchemaCommand",
             api=UsdPhysics.DriveAPI,
             prim=prim,
-            api_prefix="PhysicsDrive",
+            api_prefix="drive",
             multiple_api_token="angular",
         )

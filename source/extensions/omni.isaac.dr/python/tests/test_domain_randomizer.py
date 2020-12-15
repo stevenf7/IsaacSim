@@ -29,6 +29,9 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dr")
         self._extension_path = ext_manager.get_extension_path(ext_id)
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
+        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
+
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
         self._editor = omni.kit.editor.get_editor_interface()
@@ -141,7 +144,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for movement component for articulated robots
     async def test_movement_component_franka(self):
-        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
+        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu=False)
@@ -190,7 +193,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for movement component for articulated robots
     async def test_movement_component_carter(self):
-        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/carter/carter.usd")
+        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/carter/carter.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu=False)
