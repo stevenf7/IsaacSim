@@ -138,8 +138,7 @@ strip_package_infos = true
 # to generate test runner package for isaac sim
 [repo_package.packages.test_runner]
 omniverse_flow_version_scheme = true
-ziponly = false
-"platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
+ziponly = true
 ########################################################################################################################
 # Package publishing to packman
 ########################################################################################################################
@@ -147,3 +146,21 @@ ziponly = false
 [repo_publish]
 enabled = true
 packages = ["*"]
+
+
+########################################################################################################################
+# Test Runner
+########################################################################################################################
+[repo_test]
+
+# When running from package, look for package using that path/pattern:
+archive_pattern = "${root}/_builtpackages/isaac-sim-*.7z"
+
+[repo_test.suites.pythontests]
+kind = "glob_and_exec"
+path = "${test_root}/_build/${platform}/${config}"
+  [[repo_test.suites.pythontests.group]]
+  include = ["tests-*${shell_ext}"]
+  exclude =[]
+  args = []
+  tc_report_enabled = false
