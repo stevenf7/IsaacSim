@@ -14,7 +14,6 @@
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/input/IInput.h>
-#include <carb/settings/ISettings.h>
 
 #include <omni/isaac/manip/Input.h>
 #include <omni/kit/IEditor.h>
@@ -23,7 +22,7 @@ const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.manip.plugin", "Ma
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::manip::Input)
-CARB_PLUGIN_IMPL_DEPS(omni::kit::IEditor, carb::settings::ISettings, carb::dictionary::IDictionary, carb::input::IInput)
+CARB_PLUGIN_IMPL_DEPS(omni::kit::IEditor, carb::input::IInput)
 
 namespace omni
 {
