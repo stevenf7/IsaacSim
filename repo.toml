@@ -154,7 +154,7 @@ packages = ["*"]
 [repo_test]
 
 # When running from package, look for package using that path/pattern:
-archive_pattern = "${root}/_builtpackages/isaac-sim-*.7z"
+archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
 
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
