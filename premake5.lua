@@ -254,6 +254,8 @@ group "exts"
     include ("source/extensions/omni.isaac.app.launcher")
     include ("source/extensions/omni.isaac.splash")
 
+    include ("source/extensions/omni.kit.property.isaac")
+
     -- Linux Only
     if os.target() == "linux" then
         include ("source/extensions/omni.isaac.motion_planning")
