@@ -148,7 +148,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
 
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         self.assertAlmostEqual(
-            control.config.linear, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]) / 100.0, delta=0.01
+            control.config.linear, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]) / 100.0, delta=0.2
         )
 
         control.config.linear = 0.0
@@ -156,13 +156,13 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
 
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         self.assertAlmostEqual(
-            control.config.linear, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]) / 100.0, delta=0.01
+            control.config.linear, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]) / 100.0, delta=0.2
         )
 
         control.config.rotation = 1.0
         await asyncio.sleep(4.0)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
-        self.assertAlmostEqual(control.config.rotation, ang_vel[2], delta=0.1)
+        self.assertAlmostEqual(control.config.rotation, ang_vel[2], delta=0.2)
         print(lin_vel, ang_vel)
         self._timeline.stop()
         test_app.stop()
@@ -242,7 +242,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
 
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         self.assertAlmostEqual(
-            control.config.linear, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]) / 100.0, delta=0.1
+            control.config.linear, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]) / 100.0, delta=0.2
         )
 
         control.config.linear = 0.0
@@ -252,7 +252,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         await asyncio.sleep(4.0)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
         print(ang_vel)
-        self.assertAlmostEqual(control.config.rotation, ang_vel[2], delta=0.1)
+        self.assertAlmostEqual(control.config.rotation, ang_vel[2], delta=0.2)
         self._timeline.stop()
         test_app.stop()
         test_app = None
