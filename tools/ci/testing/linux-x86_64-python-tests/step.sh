@@ -2,26 +2,29 @@
 
 set -e
 
+PARAMS=""
 SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 
-if [ ! -z "$TEAMCITY_VERSION" ]
-then
-    package="--from-package"
-fi
-
-case $variable in
-     release)      
-          CONFIG=release
-          ;;
-     debug)      
-          CONFIG=release
-          ;;
-     --from-package)
-          package="--from-package"
-          ;; 
-     *)
-          ;;
-esac
+while (( "$#" )); do
+     case $1 in
+          release)      
+               CONFIG=release
+               shift
+               ;;
+          debug)      
+               CONFIG=debug
+               shift
+               ;;
+          package)
+               USE_PACKAGE="--from-package"
+               shift
+               ;; 
+          *)
+               PARAMS="$PARAMS $1"
+               shift
+               ;;
+     esac
+done
 
 if [ "$CONFIG" == "" ]
 then
@@ -30,4 +33,6 @@ fi
 
 export OMNI_USER=test
 export OMNI_PASS=test
-"$SCRIPT_DIR/../../../../tools/test.sh" --suite pythontests --config $CONFIG $package $*
+
+cd "$SCRIPT_DIR/../../../../tools"
+./test.sh --suite pythontests --config $CONFIG $USE_PACKAGE $PARAMS
