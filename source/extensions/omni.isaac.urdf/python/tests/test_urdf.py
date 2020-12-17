@@ -134,3 +134,21 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
         pass
+
+    async def test_urdf_mtl(self):
+        await omni.usd.get_context().new_stage_async()
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_mtl.urdf")
+
+        print("Setting up stage, importing urdf data")
+        stage = omni.usd.get_context().get_stage()
+
+        import_config = _urdf.ImportConfig()
+        root_path, filename = os.path.split(os.path.abspath(urdf_path))
+        imported_robot = self._urdf_interface.parse_urdf(root_path, filename, import_config)
+        self._urdf_interface.import_robot(root_path, filename, imported_robot, import_config)
+
+        mesh = stage.GetPrimAtPath("/test_mtl/cube/visuals/material_1")
+        self.assertNotEqual(mesh.GetPath(), Sdf.Path.emptyPath)
+        mat, rel = UsdShade.MaterialBindingAPI(mesh).ComputeBoundMaterial()
+        shader = UsdShade.Shader(stage.GetPrimAtPath(mat.GetPath().pathString + "/Shader"))
+        self.assertTrue(Gf.IsClose(shader.GetInput("diffuseColor").Get(), Gf.Vec3f(0.8, 0.0, 0), 1e-5))

@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import carb
-from pxr import Usd, UsdGeom, Gf, UsdPhysics, PhysxSchema, Sdf, UsdLux
+from pxr import UsdGeom, Gf, UsdPhysics, Sdf, UsdLux
 import omni.kit.editor
 import omni.ext
 import omni.usd
@@ -25,7 +25,7 @@ from omni.isaac.samples.scripts.utils.franka import Franka, default_config
 from omni.isaac.samples.scripts.utils.world import World
 from omni.isaac.samples.scripts.utils.reactive_behavior import FrameTerminationCriteria
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
-from omni.isaac.utils.scripts.scene_utils import set_translate, set_up_z_axis, setup_physics, create_background
+from omni.isaac.utils.scripts.scene_utils import set_translate, set_up_z_axis, setup_physics
 
 import numpy as np
 import gc
@@ -130,7 +130,7 @@ class Extension(omni.ext.IExt):
         self._timeline.stop()
 
         set_up_z_axis(self._stage)
-        add_ground_plane(self._stage, "/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0), Gf.Vec3f(1.0))
+        add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0), Gf.Vec3f(1.0))
         setup_physics(self._stage)
 
         result, nucleus_server = find_nucleus_server()
@@ -191,7 +191,7 @@ class Extension(omni.ext.IExt):
 
     def _on_add_obstacle(self, widget):
         ## set ground as an obstacles in RMP
-        self._world.register_object(0, "/World/groundPlane/collisionPlane", "ground")
+        self._world.register_object(0, "/physics/groundPlane/CollisionPlane", "ground")
         self._world.make_obstacle(
             "ground", 3, (500 * self._meters_per_unit, 500 * self._meters_per_unit, 10 * self._meters_per_unit)
         )
