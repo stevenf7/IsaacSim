@@ -53,6 +53,12 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         gc.collect()
         pass
 
+    async def simulate(self, seconds, art=None, steps_per_sec=60):
+        for frame in range(steps_per_sec * seconds):
+            if art is not None:
+                self._dc.wake_up_articulation(art)
+            await omni.kit.app.get_app().next_update_async()
+
     def create_application(self):
         json_path = self._reb_extension_path + "/resources/isaac_engine/json/isaacsim.app.json"
 
@@ -143,8 +149,8 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         control.config.rotation = 0.0
         test_app.app.connect(control, "cmd", sim_in, "base_command")
         test_app.start()
-        # Run test for 1 second, check the linear velocity
-        await asyncio.sleep(2.0)
+        # Run test for 2 seconds, check the linear velocity
+        await self.simulate(2)
 
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         self.assertAlmostEqual(
@@ -152,7 +158,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         )
 
         control.config.linear = 0.0
-        await asyncio.sleep(2.0)
+        await self.simulate(2)
 
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         self.assertAlmostEqual(
@@ -160,7 +166,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         )
 
         control.config.rotation = 1.0
-        await asyncio.sleep(4.0)
+        await self.simulate(4)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
         self.assertAlmostEqual(control.config.rotation, ang_vel[2], delta=0.2)
         print(lin_vel, ang_vel)
@@ -238,7 +244,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         test_app.app.connect(control, "cmd", sim_in, "base_command")
         test_app.start()
         # Run test for a while
-        await asyncio.sleep(3.0)
+        await self.simulate(3)
 
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         self.assertAlmostEqual(
@@ -246,10 +252,10 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         )
 
         control.config.linear = 0.0
-        await asyncio.sleep(1.0)
+        await self.simulate(1)
         print(lin_vel)
         control.config.rotation = 1.0
-        await asyncio.sleep(4.0)
+        await self.simulate(4)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
         print(ang_vel)
         self.assertAlmostEqual(control.config.rotation, ang_vel[2], delta=0.2)
