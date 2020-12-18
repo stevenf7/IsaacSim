@@ -33,7 +33,6 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_urdf_basic(self):
         await omni.usd.get_context().new_stage_async()
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.urdf")
-        print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
         import_config = _urdf.ImportConfig()
         import_config.import_inertia_tensor = True
@@ -41,11 +40,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         imported_robot = self._urdf_interface.parse_urdf(root_path, filename, import_config)
         self._urdf_interface.import_robot(root_path, filename, imported_robot, import_config)
 
-        print("check object exist")
         prim = stage.GetPrimAtPath("/test_basic")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
-        print("check different types of joints are imported")
         # make sure the joints exist
         rootJoint = stage.GetPrimAtPath("/test_basic/rootJoint")
         self.assertNotEqual(rootJoint.GetPath(), Sdf.Path.emptyPath)
@@ -75,7 +72,6 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_urdf_advanced(self):
         await omni.usd.get_context().new_stage_async()
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_advanced.urdf")
-        print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
 
         # enable merging fixed joints
@@ -119,7 +115,6 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.usd.get_context().new_stage_async()
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_merge_joints.urdf")
 
-        print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
 
         # enable merging fixed joints
@@ -139,7 +134,6 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.usd.get_context().new_stage_async()
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_mtl.urdf")
 
-        print("Setting up stage, importing urdf data")
         stage = omni.usd.get_context().get_stage()
 
         import_config = _urdf.ImportConfig()
@@ -152,3 +146,47 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         mat, rel = UsdShade.MaterialBindingAPI(mesh).ComputeBoundMaterial()
         shader = UsdShade.Shader(stage.GetPrimAtPath(mat.GetPath().pathString + "/Shader"))
         self.assertTrue(Gf.IsClose(shader.GetInput("diffuseColor").Get(), Gf.Vec3f(0.8, 0.0, 0), 1e-5))
+
+    async def test_urdf_carter(self):
+        await omni.usd.get_context().new_stage_async()
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/carter/urdf/carter.urdf")
+        stage = omni.usd.get_context().get_stage()
+        import_config = _urdf.ImportConfig()
+        import_config.merge_fixed_joints = False
+        root_path, filename = os.path.split(os.path.abspath(urdf_path))
+        imported_robot = self._urdf_interface.parse_urdf(root_path, filename, import_config)
+        self._urdf_interface.import_robot(root_path, filename, imported_robot, import_config)
+        # TODO add checks here
+
+    async def test_urdf_franka(self):
+        await omni.usd.get_context().new_stage_async()
+        urdf_path = os.path.abspath(
+            self._extension_path + "/data/urdf/robots/franka_description/robots/panda_arm_hand.urdf"
+        )
+        stage = omni.usd.get_context().get_stage()
+        import_config = _urdf.ImportConfig()
+        root_path, filename = os.path.split(os.path.abspath(urdf_path))
+        imported_robot = self._urdf_interface.parse_urdf(root_path, filename, import_config)
+        self._urdf_interface.import_robot(root_path, filename, imported_robot, import_config)
+        # TODO add checks here'
+
+    async def test_urdf_ur10(self):
+        await omni.usd.get_context().new_stage_async()
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/ur10/urdf/ur10_base.urdf")
+        stage = omni.usd.get_context().get_stage()
+        import_config = _urdf.ImportConfig()
+        root_path, filename = os.path.split(os.path.abspath(urdf_path))
+        imported_robot = self._urdf_interface.parse_urdf(root_path, filename, import_config)
+        self._urdf_interface.import_robot(root_path, filename, imported_robot, import_config)
+        # TODO add checks here'
+
+    async def test_urdf_kaya(self):
+        await omni.usd.get_context().new_stage_async()
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/kaya/urdf/kaya.urdf")
+        stage = omni.usd.get_context().get_stage()
+        import_config = _urdf.ImportConfig()
+        import_config.merge_fixed_joints = False
+        root_path, filename = os.path.split(os.path.abspath(urdf_path))
+        imported_robot = self._urdf_interface.parse_urdf(root_path, filename, import_config)
+        self._urdf_interface.import_robot(root_path, filename, imported_robot, import_config)
+        # TODO add checks here
