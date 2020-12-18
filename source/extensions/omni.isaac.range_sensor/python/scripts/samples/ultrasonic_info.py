@@ -2,34 +2,40 @@ import omni
 from omni.isaac.range_sensor import _range_sensor
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
+from omni.physx.scripts.physicsUtils import *
 import asyncio
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
         """
-        This sample is written to demonstrate the LIDAR python API for Isaac Sim.
+        This sample is written to demonstrate the ULTRASONIC python API for Isaac Sim.
         """
 
-        # The extension acquires the LIDAR interface at startup.  It will be released during extension shutdown.  We
-        # create a LIDAR prim using our schema, and then we interact with / query that prim using the python API found
-        # in lidar/bindings
-        self._li = _range_sensor.acquire_lidar_sensor_interface()
+        # The extension acquires the ULTRASONIC interface at startup.  It will be released during extension shutdown.  We
+        # create a ULTRASONIC prim using our schema, and then we interact with / query that prim using the python API found
+        # in ultrasonic/bindings
+        self._ul = _range_sensor.acquire_ultrasonic_sensor_interface()
 
         # We also need an interface to the viewport to do things like set and get camera positions
         self._viewport = omni.kit.viewport.get_default_viewport_window()
 
-        # This just defines the window we will use to access the lidar_info GUI.  Note that clicking on the menu item
-        # does not create an instance of lidar_info; that is done by the extension when it is loaded by kit.  All this
-        # menu does is show or hide our GUI we will use for interacting with lidar_info
+        # This just defines the window we will use to access the ultrasonic_info GUI.  Note that clicking on the menu item
+        # does not create an instance of ultrasonic_info; that is done by the extension when it is loaded by kit.  All this
+        # menu does is show or hide our GUI we will use for interacting with ultrasonic_info
         self._window = omni.kit.ui.Window(
-            "LIDAR Info",
+            "Ultrasonic Info",
             300,
             200,
-            menu_path="Isaac/LIDAR/LIDAR info",
+            menu_path="Isaac/Ultrasonic/Ultrasonic Demo App",
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
+
+        # with self._window.frame:
+        #    with omni.ui.VStack():
+        #        omni.ui.Rectangle(name="envelope", width=150,
+        #                          style={"background_color": 0x454545})
 
         #  Kit GUIs are defined by a tree of layouts, and leaf layouts contain GUI elements (like buttons or
         # text entry fields).  You can learn more about Layouts and GUIs in the python manual at
@@ -40,27 +46,32 @@ class Extension(omni.ext.IExt):
         # the left side of the window.
         sublayout.add_child(
             omni.kit.ui.Label(
-                "This sample demonstrates how to create a LIDAR, set properties and get data from it. Press play once LIDAR is created to simulate"
+                "This sample demonstrates how to create an ultrasonic sensor, set properties and get data from it. Press play once the sensor is created to simulate"
             )
         )
-        spawn_lidar_button = sublayout.add_child(omni.kit.ui.Button("Clean Stage And Spawn a LIDAR"))
-        spawn_lidar_button.tooltip = omni.kit.ui.Label("Spawn a LIDAR in the Stage and set its properties")
-        spawn_obstacles_button = sublayout.add_child(omni.kit.ui.Button("Spawn an obstacle for LIDAR"))
+
+        spawn_ultrasonic_button = sublayout.add_child(omni.kit.ui.Button("Clean Stage And Spawn an Ultrasonic Sensor"))
+        spawn_ultrasonic_button.tooltip = omni.kit.ui.Label(
+            "Spawn an Ultrasonic Sensor in the Stage and set its properties"
+        )
+        spawn_obstacles_button = sublayout.add_child(omni.kit.ui.Button("Spawn an Obstacle for the Ultrasonic Sensor"))
         spawn_obstacles_button.tooltip = omni.kit.ui.Label("Spawn an obstacle and move camera so its in view")
-        get_info_button = sublayout.add_child(omni.kit.ui.Button("Get data from LIDAR (press play first)"))
+        get_info_button = sublayout.add_child(
+            omni.kit.ui.Button("Get data from the Ultrasonic Sensor (press play first)")
+        )
         get_info_button.tooltip = omni.kit.ui.Label(
-            "Press play to enable simulation and then press this button to get the current LIDAR information"
+            "Press play to enable simulation and then press this button to get the current ultrasonic information"
         )
         sublayout.add_child(
             omni.kit.ui.Label(
-                'Note: The buttons above only work with the lidar spawned by the "Spawn a LIDAR" button and not existing ones in the stage'
+                'Note: The buttons above only work with the ultrasonic spawned by the "Spawn an Ultrasonic Sensor" button and not existing ones in the stage'
             )
         )
 
         # When you interact with a GUI element, you are interacting with a kit Widget.  A widget is a single
         # GUI element that may or may not contain functions you can use to define how to interact with that widget.
         # In this case, we are making simple button widgets, which will call a function we define whenever we click it.
-        spawn_lidar_button.set_clicked_fn(self._on_spawn_lidar_button)
+        spawn_ultrasonic_button.set_clicked_fn(self._on_spawn_ultrasonic_button)
         spawn_obstacles_button.set_clicked_fn(self._on_spawn_obstacles_button)
         get_info_button.set_clicked_fn(self._get_info_function)
 
@@ -68,8 +79,8 @@ class Extension(omni.ext.IExt):
         # a tiny gap in the UI in order separate one part from another.
         sublayout.add_child(omni.kit.ui.Separator())
 
-        # we add a scrolling frame because we also want to display information about our LIDAR, and the amount
-        # of information we display depends on the LIDAR parameters.
+        # we add a scrolling frame because we also want to display information about our ULTRASONIC, and the amount
+        # of information we display depends on the ULTRASONIC parameters.
         scrolling_frame = sublayout.add_child(omni.kit.ui.ScrollingFrame("", -1, -1))
         self.info_label = scrolling_frame.add_child(
             omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
@@ -79,67 +90,63 @@ class Extension(omni.ext.IExt):
         # Perform cleanup once the sample closes
         self._window = None
 
-    async def _spawn_lidar_function(self, task):
-        # Wait for stage clear to complete before creating LIDAR
+    async def _spawn_ultrasonic_function(self, task):
+        # Wait for stage clear to complete before creating ULTRASONIC
         done, pending = await asyncio.wait({task})
         if task in done:
             stage = omni.usd.get_context().get_stage()
 
-            # Set up axis to z.  The LIDAR extension scans in the XZ plane, which is assumed to be perpendicular to the
-            # rotational plane, and so to use the LIDAR as it is currently written, Z must be up.
+            # Set up axis to z.  The ULTRASONIC extension scans in the XZ plane, which is assumed to be perpendicular to the
+            # rotational plane, and so to use the ULTRASONIC as it is currently written, Z must be up.
             UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
             UsdGeom.SetStageMetersPerUnit(stage, 0.01)
 
-            # Create the PhysicsScene.  The lidar is going to execute line trace calls in PhysX, and return a value based
+            # Create the PhysicsScene.  The ultrasonic is going to execute line trace calls in PhysX, and return a value based
             # on how far it travels before colliding with an object that is using the PhysX collision API.  Because of this,
-            # to use the LIDAR extension, you MUST have a physics scene defined
+            # to use the ULTRASONIC extension, you MUST have a physics scene defined
             UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
 
-            # create the LIDAR.  Before we can set any attributes on our LIDAR, we must first create the prim using our
-            # LIDAR schema, and then populate it with the parameters we will be manipulating.  If you try to manipulate
+            # create the ULTRASONIC.  Before we can set any attributes on our ULTRASONIC, we must first create the prim using our
+            # ULTRASONIC schema, and then populate it with the parameters we will be manipulating.  If you try to manipulate
             # a parameter before creating it, you will get a runtime error
-            self.lidarPath = "/World/Lidar"
-            self.lidar = RangeSensorSchema.Lidar.Define(stage, Sdf.Path(self.lidarPath))
+            self.ultrasonicPath = "/World/Ultrasonic"
+            self.ultrasonic = RangeSensorSchema.Ultrasonic.Define(stage, Sdf.Path(self.ultrasonicPath))
 
-            # Horizontal and vertical field of view in degrees
-            self.lidar.CreateHorizontalFovAttr().Set(360.0)
-            self.lidar.CreateVerticalFovAttr().Set(10)
-
-            # Rotation rate in Hz
-            self.lidar.CreateRotationRateAttr().Set(20.0)
+            # set wedge vertical extent in degrees
+            self.ultrasonic.CreateHorizontalFovAttr().Set(15.0)
+            # set wedge horizontal extent in degrees
+            self.ultrasonic.CreateVerticalFovAttr().Set(20)
 
             # Horizontal and vertical resolution in degrees.  Rays will be fired on the bin boundries defined by the
             # resolution.  If your FOV is 45 degrees and your resolution is 15 degrees, you will get rays at
             # 0, 15, 30, and 45 degrees.
-            self.lidar.CreateHorizontalResolutionAttr().Set(1.0)
-            self.lidar.CreateVerticalResolutionAttr().Set(1.0)
+            self.ultrasonic.CreateHorizontalResolutionAttr().Set(0.5)
+            self.ultrasonic.CreateVerticalResolutionAttr().Set(0.5)
 
-            # Min and max range for the LIDAR.  This defines the starting and stopping locations for the linetrace
-            self.lidar.CreateMinRangeAttr().Set(0.4)
-            self.lidar.CreateMaxRangeAttr().Set(100.0)
+            # Min and max range for the ULTRASONIC.  This defines the starting and stopping locations for the linetrace
+            self.ultrasonic.CreateMinRangeAttr().Set(0.4)
+            self.ultrasonic.CreateMaxRangeAttr().Set(3.0)
 
-            # These attributes affect drawing the lidar in the viewport.  High Level Of Detail (HighLod) = True will draw
-            # all rays.  If false it will only draw horizontal rays.  Draw Lidar Points = True will draw the actual
-            # LIDAR rays in the viewport.
-            self.lidar.CreateHighLodAttr().Set(True)
-            self.lidar.CreateDrawPointsAttr().Set(False)
-            self.lidar.CreateDrawLinesAttr().Set(False)
+            # These attributes affect drawing the ultrasonic in the viewport.  High Level Of Detail (HighLod) = True will draw
+            # all rays.  If false it will only draw horizontal rays.  Draw Ultrasonic Points = True will draw the actual
+            # ULTRASONIC rays in the viewport.
+            self.ultrasonic.CreateDrawPointsAttr().Set(False)
+            self.ultrasonic.CreateDrawLinesAttr().Set(False)
 
             # We set the attributes we created.  We could have just set the attributes at creation, but this was
             # more illustrative.  It's important to remember that attributes do not exist until you create them; even
             # if they are defined in the schema.
-            self.lidar.GetRotationRateAttr().Set(0.5)
-            self.lidar.GetDrawLinesAttr().Set(True)
-            self.lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
+            self.ultrasonic.GetDrawLinesAttr().Set(True)
+            self.ultrasonic.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
-            # we want to make sure we can see the lidar we made, so we set the camera position and look target
+            # we want to make sure we can see the ultrasonic we made, so we set the camera position and look target
             self._viewport.set_camera_position("/OmniverseKit_Persp", 500, 500, 500, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
 
-    def _on_spawn_lidar_button(self, widget):
-        # wait for new stage before creating lidar
+    def _on_spawn_ultrasonic_button(self, widget):
+        # wait for new stage before creating ultrasonic
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
-        asyncio.ensure_future(self._spawn_lidar_function(task))
+        asyncio.ensure_future(self._spawn_ultrasonic_function(task))
 
     def _on_spawn_obstacles_button(self, widget):
         stage = omni.usd.get_context().get_stage()
@@ -164,19 +171,20 @@ class Extension(omni.ext.IExt):
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
 
-        # In order for our cube to interact with the LIDAR, it needs to be able to colide with our physX line traces.
+        # In order for our cube to interact with the ULTRASONIC, it needs to be able to colide with our physX line traces.
         # to do this, we give our cube the collision API, and set it's material and collision group.
         collisionAPI = UsdPhysics.CollisionAPI.Apply(cubePrim)
+        defaultPrimPath = str(stage.GetDefaultPrim().GetPath())
 
     def _get_info_function(self, widget):
-        maxDepth = self.lidar.GetMaxRangeAttr().Get()
+        maxDepth = self.ultrasonic.GetMaxRangeAttr().Get()
 
-        # The LIDAR itself exists as a C++ object.  In order to retrieve data from this object we need to call
+        # The ULTRASONIC itself exists as a C++ object.  In order to retrieve data from this object we need to call
         # C++ code, but this is handled for us through the use of python bindings.  Here we get the depth value of
         # each ray, and the spherical coordinates of each ray in (azimuth, zenith).
-        depth = self._li.get_depth_data(self.lidarPath)
-        zenith = self._li.get_zenith_data(self.lidarPath)
-        azimuth = self._li.get_azimuth_data(self.lidarPath)
+        depth = self._ul.get_depth_data(self.ultrasonicPath)
+        zenith = self._ul.get_zenith_data(self.ultrasonicPath)
+        azimuth = self._ul.get_azimuth_data(self.ultrasonicPath)
 
         # most of the below is string formatting in order to display our data in a nice table within our GUI.
         tableString = ""

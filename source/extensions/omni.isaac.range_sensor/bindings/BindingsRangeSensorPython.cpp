@@ -154,12 +154,15 @@ PYBIND11_MODULE(_range_sensor, m)
                 
                 Returns:
                      :obj:`int`: The number of horizontal scans of the sensor, 0 if error occurred)pbdoc")
-        .def("get_num_cols_ticked", wrapInterfaceFunction(&LidarSensorInterface::getNumColsTicked), R"pbdoc(
+        .def("get_num_cols_ticked", wrapInterfaceFunction(&LidarSensorInterface::getNumColsTicked),
+             R"pbdoc(
                 Args: 
                     arg0 (:obj:`str`): USD path to sensor as a string
                 
                 Returns:
-                     :obj:`int`: The number of vertical scans the sensor completed in the last simulation step, 0 if error occurred. Generally only useful for lidars with a non-zero rotation speed)pbdoc")
+                     :obj:`int`: The number of vertical scans the sensor completed in the last simulation step,
+                                 0 if error occurred. Generally only useful for lidars with a non-zero rotation
+                                 speed)pbdoc")
 
         .def("get_depth_data",
              [](const LidarSensorInterface* li, const char* sensorPath) -> py::object {
@@ -176,7 +179,8 @@ PYBIND11_MODULE(_range_sensor, m)
                     arg0 (:obj:`str`): USD path to sensor as a string
                 
                 Returns:
-                :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and scaled by min and max distance)pbdoc")
+                :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and scaled 
+                                      by min and max distance)pbdoc")
 
         .def("get_linear_depth_data",
              [](const LidarSensorInterface* li, const char* sensorPath) -> py::object {
@@ -255,13 +259,120 @@ PYBIND11_MODULE(_range_sensor, m)
 
     defineInterfaceClass<UltrasonicSensorInterface>(
         m, "UltrasonicSensorInterface", "acquire_ultrasonic_sensor_interface", "release_ultrasonic_sensor_interface")
-        .def("is_ultrasonic_sensor", wrapInterfaceFunction(&UltrasonicSensorInterface::isUltrasonicSensor),
+        .def("is_ultrasonic_sensor", wrapInterfaceFunction(&UltrasonicSensorInterface::isUSS),
              R"pbdoc(
                 Args: 
                     arg0 (:obj:`str`): USD path to sensor as a string
                 
                 Returns:
-                :obj:`bool`: True if a sensor exists at the give path, False otherwise)pbdoc");
+                :obj:`bool`: True if a sensor exists at the give path, False otherwise)pbdoc")
+        .def("get_num_cols", wrapInterfaceFunction(&UltrasonicSensorInterface::getNumCols),
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                     :obj:`int`: The number of horizontal scans of the sensor, 0 if error occurred)pbdoc")
+        .def("get_num_rows", wrapInterfaceFunction(&UltrasonicSensorInterface::getNumRows),
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                     :obj:`int`: The number of horizontal scans of the sensor, 0 if error occurred)pbdoc")
+        .def("get_num_emitters", wrapInterfaceFunction(&UltrasonicSensorInterface::getNumEmitters),
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                     :obj:`int`: The number of emitters on the sensor array, 0 if error occurred)pbdoc")
+        .def("get_depth_data",
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
+                 if (!ul)
+                     return py::none();
+                 uint16_t* data = ul->getDepthData(sensorPath, emitterIndex);
+                 int rows = ul->getNumRows(sensorPath);
+                 int cols = ul->getNumCols(sensorPath);
+                 return py::array(py::buffer_info(data, sizeof(uint16_t), py::format_descriptor<uint16_t>::value, 2,
+                                                  { cols, rows }, { sizeof(uint16_t) * rows, sizeof(uint16_t) }));
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and
+                                      scaled by min and max distance)pbdoc")
+        .def("get_linear_depth_data",
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
+                 if (!ul)
+                     return py::none();
+                 float* data = ul->getLinearDepthData(sensorPath, emitterIndex);
+                 int rows = ul->getNumRows(sensorPath);
+                 int numColsTicked = ul->getNumCols(sensorPath);
+                 return py::array(py::buffer_info(data, sizeof(float), py::format_descriptor<float>::value, 2,
+                                                  { numColsTicked, rows }, { sizeof(float) * rows, sizeof(float) }));
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in meters)pbdoc")
+
+
+        .def("get_intensity_data",
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
+                 if (!ul)
+                     return py::none();
+                 uint8_t* data = ul->getIntensityData(sensorPath, emitterIndex);
+                 int rows = ul->getNumRows(sensorPath);
+                 int numColsTicked = ul->getNumCols(sensorPath);
+                 return py::array(py::buffer_info(data, sizeof(uint8_t), py::format_descriptor<uint8_t>::value, 2,
+                                                  { numColsTicked, rows }, { sizeof(uint8_t) * rows, sizeof(uint8_t) }));
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The observed specular intensity of each beam, 255 if hit, 0 if not)pbdoc")
+
+        .def("get_zenith_data",
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath) -> py::object {
+                 if (!ul)
+                     return py::none();
+                 float* data = ul->getZenithData(sensorPath);
+                 int rows = ul->getNumRows(sensorPath);
+                 return py::array(py::buffer_info(
+                     data, sizeof(float), py::format_descriptor<float>::value, 1, { rows }, { sizeof(float) }));
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The zenith angle in radians for each row)pbdoc")
+
+        .def("get_azimuth_data",
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath) -> py::object {
+                 if (!ul)
+                     return py::none();
+                 float* data = ul->getAzimuthData(sensorPath);
+                 int numCols = ul->getNumCols(sensorPath);
+                 std::stringstream ss;
+                 ss << "numCols " << numCols;
+                 CARB_LOG_WARN(ss.str().c_str());
+                 return py::array(py::buffer_info(
+                     data, sizeof(float), py::format_descriptor<float>::value, 1, { numCols }, { sizeof(float) }));
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The azimuth angle in radians for each column)pbdoc");
 
     defineInterfaceClass<RadarSensorInterface>(
         m, "RadarSensorInterface", "acquire_radar_sensor_interface", "release_radar_sensor_interface")

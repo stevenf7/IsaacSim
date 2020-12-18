@@ -1,0 +1,66 @@
+#pragma once
+
+#include <carb/Defines.h>
+#include <carb/Types.h>
+
+namespace omni
+{
+namespace isaac
+{
+namespace range_sensor
+{
+
+
+// taken from https://stackoverflow.com/questions/40629345/fill-array-dynamicly-with-gradient-color-c
+static inline uint32_t dist_to_color(double ratio, bool bigEndian)
+{
+    // we want to normalize ratio so that it fits in to 6 regions
+    // where each region is 256 units long
+    int normalized = int(ratio * 256 * 6);
+
+    // find the distance to the start of the closest region
+    int x = normalized % 256;
+
+    int alpha = 255, grn = 0, red = 0, blu = 0;
+
+
+    switch (normalized / 256)
+    {
+    case 0:
+        red = 255;
+        grn = x;
+        blu = 0;
+        break; // red
+    case 1:
+        red = 255 - x;
+        grn = 255;
+        blu = 0;
+        break; // yellow
+    case 2:
+        red = 0;
+        grn = 255;
+        blu = x;
+        break; // green
+    case 3:
+        red = 0;
+        grn = 255 - x;
+        blu = 255;
+        break; // cyan
+    case 4:
+        red = x;
+        grn = 0;
+        blu = 255;
+        break; // blue
+    case 5:
+        red = 255;
+        grn = 0;
+        blu = 255 - x;
+        break; // magenta
+    }
+
+    return blu + (grn << 8) + (red << 16) + (alpha << 24);
+}
+
+}
+}
+}

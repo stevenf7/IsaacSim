@@ -49,7 +49,49 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
     filter { "configurations:release" }
         defines { "NDEBUG" }
     filter {}
-    
+
+project "test.unit"
+    kind "ConsoleApp"
+    dependson { "prebuild" }
+    includedirs {
+            "include",
+            ".",
+            "%{root}/_build/target-deps/nv_usd/debug/include",
+            "%{root}/_build/target-deps/rtx_plugins/include",
+        }
+
+    libdirs { "%{root}/_build/target-deps/nv_usd/debug/lib",
+              "%{root}/_build/target-deps/carb_sdk_plugins/_build/linux-x86_64/debug"}
+    links {"carb"}
+    --"omni.ui"}
+
+    runpathdirs { "%{root}/_build/target-deps/nv_usd/debug/lib",
+	          "%{root}/_build/target-deps/carb_sdk_plugins/_build/linux-x86_64/debug" }
+    filter { "system:linux" }
+            buildoptions { "-pthread" }
+            links { "pthread" }
+            rtti "On"
+            includedirs { "%{target_deps}/python/include/python3.6m" }
+
+    filter { "system:linux", "platforms:x86_64" }
+            exceptionhandling "On"
+            includedirs { "%{target_deps}/nv_usd/%{config}/include/boost" }
+            libdirs { "%{target_deps}/cuda/lib64" }
+            links { "boost_python36", "python3.6m", "cudart_static", "sdf", "tf", "usd", "usdUtils" }
+            removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
+            disablewarnings { "error=switch", "error=unused-function", "error=sign-compare" }
+
+    files {
+     	   "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/TestUSS.cpp",
+           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/USSEnvelope.h",
+           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicEmitter.h"}
+    filter { "configurations:debug" }
+      defines { "_DEBUG" }
+
+   filter { "configurations:release" }
+      defines { "_NDEBUG" }
+
+
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings {
     ext = ext,
