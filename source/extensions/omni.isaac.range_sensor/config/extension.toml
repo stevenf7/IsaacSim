@@ -28,6 +28,9 @@ name = "omni.isaac.range_sensor"
 name = "omni.isaac.range_sensor.scripts.samples.lidar_info"
 
 [[python.module]]
+name = "omni.isaac.range_sensor.scripts.samples.ultrasonic_info"
+
+[[python.module]]
 name = "omni.isaac.RangeSensorSchema"
 public = false
 

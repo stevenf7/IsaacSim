@@ -349,6 +349,221 @@ bool CARB_ABI isUltrasonicSensor(const char* primPath)
     }
 }
 
+int CARB_ABI getNumRows(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getNumRows();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return 0;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return 0;
+    }
+}
+
+int CARB_ABI getNumEmitters(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return sensor->getNumEmitters();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return 0;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return 0;
+    }
+}
+
+int CARB_ABI getNumCols(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return sensor->getNumCols();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return 0;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return 0;
+    }
+}
+
+
+uint16_t* CARB_ABI getDepthData(const char* primPath, int emitterIndex)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        // TODO @markb: put sensible indexing guards on this
+        if (sensor)
+        {
+
+            return sensor->getDepthData(emitterIndex).data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+float* CARB_ABI getLinearDepthData(const char* primPath, int emitterIndex)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getLinearDepthData(emitterIndex).data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+uint8_t* CARB_ABI getIntensityData(const char* primPath, int emitterIndex)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getIntensityData(emitterIndex).data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+float* CARB_ABI getZenithData(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getZenithData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+float* CARB_ABI getAzimuthData(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getAzimuthData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+carb::Float3* CARB_ABI getPointCloud(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getPointCloud().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
 }
 
 namespace radar
@@ -402,6 +617,7 @@ void onDetach(void* data)
     }
 }
 
+// TODO @markb: add this to ultrasonic!!!
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
 {
     if (!settings->isPlaying)
@@ -576,7 +792,15 @@ void fillInterface(omni::isaac::range_sensor::UltrasonicSensorInterface& iface)
 {
     using namespace omni::isaac::range_sensor;
     memset(&iface, 0, sizeof(iface));
-    iface.isUltrasonicSensor = ultrasonic::isUltrasonicSensor;
+    iface.getNumCols = ultrasonic::getNumCols;
+    iface.getNumRows = ultrasonic::getNumRows;
+    iface.getDepthData = ultrasonic::getDepthData;
+    iface.getLinearDepthData = ultrasonic::getLinearDepthData;
+    iface.getIntensityData = ultrasonic::getIntensityData;
+    iface.getZenithData = ultrasonic::getZenithData;
+    iface.getAzimuthData = ultrasonic::getAzimuthData;
+    iface.getPointCloud = ultrasonic::getPointCloud;
+    iface.isUSS = ultrasonic::isUltrasonicSensor;
 }
 
 
