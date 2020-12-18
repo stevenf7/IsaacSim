@@ -76,6 +76,8 @@ private:
     carb::Framework* framework = nullptr;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
     omni::renderer::IDebugDraw* mDebugDrawPtr = nullptr;
+    carb::dictionary::ISerializer* mJsonSerializer = nullptr;
+    carb::dictionary::IDictionary* mIDict = nullptr;
     omni::renderer::LineBuffer mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
     omni::renderer::RenderInstanceBuffer mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
 
