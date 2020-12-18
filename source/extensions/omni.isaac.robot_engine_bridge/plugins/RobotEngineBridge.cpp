@@ -30,6 +30,7 @@
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/fastcache/FastCache.h>
 #include <omni/physx/IPhysx.h>
+#include <omni/renderer/IDebugDraw.h>
 
 #include <unordered_map>
 #include <string>
@@ -60,7 +61,8 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::physx::IPhysx,
                       carb::sensors::Sensors,
                       carb::tasking::ITasking,
-                      carb::fastcache::FastCache)
+                      carb::fastcache::FastCache,
+                      omni::renderer::IDebugDraw)
 
 // private stuff
 namespace
@@ -205,7 +207,7 @@ CARB_EXPORT void carbOnPluginStartup()
     g_framework = carb::getFramework();
     g_stageUpdate = g_framework->acquireInterface<omni::kit::IStageUpdate>();
     g_jsonSerializer =
-        carb::getFramework()->acquireInterface<carb::dictionary::ISerializer>("carb.dictionary.serializer-json.plugin");
+        g_framework->acquireInterface<carb::dictionary::ISerializer>("carb.dictionary.serializer-json.plugin");
     if (!g_jsonSerializer)
     {
         CARB_LOG_ERROR("Failed to acquire carb::dictionary::ISerializer interface");
