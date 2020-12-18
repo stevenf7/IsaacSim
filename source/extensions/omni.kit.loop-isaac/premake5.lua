@@ -1,0 +1,21 @@
+local ext = get_current_extension_info()
+
+project_ext (ext)
+
+-- C++ Carbonite plugin
+project_ext_plugin(ext, "omni.kit.loop-isaac.plugin")
+    add_files("impl", "plugins/omni.kit.loop")
+    add_files("iface", "%{root}/include/omni/kit/**")
+
+    -- Python Bindings for Carobnite Plugin
+project_ext_bindings {
+    ext = ext,
+    project_name = "omni.kit.loop-isaac.python",
+    module = "_loop",
+    src = "bindings",
+    target_subdir = "omni/kit/loop"
+}
+
+repo_build.prebuild_link {
+    { "docs", ext.target_dir.."/docs" },
+}
