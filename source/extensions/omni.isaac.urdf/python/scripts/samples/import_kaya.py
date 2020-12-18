@@ -43,8 +43,8 @@ class Extension(omni.ext.IExt):
         if task in done:
             import_config = _urdf.ImportConfig()
             import_config.merge_fixed_joints = True
-            import_config.import_inertia_tensor = True
-            import_config.distance_scale = 10
+            import_config.import_inertia_tensor = False
+            # import_config.distance_scale = 100
             import_config.fix_base = False
             import_robot(
                 self._urdf_interface, self._extension_path + "/data/urdf/robots/kaya/urdf/kaya.urdf", import_config
@@ -66,7 +66,7 @@ class Extension(omni.ext.IExt):
             planePath="/groundPlane",
             axis="Z",
             size=1500.0,
-            position=Gf.Vec3f(-25),
+            position=Gf.Vec3f(0, 0, -25),
             color=Gf.Vec3f(0.5),
         )
 
@@ -95,7 +95,7 @@ class Extension(omni.ext.IExt):
                         "UnapplyAPISchemaCommand",
                         api=UsdPhysics.DriveAPI,
                         prim=prim,
-                        api_prefix="PhysicsDrive",
+                        api_prefix="drive",
                         multiple_api_token="angular",
                     )
 
@@ -104,10 +104,10 @@ class Extension(omni.ext.IExt):
         axle_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_1_joint"), "angular")
         axle_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_2_joint"), "angular")
 
-        set_drive_parameters(axle_0, "velocity", math.degrees(1), 0, 1e4, 1e10)
-        set_drive_parameters(axle_1, "velocity", math.degrees(1), 0, 1e4, 1e10)
-        set_drive_parameters(axle_2, "velocity", math.degrees(1), 0, 1e4, 1e10)
+        set_drive_parameters(axle_0, "velocity", math.degrees(1), 0, math.radians(1e4), 1e10)
+        set_drive_parameters(axle_1, "velocity", math.degrees(1), 0, math.radians(1e4), 1e10)
+        set_drive_parameters(axle_2, "velocity", math.degrees(1), 0, math.radians(1e4), 1e10)
 
-        usd_context = omni.usd.get_context()
-        selection = usd_context.get_selection()
-        selection.set_selected_prim_paths(["/kaya"], True)
+        # usd_context = omni.usd.get_context()
+        # selection = usd_context.get_selection()
+        # selection.set_selected_prim_paths(["/kaya"], True)

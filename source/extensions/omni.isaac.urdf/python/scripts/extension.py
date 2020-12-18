@@ -34,7 +34,8 @@ def on_filter_folder(item) -> bool:
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id):
+
         self._urdf_interface = _urdf.acquire_urdf_interface()
         self._usd_context = omni.usd.get_context()
         menu_path = f"Window/Isaac/{EXTENSION_NAME}"
@@ -61,18 +62,10 @@ class Extension(omni.ext.IExt):
             item_filter_fn=on_filter_item,
         )
 
-        self._folder_picker = FilePickerDialog(
-            "Select output",
-            allow_multi_selection=False,
-            apply_button_label="Select folder",
-            click_apply_handler=weakref.proxy(self)._on_open_folder_selected,
-            click_cancel_handler=weakref.proxy(self)._on_picker_cancel,
-            item_filter_fn=on_filter_folder,
-        )
+        extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
 
+        # self._filepicker.toggle_bookmark_from_path("Built In URDFs", extension_path + "/data/urdf", True)
         self._filepicker.hide()
-
-        self._folder_picker.hide()
 
         with self._window.frame:
             with ui.ScrollingFrame(
@@ -452,9 +445,6 @@ class Extension(omni.ext.IExt):
         if self.root_path:
             self._urdf_interface.import_robot(self.root_path, self.filename, self._imported_robot, self.config)
 
-    def _on_open_folder_selected(self, menu, path):
-        self._folder_picker.hide()
-
     def _parse_and_import(self, path=None):
         self.root_path, self.filename = os.path.split(os.path.abspath(path))
         self._imported_robot = self._urdf_interface.parse_urdf(self.root_path, self.filename, self.config)
@@ -489,8 +479,6 @@ class Extension(omni.ext.IExt):
     def _on_picker_cancel(self, a, b):
         if self._filepicker:
             self._filepicker.hide()
-        if self._folder_picker:
-            self._folder_picker.hide()
 
     def _init_context_menu(self):
         self._context_menu = self._content_browser.add_context_menu(
@@ -506,18 +494,13 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         self._unregister_menus()
         if self._filepicker:
+            # self._filepicker.toggle_bookmark_from_path("Built In URDFs", "", False)
             self._filepicker._widget._file_bar._click_apply_handler = None
             self._filepicker._widget._click_apply_handler = None
             self._filepicker._widget._file_bar._click_cancel_handler = None
             self._filepicker._widget._click_cancel_handler = None
             self._filepicker = None
 
-        if self._folder_picker:
-            self._folder_picker._widget._file_bar._click_apply_handler = None
-            self._folder_picker._widget._click_apply_handler = None
-            self._folder_picker._widget._file_bar._click_cancel_handler = None
-            self._folder_picker._widget._click_cancel_handler = None
-            self._folder_picker = None
         if self._window:
             self._window = None
         _urdf.release_urdf_interface(self._urdf_interface)

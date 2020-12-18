@@ -41,7 +41,9 @@ files = [
     ["_build/$platform/$config"],
     ["deps"],
     ["tools/packman"],
-    ["tools/autopull"]
+    ["tools/autopull"],
+    ["source/python_samples", "python_samples"],
+    ["source/ros_samples", "ros_samples"]
 ]
 
 [isaac-sim.windows-x86_64]
