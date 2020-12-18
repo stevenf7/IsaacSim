@@ -255,6 +255,7 @@ group "exts"
     include ("source/extensions/omni.isaac.splash")
 
     include ("source/extensions/omni.kit.property.isaac")
+    include ("source/extensions/omni.kit.loop-isaac")
 
     -- Linux Only
     if os.target() == "linux" then

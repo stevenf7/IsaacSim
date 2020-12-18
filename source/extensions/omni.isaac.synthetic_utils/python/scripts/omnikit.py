@@ -13,6 +13,7 @@ import omni.kit.app
 import omni.kit.editor
 import omni.kit
 from pxr import UsdGeom, Semantics, Usd
+from omni.kit.loop import _loop
 
 import os
 import time
@@ -87,6 +88,7 @@ Launches and configures OmniKit and exposes useful functions.
         self.kit_settings = None
         setup_future = self._launch_kit()
         self._start_app()
+        self.loop_runner = _loop.acquire_loop_interface()
 
         while self.app.is_running() and not setup_future.done():
             time.sleep(0.001)  # This sleep prevents a deadlock in certain cases
@@ -192,6 +194,7 @@ Launches and configures OmniKit and exposes useful functions.
                     self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
                 else:
                     self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / physics_dt))
+            self.loop_runner.set_runner_dt(dt)
             self.app.update()
         else:
             time_now = time.time()
@@ -202,6 +205,7 @@ Launches and configures OmniKit and exposes useful functions.
                     self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
                 else:
                     self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / physics_dt))
+            self.loop_runner.set_runner_dt(dt)
             self.app.update()
 
     def play(self):

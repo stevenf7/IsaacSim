@@ -8,8 +8,8 @@
                 "omni.renderer-rtx",
                 "omni.kit.editor-full",
                 "omni.kit.builtin.init",
-                "omni.kit.builtin.profiler",
-                "omni.kit.builtin.material_library",
+                "omni.kit.window.profiler",
+                "omni.kit.material.library",
                 "omni.kit.window.viewport",
                 "omni.kit.window.toolbar",
                 "omni.kit.primitive.mesh",
@@ -18,11 +18,12 @@
                 "omni.physx",
                 "omni.syntheticdata",
                 "omni.isaac.utils",
-                "omni.isaac.lidar",
+                "omni.isaac.range_sensor",
                 "omni.isaac.dynamic_control",
                 "omni.isaac.robot_engine_bridge",
                 "omni.isaac.dr",
-                "omni.isaac.synthetic_utils"
+                "omni.isaac.synthetic_utils",
+                "omni.kit.loop-isaac"
             ]
         },
         "renderer": {

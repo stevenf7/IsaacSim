@@ -31,7 +31,7 @@ if __name__ == "__main__":
     kit.update(1.0)
     print("Rendering and Physics with 1/60 seconds step:")
     kit.update(1.0 / 60.0)
-    print("Rendering 1/60 seconds step size and Physics 1/120 seconds step size:")
+    print("Rendering 1/30 seconds step size and Physics 1/120 seconds step size:")
     kit.update(1.0 / 30.0, 1.0 / 120.0, 4)
 
     # cleanup
