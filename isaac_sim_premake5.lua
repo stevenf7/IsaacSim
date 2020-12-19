@@ -104,3 +104,39 @@ function define_ext_test_experience(ext_name, python_module)
         define_project = false
     })
 end
+
+-- Isaac Sim needs this redefined here because we have a custom PXR_PLUGINPATH_NAME export to handle runtime USD
+-- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
+function create_experience_runner(name, config_path, config, extra_args)
+    if os.target() == "windows" then
+        local bat_file_dir = root.."/_build/windows-x86_64/"..config
+        local bat_file_path = bat_file_dir.."/"..name..".bat"
+        local kit_bin_relative = path.getrelative(bat_file_dir, KIT_SDK_RESOLVED[config].."/_build/windows-x86_64/"..config)
+        kit_bin_relative = path.normalize(kit_bin_relative):gsub("/", "\\")
+        local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
+        local f = io.open(bat_file_path, 'w')
+        f:write(string.format([[
+@echo off
+setlocal
+call "%%~dp0%s\omniverse-kit.exe" %s %s %%*
+        ]], kit_bin_relative, config_path, extra_args))
+        f:close()
+    else
+        local sh_file_dir = root.."/_build/linux-x86_64/"..config
+        local sh_file_path = sh_file_dir.."/"..name..".sh"
+        local kit_bin_relative = path.getrelative(sh_file_dir, KIT_SDK_RESOLVED[config].."/_build/linux-x86_64/"..config)
+        local usd_ext_isaac_schema_path = root.."/_build/target-deps/usd_ext_isaac/"..config.."/share/usd/plugins/*/resources/"
+        kit_bin_relative = path.normalize(kit_bin_relative)
+        local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
+        local f = io.open(sh_file_path, 'w')
+        f:write(string.format([[
+#!/bin/bash
+set -e
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+export PXR_PLUGINPATH_NAME="%s":$PXR_PLUGINPATH_NAME
+"$SCRIPT_DIR/%s/kit" %s %s $@
+        ]], usd_ext_isaac_schema_path, kit_bin_relative, config_path, extra_args))
+        f:close()
+        os.chmod(sh_file_path, 755)
+    end
+end
