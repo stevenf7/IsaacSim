@@ -16,6 +16,7 @@ from pxr import UsdGeom, Semantics, Usd
 from omni.kit.loop import _loop
 
 import os
+import sys
 import time
 import atexit
 import asyncio
@@ -79,7 +80,8 @@ Launches and configures OmniKit and exposes useful functions.
 
         # Load app plugin
         carb.get_framework().load_plugins(
-            loaded_file_wildcards=["omni.kit.app.plugin"], search_paths=["${CARB_APP_PATH}/plugins"]
+            loaded_file_wildcards=["omni.kit.app.plugin"],
+            search_paths=[os.path.abspath(f'{os.environ["CARB_APP_PATH"]}/plugins')],
         )
 
         # launch kit
@@ -102,7 +104,6 @@ Launches and configures OmniKit and exposes useful functions.
         async def setup():
             await omni.usd.get_context().new_stage_async()
             self.carb_settings = carb.settings.acquire_settings_interface()
-            self.kit_settings = carb.settings.get_settings()
             self.setup_renderer()
             self.set_setting("/rtx/rendermode", self.config["renderer"])
 
@@ -111,20 +112,22 @@ Launches and configures OmniKit and exposes useful functions.
     def _start_app(self):
         args = [
             os.path.abspath(__file__),
-            f'--merge-config={self.config["experience"]}',
+            f'{self.config["experience"]}',
             "--/persistent/app/viewport/displayOptions=0",  # hide extra stuff in viewport
+            # TODO Make this a config setting?
             "--/persistent/physics/overrideGPUSettings=0",  # force CPU physx
             # "--/persistent/physics/updateToUsd=True",
             # "--/persistent/physics/useFastCache=True",
             # Experimental, forces kit to not render until all USD files are loaded
-            f'--/rtx/materialDb/syncLoads={self.config["sync_loads"]}',
+            # f'--/rtx/materialDb/syncLoads={self.config["sync_loads"]}',
             f'--/omni.kit.plugin/syncUsdLoads={self.config["sync_loads"]}',
+            # TODO: Is this still needed
             "--/app/content/emptyStageOnStart=False",  # This is required due to a infinite loop but results in errors on launch
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',
-            f'--/app/extensions/folders2/0="{os.environ["KIT_PATH"]}/exts"',  # adding to json doesn't work
-            f'--/app/extensions/folders2/1="{os.environ["KIT_PATH"]}/extsPhysics"',  # adding to json doesn't work
-            f'--/app/extensions/folders2/2="{os.environ["ISAAC_PATH"]}/exts"',  # adding to json doesn't work
+            f'--/app/extensions/folders2/0="{os.path.abspath(os.environ["CARB_APP_PATH"])}/exts"',  # adding to json doesn't work
+            f'--/app/extensions/folders2/1="{os.path.abspath(os.environ["CARB_APP_PATH"])}/extsPhysics"',  # adding to json doesn't work
+            f'--/app/extensions/folders2/2="{os.path.abspath(os.environ["ISAAC_PATH"])}/exts"',  # adding to json doesn't work
         ]
         if self.config.get("headless"):
             args.append("--no-window")
@@ -138,9 +141,10 @@ Launches and configures OmniKit and exposes useful functions.
         if self.app:
             self.set_setting("/app/file/ignoreUnsavedOnExit", True)
             self.update()
-            self.app.post_quit()
+            # self.app.post_quit()
             # self.app.shutdown()
             self.app = None
+            # sys.exit()
 
     def exit(self):
         """Sets is_exiting Flag to True and tells omniverse app to exit"""
@@ -186,25 +190,27 @@ Launches and configures OmniKit and exposes useful functions.
         # dont update if exit was called
         if self._exiting:
             return
+        settings = carb.settings.get_settings()
         if physics_substeps is not None and physics_substeps > 0:
-            self.kit_settings.set("/physics/maxNumSteps", int(physics_substeps))
+            settings.set_int("persistent/physics/maxNumSteps", int(physics_substeps))
         if dt is not None:
-            if self.kit_settings and dt > 0.0:
+            if dt > 0.0:
                 if physics_dt is None or physics_dt <= 0.0:
-                    self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
+                    settings.set_float("persistent/physics/timeStepsPerSecond", float(1.0 / dt))
                 else:
-                    self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / physics_dt))
+                    settings.set_float("persistent/physics/timeStepsPerSecond", float(1.0 / physics_dt))
             self.loop_runner.set_runner_dt(dt)
+
             self.app.update()
         else:
             time_now = time.time()
             dt = time_now - self.last_update_t
             self.last_update_t = time_now
-            if self.kit_settings and dt > 0.0:
+            if settings and dt > 0.0:
                 if physics_dt is None or physics_dt <= 0.0:
-                    self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / dt))
+                    settings.set_float("persistent/physics/timeStepsPerSecond", float(1.0 / dt))
                 else:
-                    self.kit_settings.set("/physics/timeStepsPerSecond", float(1.0 / physics_dt))
+                    settings.set_float("persistent/physics/timeStepsPerSecond", float(1.0 / physics_dt))
             self.loop_runner.set_runner_dt(dt)
             self.app.update()
 
@@ -298,7 +304,7 @@ Launches and configures OmniKit and exposes useful functions.
             sem.GetSemanticTypeAttr().Set("class")
             sem.GetSemanticDataAttr().Set(semantic_label)
         if rotation:
-            xform_api.SetRotate(rotation, UsdGeom.XformCommonAPI.RotationOrderZYX)
+            xform_api.SetRotate(rotation, UsdGeom.XformCommonAPI.RotationOrderXYZ)
         if scale:
             xform_api.SetScale(scale)
         if translation:

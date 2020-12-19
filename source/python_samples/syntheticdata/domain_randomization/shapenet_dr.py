@@ -29,7 +29,6 @@ import omni
 from pxr import UsdGeom, UsdShade, Sdf
 
 from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, shapenet, DomainRandomization
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 # Setup default generation variables
 # Value are (min, max) ranges
@@ -44,7 +43,7 @@ BBOX_AREA_THRESH = 16
 RENDER_CONFIG = {
     "renderer": "PathTracing",
     "samples_per_pixel_per_frame": 12,
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
 }
 
 
@@ -79,6 +78,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.dr_helper = DomainRandomization()
         self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
+
+        from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")

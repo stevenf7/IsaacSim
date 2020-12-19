@@ -30,7 +30,7 @@ SCALE = 50.0
 
 def main():
     kit = OmniKitHelper(
-        {"renderer": "RayTracedLighting", "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json'}
+        {"renderer": "RayTracedLighting", "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit'}
     )
     sd_helper = SyntheticDataHelper()
 

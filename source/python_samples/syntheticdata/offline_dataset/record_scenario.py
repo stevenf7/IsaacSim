@@ -20,13 +20,12 @@ import signal
 import carb
 import omni
 from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, DataWriter, DomainRandomization
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 # Default rendering parameters
 RENDER_CONFIG = {
     "renderer": "PathTracing",
     "samples_per_pixel_per_frame": 12,
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
 }
 
 
@@ -39,6 +38,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
         self.result = True
+
+        from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+
         if scenario_path is None:
             self.result, nucleus_server = find_nucleus_server()
             if self.result is False:

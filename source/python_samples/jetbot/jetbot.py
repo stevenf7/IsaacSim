@@ -1,8 +1,6 @@
 import carb
 import omni
-from pxr import UsdGeom, Gf, PhysicsSchema
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from pxr import UsdGeom, Gf, UsdPhysics
 
 import numpy as np
 
@@ -20,6 +18,7 @@ CAMERA_PIVOT = 40.0
 class Jetbot:
     def __init__(self, omni_kit):
         from omni.isaac.dynamic_control import _dynamic_control
+        from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
         self.omni_kit = omni_kit
         result, nucleus_server = find_nucleus_server()
@@ -49,12 +48,12 @@ class Jetbot:
         self.camera_pivot = prim_path + "/chassis/rgb_camera"
 
         # Set joint drive parameters
-        left_wheel_joint = PhysicsSchema.DriveAPI.Get(
+        left_wheel_joint = UsdPhysics.DriveAPI.Apply(
             stage.GetPrimAtPath(f"{prim_path}/chassis/left_wheel_joint"), "angular"
         )
         left_wheel_joint.GetDampingAttr().Set(DRIVE_STIFFNESS)
 
-        right_wheel_joint = PhysicsSchema.DriveAPI.Get(
+        right_wheel_joint = UsdPhysics.DriveAPI.Apply(
             stage.GetPrimAtPath(f"{prim_path}/chassis/right_wheel_joint"), "angular"
         )
         right_wheel_joint.GetDampingAttr().Set(DRIVE_STIFFNESS)

@@ -6,12 +6,10 @@ from omni.isaac.synthetic_utils import OmniKitHelper
 from omni.isaac.synthetic_utils import DomainRandomization
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
-
 import carb.tokens
 
 CONFIG = {
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
     "width": 1280,
     "height": 720,
     "sync_loads": True,
@@ -60,6 +58,8 @@ class DualCameraSample:
         self._environment = stage.DefinePrim("/environment", "Xform")
 
         self._room = stage.DefinePrim("/environment/room", "Xform")
+
+        from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
         result, nucleus_server = find_nucleus_server()
         if result is False:

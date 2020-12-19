@@ -21,7 +21,7 @@ def train(args):
         "height": 224,
         "renderer": "RayTracedLighting",
         "headless": args.headless,
-        "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+        "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
     }
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
 

@@ -61,21 +61,22 @@ vscode.python_env.PYTHONPATH= [
 vscode.python_env.PATH= ["$$$${PATH}", "$root/_build/$platform/$config",
   "$root/_build/kit_$config/_build/$platform/$config",
   "$root/_build/kit_$config/_build/$platform/$config/plugins",
+  "$root/_build/kit_$config/_build/$platform/$config/plugins/carb_gfx",
+  "$root/_build/kit_$config/_build/$platform/$config/plugins/rtx",
+  "$root/_build/kit_$config/_build/$platform/$config/libs/mdl",
+  "$root/_build/kit_$config/_build/$platform/$config/libs/iray",
   "$root/_build/kit_$config/_build/$platform/$config/exts/*/bin",
   "$root/_build/kit_$config/_build/$platform/$config/extsPhysics/*/bin",
   "$root/_build/kit_$config/_build/$platform/$config/extensions/extensions-bundled/bin",
   "$root/_build/kit_$config/_build/$platform/$config/plugins/bindings-python/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.dr/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.urdf/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.motion_planning/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.range_sensor/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.ros_bridge/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.dynamic_control/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.occupancy_map/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.step_importer/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.manip/bin",
-  "$root/_build/$platform/$config/exts/omni.isaac.utils/bin",
+  # "$root/_build/$platform/$config/exts/omni.isaac.*/bin",
 ]
+# These paths are used by python samples
+vscode.python_env.CARB_APP_PATH= ["$root/_build/kit_$config/_build/$platform/$config"]
+vscode.python_env.ISAAC_PATH= ["$root/_build/$platform/$config"]
+vscode.python_env.EXP_PATH= ["$root/source/python_samples/experiences"]
+# TODO
+# vscode.python_env.PXR_PLUGINPATH_NAME= ["$root/_build/"]
 
 
 msbuild.sln_file = "isaac-sim.sln"

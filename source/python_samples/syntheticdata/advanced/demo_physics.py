@@ -39,7 +39,7 @@ CUSTOM_CONFIG = {
     "max_volume_bounces": 4,
     "subdiv_refinement_level": 2,
     "headless": True,
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
 }
 
 
