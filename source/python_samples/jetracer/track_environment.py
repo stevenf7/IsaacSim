@@ -2,7 +2,6 @@ import carb
 import omni
 import random
 from pxr import UsdGeom, Gf, Sdf, UsdPhysics, PhysxSchema, PhysicsSchemaTools
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 from omni.isaac.synthetic_utils import DomainRandomization
 from gtc2020_track_utils import *
@@ -10,8 +9,11 @@ from gtc2020_track_utils import *
 
 class Environment:
     def __init__(self, omni_kit, z_height=0):
+        from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+
         self.omni_kit = omni_kit
-        result, nucleus_server = find_nucleus_server()
+        self.find_nucleus_server = find_nucleus_server
+        result, nucleus_server = self.find_nucleus_server()
         if result is False:
             carb.log_error(
                 "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in experiences/isaac-sim-python.json"
@@ -133,7 +135,7 @@ class Environment:
         self.add_track(stage)
 
     def add_track(self, stage):
-        result, nucleus_server = find_nucleus_server()
+        result, nucleus_server = self.find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return

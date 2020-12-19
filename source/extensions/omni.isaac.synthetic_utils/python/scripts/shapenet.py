@@ -11,6 +11,7 @@
 import os
 import asyncio
 import omni
+import omni.kit.tool.asset_importer.native_bindings as assetimport
 
 
 LABEL_TO_SYNSET = {
@@ -67,15 +68,15 @@ async def convert(in_file, out_file, load_materials=False):
     #              OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE, or OMNI_CONVERTER_FLAGS_GEN_SMOOTH_NORMALS
     # print(in_file, ' is being converted and saved as ', out_file, ', please standby, and remember to tip your waitress.' )
 
-    flags = omni.assetimport.assetconverter.OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE
+    flags = assetimport.OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE
     if load_materials is False:
-        flags = flags | omni.assetimport.assetconverter.OMNI_CONVERTER_FLAGS_IGNORE_MATERIALS
+        flags = flags | assetimport.OMNI_CONVERTER_FLAGS_IGNORE_MATERIALS
 
-    future = omni.assetimport.assetconverter.omniConverterCreateUSD(in_file, out_file, flags)
-    status = omni.assetimport.assetconverter.OmniConverterStatus.eOK
+    future = assetimport.omniConverterCreateUSD(in_file, out_file, flags)
+    status = assetimport.OmniConverterStatus.eOK
     while True:
-        status = omni.assetimport.assetconverter.omniConverterCheckFutureStatus(future)
-        if status == omni.assetimport.assetconverter.OmniConverterStatus.eInProgress:
+        status = assetimport.omniConverterCheckFutureStatus(future)
+        if status == assetimport.OmniConverterStatus.eInProgress:
             await asyncio.sleep(0.1)
         else:
             break
@@ -120,6 +121,6 @@ def shapenet_convert(args):
             out_path = os.path.join(out_dir, f"{shape_name}.usd")
             if not os.path.exists(out_path):
                 status = asyncio.get_event_loop().run_until_complete(convert(local_path, out_path, args.load_materials))
-                if not status == omni.assetimport.assetconverter.OmniConverterStatus.eOK:
+                if not status == assetimport.OmniConverterStatus.eOK:
                     print(f"ERROR OmniConverterStatus is {status}")
                 print(f"---Added {out_path}")

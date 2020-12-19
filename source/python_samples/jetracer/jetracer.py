@@ -1,7 +1,6 @@
 import carb
 import omni
 from pxr import UsdGeom, Gf
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 import numpy as np
 
@@ -9,6 +8,7 @@ import numpy as np
 class Jetracer:
     def __init__(self, omni_kit):
         from omni.isaac.dynamic_control import _dynamic_control
+        from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
         self.omni_kit = omni_kit
 

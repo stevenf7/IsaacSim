@@ -1,7 +1,6 @@
 import carb
 import omni
 import numpy as np
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 from pxr import UsdGeom, Gf, Sdf, UsdPhysics, PhysxSchema, PhysicsSchemaTools
 from jetbot_city.road_map import *
@@ -15,6 +14,8 @@ import math
 
 class Environment:
     def __init__(self, omni_kit, z_height=0):
+        from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+
         self.omni_kit = omni_kit
         result, nucleus_server = find_nucleus_server()
         if result is False:

@@ -18,7 +18,7 @@ large datasets or for online training of Deep Learning models.
 """
 
 if __name__ == "__main__":
-    RENDER_CONFIG = {"experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json'}
+    RENDER_CONFIG = {"experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit'}
     OmniKitHelper(config=RENDER_CONFIG)
 
     import argparse
