@@ -11,7 +11,6 @@
 import os
 import asyncio
 import omni
-import omni.kit.tool.asset_importer.native_bindings as assetimport
 
 
 LABEL_TO_SYNSET = {
@@ -60,6 +59,7 @@ SYNSET_TO_LABEL = {v: k for k, v in LABEL_TO_SYNSET.items()}
 async def convert(in_file, out_file, load_materials=False):
     # This import causes conflicts when global
     from omni.isaac import shapenet
+    import omni.kit.tool.asset_importer.native_bindings as assetimport
 
     # A No-Material version of the omni.isaac.shapenet convert function
     # You really should only call this from the MainThread because there will be a deadlock on the GIL when this
@@ -88,6 +88,7 @@ def shapenet_convert(args):
 
     # This import needs to occur after kit is loaded so that physx can be discovered
     from omni.isaac import shapenet
+    import omni.kit.tool.asset_importer.native_bindings as assetimport
 
     local_shapenet = shapenet.get_local_shape_loc()
     local_shapenet_output = f"{os.path.abspath(local_shapenet)}_nomat"

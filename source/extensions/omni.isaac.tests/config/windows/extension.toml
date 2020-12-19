@@ -2,7 +2,7 @@ display_name = "Isaac Isaac Tests"
 
 [dependencies]
 "omni.kit.editor" = {}
-"omni.physx" = {}
+"omni.physx.core" = {}
 
 [[python.module]]
 name = "omni.isaac.tests"

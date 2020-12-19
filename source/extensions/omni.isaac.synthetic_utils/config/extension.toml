@@ -18,10 +18,13 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.syntheticdata" = {}
-"omni.kit.loop-isaac" = {}
 
 [[python.module]]
 name = "omni.isaac.synthetic_utils"
+
+[[python.module]]
+name = "omni.isaac.synthetic_utils.scripts.syntheticdata_recorder"
+public = false
 
 [python.pipapi]
 requirements = ["matplotlib"]

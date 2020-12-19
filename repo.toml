@@ -165,3 +165,12 @@ path = "${test_root}/_build/${platform}/${config}"
   exclude =[]
   args = []
   tc_report_enabled = false
+
+
+# Catch2 Unit Tests
+[repo_test.suites.unittests]
+kind = "catch2"
+default = true
+executables = [
+	"${test_root}/_build/${platform}/${config}/test.unit.range_sensor${exe_ext}",
+]

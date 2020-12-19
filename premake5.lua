@@ -128,45 +128,6 @@ workspace "isaac-sim"
 
     filter {}
 
-
-
--- Isaac Sim needs this redefined here because we have a custom PXR_PLUGINPATH_NAME export to handle runtime USD
--- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
-function create_experience_runner(name, config_path, config, extra_args)
-    if os.target() == "windows" then
-        local bat_file_dir = root.."/_build/windows-x86_64/"..config
-        local bat_file_path = bat_file_dir.."/"..name..".bat"
-        local kit_bin_relative = path.getrelative(bat_file_dir, KIT_SDK_RESOLVED[config].."/_build/windows-x86_64/"..config)
-        kit_bin_relative = path.normalize(kit_bin_relative):gsub("/", "\\")
-        local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
-        local f = io.open(bat_file_path, 'w')
-        f:write(string.format([[
-@echo off
-setlocal
-call "%%~dp0%s\omniverse-kit.exe" %s %s %%*
-        ]], kit_bin_relative, config_path, extra_args))
-        f:close()
-    else
-        local sh_file_dir = root.."/_build/linux-x86_64/"..config
-        local sh_file_path = sh_file_dir.."/"..name..".sh"
-        local kit_bin_relative = path.getrelative(sh_file_dir, KIT_SDK_RESOLVED[config].."/_build/linux-x86_64/"..config)
-        local usd_ext_isaac_schema_path = root.."/_build/target-deps/usd_ext_isaac/"..config.."/share/usd/plugins/*/resources/"
-        kit_bin_relative = path.normalize(kit_bin_relative)
-        local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
-        local f = io.open(sh_file_path, 'w')
-        f:write(string.format([[
-#!/bin/bash
-set -e
-SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-export PXR_PLUGINPATH_NAME="%s":$PXR_PLUGINPATH_NAME
-"$SCRIPT_DIR/%s/kit" %s %s $@
-        ]], usd_ext_isaac_schema_path, kit_bin_relative, config_path, extra_args))
-        f:close()
-        os.chmod(sh_file_path, 755)
-    end
-end
-
-
 function create_app_shortcut(app_name, config)
     if os.target() == "windows" then
         local bat_file_path = root.."/_build/windows-x86_64/"..config.."/appshortcuts/"..app_name..".bat"
@@ -219,8 +180,8 @@ group "apps"
     end
 
     define_local_experience("isaac-sim")
-    define_local_experience("isaac-sim.launcher")
-    define_local_experience("isaac-sim.headless")
+    -- define_local_experience("isaac-sim.launcher") # TODO
+    -- define_local_experience("isaac-sim.headless") # TODO
     -- define_local_experience("isaac-sim.testing")
 
     -- -- Test runner experience:
@@ -230,9 +191,8 @@ group "apps"
     -- }
     -- define_local_experience("tests-create-mini", "omni.create.mini", table.concat(args, " "))
 
-
+-- Isaac Extensions
 group "exts"
-    -- Isaac Extensions
     -- Windows and Linux
     include ("source/extensions/omni.isaac.about")
     -- include ("source/extensions/omni.isaac.decals")
@@ -264,21 +224,3 @@ group "exts"
         include ("source/extensions/omni.isaac.ros_bridge")
         include ("source/extensions/omni.isaac.occupancy_map")
     end
-
--- -- copy usd ext isaac binaries into kit sdk bin directory
--- group "usd_ext_isaac"
---     local usd_bin_path = "_build/%{platform}/%{config}/plugins"
---     local target_bindings_folder = usd_bin_path.."/bindings-python"
---     local usd_folder_path = usd_bin_path.."/usd"
-
---     repo_build.prebuild_copy {  
---         { "%{root}/_build/target-deps/usd_ext_isaac/$config/share/usd/plugins/**", usd_folder_path},
---         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/**", target_bindings_folder.."/pxr"},
---     }
---     repo_build.prebuild_copy ({
---         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/*.dll", usd_bin_path },
---     }, "windows-x86_64")
-
---     repo_build.prebuild_copy ({
---         { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/*.so", usd_bin_path },
---     }, "linux-x86_64")

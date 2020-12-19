@@ -18,17 +18,11 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.ui" = {}
-"omni.physx" = {}
+"omni.physx.core" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.synthetic_utils" = {}
-"omni.syntheticdata" = {}
 
 [[python.module]]
 name = "omni.isaac.utils"
-
-[[python.module]]
-name = "omni.isaac.utils.scripts.syntheticdata_recorder"
-public = false
 
 [[python.module]]
 name = "omni.isaac.utils.scripts.physics_inspector"

@@ -50,7 +50,7 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
         defines { "NDEBUG" }
     filter {}
 
-project "test.unit"
+project "test.unit.range_sensor"
     kind "ConsoleApp"
     dependson { "prebuild" }
     includedirs {

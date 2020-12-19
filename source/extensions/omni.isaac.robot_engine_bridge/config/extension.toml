@@ -34,7 +34,7 @@ recursive = false
 path = "bin/${lib_prefix}robotEngineBridgeSchema${lib_ext}"
 
 [python.pipapi]
-requirements = ["numpy", "numpy-quaternion", "pycapnp", "numba"]
+requirements = ["numpy", "numpy-quaternion", "pycapnp", "numba", "scipy"]
 archiveDirs = ["pip-packages"]
 
 # We need to enable fastcache for this extension for plan visualizer

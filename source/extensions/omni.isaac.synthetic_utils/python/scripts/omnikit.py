@@ -13,7 +13,6 @@ import omni.kit.app
 import omni.kit.editor
 import omni.kit
 from pxr import UsdGeom, Semantics, Usd
-from omni.kit.loop import _loop
 
 import os
 import sys
@@ -70,6 +69,9 @@ Launches and configures OmniKit and exposes useful functions.
             sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
             experience (str): The config json used to launch the application. 
         """
+        # only import custom loop runner if we create this object
+        from omni.kit.loop import _loop
+
         # initialize vars
         self._exiting = False
         self._is_dirty_instance_mappings = True
