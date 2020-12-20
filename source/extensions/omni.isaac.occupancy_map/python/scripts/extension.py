@@ -5,6 +5,9 @@ from .. import _occupancy_map
 import omni
 from pxr import UsdGeom, Gf
 import gc
+import os
+from omni.kit.widget.filebrowser import FileBrowserItem
+from .utils import update_location, compute_coordinates, generate_image
 
 
 def create_xyz(init=0, all_axis=["X", "Y", "Z"], callback=None):
@@ -35,6 +38,7 @@ class Extension(omni.ext.IExt):
         self._om = _occupancy_map.acquire_occupancy_map_interface()
         self._editor = omni.kit.editor.get_editor_interface()
         self._layers = omni.usd.get_context().get_layers()
+        self._filepicker = None
         with self._window.frame:
             with ui.HStack():
                 with ui.VStack():
@@ -128,16 +132,16 @@ class Extension(omni.ext.IExt):
                 self._selection = self._usd_context.get_selection()
 
     def on_update_location(self):
-        self._om.set_transform(
-            (
+        update_location(
+            self._om,
+            [
                 self.start_location["X"].model.get_value_as_float(),
                 self.start_location["Y"].model.get_value_as_float(),
                 self.start_location["Z"].model.get_value_as_float(),
-            ),
-            (self.lower_bound["X"].model.get_value_as_float(), self.lower_bound["Y"].model.get_value_as_float()),
-            (self.upper_bound["X"].model.get_value_as_float(), self.upper_bound["Y"].model.get_value_as_float()),
+            ],
+            [self.lower_bound["X"].model.get_value_as_float(), self.lower_bound["Y"].model.get_value_as_float()],
+            [self.upper_bound["X"].model.get_value_as_float(), self.upper_bound["Y"].model.get_value_as_float()],
         )
-        self._om.update()
 
     def _draw_instances(self):
 
@@ -164,16 +168,8 @@ class Extension(omni.ext.IExt):
         proto_indices_attr.Set([0] * len(pos_list))
 
     def _generate_map(self):
-        self._om.set_transform(
-            (
-                self.start_location["X"].model.get_value_as_float(),
-                self.start_location["Y"].model.get_value_as_float(),
-                self.start_location["Z"].model.get_value_as_float(),
-            ),
-            (self.lower_bound["X"].model.get_value_as_float(), self.lower_bound["Y"].model.get_value_as_float()),
-            (self.upper_bound["X"].model.get_value_as_float(), self.upper_bound["Y"].model.get_value_as_float()),
-        )
-        self._om.update()
+        self.on_update_location()
+
         self._om.generate(
             self.cell_size.model.get_value_as_float(),
             self.deg_per_ray.model.get_value_as_float(),
@@ -185,27 +181,9 @@ class Extension(omni.ext.IExt):
         # self.draw_voxel_btn.visible = True
 
     def _generate_image(self):
-        from PIL import Image, ImageDraw
-        import numpy as np
 
-        points = self._om.get_occupied_positions()
-        if len(points) == 0:
-            print("No occupied points, cannot generate image")
-            return
-
-        # print("min bound: ", self._om.get_min_bound())
-        # print("max bound: ", self._om.get_max_bound())
-
-        min_b = self._om.get_min_bound()
-        max_b = self._om.get_max_bound()
         scale = self.cell_size.model.get_value_as_float()
-        half_w = scale * 0.5
-        top_left = (max_b[0] - half_w, min_b[1] + half_w)
-        top_right = (min_b[0] + half_w, min_b[1] + half_w)
-        bottom_left = (max_b[0] - half_w, max_b[1] - half_w)
-        bottom_right = (min_b[0] + half_w, max_b[1] - half_w)
-
-        image_coords = np.matrix([[0, 1], [-1, 0]]) * np.matrix([[-top_left[0]], [-top_left[1]]])
+        top_left, top_right, bottom_left, bottom_right, image_coords = compute_coordinates(self._om, scale)
 
         print("World coordinates for image in stage units:")
         print("Top left: ", top_left)
@@ -217,11 +195,6 @@ class Extension(omni.ext.IExt):
         print(
             f"Coordinates of top left of image (pixel 0,0) as origin, + X down, + Y right:\n{float(image_coords[0][0]), float(image_coords[1][0])}"
         )
-        size = [0, 0, 0]
-
-        size[0] = max_b[0] - min_b[0]
-        size[1] = max_b[1] - min_b[1]
-        size[2] = max_b[2] - min_b[2]
 
         occupied_col = []
         for item in self.occupied_color_model.get_item_children():
@@ -238,51 +211,54 @@ class Extension(omni.ext.IExt):
             component = self.unknown_color_model.get_item_value_model(item)
             unknown_col.append(int(component.get_value_as_float() * 255))
 
-        image = unknown_col * (int(size[0] / scale) * int(size[1] / scale))
-
-        for p in points:
-            index = int(p[1] / scale - min_b[1] / scale) * int(size[0] / scale) + int(p[0] / scale - min_b[0] / scale)
-            image[index * 4 + 0] = occupied_col[0]
-            image[index * 4 + 1] = occupied_col[1]
-            image[index * 4 + 2] = occupied_col[2]
-            image[index * 4 + 3] = occupied_col[3]
-
-        start_pix = (
-            int(self.start_location["X"].model.get_value_as_float() / scale - min_b[0] / scale),
-            int(self.start_location["Y"].model.get_value_as_float() / scale - min_b[1] / scale),
+        im = generate_image(
+            self._om,
+            scale,
+            occupied_col,
+            unknown_col,
+            freespace_col,
+            [self.start_location["X"].model.get_value_as_float(), self.start_location["Y"].model.get_value_as_float()],
         )
-
-        im = Image.frombytes("RGBA", (int(size[0] / scale), int(size[1] / scale)), bytes(image))
-        ImageDraw.floodfill(
-            im,
-            start_pix,
-            (freespace_col[0], freespace_col[1], freespace_col[2], freespace_col[3]),
-            border=None,
-            thresh=0,
-        )
-        # Flip image to match what SDK expects
-        im = im.transpose(Image.FLIP_LEFT_RIGHT)
 
         image = list(im.tobytes())
         self._visualize_window = omni.ui.Window("Visualization", width=300, height=300)
 
-        def save_image(path):
-            print("Saving occupancy map image to", path)
-            im.save(path)
+        def save_image(file, folder):
+            print("Saving occupancy map image to", folder + "/" + file)
+            im.save(folder + "/" + file)
+            self._filepicker.hide()
+
+        def _on_filter_png_files(item: FileBrowserItem) -> bool:
+            """Callback to filter the choices of file names in the open or save dialog"""
+            if not item or item.is_folder:
+                return True
+            # Show only files with listed extensions
+            return os.path.splitext(item.path)[1] == ".png"
 
         def save_file():
-            self._filepicker = omni.kit.ui.FilePicker(
-                "Save Generated Image",
-                file_type=omni.kit.ui.FileDialogSelectType.FILE,
-                mode=omni.kit.ui.FileDialogOpenMode.SAVE,
+            from omni.kit.window.filepicker import FilePickerDialog
+
+            self._filepicker = None
+            self._filepicker = FilePickerDialog(
+                "Save .png image",
+                allow_multi_selection=False,
+                apply_button_label="Save",
+                click_apply_handler=save_image,
+                item_filter_options=[".png Files (*.png, *.PNG)"],
+                item_filter_fn=_on_filter_png_files,
             )
-            self._filepicker.set_file_selected_fn(save_image)
-            self._filepicker.add_filter("PNG (*.png)", r".*.png$")
-            self._filepicker.show()
+
+        min_b = self._om.get_min_bound()
+        max_b = self._om.get_max_bound()
+        size = [0, 0, 0]
+
+        size[0] = max_b[0] - min_b[0]
+        size[1] = max_b[1] - min_b[1]
+        size[2] = max_b[2] - min_b[2]
 
         with self._visualize_window.frame:
             self._rgb_byte_provider = omni.ui.ByteImageProvider()
-            self._rgb_byte_provider.set_data(image, [int(size[0] / scale), int(size[1] / scale)])
+            self._rgb_byte_provider.set_bytes_data(image, [int(size[0] / scale), int(size[1] / scale)])
             with ui.VStack():
                 with ui.VStack(height=0):
                     ui.Label(
@@ -302,4 +278,6 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         _occupancy_map.release_occupancy_map_interface(self._om)
+        if self._filepicker:
+            self._filepicker = None
         gc.collect()

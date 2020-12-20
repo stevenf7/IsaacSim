@@ -19,9 +19,13 @@ icon = "data/icon.png"
 "omni.kit.editor" = {}
 "omni.physx.core" = {} 
 "omni.debugdraw" = {}
+"omni.isaac.utils" = {}
 
 [[python.module]]
 name = "omni.isaac.occupancy_map"
+
+[[python.module]]
+name = "omni.isaac.occupancy_map.tests"
 
 [[native.plugins]]
 path = "bin/*.plugin"
