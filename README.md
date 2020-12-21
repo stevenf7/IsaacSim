@@ -1,7 +1,7 @@
 # Omniverse Isaac Sim
 This is where the Robotics experiece for Omniverse is developed
 
-[Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Robotics+App+Home)
+[Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Sim)
 
 [Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/releases)
 
@@ -11,17 +11,17 @@ This is where the Robotics experiece for Omniverse is developed
 
 ### Latest Documentation and Packages
 
-[Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/robotics)
+[Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim)
 
-[Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Master_BuildAndPackagingValidation/.lastSuccessful/isaac-sim%40%7Bbuild.number%7D-linux-x86_64-release.7z)
+[Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Master_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-launcher%40%7Bbuild.number%7D.linux-x86_64.release.7z)
 
-[Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndPackagingValidation/.lastSuccessful/isaac-sim%40%7Bbuild.number%7D-linux-x86_64-release.7z)
+[Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-launcher%40%7Bbuild.number%7D.linux-x86_64.release.7z)
 
 
 ### Filing Bugs and Feature Requests
 Use the links below to create a new bug/feature request
-* [Create New Bug](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=1&priority=10&assignee=hmazhar&customfield_16630=17684&components=22384&customfield_10005=OM-16165)
-* [Create New Feature Request](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=2&assignee=hmazhar&customfield_16630=17684&components=22384&customfield_10005=OM-16163)
+* [Create New Bug](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=1&priority=10&assignee=hmazhar&customfield_16630=17684&components=22384&customfield_10005=OM-24041)
+* [Create New Feature Request](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=2&assignee=hmazhar&customfield_16630=17684&components=22384&customfield_10005=OM-24047)
 * [Main Robotics JIRA Board](https://nvidia-omniverse.atlassian.net/secure/RapidBoard.jspa?rapidView=25049)
 
 ### List of internal servers:
@@ -43,9 +43,9 @@ Use the links below to create a new bug/feature request
 
 
 ### TeamCity Pipelines
-Master: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Master_BuildAndPackagingValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Master_BuildAndPackagingValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Master_BuildAndPackagingValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Master=%3Cdefault%3E)
+Master: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Master_BuildAndValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Master_BuildAndValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Master_BuildAndValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Master=%3Cdefault%3E)
 
-Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Develop_BuildAndPackagingValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Develop_BuildAndPackagingValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Develop_BuildAndPackagingValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Develop=%3Cdefault%3E)
+Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Develop_BuildAndValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Develop_BuildAndValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Develop_BuildAndValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Develop=%3Cdefault%3E)
 
 ## Prerequisites
 #### Hardware
