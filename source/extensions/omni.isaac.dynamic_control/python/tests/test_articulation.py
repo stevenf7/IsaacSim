@@ -335,7 +335,7 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_articulation_position_franka(self, gpu=False):
 
         (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
-        # (result, error) = await load_test_file("omniverse://ov-isaac-qa/Isaac/Robots/Franka/franka.usd")
+        # (result, error) = await load_test_file("omniverse://ov-isaac-dev/Isaac/Robots/Franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)

@@ -18,7 +18,7 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.usd" = {}
-"omni.ui" = {}
+"omni.ui" = { order = -100 }
 "omni.kit.window.property" = {}
 "omni.kit.property.usd" = {}
 

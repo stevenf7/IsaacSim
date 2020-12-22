@@ -2,7 +2,7 @@ display_name = "Isaac About Window"
 
 [dependencies]
 "omni.kit.editor" = {}
-"omni.ui" = {}
+"omni.ui" = { order = -100 }
 
 [[python.module]]
 name = "omni.isaac.about"

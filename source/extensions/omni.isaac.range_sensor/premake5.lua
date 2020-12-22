@@ -63,7 +63,7 @@ project "test.unit.range_sensor"
     libdirs { "%{root}/_build/target-deps/nv_usd/debug/lib",
               "%{root}/_build/target-deps/carb_sdk_plugins/_build/linux-x86_64/debug"}
     links {"carb"}
-    --"omni.ui"}
+
 
     runpathdirs { "%{root}/_build/target-deps/nv_usd/debug/lib",
 	          "%{root}/_build/target-deps/carb_sdk_plugins/_build/linux-x86_64/debug" }

@@ -2,7 +2,7 @@ display_name = "Exploded View"
 
 [dependencies]
 "omni.kit.editor" = {}
-"omni.ui" = {}
+"omni.ui" = { order = -100 }
 
 [[python.module]]
 name = "omni.isaac.exploded_view"

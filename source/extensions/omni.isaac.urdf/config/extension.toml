@@ -17,9 +17,10 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.editor" = {}
+"omni.ui" = { order = -100 }
 "omni.isaac.utils" = {}
 "omni.kit.window.filepicker" = {}
-"omni.kit.window.content_browser" = {}
+"omni.kit.window.content_browser" = {order = 1} # order = 1 is a hack to prevent the extension from crashing if it loads too soon
 
 [[python.module]]
 name = "omni.isaac.urdf"

@@ -17,7 +17,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.editor" = {}
-"omni.ui" = {}
+"omni.ui" = { order = -100 }
 
 [[python.module]]
 name = "omni.isaac.manip"

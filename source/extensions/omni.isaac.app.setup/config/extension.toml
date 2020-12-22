@@ -6,7 +6,7 @@ authors = ["Isaac Sim Team"]
 
 [dependencies]
 "omni.usd" = {}
-"omni.ui" = {}
+"omni.ui" = { order = -100 }
 
 # Isaac Sim Core Extensions 
 "omni.kit.search.service" = {}
