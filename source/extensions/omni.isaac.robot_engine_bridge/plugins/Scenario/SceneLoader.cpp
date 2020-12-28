@@ -16,6 +16,7 @@
 
 #include <carb/dictionary/DictionaryUtils.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/utils/Transforms.h>
 #include <omni/usd/UsdContextIncludes.h>
 #include <omni/usd/UsdContext.h>
 #include <carb/profiler/Profile.h>
@@ -26,7 +27,6 @@
 #include <omni/kit/ViewportWindowUtils.h>
 
 #include "../Core/IsaacComponent.h"
-#include "../Utils/IsaacUtilities.h"
 
 #include "SceneLoader.h"
 
@@ -190,17 +190,16 @@ void SceneLoader::loadSceneAndScenario(std::string sceneName, int scenarioIndex,
 
     if (endsWith(sceneName, ".usd") || endsWith(sceneName, ".usda"))
     {
-        bool result =
-            omni::usd::UsdContext::getContext()->openStage(sceneName.c_str(), [this](bool success, const char* err) {
-                if (!success)
-                {
-                    CARB_LOG_ERROR("Open USD error: %s", err);
-                }
-                else
-                {
-                    CARB_LOG_INFO("Open USD complete");
-                }
-            });
+        omni::usd::UsdContext::getContext()->openStage(sceneName.c_str(), [this](bool success, const char* err) {
+            if (!success)
+            {
+                CARB_LOG_ERROR("Open USD error: %s", err);
+            }
+            else
+            {
+                CARB_LOG_INFO("Open USD complete");
+            }
+        });
         sendResponse(1, request);
     }
     else

@@ -15,7 +15,7 @@
 #include <carb/fastcache/FastCache.h>
 
 #include <omni/renderer/IDebugDraw.h>
-#include <robotEngineBridgeSchema/robotEnginePlan2Visualizer.h>
+#include <robotEngineBridgeSchema/robotEnginePolylineVisualizer.h>
 
 #include <string>
 
@@ -33,7 +33,7 @@ struct DebugData
     uint32_t color;
 };
 
-class Plan2Visualizer : public IsaacComponent
+class PolylineVisualizer : public IsaacComponent
 {
 
 
@@ -45,13 +45,13 @@ public:
      * @param prim
      * @param stage
      */
-    Plan2Visualizer();
+    PolylineVisualizer();
 
     /**
      * @brief
      *
      */
-    ~Plan2Visualizer();
+    ~PolylineVisualizer();
 
 
     /**

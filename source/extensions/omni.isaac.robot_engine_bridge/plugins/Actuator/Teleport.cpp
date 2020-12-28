@@ -15,7 +15,7 @@
 #include <carb/profiler/Profile.h>
 #include <carb/InterfaceUtils.h>
 
-#include "../Utils/IsaacUtilities.h"
+#include <omni/isaac/utils/Transforms.h>
 
 #include "Teleport.h"
 
@@ -71,8 +71,9 @@ void Teleport::tick()
                 std::string actorName = object.first;
                 if (strcmp(actorName.c_str(), names[i].cStr()) == 0)
                 {
-                    setTransform(mDynamicControlPtr, prim, pxBodyTranslation * mInvUnitScale, pxBodyRotation);
-                    setScale(mDynamicControlPtr, prim, pxBodyScale);
+                    isaac::utils::transforms::setTransform(
+                        mDynamicControlPtr, prim, pxBodyTranslation * mInvUnitScale, pxBodyRotation);
+                    isaac::utils::transforms::setScale(mDynamicControlPtr, prim, pxBodyScale);
                 }
             }
         }

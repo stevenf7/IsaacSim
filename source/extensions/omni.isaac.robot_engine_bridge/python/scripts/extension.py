@@ -1,7 +1,5 @@
 import os
 import omni.ext
-import omni.kit.commands
-import omni.kit.editor
 import omni.kit.ui
 import carb.tokens
 
@@ -17,7 +15,6 @@ class Extension(omni.ext.IExt):
         self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
 
         menu_path = f"Window/Isaac/{EXTENSION_NAME}"
-        self._editor = omni.kit.editor.get_editor_interface()
         # active script
         self._script = None
         self._window = omni.kit.ui.Window(

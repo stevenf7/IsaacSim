@@ -1,0 +1,711 @@
+import omni.kit.commands
+import omni.kit.utils
+import omni.isaac.RobotEngineBridgeSchema as REBSchema
+import carb
+from pxr import Gf
+
+
+def get_path(stage, path, parent=None):
+    if parent:
+        path = omni.kit.utils.get_stage_next_free_path(stage, parent + path, False)
+    else:
+        path = omni.kit.utils.get_stage_next_free_path(stage, path, True)
+    return path
+
+
+def setup_base_prim(prim):
+    prim.CreateNodeNameAttr("interface")
+    prim.CreateEnabledAttr(True)
+    prim.CreateTimeOffsetAttr(0.0)
+
+
+def setup_publisher(prim, component, channel):
+    prim.CreateOutputComponentAttr(component)
+    prim.CreateOutputChannelAttr(channel)
+
+
+def setup_receiver(prim, component, channel):
+    prim.CreateInputComponentAttr(component)
+    prim.CreateInputChannelAttr(channel)
+
+
+# this command is used to create each REB prim, it also handles undo so that each individual prim command doesn't have to
+class CreateRobotEngineBridgePrimCommand(omni.kit.commands.Command):
+    def __init__(self, path: str, parent: str, scehma_type):
+        self._path = path
+        self._parent = parent
+        self._scehma_type = scehma_type
+        self._prim_path = None
+        pass
+
+    def do(self):
+        self._stage = omni.usd.get_context().get_stage()
+        # make prim path unique
+        self._prim_path = get_path(self._stage, self._path, self._parent)
+        self._prim = self._scehma_type.Define(self._stage, self._prim_path)
+        setup_base_prim(self._prim)
+        return self._prim
+
+    def undo(self):
+        if self._prim_path is not None:
+            return self._stage.RemovePrim(self._prim_path)
+
+
+class CreateRobotEngineBridgeDifferentialBaseCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_DifferentialBase",
+        parent=None,
+        input_component="input",
+        input_channel="base_command",
+        output_component="output",
+        output_channel="base_state",
+        chassis_prim_rel=None,
+        left_wheel_joint_name="",
+        right_wheel_joint_name="",
+        robot_front=(1, 0, 0),
+        wheel_radius=0.1,
+        wheel_base=0.5,
+        max_speed=(1.5, 1.0),
+        time_without_command=0.2,
+        acceleration_smoothing=1.0,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        self._prim = None
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineDifferentialBase,
+        )
+        if success and self._prim:
+
+            setup_receiver(self._prim, self._input_component, self._input_channel)
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+
+            rel_paths = self._prim.CreateChassisPrimRel()
+            if self._chassis_prim_rel is not None:
+                if len(self._chassis_prim_rel) == 1:
+                    rel_paths.AddTarget(self._chassis_prim_rel[0])
+                else:
+                    carb.log_warn("only one chassis prim rel target can be specified")
+
+            self._prim.CreateLeftWheelJointNameAttr(self._left_wheel_joint_name)
+            self._prim.CreateRightWheelJointNameAttr(self._right_wheel_joint_name)
+
+            self._prim.CreateRobotFrontAttr(self._robot_front)
+            self._prim.CreateWheelRadiusAttr(self._wheel_radius)
+            self._prim.CreateWheelBaseAttr(self._wheel_base)
+            self._prim.CreateMaxSpeedAttr(self._max_speed)
+            self._prim.CreateMaxTimeWithoutCommandAttr(self._time_without_command)
+            self._prim.CreateAccelerationSmoothingAttr(self._acceleration_smoothing)
+
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeHolonomicBaseCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_HolonomicBase",
+        parent=None,
+        input_component="input",
+        input_channel="base_command",
+        output_component="output",
+        output_channel="base_state",
+        articulation_prim_rel=None,
+        wheel_1_joint_name="",
+        wheel_2_joint_name="",
+        wheel_3_joint_name="",
+        robot_front=(1, 0, 0),
+        wheel_radius=0.1,
+        wheel_base=0.5,
+        max_speed=(1.5, 1.0),
+        time_without_command=0.2,
+        acceleration_smoothing=1.0,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineHolonomicBase,
+        )
+        if success and self._prim:
+            setup_receiver(self._prim, self._input_component, self._input_channel)
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+
+            rel_paths = self._prim.CreateArticulationPrimRel()
+            if self._articulation_prim_rel is not None:
+                if len(self._articulation_prim_rel) == 1:
+                    rel_paths.AddTarget(self._articulation_prim_rel[0])
+                else:
+                    carb.log_warn("only one articulation prim rel target can be specified")
+
+            self._prim.CreateWheel1JointNameAttr(self._wheel_1_joint_name)
+            self._prim.CreateWheel2JointNameAttr(self._wheel_2_joint_name)
+            self._prim.CreateWheel3JointNameAttr(self._wheel_3_joint_name)
+
+            self._prim.CreateRobotFrontAttr(self._robot_front)
+            self._prim.CreateWheelRadiusAttr(self._wheel_radius)
+            self._prim.CreateWheelBaseAttr(self._wheel_base)
+            self._prim.CreateMaxSpeedAttr(self._max_speed)
+            self._prim.CreateMaxTimeWithoutCommandAttr(self._time_without_command)
+            self._prim.CreateAccelerationSmoothingAttr(self._acceleration_smoothing)
+
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeVehicleCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_Vehicle",
+        parent=None,
+        input_component="input",
+        input_channel="vehicle_command",
+        output_component="output",
+        output_channel="vehicle_state",
+        vehicle_prim_rel=None,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineVehicle,
+        )
+        if success and self._prim:
+            setup_receiver(self._prim, self._input_component, self._input_channel)
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+
+            rel_paths = self._prim.CreateVehiclePrimRel()
+            if self._vehicle_prim_rel is not None:
+                if len(self._vehicle_prim_rel) == 1:
+                    rel_paths.AddTarget(self._vehicle_prim_rel[0])
+                else:
+                    carb.log_warn("only one vehicle prim rel target can be specified")
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeJointControlCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_JointControl",
+        parent=None,
+        input_component="input",
+        input_channel="joint_position",
+        output_component="output",
+        output_channel="joint_state",
+        articulation_prim_rel=None,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineJointControl,
+        )
+        if success and self._prim:
+            setup_receiver(self._prim, self._input_component, self._input_channel)
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+
+            rel_paths = self._prim.CreateArticulationPrimRel()
+            if self._articulation_prim_rel is not None:
+                if len(self._articulation_prim_rel) == 1:
+                    rel_paths.AddTarget(self._articulation_prim_rel[0])
+                else:
+                    carb.log_warn("only one articulation prim rel target can be specified")
+
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeScissorLiftCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_ScissorLift",
+        parent=None,
+        input_component="input",
+        input_channel="joint_position",
+        output_component="output",
+        output_channel="joint_state",
+        articulation_prim_rel=None,
+        lift_joint_name="lift_joint",
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineScissorLift,
+        )
+        if success and self._prim:
+
+            setup_receiver(self._prim, self._input_component, self._input_channel)
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+            rel_paths = self._prim.CreateArticulationPrimRel()
+            if self._articulation_prim_rel is not None:
+                if len(self._articulation_prim_rel) == 1:
+                    rel_paths.AddTarget(self._articulation_prim_rel[0])
+                else:
+                    carb.log_warn("only one articulation prim rel target can be specified")
+            self._prim.CreateLiftJointNameAttr(self._lift_joint_name)
+
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeSurfaceGripperCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_SurfaceGripper",
+        parent=None,
+        input_component="input",
+        input_channel="io_command",
+        output_component="output",
+        output_channel="io_state",
+        d6_joint_prim_rel=None,
+        parent_prim_rel=None,
+        gripper_entity="gripper",
+        grip_threshold=1,
+        force_limit=1e10,
+        torque_limit=1e10,
+        bend_angle=0,
+        stiffness=1e10,
+        damping=1e3,
+        offset_position=Gf.Vec3f(0, 0, 0),
+        offset_rotation=Gf.Quatf(1.0),
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineSurfaceGripper,
+        )
+        if success and self._prim:
+            setup_receiver(self._prim, self._input_component, self._input_channel)
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+            d6_rel_paths = self._prim.CreateD6JointPrimRel()
+            if self._d6_joint_prim_rel is not None:
+                if len(self._d6_joint_prim_rel) == 1:
+                    d6_rel_paths.AddTarget(self._d6_joint_prim_rel[0])
+                else:
+                    carb.log_warn("only one d6 prim rel target can be specified")
+
+            parent_rel_paths = self._prim.CreateParentPrimRel()
+            if self._parent_prim_rel is not None:
+                if len(self._parent_prim_rel) == 1:
+                    parent_rel_paths.AddTarget(self._parent_prim_rel[0])
+                else:
+                    carb.log_warn("only one parent prim rel target can be specified")
+
+            self._prim.CreateGripperEntityAttr(self._gripper_entity)
+
+            self._prim.CreateGripThresholdAttr(self._grip_threshold)
+            self._prim.CreateForceLimitAttr(self._force_limit)
+            self._prim.CreateTorqueLimitAttr(self._torque_limit)
+            self._prim.CreateBendAngleAttr(self._bend_angle)
+            self._prim.CreateStiffnessAttr(self._stiffness)
+            self._prim.CreateDampingAttr(self._damping)
+            self._prim.CreateOffsetPositionAttr(self._offset_position)
+            self._prim.CreateOffsetRotationAttr(self._offset_rotation)
+
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeTwoFingerGripperCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_TwoFingerGripper",
+        parent=None,
+        input_component="input",
+        input_channel="io_command",
+        output_component="output",
+        output_channel="io_state",
+        articulation_prim_rel=None,
+        left_finger_joint="left_finger",
+        right_finger_joint="right_finger",
+        gripper_entity="gripper",
+        closed_distance=0,
+        open_distance=0.04,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineTwoFingerGripper,
+        )
+        if success and self._prim:
+            setup_receiver(self._prim, self._input_component, self._input_channel)
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+            rel_paths = self._prim.CreateArticulationPrimRel()
+            if self._articulation_prim_rel is not None:
+                if len(self._articulation_prim_rel) == 1:
+                    rel_paths.AddTarget(self._articulation_prim_rel[0])
+                else:
+                    carb.log_warn("only one articulation prim rel target can be specified")
+            self._prim.CreateLeftFingerJointAttr(self._left_finger_joint)
+            self._prim.CreateRightFingerJointAttr(self._right_finger_joint)
+            self._prim.CreateGripperEntityAttr(self._gripper_entity)
+            self._prim.CreateClosedDistanceAttr(self._closed_distance)
+            self._prim.CreateOpenDistanceAttr(self._open_distance)
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeRigidBodySinkCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_RigidBodySink",
+        parent=None,
+        output_component="output",
+        output_channel="bodies",
+        rigid_body_prims_rel=None,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineRigidBodySink,
+        )
+        if success and self._prim:
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+            rel_paths = self._prim.CreateRigidBodyPrimsRel()
+            if self._rigid_body_prims_rel is not None:
+                for path in self._rigid_body_prims_rel:
+                    rel_paths.AddTarget(path)
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeTeleportCommand(omni.kit.commands.Command):
+    def __init__(self, path="/REB_Teleport", parent=None, input_component="input", input_channel="teleport"):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineTeleport,
+        )
+        if success and self._prim:
+            setup_receiver(self._prim, self._input_component, self._input_channel)
+            self._prim.CreateTeleportPrimsRel()
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeScenarioFromMessageCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_ScenarioFromMessage",
+        parent=None,
+        input_component="input",
+        input_channel="scenario_actors",
+        teleport_input_component="input",
+        teleport_input_channel="teleport",
+        rigid_body_sink_output_component="output",
+        rigid_body_sink_output_channel="bodies",
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineScenarioFromMessage,
+        )
+        if success and self._prim:
+            setup_receiver(self._prim, self._input_component, self._input_channel)
+
+            self._prim.CreateTeleportInputComponentAttr(self._teleport_input_component)
+            self._prim.CreateTeleportInputChannelAttr(self._teleport_input_channel)
+
+            self._prim.CreateRigidBodySinkOutputComponentAttr(self._rigid_body_sink_output_component)
+            self._prim.CreateRigidBodySinkOutputChannelAttr(self._rigid_body_sink_output_channel)
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeCameraCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_Camera",
+        parent=None,
+        rgb_output_component="output",
+        rgb_output_channel="color",
+        depth_output_component="output",
+        depth_output_channel="depth",
+        segmentation_output_component="output",
+        segmentation_output_channel="segmentation",
+        bbox2d_output_component="output",
+        bbox2d_output_channel="bbox",
+        bbox2d_class_list="",
+        bbox3d_output_component="output",
+        bbox3d_output_channel="bbox3d",
+        bbox3d_class_list="",
+        rgb_enabled=True,
+        depth_enabled=False,
+        segmentaion_enabled=False,
+        bbox2d_enabled=False,
+        bbox3d_enabled=False,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineCamera,
+        )
+        if success and self._prim:
+            self._prim.CreateRgbOutputComponentAttr(self._rgb_output_component)
+            self._prim.CreateRgbOutputChannelAttr(self._rgb_output_channel)
+
+            self._prim.CreateDepthOutputComponentAttr(self._depth_output_component)
+            self._prim.CreateDepthOutputChannelAttr(self._depth_output_channel)
+
+            self._prim.CreateSegmentationOutputComponentAttr(self._segmentation_output_component)
+            self._prim.CreateSegmentationOutputChannelAttr(self._segmentation_output_channel)
+
+            self._prim.CreateBoundingBox2DOutputComponentAttr(self._bbox2d_output_component)
+            self._prim.CreateBoundingBox2DOutputChannelAttr(self._bbox2d_output_channel)
+            self._prim.CreateBoundingBox2DClassListAttr(self._bbox2d_class_list)
+
+            self._prim.CreateBoundingBox3DOutputComponentAttr(self._bbox3d_output_component)
+            self._prim.CreateBoundingBox3DOutputChannelAttr(self._bbox3d_output_channel)
+            self._prim.CreateBoundingBox3DClassListAttr(self._bbox3d_class_list)
+
+            self._prim.CreateRgbEnabledAttr(self._rgb_enabled)
+            self._prim.CreateDepthEnabledAttr(self._depth_enabled)
+            self._prim.CreateSegmentationEnabledAttr(self._segmentaion_enabled)
+            self._prim.CreateBoundingBox2DEnabledAttr(self._bbox2d_enabled)
+            self._prim.CreateBoundingBox3DEnabledAttr(self._bbox3d_enabled)
+
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeLidarCommand(omni.kit.commands.Command):
+    def __init__(
+        self, path="/REB_Lidar", parent=None, output_component="output", output_channel="rangescan", lidar_prim_rel=None
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineLidar,
+        )
+        if success and self._prim:
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+            rel_paths = self._prim.CreateLidarPrimRel()
+            if self._lidar_prim_rel is not None:
+                if len(self._lidar_prim_rel) == 1:
+                    rel_paths.AddTarget(self._lidar_prim_rel[0])
+                else:
+                    carb.log_warn("only one lidar prim rel target can be specified")
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgeContactMonitorCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_ContactMonitor",
+        parent=None,
+        output_component="output",
+        output_channel="collision",
+        target_prim_rel=None,
+        ignored_prims_rel=None,
+        force_threshold=1000.0,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineContactMonitor,
+        )
+        if success and self._prim:
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+            target_paths = self._prim.CreateTargetPrimRel()
+            if self._target_prim_rel is not None:
+                if len(self._target_prim_rel) == 1:
+                    target_paths.AddTarget(self._target_prim_rel[0])
+                else:
+                    carb.log_warn("only one target prim rel target can be specified")
+            ignored_paths = self._prim.CreateIgnoredPrimsRel()
+            if self._ignored_prims_rel is not None:
+                for path in self._ignored_prims_rel:
+                    ignored_paths.AddTarget(path)
+            self._prim.CreateForceThresholdAttr(self._force_threshold)
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgePolylineVisualizerCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path="/REB_PolylineVisualizer",
+        parent=None,
+        input_component="input",
+        input_channel="sight_plan",
+        parent_prim_rel=None,
+        width=0.1,
+        color=Gf.Vec4f(1.0, 1.0, 1.0, 1.0),
+        offset=Gf.Vec3f(0, 0, 0),
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEnginePolylineVisualizer,
+        )
+        if success and self._prim:
+            setup_receiver(self._prim, self._input_component, self._input_channel)
+
+            parent_path = self._prim.CreateParentPrimRel()
+            if self._parent_prim_rel is not None:
+                if len(self._parent_prim_rel) == 1:
+                    parent_path.AddTarget(self._parent_prim_rel[0])
+                else:
+                    carb.log_warn("only one parent prim rel target can be specified")
+            self._prim.CreateWidthAttr(self._width)
+            self._prim.CreateColorAttr().Set(self._color)
+            self._prim.CreateOffsetAttr().Set(self._offset)
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+omni.kit.commands.register_all_commands_in_module(__name__)

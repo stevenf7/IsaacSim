@@ -18,7 +18,7 @@
 #include <string>
 
 #include "../Core/IsaacComponent.h"
-#include "Plan2Visualizer.h"
+#include "PolylineVisualizer.h"
 #include <carb/logging/Log.h>
 #include <carb/profiler/Profile.h>
 #include <omni/isaac/utils/Conversions.h>
@@ -31,7 +31,7 @@ namespace isaac
 namespace robot_engine_bridge
 {
 
-Plan2Visualizer::Plan2Visualizer() : IsaacComponent()
+PolylineVisualizer::PolylineVisualizer() : IsaacComponent()
 {
 
     framework = carb::getFramework();
@@ -71,11 +71,11 @@ Plan2Visualizer::Plan2Visualizer() : IsaacComponent()
     }
 }
 
-Plan2Visualizer::~Plan2Visualizer()
+PolylineVisualizer::~PolylineVisualizer()
 {
 }
 
-void Plan2Visualizer::onStart()
+void PolylineVisualizer::onStart()
 {
     onComponentChange();
     mUnitScale = 1.0f / UsdGeomGetStageMetersPerUnit(mStage);
@@ -88,7 +88,7 @@ pxr::GfVec3f getOrientation(pxr::GfVec3f& normal, pxr::GfVec3f& tangent)
     return binormal.GetNormalized();
 }
 
-void Plan2Visualizer::tick()
+void PolylineVisualizer::tick()
 {
 
     IsaacMessage<isaac_message::Json> jsonProto;
@@ -129,7 +129,7 @@ void Plan2Visualizer::tick()
                         if (style && mIDict->getItemType(style) == carb::dictionary::ItemType::eDictionary)
                         {
                             std::string styleStr = mIDict->getItemName(style);
-                            const carb::dictionary::Item* fillType = mIDict->getItem(style, "f");
+                            // const carb::dictionary::Item* fillType = mIDict->getItem(style, "f");
 
 
                             // fill type must be defined and also true currently
@@ -140,8 +140,8 @@ void Plan2Visualizer::tick()
                             // }
 
                             const carb::dictionary::Item* size = mIDict->getItem(style, "s");
-                            const carb::dictionary::Item* color = mIDict->getItem(style, "c");
-                            const carb::dictionary::Item* alpha = mIDict->getItem(style, "a");
+                            // const carb::dictionary::Item* color = mIDict->getItem(style, "c");
+                            // const carb::dictionary::Item* alpha = mIDict->getItem(style, "a");
                             if (size && mIDict->getItemType(size) == carb::dictionary::ItemType::eFloat)
                             {
                                 mWidth = mIDict->getAsFloat(size);
@@ -297,18 +297,18 @@ void Plan2Visualizer::tick()
     }
 }
 
-void Plan2Visualizer::onStop()
+void PolylineVisualizer::onStop()
 {
     releaseDebugLineList();
 }
 
-void Plan2Visualizer::onComponentChange()
+void PolylineVisualizer::onComponentChange()
 {
-    // CARB_LOG_ERROR("Plan2Visualizer Update");
+    // CARB_LOG_ERROR("PolylineVisualizer Update");
     IsaacComponent::onComponentChange();
 
-    const pxr::RobotEngineBridgeSchemaRobotEnginePlan2Visualizer& typedPrim =
-        (pxr::RobotEngineBridgeSchemaRobotEnginePlan2Visualizer)mPrim;
+    const pxr::RobotEngineBridgeSchemaRobotEnginePolylineVisualizer& typedPrim =
+        (pxr::RobotEngineBridgeSchemaRobotEnginePolylineVisualizer)mPrim;
     isaac::utils::safeGetAttribute(typedPrim.GetInputComponentAttr(), mInputComponent);
     isaac::utils::safeGetAttribute(typedPrim.GetInputChannelAttr(), mInputChannel);
     isaac::utils::safeGetAttribute(typedPrim.GetWidthAttr(), mWidth);
@@ -333,7 +333,7 @@ void Plan2Visualizer::onComponentChange()
 }
 
 
-void Plan2Visualizer::createDebugLineList(size_t size)
+void PolylineVisualizer::createDebugLineList(size_t size)
 {
     if (mShapeDebugLineBuffer == omni::renderer::IDebugDraw::eInvalidBuffer)
     {
@@ -349,7 +349,7 @@ void Plan2Visualizer::createDebugLineList(size_t size)
     }
 }
 
-void Plan2Visualizer::releaseDebugLineList()
+void PolylineVisualizer::releaseDebugLineList()
 {
     if (mShapeDebugLineBuffer != omni::renderer::IDebugDraw::eInvalidBuffer)
     {

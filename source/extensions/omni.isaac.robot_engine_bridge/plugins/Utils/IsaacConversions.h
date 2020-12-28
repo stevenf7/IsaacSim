@@ -13,6 +13,7 @@
 #include <UsdPCH.h>
 // clang-format on
 
+#include "../Core/IsaacMessage.h"
 namespace omni
 {
 namespace isaac
@@ -26,12 +27,7 @@ namespace robot_engine_bridge
  * @param usdVec3d
  * @param isaacVector3dProto
  */
-static void toVector3dProto(const pxr::GfVec3d& usdVec3d, isaac_message::Vector3d::Builder& isaacVector3dProto)
-{
-    isaacVector3dProto.setX(usdVec3d[0]);
-    isaacVector3dProto.setY(usdVec3d[1]);
-    isaacVector3dProto.setZ(usdVec3d[2]);
-}
+void toVector3dProto(const pxr::GfVec3d& usdVec3d, isaac_message::Vector3d::Builder& isaacVector3dProto);
 
 /**
  * @brief Converts sim Float3 to robot engine Vector3d proto
@@ -39,12 +35,7 @@ static void toVector3dProto(const pxr::GfVec3d& usdVec3d, isaac_message::Vector3
  * @param carbFloat3
  * @param isaacVector3dProto
  */
-static void toVector3dProto(const carb::Float3& carbFloat3, isaac_message::Vector3d::Builder& isaacVector3dProto)
-{
-    isaacVector3dProto.setX(carbFloat3.x);
-    isaacVector3dProto.setY(carbFloat3.y);
-    isaacVector3dProto.setZ(carbFloat3.z);
-}
+void toVector3dProto(const carb::Float3& carbFloat3, isaac_message::Vector3d::Builder& isaacVector3dProto);
 
 /**
  * @brief Converts sim quat to robot engine SO3d proto
@@ -52,14 +43,7 @@ static void toVector3dProto(const carb::Float3& carbFloat3, isaac_message::Vecto
  * @param usdQuat
  * @param isaacSO3dProto
  */
-static void toSO3dProto(const pxr::GfQuatd& usdQuat, isaac_message::SO3d::Builder& isaacSO3dProto)
-{
-    auto isaacSO3dQuatProto = isaacSO3dProto.initQ();
-    isaacSO3dQuatProto.setX(usdQuat.GetImaginary()[0]);
-    isaacSO3dQuatProto.setY(usdQuat.GetImaginary()[1]);
-    isaacSO3dQuatProto.setZ(usdQuat.GetImaginary()[2]);
-    isaacSO3dQuatProto.setW(usdQuat.GetReal());
-}
+void toSO3dProto(const pxr::GfQuatd& usdQuat, isaac_message::SO3d::Builder& isaacSO3dProto);
 }
 }
 }

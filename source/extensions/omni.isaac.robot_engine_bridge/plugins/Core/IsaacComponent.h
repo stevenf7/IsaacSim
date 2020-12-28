@@ -272,6 +272,18 @@ public:
         {
             return mError;
         }
+        // Check to make sure that the proto received matches that requested
+        int64_t protoID = 0;
+        mError = (mIsaacCApiPtr->isaac_get_message_proto_id)(mAppHandle, &uuid, &protoID);
+
+        if (!checkErrorCode(mError))
+        {
+            return mError;
+        }
+        if (data.checkType(protoID) == false)
+        {
+            return isaac_error_invalid_message;
+        }
         {
 #if 0
             CARB_PROFILE_ZONE(0, "receive decode");
@@ -294,11 +306,13 @@ public:
             isaac_message::gJsonCodec.decode(message_json, data.initProto());
             // CARB_LOG_ERROR("Message json: %s", message_json.cStr());
 #else
-
             uint64_t num_segments = 0;
             mError =
                 (mIsaacCApiPtr->isaac_read_message_proto_segments)(mAppHandle, &uuid, nullptr, nullptr, &num_segments);
-
+            if (!checkErrorCode(mError))
+            {
+                return mError;
+            }
             if (num_segments)
             {
                 data.segment_ptrs.resize(num_segments);
@@ -308,15 +322,27 @@ public:
                 mError = (mIsaacCApiPtr->isaac_read_message_proto_segments)(
                     mAppHandle, &uuid, reinterpret_cast<const void**>(data.segment_ptrs.data()),
                     data.segment_sizes.data(), &num_segments);
+                if (!checkErrorCode(mError))
+                {
+                    return mError;
+                }
                 data.flatArrayToCapnpBuffer();
                 // data.printJson();
             }
+            // else
+            // {
+            //     return isaac_error_invalid_message;
+            // }
 #endif
         }
         // Grabs message buffers meta data
         int64_t size = 0;
         mError = (mIsaacCApiPtr->isaac_message_get_buffers)(
             mAppHandle, &uuid, nullptr, &size, isaac_memory_t::isaac_memory_host);
+        if (!checkErrorCode(mError))
+        {
+            return mError;
+        }
         if (size < 0)
         {
             return isaac_error_invalid_message;
@@ -358,9 +384,12 @@ public:
         // Releases received Isaac message
         if (uuid.upper != 0 || uuid.lower != 0)
         {
-            (mIsaacCApiPtr->isaac_release_message)(mAppHandle, &uuid);
+            mError = (mIsaacCApiPtr->isaac_release_message)(mAppHandle, &uuid);
+            if (!checkErrorCode(mError))
+            {
+                return mError;
+            }
         }
-
         return mError;
     }
 

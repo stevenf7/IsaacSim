@@ -1,47 +1,40 @@
-import omni.kit.editor
+# NOTE:
+#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
+#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
+import omni.kit.test
+
+import omni.kit.usd
+import gc
+
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 import omni.kit.commands
-import omni.kit.ui
+from .common import create_application, get_selected_path, simulate
+
 from pxr import Gf
 
 
-class RobotEngineBridgeMenu:
-    def __init__(self):
-        menu_items = [
-            ("Differential Base", self._add_differential_base),
-            ("Holonomic Base", self._add_holonomic_base),
-            ("Vehicle", self._add_vehicle),
-            ("Joint Control", self._add_joint_control),
-            ("Scissor Lift", self._add_scissor_lift_simulator),
-            ("Surface Gripper", self._add_surface_gripper),
-            ("Two Finger Gripper", self._add_twofinger_gripper),
-            ("Rigid Body Sink", self._add_rigid_body_sink),
-            ("Teleport", self._add_teleport),
-            ("Scenario From Message", self._add_scenario_from_message),
-            ("Camera", self._add_camera),
-            ("Lidar", self._add_lidar),
-            ("Contact Monitor", self._add_contact_monitor),
-            ("Polyline Visualizer", self._add_polyline_visualizer),
-        ]
-
-        self._menus = []
-        for item in menu_items:
-            self._menus.append(omni.kit.ui.get_editor_menu().add_item(f"Create/Isaac/Robot Engine/{item[0]}", item[1]))
-
-    def _get_stage_and_path(self):
+# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+class TestREBCommands(omni.kit.test.AsyncTestCase):
+    # Before running each test
+    async def setUp(self):
+        await omni.usd.get_context().new_stage_async()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
         self._stage = omni.usd.get_context().get_stage()
-        selectedPrims = omni.usd.get_context().get_selection().get_selected_prim_paths()
+        pass
 
-        if len(selectedPrims) > 0:
-            curr_prim = selectedPrims[-1]
-        else:
-            curr_prim = None
-        return curr_prim
+    # After running each test
+    async def tearDown(self):
+        gc.collect()
+        pass
 
-    def _add_differential_base(self, *args, **kwargs):
+    # Run all commands
+    async def test_command_basic(self):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeDifferentialBaseCommand",
             path="/REB_DifferentialBase",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             input_component="input",
             input_channel="base_command",
             output_component="output",
@@ -57,13 +50,10 @@ class RobotEngineBridgeMenu:
             acceleration_smoothing=1.0,
         )
 
-        pass
-
-    def _add_holonomic_base(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeHolonomicBaseCommand",
             path="/REB_HolonomicBase",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             input_component="input",
             input_channel="base_command",
             output_component="output",
@@ -79,39 +69,33 @@ class RobotEngineBridgeMenu:
             time_without_command=0.2,
             acceleration_smoothing=1.0,
         )
-        pass
 
-    def _add_vehicle(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeVehicleCommand",
             path="/REB_Vehicle",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             input_component="input",
             input_channel="vehicle_command",
             output_component="output",
             output_channel="vehicle_state",
             vehicle_prim_rel=None,
         )
-        pass
 
-    def _add_joint_control(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeJointControlCommand",
             path="/REB_JointControl",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             input_component="input",
             input_channel="joint_position",
             output_component="output",
             output_channel="joint_state",
             articulation_prim_rel=None,
         )
-        pass
 
-    def _add_scissor_lift_simulator(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeScissorLiftCommand",
             path="/REB_ScissorLift",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             input_component="input",
             input_channel="lift_command",
             output_component="output",
@@ -119,13 +103,11 @@ class RobotEngineBridgeMenu:
             articulation_prim_rel=None,
             lift_joint_name="lift_joint",
         )
-        pass
 
-    def _add_surface_gripper(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeSurfaceGripperCommand",
             path="/REB_SurfaceGripper",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             input_component="input",
             input_channel="io_command",
             output_component="output",
@@ -142,13 +124,11 @@ class RobotEngineBridgeMenu:
             offset_position=Gf.Vec3f(0, 0, 0),
             offset_rotation=Gf.Quatf(1.0),
         )
-        pass
 
-    def _add_twofinger_gripper(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeTwoFingerGripperCommand",
             path="/REB_TwoFingerGripper",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             input_component="input",
             input_channel="io_command",
             output_component="output",
@@ -161,36 +141,27 @@ class RobotEngineBridgeMenu:
             open_distance=0.04,
         )
 
-        pass
-
-    def _add_rigid_body_sink(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeRigidBodySinkCommand",
             path="/REB_RigidBodySink",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             output_component="output",
             output_channel="bodies",
             rigid_body_prims_rel=None,
         )
 
-        pass
-
-    def _add_teleport(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeTeleportCommand",
             path="/REB_Teleport",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             input_component="input",
             input_channel="teleport",
         )
 
-        pass
-
-    def _add_scenario_from_message(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeScenarioFromMessageCommand",
             path="/REB_ScenarioFromMessage",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             input_component="input",
             input_channel="scenario_actors",
             teleport_input_component="input",
@@ -199,13 +170,10 @@ class RobotEngineBridgeMenu:
             rigid_body_sink_output_channel="bodies",
         )
 
-        pass
-
-    def _add_camera(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeCameraCommand",
             path="/REB_Camera",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             rgb_output_component="output",
             rgb_output_channel="color",
             depth_output_component="output",
@@ -225,25 +193,19 @@ class RobotEngineBridgeMenu:
             bbox3d_enabled=False,
         )
 
-        pass
-
-    def _add_lidar(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeLidarCommand",
             path="/REB_Lidar",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             output_component="output",
             output_channel="rangescan",
             lidar_prim_rel=None,
         )
 
-        pass
-
-    def _add_contact_monitor(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeContactMonitorCommand",
             path="/REB_ContactMonitor",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             output_component="output",
             output_channel="collision",
             target_prim_rel=None,
@@ -251,13 +213,10 @@ class RobotEngineBridgeMenu:
             force_threshold=1000.0,
         )
 
-        pass
-
-    def _add_polyline_visualizer(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgePolylineVisualizerCommand",
             path="/REB_PolylineVisualizer",
-            parent=self._get_stage_and_path(),
+            parent=get_selected_path(),
             input_component="input",
             input_channel="sight_plan",
             parent_prim_rel=None,
@@ -266,7 +225,40 @@ class RobotEngineBridgeMenu:
             offset=Gf.Vec3f(0, 0, 0),
         )
 
-        pass
+    async def test_command_active(self):
+        create_application(self._re_bridge)
+        self._timeline.play()
+        await simulate(1)
+        await self.test_command_basic()
+        await simulate(1)
+        self._re_bridge.destroy_application()
+        self._timeline.stop()
 
-    def shutdown(self):
-        self._menus = None
+    # TODO make this generic and automatically randomize all parameters
+    async def test_diffbase_update(self):
+        result, prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgeDifferentialBaseCommand",
+            path="/REB_DifferentialBase",
+            parent=get_selected_path(),
+            input_component="input",
+            input_channel="base_command",
+            output_component="output",
+            output_channel="base_state",
+            chassis_prim_rel=None,
+            left_wheel_joint_name="",
+            right_wheel_joint_name="",
+            robot_front=(1, 0, 0),
+            wheel_radius=0.1,
+            wheel_base=0.5,
+            max_speed=(1.5, 1.0),
+            time_without_command=0.2,
+            acceleration_smoothing=1.0,
+        )
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        # print(result, prim)
+        prim.GetInputComponentAttr().Set("input_changed")
+        prim.GetInputChannelAttr().Set("base_command_changed")
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        # TODO complete test
