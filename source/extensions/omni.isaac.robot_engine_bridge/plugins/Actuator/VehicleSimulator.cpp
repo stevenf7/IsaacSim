@@ -45,44 +45,45 @@ using utils::conversions::asGfVec3d;
 namespace robot_engine_bridge
 {
 
-static ::physx::PxVehicleWheels* getVehicleNoCheck(const pxr::SdfPath& vehiclePath,
-                                                   omni::physx::IPhysx* physxInterface,
-                                                   size_t& vehicleId)
-{
-    vehicleId = physxInterface->getObjectId(vehiclePath, omni::physx::PhysXType::ePTVehicle);
-    ::physx::PxVehicleWheels* physxVehicle =
-        reinterpret_cast<::physx::PxVehicleWheels*>(physxInterface->getPhysXPtrFast(vehicleId));
-    CARB_ASSERT(physxVehicle);
-    return physxVehicle;
-}
+// static ::physx::PxVehicleWheels* getVehicleNoCheck(const pxr::SdfPath& vehiclePath,
+//                                                    omni::physx::IPhysx* physxInterface,
+//                                                    size_t& vehicleId)
+// {
+//     vehicleId = physxInterface->getObjectId(vehiclePath, omni::physx::PhysXType::ePTVehicle);
+//     ::physx::PxVehicleWheels* physxVehicle =
+//         reinterpret_cast<::physx::PxVehicleWheels*>(physxInterface->getPhysXPtrFast(vehicleId));
+//     CARB_ASSERT(physxVehicle);
+//     return physxVehicle;
+// }
 
-static ::physx::PxVehicleWheels* getVehicleWithErrorLog(const pxr::SdfPath& vehiclePath,
-                                                        omni::physx::IPhysx* physxInterface,
-                                                        pxr::UsdStageRefPtr usdStage,
-                                                        const char* functionNameForErrorMsg)
-{
-    pxr::UsdPrim vehiclePrim = usdStage->GetPrimAtPath(vehiclePath);
+// static ::physx::PxVehicleWheels* getVehicleWithErrorLog(const pxr::SdfPath& vehiclePath,
+//                                                         omni::physx::IPhysx* physxInterface,
+//                                                         pxr::UsdStageRefPtr usdStage,
+//                                                         const char* functionNameForErrorMsg)
+// {
+//     pxr::UsdPrim vehiclePrim = usdStage->GetPrimAtPath(vehiclePath);
 
-    if (vehiclePrim)
-    {
-        if (vehiclePrim.HasAPI<pxr::PhysxSchemaPhysxVehicleAPI>())
-        {
-            size_t vehicleId;
-            return getVehicleNoCheck(vehiclePath, physxInterface, vehicleId);
-        }
-        else
-        {
-            CARB_LOG_ERROR("PhysX Vehicle: %s: prim at \"%s\" must have API schema \"PhysxVehicleAPI\" applied\n",
-                           functionNameForErrorMsg, vehiclePath.GetText());
-        }
-    }
-    else
-    {
-        CARB_LOG_ERROR("PhysX Vehicle: %s: no prim at path \"%s\"\n", functionNameForErrorMsg, vehiclePath.GetText());
-    }
+//     if (vehiclePrim)
+//     {
+//         if (vehiclePrim.HasAPI<pxr::PhysxSchemaPhysxVehicleAPI>())
+//         {
+//             size_t vehicleId;
+//             return getVehicleNoCheck(vehiclePath, physxInterface, vehicleId);
+//         }
+//         else
+//         {
+//             CARB_LOG_ERROR("PhysX Vehicle: %s: prim at \"%s\" must have API schema \"PhysxVehicleAPI\" applied\n",
+//                            functionNameForErrorMsg, vehiclePath.GetText());
+//         }
+//     }
+//     else
+//     {
+//         CARB_LOG_ERROR("PhysX Vehicle: %s: no prim at path \"%s\"\n", functionNameForErrorMsg,
+//         vehiclePath.GetText());
+//     }
 
-    return nullptr;
-}
+//     return nullptr;
+// }
 template <typename T>
 static void cacheWheelIndices(std::vector<T>& wheelCacheList, const size_t vehicleId, omni::physx::IPhysx* physXInterface)
 {
@@ -174,7 +175,8 @@ void VehicleSimulator::tick()
     {
         ::physx::PxVehicleNoDrive* vehicleNoDrive = static_cast<::physx::PxVehicleNoDrive*>(mCache.mVehiclePtr);
         ::physx::PxRigidDynamic* dynamicActor = vehicleNoDrive->getRigidDynamicActor();
-        float speed = dynamicActor->getLinearVelocity().magnitude() * (float)pxr::UsdGeomGetStageMetersPerUnit(mStage);
+        // float speed = dynamicActor->getLinearVelocity().magnitude() *
+        // (float)pxr::UsdGeomGetStageMetersPerUnit(mStage);
 
         const ::physx::PxTransform vehicleChassisTrnsfm =
             dynamicActor->getGlobalPose().transform(dynamicActor->getCMassLocalPose());
@@ -222,7 +224,7 @@ void VehicleSimulator::tick()
             // }
 
             ::physx::PxVehicleNoDrive* vehicleNoDrive = static_cast<::physx::PxVehicleNoDrive*>(mCache.mVehiclePtr);
-            const float signMultiplier = mInReverse ? -1.0f : 1.0f;
+            // const float signMultiplier = mInReverse ? -1.0f : 1.0f;
             const float acceleration = elements[0] / mUnitScale; // m/s^2 -> cm/s^2
 
             float forwardAcceleration = 0;
@@ -497,7 +499,7 @@ void VehicleSimulator::fillCache()
         mCache.state = CacheStateFlag::eVALID;
 
 
-        auto& wheelCacheList = *mCache.wheelsDriveBasic;
+        // auto& wheelCacheList = *mCache.wheelsDriveBasic;
         ::physx::PxVehicleWheelQueryResult* wheelQueryResult =
             (::physx::PxVehicleWheelQueryResult*)(mPhysxPtr->getWheelQueryResult(mCache.vehicleId));
         // Distance between left and right rear wheels
@@ -520,7 +522,6 @@ void VehicleSimulator::fillCache()
 void VehicleSimulator::onComponentChange()
 {
     IsaacComponent::onComponentChange();
-    double stageUnits = UsdGeomGetStageMetersPerUnit(mStage);
 
     const pxr::RobotEngineBridgeSchemaRobotEngineVehicle& typedPrim =
         (pxr::RobotEngineBridgeSchemaRobotEngineVehicle)mPrim;

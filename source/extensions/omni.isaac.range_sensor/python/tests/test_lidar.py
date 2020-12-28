@@ -12,6 +12,11 @@ import os
 import carb.tokens
 
 
+async def simulate(seconds, steps_per_sec=60):
+    for frame in range(int(steps_per_sec * seconds)):
+        await omni.kit.app.get_app().next_update_async()
+
+
 def get_data_file(file_name: str):
     if os.path.isabs(file_name):
         path_to_file = file_name
@@ -132,7 +137,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Run for a second
         self._timeline.play()
-        await asyncio.sleep(1)
+        await simulate(1.0)
         self._timeline.pause()
 
         # Get depth, and check that we hit the cube in front, and hit nothing in back
@@ -173,7 +178,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Run for two seconds
 
         self._timeline.play()
-        await asyncio.sleep(2)
+        await simulate(2.0)
         self._timeline.pause()
         # Get depth, and check that we hit the cube in front, and hit nothing in back
         depth = self._lidar.get_depth_data(lidarPath)
@@ -232,7 +237,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Run for two seconds
 
         self._timeline.play()
-        await asyncio.sleep(2)
+        await simulate(2.0)
         self._timeline.pause()
         # Get depth, and check that we hit the cube in front, and hit nothing in back
         depth = self._lidar.get_depth_data(lidarPath)
@@ -267,7 +272,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     #     # Run for a second
     #     self._timeline.play()
-    #     await asyncio.sleep(1)
+    #     await simulate(2.0)
     #     self._timeline.pause()
 
     #     kitZenith = self._lidar.get_zenith_data(lidarPath)

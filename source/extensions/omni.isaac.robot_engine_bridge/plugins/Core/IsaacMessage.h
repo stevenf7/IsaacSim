@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "IsaacCApi.h"
+
 #include <carb/cuda/CudaRuntime.h>
 #include <carb/logging/Log.h>
 
@@ -39,6 +41,7 @@
 #include <stdlib.h>
 #include <string>
 #include <unordered_map>
+
 namespace omni
 {
 namespace isaac
@@ -349,6 +352,10 @@ public:
     {
         kj::String message_json = isaac_message::gJsonCodec.encode(getProto());
         CARB_LOG_ERROR("Message json: %s", message_json.cStr());
+    }
+    bool checkType(const int64_t type)
+    {
+        return ::capnp::typeId<Proto>() == static_cast<uint64_t>(type);
     }
     std::vector<const uint8_t*> segment_ptrs;
     std::vector<uint64_t> segment_sizes;

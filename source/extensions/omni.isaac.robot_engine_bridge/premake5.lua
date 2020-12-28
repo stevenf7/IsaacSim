@@ -4,8 +4,6 @@ project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
 
-    disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable", "error=unused-function"}
-
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/robot_engine_bridge/**")
 

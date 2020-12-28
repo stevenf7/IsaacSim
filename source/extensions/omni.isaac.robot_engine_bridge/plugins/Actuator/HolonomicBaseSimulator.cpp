@@ -188,7 +188,6 @@ void HolonomicBaseSimulator::tick()
 void HolonomicBaseSimulator::onComponentChange()
 {
     IsaacComponent::onComponentChange();
-    double stageUnits = UsdGeomGetStageMetersPerUnit(mStage);
 
     const pxr::RobotEngineBridgeSchemaRobotEngineHolonomicBase& typedPrim =
         (pxr::RobotEngineBridgeSchemaRobotEngineHolonomicBase)mPrim;

@@ -15,6 +15,7 @@
 #include <string>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/utils/Transforms.h>
 #include <carb/profiler/Profile.h>
 #include <carb/InterfaceUtils.h>
 #include <carb/filesystem/IFileSystem.h>
@@ -25,7 +26,6 @@
 #include "../Core/IsaacComponent.h"
 #include "../Monitor/RigidBodiesSink.h"
 #include "../Actuator/Teleport.h"
-#include "../Utils/IsaacUtilities.h"
 
 #include <robotEngineBridgeSchema/robotEngineTeleport.h>
 #include <robotEngineBridgeSchema/robotEngineRigidBodySink.h>
@@ -142,7 +142,8 @@ void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Rea
                     pxr::GfVec4f pxBodyRotation(isaacBodyRotation.getX(), isaacBodyRotation.getY(),
                                                 isaacBodyRotation.getZ(), isaacBodyRotation.getW());
 
-                    setTransform(mDynamicControlPtr, prim, pxBodyTranslation * mInvUnitScale, pxBodyRotation);
+                    isaac::utils::transforms::setTransform(
+                        mDynamicControlPtr, prim, pxBodyTranslation * mInvUnitScale, pxBodyRotation);
                 }
                 AddObject(actorName, prim);
             }

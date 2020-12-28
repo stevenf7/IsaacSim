@@ -9,9 +9,7 @@
 
 #pragma once
 
-#include "../Core/IsaacComponent.h"
-
-#include <carb/filesystem/IFileSystem.h>
+// #include <carb/filesystem/IFileSystem.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 // clang-format off
@@ -22,9 +20,10 @@ namespace omni
 {
 namespace isaac
 {
-namespace robot_engine_bridge
+namespace utils
 {
-
+namespace transforms
+{
 using omni::isaac::dynamic_control::DcHandle;
 using omni::isaac::dynamic_control::DcObjectType;
 using omni::isaac::dynamic_control::DcTransform;
@@ -36,7 +35,7 @@ using omni::isaac::dynamic_control::DcTransform;
  * @param pxBodyTranslation
  * @param pxBodyRotation
  */
-static void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
+inline void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
                          pxr::UsdPrim& prim,
                          pxr::GfVec3f pxBodyTranslation,
                          pxr::GfVec4f pxBodyRotation)
@@ -89,7 +88,7 @@ static void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicC
  * @param prim
  * @param pxBodyScale
  */
-static void setScale(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
+inline void setScale(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
                      pxr::UsdPrim& prim,
                      pxr::GfVec3d pxBodyScale)
 {
@@ -102,6 +101,7 @@ static void setScale(omni::isaac::dynamic_control::DynamicControl* mDynamicContr
         auto scaledTransformMat = scaleMat * currentTransformMat;
         omni::usd::UsdUtils::setLocalTransformMatrix(prim, scaledTransformMat);
     }
+}
 }
 }
 }
