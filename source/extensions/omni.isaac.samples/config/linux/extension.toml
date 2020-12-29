@@ -24,7 +24,7 @@ icon = "data/icon.png"
 "omni.isaac.manip" = {}
 
 [[python.module]]
-name = "omni.isaac.samples"
+name = "omni.isaac.samples.tests"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.kaya_preview"

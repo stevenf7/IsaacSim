@@ -71,6 +71,9 @@ class Gripper:
         self.dc.set_dof_position_target(self.finger_j1, self.width * 0.5 * 100)
         self.dc.set_dof_position_target(self.finger_j2, self.width * 0.5 * 100)
 
+    def status(self):
+        return self.dc.get_dof_position(self.finger_j1), self.dc.get_dof_position(self.finger_j2)
+
 
 class Status:
     """Class that contains status for end effector
