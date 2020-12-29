@@ -278,3 +278,9 @@ class RMPSample:
         if dof_states is not None:
             print("robot joint states:")
             print(dof_states["pos"])
+
+    def move_target(self, position: Gf.Vec3f):
+        """Move the target to a new location
+        """
+        if self._target_prim is not None:
+            self._target_prim.GetAttribute("xformOp:translate").Set(position)

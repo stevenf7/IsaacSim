@@ -7,6 +7,7 @@ import omni.kit
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.samples.scripts.rmp_sample.sample import RMPSample
 from .common import simulate
+from pxr import Gf
 
 
 class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -71,6 +72,37 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(left, 0.0, delta=0.1)
         self.assertAlmostEqual(right, 0.0, delta=0.1)
         pass
+
+    async def test_obstacle(self):
+        self._sample.create_robot()
+        self._timeline.play()
+        self._sample.follow_target()
+        await simulate(1)
+        self._sample.add_obstacle()
+        # move target to location just above cube, we should not be able to reach
+        self._sample.move_target(Gf.Vec3f(30.0, -20.0, 12))
+        await simulate(3)
+        self.assertEqual(self._sample.has_arrived(), False)
+        # toggle, we should be able to reach
+        self._sample.toggle_obstacle()
+        await simulate(3)
+        self.assertEqual(self._sample.has_arrived(), True)
+        # toggle, we should not be able to reach
+        self._sample.toggle_obstacle()
+        await simulate(3)
+        self.assertEqual(self._sample.has_arrived(), False)
+        # toggle, we should be able to reach
+        self._sample.toggle_obstacle()
+        await simulate(3)
+        self.assertEqual(self._sample.has_arrived(), True)
+        # move target to above clear spot, we should be able to reach
+        self._sample.move_target(Gf.Vec3f(30.0, 30.0, 20))
+        await simulate(4)
+        self.assertEqual(self._sample.has_arrived(), True)
+        # move target to inside ground, we should not reach
+        self._sample.move_target(Gf.Vec3f(30.0, 30.0, 0))
+        await simulate(4)
+        self.assertEqual(self._sample.has_arrived(), False)
 
     # Run all functions with simulation enabled
     async def test_simulation(self):
