@@ -25,11 +25,11 @@ struct RobotEngineBridge
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::robot_engine_bridge::RobotEngineBridge", 0, 1);
 
-    void(CARB_ABI* createApplication)(std::string asset_path,
+    bool(CARB_ABI* createApplication)(std::string asset_path,
                                       std::string app_file,
                                       std::vector<const char*> module_paths,
                                       std::vector<const char*> json_files);
-    void(CARB_ABI* destroyApplication)();
+    bool(CARB_ABI* destroyApplication)();
     std::string const(CARB_ABI* getLastError)();
     void(CARB_ABI* initializeStageLoader)(std::string inputComponent,
                                           std::string requestChannelName,

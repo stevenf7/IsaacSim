@@ -1,6 +1,9 @@
 import omni
+import carb
 import numpy as np
 from omni.isaac.pyalice import Codelet
+import time
+import logging
 
 
 class PyaliceApp:
@@ -12,6 +15,7 @@ class PyaliceApp:
         self._reb_extension_path = ext_manager.get_extension_path(ext_id)
 
         self.app = Application(name="test", asset_path=self._reb_extension_path)
+        self.app.logger.setLevel(logging.ERROR)
         self._stopped = True
 
     def run(self, duration: float = 1.0):
@@ -25,19 +29,21 @@ class PyaliceApp:
         if self._stopped is False:
             self.app.stop()
             self._stopped = True
+            time.sleep(2.0)
 
     def __del__(self):
         self.stop()
 
 
-def create_application(re_bridge):
+def create_application(json_file: str = "isaacsim.app.json"):
     ext_manager = omni.kit.app.get_app().get_extension_manager()
     ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
     reb_extension_path = ext_manager.get_extension_path(ext_id)
-    json_path = reb_extension_path + "/resources/isaac_engine/json/isaacsim.app.json"
-    asset_path = reb_extension_path
-    print("create application with: ", asset_path, json_path)
-    re_bridge.create_application(asset_path, json_path, [], [])
+    app_file = f"{reb_extension_path}/resources/isaac_engine/json/{json_file}"
+    carb.log_info(f"create application with: {reb_extension_path} {app_file}")
+    return omni.kit.commands.execute(
+        "CreateRobotEngineBridgeApplicationCommand", asset_path=reb_extension_path, app_file=app_file
+    )
 
 
 class ConstantDiffBaseControl(Codelet):

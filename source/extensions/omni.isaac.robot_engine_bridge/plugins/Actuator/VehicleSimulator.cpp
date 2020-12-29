@@ -470,16 +470,16 @@ void VehicleSimulator::fillCache()
             if (massAPI.GetMassAttr())
             {
                 massAPI.GetMassAttr().Get(&mCache.chassisMass);
-                CARB_LOG_ERROR("Chassis mass: %f", mCache.chassisMass);
+                CARB_LOG_INFO("Chassis mass: %f", mCache.chassisMass);
             }
             else
             {
                 mCache.chassisMass = 100;
-                CARB_LOG_ERROR("NO Chassis Mass using deault %f", mCache.chassisMass);
+                CARB_LOG_WARN("NO Chassis Mass using deault %f", mCache.chassisMass);
             }
             mCache.totalMass += mCache.chassisMass;
         }
-        CARB_LOG_ERROR("Vehicle Mass: %f kg", mCache.totalMass);
+        CARB_LOG_INFO("Total Vehicle Mass: %f kg", mCache.totalMass);
         if (success)
             mCache.state |= CacheStateFlag::eUSD;
 

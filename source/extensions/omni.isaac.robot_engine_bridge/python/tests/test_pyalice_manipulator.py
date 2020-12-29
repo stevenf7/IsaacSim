@@ -9,7 +9,6 @@ import numpy as np
 import gc
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.utils.scripts.test_utils import load_test_file
@@ -19,14 +18,13 @@ from .common import PyaliceApp, create_application, simulate
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCase):
+class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
@@ -42,12 +40,12 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCase):
             return
         self._nucleus_path = nucleus_server + "/Isaac"
 
-        create_application(self._re_bridge)
+        self.assertTrue(create_application()[1])
         pass
 
     # After running each test
     async def tearDown(self):
-        self._re_bridge.destroy_application()
+        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
         gc.collect()
         pass
 
