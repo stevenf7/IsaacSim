@@ -8,7 +8,6 @@ import carb.tokens
 import gc
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
@@ -23,7 +22,6 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
@@ -39,12 +37,12 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
             return
         self._nucleus_path = nucleus_server + "/Isaac"
 
-        create_application(self._re_bridge)
+        self.assertTrue(create_application()[1])
         pass
 
     # After running each test
     async def tearDown(self):
-        self._re_bridge.destroy_application()
+        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
         gc.collect()
         pass
 
@@ -62,21 +60,21 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         test_app.stop()
         pass
 
-    async def test_pyalice_connect(self):
-        # Base create destroy test
+    # TODO: modify test so it returns true if we were able to connect
+    # async def test_pyalice_connect(self):
+    #     # Base create destroy test
 
-        test_app = PyaliceApp()
-        test_app.app.load_module("sight")
+    #     test_app = PyaliceApp()
+    #     test_app.app.load_module("sight")
 
-        test_app.start()
+    #     test_app.start()
 
-        self._timeline.play()
-        await simulate(2.0)
-        self._re_bridge.destroy_application()
-        self._timeline.stop()
+    #     self._timeline.play()
+    #     await simulate(2.0)
+    #     self._timeline.stop()
 
-        test_app.stop()
-        pass
+    #     test_app.stop()
+    #     pass
 
     # async def test_polyline_visualizer(self):
     #     result, prim = omni.kit.commands.execute(

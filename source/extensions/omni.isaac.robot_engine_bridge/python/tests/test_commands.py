@@ -2,12 +2,10 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-
 import omni.kit.usd
 import gc
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 import omni.kit.commands
 from .common import create_application, get_selected_path, simulate
 
@@ -20,12 +18,14 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
         self._stage = omni.usd.get_context().get_stage()
         pass
 
     # After running each test
     async def tearDown(self):
+        self._stage = None
+        self._timeline = None
+        await omni.usd.get_context().new_stage_async()
         gc.collect()
         pass
 
@@ -42,10 +42,10 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
             chassis_prim_rel=None,
             left_wheel_joint_name="",
             right_wheel_joint_name="",
-            robot_front=(1, 0, 0),
+            robot_front=Gf.Vec3f(1, 0, 0),
             wheel_radius=0.1,
             wheel_base=0.5,
-            max_speed=(1.5, 1.0),
+            max_speed=Gf.Vec2f(1.5, 1.0),
             time_without_command=0.2,
             acceleration_smoothing=1.0,
         )
@@ -62,10 +62,10 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
             wheel_1_joint_name="",
             wheel_2_joint_name="",
             wheel_3_joint_name="",
-            robot_front=(1, 0, 0),
+            robot_front=Gf.Vec3f(1, 0, 0),
             wheel_radius=0.04,
             wheel_base=0.125,
-            max_speed=(1.5, 1.0),
+            max_speed=Gf.Vec2f(1.5, 1.0),
             time_without_command=0.2,
             acceleration_smoothing=1.0,
         )
@@ -226,12 +226,12 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
     async def test_command_active(self):
-        create_application(self._re_bridge)
+        self.assertTrue(create_application()[1])
         self._timeline.play()
         await simulate(1)
         await self.test_command_basic()
         await simulate(1)
-        self._re_bridge.destroy_application()
+        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
         self._timeline.stop()
 
     # TODO make this generic and automatically randomize all parameters
@@ -247,18 +247,18 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
             chassis_prim_rel=None,
             left_wheel_joint_name="",
             right_wheel_joint_name="",
-            robot_front=(1, 0, 0),
+            robot_front=Gf.Vec3f(1, 0, 0),
             wheel_radius=0.1,
             wheel_base=0.5,
-            max_speed=(1.5, 1.0),
+            max_speed=Gf.Vec2f(1.5, 1.0),
             time_without_command=0.2,
             acceleration_smoothing=1.0,
         )
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         # print(result, prim)
-        prim.GetInputComponentAttr().Set("input_changed")
-        prim.GetInputChannelAttr().Set("base_command_changed")
+        prim.GetInputComponentAttr().Set(str("input_changed"))
+        prim.GetInputChannelAttr().Set(str("base_command_changed"))
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         # TODO complete test

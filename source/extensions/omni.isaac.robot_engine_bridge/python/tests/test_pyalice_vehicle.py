@@ -8,7 +8,6 @@ import carb.tokens
 import gc
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.utils.scripts.test_utils import load_test_file
@@ -17,14 +16,13 @@ from .common import PyaliceApp, VehicleControl, create_application, simulate
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCase):
+class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
@@ -40,12 +38,15 @@ class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCase):
             return
         self._nucleus_path = nucleus_server + "/Isaac"
 
-        create_application(self._re_bridge)
+        self.assertTrue(create_application()[1])
+        self._pyalice_app = PyaliceApp()
         pass
 
     # After running each test
     async def tearDown(self):
-        self._re_bridge.destroy_application()
+        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self._pyalice_app = None
+        await omni.usd.get_context().new_stage_async()
         gc.collect()
         pass
 
@@ -59,18 +60,17 @@ class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCase):
         # settle the robot
         await simulate(1)
 
-        test_app = PyaliceApp()
-        test_app.app.load(
+        self._pyalice_app.app.load(
             filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
         )
-        sim_in = test_app.app.nodes["simulation.interface"]["input"]
-        sim_out = test_app.app.nodes["simulation.interface"]["output"]
+        sim_in = self._pyalice_app.app.nodes["simulation.interface"]["input"]
+        sim_out = self._pyalice_app.app.nodes["simulation.interface"]["output"]
 
-        control = test_app.app.add("controller").add(VehicleControl, name="VehicleControl")
+        control = self._pyalice_app.app.add("controller").add(VehicleControl, name="VehicleControl")
         control.config.accelerator = 2.0
         control.config.steering = 0.0
-        test_app.app.connect(control, "cmd", sim_in, "vehicle_command")
-        test_app.start()
+        self._pyalice_app.app.connect(control, "cmd", sim_in, "vehicle_command")
+        self._pyalice_app.start()
         # TODO: Check chassis linear velocity
         await simulate(10)
         # TODO: Compute analytical values to compare against
@@ -83,7 +83,5 @@ class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCase):
 
         # print(lin_vel, ang_vel)
         self._timeline.stop()
-        test_app.stop()
-        test_app = None
-        self._re_bridge.destroy_application()
+        self._pyalice_app.stop()
         pass

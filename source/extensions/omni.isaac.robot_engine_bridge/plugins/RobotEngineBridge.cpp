@@ -80,20 +80,38 @@ std::unique_ptr<omni::isaac::robot_engine_bridge::IsaacCApi> g_c_api;
 std::unique_ptr<omni::isaac::robot_engine_bridge::IsaacApplication> g_application_handle;
 
 
-void CARB_ABI createApplication(std::string asset_path,
+bool CARB_ABI createApplication(std::string asset_path,
                                 std::string app_file,
                                 std::vector<const char*> module_paths,
                                 std::vector<const char*> json_files)
 {
 
 
-    g_application_handle->create(asset_path, app_file, module_paths, json_files);
-    g_application_handle->start();
+    isaac_error_t error = g_application_handle->create(asset_path, app_file, module_paths, json_files);
+    if (error != isaac_error_t::isaac_error_success)
+    {
+        return false;
+    }
+    error = g_application_handle->start();
+    if (error != isaac_error_t::isaac_error_success)
+    {
+        return false;
+    }
+    return true;
 }
-void CARB_ABI destroyApplication()
+bool CARB_ABI destroyApplication()
 {
-    g_application_handle->stop();
-    g_application_handle->destroy();
+    isaac_error_t error = g_application_handle->stop();
+    if (error != isaac_error_t::isaac_error_success)
+    {
+        return false;
+    }
+    error = g_application_handle->destroy();
+    if (error != isaac_error_t::isaac_error_success)
+    {
+        return false;
+    }
+    return true;
 }
 std::string const CARB_ABI getLastError()
 {

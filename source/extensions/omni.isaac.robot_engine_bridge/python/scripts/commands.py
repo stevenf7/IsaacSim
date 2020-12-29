@@ -2,10 +2,11 @@ import omni.kit.commands
 import omni.kit.utils
 import omni.isaac.RobotEngineBridgeSchema as REBSchema
 import carb
+from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 from pxr import Gf
 
 
-def get_path(stage, path, parent=None):
+def get_path(stage, path: str, parent=None) -> str:
     if parent:
         path = omni.kit.utils.get_stage_next_free_path(stage, parent + path, False)
     else:
@@ -19,14 +20,46 @@ def setup_base_prim(prim):
     prim.CreateTimeOffsetAttr(0.0)
 
 
-def setup_publisher(prim, component, channel):
+def setup_publisher(prim, component: str, channel: str):
     prim.CreateOutputComponentAttr(component)
     prim.CreateOutputChannelAttr(channel)
 
 
-def setup_receiver(prim, component, channel):
+def setup_receiver(prim, component: str, channel: str):
     prim.CreateInputComponentAttr(component)
     prim.CreateInputChannelAttr(channel)
+
+
+# this command is used to create each REB prim, it also handles undo so that each individual prim command doesn't have to
+class CreateRobotEngineBridgeApplicationCommand(omni.kit.commands.Command):
+    def __init__(self, asset_path: str, app_file: str, module_paths: list = [], json_files: list = []):
+        self._asset_path = asset_path
+        self._app_file = app_file
+        self._module_paths = module_paths
+        self._json_files = json_files
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        pass
+
+    def do(self) -> bool:
+
+        return self._re_bridge.create_application(
+            self._asset_path, self._app_file, self._module_paths, self._json_files
+        )
+
+    def undo(self):
+        pass
+
+
+class DestroyRobotEngineBridgeApplicationCommand(omni.kit.commands.Command):
+    def __init__(self):
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        pass
+
+    def do(self) -> bool:
+        return self._re_bridge.destroy_application()
+
+    def undo(self):
+        pass
 
 
 # this command is used to create each REB prim, it also handles undo so that each individual prim command doesn't have to
@@ -54,21 +87,21 @@ class CreateRobotEngineBridgePrimCommand(omni.kit.commands.Command):
 class CreateRobotEngineBridgeDifferentialBaseCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_DifferentialBase",
+        path: str = "/REB_DifferentialBase",
         parent=None,
-        input_component="input",
-        input_channel="base_command",
-        output_component="output",
-        output_channel="base_state",
+        input_component: str = "input",
+        input_channel: str = "base_command",
+        output_component: str = "output",
+        output_channel: str = "base_state",
         chassis_prim_rel=None,
-        left_wheel_joint_name="",
-        right_wheel_joint_name="",
-        robot_front=(1, 0, 0),
-        wheel_radius=0.1,
-        wheel_base=0.5,
-        max_speed=(1.5, 1.0),
-        time_without_command=0.2,
-        acceleration_smoothing=1.0,
+        left_wheel_joint_name: str = "",
+        right_wheel_joint_name: str = "",
+        robot_front: Gf.Vec2f = Gf.Vec3f(1, 0, 0),
+        wheel_radius: float = 0.1,
+        wheel_base: float = 0.5,
+        max_speed: Gf.Vec2f = Gf.Vec2f(1.5, 1.0),
+        time_without_command: float = 0.2,
+        acceleration_smoothing: float = 1.0,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -116,22 +149,22 @@ class CreateRobotEngineBridgeDifferentialBaseCommand(omni.kit.commands.Command):
 class CreateRobotEngineBridgeHolonomicBaseCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_HolonomicBase",
+        path: str = "/REB_HolonomicBase",
         parent=None,
-        input_component="input",
-        input_channel="base_command",
-        output_component="output",
-        output_channel="base_state",
+        input_component: str = "input",
+        input_channel: str = "base_command",
+        output_component: str = "output",
+        output_channel: str = "base_state",
         articulation_prim_rel=None,
-        wheel_1_joint_name="",
-        wheel_2_joint_name="",
-        wheel_3_joint_name="",
-        robot_front=(1, 0, 0),
-        wheel_radius=0.1,
-        wheel_base=0.5,
-        max_speed=(1.5, 1.0),
-        time_without_command=0.2,
-        acceleration_smoothing=1.0,
+        wheel_1_joint_name: str = "",
+        wheel_2_joint_name: str = "",
+        wheel_3_joint_name: str = "",
+        robot_front: Gf.Vec3f = Gf.Vec3f(1, 0, 0),
+        wheel_radius: float = 0.1,
+        wheel_base: float = 0.5,
+        max_speed: Gf.Vec2f = Gf.Vec2f(1.5, 1.0),
+        time_without_command: float = 0.2,
+        acceleration_smoothing: float = 1.0,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -178,12 +211,12 @@ class CreateRobotEngineBridgeHolonomicBaseCommand(omni.kit.commands.Command):
 class CreateRobotEngineBridgeVehicleCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_Vehicle",
+        path: str = "/REB_Vehicle",
         parent=None,
-        input_component="input",
-        input_channel="vehicle_command",
-        output_component="output",
-        output_channel="vehicle_state",
+        input_component: str = "input",
+        input_channel: str = "vehicle_command",
+        output_component: str = "output",
+        output_channel: str = "vehicle_state",
         vehicle_prim_rel=None,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
@@ -219,12 +252,12 @@ class CreateRobotEngineBridgeVehicleCommand(omni.kit.commands.Command):
 class CreateRobotEngineBridgeJointControlCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_JointControl",
+        path: str = "/REB_JointControl",
         parent=None,
-        input_component="input",
-        input_channel="joint_position",
-        output_component="output",
-        output_channel="joint_state",
+        input_component: str = "input",
+        input_channel: str = "joint_position",
+        output_component: str = "output",
+        output_channel: str = "joint_state",
         articulation_prim_rel=None,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
@@ -261,14 +294,14 @@ class CreateRobotEngineBridgeJointControlCommand(omni.kit.commands.Command):
 class CreateRobotEngineBridgeScissorLiftCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_ScissorLift",
+        path: str = "/REB_ScissorLift",
         parent=None,
-        input_component="input",
-        input_channel="joint_position",
-        output_component="output",
-        output_channel="joint_state",
+        input_component: str = "input",
+        input_channel: str = "joint_position",
+        output_component: str = "output",
+        output_channel: str = "joint_state",
         articulation_prim_rel=None,
-        lift_joint_name="lift_joint",
+        lift_joint_name: str = "lift_joint",
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -305,23 +338,23 @@ class CreateRobotEngineBridgeScissorLiftCommand(omni.kit.commands.Command):
 class CreateRobotEngineBridgeSurfaceGripperCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_SurfaceGripper",
+        path: str = "/REB_SurfaceGripper",
         parent=None,
-        input_component="input",
-        input_channel="io_command",
-        output_component="output",
-        output_channel="io_state",
+        input_component: str = "input",
+        input_channel: str = "io_command",
+        output_component: str = "output",
+        output_channel: str = "io_state",
         d6_joint_prim_rel=None,
         parent_prim_rel=None,
-        gripper_entity="gripper",
-        grip_threshold=1,
-        force_limit=1e10,
-        torque_limit=1e10,
-        bend_angle=0,
-        stiffness=1e10,
-        damping=1e3,
-        offset_position=Gf.Vec3f(0, 0, 0),
-        offset_rotation=Gf.Quatf(1.0),
+        gripper_entity: str = "gripper",
+        grip_threshold: float = 1,
+        force_limit: float = 1e10,
+        torque_limit: float = 1e10,
+        bend_angle: float = 0,
+        stiffness: float = 1e10,
+        damping: float = 1e3,
+        offset_position: Gf.Vec3f = Gf.Vec3f(0, 0, 0),
+        offset_rotation: Gf.Quatf = Gf.Quatf(1.0),
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -374,18 +407,18 @@ class CreateRobotEngineBridgeSurfaceGripperCommand(omni.kit.commands.Command):
 class CreateRobotEngineBridgeTwoFingerGripperCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_TwoFingerGripper",
+        path: str = "/REB_TwoFingerGripper",
         parent=None,
-        input_component="input",
-        input_channel="io_command",
-        output_component="output",
-        output_channel="io_state",
+        input_component: str = "input",
+        input_channel: str = "io_command",
+        output_component: str = "output",
+        output_channel: str = "io_state",
         articulation_prim_rel=None,
-        left_finger_joint="left_finger",
-        right_finger_joint="right_finger",
-        gripper_entity="gripper",
-        closed_distance=0,
-        open_distance=0.04,
+        left_finger_joint: str = "left_finger",
+        right_finger_joint: str = "right_finger",
+        gripper_entity: str = "gripper",
+        closed_distance: float = 0,
+        open_distance: float = 0.04,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -424,10 +457,10 @@ class CreateRobotEngineBridgeTwoFingerGripperCommand(omni.kit.commands.Command):
 class CreateRobotEngineBridgeRigidBodySinkCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_RigidBodySink",
+        path: str = "/REB_RigidBodySink",
         parent=None,
-        output_component="output",
-        output_channel="bodies",
+        output_component: str = "output",
+        output_channel: str = "bodies",
         rigid_body_prims_rel=None,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
@@ -457,7 +490,9 @@ class CreateRobotEngineBridgeRigidBodySinkCommand(omni.kit.commands.Command):
 
 
 class CreateRobotEngineBridgeTeleportCommand(omni.kit.commands.Command):
-    def __init__(self, path="/REB_Teleport", parent=None, input_component="input", input_channel="teleport"):
+    def __init__(
+        self, path: str = "/REB_Teleport", parent=None, input_component: str = "input", input_channel: str = "teleport"
+    ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
@@ -484,14 +519,14 @@ class CreateRobotEngineBridgeTeleportCommand(omni.kit.commands.Command):
 class CreateRobotEngineBridgeScenarioFromMessageCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_ScenarioFromMessage",
+        path: str = "/REB_ScenarioFromMessage",
         parent=None,
-        input_component="input",
-        input_channel="scenario_actors",
-        teleport_input_component="input",
-        teleport_input_channel="teleport",
-        rigid_body_sink_output_component="output",
-        rigid_body_sink_output_channel="bodies",
+        input_component: str = "input",
+        input_channel: str = "scenario_actors",
+        teleport_input_component: str = "input",
+        teleport_input_channel: str = "teleport",
+        rigid_body_sink_output_component: str = "output",
+        rigid_body_sink_output_channel: str = "bodies",
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -524,25 +559,25 @@ class CreateRobotEngineBridgeScenarioFromMessageCommand(omni.kit.commands.Comman
 class CreateRobotEngineBridgeCameraCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_Camera",
+        path: str = "/REB_Camera",
         parent=None,
-        rgb_output_component="output",
-        rgb_output_channel="color",
-        depth_output_component="output",
-        depth_output_channel="depth",
-        segmentation_output_component="output",
-        segmentation_output_channel="segmentation",
-        bbox2d_output_component="output",
-        bbox2d_output_channel="bbox",
-        bbox2d_class_list="",
-        bbox3d_output_component="output",
-        bbox3d_output_channel="bbox3d",
-        bbox3d_class_list="",
-        rgb_enabled=True,
-        depth_enabled=False,
-        segmentaion_enabled=False,
-        bbox2d_enabled=False,
-        bbox3d_enabled=False,
+        rgb_output_component: str = "output",
+        rgb_output_channel: str = "color",
+        depth_output_component: str = "output",
+        depth_output_channel: str = "depth",
+        segmentation_output_component: str = "output",
+        segmentation_output_channel: str = "segmentation",
+        bbox2d_output_component: str = "output",
+        bbox2d_output_channel: str = "bbox",
+        bbox2d_class_list: str = "",
+        bbox3d_output_component: str = "output",
+        bbox3d_output_channel: str = "bbox3d",
+        bbox3d_class_list: str = "",
+        rgb_enabled: bool = True,
+        depth_enabled: bool = False,
+        segmentaion_enabled: bool = False,
+        bbox2d_enabled: bool = False,
+        bbox3d_enabled: bool = False,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -590,7 +625,12 @@ class CreateRobotEngineBridgeCameraCommand(omni.kit.commands.Command):
 
 class CreateRobotEngineBridgeLidarCommand(omni.kit.commands.Command):
     def __init__(
-        self, path="/REB_Lidar", parent=None, output_component="output", output_channel="rangescan", lidar_prim_rel=None
+        self,
+        path: str = "/REB_Lidar",
+        parent=None,
+        output_component: str = "output",
+        output_channel: str = "rangescan",
+        lidar_prim_rel=None,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -623,13 +663,13 @@ class CreateRobotEngineBridgeLidarCommand(omni.kit.commands.Command):
 class CreateRobotEngineBridgeContactMonitorCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_ContactMonitor",
+        path: str = "/REB_ContactMonitor",
         parent=None,
-        output_component="output",
-        output_channel="collision",
+        output_component: str = "output",
+        output_channel: str = "collision",
         target_prim_rel=None,
         ignored_prims_rel=None,
-        force_threshold=1000.0,
+        force_threshold: float = 1000.0,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -667,14 +707,14 @@ class CreateRobotEngineBridgeContactMonitorCommand(omni.kit.commands.Command):
 class CreateRobotEngineBridgePolylineVisualizerCommand(omni.kit.commands.Command):
     def __init__(
         self,
-        path="/REB_PolylineVisualizer",
+        path: str = "/REB_PolylineVisualizer",
         parent=None,
-        input_component="input",
-        input_channel="sight_plan",
+        input_component: str = "input",
+        input_channel: str = "sight_plan",
         parent_prim_rel=None,
-        width=0.1,
-        color=Gf.Vec4f(1.0, 1.0, 1.0, 1.0),
-        offset=Gf.Vec3f(0, 0, 0),
+        width: float = 0.1,
+        color: Gf.Vec4f = Gf.Vec4f(1.0, 1.0, 1.0, 1.0),
+        offset: Gf.Vec3f = Gf.Vec3f(0, 0, 0),
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():

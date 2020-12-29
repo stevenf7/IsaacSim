@@ -84,11 +84,13 @@ isaac_error_t IsaacApplication::create(std::string assetPath,
     }
     else
     {
-        CARB_LOG_WARN("Application Already Created, Destroy before creating again");
+        CARB_LOG_ERROR("Application Already Created, Destroy before creating again");
+        return isaac_error_t::isaac_error_unknown;
     }
 
     if (mError != isaac_error_t::isaac_error_success)
     {
+        mAppHandle = 0;
         CARB_LOG_ERROR("Application Was Not Created Successfully");
         return mError;
     }
@@ -124,7 +126,7 @@ isaac_error_t IsaacApplication::stop()
     mRunning = false;
     if (mAppHandle == 0)
     {
-        CARB_LOG_INFO("Cannot Stop application that is not created");
+        CARB_LOG_WARN("Cannot Stop application that is not created");
         return isaac_error::isaac_error_unknown;
     }
     mError = (mIsaacCApiPtr->isaac_stop_application)(mAppHandle);
@@ -141,13 +143,23 @@ isaac_error_t IsaacApplication::destroy()
     // Apps must be stopped before they are destroyed
     if (mRunning)
     {
-        stop();
+        mError = stop();
     }
-    mError = (mIsaacCApiPtr->isaac_destroy_application)(&mAppHandle);
+    // Stop will also fail if the application is not created
     if (mError != isaac_error_t::isaac_error_success)
     {
         CARB_LOG_ERROR("Application Was Not Destroyed Successfully");
         return mError;
+    }
+    // Only destroy an app if we have a valid handle to it
+    if (mAppHandle != 0)
+    {
+        mError = (mIsaacCApiPtr->isaac_destroy_application)(&mAppHandle);
+        if (mError != isaac_error_t::isaac_error_success)
+        {
+            CARB_LOG_ERROR("Application Was Not Destroyed Successfully");
+            return mError;
+        }
     }
     mAppHandle = 0;
     for (auto& component : mComponents)
