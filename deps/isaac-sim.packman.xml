@@ -14,7 +14,7 @@
         <package name="lula" version="linux_x64_linbuild_20200415_a36cb37" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
-        <package name="isaac_engine" version="linux_x64_20201228_master_d103b7f03" platforms="linux-x86_64"/>
+        <package name="isaac_engine" version="linux_x64_9cf5e71_20201229_master_2d8218820" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="step_reader" linkPath="../_build/target-deps/stepreader">
         <package name="step_reader" version="linux_x64_linbuild_20201005_1f9616f" platforms="linux-x86_64" />

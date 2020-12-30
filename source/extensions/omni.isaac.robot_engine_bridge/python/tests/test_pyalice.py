@@ -12,7 +12,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from .common import PyaliceApp, create_application, simulate
-
+from pxr import Gf
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREBPyalice(omni.kit.test.AsyncTestCase):
@@ -76,59 +76,60 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
     #     test_app.stop()
     #     pass
 
-    # async def test_polyline_visualizer(self):
-    #     result, prim = omni.kit.commands.execute(
-    #         "CreateRobotEngineBridgePolylineVisualizerCommand",
-    #         path="/REB_PolylineVisualizer",
-    #         parent=get_selected_path(),
-    #         input_component="input",
-    #         input_channel="plan",
-    #         parent_prim_rel=None,
-    #         width=0.1,
-    #         color=Gf.Vec4f(1.0, 1.0, 1.0, 1.0),
-    #         offset=Gf.Vec3f(0, 0, 0),
-    #     )
+    # TODO add checks for this test
+    async def test_polyline_visualizer(self):
+        result, prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePolylineVisualizerCommand",
+            path="/REB_PolylineVisualizer",
+            parent=None,
+            input_component="input",
+            input_channel="sight_plan",
+            parent_prim_rel=None,
+            width=0.1,
+            color=Gf.Vec4f(1.0, 1.0, 1.0, 1.0),
+            offset=Gf.Vec3f(0, 0, 0),
+        )
 
-    #     test_app = PyaliceApp()
+        test_app = PyaliceApp()
 
-    #     test_app.app.load(
-    #         filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
-    #     )
-    #     sim_input = test_app.app.nodes["simulation.interface"]["input"]
+        test_app.app.load(
+            filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
+        )
+        sim_input = test_app.app.nodes["simulation.interface"]["input"]
 
-    #     test_app.app.load_module("sight")
-    #     test_app.app.load_module("message_generators")
+        test_app.app.load_module("sight")
+        test_app.app.load_module("message_generators")
 
-    #     plan2 = test_app.app.add("generation").add(test_app.app.registry.isaac.message_generators.Plan2Generator)
-    #     plan2.config.waypoints = [
-    #         [0.0, 0.0, 0.0],
-    #         [0.0, 1.0, 0.0],
-    #         [1.57, 2.0, 0.0],
-    #         [1.57, 2.0, 1.0],
-    #         [0.0, 2.0, 2.0],
-    #         [0.0, 3.0, 2.0],
-    #         [0.0, 4.0, 2.0],
-    #     ]
-    #     plan2.config.new_message_threshold = [0.0, 0.0]
-    #     plan2.config.tick_period = "10Hz"
+        plan2 = test_app.app.add("generation").add(test_app.app.registry.isaac.message_generators.Plan2Generator)
+        plan2.config.waypoints = [
+            [0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [1.57, 2.0, 0.0],
+            [1.57, 2.0, 1.0],
+            [0.0, 2.0, 2.0],
+            [0.0, 3.0, 2.0],
+            [0.0, 4.0, 2.0],
+        ]
+        plan2.config.new_message_threshold = [0.0, 0.0]
+        plan2.config.tick_period = "10Hz"
 
-    #     test_app.app.load_module("viewers")
-    #     viewer = test_app.app.add("viewers").add(test_app.app.registry.isaac.viewers.Plan2Viewer)
-    #     viewer.config.size = 0.5
-    #     viewer.config.color = [118, 185, 0, 255]
+        test_app.app.load_module("viewers")
+        viewer = test_app.app.add("viewers").add(test_app.app.registry.isaac.viewers.Plan2Viewer)
+        viewer.config.size = 0.5
+        viewer.config.color = [118, 185, 0, 255]
 
-    #     test_app.app.connect(plan2, "plan", viewer, "plan")
-    #     test_app.app.connect(plan2, "plan", sim_input, "plan")
+        test_app.app.connect(plan2, "plan", viewer, "plan")
+        test_app.app.connect(plan2, "plan", sim_input, "plan")
 
-    #     kit_frontend = test_app.app.add("kit_frontend").add(test_app.app.registry.isaac.sight.SightTunnel)
-    #     kit_frontend.config.edges = [
-    #         {"source": "viewers/Plan2Viewer/plan", "target": "simulation.interface/input/sight_plan"}
-    #     ]
+        kit_frontend = test_app.app.add("kit_frontend").add(test_app.app.registry.isaac.sight.SightTunnel)
+        kit_frontend.config.edges = [
+            {"source": "viewers/Plan2Viewer/plan", "target": "simulation.interface/input/sight_plan"}
+        ]
 
-    #     test_app.start()
+        test_app.start()
 
-    #     self._timeline.play()
-    #     await simulate(1)
-    #     self._timeline.stop()
-    #     test_app.stop()
-    #     test_app = None
+        self._timeline.play()
+        await simulate(2)
+        self._timeline.stop()
+        test_app.stop()
+        test_app = None
