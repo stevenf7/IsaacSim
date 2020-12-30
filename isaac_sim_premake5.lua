@@ -126,7 +126,8 @@ call "%%~dp0%s\omniverse-kit.exe" %s %s %%*
         local sh_file_dir = root.."/_build/linux-x86_64/"..config
         local sh_file_path = sh_file_dir.."/"..name..".sh"
         local kit_bin_relative = path.getrelative(sh_file_dir, KIT_SDK_RESOLVED[config].."/_build/linux-x86_64/"..config)
-        local usd_ext_isaac_schema_path = root.."/_build/target-deps/usd_ext_isaac/"..config.."/share/usd/plugins/*/resources/"
+        local usd_ext_isaac_schema_relative = path.normalize(path.getrelative(sh_file_dir, root.."/_build/target-deps/usd_ext_isaac/"))
+        local usd_ext_isaac_schema_path="/"..config.."/share/usd/plugins/*/resources/"
         kit_bin_relative = path.normalize(kit_bin_relative)
         local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
         local f = io.open(sh_file_path, 'w')
@@ -134,9 +135,9 @@ call "%%~dp0%s\omniverse-kit.exe" %s %s %%*
 #!/bin/bash
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-export PXR_PLUGINPATH_NAME="%s":$PXR_PLUGINPATH_NAME
+export PXR_PLUGINPATH_NAME="$(readlink -e $SCRIPT_DIR/%s)%s":$PXR_PLUGINPATH_NAME
 "$SCRIPT_DIR/%s/kit" %s %s $@
-        ]], usd_ext_isaac_schema_path, kit_bin_relative, config_path, extra_args))
+        ]], usd_ext_isaac_schema_relative, usd_ext_isaac_schema_path,  kit_bin_relative, config_path, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)
     end
