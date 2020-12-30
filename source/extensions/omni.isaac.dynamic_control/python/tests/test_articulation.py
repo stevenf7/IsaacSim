@@ -255,8 +255,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         left_wheel_ptr = self._dc.find_articulation_dof(art, "left_wheel")
         right_wheel_ptr = self._dc.find_articulation_dof(art, "right_wheel")
         left_dof_idx = self._dc.find_articulation_dof_index(art, "left_wheel")
-        right_dof_idx = self._dc.find_articulation_dof_index(art, "left_wheel")
-        root_body_ptr = self._dc.get_articulation_root_body(art)
+        right_dof_idx = self._dc.find_articulation_dof_index(art, "right_wheel")
+        imu_body_ptr = self._dc.find_articulation_body(art, "imu")
         # the wheels are offset 5cm from the wheel mesh, need to account for that in wheelbase
         wheel_base = 31.613607 - 5.0  # in cm
         wheel_radius = 24.0  # in cm
@@ -272,8 +272,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(drive_target, dof_states["vel"][left_dof_idx], delta=0.01)
         self.assertAlmostEqual(drive_target, dof_states["vel"][right_dof_idx], delta=0.01)
         # check chassis linear velocity, angular should be zero
-        lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
-        ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
+        lin_vel = self._dc.get_rigid_body_linear_velocity(imu_body_ptr)
+        ang_vel = self._dc.get_rigid_body_angular_velocity(imu_body_ptr)
         self.assertAlmostEqual(drive_target * wheel_radius, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1)
         self.assertAlmostEqual(0, np.linalg.norm([ang_vel.x, ang_vel.y, ang_vel.z]), 1)
 
@@ -287,8 +287,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.assertAlmostEqual(drive_target, dof_states["vel"][left_dof_idx], delta=0.01)
         self.assertAlmostEqual(drive_target, dof_states["vel"][right_dof_idx], delta=0.01)
-        lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
-        ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
+        lin_vel = self._dc.get_rigid_body_linear_velocity(imu_body_ptr)
+        ang_vel = self._dc.get_rigid_body_angular_velocity(imu_body_ptr)
         self.assertAlmostEqual(
             drive_target * wheel_radius, np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), delta=0.2
         )
@@ -308,8 +308,8 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.set_dof_velocity_target(left_wheel_ptr, -drive_target)
         self._dc.set_dof_velocity_target(right_wheel_ptr, drive_target)
         await self.simulate(2, art)
-        lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
-        ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
+        lin_vel = self._dc.get_rigid_body_linear_velocity(imu_body_ptr)
+        ang_vel = self._dc.get_rigid_body_angular_velocity(imu_body_ptr)
         # print(np.linalg.norm(lin_vel), ang_vel)
 
         self.assertLess(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1.5)
@@ -324,12 +324,12 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.set_dof_velocity_target(right_wheel_ptr, drive_target)
         await self.simulate(1, art)
         await omni.kit.app.get_app().next_update_async()
-        lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
-        ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
+        lin_vel = self._dc.get_rigid_body_linear_velocity(imu_body_ptr)
+        ang_vel = self._dc.get_rigid_body_angular_velocity(imu_body_ptr)
         # print(np.linalg.norm(lin_vel), ang_vel)
 
-        self.assertLess(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 1.5)
-        self.assertAlmostEqual(drive_target * wheel_radius / wheel_base, ang_vel[2], 1)
+        self.assertLess(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 3.5)
+        self.assertAlmostEqual(drive_target * wheel_radius / wheel_base, ang_vel[2], delta=0.1)
         self._timeline.stop()
 
     async def test_articulation_position_franka(self, gpu=False):

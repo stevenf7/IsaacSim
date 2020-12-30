@@ -7,6 +7,7 @@ import omni.kit.usd
 from omni.isaac.dynamic_control import _dynamic_control as dc
 from omni.isaac.motion_planning import _motion_planning as mp
 import os
+import gc
 import asyncio
 import numpy as np
 from omni.isaac.utils._isaac_utils import math as mu
@@ -61,18 +62,22 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # After running each test
     async def tearDown(self):
-        print("tear down")
-        if self._timeline.is_playing():
-            self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-        self.assertFalse(self._dc.is_simulating())
-        self._dc = None
-        self._mp = None
-        self._physx = None
+        # In some cases the test will end before the asset is loaded, in this case wait for assets to load
+        while omni.kit.editor.get_editor_interface().get_current_renderer_status()[3] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+
         if self._scenario is not None:
             self._scenario.stop_tasks()
             self._scenario = None
-        print("done")
+        await omni.kit.app.get_app().next_update_async()
+
+        self._dc = None
+        self._mp = None
+        self._physx = None
+        gc.collect()
+
+        await omni.usd.get_context().new_stage_async()
         pass
 
     # async def test_bmw_demo_run(self):
@@ -174,14 +179,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._scenario = bin_stack.BinStack(self._editor, self._dc, self._mp)
         # Make sure the stage loaded
         self.assertTrue(self._scenario is not None)
-
-        self._physx.release_physics_objects()
-
         self._scenario.create_UR10(False)
-
-        self._physx.release_physics_objects()
-        self._physx.force_load_physics_from_usd()
-
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._dc.is_simulating())
@@ -231,14 +229,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._scenario = fill_bin.FillBin(self._editor, self._dc, self._mp)
         # Make sure the stage loaded
         self.assertTrue(self._scenario is not None)
-
-        self._physx.release_physics_objects()
-
         self._scenario.create_UR10(False)
-
-        self._physx.release_physics_objects()
-        self._physx.force_load_physics_from_usd()
-
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._dc.is_simulating())

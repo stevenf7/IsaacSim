@@ -96,8 +96,10 @@ function define_ext_test_experience(ext_name, python_module)
         "--ext-folder \""..script_dir_token.."/apps\" ",
         "--/isaac/nucleus/default=\"omniverse://ov-isaac-dev\"", -- Default server used for isaac samples
         "--/omni.kit.plugin/syncUsdLoads=1", -- Force USD to fully load before rendering
+        "--/rtx/materialDb/syncLoads=true",
         "--/persistent/app/viewport/displayOptions=0", -- Disable all ui elements in viewport
         "--/app/settings/persistent=false",
+        "--no-assert-dialog",
     }
     define_experience("tests-"..ext_name, {
         config_path = "",

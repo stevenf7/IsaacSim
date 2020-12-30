@@ -255,7 +255,7 @@ class Extension(omni.ext.IExt):
         if mass > 0:
             massAPI = UsdPhysics.MassAPI.Apply(bodyPrim)
             massAPI.CreateMassAttr(mass)
-        physicsAPI = UsdPhysics.PhysicsAPI.Apply(bodyPrim)
-        physicsAPI.CreateBodyTypeAttr("rigid")
+        UsdPhysics.RigidBodyAPI.Apply(bodyPrim)
+        UsdPhysics.CollisionAPI(bodyPrim)
         print(bodyPrim.GetPath().pathString)
         return bodyGeom
