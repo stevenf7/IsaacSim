@@ -121,7 +121,7 @@ function create_experience_runner(name, config_path, config, extra_args)
         f:write(string.format([[
 @echo off
 setlocal
-call "%%~dp0%s\omniverse-kit.exe" %s %s %%*
+call "%%~dp0%s\kit.exe" %s %s %%*
         ]], kit_bin_relative, config_path, extra_args))
         f:close()
     else
