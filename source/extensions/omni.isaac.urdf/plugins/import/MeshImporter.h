@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -20,84 +20,40 @@
 #include <set>
 #include <experimental/filesystem>
 #include <cmath>
+#include "ImportHelpers.h"
 
+const static size_t INVALID_MATERIAL_INDEX = SIZE_MAX;
 
-struct MeshPoint
+struct ImportTransform
 {
-    size_t index;
-    std::vector<float> values;
-
-    bool operator==(const MeshPoint& other) const
-    {
-        if (values.size() != other.values.size())
-        {
-            return false;
-        }
-
-        for (size_t i = 0; i < values.size(); i++)
-        {
-            if (values[i] != other.values[i])
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool operator<(const MeshPoint& other) const
-    {
-        for (size_t i = 0; i < values.size(); i++)
-        {
-            if (values[i] < other.values[i])
-            {
-                return true;
-            }
-            else if (values[i] > other.values[i])
-            {
-                return false;
-            }
-        }
-
-        return false;
-    }
+    pxr::GfMatrix4d matrix;
+    pxr::GfVec3f translation;
+    pxr::GfVec3f eulerAngles; // XYZ order
+    pxr::GfVec3f scale;
 };
+
+
+struct MeshGeomSubset
+{
+    pxr::VtArray<int> faceIndices;
+    size_t materialIndex = INVALID_MATERIAL_INDEX;
+};
+
 
 struct Mesh
 {
-    // Assimp will split meshes into several pieces if it has multiple materials attached.
-    // Importer will group them under the same xform node.
-    std::string groupName;
-
-    // Group Prim path
-    pxr::SdfPath groupPrimPath;
-
-    // This is the unique name across stage
-    std::string uniqueName;
-
-    // This is only useful for separate mesh export.
-    // For single file export, all meshes will share the same layer.
-    std::string layerAbsolutePath;
-
-    // Prim path of this mesh.
-    pxr::SdfPath primPath;
-
-    // Remapping information of mesh points
-    size_t remappingVertexCount;
-    std::vector<bool> keepPoints;
-    std::vector<size_t> indexRemapping;
-
-    // If exportPointerInstancer is true, it will export pointer instancer for this mesh.
-    // pointerInstances hosts the indexes of mMeshInstances
-    bool exportPointerInstancer;
-    pxr::SdfPath pointInstancerPath;
-    std::vector<size_t> pointerInstances;
-
-    // It will hosts the indexes of mMeshInstances that will not be exported as pointer instancer.
-    std::vector<size_t> instances;
+    std::string name;
+    pxr::VtArray<pxr::GfVec3f> points;
+    pxr::VtArray<int> faceVertexCounts;
+    pxr::VtArray<int> faceVertexIndices;
+    pxr::VtArray<pxr::GfVec3f> normals; // Face varing normals
+    pxr::VtArray<pxr::VtArray<pxr::GfVec2f>> uvs; // Face varing uvs
+    pxr::VtArray<pxr::VtArray<pxr::GfVec3f>> colors; // Face varing colors
+    std::vector<MeshGeomSubset> meshSubsets;
 };
 
 const static std::string ASSIMP_INSERTED_NODE_PATTERN = "$Assimp";
+
 
 static pxr::GfMatrix4d AiMatrixToGfMatrix(const aiMatrix4x4& matrix)
 {
@@ -105,6 +61,57 @@ static pxr::GfMatrix4d AiMatrixToGfMatrix(const aiMatrix4x4& matrix)
                            matrix.a3, matrix.b3, matrix.c3, matrix.d3, matrix.a4, matrix.b4, matrix.c4, matrix.d4);
 }
 
+static pxr::GfVec3f AiVector3dToGfVector3f(const aiVector3D& vector)
+{
+    return pxr::GfVec3f(vector.x, vector.y, vector.z);
+}
+
+static pxr::GfVec2f AiVector3dToGfVector2f(const aiVector3D& vector)
+{
+    return pxr::GfVec2f(vector.x, vector.y);
+}
+
+static pxr::GfVec3h AiVector3dToGfVector3h(const aiVector3D& vector)
+{
+    return pxr::GfVec3h(vector.x, vector.y, vector.z);
+}
+
+static pxr::GfQuatf AiQuatToGfVector(const aiQuaternion& quat)
+{
+    return pxr::GfQuatf(quat.w, quat.x, quat.y, quat.z);
+}
+
+static pxr::GfQuath AiQuatToGfVectorh(const aiQuaternion& quat)
+{
+    return pxr::GfQuath(quat.w, quat.x, quat.y, quat.z);
+}
+
+static pxr::GfVec3f AiColor3DToGfVector3f(const aiColor3D& color)
+{
+    return pxr::GfVec3f(color.r, color.g, color.b);
+}
+
+static pxr::GfVec3f AiColor4DToGfVector3f(const aiColor4D& color)
+{
+    return pxr::GfVec3f(color.r, color.g, color.b);
+}
+
+static ImportTransform AiMatrixToTransform(const aiMatrix4x4& matrix)
+{
+    ImportTransform transform;
+    transform.matrix =
+        pxr::GfMatrix4d(matrix.a1, matrix.b1, matrix.c1, matrix.d1, matrix.a2, matrix.b2, matrix.c2, matrix.d2,
+                        matrix.a3, matrix.b3, matrix.c3, matrix.d3, matrix.a4, matrix.b4, matrix.c4, matrix.d4);
+
+    aiVector3D translation, rotation, scale;
+    matrix.Decompose(scale, rotation, translation);
+    transform.translation = AiVector3dToGfVector3f(translation);
+    transform.eulerAngles = AiVector3dToGfVector3f(
+        aiVector3D(AI_RAD_TO_DEG(rotation.x), AI_RAD_TO_DEG(rotation.y), AI_RAD_TO_DEG(rotation.z)));
+    transform.scale = AiVector3dToGfVector3f(scale);
+
+    return transform;
+}
 static aiMatrix4x4 GetLocalTransform(const aiNode* node)
 {
     aiMatrix4x4 transform = node->mTransformation;
@@ -160,32 +167,16 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         aiNode* node = nodesToProcess.back();
         if (!node)
         {
-            printf("INVALID NODE\n");
+            // printf("INVALID NODE\n");
             continue;
         }
         nodesToProcess.pop_back();
-        // process any meshes in this node:
         aiMatrix4x4 transform = GetLocalTransform(node);
-
-        // if (normalizeScale)
-        // {
-        //     aiVector3D pos, scale;
-        //     aiQuaternion rot;
-        //     transform.Decompose(scale, rot, pos);
-
-        //     scale.x = (scale.x == 0) ? 1 : 1.0 / scale.x;
-        //     scale.y = (scale.y == 0) ? 1 : 1.0 / scale.y;
-        //     scale.z = (scale.z == 0) ? 1 : 1.0 / scale.z;
-
-        //     aiMatrix4x4 scale_mat;
-        //     transform = transform * aiMatrix4x4::Scaling(scale, scale_mat);
-        // }
-
         for (size_t i = 0; i < node->mNumMeshes; i++)
         {
             meshTransforms.push_back(std::pair<int, aiMatrix4x4>(node->mMeshes[i], transform));
         }
-
+        // process any meshes in this node:
         for (size_t i = 0; i < node->mNumChildren; i++)
         {
             nodesToProcess.push_back(node->mChildren[i]);
@@ -194,108 +185,69 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
     // printf("%s TOTAL MESHES: %d\n", path.c_str(), meshTransforms.size());
     mMeshPrims.resize(meshTransforms.size());
 
+
+    for (size_t i = 0; i < mScene->mNumMaterials; i++)
+    {
+        auto material = mScene->mMaterials[i];
+        // printf("AA %d %s \n", i, material->GetName().C_Str());
+    }
+
     for (size_t i = 0; i < meshTransforms.size(); i++)
     {
         auto transformedMesh = meshTransforms[i];
-        auto mesh = mScene->mMeshes[transformedMesh.first];
-        // pxr::GfMatrix4d nodeMat = AiMatrixToGfMatrix(transformedMesh.second);
-        // pxr::GfVec3d temp = nodeMat.ExtractTranslation();
-        // pxr::GfRotation rot = nodeMat.ExtractRotation();
-        // pxr::GfVec3d sc = pxr::GfTransform(nodeMat).GetScale();
+        auto assimpMesh = mScene->mMeshes[transformedMesh.first];
+        // printf("material index: %d \n", assimpMesh->mMaterialIndex);
+        // Gather all mesh points information to sort
+        std::vector<Mesh> meshImported;
 
-        // printf("%d %d  TRANS: [%f %f %f] SCALE: [%f %f %f] ROT: [%f] - [%f %f %f]\n", i, transformedMesh.first,
-        // temp[0],temp[1], temp[2], sc[0], sc[1], sc[2], rot.GetAngle(), rot.GetAxis()[0],
-        // rot.GetAxis()[1],rot.GetAxis()[2]);
+        for (size_t j = 0; j < assimpMesh->mNumVertices; j++)
         {
-            // Gather all mesh points information to sort
-            std::vector<MeshPoint> meshPoints;
-            size_t numUVChannels = mesh->GetNumUVChannels();
-            size_t numColorChannels = mesh->GetNumColorChannels();
-            for (size_t j = 0; j < mesh->mNumVertices; j++)
+            auto vertex = assimpMesh->mVertices[j];
+            vertex *= transformedMesh.second;
+            mMeshPrims[i].points.push_back(AiVector3dToGfVector3f(vertex));
+        }
+        for (size_t j = 0; j < assimpMesh->mNumFaces; j++)
+        {
+            const aiFace& face = assimpMesh->mFaces[j];
+            if (face.mNumIndices >= 3)
             {
-                MeshPoint point;
-                point.index = j;
-                point.values.push_back(mesh->mVertices[j].x);
-                point.values.push_back(mesh->mVertices[j].y);
-                point.values.push_back(mesh->mVertices[j].z);
-                if (mesh->mNormals)
+                for (size_t k = 0; k < face.mNumIndices; k++)
                 {
-                    point.values.push_back(mesh->mNormals[j].x);
-                    point.values.push_back(mesh->mNormals[j].y);
-                    point.values.push_back(mesh->mNormals[j].z);
-                }
-                for (size_t k = 0; k < numUVChannels; k++)
-                {
-                    point.values.push_back(mesh->mTextureCoords[k][j].x);
-                    point.values.push_back(mesh->mTextureCoords[k][j].y);
-                }
-                for (size_t k = 0; k < numColorChannels; k++)
-                {
-                    point.values.push_back(mesh->mColors[k][j].r);
-                    point.values.push_back(mesh->mColors[k][j].g);
-                    point.values.push_back(mesh->mColors[k][j].b);
-                }
-                meshPoints.push_back(point);
-            }
-
-            // Sort points to remove redudant one
-            std::sort(meshPoints.begin(), meshPoints.end());
-
-            std::vector<bool> keepPoints(mesh->mNumVertices, false);
-            std::vector<size_t> referenceIndex(mesh->mNumVertices);
-
-            // Find and mark all redundant points
-            auto meshPoint = meshPoints[0];
-            size_t currentIndex = meshPoint.index;
-            referenceIndex[currentIndex] = currentIndex;
-            keepPoints[currentIndex] = true;
-            for (size_t j = 1; j < meshPoints.size(); j++)
-            {
-                if (meshPoints[j] == meshPoint)
-                {
-                    keepPoints[meshPoints[j].index] = false;
-                    referenceIndex[meshPoints[j].index] = currentIndex;
-                }
-                else
-                {
-                    meshPoint = meshPoints[j];
-                    currentIndex = meshPoint.index;
-                    referenceIndex[currentIndex] = currentIndex;
-                    keepPoints[currentIndex] = true;
+                    mMeshPrims[i].faceVertexIndices.push_back(face.mIndices[k]);
                 }
             }
-            meshPoints.clear();
-
-            // Keep only unique points
-            size_t keepPointsSize = 0;
-            std::vector<size_t> indexRemapping(mesh->mNumVertices);
-            for (size_t j = 0; j < mesh->mNumVertices; j++)
-            {
-                if (keepPoints[j])
-                {
-                    indexRemapping[j] = keepPointsSize;
-                    keepPointsSize++;
-                }
-            }
-
-            // Remapping indexes for redundant points
-            for (size_t j = 0; j < mesh->mNumVertices; j++)
-            {
-                if (!keepPoints[j])
-                {
-                    indexRemapping[j] = indexRemapping[referenceIndex[j]];
-                }
-            }
-
-            mMeshPrims[i].keepPoints = keepPoints;
-            mMeshPrims[i].remappingVertexCount = keepPointsSize;
-            mMeshPrims[i].indexRemapping = indexRemapping;
         }
 
-        // const std::string& meshName = Utils::MakeValidUSDIdentifier(mesh->mName.C_Str());
-        // mMeshPrims[transformedMesh.first].uniqueName = meshName;
+        for (size_t j = 0; j < assimpMesh->mNumFaces; j++)
+        {
+            const aiFace& face = assimpMesh->mFaces[j];
+            if (face.mNumIndices >= 3)
+            {
+                for (size_t k = 0; k < face.mNumIndices; k++)
+                {
+                    if (assimpMesh->mNormals)
+                    {
+                        mMeshPrims[i].normals.push_back(AiVector3dToGfVector3f(assimpMesh->mNormals[face.mIndices[k]]));
+                    }
+
+                    for (size_t m = 0; m < mMeshPrims[i].uvs.size(); m++)
+                    {
+                        mMeshPrims[i].uvs[m].push_back(
+                            AiVector3dToGfVector2f(assimpMesh->mTextureCoords[m][face.mIndices[k]]));
+                    }
+
+                    for (size_t m = 0; m < mMeshPrims[i].colors.size(); m++)
+                    {
+                        mMeshPrims[i].colors[m].push_back(AiColor4DToGfVector3f(assimpMesh->mColors[m][face.mIndices[k]]));
+                    }
+                }
+                mMeshPrims[i].faceVertexCounts.push_back(face.mNumIndices);
+            }
+        }
     }
-    auto usdMesh = pxr::UsdGeomMesh::Define(usdStage, pxr::SdfPath(path));
+
+    auto usdMesh =
+        pxr::UsdGeomMesh::Define(usdStage, pxr::SdfPath(omni::isaac::urdf::GetNewSdfPathString(usdStage, path)));
 
 
     pxr::VtArray<pxr::GfVec3f> allPoints;
@@ -314,148 +266,36 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         auto mesh = mScene->mMeshes[transformedMesh.first];
         auto& meshPrim = mMeshPrims[m];
 
-        pxr::VtArray<pxr::GfVec3f> points;
-        pxr::VtArray<int> faceVertexCounts;
-        pxr::VtArray<int> faceVertexIndices;
-        pxr::VtArray<pxr::VtArray<pxr::GfVec3f>> colors;
-        pxr::VtArray<pxr::GfVec3f> normals;
-        pxr::VtArray<pxr::GfVec3f> tangentX;
-        pxr::VtArray<pxr::GfVec2f> uv[AI_MAX_NUMBER_OF_TEXTURECOORDS];
-        pxr::VtArray<pxr::GfVec3f> color[AI_MAX_NUMBER_OF_COLOR_SETS];
-
-
-        // Gather all mesh points information to sort
-        std::vector<MeshPoint> meshPoints;
-        size_t numUVChannels = mesh->GetNumUVChannels();
-        size_t numColorChannels = mesh->GetNumColorChannels();
-
-        for (size_t j = 0; j < mesh->mNumFaces; j++)
+        for (size_t k = 0; k < meshPrim.uvs.size(); k++)
         {
-            aiFace face = mesh->mFaces[j];
-
-            size_t facePointsCounts = 3;
-            if (face.mNumIndices == 1)
-            {
-                size_t v0 = meshPrim.indexRemapping[face.mIndices[0]];
-                faceVertexIndices.push_back(v0);
-                faceVertexIndices.push_back(v0);
-                faceVertexIndices.push_back(v0);
-            }
-            else if (face.mNumIndices == 2)
-            {
-                size_t v0 = meshPrim.indexRemapping[face.mIndices[0]];
-                size_t v1 = meshPrim.indexRemapping[face.mIndices[1]];
-                faceVertexIndices.push_back(v0);
-                faceVertexIndices.push_back(v1);
-                faceVertexIndices.push_back(v1);
-            }
-            else
-            {
-                for (size_t i = 0; i < face.mNumIndices; i++)
-                {
-                    size_t v = meshPrim.indexRemapping[face.mIndices[i]];
-                    faceVertexIndices.push_back(v);
-                }
-                facePointsCounts = face.mNumIndices;
-            }
-            faceVertexCounts.push_back(facePointsCounts);
+            uvs.push_back(meshPrim.uvs[k]);
         }
 
-        pxr::VtArray<pxr::GfVec3f> vertexNormals;
-        pxr::VtArray<pxr::GfVec2f> vertexUv[AI_MAX_NUMBER_OF_TEXTURECOORDS];
-        pxr::VtArray<pxr::GfVec3f> vertexColor[AI_MAX_NUMBER_OF_COLOR_SETS];
-
-        // Keep only unique points
-        for (size_t j = 0; j < mesh->mNumVertices; j++)
+        for (size_t i = 0; i < meshPrim.points.size(); i++)
         {
-            if (meshPrim.keepPoints[j])
-            {
-                auto vertex = mesh->mVertices[j];
-                vertex *= transformedMesh.second;
-                points.push_back(pxr::GfVec3f(vertex.x, vertex.y, vertex.z));
-                if (mesh->mNormals)
-                {
-                    vertexNormals.push_back(pxr::GfVec3f(mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z));
-                }
-
-                for (size_t k = 0; k < numUVChannels; k++)
-                {
-                    vertexUv[k].push_back(pxr::GfVec2f(mesh->mTextureCoords[k][j].x, mesh->mTextureCoords[k][j].y));
-                }
-
-                for (size_t k = 0; k < numColorChannels; k++)
-                {
-                    vertexColor[k].push_back(
-                        pxr::GfVec3f(mesh->mColors[k][j].r, mesh->mColors[k][j].g, mesh->mColors[k][j].b));
-                }
-            }
+            allPoints.push_back(meshPrim.points[i]);
         }
 
-        // Convert to face varying data
-        if (!vertexNormals.empty())
+        for (size_t i = 0; i < meshPrim.faceVertexCounts.size(); i++)
         {
-            for (size_t j = 0; j < faceVertexIndices.size(); j++)
-            {
-                auto vertexIndex = faceVertexIndices[j];
-                normals.push_back(vertexNormals[vertexIndex]);
-            }
+            allFaceVertexCounts.push_back(meshPrim.faceVertexCounts[i]);
         }
 
-        for (size_t k = 0; k < numUVChannels; k++)
+        for (size_t i = 0; i < meshPrim.faceVertexIndices.size(); i++)
         {
-            for (size_t j = 0; j < faceVertexIndices.size(); j++)
-            {
-                auto vertexIndex = faceVertexIndices[j];
-                uv[k].push_back(vertexUv[k][vertexIndex]);
-            }
+            allFaceVertexIndices.push_back(meshPrim.faceVertexIndices[i] + indexOffset);
         }
-
-        for (size_t k = 0; k < numColorChannels; k++)
-        {
-            for (size_t j = 0; j < faceVertexIndices.size(); j++)
-            {
-                auto vertexIndex = faceVertexIndices[j];
-                color[k].push_back(vertexColor[k][vertexIndex]);
-            }
-        }
-
-
-        for (size_t k = 0; k < numUVChannels; k++)
-        {
-            uvs.push_back(uv[k]);
-        }
-
-        for (size_t k = 0; k < numColorChannels; k++)
-        {
-            allColors.push_back(color[k]);
-        }
-
-
-        for (size_t i = 0; i < points.size(); i++)
-        {
-            allPoints.push_back(points[i]);
-        }
-
-        for (size_t i = 0; i < faceVertexCounts.size(); i++)
-        {
-            allFaceVertexCounts.push_back(faceVertexCounts[i]);
-        }
-
-        for (size_t i = 0; i < faceVertexIndices.size(); i++)
-        {
-            allFaceVertexIndices.push_back(faceVertexIndices[i] + indexOffset);
-        }
-        for (size_t i = vertexOffset; i < vertexOffset + faceVertexCounts.size(); i++)
+        for (size_t i = vertexOffset; i < vertexOffset + meshPrim.faceVertexCounts.size(); i++)
         {
             materialMap[mesh->mMaterialIndex].push_back(i);
         }
         // printf("faceVertexOffset %d %d %d %d\n", indexOffset, points.size(), vertexOffset, faceVertexCounts.size());
-        indexOffset = indexOffset + points.size();
-        vertexOffset = vertexOffset + faceVertexCounts.size();
+        indexOffset = indexOffset + meshPrim.points.size();
+        vertexOffset = vertexOffset + meshPrim.faceVertexCounts.size();
 
-        for (size_t i = 0; i < normals.size(); i++)
+        for (size_t i = 0; i < meshPrim.normals.size(); i++)
         {
-            allNormals.push_back(normals[i]);
+            allNormals.push_back(meshPrim.normals[i]);
         }
     }
 
@@ -466,14 +306,6 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
     pxr::VtArray<pxr::GfVec3f> Extent;
     pxr::UsdGeomPointBased::ComputeExtent(allPoints, &Extent);
     usdMesh.CreateExtentAttr().Set(Extent);
-
-    // // Vertex color
-    // if (!allColors.empty())
-    // {
-    //     auto Primvar = usdMesh.CreateDisplayColorPrimvar(pxr::UsdGeomTokens->faceVarying);
-    //     Primvar.Set(allColors[0]);
-    //     // TODO : set multi colors
-    // }
 
     // Normals
     if (!allNormals.empty())
@@ -507,7 +339,7 @@ static pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         for (auto const& mat : materialMap)
         {
             std::string name(mScene->mMaterials[mat.first]->GetName().C_Str());
-
+            // printf("materials: %s\n", name.c_str());
 
             pxr::UsdPrim prim;
             pxr::UsdShadeMaterial matPrim;

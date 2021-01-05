@@ -3,7 +3,6 @@
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 
-import carb.tokens
 import os
 from pxr import Sdf, Gf, UsdShade
 import asyncio
@@ -28,6 +27,23 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         # _urdf.release_urdf_interface(self._urdf_interface)
         pass
+
+    # Tests to make sure visual mesh names are incremented
+    async def test_urdf_mesh_naming(self):
+        await omni.usd.get_context().new_stage_async()
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_names.urdf")
+
+        stage = omni.usd.get_context().get_stage()
+
+        import_config = _urdf.ImportConfig()
+        import_config.merge_fixed_joints = True
+        root_path, filename = os.path.split(os.path.abspath(urdf_path))
+        imported_robot = self._urdf_interface.parse_urdf(root_path, filename, import_config)
+        self._urdf_interface.import_robot(root_path, filename, imported_robot, import_config)
+        prim = stage.GetPrimAtPath("/test_names/cube/visuals")
+        prim_range = prim.GetChildren()
+        # There should be a total of 6 visual meshes after import
+        self.assertEqual(len(prim_range), 6)
 
     # basic urdf test: joints and links are imported correctly
     async def test_urdf_basic(self):
