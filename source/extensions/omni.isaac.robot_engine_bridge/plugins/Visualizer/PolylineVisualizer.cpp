@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -23,7 +23,7 @@
 #include <carb/profiler/Profile.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/isaac/utils/Curves.h>
-
+#include "../Thirdparty/csscolorparser.hpp"
 namespace omni
 {
 namespace isaac
@@ -129,28 +129,43 @@ void PolylineVisualizer::tick()
                         if (style && mIDict->getItemType(style) == carb::dictionary::ItemType::eDictionary)
                         {
                             std::string styleStr = mIDict->getItemName(style);
-                            // const carb::dictionary::Item* fillType = mIDict->getItem(style, "f");
-
+                            const carb::dictionary::Item* fillType = mIDict->getItem(style, "f");
 
                             // fill type must be defined and also true currently
                             // TODO: support more rendering types
-                            // if (!fillType || mIDict->getAsBool(fillType) == false)
-                            // {
-                            //     CARB_LOG_WARN("only filled supported, defaulting to that");
-                            // }
+                            if (!fillType || mIDict->getAsBool(fillType) == false)
+                            {
+                                CARB_LOG_WARN("only filled supported, defaulting to that");
+                            }
 
                             const carb::dictionary::Item* size = mIDict->getItem(style, "s");
-                            // const carb::dictionary::Item* color = mIDict->getItem(style, "c");
-                            // const carb::dictionary::Item* alpha = mIDict->getItem(style, "a");
+                            const carb::dictionary::Item* color = mIDict->getItem(style, "c");
+                            const carb::dictionary::Item* alpha = mIDict->getItem(style, "a");
                             if (size && mIDict->getItemType(size) == carb::dictionary::ItemType::eFloat)
                             {
                                 mWidth = mIDict->getAsFloat(size);
+                                // printf("SIZE %f\n", mWidth);
                             }
-                            // TODO add color support
-                            // if (color && mIDict->getItemType(color) == carb::dictionary::ItemType::eString)
-                            // {
-                            //     std::string colorStr = mIDict->getStringBuffer(color);
-                            // }
+
+                            if (color && mIDict->getItemType(color) == carb::dictionary::ItemType::eString)
+                            {
+                                std::string colorStr = mIDict->getStringBuffer(color);
+
+                                auto color = CSSColorParser::parse(colorStr);
+                                if (color)
+                                {
+                                    mRed = color->r;
+                                    mGreen = color->g;
+                                    mBlue = color->b;
+                                }
+                            }
+                            if (alpha && mIDict->getItemType(alpha) == carb::dictionary::ItemType::eFloat)
+                            {
+                                mAlpha = 255 * mIDict->getAsFloat(alpha);
+                            }
+
+
+                            mColorValue = mBlue + (mGreen << 8) + (mRed << 16) + (mAlpha << 24);
                         }
                         size_t numDataItems = mIDict->getArrayLength(data);
                         pxr::VtArray<pxr::GfVec3f> ctrlPoints;
@@ -315,12 +330,12 @@ void PolylineVisualizer::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetColorAttr(), mColor);
     isaac::utils::safeGetAttribute(typedPrim.GetOffsetAttr(), mOffset);
 
-    int red = 255 * mColor[0];
-    int grn = 255 * mColor[1];
-    int blu = 255 * mColor[2];
-    int alpha = 255 * mColor[3];
+    mRed = 255 * mColor[0];
+    mGreen = 255 * mColor[1];
+    mBlue = 255 * mColor[2];
+    mAlpha = 255 * mColor[3];
 
-    mColorValue = blu + (grn << 8) + (red << 16) + (alpha << 24);
+    mColorValue = mBlue + (mGreen << 8) + (mRed << 16) + (mAlpha << 24);
 
     pxr::SdfPathVector targets;
     typedPrim.GetParentPrimRel().GetTargets(&targets);

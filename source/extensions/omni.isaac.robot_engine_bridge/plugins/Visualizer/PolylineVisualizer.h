@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -100,6 +100,7 @@ private:
     pxr::GfVec3f mOffset = pxr::GfVec3f(0, 0, 0);
     std::vector<DebugData> mLineData;
     uint32_t mColorValue = 0;
+    int mRed = 255, mGreen = 255, mBlue = 255, mAlpha = 255;
     pxr::VtArray<pxr::GfVec4f> tessellatedPoints;
     pxr::VtArray<pxr::GfVec4f> tessellatedTangents;
 };
