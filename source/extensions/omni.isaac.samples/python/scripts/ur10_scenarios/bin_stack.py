@@ -104,7 +104,7 @@ class PickAndPlaceStateMachine(object):
         self.upside_offset = _dynamic_control.Transform()
         self.upside_flip = _dynamic_control.Transform()
 
-        self.upside_goal.p = (0.80808, 0.70978, -0.00389)
+        self.upside_goal.p = (0.80808, 0.70978, -0.03)
         self.upside_goal.r = (0.12380744620354063, -0.510572739737588, -0.1093972128961598, 0.8438124456962951)
 
         self.upside_offset.p = [0.51855, 0.9221, 0.1370]
@@ -593,17 +593,19 @@ class PickAndPlaceStateMachine(object):
         """
         offset = _dynamic_control.Transform()
         if self._upright:
-            offset.p = (-0.15, 0.0, 0)
+            offset.p = (-0.28, 0.0, -0.05)
             # Quickly push the arm down 15 cm to clear the bin and let it fall on the platform
             pose = math_utils.mul(self.target_position, offset)
             self.lerp_to_pose(pose, n_waypoints=1)
             # Wait in place for a while
             self.lerp_to_pose(pose, n_waypoints=5)
-            # Then move to the side and slightly more down
-            offset.p = (-0.40, 0.20, 0.15)
+            # Then move back
+            offset.p = (-0.20, 0.00, 0.30)
             pose = math_utils.mul(self.target_position, offset)
+            self.lerp_to_pose(pose, n_waypoints=15)
+            # Reorient gripper
             pose.r = math_utils.mul(pose.r, (0, 0.7071, 0, 0.7071))
-            self.lerp_to_pose(pose, n_waypoints=60)
+            self.lerp_to_pose(pose, n_waypoints=30)
         else:
 
             offset.p = (-0.10, 0.0, 0.0)
@@ -765,7 +767,7 @@ class BinStack(Scenario):
             if self._reset:
                 self._paused = False
             if not self._paused:
-                self._time += 1.0 / 60.0
+                self._time += step
                 if self.add_bin_timeout > 0:
                     self.add_bin_timeout -= 1
                     if self.add_bin_timeout == 0:
@@ -854,7 +856,7 @@ class BinStack(Scenario):
             self._dc.set_rigid_body_disable_simulation(self.bin_handles[i], False)
 
             tf = _dynamic_control.Transform()
-            tf.p = [-random.random() * 15 - 5, 150, -19]
+            tf.p = [-random.random() * 15 - 5, 150, -16]
             z = random.random() * 2 - 1
             w = random.random() * 2 - 1
             norm = np.sqrt(z ** 2 + w ** 2)
@@ -862,7 +864,7 @@ class BinStack(Scenario):
             if random.random() > 0.5:
                 tf.r = math_utils.mul(tf.r, [0, 1, 0, 0])
             self._dc.set_rigid_body_pose(self.bin_handles[i], tf)
-            self._dc.set_rigid_body_linear_velocity(self.bin_handles[i], [0, -20.0, 0])
+            self._dc.set_rigid_body_linear_velocity(self.bin_handles[i], [0, -30.0, 0])
             self._bin_objects[self.bin_paths[i]].unsuppress()
             self.current_bin += 1
             self.unpicked_bins += 1
@@ -890,8 +892,6 @@ class BinStack(Scenario):
         self.bin_handles = [self._dc.get_rigid_body(i) for i in self.bin_paths]
 
         # Create world and robot object
-        self.world = World(self._dc, self._mp)
-
         ur10_path = str(prim.GetPath()) + "/ur10"
         self.world = World(self._dc, self._mp)
         sgp = Surface_Gripper_Properties()

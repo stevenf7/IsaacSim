@@ -254,7 +254,7 @@ class Franka:
             self.world.register_parent(self.base, self.prim, "panda_link0")
 
         settings = carb.settings.get_settings()
-        self.mp.setFrequency(self.rmp_handle, settings.get("/physics/timeStepsPerSecond"), True)
+        self.mp.setFrequency(self.rmp_handle, settings.get("/physics/timeStepsPerSecond"))
 
         self.end_effector = EndEffector(self.dc, self.mp, self.ar, self.rmp_handle)
         if default_config:

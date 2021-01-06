@@ -4,6 +4,8 @@
 import omni.kit.test
 import omni.kit
 
+import carb
+
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.samples.scripts.rmp_sample.sample import RMPSample
 from .common import simulate
@@ -18,6 +20,15 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline = omni.timeline.get_timeline_interface()
         self._editor = omni.kit.editor.get_editor_interface()
         self._editor_event_subscription = self._editor.subscribe_to_update_events(self._sample.step)
+        physics_rate = carb.settings.get_settings().get("/physics/timeStepsPerSecond")
+        self.phys_num_steps = carb.settings.get_settings().get("persistent/physics/maxNumSteps")
+        carb.settings.get_settings().set_int(
+            "persistent/physics/maxNumSteps", int(1)
+        )  # Enforce single timestep per stage update
+        self.time_step = 1.0 / physics_rate
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(physics_rate))
+        self._limit_fps = carb.settings.get_settings().get("/app/runLoops/main/rateLimitEnabled")
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         await omni.usd.get_context().new_stage_async()
 
         pass
@@ -26,6 +37,9 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         self._sample = None
         self._editor_event_subscription = None
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", self._limit_fps)
+        carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(self.phys_num_steps))
+
         pass
 
     # basic test, should not crash or error if we call all functions

@@ -18,6 +18,8 @@ project_ext_plugin(ext, "omni.isaac.motion_planning.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/lula/include",
         "%{root}/_build/target-deps/python/include/python3.6m",
+        "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
+        "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/client_library/include",
 

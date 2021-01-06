@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -149,9 +149,8 @@ public:
      * @brief Set the step frequency.
      *
      * @param newFrequency.
-     * @param useFixedDt.
      */
-    void setFrequency(const float newFrequency, bool useFixedDt);
+    void setFrequency(const float newFrequency);
 
     /**
      * @brief Set the Prim corresponding to the articulation controlled by this RMP
