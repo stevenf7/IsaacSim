@@ -68,6 +68,7 @@ class PickAndPlaceStateMachine(object):
         self.end_effector_handle = None
         self._stage = stage
         self.current = target_body
+        self.retry = True
 
         self.start_time = 0.0
         self.start = False
@@ -361,11 +362,16 @@ class PickAndPlaceStateMachine(object):
         Handles a state machine step when the target goal is reached, and the machine is on attach state
         """
         self.robot.end_effector.gripper.close()
-        self.lerp_to_pose(self.target_position, 60)  # Wait 1 second in place for attachment
         if self.robot.end_effector.gripper.is_closed():
+            self.lerp_to_pose(self.target_position, 20)
             self._attached = True
             self.is_closed = True
-        else:  # Failed to attach so return grasp to try again
+            self.retry = True
+        elif self.retry:
+            self.retry = False
+            self.lerp_to_pose(self.target_position, 20)
+            self.move_to_target()
+        else:
             # move up 25 centimiters and return to picking state
             offset = _dynamic_control.Transform()
             offset.p = (-0.25, 0.0, 0.0)
@@ -381,7 +387,7 @@ class PickAndPlaceStateMachine(object):
         target_position = _dynamic_control.Transform()
         target_position.p = [0.0, 0.81, 0.58]
         target_position.r = [0, -1, 0, 0]
-        print(target_position.r)
+        # print(target_position.r)
         self.lerp_to_pose(target_position, 360)
         self.target_position = self.waypoints.popleft()
         self.move_to_target()
@@ -410,6 +416,7 @@ class PickAndPlaceStateMachine(object):
             self.lerp_to_pose(target, n_waypoints=30)
             self.target_position = self.waypoints.popleft()
             self.move_to_target()
+            self.retry = True
             self.change_state(SM_states.ATTACH)
 
     def _picking_no_event(self, *args):
@@ -521,7 +528,7 @@ class FillBin(Scenario):
                     self.stop_tasks()
                 elif self.pick_and_place.current_state != self.current_state:
                     self._start_time = self._time
-                    print(self._time)
+                    # print(self._time)
                     self.current_state = self.pick_and_place.current_state
 
             if self._paused:

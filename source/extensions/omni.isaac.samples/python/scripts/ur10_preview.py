@@ -16,6 +16,7 @@ import omni.kit.settings
 from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.dynamic_control import _dynamic_control
 import omni.physx as _physx
+from omni.physx.bindings._physx import SimulationEvent
 
 from .ur10_scenarios.scenario import Scenario
 from .ur10_scenarios import bin_stack
@@ -88,6 +89,7 @@ class Extension(omni.ext.IExt):
         self._sub_stage_event = self._usd_context.get_stage_event_stream().create_subscription_to_pop(
             self._on_stage_event
         )
+        self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
         self._scenario = Scenario(self._editor, self._dc, self._mp)
 
     def _on_clear_scenario(self, widget):
@@ -137,7 +139,7 @@ class Extension(omni.ext.IExt):
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()
 
-        self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+        # self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()
         self._stop_task_btn.enabled = True
@@ -145,7 +147,8 @@ class Extension(omni.ext.IExt):
         self._add_new_bins_btn.enabled = True
 
     def _on_stop_tasks(self, *args):
-        self._scenario.stop_tasks()
+        if self._scenario:
+            self._scenario.stop_tasks()
 
     def _on_pause_tasks(self, *args):
         self._open_gripper_btn.enabled = self._scenario.pause_tasks()
@@ -168,12 +171,11 @@ class Extension(omni.ext.IExt):
                 self._on_add_bin()
         return True
 
-    def _on_editor_step(self, step):
-        if self._timeline.is_playing():
-            if self._first_step:
-                self._scenario.register_assets()
-                self._first_step = False
-            self._scenario.step(step)
+    def _on_simulation_step(self, step):
+        if self._first_step:
+            self._scenario.register_assets()
+            self._first_step = False
+        self._scenario.step(step)
 
     def _on_stage_event(self, event):
         self.stage = self._usd_context.get_stage()
@@ -224,4 +226,6 @@ class Extension(omni.ext.IExt):
         self._scenario = None
         self._editor_event_subscription = None
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
+        self._physx_subs = None
         self._window.set_update_fn(None)
+        self._window = None

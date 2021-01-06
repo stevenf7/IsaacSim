@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -92,7 +92,7 @@ struct MotionPlanning
     std::vector<carb::Float3>(CARB_ABI* getRMPState)(size_t handle);
     std::vector<carb::Float3>(CARB_ABI* getRMPTarget)(size_t handle);
     void(CARB_ABI* setDefaultConfig)(size_t handle, const std::vector<double>& config);
-    void(CARB_ABI* setFrequency)(size_t handle, const float frequency, const bool useFixedDt);
+    void(CARB_ABI* setFrequency)(size_t handle, const float frequency);
     void(CARB_ABI* addObstacle)(size_t handle, std::string primPath, int type, carb::Float3 scale);
     void(CARB_ABI* updateObstacle)(size_t handle, std::string primPath);
     void(CARB_ABI* removeObstacle)(size_t handle, std::string primPath);

@@ -9,6 +9,7 @@ from omni.isaac.motion_planning import _motion_planning as mp
 import os
 import gc
 import asyncio
+import carb
 import numpy as np
 from omni.isaac.utils._isaac_utils import math as mu
 from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics
@@ -30,6 +31,16 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._mp = mp.acquire_motion_planning_interface()
         self._physx = physx.acquire_physx_interface()
         await omni.usd.get_context().new_stage_async()
+
+        physics_rate = carb.settings.get_settings().get("/physics/timeStepsPerSecond")
+        self.phys_num_steps = carb.settings.get_settings().get("persistent/physics/maxNumSteps")
+        carb.settings.get_settings().set_int(
+            "persistent/physics/maxNumSteps", int(1)
+        )  # Enforce single timestep per stage update
+        self.time_step = 1.0 / physics_rate
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(physics_rate))
+        self._limit_fps = carb.settings.get_settings().get("/app/runLoops/main/rateLimitEnabled")
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
 
         self.assertFalse(self._dc.is_simulating())
         # Start Simulation and wait
@@ -76,6 +87,8 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._mp = None
         self._physx = None
         gc.collect()
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", self._limit_fps)
+        carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(self.phys_num_steps))
 
         await omni.usd.get_context().new_stage_async()
         pass
@@ -88,13 +101,15 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_bin_stack_run(self):
         await self.load_bin_stack_scene()
         await self.execute_stack_scene(True)
-        self._timeline.stop()
+        # self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         self._scenario.stop_tasks()
-        self._scenario.step(None)
+        self._scenario.step(self.time_step)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        self._scenario.step(None)
+        self._scenario.step(self.time_step)
+        await omni.kit.app.get_app().next_update_async()
+        self._scenario.step(self.time_step)
         await self.execute_stack_scene()
         pass
 
@@ -109,7 +124,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
             while self._scenario.pick_and_place.current_state == self.current_state:
                 await omni.kit.app.get_app().next_update_async()
                 self.assertTrue(self._dc.is_simulating())
-                self._scenario.step(None)
+                self._scenario.step(self.time_step)
             next_state = (self.state_idx + 1) % len(self.default_sequence)
             self.assertEqual(self._scenario.pick_and_place.current_state, self.default_sequence[next_state])
             self.state_idx = next_state
@@ -134,7 +149,6 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.current_state = self.default_sequence[0]
         self.state_idx = 0
-        self.upright = False
         timeout_max = 1000
         timeout = 0
         self.upright = False
@@ -146,10 +160,11 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
                 timeout += 1
                 await omni.kit.app.get_app().next_update_async()
                 self.assertTrue(self._dc.is_simulating())
-                self._scenario.step(None)
+                self._scenario.step(self.time_step)
             self.assertLess(timeout, timeout_max)
             timeout = 0
             if self.current_state == bin_stack.SM_states.ATTACH and stop_when_attached:
+                await omni.kit.app.get_app().next_update_async()
                 self.assertTrue(self._scenario.pick_and_place.robot.end_effector.gripper.is_closed())
                 return
             if self._scenario.pick_and_place._upright or self.upright:
@@ -180,6 +195,8 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Make sure the stage loaded
         self.assertTrue(self._scenario is not None)
         self._scenario.create_UR10(False)
+        await omni.kit.app.get_app().next_update_async()
+
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._dc.is_simulating())

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -33,6 +33,10 @@
 #include <lula/util/logging.h>
 #include <glog/logging.h>
 
+#include <physicsSchemaTools/UsdTools.h>
+#include <omni/physx/IPhysx.h>
+#include <omni/physx/IPhysxSceneQuery.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -55,6 +59,10 @@ omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 omni::isaac::dynamic_control::DynamicControl* gDynamicControl = nullptr;
 static bool gInitLogging = false;
 static float gTime = 0;
+
+static omni::physx::IPhysx* gPhysXInterface = nullptr;
+omni::physx::SubscriptionId gStepSubscription;
+omni::physx::SubscriptionId gEventSubscription;
 
 std::unordered_map<size_t, std::shared_ptr<MotionPolicy>> gMotionPolicies;
 }
@@ -122,11 +130,11 @@ void CARB_ABI MpSetTargetGlobal(size_t handle, carb::Float3 position, carb::Floa
     }
 }
 
-void CARB_ABI MpSetFrequency(size_t handle, const float Frequency, bool useFixedDt)
+void CARB_ABI MpSetFrequency(size_t handle, const float Frequency)
 {
     if (handle != 0 && gMotionPolicies.find(handle) != gMotionPolicies.end())
     {
-        gMotionPolicies[handle]->setFrequency(Frequency, useFixedDt);
+        gMotionPolicies[handle]->setFrequency(Frequency);
     }
 }
 
@@ -304,14 +312,24 @@ auto loadTaskFn = [](carb::tasking::ITasking* tasking, void* taskArg) {
 };
 
 
-void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
+void onPhysicsUpdate(omni::physx::SimulationStatusEvent eventStatus, void* userData)
 {
-    if (!settings->isPlaying)
-    {
-        return;
-    }
+
+    // if (eventStatus == omni::physx::SimulationStatusEvent::eSimulationStarting)
+    // {
+    //     CARB_LOG_INFO("Simulation starting");
+    // }
+    // if (eventStatus == omni::physx::SimulationStatusEvent::eSimulationEnded)
+    // {
+    //     CARB_LOG_INFO("Simulation Ended");
+    // }
+}
+
+void onPhysicsStep(float timeElapsed, void* userData)
+{
+    CARB_LOG_INFO("Physics Step");
+
     CARB_PROFILE_ZONE(0, "MpOnUpdate");
-    // CARB_LOG_ERROR("Tick: %f - %f %d", currentTime, elapsedSecs, gMotionPolicies.size());
 #if 0
     for (const auto& policy : gMotionPolicies)
     {
@@ -323,7 +341,7 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
     for (const auto& policy : gMotionPolicies)
     {
         td[index].time = gTime;
-        td[index].dt = elapsedSecs;
+        td[index].dt = timeElapsed;
         td[index].handle = policy.first;
 
         carb::tasking::TaskDesc bigTask{};
@@ -336,7 +354,7 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
     gTasking->yieldUntilCounter(gTaskCounter);
     delete[] td;
 #endif
-    gTime += elapsedSecs;
+    gTime += timeElapsed;
 }
 
 void onStop(void* userData)
@@ -363,16 +381,27 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
         return;
     }
+    gPhysXInterface = gFramework->acquireInterface<omni::physx::IPhysx>();
+    if (!gPhysXInterface)
+    {
+        CARB_LOG_ERROR("Failed to acquire PhysX` interface");
+        return;
+    }
+
+
+    gStepSubscription = gPhysXInterface->subscribeToPhysicsStepEvents(onPhysicsStep, nullptr);
+    // gEventSubscription = gPhysXInterface->subscribeToPhysicsSimulationEvents(onPhysicsUpdate, nullptr);
+
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "MotionPlanning";
     desc.onAttach = onAttach;
     desc.onDetach = onDetach;
-    desc.onUpdate = onUpdate;
+    // desc.onUpdate = onUpdate;
     desc.onStop = onStop;
     // Create the stage update node and make sure it runs first
     size_t index = gStageUpdate->getStageUpdateNodeCount();
     gStageUpdateNode = gStageUpdate->createStageUpdateNode(desc);
-    gStageUpdate->setStageUpdateNodeOrder(index, -100);
+    // gStageUpdate->setStageUpdateNodeOrder(index, -100);
     if (!gInitLogging)
     {
         google::InitGoogleLogging("Lula");

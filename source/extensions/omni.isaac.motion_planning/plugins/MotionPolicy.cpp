@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -28,7 +28,6 @@ MotionPolicy::MotionPolicy(pxr::UsdStageWeakPtr stage, omni::isaac::dynamic_cont
 {
     mStage = stage;
     mDynamicControl = dynamicControl;
-    mOverrideDt = false;
     mFrequency = 120.0f;
     mFixedDt = 1.0f / mFrequency;
 
@@ -85,14 +84,13 @@ void MotionPolicy::initialize(const std::string& robotUrdfPath,
     mEndEffectorError.resize(4);
 }
 
-void MotionPolicy::setFrequency(const float frequency, const bool useFixedDt)
+void MotionPolicy::setFrequency(const float frequency)
 {
     if (frequency > 0)
     {
         mFrequency = frequency;
         mFixedDt = 1.0f / mFrequency;
     }
-    mOverrideDt = useFixedDt;
 }
 
 void MotionPolicy::reset()
@@ -107,10 +105,6 @@ void MotionPolicy::step(const float t, const float sourceDt)
     mRegisteredSuppressionTokens->Update();
 
     float dt = sourceDt;
-    if (mOverrideDt)
-    {
-        dt = mFixedDt;
-    }
 
     static double remaining = 0.f;
     int numRmpSubsteps = std::max(1, (int)((dt + remaining) * (mFrequency)));

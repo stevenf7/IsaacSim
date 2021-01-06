@@ -213,7 +213,7 @@ class UR10:
             True,
         )
         settings = carb.settings.get_settings()
-        self.mp.setFrequency(self.rmp_handle, settings.get("/physics/timeStepsPerSecond"), True)
+        self.mp.setFrequency(self.rmp_handle, settings.get("/physics/timeStepsPerSecond"))
         print("UR10 rmp handle", self.rmp_handle)
         if world is not None:
             self.world = world

@@ -122,7 +122,8 @@ class Extension(omni.ext.IExt):
 
         self._scenario.register_assets()
 
-        self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+        # self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+        self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()
         self._stop_task_btn.enabled = True
@@ -159,7 +160,7 @@ class Extension(omni.ext.IExt):
                 self._on_toggle_obstacle()
         return True
 
-    def _on_editor_step(self, step):
+    def _on_simulation_step(self, step):
         """This function is called every timestep in the editor
 
         Arguments:
@@ -239,4 +240,5 @@ class Extension(omni.ext.IExt):
         self._scenario = None
         self._editor_event_subscription = None
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
+        self._physx_subs = None
         self._window.set_update_fn(None)
