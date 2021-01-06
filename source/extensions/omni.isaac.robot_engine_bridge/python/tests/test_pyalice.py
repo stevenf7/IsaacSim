@@ -116,7 +116,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         test_app.app.load_module("viewers")
         viewer = test_app.app.add("viewers").add(test_app.app.registry.isaac.viewers.Plan2Viewer)
         viewer.config.size = 0.5
-        viewer.config.color = [118, 185, 0, 255]
+        viewer.config.color = [255, 0, 0, 255]
 
         test_app.app.connect(plan2, "plan", viewer, "plan")
         test_app.app.connect(plan2, "plan", sim_input, "plan")
@@ -129,7 +129,19 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         test_app.start()
 
         self._timeline.play()
-        await simulate(2)
+        await simulate(1.0)
+        viewer.config.size = 0.5
+        viewer.config.color = [255, 0, 0, 255]
+        await simulate(1.0)
+        viewer.config.size = 0.0
+        viewer.config.color = [0, 255, 0, 255]
+        await simulate(1.0)
+        viewer.config.size = 1.0
+        viewer.config.color = [0, 0, 255, 255]
+        await simulate(1.0)
+        viewer.config.size = 1.0
+        viewer.config.color = [0, 0, 255, 0]
+        await simulate(1.0)
         self._timeline.stop()
         test_app.stop()
         test_app = None
