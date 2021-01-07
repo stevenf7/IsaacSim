@@ -11,6 +11,7 @@ import os
 import asyncio
 import numpy as np
 import weakref
+import carb
 from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics, PhysicsSchemaTools
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -28,9 +29,11 @@ class TestStepImporter(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.step_importer")
         self._extension_path = ext_manager.get_extension_path(ext_id)
+        carb.settings.get_settings().set_string(usd_exporter.DEFAULT_TEMP_FOLDER_SETTING, self._extension_path)
         self.path = os.path.abspath(self._extension_path + "/data/step/test.stp")
         print(self.path)
         self.assertTrue(os.path.isfile(self.path))
+        print(carb.settings.get_settings().get(usd_exporter.DEFAULT_TEMP_FOLDER_SETTING))
         self.basename = "test"
         self.step_file = None
         pass

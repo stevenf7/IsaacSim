@@ -15,6 +15,7 @@ import copy
 
 from omni.isaac.step_importer import _step_importer
 
+DEFAULT_TEMP_FOLDER_SETTING = "/ext/omni.isaac.step_importer/default_temp"
 
 # Dummy Variant classes to avoid code branching that would force code copy
 class DummyVariantContext:
@@ -147,7 +148,9 @@ class PartExporter:
         self.stage = None
         self.material_stage = None
         self.preview = True
-        self.tempdir = tempfile.TemporaryDirectory(prefix=self.tmp_prefix).name
+        self.tempdir = tempfile.TemporaryDirectory(
+            prefix=self.tmp_prefix, dir=carb.settings.get_settings().get(DEFAULT_TEMP_FOLDER_SETTING)
+        ).name
         self._temp_dir_to_clean = temp_dir_to_clean
         self._on_exported_fn = None
 
@@ -308,7 +311,7 @@ class PartExporter:
                 assembly_name = ("a_" + assembly_name).lower()
             if self._make_assembly_usd:
                 count = 0
-                assembly_path = os.path.join(self.path, assembly_name + ".usd").lower()
+                assembly_path = os.path.join(self.path, assembly_name + ".usd")
                 while os.path.isfile(assembly_path):
                     count += 1
                     assembly_path = os.path.join(self.path, "{}_{:02d}.usd".format(assembly_name, count))
@@ -341,7 +344,9 @@ class PartExporter:
                     usd_sub_path = "{}/{}_{:02d}".format(path, sub_assembly_name, count)
                 if self._make_assembly_usd:
                     xform = stage.OverridePrim(Sdf.Path(usd_sub_path))
-                    xform.GetReferences().AddReference(os.path.relpath(sub_assembly_path, self.path).replace("\\", "/"))
+                    xform.GetReferences().AddReference(
+                        os.path.relpath(sub_assembly_path, self.path.lower()).replace("\\", "/")
+                    )
                 else:
                     xform = stage.GetPrimAtPath(Sdf.Path(sub_assembly_path))
                 set_pose(xform, c.pose)
