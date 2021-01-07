@@ -70,15 +70,6 @@ class StepImporter(omni.ext.IExt):
         self._content_browser = get_content_window()
         self._init_context_menu()
 
-        self._filepicker = FilePickerDialog(
-            "Import STEP",
-            allow_multi_selection=False,
-            apply_button_label="Import",
-            click_apply_handler=weakref.proxy(self)._select_picked_file_callback,
-            click_cancel_handler=weakref.proxy(self)._on_picker_cancel,
-            item_filter_fn=on_filter_item,
-        )
-
         self._folder_picker = FilePickerDialog(
             "Select output",
             allow_multi_selection=False,
@@ -88,7 +79,7 @@ class StepImporter(omni.ext.IExt):
             item_filter_fn=on_filter_folder,
         )
 
-        self._filepicker.hide()
+        self._filepicker = None
 
         self._folder_picker.hide()
 
@@ -115,7 +106,7 @@ class StepImporter(omni.ext.IExt):
                 self._style = "NvidiaDark"
 
         self._menu = omni.kit.ui.get_editor_menu().add_item(
-            "Window/Isaac/" + EXTENSION_NAME, self.show_window, toggle=False, value=False
+            "Window/Isaac/" + EXTENSION_NAME, self.menu_click, toggle=False, value=False
         )
 
         if self._style == "NvidiaLight":
@@ -432,28 +423,19 @@ class StepImporter(omni.ext.IExt):
         self.exporter = None
 
     def on_visibility_change(self, a):
-        self.show_window(self._menu, False)
+        self.show_window(self._menu, a)
 
-    def show_window(self, menu, value=False):
-        if not value:
-            if self._window:
-                self._window = None
-                self.build_steps.clear()
-                self.current_step = -1
-                if self._assembly_model:
-                    self._assembly_model.reset()
-                    self._assembly_model = None
-                self.part = _step_importer.Part()
-        if value and self._window is None:
+    def _build_ui(self):
+        if self._window is None:
             self._window = ui.Window(
                 EXTENSION_NAME,
                 width=800,
                 height=400,
                 menu_path="Isaac/Importers/" + EXTENSION_NAME,
-                open=value,
+                open=True,
                 dock=ui.DockPreference.LEFT_BOTTOM,
             )
-            self._window.set_visibility_changed_fn(self.show_window)
+            self._window.set_visibility_changed_fn(self.on_visibility_change)
             self._assembly_model = AssemblyTreeModel()
             self.props = {}
             with self._window.frame:
@@ -487,10 +469,22 @@ class StepImporter(omni.ext.IExt):
                                 self.step_btns[i].selected = False
                             self.select_step(0)
                         ui.Spacer(width=ui.Pixel(20))
-            # main_dockspace = ui.Workspace.get_window("DockSpace")
-            # self._window.deferred_dock_in("DockSpace")
-            # if menu:
-            #     self._select_file()
+        self._window.visible = True
+
+    def menu_click(self, menu, value=False):
+        self.show_window(menu, value)
+        if value:
+            self._select_file()
+
+    def show_window(self, menu, value=False):
+        if not value:
+            self.select_step(0)
+            self._on_picker_cancel(None, None)
+            if self._assembly_model:
+                self._assembly_model.reset()
+            self.part = _step_importer.Part()
+        else:
+            self._build_ui()
 
     def _on_picker_cancel(self, a, b):
         if self._filepicker:
@@ -525,7 +519,17 @@ class StepImporter(omni.ext.IExt):
         self._si = None
 
     def _select_file(self):
-        self._filepicker.show()
+        if self._filepicker:
+            self._filepicker.show()
+        else:
+            self._filepicker = FilePickerDialog(
+                "Import STEP",
+                allow_multi_selection=False,
+                apply_button_label="Import",
+                click_apply_handler=weakref.proxy(self)._select_picked_file_callback,
+                click_cancel_handler=weakref.proxy(self)._on_picker_cancel,
+                item_filter_fn=on_filter_item,
+            )
 
     def _select_folder(self, btn_widget):
         self._folder_picker.show()
