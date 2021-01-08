@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -287,6 +287,29 @@ PYBIND11_MODULE(_range_sensor, m)
                 
                 Returns:
                      :obj:`int`: The number of emitters on the sensor array, 0 if error occurred)pbdoc")
+
+        .def("get_envelope",
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
+                 if (!ul)
+                 {
+                     return py::none();
+                 }
+                 float* data = ul->getEnvelope(sensorPath, emitterIndex);
+                 int numBins = ul->getNumBins(sensorPath);
+                 int nDims = 1;
+                 size_t sz = sizeof(float);
+
+                 return py::array(py::buffer_info(
+                     data, sizeof(float), py::format_descriptor<float>::value, nDims, { numBins }, { sz }));
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                    arg1 (:obj:`int`): array index of the emitter that we are querying
+                
+                Returns:
+                :obj:`numpy.ndarray`: The binned timestamps of returns from sensor emission)pbdoc")
+
         .def("get_depth_data",
              [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
                  if (!ul)

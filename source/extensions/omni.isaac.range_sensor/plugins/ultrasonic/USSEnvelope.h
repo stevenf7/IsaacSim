@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -15,9 +15,16 @@
 #include <algorithm>
 #include <cstddef>
 #include <numeric>
+#include <sstream>
 #include <utility>
 #include <vector>
 
+template <typename T>
+bool almostEqual(T x, T y, int ulp = 1000)
+{
+    T prec = std::numeric_limits<T>::epsilon() * ulp;
+    return std::abs(x - y) < prec || std::abs((x - y) / std::max(x, y)) < prec;
+}
 
 class USSEnvelope
 {
@@ -26,6 +33,7 @@ public:
     // envelope is initialized to be all zeroes
     USSEnvelope(const int numBins, const float maxDist)
         : m_numBins(numBins),
+          m_maxDist(maxDist),
           m_maxDistRoundTrip(maxDist * 2.f),
           m_maxTimestamp(m_maxDistRoundTrip / C),
           m_binWidth(m_maxTimestamp / m_numBins),
@@ -37,8 +45,16 @@ public:
         std::vector<float> echo;
         for (size_t i = 0; i < linearDepth.size(); i++)
         {
-            // convert from distance to echo
-            echo.push_back(linearDepth[i] / C * 2.f);
+            // do not include echoes of equal to maxDist
+            if (!almostEqual(m_maxDist, linearDepth[i]))
+            {
+                // convert from distance to echo
+                echo.push_back(linearDepth[i] * 2.f / C);
+            }
+        }
+        for (size_t i = 0; i < m_binnedEcho.size(); i++)
+        {
+            m_binnedEcho[i].clear();
         }
 
         std::vector<float> sortedEcho(echo);
@@ -52,9 +68,15 @@ public:
                 rightBinBoundary += m_binWidth;
                 currentBin++;
             }
-            if ((sortedEcho[i] > rightBinBoundary) || (sortedEcho[i] < 0))
+
+            // use m_maxTimestamp not final rightBinBoundary as a guard because of accumulation of error on sum
+            if ((sortedEcho[i] > m_maxTimestamp) || (sortedEcho[i] < 0))
             {
-                throw std::invalid_argument("Reflected point is outside of valid ray boundaries");
+                std::stringstream ss;
+                ss << "Reflected point is outside of ray boundaries: rightBinBoundary = " << rightBinBoundary
+                   << ", sortedEcho[i] = " << sortedEcho[i] << ", i= " << i << ", currentBin = " << currentBin
+                   << ", m_numBins = " << m_numBins << std::endl;
+                throw std::invalid_argument(ss.str());
             }
             else
             {
@@ -75,12 +97,12 @@ public:
 
 private:
     size_t m_numBins;
+    float m_maxDist;
     // max dist is 7m * 2 (roundtrip)
-    float m_maxDistRoundTrip; // = 7. * 2.;
-    // speed of light is 343. m/s
+    float m_maxDistRoundTrip;
+    // speed of sound is 343. m/s
     const float C = 343.f;
     float m_maxTimestamp;
-    // const float MAX_TIMESTAMP = m_maxDistRoundTrip; // / C;
     float m_binWidth;
     std::vector<std::vector<float>> m_binnedEcho;
     std::vector<float> m_envelope;

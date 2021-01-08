@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -73,6 +73,7 @@ void scan_(int start,
            std::vector<carb::Float3>& hitPosition,
            std::vector<float>& linearDepth,
            std::vector<uint8_t>& intensity,
+           USSEnvelope& envelope,
            std::vector<float>& zenith,
            std::vector<float>& azimuth,
            float maxDepth,
@@ -184,6 +185,7 @@ void scan_(int start,
             ++i %= (cols * rows);
         }
     }
+    envelope.updateEnvelope(linearDepth);
 }
 
 
@@ -219,6 +221,8 @@ void UltrasonicSensor::dumpData(double dt)
 
 UltrasonicSensor::UltrasonicSensor(omni::physx::IPhysx* physxPtr, carb::fastcache::FastCache* fastCachePtr)
     : RangeSensorComponent(physxPtr, fastCachePtr),
+      mMinDepth(mMinRange / mMetersPerUnit),
+      mMaxDepth(mMaxRange / mMetersPerUnit),
       mRows(int(mVerticalFov / mVerticalResolution)),
       mCols(int(mHorizontalFov / mHorizontalResolution)),
       mLinearDepth(NUM_EMITTERS, std::vector<float>(mRows * mCols, 0)),
@@ -229,6 +233,7 @@ UltrasonicSensor::UltrasonicSensor(omni::physx::IPhysx* physxPtr, carb::fastcach
       mLastDepth(NUM_EMITTERS, std::vector<uint16_t>(mRows * mCols, 0)),
       mHitPos(NUM_EMITTERS, std::vector<carb::Float3>(mRows * mCols, { 0, 0, 0 })),
       mLastHitPos(NUM_EMITTERS, std::vector<carb::Float3>(mRows * mCols, { 0, 0, 0 })),
+      mEnvelope(std::vector<USSEnvelope>(NUM_EMITTERS, USSEnvelope(NUM_BINS, mMaxDepth))),
       mEmitterDebugLines(NUM_EMITTERS, std::vector<DebugData>())
 {
 
@@ -237,14 +242,14 @@ UltrasonicSensor::UltrasonicSensor(omni::physx::IPhysx* physxPtr, carb::fastcach
     mAzimuth.assign(mCols, 0.0f);
     mLastAzimuth.assign(mCols, 0.0f);
 
-    emitter.setEmitterDelay(0, 0.0);
-    emitter.setEmitterDelay(1, 0.3);
-    emitter.setEmitterDelay(2, 0.6);
-    emitter.setEmitterDelay(3, 0.0);
-    emitter.setEmitterDelay(4, 0.3);
-    emitter.setEmitterDelay(5, 0.6);
-    emitter.setEmitterDelay(6, 0.0);
-    emitter.setEmitterDelay(7, 0.3);
+    mEmissionTimer.setEmitterDelay(0, 0.0);
+    mEmissionTimer.setEmitterDelay(1, 0.3);
+    mEmissionTimer.setEmitterDelay(2, 0.6);
+    mEmissionTimer.setEmitterDelay(3, 0.0);
+    mEmissionTimer.setEmitterDelay(4, 0.3);
+    mEmissionTimer.setEmitterDelay(5, 0.6);
+    mEmissionTimer.setEmitterDelay(6, 0.0);
+    mEmissionTimer.setEmitterDelay(7, 0.3);
 }
 
 UltrasonicSensor::~UltrasonicSensor()
@@ -256,6 +261,17 @@ void UltrasonicSensor::onStart()
     RangeSensorComponent::onStart();
 }
 
+void UltrasonicSensor::clampRangeBounds()
+{
+    mMinRange = pxr::GfClamp(mMinRange, 0, 1e9f);
+    mMaxRange = pxr::GfClamp(mMaxRange, mMinRange, 1e9f);
+}
+
+void UltrasonicSensor::updateDepthBounds()
+{
+    mMinDepth = mMinRange / mMetersPerUnit;
+    mMaxDepth = mMaxRange / mMetersPerUnit;
+}
 
 void UltrasonicSensor::onComponentChange()
 {
@@ -291,11 +307,8 @@ void UltrasonicSensor::onComponentChange()
     mVerticalResolution = pxr::GfClamp(mVerticalResolution, 0.005f, 1024);
     mVerticalFov = pxr::GfClamp(mVerticalFov, mVerticalResolution, 360);
 
-    mMinRange = pxr::GfClamp(mMinRange, 0, 1e9f);
-    mMaxRange = pxr::GfClamp(mMaxRange, mMinRange, 1e9f);
-
-    mMinDepth = mMinRange / mMetersPerUnit;
-    mMaxDepth = mMaxRange / mMetersPerUnit;
+    clampRangeBounds();
+    updateDepthBounds();
 
     mMaxStepSize = float(1.0 / 30.0);
 
@@ -343,7 +356,7 @@ void UltrasonicSensor::tick()
         CARB_LOG_ERROR("Physics Scene does not exist");
         return;
     }
-    emitter.update(mTimeDelta);
+    mEmissionTimer.update(mTimeDelta);
 
     carb::fastcache::Transform parentTrans;
     parentTrans.orientation = { 0, 0, 0, 1 };
@@ -368,68 +381,68 @@ void UltrasonicSensor::tick()
     const ::physx::PxVec3& sensorXOffset = ::physx::PxVec3(25.f, 0.f, 0.f);
     const ::physx::PxVec3& sensorYOffset = ::physx::PxVec3(0.0f, 50.0f, 0.0f);
 
-    if (emitter.shouldEmit(0))
+    if (mEmissionTimer.shouldEmit(0))
     {
         ::physx::PxQuat theta5 = theta0 * ::physx::PxQuat(::physx::PxPi * -0.2f, ::physx::PxVec3(0.0f, 0.0f, 1.0f));
         scan_<false, true>(0, mCols, mRows, mCols, origin + sensorXOffset, theta5, mPhysx, mPxScene,
-                           mEmitterDebugLines[0], mDepth[0], mHitPos[0], mLinearDepth[0], mIntensity[0], mZenith,
-                           mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+                           mEmitterDebugLines[0], mDepth[0], mHitPos[0], mLinearDepth[0], mIntensity[0], mEnvelope[0],
+                           mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
     }
 
-    if (emitter.shouldEmit(1))
+    if (mEmissionTimer.shouldEmit(1))
     {
         ::physx::PxQuat theta6 = theta0 * ::physx::PxQuat(::physx::PxPi * -0.1f, ::physx::PxVec3(0.0f, 0.0f, 1.0f));
         scan_<false, true>(0, mCols, mRows, mCols, origin + sensorXOffset + sensorYOffset, theta6, mPhysx, mPxScene,
-                           mEmitterDebugLines[1], mDepth[1], mHitPos[1], mLinearDepth[1], mIntensity[1], mZenith,
-                           mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+                           mEmitterDebugLines[1], mDepth[1], mHitPos[1], mLinearDepth[1], mIntensity[1], mEnvelope[1],
+                           mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
     }
 
-    if (emitter.shouldEmit(2))
+    if (mEmissionTimer.shouldEmit(2))
     {
         ::physx::PxQuat theta7 = theta0 * ::physx::PxQuat(::physx::PxPi * 0.1f, ::physx::PxVec3(0.0f, 0.0f, 1.0f));
         scan_<false, true>(0, mCols, mRows, mCols, origin + sensorXOffset + 2.f * sensorYOffset, theta7, mPhysx,
                            mPxScene, mEmitterDebugLines[2], mDepth[2], mHitPos[2], mLinearDepth[2], mIntensity[2],
-                           mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+                           mEnvelope[2], mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
     }
 
-    if (emitter.shouldEmit(3))
+    if (mEmissionTimer.shouldEmit(3))
     {
         ::physx::PxQuat theta8 = theta0 * ::physx::PxQuat(::physx::PxPi * 0.2f, ::physx::PxVec3(0.0f, 0.0f, 1.0f));
         scan_<false, true>(0, mCols, mRows, mCols, origin + sensorXOffset + 3.f * sensorYOffset, theta8, mPhysx,
                            mPxScene, mEmitterDebugLines[3], mDepth[3], mHitPos[3], mLinearDepth[3], mIntensity[3],
-                           mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+                           mEnvelope[3], mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
     }
 
-    if (emitter.shouldEmit(4))
+    if (mEmissionTimer.shouldEmit(4))
     {
         ::physx::PxQuat theta1 = theta0 * ::physx::PxQuat(::physx::PxPi * 1.2f, ::physx::PxVec3(0.0f, 0.0f, 1.0f));
         scan_<false, true>(0, mCols, mRows, mCols, origin - sensorXOffset, theta1, mPhysx, mPxScene,
-                           mEmitterDebugLines[4], mDepth[4], mHitPos[4], mLinearDepth[4], mIntensity[4], mZenith,
-                           mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+                           mEmitterDebugLines[4], mDepth[4], mHitPos[4], mLinearDepth[4], mIntensity[4], mEnvelope[4],
+                           mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
     }
 
-    if (emitter.shouldEmit(5))
+    if (mEmissionTimer.shouldEmit(5))
     {
         ::physx::PxQuat theta2 = theta0 * ::physx::PxQuat(::physx::PxPi * 1.1f, ::physx::PxVec3(0.0f, 0.0f, 1.0f));
         scan_<false, true>(0, mCols, mRows, mCols, origin - sensorXOffset + sensorYOffset, theta2, mPhysx, mPxScene,
-                           mEmitterDebugLines[5], mDepth[5], mHitPos[5], mLinearDepth[5], mIntensity[5], mZenith,
-                           mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+                           mEmitterDebugLines[5], mDepth[5], mHitPos[5], mLinearDepth[5], mIntensity[5], mEnvelope[5],
+                           mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
     }
 
-    if (emitter.shouldEmit(6))
+    if (mEmissionTimer.shouldEmit(6))
     {
         ::physx::PxQuat theta3 = theta0 * ::physx::PxQuat(::physx::PxPi * 0.9f, ::physx::PxVec3(0.0f, 0.0f, 1.0f));
         scan_<false, true>(0, mCols, mRows, mCols, origin - sensorXOffset + 2.f * sensorYOffset, theta3, mPhysx,
                            mPxScene, mEmitterDebugLines[6], mDepth[6], mHitPos[6], mLinearDepth[6], mIntensity[6],
-                           mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+                           mEnvelope[6], mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
     }
 
-    if (emitter.shouldEmit(7))
+    if (mEmissionTimer.shouldEmit(7))
     {
         ::physx::PxQuat theta4 = theta0 * ::physx::PxQuat(::physx::PxPi * 0.8f, ::physx::PxVec3(0.0f, 0.0f, 1.0f));
         scan_<false, true>(0, mCols, mRows, mCols, origin - sensorXOffset + 3.f * sensorYOffset, theta4, mPhysx,
                            mPxScene, mEmitterDebugLines[7], mDepth[7], mHitPos[7], mLinearDepth[7], mIntensity[7],
-                           mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+                           mEnvelope[7], mZenith, mAzimuth, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
     }
 
     for (size_t i = 0; i < mEmitterDebugLines.size(); i++)

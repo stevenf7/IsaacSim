@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,10 +9,9 @@
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "USSEnvelope.h"
-#include "UltrasonicEmitter.h"
+#include "UltrasonicArrayEmissionTimer.h"
 #include "doctest/doctest.h"
 
-#include <iostream>
 #include <string>
 
 TEST_CASE("main")
@@ -40,9 +39,10 @@ TEST_CASE("main")
         distances.push_back(7.4f);
         CHECK_THROWS(ussEnv.updateEnvelope(distances));
     }
+
     SUBCASE("Check Emitter")
     {
-        UltrasonicEmitter emitter;
+        UltrasonicArrayEmissionTimer emitter;
         size_t emitterIdx = 3;
         double deltaT = 0.4;
         emitter.update(deltaT);
@@ -59,7 +59,7 @@ TEST_CASE("main")
 
     SUBCASE("Check Emitter Delay")
     {
-        UltrasonicEmitter emitter;
+        UltrasonicArrayEmissionTimer emitter;
         size_t emitterIdx0 = 0;
         size_t emitterIdx3 = 3;
         double delay = 2.0;
@@ -70,11 +70,27 @@ TEST_CASE("main")
         CHECK(emitter.shouldEmit(emitterIdx3) == true);
     }
 
-    /*SUBCASE("Check UltrasonicSensor") {
-        carb::Framework* framework = carb::getFramework();
-        omni::physx::IPhysx* physxPtr = framework->acquireInterface<omni::physx::IPhysx>();
-        carb::fastcache::FastCache* fastCachePtr = framework->acquireInterface<carb::fastcache::FastCache>();
-        omni::isaac::range_sensor::UltrasonicSensor sensor(physxPtr, fastCachePtr);
+    SUBCASE("Check Real data")
+    {
+        int numBins = 224;
+        float maxDist = 100.;
+        USSEnvelope ussEnv(numBins, maxDist);
+        std::vector<float> distances{ 100.f,      100.f,      100.f,      100.f,      100.f,      100.f,
+                                      100.f,      100.f,      100.f,      100.f,      100.f,      100.f,
+                                      100.f,      100.f,      100.f,      100.f,      100.f,      100.f,
+                                      2.8684325f, 2.8684325f, 2.8684325f, 2.8684325f, 2.8684325f, 2.8684325f,
+                                      14.324773f, 14.324775f, 14.32477f,  14.324772f, 14.324768f, 14.324773f,
+                                      1.5981145f, 1.5981146f, 1.5981146f, 1.5981146f, 1.5981147f, 1.5981146f };
+        ussEnv.updateEnvelope(distances);
+        std::vector<float>& envelope = ussEnv.getEnvelope();
 
-    }*/
+        // equality with an int hacks off after the decimal?
+        CHECK(envelope[3] == 6);
+        CHECK(envelope[0] == 0);
+        CHECK(envelope[223] == 0);
+
+        // check the state is the same after a second update
+        ussEnv.updateEnvelope(distances);
+        CHECK(envelope[3] == 6);
+    }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,7 +11,7 @@
 
 
 #include "../core/RangeSensorComponent.h"
-#include "UltrasonicEmitter.h"
+#include "UltrasonicArrayEmissionTimer.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
@@ -39,6 +39,10 @@ public:
     virtual void tick();
     virtual void onComponentChange();
 
+    int getNumBins() const
+    {
+        return NUM_BINS;
+    }
     int getNumCols() const
     {
         return mCols;
@@ -60,11 +64,17 @@ public:
     {
         return mLastLinearDepth[emitterIndex];
     }
+    std::vector<float>& getEnvelope(int emitterIndex)
+    {
+        return mEnvelope[emitterIndex].getEnvelope();
+    }
     std::vector<uint8_t>& getIntensityData(int emitterIndex)
     {
         return mLastIntensity[emitterIndex];
     }
-    // these are the same across all sensors for now
+
+    // these (zenith and azimuth getters) are the same across all emitters on the sensor for now
+    // in other words, all emitters have the same resolution, shape, etc
     std::vector<float>& getZenithData()
     {
         return mLastZenith;
@@ -75,16 +85,18 @@ public:
     }
 
 private:
-    UltrasonicEmitter emitter;
     const static size_t NUM_EMITTERS = 8;
+    const static size_t NUM_BINS = 224;
     float mHorizontalFov = 60.0f;
     float mVerticalFov = 30.0f;
     float mHorizontalResolution = 0.4f;
     float mVerticalResolution = 4.0f;
 
 
-    float mMinDepth = 0;
-    float mMaxDepth = 1e8;
+    // difference between m[min|max]Depth and m[min|max]Range is division by the units
+    // mMinRange and mMaxRange are defined in parent component
+    float mMinDepth;
+    float mMaxDepth;
     float mMaxStepSize = 0;
     int mMaxColsPerTick = 0;
     int mLastCol = 0;
@@ -107,9 +119,14 @@ private:
     std::vector<std::vector<uint16_t>> mLastDepth;
     std::vector<std::vector<carb::Float3>> mHitPos;
     std::vector<std::vector<carb::Float3>> mLastHitPos;
+    UltrasonicArrayEmissionTimer mEmissionTimer;
+    std::vector<USSEnvelope> mEnvelope;
     std::vector<std::vector<omni::isaac::range_sensor::DebugData>> mEmitterDebugLines;
 
+
     void dumpData(double dt);
+    void clampRangeBounds();
+    void updateDepthBounds();
 };
 
 
