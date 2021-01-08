@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -349,6 +349,30 @@ bool CARB_ABI isUltrasonicSensor(const char* primPath)
     }
 }
 
+int CARB_ABI getNumBins(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getNumBins();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return 0;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return 0;
+    }
+}
+
 int CARB_ABI getNumRows(const char* primPath)
 {
     if (g_stage && gRangeSensorManager)
@@ -431,6 +455,30 @@ uint16_t* CARB_ABI getDepthData(const char* primPath, int emitterIndex)
         {
 
             return sensor->getDepthData(emitterIndex).data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+float* CARB_ABI getEnvelope(const char* primPath, int emitterIndex)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getEnvelope(emitterIndex).data();
         }
         else
         {
@@ -799,7 +847,9 @@ void fillInterface(omni::isaac::range_sensor::UltrasonicSensorInterface& iface)
     iface.getIntensityData = ultrasonic::getIntensityData;
     iface.getZenithData = ultrasonic::getZenithData;
     iface.getAzimuthData = ultrasonic::getAzimuthData;
+    iface.getNumBins = ultrasonic::getNumBins;
     iface.getPointCloud = ultrasonic::getPointCloud;
+    iface.getEnvelope = ultrasonic::getEnvelope;
     iface.isUSS = ultrasonic::isUltrasonicSensor;
 }
 

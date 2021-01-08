@@ -136,6 +136,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             depth = self._ultrasonic.get_depth_data(ultrasonicPath, emitter_idx)
             lin_depth = self._ultrasonic.get_linear_depth_data(ultrasonicPath, emitter_idx)
             intensity = self._ultrasonic.get_intensity_data(ultrasonicPath, emitter_idx)
+            envelope = self._ultrasonic.get_envelope(ultrasonicPath, emitter_idx)
             if depth.any() and np.any(depth < 65534) and np.any(depth > 0):
                 break
 
@@ -143,4 +144,12 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertEqual(depth[0, 6], 1047)
         self.assertEqual(intensity[0, 6], 255)
         self.assertAlmostEqual(lin_depth[0, 6], 1.5981145)
+
+        # check that envelope is correct
+        self.assertAlmostEqual(envelope[0], 0.0)
+        self.assertAlmostEqual(envelope[3], 150.0)
+        self.assertAlmostEqual(envelope[4], 0.0)
+        # ray traces that hit nothing return max distance
+        self.assertAlmostEqual(envelope[223], 0.0)
+
         self._timeline.stop()

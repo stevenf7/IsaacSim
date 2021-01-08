@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -8,15 +8,17 @@
 //
 
 #pragma once
+#include "USSEnvelope.h"
+
 #include <iostream>
 #include <sstream>
 #include <vector>
 
-class UltrasonicEmitter
+class UltrasonicArrayEmissionTimer
 {
 
 public:
-    UltrasonicEmitter()
+    UltrasonicArrayEmissionTimer()
         : mDeltaTSuccessivePulses(std::vector<double>(NUM_EMITTERS, PULSE_GAP_DELTA)),
           mPulseDuration(std::vector<double>(NUM_EMITTERS, PULSE_DURATION)),
           mTimeSinceLastPulse(std::vector<double>(NUM_EMITTERS, 0.)),
@@ -75,6 +77,7 @@ public:
         mTimeSinceLastPulse[index] -= delay;
         // std::cout << ", after: " << mTimeSinceLastPulse[index] << std::endl;
     }
+
 
 private:
     const double PULSE_DURATION = 0.5; // 2500.;

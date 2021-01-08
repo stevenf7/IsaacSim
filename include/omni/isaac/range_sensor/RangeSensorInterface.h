@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -55,9 +55,12 @@ struct UltrasonicSensorInterface
     int(CARB_ABI* getNumRows)(const char* sensorPath);
     int(CARB_ABI* getNumEmitters)(const char* sensorPath);
     int(CARB_ABI* getNumColsTicked)(const char* sensorPath);
+    int(CARB_ABI* getNumBins)(const char* sensorPath);
+
 
     uint16_t*(CARB_ABI* getDepthData)(const char* sensorPath, int emitterIndex);
     float*(CARB_ABI* getLinearDepthData)(const char* sensorPath, int emitterIndex);
+    float*(CARB_ABI* getEnvelope)(const char* sensorPath, int emitterIndex);
     uint8_t*(CARB_ABI* getIntensityData)(const char* sensorPath, int emitterIndex);
     float*(CARB_ABI* getZenithData)(const char* sensorPath);
     float*(CARB_ABI* getAzimuthData)(const char* sensorPath);
