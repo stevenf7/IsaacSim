@@ -1,5 +1,20 @@
 display_name = "STEP Importer"
 
+
+[package]
+version = "0.1.0"
+category = "Importer"
+title = "Isaac Sim Step Importer"
+description = "Import STEP files into Omniverse"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.step_importer"
+keywords = ["isaac", "physics"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/img/exploded_view.png"
+icon = "data/img/icon.png"
+
+
 [dependencies]
 "omni.kit.editor" = {}
 "omni.kit.tool.asset_importer" = {}
