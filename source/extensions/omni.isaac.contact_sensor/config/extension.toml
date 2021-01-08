@@ -1,0 +1,37 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Contact Sensor Simulation"
+description = "Contact Sensor"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.contact_sensor"
+keywords = ["isaac", "physics", "robotics"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.kit.editor" = {}
+"omni.physx" = {}
+
+[[python.modules]]
+name = "omni.isaac.contact_sensor"
+
+[[python.module]]
+name = "omni.isaac.contact_sensor.tests"
+public = false
+
+[[python.modules]]
+name = "omni.isaac.contact_sensor.scripts.samples.contact_sensor"
+
+[[native.plugins]]
+path = "bin/*.plugin"
+recursive = false
+
+[python.pipapi]
+requirements = ["numpy"]
