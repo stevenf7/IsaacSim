@@ -61,6 +61,7 @@ struct UltrasonicSensorInterface
     uint16_t*(CARB_ABI* getDepthData)(const char* sensorPath, int emitterIndex);
     float*(CARB_ABI* getLinearDepthData)(const char* sensorPath, int emitterIndex);
     float*(CARB_ABI* getEnvelope)(const char* sensorPath, int emitterIndex);
+    std::vector<float>(CARB_ABI* getEnvelopeArrayFlattened)(const char* sensorPath);
     uint8_t*(CARB_ABI* getIntensityData)(const char* sensorPath, int emitterIndex);
     float*(CARB_ABI* getZenithData)(const char* sensorPath);
     float*(CARB_ABI* getAzimuthData)(const char* sensorPath);

@@ -140,6 +140,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             if depth.any() and np.any(depth < 65534) and np.any(depth > 0):
                 break
 
+        envelope_arr = self._ultrasonic.get_envelope_array(ultrasonicPath)
+        self.assertAlmostEqual(envelope_arr[3, 3], 150.0)
         # if we exited the for loop via the break, we should have a valid scan
         self.assertEqual(depth[0, 6], 1047)
         self.assertEqual(intensity[0, 6], 255)
