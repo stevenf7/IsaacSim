@@ -68,6 +68,29 @@ public:
     {
         return mEnvelope[emitterIndex].getEnvelope();
     }
+    std::vector<std::vector<float>> getEnvelopeArray()
+    {
+        std::vector<std::vector<float>> env;
+        for (size_t i = 0; i < mEnvelope.size(); i++)
+        {
+            env.push_back(mEnvelope[i].getEnvelope());
+        }
+        return env;
+    }
+
+    std::vector<float> getEnvelopeArrayFlattened()
+    {
+        auto envArray = getEnvelopeArray();
+        std::vector<float> flattenedEnvelope;
+        for (size_t i = 0; i < envArray.size(); i++)
+        {
+            for (size_t j = 0; j < NUM_BINS; j++)
+            {
+                flattenedEnvelope.push_back(envArray[i][j]);
+            }
+        }
+        return flattenedEnvelope;
+    }
     std::vector<uint8_t>& getIntensityData(int emitterIndex)
     {
         return mLastIntensity[emitterIndex];
@@ -85,7 +108,7 @@ public:
     }
 
 private:
-    const static size_t NUM_EMITTERS = 8;
+    const static size_t NUM_EMITTERS = 12;
     const static size_t NUM_BINS = 224;
     float mHorizontalFov = 60.0f;
     float mVerticalFov = 30.0f;

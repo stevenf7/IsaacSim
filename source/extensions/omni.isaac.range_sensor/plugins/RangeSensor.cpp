@@ -493,6 +493,29 @@ float* CARB_ABI getEnvelope(const char* primPath, int emitterIndex)
     }
 }
 
+std::vector<float> CARB_ABI getEnvelopeArrayFlattened(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return sensor->getEnvelopeArrayFlattened();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return std::vector<float>();
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return std::vector<float>();
+    }
+}
+
 float* CARB_ABI getLinearDepthData(const char* primPath, int emitterIndex)
 {
     if (g_stage && gRangeSensorManager)
@@ -848,8 +871,10 @@ void fillInterface(omni::isaac::range_sensor::UltrasonicSensorInterface& iface)
     iface.getZenithData = ultrasonic::getZenithData;
     iface.getAzimuthData = ultrasonic::getAzimuthData;
     iface.getNumBins = ultrasonic::getNumBins;
+    iface.getNumEmitters = ultrasonic::getNumEmitters;
     iface.getPointCloud = ultrasonic::getPointCloud;
     iface.getEnvelope = ultrasonic::getEnvelope;
+    iface.getEnvelopeArrayFlattened = ultrasonic::getEnvelopeArrayFlattened;
     iface.isUSS = ultrasonic::isUltrasonicSensor;
 }
 

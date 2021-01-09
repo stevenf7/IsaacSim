@@ -82,7 +82,7 @@ public:
 private:
     const double PULSE_DURATION = 0.5; // 2500.;
     const double PULSE_GAP_DELTA = 1.0; // 10000.;
-    static const size_t NUM_EMITTERS = 8;
+    static const size_t NUM_EMITTERS = 12;
     // all times are in milliseconds
     const std::vector<double> mDeltaTSuccessivePulses;
     const std::vector<double> mPulseDuration;

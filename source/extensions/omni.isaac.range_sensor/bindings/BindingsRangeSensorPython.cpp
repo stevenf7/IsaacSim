@@ -344,6 +344,29 @@ PYBIND11_MODULE(_range_sensor, m)
                 Returns:
                 :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in meters)pbdoc")
 
+        .def("get_envelope_array",
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath) -> py::object {
+                 if (!ul)
+                 {
+                     return py::none();
+                 }
+                 std::vector<float> data = ul->getEnvelopeArrayFlattened(sensorPath);
+                 float* data_ptr = data.data();
+                 int numBins = ul->getNumBins(sensorPath);
+                 int numEmitters = ul->getNumEmitters(sensorPath);
+                 int nDims = 2;
+
+                 auto arr =
+                     py::array(py::buffer_info(data_ptr, sizeof(float), py::format_descriptor<float>::value, nDims,
+                                               { numEmitters, numBins }, { sizeof(float) * numBins, sizeof(float) }));
+                 return arr;
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The array of envelopes from the ultrasonic sensor)pbdoc")
 
         .def("get_intensity_data",
              [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
