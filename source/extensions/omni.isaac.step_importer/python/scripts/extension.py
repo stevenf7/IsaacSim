@@ -395,9 +395,9 @@ class StepImporter(omni.ext.IExt):
                 self.exporter.export_mesh(mesh_idx, props, len(items) == 1)
 
             if len(items) > 1 or import_all:
-                self.exporter.export()
+                self.exporter.export(True)
 
-        omni.usd.get_context().close_stage_with_callback(on_finish_fn=lambda a, b: export())
+        omni.usd.get_context().new_stage_with_callback(on_finish_fn=lambda a, b: export())
 
     def reimport_all_meshes(self):
         self.reimport_meshes(True)
@@ -592,7 +592,8 @@ class StepImporter(omni.ext.IExt):
             self._mesh_model.reset()
             self.path = ""
             carb.log_error("Only Local Paths supported")
-        self._filepicker.hide()
+        if self._filepicker:
+            self._filepicker.hide()
 
     def _finish_import(self, output_dir):
         # setting asset importer parameters to upload

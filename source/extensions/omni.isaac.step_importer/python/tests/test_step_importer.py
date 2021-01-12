@@ -74,3 +74,12 @@ class TestStepImporter(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.test_create_exporter()
         self.exporter.export()
         pass
+
+    async def test_reimport(self):
+        await self.test_export()
+        props = _step_importer.Tesselation_Properties()
+
+        for i in range(4):
+            self.exporter.export_mesh(i, [props], False)
+        self.exporter.export(True)
+        pass
