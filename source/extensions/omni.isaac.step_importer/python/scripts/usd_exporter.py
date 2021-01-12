@@ -41,6 +41,9 @@ class DummyVariantSet:
 
 
 def createInMemoryStage(path):
+    # if os.path.isfile(path):
+    #     stage = pxr.Usd.Stage.Open(path)
+    # else:
     stage = pxr.Usd.Stage.CreateNew(path)
     pxr.UsdGeom.SetStageUpAxis(stage, pxr.UsdGeom.Tokens.z)
     return stage
@@ -161,10 +164,11 @@ class PartExporter:
         return self.tempdir
 
     def is_temp_stage_open(self):
-        return os.path.split(self.tempdir)[1].replace("\\", "/").lower() in omni.usd.get_context().get_stage_url()
+        return os.path.split(self.tempdir)[1].replace("\\", "/") in omni.usd.get_context().get_stage_url()
 
     def __del__(self):
         # Cleans after itself, deletes the temp folder
+        self.stage = None
         temp_path_name = os.path.split(self.tempdir)[1]
         if self.is_temp_stage_open():
             tempdir = self.tempdir
@@ -228,11 +232,12 @@ class PartExporter:
 
         return absolute_paths, relative_paths
 
-    def export(self):
+    def export(self, redo=False):
         """
         Exports a preview version of the assembly with low quality meshes, to allow tweaking per mesh,
         removing duplicates, and reorg the assembly structure.
         """
+        self.stage = None
         usd_context = omni.usd.get_context()
         usd_context.disable_save_to_recent_files()
         base_folder = self.tempdir
@@ -242,22 +247,24 @@ class PartExporter:
             os.makedirs(self.path)
         carb.log_info("Creating assembly usd at " + self.path)
         files = glob.glob(os.path.join(self.path, "*"))
-        for f in files:
-            if os.path.isfile(f):
-                os.remove(f)
-        shutil.rmtree(os.path.join(part_path, "meshes"), True)
+        # for f in files:
+        #     if os.path.isfile(f):
+        #         os.remove(f)
         materials_path = os.path.join(part_path, "materials").replace("\\", "/")
         self.materials_path = os.path.join(materials_path, "colors.usd").replace("\\", "/")
-        if os.path.exists(self.materials_path):
-            shutil.rmtree(materials_path)
-        os.makedirs(materials_path)
-        if len(self.part.materials) != len(self.material_names):
-            self.material_names = ["Material_{:02d}".format(i) for i in range(len(self.part.materials))]
-        self.material_list = export_material_list(self.part.materials, self.material_names, self.materials_path)
-        meshes_path = os.path.join(part_path, "meshes")
-        if not os.path.exists(meshes_path):
-            os.makedirs(meshes_path)
-        self.export_mesh_list(meshes_path, self.materials_path, self.part.materials)
+        # if os.path.exists(self.materials_path):
+        #     shutil.rmtree(materials_path)
+        # os.makedirs(materials_path)
+        if not os.path.exists(self.materials_path):
+            os.makedirs(materials_path)
+            if len(self.part.materials) != len(self.material_names):
+                self.material_names = ["Material_{:02d}".format(i) for i in range(len(self.part.materials))]
+            self.material_list = export_material_list(self.part.materials, self.material_names, self.materials_path)
+        if not redo:
+            meshes_path = os.path.join(part_path, "meshes")
+            if not os.path.exists(meshes_path):
+                os.makedirs(meshes_path)
+            self.export_mesh_list(meshes_path, self.materials_path, self.part.materials)
         # for i, path in enumerate(self.mesh_paths):
         #     self.part.mesh_usd_paths[i] = path
 
@@ -277,14 +284,15 @@ class PartExporter:
             self.part.assemblies[0].sub_assemblies = [c]
             self.part.assemblies[0].meshes = []
 
-        if self._make_assembly_usd:
-            self.assemblies_path = [None for i in range(len(self.part.assemblies))]
-        else:
-            stage_name = re.sub(
-                r"[\W,_]+", "_", self.part_name
-            ).lower()  # Ensures use of lowercase path name because USD library always return lowercase name.
-            stage_path = os.path.join(self.path, stage_name + ".usd")
-            self.stage = createInMemoryStage(stage_path)
+        if not redo:
+            if self._make_assembly_usd:
+                self.assemblies_path = [None for i in range(len(self.part.assemblies))]
+            else:
+                stage_name = re.sub(
+                    r"[\W,_]+", "_", self.part_name
+                ).lower()  # Ensures use of lowercase path name because USD library always return lowercase name.
+                stage_path = os.path.join(self.path, stage_name + ".usd")
+                self.stage = createInMemoryStage(stage_path)
         self.assemblies_path[1] = self.export_assembly("/Root", 1)
         if self._make_assembly_usd:
             stage_path = self.assemblies_path[1]
@@ -312,10 +320,11 @@ class PartExporter:
             if self._make_assembly_usd:
                 count = 0
                 assembly_path = os.path.join(self.path, assembly_name + ".usd")
-                while os.path.isfile(assembly_path):
-                    count += 1
-                    assembly_path = os.path.join(self.path, "{}_{:02d}.usd".format(assembly_name, count))
-                self.assemblies_path[index] = assembly_path
+                if not self.assemblies_path[index]:
+                    while os.path.isfile(assembly_path):
+                        count += 1
+                        assembly_path = os.path.join(self.path, "{}_{:02d}.usd".format(assembly_name, count))
+                    self.assemblies_path[index] = assembly_path
                 stage = createInMemoryStage(assembly_path)
 
                 path = "/Root"
@@ -344,9 +353,7 @@ class PartExporter:
                     usd_sub_path = "{}/{}_{:02d}".format(path, sub_assembly_name, count)
                 if self._make_assembly_usd:
                     xform = stage.OverridePrim(Sdf.Path(usd_sub_path))
-                    xform.GetReferences().AddReference(
-                        os.path.relpath(sub_assembly_path, self.path.lower()).replace("\\", "/")
-                    )
+                    xform.GetReferences().AddReference(os.path.relpath(sub_assembly_path, self.path).replace("\\", "/"))
                 else:
                     xform = stage.GetPrimAtPath(Sdf.Path(sub_assembly_path))
                 set_pose(xform, c.pose)
@@ -609,8 +616,10 @@ def create_usd_mesh_at_path(
     root = UsdGeom.Xform.Define(stage, "/Root").GetPrim()
     stage.SetDefaultPrim(root)
 
-    materials = stage.DefinePrim("/Root/Looks", "Scope")
-    materials.GetReferences().AddReference(os.path.relpath(materials_stage, path).replace("\\", "/"))
+    materials = stage.GetPrimAtPath("/Root/Looks")
+    if not materials:
+        materials = stage.DefinePrim("/Root/Looks", "Scope")
+        materials.GetReferences().AddReference(os.path.relpath(materials_stage, path).replace("\\", "/"))
 
     usdMesh = UsdGeom.Mesh.Define(stage, Sdf.Path(mesh_name))
     mesh_prim = stage.GetPrimAtPath(Sdf.Path(mesh_name))
@@ -619,7 +628,9 @@ def create_usd_mesh_at_path(
 
     root_layer = stage.GetRootLayer()
     if stage_path not in root_layer.subLayerPaths:
-        root_layer.subLayerPaths.append(os.path.relpath(materials_stage, path).replace("\\", "/"))
+        mat_layer = os.path.relpath(materials_stage, path).replace("\\", "/")
+        if mat_layer not in root_layer.subLayerPaths:
+            root_layer.subLayerPaths.append(mat_layer)
 
     pose = _step_importer.Transform()
     pose.p = mesh_props.com

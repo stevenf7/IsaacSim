@@ -98,7 +98,7 @@ class MeshItem(ui.AbstractItem):
         ]
 
     def update_prim_paths(self):
-        usd_path = self.get_usd_path().replace("\\", "/").lower()
+        usd_path = self.get_usd_path().replace("\\", "/")
         stage = omni.usd.get_context().get_stage()
         self.prims = [
             t for t in stage.Traverse() if UsdGeom.Mesh(t) and usd_path == (t.GetPrimStack()[-1]).layer.identifier

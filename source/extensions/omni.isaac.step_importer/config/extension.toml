@@ -2,7 +2,7 @@ display_name = "STEP Importer"
 
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Importer"
 title = "Isaac Sim Step Importer"
 description = "Import STEP files into Omniverse"
