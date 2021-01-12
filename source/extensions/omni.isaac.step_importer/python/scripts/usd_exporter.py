@@ -41,11 +41,11 @@ class DummyVariantSet:
 
 
 def createInMemoryStage(path):
-    # if os.path.isfile(path):
-    #     stage = pxr.Usd.Stage.Open(path)
-    # else:
-    stage = pxr.Usd.Stage.CreateNew(path)
-    pxr.UsdGeom.SetStageUpAxis(stage, pxr.UsdGeom.Tokens.z)
+    if os.path.isfile(path):
+        stage = pxr.Usd.Stage.Open(path)
+    else:
+        stage = pxr.Usd.Stage.CreateNew(path)
+        pxr.UsdGeom.SetStageUpAxis(stage, pxr.UsdGeom.Tokens.z)
     return stage
 
 
