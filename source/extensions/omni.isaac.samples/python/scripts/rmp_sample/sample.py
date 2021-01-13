@@ -112,9 +112,20 @@ class RMPSample:
                 self.register_assets()
                 self.first_step = False
             if self.following:
-                target_pos = self._target_prim.GetAttribute("xformOp:translate").Get()
-                self._target = {"orig": np.array([target_pos[0], target_pos[1], target_pos[2]]) * self._meters_per_unit}
+                target_mat = self._target_prim.GetAttribute("xformOp:transform").Get()
+                target_pos = target_mat.ExtractTranslation()
+                target_rot = target_mat.ExtractRotationMatrix()
+
+                # go to target by specify translation and orientation of the final pose
+                # note: not all axes needs to be specified. Two is enough completely constrain the motion, or just use one for partial pose constraints.
+                self._target = {
+                    "orig": np.array([target_pos[0], target_pos[1], target_pos[2]]) * self._meters_per_unit,
+                    "axis_x": np.array(-target_rot[0]),
+                    "axis_y": np.array(target_rot[1]),
+                    "axis_z": np.array(-target_rot[2]),
+                }
                 self._robot.end_effector.go_local(target=self._target, use_default_config=True, wait_for_target=True)
+
             # update RMP's world and robot states to sync with Kit
             self._world.update()
             self._robot.update()
@@ -123,12 +134,13 @@ class RMPSample:
         # create target
         target_path = "/scene/target"
         if not self._stage.GetPrimAtPath(target_path):
-            target_geom = UsdGeom.Sphere.Define(self._stage, target_path)
-            offset = Gf.Vec3f(30, 0.0, 30.0)  # these are in cm
+            target_geom = UsdGeom.Cube.Define(self._stage, target_path)
+            offset = Gf.Vec3d(30, 0.0, 30.0)  # these are in cm
+            mat = Gf.Matrix4d().SetTranslate(offset)
             colors = Gf.Vec3f(1.0, 0, 0)
-            target_size = 4
-            target_geom.CreateRadiusAttr(target_size)
-            target_geom.AddTranslateOp().Set(offset)
+            target_size = 8
+            target_geom.CreateSizeAttr(target_size)
+            target_geom.AddTransformOp().Set(mat)
             target_geom.CreateDisplayColorAttr().Set([colors])
             self._target_prim = self._stage.GetPrimAtPath(target_path)
 
@@ -212,7 +224,10 @@ class RMPSample:
 
         # put target back (a visual prim) in position
         if self._target:
-            self._target_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(30.0, 0.0, 30))
+            reset_orig = Gf.Vec3d(30.0, 0.0, 30)
+            reset_rot = Gf.Matrix3d(1.0)
+            reset_mat = Gf.Matrix4d(reset_rot, reset_orig)
+            self._target_prim.GetAttribute("xformOp:transform").Set(reset_mat)
 
         # put obstacle block (a rigid body prim) back in position
         if self._block_prim:
@@ -279,8 +294,9 @@ class RMPSample:
             print("robot joint states:")
             print(dof_states["pos"])
 
-    def move_target(self, position: Gf.Vec3f):
+    def move_target(self, position: Gf.Vec3d, rotation: Gf.Matrix3d = Gf.Matrix3d(1.0)):
         """Move the target to a new location
         """
         if self._target_prim is not None:
-            self._target_prim.GetAttribute("xformOp:translate").Set(position)
+            mat = Gf.Matrix4d().SetTransform(rotation, position)
+            self._target_prim.GetAttribute("xformOp:transform").Set(mat)
