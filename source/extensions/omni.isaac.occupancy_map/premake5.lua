@@ -7,7 +7,6 @@ project_with_location("omni.isaac.occupancy_map.generator")
     kind "SharedLib"
     language "C++"
     
-    disablewarnings {"error=pragmas"}
 
     include_physx()
     add_files("impl", "library")
@@ -37,6 +36,7 @@ project_with_location("omni.isaac.occupancy_map.generator")
 
 
     filter { "system:linux" }
+        disablewarnings {"error=pragmas"}
         includedirs {
             "%{root}/_build/target-deps/python/include/python3.6m"
         }
@@ -50,7 +50,6 @@ project_with_location("omni.isaac.occupancy_map.generator")
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
     dependson {"omni.isaac.occupancy_map.generator"}
-    disablewarnings {"error=pragmas"}
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/occupancy_map/**")
@@ -68,6 +67,7 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
     }
     links {"usdUtils", "omni.isaac.occupancy_map.generator"}
     filter { "system:linux" }
+        disablewarnings {"error=pragmas"}
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
             "%{root}/_build/target-deps/python/include/python3.6m"
