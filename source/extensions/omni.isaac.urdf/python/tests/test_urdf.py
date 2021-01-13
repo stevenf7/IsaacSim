@@ -206,3 +206,14 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         imported_robot = self._urdf_interface.parse_urdf(root_path, filename, import_config)
         self._urdf_interface.import_robot(root_path, filename, imported_robot, import_config)
         # TODO add checks here
+
+    async def test_missing(self):
+        await omni.usd.get_context().new_stage_async()
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_missing.urdf")
+
+        stage = omni.usd.get_context().get_stage()
+
+        import_config = _urdf.ImportConfig()
+        root_path, filename = os.path.split(os.path.abspath(urdf_path))
+        imported_robot = self._urdf_interface.parse_urdf(root_path, filename, import_config)
+        self._urdf_interface.import_robot(root_path, filename, imported_robot, import_config)

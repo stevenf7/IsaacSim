@@ -4,8 +4,6 @@ project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.urdf.plugin")
 
-    removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
-
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/urdf/**")
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -59,8 +59,6 @@ namespace isaac
 namespace urdf
 {
 
-using namespace carb::gym;
-
 
 UrdfRobot UrdfImporter::createAsset()
 {
@@ -97,7 +95,7 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
         // pxr::GfMatrix4d meshMat;
         if (meshPath.empty())
         {
-            CARB_LOG_INFO("Failed to resolve mesh '%s'", meshUri.c_str());
+            CARB_LOG_WARN("Failed to resolve mesh '%s'", meshUri.c_str());
             return pxr::UsdPrim(); // move to next shape
         }
         else
@@ -114,11 +112,11 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
             // Add visuals
             if (!sceneRAII || sceneRAII->mRootNode->mNumChildren == 0)
             {
-                CARB_LOG_INFO("Asset convert failed as asset cannot be loaded.");
+                CARB_LOG_WARN("Asset convert failed as asset cannot be loaded.");
             }
             if (!sceneRAII->mRootNode)
             {
-                CARB_LOG_INFO("Asset convert failed as asset file is broken.");
+                CARB_LOG_WARN("Asset convert failed as asset file is broken.");
             }
             path = SimpleImport(stage, name, sceneRAII.get(), loadMaterials);
         }
@@ -240,7 +238,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
     }
     else
     {
-        CARB_LOG_ERROR("linkPrim %s not created", link.name.c_str());
+        CARB_LOG_WARN("linkPrim %s not created", link.name.c_str());
         return;
     }
 
@@ -303,7 +301,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
             {
                 auto& color = link.visuals[i].material.color;
                 pxr::SdfPath shaderPath = prim.GetPath().AppendPath(pxr::SdfPath(
-                    "Looks/" + MakeValidUSDIdentifier("material_" + std::to_string(color.r) + "_" +
+                    "Looks/" + makeValidUSDIdentifier("material_" + std::to_string(color.r) + "_" +
                                                       std::to_string(color.g) + "_" + std::to_string(color.b))));
                 pxr::UsdShadeMaterial matPrim = pxr::UsdShadeMaterial::Define(stage, shaderPath);
                 if (matPrim)
@@ -332,7 +330,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         }
         if (!prim)
         {
-            CARB_LOG_ERROR("Prim %s not created", meshName.c_str());
+            CARB_LOG_WARN("Prim %s not created", meshName.c_str());
         }
     }
     // Add collisions
@@ -377,7 +375,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         }
         else
         {
-            CARB_LOG_ERROR("Prim %s not created", meshName.c_str());
+            CARB_LOG_WARN("Prim %s not created", meshName.c_str());
         }
     }
 }
@@ -415,7 +413,7 @@ void AddSingleJoint(const UrdfJoint& joint,
     if (joint.type != UrdfJointType::CONTINUOUS)
     {
         // Angular limits are in degrees so scale accordingly
-        float scale = 180.0 / M_PI;
+        float scale = 180.0f / static_cast<float>(M_PI);
         if (joint.type == UrdfJointType::PRISMATIC)
         {
             scale = distanceScale;
@@ -631,7 +629,7 @@ void UrdfImporter::addMaterials(pxr::UsdStageWeakPtr stage, const UrdfRobot& rob
         if (color.r >= 0 && color.g >= 0 && color.b >= 0)
         {
             pxr::SdfPath shaderPath =
-                prefixPath.AppendPath(pxr::SdfPath("Looks/" + MakeValidUSDIdentifier("material_" + name)));
+                prefixPath.AppendPath(pxr::SdfPath("Looks/" + makeValidUSDIdentifier("material_" + name)));
 
             pxr::UsdShadeMaterial matPrim = pxr::UsdShadeMaterial::Define(stage, shaderPath);
             if (matPrim)
