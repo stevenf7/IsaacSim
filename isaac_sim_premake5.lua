@@ -1,6 +1,6 @@
 
 function include_physx()
-    disablewarnings {"error=pragmas"}
+    
     defines {  "PX_PHYSX_STATIC_LIB"}
     libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
 
@@ -13,6 +13,7 @@ function include_physx()
     filter { "system:windows", "platforms:x86_64" }
         links { "nvToolsExt64_1"}
     filter { "system:linux", "platforms:x86_64" }
+        disablewarnings {"error=pragmas"}
         links { "nvToolsExt"}
     filter {}
 
