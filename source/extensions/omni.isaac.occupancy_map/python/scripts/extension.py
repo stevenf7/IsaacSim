@@ -211,7 +211,7 @@ class Extension(omni.ext.IExt):
             component = self.unknown_color_model.get_item_value_model(item)
             unknown_col.append(int(component.get_value_as_float() * 255))
 
-        im = generate_image(
+        image = generate_image(
             self._om,
             scale,
             occupied_col,
@@ -220,10 +220,13 @@ class Extension(omni.ext.IExt):
             [self.start_location["X"].model.get_value_as_float(), self.start_location["Y"].model.get_value_as_float()],
         )
 
-        image = list(im.tobytes())
         self._visualize_window = omni.ui.Window("Visualization", width=300, height=300)
 
         def save_image(file, folder):
+            from PIL import Image
+
+            dims = self._om.get_dimensions()
+            im = Image.frombytes("RGBA", (dims.x, dims.y), bytes(image))
             print("Saving occupancy map image to", folder + "/" + file)
             im.save(folder + "/" + file)
             self._filepicker.hide()
@@ -254,7 +257,6 @@ class Extension(omni.ext.IExt):
 
         size[0] = max_b[0] - min_b[0]
         size[1] = max_b[1] - min_b[1]
-        size[2] = max_b[2] - min_b[2]
 
         with self._visualize_window.frame:
             self._rgb_byte_provider = omni.ui.ByteImageProvider()
@@ -277,7 +279,6 @@ class Extension(omni.ext.IExt):
                 ui.Button("Save Image", clicked_fn=save_file, height=0)
 
     def on_shutdown(self):
-        _occupancy_map.release_occupancy_map_interface(self._om)
         if self._filepicker:
             self._filepicker = None
         gc.collect()

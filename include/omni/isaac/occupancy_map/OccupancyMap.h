@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -15,10 +15,12 @@
 
 namespace omni
 {
+
 namespace isaac
 {
 namespace occupancy_map
 {
+
 
 struct OccupancyMap
 {
@@ -30,10 +32,15 @@ struct OccupancyMap
         float gridResolution, float rayResolution, float minSearchDistance, float occupancyThreshold, size_t maxRays);
     void(CARB_ABI* update)();
     void(CARB_ABI* setTransform)(carb::Float3 inputOrigin, carb::Float2 minPoint, carb::Float2 maxPoint);
-    std::vector<carb::Float3>(CARB_ABI* getOccupiedPositions)();
-    std::vector<carb::Float3>(CARB_ABI* getFreePositions)();
-    carb::Float3(CARB_ABI* getMinBound)();
-    carb::Float3(CARB_ABI* getMaxBound)();
+    std::vector<carb::Float2>(CARB_ABI* getOccupiedPositions)();
+    std::vector<carb::Float2>(CARB_ABI* getFreePositions)();
+    carb::Float2(CARB_ABI* getMinBound)();
+    carb::Float2(CARB_ABI* getMaxBound)();
+    carb::Int2(CARB_ABI* getDimensions)();
+    std::vector<float>(CARB_ABI* getBuffer)();
+    std::vector<char>(CARB_ABI* getColoredByteBuffer)(const carb::Int4& occupied,
+                                                      const carb::Int4& unoccupied,
+                                                      const carb::Int4& unknown);
 };
 }
 }

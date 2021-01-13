@@ -203,6 +203,26 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgeOccupancyGridMapCommand",
+            path="/REB_OccupancyGridMap",
+            parent=None,
+            output_component="output",
+            output_channel="occupancy_map",
+            parent_prim_rel=None,
+            offset=Gf.Vec3f(0, 0, 0),
+            cell_size=0.1,
+            degrees_per_ray=5,
+            surface_offset=0.02,
+            occupancy_threshold=1.0,
+            max_rays=1000000,
+            map_size=Gf.Vec2i(32, 32),
+            debug_draw=False,
+            occupied_value=1.0,
+            unoccupied_value=0.0,
+            unknown_value=0.5,
+        )
+
+        result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeContactMonitorCommand",
             path="/REB_ContactMonitor",
             parent=get_selected_path(),
