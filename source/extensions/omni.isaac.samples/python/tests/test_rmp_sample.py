@@ -94,7 +94,7 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         await simulate(1)
         self._sample.add_obstacle()
         # move target to location just above cube, we should not be able to reach
-        self._sample.move_target(Gf.Vec3f(30.0, -20.0, 12))
+        self._sample.move_target(Gf.Vec3d(30.0, -20.0, 12))
         await simulate(3)
         self.assertEqual(self._sample.has_arrived(), False)
         # toggle, we should be able to reach
@@ -110,11 +110,11 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         await simulate(3)
         self.assertEqual(self._sample.has_arrived(), True)
         # move target to above clear spot, we should be able to reach
-        self._sample.move_target(Gf.Vec3f(30.0, 30.0, 20))
+        self._sample.move_target(Gf.Vec3d(30.0, 30.0, 20))
         await simulate(4)
         self.assertEqual(self._sample.has_arrived(), True)
         # move target to inside ground, we should not reach
-        self._sample.move_target(Gf.Vec3f(30.0, 30.0, 0))
+        self._sample.move_target(Gf.Vec3d(30.0, 30.0, 0))
         await simulate(4)
         self.assertEqual(self._sample.has_arrived(), False)
 
