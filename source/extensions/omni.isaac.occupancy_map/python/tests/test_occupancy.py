@@ -8,8 +8,9 @@ import carb.tokens
 import os
 import asyncio
 import numpy as np
+from omni.physx.scripts import utils
 
-from pxr import UsdPhysics, Sdf
+from pxr import UsdPhysics, Sdf, UsdGeom, PhysxSchema
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.occupancy_map import _occupancy_map
@@ -41,6 +42,17 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     def compute_index(self, p, scale, size, min_b):
         return int(p[1] / scale - min_b[1] / scale) * int(size[0] / scale) + int(p[0] / scale - min_b[0] / scale)
+
+    def add_cube(self, path, size, offset):
+
+        cubeGeom = UsdGeom.Cube.Define(self._stage, path)
+        cubePrim = self._stage.GetPrimAtPath(path)
+
+        cubeGeom.CreateSizeAttr(size)
+        cubeGeom.AddTranslateOp().Set(offset)
+        utils.setCollider(cubePrim)
+
+        return cubeGeom
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_simple_room(self):
@@ -74,7 +86,6 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         size[0] = max_b[0] - min_b[0]
         size[1] = max_b[1] - min_b[1]
-        size[2] = max_b[2] - min_b[2]
 
         # raw data: computed index, point value, point index
         # no reason for picking these specific points
@@ -100,3 +111,54 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         # self.assertEqual(im.getpixel((0, 104)), (0, 0, 0, 255))
         # self.assertEqual(im.getpixel((60, 63)), (0, 0, 0, 255))
         pass
+
+    async def test_synthetic(self):
+        await omni.usd.get_context().new_stage_async()
+        context = omni.usd.get_context()
+        self._stage = context.get_stage()
+        self.add_cube("/cube_1", 100, (100, 0, 0))
+        self.add_cube("/cube_2", 100, (100, 200, 0))
+        self.add_cube("/cube_3", 100, (-150, -150, 0))
+        self._physx = omni.physx.acquire_physx_interface()
+
+        await omni.kit.app.get_app().next_update_async()
+        UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+        physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(self._stage, "/World/physicsScene")
+        physxSceneAPI.CreateEnableCCDAttr(True)
+        physxSceneAPI.CreateEnableStabilizationAttr(True)
+        physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+        physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+        physxSceneAPI.CreateSolverTypeAttr("TGS")
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        generator = _occupancy_map.Generator(self._physx, context.get_stage_id())
+        generator.update_settings(5, 1, 2, 5, 1000000, 4, 5, 6)
+        generator.set_transform((0, 0, 0), (-200, -200), (200, 200))
+        for frame in range(1):
+            await omni.kit.app.get_app().next_update_async()
+            generator.generate()
+
+        min_bounds = generator.get_min_bound()
+        self.assertEqual(min_bounds[0], -200)
+        self.assertEqual(min_bounds[1], -200)
+        max_bounds = generator.get_max_bound()
+        self.assertEqual(max_bounds[0], 200)
+        self.assertEqual(max_bounds[1], 200)
+
+        dims = generator.get_dimensions()
+        self.assertEqual(dims[0], 80)
+        self.assertEqual(dims[1], 80)
+        # TODO: add raw occupied position checks
+        # print(generator.get_occupied_positions())
+        buffer = np.array(generator.get_buffer())
+        self.assertEqual(len(buffer), dims[0] * dims[1])
+        buffer = np.reshape(buffer, (dims[0], dims[1]))
+
+        self.assertEqual(buffer[0, 79], 6)
+        self.assertEqual(buffer[5, 75], 6)
+        self.assertEqual(buffer[10, 59], 4)
+        self.assertEqual(buffer[50, 20], 4)
+        self.assertEqual(buffer[75, 29], 4)
+        self.assertEqual(buffer[40, 40], 5)
+        self.assertEqual(buffer[75, 20], 6)

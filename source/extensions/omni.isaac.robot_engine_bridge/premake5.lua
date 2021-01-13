@@ -3,7 +3,7 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
-
+    dependson {"omni.isaac.occupancy_map.generator"}
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/robot_engine_bridge/**")
 
@@ -50,7 +50,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
     links {
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
         "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "capnp", "omni.usd", 
-        "rangeSensorSchema", "robotEngineBridgeSchema", "physxSchema",
+        "rangeSensorSchema", "robotEngineBridgeSchema", "physxSchema", "omni.isaac.occupancy_map.generator"
     }
 
     linkoptions{"-Wl,--whole-archive %{root}/_build/target-deps/isaac_engine/lib/libkj.a -Wl,--no-whole-archive"}

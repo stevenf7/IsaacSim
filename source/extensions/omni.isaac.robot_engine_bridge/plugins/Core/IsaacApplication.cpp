@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -25,6 +25,7 @@
 #include "../Scenario/SceneLoader.h"
 #include "../Sensor/LidarComponent.h"
 #include "../Sensor/CameraComponent.h"
+#include "../Sensor/OccupancyGridMapComponent.h"
 #include "../Monitor/ContactMonitor.h"
 #include "../Visualizer/PolylineVisualizer.h"
 #include "plugins/core/ScopedTimer.h"
@@ -354,6 +355,12 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     {
         component = std::make_unique<CameraComponent>();
         component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineCamera(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineOccupancyGridMap>())
+    {
+        component = std::make_unique<OccupancyGridMapComponent>();
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineOccupancyGridMap(prim), mStage);
     }
     else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineContactMonitor>())
     {

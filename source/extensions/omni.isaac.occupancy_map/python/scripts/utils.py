@@ -25,36 +25,20 @@ def compute_coordinates(om, cell_size):
 
 
 def generate_image(om, scale, occupied_col, unknown_col, freespace_col, start_location):
-    from PIL import Image, ImageDraw
-
-    points = om.get_occupied_positions()
-    if len(points) == 0:
-        print("No occupied points, cannot generate image")
-        return None
-    min_b = om.get_min_bound()
-    max_b = om.get_max_bound()
-
-    size = [0, 0, 0]
-
-    size[0] = max_b[0] - min_b[0]
-    size[1] = max_b[1] - min_b[1]
-    size[2] = max_b[2] - min_b[2]
-
-    image = unknown_col * (int(size[0] / scale) * int(size[1] / scale))
-    for p in points:
-        index = int(p[1] / scale - min_b[1] / scale) * int(size[0] / scale) + int(p[0] / scale - min_b[0] / scale)
-        image[index * 4 + 0] = occupied_col[0]
-        image[index * 4 + 1] = occupied_col[1]
-        image[index * 4 + 2] = occupied_col[2]
-        image[index * 4 + 3] = occupied_col[3]
-
-    start_pix = (int(start_location[0] / scale - min_b[0] / scale), int(start_location[1] / scale - min_b[1] / scale))
-
-    im = Image.frombytes("RGBA", (int(size[0] / scale), int(size[1] / scale)), bytes(image))
-    ImageDraw.floodfill(
-        im, start_pix, (freespace_col[0], freespace_col[1], freespace_col[2], freespace_col[3]), border=None, thresh=0
-    )
-    # Flip image to match what SDK expects
-    im = im.transpose(Image.FLIP_LEFT_RIGHT)
-
-    return im
+    buffer = om.get_buffer()
+    dims = om.get_dimensions()
+    image = unknown_col * dims[0] * dims[1]
+    idx = 0
+    for b in buffer:
+        if b == 1.0:
+            image[idx * 4 + 0] = occupied_col[0]
+            image[idx * 4 + 1] = occupied_col[1]
+            image[idx * 4 + 2] = occupied_col[2]
+            image[idx * 4 + 3] = occupied_col[3]
+        if b == 0.0:
+            image[idx * 4 + 0] = freespace_col[0]
+            image[idx * 4 + 1] = freespace_col[1]
+            image[idx * 4 + 2] = freespace_col[2]
+            image[idx * 4 + 3] = freespace_col[3]
+        idx += 1
+    return image
