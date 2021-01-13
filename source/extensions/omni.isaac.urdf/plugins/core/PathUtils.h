@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,12 +9,18 @@
 
 #pragma once
 
+// clang-format off
+#include "UsdPCH.h"
+// clang-format on
+
 #include <string>
 #include <vector>
 
-namespace carb
+namespace omni
 {
-namespace gym
+namespace isaac
+{
+namespace urdf
 {
 
 enum class PathType
@@ -40,5 +46,7 @@ std::string getPathStem(const char* path);
 
 std::vector<std::string> getFileListRecursive(const std::string& dir, bool sorted = true);
 
+std::string makeValidUSDIdentifier(const std::string& name);
+}
 }
 }

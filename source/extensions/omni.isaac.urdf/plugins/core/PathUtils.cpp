@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -25,11 +25,13 @@
 #    include <unistd.h>
 #endif
 
-namespace carb
+namespace omni
 {
-namespace gym
+namespace isaac
 {
 
+namespace urdf
+{
 PathType testPath(const char* path)
 {
     if (!path || !*path)
@@ -309,5 +311,17 @@ std::vector<std::string> getFileListRecursive(const std::string& dir, bool sorte
     return flist;
 }
 
+std::string makeValidUSDIdentifier(const std::string& name)
+{
+    auto validName = pxr::TfMakeValidIdentifier(name);
+    if (validName[0] == '_')
+    {
+        validName = "a" + validName;
+    }
+
+    return validName;
+}
+
+}
 }
 }

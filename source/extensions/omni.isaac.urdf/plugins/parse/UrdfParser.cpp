@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,9 +9,7 @@
 
 #include "UrdfParser.h"
 
-// clang-format off
-#include "UsdPCH.h"
-// clang-format on
+#include "../core/PathUtils.h"
 
 //#define VERBOSE_URDF
 namespace omni
@@ -22,18 +20,6 @@ namespace urdf
 {
 
 // Stream operators for nice printing
-
-static std::string makeValidUSDIdentifier(const std::string& name)
-{
-    auto validName = pxr::TfMakeValidIdentifier(name);
-    if (validName[0] == '_')
-    {
-        validName = "a" + validName;
-    }
-
-    return validName;
-}
-
 std::ostream& operator<<(std::ostream& out, const Transform& origin)
 {
     out << "Origin: ";

@@ -49,6 +49,10 @@ class Extension(omni.ext.IExt):
         self._rgb_image_provider = None
         self._robot_graph_im = None
         self.root_path = None
+        self._filepicker = None
+        self._content_browser = None
+
+    def build_ui(self):
 
         self._content_browser = get_content_window()
         self._init_context_menu()
@@ -62,8 +66,7 @@ class Extension(omni.ext.IExt):
             item_filter_fn=on_filter_item,
         )
 
-        extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
-
+        # extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
         # self._filepicker.toggle_bookmark_from_path("Built In URDFs", extension_path + "/data/urdf", True)
         self._filepicker.hide()
 
@@ -242,7 +245,7 @@ class Extension(omni.ext.IExt):
     def _menu_callback(self, name, visible):
         self._window.visible = not self._window.visible
         if self._window.visible:
-
+            self.build_ui()
             self._events = self._usd_context.get_stage_event_stream()
             self._stage_event_sub = self._events.create_subscription_to_pop(
                 self._on_stage_event, name="urdf importer stage event"
@@ -392,7 +395,7 @@ class Extension(omni.ext.IExt):
                                 fill_policy=ui.IwpFillPolicy.IWP_PRESERVE_ASPECT_FIT,
                             )
 
-                            self._rgb_byte_provider.set_data(
+                            self._rgb_byte_provider.set_bytes_data(
                                 list(self._robot_graph_im.tobytes("raw", "RGBA")),
                                 [int(self._robot_graph_im.size[0]), int(self._robot_graph_im.size[1])],
                             )
@@ -404,7 +407,7 @@ class Extension(omni.ext.IExt):
                         def update_image(vertical=True):
                             self._robot_graph_im = self._generate_robot_image(robot, vertical=vertical)
                             # if im is not None:
-                            self._rgb_byte_provider.set_data(
+                            self._rgb_byte_provider.set_bytes_data(
                                 list(self._robot_graph_im.tobytes("raw", "RGBA")),
                                 [int(self._robot_graph_im.size[0]), int(self._robot_graph_im.size[1])],
                             )
@@ -489,7 +492,8 @@ class Extension(omni.ext.IExt):
         )
 
     def _unregister_menus(self):
-        self._content_browser.delete_context_menu("Convert STEP to USD")
+        if self._content_browser:
+            self._content_browser.delete_context_menu("Convert STEP to USD")
 
     def on_shutdown(self):
         self._unregister_menus()
@@ -503,4 +507,3 @@ class Extension(omni.ext.IExt):
 
         if self._window:
             self._window = None
-        _urdf.release_urdf_interface(self._urdf_interface)
