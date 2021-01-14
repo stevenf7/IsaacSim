@@ -17,7 +17,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.editor" = {}
-"omni.physx" = {}
+"omni.physx.bundle" = {}
 "omni.isaac.dynamic_control" = {}
 
 [[python.modules]]
@@ -35,4 +35,4 @@ path = "bin/*.plugin"
 recursive = false
 
 [python.pipapi]
-requirements = ["numpy"]
+requirements = ["numpy==1.19.0"]

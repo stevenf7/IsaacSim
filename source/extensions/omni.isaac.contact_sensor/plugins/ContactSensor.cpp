@@ -291,8 +291,8 @@ void ContactManager::removeAllSensorsFromBody(const char* usdPath)
 ContactManager::ContactManager(omni::physx::IPhysx* physxInterface)
 {
     // setup the physx simulation and contact callbacks
-    mStepSubscription = physxInterface->subscribeToPhysicsStepEvents(omni::isaac::contact_sensor::onPhysicsStep, this);
-    mEventSubscription = physxInterface->subscribeToPhysicsSimulationEvents(onPhysicsUpdate, this);
+    mStepSubscription = physxInterface->subscribePhysicsStepEvents(omni::isaac::contact_sensor::onPhysicsStep, this);
+    mEventSubscription = physxInterface->subscribePhysicsSimulationEvents(onPhysicsUpdate, this);
 
     mContactCallbackPtr = carb::events::createSubscriptionToPop(
         carb::getCachedInterface<omni::physx::IPhysx>()->getSimulationEventStream().get(),
@@ -303,8 +303,8 @@ ContactManager::ContactManager(omni::physx::IPhysx* physxInterface)
 
 void ContactManager::unSubscribeEvents(omni::physx::IPhysx* physxInterface)
 {
-    physxInterface->unsubscribeToPhysicsStepEvents(mStepSubscription);
-    physxInterface->unsubscribeToPhysicsSimulationEvents(mEventSubscription);
+    physxInterface->unsubscribePhysicsStepEvents(mStepSubscription);
+    physxInterface->unsubscribePhysicsSimulationEvents(mEventSubscription);
     mContactCallbackPtr = nullptr;
 }
 

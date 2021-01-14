@@ -21,11 +21,13 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.urdf")
         self._extension_path = ext_manager.get_extension_path(ext_id)
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
         # _urdf.release_urdf_interface(self._urdf_interface)
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # Tests to make sure visual mesh names are incremented

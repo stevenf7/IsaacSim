@@ -1,0 +1,125 @@
+import os
+import sys
+import argparse
+import distutils.dir_util
+import glob
+
+import logging
+
+from typing import Dict, Callable
+from string import Template
+from pathlib import Path
+
+import omni.repo.man
+import packmanapi
+
+logger = logging.getLogger(os.path.basename(__file__))
+
+
+def call_git_safe(root, args):
+    print("> git {}".format(" ".join(args)))
+    with omni.repo.man.change_cwd(root):
+        omni.repo.man.run_process(["git"] + args, exit_on_error=True)
+
+
+def substitute_tokens_in_file(path, tokens):
+    logger.info(f"substitute_tokens_in_file: '{path}'. Tokens: {tokens}")
+    content = Template(open(path, "r").read()).substitute(tokens)
+    with open(path, "w") as f:
+        f.write(content)
+
+
+def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
+    parser.description = "Tool to publish launcher to packman and deploy it on launcher pipeline repo."
+    parser.add_argument(
+        "-s",
+        "--skip-commit",
+        dest="skip_commit",
+        required=False,
+        action="store_true",
+        help="Only update, don't commit changes.",
+    )
+    parser.add_argument("-t", "--test", dest="test_run", required=False, action="store_true", help="Test run.")
+
+    def run_repo_tool(options: Dict, config: Dict):
+        repo_folders = config["repo"]["folders"]
+        root = repo_folders["root"]
+
+        tool_config = config["deploy_launcher"]
+        git_url = tool_config["git_url"]
+        template_path = tool_config["template_path"]
+
+        if not os.path.exists(template_path):
+            logger.error(f"template_path: '{template_path}' doesn't exist.")
+            sys.exit(-1)
+
+        package_url_windows = "test.url.win"
+        package_url_linux = "test.url.linux"
+
+        # publish first
+        if not options.test_run:
+            packages, labels = omni.repo.man.publish.get_packages_and_labels("*", repo_folders["packages"], None)
+            if len(packages) == 0:
+                logger.error("No packages found.")
+                sys.exit(-1)
+            for package in packages:
+                print(f"Publishing Package {package}")
+
+                remote = "cloudfront"
+                try:
+                    packmanapi.push(package, remotes=[remote], force=False)
+                except packmanapi.PackmanErrorFileExists:
+                    print(f"package: {package} already exist on remote.")
+
+                package_name, package_version = Path(package).stem.split("@")
+                package_info = packmanapi.resolve(name=package_name, package_version=package_version, remotes=[remote])
+                package_url = package_info["remote_url"]
+                print(f"package: {package_name}, url: {package_url}")
+
+                if "windows" in package:
+                    package_url_windows = package_url
+                else:
+                    package_url_linux = package_url
+
+        # Now deploay
+        print(f"package_url_windows: {package_url_windows}")
+        print(f"package_url_linux: {package_url_linux}")
+        with omni.repo.man.TemporaryDirectory() as temp_dir:
+            logger.info(f"Working in temp folder: {temp_dir}")
+
+            version = open(f"{root}/VERSION.md").readline().strip()
+
+            pipeline_repo = "pipeline_repo"
+
+            # clone repo
+            call_git_safe(temp_dir, ["clone", git_url, pipeline_repo])
+            cloned_repo_dir = os.path.join(temp_dir, pipeline_repo)
+
+            # setup user
+            call_git_safe(cloned_repo_dir, ["config", "user.email", '"teamcity@nvidia.com"'])
+            call_git_safe(cloned_repo_dir, ["config", "user.name", '"Team City"'])
+
+            # create branch
+            branch_name = f"INTEG-{version}"
+            call_git_safe(cloned_repo_dir, ["checkout", "-b", branch_name])
+
+            # clean all files and copy ours from template folder
+            for p in glob.glob(cloned_repo_dir + "/*"):
+                os.remove(p)
+            distutils.dir_util.copy_tree(template_path, cloned_repo_dir)
+
+            # fill in all files with data
+            tokens = {
+                "package_url_windows": package_url_windows,
+                "package_url_linux": package_url_linux,
+                "version": version,
+            }
+            for file in ["description.toml", "package.toml"]:
+                substitute_tokens_in_file(os.path.join(cloned_repo_dir, file), tokens)
+
+            # push/commit everything
+            call_git_safe(cloned_repo_dir, ["add", "-A"])
+            call_git_safe(cloned_repo_dir, ["commit", "-m", f"deploy version: {version}"])
+            call_git_safe(cloned_repo_dir, ["push", git_url, branch_name])
+
+    return run_repo_tool

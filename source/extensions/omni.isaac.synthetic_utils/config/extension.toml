@@ -27,4 +27,4 @@ name = "omni.isaac.synthetic_utils.scripts.syntheticdata_recorder"
 public = false
 
 [python.pipapi]
-requirements = ["matplotlib"]
+requirements = ["matplotlib==3.3.1", "pillow==7.2.0"]

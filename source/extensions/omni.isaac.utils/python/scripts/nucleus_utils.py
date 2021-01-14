@@ -1,6 +1,7 @@
 import carb
 import omni.client
 from omni.client._omniclient import Result
+import json
 
 
 def find_nucleus_server(suffix="/Isaac"):
@@ -22,26 +23,38 @@ def find_nucleus_server(suffix="/Isaac"):
     carb.log_warn("Attempting to locate server from previously saved servers...")
 
     saved_servers = carb.settings.get_settings().get("/persistent/app/omniverse/savedServers")
-
-    if saved_servers:
+    all_servers = []
+    if saved_servers is not None:
+        # print("savedServers", saved_servers)
         server_list = saved_servers.split(";")
         if len(server_list):
             for server in server_list:
-                server_name = "omniverse://{}".format(server)
-                carb.log_info("Testing {} Server for {} folder".format(server_name, suffix))
-                result, entries = omni.client.list("{}{}".format(server_name, suffix))
-                if result == Result.OK:
-                    carb.log_warn("Success: {} Server has {} folder".format(server_name, suffix))
-                    return True, server_name
-                else:
-                    carb.log_warn("Server {} does not have {} folder".format(server_name, suffix))
-            carb.log_warn("No saved server contains {} folder".format(suffix))
-            return False, ""
-        else:
-            carb.log_warn("No saved servers in /persistent/app/omniverse/savedServers setting")
-            return False, ""
+                all_servers.append("omniverse://{}".format(server))
     else:
         carb.log_warn("/persistent/app/omniverse/savedServers setting not found")
+    mounted_drives = carb.settings.get_settings().get_settings_dictionary("/persistent/app/omniverse/mountedDrives")
+
+    if mounted_drives is not None:
+        # print("mountedDrives", mounted_drives)
+        mounted_dict = json.loads(mounted_drives.get_dict())
+        for drive in mounted_dict.items():
+            all_servers.append(drive[1])
+    else:
+        carb.log_warn("/persistent/app/omniverse/mountedDrives setting not found")
+
+    if len(all_servers):
+        for server_name in all_servers:
+            carb.log_info("Testing {} Server for {} folder".format(server_name, suffix))
+            result, entries = omni.client.list("{}{}".format(server_name, suffix))
+            if result == Result.OK:
+                carb.log_warn("Success: {} Server has {} folder".format(server_name, suffix))
+                return True, server_name
+            else:
+                carb.log_warn("Server {} does not have {} folder".format(server_name, suffix))
+        carb.log_warn("No saved server contains {} folder".format(suffix))
+        return False, ""
+    else:
+        carb.log_warn("No saved servers")
         return False, ""
 
 

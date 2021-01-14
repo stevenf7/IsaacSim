@@ -36,16 +36,23 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._stage = omni.usd.get_context().get_stage()
         self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     def is_loading(self):
         time, message, loaded, loading = self._editor.get_current_renderer_status()
         return loading > 0
+
+    async def simulate(self, seconds, steps_per_sec=60):
+        for frame in range(int(steps_per_sec * seconds)):
+            await omni.kit.app.get_app().next_update_async()
 
     # Unit test for color component
     async def test_color_component(self):
@@ -150,7 +157,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         set_scene_physics_type(gpu=False)
         # Start Simulation and wait
         self._timeline.play()
-        await asyncio.sleep(1.0)
+        await self.simulate(1.0)
         await omni.kit.app.get_app().next_update_async()
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
@@ -199,7 +206,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         set_scene_physics_type(gpu=False)
         # Start Simulation and wait
         self._timeline.play()
-        await asyncio.sleep(1.0)
+        await self.simulate(1.0)
         await omni.kit.app.get_app().next_update_async()
         art = self._dc.get_articulation("/carter")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)

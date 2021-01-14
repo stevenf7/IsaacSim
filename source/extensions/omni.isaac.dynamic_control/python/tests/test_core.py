@@ -17,10 +17,12 @@ class TestCore(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def setUp(self):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._timeline = omni.timeline.get_timeline_interface()
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # Actual test, notice it is "async" function, so "await" can be used if needed

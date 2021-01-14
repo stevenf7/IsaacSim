@@ -1,6 +1,7 @@
 local ext = get_current_extension_info()
-project_ext (ext)
-
+project_ext (ext, { 
+    define_test = false
+})
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
 

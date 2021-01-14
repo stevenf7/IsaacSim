@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -117,6 +117,13 @@ inline bool checkSimulating(const char* funcname)
 #define DC_LOOKUP_ARTICULATION(handle) (lookupArticulation((handle), __func__))
 #define DC_LOOKUP_ATTRACTOR(handle) (lookupAttractor((handle), __func__))
 #define DC_LOOKUP_D6JOINT(handle) (lookupD6Joint((handle), __func__))
+
+inline const pxr::SdfPath& intToPath(const uint64_t& path)
+{
+    static_assert(sizeof(pxr::SdfPath) == sizeof(uint64_t), "Change to make the same size as pxr::SdfPath");
+
+    return reinterpret_cast<const pxr::SdfPath&>(path);
+}
 
 inline DcRigidBody* lookupRigidBody(DcHandle handle, const char* funcname)
 {
@@ -3522,7 +3529,7 @@ DcRayCastResult CARB_ABI DcRayCast(const carb::Float3& origin, const carb::Float
 
     if (out.hit)
     {
-        out.rigidBody = ctx->getRigidBodyHandle(SdfPath(result.rigidBody));
+        out.rigidBody = ctx->getRigidBodyHandle(intToPath(result.rigidBody));
         out.distance = result.distance;
     }
     return out;

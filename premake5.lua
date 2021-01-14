@@ -181,8 +181,8 @@ group "apps"
 
     define_local_experience("isaac-sim")
     -- define_local_experience("isaac-sim.launcher") # TODO
-    -- define_local_experience("isaac-sim.headless") # TODO
-    -- define_local_experience("isaac-sim.testing")
+    -- We reuse the isaac sim config and add additional args to it
+    define_local_experience("isaac-sim.headless", "isaac-sim", "--no-window --/app/livestream/enabled=1 --/app/livestream/allowResize=1" )
 
     -- -- Test runner experience:
     -- args = {
