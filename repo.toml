@@ -74,7 +74,6 @@ vscode.python_env.PATH= ["$$$${PATH}", "$root/_build/$platform/$config",
 # These paths are used by python samples
 vscode.python_env.CARB_APP_PATH= ["$root/_build/kit_$config/_build/$platform/$config"]
 vscode.python_env.ISAAC_PATH= ["$root/_build/$platform/$config"]
-vscode.python_env.EXP_PATH= ["$root/source/python_samples/experiences"]
 # TODO
 # vscode.python_env.PXR_PLUGINPATH_NAME= ["$root/_build/"]
 
