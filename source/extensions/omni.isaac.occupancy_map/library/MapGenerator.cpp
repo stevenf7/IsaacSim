@@ -349,7 +349,10 @@ std::vector<float> MapGenerator::getBuffer()
         // scale by the grid resolution to get the number of pixels
         // num_cells = meters / (meters/cell)
         carb::Int2 num_cells = getDimensions();
-
+        if (num_cells.x * num_cells.y <= 0)
+        {
+            return buffer;
+        }
         buffer.resize(num_cells.x * num_cells.y);
         std::fill(buffer.begin(), buffer.end(), mUnknownValue);
 
