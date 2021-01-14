@@ -2,8 +2,12 @@ display_name = "Isaac Tests"
 
 [dependencies]
 "omni.kit.editor" = {}
-"omni.physx.core" = {}
+"omni.physx.bundle" = {}
 "omni.kit.window.tests" = {}
+"omni.kit.window.toolbar" = {} # needed for simulation to happen
 
 [[python.module]]
 name = "omni.isaac.tests"
+
+[[python.module]]
+name = "omni.isaac.tests.tests"

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "0.1.2"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "Isaac Sim Utility Extensions"
@@ -18,7 +18,7 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.editor" = {}
 "omni.ui" = { order = -100 }
-"omni.physx.core" = {}
+"omni.physx.bundle" = {}
 "omni.isaac.dynamic_control" = {}
 
 [[python.module]]
@@ -37,6 +37,3 @@ public = false
 [[python.module]]
 name = "omni.isaac.utils.scripts.array_editor"
 public = false
-
-[python.pipapi]
-requirements = ["matplotlib", "pillow"]

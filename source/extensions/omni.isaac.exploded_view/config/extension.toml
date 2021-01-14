@@ -8,4 +8,4 @@ display_name = "Exploded View"
 name = "omni.isaac.exploded_view"
 
 [python.pipapi]
-requirements = ["numpy"]
+requirements = ["numpy==1.19.0"]

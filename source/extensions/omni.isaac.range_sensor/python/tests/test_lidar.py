@@ -232,7 +232,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         lidar.GetRotationRateAttr().Set(0.0)
         lidar.GetHighLodAttr().Set(False)
-        lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 37.0))
+        lidar.AddTranslateOp().Set(Gf.Vec3f(-6.0, 0.0, 37.0))
 
         # Run for two seconds
 

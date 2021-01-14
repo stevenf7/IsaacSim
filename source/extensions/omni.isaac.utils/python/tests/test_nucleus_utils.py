@@ -4,6 +4,7 @@ import omni.kit.usd
 import omni.kit.commands
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 import carb
+import json
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -15,6 +16,21 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_find_nucleus_server(self):
+        # TODO: should switch to mountedDrives for kit 101
+        result = carb.settings.get_settings().get_settings_dictionary("/persistent/app/omniverse/mountedDrives")
+        if result is not None:
+            self.assertTrue("localhost" in result.get_dict())
+            # Test mountedDrives
+            # specify default saved server does doesn't have /Isaac folder, and one that doesn't
+            carb.settings.get_settings().set(
+                "/persistent/app/omniverse/mountedDrives",
+                json.dumps({"ov-isaac-dev": "omniverse://ov-isaac-dev", "ov-content": "omniverse://ov-content"}),
+            )
+            carb.settings.get_settings().set("/isaac/nucleus/default", "")
+            result, nucleus_server = find_nucleus_server()
+            self.assertTrue(result)
+            carb.settings.get_settings().set("/persistent/app/omniverse/mountedDrives", "{}")
+
         # check if the "/isaac/nucleus/default" setting works, clear saved servers to force ov-isaac-dev
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "")
         carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-isaac-dev")
@@ -66,3 +82,4 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         result, nucleus_server = find_nucleus_server()
         self.assertFalse(result)
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "")
+        print(dir(carb.settings.get_settings()))

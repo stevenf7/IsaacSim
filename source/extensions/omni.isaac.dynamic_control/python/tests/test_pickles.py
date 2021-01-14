@@ -17,10 +17,12 @@ from omni.isaac.dynamic_control import _dynamic_control
 class TestPickles(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     async def test_pickles(self):

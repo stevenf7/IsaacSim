@@ -48,11 +48,14 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._stage = omni.usd.get_context().get_stage()
         self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     async def simulate(self, seconds, steps_per_sec=60):

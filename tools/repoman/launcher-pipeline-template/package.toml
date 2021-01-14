@@ -1,0 +1,18 @@
+name = "Create Daily"
+slug = "create-daily"
+kind = "app"
+version = "${version}"
+
+[[package.windows-x86_64.packman]]
+name = "Create"
+url = "${package_url_windows}"
+location = "$${base}"
+
+# [[package.linux-x86_64.packman]]
+# name = "Create"
+# url = ""
+# location = "$${base}"
+
+[images]
+name = "Create-Daily-Images"
+url = "https://d4i3qtqj3r0z5.cloudfront.net/create-launcher-images%402021.1.0-dl.1.zip"

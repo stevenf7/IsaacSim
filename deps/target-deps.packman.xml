@@ -53,7 +53,7 @@
 
   <!-- Extensions from View -->
   <dependency name="omni.kit.utility.icon_modifier.release" linkPath="../_build/windows-x86_64/release/exts/omni.kit.utility.icon_modifier">
-    <package name="omni.kit.utility.icon_modifier" version="0.1.0+${platform}.release" platforms="windows-x86_64" />
+    <package name="omni.kit.utility.icon_modifier" version="0.1.2+${platform}.release" platforms="windows-x86_64" />
   </dependency>
 
   <!-- Miscellaneous Extensions-->
@@ -66,7 +66,7 @@
   </dependency>
 
   <dependency name="omni.blast" linkPath="../_build/${platform}/release/exts/omni.blast">
-    <package name="omni_blast" version="0.4.10.212-1d37441b-${platform}" platforms="windows-x86_64 linux-x86_64" />
+    <package name="omni_blast" version="0.5.0.217-43a84e52-${platform}" platforms="windows-x86_64 linux-x86_64" />
   </dependency>
 </project>
 

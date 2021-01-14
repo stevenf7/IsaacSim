@@ -389,8 +389,8 @@ CARB_EXPORT void carbOnPluginStartup()
     }
 
 
-    gStepSubscription = gPhysXInterface->subscribeToPhysicsStepEvents(onPhysicsStep, nullptr);
-    // gEventSubscription = gPhysXInterface->subscribeToPhysicsSimulationEvents(onPhysicsUpdate, nullptr);
+    gStepSubscription = gPhysXInterface->subscribePhysicsStepEvents(onPhysicsStep, nullptr);
+    // gEventSubscription = gPhysXInterface->subscribePhysicsSimulationEvents(onPhysicsUpdate, nullptr);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "MotionPlanning";
@@ -412,6 +412,8 @@ CARB_EXPORT void carbOnPluginStartup()
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
+    gPhysXInterface->unsubscribePhysicsStepEvents(gStepSubscription);
+    // gPhysXInterface->unsubscribePhysicsSimulationEvents(gEventSubscription)
     gStageUpdate->destroyStageUpdateNode(gStageUpdateNode);
     gTasking->destroyCounter(gTaskCounter);
 }

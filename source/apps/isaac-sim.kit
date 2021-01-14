@@ -15,7 +15,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.status_bar" = {}
 
 "omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
-"omni.kit.splash" = {}
+# "omni.kit.splash" = {} # splash interferes with headless currently, waiting for fix
 
 "omni.stats" = {}
 
@@ -31,7 +31,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.skelvis" = {}
 
 ## PhysX
-"omni.physx.core" = {}
+"omni.physx.bundle" = {}
 
 "omni.kit.search.service" = {}
 "omni.kit.primitive.mesh" = {}
@@ -93,6 +93,10 @@ keywords = ["experience", "app", "usd"]
 # tool
 "omni.kit.tool.asset_importer" = {}
 "omni.kit.tool.collect" = {}
+
+
+# omni graph
+"omni.graph.core" = {}
 
 [settings]
 exts."omni.kit.window.file".useNewFilePicker = true
