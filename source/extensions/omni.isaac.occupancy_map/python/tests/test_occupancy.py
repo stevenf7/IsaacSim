@@ -54,6 +54,25 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         return cubeGeom
 
+    # test to make sure this runs
+    async def test_no_sim(self):
+        await omni.usd.get_context().new_stage_async()
+        context = omni.usd.get_context()
+        self._stage = context.get_stage()
+        UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+
+        self.add_cube("/cube_1", 100, (100, 0, 0))
+        self.add_cube("/cube_2", 100, (100, 200, 0))
+        self.add_cube("/cube_3", 100, (-150, -150, 0))
+        self._physx = omni.physx.acquire_physx_interface()
+        await omni.kit.app.get_app().next_update_async()
+        generator = _occupancy_map.Generator(self._physx, context.get_stage_id())
+        generator.update_settings(5, 1, 2, 5, 1000000, 4, 5, 6)
+        generator.set_transform((0, 0, 0), (-200, -200), (200, 200))
+        generator.generate()
+        buffer = generator.get_buffer()
+        self.assertEqual(len(buffer), 0)
+
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_simple_room(self):
         (result, error) = await load_test_file(self._nucleus_path + "/Environments/Simple_Room/simple_room.usd")
