@@ -5,6 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "env": {
+                "EXP_PATH": "${workspaceFolder}/source/python_samples/experiences",
+            },
+            "envFile": "${workspaceFolder}/.vscode/.python_samples.env",
+            "preLaunchTask": "setup_python_env"
+        },
+        {
             "name": "(Windows) test.unit",
             "type": "cppvsdbg",
             "request": "launch",
