@@ -126,7 +126,7 @@ void OccupancyGridMapComponent::publishAllMessages()
     std::vector<std::unique_ptr<IsaacBuffer>> buffers(1);
     buffers[0] = std::make_unique<IsaacHostBuffer>(mMapSize[0] * mMapSize[1] * sizeof(float));
     std::memcpy(buffers[0]->data(), data.data(), mMapSize[0] * mMapSize[1] * sizeof(float));
-    publish(mOutputComponent, mChannelName, stateMessage, isaac_message::StateProtoId, buffers);
+    publish(mOutputComponent, mChannelName, stateMessage, buffers);
 }
 void OccupancyGridMapComponent::onComponentChange()
 {

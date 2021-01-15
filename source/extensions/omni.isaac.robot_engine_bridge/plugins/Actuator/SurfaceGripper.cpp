@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -104,7 +104,7 @@ void SurfaceGripper::tick()
         buffers[0] = std::make_unique<IsaacHostBuffer>(elements.size() * sizeof(double));
         std::memcpy(buffers[0]->data(), elements.data(), elements.size() * sizeof(double));
 
-        publish(mOutputComponent, mGripperStateChannelName, statusComposite, isaac_message::CompositeProtoId, buffers);
+        publish(mOutputComponent, mGripperStateChannelName, statusComposite, buffers);
     }
 }
 

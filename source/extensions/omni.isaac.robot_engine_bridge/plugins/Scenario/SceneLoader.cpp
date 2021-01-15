@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -47,13 +47,6 @@ SceneLoader::SceneLoader(omni::isaac::dynamic_control::DynamicControl* dynamicCo
     if (!mFramework)
     {
         CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
-        return;
-    }
-
-    mEditorInterface = mFramework->acquireInterface<omni::kit::IEditor>();
-    if (!mEditorInterface)
-    {
-        CARB_LOG_ERROR("Failed to acquire omni::kit::IEditor interface");
         return;
     }
 }
@@ -168,7 +161,7 @@ void SceneLoader::sendResponse(int status, std::string request)
     jsonReplyProto.setSerialized(replyMessage);
     std::vector<std::unique_ptr<IsaacBuffer>> buffers;
 
-    publish(mOutputComponent, mReplyChannelName, jsonMessage, isaac_message::JsonProtoId, buffers);
+    publish(mOutputComponent, mReplyChannelName, jsonMessage, buffers);
 }
 
 bool endsWith(std::string const& fullString, std::string const& ending)

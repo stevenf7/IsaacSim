@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -40,13 +40,6 @@ CameraComponent::CameraComponent() : IsaacComponent()
         return;
     }
 
-    mEditorInterface = mFramework->acquireInterface<omni::kit::IEditor>();
-    if (!mEditorInterface)
-    {
-        CARB_LOG_ERROR("Failed to acquire omni::kit::IEditor interface");
-        return;
-    }
-
     mSyntheticDataInterface = mFramework->acquireInterface<carb::syntheticdata::SyntheticData>();
     if (!mSyntheticDataInterface)
     {
@@ -67,7 +60,6 @@ CameraComponent::~CameraComponent()
     // Destroy all sensors
     onStop();
 
-    mFramework->releaseInterface(mEditorInterface);
     mFramework->releaseInterface(mSyntheticDataInterface);
     mFramework->releaseInterface(mSensorsInterface);
 }
@@ -124,7 +116,7 @@ void CameraComponent::tick()
 
         rgbaToRgb(mRgbBuffers[0]->data(), (uint8_t*)mRgbSensorData, rgbInfo.tex.width, rgbInfo.tex.height,
                   rgbInfo.tex.rowSize);
-        publish(mRgbOutputComponent, mRgbChannelName, imageMessage, isaac_message::ImageProtoId, mRgbBuffers);
+        publish(mRgbOutputComponent, mRgbChannelName, imageMessage, mRgbBuffers);
         publishIntrinsics(
             mRgbOutputComponent, mRgbChannelName, rgbInfo, focalLength, horizontalAperture, verticalAperture);
     }
@@ -149,7 +141,7 @@ void CameraComponent::tick()
         CUDA_CHECK(cudaMemcpy(mDepthBuffers[0]->data(), mDepthSensorData, depthInfo.tex.rowSize * depthInfo.tex.height,
                               cudaMemcpyDeviceToDevice));
 
-        publish(mDepthOutputComponent, mDepthChannelName, imageMessage, isaac_message::ImageProtoId, mDepthBuffers);
+        publish(mDepthOutputComponent, mDepthChannelName, imageMessage, mDepthBuffers);
         publishIntrinsics(
             mDepthOutputComponent, mDepthChannelName, depthInfo, focalLength, horizontalAperture, verticalAperture);
     }
@@ -201,7 +193,7 @@ void CameraComponent::tick()
                            segmentationInfo.tex.width, segmentationInfo.tex.height, segmentationInfo.tex.rowSize);
 
             publish(mSegmentationOutputComponent, mSegmentationChannelName + "_instance", instanceMessage,
-                    isaac_message::ImageProtoId, mSegmentationBuffers);
+                    mSegmentationBuffers);
         }
 
         // Semantic segmentation
@@ -215,8 +207,7 @@ void CameraComponent::tick()
                           semanticInfo.tex.height, semanticInfo.tex.rowSize);
 
 
-            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_class", semanticMessage,
-                    isaac_message::ImageProtoId, mSemanticBuffers);
+            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_class", semanticMessage, mSemanticBuffers);
         }
 
         // Class labels
@@ -233,8 +224,7 @@ void CameraComponent::tick()
                 index++;
             }
             std::vector<std::unique_ptr<IsaacBuffer>> buffers;
-            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_labels", labelsMessage,
-                    isaac_message::LabelProtoId, buffers);
+            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_labels", labelsMessage, buffers);
         }
 
         // Camera intrinsics
@@ -311,8 +301,7 @@ void CameraComponent::tick()
                     boundingBoxId++;
                 }
                 std::vector<std::unique_ptr<IsaacBuffer>> buffers;
-                publish(mBoundingBox2DOutputComponent, mBoundingBox2DChannelName, detectionMessage,
-                        isaac_message::Detections2ProtoId, buffers);
+                publish(mBoundingBox2DOutputComponent, mBoundingBox2DChannelName, detectionMessage, buffers);
             }
         }
     }
@@ -413,8 +402,7 @@ void CameraComponent::tick()
                     boundingBoxId++;
                 }
                 std::vector<std::unique_ptr<IsaacBuffer>> buffers;
-                publish(mBoundingBox3DOutputComponent, mBoundingBox3DChannelName, detectionMessage,
-                        isaac_message::Detections3ProtoId, buffers);
+                publish(mBoundingBox3DOutputComponent, mBoundingBox3DChannelName, detectionMessage, buffers);
             }
         }
     }
@@ -611,8 +599,7 @@ void CameraComponent::publishIntrinsics(std::string outputComponent,
 
     std::vector<std::unique_ptr<IsaacBuffer>> dummyBuffers;
 
-    publish(outputComponent, channelName + "_intrinsics", intrinsicsMessage, isaac_message::CameraIntrinsicsProtoId,
-            dummyBuffers);
+    publish(outputComponent, channelName + "_intrinsics", intrinsicsMessage, dummyBuffers);
 }
 }
 }

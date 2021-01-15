@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -142,7 +142,6 @@ public:
     isaac_error_t publish(const std::string& component,
                           const std::string& channel,
                           T& data,
-                          uint64_t protoId,
                           const std::vector<std::unique_ptr<IsaacBuffer>>& buffers)
     {
         CARB_PROFILE_ZONE(0, "publishMessage");
@@ -191,7 +190,7 @@ public:
         {
             return mError;
         }
-        mError = (mIsaacCApiPtr->isaac_set_message_proto_id)(mAppHandle, &uuid, protoId);
+        mError = (mIsaacCApiPtr->isaac_set_message_proto_id)(mAppHandle, &uuid, data.protoId());
         if (!checkErrorCode(mError))
         {
             return mError;
