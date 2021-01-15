@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -52,22 +52,6 @@ namespace robot_engine_bridge
 
 namespace isaac_message
 {
-static const uint64_t ActorGroupProtoId = 15616880102797312316U;
-static const uint64_t CollisionProtoId = 16245352794000411201U;
-static const uint64_t ImageProtoId = 16240193334533147313U;
-static const uint64_t CameraIntrinsicsProtoId = 17438625575095802085U;
-static const uint64_t CompositeProtoId = 11748931141111337194U;
-static const uint64_t LabelProtoId = 13706910962019518033U;
-static const uint64_t FlatscanProtoId = 15101491517973344605U;
-static const uint64_t JsonProtoId = 16451265754834835783U;
-static const uint64_t Plan2ProtoId = 17863627595039553900U;
-static const uint64_t PoseTreeEdgeProtoId = 15616880102797312316U;
-static const uint64_t RangeScanProtoId = 11901202900662173387U;
-static const uint64_t RigidBody3GroupProtoId = 11014643331508973803U;
-static const uint64_t StateProtoId = 13177870757040999364U;
-static const uint64_t Detections2ProtoId = 12576484744224273470U;
-static const uint64_t Detections3ProtoId = 16439473061879685265U;
-
 static capnp::JsonCodec gJsonCodec;
 
 /// "math.capnp".Vector2dProto
@@ -356,6 +340,10 @@ public:
     bool checkType(const int64_t type)
     {
         return ::capnp::typeId<Proto>() == static_cast<uint64_t>(type);
+    }
+    int64_t protoId()
+    {
+        return ::capnp::typeId<Proto>();
     }
     std::vector<const uint8_t*> segment_ptrs;
     std::vector<uint64_t> segment_sizes;

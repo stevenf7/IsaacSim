@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -75,6 +75,7 @@ void ScenarioFromMessage::tick()
 
     mRigidBodiesSink->updateTimestamp(mTimeSeconds, mTimeDelta, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
     mRigidBodiesSink->tick();
+    mRigidBodiesSink->publishAllMessages();
 }
 
 void ScenarioFromMessage::onComponentChange()
@@ -125,10 +126,14 @@ void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Rea
             std::string mUsdAsset = actorCreateRequests[i].getPrefab();
             carb::extras::Path mUsdAssetPath(mUsdAsset);
             std::string warningMsg;
+            CARB_LOG_INFO("spawn %s %s", actorName.c_str(), mUsdAsset.c_str());
 
             auto prim = omni::usd::UsdUtils::createExternalRefNodeAtPath(
                 mStage, mUsdAsset.c_str(), ("/" + actorName).c_str(), warningMsg);
-
+            if (warningMsg.size() > 0)
+            {
+                CARB_LOG_WARN("%s", warningMsg.c_str());
+            }
             // Set Pose
             if (prim)
             {
@@ -160,6 +165,8 @@ void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Rea
             auto defaultPrim = mStage->GetDefaultPrim();
             auto targetPath = defaultPrim.GetPath().GetString() + "/" + actorName;
             auto prim = mStage->GetPrimAtPath(pxr::SdfPath(targetPath));
+
+            CARB_LOG_INFO("destroy %s", actorName.c_str());
             if (prim)
             {
                 omni::usd::UsdUtils::removePrim(prim);

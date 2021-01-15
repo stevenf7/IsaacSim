@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -84,7 +84,6 @@ private:
                            float horizontalAperture,
                            float verticalAperture);
     carb::Framework* mFramework = nullptr;
-    omni::kit::IEditor* mEditorInterface = nullptr;
     carb::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
     carb::sensors::Sensors* mSensorsInterface = nullptr;
 

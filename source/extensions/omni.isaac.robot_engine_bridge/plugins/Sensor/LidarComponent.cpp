@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -131,7 +131,7 @@ void LidarComponent::publishAllMessages()
     std::vector<std::unique_ptr<IsaacBuffer>> buffers(1);
     buffers[0] = std::make_unique<IsaacHostBuffer>(numBeams * sizeof(uint16_t));
     std::memcpy(buffers[0]->data(), ranges, numBeams * sizeof(uint16_t));
-    publish(mOutputComponent, mScanChannelName, scanMessage, isaac_message::RangeScanProtoId, buffers);
+    publish(mOutputComponent, mScanChannelName, scanMessage, buffers);
 }
 void LidarComponent::onComponentChange()
 {

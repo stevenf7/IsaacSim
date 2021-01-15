@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -180,7 +180,7 @@ void HolonomicBaseSimulator::tick()
     std::vector<std::unique_ptr<IsaacBuffer>> buffers(1);
     buffers[0] = std::make_unique<IsaacHostBuffer>(real_data.size() * sizeof(double));
     std::memcpy(buffers[0]->data(), real_data.data(), real_data.size() * sizeof(double));
-    publish(mOutputComponent, mStateChannelName, stateMessage, isaac_message::StateProtoId, buffers);
+    publish(mOutputComponent, mStateChannelName, stateMessage, buffers);
     mLastSpeed = measuredSpeed;
 }
 

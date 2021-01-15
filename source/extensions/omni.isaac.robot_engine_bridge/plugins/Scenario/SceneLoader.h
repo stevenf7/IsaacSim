@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -103,7 +103,6 @@ private:
     carb::dictionary::ISerializer* mJsonSerializer = nullptr;
     carb::dictionary::IDictionary* mIDict = nullptr;
     carb::Framework* mFramework = nullptr;
-    omni::kit::IEditor* mEditorInterface = nullptr;
 
 
     // The name of the channel for receiving scenario commands

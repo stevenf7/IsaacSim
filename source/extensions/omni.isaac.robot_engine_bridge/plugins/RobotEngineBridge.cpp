@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -21,7 +21,6 @@
 #include <carb/syntheticdata/SyntheticData.h>
 
 #include <omni/kit/IStageUpdate.h>
-#include <omni/kit/IEditor.h>
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -53,16 +52,15 @@ const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.robot_engine_bridg
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::robot_engine_bridge::RobotEngineBridge)
 CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
-                      omni::isaac::dynamic_control::DynamicControl,
-                      omni::kit::IStageUpdate,
-                      omni::kit::IEditor,
-                      omni::isaac::range_sensor::LidarSensorInterface,
                       carb::syntheticdata::SyntheticData,
-                      omni::physx::IPhysx,
                       carb::sensors::Sensors,
                       carb::tasking::ITasking,
                       carb::fastcache::FastCache,
-                      omni::renderer::IDebugDraw)
+                      omni::kit::IStageUpdate,
+                      omni::renderer::IDebugDraw,
+                      omni::physx::IPhysx,
+                      omni::isaac::dynamic_control::DynamicControl,
+                      omni::isaac::range_sensor::LidarSensorInterface)
 
 // private stuff
 namespace
@@ -74,7 +72,6 @@ carb::dictionary::ISerializer* g_jsonSerializer = nullptr;
 omni::isaac::dynamic_control::DynamicControl* g_dynamicControl = nullptr;
 carb::dictionary::IDictionary* g_iDict = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
-omni::physx::IPhysx* g_physx = nullptr;
 
 std::unique_ptr<omni::isaac::robot_engine_bridge::IsaacCApi> g_c_api;
 std::unique_ptr<omni::isaac::robot_engine_bridge::IsaacApplication> g_application_handle;
@@ -244,12 +241,6 @@ CARB_EXPORT void carbOnPluginStartup()
     if (!g_iDict)
     {
         CARB_LOG_ERROR("Failed to acquire carb::dictionary::IDictionary interface");
-        return;
-    }
-    g_physx = g_framework->acquireInterface<omni::physx::IPhysx>();
-    if (!g_physx)
-    {
-        CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
         return;
     }
     g_c_api = std::make_unique<omni::isaac::robot_engine_bridge::IsaacCApi>();
