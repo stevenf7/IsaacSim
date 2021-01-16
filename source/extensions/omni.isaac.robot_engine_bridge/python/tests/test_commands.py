@@ -223,6 +223,15 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgeUltrasonicCommand",
+            path="/REB_Ultrasonic",
+            parent=get_selected_path(),
+            output_component="output",
+            output_channel="uss_envelopes",
+            ultrasonic_prim_rel=None,
+        )
+
+        result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeContactMonitorCommand",
             path="/REB_ContactMonitor",
             parent=get_selected_path(),

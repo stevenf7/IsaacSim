@@ -6,3 +6,4 @@ from .test_pyalice_manipulator import *
 from .test_pyalice_vehicle import *
 from .test_pyalice_scenario import *
 from .test_pyalice_ogm import *
+from .test_pyalice_uss import *

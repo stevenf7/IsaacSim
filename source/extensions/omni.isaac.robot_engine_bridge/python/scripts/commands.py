@@ -720,6 +720,43 @@ class CreateRobotEngineBridgeOccupancyGridMapCommand(omni.kit.commands.Command):
         pass
 
 
+class CreateRobotEngineBridgeUltrasonicCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path: str = "/REB_Ultrasonic",
+        parent=None,
+        output_component: str = "output",
+        output_channel: str = "uss_envelopes",
+        ultrasonic_prim_rel=None,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=REBSchema.RobotEngineUltrasonic,
+        )
+        if success and self._prim:
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+            rel_paths = self._prim.CreateUltrasonicPrimRel()
+            if self._ultrasonic_prim_rel is not None:
+                if len(self._ultrasonic_prim_rel) == 1:
+                    rel_paths.AddTarget(self._ultrasonic_prim_rel[0])
+                else:
+                    carb.log_warn("only one ultrasonic prim rel target can be specified")
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
 class CreateRobotEngineBridgeContactMonitorCommand(omni.kit.commands.Command):
     def __init__(
         self,
