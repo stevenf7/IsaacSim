@@ -168,7 +168,7 @@ class LauncherWindow:
                 ui.Rectangle(style={"background_color": BLUE, "border_radius": 3})
 
                 ext_manager = omni.kit.app.get_app().get_extension_manager()
-                ext_dict = ext_manager.get_extension_dict(f"{app_id}-2020.3.0")
+                ext_dict = ext_manager.get_extension_dict(f"{app_id}-2021.1.0")
 
                 description = "Desciptions To Come"
                 # if ext_dict:
@@ -254,7 +254,7 @@ class LauncherWindow:
         self._detail_label.text = app_title
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_dict = ext_manager.get_extension_dict(f"{app_id}-2020.3.0")
+        ext_dict = ext_manager.get_extension_dict(f"{app_id}-2021.1.0")
 
         description = ext_dict["package"]["description"]
         if "details_description" in ext_dict["package"]:

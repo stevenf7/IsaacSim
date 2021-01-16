@@ -85,7 +85,7 @@ stage_files.error_if_missing = true
 
 licensing.enabled = true
 licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/target-deps.packman.xml"]
-licensing.fail_on_missing = true
+licensing.fail_on_missing = false
 
 
 ########################################################################################################################
