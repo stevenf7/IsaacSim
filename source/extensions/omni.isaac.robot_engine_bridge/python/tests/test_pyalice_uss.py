@@ -1,0 +1,128 @@
+# NOTE:
+#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
+#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
+import omni.kit.test
+
+import omni.kit.usd
+import carb.tokens
+import gc
+
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+from omni.isaac.dynamic_control import _dynamic_control
+
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from .common import PyaliceApp, create_application, simulate
+from pxr import Gf, UsdGeom, UsdPhysics, Sdf
+from omni.physx.scripts import utils
+import omni.isaac.RangeSensorSchema as RangeSensorSchema
+
+
+# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
+    # Before running each test
+    async def setUp(self):
+        await omni.usd.get_context().new_stage_async()
+        context = omni.usd.get_context()
+        self._stage = context.get_stage()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._usd_context = omni.usd.get_context()
+        self._dc = _dynamic_control.acquire_dynamic_control_interface()
+
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
+        self._reb_extension_path = ext_manager.get_extension_path(ext_id)
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
+        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
+
+        self._asset_path = self._reb_extension_path
+
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
+        self._nucleus_path = nucleus_server + "/Isaac"
+
+        self.assertTrue(create_application()[1])
+        pass
+
+    # After running each test
+    async def tearDown(self):
+        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        gc.collect()
+        pass
+
+    def add_cube(self, path, size, offset):
+
+        cubeGeom = UsdGeom.Cube.Define(self._stage, path)
+        cubePrim = self._stage.GetPrimAtPath(path)
+
+        cubeGeom.CreateSizeAttr(size)
+        cubeGeom.AddTranslateOp().Set(offset)
+        utils.setCollider(cubePrim)
+
+        return cubeGeom
+
+    def create_scene(self):
+        UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+        self.add_cube("/cube_1", 100, (100, 0, 0))
+        self.add_cube("/cube_2", 100, (100, 200, 0))
+        self.add_cube("/cube_3", 100, (-150, -150, 0))
+
+    def add_ultrasonic(self, ultrasonicPath):
+
+        ultrasonic = RangeSensorSchema.Ultrasonic.Define(self._stage, Sdf.Path(ultrasonicPath))
+        ultrasonic.CreateHorizontalFovAttr().Set(60.0)
+        ultrasonic.CreateVerticalFovAttr().Set(30.0)
+        ultrasonic.CreateHorizontalResolutionAttr().Set(0.4)
+        ultrasonic.CreateVerticalResolutionAttr().Set(4.0)
+        ultrasonic.CreateMinRangeAttr().Set(0.4)
+        ultrasonic.CreateMaxRangeAttr().Set(100.0)
+        ultrasonic.CreateDrawPointsAttr().Set(True)
+
+        xform = UsdGeom.Xformable(ultrasonic)
+        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+
+        return ultrasonic
+
+    async def test_component(self):
+        self.add_ultrasonic("/uss_array")
+        result, prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgeUltrasonicCommand",
+            path="/REB_Ultrasonic",
+            parent=None,
+            output_component="output",
+            output_channel="uss_envelopes",
+            ultrasonic_prim_rel=["/uss_array"],
+        )
+        self.create_scene()
+        self._timeline.play()
+        await simulate(1.0)
+
+    async def test_uss(self):
+
+        self.add_ultrasonic("/uss_array")
+        result, prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgeUltrasonicCommand",
+            path="/REB_Ultrasonic",
+            parent=None,
+            output_component="output",
+            output_channel="uss_envelopes",
+            ultrasonic_prim_rel=["/uss_array"],
+        )
+        self.create_scene()
+        test_app = PyaliceApp()
+
+        test_app.app.load(
+            filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
+        )
+
+        test_app.start()
+
+        self._timeline.play()
+        await simulate(0.1)
+        msg = test_app.app.receive("simulation.interface", "output", "uss_envelopes")
+        buffer = msg.tensor
+        self.assertTupleEqual(buffer.shape, (12, 224))
+        self._timeline.stop()
+        test_app.stop()
+        test_app = None

@@ -24,6 +24,7 @@
 #include "../Monitor/RigidBodiesSink.h"
 #include "../Scenario/SceneLoader.h"
 #include "../Sensor/LidarComponent.h"
+#include "../Sensor/UltrasonicComponent.h"
 #include "../Sensor/CameraComponent.h"
 #include "../Sensor/OccupancyGridMapComponent.h"
 #include "../Monitor/ContactMonitor.h"
@@ -315,6 +316,11 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     {
         component = std::make_unique<LidarComponent>();
         component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineLidar(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineUltrasonic>())
+    {
+        component = std::make_unique<UltrasonicComponent>();
+        component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineUltrasonic(prim), mStage);
     }
     else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineScenarioFromMessage>())
     {

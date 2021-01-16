@@ -20,6 +20,7 @@ class RobotEngineBridgeMenu:
             ("Camera", self._add_camera),
             ("Lidar", self._add_lidar),
             ("Occupancy Grid Map", self._add_occupancy_grid_map),
+            ("Ultrasonic", self._add_ultrasonic),
             ("Contact Monitor", self._add_contact_monitor),
             ("Polyline Visualizer", self._add_polyline_visualizer),
         ]
@@ -259,6 +260,18 @@ class RobotEngineBridgeMenu:
             occupied_value=1.0,
             unoccupied_value=0.0,
             unknown_value=0.5,
+        )
+
+        pass
+
+    def _add_ultrasonic(self, *args, **kwargs):
+        result, prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgeUltrasonicCommand",
+            path="/REB_Ultrasonic",
+            parent=self._get_stage_and_path(),
+            output_component="output",
+            output_channel="uss_envelopes",
+            ultrasonic_prim_rel=None,
         )
 
         pass
