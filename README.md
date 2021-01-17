@@ -11,11 +11,11 @@ This is where the Robotics experiece for Omniverse is developed
 
 ### Latest Documentation and Packages
 
-[Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/isaacsim)
+[Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/overview.html)
 
-[Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Master_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-launcher%40%7Bbuild.number%7D.linux-x86_64.release.7z)
+[Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Master_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac_sim-launcher%40%7Bbuild.number%7D.linux-x86_64.release.7z)
 
-[Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-launcher%40%7Bbuild.number%7D.linux-x86_64.release.7z)
+[Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac_sim-launcher%40%7Bbuild.number%7D.linux-x86_64.release.7z)
 
 
 ### Filing Bugs and Feature Requests
@@ -55,12 +55,12 @@ Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildTyp
 - Install Ubuntu 18.04 (linux-x86_64) / Windows 10 version 1809 (windows-x86_64 and DXR)
 - Install NVIDIA driver 450.57 (Linux) / NVIDIA driver 451.48 (Windows)
 - Install VS Code (recommended) or VS2017 with [SDK 10.17763+](https://go.microsoft.com/fwlink/?LinkID=2023014)
-- (Optional) Install Vulkan SDK 1.2.131.1:
+- (Optional) Install Vulkan SDK 1.2.148.1:
     * Required for debug builds and validation layers only.
-    * Vulkan 1.1 core remains our min requirement for development. 
+    * Vulkan 1.1 core remains our min requirement for development, and we use SDK 1.2.148.1 for development. 
     * Vulkan SDKs prior to this version has known bugs and are not compatible.
-    * [Windows] (https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.131.1/windows/VulkanSDK-1.2.131.1-Installer.exe)
-    * [Linux] (https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.131.1/linux/vulkansdk-linux-x86_64-1.2.131.1.tar.gz)
+    * [Windows] (https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.148.1/windows/VulkanSDK-1.2.148.1-Installer.exe)
+    * [Linux] (https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.148.1/linux/vulkansdk-linux-x86_64-1.2.148.1.tar.gz)
 - Install "git".
 - Install "git-lfs":
     * Required for fetching data folder used in unit tests only.

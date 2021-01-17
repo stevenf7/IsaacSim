@@ -120,13 +120,13 @@ enabled = true
 
 [repo_package]
 
-[repo_package.packages.isaac-sim]
+[repo_package.packages.isaac_sim]
 omniverse_flow_version_scheme = true
 ziponly = false
 package_per_config = true
 "platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
 
-[repo_package.packages.isaac-sim-launcher]
+[repo_package.packages.isaac_sim-launcher]
 omniverse_flow_version_scheme = true
 ziponly = false
 "platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
@@ -145,7 +145,7 @@ ziponly = true
 
 [repo_publish]
 enabled = true
-packages = ["*"]
+packages = ["isaac_sim*"]
 
 ########################################################################################################################
 # Launcher publish and deploy
@@ -162,7 +162,7 @@ template_path = "${root}/tools/repoman/launcher-pipeline-template"
 [repo_test]
 
 # When running from package, look for package using that path/pattern:
-archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
+archive_pattern = "${root}/_build/packages/isaac_sim-*.7z"
 
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
