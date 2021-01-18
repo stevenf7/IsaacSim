@@ -36,6 +36,9 @@ fetch.enable_exclude_configs_tags = false
 stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/kit_debug"
 stage_files.extra_mapping.kit_sdk_release = "${root}/_build/kit_release"
 
+# This allows us to write to files outside of _build
+stage_files.allowed_paths=[]
+
 vscode.python = "${root}/_build/kit_debug/_build/target-deps/python"
 
 vscode.python_env.PYTHONPATH= [
@@ -52,7 +55,7 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/exts",
   "$root/_build/$platform/$config/bindings-python",
   "$root/_build/$platform/$config/exts/*",
-  "$root/_build/kit_$config/_build/$platform/$config/exts/*/",
+  "$root/_build/kit_$config/_exts/*/",
   "$root/_build/kit_$config/_build/$platform/$config/extsPhysics/*/",
   "$root/_build/kit_$config/_build/$platform/$config/extensions/extensions-bundled",
   "$root/_build/kit_$config/_build/$platform/$config/plugins/bindings-python",
@@ -65,7 +68,7 @@ vscode.python_env.PATH= ["$$$${PATH}", "$root/_build/$platform/$config",
   "$root/_build/kit_$config/_build/$platform/$config/plugins/rtx",
   "$root/_build/kit_$config/_build/$platform/$config/libs/mdl",
   "$root/_build/kit_$config/_build/$platform/$config/libs/iray",
-  "$root/_build/kit_$config/_build/$platform/$config/exts/*/bin",
+  "$root/_build/kit_$config/_exts/*/bin",
   "$root/_build/kit_$config/_build/$platform/$config/extsPhysics/*/bin",
   "$root/_build/kit_$config/_build/$platform/$config/extensions/extensions-bundled/bin",
   "$root/_build/kit_$config/_build/$platform/$config/plugins/bindings-python/bin",
