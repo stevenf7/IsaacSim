@@ -28,6 +28,12 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._extension_path = ext_manager.get_extension_path(ext_id)
+
+        self._physics_rate = carb.settings.get_settings().get("/physics/timeStepsPerSecond")
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
+        carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(1))
+
         await omni.kit.app.get_app().next_update_async()
         pass
 
