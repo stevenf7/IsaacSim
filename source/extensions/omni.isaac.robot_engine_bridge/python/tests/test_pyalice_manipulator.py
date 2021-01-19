@@ -41,6 +41,14 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._nucleus_path = nucleus_server + "/Isaac"
 
         self.assertTrue(create_application()[1])
+
+        self._physics_rate = carb.settings.get_settings().get("/physics/timeStepsPerSecond")
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
+        carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(1))
+
+        await omni.kit.app.get_app().next_update_async()
+
         pass
 
     # After running each test
@@ -86,7 +94,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         states = Composite.parse_composite_message(state_msg, quantities)
         self.assertIsNotNone(states)
         delta = np.abs(states - values)
-        self.assertTrue(np.max(delta) < 0.01)
+        self.assertLessEqual(np.max(delta), 0.01)
 
         self._timeline.stop()
         test_app.stop()
@@ -131,7 +139,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app.app.publish("simulation.interface", "input", "io_command", open_gripper)
 
         # Run test for a while for the arm to move
-        await simulate(5)
+        await simulate(3)
 
         # validate joint angles
         state_msg = test_app.app.receive("simulation.interface", "output", "joint_state")

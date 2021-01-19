@@ -88,7 +88,7 @@ class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCase):
         )
         self.create_scene()
         self._timeline.play()
-        await simulate(1.0)
+        await simulate(0.1)
 
     async def test_occupancy_grid_map(self):
 

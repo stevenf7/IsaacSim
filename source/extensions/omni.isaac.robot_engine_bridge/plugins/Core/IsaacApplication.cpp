@@ -126,18 +126,21 @@ isaac_error_t IsaacApplication::start()
 isaac_error_t IsaacApplication::stop()
 {
     mRunning = false;
-    if (mAppHandle == 0)
+    if (mAppHandle != 0)
     {
-        CARB_LOG_WARN("Cannot Stop application that is not created");
+        mError = (mIsaacCApiPtr->isaac_stop_application)(mAppHandle);
+        if (mError != isaac_error_t::isaac_error_success)
+        {
+            CARB_LOG_ERROR("Application Was Not Stopped Successfully");
+            return mError;
+        }
+        return isaac_error_t::isaac_error_success;
+    }
+    else
+    {
+        // CARB_LOG_WARN("Cannot Stop application that is not created");
         return isaac_error::isaac_error_unknown;
     }
-    mError = (mIsaacCApiPtr->isaac_stop_application)(mAppHandle);
-    if (mError != isaac_error_t::isaac_error_success)
-    {
-        CARB_LOG_ERROR("Application Was Not Stopped Successfully");
-        return mError;
-    }
-    return isaac_error_t::isaac_error_success;
 }
 
 isaac_error_t IsaacApplication::destroy()
@@ -146,13 +149,14 @@ isaac_error_t IsaacApplication::destroy()
     if (mRunning)
     {
         mError = stop();
+        // Stop will also fail if the application is not created
+        if (mError != isaac_error_t::isaac_error_success)
+        {
+            CARB_LOG_ERROR("Application Was Not Destroyed Successfully");
+            return mError;
+        }
     }
-    // Stop will also fail if the application is not created
-    if (mError != isaac_error_t::isaac_error_success)
-    {
-        CARB_LOG_ERROR("Application Was Not Destroyed Successfully");
-        return mError;
-    }
+
     // Only destroy an app if we have a valid handle to it
     if (mAppHandle != 0)
     {
