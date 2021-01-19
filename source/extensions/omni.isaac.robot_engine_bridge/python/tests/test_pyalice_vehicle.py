@@ -68,7 +68,7 @@ class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         control = self._pyalice_app.app.add("controller").add(VehicleControl, name="VehicleControl")
         self.assertIsNotNone(control)
-        control.config.accelerator = 2.0
+        control.config.accelerator = 1.0
         control.config.steering = 0.0
         self._pyalice_app.app.connect(control, "cmd", sim_in, "vehicle_command")
         self._pyalice_app.start()

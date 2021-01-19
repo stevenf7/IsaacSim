@@ -166,9 +166,9 @@ void VehicleSimulator::tick()
         return;
     }
 
-    if (mCache.driveType == DriveType::eSTANDARD)
+    if (mCache.driveType != DriveType::eNONE)
     {
-        CARB_LOG_ERROR("Only Basic Drive is supportred currently");
+        CARB_LOG_ERROR("Only None Drive is supportred currently");
         return;
     }
     else
@@ -239,22 +239,21 @@ void VehicleSimulator::tick()
 
             float driveTorque = 0;
 
-            driveTorque = acceleration * (*mCache.wheelsDriveBasic)[0].radius * mCache.totalMass / mCache.numDrivenWheels;
+            driveTorque = acceleration * (*mCache.wheels)[0].radius * mCache.totalMass / mCache.numDrivenWheels;
 
             // CARB_LOG_ERROR("requested acceleration: %f cm/s^2, drive torque: %f N*cm on %d wheels", acceleration,
             //                driveTorque, mCache.numDrivenWheels);
 
 
             // steering angle in radians
-            float maxSteerAngle = (*mCache.wheelsDriveBasic)[0].maxSteerAngle;
+            float maxSteerAngle = (*mCache.wheels)[0].maxSteerAngle;
             mCurrentSteeringAngle = pxr::GfClamp(elements[1], double(-maxSteerAngle), double(maxSteerAngle));
-            setAckermannSteering(
-                mCurrentSteeringAngle, (*mCache.wheelsDriveBasic)[0].index, (*mCache.wheelsDriveBasic)[1].index);
+            setAckermannSteering(mCurrentSteeringAngle, (*mCache.wheels)[0].index, (*mCache.wheels)[1].index);
 
-            const uint32_t wheelCount = static_cast<uint32_t>(mCache.wheelsDriveBasic->size());
+            const uint32_t wheelCount = static_cast<uint32_t>(mCache.wheels->size());
             for (uint32_t i = 0; i < wheelCount; i++)
             {
-                const WheelCacheDriveBasic& wheelCache = (*mCache.wheelsDriveBasic)[i];
+                const WheelCache& wheelCache = (*mCache.wheels)[i];
 
                 if (wheelCache.wheelFlags & WheelFlag::eHAS_DRIVE)
                 {
@@ -313,6 +312,7 @@ void VehicleSimulator::fillCache()
     }
     bool success = true;
 
+    // Locate the Global Vehicle Settings to get forward axis
     pxr::UsdPrimRange range = mStage->Traverse();
     for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
     {
@@ -329,194 +329,204 @@ void VehicleSimulator::fillCache()
             }
         }
     }
-    if (mVehiclePrim && mVehiclePrim.HasAPI<pxr::PhysxSchemaPhysxVehicleAPI>())
-    {
-        pxr::PhysxSchemaPhysxVehicleAPI vehicleAPI(mVehiclePrim);
-        pxr::UsdRelationship driveRel = vehicleAPI.GetDriveRel();
-        if (driveRel)
-        {
-            pxr::SdfPathVector paths;
-            driveRel.GetTargets(&paths);
-            if (paths.size() == 1)
-            {
-                pxr::SdfPath drivePath = paths[0];
-                pxr::UsdPrim drivePrim = mStage->GetPrimAtPath(drivePath);
-                if (drivePrim)
-                {
-                    if (drivePrim.IsA<pxr::PhysxSchemaPhysxVehicleDriveStandard>())
-                    {
-                        mCache.driveType = DriveType::eSTANDARD;
-                        mCache.wheels = new std::vector<WheelCache>;
-                        mCache.wheels->reserve(WheelCache::sInitialWheelCapacity);
-                    }
-                    else
-                    {
-                        CARB_ASSERT(drivePrim.IsA<pxr::PhysxSchemaPhysxVehicleDriveBasic>());
-                        // vehicleManager.registerDriveBasicVehicle(drivePath, this);
-                        pxr::PhysxSchemaPhysxVehicleDriveBasic driveBasic(drivePrim);
-                        mCache.driveType = DriveType::eBASIC;
-                        mCache.wheelsDriveBasic = new std::vector<WheelCacheDriveBasic>;
-                        mCache.wheelsDriveBasic->reserve(WheelCache::sInitialWheelCapacity);
-
-                        pxr::UsdAttribute peakTorqueAttr = driveBasic.GetPeakTorqueAttr();
-                        if (peakTorqueAttr.HasValue())
-                            peakTorqueAttr.Get(&mCache.peakDriveTorque);
-                        else
-                        {
-                            const float lengthScale =
-                                1.0f / static_cast<float>(pxr::UsdGeomGetStageMetersPerUnit(mStage));
-                            mCache.peakDriveTorque = 500.0f * lengthScale * lengthScale;
-                            // hardcoded value is not nice but the plan is to have a dictionary with default values
-                            // at some point. Plus, there is an automated test that covers this value.
-                        }
-                    }
-                }
-                else
-                {
-                    success = false;
-                }
-            }
-            else
-            {
-                success = false;
-            }
-        }
-        else
-        {
-            mCache.driveType = DriveType::eNONE;
-            mCache.wheels = new std::vector<WheelCache>;
-            mCache.wheels->reserve(WheelCache::sInitialWheelCapacity);
-        }
-
-        // caching the wheel attachment paths and other USD info to avoid parsing USD all the time
-        pxr::UsdPrimSubtreeRange subPrims = mVehiclePrim.GetDescendants();
-        mCache.numDrivenWheels = 0;
-        mCache.numBrakedWheels = 0;
-        mCache.totalMass = 0;
-        for (pxr::UsdPrim subPrim : subPrims)
-        {
-            if (subPrim.HasAPI<pxr::PhysxSchemaPhysxVehicleWheelAttachmentAPI>())
-            {
-                WheelCache wheelCache;
-                wheelCache.usdPath = subPrim.GetPath();
-                wheelCache.index = -1;
-                wheelCache.wheelFlags = 0;
-
-                if (subPrim.HasAPI<pxr::PhysxSchemaPhysxVehicleWheelControllerAPI>())
-                {
-                    wheelCache.wheelFlags |= WheelFlag::eHAS_WHEEL_CONTROLLER;
-                    mCache.hasController = true;
-                }
-
-                if (mCache.driveType != DriveType::eBASIC)
-                    mCache.wheels->push_back(wheelCache);
-                else
-                {
-                    WheelCacheDriveBasic wheelCacheDriveBasic;
-                    static_cast<WheelCache&>(wheelCacheDriveBasic) = wheelCache;
-
-                    pxr::PhysxSchemaPhysxVehicleWheelAttachmentAPI wheelAttachmentAPI(subPrim);
-                    bool driven;
-                    wheelAttachmentAPI.GetDrivenAttr().Get(&driven);
-                    if (driven)
-                    {
-                        wheelCacheDriveBasic.wheelFlags |= WheelFlag::eHAS_DRIVE;
-                        mCache.numDrivenWheels++;
-                    }
-
-                    pxr::UsdRelationship wheelRel = wheelAttachmentAPI.GetWheelRel();
-                    pxr::SdfPathVector paths;
-                    wheelRel.GetTargets(&paths);
-                    CARB_ASSERT(paths.size() == 1); // else it should not have loaded
-                    pxr::SdfPath wheelPath = paths[0];
-                    pxr::UsdPrim wheelPrim = mStage->GetPrimAtPath(wheelPath);
-                    CARB_ASSERT(wheelPrim); // else it should not have loaded
-                    pxr::PhysxSchemaPhysxVehicleWheel wheel(wheelPrim);
-                    // note: as long as the following attributes do not have fallback values,
-                    //       there is no need to take length scale into account
-
-                    CARB_ASSERT(wheel.GetMassAttr()); // else it should not have loaded
-                    wheel.GetMassAttr().Get(&wheelCacheDriveBasic.mass);
-                    mCache.totalMass += wheelCacheDriveBasic.mass;
-
-                    CARB_ASSERT(wheel.GetRadiusAttr()); // else it should not have loaded
-                    wheel.GetRadiusAttr().Get(&wheelCacheDriveBasic.radius);
-
-                    CARB_ASSERT(wheel.GetMaxSteerAngleAttr()); // else it should not have loaded
-                    wheel.GetMaxSteerAngleAttr().Get(&wheelCacheDriveBasic.maxSteerAngle);
-                    if (wheelCacheDriveBasic.maxSteerAngle != 0.0f)
-                        wheelCacheDriveBasic.wheelFlags |= WheelFlag::eHAS_STEER;
-
-                    CARB_ASSERT(wheel.GetMaxBrakeTorqueAttr()); // else it should not have loaded
-                    wheel.GetMaxBrakeTorqueAttr().Get(&wheelCacheDriveBasic.maxBrakeTorque);
-
-                    CARB_ASSERT(wheel.GetMaxHandBrakeTorqueAttr()); // else it should not have loaded
-                    wheel.GetMaxHandBrakeTorqueAttr().Get(&wheelCacheDriveBasic.maxHandBrakeTorque);
-
-                    if ((wheelCacheDriveBasic.maxBrakeTorque + wheelCacheDriveBasic.maxHandBrakeTorque) != 0.0f)
-                    {
-                        wheelCacheDriveBasic.wheelFlags |= WheelFlag::eHAS_BRAKE;
-                        mCache.numBrakedWheels++;
-                    }
-
-                    mCache.wheelsDriveBasic->push_back(wheelCacheDriveBasic);
-                }
-            }
-        }
-
-        if (mVehiclePrim.HasAPI<pxr::UsdPhysicsMassAPI>())
-        {
-            pxr::UsdPhysicsMassAPI massAPI(mVehiclePrim);
-            if (massAPI.GetMassAttr())
-            {
-                massAPI.GetMassAttr().Get(&mCache.chassisMass);
-                CARB_LOG_INFO("Chassis mass: %f", mCache.chassisMass);
-            }
-            else
-            {
-                mCache.chassisMass = 100;
-                CARB_LOG_WARN("NO Chassis Mass using deault %f", mCache.chassisMass);
-            }
-            mCache.totalMass += mCache.chassisMass;
-        }
-        CARB_LOG_INFO("Total Vehicle Mass: %f kg", mCache.totalMass);
-        if (success)
-            mCache.state |= CacheStateFlag::eUSD;
-
-
-        mCache.vehicleId = mPhysxPtr->getObjectId(mVehiclePath, omni::physx::PhysXType::ePTVehicle);
-        mCache.mVehiclePtr = (::physx::PxVehicleWheels*)mPhysxPtr->getPhysXPtrFast(mCache.vehicleId);
-
-        if (mCache.driveType != DriveType::eBASIC)
-        {
-            cacheWheelIndices(*mCache.wheels, mCache.vehicleId, mPhysxPtr);
-        }
-        else
-        {
-            cacheWheelIndices(*mCache.wheelsDriveBasic, mCache.vehicleId, mPhysxPtr);
-        }
-
-        mCache.state = CacheStateFlag::eVALID;
-
-
-        // auto& wheelCacheList = *mCache.wheelsDriveBasic;
-        ::physx::PxVehicleWheelQueryResult* wheelQueryResult =
-            (::physx::PxVehicleWheelQueryResult*)(mPhysxPtr->getWheelQueryResult(mCache.vehicleId));
-        // Distance between left and right rear wheels
-        mCache.rearWidth =
-            (wheelQueryResult->wheelQueryResults[2].localPose.p - wheelQueryResult->wheelQueryResults[3].localPose.p)
-                .magnitude();
-        // distance between front and rear axles
-        mCache.axleSeparation =
-            (wheelQueryResult->wheelQueryResults[0].localPose.p - wheelQueryResult->wheelQueryResults[2].localPose.p)
-                .magnitude();
-
-        CARB_LOG_INFO("mRearWidth: %f, mAxleSeparation: %f", mCache.rearWidth, mCache.axleSeparation);
-    }
-    else
+    if (!mVehiclePrim)
     {
         CARB_LOG_ERROR("Vehicle Prim is not valid");
+        return;
     }
+
+    if (!mVehiclePrim.HasAPI<pxr::PhysxSchemaPhysxVehicleAPI>())
+    {
+        CARB_LOG_ERROR("Vehicle Prim does not have a PhysxVehicleAPI");
+        return;
+    }
+
+
+    // pxr::PhysxSchemaPhysxVehicleAPI vehicleAPI(mVehiclePrim);
+
+    // pxr::UsdRelationship driveRel = vehicleAPI.GetDriveRel();
+    // if (driveRel)
+    // {
+    //     pxr::SdfPathVector paths;
+    //     driveRel.GetTargets(&paths);
+    //     if (paths.size() == 1)
+    //     {
+    //         pxr::SdfPath drivePath = paths[0];
+    //         pxr::UsdPrim drivePrim = mStage->GetPrimAtPath(drivePath);
+    //         if (drivePrim)
+    //         {
+    //             if (drivePrim.IsA<pxr::PhysxSchemaPhysxVehicleDriveStandard>())
+    //             {
+    //                 mCache.driveType = DriveType::eSTANDARD;
+    //                 mCache.wheels = new std::vector<WheelCache>;
+    //                 mCache.wheels->reserve(WheelCache::sInitialWheelCapacity);
+    //             }
+    //             else
+    //             {
+    //                 CARB_ASSERT(drivePrim.IsA<pxr::PhysxSchemaPhysxVehicleDriveBasic>());
+    //                 // vehicleManager.registerDriveBasicVehicle(drivePath, this);
+    //                 pxr::PhysxSchemaPhysxVehicleDriveBasic driveBasic(drivePrim);
+    //                 mCache.driveType = DriveType::eBASIC;
+    //                 mCache.wheelsDriveBasic = new std::vector<WheelCacheDriveBasic>;
+    //                 mCache.wheelsDriveBasic->reserve(WheelCache::sInitialWheelCapacity);
+
+    //                 pxr::UsdAttribute peakTorqueAttr = driveBasic.GetPeakTorqueAttr();
+    //                 if (peakTorqueAttr.HasValue())
+    //                     peakTorqueAttr.Get(&mCache.peakDriveTorque);
+    //                 else
+    //                 {
+    //                     const float lengthScale = 1.0f /
+    //                     static_cast<float>(pxr::UsdGeomGetStageMetersPerUnit(mStage)); mCache.peakDriveTorque =
+    //                     500.0f * lengthScale * lengthScale;
+    //                     // hardcoded value is not nice but the plan is to have a dictionary with default values
+    //                     // at some point. Plus, there is an automated test that covers this value.
+    //                 }
+    //             }
+    //         }
+    //         else
+    //         {
+    //             success = false;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         success = false;
+    //     }
+    // }
+    // else
+    // {
+    mCache.driveType = DriveType::eNONE;
+    mCache.wheels = new std::vector<WheelCache>;
+    mCache.wheels->reserve(WheelCache::sInitialWheelCapacity);
+    // }
+
+    // caching the wheel attachment paths and other USD info to avoid parsing USD all the time
+    pxr::UsdPrimSubtreeRange subPrims = mVehiclePrim.GetDescendants();
+    mCache.numDrivenWheels = 0;
+    mCache.numBrakedWheels = 0;
+    mCache.totalMass = 0;
+    for (pxr::UsdPrim subPrim : subPrims)
+    {
+        if (subPrim.HasAPI<pxr::PhysxSchemaPhysxVehicleWheelAttachmentAPI>())
+        {
+            WheelCache wheelCache;
+            wheelCache.usdPath = subPrim.GetPath();
+            wheelCache.index = -1;
+            wheelCache.wheelFlags = 0;
+
+            if (subPrim.HasAPI<pxr::PhysxSchemaPhysxVehicleWheelControllerAPI>())
+            {
+                wheelCache.wheelFlags |= WheelFlag::eHAS_WHEEL_CONTROLLER;
+                mCache.hasController = true;
+            }
+
+            pxr::PhysxSchemaPhysxVehicleWheelAttachmentAPI wheelAttachmentAPI(subPrim);
+            bool driven;
+            wheelAttachmentAPI.GetDrivenAttr().Get(&driven);
+            if (driven)
+            {
+                wheelCache.wheelFlags |= WheelFlag::eHAS_DRIVE;
+                mCache.numDrivenWheels++;
+            }
+
+
+            pxr::UsdRelationship wheelRel = wheelAttachmentAPI.GetWheelRel();
+            pxr::SdfPathVector paths;
+            wheelRel.GetTargets(&paths);
+            CARB_ASSERT(paths.size() == 1); // else it should not have loaded
+
+            pxr::SdfPath wheelPath = paths[0];
+            pxr::UsdPrim wheelPrim = mStage->GetPrimAtPath(wheelPath);
+            CARB_ASSERT(wheelPrim); // else it should not have loaded
+            pxr::PhysxSchemaPhysxVehicleWheel wheel(wheelPrim);
+            // note: as long as the following attributes do not have fallback values,
+            //       there is no need to take length scale into account
+
+            CARB_ASSERT(wheel.GetMassAttr()); // else it should not have loaded
+            wheel.GetMassAttr().Get(&wheelCache.mass);
+            mCache.totalMass += wheelCache.mass;
+
+            CARB_ASSERT(wheel.GetRadiusAttr()); // else it should not have loaded
+            wheel.GetRadiusAttr().Get(&wheelCache.radius);
+
+            CARB_ASSERT(wheel.GetMaxSteerAngleAttr()); // else it should not have loaded
+            wheel.GetMaxSteerAngleAttr().Get(&wheelCache.maxSteerAngle);
+            if (wheelCache.maxSteerAngle != 0.0f)
+            {
+                wheelCache.wheelFlags |= WheelFlag::eHAS_STEER;
+            }
+
+
+            CARB_ASSERT(wheel.GetMaxBrakeTorqueAttr()); // else it should not have loaded
+            wheel.GetMaxBrakeTorqueAttr().Get(&wheelCache.maxBrakeTorque);
+
+            CARB_ASSERT(wheel.GetMaxHandBrakeTorqueAttr()); // else it should not have loaded
+            wheel.GetMaxHandBrakeTorqueAttr().Get(&wheelCache.maxHandBrakeTorque);
+
+            if ((wheelCache.maxBrakeTorque + wheelCache.maxHandBrakeTorque) != 0.0f)
+            {
+                wheelCache.wheelFlags |= WheelFlag::eHAS_BRAKE;
+                mCache.numBrakedWheels++;
+            }
+
+            // if (mCache.driveType != DriveType::eNONE)
+            mCache.wheels->push_back(wheelCache);
+            // else
+            // {
+            //     WheelCacheDriveBasic wheelCacheDriveBasic;
+            //     static_cast<WheelCache&>(wheelCacheDriveBasic) = wheelCache;
+
+
+            // }
+        }
+    }
+
+    if (mVehiclePrim.HasAPI<pxr::UsdPhysicsMassAPI>())
+    {
+        pxr::UsdPhysicsMassAPI massAPI(mVehiclePrim);
+        if (massAPI.GetMassAttr())
+        {
+            massAPI.GetMassAttr().Get(&mCache.chassisMass);
+            CARB_LOG_INFO("Chassis mass: %f", mCache.chassisMass);
+        }
+        else
+        {
+            mCache.chassisMass = 100;
+            CARB_LOG_WARN("NO Chassis Mass using deault %f", mCache.chassisMass);
+        }
+        mCache.totalMass += mCache.chassisMass;
+    }
+    CARB_LOG_INFO("Total Vehicle Mass: %f kg", mCache.totalMass);
+    if (success)
+        mCache.state |= CacheStateFlag::eUSD;
+
+
+    mCache.vehicleId = mPhysxPtr->getObjectId(mVehiclePath, omni::physx::PhysXType::ePTVehicle);
+    mCache.mVehiclePtr = (::physx::PxVehicleWheels*)mPhysxPtr->getPhysXPtrFast(mCache.vehicleId);
+
+    if (mCache.driveType == DriveType::eNONE)
+    {
+        cacheWheelIndices(*mCache.wheels, mCache.vehicleId, mPhysxPtr);
+    }
+    // else
+    // {
+    //     cacheWheelIndices(*mCache.wheelsDriveBasic, mCache.vehicleId, mPhysxPtr);
+    // }
+
+    mCache.state = CacheStateFlag::eVALID;
+
+
+    // auto& wheelCacheList = *mCache.wheelsDriveBasic;
+    ::physx::PxVehicleWheelQueryResult* wheelQueryResult =
+        (::physx::PxVehicleWheelQueryResult*)(mPhysxPtr->getWheelQueryResult(mCache.vehicleId));
+    // Distance between left and right rear wheels
+    mCache.rearWidth =
+        (wheelQueryResult->wheelQueryResults[2].localPose.p - wheelQueryResult->wheelQueryResults[3].localPose.p).magnitude();
+    // distance between front and rear axles
+    mCache.axleSeparation =
+        (wheelQueryResult->wheelQueryResults[0].localPose.p - wheelQueryResult->wheelQueryResults[2].localPose.p).magnitude();
+
+    CARB_LOG_INFO("mRearWidth: %f, mAxleSeparation: %f", mCache.rearWidth, mCache.axleSeparation);
 }
 
 void VehicleSimulator::onComponentChange()

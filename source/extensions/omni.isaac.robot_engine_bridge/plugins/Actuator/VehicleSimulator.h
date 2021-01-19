@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -41,17 +41,13 @@ struct WheelCache
     pxr::SdfPath usdPath;
     int32_t index;
     uint32_t wheelFlags;
-
-    static const uint32_t sInitialWheelCapacity = 4;
-};
-
-struct WheelCacheDriveBasic : public WheelCache
-{
     float maxSteerAngle;
     float maxBrakeTorque;
     float maxHandBrakeTorque;
     float mass;
     float radius;
+
+    static const uint32_t sInitialWheelCapacity = 4;
 };
 
 
@@ -86,7 +82,6 @@ struct Cache
     union
     {
         std::vector<WheelCache>* wheels;
-        std::vector<WheelCacheDriveBasic>* wheelsDriveBasic;
     };
     float peakDriveTorque; // only used for DriveType::eBASIC
     DriveType::Enum driveType;
@@ -98,7 +93,7 @@ struct Cache
     float axleSeparation = 0.0f;
     int numDrivenWheels = 0; // Lets us divide torque evenly between all driven wheels
     int numBrakedWheels = 0; // Lets us divide torque evenly between all braked wheels
-    double chassisMass = 0;
+    float chassisMass = 0;
     float totalMass = 0;
 
     ::physx::PxVec3 forward = ::physx::PxVec3(1, 0, 0);
