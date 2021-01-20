@@ -12,6 +12,7 @@
 
 #include "../core/RangeSensorComponent.h"
 #include "UltrasonicArrayEmissionTimer.h"
+#include "UltrasonicEmitter.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
@@ -145,7 +146,7 @@ private:
     UltrasonicArrayEmissionTimer mEmissionTimer;
     std::vector<USSEnvelope> mEnvelope;
     std::vector<std::vector<omni::isaac::range_sensor::DebugData>> mEmitterDebugLines;
-
+    std::vector<UltrasonicEmitter> mEmitters;
 
     void dumpData(double dt);
     void clampRangeBounds();
