@@ -21,7 +21,9 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # This needs to be set so that kit updates match physics updates
         physics_rate = carb.settings.get_settings().get("/physics/timeStepsPerSecond")
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(physics_rate))
+        carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(1))
 
         self._cs = _contact_sensor.acquire_contact_sensor_interface()
         self._omni_pbr_data = os.path.abspath(
@@ -213,7 +215,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         props.radius = 12  # Cover the entire leg tip
         props.minThreshold = 0
         props.maxThreshold = 1000000000000
-        props.sensorPeriod = 1 / 100
+        props.sensorPeriod = 1.0 / 100.0
         # Sensors will be placed in the middle of capsule, so ground contact should always read zero
         for i in range(4):
             props.position = self.sensor_ofsets[i]
@@ -222,7 +224,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         readings = []
         self._timeline.play()
-        for i in range(61):  # Simulate for one second
+        for i in range(60):  # Simulate for one second
             await omni.kit.app.get_app().next_update_async()
             contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
             sensor_reading = self._cs.get_sensor_readings(self._sensor_handles[0])
