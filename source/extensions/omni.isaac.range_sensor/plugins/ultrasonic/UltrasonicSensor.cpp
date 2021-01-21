@@ -154,9 +154,6 @@ void UltrasonicSensor::onComponentChange()
     mVerticalResolution = pxr::GfClamp(mVerticalResolution, 0.005f, 1024);
     mVerticalFov = pxr::GfClamp(mVerticalFov, mVerticalResolution, 360);
 
-    clampRangeBounds();
-    updateDepthBounds();
-
     mMaxStepSize = float(1.0 / 30.0);
 
     mCols = int(mHorizontalFov / mHorizontalResolution);
@@ -183,9 +180,12 @@ void UltrasonicSensor::onComponentChange()
     mRemainingTime = 0.0f;
 
     // TODO: Temporary initialization step, will be moved to the emitter onComponentChange
+    clampRangeBounds();
+    updateDepthBounds();
+    // calculate num
     for (auto& emitter : mEmitters)
     {
-        emitter.initialize(NUM_BINS, mMaxDepth, mRows, mCols);
+        emitter.initialize(NUM_BINS, mMaxDepth * mMetersPerUnit, mRows, mCols);
     }
 }
 
