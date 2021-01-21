@@ -59,22 +59,22 @@ public:
     // std::vector<uint16_t>& getDepthData() { return mLastDepth[3]; }
     std::vector<uint16_t>& getDepthData(int emitterIndex)
     {
-        return mDepth[emitterIndex];
+        return mEmitters[emitterIndex].mDepth;
     }
     std::vector<float>& getLinearDepthData(int emitterIndex)
     {
-        return mLastLinearDepth[emitterIndex];
+        return mEmitters[emitterIndex].mLastLinearDepth;
     }
     std::vector<float>& getEnvelope(int emitterIndex)
     {
-        return mEnvelope[emitterIndex].getEnvelope();
+        return mEmitters[emitterIndex].getEnvelope();
     }
     std::vector<std::vector<float>> getEnvelopeArray()
     {
         std::vector<std::vector<float>> env;
-        for (size_t i = 0; i < mEnvelope.size(); i++)
+        for (size_t i = 0; i < mEmitters.size(); i++)
         {
-            env.push_back(mEnvelope[i].getEnvelope());
+            env.push_back(mEmitters[i].getEnvelope());
         }
         return env;
     }
@@ -94,7 +94,7 @@ public:
     }
     std::vector<uint8_t>& getIntensityData(int emitterIndex)
     {
-        return mLastIntensity[emitterIndex];
+        return mEmitters[emitterIndex].mLastIntensity;
     }
 
     // these (zenith and azimuth getters) are the same across all emitters on the sensor for now
@@ -134,18 +134,8 @@ private:
     std::vector<float> mLastAzimuth;
     std::vector<float> mLastZenith;
 
-    std::vector<std::vector<float>> mLinearDepth;
-    std::vector<std::vector<float>> mLastLinearDepth;
-    std::vector<std::vector<uint8_t>> mIntensity;
-    std::vector<std::vector<uint8_t>> mLastIntensity;
 
-    std::vector<std::vector<uint16_t>> mDepth;
-    std::vector<std::vector<uint16_t>> mLastDepth;
-    std::vector<std::vector<carb::Float3>> mHitPos;
-    std::vector<std::vector<carb::Float3>> mLastHitPos;
     UltrasonicArrayEmissionTimer mEmissionTimer;
-    std::vector<USSEnvelope> mEnvelope;
-    std::vector<std::vector<omni::isaac::range_sensor::DebugData>> mEmitterDebugLines;
     std::vector<UltrasonicEmitter> mEmitters;
 
     void dumpData(double dt);
