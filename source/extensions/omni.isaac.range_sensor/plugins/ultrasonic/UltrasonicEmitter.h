@@ -41,12 +41,6 @@ public:
                const ::physx::PxQuat& worldRotation,
                omni::physx::IPhysx* physxPtr,
                ::physx::PxScene* physxScenePtr,
-               std::vector<omni::isaac::range_sensor::DebugData>& debugLines,
-               std::vector<uint16_t>& depth,
-               std::vector<carb::Float3>& hitPosition,
-               std::vector<float>& linearDepth,
-               std::vector<uint8_t>& intensity,
-               USSEnvelope& envelope,
                std::vector<float>& zenith,
                std::vector<float>& azimuth,
                float maxDepth,
@@ -83,12 +77,12 @@ public:
                 if (hit)
                 {
                     // the distance of the ray should be from center of lidar
-                    depth[i] = static_cast<uint16_t>((raycastHit.distance + minDepth) * invMaxDepth * 65535.0f);
-                    linearDepth[i] = (raycastHit.distance + minDepth) * metersPerUnit; // in meters
-                    intensity[i] = 255;
+                    mDepth[i] = static_cast<uint16_t>((raycastHit.distance + minDepth) * invMaxDepth * 65535.0f);
+                    mLinearDepth[i] = (raycastHit.distance + minDepth) * metersPerUnit; // in meters
+                    mIntensity[i] = 255;
                     carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
                     ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - origin);
-                    hitPosition[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
+                    mHitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
                     if (drawPoints)
                     {
                         omni::isaac::range_sensor::DebugData data;
@@ -100,9 +94,9 @@ public:
                         data.endPos = { temp.x, temp.y, temp.z };
                         // set ratio for color.  should be zero at minDepth and unity at maxDepth
                         auto ratio =
-                            (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
+                            (mLinearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
                         data.color = dist_to_color(ratio, true);
-                        debugLines.push_back(data);
+                        mEmitterDebugLines.push_back(data);
                     }
 
                     if (drawLines)
@@ -115,19 +109,19 @@ public:
                         data.endPos = hitPos;
                         // set ratio for color.  should be zero at minDepth and unity at maxDepth
                         auto ratio =
-                            (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
+                            (mLinearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
                         data.color = dist_to_color(ratio, true);
-                        debugLines.push_back(data);
+                        mEmitterDebugLines.push_back(data);
                     }
                 }
                 else
                 {
-                    depth[i] = 65535;
-                    linearDepth[i] = maxDepth * metersPerUnit; // in meters
-                    intensity[i] = 0;
+                    mDepth[i] = 65535;
+                    mLinearDepth[i] = maxDepth * metersPerUnit; // in meters
+                    mIntensity[i] = 0;
                     ::physx::PxVec3 hitPos = origin + unitDir * (maxDepth + minDepth);
                     ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - origin);
-                    hitPosition[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
+                    mHitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
                     if (drawPoints)
                     {
 
@@ -140,7 +134,7 @@ public:
                         auto temp = hitPos - diff.getNormalized();
                         data.endPos = { temp.x, temp.y, temp.z };
                         data.color = 255 + (255 << 8) + (255 << 16) + (255 << 24);
-                        debugLines.push_back(data);
+                        mEmitterDebugLines.push_back(data);
                     }
 
                     if (drawLines)
@@ -151,7 +145,7 @@ public:
                         data.startPos = { temp.x, temp.y, temp.z };
                         data.endPos = { hitPos.x, hitPos.y, hitPos.z };
                         data.color = 255 + (255 << 8) + (255 << 16) + (50 << 24);
-                        debugLines.push_back(data);
+                        mEmitterDebugLines.push_back(data);
                     }
                 }
 
@@ -162,16 +156,49 @@ public:
         }
 
         // direct so intensities are all 1.f
-        std::vector<float> intensities(linearDepth.size(), 1.f);
+        std::vector<float> intensities(mLinearDepth.size(), 1.f);
         std::vector<float> totalDepth;
         // updateInterface takes _round trip_ depth, not one way
         // hence we pass double the linear depth of the direct ray
         // from sensor to ray's collision point
-        for (size_t i = 0; i < linearDepth.size(); i++)
+        for (size_t i = 0; i < mLinearDepth.size(); i++)
         {
-            totalDepth.push_back(linearDepth[i] * 2.f);
+            totalDepth.push_back(mLinearDepth[i] * 2.f);
         }
-        envelope.updateEnvelope(totalDepth, intensities);
+        mEnvelope->updateEnvelope(totalDepth, intensities);
+    }
+
+    void initialize(const size_t numBins, const float maxDepth, const int rows, const int cols)
+    {
+        mRows = rows;
+        mCols = cols;
+        mEnvelope = std::make_unique<USSEnvelope>(numBins, maxDepth);
+
+        mLinearDepth.resize(mRows * mCols);
+        mIntensity.resize(mRows * mCols);
+        mDepth.resize(mRows * mCols);
+        mHitPos.resize(mRows * mCols);
+
+        mLastLinearDepth.resize(mRows * mCols);
+        mLastIntensity.resize(mRows * mCols);
+        mLastDepth.resize(mRows * mCols);
+        mLastHitPos.resize(mRows * mCols);
+
+        mLinearDepth.assign(mRows * mCols, 0);
+        mIntensity.assign(mRows * mCols, 0);
+        mDepth.assign(mRows * mCols, 0);
+        mHitPos.assign(mRows * mCols, { 0, 0, 0 });
+
+
+        mLastLinearDepth.assign(mRows * mCols, 0);
+        mLastIntensity.assign(mRows * mCols, 0);
+        mLastDepth.assign(mRows * mCols, 0);
+        mLastHitPos.assign(mRows * mCols, { 0, 0, 0 });
+    }
+
+    std::vector<float>& getEnvelope()
+    {
+        return mEnvelope->getEnvelope();
     }
     // void onComponentChange()
     // {
@@ -204,6 +231,22 @@ public:
     //     mMinDepth = mMinRange / mMetersPerUnit;
     //     mMaxDepth = mMaxRange / mMetersPerUnit;
     // }
+
+    std::unique_ptr<USSEnvelope> mEnvelope;
+    std::vector<omni::isaac::range_sensor::DebugData> mEmitterDebugLines;
+
+    std::vector<float> mLastLinearDepth;
+    std::vector<uint8_t> mLastIntensity;
+    std::vector<uint16_t> mLastDepth;
+    std::vector<carb::Float3> mLastHitPos;
+
+
+    std::vector<float> mLinearDepth;
+    std::vector<uint8_t> mIntensity;
+    std::vector<uint16_t> mDepth;
+    std::vector<carb::Float3> mHitPos;
+    int mRows = 0;
+    int mCols = 0;
 
 private:
     bool raycast(const ::physx::PxVec3& pos,

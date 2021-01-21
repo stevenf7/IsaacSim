@@ -39,6 +39,10 @@ async def load_test_file(test_file_name: str):
 class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
+
+        # Run as fast as possible
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", False)
+
         self._ultrasonic = _range_sensor.acquire_ultrasonic_sensor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         await omni.usd.get_context().new_stage_async()
