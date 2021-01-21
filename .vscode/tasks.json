@@ -53,5 +53,12 @@
                 "command": "source ${workspaceFolder}/_build/linux-x86_64/release/setup_python_env.sh && printenv >${workspaceFolder}/.vscode/.python_samples.env"
             }
         }
+        {
+            "label": "pxr_plugin_path",
+            "type": "shell",
+            "linux": {
+                "command": "echo PXR_PLUGINPATH_NAME=\"$(readlink -e ${workspaceFolder}/_build/target-deps/usd_ext_isaac)/release/share/usd/plugins/*/resources/\":\\$PXR_PLUGINPATH_NAME > ${workspaceFolder}/.vscode/.pxr_plugin.env"
+            }
+        }
     ]
 }
