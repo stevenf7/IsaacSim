@@ -1,4 +1,5 @@
 import omni
+import omni.ui as omni_ui
 from omni.isaac.range_sensor import _range_sensor
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
@@ -31,11 +32,6 @@ class Extension(omni.ext.IExt):
             open=False,
             dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
         )
-
-        # with self._window.frame:
-        #    with omni.ui.VStack():
-        #        omni.ui.Rectangle(name="envelope", width=150,
-        #                          style={"background_color": 0x454545})
 
         #  Kit GUIs are defined by a tree of layouts, and leaf layouts contain GUI elements (like buttons or
         # text entry fields).  You can learn more about Layouts and GUIs in the python manual at
@@ -115,7 +111,7 @@ class Extension(omni.ext.IExt):
             # set wedge vertical extent in degrees
             self.ultrasonic.CreateHorizontalFovAttr().Set(15.0)
             # set wedge horizontal extent in degrees
-            self.ultrasonic.CreateVerticalFovAttr().Set(20)
+            self.ultrasonic.CreateVerticalFovAttr().Set(10)
 
             # Horizontal and vertical resolution in degrees.  Rays will be fired on the bin boundries defined by the
             # resolution.  If your FOV is 45 degrees and your resolution is 15 degrees, you will get rays at
@@ -182,13 +178,28 @@ class Extension(omni.ext.IExt):
         # The ULTRASONIC itself exists as a C++ object.  In order to retrieve data from this object we need to call
         # C++ code, but this is handled for us through the use of python bindings.  Here we get the depth value of
         # each ray, and the spherical coordinates of each ray in (azimuth, zenith).
-        depth = self._ul.get_depth_data(self.ultrasonicPath)
+        depth = self._ul.get_depth_data(self.ultrasonicPath, 5)
         zenith = self._ul.get_zenith_data(self.ultrasonicPath)
         azimuth = self._ul.get_azimuth_data(self.ultrasonicPath)
+        envelope_arr = self._ul.get_envelope_array(self.ultrasonicPath)
+
+        self.plot_window = omni_ui.Window("Inspect Envelopes", width=385, height=620, visible=True)
+        with self.plot_window.frame:
+            with omni_ui.VStack():
+                for i in range(envelope_arr.shape[0]):
+                    omni_ui.Plot(
+                        omni_ui.Type.HISTOGRAM,
+                        0.0,
+                        600.0,
+                        *(envelope_arr[i].tolist()),
+                        width=360,
+                        height=50,
+                        style={"color": 0xFFFF0000},
+                    )
+                    omni_ui.Spacer(height=1)
 
         # most of the below is string formatting in order to display our data in a nice table within our GUI.
         tableString = ""
-
         numCols = len(zenith)
         rowString = ""
         for i in range(numCols):

@@ -160,7 +160,18 @@ public:
                 ++i %= (cols * rows);
             }
         }
-        envelope.updateEnvelope(linearDepth);
+
+        // direct so intensities are all 1.f
+        std::vector<float> intensities(linearDepth.size(), 1.f);
+        std::vector<float> totalDepth;
+        // updateInterface takes _round trip_ depth, not one way
+        // hence we pass double the linear depth of the direct ray
+        // from sensor to ray's collision point
+        for (size_t i = 0; i < linearDepth.size(); i++)
+        {
+            totalDepth.push_back(linearDepth[i] * 2.f);
+        }
+        envelope.updateEnvelope(totalDepth, intensities);
     }
     // void onComponentChange()
     // {

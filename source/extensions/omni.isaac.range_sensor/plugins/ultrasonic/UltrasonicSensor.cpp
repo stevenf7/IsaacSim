@@ -163,6 +163,12 @@ void UltrasonicSensor::onComponentChange()
         typedPrim.GetVerticalResolutionAttr().Get(&mVerticalResolution);
     }
 
+    if (typedPrim.GetMaxRangeAttr().HasValue())
+    {
+        typedPrim.GetMaxRangeAttr().Get(&mMaxDepth);
+    }
+    mEnvelope = std::vector<USSEnvelope>(NUM_EMITTERS, USSEnvelope(NUM_BINS, mMaxDepth));
+
     // we have to have atleast one beam so the FOV can never be smaller than resolution
     mHorizontalResolution = pxr::GfClamp(mHorizontalResolution, 0.005f, 1024);
     mHorizontalFov = pxr::GfClamp(mHorizontalFov, mHorizontalResolution, 360);
