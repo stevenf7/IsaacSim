@@ -100,3 +100,4 @@ outputs.yml
 .thumbs
 
 .vscode/.python_samples.env
+.vscode/.pxr_plugin.env
