@@ -1,7 +1,7 @@
 import omni
 import carb
 import numpy as np
-from omni.isaac.pyalice import Codelet
+from omni.isaac.pyalice import Codelet, Composite
 import time
 import logging
 
@@ -76,21 +76,13 @@ class VehicleControl(Codelet):
     """
 
     def start(self):
-        self.tx = self.isaac_proto_tx("StateProto", "cmd")
+        self.tx = self.isaac_proto_tx("CompositeProto", "cmd")
+        self._entities = [["body", "acceleration", 1], ["steering", "position", 1]]
         self.tick_periodically(0.05)
 
     def tick(self):
-        ELEMENT_TYPE_F64 = 3
-        tx_message = self.tx.init()
-        pack = tx_message.proto.pack
-        pack.elementType = ELEMENT_TYPE_F64
-        sizes = pack.init("sizes", 3)
-        sizes[0] = 1
-        sizes[1] = 1
-        sizes[2] = 2
-        pack.scanlineStride = 0
-        pack.dataBufferIndex = 0
-        tx_message.buffers = [np.array([self.config.accelerator, self.config.steering])]
+        values = np.array([self.config.accelerator, self.config.steering])
+        self.tx._msg = Composite.create_composite_message(self._entities, values)
         self.tx.publish()
 
 
