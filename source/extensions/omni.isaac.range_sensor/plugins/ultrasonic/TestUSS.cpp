@@ -10,6 +10,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "USSEnvelope.h"
 #include "UltrasonicArrayEmissionTimer.h"
+#include "UltrasonicReceiver.h"
 #include "doctest/doctest.h"
 
 #include <string>
@@ -26,18 +27,19 @@ TEST_CASE("main")
         CHECK(ussEnv.getEnvelope().size() == 10);
 
         std::vector<float> distances;
-        distances.push_back(6.99f);
-        distances.push_back(0.1f);
-        bool res = ussEnv.updateEnvelope(distances);
+        distances.push_back(6.99f * 2.f);
+        distances.push_back(0.1f * 2.f);
+
+        std::vector<float> intensities;
+        intensities.push_back(1.f);
+        intensities.push_back(1.f);
+        bool res = ussEnv.updateEnvelope(distances, intensities);
         CHECK(res == true);
 
         std::vector<float> envelope2 = ussEnv.getEnvelope();
         CHECK(envelope2.back() == doctest::Approx(1.f));
         CHECK(envelope2.at(3) == doctest::Approx(0.f));
         CHECK(envelope2.front() == doctest::Approx(1.f));
-
-        distances.push_back(7.4f);
-        CHECK_THROWS(ussEnv.updateEnvelope(distances));
     }
 
     SUBCASE("Check Emitter")
@@ -81,7 +83,18 @@ TEST_CASE("main")
                                       2.8684325f, 2.8684325f, 2.8684325f, 2.8684325f, 2.8684325f, 2.8684325f,
                                       14.324773f, 14.324775f, 14.32477f,  14.324772f, 14.324768f, 14.324773f,
                                       1.5981145f, 1.5981146f, 1.5981146f, 1.5981146f, 1.5981147f, 1.5981146f };
-        ussEnv.updateEnvelope(distances);
+
+        std::vector<float> totalDistances;
+        std::vector<float> intensities;
+        std::cout << "distances.size() = " << distances.size() << std::endl;
+        for (size_t i = 0; i < distances.size(); i++)
+        {
+            totalDistances.push_back(distances[i] * 2.f);
+            intensities.push_back(1.f);
+        }
+        std::cout << "updating envelope" << std::endl;
+        ussEnv.updateEnvelope(totalDistances, intensities);
+        std::cout << "updated envelope" << std::endl;
         std::vector<float>& envelope = ussEnv.getEnvelope();
 
         // equality with an int hacks off after the decimal?
@@ -90,7 +103,69 @@ TEST_CASE("main")
         CHECK(envelope[223] == 0);
 
         // check the state is the same after a second update
-        ussEnv.updateEnvelope(distances);
+        ussEnv.updateEnvelope(totalDistances, intensities);
         CHECK(envelope[3] == 6);
+    }
+    SUBCASE("Check indirect modelling")
+    {
+        ::physx::PxVec3 emitterCenter({ 1.f, 1.f, 0.f });
+        ::physx::PxVec3 receiverCenter1({ 4.f, 1.f, 0.f });
+
+        ::physx::PxVec3 surfacePoint({ 2.f, 5.f, 0.f });
+        std::vector<::physx::PxVec3> surfacePoints;
+        surfacePoints.push_back(surfacePoint);
+
+        UltrasonicReceiver receiver1(receiverCenter1);
+        std::vector<float> intens1 = receiver1.getIndirectIntensities(emitterCenter, surfacePoints);
+        float cosTheta = 14.f;
+        float mag = 18.439088914585774f;
+        CHECK(intens1[0] == doctest::Approx(cosTheta / mag));
+
+        ::physx::PxVec3 receiverCenter2({ 8.f, 1.f, 0.f });
+        UltrasonicReceiver receiver2(receiverCenter2);
+        std::vector<float> intens2 = receiver2.getIndirectIntensities(emitterCenter, surfacePoints);
+        std::cout << "intens2[0] = " << intens2[0] << std::endl;
+        // larger angle, smaller response
+        CHECK(intens1[0] > intens2[0]);
+    }
+
+    SUBCASE("Check envelope addition throws")
+    {
+        int numBins = 10;
+        // maxDist is in meters
+        float maxDist = 7.;
+        USSEnvelope ussEnv1(numBins, maxDist);
+        USSEnvelope ussEnv2(numBins + 1, maxDist);
+
+        CHECK_THROWS(ussEnv1 + ussEnv2);
+    }
+
+    SUBCASE("Check envelope addition")
+    {
+        int numBins = 10;
+        // maxDist is in meters
+        float maxDist = 7.;
+        USSEnvelope ussEnv1(numBins, maxDist);
+        std::vector<float> totalDist1(2, 2.f);
+        std::vector<float> intens1(2, 3.f);
+        ussEnv1.updateEnvelope(totalDist1, intens1);
+
+        USSEnvelope ussEnv2 = ussEnv1 + ussEnv1;
+        CHECK(ussEnv2.getEnvelope()[0] == doctest::Approx(0.f));
+        CHECK(ussEnv2.getEnvelope()[1] == doctest::Approx(12.f));
+    }
+
+    SUBCASE("Check indirect path lengths")
+    {
+        ::physx::PxVec3 emitterCenter({ 1.f, 1.f, 0.f });
+        ::physx::PxVec3 receiverCenter({ 5.f, 1.f, 0.f });
+
+        ::physx::PxVec3 surfacePoint({ 3.f, 5.f, 0.f });
+        UltrasonicReceiver receiver(receiverCenter);
+        std::vector<::physx::PxVec3> surfacePoints;
+        surfacePoints.push_back(surfacePoint);
+        std::vector<float> len = receiver.getTotalPathLength(emitterCenter, surfacePoints);
+        // res is 2 * sqrt(20)
+        CHECK(len[0] == doctest::Approx(8.94427190999916f));
     }
 }

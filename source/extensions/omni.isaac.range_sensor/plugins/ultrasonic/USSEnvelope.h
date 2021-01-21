@@ -31,7 +31,7 @@ class USSEnvelope
 
 public:
     // envelope is initialized to be all zeroes
-    USSEnvelope(const int numBins, const float maxDist)
+    USSEnvelope(const size_t numBins, const float maxDist)
         : m_numBins(numBins),
           m_maxDist(maxDist),
           m_maxDistRoundTrip(maxDist * 2.f),
@@ -40,16 +40,16 @@ public:
           m_binnedEcho(numBins, std::vector<float>()),
           m_envelope(numBins, 0){};
     // linearDepth is distance in meters
-    bool updateEnvelope(const std::vector<float>& linearDepth)
+    bool updateEnvelope(const std::vector<float>& totalRayLength, std::vector<float>& rayIntensity)
     {
         std::vector<float> echo;
-        for (size_t i = 0; i < linearDepth.size(); i++)
+        for (size_t i = 0; i < totalRayLength.size(); i++)
         {
-            // do not include echoes of equal to maxDist
-            if (!almostEqual(m_maxDist, linearDepth[i]))
+            // only include echoes of equal to maxDist
+            if (totalRayLength[i] < m_maxDistRoundTrip)
             {
                 // convert from distance to echo
-                echo.push_back(linearDepth[i] * 2.f / C);
+                echo.push_back(totalRayLength[i] / C);
             }
         }
         for (size_t i = 0; i < m_binnedEcho.size(); i++)
@@ -75,12 +75,12 @@ public:
                 std::stringstream ss;
                 ss << "Reflected point is outside of ray boundaries: rightBinBoundary = " << rightBinBoundary
                    << ", sortedEcho[i] = " << sortedEcho[i] << ", i= " << i << ", currentBin = " << currentBin
-                   << ", m_numBins = " << m_numBins << std::endl;
+                   << ", m_numBins = " << m_numBins << ", m_maxDist = " << m_maxDist << ", " << std::endl;
                 throw std::invalid_argument(ss.str());
             }
             else
             {
-                m_binnedEcho[currentBin - 1].push_back(m_intensityPerRay);
+                m_binnedEcho[currentBin - 1].push_back(rayIntensity[i]);
             }
         }
         for (size_t i = 0; i < m_binnedEcho.size(); i++)
@@ -95,6 +95,32 @@ public:
         return m_envelope;
     }
 
+    size_t size() const
+    {
+        return m_envelope.size();
+    }
+
+    // Overload + operator to add two USSEnvelope objects.
+    USSEnvelope operator+(const USSEnvelope& b)
+    {
+        USSEnvelope env(m_numBins, m_maxDist);
+        if (b.size() == m_envelope.size())
+        {
+            for (size_t i = 0; i < m_envelope.size(); i++)
+            {
+                env.m_envelope[i] = m_envelope[i] + b.m_envelope[i];
+            }
+        }
+        else
+        {
+            std::stringstream ss;
+            ss << "Size of b (" << b.size() << ") must equal size of this object's envelope (" << m_envelope.size()
+               << ")." << std::endl;
+            throw std::invalid_argument(ss.str());
+        }
+        return env;
+    }
+
 private:
     size_t m_numBins;
     float m_maxDist;
@@ -106,5 +132,4 @@ private:
     float m_binWidth;
     std::vector<std::vector<float>> m_binnedEcho;
     std::vector<float> m_envelope;
-    float m_intensityPerRay = 1.f;
 };

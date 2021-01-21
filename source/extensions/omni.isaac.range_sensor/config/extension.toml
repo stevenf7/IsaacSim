@@ -19,6 +19,7 @@ icon = "data/icon.png"
 "omni.kit.editor" = {}
 "omni.graph.core" ={} # needed for fastcache
 "omni.physx.bundle" = {} 
+"omni.ui" = { order = -100 }
 "omni.debugdraw" = {}
 "omni.kit.window.toolbar" = {}
 "omni.kit.test" = {order = -100}

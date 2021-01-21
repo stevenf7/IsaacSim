@@ -56,6 +56,7 @@ project "test.unit.range_sensor"
     includedirs {
             "include",
             ".",
+            "%{root}/_build/target-deps/physx/include",
             "%{root}/_build/target-deps/nv_usd/debug/include",
             "%{root}/_build/target-deps/rtx_plugins/include",
         }
@@ -78,11 +79,11 @@ project "test.unit.range_sensor"
             includedirs { "%{target_deps}/nv_usd/%{config}/include/boost" }
             libdirs { "%{target_deps}/cuda/lib64" }
             links { "boost_python36", "python3.6m", "cudart_static", "sdf", "tf", "usd", "usdUtils" }
-            removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
-            disablewarnings { "error=switch", "error=unused-function", "error=sign-compare" }
 
     files {
      	   "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/TestUSS.cpp",
+           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicReceiver.h",
+           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicReceiver.cpp",
            "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/USSEnvelope.h",
            "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicEmitter.h"}
     filter { "configurations:debug" }

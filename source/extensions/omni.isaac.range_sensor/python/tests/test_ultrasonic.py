@@ -79,12 +79,12 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
     def add_ultrasonic(self, ultrasonicPath):
 
         ultrasonic = RangeSensorSchema.Ultrasonic.Define(self._stage, Sdf.Path(ultrasonicPath))
-        ultrasonic.CreateHorizontalFovAttr().Set(60.0)
-        ultrasonic.CreateVerticalFovAttr().Set(30.0)
+        ultrasonic.CreateHorizontalFovAttr().Set(20.0)
+        ultrasonic.CreateVerticalFovAttr().Set(10.0)
         ultrasonic.CreateHorizontalResolutionAttr().Set(0.4)
-        ultrasonic.CreateVerticalResolutionAttr().Set(4.0)
+        ultrasonic.CreateVerticalResolutionAttr().Set(0.8)
         ultrasonic.CreateMinRangeAttr().Set(0.4)
-        ultrasonic.CreateMaxRangeAttr().Set(100.0)
+        ultrasonic.CreateMaxRangeAttr().Set(2.0)
         ultrasonic.CreateDrawPointsAttr().Set(True)
 
         xform = UsdGeom.Xformable(ultrasonic)
@@ -96,12 +96,11 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         cubeGeom = UsdGeom.Cube.Define(self._stage, path)
         cubePrim = self._stage.GetPrimAtPath(path)
-
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
         utils.setRigidBody(cubePrim, "convexHull", False)
 
-        return cubeGeom
+        return cubePrim
 
     # Tests a static ultrasonic with a cube in front of it
     async def test_static_ultrasonic(self):
@@ -118,17 +117,17 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/World/Cube"
-        cubeGeom = self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        cubePrim = self.add_cube(cubePath, 25.0, Gf.Vec3f(0.0, -90.0, 0.0))
 
         # Add ultrasonic
         ultrasonicPath = "/World/Ultrasonic"
         ultrasonic = self.add_ultrasonic(ultrasonicPath)
 
-        ultrasonic.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
+        ultrasonic.AddTranslateOp().Set(Gf.Vec3f(8.0, 0.0, 2.0))
 
         # run for 12s @ 500Hz
         steps_per_sec = 500
-        seconds = 12
+        seconds = 3
         self._timeline.play()
         for frame in range(steps_per_sec * seconds):
             await omni.kit.app.get_app().next_update_async()
@@ -137,21 +136,20 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             lin_depth = self._ultrasonic.get_linear_depth_data(ultrasonicPath, emitter_idx)
             intensity = self._ultrasonic.get_intensity_data(ultrasonicPath, emitter_idx)
             envelope = self._ultrasonic.get_envelope(ultrasonicPath, emitter_idx)
-            if depth.any() and np.any(depth < 65534) and np.any(depth > 0):
-                break
 
         envelope_arr = self._ultrasonic.get_envelope_array(ultrasonicPath)
-        self.assertAlmostEqual(envelope_arr[3, 3], 150.0)
-        # if we exited the for loop via the break, we should have a valid scan
-        self.assertEqual(depth[0, 6], 1047)
-        self.assertEqual(intensity[0, 6], 255)
-        self.assertAlmostEqual(lin_depth[0, 6], 1.5981145)
 
-        # check that envelope is correct
-        self.assertAlmostEqual(envelope[0], 0.0)
-        self.assertAlmostEqual(envelope[3], 150.0)
-        self.assertAlmostEqual(envelope[4], 0.0)
-        # ray traces that hit nothing return max distance
-        self.assertAlmostEqual(envelope[223], 0.0)
+        # move box then confirm that the envelopes have changed
+        cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(20.0, 220.0, 0.0))
+        for frame in range(steps_per_sec * seconds):
+            await omni.kit.app.get_app().next_update_async()
+            emitter_idx = 3
+            depth2 = self._ultrasonic.get_depth_data(ultrasonicPath, emitter_idx)
+            lin_depth2 = self._ultrasonic.get_linear_depth_data(ultrasonicPath, emitter_idx)
 
+        envelope_arr2 = self._ultrasonic.get_envelope_array(ultrasonicPath)
+        res = envelope_arr - envelope_arr2
+        self.assertFalse(res[0].any())
+        self.assertTrue(res[10].any())
+        self.assertTrue(res[11].any())
         self._timeline.stop()
