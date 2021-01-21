@@ -191,25 +191,20 @@ void VehicleSimulator::tick()
         mPrevForwardSpeed = forwardSpeed;
     }
 
-
-    IsaacMessage<isaac_message::State> commandComposite;
     {
         // Receive current command
+        IsaacMessage<isaac_message::Composite> commandComposite;
         std::vector<IsaacHostBuffer> buffers;
         MessageHeader header;
         if (checkErrorCode(receive(mInputComponent, mCommandChannelName, header, commandComposite, buffers)))
         {
-            // State need buffer for data
-            if (buffers.size() == 0)
-            {
-                return;
-            }
             std::vector<double> elements(buffers[0].size() / sizeof(double));
             std::memcpy(elements.data(), buffers[0].data(), elements.size() * sizeof(double));
             if (elements.size() != 2)
             {
                 CARB_LOG_ERROR("Wrong number of elements: %zu", elements.size());
             }
+
             // mCommandedSpeed[0] = pxr::GfClamp(elements[0], -mMaximumSpeed[0], mMaximumSpeed[0]);
             // mCommandedSpeed[1] = pxr::GfClamp(elements[1], -mMaximumSpeed[1], mMaximumSpeed[1]);
 
