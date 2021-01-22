@@ -77,7 +77,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
     #     pass
 
     # TODO add checks for this test
-    async def test_polyline_visualizer(self):
+    async def test_polyline_visualizer_2d(self):
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgePolylineVisualizerCommand",
             path="/REB_PolylineVisualizer",
@@ -141,6 +141,69 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
         await simulate(1.0)
         viewer.config.size = 1.0
         viewer.config.color = [0, 0, 255, 0]
+        await simulate(1.0)
+        self._timeline.stop()
+        test_app.stop()
+        test_app = None
+
+    async def test_polyline_visualizer_3d(self):
+        result, prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePolylineVisualizerCommand",
+            path="/REB_PolylineVisualizer",
+            parent=None,
+            input_component="input",
+            input_channel="sight_plan",
+            parent_prim_rel=None,
+            width=0.1,
+            color=Gf.Vec4f(1.0, 1.0, 1.0, 1.0),
+            offset=Gf.Vec3f(0, 0, 0),
+        )
+
+        test_app = PyaliceApp()
+
+        test_app.app.load(
+            filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
+        )
+        sim_input = test_app.app.nodes["simulation.interface"]["input"]
+
+        test_app.app.load_module("sight")
+        test_app.app.load_module("message_generators")
+
+        polyline2 = test_app.app.add("generation").add(
+            test_app.app.registry.isaac.message_generators.Polyline2Generator
+        )
+        polyline2.config.prototype = [[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0]]
+        polyline2.config.new_message_threshold = [0.0, 0.0]
+        polyline2.config.tick_period = "10Hz"
+
+        test_app.app.load_module("viewers")
+        viewer = test_app.app.add("viewers").add(test_app.app.registry.isaac.viewers.Polyline2Viewer)
+        viewer.config.size = 0.5
+        viewer.config.color = [255, 0, 0, 255]
+
+        test_app.app.connect(polyline2, "polyline", viewer, "polyline")
+        test_app.app.connect(polyline2, "polyline", sim_input, "polyline")
+
+        kit_frontend = test_app.app.add("kit_frontend").add(test_app.app.registry.isaac.sight.SightTunnel)
+        kit_frontend.config.edges = [
+            {"source": "viewers/Polyline2Viewer/polyline", "target": "simulation.interface/input/sight_plan"}
+        ]
+
+        test_app.start()
+
+        self._timeline.play()
+        await simulate(1.0)
+        viewer.config.size = 0.5
+        viewer.config.polyline_color = [255, 0, 0, 255]
+        await simulate(1.0)
+        viewer.config.size = 0.0
+        viewer.config.polyline_color = [0, 255, 0, 255]
+        await simulate(1.0)
+        viewer.config.size = 1.0
+        viewer.config.polyline_color = [0, 0, 255, 255]
+        await simulate(1.0)
+        viewer.config.size = 1.0
+        viewer.config.polyline_color = [0, 0, 255, 0]
         await simulate(1.0)
         self._timeline.stop()
         test_app.stop()
