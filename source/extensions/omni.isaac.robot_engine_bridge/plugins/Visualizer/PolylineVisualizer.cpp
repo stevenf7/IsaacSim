@@ -99,6 +99,8 @@ void PolylineVisualizer::tick()
         if (checkErrorCode(receive(mInputComponent, mInputChannel, header, jsonProto, buffers)))
         {
             std::string jsonString = jsonProto.getProto().getSerialized();
+            // Uncomment to print out the json we receive to help debug
+            // CARB_LOG_ERROR("%s", jsonString.c_str());
             carb::dictionary::Item* jsonBase = mJsonSerializer->createDictionaryFromStringBuffer(jsonString.c_str());
             // currently only supports plan2
             const carb::dictionary::Item* view = mIDict->getItem(jsonBase, "v");
@@ -198,11 +200,17 @@ void PolylineVisualizer::tick()
 
                                         for (size_t i = 0; i < numPoints; i++)
                                         {
+                                            // Parse depending on whether the data is 2d or 3d
                                             const carb::dictionary::Item* point = mIDict->getItemAt(pointData, i);
                                             if (mIDict->getArrayLength(point) == 2)
                                             {
                                                 carb::Float2 p = mIDict->get<carb::Float2>(point);
                                                 ctrlPoints.push_back(pxr::GfVec3f(p.x, p.y, 0));
+                                            }
+                                            else if (mIDict->getArrayLength(point) == 3)
+                                            {
+                                                carb::Float3 p = mIDict->get<carb::Float3>(point);
+                                                ctrlPoints.push_back(pxr::GfVec3f(p.x, p.y, p.z));
                                             }
                                         }
                                     }
