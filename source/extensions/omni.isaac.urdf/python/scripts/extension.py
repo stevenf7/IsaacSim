@@ -493,7 +493,7 @@ class Extension(omni.ext.IExt):
 
     def _unregister_menus(self):
         if self._content_browser:
-            self._content_browser.delete_context_menu("Convert STEP to USD")
+            self._content_browser.delete_context_menu("Convert URDF to USD")
 
     def on_shutdown(self):
         self._unregister_menus()

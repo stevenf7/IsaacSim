@@ -970,7 +970,7 @@ bool parseJoints(const XMLElement& root, std::map<std::string, UrdfJoint>& urdfJ
             auto parentElement = jointElement->FirstChildElement("parent");
             if (parentElement)
             {
-                joint.parentLinkName = parentElement->Attribute("link");
+                joint.parentLinkName = makeValidUSDIdentifier(parentElement->Attribute("link"));
             }
             else
             {
@@ -981,7 +981,7 @@ bool parseJoints(const XMLElement& root, std::map<std::string, UrdfJoint>& urdfJ
             auto childElement = jointElement->FirstChildElement("child");
             if (childElement)
             {
-                joint.childLinkName = childElement->Attribute("link");
+                joint.childLinkName = makeValidUSDIdentifier(childElement->Attribute("link"));
             }
             else
             {
