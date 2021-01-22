@@ -327,6 +327,13 @@ void onPhysicsUpdate(omni::physx::SimulationStatusEvent eventStatus, void* userD
 
 void onPhysicsStep(float timeElapsed, void* userData)
 {
+    gTime += timeElapsed;
+
+    // There are no motion policies to simulate, return
+    if (gMotionPolicies.size() == 0)
+    {
+        return;
+    }
     CARB_LOG_INFO("Physics Step");
 
     CARB_PROFILE_ZONE(0, "MpOnUpdate");
@@ -354,7 +361,6 @@ void onPhysicsStep(float timeElapsed, void* userData)
     gTasking->yieldUntilCounter(gTaskCounter);
     delete[] td;
 #endif
-    gTime += timeElapsed;
 }
 
 void onStop(void* userData)

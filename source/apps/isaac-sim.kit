@@ -143,27 +143,14 @@ size = 16
 # rendering_0.rateLimitEnabled = false
 
 [settings.exts.'omni.kit.window.extensions']
-featuredExts = [
-    "omni.kit.usda_edit",
-    "omni.kit.window.stageviewer",
-
-    "omni.flowusd",
-    "omni.blast",
-
-    "omni.anim.timesample_editor",
-
-    ## Omni Graph
-    "omni.graph.core",
-    "omni.graph.ui",
-
-    "omni.kit.tool.surface_instancer"
-]
+# List extensions here we want to show as featured when extension manager is opened
+featuredExts = []
 
 
 [settings]
 # MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you
 # only want to use a single GPU on your MGPU system
-renderer.multiGpu.enabled = true
+renderer.multiGpu.enabled = false
 
 # Basic Kit App
 ################################
@@ -252,7 +239,7 @@ nucleus.default = "omniverse://ov-isaac-dev"
 "omni.isaac.robot_engine_bridge" = {}
 "omni.isaac.dr" = {}
 "omni.isaac.tests" = {}
-"omni.kit.property.isaac" = {}
+# "omni.kit.property.isaac" = {} # not needed on kit 101
 
 # Non Isaac Sim Extensions
 ######################

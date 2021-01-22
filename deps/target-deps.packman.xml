@@ -66,7 +66,7 @@
   </dependency>
 
   <dependency name="omni.blast" linkPath="../_build/${platform}/release/exts/omni.blast">
-    <package name="omni_blast" version="0.5.0.217-43a84e52-${platform}" platforms="windows-x86_64 linux-x86_64" />
+    <package name="omni_blast" version="0.6.1-kit_101.0-234-061f4ab5-${platform}" platforms="windows-x86_64 linux-x86_64" />
   </dependency>
 </project>
 
