@@ -144,3 +144,33 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app = None
 
         pass
+
+    async def test_camera_switcher(self):
+
+        self._stage.DefinePrim("/World/Camera_1", "Camera")
+        self._stage.DefinePrim("/World/Camera_2", "Camera")
+
+        vpi = omni.kit.viewport.get_viewport_interface()
+        vpi.get_viewport_window().set_active_camera("/World/Camera_1")
+        await omni.kit.app.get_app().next_update_async()
+        self.assertEqual(vpi.get_viewport_window().get_active_camera(), "/World/Camera_1")
+
+        test_app = PyaliceApp()
+        test_app.app.load(
+            filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
+        )
+
+        sim_input = test_app.app.nodes["simulation.interface"]["input"]
+        test_app.app.load_module("json")
+        camera_switch = test_app.app.add("camera_switch").add(test_app.app.registry.isaac.json.JsonMockup)
+        camera_switch.config.tick_period = "10Hz"
+        camera_switch.config.json_mock = {"camera_name": "/World/Camera_2"}
+        camera_switch.config.num_successful_publishes = 10
+        camera_switch.config.report_success = True
+        test_app.app.connect(camera_switch, "json", sim_input, "camera_switch")
+        test_app.start()
+
+        self._timeline.play()
+        await simulate(1.0)
+        self.assertEqual(vpi.get_viewport_window().get_active_camera(), "/World/Camera_2")
+        self._timeline.stop()
