@@ -5,6 +5,7 @@ display_name = "Isaac Tests"
 "omni.physx.bundle" = {}
 "omni.kit.window.tests" = {}
 "omni.kit.window.toolbar" = {} # needed for simulation to happen
+"omni.kit.primitive.mesh" = {} # needed for mesh creation commands
 
 [[python.module]]
 name = "omni.isaac.tests"
