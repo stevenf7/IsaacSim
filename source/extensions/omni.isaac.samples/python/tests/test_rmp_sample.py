@@ -30,16 +30,17 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._limit_fps = carb.settings.get_settings().get("/app/runLoops/main/rateLimitEnabled")
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         await omni.usd.get_context().new_stage_async()
-
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
+        await omni.kit.app.get_app().next_update_async()
         self._sample = None
         self._editor_event_subscription = None
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", self._limit_fps)
         carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(self.phys_num_steps))
-
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # basic test, should not crash or error if we call all functions
