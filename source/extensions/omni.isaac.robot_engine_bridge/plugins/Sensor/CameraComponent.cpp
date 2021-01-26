@@ -591,6 +591,9 @@ void CameraComponent::publishIntrinsics(std::string outputComponent,
     pinhole.setRows(info.tex.height);
     pinhole.setCols(info.tex.width);
     auto focal = pinhole.initFocal();
+    // We have to ignore the vertical aperture number because our pixels are square
+    // Compute it directly from the image size and horizontal aperture
+    verticalAperture = info.tex.height / info.tex.width * horizontalAperture;
     focal.setX(info.tex.height * focalLength / verticalAperture);
     focal.setY(info.tex.width * focalLength / horizontalAperture);
     auto center = pinhole.initCenter();
