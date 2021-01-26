@@ -3,14 +3,18 @@
 #include "UltrasonicArrayEmissionTimer.h"
 #include "plugins/core/UsdUtilities.h"
 
+#include <omni/usd/UtilsIncludes.h>
+//
+#include <omni/usd/UsdUtils.h>
+//
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/isaac/utils/Conversions.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
-
-// #include <rangeSensorSchema/ultrasonicEmitter.h>
+#include <rangeSensorSchema/ultrasonicEmitter.h>
 
 #include <vector>
 
@@ -24,13 +28,43 @@ namespace range_sensor
 {
 
 // TODO: This class will eventually refer to a specific emitter prim
-class UltrasonicEmitter //: public utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicEmitter>
+class UltrasonicEmitter : public utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicEmitter>
 {
 public:
     UltrasonicEmitter()
     {
     }
+    void doScan(carb::fastcache::FastCache* fastCachePtr,
+                omni::physx::IPhysx* physxPtr,
+                ::physx::PxScene* physxScenePtr,
+                std::vector<float>& zenith,
+                std::vector<float>& azimuth,
+                float maxDepth,
+                float minDepth)
+    {
+        if (!mEnabled)
+        {
+            return;
+        }
+        carb::fastcache::Transform parentTrans;
+        parentTrans.orientation = { 0, 0, 0, 1 };
+        auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
+        ::physx::PxVec3 origin = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
+        ::physx::PxQuat theta0 = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
+        // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
+        if (mParentPrim.IsA<pxr::UsdGeomXformable>())
+        {
+            fastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
+            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
+            origin = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(origin);
+            theta0 = parentRot * theta0;
+        }
 
+        bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
+
+        scan_<true, true>(0, mCols, mRows, mCols, origin, theta0, physxPtr, physxScenePtr, zenith, azimuth, mYawOffset,
+                          maxDepth, minDepth, mMetersPerUnit, zUp);
+    }
 
     template <bool drawPoints, bool drawLines>
     void scan_(int start,
@@ -43,6 +77,7 @@ public:
                ::physx::PxScene* physxScenePtr,
                std::vector<float>& zenith,
                std::vector<float>& azimuth,
+               float yawOffset,
                float maxDepth,
                float minDepth,
                float metersPerUnit,
@@ -63,7 +98,7 @@ public:
         for (int colPreMod = start; colPreMod < stop; colPreMod++)
         {
             int col = colPreMod % cols;
-            ::physx::PxQuat mainrot = worldRotation * ::physx::PxQuat(azimuth[col], azimuthDir);
+            ::physx::PxQuat mainrot = worldRotation * ::physx::PxQuat(azimuth[col] + yawOffset, azimuthDir);
 
             for (int row = 0; row < rows; row++)
             {
@@ -168,8 +203,15 @@ public:
         mEnvelope->updateEnvelope(totalDepth, intensities);
     }
 
-    void initialize(const size_t numBins, const float maxDepth, const int rows, const int cols)
+    void initialize(const pxr::RangeSensorSchemaUltrasonicEmitter& prim,
+                    pxr::UsdStageWeakPtr stage,
+                    const size_t numBins,
+                    const float maxDepth,
+                    const int rows,
+                    const int cols)
     {
+        utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicEmitter>::initialize(prim, stage);
+
         mRows = rows;
         mCols = cols;
         mEnvelope = std::make_unique<USSEnvelope>(numBins, maxDepth);
@@ -179,74 +221,47 @@ public:
         mDepth.resize(mRows * mCols);
         mHitPos.resize(mRows * mCols);
 
-        mLastLinearDepth.resize(mRows * mCols);
-        mLastIntensity.resize(mRows * mCols);
-        mLastDepth.resize(mRows * mCols);
-        mLastHitPos.resize(mRows * mCols);
-
         mLinearDepth.assign(mRows * mCols, 0);
         mIntensity.assign(mRows * mCols, 0);
         mDepth.assign(mRows * mCols, 0);
         mHitPos.assign(mRows * mCols, { 0, 0, 0 });
+        onComponentChange();
+    }
 
 
-        mLastLinearDepth.assign(mRows * mCols, 0);
-        mLastIntensity.assign(mRows * mCols, 0);
-        mLastDepth.assign(mRows * mCols, 0);
-        mLastHitPos.assign(mRows * mCols, { 0, 0, 0 });
+    void onStart()
+    {
+    }
+
+    void tick()
+    {
+    }
+
+    void onComponentChange()
+    {
+        mMetersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->mStage));
+        isaac::utils::safeGetAttribute(mPrim.GetEnabledAttr(), mEnabled);
+        isaac::utils::safeGetAttribute(mPrim.GetYawOffsetAttr(), mYawOffset);
+
+        isaac::utils::safeGetAttribute(mPrim.GetPerRayIntensityAttr(), mPerRayIntensity);
+        isaac::utils::safeGetAttribute(mPrim.GetFiringDelayAttr(), mFiringDelay);
+
+        mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
     }
 
     std::vector<float>& getEnvelope()
     {
         return mEnvelope->getEnvelope();
     }
-    // void onComponentChange()
-    // {
-    //     mMetersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->mStage));
-
-    //     isaac::utils::safeGetAttribute(mPrim.GetHorizontalFovAttr(), mHorizontalFov);
-    //     isaac::utils::safeGetAttribute(mPrim.GetVerticalFovAttr(), mVerticalFov);
-
-    //     isaac::utils::safeGetAttribute(mPrim.GetHorizontalResolutionAttr(), mHorizontalResolution);
-    //     isaac::utils::safeGetAttribute(mPrim.GetVerticalResolutionAttr(), mVerticalResolution);
-
-    //     isaac::utils::safeGetAttribute(mPrim.GetMinRangeAttr(), mMinRange);
-    //     isaac::utils::safeGetAttribute(mPrim.GetMaxRangeAttr(), mMaxRange);
-    //     isaac::utils::safeGetAttribute(mPrim.GetYawOffsetAttr(), mYawOffset);
-
-    //     isaac::utils::safeGetAttribute(mPrim.GetFiringGroupAttr(), mFiringGroup);
-    //     isaac::utils::safeGetAttribute(mPrim.GetPerRayIntensityAttr(), mPerRayIntensity);
-
-    //     // we have to have atleast one beam so the FOV can never be smaller than resolution
-    //     mHorizontalResolution = pxr::GfClamp(mHorizontalResolution, 0.005f, 1024);
-    //     mHorizontalFov = pxr::GfClamp(mHorizontalFov, mHorizontalResolution, 360);
-
-    //     mVerticalResolution = pxr::GfClamp(mVerticalResolution, 0.005f, 1024);
-    //     mVerticalFov = pxr::GfClamp(mVerticalFov, mVerticalResolution, 360);
-
-
-    //     mMinRange = pxr::GfClamp(mMinRange, 0, 1e9f);
-    //     mMaxRange = pxr::GfClamp(mMaxRange, mMinRange, 1e9f);
-
-    //     mMinDepth = mMinRange / mMetersPerUnit;
-    //     mMaxDepth = mMaxRange / mMetersPerUnit;
-    // }
-
     std::unique_ptr<USSEnvelope> mEnvelope;
     std::vector<omni::isaac::range_sensor::DebugData> mEmitterDebugLines;
-
-    std::vector<float> mLastLinearDepth;
-    std::vector<uint8_t> mLastIntensity;
-    std::vector<uint16_t> mLastDepth;
-    std::vector<carb::Float3> mLastHitPos;
-
-
     std::vector<float> mLinearDepth;
     std::vector<uint8_t> mIntensity;
     std::vector<uint16_t> mDepth;
     std::vector<carb::Float3> mHitPos;
     int mRows = 0;
     int mCols = 0;
+    float mFiringDelay = 0.0f;
 
 private:
     bool raycast(const ::physx::PxVec3& pos,
@@ -265,27 +280,14 @@ private:
         const bool ret = ::physx::PxSceneQueryExt::raycastSingle(*physxScene, pos, dir, distance, hitFlags, hit);
         return ret;
     }
+    float mYawOffset = 0.0f;
 
-    // int mFiringGroup = 0;
-    // float mPerRayIntensity = 1.0;
-    // float mMinRange = 0.4;
-    // float mMaxRange = 100.0;
-    // float mYawOffset = 0.0;
-    // float mHorizontalFov = 60.0;
-    // float mVerticalFov = 30.0;
-    // float mHorizontalResolution = 0.4;
-    // float mVerticalResolution = 4.0;
+    int mFiringGroup = 0;
+    float mPerRayIntensity = 1.0f;
+    bool mEnabled = true;
+    float mMetersPerUnit = 1.0f;
 
-    // float mMetersPerUnit = 1.0;
-
-    // float mMinDepth = 0.0;
-    // float mMaxDepth = 1.0;
-
-
-    // int mRows; // = 0,
-    // int mCols; // = 0;
-
-    // float mNumBins = 224;
+    pxr::UsdPrim mParentPrim;
 };
 }
 }

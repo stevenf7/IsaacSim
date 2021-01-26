@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -214,10 +214,10 @@ public:
             component = std::make_unique<LidarSensor>(mPhysxPtr, mFastCachePtr);
             component->initialize(pxr::RangeSensorSchemaLidar(prim), mStage);
         }
-        else if (prim.IsA<pxr::RangeSensorSchemaUltrasonic>())
+        else if (prim.IsA<pxr::RangeSensorSchemaUltrasonicArray>())
         {
             component = std::make_unique<UltrasonicSensor>(mPhysxPtr, mFastCachePtr);
-            component->initialize(pxr::RangeSensorSchemaUltrasonic(prim), mStage);
+            component->initialize(pxr::RangeSensorSchemaUltrasonicArray(prim), mStage);
         }
         else if (prim.IsA<pxr::RangeSensorSchemaRadar>())
         {
@@ -232,6 +232,27 @@ public:
             mComponents[prim.GetPath().GetString()] = std::move(component);
         }
     }
+
+    virtual void onComponentChange(const pxr::UsdPrim& prim)
+    {
+        utils::BridgeApplicationBase<RangeSensorComponent>::onComponentChange(prim);
+        // Also need to make sure all emitters get their functions called
+        for (auto& component : mComponents)
+        {
+            UltrasonicSensor* uss = dynamic_cast<UltrasonicSensor*>(component.second.get());
+            if (uss)
+            {
+                uss->onEmitterChange(prim);
+            }
+        }
+
+        // update properties of this prim (onComponentChange)
+        if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+        {
+            mComponents[prim.GetPath().GetString()]->onComponentChange();
+        }
+    }
+
     LidarSensor* getLidarSensor(const pxr::UsdPrim& prim)
     {
         if (prim)

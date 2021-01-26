@@ -44,7 +44,7 @@ TEST_CASE("main")
 
     SUBCASE("Check Emitter")
     {
-        UltrasonicArrayEmissionTimer emitter;
+        UltrasonicArrayEmissionTimer emitter(12, 1.0, 0.5);
         size_t emitterIdx = 3;
         double deltaT = 0.4;
         emitter.update(deltaT);
@@ -61,7 +61,7 @@ TEST_CASE("main")
 
     SUBCASE("Check Emitter Delay")
     {
-        UltrasonicArrayEmissionTimer emitter;
+        UltrasonicArrayEmissionTimer emitter(12, 1.0, 0.5);
         size_t emitterIdx0 = 0;
         size_t emitterIdx3 = 3;
         double delay = 2.0;

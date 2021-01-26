@@ -38,7 +38,7 @@ public:
           m_maxTimestamp(m_maxDistRoundTrip / C),
           m_binWidth(m_maxTimestamp / m_numBins),
           m_binnedEcho(numBins, std::vector<float>()),
-          m_envelope(numBins, 0){};
+          m_envelope(numBins, 0.0f){};
     // linearDepth is distance in meters
     bool updateEnvelope(const std::vector<float>& totalRayLength, std::vector<float>& rayIntensity)
     {

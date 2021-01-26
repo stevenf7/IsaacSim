@@ -16,7 +16,7 @@
 #include <carb/Types.h>
 #include <vector>
 #include <string>
-#include <rangeSensorSchema/ultrasonic.h>
+#include <rangeSensorSchema/ultrasonicArray.h>
 
 #include "../Core/IsaacComponent.h"
 #include "UltrasonicComponent.h"
@@ -72,12 +72,12 @@ void UltrasonicComponent::publishAllMessages()
     CARB_PROFILE_ZONE(0, "REB UltrasonicComponent Tick");
 
     pxr::UsdPrim prim = mStage->GetPrimAtPath(mUltrasonicPath);
-    if (!prim.IsA<pxr::RangeSensorSchemaUltrasonic>())
+    if (!prim.IsA<pxr::RangeSensorSchemaUltrasonicArray>())
     {
         CARB_LOG_ERROR("Prim is not a USS Prim");
         return;
     }
-    pxr::RangeSensorSchemaUltrasonic ultrasonicPrim = pxr::RangeSensorSchemaUltrasonic(prim);
+    pxr::RangeSensorSchemaUltrasonicArray ultrasonicPrim = pxr::RangeSensorSchemaUltrasonicArray(prim);
     if (!mUltrasonicSensorInterface->isUSS(mUltrasonicPath.GetString().c_str()))
     {
         CARB_LOG_ERROR("Prim is not registered with USS extension");
