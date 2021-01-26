@@ -102,38 +102,66 @@ class Extension(omni.ext.IExt):
             # to use the ULTRASONIC extension, you MUST have a physics scene defined
             UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
 
+            # List of poses that define the emitter prims
+            emitter_poses = [
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, -0.309017)), Gf.Vec3d(25, 0.0, 25)),
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, -0.156434)), Gf.Vec3d(25, 50.0, 25)),
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, 0.156434)), Gf.Vec3d(25, 100, 25)),
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, 0.309017)), Gf.Vec3d(25, 150, 25)),
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.309017, 0, 0, 0.951056)), Gf.Vec3d(-25, 0.0, 25)),
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.156435, 0, 0, 0.987688)), Gf.Vec3d(-25, 50.0, 25)),
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.156434, 0, 0, 0.987688)), Gf.Vec3d(-25, 100, 25)),
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.309017, 0, 0, 0.951057)), Gf.Vec3d(-25, 150, 25)),
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, -0.649448)), Gf.Vec3d(12.5, 0.0, 25)),
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, -0.760406)), Gf.Vec3d(12.5, 0.0, 25)),
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, 0.649448)), Gf.Vec3d(12.5, 150, 25)),
+                Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, 0.760406)), Gf.Vec3d(12.5, 150, 25)),
+            ]
+
+            emitters = []
+            for pose in emitter_poses:
+                result, emitter_prim = omni.kit.commands.execute(
+                    "CreateRangeSensorUltrasonicEmitterCommand",
+                    path="/World/UltrasonicEmitter",
+                    per_ray_intensity=0.4,
+                    yaw_offset=0.0,
+                    firing_delay=0.5,
+                )
+
+                emitter_prim.GetPrim().GetAttribute("xformOp:transform").Set(pose)
+                emitters.append(emitter_prim)
+
             # create the ULTRASONIC.  Before we can set any attributes on our ULTRASONIC, we must first create the prim using our
             # ULTRASONIC schema, and then populate it with the parameters we will be manipulating.  If you try to manipulate
             # a parameter before creating it, you will get a runtime error
-            self.ultrasonicPath = "/World/Ultrasonic"
-            self.ultrasonic = RangeSensorSchema.Ultrasonic.Define(stage, Sdf.Path(self.ultrasonicPath))
 
-            # set wedge vertical extent in degrees
-            self.ultrasonic.CreateHorizontalFovAttr().Set(15.0)
-            # set wedge horizontal extent in degrees
-            self.ultrasonic.CreateVerticalFovAttr().Set(10)
+            emitter_paths = [emitter.GetPath() for emitter in emitters]
 
-            # Horizontal and vertical resolution in degrees.  Rays will be fired on the bin boundries defined by the
-            # resolution.  If your FOV is 45 degrees and your resolution is 15 degrees, you will get rays at
-            # 0, 15, 30, and 45 degrees.
-            self.ultrasonic.CreateHorizontalResolutionAttr().Set(0.5)
-            self.ultrasonic.CreateVerticalResolutionAttr().Set(0.5)
+            self.ultrasonicPath = "/World/UltrasonicArray"
 
-            # Min and max range for the ULTRASONIC.  This defines the starting and stopping locations for the linetrace
-            self.ultrasonic.CreateMinRangeAttr().Set(0.4)
-            self.ultrasonic.CreateMaxRangeAttr().Set(3.0)
-
-            # These attributes affect drawing the ultrasonic in the viewport.  High Level Of Detail (HighLod) = True will draw
-            # all rays.  If false it will only draw horizontal rays.  Draw Ultrasonic Points = True will draw the actual
-            # ULTRASONIC rays in the viewport.
-            self.ultrasonic.CreateDrawPointsAttr().Set(False)
-            self.ultrasonic.CreateDrawLinesAttr().Set(False)
-
-            # We set the attributes we created.  We could have just set the attributes at creation, but this was
-            # more illustrative.  It's important to remember that attributes do not exist until you create them; even
-            # if they are defined in the schema.
-            self.ultrasonic.GetDrawLinesAttr().Set(True)
-            self.ultrasonic.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
+            result, self.ultrasonic = omni.kit.commands.execute(
+                "CreateRangeSensorUltrasonicArrayCommand",
+                path=self.ultrasonicPath,
+                # Min and max range for the ULTRASONIC.  This defines the starting and stopping locations for the linetrace
+                min_range=0.4,
+                max_range=3.0,
+                # These attributes affect drawing the ultrasonic in the viewport.  High Level Of Detail (HighLod) = True will draw
+                # all rays.  If false it will only draw horizontal rays.  Draw Ultrasonic Points = True will draw the actual
+                # ULTRASONIC rays in the viewport.
+                draw_points=False,
+                draw_lines=True,
+                # Horizontal and vertical resolution in degrees.  Rays will be fired on the bin boundries defined by the
+                # resolution.  If your FOV is 45 degrees and your resolution is 15 degrees, you will get rays at
+                # 0, 15, 30, and 45 degrees.
+                horizontal_fov=15.0,  # set wedge vertical extent in degrees
+                vertical_fov=10.0,  # set wedge horizontal extent in degrees
+                horizontal_resolution=0.5,
+                vertical_resolution=0.5,
+                pulse_duration=0.1,
+                pulse_gap_delta=0.3,
+                num_bins=224,
+                emitter_prims=emitter_paths,
+            )
 
             # we want to make sure we can see the ultrasonic we made, so we set the camera position and look target
             self._viewport.set_camera_position("/OmniverseKit_Persp", 500, 500, 500, True)

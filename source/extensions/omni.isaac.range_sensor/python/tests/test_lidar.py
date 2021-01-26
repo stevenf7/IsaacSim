@@ -5,8 +5,6 @@ import omni.kit.commands
 from omni.isaac.range_sensor import _range_sensor
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 from omni.physx.scripts import utils
-import omni.isaac.RangeSensorSchema as RangeSensorSchema
-import asyncio
 import numpy as np
 import os
 import carb.tokens
@@ -81,24 +79,6 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
 
-    def add_lidar(self, lidarPath):
-
-        lidar = RangeSensorSchema.Lidar.Define(self._stage, Sdf.Path(lidarPath))
-        lidar.CreateHorizontalFovAttr().Set(360.0)
-        lidar.CreateVerticalFovAttr().Set(30.0)
-        lidar.CreateRotationRateAttr().Set(20.0)
-        lidar.CreateHorizontalResolutionAttr().Set(0.4)
-        lidar.CreateVerticalResolutionAttr().Set(4.0)
-        lidar.CreateMinRangeAttr().Set(0.4)
-        lidar.CreateMaxRangeAttr().Set(100.0)
-        lidar.CreateHighLodAttr().Set(True)
-        lidar.CreateDrawPointsAttr().Set(True)
-
-        xform = UsdGeom.Xformable(lidar)
-        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-
-        return lidar
-
     def add_cube(self, path, size, offset):
 
         cubeGeom = UsdGeom.Cube.Define(self._stage, path)
@@ -125,15 +105,29 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/World/Cube"
-        cubeGeom = self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
 
         # Add lidar
-        lidarPath = "/World/Lidar"
-        lidar = self.add_lidar(lidarPath)
+        result, lidar = omni.kit.commands.execute(
+            "CreateRangeSensorLidarCommand",
+            path="/World/Lidar",
+            parent=None,
+            min_range=0.4,
+            max_range=100.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=360.0,
+            vertical_fov=30.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=4.0,
+            rotation_rate=0.0,
+            high_lod=False,
+            yaw_offset=0.0,
+        )
+        lidarPath = str(lidar.GetPath())
 
-        lidar.GetRotationRateAttr().Set(0.0)
-        lidar.GetHighLodAttr().Set(False)
-        lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
+        mat = Gf.Matrix4d().SetTranslate(Gf.Vec3d(0.0, 0.0, 25.0))
+        lidar.GetPrim().GetAttribute("xformOp:transform").Set(mat)
 
         # Run for a second
         self._timeline.play()
@@ -161,23 +155,40 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         # Add a cube
         cubePath = "/World/Cube"
-        cubeGeom = self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
 
         # Add falling cube
         cubePath2 = "/World/Cube2"
-        cubeGeom2 = self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
+        self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
 
         # Add lidar
-        lidarPath = "/World/Cube2/Lidar"
-        lidar = self.add_lidar(lidarPath)
+        result, lidar = omni.kit.commands.execute(
+            "CreateRangeSensorLidarCommand",
+            path="/Lidar",
+            parent="/World/Cube2",
+            min_range=0.4,
+            max_range=100.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=360.0,
+            vertical_fov=30.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=4.0,
+            rotation_rate=0.0,
+            high_lod=False,
+            yaw_offset=0.0,
+        )
+        lidarPath = str(lidar.GetPath())
 
-        lidar.GetRotationRateAttr().Set(0.0)
-        lidar.GetHighLodAttr().Set(False)
-        lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 50.0))
-
-        # Run for two seconds
-
+        mat = Gf.Matrix4d().SetTranslate(Gf.Vec3d(0.0, 0.0, 50.0))
+        lidar.GetPrim().GetAttribute("xformOp:transform").Set(mat)
         self._timeline.play()
+        # get data before it falls and make sure that lidar is parented properly and does not have block infront of it
+        await simulate(0.1)
+        depth = self._lidar.get_depth_data(lidarPath)
+        self.assertEqual(depth[0, 0], 65535)
+
+        # wait for it to drop
         await simulate(2.0)
         self._timeline.pause()
         # Get depth, and check that we hit the cube in front, and hit nothing in back
@@ -197,10 +208,24 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
             color=Gf.Vec3f(0.5),
         )
         cubePath2 = "/World/Cube2"
-        cubeGeom2 = self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
+        self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
 
-        lidarPath = "/World/Cube2/Lidar"
-        lidar = self.add_lidar(lidarPath)
+        # Add lidar
+        result, lidar = omni.kit.commands.execute(
+            "CreateRangeSensorLidarCommand",
+            path="/World/Cube2/Lidar",
+            min_range=0.4,
+            max_range=100.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=360.0,
+            vertical_fov=30.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=4.0,
+            rotation_rate=20.0,
+            high_lod=True,
+            yaw_offset=0.0,
+        )
 
         self._timeline.play()
         lidar.GetHighLodAttr().Set(True)
@@ -224,15 +249,29 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/Cube"
-        cubeGeom = self.add_cube(cubePath, 75.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        self.add_cube(cubePath, 75.0, Gf.Vec3f(-200.0, 0.0, 50.0))
 
         # Add lidar
-        lidarPath = "/carter/chassis_link/Lidar"
-        lidar = self.add_lidar(lidarPath)
+        result, lidar = omni.kit.commands.execute(
+            "CreateRangeSensorLidarCommand",
+            path="/Lidar",
+            parent="/carter/chassis_link",
+            min_range=0.4,
+            max_range=100.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=360.0,
+            vertical_fov=30.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=4.0,
+            rotation_rate=0.0,
+            high_lod=False,
+            yaw_offset=0.0,
+        )
+        lidarPath = str(lidar.GetPath())
 
-        lidar.GetRotationRateAttr().Set(0.0)
-        lidar.GetHighLodAttr().Set(False)
-        lidar.AddTranslateOp().Set(Gf.Vec3f(-6.0, 0.0, 37.0))
+        mat = Gf.Matrix4d().SetTranslate(Gf.Vec3d(-6.0, 0.0, 37.0))
+        lidar.GetPrim().GetAttribute("xformOp:transform").Set(mat)
 
         # Run for two seconds
 

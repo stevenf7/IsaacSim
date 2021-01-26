@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -135,10 +135,7 @@ public:
             this->mPrim.GetDrawLinesAttr().Get(&mDrawLines);
         }
 
-        if (this->mPrim.GetYawOffsetAttr().HasValue())
-        {
-            this->mPrim.GetYawOffsetAttr().Get(&mYawOffset);
-        }
+
         mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
         // printf("PARENT: %s\n", mParentPrim.GetPath().GetString().c_str());
         mMetersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->mStage));
@@ -198,7 +195,6 @@ protected:
     std::vector<omni::isaac::range_sensor::DebugData> mDebugLines;
     std::vector<carb::Float3> mLastHitPos;
 
-    float mYawOffset = 0.0f;
     float mMinRange = 0.4f;
     float mMaxRange = 100.0f;
 

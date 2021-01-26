@@ -35,13 +35,20 @@ async def load_test_file(test_file_name: str):
     return (result, error)
 
 
+async def simulate(seconds, steps_per_sec=60):
+    for frame in range(int(steps_per_sec * seconds)):
+        await omni.kit.app.get_app().next_update_async()
+
+
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
 
-        # Run as fast as possible
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", False)
+        self._physics_rate = carb.settings.get_settings().get("/physics/timeStepsPerSecond")
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
+        carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(1))
 
         self._ultrasonic = _range_sensor.acquire_ultrasonic_sensor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -80,33 +87,114 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
 
-    def add_ultrasonic(self, ultrasonicPath):
-
-        ultrasonic = RangeSensorSchema.Ultrasonic.Define(self._stage, Sdf.Path(ultrasonicPath))
-        ultrasonic.CreateHorizontalFovAttr().Set(20.0)
-        ultrasonic.CreateVerticalFovAttr().Set(10.0)
-        ultrasonic.CreateHorizontalResolutionAttr().Set(0.4)
-        ultrasonic.CreateVerticalResolutionAttr().Set(0.8)
-        ultrasonic.CreateMinRangeAttr().Set(0.4)
-        ultrasonic.CreateMaxRangeAttr().Set(2.0)
-        ultrasonic.CreateDrawPointsAttr().Set(True)
-
-        xform = UsdGeom.Xformable(ultrasonic)
-        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-
-        return ultrasonic
-
-    def add_cube(self, path, size, offset):
+    # Create a cube, set physics to False to make it static with collision only
+    def add_cube(self, path, size, offset, physics=True):
 
         cubeGeom = UsdGeom.Cube.Define(self._stage, path)
         cubePrim = self._stage.GetPrimAtPath(path)
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
-        utils.setRigidBody(cubePrim, "convexHull", False)
+        if physics:
+            utils.setRigidBody(cubePrim, "convexHull", False)
+        else:
+            utils.setCollider(cubePrim)
 
         return cubePrim
 
-    # ensures that envelope changes when cube is moved
+    # Test to make sure that command can create emitter and array without any errors
+    # Simulate and stop to make sure it doesn't crash
+    async def test_command(self):
+
+        result, emitter = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicEmitterCommand",
+            path="/World/UltrasonicEmitter",
+            per_ray_intensity=0.4,
+            yaw_offset=0.0,
+            firing_delay=0.0,
+        )
+        result, ultrasonic = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicArrayCommand",
+            path="/World/UltrasonicArray",
+            min_range=0.4,
+            max_range=2.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=20.0,
+            vertical_fov=10.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=0.8,
+            pulse_duration=0.5,
+            pulse_gap_delta=1.0,
+            num_bins=224,
+            emitter_prims=[emitter.GetPath()],
+        )
+        self.assertTrue(result)
+        self._timeline.play()
+        await simulate(0.5)
+        self._timeline.stop()
+        await simulate(0.1)
+        self._timeline.play()
+        await simulate(0.5)
+
+    # Create two emitters, test to make sure that data from them is correct
+    async def test_two_emitter(self):
+
+        result, emitter0 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicEmitterCommand",
+            path="/World/UltrasonicEmitter0",
+            per_ray_intensity=0.4,
+            yaw_offset=0.0,
+            firing_delay=0.1,
+        )
+        mat = Gf.Matrix4d().SetTranslateOnly(Gf.Vec3d(0.0, 0.0, 0.0))
+        # Rotate 90 degrees about z
+        mat = Gf.Matrix4d().SetRotateOnly(Gf.Rotation(Gf.Vec3d(0, 0, 1), 90))
+        emitter0.GetPrim().GetAttribute("xformOp:transform").Set(mat)
+
+        result, emitter1 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicEmitterCommand",
+            path="/World/UltrasonicEmitter1",
+            per_ray_intensity=0.4,
+            yaw_offset=0.0,
+            firing_delay=0.2,
+        )
+        mat = Gf.Matrix4d().SetTranslate(Gf.Vec3d(0.0, 0.0, 0.0))
+        emitter1.GetPrim().GetAttribute("xformOp:transform").Set(mat)
+
+        result, ultrasonic = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicArrayCommand",
+            path="/World/UltrasonicArray",
+            min_range=0.4,
+            max_range=2.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=20.0,
+            vertical_fov=10.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=0.8,
+            pulse_duration=0.1,
+            pulse_gap_delta=0.3,
+            num_bins=224,
+            emitter_prims=[emitter0.GetPath(), emitter1.GetPath()],
+        )
+        self.assertTrue(result)
+
+        self.add_cube("/World/Cube0", 25.0, Gf.Vec3f(0.0, 100.0, 0.0), physics=False)
+        self.add_cube("/World/Cube1", 25.0, Gf.Vec3f(0.0, -90.0, 0.0), physics=False)
+        self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
+        self.add_cube("/World/Cube3", 25.0, Gf.Vec3f(-70.0, 0.0, 0.0), physics=False)
+
+        self._timeline.play()
+        await simulate(2.0)
+        # TODO test to make sure that the sensor is firing at correct times
+        # TODO test to make sure that distances are correct
+        depth = self._ultrasonic.get_linear_depth_data("/World/UltrasonicArray", 0)
+
+    # TODO: Add test that makes emitter on dynamic object
+    # TODO: Add test that changes a parameter on the array and the emitter to make sure USD updates are working
+
+    # TODO: re-work the existing tests to make sure that they work
+    # # ensures that envelope changes when cube is moved
     async def test_static_ultrasonic_moving_box(self):
         # Plane
         omni.kit.commands.execute(
@@ -123,42 +211,68 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubePath = "/World/Cube"
         cubePrim = self.add_cube(cubePath, 25.0, Gf.Vec3f(0.0, -90.0, 0.0))
 
-        # Add ultrasonic
-        ultrasonicPath = "/World/Ultrasonic"
-        ultrasonic = self.add_ultrasonic(ultrasonicPath)
+        emitter_poses = [
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, -0.309017)), Gf.Vec3d(25, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, -0.156434)), Gf.Vec3d(25, 50.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, 0.156434)), Gf.Vec3d(25, 100, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, 0.309017)), Gf.Vec3d(25, 150, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.309017, 0, 0, 0.951056)), Gf.Vec3d(-25, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.156435, 0, 0, 0.987688)), Gf.Vec3d(-25, 50.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.156434, 0, 0, 0.987688)), Gf.Vec3d(-25, 100, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.309017, 0, 0, 0.951057)), Gf.Vec3d(-25, 150, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, -0.649448)), Gf.Vec3d(12.5, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, -0.760406)), Gf.Vec3d(12.5, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, 0.649448)), Gf.Vec3d(12.5, 150, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, 0.760406)), Gf.Vec3d(12.5, 150, 25)),
+        ]
 
-        ultrasonic.AddTranslateOp().Set(Gf.Vec3f(8.0, 0.0, 2.0))
+        emitters = []
+        for pose in emitter_poses:
+            result, emitter_prim = omni.kit.commands.execute(
+                "CreateRangeSensorUltrasonicEmitterCommand",
+                path="/World/UltrasonicEmitter",
+                per_ray_intensity=0.4,
+                yaw_offset=0.0,
+                firing_delay=0.5,
+            )
+            emitter_prim.GetPrim().GetAttribute("xformOp:transform").Set(pose)
+            emitters.append(emitter_prim)
+        emitter_paths = [emitter.GetPath() for emitter in emitters]
+
+        # Add ultrasonic
+        ultrasonicPath = "/World/UltrasonicArray"
+        result, ultrasonic = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicArrayCommand",
+            path=ultrasonicPath,
+            min_range=0.4,
+            max_range=2.0,
+            draw_points=True,
+            horizontal_fov=20.0,
+            vertical_fov=10.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=0.8,
+            pulse_duration=0.5,
+            pulse_gap_delta=1.0,
+            num_bins=224,
+            emitter_prims=emitter_paths,
+        )
 
         # run for 12s @ 50Hz
         steps_per_sec = 50
         seconds = 3
         self._timeline.play()
-        for frame in range(steps_per_sec * seconds):
-            await omni.kit.app.get_app().next_update_async()
-            emitter_idx = 3
-            depth = self._ultrasonic.get_depth_data(ultrasonicPath, emitter_idx)
-            lin_depth = self._ultrasonic.get_linear_depth_data(ultrasonicPath, emitter_idx)
-            intensity = self._ultrasonic.get_intensity_data(ultrasonicPath, emitter_idx)
-            envelope = self._ultrasonic.get_envelope(ultrasonicPath, emitter_idx)
 
+        await simulate(seconds, steps_per_sec=steps_per_sec)
         envelope_arr = self._ultrasonic.get_envelope_array(ultrasonicPath)
-
-        # move box then confirm that the envelopes have changed
         cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(20.0, 220.0, 0.0))
-        for frame in range(steps_per_sec * seconds):
-            await omni.kit.app.get_app().next_update_async()
-            emitter_idx = 3
-            depth2 = self._ultrasonic.get_depth_data(ultrasonicPath, emitter_idx)
-            lin_depth2 = self._ultrasonic.get_linear_depth_data(ultrasonicPath, emitter_idx)
-
+        await simulate(seconds, steps_per_sec=steps_per_sec)
         envelope_arr2 = self._ultrasonic.get_envelope_array(ultrasonicPath)
-        res = envelope_arr - envelope_arr2
-        self.assertFalse(res[0].any())
-        self.assertTrue(res[10].any())
-        self.assertTrue(res[11].any())
-        self._timeline.stop()
+        envelope_diff = envelope_arr - envelope_arr2
+        self.assertFalse(envelope_diff[0].any())
+        self.assertTrue(envelope_diff[10].any())
+        self.assertTrue(envelope_diff[11].any())
 
-    # ensures that envelope changes when cube is moved progressively further away from sensor
+    # # ensures that envelope changes when cube is moved progressively further away from sensor
     async def test_move_box_to_muliple_distances(self):
         # Plane
         omni.kit.commands.execute(
@@ -175,47 +289,70 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubePath = "/World/Cube"
         cubePrim = self.add_cube(cubePath, 25.0, Gf.Vec3f(0.0, -90.0, 0.0))
 
+        emitter_poses = [
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, -0.309017)), Gf.Vec3d(25, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, -0.156434)), Gf.Vec3d(25, 50.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, 0.156434)), Gf.Vec3d(25, 100, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, 0.309017)), Gf.Vec3d(25, 150, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.309017, 0, 0, 0.951056)), Gf.Vec3d(-25, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.156435, 0, 0, 0.987688)), Gf.Vec3d(-25, 50.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.156434, 0, 0, 0.987688)), Gf.Vec3d(-25, 100, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.309017, 0, 0, 0.951057)), Gf.Vec3d(-25, 150, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, -0.649448)), Gf.Vec3d(12.5, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, -0.760406)), Gf.Vec3d(12.5, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, 0.649448)), Gf.Vec3d(12.5, 150, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, 0.760406)), Gf.Vec3d(12.5, 150, 25)),
+        ]
+
+        emitters = []
+        for pose in emitter_poses:
+            result, emitter_prim = omni.kit.commands.execute(
+                "CreateRangeSensorUltrasonicEmitterCommand",
+                path="/World/UltrasonicEmitter",
+                per_ray_intensity=0.4,
+                yaw_offset=0.0,
+                firing_delay=0.5,
+            )
+            emitter_prim.GetPrim().GetAttribute("xformOp:transform").Set(pose)
+            emitters.append(emitter_prim)
+        emitter_paths = [emitter.GetPath() for emitter in emitters]
+
         # Add ultrasonic
-        ultrasonicPath = "/World/Ultrasonic"
-        ultrasonic = self.add_ultrasonic(ultrasonicPath)
+        ultrasonicPath = "/World/UltrasonicArray"
+        result, ultrasonic = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicArrayCommand",
+            path=ultrasonicPath,
+            min_range=0.4,
+            max_range=2.0,
+            draw_points=True,
+            horizontal_fov=20.0,
+            vertical_fov=10.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=0.8,
+            pulse_duration=0.5,
+            pulse_gap_delta=1.0,
+            num_bins=224,
+            emitter_prims=emitter_paths,
+        )
 
-        ultrasonic.AddTranslateOp().Set(Gf.Vec3f(8.0, 0.0, 2.0))
-
-        # run for 12s @ 50Hz
+        # run for 3s @ 50Hz
         steps_per_sec = 50
         seconds = 3
         self._timeline.play()
-        for frame in range(steps_per_sec * seconds):
-            await omni.kit.app.get_app().next_update_async()
-            emitter_idx = 3
-            depth = self._ultrasonic.get_depth_data(ultrasonicPath, emitter_idx)
-            lin_depth = self._ultrasonic.get_linear_depth_data(ultrasonicPath, emitter_idx)
-            intensity = self._ultrasonic.get_intensity_data(ultrasonicPath, emitter_idx)
-            envelope = self._ultrasonic.get_envelope(ultrasonicPath, emitter_idx)
-
+        await simulate(seconds, steps_per_sec=steps_per_sec)
         envelope_arr = self._ultrasonic.get_envelope_array(ultrasonicPath)
-        self.assertTrue(np.allclose(envelope_arr[9][87:93], np.array([66.0, 88.0, 58.0, 49.0, 59.0, 2.0])))
+        self.assertTrue(np.allclose(envelope_arr[9][87:93], np.array([99.0, 140.0, 130.0, 59.0, 21.0, 1.0])))
 
         # move box then confirm that the envelopes have changed
         cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(0.0, -120.0, 0.0))
-        for frame in range(steps_per_sec * seconds):
-            await omni.kit.app.get_app().next_update_async()
-            emitter_idx = 3
-            depth2 = self._ultrasonic.get_depth_data(ultrasonicPath, emitter_idx)
-            lin_depth2 = self._ultrasonic.get_linear_depth_data(ultrasonicPath, emitter_idx)
-
+        await simulate(seconds, steps_per_sec=steps_per_sec)
         envelope_arr2 = self._ultrasonic.get_envelope_array(ultrasonicPath)
+        self.assertTrue(np.allclose(envelope_arr2[9][87:93], np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])))
+        self.assertTrue(np.allclose(envelope_arr2[9][120:127], np.array([13.0, 81.0, 99.0, 96.0, 67.0, 19.0, 2.0])))
 
-        self.assertTrue(np.allclose(envelope_arr2[9][87:93], np.array([0.0, 0.0, 0.0, 0.0, 50.0, 0.0])))
-        self.assertTrue(np.allclose(envelope_arr2[9][120:127], np.array([13.0, 74.0, 60.0, 41.0, 38.0, 31.0, 7.0])))
-
+        # move box further and again confirm that the envelopes have changed
         cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(0.0, -190.0, 0.0))
-        for frame in range(steps_per_sec * seconds):
-            await omni.kit.app.get_app().next_update_async()
-            emitter_idx = 3
-            depth3 = self._ultrasonic.get_depth_data(ultrasonicPath, emitter_idx)
-            lin_depth3 = self._ultrasonic.get_linear_depth_data(ultrasonicPath, emitter_idx)
-
+        await simulate(seconds, steps_per_sec=steps_per_sec)
         envelope_arr3 = self._ultrasonic.get_envelope_array(ultrasonicPath)
-        self.assertTrue(np.allclose(envelope_arr3[9][120:127], np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])))
-        self.assertTrue(np.allclose(envelope_arr3[9][199:203], np.array([61.0, 49.0, 36.0, 14.0])))
+        self.assertTrue(np.allclose(envelope_arr3[9][120:127], np.array([0.0, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0])))
+        self.assertTrue(np.allclose(envelope_arr3[9][199:203], np.array([21.0, 49.0, 26.0, 4.0])))

@@ -18,7 +18,7 @@
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
-#include <rangeSensorSchema/ultrasonic.h>
+#include <rangeSensorSchema/ultrasonicArray.h>
 
 #include <vector>
 
@@ -42,7 +42,8 @@ public:
 
     int getNumBins() const
     {
-        return NUM_BINS;
+        // TODO make this return without casting
+        return static_cast<int>(mNumBins);
     }
     int getNumCols() const
     {
@@ -54,7 +55,8 @@ public:
     }
     int getNumEmitters() const
     {
-        return NUM_EMITTERS;
+        // TODO make this return without casting
+        return static_cast<int>(mEmitters.size());
     }
     // std::vector<uint16_t>& getDepthData() { return mLastDepth[3]; }
     std::vector<uint16_t>& getDepthData(int emitterIndex)
@@ -63,7 +65,7 @@ public:
     }
     std::vector<float>& getLinearDepthData(int emitterIndex)
     {
-        return mEmitters[emitterIndex].mLastLinearDepth;
+        return mEmitters[emitterIndex].mLinearDepth;
     }
     std::vector<float>& getEnvelope(int emitterIndex)
     {
@@ -85,7 +87,7 @@ public:
         std::vector<float> flattenedEnvelope;
         for (size_t i = 0; i < envArray.size(); i++)
         {
-            for (size_t j = 0; j < NUM_BINS; j++)
+            for (size_t j = 0; j < mNumBins; j++)
             {
                 flattenedEnvelope.push_back(envArray[i][j]);
             }
@@ -94,48 +96,44 @@ public:
     }
     std::vector<uint8_t>& getIntensityData(int emitterIndex)
     {
-        return mEmitters[emitterIndex].mLastIntensity;
+        return mEmitters[emitterIndex].mIntensity;
     }
 
     // these (zenith and azimuth getters) are the same across all emitters on the sensor for now
     // in other words, all emitters have the same resolution, shape, etc
     std::vector<float>& getZenithData()
     {
-        return mLastZenith;
+        return mZenith;
     }
     std::vector<float>& getAzimuthData()
     {
-        return mLastAzimuth;
+        return mAzimuth;
     }
 
+    virtual void onEmitterChange(const pxr::UsdPrim& prim);
+
 private:
-    const static size_t NUM_EMITTERS = 12;
-    const static size_t NUM_BINS = 224;
+    size_t mNumBins = 224;
     float mHorizontalFov = 60.0f;
     float mVerticalFov = 30.0f;
     float mHorizontalResolution = 0.4f;
     float mVerticalResolution = 4.0f;
-
+    float mPulseDuration = 0.5;
+    float mPulseGapDelta = 1.0;
 
     // difference between m[min|max]Depth and m[min|max]Range is division by the units
     // mMinRange and mMaxRange are defined in parent component
-    float mMinDepth;
-    float mMaxDepth;
-    float mMaxStepSize = 0;
-    int mMaxColsPerTick = 0;
-    int mLastCol = 0;
-    float mRemainingTime = 0;
+    float mMinDepth = 0;
+    float mMaxDepth = 100000; // 100 m in cm
 
     int mRows; // = 0,
     int mCols; // = 0;
 
     std::vector<float> mZenith;
     std::vector<float> mAzimuth;
-    std::vector<float> mLastAzimuth;
-    std::vector<float> mLastZenith;
 
 
-    UltrasonicArrayEmissionTimer mEmissionTimer;
+    std::unique_ptr<UltrasonicArrayEmissionTimer> mEmissionTimer;
     std::vector<UltrasonicEmitter> mEmitters;
 
     void dumpData(double dt);

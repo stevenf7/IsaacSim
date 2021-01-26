@@ -18,20 +18,21 @@ class UltrasonicArrayEmissionTimer
 {
 
 public:
-    UltrasonicArrayEmissionTimer()
-        : mDeltaTSuccessivePulses(std::vector<double>(NUM_EMITTERS, PULSE_GAP_DELTA)),
-          mPulseDuration(std::vector<double>(NUM_EMITTERS, PULSE_DURATION)),
-          mTimeSinceLastPulse(std::vector<double>(NUM_EMITTERS, 0.)),
-          mShouldEmit(std::vector<bool>(NUM_EMITTERS, false)),
-          mTimeSincePulseStarted(std::vector<double>(NUM_EMITTERS, 0.)),
-          mDelay(std::vector<double>(NUM_EMITTERS, 0.))
+    UltrasonicArrayEmissionTimer(const size_t numEmitters, const double pulse_gap_delta, const double pulse_duration)
+        : mDeltaTSuccessivePulses(std::vector<double>(numEmitters, pulse_gap_delta)),
+          mPulseDuration(std::vector<double>(numEmitters, pulse_duration)),
+          mTimeSinceLastPulse(std::vector<double>(numEmitters, 0.)),
+          mShouldEmit(std::vector<bool>(numEmitters, false)),
+          mTimeSincePulseStarted(std::vector<double>(numEmitters, 0.)),
+          mDelay(std::vector<double>(numEmitters, 0.)),
+          mNumEmitters(numEmitters)
     {
         ;
     }
 
     void update(double deltaT)
     {
-        for (size_t i = 0; i < NUM_EMITTERS; i++)
+        for (size_t i = 0; i < mNumEmitters; i++)
         {
             mTimeSinceLastPulse[i] += deltaT;
             // std::cout << "mTimeSinceLastPulse[ " << i << "] = " << mTimeSinceLastPulse[i] << std::endl;
@@ -66,7 +67,7 @@ public:
         else
         {
             std::stringstream errMsg;
-            errMsg << "Queried an emitter that does not exist. " << index << " >= " << NUM_EMITTERS;
+            errMsg << "Queried an emitter that does not exist. " << index << " >= " << mNumEmitters;
             throw std::out_of_range(errMsg.str());
         }
     }
@@ -80,9 +81,6 @@ public:
 
 
 private:
-    const double PULSE_DURATION = 0.5; // 2500.;
-    const double PULSE_GAP_DELTA = 1.0; // 10000.;
-    static const size_t NUM_EMITTERS = 12;
     // all times are in milliseconds
     const std::vector<double> mDeltaTSuccessivePulses;
     const std::vector<double> mPulseDuration;
@@ -90,4 +88,5 @@ private:
     std::vector<bool> mShouldEmit;
     std::vector<double> mTimeSincePulseStarted;
     std::vector<double> mDelay;
+    size_t mNumEmitters = 0;
 };

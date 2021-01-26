@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -89,6 +89,7 @@ private:
     float mVerticalFov = 30.0f;
     float mHorizontalResolution = 0.4f;
     float mVerticalResolution = 4.0f;
+    float mYawOffset = 0.0f;
 
     // Ranges converted to proper units
     float mMinDepth = 0;

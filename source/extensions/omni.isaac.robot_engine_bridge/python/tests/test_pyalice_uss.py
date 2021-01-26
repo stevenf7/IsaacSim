@@ -70,17 +70,50 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
 
     def add_ultrasonic(self, ultrasonicPath):
 
-        ultrasonic = RangeSensorSchema.Ultrasonic.Define(self._stage, Sdf.Path(ultrasonicPath))
-        ultrasonic.CreateHorizontalFovAttr().Set(60.0)
-        ultrasonic.CreateVerticalFovAttr().Set(30.0)
-        ultrasonic.CreateHorizontalResolutionAttr().Set(0.4)
-        ultrasonic.CreateVerticalResolutionAttr().Set(4.0)
-        ultrasonic.CreateMinRangeAttr().Set(0.4)
-        ultrasonic.CreateMaxRangeAttr().Set(100.0)
-        ultrasonic.CreateDrawPointsAttr().Set(True)
+        emitter_poses = [
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, -0.309017)), Gf.Vec3d(25, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, -0.156434)), Gf.Vec3d(25, 50.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, 0.156434)), Gf.Vec3d(25, 100, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, 0.309017)), Gf.Vec3d(25, 150, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.309017, 0, 0, 0.951056)), Gf.Vec3d(-25, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.156435, 0, 0, 0.987688)), Gf.Vec3d(-25, 50.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.156434, 0, 0, 0.987688)), Gf.Vec3d(-25, 100, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.309017, 0, 0, 0.951057)), Gf.Vec3d(-25, 150, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, -0.649448)), Gf.Vec3d(12.5, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, -0.760406)), Gf.Vec3d(12.5, 0.0, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, 0.649448)), Gf.Vec3d(12.5, 150, 25)),
+            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, 0.760406)), Gf.Vec3d(12.5, 150, 25)),
+        ]
 
-        xform = UsdGeom.Xformable(ultrasonic)
-        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+        emitters = []
+        for pose in emitter_poses:
+            result, emitter_prim = omni.kit.commands.execute(
+                "CreateRangeSensorUltrasonicEmitterCommand",
+                path="/World/UltrasonicEmitter",
+                per_ray_intensity=0.4,
+                yaw_offset=0.0,
+                firing_delay=0.1,
+            )
+            emitter_prim.GetPrim().GetAttribute("xformOp:transform").Set(pose)
+            emitters.append(emitter_prim)
+        emitter_paths = [emitter.GetPath() for emitter in emitters]
+
+        # Add ultrasonic
+        result, ultrasonic = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicArrayCommand",
+            path=ultrasonicPath,
+            min_range=0.4,
+            max_range=2.0,
+            draw_lines=True,
+            horizontal_fov=20.0,
+            vertical_fov=10.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=0.8,
+            pulse_duration=0.2,
+            pulse_gap_delta=0.05,
+            num_bins=224,
+            emitter_prims=emitter_paths,
+        )
 
         return ultrasonic
 
@@ -119,7 +152,7 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
         test_app.start()
 
         self._timeline.play()
-        await simulate(0.1)
+        await simulate(2.0)
         msg = test_app.app.receive("simulation.interface", "output", "uss_envelopes")
         buffer = msg.tensor
         self.assertTupleEqual(buffer.shape, (12, 224))
