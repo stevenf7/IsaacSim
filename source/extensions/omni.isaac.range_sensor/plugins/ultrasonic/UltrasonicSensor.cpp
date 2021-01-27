@@ -64,6 +64,20 @@ void UltrasonicSensor::updateDepthBounds()
     mMaxDepth = mMaxRange / mMetersPerUnit;
 }
 
+int getNearestInt(float input)
+{
+    // The number is close to an integer round
+    if (abs(input - round(input)) <= 1e-5)
+    {
+        return static_cast<int>(round(input));
+    }
+    // The number is not close to an integer, cast normally
+    else
+    {
+        return static_cast<int>(input);
+    }
+}
+
 void UltrasonicSensor::onComponentChange()
 {
 
@@ -71,7 +85,7 @@ void UltrasonicSensor::onComponentChange()
     const pxr::RangeSensorSchemaUltrasonicArray& typedPrim = (pxr::RangeSensorSchemaUltrasonicArray)mPrim;
 
     isaac::utils::safeGetAttribute(typedPrim.GetHorizontalFovAttr(), mHorizontalFov);
-    isaac::utils::safeGetAttribute(typedPrim.GetVerticalFovAttr(), mHorizontalFov);
+    isaac::utils::safeGetAttribute(typedPrim.GetVerticalFovAttr(), mVerticalFov);
     isaac::utils::safeGetAttribute(typedPrim.GetHorizontalResolutionAttr(), mHorizontalResolution);
     isaac::utils::safeGetAttribute(typedPrim.GetVerticalResolutionAttr(), mVerticalResolution);
 
@@ -87,8 +101,9 @@ void UltrasonicSensor::onComponentChange()
     mVerticalResolution = pxr::GfClamp(mVerticalResolution, 0.005f, 1024);
     mVerticalFov = pxr::GfClamp(mVerticalFov, mVerticalResolution, 360);
 
-    mCols = int(mHorizontalFov / mHorizontalResolution);
-    mRows = int(mVerticalFov / mVerticalResolution);
+    // Use this instead of int casting because for cases like 30/.3 we get 99.9999 which if cast to int becomes 99
+    mCols = getNearestInt(mHorizontalFov / mHorizontalResolution);
+    mRows = getNearestInt(mVerticalFov / mVerticalResolution);
 
     mZenith.resize(mRows);
     mAzimuth.resize(mCols);
