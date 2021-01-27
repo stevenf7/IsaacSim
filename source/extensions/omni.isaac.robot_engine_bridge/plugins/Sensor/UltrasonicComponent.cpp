@@ -95,10 +95,8 @@ void UltrasonicComponent::publishAllMessages()
 
     // scanMessageProto.setTheta(kj::ArrayPtr<const float>(theta, theta + numColsTicked));
     // scanMessageProto.setPhi(kj::ArrayPtr<const float>(phi, phi + numRows));
-    IsaacMessage<isaac_message::State> stateMessage;
-    auto stateMessageProto = stateMessage.initProto();
-    stateMessageProto.setSchema("");
-    auto tensorProto = stateMessageProto.initPack();
+    IsaacMessage<isaac_message::Tensor> tensorMessage;
+    auto tensorProto = tensorMessage.initProto();
     tensorProto.setElementType(ElementType::FLOAT32);
     tensorProto.initSizes(2);
     tensorProto.setSizes({ numEmitters, numBins });
@@ -109,7 +107,7 @@ void UltrasonicComponent::publishAllMessages()
     std::vector<std::unique_ptr<IsaacBuffer>> buffers(1);
     buffers[0] = std::make_unique<IsaacHostBuffer>(numEmitters * numBins * sizeof(float));
     std::memcpy(buffers[0]->data(), data.data(), numEmitters * numBins * sizeof(float));
-    publish(mOutputComponent, mScanChannelName, stateMessage, buffers);
+    publish(mOutputComponent, mScanChannelName, tensorMessage, buffers);
 }
 void UltrasonicComponent::onComponentChange()
 {
