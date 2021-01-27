@@ -126,8 +126,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         lidarPath = str(lidar.GetPath())
 
-        mat = Gf.Matrix4d().SetTranslate(Gf.Vec3d(0.0, 0.0, 25.0))
-        lidar.GetPrim().GetAttribute("xformOp:transform").Set(mat)
+        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 25.0))
 
         # Run for a second
         self._timeline.play()
@@ -180,8 +179,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         lidarPath = str(lidar.GetPath())
 
-        mat = Gf.Matrix4d().SetTranslate(Gf.Vec3d(0.0, 0.0, 50.0))
-        lidar.GetPrim().GetAttribute("xformOp:transform").Set(mat)
+        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 50.0))
         self._timeline.play()
         # get data before it falls and make sure that lidar is parented properly and does not have block infront of it
         await simulate(0.1)
@@ -270,8 +268,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         lidarPath = str(lidar.GetPath())
 
-        mat = Gf.Matrix4d().SetTranslate(Gf.Vec3d(-6.0, 0.0, 37.0))
-        lidar.GetPrim().GetAttribute("xformOp:transform").Set(mat)
+        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(-6.0, 0.0, 37.0))
 
         # Run for two seconds
 

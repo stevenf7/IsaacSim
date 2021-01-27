@@ -146,10 +146,9 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             yaw_offset=0.0,
             firing_delay=0.1,
         )
-        mat = Gf.Matrix4d().SetTranslateOnly(Gf.Vec3d(0.0, 0.0, 0.0))
+        emitter0.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
         # Rotate 90 degrees about z
-        mat = Gf.Matrix4d().SetRotateOnly(Gf.Rotation(Gf.Vec3d(0, 0, 1), 90))
-        emitter0.GetPrim().GetAttribute("xformOp:transform").Set(mat)
+        emitter0.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(Gf.Vec3d(0, 0, 90))
 
         result, emitter1 = omni.kit.commands.execute(
             "CreateRangeSensorUltrasonicEmitterCommand",
@@ -158,8 +157,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             yaw_offset=0.0,
             firing_delay=0.2,
         )
-        mat = Gf.Matrix4d().SetTranslate(Gf.Vec3d(0.0, 0.0, 0.0))
-        emitter1.GetPrim().GetAttribute("xformOp:transform").Set(mat)
+        emitter1.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
 
         result, ultrasonic = omni.kit.commands.execute(
             "CreateRangeSensorUltrasonicArrayCommand",
@@ -212,18 +210,18 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubePrim = self.add_cube(cubePath, 25.0, Gf.Vec3f(0.0, -90.0, 0.0))
 
         emitter_poses = [
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, -0.309017)), Gf.Vec3d(25, 0.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, -0.156434)), Gf.Vec3d(25, 50.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, 0.156434)), Gf.Vec3d(25, 100, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, 0.309017)), Gf.Vec3d(25, 150, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.309017, 0, 0, 0.951056)), Gf.Vec3d(-25, 0.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.156435, 0, 0, 0.987688)), Gf.Vec3d(-25, 50.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.156434, 0, 0, 0.987688)), Gf.Vec3d(-25, 100, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.309017, 0, 0, 0.951057)), Gf.Vec3d(-25, 150, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, -0.649448)), Gf.Vec3d(12.5, 0.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, -0.760406)), Gf.Vec3d(12.5, 0.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, 0.649448)), Gf.Vec3d(12.5, 150, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, 0.760406)), Gf.Vec3d(12.5, 150, 25)),
+            (Gf.Quatd(0.951057, 0, 0, -0.309017), Gf.Vec3d(25, 0.0, 25)),
+            (Gf.Quatd(0.987688, 0, 0, -0.156434), Gf.Vec3d(25, 50.0, 25)),
+            (Gf.Quatd(0.987688, 0, 0, 0.156434), Gf.Vec3d(25, 100, 25)),
+            (Gf.Quatd(0.951057, 0, 0, 0.309017), Gf.Vec3d(25, 150, 25)),
+            (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-25, 0.0, 25)),
+            (Gf.Quatd(-0.156435, 0, 0, 0.987688), Gf.Vec3d(-25, 50.0, 25)),
+            (Gf.Quatd(0.156434, 0, 0, 0.987688), Gf.Vec3d(-25, 100, 25)),
+            (Gf.Quatd(0.309017, 0, 0, 0.951057), Gf.Vec3d(-25, 150, 25)),
+            (Gf.Quatd(0.760406, 0, 0, -0.649448), Gf.Vec3d(12.5, 0.0, 25)),
+            (Gf.Quatd(0.649448, 0, 0, -0.760406), Gf.Vec3d(12.5, 0.0, 25)),
+            (Gf.Quatd(0.760406, 0, 0, 0.649448), Gf.Vec3d(12.5, 150, 25)),
+            (Gf.Quatd(0.649448, 0, 0, 0.760406), Gf.Vec3d(12.5, 150, 25)),
         ]
 
         emitters = []
@@ -235,7 +233,10 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
                 yaw_offset=0.0,
                 firing_delay=0.5,
             )
-            emitter_prim.GetPrim().GetAttribute("xformOp:transform").Set(pose)
+            emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set(pose[1])
+            emitter_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(
+                Gf.Rotation(pose[0]).Decompose((1, 0, 0), (0, 1, 0), (0, 0, 1))
+            )
             emitters.append(emitter_prim)
         emitter_paths = [emitter.GetPath() for emitter in emitters]
 
@@ -290,18 +291,18 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubePrim = self.add_cube(cubePath, 25.0, Gf.Vec3f(0.0, -90.0, 0.0))
 
         emitter_poses = [
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, -0.309017)), Gf.Vec3d(25, 0.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, -0.156434)), Gf.Vec3d(25, 50.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.987688, 0, 0, 0.156434)), Gf.Vec3d(25, 100, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.951057, 0, 0, 0.309017)), Gf.Vec3d(25, 150, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.309017, 0, 0, 0.951056)), Gf.Vec3d(-25, 0.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(-0.156435, 0, 0, 0.987688)), Gf.Vec3d(-25, 50.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.156434, 0, 0, 0.987688)), Gf.Vec3d(-25, 100, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.309017, 0, 0, 0.951057)), Gf.Vec3d(-25, 150, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, -0.649448)), Gf.Vec3d(12.5, 0.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, -0.760406)), Gf.Vec3d(12.5, 0.0, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.760406, 0, 0, 0.649448)), Gf.Vec3d(12.5, 150, 25)),
-            Gf.Matrix4d(Gf.Rotation(Gf.Quatd(0.649448, 0, 0, 0.760406)), Gf.Vec3d(12.5, 150, 25)),
+            (Gf.Quatd(0.951057, 0, 0, -0.309017), Gf.Vec3d(25, 0.0, 25)),
+            (Gf.Quatd(0.987688, 0, 0, -0.156434), Gf.Vec3d(25, 50.0, 25)),
+            (Gf.Quatd(0.987688, 0, 0, 0.156434), Gf.Vec3d(25, 100, 25)),
+            (Gf.Quatd(0.951057, 0, 0, 0.309017), Gf.Vec3d(25, 150, 25)),
+            (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-25, 0.0, 25)),
+            (Gf.Quatd(-0.156435, 0, 0, 0.987688), Gf.Vec3d(-25, 50.0, 25)),
+            (Gf.Quatd(0.156434, 0, 0, 0.987688), Gf.Vec3d(-25, 100, 25)),
+            (Gf.Quatd(0.309017, 0, 0, 0.951057), Gf.Vec3d(-25, 150, 25)),
+            (Gf.Quatd(0.760406, 0, 0, -0.649448), Gf.Vec3d(12.5, 0.0, 25)),
+            (Gf.Quatd(0.649448, 0, 0, -0.760406), Gf.Vec3d(12.5, 0.0, 25)),
+            (Gf.Quatd(0.760406, 0, 0, 0.649448), Gf.Vec3d(12.5, 150, 25)),
+            (Gf.Quatd(0.649448, 0, 0, 0.760406), Gf.Vec3d(12.5, 150, 25)),
         ]
 
         emitters = []
@@ -313,7 +314,10 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
                 yaw_offset=0.0,
                 firing_delay=0.5,
             )
-            emitter_prim.GetPrim().GetAttribute("xformOp:transform").Set(pose)
+            emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set(pose[1])
+            emitter_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(
+                Gf.Rotation(pose[0]).Decompose((1, 0, 0), (0, 1, 0), (0, 0, 1))
+            )
             emitters.append(emitter_prim)
         emitter_paths = [emitter.GetPath() for emitter in emitters]
 
