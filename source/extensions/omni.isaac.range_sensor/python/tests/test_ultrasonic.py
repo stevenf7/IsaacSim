@@ -103,6 +103,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Test to make sure that command can create emitter and array without any errors
     # Simulate and stop to make sure it doesn't crash
+    # Check to see if data returned matches parameters used to create
     async def test_command(self):
 
         result, emitter = omni.kit.commands.execute(
@@ -112,25 +113,39 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             yaw_offset=0.0,
             firing_delay=0.0,
         )
+        horizontal_fov = 30.0
+        vertical_fov = 5.0
+        horizontal_res = 0.3
+        vertical_res = 0.1
+        num_bins = 300
+        max_range = 3.45
         result, ultrasonic = omni.kit.commands.execute(
             "CreateRangeSensorUltrasonicArrayCommand",
             path="/World/UltrasonicArray",
             min_range=0.4,
-            max_range=2.0,
+            max_range=max_range,
             draw_points=True,
             draw_lines=True,
-            horizontal_fov=20.0,
-            vertical_fov=10.0,
-            horizontal_resolution=0.4,
-            vertical_resolution=0.8,
-            pulse_duration=0.5,
+            horizontal_fov=horizontal_fov,
+            vertical_fov=vertical_fov,
+            horizontal_resolution=horizontal_res,
+            vertical_resolution=vertical_res,
+            pulse_duration=0.0,
             pulse_gap_delta=1.0,
-            num_bins=224,
+            num_bins=num_bins,
             emitter_prims=[emitter.GetPath()],
         )
         self.assertTrue(result)
         self._timeline.play()
-        await simulate(0.5)
+        await simulate(1.5)
+        self.assertEqual(self._ultrasonic.get_num_rows("/World/UltrasonicArray"), int(vertical_fov / vertical_res))
+        self.assertEqual(self._ultrasonic.get_num_cols("/World/UltrasonicArray"), int(horizontal_fov / horizontal_res))
+        self.assertEqual(self._ultrasonic.get_num_emitters("/World/UltrasonicArray"), 1)
+        self.assertEqual(len(self._ultrasonic.get_envelope("/World/UltrasonicArray", 0)), num_bins)
+        # There are no obstacles so depth should all be the same
+        depth = self._ultrasonic.get_linear_depth_data("/World/UltrasonicArray", 0)
+        self.assertAlmostEquals(np.min(depth), max_range, delta=0.001)
+        self.assertAlmostEquals(np.max(depth), max_range, delta=0.001)
         self._timeline.stop()
         await simulate(0.1)
         self._timeline.play()
@@ -329,8 +344,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             min_range=0.4,
             max_range=2.0,
             draw_points=True,
-            horizontal_fov=20.0,
-            vertical_fov=10.0,
+            horizontal_fov=10.0,
+            vertical_fov=30.0,
             horizontal_resolution=0.4,
             vertical_resolution=0.8,
             pulse_duration=0.5,

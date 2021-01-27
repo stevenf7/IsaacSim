@@ -43,7 +43,7 @@ public:
     int getNumBins() const
     {
         // TODO make this return without casting
-        return static_cast<int>(mNumBins);
+        return mNumBins;
     }
     int getNumCols() const
     {
@@ -87,7 +87,7 @@ public:
         std::vector<float> flattenedEnvelope;
         for (size_t i = 0; i < envArray.size(); i++)
         {
-            for (size_t j = 0; j < mNumBins; j++)
+            for (int j = 0; j < mNumBins; j++)
             {
                 flattenedEnvelope.push_back(envArray[i][j]);
             }
@@ -113,7 +113,7 @@ public:
     virtual void onEmitterChange(const pxr::UsdPrim& prim);
 
 private:
-    size_t mNumBins = 224;
+    int mNumBins = 224;
     float mHorizontalFov = 60.0f;
     float mVerticalFov = 30.0f;
     float mHorizontalResolution = 0.4f;
