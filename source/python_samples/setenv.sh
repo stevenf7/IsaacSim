@@ -16,6 +16,7 @@ done
 build_path=$path/_build
 export EXP_PATH=$SCRIPT_DIR/experiences
 export ISAAC_PATH=$build_path/linux-x86_64/release
+export PXR_PLUGINPATH_NAME="$(readlink -e $build_path/target-deps/usd_ext_isaac)/release/share/usd/plugins/*/resources/":$PXR_PLUGINPATH_NAME
 # TODO Not sure if this does anything
 # export USDSHADE_OLD_MDL_SCHEMA_SUPPORT=1
 # export USDIMAGING_ENABLE_NESTED_GPRIMS=1
