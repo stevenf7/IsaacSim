@@ -48,11 +48,12 @@ class CreateRangeSensorPrimCommand(omni.kit.commands.Command):
         setup_base_prim(self._prim, True, self._draw_points, self._draw_lines, self._min_range, self._max_range)
 
         xform = UsdGeom.Xformable(self._prim)
-        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+        xform_trans = xform.AddXformOp(UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, "")
+        xform_rot = xform.AddXformOp(UsdGeom.XformOp.TypeRotateXYZ, UsdGeom.XformOp.PrecisionDouble, "")
 
         # rotate sensor to align correctly if stage is y up
         if UsdGeom.GetStageUpAxis(self._stage) == UsdGeom.Tokens.y:
-            xform_op.Set(Gf.Matrix4d().SetRotate(Gf.Rotation(Gf.Vec3d(1, 0, 0), 270)))
+            xform_rot.Set(Gf.Vec3d(270, 0, 0))
         return self._prim
 
     def undo(self):
@@ -191,11 +192,12 @@ class CreateRangeSensorUltrasonicEmitterCommand(omni.kit.commands.Command):
         self._prim = RangeSensorSchema.UltrasonicEmitter.Define(self._stage, self._prim_path)
 
         xform = UsdGeom.Xformable(self._prim)
-        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+        xform_trans = xform.AddXformOp(UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, "")
+        xform_rot = xform.AddXformOp(UsdGeom.XformOp.TypeRotateXYZ, UsdGeom.XformOp.PrecisionDouble, "")
 
         # rotate sensor to align correctly if stage is y up
         if UsdGeom.GetStageUpAxis(self._stage) == UsdGeom.Tokens.y:
-            xform_op.Set(Gf.Matrix4d().SetRotate(Gf.Rotation(Gf.Vec3d(1, 0, 0), 270)))
+            xform_rot.Set(Gf.Vec3d(270, 0, 0))
         if self._prim:
             self._prim.CreateEnabledAttr().Set(True)
             self._prim.CreatePerRayIntensityAttr().Set(self._per_ray_intensity)
