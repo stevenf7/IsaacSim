@@ -205,11 +205,11 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Get path to extension data:
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.urdf")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
+        extension_path = ext_manager.get_extension_path(ext_id)
         # import URDF
         omni.kit.commands.execute(
             "ParseAndImportURDFCommand",
-            urdf_path=self._extension_path + "/data/urdf/robots/carter/urdf/carter.urdf",
+            urdf_path=extension_path + "/data/urdf/robots/carter/urdf/carter.urdf",
             import_config=import_config,
         )
         # get stage handle
