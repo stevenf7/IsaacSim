@@ -1,19 +1,16 @@
 import carb
 import omni
 import omni.kit.commands
-from omni.isaac.utils.scripts.test_utils import load_test_file
-from omni.isaac.urdf import _urdf
 import asyncio
 import math
 
 # import omni.physx as _physx
-from .common import import_robot, set_drive_parameters
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
+from .common import set_drive_parameters
+from pxr import UsdLux, Sdf, Gf, UsdPhysics
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        self._urdf_interface = _urdf.acquire_urdf_interface()
         self._window = omni.kit.ui.Window(
             "Import Kaya",
             300,
@@ -41,13 +38,15 @@ class Extension(omni.ext.IExt):
     async def _load_kaya(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            import_config = _urdf.ImportConfig()
+            status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
             import_config.merge_fixed_joints = True
             import_config.import_inertia_tensor = False
             # import_config.distance_scale = 100
             import_config.fix_base = False
-            import_robot(
-                self._urdf_interface, self._extension_path + "/data/urdf/robots/kaya/urdf/kaya.urdf", import_config
+            omni.kit.commands.execute(
+                "ParseAndImportURDFCommand",
+                urdf_path=self._extension_path + "/data/urdf/robots/kaya/urdf/kaya.urdf",
+                import_config=import_config,
             )
 
             viewport = omni.kit.viewport.get_default_viewport_window()
@@ -72,8 +71,6 @@ class Extension(omni.ext.IExt):
 
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
         distantLight.CreateIntensityAttr(500)
-
-        kaya_prim = stage.GetPrimAtPath("/kaya")
 
         # Make all rollers spin freely by removing extra drive API
         for axle in range(0, 2 + 1):

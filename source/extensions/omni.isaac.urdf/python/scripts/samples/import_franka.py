@@ -1,18 +1,15 @@
 import carb
 import omni
-from omni.isaac.utils.scripts.test_utils import load_test_file
-from omni.isaac.urdf import _urdf
 import asyncio
 import math
 
 # import omni.physx as _physx
-from .common import import_robot, set_drive_parameters
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
+from .common import set_drive_parameters
+from pxr import UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        self._urdf_interface = _urdf.acquire_urdf_interface()
         self._window = omni.kit.ui.Window(
             "Import Franka",
             300,
@@ -40,13 +37,13 @@ class Extension(omni.ext.IExt):
     async def _load_franka(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            import_config = _urdf.ImportConfig()
+            status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
             import_config.merge_fixed_joints = False
             import_config.fix_base = True
-            import_robot(
-                self._urdf_interface,
-                self._extension_path + "/data/urdf/robots/franka_description/robots/panda_arm_hand.urdf",
-                import_config,
+            omni.kit.commands.execute(
+                "ParseAndImportURDFCommand",
+                urdf_path=self._extension_path + "/data/urdf/robots/franka_description/robots/panda_arm_hand.urdf",
+                import_config=import_config,
             )
 
             viewport = omni.kit.viewport.get_default_viewport_window()
@@ -69,8 +66,6 @@ class Extension(omni.ext.IExt):
         )
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
         distantLight.CreateIntensityAttr(500)
-
-        franka_prim = stage.GetDefaultPrim()
 
         PhysxSchema.PhysxArticulationAPI.Get(stage, "/panda").CreateSolverPositionIterationCountAttr(32)
         PhysxSchema.PhysxArticulationAPI.Get(stage, "/panda").CreateSolverVelocityIterationCountAttr(8)
