@@ -4,13 +4,6 @@ import omni
 from pxr import UsdGeom, PhysxSchema, UsdPhysics
 
 
-def import_robot(urdf_interface, urdf_path, import_config):
-    root_path, filename = os.path.split(os.path.abspath(urdf_path))
-    imported_robot = urdf_interface.parse_urdf(root_path, filename, import_config)
-    path = urdf_interface.import_robot(root_path, filename, imported_robot, import_config)
-    return path
-
-
 def set_drive_parameters(drive, target_type, target_value, stiffness, damping, max_force=None):
     """Enable velocity drive for a given joint"""
 
