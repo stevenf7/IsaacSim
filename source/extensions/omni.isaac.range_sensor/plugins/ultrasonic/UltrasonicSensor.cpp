@@ -91,8 +91,6 @@ void UltrasonicSensor::onComponentChange()
 
     isaac::utils::safeGetAttribute(typedPrim.GetNumBinsAttr(), mNumBins);
 
-    isaac::utils::safeGetAttribute(typedPrim.GetPulseDurationAttr(), mPulseDuration);
-    isaac::utils::safeGetAttribute(typedPrim.GetPulseGapDeltaAttr(), mPulseGapDelta);
 
     // we have to have atleast one beam so the FOV can never be smaller than resolution
     mHorizontalResolution = pxr::GfClamp(mHorizontalResolution, 0.005f, 1024);
@@ -124,25 +122,42 @@ void UltrasonicSensor::onComponentChange()
     updateDepthBounds();
 
 
-    pxr::SdfPathVector targets;
-    typedPrim.GetEmitterPrimsRel().GetTargets(&targets);
+    pxr::SdfPathVector emitterTargets;
+    typedPrim.GetEmitterPrimsRel().GetTargets(&emitterTargets);
 
-    if (targets.size() == 0)
+    if (emitterTargets.size() == 0)
     {
         return;
     }
 
-    mEmissionTimer = std::make_unique<UltrasonicArrayEmissionTimer>(targets.size(), mPulseGapDelta, mPulseDuration);
-    mEmitters.resize(targets.size());
-    for (size_t i = 0; i < targets.size(); i++)
+
+    mEmitters.clear();
+    for (size_t i = 0; i < emitterTargets.size(); i++)
     {
-        pxr::UsdPrim prim = mStage->GetPrimAtPath(targets[i]);
+        pxr::UsdPrim prim = mStage->GetPrimAtPath(emitterTargets[i]);
         if (prim.IsA<pxr::RangeSensorSchemaUltrasonicEmitter>())
         {
             const pxr::RangeSensorSchemaUltrasonicEmitter& typedPrim = (pxr::RangeSensorSchemaUltrasonicEmitter)prim;
-            mEmitters[i] = UltrasonicEmitter();
+            mEmitters.push_back(UltrasonicEmitter());
             mEmitters[i].initialize(typedPrim, mStage, mNumBins, mMaxDepth * mMetersPerUnit, mRows, mCols);
-            mEmissionTimer->setEmitterDelay(i, mEmitters[i].mFiringDelay);
+        }
+    }
+
+    pxr::SdfPathVector firingGroupTargets;
+    typedPrim.GetFiringGroupsRel().GetTargets(&firingGroupTargets);
+    mFiringGroups.clear();
+    if (firingGroupTargets.size() != 0)
+    {
+        for (size_t i = 0; i < firingGroupTargets.size(); i++)
+        {
+            pxr::UsdPrim prim = mStage->GetPrimAtPath(firingGroupTargets[i]);
+            if (prim.IsA<pxr::RangeSensorSchemaUltrasonicFiringGroup>())
+            {
+                const pxr::RangeSensorSchemaUltrasonicFiringGroup& typedPrim =
+                    (pxr::RangeSensorSchemaUltrasonicFiringGroup)prim;
+                mFiringGroups.push_back(UltrasonicFiringGroup());
+                mFiringGroups[i].initialize(typedPrim, mStage);
+            }
         }
     }
 }
@@ -155,19 +170,34 @@ void UltrasonicSensor::tick()
         CARB_LOG_ERROR("Physics Scene does not exist");
         return;
     }
-    mEmissionTimer->update(mTimeDelta);
-
-
-    for (size_t i = 0; i < mEmitters.size(); i++)
+    if (mFiringGroups.size() > 0)
     {
+        // CARB_LOG_ERROR("Group %lu", mCurrentFiringGroup);
 
+        const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
 
-        if (mEmissionTimer->shouldEmit(i))
+        for (size_t i = 0; i < group.mEmitterModes.size(); i++)
         {
+            pxr::GfVec2i emitterMode = group.mEmitterModes[i];
+            // TODO use emitterMode[1] which contains the mode data
+            mEmitters[emitterMode[0]].doScan(mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth);
+            // CARB_LOG_ERROR("emitter %d", emitterMode[0]);
+        }
+        // TODO Use the goup.mReceiverModes array to do envelope calculation
 
+        // Increment and clamp the firing group
+        mCurrentFiringGroup += 1;
+        mCurrentFiringGroup = mCurrentFiringGroup % mFiringGroups.size();
+    }
+    else
+    {
+        // Fire everything if there is no group info (?)
+        for (size_t i = 0; i < mEmitters.size(); i++)
+        {
             mEmitters[i].doScan(mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth);
         }
     }
+
 
     mDebugLines.clear();
     for (auto& emitter : mEmitters)
@@ -184,6 +214,16 @@ void UltrasonicSensor::onEmitterChange(const pxr::UsdPrim& prim)
         if (emitter.getPrim().GetPrim() == prim)
         {
             emitter.onComponentChange();
+        }
+    }
+}
+void UltrasonicSensor::onFiringGroupChange(const pxr::UsdPrim& prim)
+{
+    for (auto& group : mFiringGroups)
+    {
+        if (group.getPrim().GetPrim() == prim)
+        {
+            group.onComponentChange();
         }
     }
 }

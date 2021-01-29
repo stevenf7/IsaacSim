@@ -127,10 +127,9 @@ class CreateRangeSensorUltrasonicArrayCommand(omni.kit.commands.Command):
         rotation_rate: float = 20.0,
         horizontal_resolution: float = 0.4,
         vertical_resolution: float = 4.0,
-        pulse_duration: float = 0.5,
-        pulse_gap_delta: float = 1.0,
         num_bins: int = 224,
-        emitter_prims=[],
+        emitter_prims: [] = [],
+        firing_group_prims: [] = [],
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -155,12 +154,14 @@ class CreateRangeSensorUltrasonicArrayCommand(omni.kit.commands.Command):
             self._prim.CreateVerticalFovAttr().Set(self._vertical_fov)
             self._prim.CreateHorizontalResolutionAttr().Set(self._horizontal_resolution)
             self._prim.CreateVerticalResolutionAttr().Set(self._vertical_resolution)
-            self._prim.CreatePulseDurationAttr().Set(self._pulse_duration)
-            self._prim.CreatePulseGapDeltaAttr().Set(self._pulse_gap_delta)
             self._prim.CreateNumBinsAttr().Set(self._num_bins)
 
             rel_paths = self._prim.CreateEmitterPrimsRel()
             for p in self._emitter_prims:
+                rel_paths.AddTarget(p)
+
+            rel_paths = self._prim.CreateFiringGroupsRel()
+            for p in self._firing_group_prims:
                 rel_paths.AddTarget(p)
         return self._prim
 
@@ -174,9 +175,9 @@ class CreateRangeSensorUltrasonicEmitterCommand(omni.kit.commands.Command):
         self,
         path: str = "/UltrasonicEmitter",
         parent=None,
-        per_ray_intensity: float = 0.4,
+        per_ray_intensity: float = 1.0,
         yaw_offset: float = 0.0,
-        firing_delay: float = 0.3,
+        adjacency_list: [] = [],
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -199,10 +200,37 @@ class CreateRangeSensorUltrasonicEmitterCommand(omni.kit.commands.Command):
         if UsdGeom.GetStageUpAxis(self._stage) == UsdGeom.Tokens.y:
             xform_rot.Set(Gf.Vec3d(270, 0, 0))
         if self._prim:
-            self._prim.CreateEnabledAttr().Set(True)
             self._prim.CreatePerRayIntensityAttr().Set(self._per_ray_intensity)
             self._prim.CreateYawOffsetAttr().Set(self._yaw_offset)
-            self._prim.CreateFiringDelayAttr().Set(self._firing_delay)
+            self._prim.CreateAdjacencyListAttr().Set(self._adjacency_list)
+        return self._prim
+
+    def undo(self):
+        if self._prim_path is not None:
+            return self._stage.RemovePrim(self._prim_path)
+        pass
+
+
+class CreateRangeSensorUltrasonicFiringGroupCommand(omni.kit.commands.Command):
+    def __init__(
+        self, path: str = "/UltrasonicFiringGroup", parent=None, emitter_modes: [] = [], receiver_modes: [] = []
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        self._prim = None
+        pass
+
+    def do(self):
+        self._stage = omni.usd.get_context().get_stage()
+        # make prim path unique
+        self._prim_path = get_path(self._stage, self._path, self._parent)
+        self._prim = RangeSensorSchema.UltrasonicFiringGroup.Define(self._stage, self._prim_path)
+
+        if self._prim:
+            self._prim.CreateEmitterModesAttr().Set(self._emitter_modes)
+            self._prim.CreateReceiverModesAttr().Set(self._receiver_modes)
         return self._prim
 
     def undo(self):

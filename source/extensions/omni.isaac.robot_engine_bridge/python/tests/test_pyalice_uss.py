@@ -92,7 +92,7 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
                 path="/World/UltrasonicEmitter",
                 per_ray_intensity=0.4,
                 yaw_offset=0.0,
-                firing_delay=0.1,
+                adjacency_list=[],
             )
             emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set(pose[1])
             emitter_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(
@@ -112,10 +112,9 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
             vertical_fov=10.0,
             horizontal_resolution=0.4,
             vertical_resolution=0.8,
-            pulse_duration=0.2,
-            pulse_gap_delta=0.05,
             num_bins=224,
             emitter_prims=emitter_paths,
+            firing_group_prims=[],
         )
 
         return ultrasonic

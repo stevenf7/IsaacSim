@@ -10,6 +10,7 @@ class RangeSensorMenu:
             ("Lidar", self.add_lidar),
             ("Ultrasonic/Array", self.add_ultrasonic_array),
             ("Ultrasonic/Emitter", self.add_ultrasonic_emitter),
+            ("Ultrasonic/FiringGroup", self.add_ultrasonic_firing_group),
         ]
         self._menus = []
         for item in menu_items:
@@ -56,10 +57,9 @@ class RangeSensorMenu:
             vertical_fov=10.0,
             horizontal_resolution=0.5,
             vertical_resolution=0.5,
-            pulse_duration=0.5,
-            pulse_gap_delta=1.0,
             num_bins=224,
             emitter_prims=[],
+            firing_group_prims=[],
         )
 
     def add_ultrasonic_emitter(self, *args, **kwargs):
@@ -67,9 +67,18 @@ class RangeSensorMenu:
             "CreateRangeSensorUltrasonicEmitterCommand",
             path="/UltrasonicEmitter",
             parent=self._get_stage_and_path(),
-            per_ray_intensity=0.4,
+            per_ray_intensity=1.0,
             yaw_offset=0.0,
-            firing_delay=0.3,
+            adjacency_list=[],
+        )
+
+    def add_ultrasonic_firing_group(self, *args, **kwargs):
+        result, prim = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/UltrasonicFiringGroup",
+            parent=self._get_stage_and_path(),
+            emitter_modes=[],
+            receiver_modes=[],
         )
 
     def shutdown(self):

@@ -12,7 +12,6 @@
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
-#include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
 #include <rangeSensorSchema/ultrasonicEmitter.h>
 
@@ -27,7 +26,6 @@ namespace isaac
 namespace range_sensor
 {
 
-// TODO: This class will eventually refer to a specific emitter prim
 class UltrasonicEmitter : public utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicEmitter>
 {
 public:
@@ -42,10 +40,7 @@ public:
                 float maxDepth,
                 float minDepth)
     {
-        if (!mEnabled)
-        {
-            return;
-        }
+
         carb::fastcache::Transform parentTrans;
         parentTrans.orientation = { 0, 0, 0, 1 };
         auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
@@ -240,11 +235,9 @@ public:
     void onComponentChange()
     {
         mMetersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->mStage));
-        isaac::utils::safeGetAttribute(mPrim.GetEnabledAttr(), mEnabled);
         isaac::utils::safeGetAttribute(mPrim.GetYawOffsetAttr(), mYawOffset);
-
         isaac::utils::safeGetAttribute(mPrim.GetPerRayIntensityAttr(), mPerRayIntensity);
-        isaac::utils::safeGetAttribute(mPrim.GetFiringDelayAttr(), mFiringDelay);
+        isaac::utils::safeGetAttribute(mPrim.GetAdjacencyListAttr(), mAdjacencyList);
 
         mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
     }
@@ -261,7 +254,6 @@ public:
     std::vector<carb::Float3> mHitPos;
     int mRows = 0;
     int mCols = 0;
-    float mFiringDelay = 0.0f;
 
 private:
     bool raycast(const ::physx::PxVec3& pos,
@@ -282,12 +274,11 @@ private:
     }
     float mYawOffset = 0.0f;
 
-    int mFiringGroup = 0;
     float mPerRayIntensity = 1.0f;
-    bool mEnabled = true;
     float mMetersPerUnit = 1.0f;
 
     pxr::UsdPrim mParentPrim;
+    pxr::VtArray<int> mAdjacencyList;
 };
 }
 }
