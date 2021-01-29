@@ -566,9 +566,8 @@ class FillBin(Scenario):
         ]
 
         # Load robot environment and set its transform
-        solid_robot = "/physics/scene/solid"
         self.env_path = "/environments/env"
-        create_ur10(self._stage, self.env_path, self.ur10_table_usd, solid_robot, Gf.Vec3d(0, 0, 0))
+        create_ur10(self._stage, self.env_path, self.ur10_table_usd, Gf.Vec3d(0, 0, 0))
 
         # Set robot end effector Target
         orig = [0, 0.75, 0.42]
@@ -647,10 +646,9 @@ class FillBin(Scenario):
             self._stage.GetPrimAtPath(ur10_path),
             self._dc,
             self._mp,
-            sgp,
             self.world,
-            "/physics/scene/solid",
             default_config,
+            sgp=sgp,
             urdf="/urdf/ur10_robot_robotiq.urdf",
         )
 

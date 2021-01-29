@@ -59,11 +59,10 @@ def set_up_z_axis(stage):
         UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
 
 
-def create_ur10(stage, env_path, UR10_stage, solid_robot, location):
+def create_ur10(stage, env_path, UR10_stage, location):
     envPrim = stage.DefinePrim(env_path, "Xform")
     envPrim.GetReferences().AddReference(UR10_stage)
     set_translate(envPrim, location)
-    print(env_path + "/ur10", solid_robot)
 
 
 def create_objects(stage, asset_paths, env_paths, translations, rotations=None):
@@ -136,6 +135,7 @@ class Scenario:
         self._add_bin_enabled = True
         self.asset_path = None
         self.small_bin_scale = np.array([0.19, 0.296, 0.08])
+        self._paused = True
 
     def __del__(self):
         self.robot_created = False
