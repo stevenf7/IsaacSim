@@ -621,7 +621,7 @@ class FillBin(Scenario):
 
         # Prim path of two blocks and their handles
         prim = self._stage.GetPrimAtPath(self.env_path)
-        self.bin_path = self.env_path + "/bin/SmallKLT"
+        self.bin_path = self.env_path + "/bin"
         self.bin_handle = self._dc.get_rigid_body(self.bin_path)
 
         # Create world and robot object
