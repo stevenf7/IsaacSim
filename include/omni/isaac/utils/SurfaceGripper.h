@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -154,7 +154,7 @@ public:
             DcHandle rb_0 = mDc->getRigidBody(mProps.parentPath.c_str());
             if (!rb_0)
             {
-                CARB_LOG_ERROR("Parent rigid Body handle not valid");
+                CARB_LOG_ERROR("Parent rigid Body handle not valid for prim %s", mProps.parentPath.c_str());
                 return false;
             }
             DcTransform t_0 = mDc->getRigidBodyPose(rb_0);
@@ -170,6 +170,7 @@ public:
 
             if (hit.hit)
             {
+                CARB_LOG_INFO("Gripping prim %s", mDc->getRigidBodyPath(hit.rigidBody));
                 DcTransform t_1 = inverse(mDc->getRigidBodyPose(hit.rigidBody)) * _t_0;
 
                 mJointProperties.body0 = rb_0;
