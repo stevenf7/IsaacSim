@@ -236,6 +236,7 @@ class UR10:
 
     def __del__(self):
         self.mp.unregisterRmp(self.rmp_handle)
+        self.end_effector.gripper = None
         print("Destructor called, UR10 deleted.")
 
     def set_pose(self, pos, rot):
