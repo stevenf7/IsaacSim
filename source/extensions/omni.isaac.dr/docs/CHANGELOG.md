@@ -2,6 +2,16 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2021-01-28
+========================
+
+Added
+-------
+- Polygon movement randomization
+
+Fixed
+------
+- DR not working properly with grouped classes for texture, material components
 
 [0.1.1] - 2020-11-25
 ========================
