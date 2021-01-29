@@ -157,9 +157,9 @@ class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCase):
         # Run test so tcp is connected
         await simulate(1)
 
-        handle_1 = self._dc.get_rigid_body("/World/bin_1/SmallKLT")
-        handle_2 = self._dc.get_rigid_body("/World/bin_2/SmallKLT")
-        handle_3 = self._dc.get_rigid_body("/World/bin_3/SmallKLT")
+        handle_1 = self._dc.get_rigid_body("/World/bin_1")
+        handle_2 = self._dc.get_rigid_body("/World/bin_2")
+        handle_3 = self._dc.get_rigid_body("/World/bin_3")
         self.assertLess(self._dc.get_rigid_body_pose(handle_1).p.z, 10)
         self.assertLess(self._dc.get_rigid_body_pose(handle_2).p.z, 10)
         self.assertLess(self._dc.get_rigid_body_pose(handle_3).p.z, 10)

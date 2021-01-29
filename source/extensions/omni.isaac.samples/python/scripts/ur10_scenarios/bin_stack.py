@@ -887,7 +887,7 @@ class BinStack(Scenario):
 
         # Prim path of two blocks and their handles
         prim = self._stage.GetPrimAtPath(self.env_path)
-        self.bin_paths = [self.env_path + "/bins/bin_{}/SmallKLT".format(i) for i in range(self.max_bins)]
+        self.bin_paths = [self.env_path + "/bins/bin_{}".format(i) for i in range(self.max_bins)]
         self.bin_handles = [self._dc.get_rigid_body(i) for i in self.bin_paths]
 
         # Create world and robot object
