@@ -126,10 +126,14 @@ void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Rea
             std::string mUsdAsset = actorCreateRequests[i].getPrefab();
             carb::extras::Path mUsdAssetPath(mUsdAsset);
             std::string warningMsg;
+            // make name an absolute path if it is not already.
+            if (actorName[0] != '/')
+            {
+                actorName = "/" + actorName;
+            }
             CARB_LOG_INFO("spawn %s %s", actorName.c_str(), mUsdAsset.c_str());
-
             auto prim = omni::usd::UsdUtils::createExternalRefNodeAtPath(
-                mStage, mUsdAsset.c_str(), ("/" + actorName).c_str(), warningMsg);
+                mStage, mUsdAsset.c_str(), actorName.c_str(), warningMsg, false);
             if (warningMsg.size() > 0)
             {
                 CARB_LOG_WARN("%s", warningMsg.c_str());
@@ -152,6 +156,10 @@ void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Rea
                 }
                 AddObject(actorName, prim);
             }
+            else
+            {
+                CARB_LOG_WARN("Could not create %s", actorName.c_str());
+            }
         }
     }
     // handle destroy request
@@ -162,15 +170,22 @@ void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Rea
         {
             // destroy all child gameobject by name
             std::string actorName = actorDestroyRequests[i];
-            auto defaultPrim = mStage->GetDefaultPrim();
-            auto targetPath = defaultPrim.GetPath().GetString() + "/" + actorName;
-            auto prim = mStage->GetPrimAtPath(pxr::SdfPath(targetPath));
+            // make name an absolute path if it is not already.
+            if (actorName[0] != '/')
+            {
+                actorName = "/" + actorName;
+            }
+            auto prim = mStage->GetPrimAtPath(pxr::SdfPath(actorName));
 
-            CARB_LOG_INFO("destroy %s", actorName.c_str());
+            CARB_LOG_INFO("Destroy %s", actorName.c_str());
             if (prim)
             {
                 omni::usd::UsdUtils::removePrim(prim);
                 RemoveObject(actorName);
+            }
+            else
+            {
+                CARB_LOG_WARN("Could not destroy %s, actor doesn't exist", actorName.c_str());
             }
         }
     }

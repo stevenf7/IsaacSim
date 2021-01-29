@@ -3529,7 +3529,7 @@ DcRayCastResult CARB_ABI DcRayCast(const carb::Float3& origin, const carb::Float
 
     if (out.hit)
     {
-        out.rigidBody = ctx->getRigidBodyHandle(intToPath(result.rigidBody));
+        out.rigidBody = ctx->registerRigidBody(intToPath(result.rigidBody));
         out.distance = result.distance;
     }
     return out;

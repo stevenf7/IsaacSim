@@ -70,13 +70,44 @@ void SurfaceGripper::tick()
             {
                 if (elements[0] == 1)
                 {
-                    CARB_LOG_WARN("Gripper Closed");
-                    mGripperJoint->close();
+                    CARB_LOG_INFO("Closing Gripper");
+
+                    if (!mGripperJoint->isClosed())
+                    {
+                        bool status = mGripperJoint->close();
+                        if (status)
+                        {
+                            CARB_LOG_INFO("Gripper Closed");
+                        }
+                        else
+                        {
+                            CARB_LOG_WARN("Gripper not closed successfully");
+                        }
+                    }
+                    else
+                    {
+                        CARB_LOG_INFO("Gripper already closed");
+                    }
                 }
                 else
                 {
-                    CARB_LOG_WARN("Gripper Open");
-                    mGripperJoint->open();
+                    CARB_LOG_INFO("Opening Gripper");
+                    if (mGripperJoint->isClosed())
+                    {
+                        bool status = mGripperJoint->open();
+                        if (status)
+                        {
+                            CARB_LOG_INFO("Gripper Opened");
+                        }
+                        else
+                        {
+                            CARB_LOG_WARN("Gripper not opened successfully");
+                        }
+                    }
+                    else
+                    {
+                        CARB_LOG_INFO("Gripper already opened");
+                    }
                 }
             }
         }
@@ -129,14 +160,22 @@ void SurfaceGripper::onComponentChange()
 
     if (targets.size() == 0)
     {
-        return;
+        std::string jointPath = mPrim.GetPath().GetString() + "/d6Joint";
+
+        CARB_LOG_WARN("JointPrim path not specified, using %s", jointPath.c_str());
+        mProps.d6JointPath = jointPath;
     }
-    mProps.d6JointPath = targets[0].GetString();
+    else
+    {
+        mProps.d6JointPath = targets[0].GetString();
+    }
+
 
     typedPrim.GetParentPrimRel().GetTargets(&targets);
 
     if (targets.size() == 0)
     {
+        CARB_LOG_ERROR("Parent prim relationsip for surface gripper not specified");
         return;
     }
     mProps.parentPath = targets[0].GetString();

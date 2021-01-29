@@ -178,11 +178,10 @@ class UR10:
         prim,
         dc,
         mp,
-        sgp,
         world=None,
-        group_path="",
         default_config=None,
         is_ghost=False,
+        sgp=None,
         compensate_gravity=True,
         urdf="/urdf/ur10_robot_no_mat.urdf",
     ):
@@ -222,8 +221,9 @@ class UR10:
 
         self.end_effector = EndEffector(self.dc, self.mp, self.ar, self.rmp_handle)
 
-        self.end_effector.gripper = Surface_Gripper(self.dc)
-        self.end_effector.gripper.initialize(sgp)
+        if sgp is not None:
+            self.end_effector.gripper = Surface_Gripper(self.dc)
+            self.end_effector.gripper.initialize(sgp)
 
         if default_config:
             self.mp.setDefaultConfig(self.rmp_handle, default_config)
