@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -65,11 +65,17 @@ void Teleport::tick()
                 isaacBodyRotation.getX(), isaacBodyRotation.getY(), isaacBodyRotation.getZ(), isaacBodyRotation.getW());
             pxr::GfVec3f pxBodyScale(isaacBodyScale.getX(), isaacBodyScale.getY(), isaacBodyScale.getZ());
 
+            std::string inputName = names[i].cStr();
+            // make usd paths absolute
+            if (inputName[0] != '/')
+            {
+                inputName = "/" + inputName;
+            }
             for (auto& object : mObjects)
             {
                 pxr::UsdPrim prim = object.second;
                 std::string actorName = object.first;
-                if (strcmp(actorName.c_str(), names[i].cStr()) == 0)
+                if (strcmp(actorName.c_str(), inputName.c_str()) == 0)
                 {
                     isaac::utils::transforms::setTransform(
                         mDynamicControlPtr, prim, pxBodyTranslation * mInvUnitScale, pxBodyRotation);

@@ -129,21 +129,127 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Destroy
         msg = Message.create_message_builder("ActorGroupProto")
         proto = msg.proto
-        request = proto.init("destroyRequests", 1)
-        request[0] = "World/cracker_box"
+        request = proto.init("destroyRequests", 2)
+        request[0] = "/World/cracker_box"
+        request[1] = "World/power_drill"  # Paths are converted to absolute, so both / and no / should work
         test_app.app.publish("simulation.interface", "input", "scenario_actors", msg)
         await simulate(0.2)
         # cracker_box should return a null prim
         cracker_box = self._stage.GetPrimAtPath("/World/cracker_box")
         self.assertFalse(cracker_box)
         power_drill = self._stage.GetPrimAtPath("/World/power_drill")
-        self.assertTrue(power_drill)
+        self.assertFalse(power_drill)
 
         self._timeline.stop()
         test_app.stop()
         test_app = None
 
         pass
+
+    # This test is failing currently, need to investigate and file a bug
+    # async def test_actor_spawner_dynamic(self):
+    #     result, prim = omni.kit.commands.execute(
+    #         "CreateRobotEngineBridgeScenarioFromMessageCommand",
+    #         path="/REB_ScenarioFromMessage",
+    #         parent=None,
+    #         input_component="input",
+    #         input_channel="scenario_actors",
+    #         teleport_input_component="input",
+    #         teleport_input_channel="teleport",
+    #         rigid_body_sink_output_component="output",
+    #         rigid_body_sink_output_channel="bodies",
+    #     )
+    #     self.assertTrue(result)
+    #     UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+    #     self._timeline.play()
+    #     await omni.kit.app.get_app().next_update_async()
+
+    #     test_app = PyaliceApp()
+    #     test_app.app.load(
+    #         filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
+    #     )
+
+    #     test_app.start()
+    #     # Run test so tcp is connected
+    #     await simulate(1)
+
+    #     # Spawn actors
+    #     msg = Message.create_message_builder("ActorGroupProto")
+    #     proto = msg.proto
+    #     request = proto.init("spawnRequests", 3)
+    #     actor = request[0]
+    #     actor.name = "/World/bin_1"
+    #     actor.prefab = self._nucleus_path + "/Props/KLT_Bin/small_KLT.usd"
+    #     actor.pose.translation.x = 0.6
+    #     actor.pose.translation.y = -0.5
+    #     actor.pose.translation.z = 0.2
+    #     actor = request[1]
+    #     actor.name = "/World/bin_2"
+    #     actor.prefab = self._nucleus_path + "/Props/KLT_Bin/small_KLT.usd"
+    #     actor.pose.translation.x = 0.6
+    #     actor.pose.translation.y = 0.5
+    #     actor.pose.translation.z = 0.2
+    #     # actor.pose.rotation.q.w = 0.707
+    #     # actor.pose.rotation.q.x = 0.707
+    #     actor = request[2]
+    #     actor.name = "/World/bin_3"
+    #     actor.prefab = self._nucleus_path + "/Props/KLT_Bin/small_KLT.usd"
+    #     actor.pose.translation.x = 1.0
+    #     actor.pose.translation.y = -0.5
+    #     actor.pose.translation.z = 0.2
+    #     # actor.pose.rotation.q.w = 0.707
+    #     # actor.pose.rotation.q.x = 0.707
+    #     test_app.app.publish("simulation.interface", "input", "scenario_actors", msg)
+
+    #     # Verify actors are created
+    #     await simulate(1.0)
+    #     # cracker_box = self._stage.GetPrimAtPath("/World/cracker_box")
+    #     # self.assertIsNotNone(cracker_box)
+    #     # self.assertTrue(cracker_box.GetAttribute("xformOp:translate").Get() == (50, 0, 0))
+    #     # self.assertTrue(cracker_box.GetAttribute("xformOp:rotateXYZ").Get() == (0, 0, 0))
+
+    #     # power_drill = self._stage.GetPrimAtPath("/World/power_drill")
+    #     # self.assertIsNotNone(power_drill)
+    #     # self.assertTrue(power_drill.GetAttribute("xformOp:translate").Get() == (0, 0, 50))
+    #     # self.assertAlmostEqual(power_drill.GetAttribute("xformOp:rotateXYZ").Get()[0], 90, delta=0.02)
+
+    #     # # Teleport
+    #     # msg = Message.create_message_builder("RigidBody3GroupProto")
+    #     # proto = msg.proto
+    #     # bodies = proto.init("bodies", 1)
+    #     # bodies[0].refTBody.translation.x = -1.0
+    #     # bodies[0].scales.x = 1.0
+    #     # bodies[0].scales.y = 1.0
+    #     # bodies[0].scales.z = 1.0
+    #     # names = proto.init("names", 1)
+    #     # names[0] = "World/cracker_box"
+    #     # test_app.app.publish("simulation.interface", "input", "teleport", msg)
+
+    #     # await simulate(0.2)
+    #     # # check that the prim moved as a result of teleport
+    #     # self.assertTrue(cracker_box.GetAttribute("xformOp:translate").Get() == (-100, 0, 0))
+
+    #     # # Rigidbody Sink
+    #     # msg = test_app.app.receive("simulation.interface", "output", "bodies")
+    #     # self.assertTrue(msg)
+    #     # self.assertAlmostEqual(msg.proto.bodies[0].refTBody.translation.x, -1.0, delta=0.001)
+
+    #     # # Destroy
+    #     # msg = Message.create_message_builder("ActorGroupProto")
+    #     # proto = msg.proto
+    #     # request = proto.init("destroyRequests", 1)
+    #     # request[0] = "World/cracker_box"
+    #     # test_app.app.publish("simulation.interface", "input", "scenario_actors", msg)
+    #     # await simulate(0.2)
+    #     # # cracker_box should return a null prim
+    #     # cracker_box = self._stage.GetPrimAtPath("/World/cracker_box")
+    #     # self.assertFalse(cracker_box)
+    #     # power_drill = self._stage.GetPrimAtPath("/World/power_drill")
+    #     # self.assertTrue(power_drill)
+
+    #     self._timeline.stop()
+    #     test_app.stop()
+    #     test_app = None
 
     async def test_camera_switcher(self):
 
