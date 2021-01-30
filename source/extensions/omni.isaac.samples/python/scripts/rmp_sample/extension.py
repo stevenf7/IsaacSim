@@ -1,8 +1,9 @@
 import omni.ext
 import omni.ui as ui
-import omni.kit.ui
 import gc
 import asyncio
+import weakref
+import omni.physx as _physx
 
 EXTENSION_NAME = "RMP Sample"
 
@@ -13,10 +14,14 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
         self._window.set_visibility_changed_fn(self._on_window)
-        self._menu_entry = omni.kit.ui.get_editor_menu().add_item(
-            f"Isaac/Samples/{EXTENSION_NAME}", self._menu_callback
+        self._menu_entry = omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Isaac/Samples",
         )
-        self._editor = omni.kit.editor.get_editor_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
         self._sample = RMPSample()
@@ -51,16 +56,16 @@ class Extension(omni.ext.IExt):
             self._sub_stage_event = (
                 omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
             )
-            self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+            self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
             self._timeline_sub = self._timeline.get_timeline_event_stream().create_subscription_to_pop(
                 self._on_timeline_event
             )
         else:
             self._sub_stage_event = None
-            self._editor_event_subscription = None
+            self._physx_subs = None
             self._timeline_sub = None
 
-    def _menu_callback(self, a, b):
+    def _menu_callback(self):
         self._window.visible = not self._window.visible
 
     def _on_stage_event(self, event):
@@ -83,7 +88,7 @@ class Extension(omni.ext.IExt):
             self._timeline.stop()
             self._sample.stop_tasks()
 
-    def _on_editor_step(self, step):
+    def _on_simulation_step(self, step):
         if self._sample.created:
             self._create_robot_btn.text = "Robot Already Loaded"
             if self._timeline.is_playing():
@@ -147,7 +152,7 @@ class Extension(omni.ext.IExt):
         self._reset_btn.enabled = True
 
     def on_shutdown(self):
-        self._editor_event_subscription = None
+        self._physx_subs = None
         self._sub_stage_event = None
         self._timeline_sub = None
 

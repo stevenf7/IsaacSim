@@ -11,6 +11,8 @@ from omni.isaac.samples.scripts.rmp_sample.sample import RMPSample
 from .common import simulate
 from pxr import Gf
 
+import omni.physx as _physx
+
 
 class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
 
@@ -18,8 +20,7 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def setUp(self):
         self._sample = RMPSample()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._editor = omni.kit.editor.get_editor_interface()
-        self._editor_event_subscription = self._editor.subscribe_to_update_events(self._sample.step)
+        self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._sample.step)
         physics_rate = carb.settings.get_settings().get("/physics/timeStepsPerSecond")
         self.phys_num_steps = carb.settings.get_settings().get("persistent/physics/maxNumSteps")
         carb.settings.get_settings().set_int(
@@ -37,7 +38,7 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         await omni.kit.app.get_app().next_update_async()
         self._sample = None
-        self._editor_event_subscription = None
+        self._physx_subs = None
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", self._limit_fps)
         carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(self.phys_num_steps))
         await omni.kit.app.get_app().next_update_async()

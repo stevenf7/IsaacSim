@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
-import omni.kit.editor
+import omni
 
 
 class Kaya:

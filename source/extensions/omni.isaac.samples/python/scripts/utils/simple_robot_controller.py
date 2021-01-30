@@ -17,7 +17,6 @@ class RobotController:
     def __init__(
         self,
         stage,
-        editor,
         timeline,
         dc,
         articulation_path,
@@ -27,7 +26,6 @@ class RobotController:
         goal_offset_threshold,
     ):
         self._stage = stage
-        self._editor = editor
         self._timeline = timeline
         self._dc = dc
         self._articulation_path = articulation_path

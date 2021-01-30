@@ -8,12 +8,12 @@
 #
 from pxr import Gf
 import carb
-import omni.kit.editor
 import omni.usd
 import omni.ext
 import omni.ui as ui
 import asyncio
 import gc
+import weakref
 
 from omni.isaac.dynamic_control import _dynamic_control
 from .utils.simple_robot_controller import RobotController
@@ -43,15 +43,19 @@ def create_xyz(init={"X": 100, "Y": 100, "Z": 0}):
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
         self._window.deferred_dock_in("Content")
-        self._menu_entry = omni.kit.ui.get_editor_menu().add_item(
-            f"Isaac/Samples/{EXTENSION_NAME}", self._menu_callback
+        self._menu_entry = omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Isaac/Samples",
         )
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._create_ui()
@@ -59,7 +63,7 @@ class Extension(omni.ext.IExt):
         self._setup_done = False
         self._rc = None
 
-    def _menu_callback(self, a, b):
+    def _menu_callback(self):
         self._window.visible = not self._window.visible
         if self._window.visible:
             self._sub_stage_event = self._usd_context.get_stage_event_stream().create_subscription_to_pop(
@@ -166,7 +170,6 @@ class Extension(omni.ext.IExt):
             # setup simple robot controller
             self._rc = RobotController(
                 self._stage,
-                self._editor,
                 self._timeline,
                 self._dc,
                 self._robot_prim_path,
@@ -177,7 +180,9 @@ class Extension(omni.ext.IExt):
             )
             self._rc.control_setup()
             # start stepping
-            self._editor_event_subscription = self._editor.subscribe_to_update_events(self._rc.update)
+            self._editor_event_subscription = (
+                omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._rc.update)
+            )
 
     def _on_environment_setup(self):
         # wait for new stage before creating robot

@@ -87,8 +87,8 @@ class SimpleStack(Scenario):
     Scenarios define the life cycle within kit and handle init, startup, shutdown etc.
     """
 
-    def __init__(self, editor, dc, mp):
-        super().__init__(editor, dc, mp)
+    def __init__(self, dc, mp):
+        super().__init__(dc, mp)
 
     def reset_blocks(self, *args):
         if self._timeline.is_playing():

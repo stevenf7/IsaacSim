@@ -7,10 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import carb
-import omni.kit.editor
 import omni.ext
 import omni.appwindow
-import omni.kit.ui
+import omni.ui as ui
+import weakref
 import omni.kit.settings
 import gc
 import numpy as np
@@ -30,40 +30,11 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         """Initialize extension and UI elements
         """
-        self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._window = omni.kit.ui.Window(
-            EXTENSION_NAME,
-            300,
-            200,
-            menu_path="Isaac/Samples/" + EXTENSION_NAME,
-            open=False,
-            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
-        )
-        self._window.set_update_fn(self._on_update_ui)
-
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-
-        self._load_jetbot_btn = self._window.layout.add_child(omni.kit.ui.Button("Load Jetbot"))
-        self._load_jetbot_btn.set_clicked_fn(self._on_environment_setup)
-        self._load_jetbot_btn.tooltip = omni.kit.ui.Label("Reset the stage and load the jetbot environment")
-        self._jetbot = False  # is jetbot loaded and exist
-        self._load_jetbot_btn.enabled = True
-
-        self._reset_btn = self._window.layout.add_child(omni.kit.ui.Button("Reset Robot"))
-        self._reset_btn.set_clicked_fn(self._on_reset)
-        self._reset_btn.tooltip = omni.kit.ui.Label("Reset Robot to origin")
-        self._reset_btn.enabled = False
-
-        self._window.layout.add_child(omni.kit.ui.Label("keyboard map:"))
-        self._window.layout.add_child(omni.kit.ui.Label("   w: forward"))
-        self._window.layout.add_child(omni.kit.ui.Label("   s: reverse"))
-        self._window.layout.add_child(omni.kit.ui.Label("   a: left spin"))
-        self._window.layout.add_child(omni.kit.ui.Label("   d: right spin"))
-
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
@@ -74,10 +45,60 @@ class Extension(omni.ext.IExt):
 
         self._max_velocity = 20
         self._wheel_check = None
+        self._jetbot = False  # is jetbot loaded and exist
 
         self._vel_target = np.zeros(2)
         self._accel = np.zeros(2)
         self._ar = _dynamic_control.INVALID_HANDLE
+        self._window = None
+        self._load_jetbot_btn = None
+        self._reset_btn = False
+
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Isaac/Samples",
+        )
+
+    def _menu_callback(self):
+        self._build_ui()
+
+    def _build_ui(self):
+        if not self._window:
+            self._window = ui.Window(
+                EXTENSION_NAME,
+                width=300,
+                height=200,
+                menu_path="Isaac/Samples/" + EXTENSION_NAME,
+                open=False,
+                dock=ui.DockPreference.LEFT_BOTTOM,
+            )
+            # self._window.set_update_fn(self._on_update_ui)
+
+            with self._window.frame:
+                with ui.VStack():
+                    self._load_jetbot_btn = ui.Button(
+                        "Load Jetbot",
+                        clicked_fn=self._on_environment_setup,
+                        tooltip="Reset the stage and load the jetbot environment",
+                    )
+                    self._reset_btn = ui.Button(
+                        "Reset Robot", clicked_fn=self._on_reset, tooltip="Reset Robot to origin"
+                    )
+
+                    self._load_jetbot_btn.enabled = True
+                    self._reset_btn.enabled = False
+
+                    ui.Separator(height=3)
+                    ui.Label("keyboard map:")
+                    ui.Label("   w: forward")
+                    ui.Label("   s: reverse")
+                    ui.Label("   a: left spin")
+                    ui.Label("   d: right spin")
+        self._window.visible = True
 
     def _sub_keyboard_event(self, event, *args, **kwargs):
         """Handle keyboard events
@@ -106,7 +127,7 @@ class Extension(omni.ext.IExt):
 
         return True
 
-    def _on_reset(self, widget):
+    def _on_reset(self):
         self._dc.wake_up_articulation(self._ar)
         root_body = self._dc.get_articulation_root_body(self._ar)
         new_pose_p = (0, 0.0, 2.0)
@@ -143,10 +164,12 @@ class Extension(omni.ext.IExt):
             )
 
             # start stepping after jetbot is created
-            self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+            self._editor_event_subscription = (
+                omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
+            )
             self._jetbot = True
 
-    def _on_environment_setup(self, widget):
+    def _on_environment_setup(self):
         # wait for new stage before creating jetbot
         self._wheel_check = False
         self._ar = _dynamic_control.INVALID_HANDLE
@@ -162,10 +185,11 @@ class Extension(omni.ext.IExt):
             event (int): event type
         """
         if event.type == int(omni.usd.StageEventType.OPENED):
-            self._load_jetbot_btn.enabled = True
-            self._reset_btn.enabled = False
-            self._timeline.stop()
-            self._stop_tasks()
+            if self._window:
+                self._load_jetbot_btn.enabled = True
+                self._reset_btn.enabled = False
+                self._timeline.stop()
+                self._stop_tasks()
 
     def _stop_tasks(self):
         self._jetbot = None
@@ -175,7 +199,8 @@ class Extension(omni.ext.IExt):
         """Update jetbot physics once per step
         """
         if not self._timeline.is_playing():
-            return
+            self._reset_btn.text = "Press Play to Enable Controller"
+            self._reset_btn.enabled = False
         if not self._dc.is_simulating():
             return
         if not self._wheel_check:
@@ -190,6 +215,12 @@ class Extension(omni.ext.IExt):
             self._dc.set_dof_velocity_target(
                 self._wheel_left, np.clip(self._vel_target[1], -self._max_velocity, self._max_velocity)
             )
+            self._reset_btn.text = "Reset Robot"
+            self._load_jetbot_btn.enabled = False
+            self._reset_btn.enabled = True
+        else:
+            self._load_jetbot_btn.enabled = True
+            self._reset_btn.enabled = False
 
     def _control_setup(self):
         """ set up velocity control on the joints
@@ -209,18 +240,6 @@ class Extension(omni.ext.IExt):
 
         self._wheel_check = True
 
-    def _on_update_ui(self, widget):
-        if self._jetbot:
-            if not self._timeline.is_playing():
-                self._reset_btn.text = "Press Play to Enable Controller"
-                self._reset_btn.enabled = False
-            else:
-                self._reset_btn.text = "Reset Robot"
-                self._reset_btn.enabled = True
-        else:
-            self._load_jetbot_btn.enabled = True
-            self._reset_btn.enabled = False
-
     def on_shutdown(self):
         """Cleanup objects on extension shutdown
         """
@@ -229,6 +248,5 @@ class Extension(omni.ext.IExt):
         self._editor_event_subscription = None
         self._stop_tasks()
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
-        self._window.set_update_fn(None)
 
         gc.collect()

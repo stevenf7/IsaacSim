@@ -23,8 +23,8 @@ class MultipleObstacle(Scenario):
     Scenarios define the life cycle within kit and handle init, startup, shutdown etc.
     """
 
-    def __init__(self, editor, dc, mp):
-        super().__init__(editor, dc, mp)
+    def __init__(self, dc, mp):
+        super().__init__(dc, mp)
         self.editor_step_count = [0, 0]
         self.incrementor = [1, 1]
         self.mid = [200, 1000]

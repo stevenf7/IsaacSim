@@ -10,8 +10,10 @@ import carb.input
 import omni.kit.commands
 import omni.kit.editor
 import omni.ext
-import omni.kit.ui
+import omni.ui as ui
 import omni.kit.settings
+
+import weakref
 
 from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.dynamic_control import _dynamic_control
@@ -29,20 +31,10 @@ EXTENSION_NAME = "UR10 Preview"
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._window = omni.kit.ui.Window(
-            EXTENSION_NAME,
-            300,
-            200,
-            menu_path="Isaac/Samples/" + EXTENSION_NAME,
-            open=False,
-            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
-        )
-        self._window.set_update_fn(self._on_update_ui)
 
         self._first_step = True
         self._is_playing = False
@@ -51,34 +43,6 @@ class Extension(omni.ext.IExt):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
         self._physxIFace = _physx.acquire_physx_interface()
-
-        self._selected_scenario = self._window.layout.add_child(omni.kit.ui.ComboBox("Select Scenario:"))
-        self._selected_scenario.add_item("Stack Bins")
-        self._selected_scenario.add_item("Fill Bin")
-        self._selected_scenario.selected_index = 0
-
-        self._create_UR10_btn = self._window.layout.add_child(omni.kit.ui.Button("Create Scenario"))
-        self._create_UR10_btn.set_clicked_fn(self._on_environment_setup)
-
-        self._perform_task_btn = self._window.layout.add_child(omni.kit.ui.Button("Perform Task"))
-        self._perform_task_btn.set_clicked_fn(self._on_perform_task)
-        self._perform_task_btn.enabled = False
-
-        self._stop_task_btn = self._window.layout.add_child(omni.kit.ui.Button("Reset Task"))
-        self._stop_task_btn.set_clicked_fn(self._on_stop_tasks)
-        self._stop_task_btn.enabled = False
-
-        self._pause_task_btn = self._window.layout.add_child(omni.kit.ui.Button("Pause Task"))
-        self._pause_task_btn.set_clicked_fn(self._on_pause_tasks)
-        self._pause_task_btn.enabled = False
-
-        self._open_gripper_btn = self._window.layout.add_child(omni.kit.ui.Button("Attach/Detach Suction Gripper"))
-        self._open_gripper_btn.set_clicked_fn(self._on_open_gripper)
-        self._open_gripper_btn.enabled = False
-
-        self._add_new_bins_btn = self._window.layout.add_child(omni.kit.ui.Button("Add Bin"))
-        self._add_new_bins_btn.set_clicked_fn(self._on_add_bin)
-        self._add_new_bins_btn.enabled = False
 
         self._settings = carb.settings.get_settings()
 
@@ -90,16 +54,74 @@ class Extension(omni.ext.IExt):
             self._on_stage_event
         )
         self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
-        self._scenario = Scenario(self._editor, self._dc, self._mp)
+        self._scenario = Scenario(self._dc, self._mp)
 
-    def _on_clear_scenario(self, widget):
+        self._window = None
+        self._selected_scenario = None
+        self._create_UR10_btn = None
+        self._perform_task_btn = None
+        self._stop_task_btn = None
+        self._pause_task_btn = None
+        self._open_gripper_btn = None
+        self._add_new_bins_btn = None
+
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Isaac/Samples",
+        )
+
+    def _menu_callback(self):
+        self._build_ui()
+
+    def _build_ui(self):
+        if not self._window:
+            self._window = ui.Window(
+                EXTENSION_NAME,
+                width=300,
+                height=300,
+                menu_path="Isaac/Samples/" + EXTENSION_NAME,
+                dock=ui.DockPreference.LEFT_BOTTOM,
+            )
+            self._editor_event_subscription = (
+                omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_update_ui)
+            )
+            with self._window.frame:
+                with ui.VStack():
+
+                    self._selected_scenario = ui.ComboBox(0, "Select Scenario", "Stack Bins", "Fill Bin")
+
+                    self._create_UR10_btn = ui.Button("Create Scenario", clicked_fn=self._on_environment_setup)
+
+                    self._perform_task_btn = ui.Button("Perform Task", clicked_fn=self._on_perform_task)
+                    self._perform_task_btn.enabled = False
+
+                    self._stop_task_btn = ui.Button("Reset Task", clicked_fn=self._on_stop_tasks)
+                    self._stop_task_btn.enabled = False
+
+                    self._pause_task_btn = ui.Button("Pause Task", clicked_fn=self._on_pause_tasks)
+                    self._pause_task_btn.enabled = False
+
+                    self._open_gripper_btn = ui.Button(
+                        "Attach/Detach Suction Gripper", clicked_fn=self._on_open_gripper
+                    )
+                    self._open_gripper_btn.enabled = False
+
+                    self._add_new_bins_btn = ui.Button("Add Bin", clicked_fn=self._on_add_bin)
+                    self._add_new_bins_btn.enabled = False
+        self._window.visible = True
+
+    def _on_clear_scenario(self):
         # wait for new stage before creating franka
         asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         self._create_UR10_btn.text = "Create Scenario"
         self._create_UR10_btn.set_clicked_fn(self._on_environment_setup)
         self._selected_scenario.enabled = True
 
-    def _on_environment_setup(self, widget):
+    def _on_environment_setup(self):
         # wait for new stage before creating franka
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._on_create_UR10(task))
@@ -111,15 +133,18 @@ class Extension(omni.ext.IExt):
         done, pending = await asyncio.wait({task})
         if task not in done:
             return
+        selected_scenario = self._selected_scenario.model.get_item_value_model().as_int
+        if not selected_scenario:
+            return
 
         self._stage = self._usd_context.get_stage()
 
-        if self._selected_scenario.selected_index == 0:
-            self._scenario = bin_stack.BinStack(self._editor, self._dc, self._mp)
+        if selected_scenario == 1:
+            self._scenario = bin_stack.BinStack(self._dc, self._mp)
             self._viewport.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", -83.41, -126.78, -80.28, True)
-        if self._selected_scenario.selected_index == 1:
-            self._scenario = FillBin(self._editor, self._dc, self._mp)
+        if selected_scenario == 2:
+            self._scenario = FillBin(self._dc, self._mp)
             self._add_new_bins_btn.text = "Drop Parts"
             self._viewport.set_camera_position("/OmniverseKit_Persp", -142.07, 284.72, 111.53, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", -140.6, 282.7, 110.6, True)
@@ -178,18 +203,19 @@ class Extension(omni.ext.IExt):
         self._scenario.step(step)
 
     def _on_stage_event(self, event):
-        self.stage = self._usd_context.get_stage()
-        if event.type == int(omni.usd.StageEventType.OPENED):
-            self._create_UR10_btn.enabled = True
-            self._selected_scenario.enabled = True
-            self._perform_task_btn.enabled = False
-            self._stop_task_btn.enabled = False
-            self._pause_task_btn.enabled = False
-            self._open_gripper_btn.enabled = False
-            self._add_new_bins_btn.enabled = False
-            self._timeline.stop()
-            self._on_stop_tasks()
-            self._scenario = Scenario(self._editor, self._dc, self._mp)
+        if self._window:
+            self.stage = self._usd_context.get_stage()
+            if event.type == int(omni.usd.StageEventType.OPENED):
+                self._create_UR10_btn.enabled = True
+                self._selected_scenario.enabled = True
+                self._perform_task_btn.enabled = False
+                self._stop_task_btn.enabled = False
+                self._pause_task_btn.enabled = False
+                self._open_gripper_btn.enabled = False
+                self._add_new_bins_btn.enabled = False
+                self._timeline.stop()
+                self._on_stop_tasks()
+                self._scenario = Scenario(self._dc, self._mp)
 
     def _on_perform_task(self, *args):
         self._perform_task_btn.enabled = False
@@ -198,7 +224,7 @@ class Extension(omni.ext.IExt):
         self._open_gripper_btn.enabled = False
         self._scenario.perform_tasks()
 
-    def _on_update_ui(self, widget):
+    def _on_update_ui(self, step):
         is_stopped = self._timeline.is_stopped()
         if is_stopped and self._is_playing:
             self._on_stop_tasks()
@@ -227,5 +253,4 @@ class Extension(omni.ext.IExt):
         self._editor_event_subscription = None
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
         self._physx_subs = None
-        self._window.set_update_fn(None)
         self._window = None
