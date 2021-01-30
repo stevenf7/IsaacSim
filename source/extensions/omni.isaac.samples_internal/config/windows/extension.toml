@@ -2,7 +2,7 @@ display_name = "Isaac Preview Samples"
 
 [dependencies]
 "omni.kit.editor" = {}
-"omni.physx.bundle" = {}
+"omni.physx" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.utils" = {}
 "omni.isaac.manip" = {}

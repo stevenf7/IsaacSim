@@ -2,7 +2,7 @@ display_name = "Isaac Tests"
 
 [dependencies]
 "omni.kit.editor" = {}
-"omni.physx.bundle" = {}
+"omni.physx" = {}
 "omni.kit.window.tests" = {}
 "omni.kit.window.toolbar" = {} # needed for simulation to happen
 "omni.kit.primitive.mesh" = {} # needed for mesh creation commands
