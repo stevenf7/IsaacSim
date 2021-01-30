@@ -23,7 +23,6 @@ segmentation (instance and semantic), and camera parameters.
 
 import math
 import carb
-import omni.kit.editor
 from pxr import UsdGeom, Semantics, Gf
 
 import numpy as np
@@ -57,7 +56,6 @@ class SyntheticDataHelper:
         self.sd = sd
 
         self.sd_interface = self.sd.acquire_syntheticdata_interface()
-        self.editor = omni.kit.editor.get_editor_interface()
         self.viewport = omni.kit.viewport.get_viewport_interface()
         self.carb_settings = carb.settings.acquire_settings_interface()
 

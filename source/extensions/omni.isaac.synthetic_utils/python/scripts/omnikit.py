@@ -335,14 +335,15 @@ if __name__ == "__main__":
     UsdGeom.XformCommonAPI(cube).SetScale([100, 100, 100])
     # Create callbacks to print both editor and physics
 
-    def editor_update(dt):
+    def editor_update(e: carb.events.IEvent):
+        dt = e.payload["dt"]
         print("kit update step:", dt, "seconds")
 
     def physics_update(dt):
         print("physics update step:", dt, "seconds")
 
     kit.play()
-    update_sub = kit.editor.subscribe_to_update_events(editor_update)
+    update_sub = kit.app.get_update_event_stream().create_subscription_to_pop(editor_update)
     physics_sub = omni.physx._physx.acquire_physx_interface().subscribe_physics_step_events(physics_update)
     kit.update(1.0)
     kit.update(2.0)

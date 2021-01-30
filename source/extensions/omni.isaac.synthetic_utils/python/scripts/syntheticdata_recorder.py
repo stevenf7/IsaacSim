@@ -8,9 +8,8 @@
 #
 
 import carb
+import omni
 import omni.syntheticdata._syntheticdata as gt
-import omni.kit.ui
-import omni.kit.editor
 import omni.ui as ui
 
 import atexit
@@ -20,6 +19,7 @@ import random
 import os
 import threading
 import numpy as np
+import weakref
 
 from carb.settings import get_settings
 from PIL import Image, ImageDraw
@@ -182,17 +182,23 @@ class DataWriter:
 class Extension(omni.ext.IExt):
     def on_startup(self):
         """Caled to load the extension"""
-        self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         self._display_paths = []
         self._interface = gt.acquire_syntheticdata_interface()
         self._enable_record = False
         self._counter = 0
         self._window = ui.Window(EXTENSION_NAME, width=600, height=400)
-        self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/{EXTENSION_NAME}", self._menu_callback)
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Window/Isaac",
+        )
         self._window.visible = False
         self._window.deferred_dock_in("Content")
-        self.sub_update = self._editor.subscribe_to_update_events(self._update)
+        self.sub_update = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._update)
         self._settings = get_settings()
         self._build_window_ui()
         self._accumulated_time = 0
@@ -202,7 +208,7 @@ class Extension(omni.ext.IExt):
         """Called when the extesion us unloaded"""
         self._window = None
 
-    def _menu_callback(self, a, b):
+    def _menu_callback(self):
         self._window.visible = not self._window.visible
 
     def _build_window_ui(self):
@@ -459,7 +465,7 @@ class Extension(omni.ext.IExt):
     def reset_counter_fn(self):
         self._counter = 0
 
-    def _update(self, dt):
+    def _update(self, e: carb.events.IEvent):
         if self._enable_record == False:
             return
 
@@ -469,6 +475,7 @@ class Extension(omni.ext.IExt):
             self.rename_button()
             return
 
+        dt = e.payload["dt"]
         if self._accumulated_time < self._capture_period.model.get_value_as_float():
             self._accumulated_time += dt
             return
