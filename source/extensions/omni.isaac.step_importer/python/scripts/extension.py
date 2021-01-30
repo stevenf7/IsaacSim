@@ -1,6 +1,5 @@
 import omni.ext
 import omni.kit.commands
-import omni.kit.editor
 import omni.ui as ui
 import os
 import gc
@@ -22,7 +21,7 @@ from .style import *
 # from .. import _step_importer
 from omni.isaac.step_importer import _step_importer
 
-from omni.kit.widget.filebrowser import FileBrowserItem, FileSystemItem
+from omni.kit.widget.filebrowser import FileBrowserItemFactory, FileSystemItem
 from omni.kit.window.filepicker import FilePickerDialog
 from omni.kit.window.content_browser import get_content_window
 
@@ -38,7 +37,10 @@ def is_step_file(path: str):
 
 def on_filter_item(item) -> bool:
     if not item or item.is_folder:
-        return not (item.name == "Omniverse" or isinstance(item, omni.kit.widget.filebrowser.nucleus_model.NucleusItem))
+        # Bookmarks are listed as NucleusItem
+        return not (
+            item.name == "Omniverse"
+        )  # or isinstance(item, omni.kit.widget.filebrowser.nucleus_model.NucleusItem))
     return is_step_file(item.path)
 
 
@@ -50,10 +52,10 @@ def on_filter_folder(item) -> bool:
 
 
 class StepImporter(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id):
+        self.ext_id = ext_id
         carb.log_info("Loading Step Importer Extension")
         self._si = _step_importer.acquire_interface()
-        self._editor = omni.kit.editor.get_editor_interface()
         self.part = _step_importer.Part()
         self.exporter = None
         self.path = ""
@@ -78,9 +80,19 @@ class StepImporter(omni.ext.IExt):
             click_cancel_handler=weakref.proxy(self)._on_picker_cancel,
             item_filter_fn=on_filter_folder,
         )
+        self._filepicker = FilePickerDialog(
+            "Import STEP",
+            allow_multi_selection=False,
+            apply_button_label="Import",
+            click_apply_handler=weakref.proxy(self)._select_picked_file_callback,
+            click_cancel_handler=weakref.proxy(self)._on_picker_cancel,
+            item_filter_fn=on_filter_item,
+        )
+        self.extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(self.ext_id)
 
-        self._filepicker = None
-
+        # self._filepicker.add_connections({"Built In STEP Files":(extension_path + "/data/step")})
+        self._filepicker.toggle_bookmark_from_path("Built In STEP Files", (self.extension_path + "/data/step"), True)
+        self._filepicker.hide()
         self._folder_picker.hide()
 
         self._tesselation_properties_list = None
@@ -97,16 +109,15 @@ class StepImporter(omni.ext.IExt):
             self._on_stage_event, name="UsdShadeGraphModel Selection Watch"
         )
 
-        try:
-            self._style = self._editor.get_ui_style()
-        except:
-            self._style = None
-        finally:
-            if not self._style:
-                self._style = "NvidiaDark"
+        self._style = "NvidiaDark"
 
-        self._menu = omni.kit.ui.get_editor_menu().add_item(
-            "Window/Isaac/" + EXTENSION_NAME, self.menu_click, toggle=False, value=False
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name="Step Importer", onclick_fn=lambda a=weakref.proxy(self): a.build_ui()
+                )
+            ],
+            "Window/Isaac",
         )
 
         if self._style == "NvidiaLight":
@@ -423,7 +434,7 @@ class StepImporter(omni.ext.IExt):
         self.exporter = None
 
     def on_visibility_change(self, a):
-        self.show_window(self._menu, a)
+        self.show_window(a)
 
     def _build_ui(self):
         if self._window is None:
@@ -471,12 +482,11 @@ class StepImporter(omni.ext.IExt):
                         ui.Spacer(width=ui.Pixel(20))
         self._window.visible = True
 
-    def menu_click(self, menu, value=False):
-        self.show_window(menu, value)
-        if value:
-            self._select_file()
+    def build_ui(self):
+        self.show_window()
+        self._select_file()
 
-    def show_window(self, menu, value=False):
+    def show_window(self, value=True):
         if not value:
             self.select_step(0)
             self._on_picker_cancel(None, None)
@@ -508,6 +518,9 @@ class StepImporter(omni.ext.IExt):
             self._filepicker._widget._click_apply_handler = None
             self._filepicker._widget._file_bar._click_cancel_handler = None
             self._filepicker._widget._click_cancel_handler = None
+            self._filepicker.toggle_bookmark_from_path(
+                "Built In STEP Files", (self.extension_path + "/data/step"), False
+            )
             self._filepicker = None
 
         if self._folder_picker:
@@ -521,21 +534,13 @@ class StepImporter(omni.ext.IExt):
     def _select_file(self):
         if self._filepicker:
             self._filepicker.show()
-        else:
-            self._filepicker = FilePickerDialog(
-                "Import STEP",
-                allow_multi_selection=False,
-                apply_button_label="Import",
-                click_apply_handler=weakref.proxy(self)._select_picked_file_callback,
-                click_cancel_handler=weakref.proxy(self)._on_picker_cancel,
-                item_filter_fn=on_filter_item,
-            )
+            # self._filepicker._widget._model._item_changed(None)
 
     def _select_folder(self, btn_widget):
         self._folder_picker.show()
 
     def _import_file(self, step_path):
-        self.show_window(None, True)
+        self.show_window(True)
         self.step_file = self._si.load_step_file(step_path)
         if self._si.get_assembly_structure(self.step_file, self.part):
             carb.log_info(self.path)
