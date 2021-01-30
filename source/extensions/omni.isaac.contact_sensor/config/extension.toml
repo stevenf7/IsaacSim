@@ -17,7 +17,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.editor" = {}
-"omni.physx.bundle" = {}
+"omni.physx" = {}
 "omni.isaac.dynamic_control" = {}
 
 [[python.modules]]
