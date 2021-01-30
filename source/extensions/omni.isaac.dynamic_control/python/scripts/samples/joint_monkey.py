@@ -1,5 +1,6 @@
 import carb
 import omni
+import omni.ui as ui
 import omni.kit.test
 import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
@@ -7,6 +8,7 @@ from pxr import Usd
 import os
 import omni.physx as _physx
 import numpy as np
+import weakref
 
 # joint animation states
 ANIM_SEEK_LOWER = 1
@@ -70,29 +72,7 @@ def _print_body_rec(dc, body, indent_level=0):
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-        self._window = omni.kit.ui.Window(
-            "Joint Monkey",
-            300,
-            200,
-            menu_path="Isaac/Dynamic Control/Joint Monkey",
-            open=False,
-            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
-        )
-        sublayout = self._window.layout.add_child(omni.kit.ui.ColumnLayout())
-        load_robot_btn = sublayout.add_child(omni.kit.ui.Button("Load Robot"))
-        load_robot_btn.set_clicked_fn(self._on_load_robot)
-
-        move_joints_btn = sublayout.add_child(omni.kit.ui.Button("Move Joints"))
-        move_joints_btn.set_clicked_fn(self._on_move_joints)
-
-        sublayout.add_child(omni.kit.ui.Separator())
-        scrolling_frame = sublayout.add_child(omni.kit.ui.ScrollingFrame("", -1, -1))
-        self.dof_states_label = scrolling_frame.add_child(
-            omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
-        )
-        self.dof_props_label = scrolling_frame.add_child(
-            omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
-        )
+        self._window = None
         self._physxIFace = _physx.acquire_physx_interface()
         self._physx_subscription = None
         self._timeline = omni.timeline.get_timeline_interface()
@@ -101,6 +81,38 @@ class Extension(omni.ext.IExt):
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._extension_path = ext_manager.get_extension_path(ext_id)
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name="Joint Monkey", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback
+                )
+            ],
+            "Isaac/Dynamic Control",
+        )
+
+    def _menu_callback(self):
+        self._build_ui()
+
+    def _build_ui(self):
+        if not self._window:
+            self._window = ui.Window(
+                "Joint Monkey",
+                width=300,
+                height=200,
+                menu_path="Isaac/Dynamic Control/Joint Monkey",
+                open=False,
+                dock=ui.DockPreference.LEFT_BOTTOM,
+            )
+            with self._window.frame:
+                with ui.VStack():
+                    ui.Button("Load Robot", clicked_fn=self._on_load_robot)
+                    ui.Button("Move Joints", clicked_fn=self._on_move_joints)
+
+                    ui.Separator(height=3)
+                    with ui.ScrollingFrame():
+                        with ui.VStack():
+                            self.dof_states_label = ui.Label("")
+                            self.dof_props_label = ui.Label("")
 
     def on_shutdown(self):
         self._sub_stage_event = None
@@ -113,11 +125,11 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_position("/OmniverseKit_Persp", 150, -150, 150, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
 
-    def _on_load_robot(self, widget):
+    def _on_load_robot(self):
         task = asyncio.ensure_future(load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd"))
         asyncio.ensure_future(self._setup_camera(task))
 
-    def _on_move_joints(self, widget):
+    def _on_move_joints(self):
         self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
         self._physxIFace.force_load_physics_from_usd()
         self._timeline.play()
