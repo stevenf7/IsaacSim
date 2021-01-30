@@ -10,6 +10,7 @@ from random import seed
 from random import random
 
 
+import weakref
 from pxr import Usd, UsdGeom
 import os
 import omni.physx as _physx
@@ -19,20 +20,26 @@ import omni.ui as ui
 
 class Contact_sensor_demo(omni.ext.IExt):
     def on_startup(self):
-        self._menu = omni.kit.ui.get_editor_menu().add_item("Isaac/Samples/Contact Sensor", self._on_menu_click)
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name="Contact Sensor", onclick_fn=lambda a=weakref.proxy(self): a.build_ai()
+                )
+            ],
+            "Isaac/Samples",
+        )
         self._window = None
 
     def _on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.CLOSED):
             self.on_shutdown()
 
-    def _on_menu_click(self, a, b):
+    def build_ai(self):
         if self._window is None:
             self._cs = _contact_sensor.acquire_contact_sensor_interface()
 
-            self._editor = omni.kit.editor.get_editor_interface()
             self._timeline = omni.timeline.get_timeline_interface()
-            self.sub = self._editor.subscribe_to_update_events(self._on_update)
+            self.sub = _physx.get_physx_interface().subscribe_physics_step_events(self._on_update)
 
             self.leg_paths = ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)]
             self.sensor_ofsets = [
@@ -52,8 +59,7 @@ class Contact_sensor_demo(omni.ext.IExt):
                 width=300,
                 height=200,
                 menu_path="Isaac/Samples/Contact Sensor",
-                open=b,
-                dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
+                dock=ui.DockPreference.LEFT_BOTTOM,
             )
             self.sliders = []
             self.colors = [0xFFBBBBFF, 0xFFBBFFBB, 0xBBFFBBBB, 0xBBBBFFFF]
@@ -74,15 +80,12 @@ class Contact_sensor_demo(omni.ext.IExt):
             omni.usd.get_context().open_stage_with_callback(
                 self._extension_path + "/data/ant.usd", lambda a, b: self.create_scenario()
             )
-            self._window.visible = True
-        else:
-            self._window.visible = True
+        self._window.visible = True
 
     def on_shutdown(self):
         if self._window:
             self.sub = None
             self._timeline = None
-            self._editor = None
             self._stage_event_subscription = None
         self._window = None
 
