@@ -35,8 +35,8 @@ class GhostScenario(Scenario):
     Ghost robots are used to visualize alternative trajectories that could have been used to pick up a block.
     """
 
-    def __init__(self, editor, dc, mp):
-        super().__init__(editor, dc, mp)
+    def __init__(self, dc, mp):
+        super().__init__(dc, mp)
         self.on_stop = 0
         self.on_start = 0
         self.reset_time = 100  # reset the scenario every 100 seconds

@@ -8,14 +8,15 @@
 
 import carb
 import omni.kit.commands
-import omni.kit.editor
 import omni.ext
 import omni.appwindow
-import omni.kit.ui
+import weakref
 import omni.kit.settings
 import gc
 import numpy as np
 import asyncio
+import omni.ui as ui
+import omni.physx as _physx
 
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.manip import _manip
@@ -33,43 +34,69 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         """Initialize extension and UI elements
         """
-        self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._window = omni.kit.ui.Window(
-            EXTENSION_NAME,
-            300,
-            200,
-            menu_path="Isaac/Samples/" + EXTENSION_NAME,
-            open=False,
-            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
-        )
-
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
-
-        self._load_kaya_btn = self._window.layout.add_child(omni.kit.ui.Button("Load Kaya"))
-        self._load_kaya_btn.set_clicked_fn(self._on_environment_setup)
-        self._load_kaya_btn.tooltip = omni.kit.ui.Label("Reset the stage and load the kaya environment")
-        self._gamepad_setup_btn = self._window.layout.add_child(omni.kit.ui.Button("Press Load Kaya First"))
-        self._gamepad_setup_btn.set_clicked_fn(self._on_gamepad_setup)
-        self._gamepad_setup_btn.enabled = False
-        self._gamepad_setup_btn.tooltip = omni.kit.ui.Label("Connect the gamepad to the robot and begin simulation")
         self.kaya = None
 
         self._manip = _manip.acquire()
         self._joystick_deadzone = 0.2
         self._gains = (4, 4, 0.5)
         self._vel_target = np.zeros(3)
+        self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
-    def _on_gamepad_setup(self, widget):
+        self._window = None
+        self._load_kaya_btn = None
+        self._gamepad_setup_btn = None
+
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Isaac/Samples",
+        )
+
+    def _menu_callback(self):
+        self._build_ui()
+
+    def _build_ui(self):
+        if not self._window:
+            self._window = ui.Window(
+                EXTENSION_NAME,
+                width=300,
+                height=200,
+                menu_path="Isaac/Samples/" + EXTENSION_NAME,
+                open=False,
+                dock=ui.DockPreference.LEFT_BOTTOM,
+            )
+            with self._window.frame:
+                with ui.VStack():
+                    self._load_kaya_btn = ui.Button(
+                        "Load Kaya",
+                        tooltip="Reset the stage and load the kaya environment",
+                        clicked_fn=self._on_environment_setup,
+                    )
+                    self._gamepad_setup_btn = ui.Button(
+                        "Press Load Kaya First",
+                        tooltip="Connect the gamepad to the robot and begin simulation",
+                        clicked_fn=self._on_gamepad_setup,
+                    )
+                    self._gamepad_setup_btn.enabled = False
+        self._window.visible = True
+
+    def _on_gamepad_setup(self):
         if self.kaya is None:
             print("Cannot start gamepad, kaya not valid")
             return
         # must start editor before setting up gamepad to move
         self._timeline.play()
         self._manip.bind_gamepad(self._on_event_fn)
+
+    def on_shutdown(self):
+        self._physx_subs = None
 
     async def _create_kaya(self, task):
         done, pending = await asyncio.wait({task})
@@ -102,9 +129,9 @@ class Extension(omni.ext.IExt):
             self._gamepad_setup_btn.text = "Connect GamePad"
 
             # start stepping after kaya is created
-            self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+            self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_step)
 
-    def _on_environment_setup(self, widget):
+    def _on_environment_setup(self):
         # wait for new stage before creating kaya
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._create_kaya(task))
@@ -122,7 +149,7 @@ class Extension(omni.ext.IExt):
         else:
             pass
 
-    def _on_editor_step(self, step):
+    def _on_step(self, step):
         """Update kaya physics once per step
         """
         if self.kaya is not None:

@@ -9,13 +9,12 @@
 import carb.input
 from pxr import Usd, UsdGeom
 import omni.kit.commands
-import omni.kit.editor
 import omni.ext
 import omni.appwindow
-import omni.kit.ui
+import omni.ui as ui
 import omni.kit.settings
 import asyncio
-
+import weakref
 from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.dynamic_control import _dynamic_control
 import omni.physx as _physx
@@ -32,46 +31,21 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         """Initialize extension and UI elements
         """
-        self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._window = omni.kit.ui.Window(
-            EXTENSION_NAME,
-            300,
-            200,
-            menu_path="Isaac/Samples/" + EXTENSION_NAME,
-            open=False,
-            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
-        )
-        self._window.set_update_fn(self._on_update_ui)
+        self._window = None
+        self._selected_scenario = None
+        self._create_franka_btn = None
+        self._perform_task_btn = None
+        self._stop_task_btn = None
+        self._toggle_obstacle_btn = None
 
         self._mp = _motion_planning.acquire_motion_planning_interface()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
         self._physxIFace = _physx.acquire_physx_interface()
-
-        self._selected_scenario = self._window.layout.add_child(omni.kit.ui.ComboBox())
-        self._selected_scenario.add_item("Ghost Robots")
-        self._selected_scenario.add_item("Simple Stack")
-        self._selected_scenario.add_item("Multiple Obstacles")
-        self._selected_scenario.selected_index = 0
-
-        self._create_franka_btn = self._window.layout.add_child(omni.kit.ui.Button("Create Scenario"))
-        self._create_franka_btn.set_clicked_fn(self._on_environment_setup)
-
-        self._perform_task_btn = self._window.layout.add_child(omni.kit.ui.Button("Perform Task"))
-        self._perform_task_btn.set_clicked_fn(self._on_perform_task)
-        self._perform_task_btn.enabled = False
-
-        self._stop_task_btn = self._window.layout.add_child(omni.kit.ui.Button("Stop/Reset Task"))
-        self._stop_task_btn.set_clicked_fn(self._on_stop_tasks)
-        self._stop_task_btn.enabled = False
-
-        self._toggle_obstacle_btn = self._window.layout.add_child(omni.kit.ui.Button("Toggle Obstacle"))
-        self._toggle_obstacle_btn.set_clicked_fn(self._on_toggle_obstacle)
-        self._toggle_obstacle_btn.enabled = False
 
         self._settings = carb.settings.get_settings()
 
@@ -82,9 +56,51 @@ class Extension(omni.ext.IExt):
         self._sub_stage_event = self._usd_context.get_stage_event_stream().create_subscription_to_pop(
             self._on_stage_event
         )
-        self._scenario = Scenario(self._editor, self._dc, self._mp)
+        self._scenario = Scenario(self._dc, self._mp)
+        self._scenarios = [GhostScenario, SimpleStack, MultipleObstacle]
+        self._editor_event_subscription = None
 
-    def _on_environment_setup(self, widget):
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Isaac/Samples",
+        )
+
+    def _menu_callback(self):
+        self._build_ui()
+
+    def _build_ui(self):
+        if not self._window:
+            self._window = ui.Window(
+                EXTENSION_NAME,
+                width=300,
+                height=200,
+                menu_path="Isaac/Samples/" + EXTENSION_NAME,
+                dock=ui.DockPreference.LEFT_BOTTOM,
+            )
+            with self._window.frame:
+                with ui.VStack():
+                    self._selected_scenario = ui.ComboBox(0, "Ghost Robots", "Simple Stack", "Multiple Obstacles")
+
+                    self._create_franka_btn = ui.Button("Create Scenario", clicked_fn=self._on_environment_setup)
+
+                    self._perform_task_btn = ui.Button("Perform Task", clicked_fn=self._on_perform_task)
+                    self._perform_task_btn.enabled = False
+
+                    self._stop_task_btn = ui.Button("Stop/Reset Task", clicked_fn=self._on_stop_tasks)
+                    self._stop_task_btn.enabled = False
+
+                    self._toggle_obstacle_btn = ui.Button("Toggle Obstacle", clicked_fn=self._on_toggle_obstacle)
+                    self._toggle_obstacle_btn.enabled = False
+            self._editor_event_subscription = (
+                omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_update_ui)
+            )
+        self._window.visible = True
+
+    def _on_environment_setup(self):
         # wait for new stage before creating franka
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._on_create_franka(task))
@@ -97,13 +113,9 @@ class Extension(omni.ext.IExt):
             return
 
         self._stage = self._usd_context.get_stage()
-
-        if self._selected_scenario.selected_index == 0:
-            self._scenario = GhostScenario(self._editor, self._dc, self._mp)
-        elif self._selected_scenario.selected_index == 1:
-            self._scenario = SimpleStack(self._editor, self._dc, self._mp)
-        elif self._selected_scenario.selected_index == 2:
-            self._scenario = MultipleObstacle(self._editor, self._dc, self._mp)
+        self._scenario = self._scenarios[self._selected_scenario.model.get_item_value_model().as_int](
+            self._dc, self._mp
+        )
 
         self._create_franka_btn.enabled = False
         self._selected_scenario.enabled = False
@@ -122,7 +134,6 @@ class Extension(omni.ext.IExt):
 
         self._scenario.register_assets()
 
-        # self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
         self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()
@@ -176,16 +187,17 @@ class Extension(omni.ext.IExt):
         Arguments:
             event (int): event type
         """
-        self.stage = self._usd_context.get_stage()
-        if event.type == int(omni.usd.StageEventType.OPENED):
-            self._create_franka_btn.enabled = True
-            self._selected_scenario.enabled = True
-            self._perform_task_btn.enabled = False
-            self._stop_task_btn.enabled = False
-            self._toggle_obstacle_btn.enabled = False
-            self._timeline.stop()
-            self._on_stop_tasks()
-            self._scenario = Scenario(self._editor, self._dc, self._mp)
+        if self._window:
+            self.stage = self._usd_context.get_stage()
+            if event.type == int(omni.usd.StageEventType.OPENED):
+                self._create_franka_btn.enabled = True
+                self._selected_scenario.enabled = True
+                self._perform_task_btn.enabled = False
+                self._stop_task_btn.enabled = False
+                self._toggle_obstacle_btn.enabled = False
+                self._timeline.stop()
+                self._on_stop_tasks()
+                self._scenario = Scenario(self._dc, self._mp)
 
     def _on_toggle_obstacle(self, *args):
         """Toggle obstacle visibility
@@ -205,7 +217,7 @@ class Extension(omni.ext.IExt):
         """
         self._scenario.perform_tasks()
 
-    def _on_update_ui(self, widget):
+    def _on_update_ui(self, step):
         """Callback that updates UI elements every frame
         """
         if self._scenario.is_created():
@@ -241,4 +253,3 @@ class Extension(omni.ext.IExt):
         self._editor_event_subscription = None
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
         self._physx_subs = None
-        self._window.set_update_fn(None)

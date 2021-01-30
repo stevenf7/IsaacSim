@@ -44,7 +44,6 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.assertFalse(self._dc.is_simulating())
         # Start Simulation and wait
-        self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         self.upright_sequence = [
             bin_stack.SM_states.STANDBY,
@@ -191,7 +190,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def load_bin_stack_scene(self):
 
-        self._scenario = bin_stack.BinStack(self._editor, self._dc, self._mp)
+        self._scenario = bin_stack.BinStack(self._dc, self._mp)
         # Make sure the stage loaded
         self.assertTrue(self._scenario is not None)
         self._scenario.create_UR10(False)
@@ -203,47 +202,9 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._scenario.register_assets()
         pass
 
-    # async def load_bmw_demo_scene(self):
-
-    #     self._scenario = bmw_fof_demo.AttachBody(self._editor, self._dc, self._mp)
-    #     # Make sure the stage loaded
-    #     self.assertTrue(self._scenario is not None)
-
-    #     self._physx.release_physics_objects()
-
-    #     self._scenario.create_UR10(False)
-
-    #     self._physx.release_physics_objects()
-    #     self._physx.force_load_physics_from_usd()
-
-    #     self._timeline.play()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     self.assertTrue(self._dc.is_simulating())
-    #     self._scenario.register_assets()
-
-    #     self.upright_sequence = [
-    #         bmw_fof_demo.SM_states.STANDBY,
-    #         bmw_fof_demo.SM_states.PICKING,
-    #         bmw_fof_demo.SM_states.ATTACH,
-    #         bmw_fof_demo.SM_states.FLIPPING,
-    #         bmw_fof_demo.SM_states.DETACH,
-    #         bmw_fof_demo.SM_states.PICKING,
-    #         bmw_fof_demo.SM_states.ATTACH,
-    #         bmw_fof_demo.SM_states.PLACING,
-    #         bmw_fof_demo.SM_states.DETACH,
-    #     ]
-    #     self.default_sequence = [
-    #         bmw_fof_demo.SM_states.STANDBY,
-    #         bmw_fof_demo.SM_states.PICKING,
-    #         bmw_fof_demo.SM_states.ATTACH,
-    #         bmw_fof_demo.SM_states.PLACING,
-    #         bmw_fof_demo.SM_states.DETACH,
-    #     ]
-    #     pass
-
     async def load_fill_bin_scene(self):
 
-        self._scenario = fill_bin.FillBin(self._editor, self._dc, self._mp)
+        self._scenario = fill_bin.FillBin(self._dc, self._mp)
         # Make sure the stage loaded
         self.assertTrue(self._scenario is not None)
         self._scenario.create_UR10(False)

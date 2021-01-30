@@ -122,8 +122,7 @@ class Scenario:
     Scenarios define the life cycle within kit and handle init, startup, shutdown etc.
     """
 
-    def __init__(self, editor, dc, mp):
-        self._editor = editor
+    def __init__(self, dc, mp):
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
         self._dc = dc

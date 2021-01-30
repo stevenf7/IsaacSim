@@ -8,10 +8,8 @@
 
 import carb
 from pxr import UsdGeom, Gf, UsdPhysics, Sdf, UsdLux
-import omni.kit.editor
 import omni.ext
 import omni.usd
-import omni.kit.ui
 import omni.kit.settings
 
 from omni.isaac.motion_planning import _motion_planning
