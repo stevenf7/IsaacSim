@@ -13,6 +13,7 @@
 #include "../core/RangeSensorComponent.h"
 #include "UltrasonicArrayEmissionTimer.h"
 #include "UltrasonicEmitter.h"
+#include "UltrasonicFiringGroup.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
@@ -111,6 +112,7 @@ public:
     }
 
     virtual void onEmitterChange(const pxr::UsdPrim& prim);
+    virtual void onFiringGroupChange(const pxr::UsdPrim& prim);
 
 private:
     int mNumBins = 224;
@@ -118,8 +120,6 @@ private:
     float mVerticalFov = 30.0f;
     float mHorizontalResolution = 0.4f;
     float mVerticalResolution = 4.0f;
-    float mPulseDuration = 0.5;
-    float mPulseGapDelta = 1.0;
 
     // difference between m[min|max]Depth and m[min|max]Range is division by the units
     // mMinRange and mMaxRange are defined in parent component
@@ -133,8 +133,9 @@ private:
     std::vector<float> mAzimuth;
 
 
-    std::unique_ptr<UltrasonicArrayEmissionTimer> mEmissionTimer;
     std::vector<UltrasonicEmitter> mEmitters;
+    std::vector<UltrasonicFiringGroup> mFiringGroups;
+    size_t mCurrentFiringGroup = 0;
 
     void dumpData(double dt);
     void clampRangeBounds();

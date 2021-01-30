@@ -125,11 +125,11 @@ class Extension(omni.ext.IExt):
                     path="/World/UltrasonicEmitter",
                     per_ray_intensity=0.4,
                     yaw_offset=0.0,
-                    firing_delay=0.5,
+                    adjacency_list=[],
                 )
 
                 emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set(pose[1])
-                emitter_prim.GetPrim().GetAttribute("xformOp:rotate").Set(
+                emitter_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(
                     Gf.Rotation(pose[0]).Decompose((1, 0, 0), (0, 1, 0), (0, 0, 1))
                 )
                 emitters.append(emitter_prim)
@@ -160,10 +160,9 @@ class Extension(omni.ext.IExt):
                 vertical_fov=10.0,  # set wedge horizontal extent in degrees
                 horizontal_resolution=0.5,
                 vertical_resolution=0.5,
-                pulse_duration=0.1,
-                pulse_gap_delta=0.3,
                 num_bins=224,
                 emitter_prims=emitter_paths,
+                firing_group_prims=[],
             )
 
             # we want to make sure we can see the ultrasonic we made, so we set the camera position and look target

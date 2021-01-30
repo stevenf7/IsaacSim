@@ -111,7 +111,19 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             path="/World/UltrasonicEmitter",
             per_ray_intensity=0.4,
             yaw_offset=0.0,
-            firing_delay=0.0,
+            adjacency_list=[0],
+        )
+        result, group_1 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/World/UltrasonicFiringGroup",
+            emitter_modes=[(0, 0)],
+            receiver_modes=[(0, 0)],
+        )
+        result, group_2 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/World/UltrasonicFiringGroup",
+            emitter_modes=[(0, 1)],
+            receiver_modes=[(0, 1)],
         )
         horizontal_fov = 30.0
         vertical_fov = 5.0
@@ -130,10 +142,9 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             vertical_fov=vertical_fov,
             horizontal_resolution=horizontal_res,
             vertical_resolution=vertical_res,
-            pulse_duration=0.0,
-            pulse_gap_delta=1.0,
             num_bins=num_bins,
             emitter_prims=[emitter.GetPath()],
+            firing_group_prims=[group_1.GetPath(), group_2.GetPath()],
         )
         self.assertTrue(result)
         self._timeline.play()
@@ -159,7 +170,19 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             path="/World/UltrasonicEmitter0",
             per_ray_intensity=0.4,
             yaw_offset=0.0,
-            firing_delay=0.1,
+            adjacency_list=[],
+        )
+        result, group_1 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/World/UltrasonicFiringGroup",
+            emitter_modes=[(0, 0)],
+            receiver_modes=[(0, 0)],
+        )
+        result, group_2 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/World/UltrasonicFiringGroup",
+            emitter_modes=[(1, 1)],
+            receiver_modes=[(1, 1)],
         )
         emitter0.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
         # Rotate 90 degrees about z
@@ -170,7 +193,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             path="/World/UltrasonicEmitter1",
             per_ray_intensity=0.4,
             yaw_offset=0.0,
-            firing_delay=0.2,
+            adjacency_list=[],
         )
         emitter1.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
 
@@ -185,10 +208,9 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             vertical_fov=10.0,
             horizontal_resolution=0.4,
             vertical_resolution=0.8,
-            pulse_duration=0.1,
-            pulse_gap_delta=0.3,
             num_bins=224,
             emitter_prims=[emitter0.GetPath(), emitter1.GetPath()],
+            firing_group_prims=[group_1.GetPath(), group_2.GetPath()],
         )
         self.assertTrue(result)
 
@@ -246,7 +268,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
                 path="/World/UltrasonicEmitter",
                 per_ray_intensity=0.4,
                 yaw_offset=0.0,
-                firing_delay=0.5,
+                adjacency_list=[],
             )
             emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set(pose[1])
             emitter_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(
@@ -267,10 +289,9 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             vertical_fov=10.0,
             horizontal_resolution=0.4,
             vertical_resolution=0.8,
-            pulse_duration=0.5,
-            pulse_gap_delta=1.0,
             num_bins=224,
             emitter_prims=emitter_paths,
+            firing_group_prims=[],
         )
 
         # run for 12s @ 50Hz
@@ -327,7 +348,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
                 path="/World/UltrasonicEmitter",
                 per_ray_intensity=0.4,
                 yaw_offset=0.0,
-                firing_delay=0.5,
+                adjacency_list=[],
             )
             emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set(pose[1])
             emitter_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(
@@ -348,10 +369,9 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             vertical_fov=30.0,
             horizontal_resolution=0.4,
             vertical_resolution=0.8,
-            pulse_duration=0.5,
-            pulse_gap_delta=1.0,
             num_bins=224,
             emitter_prims=emitter_paths,
+            firing_group_prims=[],
         )
 
         # run for 3s @ 50Hz

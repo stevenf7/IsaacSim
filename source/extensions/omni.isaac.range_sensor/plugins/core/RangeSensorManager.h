@@ -236,6 +236,11 @@ public:
     virtual void onComponentChange(const pxr::UsdPrim& prim)
     {
         utils::BridgeApplicationBase<RangeSensorComponent>::onComponentChange(prim);
+        // update properties of this prim (onComponentChange)
+        if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+        {
+            mComponents[prim.GetPath().GetString()]->onComponentChange();
+        }
         // Also need to make sure all emitters get their functions called
         for (auto& component : mComponents)
         {
@@ -243,13 +248,8 @@ public:
             if (uss)
             {
                 uss->onEmitterChange(prim);
+                uss->onFiringGroupChange(prim);
             }
-        }
-
-        // update properties of this prim (onComponentChange)
-        if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
-        {
-            mComponents[prim.GetPath().GetString()]->onComponentChange();
         }
     }
 
