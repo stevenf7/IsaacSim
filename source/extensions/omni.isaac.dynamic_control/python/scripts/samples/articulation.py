@@ -1,10 +1,13 @@
 import carb
 import omni
+import omni.ui as ui
 import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
 import os
 import omni.physx as _physx
+import omni.kit.menu
+import weakref
 
 
 def get_data_file(file_name: str):
@@ -58,53 +61,74 @@ def _print_body_rec(dc, body, indent_level=0):
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-        self._window = omni.kit.ui.Window(
-            "Articulation Info",
-            300,
-            200,
-            menu_path="Isaac/Dynamic Control/Articulation info",
-            open=False,
-            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
-        )
-        sublayout = self._window.layout.add_child(omni.kit.ui.ColumnLayout())
-        sublayout.add_child(
-            omni.kit.ui.Label(
-                "This sample demonstrates how to load a USD stage containing an articulated robot and then retreiving that articulation and using the dynamic_control python API to query it",
-                clippingmode=omni.kit.ui.ClippingType.WRAP,
-            )
-        )
-
-        load_robot_btn = sublayout.add_child(omni.kit.ui.Button("Load Franka USD"))
-        load_robot_btn.set_clicked_fn(self._on_load_robot)
-        load_robot_btn.tooltip = omni.kit.ui.Label("Press to load the Franka USD file and start simulation")
-        get_info_btn = sublayout.add_child(omni.kit.ui.Button("Get Articulation Info"))
-        get_info_btn.set_clicked_fn(self._on_print_info)
-        get_info_btn.tooltip = omni.kit.ui.Label("Pressing this button will print information below")
-        sublayout.add_child(
-            omni.kit.ui.Label(
-                'Note: The buttons above only work with the robot loaded by the "Load Franka USD" button and not existing robots/articulations in the stage'
-            )
-        )
-        sublayout.add_child(omni.kit.ui.Separator())
-        scrolling_frame = sublayout.add_child(omni.kit.ui.ScrollingFrame("", -1, -1))
-        self.hierarchy_label = scrolling_frame.add_child(
-            omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
-        )
-        self.body_states_label = scrolling_frame.add_child(
-            omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
-        )
-        self.dof_states_label = scrolling_frame.add_child(
-            omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
-        )
-        self.dof_props_label = scrolling_frame.add_child(
-            omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
-        )
+        self._window = None
         self._physxIFace = _physx.acquire_physx_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._extension_path = ext_manager.get_extension_path(ext_id)
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name="Articulation Info", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback
+                )
+            ],
+            "Isaac/Dynamic Control",
+        )
+
+    def _menu_callback(self):
+        self._build_ui()
+
+    def _build_ui(self):
+        if not self._window:
+            print("creating window")
+            self._window = ui.Window(
+                "Articulation Info",
+                width=ui.Pixel(1000),
+                height=ui.Pixel(400),
+                menu_path="Isaac/Dynamic Control/Articulation info",
+                open=False,
+                dock=ui.DockPreference.LEFT_BOTTOM,
+            )
+            with self._window.frame:
+                with ui.VStack(width=ui.Percent(100)):
+                    ui.Label(
+                        "This sample demonstrates how to load a USD stage containing an articulated robot and then retreiving that articulation and using the dynamic_control python API to query it",
+                        height=20,
+                    )
+                    ui.Button(
+                        "Load Franka USD",
+                        height=20,
+                        width=ui.Pixel(40),
+                        tooltip="Press to load the Franka USD file and start simulation",
+                        clicked_fn=lambda: self._on_load_robot(),
+                    )
+                    ui.Button(
+                        "Get Articulation Info",
+                        height=20,
+                        width=ui.Pixel(40),
+                        tooltip="Pressing this button will print information below",
+                        clicked_fn=lambda: self._on_print_info(),
+                    )
+
+                    ui.Separator(height=3)
+                    with ui.ScrollingFrame():
+                        with ui.VStack():
+                            with ui.CollapsableFrame("Hierarchy", height=ui.Pixel(0), collapsed=False):
+                                with ui.ScrollingFrame(height=ui.Pixel(200)):
+                                    self.hierarchy_label = ui.Label("")
+                            with ui.CollapsableFrame("Body States", height=ui.Pixel(0), collapsed=True):
+                                with ui.ScrollingFrame(height=ui.Pixel(150)):
+                                    self.body_states_label = ui.Label("")
+                            with ui.CollapsableFrame("DOF States", height=ui.Pixel(0), collapsed=True):
+                                with ui.ScrollingFrame(height=ui.Pixel(100)):
+                                    self.dof_states_label = ui.Label("")
+                            with ui.CollapsableFrame("DOF Properties", height=ui.Pixel(0), collapsed=True):
+                                with ui.ScrollingFrame(height=ui.Pixel(130)):
+                                    self.dof_props_label = ui.Label("")
+
+        self._window.visible = True
 
     def on_shutdown(self):
         self._window = None
@@ -117,11 +141,11 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 50, True)
             self._timeline.play()
 
-    def _on_load_robot(self, widget):
+    def _on_load_robot(self):
         task = asyncio.ensure_future(load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd"))
         asyncio.ensure_future(self._setup_camera(task))
 
-    def _on_print_info(self, widget):
+    def _on_print_info(self):
         self._physxIFace.force_load_physics_from_usd()
 
         ar = self._dc.get_articulation("/panda")
@@ -130,17 +154,15 @@ class Extension(omni.ext.IExt):
             return
 
         root = self._dc.get_articulation_root_body(ar)
-        self.hierarchy_label.text = (
-            str("Got articulation handle %d \n" % ar) + str("--- Hierarchy\n") + _print_body_rec(self._dc, root)
-        )
+        self.hierarchy_label.text = str("Articulation handle %d \n" % ar) + _print_body_rec(self._dc, root)
 
         body_states = self._dc.get_articulation_body_states(ar, _dynamic_control.STATE_ALL)
-        self.body_states_label.text = str("--- Body states:\n") + str(body_states) + "\n"
+        self.body_states_label.text = str(body_states) + "\n"
 
         dof_states = self._dc.get_articulation_dof_states(ar, _dynamic_control.STATE_ALL)
-        self.dof_states_label.text = str("--- DOF states:\n") + str(dof_states) + "\n"
+        self.dof_states_label.text = str(dof_states) + "\n"
 
         dof_props = self._dc.get_articulation_dof_properties(ar)
-        self.dof_props_label.text = str("--- DOF properties:\n") + str(dof_props) + "\n"
+        self.dof_props_label.text = str(dof_props) + "\n"
 
         return
