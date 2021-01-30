@@ -1,9 +1,8 @@
 import carb
 import omni.ui as ui
 import omni.usd
+import weakref
 from .nucleus_utils import get_server_path
-
-ADD_SIMPLE_ROOM_PYTHON_SAMPLE_MENU = "Isaac/Domain Randomizer/Simple Room Python Sample"
 
 
 class Extension(omni.ext.IExt):
@@ -12,11 +11,17 @@ class Extension(omni.ext.IExt):
         self._stage = self._usd_context.get_stage()
         self._asset_path = None
         self._window = ui.Window("Simple Room Python Sample", width=600, height=400)
-        self._menu_entry = omni.kit.ui.get_editor_menu().add_item(
-            ADD_SIMPLE_ROOM_PYTHON_SAMPLE_MENU, self._menu_callback
-        )
         self._window.visible = False
         self._window.deferred_dock_in("Content")
+
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name="Simple Room Python Sample", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Isaac/Domain Randomizer",
+        )
 
         with self._window.frame:
             with ui.VStack(height=0):
@@ -26,7 +31,7 @@ class Extension(omni.ext.IExt):
                 load_comp_btn = ui.Button("Load DR Component", width=100)
                 load_comp_btn.set_clicked_fn(self._on_load_component)
 
-    def _menu_callback(self, a, b):
+    def _menu_callback(self):
         self._window.visible = not self._window.visible
 
     def on_shutdown(self):

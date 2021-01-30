@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -78,7 +78,7 @@ PYBIND11_MODULE(_dr, m)
                 # Switch to manual mode
                 dr_interface.toggle_manual_mode()
                 # Python equivalent of pressing play in editor
-                editor = omni.kit.editor.get_editor_interface()
+                timeline = omni.timeline.get_timeline_interface()
                 if not timeline.is_playing():
                     timeline.play()
 

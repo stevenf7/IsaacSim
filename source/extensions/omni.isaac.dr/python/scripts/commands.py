@@ -1,7 +1,6 @@
 from pxr import Gf, Usd, UsdGeom, Sdf
 import omni.isaac.DrSchema as DrSchema
 import omni.kit
-import omni.kit.ui
 import omni.usd
 
 
