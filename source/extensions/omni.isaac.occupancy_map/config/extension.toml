@@ -20,6 +20,7 @@ icon = "data/icon.png"
 "omni.physx" = {} 
 "omni.debugdraw" = {}
 "omni.isaac.utils" = {}
+"omni.kit.window.filepicker" = {}
 
 [[python.module]]
 name = "omni.isaac.occupancy_map"
