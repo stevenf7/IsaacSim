@@ -3,117 +3,114 @@ import os
 import carb
 import carb.tokens
 import omni.kit
+import omni.ui as ui
 import omni.usd
+import weakref
 from .nucleus_utils import get_server_path
 
 from pxr import UsdGeom
 
-ADD_COMPONENT_SAMPLE_MENU = "Isaac/Domain Randomizer/Component Sample"
-ADD_SIMPLE_ROOM_SAMPLE_MENU = "Isaac/Domain Randomizer/Simple Room Sample"
-ADD_WAREHOUSE_SAMPLE_MENU = "Isaac/Domain Randomizer/Warehouse Sample"
-
-
-def get_data_file(file_name: str):
-    if os.path.isabs(file_name):
-        path_to_file = file_name
-    else:
-        path_to_file = os.path.abspath(
-            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
-        )
-    return path_to_file
-
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        self._editor = omni.kit.editor.get_editor_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._asset_path = None
 
-        self._window = omni.kit.ui.Window(
-            "Domain Randomizer Component Samples",
-            300,
-            200,
-            menu_path=ADD_COMPONENT_SAMPLE_MENU,
-            open=False,
-            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name="Component Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_component_sample()
+                ),
+                omni.kit.menu.utils.MenuItemDescription(
+                    name="Simple Room Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_simple_room_scene()
+                ),
+                omni.kit.menu.utils.MenuItemDescription(
+                    name="Warehouse Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_warehouse_scene()
+                ),
+            ],
+            "Isaac/Domain Randomizer",
         )
 
-        self._menus = []
-        editor_menu = omni.kit.ui.get_editor_menu()
-        self._menus.append(editor_menu.add_item(ADD_SIMPLE_ROOM_SAMPLE_MENU, self._on_dr_sample_menu_click))
-        self._menus.append(editor_menu.add_item(ADD_WAREHOUSE_SAMPLE_MENU, self._on_dr_sample_menu_click))
+    def add_component_sample(self):
+        self._window = ui.Window(
+            "Domain Randomizer Component Samples", dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
+        )
 
-        sublayout = self._window.layout.add_child(omni.kit.ui.ColumnLayout())
-        self._selected_scenario = sublayout.add_child(omni.kit.ui.ComboBox())
-        self._selected_scenario.add_item("Color")
-        self._selected_scenario.add_item("Movement")
-        self._selected_scenario.add_item("Rotation")
-        self._selected_scenario.add_item("Scale")
-        self._selected_scenario.add_item("Light")
-        self._selected_scenario.add_item("Texture")
-        self._selected_scenario.add_item("Material")
-        self._selected_scenario.add_item("Mesh")
-        self._selected_scenario.add_item("Visibility")
-        self._selected_scenario.selected_index = 0
-        clear_stage_btn = sublayout.add_child(omni.kit.ui.Button("Clear Stage"))
-        clear_stage_btn.set_clicked_fn(self._on_clear_stage)
-        load_stage_btn = sublayout.add_child(omni.kit.ui.Button("Load Stage"))
-        load_stage_btn.set_clicked_fn(self._on_load_stage)
-        load_comp_btn = sublayout.add_child(omni.kit.ui.Button("Load DR Component"))
-        load_comp_btn.set_clicked_fn(self._on_load_component)
+        with self._window.frame:
+            with ui.VStack(spacing=5):
+                self._selected_scenario = ui.ComboBox(
+                    0,
+                    "Color",
+                    "Movement",
+                    "Rotation",
+                    "Scale",
+                    "Light",
+                    "Texture",
+                    "Material",
+                    "Mesh",
+                    "Visibility",
+                    height=0,
+                    width=200,
+                )
+                clear_stage_btn = ui.Button("Clear Stage", height=30, width=100)
+                clear_stage_btn.set_clicked_fn(self._on_clear_stage)
+                load_stage_btn = ui.Button("Load Stage", height=30, width=100)
+                load_stage_btn.set_clicked_fn(self._on_load_stage)
+                load_comp_btn = ui.Button("Load DR Component", height=30, width=100)
+                load_comp_btn.set_clicked_fn(self._on_load_component)
 
     def on_shutdown(self):
-        self.menus = []
-        self._editor = None
         self._window = None
         self._usd_context = None
         self._stage = None
 
-    def _on_clear_stage(self, widget):
+    def _on_clear_stage(self):
         omni.usd.get_context().close_stage_with_callback(lambda a, b: omni.usd.get_context().new_stage(None))
 
-    def _on_load_stage(self, widget):
+    def _on_load_stage(self):
         if self._asset_path is None:
             self._asset_path = get_server_path("/Isaac")
         if self._asset_path is None:
             return
 
+        current_scenario_index = self._selected_scenario.model.get_item_value_model().as_int
         stage_path = self._asset_path + "/Samples/DR/Props/simple_cube_with_light.usd"
-        if self._selected_scenario.selected_index == 7:
+        if current_scenario_index == 7:
             stage_path = self._asset_path + "/Samples/DR/Props/only_light.usd"
-        elif self._selected_scenario.selected_index == 8:
+        elif current_scenario_index == 8:
             stage_path = self._asset_path + "/Samples/DR/Props/multiple_cubes_with_light.usd"
         omni.usd.get_context().close_stage_with_callback(
             lambda a, b: omni.usd.get_context().open_stage(stage_path, None)
         )
 
-    def _on_load_component(self, widget):
+    def _on_load_component(self):
         if self._asset_path is None:
             self._asset_path = get_server_path("/Isaac")
         if self._asset_path is None:
             return
 
-        if self._selected_scenario.selected_index == 0:
+        current_scenario_index = self._selected_scenario.model.get_item_value_model().as_int
+        if current_scenario_index == 0:
             self.add_color_menu()
-        elif self._selected_scenario.selected_index == 1:
+        elif current_scenario_index == 1:
             self.add_movement_menu()
-        elif self._selected_scenario.selected_index == 2:
+        elif current_scenario_index == 2:
             self.add_rotation_menu()
-        elif self._selected_scenario.selected_index == 3:
+        elif current_scenario_index == 3:
             self.add_scale_menu()
-        elif self._selected_scenario.selected_index == 4:
+        elif current_scenario_index == 4:
             self.add_light_menu()
-        elif self._selected_scenario.selected_index == 5:
+        elif current_scenario_index == 5:
             self.add_texture_menu()
-        elif self._selected_scenario.selected_index == 6:
+        elif current_scenario_index == 6:
             self.add_material_menu()
-        elif self._selected_scenario.selected_index == 7:
+        elif current_scenario_index == 7:
             self.add_mesh_menu()
-        elif self._selected_scenario.selected_index == 8:
+        elif current_scenario_index == 8:
             self.add_visibility_menu()
 
-    def add_color_menu(self, parent=None):
+    def add_color_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -132,7 +129,7 @@ class Extension(omni.ext.IExt):
             seed=12345,
         )
 
-    def add_movement_menu(self, parent=None):
+    def add_movement_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -151,7 +148,7 @@ class Extension(omni.ext.IExt):
             seed=12345,
         )
 
-    def add_rotation_menu(self, parent=None):
+    def add_rotation_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -168,7 +165,7 @@ class Extension(omni.ext.IExt):
             seed=12345,
         )
 
-    def add_scale_menu(self, parent=None):
+    def add_scale_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -186,7 +183,7 @@ class Extension(omni.ext.IExt):
             seed=12345,
         )
 
-    def add_light_menu(self, parent=None):
+    def add_light_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -212,7 +209,7 @@ class Extension(omni.ext.IExt):
             seed=12345,
         )
 
-    def add_texture_menu(self, parent=None):
+    def add_texture_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -238,7 +235,7 @@ class Extension(omni.ext.IExt):
             seed=12345,
         )
 
-    def add_material_menu(self, parent=None):
+    def add_material_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -264,7 +261,7 @@ class Extension(omni.ext.IExt):
             seed=12345,
         )
 
-    def add_mesh_menu(self, parent=None):
+    def add_mesh_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         # Create DR mesh component
@@ -279,7 +276,7 @@ class Extension(omni.ext.IExt):
             seed=12345,
         )
 
-    def add_visibility_menu(self, parent=None):
+    def add_visibility_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         # Create DR visibility component
@@ -292,7 +289,7 @@ class Extension(omni.ext.IExt):
             seed=12345,
         )
 
-    def add_simple_room_scene(self, parent=None):
+    def add_simple_room_scene(self):
         if self._asset_path is None:
             self._asset_path = get_server_path("/Isaac")
         if self._asset_path is None:
@@ -303,7 +300,7 @@ class Extension(omni.ext.IExt):
             )
         )
 
-    def add_warehouse_scene(self, parent=None):
+    def add_warehouse_scene(self):
         if self._asset_path is None:
             self._asset_path = get_server_path("/Isaac")
         if self._asset_path is None:
@@ -313,11 +310,3 @@ class Extension(omni.ext.IExt):
                 self._asset_path + "/Samples/DR/Stage/simple_warehouse_material_sample.usda", None
             )
         )
-
-    def _on_dr_sample_menu_click(self, menu, value):
-        self._stage = self._usd_context.get_stage()
-
-        if menu == ADD_SIMPLE_ROOM_SAMPLE_MENU:
-            self.add_simple_room_scene()
-        if menu == ADD_WAREHOUSE_SAMPLE_MENU:
-            self.add_warehouse_scene()
