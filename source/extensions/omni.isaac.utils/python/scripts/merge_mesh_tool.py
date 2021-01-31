@@ -7,17 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import os
 import gc
 import omni.ext
 import omni.usd
-import omni.kit.editor
 import omni.ui as ui
 import omni.kit
 import omni.kit.commands
 from pxr import Usd, UsdGeom, Sdf, UsdShade
-from pxr.Vt import IntArray, Vec3fArray, Vec2fArray
-import itertools
+import weakref
 
 EXTENSION_NAME = "Mesh Merge Tool"
 
@@ -26,12 +23,19 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         """Called to load the extension"""
         self._window = None
-        self._editor = omni.kit.editor.get_editor_interface()
 
         self._stage = omni.usd.get_context().get_stage()
-        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
-        self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/Mesh Merge Tool", self._menu_callback)
-
+        self._window = omni.ui.Window(
+            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        )
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Window/Isaac",
+        )
         self.models = {}
         with self._window.frame:
             with ui.HStack():
@@ -68,7 +72,7 @@ class Extension(omni.ext.IExt):
                 with ui.VStack():
                     ui.Button("Merge Selected Prim", clicked_fn=self._merge_mesh)
 
-    def _menu_callback(self, name, visible):
+    def _menu_callback(self):
         self._window.visible = not self._window.visible
         if self._window.visible:
             self._usd_context = omni.usd.get_context()

@@ -1,8 +1,8 @@
 import omni.ext
-import omni.kit.ui
 import omni.ui as ui
 from pxr import Gf
 import gc
+import weakref
 
 
 class EditableArrayDelegate(ui.AbstractItemDelegate):
@@ -228,13 +228,19 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         self._usd_context = omni.usd.get_context()
 
-        menu_path = f"Window/Isaac/{EXTENSION_NAME}"
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
-        self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/Array Editor", self._menu_callback)
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Window/Isaac",
+        )
         with self._window.frame:
             self._frame = ui.Frame()
 
-    def _menu_callback(self, name, visible):
+    def _menu_callback(self):
         self._window.visible = not self._window.visible
         if self._window.visible:
             self._selection = self._usd_context.get_selection()

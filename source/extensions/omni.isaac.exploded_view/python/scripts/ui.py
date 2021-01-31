@@ -3,7 +3,7 @@ import omni.ui as ui
 
 import carb
 from .extension import *
-
+import weakref
 
 EXTENSION_NAME = "Exploded View"
 
@@ -20,11 +20,16 @@ class Exploded_view(omni.ext.IExt):
         self._selection = self._context.get_selection()
         self._window = None
 
-        self._menu = omni.kit.ui.get_editor_menu().add_item(
-            "Window/Isaac/" + EXTENSION_NAME, self.show_window, toggle=False, value=False
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a.show_window()
+                )
+            ],
+            "Window/Isaac",
         )
 
-    def show_window(self, menu, value):
+    def show_window(self):
         if self._window:
             self._window.visible = value
         elif value:

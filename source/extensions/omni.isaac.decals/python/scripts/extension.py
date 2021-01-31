@@ -6,7 +6,6 @@ import carb
 import omni.ext
 import omni.usd
 import omni.kit.ui
-import omni.kit.editor
 from .. import _decals
 
 # from .tests.test_decals import *
@@ -19,7 +18,6 @@ class Extension(omni.ext.IExt):
         self._decals = _decals.acquire()
 
         menu_path = f"Window/{EXTENSION_NAME}"
-        self._editor = omni.kit.editor.get_editor_interface()
         self._usd_context = omni.usd.get_context()
         self._selection = self._usd_context.get_selection()
         self._window = omni.kit.ui.Window(EXTENSION_NAME, 960, 600, menu_path=menu_path)

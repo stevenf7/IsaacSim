@@ -3,34 +3,43 @@ import omni
 import math
 import omni.kit.commands
 import asyncio
+import weakref
+import omni.ui as ui
 
 # import omni.physx as _physx
 from .common import set_drive_parameters
 from pxr import UsdLux, Sdf, Gf, UsdPhysics
 
+EXTENSION_NAME = "Import Carter"
+
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        self._window = omni.kit.ui.Window(
-            "Import Carter",
-            300,
-            200,
-            menu_path="Isaac/URDF/Carter",
-            open=False,
-            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
+        self._window = omni.ui.Window(
+            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
-        load_robot_btn = self._window.layout.add_child(omni.kit.ui.Button("Load Robot"))
-        load_robot_btn.set_clicked_fn(self._on_load_robot)
-
-        config_robot_btn = self._window.layout.add_child(omni.kit.ui.Button("Configure Robot"))
-        config_robot_btn.set_clicked_fn(self._on_config_robot)
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Isaac/URDF",
+        )
+        with self._window.frame:
+            with ui.VStack(height=0):
+                ui.Button("Load Robot", clicked_fn=self._on_load_robot)
+                ui.Button("Configure Robot", clicked_fn=self._on_config_robot)
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
     def on_shutdown(self):
         self._window = None
 
-    def _on_load_robot(self, widget):
+    def _menu_callback(self):
+        self._window.visible = not self._window.visible
+
+    def _on_load_robot(self):
         load_stage = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._load_carter(load_stage))
 
@@ -51,7 +60,7 @@ class Extension(omni.ext.IExt):
             viewport.set_camera_position("/OmniverseKit_Persp", 300, -350, 113, True)
             viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, -20, True)
 
-    def _on_config_robot(self, widget):
+    def _on_config_robot(self):
         stage = omni.usd.get_context().get_stage()
         scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
         scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))

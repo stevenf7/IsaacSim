@@ -5,7 +5,6 @@ import numpy as np
 
 import carb
 import omni.kit.app
-import omni.kit.editor
 
 from pxr import UsdGeom, Gf, Sdf, Usd, Semantics
 

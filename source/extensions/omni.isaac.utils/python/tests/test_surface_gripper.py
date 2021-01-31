@@ -394,7 +394,6 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         lin_vel = self._dc.get_rigid_body_linear_velocity(box1)
         print(lin_vel)
         self.assertGreater(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 0)
-        # Do not stop editor, check if joint cleans up correctly
         pass
 
     async def test_bend_surface_gripper(self):

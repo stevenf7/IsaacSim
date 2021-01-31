@@ -4,6 +4,7 @@ import omni.ui as ui
 import textwrap
 import weakref
 import gc
+import weakref
 
 from .link_model import *
 from .. import _urdf
@@ -38,9 +39,17 @@ class Extension(omni.ext.IExt):
 
         self._urdf_interface = _urdf.acquire_urdf_interface()
         self._usd_context = omni.usd.get_context()
-        menu_path = f"Window/Isaac/{EXTENSION_NAME}"
-        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
-        self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/URDF Importer", self._menu_callback)
+        self._window = omni.ui.Window(
+            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        )
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Window/Isaac",
+        )
         self._file_picker = None
 
         self.models = {}
@@ -242,7 +251,7 @@ class Extension(omni.ext.IExt):
             units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
             self.models["scale"].model.set_value(units_per_meter)
 
-    def _menu_callback(self, name, visible):
+    def _menu_callback(self):
         self._window.visible = not self._window.visible
         if self._window.visible:
             self.build_ui()

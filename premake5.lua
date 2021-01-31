@@ -194,7 +194,6 @@ group "apps"
 -- Isaac Extensions
 group "exts"
     -- Windows and Linux
-    include ("source/extensions/omni.isaac.about")
     -- include ("source/extensions/omni.isaac.decals")
     include ("source/extensions/omni.isaac.dr")
     include ("source/extensions/omni.isaac.dynamic_control")
