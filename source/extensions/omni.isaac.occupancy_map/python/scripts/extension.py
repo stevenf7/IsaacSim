@@ -1,6 +1,5 @@
 import omni.ext
 import omni.ui as ui
-import omni.kit.ui
 from .. import _occupancy_map
 import omni
 from pxr import UsdGeom, Gf
@@ -8,6 +7,7 @@ import gc
 import os
 from omni.kit.widget.filebrowser import FileBrowserItem
 from .utils import update_location, compute_coordinates, generate_image
+import weakref
 
 
 def create_xyz(init=0, all_axis=["X", "Y", "Z"], callback=None):
@@ -34,9 +34,15 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         EXTENSION_NAME = "Occupancy Map"
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
-        self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/{EXTENSION_NAME}", self._menu_callback)
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Window/Isaac",
+        )
         self._om = _occupancy_map.acquire_occupancy_map_interface()
-        self._editor = omni.kit.editor.get_editor_interface()
         self._layers = omni.usd.get_context().get_layers()
         self._filepicker = None
         with self._window.frame:
@@ -122,7 +128,7 @@ class Extension(omni.ext.IExt):
                     # self.draw_voxel_btn = ui.Button("Draw Voxels", clicked_fn=self._draw_instances)
                     # self.draw_voxel_btn.visible = False
 
-    def _menu_callback(self, name, visible):
+    def _menu_callback(self):
         self._window.visible = not self._window.visible
         if not self._window.visible:
             self._stage_event_sub = None

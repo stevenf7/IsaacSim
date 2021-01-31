@@ -1,18 +1,16 @@
 import omni
 import omni.kit.usd
 import omni.kit.commands
-import omni.kit.editor
+import omni.ui as ui
 import omni.ext
-import omni.kit.ui
 from omni.isaac.dynamic_control import _dynamic_control as dc
 import carb.tokens
-import os
 import carb
 import asyncio
 import numpy as np
-from omni.isaac.utils._isaac_utils import math as mu
-from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics
-
+from pxr import UsdLux, UsdGeom, Sdf, Gf, UsdPhysics
+import omni.physx as _physx
+import weakref
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties, Surface_Gripper
@@ -27,59 +25,53 @@ class Extension(omni.ext.IExt):
         Creates the User inferface and loads the interfaces for required libraries.
         """
 
-        # Loads Editor and DC interfaces
-        self._editor = omni.kit.editor.get_editor_interface()
+        # Loads interfaces
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._dc = dc.acquire_dynamic_control_interface()
         self._usd_context = omni.usd.get_context()
         # Creates UI window with default size of 600x300
-        self._window = omni.kit.ui.Window(
-            EXTENSION_NAME,
-            600,
-            300,
-            menu_path="Isaac/Samples/" + EXTENSION_NAME,
-            open=False,
-            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
+        self._window = omni.ui.Window(
+            EXTENSION_NAME, width=600, height=400, visible=False, dock=ui.DockPreference.LEFT_BOTTOM
         )
-        self._window.set_update_fn(self._on_update_ui)
-        layout = omni.kit.ui.RowColumnLayout(1, False)
-        self._create_scenario_button = layout.add_child(omni.kit.ui.Button("Create Scenario"))
-        self._create_scenario_button.tooltip = omni.kit.ui.Label(
-            "Creates a new scenario with the cone on top of the Cube"
+        self._window.set_visibility_changed_fn(self._on_window)
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Isaac/Samples",
         )
-        self._create_scenario_button.set_clicked_fn(self._on_create_scenario_button_clicked)
-        self._toggle_gripper_button = layout.add_child(omni.kit.ui.Button("Close Surface Gripper"))
-        self._toggle_gripper_button.tooltip = omni.kit.ui.Label("Toggles the surface gripper")
-        self._toggle_gripper_button.set_clicked_fn(self._on_toggle_gripper_button_clicked)
-
-        col_layout = omni.kit.ui.RowColumnLayout(3, False)
-        col_layout.set_column_width(0, 110)
-        col_layout.set_column_width(1, 210)
-        col_layout.set_column_width(2, 100)
-        label_force = omni.kit.ui.Label("Gripper Force Up")
-        label_force.tooltip = omni.kit.ui.Label(
-            "Applies a force on the Z axis on the cone Center of Mass with the slider value"
-        )
-        col_layout.add_child(label_force)
-        self._force_control = col_layout.add_child(omni.kit.ui.SliderDouble("", 0, 0, 5.0e4))
-        self._force_control.width = 200.0
-        self._force_control.tooltip = label_force.tooltip
-        self._force_button = col_layout.add_child(omni.kit.ui.Button("Apply Force"))
-        self._force_button.tooltip = label_force.tooltip
-        self._force_button.set_clicked_fn(self._on_force_button_clicked)
-        speed_label = col_layout.add_child(omni.kit.ui.Label("Gripper speed Up"))
-        speed_label.tooltip = omni.kit.ui.Label("Sets the Cone velocity towards the Z axis with the slider value")
-        self._speed_control = col_layout.add_child(omni.kit.ui.SliderDouble("", 0, 0, 1.0e3))
-        self._speed_control.width = 200.0
-        self._speed_control.tooltip = speed_label.tooltip
-        self._speed_button = col_layout.add_child(omni.kit.ui.Button("Set Speed"))
-        self._speed_button.tooltip = speed_label.tooltip
-        self._speed_button.set_clicked_fn(self._on_speed_button_clicked)
-
-        layout.add_child(col_layout)
-
-        self._window.layout.add_child(layout)
+        self._models = {}
+        with self._window.frame:
+            with ui.VStack(height=0):
+                self._models["create_button"] = ui.Button(
+                    "Create Scenario",
+                    clicked_fn=self._on_create_scenario_button_clicked,
+                    tooltip="Creates a new scenario with the cone on top of the Cube",
+                )
+                self._models["toggle_button"] = ui.Button(
+                    "Close Gripper",
+                    clicked_fn=self._on_toggle_gripper_button_clicked,
+                    tooltip="Toggles the surface gripper",
+                )
+                with ui.HStack(height=0):
+                    ui.Label("Gripper Force Up")
+                    self._models["force_slider"] = ui.FloatSlider(min=0.0, max=5.0e4).model
+                    self._models["force_button"] = ui.Button(
+                        "Apply Force",
+                        clicked_fn=self._on_force_button_clicked,
+                        tooltip="Applies a force on the Z axis on the cone Center of Mass with the slider value",
+                    )
+                with ui.HStack(height=0):
+                    ui.Label("Gripper Speed Up")
+                    self._models["speed_slider"] = ui.FloatSlider(min=0.0, max=1.0e3).model
+                    self._models["speed_button"] = ui.Button(
+                        "Set Speed",
+                        clicked_fn=self._on_speed_button_clicked,
+                        tooltip="Sets the Cone velocity towards the Z axis with the slider value",
+                    )
 
         self.surface_gripper = None
         self.cone = None
@@ -87,19 +79,34 @@ class Extension(omni.ext.IExt):
         self._stage_id = -1
 
     def on_shutdown(self):
+        self._physx_subs = None
         self._window = None
 
+    def _on_window(self, status):
+        if status:
+            self._usd_context = omni.usd.get_context()
+            if self._usd_context is not None:
+                self._stage_event_sub = (
+                    omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_update_ui)
+                )
+        else:
+            self._stage_event_sub = None
+            self._physx_subs = None
+
+    def _menu_callback(self):
+        self._window.visible = not self._window.visible
+
     def _on_update_ui(self, widget):
-        self._create_scenario_button.enabled = self._timeline.is_playing()
-        self._toggle_gripper_button.enabled = self._timeline.is_playing()
-        self._force_button.enabled = self._timeline.is_playing()
-        self._speed_button.enabled = self._timeline.is_playing()
+        self._models["create_button"].enabled = self._timeline.is_playing()
+        self._models["toggle_button"].enabled = self._timeline.is_playing()
+        self._models["force_button"].enabled = self._timeline.is_playing()
+        self._models["speed_button"].enabled = self._timeline.is_playing()
         # If the scene has been reloaded, reset UI to create Scenario
         if self._usd_context.get_stage_id() != self._stage_id:
-            self._create_scenario_button.enabled = True
-            self._create_scenario_button.text = "Create Scenario"
-            self._create_scenario_button.tooltip.text = "Creates a new scenario with the cone on top of the Cube"
-            self._create_scenario_button.set_clicked_fn(self._on_create_scenario_button_clicked)
+            self._models["create_button"].enabled = True
+            self._models["create_button"].text = "Create Scenario"
+            self._models["create_button"].set_tooltip("Creates a new scenario with the cone on top of the Cube")
+            self._models["create_button"].set_clicked_fn(self._on_create_scenario_button_clicked)
             self.cone = None
             self.box = None
             self._stage_id = -1
@@ -108,12 +115,12 @@ class Extension(omni.ext.IExt):
         # Checks if the surface gripper has been created
         if self.surface_gripper is not None:
             if self.surface_gripper.is_closed():
-                self._toggle_gripper_button.text = "Open Gripper"
+                self._models["toggle_button"].text = "Open Gripper"
             else:
-                self._toggle_gripper_button.text = "Close Gripper"
+                self._models["toggle_button"].text = "Close Gripper"
 
-    def _on_editor_step(self, step):
-        # Checks if the editor is playing, and if the stage has been loaded
+    def _on_simulation_step(self, step):
+        # Checks if the simulation is playing, and if the stage has been loaded
         if self._timeline.is_playing() and self._stage_id != -1:
             # Check if the handles for cone and box have been loaded
             if self.cone is None:
@@ -128,14 +135,15 @@ class Extension(omni.ext.IExt):
                     self.coneGeom.GetDisplayColorAttr().Set([self.color_open])
                 self._toggle_gripper_button_ui()
 
-    def _on_reset_scenario_button_clicked(self, button):
-        self._dc.set_rigid_body_linear_velocity(self.cone, [0, 0, 0])
-        self._dc.set_rigid_body_linear_velocity(self.box, [0, 0, 0])
-        self._dc.set_rigid_body_angular_velocity(self.cone, [0, 0, 0])
-        self._dc.set_rigid_body_angular_velocity(self.box, [0, 0, 0])
+    def _on_reset_scenario_button_clicked(self):
+        if self._timeline.is_playing() and self._stage_id != -1:
+            self._dc.set_rigid_body_linear_velocity(self.cone, [0, 0, 0])
+            self._dc.set_rigid_body_linear_velocity(self.box, [0, 0, 0])
+            self._dc.set_rigid_body_angular_velocity(self.cone, [0, 0, 0])
+            self._dc.set_rigid_body_angular_velocity(self.box, [0, 0, 0])
 
-        self._dc.set_rigid_body_pose(self.cone, self.gripper_start_pose)
-        self._dc.set_rigid_body_pose(self.box, self.box_start_pose)
+            self._dc.set_rigid_body_pose(self.cone, self.gripper_start_pose)
+            self._dc.set_rigid_body_pose(self.box, self.box_start_pose)
 
         if self.surface_gripper is not None:
             self.surface_gripper.open()
@@ -144,14 +152,14 @@ class Extension(omni.ext.IExt):
         done, pending = await asyncio.wait({task})
         if task in done:
             # Repurpose button to reset Scene
-            self._create_scenario_button.text = "Reset Scene"
-            self._create_scenario_button.tooltip.text = "Resets scenario with the cone on top of the Cube"
+            self._models["create_button"].text = "Reset Scene"
+            self._models["create_button"].set_tooltip("Resets scenario with the cone on top of the Cube")
 
             # Get Handle for stage and stage ID to check if stage was reloaded
             self._stage = self._usd_context.get_stage()
             self._stage_id = self._usd_context.get_stage_id()
             self._timeline.stop()
-            self._create_scenario_button.set_clicked_fn(self._on_reset_scenario_button_clicked)
+            self._models["create_button"].set_clicked_fn(self._on_reset_scenario_button_clicked)
 
             # Adds a light to the scene
             distantLight = UsdLux.DistantLight.Define(self._stage, Sdf.Path("/DistantLight"))
@@ -217,27 +225,29 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_position("/OmniverseKit_Persp", 400, 400, 400, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", *self.gripper_start_pose.p, True)
 
-            self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+            self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
 
-    def _on_create_scenario_button_clicked(self, button):
+    def _on_create_scenario_button_clicked(self):
         # wait for new stage before creating scenario
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._create_scenario(task))
 
-    def _on_toggle_gripper_button_clicked(self, button):
+    def _on_toggle_gripper_button_clicked(self):
         if self._timeline.is_playing():
             if self.surface_gripper.is_closed():
                 self.surface_gripper.open()
             else:
                 self.surface_gripper.close()
 
-    def _on_speed_button_clicked(self, button):
+    def _on_speed_button_clicked(self):
         if self._timeline.is_playing():
-            self._dc.set_rigid_body_linear_velocity(self.cone, [0, 0, self._speed_control.value])
+            self._dc.set_rigid_body_linear_velocity(
+                self.cone, [0, 0, self._models["speed_slider"].get_value_as_float()]
+            )
 
-    def _on_force_button_clicked(self, button):
+    def _on_force_button_clicked(self):
         if self._timeline.is_playing():
-            self._dc.apply_body_force(self.cone, [0, 0, self._force_control.value], [0, 0, 0])
+            self._dc.apply_body_force(self.cone, [0, 0, self._models["force_slider"].get_value_as_float()], [0, 0, 0])
 
     def createRigidBody(self, bodyType, boxActorPath, mass, scale, position, rotation, color):
         p = Gf.Vec3f(position[0], position[1], position[2])

@@ -8,7 +8,6 @@
 
 import carb.input
 import omni.kit.commands
-import omni.kit.editor
 import omni.ext
 import omni.ui as ui
 import omni.kit.settings
@@ -86,7 +85,7 @@ class Extension(omni.ext.IExt):
                 menu_path="Isaac/Samples/" + EXTENSION_NAME,
                 dock=ui.DockPreference.LEFT_BOTTOM,
             )
-            self._editor_event_subscription = (
+            self._app_update_sub = (
                 omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_update_ui)
             )
             with self._window.frame:
@@ -164,7 +163,6 @@ class Extension(omni.ext.IExt):
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()
 
-        # self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()
         self._stop_task_btn.enabled = True
@@ -250,7 +248,7 @@ class Extension(omni.ext.IExt):
         self._timeline.stop()
         self._on_stop_tasks()
         self._scenario = None
-        self._editor_event_subscription = None
+        self._app_update_sub = None
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
         self._physx_subs = None
         self._window = None

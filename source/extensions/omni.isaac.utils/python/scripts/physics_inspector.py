@@ -1,19 +1,16 @@
-import os
 import omni.ext
 import omni.ui as ui
 from omni.isaac.dynamic_control import _dynamic_control as dc
-from pxr import Usd, Sdf
 import gc
-import math
 import collections
 import carb
+import weakref
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._usd_context = omni.usd.get_context()
         self._dc = dc.acquire_dynamic_control_interface()
-        self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         if self._usd_context is not None:
             self._selection = self._usd_context.get_selection()
@@ -22,7 +19,14 @@ class Extension(omni.ext.IExt):
                 self._on_stage_event, name="physics inspector stage event"
             )
         self._window = omni.ui.Window("Inspect Physics", width=600, height=400, visible=False)
-        self._menu_entry = omni.kit.ui.get_editor_menu().add_item(f"Window/Isaac/Inspect Physics", self._menu_callback)
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name="Inspect Physics", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Window/Isaac",
+        )
         self._physx = omni.physx.acquire_physx_interface()
 
         self._data = {}
@@ -81,11 +85,13 @@ class Extension(omni.ext.IExt):
                 self._selected_prim = self._usd_context.get_stage().GetPrimAtPath(selection[0])
                 self._selected_handle = dc.INVALID_HANDLE
             if self._selected_prim is not None:
-                self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)
+                self._app_event_sub = (
+                    omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step)
+                )
             else:
-                self._editor_event_subscription = None
+                self._app_event_sub = None
 
-    def _menu_callback(self, name, visible):
+    def _menu_callback(self):
         self._window.visible = not self._window.visible
 
     def _add_plot(self, label, title):
@@ -128,9 +134,10 @@ class Extension(omni.ext.IExt):
             self._plots[f"{label}_{axis}"].scale_max = max_scale
             self._plots[f"{label}_{axis}"].set_data(*self._data[f"{label}_{axis}"])
 
-    def _on_editor_step(self, step):
+    def _on_app_step(self, e: carb.events.IEvent):
+        step = e.payload["dt"]
         if len(self._selection.get_selected_prim_paths()) == 0:
-            self._editor_event_subscription = None
+            self._app_event_sub = None
             return
         if self._timeline.is_playing() and self._window.visible:
             if self._selected_prim and self._selected_handle == dc.INVALID_HANDLE:
@@ -141,7 +148,7 @@ class Extension(omni.ext.IExt):
                         for i in range(len(value)):
                             value.append(0.0)
             if self._selected_handle == dc.INVALID_HANDLE:
-                self._editor_event_subscription = None
+                self._app_event_sub = None
                 return
             rigid_body_props = self._dc.get_rigid_body_properties(self._selected_handle)
 

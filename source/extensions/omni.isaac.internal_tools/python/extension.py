@@ -2,15 +2,20 @@ import carb
 import omni.ext
 from omni import ui
 from .utils.file_utils import *
-
+import weakref
 
 EXTENSION_NAME = "Internal Tools"
 
 
 class InternalTools(omni.ext.IExt):
     def on_startup(self):
-        self._menu = omni.kit.ui.get_editor_menu().add_item(
-            "Window/Isaac/" + EXTENSION_NAME, self.show_window, toggle=False, value=False
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a.show_window()
+                )
+            ],
+            "Window/Isaac",
         )
         self._window = ui.Window(
             EXTENSION_NAME,
@@ -30,7 +35,7 @@ class InternalTools(omni.ext.IExt):
                 ui.Button("Assets not referenced by other assets", clicked_fn=self.get_assets_ref_count)
                 ui.Button("Check for assets that cannot be released", clicked_fn=self.get_unreleasable)
 
-    def show_window(self, menu, value):
+    def show_window(self):
         self._window.visible = not self._window.visible
 
     def check_for_abs_paths(self):
