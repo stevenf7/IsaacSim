@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -21,7 +21,6 @@
 #include <carb/syntheticdata/SyntheticData.h>
 
 #include <omni/kit/IStageUpdate.h>
-#include <omni/kit/IEditor.h>
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -46,7 +45,6 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
                       omni::isaac::dynamic_control::DynamicControl,
                       omni::kit::IStageUpdate,
-                      omni::kit::IEditor,
                       omni::isaac::range_sensor::LidarSensorInterface,
                       carb::syntheticdata::SyntheticData,
                       omni::physx::IPhysx,

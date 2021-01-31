@@ -12,7 +12,6 @@
 // clang-format off
 #include <UsdPCH.h>
 // clang-format on
-#include <omni/kit/IEditor.h>
 
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>

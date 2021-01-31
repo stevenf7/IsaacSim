@@ -84,7 +84,7 @@ class Extension(omni.ext.IExt):
         omni.kit.menu.utils.add_menu_items(
             [
                 omni.kit.menu.utils.MenuItemDescription(
-                    name="Joint Monkey", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback
+                    name="Joint Monkey", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
                 )
             ],
             "Isaac/Dynamic Control",
@@ -96,12 +96,7 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                "Joint Monkey",
-                width=300,
-                height=200,
-                menu_path="Isaac/Dynamic Control/Joint Monkey",
-                open=False,
-                dock=ui.DockPreference.LEFT_BOTTOM,
+                title="Joint Monkey", width=300, height=200, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             with self._window.frame:
                 with ui.VStack():

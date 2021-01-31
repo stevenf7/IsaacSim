@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,7 +16,6 @@
 #include <carb/sensors/Sensors.h>
 #include <carb/syntheticdata/SyntheticData.h>
 
-#include <omni/kit/IEditor.h>
 #include <rosBridgeSchema/rosCamera.h>
 
 namespace omni
@@ -50,7 +49,6 @@ public:
 
 private:
     carb::Framework* mFramework = nullptr;
-    omni::kit::IEditor* mEditorInterface = nullptr;
 
     carb::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
     carb::sensors::Sensors* mSensorsInterface = nullptr;

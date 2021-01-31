@@ -71,7 +71,7 @@ class Extension(omni.ext.IExt):
         omni.kit.menu.utils.add_menu_items(
             [
                 omni.kit.menu.utils.MenuItemDescription(
-                    name="Articulation Info", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback
+                    name="Articulation Info", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
                 )
             ],
             "Isaac/Dynamic Control",
@@ -82,14 +82,12 @@ class Extension(omni.ext.IExt):
 
     def _build_ui(self):
         if not self._window:
-            print("creating window")
             self._window = ui.Window(
-                "Articulation Info",
-                width=ui.Pixel(1000),
-                height=ui.Pixel(400),
-                menu_path="Isaac/Dynamic Control/Articulation info",
-                open=False,
-                dock=ui.DockPreference.LEFT_BOTTOM,
+                title="Articulation Info",
+                width=1000,
+                height=400,
+                visible=True,
+                dockPreference=ui.DockPreference.LEFT_BOTTOM,
             )
             with self._window.frame:
                 with ui.VStack(width=ui.Percent(100)):

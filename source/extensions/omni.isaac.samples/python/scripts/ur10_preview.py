@@ -79,11 +79,7 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                EXTENSION_NAME,
-                width=300,
-                height=300,
-                menu_path="Isaac/Samples/" + EXTENSION_NAME,
-                dock=ui.DockPreference.LEFT_BOTTOM,
+                title=EXTENSION_NAME, width=300, height=300, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             self._app_update_sub = (
                 omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_update_ui)
