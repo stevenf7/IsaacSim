@@ -34,12 +34,7 @@ class Exploded_view(omni.ext.IExt):
             self._window.visible = value
         elif value:
             self._window = ui.Window(
-                EXTENSION_NAME,
-                width=500,
-                height=300,
-                menu_path="Window/Isaac/" + EXTENSION_NAME,
-                open=value,
-                dock=ui.DockPreference.LEFT_BOTTOM,
+                title=EXTENSION_NAME, width=500, height=300, visible=value, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
 
             with self._window.frame:

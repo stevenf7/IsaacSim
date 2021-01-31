@@ -25,7 +25,6 @@
 #include <carb/renderer/Renderer.h>
 #include <carb/settings/ISettings.h>
 
-#include <omni/kit/IEditor.h>
 #include <omni/kit/IViewport.h>
 #include <omni/kit/KitUtils.h>
 #include <omni/physx/IPhysx.h>

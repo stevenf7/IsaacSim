@@ -55,11 +55,7 @@ class Contact_sensor_demo(omni.ext.IExt):
             self._sensor_handles = [0 for i in range(4)]
             self.sliders = None
             self._window = ui.Window(
-                "Contact Sensor Sample",
-                width=300,
-                height=200,
-                menu_path="Isaac/Samples/Contact Sensor",
-                dock=ui.DockPreference.LEFT_BOTTOM,
+                title="Contact Sensor Sample", width=300, height=200, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             self.sliders = []
             self.colors = [0xFFBBBBFF, 0xFFBBFFBB, 0xBBFFBBBB, 0xBBBBFFFF]

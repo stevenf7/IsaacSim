@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,13 +16,12 @@
 #include <carb/input/IInput.h>
 
 #include <omni/isaac/manip/Input.h>
-#include <omni/kit/IEditor.h>
 
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.manip.plugin", "ManipInput", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::manip::Input)
-CARB_PLUGIN_IMPL_DEPS(omni::kit::IEditor, carb::input::IInput)
+CARB_PLUGIN_IMPL_DEPS(carb::input::IInput)
 
 namespace omni
 {

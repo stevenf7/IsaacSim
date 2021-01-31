@@ -65,12 +65,7 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                EXTENSION_NAME,
-                width=300,
-                height=200,
-                menu_path="Isaac/Samples/" + EXTENSION_NAME,
-                open=False,
-                dock=ui.DockPreference.LEFT_BOTTOM,
+                title=EXTENSION_NAME, width=300, height=200, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             with self._window.frame:
                 with ui.VStack():

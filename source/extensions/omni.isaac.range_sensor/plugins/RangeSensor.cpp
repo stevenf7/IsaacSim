@@ -35,7 +35,6 @@
 #include <carb/fastcache/FastCache.h>
 #include <carb/tasking/ITasking.h>
 
-#include <omni/kit/IEditor.h>
 #include <omni/kit/IViewport.h>
 #include <omni/kit/KitUtils.h>
 #include <omni/usd/UsdUtils.h>
@@ -56,7 +55,6 @@ CARB_PLUGIN_IMPL(kPluginImpl,
 
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       carb::imgui::ImGui,
-                      omni::kit::IEditor,
                       omni::kit::IStageUpdate,
                       carb::fastcache::FastCache,
                       omni::renderer::IDebugDraw,
@@ -67,7 +65,6 @@ namespace
 {
 
 
-omni::kit::IEditor* g_editor = nullptr;
 omni::renderer::IDebugDraw* g_debugDraw = nullptr;
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
@@ -760,13 +757,6 @@ CARB_EXPORT void carbOnPluginStartup()
     if (!framework)
     {
         CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
-        return;
-    }
-
-    g_editor = framework->acquireInterface<omni::kit::IEditor>();
-    if (!g_editor)
-    {
-        CARB_LOG_ERROR("*** Failed to acquire editor interface\n");
         return;
     }
 

@@ -32,7 +32,7 @@ class Extension(omni.ext.IExt):
         self._usd_context = omni.usd.get_context()
         # Creates UI window with default size of 600x300
         self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=False, dock=ui.DockPreference.LEFT_BOTTOM
+            title=EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.set_visibility_changed_fn(self._on_window)
         omni.kit.menu.utils.add_menu_items(

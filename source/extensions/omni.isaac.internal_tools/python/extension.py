@@ -18,12 +18,7 @@ class InternalTools(omni.ext.IExt):
             "Window/Isaac",
         )
         self._window = ui.Window(
-            EXTENSION_NAME,
-            width=800,
-            height=400,
-            menu_path="Window/Isaac/" + EXTENSION_NAME,
-            visible=False,
-            dock=ui.DockPreference.LEFT_BOTTOM,
+            title=EXTENSION_NAME, width=800, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         with self._window.frame:
             with ui.VStack(height=0):

@@ -439,12 +439,7 @@ class StepImporter(omni.ext.IExt):
     def _build_ui(self):
         if self._window is None:
             self._window = ui.Window(
-                EXTENSION_NAME,
-                width=800,
-                height=400,
-                menu_path="Isaac/Importers/" + EXTENSION_NAME,
-                open=True,
-                dock=ui.DockPreference.LEFT_BOTTOM,
+                title=EXTENSION_NAME, width=800, height=400, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             self._window.set_visibility_changed_fn(self.on_visibility_change)
             self._assembly_model = AssemblyTreeModel()

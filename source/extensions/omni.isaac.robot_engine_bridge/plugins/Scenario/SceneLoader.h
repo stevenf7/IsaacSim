@@ -14,7 +14,6 @@
 #include <carb/dictionary/DictionaryUtils.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/kit/IEditor.h>
 #include <robotEngineBridgeSchema/robotEngineSceneLoader.h>
 
 #include <memory>
