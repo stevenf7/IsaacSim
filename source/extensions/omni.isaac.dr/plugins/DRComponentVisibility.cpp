@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -96,10 +96,10 @@ void DRComponentVisibility::stop()
 }
 void DRComponentVisibility::tick()
 {
-    unsigned int numVisible = randomRangeInt(mNumVisibleRange[0], mNumVisibleRange[1]);
-    unsigned int countVisible = 0;
-    if (numVisible <= 0)
-        return;
+    int numVisible = randomRangeInt(mNumVisibleRange[0], mNumVisibleRange[1]);
+    if (mNumVisibleRange[0] > mNumVisibleRange[1])
+        numVisible = randomRangeInt(mNumVisibleRange[1], mNumVisibleRange[0]);
+    int countVisible = 0;
 
     auto rng = std::default_random_engine{};
     std::shuffle(mAllPrims.begin(), mAllPrims.end(), rng);
