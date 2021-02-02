@@ -1,8 +1,10 @@
 import omni
+import omni.ui as ui
 from omni.isaac.range_sensor import _range_sensor
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import asyncio
+import weakref
 
 
 class Extension(omni.ext.IExt):
@@ -22,62 +24,67 @@ class Extension(omni.ext.IExt):
         # This just defines the window we will use to access the lidar_info GUI.  Note that clicking on the menu item
         # does not create an instance of lidar_info; that is done by the extension when it is loaded by kit.  All this
         # menu does is show or hide our GUI we will use for interacting with lidar_info
-        self._window = omni.kit.ui.Window(
-            "LIDAR Info",
-            300,
-            200,
-            menu_path="Isaac/LIDAR/LIDAR info",
-            open=False,
-            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
+        self._window = omni.ui.Window(
+            "LIDAR Info", width=600, height=400, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
         )
 
-        #  Kit GUIs are defined by a tree of layouts, and leaf layouts contain GUI elements (like buttons or
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name="LIDAR Info", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Isaac/Range Sensor",
+        )
+        # Kit GUIs are defined by a tree of layouts, and leaf layouts contain GUI elements (like buttons or
         # text entry fields).  You can learn more about Layouts and GUIs in the python manual at
-        # Scripting API > omni.kit package > omni.kit.ui module.
-        sublayout = self._window.layout.add_child(omni.kit.ui.ColumnLayout())
-
-        # We are using a single colum layout, so these buttons will appear as a single column on
-        # the left side of the window.
-        sublayout.add_child(
-            omni.kit.ui.Label(
-                "This sample demonstrates how to create a LIDAR, set properties and get data from it. Press play once LIDAR is created to simulate"
-            )
-        )
-        spawn_lidar_button = sublayout.add_child(omni.kit.ui.Button("Clean Stage And Spawn a LIDAR"))
-        spawn_lidar_button.tooltip = omni.kit.ui.Label("Spawn a LIDAR in the Stage and set its properties")
-        spawn_obstacles_button = sublayout.add_child(omni.kit.ui.Button("Spawn an obstacle for LIDAR"))
-        spawn_obstacles_button.tooltip = omni.kit.ui.Label("Spawn an obstacle and move camera so its in view")
-        get_info_button = sublayout.add_child(omni.kit.ui.Button("Get data from LIDAR (press play first)"))
-        get_info_button.tooltip = omni.kit.ui.Label(
-            "Press play to enable simulation and then press this button to get the current LIDAR information"
-        )
-        sublayout.add_child(
-            omni.kit.ui.Label(
-                'Note: The buttons above only work with the lidar spawned by the "Spawn a LIDAR" button and not existing ones in the stage'
-            )
-        )
-
-        # When you interact with a GUI element, you are interacting with a kit Widget.  A widget is a single
-        # GUI element that may or may not contain functions you can use to define how to interact with that widget.
-        # In this case, we are making simple button widgets, which will call a function we define whenever we click it.
-        spawn_lidar_button.set_clicked_fn(self._on_spawn_lidar_button)
-        spawn_obstacles_button.set_clicked_fn(self._on_spawn_obstacles_button)
-        get_info_button.set_clicked_fn(self._get_info_function)
-
-        # The separator is an example of a widget that does not contain any interactive functionality.  I simply puts
-        # a tiny gap in the UI in order separate one part from another.
-        sublayout.add_child(omni.kit.ui.Separator())
-
-        # we add a scrolling frame because we also want to display information about our LIDAR, and the amount
-        # of information we display depends on the LIDAR parameters.
-        scrolling_frame = sublayout.add_child(omni.kit.ui.ScrollingFrame("", -1, -1))
-        self.info_label = scrolling_frame.add_child(
-            omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
-        )
+        # Scripting API > omni.kit package > omni.ui module.
+        # Each button below has a tooltip and a function that is called when the button is clicked
+        with self._window.frame:
+            with ui.VStack():
+                ui.Label(
+                    "This sample demonstrates how to create a LIDAR, set properties and get data from it. Press play once LIDAR is created to simulate",
+                    height=0,
+                    word_wrap=True,
+                )
+                ui.Button(
+                    "Clean Stage And Spawn a LIDAR Sensor",
+                    clicked_fn=self._on_spawn_lidar_button,
+                    tooltip="Spawn an LIDAR Sensor in the Stage and set its properties",
+                    height=0,
+                )
+                ui.Button(
+                    "Spawn an Obstacle for the LIDAR Sensor",
+                    clicked_fn=self._on_spawn_obstacles_button,
+                    tooltip="Spawn an obstacle and move camera so its in view",
+                    height=0,
+                )
+                ui.Button(
+                    "Get data from the LIDAR Sensor (press play first)",
+                    clicked_fn=self._get_info_function,
+                    tooltip="Press play to enable simulation and then press this button to get the current LIDAR information",
+                    height=0,
+                )
+                ui.Label(
+                    'Note: The buttons above only work with the LIDAR spawned by the "Spawn an LIDAR Sensor" button and not existing ones in the stage',
+                    height=0,
+                    word_wrap=True,
+                )
+                # The separator is an example of a widget that does not contain any interactive functionality.
+                # a tiny gap in the UI in order separate one part from another.
+                ui.Spacer(height=5)
+                ui.Separator(height=1, width=0)
+                ui.Spacer(height=5)
+                ui.Label("Output Information:", height=0)
+                with ui.ScrollingFrame():
+                    self._info_label = ui.Label("No Data To Display", word_wrap=True)
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
         self._window = None
+
+    def _menu_callback(self):
+        self._window.visible = not self._window.visible
 
     async def _spawn_lidar_function(self, task):
         # Wait for stage clear to complete before creating LIDAR
@@ -136,12 +143,12 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_position("/OmniverseKit_Persp", 500, 500, 500, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
 
-    def _on_spawn_lidar_button(self, widget):
+    def _on_spawn_lidar_button(self):
         # wait for new stage before creating lidar
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._spawn_lidar_function(task))
 
-    def _on_spawn_obstacles_button(self, widget):
+    def _on_spawn_obstacles_button(self):
         stage = omni.usd.get_context().get_stage()
         self.CubePath = "/World/Cube"
         offset = Gf.Vec3f(-200.0, 0.0, 50.0)
@@ -168,7 +175,7 @@ class Extension(omni.ext.IExt):
         # to do this, we give our cube the collision API, and set it's material and collision group.
         collisionAPI = UsdPhysics.CollisionAPI.Apply(cubePrim)
 
-    def _get_info_function(self, widget):
+    def _get_info_function(self):
         maxDepth = self.lidar.GetMaxRangeAttr().Get()
 
         # The LIDAR itself exists as a C++ object.  In order to retrieve data from this object we need to call
@@ -195,4 +202,4 @@ class Extension(omni.ext.IExt):
             entry = [ray * maxDepth / 65535.0 for ray in cols]
             tableString += rowString.format("{0:.5f}".format(azimuth[row]), " | ", *entry)
 
-        self.info_label.text = tableString
+        self._info_label.text = tableString

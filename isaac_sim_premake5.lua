@@ -166,7 +166,6 @@ function create_python_sample_runner(name, sample_path, config, extra_args)
         print(sh_file_path)
         f:write(string.format([[
 #!/bin/bash
-set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 if [ ! -d "${SCRIPT_DIR}/../../python_samples" ]; then
     SCRIPT_DIR=$SCRIPT_DIR/../../../python_samples
