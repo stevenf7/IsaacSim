@@ -70,6 +70,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         setup_task = asyncio.ensure_future(self.load_stage(scenario_path))
         while not setup_task.done():
             self.kit.update()
+        self.kit.setup_renderer()
         self.kit.update()
 
     def __iter__(self):

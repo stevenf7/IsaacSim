@@ -23,6 +23,7 @@ segmentation (instance and semantic), and camera parameters.
 
 import math
 import carb
+import omni
 from pxr import UsdGeom, Semantics, Gf
 
 import numpy as np
