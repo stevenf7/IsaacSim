@@ -7,6 +7,7 @@ from omni.isaac.synthetic_utils import DomainRandomization
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 
 import carb.tokens
+import argparse
 
 CONFIG = {
     "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
@@ -39,12 +40,15 @@ class DualCameraSample:
         self.sd_helper = SyntheticDataHelper()
         self.frame = 0
 
+    def shutdown(self):
+        self.kit.shutdown()
+
     def start(self):
         self.kit.play()
 
     def stop(self):
         self.kit.stop()
-        self._re_bridge.destroy_application()
+        omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")
 
     def create_stage(self):
         # open base stage and set up axis to Z
@@ -164,21 +168,15 @@ class DualCameraSample:
             [self._camera_proxy.GetPath(), self._target_prim.GetPath()]
         )
 
-    def configure_bridge(self):
-        asset_path = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve(
-                f'{os.environ["ISAAC_PATH"]}/exts/omni.isaac.robot_engine_bridge/'
-            )
+    def configure_bridge(self, json_file: str = "isaacsim.app.json"):
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
+        reb_extension_path = ext_manager.get_extension_path(ext_id)
+        app_file = f"{reb_extension_path}/resources/isaac_engine/json/{json_file}"
+        carb.log_info(f"create application with: {reb_extension_path} {app_file}")
+        return omni.kit.commands.execute(
+            "CreateRobotEngineBridgeApplicationCommand", asset_path=reb_extension_path, app_file=app_file
         )
-        # This path can be changed as long as the absolute path is supplied
-        # You could also generate one via python here, save it to a temp folder and point to it
-        json_path = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve(
-                f'{os.environ["ISAAC_PATH"]}/exts/omni.isaac.robot_engine_bridge/resources/isaac_engine/json/isaacsim.app.json'
-            )
-        )
-        # start bridge application
-        self._re_bridge.create_application(asset_path, json_path, [], [])
 
     def configure_randomization(self):
         texture_list = [
@@ -268,6 +266,9 @@ class DualCameraSample:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate Occluded and Unoccluded data")
+    parser.add_argument("--test", action="store_true")
+    args = parser.parse_args()
     sample = DualCameraSample()
     # On start if state creation was successful
     if sample.create_stage():
@@ -284,5 +285,7 @@ if __name__ == "__main__":
 
         while sample.kit.app.is_running():
             sample.step()
-
+            if args.test:
+                break
         sample.stop()
+        sample.shutdown()

@@ -80,3 +80,4 @@ if __name__ == "__main__":
         kit.update(1.0 / 60.0)
 
     kit.stop()
+    kit.shutdown()

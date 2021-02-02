@@ -151,3 +151,32 @@ export PXR_PLUGINPATH_NAME="$(readlink -e $SCRIPT_DIR/%s)%s":$PXR_PLUGINPATH_NAM
         os.chmod(sh_file_path, 755)
     end
 end
+
+function python_sample_test(name, sample_path, args)
+    local extra_args = args or ""
+    for _, config in ipairs(ALL_CONFIGS) do
+        create_python_sample_runner(name, sample_path, config, extra_args)
+    end
+end
+function create_python_sample_runner(name, sample_path, config, extra_args)
+    if os.target() == "linux" then
+        local sh_file_dir = root.."/_build/linux-x86_64/"..config
+        local sh_file_path = sh_file_dir.."/"..name..".sh"
+        local f = io.open(sh_file_path, 'w')
+        print(sh_file_path)
+        f:write(string.format([[
+#!/bin/bash
+set -e
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+if [ ! -d "${SCRIPT_DIR}/../../python_samples" ]; then
+    SCRIPT_DIR=$SCRIPT_DIR/../../../python_samples
+else
+    SCRIPT_DIR=$SCRIPT_DIR/../../python_samples
+fi
+"$SCRIPT_DIR/python.sh" $SCRIPT_DIR/%s %s $@
+
+        ]], sample_path, extra_args))
+        f:close()
+        os.chmod(sh_file_path, 755)
+    end
+end
