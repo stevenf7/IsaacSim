@@ -46,3 +46,4 @@ if __name__ == "__main__":
         dof_props = dc.get_articulation_dof_properties(ar)
         print(str("--- DOF properties:\n") + str(dof_props) + "\n")
     kit.stop()
+    kit.shutdown()

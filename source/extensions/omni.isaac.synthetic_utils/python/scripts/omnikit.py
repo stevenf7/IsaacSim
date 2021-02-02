@@ -76,13 +76,14 @@ Launches and configures OmniKit and exposes useful functions.
         # initialize vars
         self._exiting = False
         self._is_dirty_instance_mappings = True
-        atexit.register(self._cleanup)
+        # atexit.register(self._cleanup)
         self.config = DEFAULT_CONFIG
         if config is not None:
             self.config.update(config)
 
         # Load app plugin
-        carb.get_framework().load_plugins(
+        self._framework = carb.get_framework()
+        self._framework.load_plugins(
             loaded_file_wildcards=["omni.kit.app.plugin"],
             search_paths=[os.path.abspath(f'{os.environ["CARB_APP_PATH"]}/plugins')],
         )
@@ -120,8 +121,8 @@ Launches and configures OmniKit and exposes useful functions.
             "--/persistent/physics/overrideGPUSettings=0",  # force CPU physx
             # "--/persistent/physics/updateToUsd=True",
             # "--/persistent/physics/useFastCache=True",
-            # Experimental, forces kit to not render until all USD files are loaded
-            # f'--/rtx/materialDb/syncLoads={self.config["sync_loads"]}',
+            # Forces kit to not render until all USD files are loaded
+            f'--/rtx-defaults/materialDb/syncLoads={self.config["sync_loads"]}',
             f'--/omni.kit.plugin/syncUsdLoads={self.config["sync_loads"]}',
             # TODO: Is this still needed
             "--/app/content/emptyStageOnStart=False",  # This is required due to a infinite loop but results in errors on launch
@@ -138,20 +139,42 @@ Launches and configures OmniKit and exposes useful functions.
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
         self.app.startup("kit", os.environ["CARB_APP_PATH"], args)
 
-    def _cleanup(self):
-        print("Exiting OmniKitHelper")
-        if self.app:
-            self.set_setting("/app/file/ignoreUnsavedOnExit", True)
-            self.update()
-            # self.app.post_quit()
-            # self.app.shutdown()
-            self.app = None
-            # sys.exit()
+    def __del__(self):
+        if self._exiting is False and sys.meta_path is None:
+            print(
+                "\033[91m"
+                + "ERROR: Python exiting while OmniKitHelper was still running, Please call shutdown() on the OmniKitHelper object to exit cleanly"
+                + "\033[0m"
+            )
+        # if self._exiting is False:
+        #     self.shutdown()
 
-    def exit(self):
-        """Sets is_exiting Flag to True and tells omniverse app to exit"""
+    def shutdown(self):
         self._exiting = True
-        self._cleanup()
+        print("Shutting Down OmniKitHelper...")
+        # We are exisitng but something is still loading, wait for it to load to avoid a deadlock
+        if self.is_loading():
+            print("   Waiting for USD resource operations to complete (this may take a few seconds)")
+        while self.is_loading():
+            self.app.update()
+        self.app.shutdown()
+        self._framework.unload_all_plugins()
+        print("Shutting Down Complete")
+
+    # def _cleanup(self):
+    #     print("Exiting OmniKitHelper")
+    #     if self.app:
+    #         # self.set_setting("/app/file/ignoreUnsavedOnExit", True)
+    #         # self.update()
+    #         # self.app.post_quit()
+    #         # self.app.shutdown()
+    #         self.app.shutdown()
+    #         self._framework.unload_all_plugins()
+
+    # def exit(self):
+    #     """Sets is_exiting Flag to True and tells omniverse app to exit"""
+    #     self._exiting = True
+    #     self._cleanup()
 
     def get_stage(self):
         """Returns the current USD stage."""
@@ -260,23 +283,24 @@ Launches and configures OmniKit and exposes useful functions.
 
     def setup_renderer(self):
         """Reset render settings to those in config. This should be used in case a new stage is opened and the desired config needs to be re-applied"""
-        self.set_setting("/rtx/rendermode", self.config["renderer"])
+        self.set_setting("/rtx-defaults/rendermode", self.config["renderer"])
         # Raytrace mode settings
-        self.set_setting("/rtx/post/aa/op", self.config["anti_aliasing"])
+        self.set_setting("/rtx-defaults/post/aa/op", self.config["anti_aliasing"])
         # Pathtrace mode settings
-        self.set_setting("/rtx/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
-        self.set_setting("/rtx/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"])
-        self.set_setting("/rtx/pathtracing/clampSpp", self.config["samples_per_pixel_per_frame"])
-        self.set_setting("/rtx/pathtracing/maxBounces", self.config["max_bounces"])
+        self.set_setting("/rtx-defaults/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
+        self.set_setting("/rtx-defaults/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"])
+        self.set_setting("/rtx-defaults/pathtracing/clampSpp", self.config["samples_per_pixel_per_frame"])
+        self.set_setting("/rtx-defaults/pathtracing/maxBounces", self.config["max_bounces"])
         self.set_setting(
-            "/rtx/pathtracing/maxSpecularAndTransmissionBounces", self.config["max_specular_transmission_bounces"]
+            "/rtx-defaults/pathtracing/maxSpecularAndTransmissionBounces",
+            self.config["max_specular_transmission_bounces"],
         )
-        self.set_setting("/rtx/pathtracing/maxVolumeBounces", self.config["max_volume_bounces"])
-        self.set_setting("/rtx/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
-        self.set_setting("/rtx/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"])
+        self.set_setting("/rtx-defaults/pathtracing/maxVolumeBounces", self.config["max_volume_bounces"])
+        self.set_setting("/rtx-defaults/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
+        self.set_setting("/rtx-defaults/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"])
 
         # Experimental, forces kit to not render until all USD files are loaded
-        self.set_setting("/rtx/materialDb/syncLoads", self.config["sync_loads"])
+        self.set_setting("/rtx-defaults/materialDb/syncLoads", self.config["sync_loads"])
         self.set_setting("/omni.kit.plugin/syncUsdLoads", self.config["sync_loads"])
 
     def create_prim(

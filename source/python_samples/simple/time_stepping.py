@@ -38,3 +38,4 @@ if __name__ == "__main__":
     update_sub = None
     physics_sub = None
     kit.stop()
+    kit.shutdown()

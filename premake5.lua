@@ -224,3 +224,14 @@ group "exts"
         include ("source/extensions/omni.isaac.ros_bridge")
         include ("source/extensions/omni.isaac.occupancy_map")
     end
+
+repo_build.prebuild_link {
+    { "source/python_samples", "_build/python_samples" },
+    { "source/ros_samples", "_build/ros_samples" },
+}
+
+group "python_samples"
+    python_sample_test("tests-python.simple.time_stepping", "simple/time_stepping.py")
+    python_sample_test("tests-python.simple.urdf_import", "simple/urdf_import.py")
+    python_sample_test("tests-python.simple.franka_articulation", "simple/franka_articulation.py")
+    python_sample_test("tests-python.isaac_sdk.pose_estimation", "isaac_sdk/pose_estimation.py", "--test")
