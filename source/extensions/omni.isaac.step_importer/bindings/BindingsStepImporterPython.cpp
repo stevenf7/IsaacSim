@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -157,7 +157,12 @@ PYBIND11_MODULE(_step_importer, m)
 
     py::class_<MeshProperties>(m, "MeshProperties", "Contains properties of the meshes")
         .def(py::init<>())
-        .def_readwrite("name", &MeshProperties::name, "Name")
+        .def_property("name",
+                      [](MeshProperties& self) {
+                          py::str py_str(PyUnicode_Decode(self.name.c_str(), self.name.size(), "utf-8", "ignore"));
+                          return py_str;
+                      },
+                      [](MeshProperties& self, std::string name) { self.name = name; }, "Name")
         .def_readwrite("com", &MeshProperties::com, "Center of Mass")
         .def_readwrite("volume", &MeshProperties::volume, "Volume")
         .def_readwrite("density", &MeshProperties::density, "Density")
@@ -222,7 +227,12 @@ PYBIND11_MODULE(_step_importer, m)
 
     py::class_<Assembly>(m, "Assembly", "A group of Meshes and sub-assemblies that form an object")
         .def(py::init<>())
-        .def_readwrite("name", &Assembly::name, "Assembly name")
+        .def_property("name",
+                      [](Assembly& self) {
+                          py::str py_str(PyUnicode_Decode(self.name.c_str(), self.name.size(), "utf-8", "ignore"));
+                          return py_str;
+                      },
+                      [](Assembly& self, std::string name) { self.name = name; })
         .def_readwrite("sub_assemblies", &Assembly::sub_assemblies, "Sub assemblies that are part of the assembly")
         .def_readwrite("meshes", &Assembly::meshes, "Meshes that are part of the Assembly");
 
