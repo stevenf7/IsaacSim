@@ -314,7 +314,7 @@ class PartExporter:
         if self.get_assembly(index) is None:
             assembly = self.part.assemblies[index]
             # print(assembly.name)
-            assembly_name = re.sub(r"[\W,_]+", "_", assembly.name).lower()
+            assembly_name = pxr.Tf.MakeValidIdentifier(assembly.name.lower())
             if assembly_name[0].isdigit():
                 assembly_name = ("a_" + assembly_name).lower()
             if self._make_assembly_usd:
@@ -342,7 +342,7 @@ class PartExporter:
 
             for c in assembly.sub_assemblies:
                 sub_assembly = self.part.assemblies[c.id]
-                sub_assembly_name = re.sub(r"[\W,_]+", "_", sub_assembly.name).lower()
+                sub_assembly_name = pxr.Tf.MakeValidIdentifier(sub_assembly.name.lower())
                 sub_assembly_path = self.export_assembly(path + "/" + sub_assembly_name, c.id)
                 if sub_assembly_name[0].isdigit():
                     sub_assembly_name = "a_" + sub_assembly_name
@@ -361,7 +361,7 @@ class PartExporter:
                 mesh_id = self.get_mesh_id(c.id)
                 mesh_props = self.part.meshes_properties[c.id]
                 mesh_path = self.get_mesh_path(c.id)
-                mesh_name = re.sub(r"[\W,_]+", "_", self.get_mesh_name(c.id)).lower()
+                mesh_name = pxr.Tf.MakeValidIdentifier(self.get_mesh_name(c.id).lower())
                 if mesh_name[0].isdigit():
                     mesh_name = "m_" + mesh_name
                 usd_sub_path = "{}/{}".format(path, mesh_name)
@@ -509,7 +509,7 @@ class PartExporter:
             meshes.append(_step_importer.Mesh())
 
         path = os.path.join(self.path, "meshes")
-        mesh_name = re.sub(r"[\W,_]+", "_", self.part.meshes_properties[mesh_index].name).lower()
+        mesh_name = pxr.Tf.MakeValidIdentifier(self.part.meshes_properties[mesh_index].name.lower())
         carb.log_info("Converting " + self.mesh_usd_paths[mesh_index])
         if mesh_name[0].isdigit():
             mesh_name = "m_" + mesh_name
@@ -593,7 +593,7 @@ def bind_material(stage, prims, mat_path):
 
 def create_usd_mesh(meshes, mesh_props, path, materials_stage, materials_list, materials_names, move_to_com):
     count = 0
-    mesh_name = re.sub(r"[\W,_]+", "_", mesh_props.name).lower()
+    mesh_name = pxr.Tf.MakeValidIdentifier(mesh_props.name.lower())
     if mesh_name[0].isdigit():
         mesh_name = "m_" + mesh_name
     # Find next available filename to avoid overwriting meshes that potentially have the same name
