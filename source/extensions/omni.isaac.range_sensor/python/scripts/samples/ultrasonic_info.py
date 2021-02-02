@@ -1,10 +1,11 @@
 import omni
-import omni.ui as omni_ui
+import omni.ui as ui
 from omni.isaac.range_sensor import _range_sensor
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 from omni.physx.scripts.physicsUtils import *
 import asyncio
+import weakref
 
 
 class Extension(omni.ext.IExt):
@@ -24,67 +25,79 @@ class Extension(omni.ext.IExt):
         # This just defines the window we will use to access the ultrasonic_info GUI.  Note that clicking on the menu item
         # does not create an instance of ultrasonic_info; that is done by the extension when it is loaded by kit.  All this
         # menu does is show or hide our GUI we will use for interacting with ultrasonic_info
-        self._window = omni.kit.ui.Window(
-            "Ultrasonic Info",
-            300,
-            200,
-            menu_path="Isaac/Ultrasonic/Ultrasonic Demo App",
-            open=False,
-            dock=omni.kit.ui.DockPreference.LEFT_BOTTOM,
+        self._window = omni.ui.Window(
+            "Ultrasonic Info", width=600, height=400, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
         )
 
-        #  Kit GUIs are defined by a tree of layouts, and leaf layouts contain GUI elements (like buttons or
+        omni.kit.menu.utils.add_menu_items(
+            [
+                omni.kit.menu.utils.MenuItemDescription(
+                    name="Ultrasonic Info", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                )
+            ],
+            "Isaac/Range Sensor",
+        )
+
+        # Kit GUIs are defined by a tree of layouts, and leaf layouts contain GUI elements (like buttons or
         # text entry fields).  You can learn more about Layouts and GUIs in the python manual at
-        # Scripting API > omni.kit package > omni.kit.ui module.
-        sublayout = self._window.layout.add_child(omni.kit.ui.ColumnLayout())
+        # Scripting API > omni.kit package > omni.ui module.
+        # Each button below has a tooltip and a function that is called when the button is clicked
+        with self._window.frame:
+            with ui.HStack():
+                with ui.VStack(width=ui.Percent(50)):
+                    ui.Label(
+                        "This sample demonstrates how to create an ultrasonic sensor, set properties and get data from it. Press play once the sensor is created to simulate",
+                        height=0,
+                        word_wrap=True,
+                    )
+                    ui.Button(
+                        "Clean Stage And Spawn an Ultrasonic Sensor",
+                        clicked_fn=self._on_spawn_ultrasonic_button,
+                        tooltip="Spawn an Ultrasonic Sensor in the Stage and set its properties",
+                        height=0,
+                    )
+                    ui.Button(
+                        "Spawn an Obstacle for the Ultrasonic Sensor",
+                        clicked_fn=self._on_spawn_obstacles_button,
+                        tooltip="Spawn an obstacle and move camera so its in view",
+                        height=0,
+                    )
+                    ui.Button(
+                        "Get data from the Ultrasonic Sensor (press play first)",
+                        clicked_fn=self._get_info_function,
+                        tooltip="Press play to enable simulation and then press this button to get the current ultrasonic information",
+                        height=0,
+                    )
+                    ui.Label(
+                        'Note: The buttons above only work with the ultrasonic spawned by the "Spawn an Ultrasonic Sensor" button and not existing ones in the stage',
+                        height=0,
+                        word_wrap=True,
+                    )
+                    # The separator is an example of a widget that does not contain any interactive functionality.
+                    # a tiny gap in the UI in order separate one part from another.
+                    ui.Spacer(height=5)
+                    ui.Separator(height=1, width=0)
+                    ui.Spacer(height=5)
+                    ui.Label("Output Information:", height=0)
+                    with ui.ScrollingFrame():
+                        self._info_label = ui.Label("No Data To Display", word_wrap=True)
+                ui.Spacer(width=20)
+                with ui.Frame():
+                    self._envelope_frame = ui.ScrollingFrame()
 
-        # We are using a single colum layout, so these buttons will appear as a single column on
-        # the left side of the window.
-        sublayout.add_child(
-            omni.kit.ui.Label(
-                "This sample demonstrates how to create an ultrasonic sensor, set properties and get data from it. Press play once the sensor is created to simulate"
-            )
-        )
-
-        spawn_ultrasonic_button = sublayout.add_child(omni.kit.ui.Button("Clean Stage And Spawn an Ultrasonic Sensor"))
-        spawn_ultrasonic_button.tooltip = omni.kit.ui.Label(
-            "Spawn an Ultrasonic Sensor in the Stage and set its properties"
-        )
-        spawn_obstacles_button = sublayout.add_child(omni.kit.ui.Button("Spawn an Obstacle for the Ultrasonic Sensor"))
-        spawn_obstacles_button.tooltip = omni.kit.ui.Label("Spawn an obstacle and move camera so its in view")
-        get_info_button = sublayout.add_child(
-            omni.kit.ui.Button("Get data from the Ultrasonic Sensor (press play first)")
-        )
-        get_info_button.tooltip = omni.kit.ui.Label(
-            "Press play to enable simulation and then press this button to get the current ultrasonic information"
-        )
-        sublayout.add_child(
-            omni.kit.ui.Label(
-                'Note: The buttons above only work with the ultrasonic spawned by the "Spawn an Ultrasonic Sensor" button and not existing ones in the stage'
-            )
-        )
-
-        # When you interact with a GUI element, you are interacting with a kit Widget.  A widget is a single
-        # GUI element that may or may not contain functions you can use to define how to interact with that widget.
-        # In this case, we are making simple button widgets, which will call a function we define whenever we click it.
-        spawn_ultrasonic_button.set_clicked_fn(self._on_spawn_ultrasonic_button)
-        spawn_obstacles_button.set_clicked_fn(self._on_spawn_obstacles_button)
-        get_info_button.set_clicked_fn(self._get_info_function)
-
-        # The separator is an example of a widget that does not contain any interactive functionality.  I simply puts
-        # a tiny gap in the UI in order separate one part from another.
-        sublayout.add_child(omni.kit.ui.Separator())
-
-        # we add a scrolling frame because we also want to display information about our ULTRASONIC, and the amount
-        # of information we display depends on the ULTRASONIC parameters.
-        scrolling_frame = sublayout.add_child(omni.kit.ui.ScrollingFrame("", -1, -1))
-        self.info_label = scrolling_frame.add_child(
-            omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
-        )
+        # # we add a scrolling frame because we also want to display information about our ULTRASONIC, and the amount
+        # # of information we display depends on the ULTRASONIC parameters.
+        # scrolling_frame = sublayout.add_child(omni.kit.ui.ScrollingFrame("", -1, -1))
+        # self.info_label = scrolling_frame.add_child(
+        #     omni.kit.ui.Label("", useclipboard=True, clippingmode=omni.kit.ui.ClippingType.WRAP)
+        # )
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
         self._window = None
+
+    def _menu_callback(self):
+        self._window.visible = not self._window.visible
 
     async def _spawn_ultrasonic_function(self, task):
         # Wait for stage clear to complete before creating ULTRASONIC
@@ -169,12 +182,12 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_position("/OmniverseKit_Persp", 500, 500, 500, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
 
-    def _on_spawn_ultrasonic_button(self, widget):
+    def _on_spawn_ultrasonic_button(self):
         # wait for new stage before creating ultrasonic
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._spawn_ultrasonic_function(task))
 
-    def _on_spawn_obstacles_button(self, widget):
+    def _on_spawn_obstacles_button(self):
         stage = omni.usd.get_context().get_stage()
         self.CubePath = "/World/Cube"
         offset = Gf.Vec3f(-200.0, 0.0, 50.0)
@@ -202,7 +215,7 @@ class Extension(omni.ext.IExt):
         collisionAPI = UsdPhysics.CollisionAPI.Apply(cubePrim)
         defaultPrimPath = str(stage.GetDefaultPrim().GetPath())
 
-    def _get_info_function(self, widget):
+    def _get_info_function(self):
         maxDepth = self.ultrasonic.GetMaxRangeAttr().Get()
 
         # The ULTRASONIC itself exists as a C++ object.  In order to retrieve data from this object we need to call
@@ -213,20 +226,23 @@ class Extension(omni.ext.IExt):
         azimuth = self._ul.get_azimuth_data(self.ultrasonicPath)
         envelope_arr = self._ul.get_envelope_array(self.ultrasonicPath)
 
-        self.plot_window = omni_ui.Window("Inspect Envelopes", width=385, height=620, visible=True)
-        with self.plot_window.frame:
-            with omni_ui.VStack():
+        with self._envelope_frame:
+            with ui.VStack():
+                ui.Label("Inspect Envelopes:", height=0)
+                ui.Label("Mouse over the plot to see the associated envelope values per bin", height=0)
                 for i in range(envelope_arr.shape[0]):
-                    omni_ui.Plot(
-                        omni_ui.Type.HISTOGRAM,
-                        0.0,
-                        600.0,
-                        *(envelope_arr[i].tolist()),
-                        width=360,
-                        height=50,
-                        style={"color": 0xFFFF0000},
-                    )
-                    omni_ui.Spacer(height=1)
+                    with ui.HStack():
+                        ui.Label(f"{i}", width=15)
+                        ui.Spacer(width=5)
+                        ui.Plot(
+                            ui.Type.HISTOGRAM,
+                            0.0,
+                            600.0,
+                            *(envelope_arr[i].tolist()),
+                            height=50,
+                            style={"color": 0xFFFFFFFF},
+                        )
+                    ui.Spacer(height=1)
 
         # most of the below is string formatting in order to display our data in a nice table within our GUI.
         tableString = ""
@@ -244,4 +260,4 @@ class Extension(omni.ext.IExt):
             entry = [ray * maxDepth / 65535.0 for ray in cols]
             tableString += rowString.format("{0:.5f}".format(azimuth[row]), " | ", *entry)
 
-        self.info_label.text = tableString
+        self._info_label.text = tableString
