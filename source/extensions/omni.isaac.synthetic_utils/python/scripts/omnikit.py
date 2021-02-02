@@ -25,6 +25,7 @@ DEFAULT_CONFIG = {
     "width": 1024,
     "height": 800,
     "renderer": "PathTracing",  # Can also be RayTracedLighting
+    "anti_aliasing": 0,
     "samples_per_pixel_per_frame": 64,
     "denoiser": True,
     "subdiv_refinement_level": 0,
@@ -33,7 +34,7 @@ DEFAULT_CONFIG = {
     "max_specular_transmission_bounces": 6,
     "max_volume_bounces": 4,
     "sync_loads": False,
-    "experience": "isaac-sim-synthetic.json",
+    "experience": "isaac-sim.python.kit",
 }
 
 
@@ -107,7 +108,6 @@ Launches and configures OmniKit and exposes useful functions.
             await omni.usd.get_context().new_stage_async()
             self.carb_settings = carb.settings.acquire_settings_interface()
             self.setup_renderer()
-            self.set_setting("/rtx/rendermode", self.config["renderer"])
 
         return asyncio.ensure_future(setup())
 
@@ -260,6 +260,10 @@ Launches and configures OmniKit and exposes useful functions.
 
     def setup_renderer(self):
         """Reset render settings to those in config. This should be used in case a new stage is opened and the desired config needs to be re-applied"""
+        self.set_setting("/rtx/rendermode", self.config["renderer"])
+        # Raytrace mode settings
+        self.set_setting("/rtx/post/aa/op", self.config["anti_aliasing"])
+        # Pathtrace mode settings
         self.set_setting("/rtx/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
         self.set_setting("/rtx/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"])
         self.set_setting("/rtx/pathtracing/clampSpp", self.config["samples_per_pixel_per_frame"])
