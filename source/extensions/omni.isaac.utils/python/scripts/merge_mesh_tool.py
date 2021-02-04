@@ -11,7 +11,8 @@ import gc
 import omni.ext
 import omni.usd
 import omni.ui as ui
-import omni.kit
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+import omni.kit.utils
 import omni.kit.commands
 from pxr import Usd, UsdGeom, Sdf, UsdShade
 import weakref
@@ -22,20 +23,22 @@ EXTENSION_NAME = "Mesh Merge Tool"
 class Extension(omni.ext.IExt):
     def on_startup(self):
         """Called to load the extension"""
-        self._window = None
 
         self._stage = omni.usd.get_context().get_stage()
         self._window = omni.ui.Window(
             EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Window/Isaac",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Isaac",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Window")
         self.models = {}
         with self._window.frame:
             with ui.HStack():
@@ -268,5 +271,6 @@ class Extension(omni.ext.IExt):
     #         meshes_to_process = None
     def on_shutdown(self):
         """Called when the extesion us unloaded"""
+        remove_menu_items(self._menu_items, "Window")
+        self._window = None
         gc.collect()
-        del self._window

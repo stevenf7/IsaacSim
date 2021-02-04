@@ -4,6 +4,7 @@ import omni.kit
 import omni.ui as ui
 import omni.usd
 import weakref
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 
 class DRMenu:
@@ -14,38 +15,31 @@ class DRMenu:
         self._dr = domain_randomizer_interface
         self.num_components = 9
 
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Color Component", onclick_fn=lambda a=weakref.proxy(self): a.add_color_menu()
-                ),
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Movement Component", onclick_fn=lambda a=weakref.proxy(self): a.add_movement_menu()
-                ),
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Rotation Component", onclick_fn=lambda a=weakref.proxy(self): a.add_rotation_menu()
-                ),
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Scale Component", onclick_fn=lambda a=weakref.proxy(self): a.add_scale_menu()
-                ),
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Light Component", onclick_fn=lambda a=weakref.proxy(self): a.add_light_menu()
-                ),
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Texture Component", onclick_fn=lambda a=weakref.proxy(self): a.add_texture_menu()
-                ),
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Material Component", onclick_fn=lambda a=weakref.proxy(self): a.add_material_menu()
-                ),
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Mesh Component", onclick_fn=lambda a=weakref.proxy(self): a.add_mesh_menu()
-                ),
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Visibility Component", onclick_fn=lambda a=weakref.proxy(self): a.add_visibility_menu()
-                ),
-            ],
-            "Create/Isaac/DR",
-        )
+        menu_items = [
+            MenuItemDescription(name="Color Component", onclick_fn=lambda a=weakref.proxy(self): a.add_color_menu()),
+            MenuItemDescription(
+                name="Movement Component", onclick_fn=lambda a=weakref.proxy(self): a.add_movement_menu()
+            ),
+            MenuItemDescription(
+                name="Rotation Component", onclick_fn=lambda a=weakref.proxy(self): a.add_rotation_menu()
+            ),
+            MenuItemDescription(name="Scale Component", onclick_fn=lambda a=weakref.proxy(self): a.add_scale_menu()),
+            MenuItemDescription(name="Light Component", onclick_fn=lambda a=weakref.proxy(self): a.add_light_menu()),
+            MenuItemDescription(
+                name="Texture Component", onclick_fn=lambda a=weakref.proxy(self): a.add_texture_menu()
+            ),
+            MenuItemDescription(
+                name="Material Component", onclick_fn=lambda a=weakref.proxy(self): a.add_material_menu()
+            ),
+            MenuItemDescription(name="Mesh Component", onclick_fn=lambda a=weakref.proxy(self): a.add_mesh_menu()),
+            MenuItemDescription(
+                name="Visibility Component", onclick_fn=lambda a=weakref.proxy(self): a.add_visibility_menu()
+            ),
+        ]
+        self._menu_items = [
+            MenuItemDescription(name="Isaac", sub_menu=[MenuItemDescription(name="DR", sub_menu=menu_items)])
+        ]
+        add_menu_items(self._menu_items, "Create")
 
     def add_color_menu(self):
         parent = self._get_current_state(0, "ColorComponent")
@@ -299,4 +293,5 @@ class DRMenu:
         self._dr.randomize_once()
 
     def shutdown(self):
-        del self._window
+        remove_menu_items(self._menu_items, "Create")
+        self._window = None

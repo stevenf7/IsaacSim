@@ -1,6 +1,8 @@
 import carb
 import omni
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+
 import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
@@ -8,6 +10,8 @@ import os
 import omni.physx as _physx
 import omni.kit.menu
 import weakref
+
+EXTENSION_NAME = "Articulation Info"
 
 
 def get_data_file(file_name: str):
@@ -68,14 +72,17 @@ class Extension(omni.ext.IExt):
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._extension_path = ext_manager.get_extension_path(ext_id)
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Articulation Info", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Isaac/Dynamic Control",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Dynamic Control",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac")
 
     def _menu_callback(self):
         self._build_ui()
@@ -83,11 +90,7 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                title="Articulation Info",
-                width=1000,
-                height=400,
-                visible=True,
-                dockPreference=ui.DockPreference.LEFT_BOTTOM,
+                title=EXTENSION_NAME, width=1000, height=400, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             with self._window.frame:
                 with ui.VStack(width=ui.Percent(100)):

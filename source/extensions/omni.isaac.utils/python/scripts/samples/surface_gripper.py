@@ -1,6 +1,7 @@
 import omni
 import omni.kit.usd
 import omni.kit.commands
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import omni.ui as ui
 import omni.ext
 from omni.isaac.dynamic_control import _dynamic_control as dc
@@ -35,14 +36,17 @@ class Extension(omni.ext.IExt):
             title=EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.set_visibility_changed_fn(self._on_window)
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Isaac/Samples",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Samples",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac")
         self._models = {}
         with self._window.frame:
             with ui.VStack(height=0):
@@ -79,6 +83,7 @@ class Extension(omni.ext.IExt):
         self._stage_id = -1
 
     def on_shutdown(self):
+        remove_menu_items(self._menu_items, "Isaac")
         self._physx_subs = None
         self._window = None
 

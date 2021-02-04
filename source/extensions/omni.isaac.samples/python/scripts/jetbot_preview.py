@@ -15,6 +15,7 @@ import omni.kit.settings
 import gc
 import numpy as np
 import asyncio
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 from omni.isaac.dynamic_control import _dynamic_control
 
@@ -54,14 +55,17 @@ class Extension(omni.ext.IExt):
         self._load_jetbot_btn = None
         self._reset_btn = False
 
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Isaac/Samples",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Samples",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac")
 
     def _menu_callback(self):
         self._build_ui()
@@ -243,5 +247,6 @@ class Extension(omni.ext.IExt):
         self._editor_event_subscription = None
         self._stop_tasks()
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
-
+        remove_menu_items(self._menu_items, "Isaac")
+        self._window = None
         gc.collect()

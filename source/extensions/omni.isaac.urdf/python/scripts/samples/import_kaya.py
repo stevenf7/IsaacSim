@@ -5,8 +5,8 @@ import asyncio
 import math
 import weakref
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-# import omni.physx as _physx
 from .common import set_drive_parameters
 from pxr import UsdLux, Sdf, Gf, UsdPhysics
 
@@ -19,14 +19,17 @@ class Extension(omni.ext.IExt):
         self._window = omni.ui.Window(
             EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Isaac/URDF",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="URDF",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac")
         with self._window.frame:
             with ui.VStack(height=0):
                 ui.Button("Load Robot", clicked_fn=self._on_load_robot)
@@ -36,6 +39,7 @@ class Extension(omni.ext.IExt):
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
     def on_shutdown(self):
+        remove_menu_items(self._menu_items, "Isaac")
         self._window = None
 
     def _menu_callback(self):

@@ -11,6 +11,8 @@ import carb
 import omni.usd
 import omni.ext
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+
 import asyncio
 import gc
 import weakref
@@ -49,14 +51,17 @@ class Extension(omni.ext.IExt):
         self._stage = self._usd_context.get_stage()
         self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
         self._window.deferred_dock_in("Content")
-        self._menu_entry = omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Isaac/Samples",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Samples",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac")
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._create_ui()
 
@@ -224,5 +229,6 @@ class Extension(omni.ext.IExt):
         self._rc = None
         self._timeline.stop()
         self._editor_event_subscription = None
+        remove_menu_items(self._menu_items, "Isaac")
         self._window = None
         gc.collect()
