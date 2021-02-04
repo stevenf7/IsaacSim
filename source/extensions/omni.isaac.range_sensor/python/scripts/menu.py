@@ -1,20 +1,35 @@
 import carb
 import omni.kit.commands
 import omni.kit.ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from pxr import Sdf, UsdGeom, Gf
+import weakref
 
 
 class RangeSensorMenu:
     def __init__(self):
         menu_items = [
-            ("Lidar", self.add_lidar),
-            ("Ultrasonic/Array", self.add_ultrasonic_array),
-            ("Ultrasonic/Emitter", self.add_ultrasonic_emitter),
-            ("Ultrasonic/FiringGroup", self.add_ultrasonic_firing_group),
+            MenuItemDescription(name="Lidar", onclick_fn=lambda a=weakref.proxy(self): a._add_lidar()),
+            MenuItemDescription(
+                name="Ultrasonic",
+                sub_menu=[
+                    MenuItemDescription(
+                        name="Array", onclick_fn=lambda a=weakref.proxy(self): a._add_ultrasonic_array()
+                    ),
+                    MenuItemDescription(
+                        name="Emitter", onclick_fn=lambda a=weakref.proxy(self): a._add_ultrasonic_emitter()
+                    ),
+                    MenuItemDescription(
+                        name="FiringGroup", onclick_fn=lambda a=weakref.proxy(self): a._add_ultrasonic_firing_group()
+                    ),
+                ],
+            ),
         ]
-        self._menus = []
-        for item in menu_items:
-            self._menus.append(omni.kit.ui.get_editor_menu().add_item(f"Create/Isaac/Sensors/{item[0]}", item[1]))
+
+        self._menu_items = [
+            MenuItemDescription(name="Isaac", sub_menu=[MenuItemDescription(name="Sensors", sub_menu=menu_items)])
+        ]
+        add_menu_items(self._menu_items, "Create")
 
     def _get_stage_and_path(self):
         self._stage = omni.usd.get_context().get_stage()
@@ -26,7 +41,7 @@ class RangeSensorMenu:
             curr_prim = None
         return curr_prim
 
-    def add_lidar(self, *args, **kwargs):
+    def _add_lidar(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRangeSensorLidarCommand",
             path="/Lidar",
@@ -44,7 +59,7 @@ class RangeSensorMenu:
             yaw_offset=0.0,
         )
 
-    def add_ultrasonic_array(self, *args, **kwargs):
+    def _add_ultrasonic_array(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRangeSensorUltrasonicArrayCommand",
             path="/UltrasonicArray",
@@ -62,7 +77,7 @@ class RangeSensorMenu:
             firing_group_prims=[],
         )
 
-    def add_ultrasonic_emitter(self, *args, **kwargs):
+    def _add_ultrasonic_emitter(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRangeSensorUltrasonicEmitterCommand",
             path="/UltrasonicEmitter",
@@ -72,7 +87,7 @@ class RangeSensorMenu:
             adjacency_list=[],
         )
 
-    def add_ultrasonic_firing_group(self, *args, **kwargs):
+    def _add_ultrasonic_firing_group(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
             "CreateRangeSensorUltrasonicFiringGroupCommand",
             path="/UltrasonicFiringGroup",
@@ -82,4 +97,5 @@ class RangeSensorMenu:
         )
 
     def shutdown(self):
+        remove_menu_items(self._menu_items, "Create")
         self.menus = None

@@ -1,5 +1,6 @@
 import omni.ext
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from pxr import Gf
 import gc
 import weakref
@@ -229,14 +230,17 @@ class Extension(omni.ext.IExt):
         self._usd_context = omni.usd.get_context()
 
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Window/Isaac",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Isaac",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Window")
         with self._window.frame:
             self._frame = ui.Frame()
 
@@ -280,4 +284,6 @@ class Extension(omni.ext.IExt):
                 self._frame.clear()
 
     def on_shutdown(self):
+        remove_menu_items(self._menu_items, "Window")
+        self._window = None
         gc.collect()

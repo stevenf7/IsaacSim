@@ -4,6 +4,7 @@ import carb
 import carb.tokens
 import omni.kit
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import omni.usd
 import weakref
 from .nucleus_utils import get_server_path
@@ -17,20 +18,20 @@ class Extension(omni.ext.IExt):
         self._stage = self._usd_context.get_stage()
         self._asset_path = None
 
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Component Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_component_sample()
-                ),
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Simple Room Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_simple_room_scene()
-                ),
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Warehouse Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_warehouse_scene()
-                ),
-            ],
-            "Isaac/Domain Randomizer",
-        )
+        menu_items = [
+            MenuItemDescription(
+                name="Component Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_component_sample()
+            ),
+            MenuItemDescription(
+                name="Simple Room Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_simple_room_scene()
+            ),
+            MenuItemDescription(
+                name="Warehouse Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_warehouse_scene()
+            ),
+        ]
+
+        self._menu_items = [MenuItemDescription(name="Domain Randomizer", sub_menu=menu_items)]
+        add_menu_items(self._menu_items, "Isaac")
 
     def add_component_sample(self):
         self._window = ui.Window(
@@ -61,6 +62,7 @@ class Extension(omni.ext.IExt):
                 load_comp_btn.set_clicked_fn(self._on_load_component)
 
     def on_shutdown(self):
+        remove_menu_items(self._menu_items, "Isaac")
         self._window = None
         self._usd_context = None
         self._stage = None

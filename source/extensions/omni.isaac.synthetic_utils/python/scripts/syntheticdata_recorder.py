@@ -11,6 +11,7 @@ import carb
 import omni
 import omni.syntheticdata._syntheticdata as gt
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 import atexit
 import colorsys
@@ -188,14 +189,17 @@ class Extension(omni.ext.IExt):
         self._enable_record = False
         self._counter = 0
         self._window = ui.Window(EXTENSION_NAME, width=600, height=400)
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Window/Isaac",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Isaac",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Window")
         self._window.visible = False
         self._window.deferred_dock_in("Content")
         self.sub_update = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._update)
@@ -206,6 +210,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         """Called when the extesion us unloaded"""
+        remove_menu_items(self._menu_items, "Window")
         self._window = None
 
     def _menu_callback(self):

@@ -1,10 +1,13 @@
 import omni
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.range_sensor import _range_sensor
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import asyncio
 import weakref
+
+EXTENSION_NAME = "LIDAR Info"
 
 
 class Extension(omni.ext.IExt):
@@ -25,17 +28,21 @@ class Extension(omni.ext.IExt):
         # does not create an instance of lidar_info; that is done by the extension when it is loaded by kit.  All this
         # menu does is show or hide our GUI we will use for interacting with lidar_info
         self._window = omni.ui.Window(
-            "LIDAR Info", width=600, height=400, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
+            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
         )
 
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="LIDAR Info", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Isaac/Range Sensor",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Range Sensor",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac")
+
         # Kit GUIs are defined by a tree of layouts, and leaf layouts contain GUI elements (like buttons or
         # text entry fields).  You can learn more about Layouts and GUIs in the python manual at
         # Scripting API > omni.kit package > omni.ui module.
@@ -81,6 +88,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
+        remove_menu_items(self._menu_items, "Isaac")
         self._window = None
 
     def _menu_callback(self):

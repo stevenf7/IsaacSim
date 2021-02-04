@@ -4,6 +4,7 @@ import carb.tokens
 import omni.ui
 import omni.kit.menu
 import weakref
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 from .. import _robot_engine_bridge
 from .menu import RobotEngineBridgeMenu
@@ -36,14 +37,17 @@ class Extension(omni.ext.IExt):
         self._window = omni.ui.Window(
             EXTENSION_NAME, width=600, height=400, visible=True, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
         )
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Robot Engine Bridge", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Window/Isaac",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Isaac",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Window")
 
         self._scene_loader = {}
         with self._window.frame:
@@ -115,6 +119,7 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         self._menu.shutdown()
         self._menu = None
+        remove_menu_items(self._menu_items, "Window")
         _robot_engine_bridge.release_robot_engine_bridge_interface(self._re_bridge)
 
     def _on_init_stage_load_fn(self, widget):

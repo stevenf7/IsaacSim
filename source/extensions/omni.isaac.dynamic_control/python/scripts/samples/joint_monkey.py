@@ -2,6 +2,8 @@ import carb
 import omni
 import omni.ui as ui
 import omni.kit.test
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+
 import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
@@ -15,6 +17,8 @@ ANIM_SEEK_LOWER = 1
 ANIM_SEEK_UPPER = 2
 ANIM_SEEK_DEFAULT = 3
 ANIM_FINISHED = 4
+
+EXTENSION_NAME = "Joint Monkey"
 
 
 def get_data_file(file_name: str):
@@ -81,14 +85,17 @@ class Extension(omni.ext.IExt):
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._extension_path = ext_manager.get_extension_path(ext_id)
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Joint Monkey", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Isaac/Dynamic Control",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Dynamic Control",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac")
 
     def _menu_callback(self):
         self._build_ui()
@@ -96,7 +103,7 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                title="Joint Monkey", width=300, height=200, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME, width=300, height=200, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             with self._window.frame:
                 with ui.VStack():
@@ -112,6 +119,7 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         self._sub_stage_event = None
         self._physx_subscription = None
+        remove_menu_items(self._menu_items, "Isaac")
         self._window = None
 
     async def _setup_camera(self, task):

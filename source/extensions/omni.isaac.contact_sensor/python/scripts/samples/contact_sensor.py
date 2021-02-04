@@ -16,18 +16,20 @@ import os
 import omni.physx as _physx
 import omni
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 
 class Contact_sensor_demo(omni.ext.IExt):
     def on_startup(self):
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Contact Sensor", onclick_fn=lambda a=weakref.proxy(self): a.build_ai()
-                )
-            ],
-            "Isaac/Samples",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Samples",
+                sub_menu=[
+                    MenuItemDescription(name="Contact Sensor", onclick_fn=lambda a=weakref.proxy(self): a.build_ai())
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac")
         self._window = None
 
     def _on_stage_event(self, event):
@@ -83,6 +85,7 @@ class Contact_sensor_demo(omni.ext.IExt):
             self.sub = None
             self._timeline = None
             self._stage_event_subscription = None
+        remove_menu_items(self._menu_items, "Isaac")
         self._window = None
 
     def _on_update(self, dt):

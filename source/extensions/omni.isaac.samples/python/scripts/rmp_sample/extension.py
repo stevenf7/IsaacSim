@@ -1,27 +1,31 @@
 import omni.ext
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+
 import gc
 import asyncio
 import weakref
 import omni.physx as _physx
+from .sample import RMPSample
 
 EXTENSION_NAME = "RMP Sample"
-
-from .sample import RMPSample
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
         self._window.set_visibility_changed_fn(self._on_window)
-        self._menu_entry = omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Isaac/Samples",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Samples",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac")
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
         self._sample = RMPSample()
@@ -159,5 +163,6 @@ class Extension(omni.ext.IExt):
         self._timeline.stop()
         self._sample.stop_tasks()
         self._sample = None
+        remove_menu_items(self._menu_items, "Isaac")
         gc.collect()
         pass

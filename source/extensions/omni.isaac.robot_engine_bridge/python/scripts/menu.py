@@ -2,62 +2,54 @@ import omni.kit.commands
 from pxr import Gf
 import weakref
 import omni.kit.menu.utils
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 
 class RobotEngineBridgeMenu:
     def __init__(self):
         menu_items = [
-            omni.kit.menu.utils.MenuItemDescription(
+            MenuItemDescription(
                 name="Differential Base", onclick_fn=lambda a=weakref.proxy(self): a._add_differential_base()
             ),
-            omni.kit.menu.utils.MenuItemDescription(
+            MenuItemDescription(
                 name="Holonomic Base", onclick_fn=lambda a=weakref.proxy(self): a._add_holonomic_base()
             ),
-            omni.kit.menu.utils.MenuItemDescription(
-                name="Vehicle", onclick_fn=lambda a=weakref.proxy(self): a._add_vehicle()
-            ),
-            omni.kit.menu.utils.MenuItemDescription(
-                name="Joint Control", onclick_fn=lambda a=weakref.proxy(self): a._add_joint_control()
-            ),
-            omni.kit.menu.utils.MenuItemDescription(
+            MenuItemDescription(name="Vehicle", onclick_fn=lambda a=weakref.proxy(self): a._add_vehicle()),
+            MenuItemDescription(name="Joint Control", onclick_fn=lambda a=weakref.proxy(self): a._add_joint_control()),
+            MenuItemDescription(
                 name="Scissor Lift", onclick_fn=lambda a=weakref.proxy(self): a._add_scissor_lift_simulator()
             ),
-            omni.kit.menu.utils.MenuItemDescription(
+            MenuItemDescription(
                 name="Surface Gripper", onclick_fn=lambda a=weakref.proxy(self): a._add_surface_gripper()
             ),
-            omni.kit.menu.utils.MenuItemDescription(
+            MenuItemDescription(
                 name="Two Finger Gripper", onclick_fn=lambda a=weakref.proxy(self): a._add_twofinger_gripper()
             ),
-            omni.kit.menu.utils.MenuItemDescription(
+            MenuItemDescription(
                 name="Rigid Body Sink", onclick_fn=lambda a=weakref.proxy(self): a._add_rigid_body_sink()
             ),
-            omni.kit.menu.utils.MenuItemDescription(
-                name="Teleport", onclick_fn=lambda a=weakref.proxy(self): a._add_teleport()
-            ),
-            omni.kit.menu.utils.MenuItemDescription(
+            MenuItemDescription(name="Teleport", onclick_fn=lambda a=weakref.proxy(self): a._add_teleport()),
+            MenuItemDescription(
                 name="Scenario From Message", onclick_fn=lambda a=weakref.proxy(self): a._add_scenario_from_message()
             ),
-            omni.kit.menu.utils.MenuItemDescription(
-                name="Camera", onclick_fn=lambda a=weakref.proxy(self): a._add_camera()
-            ),
-            omni.kit.menu.utils.MenuItemDescription(
-                name="Lidar", onclick_fn=lambda a=weakref.proxy(self): a._add_lidar()
-            ),
-            omni.kit.menu.utils.MenuItemDescription(
+            MenuItemDescription(name="Camera", onclick_fn=lambda a=weakref.proxy(self): a._add_camera()),
+            MenuItemDescription(name="Lidar", onclick_fn=lambda a=weakref.proxy(self): a._add_lidar()),
+            MenuItemDescription(
                 name="Occupancy Grid Map", onclick_fn=lambda a=weakref.proxy(self): a._add_occupancy_grid_map()
             ),
-            omni.kit.menu.utils.MenuItemDescription(
-                name="Ultrasonic", onclick_fn=lambda a=weakref.proxy(self): a._add_ultrasonic()
-            ),
-            omni.kit.menu.utils.MenuItemDescription(
+            MenuItemDescription(name="Ultrasonic", onclick_fn=lambda a=weakref.proxy(self): a._add_ultrasonic()),
+            MenuItemDescription(
                 name="Contact Monitor", onclick_fn=lambda a=weakref.proxy(self): a._add_contact_monitor()
             ),
-            omni.kit.menu.utils.MenuItemDescription(
+            MenuItemDescription(
                 name="Polyline Visualizer", onclick_fn=lambda a=weakref.proxy(self): a._add_polyline_visualizer()
             ),
         ]
 
-        omni.kit.menu.utils.add_menu_items(menu_items, "Create/Isaac/Robot Engine")
+        self._menu_items = [
+            MenuItemDescription(name="Isaac", sub_menu=[MenuItemDescription(name="Robot Engine", sub_menu=menu_items)])
+        ]
+        add_menu_items(self._menu_items, "Create")
 
     def _get_stage_and_path(self):
         self._stage = omni.usd.get_context().get_stage()
@@ -336,4 +328,5 @@ class RobotEngineBridgeMenu:
         pass
 
     def shutdown(self):
+        remove_menu_items(self._menu_items, "Create")
         self._menus = None

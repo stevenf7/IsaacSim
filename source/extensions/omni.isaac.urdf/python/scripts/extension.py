@@ -5,6 +5,7 @@ import textwrap
 import weakref
 import gc
 import weakref
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 from .link_model import *
 from .. import _urdf
@@ -42,14 +43,17 @@ class Extension(omni.ext.IExt):
         self._window = omni.ui.Window(
             EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Window/Isaac",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Isaac",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Window")
         self._file_picker = None
 
         self.models = {}
@@ -506,6 +510,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         self._unregister_menus()
+        remove_menu_items(self._menu_items, "Window")
         if self._filepicker:
             # self._filepicker.toggle_bookmark_from_path("Built In URDFs", "", False)
             self._filepicker._widget._file_bar._click_apply_handler = None

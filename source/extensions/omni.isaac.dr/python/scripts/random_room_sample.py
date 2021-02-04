@@ -1,5 +1,6 @@
 import carb
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import omni.usd
 import weakref
 from .nucleus_utils import get_server_path
@@ -14,15 +15,14 @@ class Extension(omni.ext.IExt):
         self._window.visible = False
         self._window.deferred_dock_in("Content")
 
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Simple Room Python Sample", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Isaac/Domain Randomizer",
-        )
+        menu_items = [
+            MenuItemDescription(
+                name="Simple Room Python Sample", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+            )
+        ]
 
+        self._menu_items = [MenuItemDescription(name="Domain Randomizer", sub_menu=menu_items)]
+        add_menu_items(self._menu_items, "Isaac")
         with self._window.frame:
             with ui.VStack(height=0):
                 ui.Spacer(width=5)
@@ -35,6 +35,7 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     def on_shutdown(self):
+        remove_menu_items(self._menu_items, "Isaac")
         self._window = None
         self._usd_context = None
         self._stage = None

@@ -1,5 +1,6 @@
 import omni
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 import carb
 from .extension import *
@@ -20,16 +21,19 @@ class Exploded_view(omni.ext.IExt):
         self._selection = self._context.get_selection()
         self._window = None
 
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a.show_window()
-                )
-            ],
-            "Window/Isaac",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Isaac",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Window")
 
-    def show_window(self):
+    def _menu_callback(self):
         if self._window:
             self._window.visible = value
         elif value:
@@ -92,4 +96,5 @@ class Exploded_view(omni.ext.IExt):
             )
 
     def on_shutdown(self):
+        remove_menu_items(self._menu_items, "Window")
         self._exploded_view_manager.shutdown()

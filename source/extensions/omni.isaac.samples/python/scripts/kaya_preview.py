@@ -17,6 +17,7 @@ import numpy as np
 import asyncio
 import omni.ui as ui
 import omni.physx as _physx
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.manip import _manip
@@ -50,14 +51,17 @@ class Extension(omni.ext.IExt):
         self._load_kaya_btn = None
         self._gamepad_setup_btn = None
 
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Isaac/Samples",
-        )
+        self._menu_items = [
+            MenuItemDescription(
+                name="Samples",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac")
 
     def _menu_callback(self):
         self._build_ui()
@@ -89,9 +93,6 @@ class Extension(omni.ext.IExt):
         # must start editor before setting up gamepad to move
         self._timeline.play()
         self._manip.bind_gamepad(self._on_event_fn)
-
-    def on_shutdown(self):
-        self._physx_subs = None
 
     async def _create_kaya(self, task):
         done, pending = await asyncio.wait({task})
@@ -156,6 +157,8 @@ class Extension(omni.ext.IExt):
 
         self._manip.unbind_gamepad()
         self._timeline.stop()
+        self._physx_subs = None
         self.kaya = None
+        remove_menu_items(self._menu_items, "Isaac")
         self._window = None
         gc.collect()

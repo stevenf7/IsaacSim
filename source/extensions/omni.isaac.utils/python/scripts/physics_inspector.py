@@ -1,10 +1,13 @@
 import omni.ext
 import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.dynamic_control import _dynamic_control as dc
 import gc
 import collections
 import carb
 import weakref
+
+EXTENSION_NAME = "Inspect Physics"
 
 
 class Extension(omni.ext.IExt):
@@ -18,15 +21,18 @@ class Extension(omni.ext.IExt):
             self._stage_event_sub = self._events.create_subscription_to_pop(
                 self._on_stage_event, name="physics inspector stage event"
             )
-        self._window = omni.ui.Window("Inspect Physics", width=600, height=400, visible=False)
-        omni.kit.menu.utils.add_menu_items(
-            [
-                omni.kit.menu.utils.MenuItemDescription(
-                    name="Inspect Physics", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                )
-            ],
-            "Window/Isaac",
-        )
+        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
+        self._menu_items = [
+            MenuItemDescription(
+                name="Isaac",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Window")
         self._physx = omni.physx.acquire_physx_interface()
 
         self._data = {}
@@ -210,4 +216,6 @@ class Extension(omni.ext.IExt):
             # )
 
     def on_shutdown(self):
+        remove_menu_items(self._menu_items, "Window")
+        self._window = None
         gc.collect()
