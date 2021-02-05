@@ -1,4 +1,5 @@
 import os
+import carb
 from omni.isaac.synthetic_utils import OmniKitHelper
 
 CONFIG = {
@@ -13,17 +14,18 @@ if __name__ == "__main__":
     import omni.physx
 
     # Create callbacks to both editor and physics step callbacks
-    def editor_update(dt):
+    def editor_update(e: carb.events.IEvent):
+        dt = e.payload["dt"]
         print("kit update step:", dt, "seconds")
 
-    def physics_update(dt):
+    def physics_update(dt: float):
         print("physics update step:", dt, "seconds")
 
     # start simulation
     kit.play()
 
     # assign callbacks
-    update_sub = kit.editor.subscribe_to_update_events(editor_update)
+    update_sub = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(editor_update)
     physics_sub = omni.physx.acquire_physx_interface().subscribe_physics_step_events(physics_update)
 
     # perform step experiments

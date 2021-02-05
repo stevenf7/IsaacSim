@@ -19,3 +19,6 @@ project_ext_bindings {
 repo_build.prebuild_link {
     { "docs", ext.target_dir.."/docs" },
 }
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir.."/omni/kit/loop" },
+}
