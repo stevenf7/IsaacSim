@@ -31,7 +31,3 @@ name = "omni.isaac.utils.scripts.samples.surface_gripper"
 [[python.module]]
 name = "omni.isaac.utils.scripts.merge_mesh_tool"
 public = false
-
-[[python.module]]
-name = "omni.isaac.utils.scripts.array_editor"
-public = false
