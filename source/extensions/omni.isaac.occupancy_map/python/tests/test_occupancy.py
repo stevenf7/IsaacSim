@@ -76,6 +76,8 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_simple_room(self):
         (result, error) = await load_test_file(self._nucleus_path + "/Environments/Simple_Room/simple_room.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
         stage = omni.usd.get_context().get_stage()
         await omni.kit.app.get_app().next_update_async()
         UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))

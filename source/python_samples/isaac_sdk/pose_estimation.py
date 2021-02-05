@@ -261,7 +261,7 @@ class DualCameraSample:
 
         # output fps every 100 frames
         if self.frame % 100 == 0:
-            print("FPS: ", self.kit.editor.get_fps())
+            print("FPS: ", self._viewport.get_viewport_window().get_fps())
         self.frame = self.frame + 1
 
 
