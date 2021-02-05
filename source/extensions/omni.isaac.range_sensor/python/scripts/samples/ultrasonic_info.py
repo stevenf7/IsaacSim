@@ -145,7 +145,7 @@ class Extension(omni.ext.IExt):
                     path="/World/UltrasonicEmitter",
                     per_ray_intensity=0.4,
                     yaw_offset=0.0,
-                    adjacency_list=[],
+                    adjacency_list=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 )
 
                 emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set(pose[1])
@@ -160,14 +160,27 @@ class Extension(omni.ext.IExt):
 
             emitter_paths = [emitter.GetPath() for emitter in emitters]
 
+            result, group_1 = omni.kit.commands.execute(
+                "CreateRangeSensorUltrasonicFiringGroupCommand",
+                path="/World/UltrasonicFiringGroup",
+                emitter_modes=[(0, 0), (1, 1)],
+                receiver_modes=[(0, 0), (1, 0)],
+            )
+            result, group_2 = omni.kit.commands.execute(
+                "CreateRangeSensorUltrasonicFiringGroupCommand",
+                path="/World/UltrasonicFiringGroup",
+                emitter_modes=[(5, 1)],
+                receiver_modes=[(5, 1)],
+            )
             self.ultrasonicPath = "/World/UltrasonicArray"
 
+            print(type(group_1))
             result, self.ultrasonic = omni.kit.commands.execute(
                 "CreateRangeSensorUltrasonicArrayCommand",
                 path=self.ultrasonicPath,
                 # Min and max range for the ULTRASONIC.  This defines the starting and stopping locations for the linetrace
                 min_range=0.4,
-                max_range=3.0,
+                max_range=300.0,
                 # These attributes affect drawing the ultrasonic in the viewport.  High Level Of Detail (HighLod) = True will draw
                 # all rays.  If false it will only draw horizontal rays.  Draw Ultrasonic Points = True will draw the actual
                 # ULTRASONIC rays in the viewport.
@@ -182,7 +195,7 @@ class Extension(omni.ext.IExt):
                 vertical_resolution=0.5,
                 num_bins=224,
                 emitter_prims=emitter_paths,
-                firing_group_prims=[],
+                firing_group_prims=[group_1.GetPath(), group_2.GetPath()],
             )
 
             # we want to make sure we can see the ultrasonic we made, so we set the camera position and look target

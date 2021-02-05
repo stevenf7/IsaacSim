@@ -395,3 +395,152 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         envelope_arr3 = self._ultrasonic.get_envelope_array(ultrasonicPath)
         self.assertTrue(np.allclose(envelope_arr3[9][120:127], np.array([0.0, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0])))
         self.assertTrue(np.allclose(envelope_arr3[9][199:203], np.array([21.0, 49.0, 26.0, 4.0])))
+
+    def get_front_bumper_emitter_paths(self):
+        poses = [
+            (Gf.Quatd(0.951057, 0, 0, -0.309017), Gf.Vec3d(25, 0.0, 25)),
+            (Gf.Quatd(0.760406, 0, 0, -0.649448), Gf.Vec3d(12.5, 0.0, 25)),
+            (Gf.Quatd(0.649448, 0, 0, -0.760406), Gf.Vec3d(12.5, 0.0, 25)),
+            (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-25, 0.0, 25)),
+        ]
+        emitter_prims = [None] * len(poses)
+        cmd_name = "CreateRangeSensorUltrasonicEmitterCommand"
+        path = "/World/UltrasonicEmitter"
+        res, emitter_prims[0] = omni.kit.commands.execute(
+            cmd_name, path=path, per_ray_intensity=0.4, yaw_offset=0.0, adjacency_list=[0, 1]
+        )
+        res, emitter_prims[1] = omni.kit.commands.execute(
+            cmd_name, path=path, per_ray_intensity=0.4, yaw_offset=0.0, adjacency_list=[0, 1, 2]
+        )
+        result, emitter_prims[2] = omni.kit.commands.execute(
+            cmd_name, path=path, per_ray_intensity=0.4, yaw_offset=0.0, adjacency_list=[1, 2, 3]
+        )
+        result, emitter_prims[3] = omni.kit.commands.execute(
+            cmd_name, path=path, per_ray_intensity=0.4, yaw_offset=0.0, adjacency_list=[2, 3]
+        )
+
+        emitter_paths = []
+        for i in range(len(poses)):
+            emitter_prims[i].GetPrim().GetAttribute("xformOp:translate").Set(poses[i][1])
+            emitter_prims[i].GetPrim().GetAttribute("xformOp:rotateXYZ").Set(
+                Gf.Rotation(poses[i][0]).Decompose((1, 0, 0), (0, 1, 0), (0, 0, 1))
+            )
+            emitter_paths.append(emitter_prims[i].GetPath())
+        return emitter_paths
+
+    # check that indirects are working --> single emitter will show up in two receivers
+    async def test_front_bumper_firing_single_group_hi_lo(self):
+        emitter_paths = self.get_front_bumper_emitter_paths()
+
+        # mode 0 is not receiving from itself on same freq so it gets no directs
+        result, group_1 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/World/UltrasonicFiringGroup",
+            emitter_modes=[(0, 0)],  # , (1,1), (2,1), (3, 1)],
+            receiver_modes=[(0, 0), (1, 0)],  # , (2, 0), (2,1), (3, 1)],
+        )
+        self.ultrasonicPath = "/World/UltrasonicArray"
+
+        result, self.ultrasonic = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicArrayCommand",
+            path=self.ultrasonicPath,
+            min_range=0.4,
+            max_range=300.0,
+            draw_points=False,
+            draw_lines=True,
+            horizontal_fov=15.0,  # set wedge vertical extent in degrees
+            vertical_fov=5.0,  # set wedge horizontal extent in degrees
+            horizontal_resolution=0.5,
+            vertical_resolution=0.5,
+            num_bins=224,
+            emitter_prims=emitter_paths,
+            firing_group_prims=[group_1.GetPath()],
+        )
+        cubePrim = self.add_cube("/World/Cube0", 75.0, Gf.Vec3f(95.0, -85.0, 0.0), physics=False)
+        steps_per_sec = 50
+        seconds = 3
+        self._timeline.play()
+        await simulate(seconds, steps_per_sec=steps_per_sec)
+        envelope_arr = self._ultrasonic.get_envelope_array(self.ultrasonicPath)
+        self.assertTrue(
+            np.allclose(envelope_arr[0][51:61], np.array([10.0, 20.0, 20.0, 20.0, 20.0, 17.0, 13.0, 20.0, 10.0, 10.0]))
+        )
+        self.assertTrue(
+            np.allclose(envelope_arr[1][55:65], np.array([20.0, 20.0, 20.0, 20.0, 10.0, 20.0, 10.0, 20.0, 10.0, 15.0]))
+        )
+
+    # test to ensure that if receiving on both low and high frequencies, the response should be higher
+    async def test_front_bumper_combined_frequencies(self):
+        emitter_paths = self.get_front_bumper_emitter_paths()
+
+        # mode 0 is not receiving from itself on same freq so it gets no directs
+        result, group_1 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/World/UltrasonicFiringGroup",
+            emitter_modes=[(0, 0), (0, 1)],
+            receiver_modes=[(0, 0), (0, 1)],
+        )
+        self.ultrasonicPath = "/World/UltrasonicArray"
+
+        result, self.ultrasonic = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicArrayCommand",
+            path=self.ultrasonicPath,
+            min_range=0.4,
+            max_range=300.0,
+            draw_points=False,
+            draw_lines=True,
+            horizontal_fov=15.0,  # set wedge vertical extent in degrees
+            vertical_fov=5.0,  # set wedge horizontal extent in degrees
+            horizontal_resolution=0.5,
+            vertical_resolution=0.5,
+            num_bins=224,
+            emitter_prims=emitter_paths,
+            firing_group_prims=[group_1.GetPath()],
+        )
+        cubePrim = self.add_cube("/World/Cube0", 75.0, Gf.Vec3f(95.0, -85.0, 0.0), physics=False)
+        steps_per_sec = 50
+        seconds = 3
+        self._timeline.play()
+        await simulate(seconds, steps_per_sec=steps_per_sec)
+        envelope_arr = self._ultrasonic.get_envelope_array(self.ultrasonicPath)
+        self.assertTrue(
+            np.allclose(envelope_arr[0][51:61], np.array([20.0, 40.0, 40.0, 40.0, 40.0, 34.0, 26.0, 40.0, 20.0, 20.0]))
+        )
+
+    # test to ensure that a single emitter will produce a response in three receivers, including its own
+    async def test_front_bumper_three_receivers(self):
+        emitter_paths = self.get_front_bumper_emitter_paths()
+
+        # mode 0 is not receiving from itself on same freq so it gets no directs
+        result, group_1 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/World/UltrasonicFiringGroup",
+            emitter_modes=[(1, 0)],
+            receiver_modes=[(0, 0), (1, 0), (2, 0)],
+        )
+        self.ultrasonicPath = "/World/UltrasonicArray"
+
+        result, self.ultrasonic = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicArrayCommand",
+            path=self.ultrasonicPath,
+            min_range=0.4,
+            max_range=300.0,
+            draw_points=False,
+            draw_lines=True,
+            horizontal_fov=15.0,  # set wedge vertical extent in degrees
+            vertical_fov=5.0,  # set wedge horizontal extent in degrees
+            horizontal_resolution=0.5,
+            vertical_resolution=0.5,
+            num_bins=224,
+            emitter_prims=emitter_paths,
+            firing_group_prims=[group_1.GetPath()],
+        )
+        cubePrim = self.add_cube("/World/Cube0", 75.0, Gf.Vec3f(0.0, -85.0, 0.0), physics=False)
+        steps_per_sec = 50
+        seconds = 3
+        self._timeline.play()
+        await simulate(seconds, steps_per_sec=steps_per_sec)
+        envelope_arr = self._ultrasonic.get_envelope_array(self.ultrasonicPath)
+        self.assertTrue(np.allclose(envelope_arr[0][35:37], np.array([249.0, 51.0])))
+        self.assertTrue(np.allclose(envelope_arr[1][35:37], np.array([170.0, 130.0])))
+        self.assertTrue(np.allclose(envelope_arr[2][35:37], np.array([170.0, 130.0])))

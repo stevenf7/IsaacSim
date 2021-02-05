@@ -21,7 +21,7 @@
 
 
 #include <carb/InterfaceUtils.h>
-
+#include "FiringGroupUtils.h"
 
 #include <string>
 #include <sstream>
@@ -170,31 +170,70 @@ void UltrasonicSensor::tick()
         CARB_LOG_ERROR("Physics Scene does not exist");
         return;
     }
+    // TODO @markb: there's a lot of work happening both when there are and aren't firing groups;
+    // a lot of this should probably be abstracted away into UltrasonicReceiver or similar
     if (mFiringGroups.size() > 0)
     {
-        // CARB_LOG_ERROR("Group %lu", mCurrentFiringGroup);
 
         const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
 
-        for (size_t i = 0; i < group.mEmitterModes.size(); i++)
-        {
-            pxr::GfVec2i emitterMode = group.mEmitterModes[i];
-            // TODO use emitterMode[1] which contains the mode data
-            mEmitters[emitterMode[0]].doScan(mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth);
-            // CARB_LOG_ERROR("emitter %d", emitterMode[0]);
-        }
-        // TODO Use the goup.mReceiverModes array to do envelope calculation
+        std::vector<std::vector<::physx::PxVec3>> worldPoints(mEmitters.size());
+        std::vector<::physx::PxVec3> origins = omni::isaac::range_sensor::extractOrigins(mEmitters, mFastCachePtr);
+        std::vector<std::vector<uint8_t>> adjacency = omni::isaac::range_sensor::extractAdjacencyVectors(mEmitters);
 
+        // fire low then high
+        std::vector<std::vector<USSEnvelope>> envelopeList(
+            2, std::vector<USSEnvelope>(0, USSEnvelope(mNumBins, mMaxDepth * mMetersPerUnit)));
+        for (size_t currentFreqId = 0; currentFreqId <= 1; currentFreqId++)
+        {
+            for (size_t i = 0; i < group.mEmitterModes.size(); i++)
+            {
+                // TODO do both low and high inside of this loop
+
+                pxr::GfVec2i emitterMode = group.mEmitterModes[i];
+                // TODO use emitterMode[1] which contains the mode data
+                mEmitters[emitterMode[0]].doScan(
+                    mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth);
+
+                if (worldPoints[emitterMode[0]].size() == 0)
+                {
+                    worldPoints[emitterMode[0]] = mEmitters[emitterMode[0]].mHitPosWorld;
+                }
+                // TODO Use the goup.mReceiverModes array to do envelope calculation
+            }
+            std::vector<bool> isFiring =
+                omni::isaac::range_sensor::modesToBooleanVector(group.mEmitterModes, currentFreqId, mEmitters.size());
+            std::vector<bool> isReceiving =
+                omni::isaac::range_sensor::modesToBooleanVector(group.mReceiverModes, currentFreqId, mEmitters.size());
+            envelopeList[currentFreqId] = mReceiverArray.getCombinedEnvelopeList(
+                mNumBins, mMaxDepth * mMetersPerUnit, adjacency, isFiring, isReceiving, origins, origins, worldPoints);
+        }
+        // this is mode 0; do mode 1
+        for (size_t j = 0; j < envelopeList[0].size(); j++)
+        {
+            mEmitters[j].mEnvelope = std::make_unique<USSEnvelope>(envelopeList[0][j] + envelopeList[1][j]);
+        }
         // Increment and clamp the firing group
         mCurrentFiringGroup += 1;
         mCurrentFiringGroup = mCurrentFiringGroup % mFiringGroups.size();
     }
     else
     {
-        // Fire everything if there is no group info (?)
+        // Fire everything if there is no group info
         for (size_t i = 0; i < mEmitters.size(); i++)
         {
             mEmitters[i].doScan(mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth);
+            // direct so intensities are all 1.f
+            std::vector<float> intensities(mEmitters[i].mLinearDepth.size(), 1.f);
+            std::vector<float> totalDepth;
+            // updateInterface takes _round trip_ depth, not one way
+            // hence we pass double the linear depth of the direct ray
+            // from sensor to ray's collision point
+            for (size_t j = 0; j < mEmitters[i].mLinearDepth.size(); j++)
+            {
+                totalDepth.push_back(mEmitters[i].mLinearDepth[j] * 2.f);
+            }
+            mEmitters[i].mEnvelope->updateEnvelope(totalDepth, intensities);
         }
     }
 

@@ -32,6 +32,25 @@ public:
     UltrasonicEmitter()
     {
     }
+
+    ::physx::PxVec3 getOrigin(carb::fastcache::FastCache* fastCachePtr)
+    {
+        carb::fastcache::Transform parentTrans;
+        parentTrans.orientation = { 0, 0, 0, 1 };
+        auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
+        ::physx::PxVec3 origin = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
+        ::physx::PxQuat theta0 = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
+        // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
+        if (mParentPrim.IsA<pxr::UsdGeomXformable>())
+        {
+            fastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
+            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
+            origin = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(origin);
+            theta0 = parentRot * theta0;
+        }
+        return origin;
+    }
+
     void doScan(carb::fastcache::FastCache* fastCachePtr,
                 omni::physx::IPhysx* physxPtr,
                 ::physx::PxScene* physxScenePtr,
@@ -103,6 +122,7 @@ public:
                 ::physx::PxRaycastHit raycastHit;
                 // Project the start point out to prevent collisions from origin
                 bool hit = raycast(origin + unitDir * minDepth, unitDir, maxDepth, raycastHit, physxScenePtr);
+                mHitPosWorld[i] = raycastHit.position;
 
                 if (hit)
                 {
@@ -113,6 +133,7 @@ public:
                     carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
                     ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - origin);
                     mHitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
+
                     if (drawPoints)
                     {
                         omni::isaac::range_sensor::DebugData data;
@@ -132,7 +153,6 @@ public:
                     if (drawLines)
                     {
                         omni::isaac::range_sensor::DebugData data;
-
                         ::physx::PxVec3 diff = raycastHit.position - origin;
                         auto temp = origin + diff.getNormalized() * minDepth;
                         data.startPos = { temp.x, temp.y, temp.z };
@@ -185,6 +205,7 @@ public:
             }
         }
 
+        /*
         // direct so intensities are all 1.f
         std::vector<float> intensities(mLinearDepth.size(), 1.f);
         std::vector<float> totalDepth;
@@ -195,7 +216,7 @@ public:
         {
             totalDepth.push_back(mLinearDepth[i] * 2.f);
         }
-        mEnvelope->updateEnvelope(totalDepth, intensities);
+        mEnvelope->updateEnvelope(totalDepth, intensities);*/
     }
 
     void initialize(const pxr::RangeSensorSchemaUltrasonicEmitter& prim,
@@ -215,11 +236,13 @@ public:
         mIntensity.resize(mRows * mCols);
         mDepth.resize(mRows * mCols);
         mHitPos.resize(mRows * mCols);
+        mHitPosWorld.resize(mRows * mCols);
 
         mLinearDepth.assign(mRows * mCols, 0);
         mIntensity.assign(mRows * mCols, 0);
         mDepth.assign(mRows * mCols, 0);
         mHitPos.assign(mRows * mCols, { 0, 0, 0 });
+        mHitPosWorld.assign(mRows * mCols, { 0, 0, 0 });
         onComponentChange();
     }
 
@@ -252,6 +275,8 @@ public:
     std::vector<uint8_t> mIntensity;
     std::vector<uint16_t> mDepth;
     std::vector<carb::Float3> mHitPos;
+    std::vector<::physx::PxVec3> mHitPosWorld;
+    pxr::VtArray<int> mAdjacencyList;
     int mRows = 0;
     int mCols = 0;
 
@@ -278,7 +303,6 @@ private:
     float mMetersPerUnit = 1.0f;
 
     pxr::UsdPrim mParentPrim;
-    pxr::VtArray<int> mAdjacencyList;
 };
 }
 }
