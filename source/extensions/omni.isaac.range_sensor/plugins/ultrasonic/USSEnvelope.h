@@ -114,11 +114,41 @@ public:
         else
         {
             std::stringstream ss;
-            ss << "Size of b (" << b.size() << ") must equal size of this object's envelope (" << m_envelope.size()
-               << ")." << std::endl;
+            ss << "Size of b (" << b.size() << ") must equal size of this object's envelope on addition ("
+               << m_envelope.size() << ")." << std::endl;
             throw std::invalid_argument(ss.str());
         }
         return env;
+    }
+
+    USSEnvelope& operator=(const USSEnvelope& b)
+    {
+        USSEnvelope env(m_numBins, m_maxDist);
+        if (b.size() == m_envelope.size())
+        {
+            for (size_t i = 0; i < m_envelope.size(); i++)
+            {
+                m_envelope[i] = b.m_envelope[i];
+            }
+        }
+        else
+        {
+            std::stringstream ss;
+            ss << "Size of b (" << b.size() << ") must equal size of this object's envelope when assigning ("
+               << m_envelope.size() << ")." << std::endl;
+            throw std::invalid_argument(ss.str());
+        }
+        return *this;
+    }
+
+    friend std::ostream& operator<<(std::ostream& stream, const USSEnvelope& env)
+    {
+        for (size_t i = 0; i < env.m_envelope.size(); i++)
+        {
+            stream << env.m_envelope[i] << " ";
+        }
+        stream << std::endl;
+        return stream;
     }
 
 private:

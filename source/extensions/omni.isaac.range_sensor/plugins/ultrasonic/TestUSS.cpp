@@ -11,6 +11,10 @@
 #include "USSEnvelope.h"
 #include "UltrasonicArrayEmissionTimer.h"
 #include "UltrasonicReceiver.h"
+#include "UltrasonicReceiverArray.h"
+//#include "FiringGroupUtils.h"
+//#include <pxr/base/gf/vec2i.h>
+//#include <pxr/usd/usd/inherits.h>
 #include "doctest/doctest.h"
 
 #include <string>
@@ -167,5 +171,107 @@ TEST_CASE("main")
         std::vector<float> len = receiver.getTotalPathLength(emitterCenter, surfacePoints);
         // res is 2 * sqrt(20)
         CHECK(len[0] == doctest::Approx(8.94427190999916f));
+    }
+
+    SUBCASE("Check indirect path lengths")
+    {
+        ::physx::PxVec3 emitterCenter({ 1.f, 1.f, 0.f });
+        ::physx::PxVec3 receiverCenter({ 5.f, 1.f, 0.f });
+
+        ::physx::PxVec3 surfacePoint({ 3.f, 5.f, 0.f });
+        UltrasonicReceiver receiver(receiverCenter);
+        std::vector<::physx::PxVec3> surfacePoints;
+        surfacePoints.push_back(surfacePoint);
+        std::vector<float> len = receiver.getTotalPathLength(emitterCenter, surfacePoints);
+        // res is 2 * sqrt(20)
+        CHECK(len[0] == doctest::Approx(8.94427190999916f));
+    }
+
+    SUBCASE("Check ultrasonic receiver array")
+    {
+        std::vector<::physx::PxVec3> emitterCenters{ { 1.f, 1.f, 0.f }, { 5.f, 1.f, 0.f }, { 8.f, 1.f, 0.f } };
+
+        std::vector<std::vector<::physx::PxVec3>> worldPoints{
+            { { 1.f, 5.f, 0.f }, { 5.f, 5.f, 0.f }, { 8.f, 5.f, 0.f } }, {}, {}
+        };
+
+        std::vector<::physx::PxVec3> receiverCenters{ { 1.f, 1.f, 0.f }, { 5.f, 1.f, 0.f }, { 8.f, 1.f, 0.f } };
+
+        std::vector<std::vector<uint8_t>> adjacency{ { 0, 1 }, // adjacency for receiver zero
+                                                     { 0, 1, 2 }, // adjacency for receiver one
+                                                     { 1, 2 } }; // adjacency for receiver two
+
+        std::vector<bool> isFiring{ true, false, false };
+        std::vector<bool> isReceiving{ false, true, true };
+
+        UltrasonicReceiverArray receiverArr;
+        uint8_t receiverIndex = 1; // one is receiving
+        uint8_t emitterIndex = 0; // zero
+        CHECK(receiverArr.shouldProduceEnvelope(adjacency, isFiring, isReceiving, receiverIndex, emitterIndex));
+
+        emitterIndex = 0; // zero is emitting, but
+        receiverIndex = 0; // zero is not receiving
+        CHECK(!receiverArr.shouldProduceEnvelope(adjacency, isFiring, isReceiving, receiverIndex, emitterIndex));
+
+        emitterIndex = 0; // zero is emitting, but
+        receiverIndex = 2; // two is receiving but isn't adjacent
+        CHECK(!receiverArr.shouldProduceEnvelope(adjacency, isFiring, isReceiving, receiverIndex, emitterIndex));
+    }
+    SUBCASE("Check single emitter/receiver")
+    {
+        std::vector<::physx::PxVec3> emitterCenters{ { 1.f, 1.f, 0.f } };
+
+        std::vector<std::vector<::physx::PxVec3>> worldPoints{ { { 1.f, 2.f, 0.f } } };
+
+        std::vector<::physx::PxVec3> receiverCenters{ { 1.f, 1.f, 0.f } };
+
+        std::vector<std::vector<uint8_t>> adjacency{ { 0 } }; // adjacent to itself
+
+        std::vector<bool> isFiring{ true };
+        std::vector<bool> isReceiving{ true };
+        UltrasonicReceiverArray receiverArr;
+        auto distances = receiverArr.getAdjacentDistances(
+            adjacency, isFiring, isReceiving, emitterCenters, receiverCenters, worldPoints);
+        uint8_t emitterIndex = 0;
+        uint8_t receiverIndex = 0;
+        CHECK(doctest::Approx(distances[receiverIndex][emitterIndex][0]) == 2.f);
+    }
+
+    SUBCASE("Check multi emitter/receiver")
+    {
+        std::vector<::physx::PxVec3> emitterCenters{ { 1.f, 1.f, 0.f }, { 2.f, 1.f, 0.f }, { 3.f, 1.f, 0.f } };
+
+        std::vector<std::vector<::physx::PxVec3>> worldPoints{ { { 2.f, 2.f, 0.f }, { 3.f, 3.f, 0.f } }, {}, {} };
+
+        std::vector<::physx::PxVec3> receiverCenters{ { 1.f, 1.f, 0.f }, { 2.f, 1.f, 0.f }, { 3.f, 1.f, 0.f } };
+
+        std::vector<std::vector<uint8_t>> adjacency{ { 0, 1 }, // adjacency for receiver zero
+                                                     { 0, 1, 2 }, // adjacency for receiver one
+                                                     { 1, 2 } }; // adjacency for receiver two
+
+        std::vector<bool> isFiring{ true, false, false };
+        std::vector<bool> isReceiving{ false, true, true };
+        UltrasonicReceiverArray receiverArr;
+        auto distances = receiverArr.getAdjacentDistances(
+            adjacency, isFiring, isReceiving, emitterCenters, receiverCenters, worldPoints);
+        for (size_t i = 0; i < distances[1].size(); i++)
+        {
+            CHECK(distances[0][i].size() == 0);
+            CHECK(distances[2][i].size() == 0);
+        }
+        CHECK(doctest::Approx(distances[1][0][0]) == 2.4142135f);
+        CHECK(doctest::Approx(distances[1][0][1]) == 5.06449510224598f);
+
+        int numBins = 10;
+        float maxDist = 3.0; // not roundtrip
+        auto envelopeList = receiverArr.getCombinedEnvelopeList(
+            numBins, maxDist, adjacency, isFiring, isReceiving, emitterCenters, receiverCenters, worldPoints);
+        int receiverIndex = 1;
+        CHECK(envelopeList[receiverIndex].getEnvelope()[8] == 1);
+        CHECK(envelopeList[receiverIndex].getEnvelope()[4] == 1);
+        for (size_t i = 0; i < envelopeList.size(); i++)
+        {
+            std::cout << envelopeList[i] << std::endl;
+        }
     }
 }

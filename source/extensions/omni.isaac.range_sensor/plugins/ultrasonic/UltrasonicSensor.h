@@ -14,6 +14,7 @@
 #include "UltrasonicArrayEmissionTimer.h"
 #include "UltrasonicEmitter.h"
 #include "UltrasonicFiringGroup.h"
+#include "UltrasonicReceiverArray.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
@@ -135,6 +136,7 @@ private:
 
     std::vector<UltrasonicEmitter> mEmitters;
     std::vector<UltrasonicFiringGroup> mFiringGroups;
+    UltrasonicReceiverArray mReceiverArray;
     size_t mCurrentFiringGroup = 0;
 
     void dumpData(double dt);

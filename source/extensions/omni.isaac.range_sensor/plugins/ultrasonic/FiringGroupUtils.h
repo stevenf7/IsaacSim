@@ -1,0 +1,82 @@
+#pragma once
+
+#include <pxr/base/gf/vec2i.h>
+#include <pxr/usd/usd/inherits.h>
+
+#include <sstream>
+#include <vector>
+
+namespace omni
+{
+namespace isaac
+{
+namespace range_sensor
+{
+
+std::vector<::physx::PxVec3> extractOrigins(std::vector<UltrasonicEmitter>& emitters,
+                                            carb::fastcache::FastCache* fastCachePtr)
+{
+    std::vector<::physx::PxVec3> adjacency;
+    for (size_t i = 0; i < emitters.size(); i++)
+    {
+        adjacency.push_back(emitters[i].getOrigin(fastCachePtr));
+    }
+    return adjacency;
+}
+
+std::vector<std::vector<uint8_t>> extractAdjacencyVectors(std::vector<UltrasonicEmitter>& emitters)
+{
+    std::vector<std::vector<uint8_t>> adjacency(emitters.size());
+    for (size_t i = 0; i < emitters.size(); i++)
+    {
+        for (size_t j = 0; j < emitters[i].mAdjacencyList.size(); j++)
+        {
+            if ((emitters[i].mAdjacencyList[j] >= 0) &&
+                (static_cast<size_t>(emitters[i].mAdjacencyList[j]) < emitters.size()))
+            {
+                adjacency[i].push_back(static_cast<uint8_t>(emitters[i].mAdjacencyList[j]));
+            }
+            else
+            {
+                std::stringstream errMsg;
+                errMsg << "Adjacency list contained an emitter that does not exist: " << emitters[i].mAdjacencyList[j]
+                       << std::endl;
+                throw std::out_of_range(errMsg.str());
+            }
+        }
+    }
+    return adjacency;
+}
+
+
+// List of (emitter index, firing mode) pairs for each sensor in this group to emit from
+std::vector<bool> modesToBooleanVector(const pxr::VtArray<pxr::GfVec2i>& modes,
+                                       const size_t current_mode,
+                                       const size_t num_emitters)
+{
+    std::vector<bool> modeVector(modes.size(), false);
+    for (size_t i = 0; i < modes.size(); i++)
+    {
+        if (static_cast<size_t>(modes[i][1]) == current_mode)
+        {
+            if ((static_cast<size_t>(modes[i][0]) >= 0) && (static_cast<size_t>(modes[i][0]) < num_emitters))
+            {
+                // modes[i][0] is the emitter/receiver index
+                modeVector[modes[i][0]] = true;
+            }
+            else
+            {
+                std::stringstream errMsg;
+                errMsg << "Mode contained an emitter that does not exist: (" << modes[i][0] << ", " << modes[i][1]
+                       << ")" << std::endl;
+                throw std::out_of_range(errMsg.str());
+            }
+        }
+    }
+    return modeVector;
+}
+
+
+}
+}
+}

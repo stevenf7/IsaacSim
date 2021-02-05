@@ -407,9 +407,6 @@ PYBIND11_MODULE(_range_sensor, m)
                      return py::none();
                  float* data = ul->getAzimuthData(sensorPath);
                  int numCols = ul->getNumCols(sensorPath);
-                 std::stringstream ss;
-                 ss << "numCols " << numCols;
-                 CARB_LOG_WARN(ss.str().c_str());
                  return py::array(py::buffer_info(
                      data, sizeof(float), py::format_descriptor<float>::value, 1, { numCols }, { sizeof(float) }));
              },
