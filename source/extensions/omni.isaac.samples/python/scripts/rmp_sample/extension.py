@@ -5,6 +5,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 import gc
 import asyncio
 import weakref
+import os
 import omni.physx as _physx
 from .sample import RMPSample
 
@@ -32,7 +33,7 @@ class Extension(omni.ext.IExt):
         # Simple button style that grays out the button if disabled
         self._button_style = {":disabled": {"color": 0xFF000000}}
         with self._window.frame:
-            with omni.ui.VStack(style=self._button_style):
+            with omni.ui.VStack(style=self._button_style, width=150):
                 self._create_robot_btn = ui.Button("Load Robot", enabled=True)
                 self._create_robot_btn.set_clicked_fn(self._on_setup_environment)
                 self._create_robot_btn.set_tooltip("Load robot and environment")
@@ -48,12 +49,24 @@ class Extension(omni.ext.IExt):
                 self._gripper_btn = ui.Button("Toggle Gripper", enabled=False)
                 self._gripper_btn.set_clicked_fn(self._sample.toggle_gripper)
                 self._gripper_btn.set_tooltip("Toggle gripper open/close state")
-                self._get_states_btn = ui.Button("Get States", enabled=False)
+                self._get_states_btn = ui.Button("Get Current States Snapshot", enabled=False)
                 self._get_states_btn.set_clicked_fn(self._sample.get_states)
                 self._get_states_btn.set_tooltip("click to print state of the robot and block in terminal")
                 self._reset_btn = ui.Button("Reset", enabled=False)
                 self._reset_btn.set_clicked_fn(self._sample.reset)
                 self._reset_btn.set_tooltip("Reset Robot to default position")
+                with ui.HStack():
+                    ui.Label("Output Directory:", width=100)
+                    default_dir = os.path.join(os.getcwd(), "output.txt")
+                    self._ui_dir_name = ui.StringField(width=300)
+                    self._ui_dir_name.model.set_value(default_dir)
+                    self._ui_dir_name.model.add_end_edit_fn(
+                        self._sample.save_dir(self._ui_dir_name.model.get_value_as_string())
+                    )
+                    ui.Spacer(width=50)
+                    ui.Label("Save Data", width=70)
+                    self._save_data_btn = ui.Button("Start Saving Data", enabled=False, width=50)
+                    self._save_data_btn.set_clicked_fn(self._sample.saving_data)
 
     def _on_window(self, status):
         if status:
@@ -88,6 +101,7 @@ class Extension(omni.ext.IExt):
             self._gripper_btn.enabled = False
             self._reset_btn.enabled = False
             self._get_states_btn.enabled = False
+            self._save_data_btn.enabled = False
 
             self._timeline.stop()
             self._sample.stop_tasks()
@@ -111,12 +125,21 @@ class Extension(omni.ext.IExt):
                 self._add_obstacle_btn.text = "Add Obstacles"
                 self._gripper_btn.text = "Toggle Gripper"
                 self._get_states_btn.text = "Get States"
+                if self._sample._save_data:
+                    self._save_data_btn.text = "Stop Data Saving"
+                else:
+                    self._save_data_btn.text = "Start Data Saving"
+                    self._ui_dir_name.model.add_end_edit_fn(
+                        self._sample.save_dir(self._ui_dir_name.model.get_value_as_string())
+                    )
+
             else:
                 self._target_following_btn.text = "Press Play To Enable"
                 self._add_obstacle_btn.text = "Press Play To Enable"
                 self._toggle_obstacle_btn.text = "Press Play To Enable"
                 self._gripper_btn.text = "Press Play To Enable"
                 self._get_states_btn.text = "Press Play To Enable"
+
         else:
             self._create_robot_btn.text = "Load Robot"
             self._target_following_btn.text = "Press Load Robot To Enable"
@@ -132,6 +155,7 @@ class Extension(omni.ext.IExt):
             self._gripper_btn.enabled = True
             self._get_states_btn.enabled = True
             self._reset_btn.enabled = True
+            self._save_data_btn.enabled = True
         if e.type == int(omni.timeline.TimelineEventType.STOP) or e.type == int(omni.timeline.TimelineEventType.PAUSE):
             self._target_following_btn.enabled = False
             self._add_obstacle_btn.enabled = False
