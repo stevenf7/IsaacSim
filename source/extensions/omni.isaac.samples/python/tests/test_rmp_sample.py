@@ -120,6 +120,28 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         await simulate(4)
         self.assertEqual(self._sample.has_arrived(), False)
 
+    async def test_data_collection(self):
+        self._sample.create_robot()
+        self._timeline.play()
+        self._sample.follow_target()
+        await simulate(4)
+        self._sample.reset_action_state_dict()
+        self._sample.collect_action_state()
+        state_action_dict = self._sample.get_action_state_dict()
+
+        import numpy as np
+
+        np.testing.assert_almost_equal(
+            state_action_dict["joint command"][0],
+            np.array([-0.00882683, -0.78860676, 0.00875621, -2.84749961, 0.00704176, 2.05903769, 0.77942944, 0.0, 0.0]),
+            decimal=3,
+        )
+        np.testing.assert_almost_equal(
+            state_action_dict["joint state"][0],
+            np.array([-8.8267e-03, -7.8861e-01, 8.75626e-03, -2.8475, 7.04182e-03, 2.0590, 7.7940e-01, 0.0, 0.0]),
+            decimal=3,
+        )
+
     # Run all functions with simulation enabled
     async def test_simulation(self):
         self._sample.create_robot()

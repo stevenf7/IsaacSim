@@ -25,6 +25,7 @@ from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from omni.isaac.utils.scripts.scene_utils import set_translate, set_up_z_axis, setup_physics
 
 import numpy as np
+import os
 
 
 def create_prim_from_usd(stage, prim_env_path, prim_usd_path, location):
@@ -51,6 +52,8 @@ class RMPSample:
         self._target = None
         self._robot = None
         self._world = None
+        self._save_data = False
+        self._save_dir = None
         self._ar = _dynamic_control.INVALID_HANDLE
         self._termination_criteria = FrameTerminationCriteria(orig_thresh=0.001)
         pass
@@ -127,6 +130,9 @@ class RMPSample:
             # update RMP's world and robot states to sync with Kit
             self._world.update()
             self._robot.update()
+
+            if self._save_data:
+                self.collect_action_state()
 
     def follow_target(self):
         # create target
@@ -292,9 +298,77 @@ class RMPSample:
             print("robot joint states:")
             print(dof_states["pos"])
 
+        # get robot joint command
+        num_dofs = self._dc.get_articulation_dof_count(self._ar)
+        dof_position_target = np.zeros(num_dofs)
+        dof_velocity_target = np.zeros(num_dofs)
+
+        for dofIdx in range(num_dofs):
+            dof_handle = self._dc.get_articulation_dof(self._ar, dofIdx)
+            dof_position_target[dofIdx] = self._dc.get_dof_position_target(dof_handle)
+            dof_velocity_target[dofIdx] = self._dc.get_dof_velocity_target(dof_handle)
+
+        print("joint position command: ", dof_position_target)
+        print("joint velocity command: ", dof_velocity_target)
+
+        # get robot end_effector command
+        print("end_effector command: ", self._target)
+
     def move_target(self, position: Gf.Vec3d, rotation: Gf.Matrix3d = Gf.Matrix3d(1.0)):
         """Move the target to a new location
         """
         if self._target_prim is not None:
             mat = Gf.Matrix4d().SetTransform(rotation, position)
             self._target_prim.GetAttribute("xformOp:transform").Set(mat)
+
+    def saving_data(self):
+        if self._save_data:
+            print("stop saving")
+            self._save_data = False
+
+            f = open(self._save_dir, "w")
+            f.write(str(self.get_action_state_dict()))
+            f.close()
+            print("data written to: ", self._save_dir)
+        else:
+            print("saving data")
+            # if filename already exist, append a number to it
+            if os.path.isfile(self._save_dir):
+                file_num = 0
+                self._save_dir_orig = self._save_dir
+                while os.path.isfile(self._save_dir):
+                    self._save_dir = self._save_dir_orig[:-4] + "_" + str(file_num) + ".txt"
+                    file_num += 1
+            print("data will be saved to: ", self._save_dir)
+            self._save_data = True
+            self.reset_action_state_dict()
+
+    def save_dir(self, dir_name):
+        self._save_dir = dir_name
+
+    def get_action_state_dict(self):
+        return self.state_dict_save
+
+    def reset_action_state_dict(self):
+        self.state_dict_save = {}
+        self.state_dict_save["joint command"] = []
+        self.state_dict_save["joint state"] = []
+
+    def collect_action_state(self):
+        # get robot joint states
+        if self._ar == _dynamic_control.INVALID_HANDLE:
+            self._ar = self._dc.get_articulation("/scene/robot")
+        self.num_dofs = self._dc.get_articulation_dof_count(self._ar)
+
+        dof_position_target = np.zeros(self.num_dofs)
+        dof_velocity_target = np.zeros(self.num_dofs)
+
+        for dofIdx in range(self.num_dofs):
+            dof_handle = self._dc.get_articulation_dof(self._ar, dofIdx)
+            dof_position_target[dofIdx] = self._dc.get_dof_position_target(dof_handle)
+            dof_velocity_target[dofIdx] = self._dc.get_dof_velocity_target(dof_handle)
+
+        dof_states = self._dc.get_articulation_dof_states(self._ar, _dynamic_control.STATE_POS)
+
+        self.state_dict_save["joint command"].append(dof_position_target)
+        self.state_dict_save["joint state"].append(dof_states["pos"])
