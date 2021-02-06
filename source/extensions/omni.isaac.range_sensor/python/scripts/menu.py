@@ -1,6 +1,5 @@
 import carb
 import omni.kit.commands
-import omni.kit.ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from pxr import Sdf, UsdGeom, Gf
 import weakref
