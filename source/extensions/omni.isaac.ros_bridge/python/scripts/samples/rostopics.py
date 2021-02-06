@@ -14,7 +14,6 @@ from pxr import UsdPhysics, Sdf, Gf, UsdGeom
 import omni.usd
 import omni
 import omni.kit.ui
-import omni.kit.editor
 import omni.isaac.RosBridgeSchema as ROSSchema
 from omni.isaac.utils.scripts.test_utils import load_test_file
 import asyncio
@@ -103,7 +102,7 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_position("/OmniverseKit_Persp", 59, 120, 164, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", -190, -346, -263, True)
 
-            # editor must be playing for articulation to work, so start it now
+            # timeline must be playing for articulation to work, so start it now
             if not self._timeline.is_playing():
                 self._timeline.play()
 
@@ -207,7 +206,7 @@ class Extension(omni.ext.IExt):
         camera_prim.CreateDepthEnabledAttr(True)
         camera_prim.CreateQueueSizeAttr(10)
 
-        # make sure editor is playing for sending and receiving ros messages
+        # make sure timeline is playing for sending and receiving ros messages
         if not self._timeline.is_playing():
             self._timeline.play()
 
@@ -241,7 +240,7 @@ class Extension(omni.ext.IExt):
         else:
             ROS_prim.GetRelationship("targetPrims").AddTarget(Sdf.Path("/panda"))
 
-        # editor must be playing for messages to be published and received
+        # timeline must be playing for messages to be published and received
         if not self._timeline.is_playing():
             self._timeline.play()
 

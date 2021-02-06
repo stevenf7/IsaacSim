@@ -11,6 +11,10 @@ display_name = "ROS Bridge"
 name = "omni.isaac.ros_bridge"
 
 [[python.module]]
+name = "omni.isaac.ros_bridge.tests"
+public = false
+
+[[python.module]]
 name = "omni.isaac.ros_bridge.scripts.samples.rostopics"
 
 [[python.module]]
