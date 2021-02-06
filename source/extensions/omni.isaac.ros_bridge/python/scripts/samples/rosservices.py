@@ -13,7 +13,6 @@ from pxr import Sdf, Gf, UsdGeom, UsdLux
 import omni.usd
 import omni
 import omni.kit.ui
-import omni.kit.editor
 import omni.isaac.RosBridgeSchema as ROSSchema
 import asyncio
 
@@ -89,7 +88,7 @@ class Extension(omni.ext.IExt):
         ROS_prim = self._stage.GetPrimAtPath("/ROS_Teleport")
         ROS_prim.GetRelationship("teleportPrims").AddTarget(Sdf.Path("/Cube"))
 
-        # make sure editor is playing for sending and receiving ros messages
+        # make sure timeline is playing for sending and receiving ros messages
         if not self._timeline.is_playing():
             self._timeline.play()
 
@@ -117,6 +116,6 @@ class Extension(omni.ext.IExt):
         ROS_prim = self._stage.GetPrimAtPath("/ROS_Teleport_Cone")
         ROS_prim.GetRelationship("teleportPrims").AddTarget(Sdf.Path("/Cone"))
 
-        # make sure editor is playing for sending and receiving ros messages
+        # make sure timeline is playing for sending and receiving ros messages
         if not self._timeline.is_playing():
             self._timeline.play()
