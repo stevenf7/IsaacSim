@@ -79,13 +79,14 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
 
-    def add_cube(self, path, size, offset):
+    async def add_cube(self, path, size, offset):
 
         cubeGeom = UsdGeom.Cube.Define(self._stage, path)
         cubePrim = self._stage.GetPrimAtPath(path)
 
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
+        await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
         utils.setRigidBody(cubePrim, "convexHull", False)
 
         return cubeGeom
@@ -105,7 +106,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/World/Cube"
-        self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        await self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
@@ -154,11 +155,11 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         # Add a cube
         cubePath = "/World/Cube"
-        self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        await self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
 
         # Add falling cube
         cubePath2 = "/World/Cube2"
-        self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
+        await self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
@@ -182,7 +183,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 50.0))
         self._timeline.play()
         # get data before it falls and make sure that lidar is parented properly and does not have block infront of it
-        await simulate(0.1)
+        await omni.kit.app.get_app().next_update_async()
         depth = self._lidar.get_depth_data(lidarPath)
         self.assertEqual(depth[0, 0], 65535)
 
@@ -206,7 +207,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
             color=Gf.Vec3f(0.5),
         )
         cubePath2 = "/World/Cube2"
-        self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
+        await self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
@@ -247,7 +248,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/Cube"
-        self.add_cube(cubePath, 75.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        await self.add_cube(cubePath, 75.0, Gf.Vec3f(-200.0, 0.0, 50.0))
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
