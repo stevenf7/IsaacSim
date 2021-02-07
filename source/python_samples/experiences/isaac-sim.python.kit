@@ -7,25 +7,27 @@ version = "2021.1.0"
 keywords = ["experience", "app", "usd"]
 
 [dependencies]
-# Good old Editor...
-"omni.kit.editor" = { tag = "full" }
-"omni.ui" = { order = -100 }
+"omni.kit.uiapp" = {}
+"omni.kit.renderer.core" = {}
+"omni.kit.default" = {}
 
-# PhysX
-"omni.physx.bundle" = {}
-
-# Viewport and Renderer
 "omni.kit.window.viewport" = {}
-"omni.renderer" = { tag = "rtx" }
-"omni.hydra.rtx" = { }
+"omni.renderer-rtx" = {}
 
-"omni.kit.window.extensions" = {}
-
-# Synthetic data
+"omni.physx.bundle" = {}
 "omni.syntheticdata" = {}
-
-# omni graph
 "omni.graph.core" = {}
+
+# Extra extensions
+"omni.rtx.settings.core" = {}
+"omni.kit.window.extensions" = {}
+"omni.kit.window.profiler" = {}
+
+#Dsiabled by default to improve load times and perf but useful for debugging scenes
+# "omni.kit.widget.live" = {}
+# "omni.kit.window.stage" = {}
+# "omni.kit.widget.layers" = {}
+
 
 [settings]
 exts."omni.kit.renderer.core".imgui.enableMips = true
@@ -56,11 +58,10 @@ size = 16
 [settings]
 # MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you
 # only want to use a single GPU on your MGPU system
-renderer.multiGpu.enabled = true
+renderer.multiGpu.enabled = false
 
 # Basic Kit App
 ################################
-app.versionFile = "${app}/../VERSION"
 app.name = "Isaac Sim Python"
 persistent.app.window.uiStyle = "NvidiaDark"
 
@@ -119,14 +120,10 @@ nucleus.default = "omniverse://ov-isaac-dev"
 "omni.isaac.urdf" = {}
 "omni.isaac.utils" = {}
 "omni.isaac.range_sensor" = {}
-"omni.isaac.manip" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_planning" = {}
 "omni.isaac.occupancy_map" = {}
-"omni.isaac.samples" = {}
-# "omni.isaac.step_importer" = {}
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.robot_engine_bridge" = {}
 "omni.isaac.dr" = {}
-# "omni.isaac.tests" = {}
 "omni.kit.loop-isaac" = {}

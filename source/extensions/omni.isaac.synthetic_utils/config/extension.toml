@@ -16,7 +16,7 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.editor" = {}
+"omni.kit.uiapp" = {}
 "omni.syntheticdata" = {}
 
 [[python.module]]
@@ -27,4 +27,5 @@ name = "omni.isaac.synthetic_utils.scripts.syntheticdata_recorder"
 public = false
 
 [python.pipapi]
-requirements = ["matplotlib==3.3.1", "pillow==7.2.0"]
+# "matplotlib==3.3.1" Fails on TC, removing temporarily
+requirements = ["pillow==7.2.0"]

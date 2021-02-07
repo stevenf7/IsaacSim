@@ -36,7 +36,7 @@ project_ext_plugin(ext, "omni.isaac.urdf.plugin")
     if os.target() == "linux" then
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-            "%{root}/_build/target-deps/python/include/python3.6m",
+            "%{root}/_build/target-deps/python/include/python3.7m",
         }
         libdirs {
             "%{root}/_build/target-deps/assimp/lib64",

@@ -1,6 +1,7 @@
 import omni.ext
-import omni.kit.editor
-import omni.kit.ui
+
+# import omni.kit.editor
+# import omni.kit.ui
 import carb.settings
 from .. import _manip
 from enum import IntEnum
@@ -122,20 +123,20 @@ class Extension(omni.ext.IExt):
         self.update_sub = None
         self.stage_sub = None
         self.bindings = []
-        self.manip = _manip.acquire()
+        # self.manip = _manip.acquire()
 
-        self.editor = omni.kit.editor.get_editor_interface()
-        self.usd_context = omni.usd.get_context()
-        self.window = omni.kit.ui.Window(
-            EXTENSION_NAME, 960, 600, menu_path=f"Window/Isaac/{EXTENSION_NAME}", open=False
-        )
-        self.manip.bind_gamepad(self.on_gamepad_event_fn)
-        self.update_sub = self.editor.subscribe_to_update_events(self.on_update)
-        self.build_window_ui()
-        self.stage_sub = self.usd_context.get_stage_event_stream().create_subscription_to_pop(self.stage_event_fn)
+        # self.editor = omni.kit.editor.get_editor_interface()
+        # self.usd_context = omni.usd.get_context()
+        # self.window = omni.kit.ui.Window(
+        #     EXTENSION_NAME, 960, 600, menu_path=f"Window/Isaac/{EXTENSION_NAME}", open=False
+        # )
+        # self.manip.bind_gamepad(self.on_gamepad_event_fn)
+        # self.update_sub = self.editor.subscribe_to_update_events(self.on_update)
+        # self.build_window_ui()
+        # self.stage_sub = self.usd_context.get_stage_event_stream().create_subscription_to_pop(self.stage_event_fn)
 
-        self._settings = carb.settings.get_settings()
-        self._settings.set("/persistent/app/omniverse/gamepadCameraControl", False)
+        # self._settings = carb.settings.get_settings()
+        # self._settings.set("/persistent/app/omniverse/gamepadCameraControl", False)
 
     def on_shutdown(self):
         self.stage_sub = None

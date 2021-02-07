@@ -35,7 +35,7 @@ project_ext_bindings ({
     links {"gf", "sdf"}
 
     filter { "system:linux", "platforms:x86_64" }
-        links {"tbb", "boost_python36" }
+        links {"tbb", "boost_python37" }
     filter {}
 
     filter { "configurations:debug" }

@@ -38,7 +38,7 @@ project_with_location("omni.isaac.occupancy_map.generator")
     filter { "system:linux" }
         disablewarnings {"error=pragmas"}
         includedirs {
-            "%{root}/_build/target-deps/python/include/python3.6m"
+            "%{root}/_build/target-deps/python/include/python3.7m"
         }
         buildoptions("-fvisibility=default")
     filter { "system:windows" }
@@ -70,7 +70,7 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
         disablewarnings {"error=pragmas"}
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-            "%{root}/_build/target-deps/python/include/python3.6m"
+            "%{root}/_build/target-deps/python/include/python3.7m"
         }
     filter { "system:windows" }
         libdirs {
@@ -107,11 +107,11 @@ project_ext_bindings ({
     links {"tf", "usdUtils", "usd", "omni.isaac.occupancy_map.generator"}
 
     filter { "system:linux" }
-        links {"tbb", "boost_python36", "pthread"}
+        links {"tbb", "boost_python37", "pthread"}
         buildoptions { "-pthread"}
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-            "%{root}/_build/target-deps/python/include/python3.6m"
+            "%{root}/_build/target-deps/python/include/python3.7m"
         }
     filter { "system:windows" }
         libdirs {

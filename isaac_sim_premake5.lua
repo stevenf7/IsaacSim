@@ -90,10 +90,12 @@ end
 -- Define experience to test one particular extension.
 -- @ext_name: Extension name.
 -- @python_module: Python module name, if different from extension name. (optional)
-function define_ext_test_experience(ext_name, python_module)
-    local python_module = python_module or ext_name
+function define_ext_test_experience(ext_name, args)
+    local args = args or {}
+
+    local python_module = get_value_or_default(args, "python_module", ext_name)
     local script_dir_token = (os.target() == "windows") and "%~dp0" or "$SCRIPT_DIR"
-    local args = {
+    local test_args = {
         "--empty", -- Start empty kit
         "--enable omni.kit.test", -- We always need omni.kit.test extension as testing framework
         "--enable "..ext_name, -- Enable actual extension to test
@@ -108,11 +110,25 @@ function define_ext_test_experience(ext_name, python_module)
         "--/app/settings/persistent=false",
         "--no-assert-dialog",
     }
-    define_experience("tests-"..ext_name, {
+    -- Allow passing additional args
+    local extra_test_args = get_value_or_default(args, "extra_test_args", {})
+    test_args = concat_arrays(test_args, extra_test_args)
+
+    local suite = get_value_or_default(args, "suite", "python")
+
+    -- TODO(anov): Do we want to automatically add that flag for compat tests? Make it a global setting?
+    if suite == "compat" then
+        table.insert(test_args, "--/exts/omni.kit.renderer.core/compatibilityMode=true")
+    end
+
+    local exp_args = {
         config_path = "",
-        extra_args = table.concat(args, " "),
+        extra_args = table.concat(test_args, " "),
         define_project = false
-    })
+    }
+    exp_args = merge_tables(exp_args, args)
+
+    define_experience("tests-"..suite.."-"..ext_name, exp_args)
 end
 
 -- Isaac Sim needs this redefined here because we have a custom PXR_PLUGINPATH_NAME export to handle runtime USD

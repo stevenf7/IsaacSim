@@ -29,7 +29,7 @@ export EXP_PATH=$SCRIPT_DIR/experiences
 source ${MY_DIR}/linux-x86_64/release/setup_python_env.sh
 
 # By default use our python, but allow overriding it by checking if PYTHONEXE env var is defined:
-python_exe=${PYTHONEXE:-"${MY_DIR}/kit_release/_build/target-deps/python/bin/python3.6"}
+python_exe=${PYTHONEXE:-"${MY_DIR}/kit_release/_build/target-deps/python/bin/python3"}
 # include the default kit python env packages
 export PYTHONPATH="${MY_DIR}/kit_release/_exts/omni.kit.pip_archive/pip_prebundle":$PYTHONPATH
 

@@ -28,7 +28,7 @@ project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
     filter { "system:linux" }
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-            "%{root}/_build/target-deps/python/include/python3.6m"
+            "%{root}/_build/target-deps/python/include/python3.7m"
         }
     filter { "system:windows" }
         libdirs {

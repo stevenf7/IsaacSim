@@ -1,20 +1,17 @@
 <project toolsVersion="5.0">
   <!-- Import Kit SDk target-deps xml file to steal some deps from it: -->
-  <import path="../_build/kit_release/deps/target-deps.packman.xml">
-    <filter include="carb_gfx_plugins" />
+  <import path="../_build/kit_${config}/deps/target-deps.packman.xml">
     <filter include="pybind11" />
     <filter include="fmt" />
     <filter include="python" />
     <filter include="nvtx" />
-    <filter include="usd_audio_schema_release" />
-    <filter include="usd_audio_schema_debug" />
+    <filter include="usd_audio_schema_${config}" />
   </import>
 
   <!-- Import Rtx plugins deps -->
   <import path="../_build/target-deps/rtx_plugins/deps/target-deps.packman.xml">
     <filter include="carb_sdk_plugins" />
-    <filter include="nv_usd_py36_release" />
-    <filter include="nv_usd_py36_debug" />
+    <filter include="nv_usd_py37_${config}" />
     <filter include="cuda" />
     <filter include="client_library" />
   </import>
@@ -25,48 +22,44 @@
     <filter include="physx" />
     <filter include="vhacd" />
     <filter include="physxdevice" />
-    <filter include="usd_ext_physics_release" />
-    <filter include="usd_ext_physics_debug" />
+    <filter include="usd_ext_physics_${config}" />
   </import>
 
   <!-- Pull those deps of the same version as in Kit SDK. Override linkPath to point correctly, other properties can also be override, including version. -->
   <dependency name="carb_sdk_plugins" linkPath="../_build/target-deps/carb_sdk_plugins" />
-  <dependency name="nv_usd_py36_release" linkPath="../_build/target-deps/nv_usd/release" />
-  <dependency name="nv_usd_py36_debug" linkPath="../_build/target-deps/nv_usd/debug" />
+  <dependency name="nv_usd_py37_${config}" linkPath="../_build/target-deps/nv_usd/${config}" />
   <dependency name="cuda" linkPath="../_build/target-deps/cuda" />
   <dependency name="client_library" linkPath="../_build/target-deps/client_library" />
 
-  <dependency name="carb_gfx_plugins" linkPath="../_build/target-deps/carb_gfx_plugins" />
   <dependency name="pybind11" linkPath="../_build/target-deps/pybind11" />
   <dependency name="fmt" linkPath="../_build/target-deps/fmt" />
   <dependency name="python" linkPath="../_build/target-deps/python" />
   <dependency name="nvtx" linkPath="../_build/target-deps/nvtx" />
-  <dependency name="usd_audio_schema_release" linkPath="../_build/target-deps/usd_audio_schema/release" />
-  <dependency name="usd_audio_schema_debug" linkPath="../_build/target-deps/usd_audio_schema/debug" />
+  <dependency name="usd_audio_schema_${config}" linkPath="../_build/target-deps/usd_audio_schema/${config}" />
 
   <dependency name="pxshared" linkPath="../_build/target-deps/pxshared"/>
   <dependency name="physx" linkPath="../_build/target-deps/physx" />
   <dependency name="vhacd" linkPath="../_build/target-deps/vhacd" />
   <dependency name="physxdevice" linkPath="../_build/target-deps/physxdevice" />
-  <dependency name="usd_ext_physics_release" linkPath="../_build/target-deps/usd_ext_physics/release" />
-  <dependency name="usd_ext_physics_debug" linkPath="../_build/target-deps/usd_ext_physics/debug" />
+  <dependency name="usd_ext_physics_${config}" linkPath="../_build/target-deps/usd_ext_physics/${config}" />
 
   <!-- Extensions from View -->
-  <dependency name="omni.kit.utility.icon_modifier.release" linkPath="../_build/windows-x86_64/release/exts/omni.kit.utility.icon_modifier">
-    <package name="omni.kit.utility.icon_modifier" version="0.1.2+${platform}.release" platforms="windows-x86_64" />
+  <dependency name="omni.kit.utility.icon_modifier" linkPath="../_build/windows-x86_64/${config}/exts/omni.kit.utility.icon_modifier">
+    <package name="omni.kit.utility.icon_modifier" version="0.1.2+${platform}.${config}" platforms="windows-x86_64" />
   </dependency>
 
   <!-- Miscellaneous Extensions-->
-  <dependency name="omni.kit.tools.surface_instancer" linkPath="../_build/${platform}/release/exts/omni.kit.tools.surface_instancer">
+  <dependency name="omni.kit.tools.surface_instancer" linkPath="../_build/${platform}/${config}/exts/omni.kit.tools.surface_instancer">
     <package name="omni.kit.tools.surface_instancer" version="0.1.12" platforms="windows-x86_64 linux-x86_64"/>
   </dependency>
 
-  <dependency name="omni.kit.tools.mergemesh" linkPath="../_build/${platform}/release/exts/omni.kit.tools.mergemesh">
+  <dependency name="omni.kit.tools.mergemesh" linkPath="../_build/${platform}/${config}/exts/omni.kit.tools.mergemesh">
     <package name="omni.kit.tools.mergemesh" version="0.1.3" platforms="windows-x86_64 linux-x86_64"/>
   </dependency>
 
-  <dependency name="omni.blast" linkPath="../_build/${platform}/release/exts/omni.blast">
-    <package name="omni_blast" version="0.6.1-kit_101.0-234-061f4ab5-${platform}" platforms="windows-x86_64 linux-x86_64" />
+  <dependency name="omni.blast" linkPath="../_build/${platform}/${config}/exts/omni.blast-0.6.2">
+    <package name="omni_blast" version="0.6.2.local-3eab3f28-${platform}" platforms="windows-x86_64" />
+    <package name="omni_blast" version="0.6.2.local2-e3c38033-${platform}" platforms="linux-x86_64" />
   </dependency>
 </project>
 

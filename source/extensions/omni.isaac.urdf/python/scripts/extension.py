@@ -11,8 +11,6 @@ from .link_model import *
 from .. import _urdf
 from pxr import UsdGeom
 
-from omni.kit.window.filepicker import FilePickerDialog
-from omni.kit.window.content_browser import get_content_window
 
 EXTENSION_NAME = "URDF Importer"
 
@@ -66,6 +64,8 @@ class Extension(omni.ext.IExt):
         self._content_browser = None
 
     def build_ui(self):
+        from omni.kit.window.filepicker import FilePickerDialog
+        from omni.kit.window.content_browser import get_content_window
 
         self._content_browser = get_content_window()
         self._init_context_menu()
