@@ -32,7 +32,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/include", 
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/python/include/python3.6m",
+        "%{root}/_build/target-deps/python/include/python3.7m",
         "%{root}/_build/target-deps/nv_ros/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/include",

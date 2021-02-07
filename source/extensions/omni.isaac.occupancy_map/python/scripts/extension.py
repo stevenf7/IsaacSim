@@ -6,7 +6,6 @@ import omni
 from pxr import UsdGeom, Gf
 import gc
 import os
-from omni.kit.widget.filebrowser import FileBrowserItem
 from .utils import update_location, compute_coordinates, generate_image
 import weakref
 
@@ -250,6 +249,7 @@ class Extension(omni.ext.IExt):
 
         def save_file():
             from omni.kit.window.filepicker import FilePickerDialog
+            from omni.kit.widget.filebrowser import FileBrowserItem
 
             self._filepicker = None
             self._filepicker = FilePickerDialog(

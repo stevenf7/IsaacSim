@@ -10,7 +10,6 @@
 
 import carb
 import omni.kit.app
-import omni.kit.editor
 import omni.kit
 from pxr import UsdGeom, Semantics, Usd
 
@@ -100,7 +99,6 @@ Launches and configures OmniKit and exposes useful functions.
             time.sleep(0.001)  # This sleep prevents a deadlock in certain cases
             self.update()
 
-        self.editor = omni.kit.editor.get_editor_interface()
         self.timeline = omni.timeline.get_timeline_interface()
 
     def _launch_kit(self):
@@ -259,7 +257,7 @@ Launches and configures OmniKit and exposes useful functions.
 
     def get_status(self):
         """Get the status of the renderer to see if anything is loading"""
-        return self.editor.get_current_renderer_status()
+        return omni.usd.get_context().get_stage_loading_status()
 
     def is_loading(self):
         """convenience function to see if any files are being loaded
@@ -267,7 +265,7 @@ Launches and configures OmniKit and exposes useful functions.
         Returns:
             bool: True if loading, False otherwise
         """
-        time, message, loaded, loading = self.get_status()
+        message, loaded, loading = self.get_status()
         return loading > 0
 
     def is_exiting(self):

@@ -11,7 +11,7 @@ project_ext_plugin(ext, "omni.isaac.step_importer.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/stepreader/include",
-        "%{root}/_build/target-deps/python/include/python3.6m",
+        "%{root}/_build/target-deps/python/include/python3.7m",
     }
     libdirs {   
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib"

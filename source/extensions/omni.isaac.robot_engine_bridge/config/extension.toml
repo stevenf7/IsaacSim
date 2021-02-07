@@ -1,7 +1,7 @@
 display_name = "Robot Engine Bridge"
 
 [dependencies]
-"omni.kit.editor" = {}
+"omni.kit.uiapp" = {}
 "omni.graph.core" = {} # needed for fastcache
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.range_sensor" = {}

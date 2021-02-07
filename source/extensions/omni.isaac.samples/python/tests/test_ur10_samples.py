@@ -73,7 +73,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
     # After running each test
     async def tearDown(self):
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
-        while omni.kit.editor.get_editor_interface().get_current_renderer_status()[3] > 0:
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
 

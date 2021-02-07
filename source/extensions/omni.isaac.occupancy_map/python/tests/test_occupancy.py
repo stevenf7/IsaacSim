@@ -37,7 +37,7 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
-        while omni.kit.editor.get_editor_interface().get_current_renderer_status()[3] > 0:
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
         pass
 
