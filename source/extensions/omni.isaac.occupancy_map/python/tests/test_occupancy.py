@@ -30,14 +30,15 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
         self._nucleus_path = nucleus_server + "/Isaac"
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
+        await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.kit.editor.get_editor_interface().get_current_renderer_status()[3] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
-            await asyncio.sleep(1.0)
+            await omni.kit.app.get_app().next_update_async()
         pass
 
     def compute_index(self, p, scale, size, min_b):

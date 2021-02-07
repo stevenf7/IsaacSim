@@ -208,6 +208,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Make sure the stage loaded
         self.assertTrue(self._scenario is not None)
         self._scenario.create_UR10(False)
+        await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._dc.is_simulating())

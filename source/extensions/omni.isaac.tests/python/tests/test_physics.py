@@ -25,6 +25,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubeGeom = UsdGeom.Cube.Define(self._stage, cubePath)
         cubeGeom.CreateSizeAttr(100)
         cubePrim = self._stage.GetPrimAtPath(cubePath)
+        await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
         rigidBodyAPI = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
 
         omni.timeline.get_timeline_interface().play()
@@ -41,6 +42,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubeGeom = UsdGeom.Cube.Define(self._stage, cubePath)
         cubeGeom.CreateSizeAttr(100)
         cubePrim = self._stage.GetPrimAtPath(cubePath)
+        await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
         UsdPhysics.RigidBodyAPI.Apply(cubePrim)
 
         omni.timeline.get_timeline_interface().play()
@@ -69,6 +71,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubeGeom = UsdGeom.Cube.Define(self._stage, cubePath)
         cubeGeom.CreateSizeAttr(100)
         cubePrim = self._stage.GetPrimAtPath(cubePath)
+        await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
         rigidBodyAPI = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
 
         omni.timeline.get_timeline_interface().play()
@@ -101,6 +104,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubeGeom = UsdGeom.Cube.Define(self._stage, cubePath)
         cubeGeom.CreateSizeAttr(100)
         cubePrim = self._stage.GetPrimAtPath(cubePath)
+        await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
         rigidBodyAPI = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
 
         # test acceleration, velocity, position
