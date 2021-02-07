@@ -90,8 +90,10 @@ class Extension(omni.ext.IExt):
             )
             with self._window.frame:
                 with ui.VStack():
-
-                    self._selected_scenario = ui.ComboBox(0, "Select Scenario", "Stack Bins", "Fill Bin")
+                    with ui.HStack(height=0):
+                        ui.Label("Selected Scenario", width=0)
+                        ui.Spacer(width=5)
+                        self._selected_scenario = ui.ComboBox(0, "Stack Bins", "Fill Bin")
 
                     self._create_UR10_btn = ui.Button("Create Scenario", clicked_fn=self._on_environment_setup)
 
@@ -131,18 +133,16 @@ class Extension(omni.ext.IExt):
 
         done, pending = await asyncio.wait({task})
         if task not in done:
+            await omni.kit.app.get_app().next_update_async()
             return
         selected_scenario = self._selected_scenario.model.get_item_value_model().as_int
-        if not selected_scenario:
-            return
 
         self._stage = self._usd_context.get_stage()
-
-        if selected_scenario == 1:
+        if selected_scenario == 0:
             self._scenario = bin_stack.BinStack(self._dc, self._mp)
             self._viewport.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", -83.41, -126.78, -80.28, True)
-        if selected_scenario == 2:
+        if selected_scenario == 1:
             self._scenario = FillBin(self._dc, self._mp)
             self._add_new_bins_btn.text = "Drop Parts"
             self._viewport.set_camera_position("/OmniverseKit_Persp", -142.07, 284.72, 111.53, True)

@@ -33,7 +33,7 @@ class Extension(omni.ext.IExt):
         # Simple button style that grays out the button if disabled
         self._button_style = {":disabled": {"color": 0xFF000000}}
         with self._window.frame:
-            with omni.ui.VStack(style=self._button_style, width=150):
+            with omni.ui.VStack(style=self._button_style):
                 self._create_robot_btn = ui.Button("Load Robot", enabled=True)
                 self._create_robot_btn.set_clicked_fn(self._on_setup_environment)
                 self._create_robot_btn.set_tooltip("Load robot and environment")
@@ -55,17 +55,18 @@ class Extension(omni.ext.IExt):
                 self._reset_btn = ui.Button("Reset", enabled=False)
                 self._reset_btn.set_clicked_fn(self._sample.reset)
                 self._reset_btn.set_tooltip("Reset Robot to default position")
-                with ui.HStack():
-                    ui.Label("Output Directory:", width=100)
+                with ui.HStack(height=0):
+                    ui.Label("Output Directory:", width=0)
                     default_dir = os.path.join(os.getcwd(), "output.txt")
-                    self._ui_dir_name = ui.StringField(width=300)
+                    self._ui_dir_name = ui.StringField()
                     self._ui_dir_name.model.set_value(default_dir)
                     self._ui_dir_name.model.add_end_edit_fn(
                         self._sample.save_dir(self._ui_dir_name.model.get_value_as_string())
                     )
-                    ui.Spacer(width=50)
-                    ui.Label("Save Data", width=70)
-                    self._save_data_btn = ui.Button("Start Saving Data", enabled=False, width=50)
+                    ui.Spacer(width=5)
+                    ui.Label("Save Data", width=0)
+                    ui.Spacer(width=5)
+                    self._save_data_btn = ui.Button("Start Saving Data", enabled=False, width=0)
                     self._save_data_btn.set_clicked_fn(self._sample.saving_data)
 
     def _on_window(self, status):
