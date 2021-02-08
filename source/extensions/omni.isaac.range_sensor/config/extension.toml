@@ -21,6 +21,7 @@ icon = "data/icon.png"
 "omni.graph.core" ={} # needed for fastcache
 "omni.physx" = {} 
 "omni.debugdraw" = {}
+"omni.kit.window.toolbar" = {} # needed for simulation to start
 
 [[python.module]]
 name = "omni.isaac.range_sensor"
