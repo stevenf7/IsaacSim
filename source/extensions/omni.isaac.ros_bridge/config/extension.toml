@@ -1,7 +1,7 @@
 display_name = "ROS Bridge"
 
 [dependencies]
-"omni.kit.editor" = {}
+"omni.kit.uiapp" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.range_sensor" = {}
 "omni.syntheticdata" = {}

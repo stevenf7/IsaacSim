@@ -64,7 +64,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
             await omni.kit.app.get_app().next_update_async()
 
     def is_loading(self):
-        time, message, loaded, loading = omni.kit.editor.get_editor_interface().get_current_renderer_status()
+        message, loaded, loading = omni.usd.get_context().get_stage_loading_status()
         return loading > 0
 
     async def test_add_sensors(self):

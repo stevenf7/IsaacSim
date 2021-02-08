@@ -16,13 +16,12 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.editor" = {}
+"omni.kit.uiapp" = {}
+"omni.kit.menu.utils" = {}
 "omni.graph.core" ={} # needed for fastcache
 "omni.physx" = {} 
-"omni.ui" = { order = -100 }
 "omni.debugdraw" = {}
-"omni.kit.window.toolbar" = {}
-"omni.kit.test" = {order = -100}
+"omni.kit.window.toolbar" = {} # needed for simulation to start
 
 [[python.module]]
 name = "omni.isaac.range_sensor"

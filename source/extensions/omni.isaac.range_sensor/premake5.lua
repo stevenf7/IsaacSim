@@ -36,7 +36,7 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
     filter { "system:linux" }
         includedirs {
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-            "%{root}/_build/target-deps/python/include/python3.6m"
+            "%{root}/_build/target-deps/python/include/python3.7m"
         }
     filter { "system:windows" }
         libdirs {
@@ -57,28 +57,28 @@ project "test.unit.range_sensor"
             "include",
             ".",
             "%{root}/_build/target-deps/physx/include",
-            "%{root}/_build/target-deps/nv_usd/debug/include",
+            "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
             "%{root}/_build/target-deps/rtx_plugins/include",
         }
 
-    libdirs { "%{root}/_build/target-deps/nv_usd/debug/lib",
-              "%{root}/_build/target-deps/carb_sdk_plugins/_build/linux-x86_64/debug"}
+    libdirs { "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+              "%{root}/_build/target-deps/carb_sdk_plugins/_build/linux-x86_64/%{cfg.buildcfg}"}
     links {"carb"}
 
 
-    runpathdirs { "%{root}/_build/target-deps/nv_usd/debug/lib",
-	          "%{root}/_build/target-deps/carb_sdk_plugins/_build/linux-x86_64/debug" }
+    runpathdirs { "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+	          "%{root}/_build/target-deps/carb_sdk_plugins/_build/linux-x86_64/%{cfg.buildcfg}" }
     filter { "system:linux" }
             buildoptions { "-pthread" }
             links { "pthread" }
             rtti "On"
-            includedirs { "%{target_deps}/python/include/python3.6m" }
+            includedirs { "%{target_deps}/python/include/python3.7m" }
 
     filter { "system:linux", "platforms:x86_64" }
             exceptionhandling "On"
             includedirs { "%{target_deps}/nv_usd/%{config}/include/boost" }
             libdirs { "%{target_deps}/cuda/lib64" }
-            links { "boost_python36", "python3.6m", "cudart_static", "sdf", "tf", "usd", "usdUtils" }
+            links { "boost_python37", "python3.7m", "cudart_static", "sdf", "tf", "usd", "usdUtils" }
 
     files {
      	   "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/TestUSS.cpp",

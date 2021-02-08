@@ -7,14 +7,16 @@ version = "2021.1.0"
 keywords = ["experience", "app", "usd"]
 
 [dependencies]
-# Good old Editor...
-"omni.kit.editor" = { tag = "full" }
-"omni.ui" = { order = -100 }
+# The Main UI App
+"omni.kit.uiapp" = {}
+"omni.kit.renderer.core" = {}
+"omni.kit.default" = {}
 
 # Status Bar
 "omni.kit.window.status_bar" = {}
 
-"omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
+# Disable app setup for kit next transition as it was hiding some issues
+# "omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
 # "omni.kit.splash" = {} # splash interferes with headless currently, waiting for fix
 
 "omni.stats" = {}
@@ -23,6 +25,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.menu.file" = {}
 "omni.kit.menu.edit" = {}
 "omni.kit.menu.create" = {}
+
 "omni.kit.window.file" = {}
 "omni.kit.context_menu" = {}
 
@@ -30,7 +33,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.stage_templates" = {}
 
 # Animation
-"omni.kit.skelvis" = {}
+# "omni.kit.skelvis" = {}
 
 ## PhysX
 "omni.physx.bundle" = {}
@@ -43,13 +46,14 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.widget.live" = {}
 "omni.kit.window.stage" = {}
 "omni.kit.widget.layers" = {}
+"omni.kit.window.cursor" = {}
 
+"omni.kit.window.tests" = {}
 "omni.kit.window.toolbar" = {}
 
 # Viewport and Renderer
 "omni.kit.window.viewport" = {}
-"omni.renderer" = { tag = "rtx" }
-"omni.hydra.rtx" = { }
+"omni.renderer-rtx" = {}
 
 "omni.rtx.settings.core" = {} # this is the new Render Settings 2.0
 
@@ -62,6 +66,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.provide_feedback" = {}
 
 "omni.kit.material.library" = {}
+"omni.kit.window.material_graph" = {}
 
 "omni.kit.window.imageviewer" = {}
 
@@ -69,7 +74,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.filepicker" = { }
 "omni.kit.window.content_browser" = { }
 
-"omni.kit.tagging" = {order = -10 } # should be a dependency of below
+"omni.kit.tagging" = {order = -10 } # should be a dependency of below 
 "omni.kit.filebrowser_column.tags" = {}
 
 "omni.kit.window.stats" = { order = 1000 }
@@ -82,6 +87,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.usd_paths" = {}
 "omni.kit.window.preferences" = { order = 1000 } # so the menu is in the correct place
 
+"omni.kit.renderer.capture" = {}
 "omni.kit.thumbnails.usd" = {}
 "omni.kit.thumbnails.images" = {}
 
@@ -91,7 +97,6 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.property.layer" = {}
 "omni.kit.property.tagging" = {}
 
-#
 # tool
 "omni.kit.tool.asset_importer" = {}
 "omni.kit.tool.collect" = {}
@@ -99,6 +104,7 @@ keywords = ["experience", "app", "usd"]
 
 # omni graph
 "omni.graph.core" = {}
+# "omni.graph.ui" = {}
 
 [settings]
 exts."omni.kit.window.file".useNewFilePicker = true
@@ -106,6 +112,7 @@ exts."omni.kit.tool.asset_importer".useNewFilePicker = true
 exts."omni.kit.tool.collect".useNewFilePicker = true
 exts."omni.kit.widget.layers".useNewFilePicker = true
 exts."omni.kit.renderer.core".imgui.enableMips = true
+app.content.emptyStageOnStart = true
 
 [settings.exts."omni.kit.registry.nucleus"]
 registries = [
@@ -125,16 +132,17 @@ dev_build = false
 
 [settings.app.window]
 title = "Isaac Sim"
+hideUi = false
 
-width = 1700
-height = 900
+# width = 1700
+# height = 900
 # x = -1
 # y = -1
 
 # Fonts
-[setting.app.font]
-file = "${fonts}/OpenSans-SemiBold.ttf"
-size = 16
+# [setting.app.font]
+# file = "${fonts}/OpenSans-SemiBold.ttf"
+# size = 16
 
 # [setting.app.runLoops]
 # main.rateLimitEnabled = false
@@ -148,8 +156,9 @@ featuredExts = []
 
 
 [settings]
-# MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you
+# MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you 
 # only want to use a single GPU on your MGPU system
+# False for Isaac Sim
 renderer.multiGpu.enabled = false
 
 # Basic Kit App

@@ -16,11 +16,11 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.editor" = {}
+"omni.kit.uiapp" = {}
 "omni.physx" = {} 
 "omni.debugdraw" = {}
 "omni.isaac.utils" = {}
-"omni.kit.window.filepicker" = {}
+# "omni.kit.window.filepicker" = {}
 
 [[python.module]]
 name = "omni.isaac.occupancy_map"

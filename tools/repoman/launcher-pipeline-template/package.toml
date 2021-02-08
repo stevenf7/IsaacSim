@@ -8,10 +8,10 @@ name = "Create"
 url = "${package_url_windows}"
 location = "$${base}"
 
-# [[package.linux-x86_64.packman]]
-# name = "Create"
-# url = ""
-# location = "$${base}"
+[[package.linux-x86_64.packman]]
+name = "Create"
+url = "${package_url_linux}"
+location = "$${base}"
 
 [images]
 name = "Create-Daily-Images"

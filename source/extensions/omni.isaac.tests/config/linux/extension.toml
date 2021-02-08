@@ -1,7 +1,7 @@
 display_name = "Isaac Tests"
 
 [dependencies]
-"omni.kit.editor" = {}
+"omni.kit.uiapp" = {}
 "omni.physx" = {}
 "omni.kit.window.tests" = {}
 "omni.kit.window.toolbar" = {} # needed for simulation to happen

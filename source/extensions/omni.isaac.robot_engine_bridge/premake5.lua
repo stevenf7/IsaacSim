@@ -25,7 +25,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
         "%{root}/source/extensions/omni.isaac.utils", 
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/python/include/python3.6m",
+        "%{root}/_build/target-deps/python/include/python3.7m",
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/pxshared/include",
         "%{root}/_build/target-deps/isaac_engine/include",

@@ -39,7 +39,7 @@ description = [
 
 [[links]]
 title = "Release Notes"
-url = "https://docs.omniverse.nvidia.com/app_create/app_create/release_notes.html"
+url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/blob/daily/CHANGELOG.md"
 [[links]]
 title = "Documentation"
 url = "https://docs.omniverse.nvidia.com/app_create/app_create/overview.html"

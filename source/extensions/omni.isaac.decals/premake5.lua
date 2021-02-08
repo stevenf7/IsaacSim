@@ -29,7 +29,7 @@ project_ext_plugin(ext, "omni.isaac.decals.plugin")
     }
 
     filter { "system:linux" }
-        includedirs { "%{root}/_build/target-deps/python/include/python3.6m" }
+        includedirs { "%{root}/_build/target-deps/python/include/python3.7m" }
     filter {}
     
 -- Python Bindings for Carobnite Plugin

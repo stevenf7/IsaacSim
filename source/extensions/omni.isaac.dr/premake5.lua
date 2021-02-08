@@ -31,7 +31,7 @@ project_ext_plugin(ext, "omni.isaac.dr.plugin")
 
     filter { "system:linux" }
         buildoptions { "-pthread" }
-        includedirs { "%{root}/_build/target-deps/python/include/python3.6m" }
+        includedirs { "%{root}/_build/target-deps/python/include/python3.7m" }
     filter {}
     
 -- Python Bindings for Carobnite Plugin
