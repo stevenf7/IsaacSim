@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import os
 import asyncio
 
 import carb
@@ -66,7 +67,8 @@ class CreateLauncherExtension(omni.ext.IExt):
         if not app_folder:
             app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
         if not app_version:
-            app_version = open(f"{app_folder}/../VERSION").read()
+            app_launch_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
+            app_version = open(f"{app_launch_folder}/VERSION").read()
 
         if app_version:
             app_version, _ = app_version.split("+")

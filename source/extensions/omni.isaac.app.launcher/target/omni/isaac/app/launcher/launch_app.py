@@ -1,8 +1,10 @@
 import os
+import sys
 from .settings import DEFAULT_APP_SETTING, SHOW_CONSOLE_SETTING
 
 from typing import Dict, Any
 import carb.settings
+import carb.tokens
 
 import omni.kit.app
 
@@ -22,7 +24,12 @@ def launch_app(app_id: str, app_become_new_default=False, close_on_launch=False)
     if app_folder == "":
         app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
 
-    launch_args = [f"{app_folder}/../{app_id}.bat"]
+    script_extension = "bat"
+    if not sys.platform == "win32":
+        script_extension = "sh"
+
+    app_launch_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
+    launch_args = [f"{app_launch_folder}/{app_id}.{script_extension}"]
 
     kwargs: Dict[str, Any] = {"close_fds": False}
     if platform.system().lower() == "windows":

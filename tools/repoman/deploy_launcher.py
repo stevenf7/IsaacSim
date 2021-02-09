@@ -11,9 +11,32 @@ from string import Template
 from pathlib import Path
 
 import omni.repo.man
+import omni.repo.package
 import packmanapi
 
 logger = logging.getLogger(os.path.basename(__file__))
+
+
+class Version:
+    def __init__(self):
+        self.core = ""
+        self.prerelease = ""
+        self.major = ""
+        self.minor = ""
+        self.patch = ""
+        self.pretag = ""
+        self.prebuild = ""
+
+
+def parse_version(full_version: Version):
+    parsed_version = Version()
+    if "-" in full_version:
+        parsed_version.core, parsed_version.prerelease = full_version.split("-", maxsplit=1)
+        parsed_version.major, parsed_version.minor, parsed_version.patch = parsed_version.core.split(".", maxsplit=2)
+        parsed_version.pretag, parsed_version.prebuild = parsed_version.prerelease.split(".", maxsplit=1)
+    else:
+        parsed_version.major, parsed_version.minor, parsed_version.patch = full_version.split(".", maxsplit=2)
+    return parsed_version
 
 
 def call_git_safe(root, args):
@@ -58,13 +81,35 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
 
         # publish first
         if not options.test_run:
-            packages, labels = omni.repo.man.publish.get_packages_and_labels("*", repo_folders["packages"], None)
+            packages, labels = omni.repo.man.publish.get_packages_and_labels(
+                "isaac_sim-launcher*", repo_folders["packages"], None
+            )
             if len(packages) == 0:
                 logger.error("No packages found.")
                 sys.exit(-1)
             for package in packages:
-                print(f"Publishing Package {package}")
 
+                if package.lower().endswith((".7z")):
+                    print(f"Converting package {package} to a zip file.")
+                    with omni.repo.man.TemporaryDirectory() as temp_dir:
+                        target_dir = temp_dir
+                        logger.info("TempDir: %s" % target_dir)
+                        logger.info("NOTE: File attributes are not preserved when converting package on Windows.")
+                        try:
+                            packmanapi.extract_archive7z_to_folder(package, target_dir)
+                            new_package = f"{os.path.splitext(package)[0]}.zip"
+                            packmanapi.create_archivezip_from_folder(target_dir, new_package)
+                            omni.repo.package.try_remove(package)
+                            package = new_package
+                        except:
+                            print(f"Error converting {package}.")
+                            sys.exit(-1)
+
+                if not package.lower().endswith((".zip")):
+                    print(f"Invalid package {package}. Need to be a zip file.")
+                    sys.exit(-1)
+
+                print(f"Publishing Package {package}")
                 remote = "cloudfront"
                 try:
                     packmanapi.push(package, remotes=[remote], force=False)
@@ -88,6 +133,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             logger.info(f"Working in temp folder: {temp_dir}")
 
             version = open(f"{root}/VERSION.md").readline().strip()
+            parsed_version = parse_version(version)
 
             pipeline_repo = "pipeline_repo"
 
@@ -100,8 +146,12 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             call_git_safe(cloned_repo_dir, ["config", "user.name", '"Team City"'])
 
             # create branch
-            branch_name = f"INTEG-{version}"
+            branch_name = f"integ-{parsed_version.core}-{parsed_version.pretag}"
             call_git_safe(cloned_repo_dir, ["checkout", "-b", branch_name])
+            try:
+                call_git_safe(cloned_repo_dir, ["pull", git_url, branch_name])
+            except:
+                print(f"This is fine. The branch is new and have not been pushed yet.")
 
             # clean all files and copy ours from template folder
             for p in glob.glob(cloned_repo_dir + "/*"):

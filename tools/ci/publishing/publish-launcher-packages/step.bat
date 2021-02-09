@@ -1,6 +1,7 @@
 @echo off
 
-call "%~dp0..\..\..\publish_launcher_package.bat"
+:: NOTE: File attributes are not preserved when converting package on Windows.
+call "%~dp0..\..\..\..\repo.bat" deploy_launcher
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 

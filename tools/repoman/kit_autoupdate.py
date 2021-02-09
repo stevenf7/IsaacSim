@@ -100,7 +100,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 changelog.write_log(new_version, start_commit, end_commit, commit_log, changelog_path)
                 print("commit log", commit_log)
 
-                slack_notifier.post_extension_published("Create", new_version, commit_log)
+                slack_notifier.post_extension_published("Isaac Sim", new_version, commit_log)
 
         if not options.skip_commit:
             git_utils.call_git_safe(root, ["add", "-A"])

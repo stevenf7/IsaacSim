@@ -180,7 +180,7 @@ group "apps"
     end
 
     define_local_experience("isaac-sim")
-    -- define_local_experience("isaac-sim.launcher") # TODO
+    define_local_experience("isaac-sim.launcher")
     -- We reuse the isaac sim config and add additional args to it
     define_local_experience("isaac-sim.headless", "isaac-sim", "--no-window --/app/livestream/enabled=1 --/app/livestream/allowResize=1" )
 
