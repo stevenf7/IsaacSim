@@ -52,8 +52,8 @@ class CreateSetupExtension(omni.ext.IExt):
         # icon (windows only!)
         if sys.platform == "win32":
             ext_manager = omni.kit.app.get_app().get_extension_manager()
-            ext_manager.set_extension_enabled_immediate("omni.kit.utility.icon_modifier", True)
-            self._setup_icon(f"{ext_manager.get_extension_path(ext_id)}/data/nvidia-omniverse-create.ico")
+            # ext_manager.set_extension_enabled_immediate("omni.kit.utility.icon_modifier", True)
+            # self._setup_icon(f"{ext_manager.get_extension_path(ext_id)}/data/nvidia-omniverse-create.ico")
 
         # setup some imgui Style overide
         imgui = _imgui.acquire_imgui()

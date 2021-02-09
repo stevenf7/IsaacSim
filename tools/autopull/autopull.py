@@ -33,4 +33,5 @@ if __name__ == "__main__":
         os.path.join(script_dir, "../../deps/kit-sdk.packman.xml"),
         platform=get_host_platform(),
         include_tags=[options.config],
+        tokens={"config": options.config},
     )

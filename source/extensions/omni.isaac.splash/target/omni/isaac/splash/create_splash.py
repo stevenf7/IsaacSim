@@ -37,7 +37,7 @@ class CreateSplashExtension(omni.ext.IExt):
         self._window = ui.Window("Splash", style={"Window": {"padding": 0}})
         with self._window.frame:
             with ui.VStack(style={"padding": 0}):
-                splash_path = f"{extension_path}/data/create_splash_screen@1x.png"
+                splash_path = f"{extension_path}/data/isaac_splash_screen_daily@1x.png"
                 ui.Image(splash_path, fill_policy=ui.FillPolicy.PRESERVE_ASPECT_FIT, alignment=ui.Alignment.CENTER)
 
         self.__build_task = asyncio.ensure_future(self.__build_layout())

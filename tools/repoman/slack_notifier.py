@@ -21,8 +21,8 @@ from typing import List
 # (you need to add an "incoming webhook")
 SLACK_HOST = "slack.com"
 SLACK_HOOK_HOST = "hooks.slack.com"
-# this is tied to a specific channel, in this case #omni-create-changelog-test"
-SLACK_HOOK_URL = "/services/T04SYRAP3/B01L25CGL2C/5nVQx5YRTAkYaxW58I2x7jRT"
+# this is tied to a specific channel, in this case #ct-omni-isaacsim-changelog
+SLACK_HOOK_URL = "/services/T04SYRAP3/B01M48YHV4Z/sLuEg1fLu2qHhUbAbvML4Hfh"
 
 
 def _post(host, url, json=None, headers=None):

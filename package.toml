@@ -112,3 +112,23 @@ files = [
     ["PACKAGE-INFO.yaml"],
     ["VERSION.md"],
 ]
+
+
+########################################################################################################################
+# launcher images package
+########################################################################################################################
+
+[isaac_sim-pipeline-images-dl]
+files = [
+    ["tools/repoman/launcher-images/dl/**",""],
+]
+
+[isaac_sim-pipeline-images-rc]
+files = [
+    ["tools/repoman/launcher-images/rc/**",""],
+]
+
+[isaac_sim-pipeline-images-prod]
+files = [
+    ["tools/repoman/launcher-images/prod/**",""],
+]

@@ -1,18 +1,19 @@
-name = "Create Daily"
-slug = "create-daily"
+name = "Isaac Sim Daily"
+slug = "isaac_sim-daily"
 kind = "app"
 version = "${version}"
 
-[[package.windows-x86_64.packman]]
-name = "Create"
-url = "${package_url_windows}"
-location = "$${base}"
+# [[package.windows-x86_64.packman]]
+# name = "Isaac Sim"
+# url = "${package_url_windows}"
+# location = "$${base}"
 
 [[package.linux-x86_64.packman]]
-name = "Create"
+name = "Isaac Sim"
 url = "${package_url_linux}"
 location = "$${base}"
 
 [images]
-name = "Create-Daily-Images"
-url = "https://d4i3qtqj3r0z5.cloudfront.net/create-launcher-images%402021.1.0-dl.1.zip"
+name = "Isaac-Sim-Daily-Images"
+url = "https://d4i3qtqj3r0z5.cloudfront.net/isaac_sim-pipeline-images-dl%402021.1.0-dl.9%2Bpackaging.0.8cf9f635.gitlab.windows-x86_64.zip"
+
