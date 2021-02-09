@@ -3,7 +3,7 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.dr.plugin")
-    disablewarnings {"error=unused-variable"} 
+    
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/dr/**")
     includedirs {
@@ -30,6 +30,7 @@ project_ext_plugin(ext, "omni.isaac.dr.plugin")
     }
 
     filter { "system:linux" }
+        disablewarnings {"error=unused-variable"} 
         buildoptions { "-pthread" }
         includedirs { "%{root}/_build/target-deps/python/include/python3.7m" }
     filter {}
