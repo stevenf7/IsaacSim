@@ -175,6 +175,7 @@ path = "${test_root}/_build/${platform}/${config}"
   exclude =[]
   args = []
   tc_report_enabled = false
+  timeout = 240
 
 
 # Catch2 Unit Tests
