@@ -18,7 +18,8 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
-"omni.isaac.dynamic_control" = {}
+"omni.kit.window.toolbar" = {} # Needed for simulation to occur
+"omni.kit.numpy.common" = {}
 
 [[python.modules]]
 name = "omni.isaac.contact_sensor"
