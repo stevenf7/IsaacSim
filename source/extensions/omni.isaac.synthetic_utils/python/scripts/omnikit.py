@@ -106,7 +106,8 @@ Launches and configures OmniKit and exposes useful functions.
         async def setup():
             await omni.usd.get_context().new_stage_async()
             self.carb_settings = carb.settings.acquire_settings_interface()
-            self.setup_renderer()
+            self.setup_renderer(mode="default")  # set rtx-defaults settings
+            self.setup_renderer(mode="non-default")  # set rtx settings
 
         return asyncio.ensure_future(setup())
 
@@ -279,26 +280,27 @@ Launches and configures OmniKit and exposes useful functions.
         """Allow use of omni.kit.commands interface"""
         omni.kit.commands.execute(*args, **kwargs)
 
-    def setup_renderer(self):
+    def setup_renderer(self, mode="non-default"):
+        rtx_mode = "/rtx-defaults" if mode == "default" else "/rtx"
         """Reset render settings to those in config. This should be used in case a new stage is opened and the desired config needs to be re-applied"""
-        self.set_setting("/rtx-defaults/rendermode", self.config["renderer"])
+        self.set_setting(rtx_mode + "/rendermode", self.config["renderer"])
         # Raytrace mode settings
-        self.set_setting("/rtx-defaults/post/aa/op", self.config["anti_aliasing"])
+        self.set_setting(rtx_mode + "/post/aa/op", self.config["anti_aliasing"])
         # Pathtrace mode settings
-        self.set_setting("/rtx-defaults/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
-        self.set_setting("/rtx-defaults/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"])
-        self.set_setting("/rtx-defaults/pathtracing/clampSpp", self.config["samples_per_pixel_per_frame"])
-        self.set_setting("/rtx-defaults/pathtracing/maxBounces", self.config["max_bounces"])
+        self.set_setting(rtx_mode + "/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
+        self.set_setting(rtx_mode + "/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"])
+        self.set_setting(rtx_mode + "/pathtracing/clampSpp", self.config["samples_per_pixel_per_frame"])
+        self.set_setting(rtx_mode + "/pathtracing/maxBounces", self.config["max_bounces"])
         self.set_setting(
-            "/rtx-defaults/pathtracing/maxSpecularAndTransmissionBounces",
+            rtx_mode + "/pathtracing/maxSpecularAndTransmissionBounces",
             self.config["max_specular_transmission_bounces"],
         )
-        self.set_setting("/rtx-defaults/pathtracing/maxVolumeBounces", self.config["max_volume_bounces"])
-        self.set_setting("/rtx-defaults/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
-        self.set_setting("/rtx-defaults/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"])
+        self.set_setting(rtx_mode + "/pathtracing/maxVolumeBounces", self.config["max_volume_bounces"])
+        self.set_setting(rtx_mode + "/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
+        self.set_setting(rtx_mode + "/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"])
 
         # Experimental, forces kit to not render until all USD files are loaded
-        self.set_setting("/rtx-defaults/materialDb/syncLoads", self.config["sync_loads"])
+        self.set_setting(rtx_mode + "/materialDb/syncLoads", self.config["sync_loads"])
         self.set_setting("/omni.kit.plugin/syncUsdLoads", self.config["sync_loads"])
 
     def create_prim(
