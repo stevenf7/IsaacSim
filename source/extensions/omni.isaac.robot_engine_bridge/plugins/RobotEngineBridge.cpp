@@ -54,13 +54,15 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
                       carb::syntheticdata::SyntheticData,
                       carb::sensors::Sensors,
+                      carb::settings::ISettings,
                       carb::tasking::ITasking,
                       carb::fastcache::FastCache,
                       omni::kit::IStageUpdate,
                       omni::renderer::IDebugDraw,
                       omni::physx::IPhysx,
                       omni::isaac::dynamic_control::DynamicControl,
-                      omni::isaac::range_sensor::LidarSensorInterface)
+                      omni::isaac::range_sensor::LidarSensorInterface,
+                      omni::isaac::range_sensor::UltrasonicSensorInterface)
 
 // private stuff
 namespace
