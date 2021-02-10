@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -657,9 +657,10 @@ PYBIND11_MODULE(_dynamic_control, m)
             }));
 
     // numpy dtypes
-    PYBIND11_NUMPY_DTYPE(carb::Float2, x, y);
-    PYBIND11_NUMPY_DTYPE(carb::Float3, x, y, z);
-    PYBIND11_NUMPY_DTYPE(carb::Float4, x, y, z, w);
+    //  carb types are imported from kit now
+    // PYBIND11_NUMPY_DTYPE(carb::Float2, x, y);
+    // PYBIND11_NUMPY_DTYPE(carb::Float3, x, y, z);
+    // PYBIND11_NUMPY_DTYPE(carb::Float4, x, y, z, w);
     PYBIND11_NUMPY_DTYPE(DcTransform, p, r);
     PYBIND11_NUMPY_DTYPE(DcVelocity, linear, angular);
     PYBIND11_NUMPY_DTYPE(DcRigidBodyState, pose, vel);
