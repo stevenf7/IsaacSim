@@ -12,6 +12,8 @@ class DRMenu:
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = ui.Window("Domain Randomizer", dockPreference=omni.ui.DockPreference.LEFT_BOTTOM)
+        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
+        self._window.dock_order = 4
         self._dr = domain_randomizer_interface
         self.num_components = 9
 
