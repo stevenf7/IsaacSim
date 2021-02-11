@@ -45,7 +45,10 @@ const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.motion_planning.pl
                                                   "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
 
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::motion_planning::MotionPlanning)
-CARB_PLUGIN_IMPL_DEPS(omni::isaac::dynamic_control::DynamicControl, omni::kit::IStageUpdate, carb::tasking::ITasking)
+CARB_PLUGIN_IMPL_DEPS(omni::isaac::dynamic_control::DynamicControl,
+                      omni::kit::IStageUpdate,
+                      carb::tasking::ITasking,
+                      omni::physx::IPhysx)
 
 // private stuff
 namespace

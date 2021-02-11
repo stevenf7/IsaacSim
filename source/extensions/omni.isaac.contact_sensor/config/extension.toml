@@ -19,6 +19,7 @@ icon = "data/icon.png"
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
 "omni.kit.window.toolbar" = {} # Needed for simulation to occur
+"omni.graph.core" = {}
 "omni.kit.numpy.common" = {}
 
 [[python.modules]]

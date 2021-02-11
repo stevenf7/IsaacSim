@@ -26,7 +26,7 @@ async def simulate(seconds, steps_per_sec=60):
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
-    def createRigidCube(self, boxActorPath, mass, scale, position, rotation, color):
+    async def createRigidCube(self, boxActorPath, mass, scale, position, rotation, color):
         p = Gf.Vec3f(position[0], position[1], position[2])
         orientation = Gf.Quatf(rotation[3], rotation[0], rotation[1], rotation[2])
         color = Gf.Vec3f(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0)
@@ -40,17 +40,18 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubeGeom.AddOrientOp().Set(orientation)
         cubeGeom.AddScaleOp().Set(scale)
         cubeGeom.CreateDisplayColorAttr().Set([color])
-
+        await omni.kit.app.get_app().next_update_async()
         UsdPhysics.CollisionAPI.Apply(cubePrim)
         if mass > 0:
             massAPI = UsdPhysics.MassAPI.Apply(cubePrim)
             massAPI.CreateMassAttr(mass)
         UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+        await omni.kit.app.get_app().next_update_async()
         UsdPhysics.CollisionAPI(cubePrim)
         print(cubePrim.GetPath().pathString)
 
     # Helper for setting up the physics stage
-    def setup_physics(self, box1_props):
+    async def setup_physics(self, box1_props):
         # Set Up Physics scene
 
         UsdGeom.SetStageUpAxis(self.stage, UsdGeom.Tokens.z)
@@ -73,9 +74,9 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Create two cubes and set them to be rigid bodies
 
         # box0
-        self.createRigidCube(*self.box0_props)
+        await self.createRigidCube(*self.box0_props)
         # Box1
-        self.createRigidCube(*box1_props)
+        await self.createRigidCube(*box1_props)
 
         # d6FixedJoint = UsdPhysics.Joint.Define(self.stage, "/box0/d6FixedJoint")
         # d6FixedJoint.CreateBody0Rel().SetTargets(["/box0"])
@@ -132,7 +133,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_initialize_surface_gripper(self):
 
-        self.setup_physics(self.box1_props)
+        await self.setup_physics(self.box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
         self._timeline.play()
@@ -147,7 +148,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_close_surface_gripper(self):
 
-        self.setup_physics(self.box1_props)
+        await self.setup_physics(self.box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
         self._timeline.play()
@@ -240,7 +241,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.box0_props[3] = [-5, 0, 5]
         box1_props = [self.box1, 10.0, [0.1, 0.1, 0.1], [6, 0, 5], [0, 0, 0, 1], [255, 80, 80]]
 
-        self.setup_physics(box1_props)
+        await self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
         self._timeline.play()
@@ -300,7 +301,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         box1_props = [self.box1, 1.0, [0.1, 0.1, 0.1], [8, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
 
-        self.setup_physics(box1_props)
+        await self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
         self._timeline.play()
@@ -361,7 +362,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         box1_props = [self.box1, 10.0, [0.1, 0.1, 0.02], [6, 0, 200.5], [0, 0, 0, 1], [255, 80, 80]]
 
-        self.setup_physics(box1_props)
+        await self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
         self._timeline.play()
@@ -400,7 +401,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         box1_props = [self.box1, 10.0, [0.1, 0.1, 0.1], [6, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
 
-        self.setup_physics(box1_props)
+        await self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
         self._timeline.play()
@@ -450,7 +451,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         box1_props = [self.box1, 10.0, [0.1, 0.1, 0.1], [6, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
 
-        self.setup_physics(box1_props)
+        await self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
         self._timeline.play()

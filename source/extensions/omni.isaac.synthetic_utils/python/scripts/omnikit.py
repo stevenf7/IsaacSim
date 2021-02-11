@@ -101,6 +101,22 @@ Launches and configures OmniKit and exposes useful functions.
 
         self.timeline = omni.timeline.get_timeline_interface()
 
+        # Dock windows  if they exist
+        main_dockspace = omni.ui.Workspace.get_window("DockSpace")
+
+        def dock_window(space, name, location):
+            window = omni.ui.Workspace.get_window(name)
+            if window and space:
+                window.dock_in(space, location)
+            return window
+
+        dock_window(main_dockspace, "Viewport", omni.ui.DockPosition.TOP)
+        sensors = dock_window(main_dockspace, "Synthetic Data Sensors", omni.ui.DockPosition.BOTTOM)
+        dock_window(sensors, "Robot Engine Bridge", omni.ui.DockPosition.SAME)
+        dock_window(sensors, "Domain Randomizer", omni.ui.DockPosition.SAME)
+        prop = dock_window(main_dockspace, "Property", omni.ui.DockPosition.RIGHT)
+        dock_window(prop, "RTX Settings", omni.ui.DockPosition.SAME)
+
     def _launch_kit(self):
         # Set up the renderer
         async def setup():
