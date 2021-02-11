@@ -60,6 +60,7 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
     # enable following target, check that we reached it
     async def test_follow(self):
         self._sample.create_robot()
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await simulate(1)
         self._sample.follow_target()
@@ -72,6 +73,7 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
     # enable following target, check that we reached it
     async def test_gripper(self):
         self._sample.create_robot()
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await simulate(1)
         left, right = self._sample.gripper_state()
@@ -91,6 +93,7 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_obstacle(self):
         self._sample.create_robot()
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         self._sample.follow_target()
         await simulate(1)
@@ -122,6 +125,7 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_data_collection(self):
         self._sample.create_robot()
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         self._sample.follow_target()
         await simulate(4)
@@ -145,6 +149,7 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Run all functions with simulation enabled
     async def test_simulation(self):
         self._sample.create_robot()
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await simulate(1)
         self._sample.follow_target()

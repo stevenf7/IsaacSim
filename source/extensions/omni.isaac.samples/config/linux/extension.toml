@@ -18,6 +18,7 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
+"omni.graph.core" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_planning" = {version="0.1.2"}
 "omni.isaac.utils" = {}

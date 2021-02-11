@@ -26,6 +26,7 @@ from omni.isaac.utils.scripts.scene_utils import set_translate, set_up_z_axis, s
 
 import numpy as np
 import os
+import asyncio
 
 
 def create_prim_from_usd(stage, prim_env_path, prim_usd_path, location):
@@ -173,9 +174,14 @@ class RMPSample:
             self._block_geom.CreateDisplayColorAttr().Set([obstacle_color])
             self._block_prim = self._stage.GetPrimAtPath(self._block_path)
 
-            # make this obstacle a rigid body with physics and collision properties
-            UsdPhysics.RigidBodyAPI.Apply(self._block_prim)
-            UsdPhysics.CollisionAPI.Apply(self._block_prim)
+            async def setup_block_physics():
+                await omni.kit.app.get_app().next_update_async()
+                # make this obstacle a rigid body with physics and collision properties
+                UsdPhysics.RigidBodyAPI.Apply(self._block_prim)
+                await omni.kit.app.get_app().next_update_async()
+                UsdPhysics.CollisionAPI.Apply(self._block_prim)
+
+            asyncio.ensure_future(setup_block_physics())
 
         self._block_prim = self._stage.GetPrimAtPath(self._block_path)
         # set the block as an obstacle in RMP
