@@ -23,6 +23,10 @@ public = false
 name = "omni.isaac.robot_engine_bridge.tests"
 public = false
 
+[[python.module]]
+name = "omni.isaac.robot_engine_bridge.scripts.samples.vehicle_control"
+public = false
+
 [[native.plugins]]
 path = "bin/*.plugin"
 recursive = false
