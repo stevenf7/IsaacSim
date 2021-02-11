@@ -49,6 +49,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         import_config.import_inertia_tensor = True
         omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        await omni.kit.app.get_app().next_update_async()
 
         prim = stage.GetPrimAtPath("/test_basic")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
@@ -88,6 +89,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
         import_config.merge_fixed_joints = True
         omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        await omni.kit.app.get_app().next_update_async()
 
         # check if object is there
         prim = stage.GetPrimAtPath("/test_advanced")
