@@ -1,5 +1,5 @@
 <project toolsVersion="5.0">
   <dependency name="kit_sdk_${config}" linkPath="../_build/kit_${config}" tags="${config}">
-    <package name="omniverse-kit" version="101.0+master.27179.0ed41631.teamcity.${platform}.${config}"/>
+    <package name="omniverse-kit" version="101.0+master.27846.3ef2b3ab.teamcity.${platform}.${config}"/>
   </dependency>
 </project>
