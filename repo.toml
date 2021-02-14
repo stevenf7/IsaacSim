@@ -191,9 +191,9 @@ path = "${test_root}/_build/${platform}/${config}"
   [[repo_test.suites.pythontests.group]]
   include = ["tests-*${shell_ext}"]
   exclude =[]
-  args = []
+  args = ["--portable-root ${test_root}/_build/portable_root"]
   tc_report_enabled = false
-  timeout = 240
+  timeout = 480
 
 
 # Catch2 Unit Tests
