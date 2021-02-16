@@ -160,7 +160,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
                 await omni.kit.app.get_app().next_update_async()
                 self.assertTrue(self._dc.is_simulating())
                 self._scenario.step(self.time_step)
-            self.assertLess(timeout, timeout_max)
+            self.assertLessEqual(timeout, timeout_max)
             timeout = 0
             if self.current_state == bin_stack.SM_states.ATTACH and stop_when_attached:
                 await omni.kit.app.get_app().next_update_async()

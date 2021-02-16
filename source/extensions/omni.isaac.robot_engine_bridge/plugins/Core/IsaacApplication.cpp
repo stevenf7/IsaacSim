@@ -172,7 +172,11 @@ isaac_error_t IsaacApplication::destroy()
     {
         component.second.get()->setAppHandle(mAppHandle);
     }
-    mSceneLoaderComponent->setAppHandle(mAppHandle);
+    // If we destroy before attaching to a stage we never initialized the scene loader component
+    if (mSceneLoaderComponent)
+    {
+        mSceneLoaderComponent->setAppHandle(mAppHandle);
+    }
     return isaac_error_t::isaac_error_success;
 }
 

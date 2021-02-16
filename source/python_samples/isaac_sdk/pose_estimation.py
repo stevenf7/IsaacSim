@@ -268,7 +268,7 @@ class DualCameraSample:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate Occluded and Unoccluded data")
     parser.add_argument("--test", action="store_true")
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
     sample = DualCameraSample()
     # On start if state creation was successful
     if sample.create_stage():

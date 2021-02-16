@@ -5,7 +5,7 @@ from omni.isaac.synthetic_utils import OmniKitHelper
 CONFIG = {
     "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
     "renderer": "RayTracedLighting",
-    "headless": False,
+    "headless": True,
 }
 
 if __name__ == "__main__":

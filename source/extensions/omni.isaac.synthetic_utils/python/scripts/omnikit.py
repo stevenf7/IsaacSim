@@ -18,7 +18,7 @@ import sys
 import time
 import atexit
 import asyncio
-
+import argparse
 
 DEFAULT_CONFIG = {
     "width": 1024,
@@ -91,15 +91,21 @@ Launches and configures OmniKit and exposes useful functions.
         self.last_update_t = time.time()
         self.app = omni.kit.app.get_app()
         self.kit_settings = None
-        setup_future = self._launch_kit()
         self._start_app()
+        # setup_future = self._launch_kit()
         self.loop_runner = _loop.acquire_loop_interface()
-
-        while self.app.is_running() and not setup_future.done():
-            time.sleep(0.001)  # This sleep prevents a deadlock in certain cases
-            self.update()
+        self.carb_settings = carb.settings.acquire_settings_interface()
+        self.setup_renderer(mode="default")  # set rtx-defaults settings
+        self.setup_renderer(mode="non-default")  # set rtx settings
 
         self.timeline = omni.timeline.get_timeline_interface()
+
+        # Wait for new stage to open
+        new_stage_task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
+
+        while not new_stage_task.done():
+            time.sleep(0.001)  # This sleep prevents a deadlock in certain cases
+            self.update()
 
         # Dock windows  if they exist
         main_dockspace = omni.ui.Workspace.get_window("DockSpace")
@@ -116,16 +122,6 @@ Launches and configures OmniKit and exposes useful functions.
         dock_window(sensors, "Domain Randomizer", omni.ui.DockPosition.SAME)
         prop = dock_window(main_dockspace, "Property", omni.ui.DockPosition.RIGHT)
         dock_window(prop, "RTX Settings", omni.ui.DockPosition.SAME)
-
-    def _launch_kit(self):
-        # Set up the renderer
-        async def setup():
-            await omni.usd.get_context().new_stage_async()
-            self.carb_settings = carb.settings.acquire_settings_interface()
-            self.setup_renderer(mode="default")  # set rtx-defaults settings
-            self.setup_renderer(mode="non-default")  # set rtx settings
-
-        return asyncio.ensure_future(setup())
 
     def _start_app(self):
         args = [
@@ -152,6 +148,15 @@ Launches and configures OmniKit and exposes useful functions.
             # args.append("--/app/window/hideUi=true")
         if self.config.get("active_gpu"):
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
+        # parse any extra command line args here
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--portable-root")
+        parsed_args, unknown_args = parser.parse_known_args()
+        if parsed_args.portable_root is not None:
+            args.append(f"--portable-root")
+            args.append(f"{parsed_args.portable_root}")
+        else:
+            args.append(f"--portable")
         self.app.startup("kit", os.environ["CARB_APP_PATH"], args)
 
     def __del__(self):
@@ -368,31 +373,3 @@ Launches and configures OmniKit and exposes useful functions.
         rootLayer.SetPermissionToEdit(True)
         with Usd.EditContext(stage, rootLayer):
             UsdGeom.SetStageUpAxis(stage, axis)
-
-
-if __name__ == "__main__":
-    # Example usage, with step size test
-    kit = OmniKitHelper()
-
-    stage = kit.get_stage()
-    cube = UsdGeom.Cube.Define(stage, "/World/cube")
-    UsdGeom.XformCommonAPI(cube).SetScale([100, 100, 100])
-    # Create callbacks to print both editor and physics
-
-    def editor_update(e: carb.events.IEvent):
-        dt = e.payload["dt"]
-        print("kit update step:", dt, "seconds")
-
-    def physics_update(dt):
-        print("physics update step:", dt, "seconds")
-
-    kit.play()
-    update_sub = kit.app.get_update_event_stream().create_subscription_to_pop(editor_update)
-    physics_sub = omni.physx._physx.acquire_physx_interface().subscribe_physics_step_events(physics_update)
-    kit.update(1.0)
-    kit.update(2.0)
-    kit.update(1.0 / 60.0)
-    kit.update(1.0)
-    update_sub = None
-    physics_sub = None
-    kit.stop()

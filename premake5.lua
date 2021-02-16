@@ -231,7 +231,9 @@ repo_build.prebuild_link {
 }
 
 group "python_samples"
+    python_sample_test("tests-python.core.app_framework", "core/app_framework.py")
     python_sample_test("tests-python.simple.time_stepping", "simple/time_stepping.py")
     python_sample_test("tests-python.simple.urdf_import", "simple/urdf_import.py")
     python_sample_test("tests-python.simple.franka_articulation", "simple/franka_articulation.py")
+    python_sample_test("tests-python.simple.change_resolution", "simple/change_resolution.py")
     python_sample_test("tests-python.isaac_sdk.pose_estimation", "isaac_sdk/pose_estimation.py", "--test")
