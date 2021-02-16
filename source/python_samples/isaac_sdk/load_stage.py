@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Usd Load sample")
     parser.add_argument("--usd_path", type=str, help="path to usd file")
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
     sample = UsdLoadSample()
     if sample.load_stage(args):
         while sample.kit.is_loading():
