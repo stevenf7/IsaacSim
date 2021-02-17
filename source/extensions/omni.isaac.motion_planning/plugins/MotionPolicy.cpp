@@ -24,6 +24,11 @@ Eigen::Vector3d asEigenVector3d(const carb::Float3& v)
     return Eigen::Vector3d(v.x, v.y, v.z);
 }
 
+carb::Float3 asCarbFloat3(const Eigen::Vector3d& v)
+{
+    return carb::Float3({ static_cast<float>(v[0]), static_cast<float>(v[1]), static_cast<float>(v[2]) });
+}
+
 MotionPolicy::MotionPolicy(pxr::UsdStageWeakPtr stage, omni::isaac::dynamic_control::DynamicControl* dynamicControl)
 {
     mStage = stage;
@@ -247,20 +252,20 @@ std::vector<double> MotionPolicy::getError()
 
 std::vector<carb::Float3> MotionPolicy::getRmpState()
 {
-    mEndEffectorState[0] = carb::Float3({ mOrigFk[0], mOrigFk[1], mOrigFk[2] });
-    mEndEffectorState[1] = carb::Float3({ mAxisXFk[0], mAxisXFk[1], mAxisXFk[2] });
-    mEndEffectorState[2] = carb::Float3({ mAxisYFk[0], mAxisYFk[1], mAxisYFk[2] });
-    mEndEffectorState[3] = carb::Float3({ mAxisZFk[0], mAxisZFk[1], mAxisZFk[2] });
+    mEndEffectorState[0] = asCarbFloat3(mOrigFk);
+    mEndEffectorState[1] = asCarbFloat3(mAxisXFk);
+    mEndEffectorState[2] = asCarbFloat3(mAxisYFk);
+    mEndEffectorState[3] = asCarbFloat3(mAxisZFk);
 
     return mEndEffectorState;
 }
 
 std::vector<carb::Float3> MotionPolicy::getRmpTarget()
 {
-    mEndEffectorTarget[0] = carb::Float3({ mTargetOrig[0], mTargetOrig[1], mTargetOrig[2] });
-    mEndEffectorTarget[1] = carb::Float3({ mTargetAxisX[0], mTargetAxisX[1], mTargetAxisX[2] });
-    mEndEffectorTarget[2] = carb::Float3({ mTargetAxisY[0], mTargetAxisY[1], mTargetAxisY[2] });
-    mEndEffectorTarget[3] = carb::Float3({ mTargetAxisZ[0], mTargetAxisZ[1], mTargetAxisZ[2] });
+    mEndEffectorTarget[0] = asCarbFloat3(mTargetOrig);
+    mEndEffectorTarget[1] = asCarbFloat3(mTargetAxisX);
+    mEndEffectorTarget[2] = asCarbFloat3(mTargetAxisY);
+    mEndEffectorTarget[3] = asCarbFloat3(mTargetAxisZ);
 
     return mEndEffectorTarget;
 }
