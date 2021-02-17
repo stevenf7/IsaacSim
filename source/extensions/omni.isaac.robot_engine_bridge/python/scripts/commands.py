@@ -14,12 +14,6 @@ def get_path(stage, path: str, parent=None) -> str:
     return path
 
 
-def setup_base_prim(prim):
-    prim.CreateNodeNameAttr("interface")
-    prim.CreateEnabledAttr(True)
-    prim.CreateTimeOffsetAttr(0.0)
-
-
 def setup_publisher(prim, component: str, channel: str):
     prim.CreateOutputComponentAttr(component)
     prim.CreateOutputChannelAttr(channel)
@@ -64,10 +58,11 @@ class DestroyRobotEngineBridgeApplicationCommand(omni.kit.commands.Command):
 
 # this command is used to create each REB prim, it also handles undo so that each individual prim command doesn't have to
 class CreateRobotEngineBridgePrimCommand(omni.kit.commands.Command):
-    def __init__(self, path: str, parent: str, scehma_type):
-        self._path = path
-        self._parent = parent
-        self._scehma_type = scehma_type
+    def __init__(self, path: str, parent: str, scehma_type, enabled: bool = True, node_name: str = "interface"):
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+
         self._prim_path = None
         pass
 
@@ -76,7 +71,9 @@ class CreateRobotEngineBridgePrimCommand(omni.kit.commands.Command):
         # make prim path unique
         self._prim_path = get_path(self._stage, self._path, self._parent)
         self._prim = self._scehma_type.Define(self._stage, self._prim_path)
-        setup_base_prim(self._prim)
+        self._prim.CreateNodeNameAttr(self._node_name)
+        self._prim.CreateEnabledAttr(self._enabled)
+        self._prim.CreateTimeOffsetAttr(0.0)
         return self._prim
 
     def undo(self):
@@ -89,6 +86,7 @@ class CreateRobotEngineBridgeDifferentialBaseCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_DifferentialBase",
         parent=None,
+        enabled: bool = True,
         input_component: str = "input",
         input_channel: str = "base_command",
         output_component: str = "output",
@@ -115,6 +113,7 @@ class CreateRobotEngineBridgeDifferentialBaseCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineDifferentialBase,
         )
         if success and self._prim:
@@ -151,6 +150,7 @@ class CreateRobotEngineBridgeHolonomicBaseCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_HolonomicBase",
         parent=None,
+        enabled: bool = True,
         input_component: str = "input",
         input_channel: str = "base_command",
         output_component: str = "output",
@@ -177,6 +177,7 @@ class CreateRobotEngineBridgeHolonomicBaseCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineHolonomicBase,
         )
         if success and self._prim:
@@ -213,6 +214,7 @@ class CreateRobotEngineBridgeVehicleCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_Vehicle",
         parent=None,
+        enabled: bool = True,
         input_component: str = "input",
         input_channel: str = "vehicle_command",
         output_component: str = "output",
@@ -230,6 +232,7 @@ class CreateRobotEngineBridgeVehicleCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineVehicle,
         )
         if success and self._prim:
@@ -254,6 +257,7 @@ class CreateRobotEngineBridgeJointControlCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_JointControl",
         parent=None,
+        enabled: bool = True,
         input_component: str = "input",
         input_channel: str = "joint_position",
         output_component: str = "output",
@@ -271,6 +275,7 @@ class CreateRobotEngineBridgeJointControlCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineJointControl,
         )
         if success and self._prim:
@@ -296,6 +301,7 @@ class CreateRobotEngineBridgeScissorLiftCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_ScissorLift",
         parent=None,
+        enabled: bool = True,
         input_component: str = "input",
         input_channel: str = "joint_position",
         output_component: str = "output",
@@ -314,6 +320,7 @@ class CreateRobotEngineBridgeScissorLiftCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineScissorLift,
         )
         if success and self._prim:
@@ -340,6 +347,7 @@ class CreateRobotEngineBridgeSurfaceGripperCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_SurfaceGripper",
         parent=None,
+        enabled: bool = True,
         input_component: str = "input",
         input_channel: str = "io_command",
         output_component: str = "output",
@@ -367,6 +375,7 @@ class CreateRobotEngineBridgeSurfaceGripperCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineSurfaceGripper,
         )
         if success and self._prim:
@@ -409,6 +418,7 @@ class CreateRobotEngineBridgeTwoFingerGripperCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_TwoFingerGripper",
         parent=None,
+        enabled: bool = True,
         input_component: str = "input",
         input_channel: str = "io_command",
         output_component: str = "output",
@@ -431,6 +441,7 @@ class CreateRobotEngineBridgeTwoFingerGripperCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineTwoFingerGripper,
         )
         if success and self._prim:
@@ -459,6 +470,7 @@ class CreateRobotEngineBridgeRigidBodySinkCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_RigidBodySink",
         parent=None,
+        enabled: bool = True,
         output_component: str = "output",
         output_channel: str = "bodies",
         rigid_body_prims_rel=None,
@@ -474,6 +486,7 @@ class CreateRobotEngineBridgeRigidBodySinkCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineRigidBodySink,
         )
         if success and self._prim:
@@ -491,7 +504,12 @@ class CreateRobotEngineBridgeRigidBodySinkCommand(omni.kit.commands.Command):
 
 class CreateRobotEngineBridgeTeleportCommand(omni.kit.commands.Command):
     def __init__(
-        self, path: str = "/REB_Teleport", parent=None, input_component: str = "input", input_channel: str = "teleport"
+        self,
+        path: str = "/REB_Teleport",
+        parent=None,
+        enabled: bool = True,
+        input_component: str = "input",
+        input_channel: str = "teleport",
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -504,6 +522,7 @@ class CreateRobotEngineBridgeTeleportCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineTeleport,
         )
         if success and self._prim:
@@ -521,6 +540,7 @@ class CreateRobotEngineBridgeScenarioFromMessageCommand(omni.kit.commands.Comman
         self,
         path: str = "/REB_ScenarioFromMessage",
         parent=None,
+        enabled: bool = True,
         input_component: str = "input",
         input_channel: str = "scenario_actors",
         teleport_input_component: str = "input",
@@ -539,6 +559,7 @@ class CreateRobotEngineBridgeScenarioFromMessageCommand(omni.kit.commands.Comman
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineScenarioFromMessage,
         )
         if success and self._prim:
@@ -561,6 +582,7 @@ class CreateRobotEngineBridgeCameraCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_Camera",
         parent=None,
+        enabled: bool = True,
         rgb_output_component: str = "output",
         rgb_output_channel: str = "color",
         depth_output_component: str = "output",
@@ -590,6 +612,7 @@ class CreateRobotEngineBridgeCameraCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineCamera,
         )
         if success and self._prim:
@@ -628,6 +651,7 @@ class CreateRobotEngineBridgeLidarCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_Lidar",
         parent=None,
+        enabled: bool = True,
         output_component: str = "output",
         output_channel: str = "rangescan",
         lidar_prim_rel=None,
@@ -643,6 +667,7 @@ class CreateRobotEngineBridgeLidarCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineLidar,
         )
         if success and self._prim:
@@ -665,6 +690,7 @@ class CreateRobotEngineBridgeOccupancyGridMapCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_OccupancyGridMap",
         parent=None,
+        enabled: bool = True,
         output_component: str = "output",
         output_channel: str = "occupancy_map",
         parent_prim_rel=None,
@@ -691,6 +717,7 @@ class CreateRobotEngineBridgeOccupancyGridMapCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineOccupancyGridMap,
         )
         if success and self._prim:
@@ -725,6 +752,7 @@ class CreateRobotEngineBridgeUltrasonicCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_Ultrasonic",
         parent=None,
+        enabled: bool = True,
         output_component: str = "output",
         output_channel: str = "uss_envelopes",
         ultrasonic_prim_rel=None,
@@ -740,6 +768,7 @@ class CreateRobotEngineBridgeUltrasonicCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineUltrasonic,
         )
         if success and self._prim:
@@ -762,6 +791,7 @@ class CreateRobotEngineBridgeContactMonitorCommand(omni.kit.commands.Command):
         self,
         path: str = "/REB_ContactMonitor",
         parent=None,
+        enabled: bool = True,
         output_component: str = "output",
         output_channel: str = "collision",
         target_prim_rel=None,
@@ -779,6 +809,7 @@ class CreateRobotEngineBridgeContactMonitorCommand(omni.kit.commands.Command):
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEngineContactMonitor,
         )
         if success and self._prim:
@@ -806,6 +837,7 @@ class CreateRobotEngineBridgePolylineVisualizerCommand(omni.kit.commands.Command
         self,
         path: str = "/REB_PolylineVisualizer",
         parent=None,
+        enabled: bool = True,
         input_component: str = "input",
         input_channel: str = "sight_plan",
         parent_prim_rel=None,
@@ -824,6 +856,7 @@ class CreateRobotEngineBridgePolylineVisualizerCommand(omni.kit.commands.Command
             "CreateRobotEngineBridgePrimCommand",
             path=self._path,
             parent=self._parent,
+            enabled=self._enabled,
             scehma_type=REBSchema.RobotEnginePolylineVisualizer,
         )
         if success and self._prim:
@@ -839,6 +872,23 @@ class CreateRobotEngineBridgePolylineVisualizerCommand(omni.kit.commands.Command
             self._prim.CreateColorAttr().Set(self._color)
             self._prim.CreateOffsetAttr().Set(self._offset)
         return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class TickRobotEngineBridgeComponentCommand(omni.kit.commands.Command):
+    def __init__(self, path: str):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        pass
+
+    def do(self):
+        return self._re_bridge.tick_component(self._path)
 
     def undo(self):
         # undo must be defined even if empty

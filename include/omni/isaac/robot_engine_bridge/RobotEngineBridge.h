@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -30,12 +30,13 @@ struct RobotEngineBridge
                                       std::vector<const char*> module_paths,
                                       std::vector<const char*> json_files);
     bool(CARB_ABI* destroyApplication)();
+    bool(CARB_ABI* tickComponent)(const std::string& primPath);
     std::string const(CARB_ABI* getLastError)();
-    void(CARB_ABI* initializeStageLoader)(std::string inputComponent,
-                                          std::string requestChannelName,
-                                          std::string cameraRequestChannelName,
-                                          std::string outputComponent,
-                                          std::string replyChannelName);
+    void(CARB_ABI* initializeStageLoader)(const std::string& inputComponent,
+                                          const std::string& requestChannelName,
+                                          const std::string& cameraRequestChannelName,
+                                          const std::string& outputComponent,
+                                          const std::string& replyChannelName);
 };
 }
 }
