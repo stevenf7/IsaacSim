@@ -156,12 +156,12 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubeGeom.AddTranslateOp().Set(offset)
         utils.setCollider(cubePrim)
 
-        return cubeGeom
+        return cubePrim
 
     async def test_sink_manual(self):
 
         UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
-        self.add_cube("/cube", 100, (0, 0, 10))
+        cube_prim = self.add_cube("/cube", 100, (0, 0, 10))
         result, prim = omni.kit.commands.execute(
             "CreateRobotEngineBridgeRigidBodySinkCommand",
             path="/REB_RigidBodySink",
@@ -193,10 +193,23 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(
             omni.kit.commands.execute("TickRobotEngineBridgeComponentCommand", path="/REB_RigidBodySink")[1]
         )
+        # move cube and simulate time so that message is received
+        # This also makes sure that the component isn't publishing the pose while simulating
+        cube_prim.GetAttribute("xformOp:translate").Set((100, 100, 100))
+        await simulate(0.5)
         # Check that we got a message
         msg = test_app.app.receive("simulation.interface", "output", "bodies")
         self.assertTrue(msg)
         self.assertAlmostEqual(msg.proto.bodies[0].refTBody.translation.z, 0.1, delta=0.001)
+        # publish again, now we will get latest pose
+        self.assertTrue(
+            omni.kit.commands.execute("TickRobotEngineBridgeComponentCommand", path="/REB_RigidBodySink")[1]
+        )
+
+        await simulate(0.5)
+        msg = test_app.app.receive("simulation.interface", "output", "bodies")
+        self.assertTrue(msg)
+        self.assertAlmostEqual(msg.proto.bodies[0].refTBody.translation.z, 1.0, delta=0.001)
 
         self._timeline.stop()
         test_app.stop()
