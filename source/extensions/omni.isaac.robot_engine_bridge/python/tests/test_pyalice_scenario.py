@@ -12,8 +12,9 @@ from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from omni.isaac.pyalice import Message
-from pxr import UsdPhysics, Sdf
+from pxr import UsdPhysics, Sdf, UsdGeom
 from .common import PyaliceApp, create_application, simulate
+from omni.physx.scripts import utils
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -139,6 +140,63 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertFalse(cracker_box)
         power_drill = self._stage.GetPrimAtPath("/World/power_drill")
         self.assertFalse(power_drill)
+
+        self._timeline.stop()
+        test_app.stop()
+        test_app = None
+
+        pass
+
+    def add_cube(self, path, size, offset):
+
+        cubeGeom = UsdGeom.Cube.Define(self._stage, path)
+        cubePrim = self._stage.GetPrimAtPath(path)
+
+        cubeGeom.CreateSizeAttr(size)
+        cubeGeom.AddTranslateOp().Set(offset)
+        utils.setCollider(cubePrim)
+
+        return cubeGeom
+
+    async def test_sink_manual(self):
+
+        UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+        self.add_cube("/cube", 100, (0, 0, 10))
+        result, prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgeRigidBodySinkCommand",
+            path="/REB_RigidBodySink",
+            parent=None,
+            enabled=False,
+            output_component="output",
+            output_channel="bodies",
+            rigid_body_prims_rel=["/cube"],
+        )
+
+        self.assertTrue(result)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        test_app = PyaliceApp()
+        test_app.app.load(
+            filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
+        )
+
+        test_app.start()
+        # Run test so tcp is connected
+        await simulate(1)
+
+        # Rigidbody Sink is disabled to start
+        msg = test_app.app.receive("simulation.interface", "output", "bodies")
+        self.assertFalse(msg)
+        # Publish data manually
+        self.assertTrue(
+            omni.kit.commands.execute("TickRobotEngineBridgeComponentCommand", path="/REB_RigidBodySink")[1]
+        )
+        # Check that we got a message
+        msg = test_app.app.receive("simulation.interface", "output", "bodies")
+        self.assertTrue(msg)
+        self.assertAlmostEqual(msg.proto.bodies[0].refTBody.translation.z, 0.1, delta=0.001)
 
         self._timeline.stop()
         test_app.stop()

@@ -112,15 +112,24 @@ bool CARB_ABI destroyApplication()
     }
     return true;
 }
+
+bool CARB_ABI tickComponent(const std::string& primPath)
+{
+    if (g_stage)
+    {
+        return g_application_handle->tickComponent(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+    }
+    return false;
+}
 std::string const CARB_ABI getLastError()
 {
     return g_application_handle->getLastError();
 }
-void CARB_ABI initializeStageLoader(std::string inputComponent,
-                                    std::string requestChannelName,
-                                    std::string cameraRequestChannelName,
-                                    std::string outputComponent,
-                                    std::string replyChannelName)
+void CARB_ABI initializeStageLoader(const std::string& inputComponent,
+                                    const std::string& requestChannelName,
+                                    const std::string& cameraRequestChannelName,
+                                    const std::string& outputComponent,
+                                    const std::string& replyChannelName)
 {
     g_application_handle->initializeStageLoader(
         inputComponent, requestChannelName, cameraRequestChannelName, outputComponent, replyChannelName);
@@ -280,6 +289,7 @@ void fillInterface(omni::isaac::robot_engine_bridge::RobotEngineBridge& iface)
 
     iface.createApplication = createApplication;
     iface.destroyApplication = destroyApplication;
+    iface.tickComponent = tickComponent;
     iface.getLastError = getLastError;
     iface.initializeStageLoader = initializeStageLoader;
 }

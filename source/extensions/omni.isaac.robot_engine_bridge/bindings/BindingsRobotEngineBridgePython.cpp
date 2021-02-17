@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -39,6 +39,7 @@ PYBIND11_MODULE(_robot_engine_bridge, m)
 
         .def("create_application", wrapInterfaceFunction(&RobotEngineBridge::createApplication))
         .def("destroy_application", wrapInterfaceFunction(&RobotEngineBridge::destroyApplication))
+        .def("tick_component", wrapInterfaceFunction(&RobotEngineBridge::tickComponent))
         .def("get_last_error", wrapInterfaceFunction(&RobotEngineBridge::getLastError))
         .def("initialize_stage_loader", wrapInterfaceFunction(&RobotEngineBridge::initializeStageLoader));
 }

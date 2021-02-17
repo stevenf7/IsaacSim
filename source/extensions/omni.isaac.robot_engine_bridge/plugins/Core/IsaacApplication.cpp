@@ -180,11 +180,11 @@ isaac_error_t IsaacApplication::destroy()
     return isaac_error_t::isaac_error_success;
 }
 
-void IsaacApplication::initializeStageLoader(std::string inputComponent,
-                                             std::string requestChannelName,
-                                             std::string cameraRequestChannelName,
-                                             std::string outputComponent,
-                                             std::string replyChannelName)
+void IsaacApplication::initializeStageLoader(const std::string& inputComponent,
+                                             const std::string& requestChannelName,
+                                             const std::string& cameraRequestChannelName,
+                                             const std::string& outputComponent,
+                                             const std::string& replyChannelName)
 {
     CARB_LOG_INFO("Initialize Stage Loader");
 
@@ -412,6 +412,28 @@ std::string IsaacApplication::getLastError()
     return std::string((mIsaacCApiPtr->isaac_get_error_message(mError)));
 }
 
+bool IsaacApplication::tickComponent(const pxr::UsdPrim& prim)
+{
+    if (prim)
+    {
+        if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+        {
+            auto* component = mComponents[prim.GetPath().GetString()].get();
+
+
+            if (component->mDoStart == true)
+            {
+                component->onStart();
+                component->mDoStart = false;
+            }
+
+            component->publishAllMessages();
+            component->tick();
+            return true;
+        }
+    }
+    return false;
+}
 }
 }
 }

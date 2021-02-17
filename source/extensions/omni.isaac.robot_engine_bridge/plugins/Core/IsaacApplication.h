@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -135,11 +135,20 @@ public:
      * @param outputComponent
      * @param replyChannelName
      */
-    void initializeStageLoader(std::string inputComponent,
-                               std::string requestChannelName,
-                               std::string cameraRequestChannelName,
-                               std::string outputComponent,
-                               std::string replyChannelName);
+    void initializeStageLoader(const std::string& inputComponent,
+                               const std::string& requestChannelName,
+                               const std::string& cameraRequestChannelName,
+                               const std::string& outputComponent,
+                               const std::string& replyChannelName);
+
+    /**
+     * @brief
+     *
+     * @param prim
+     * @return true
+     * @return false
+     */
+    bool tickComponent(const pxr::UsdPrim& prim);
 
     IsaacCApi* mIsaacCApiPtr = nullptr;
 
