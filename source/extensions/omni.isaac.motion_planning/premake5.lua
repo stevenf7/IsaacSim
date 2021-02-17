@@ -4,8 +4,6 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.motion_planning.plugin")
-
-    removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
     cppdialect "C++17"
 
     add_files("impl", "plugins")

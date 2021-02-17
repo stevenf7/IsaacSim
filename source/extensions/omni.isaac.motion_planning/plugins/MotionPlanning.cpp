@@ -65,7 +65,6 @@ static float gTime = 0;
 
 static omni::physx::IPhysx* gPhysXInterface = nullptr;
 omni::physx::SubscriptionId gStepSubscription;
-omni::physx::SubscriptionId gEventSubscription;
 
 std::unordered_map<size_t, std::shared_ptr<MotionPolicy>> gMotionPolicies;
 }
@@ -265,10 +264,11 @@ std::vector<omni::isaac::dynamic_control::DcTransform> CARB_ABI MpUpdateGetRelat
                 const pxr::GfTransform bodyToWorld(omni::usd::UsdUtils::getWorldTransformMatrix(prim));
                 const pxr::GfQuatd q = bodyToWorld.GetRotation().GetQuat();
                 omni::isaac::dynamic_control::DcTransform T;
-                T.p = carb::Float3({ bodyToWorld.GetTranslation()[0] * unitScale,
-                                     bodyToWorld.GetTranslation()[1] * unitScale,
-                                     bodyToWorld.GetTranslation()[2] * unitScale });
-                T.r = carb::Float4({ q.GetImaginary()[0], q.GetImaginary()[1], q.GetImaginary()[2], q.GetReal() });
+                T.p = carb::Float3({ static_cast<float>(bodyToWorld.GetTranslation()[0] * unitScale),
+                                     static_cast<float>(bodyToWorld.GetTranslation()[1] * unitScale),
+                                     static_cast<float>(bodyToWorld.GetTranslation()[2] * unitScale) });
+                T.r = carb::Float4({ static_cast<float>(q.GetImaginary()[0]), static_cast<float>(q.GetImaginary()[1]),
+                                     static_cast<float>(q.GetImaginary()[2]), static_cast<float>(q.GetReal()) });
 
                 result[i] = omni::isaac::utils::math::transformInv(parentTransform, T);
             }
@@ -408,7 +408,7 @@ CARB_EXPORT void carbOnPluginStartup()
     // desc.onUpdate = onUpdate;
     desc.onStop = onStop;
     // Create the stage update node and make sure it runs first
-    size_t index = gStageUpdate->getStageUpdateNodeCount();
+    // size_t index = gStageUpdate->getStageUpdateNodeCount();
     gStageUpdateNode = gStageUpdate->createStageUpdateNode(desc);
     // gStageUpdate->setStageUpdateNodeOrder(index, -100);
     if (!gInitLogging)
