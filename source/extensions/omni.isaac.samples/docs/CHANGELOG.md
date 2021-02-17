@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.1.4] - 2021-02-17
+========================
+
+Added
+-------
+- update to python 3.7
+- update to omni.kit.uiapp
+- Update RMP sample to save data
 
 [0.1.3] - 2021-01-13
 ========================
