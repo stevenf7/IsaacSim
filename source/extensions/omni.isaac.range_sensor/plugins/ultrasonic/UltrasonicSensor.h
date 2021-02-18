@@ -44,7 +44,6 @@ public:
 
     int getNumBins() const
     {
-        // TODO make this return without casting
         return mNumBins;
     }
     int getNumCols() const
@@ -65,14 +64,17 @@ public:
     {
         return mEmitters[emitterIndex].mDepth;
     }
+
     std::vector<float>& getLinearDepthData(int emitterIndex)
     {
         return mEmitters[emitterIndex].mLinearDepth;
     }
+
     std::vector<float>& getEnvelope(int emitterIndex)
     {
         return mEmitters[emitterIndex].getEnvelope();
     }
+
     std::vector<std::vector<float>> getEnvelopeArray()
     {
         std::vector<std::vector<float>> env;
@@ -81,6 +83,23 @@ public:
             env.push_back(mEmitters[i].getEnvelope());
         }
         return env;
+    }
+
+    std::vector<std::vector<float>> getActiveEnvelopeArray()
+    {
+        std::vector<std::vector<float>> envelopes;
+        for (size_t i = 0; i < mEmitters.size(); i++)
+        {
+            if (mIsReceiving[mFreqIdLow][i])
+            {
+                envelopes.push_back(mEmitters[i].getEnvelopeLow());
+            }
+            if (mIsReceiving[mFreqIdHigh][i])
+            {
+                envelopes.push_back(mEmitters[i].getEnvelopeHigh());
+            }
+        }
+        return envelopes;
     }
 
     std::vector<float> getEnvelopeArrayFlattened()
@@ -101,6 +120,54 @@ public:
         return mEmitters[emitterIndex].mIntensity;
     }
 
+    std::vector<carb::Int2> getEmitterFiringInfo()
+    {
+        // const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
+
+        std::vector<carb::Int2> info;
+        for (size_t i = 0; i < mEmitters.size(); i++)
+        {
+            if (mIsFiring[mFreqIdLow][i])
+            {
+                info.push_back(carb::Int2({ static_cast<int>(i), static_cast<int>(mFreqIdLow) }));
+            }
+            if (mIsFiring[mFreqIdHigh][i])
+            {
+                info.push_back(carb::Int2({ static_cast<int>(i), static_cast<int>(mFreqIdHigh) }));
+            }
+        }
+
+        // for (size_t i = 0; i < group.mEmitterModes.size(); i++)
+        // {
+        //     info.push_back(carb::Int2({ group.mEmitterModes[i][0], group.mEmitterModes[i][1] }));
+        // }
+        return info;
+    }
+    std::vector<carb::Int2> getReceiverFiringInfo()
+    {
+        // const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
+
+        std::vector<carb::Int2> info;
+
+        for (size_t i = 0; i < mEmitters.size(); i++)
+        {
+            if (mIsReceiving[mFreqIdLow][i])
+            {
+                info.push_back(carb::Int2({ static_cast<int>(i), static_cast<int>(mFreqIdLow) }));
+            }
+            if (mIsReceiving[mFreqIdHigh][i])
+            {
+                info.push_back(carb::Int2({ static_cast<int>(i), static_cast<int>(mFreqIdHigh) }));
+            }
+        }
+
+        // for (size_t i = 0; i < group.mReceiverModes.size(); i++)
+        // {
+        //     info.push_back(carb::Int2({ group.mReceiverModes[i][0], group.mReceiverModes[i][1] }));
+        // }
+        return info;
+    }
+
     // these (zenith and azimuth getters) are the same across all emitters on the sensor for now
     // in other words, all emitters have the same resolution, shape, etc
     std::vector<float>& getZenithData()
@@ -116,6 +183,12 @@ public:
     virtual void onFiringGroupChange(const pxr::UsdPrim& prim);
 
 private:
+    size_t mFreqIdLow = 0;
+    size_t mFreqIdHigh = 1;
+
+    std::vector<std::vector<bool>> mIsReceiving; //(2, std::vector<bool>());
+    std::vector<std::vector<bool>> mIsFiring; //(2, std::vector<bool>());
+
     int mNumBins = 224;
     float mHorizontalFov = 60.0f;
     float mVerticalFov = 30.0f;

@@ -513,6 +513,76 @@ std::vector<float> CARB_ABI getEnvelopeArrayFlattened(const char* primPath)
     }
 }
 
+std::vector<std::vector<float>> CARB_ABI getActiveEnvelopeArray(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return sensor->getActiveEnvelopeArray();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return std::vector<std::vector<float>>();
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return std::vector<std::vector<float>>();
+    }
+}
+
+std::vector<carb::Int2> CARB_ABI getEmitterFiringInfo(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return sensor->getEmitterFiringInfo();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return std::vector<carb::Int2>();
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return std::vector<carb::Int2>();
+    }
+}
+
+
+std::vector<carb::Int2> CARB_ABI getReceiverFiringInfo(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::UltrasonicSensor* sensor =
+            gRangeSensorManager->getUltrasonicSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return sensor->getReceiverFiringInfo();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Ultrasonic Sensor does not exist");
+            return std::vector<carb::Int2>();
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Ultrasonic Sensor Manager does not exist");
+        return std::vector<carb::Int2>();
+    }
+}
+
 float* CARB_ABI getLinearDepthData(const char* primPath, int emitterIndex)
 {
     if (g_stage && gRangeSensorManager)
@@ -864,7 +934,10 @@ void fillInterface(omni::isaac::range_sensor::UltrasonicSensorInterface& iface)
     iface.getNumEmitters = ultrasonic::getNumEmitters;
     iface.getPointCloud = ultrasonic::getPointCloud;
     iface.getEnvelope = ultrasonic::getEnvelope;
+    iface.getActiveEnvelopeArray = ultrasonic::getActiveEnvelopeArray;
     iface.getEnvelopeArrayFlattened = ultrasonic::getEnvelopeArrayFlattened;
+    iface.getEmitterFiringInfo = ultrasonic::getEmitterFiringInfo;
+    iface.getReceiverFiringInfo = ultrasonic::getReceiverFiringInfo;
     iface.isUSS = ultrasonic::isUltrasonicSensor;
 }
 

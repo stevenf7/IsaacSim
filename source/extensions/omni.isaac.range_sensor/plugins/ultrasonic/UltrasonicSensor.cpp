@@ -39,7 +39,9 @@ namespace range_sensor
 
 
 UltrasonicSensor::UltrasonicSensor(omni::physx::IPhysx* physxPtr, carb::fastcache::FastCache* fastCachePtr)
-    : RangeSensorComponent(physxPtr, fastCachePtr)
+    : RangeSensorComponent(physxPtr, fastCachePtr),
+      mIsReceiving(2, std::vector<bool>()),
+      mIsFiring(2, std::vector<bool>())
 {
 }
 
@@ -184,6 +186,17 @@ void UltrasonicSensor::tick()
         // fire low then high
         std::vector<std::vector<USSEnvelope>> envelopeList(
             2, std::vector<USSEnvelope>(0, USSEnvelope(mNumBins, mMaxDepth * mMetersPerUnit)));
+
+
+        mIsFiring[mFreqIdLow] =
+            omni::isaac::range_sensor::modesToBooleanVector(group.mEmitterModes, mFreqIdLow, mEmitters.size());
+        mIsFiring[mFreqIdHigh] =
+            omni::isaac::range_sensor::modesToBooleanVector(group.mEmitterModes, mFreqIdHigh, mEmitters.size());
+
+        mIsReceiving[mFreqIdLow] =
+            omni::isaac::range_sensor::modesToBooleanVector(group.mReceiverModes, mFreqIdLow, mEmitters.size());
+        mIsReceiving[mFreqIdHigh] =
+            omni::isaac::range_sensor::modesToBooleanVector(group.mReceiverModes, mFreqIdHigh, mEmitters.size());
         for (size_t currentFreqId = 0; currentFreqId <= 1; currentFreqId++)
         {
             for (size_t i = 0; i < group.mEmitterModes.size(); i++)
@@ -201,17 +214,17 @@ void UltrasonicSensor::tick()
                 }
                 // TODO Use the goup.mReceiverModes array to do envelope calculation
             }
-            std::vector<bool> isFiring =
-                omni::isaac::range_sensor::modesToBooleanVector(group.mEmitterModes, currentFreqId, mEmitters.size());
-            std::vector<bool> isReceiving =
-                omni::isaac::range_sensor::modesToBooleanVector(group.mReceiverModes, currentFreqId, mEmitters.size());
+
             envelopeList[currentFreqId] = mReceiverArray.getCombinedEnvelopeList(
-                mNumBins, mMaxDepth * mMetersPerUnit, adjacency, isFiring, isReceiving, origins, origins, worldPoints);
+                mNumBins, mMaxDepth * mMetersPerUnit, adjacency, mIsFiring[currentFreqId], mIsReceiving[currentFreqId],
+                origins, origins, worldPoints);
         }
         // this is mode 0; do mode 1
         for (size_t j = 0; j < envelopeList[0].size(); j++)
         {
-            mEmitters[j].mEnvelope = std::make_unique<USSEnvelope>(envelopeList[0][j] + envelopeList[1][j]);
+            // set low and hi envelopes
+            mEmitters[j].setEnvelopes(envelopeList[mFreqIdLow][j], envelopeList[mFreqIdHigh][j],
+                                      mIsReceiving[mFreqIdLow][j], mIsReceiving[mFreqIdHigh][j]);
         }
         // Increment and clamp the firing group
         mCurrentFiringGroup += 1;
@@ -223,17 +236,16 @@ void UltrasonicSensor::tick()
         for (size_t i = 0; i < mEmitters.size(); i++)
         {
             mEmitters[i].doScan(mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth);
-            // direct so intensities are all 1.f
-            std::vector<float> intensities(mEmitters[i].mLinearDepth.size(), 1.f);
             std::vector<float> totalDepth;
-            // updateInterface takes _round trip_ depth, not one way
-            // hence we pass double the linear depth of the direct ray
-            // from sensor to ray's collision point
+            // all direct intensity; low + high = 1
+            std::vector<float> intensities(mEmitters[i].mLinearDepth.size(), 0.5f);
             for (size_t j = 0; j < mEmitters[i].mLinearDepth.size(); j++)
             {
                 totalDepth.push_back(mEmitters[i].mLinearDepth[j] * 2.f);
             }
-            mEmitters[i].mEnvelope->updateEnvelope(totalDepth, intensities);
+            USSEnvelope env(mNumBins, mMaxDepth * mMetersPerUnit);
+            env.updateEnvelope(totalDepth, intensities);
+            mEmitters[i].setEnvelopes(env, env, true, true);
         }
     }
 

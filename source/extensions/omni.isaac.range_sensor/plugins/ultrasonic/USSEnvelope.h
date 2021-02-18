@@ -90,6 +90,8 @@ public:
         return true;
     };
 
+    bool isValid = true;
+
     std::vector<float>& getEnvelope()
     {
         return m_envelope;

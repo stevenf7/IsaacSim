@@ -26,6 +26,15 @@ public:
                                                             const std::vector<::physx::PxVec3>& receiverOrigins,
                                                             const std::vector<std::vector<::physx::PxVec3>>& worldPoints);
 
+    std::vector<USSEnvelope> getCombinedActiveEnvelopeList(const int numBins,
+                                                           const float maxDist,
+                                                           const std::vector<std::vector<uint8_t>>& adjacency,
+                                                           const std::vector<bool>& isFiring,
+                                                           const std::vector<bool>& isReceiving,
+                                                           const std::vector<::physx::PxVec3>& emitterOrigins,
+                                                           const std::vector<::physx::PxVec3>& receiverOrigins,
+                                                           const std::vector<std::vector<::physx::PxVec3>>& worldPoints);
+
     std::vector<USSEnvelope> getCombinedEnvelopeList(const int numBins,
                                                      const float maxDist,
                                                      const std::vector<std::vector<uint8_t>>& adjacency,
@@ -45,4 +54,5 @@ private:
     std::vector<float> getTotalPathLength(const ::physx::PxVec3& receiverOrigin,
                                           const ::physx::PxVec3& emitterOrigin,
                                           const std::vector<::physx::PxVec3>& worldPoints);
+    const float invalidEnvelopeFloat = -1.1f;
 };

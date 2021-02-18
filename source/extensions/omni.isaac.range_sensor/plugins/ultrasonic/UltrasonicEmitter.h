@@ -230,8 +230,11 @@ public:
 
         mRows = rows;
         mCols = cols;
-        mEnvelope = std::make_unique<USSEnvelope>(numBins, maxDepth);
+        mNumBins = numBins;
 
+        mEnvelopeLow = std::make_unique<USSEnvelope>(numBins, maxDepth);
+        mEnvelopeHigh = std::make_unique<USSEnvelope>(numBins, maxDepth);
+        mEnvelopeCombined = std::make_unique<USSEnvelope>(numBins, maxDepth);
         mLinearDepth.resize(mRows * mCols);
         mIntensity.resize(mRows * mCols);
         mDepth.resize(mRows * mCols);
@@ -267,9 +270,58 @@ public:
 
     std::vector<float>& getEnvelope()
     {
-        return mEnvelope->getEnvelope();
+        // return mEnvelope->getEnvelope();
+        return mEnvelopeCombined->getEnvelope();
     }
-    std::unique_ptr<USSEnvelope> mEnvelope;
+
+    std::vector<float>& getEnvelopeLow()
+    {
+        return mEnvelopeLow->getEnvelope();
+    }
+
+    std::vector<float>& getEnvelopeHigh()
+    {
+        return mEnvelopeHigh->getEnvelope();
+    }
+
+    void setEnvelopes(USSEnvelope& low, USSEnvelope& high, const bool isReceivingLow, const bool isReceivingHigh)
+    {
+        if (isReceivingLow)
+        {
+            mEnvelopeLow = std::make_unique<USSEnvelope>(low);
+        }
+        else
+        {
+            USSEnvelope dummy(mNumBins, -1.1f);
+            dummy.isValid = false;
+            mEnvelopeLow = std::make_unique<USSEnvelope>(dummy);
+        }
+        if (isReceivingHigh)
+        {
+            mEnvelopeHigh = std::make_unique<USSEnvelope>(high);
+        }
+        else
+        {
+            USSEnvelope dummy(mNumBins, -1.1f);
+            dummy.isValid = false;
+            mEnvelopeHigh = std::make_unique<USSEnvelope>(dummy);
+        }
+
+        if (isReceivingLow && isReceivingHigh)
+        {
+            mEnvelopeCombined = std::make_unique<USSEnvelope>(low + high);
+        }
+        else if (isReceivingLow)
+        {
+            mEnvelopeCombined = std::make_unique<USSEnvelope>(low);
+        }
+        else
+        {
+            mEnvelopeCombined = std::make_unique<USSEnvelope>(high);
+        }
+    }
+
+
     std::vector<omni::isaac::range_sensor::DebugData> mEmitterDebugLines;
     std::vector<float> mLinearDepth;
     std::vector<uint8_t> mIntensity;
@@ -279,8 +331,13 @@ public:
     pxr::VtArray<int> mAdjacencyList;
     int mRows = 0;
     int mCols = 0;
+    size_t mNumBins = 0;
 
 private:
+    std::unique_ptr<USSEnvelope> mEnvelopeCombined;
+    std::unique_ptr<USSEnvelope> mEnvelopeLow;
+    std::unique_ptr<USSEnvelope> mEnvelopeHigh;
+
     bool raycast(const ::physx::PxVec3& pos,
                  const ::physx::PxVec3& dir,
                  float distance,
