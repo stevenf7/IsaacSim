@@ -367,7 +367,7 @@ PYBIND11_MODULE(_range_sensor, m)
                 
                 Returns:
                 :obj:`numpy.ndarray`: The array of envelopes from the ultrasonic sensor)pbdoc")
-
+        .def("get_active_envelope_array", wrapInterfaceFunction(&UltrasonicSensorInterface::getActiveEnvelopeArray))
         .def("get_intensity_data",
              [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
                  if (!ul)
@@ -384,7 +384,18 @@ PYBIND11_MODULE(_range_sensor, m)
                 
                 Returns:
                 :obj:`numpy.ndarray`: The observed specular intensity of each beam, 255 if hit, 0 if not)pbdoc")
-
+        .def("get_emitter_firing_info", wrapInterfaceFunction(&UltrasonicSensorInterface::getEmitterFiringInfo), R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`list`: emitter firing info for the current group fired)pbdoc")
+        .def("get_receiver_firing_info", wrapInterfaceFunction(&UltrasonicSensorInterface::getReceiverFiringInfo), R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`list`: receiver info for the current group fired)pbdoc")
         .def("get_zenith_data",
              [](const UltrasonicSensorInterface* ul, const char* sensorPath) -> py::object {
                  if (!ul)

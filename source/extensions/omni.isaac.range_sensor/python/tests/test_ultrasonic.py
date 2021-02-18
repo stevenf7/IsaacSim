@@ -102,6 +102,23 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         return cubePrim
 
+    def get_full_array_poses(self):
+        emitter_poses = [
+            (Gf.Quatd(0.951057, 0, 0, -0.309017), Gf.Vec3d(25, 0.0, 25)),
+            (Gf.Quatd(0.987688, 0, 0, -0.156434), Gf.Vec3d(25, 50.0, 25)),
+            (Gf.Quatd(0.987688, 0, 0, 0.156434), Gf.Vec3d(25, 100, 25)),
+            (Gf.Quatd(0.951057, 0, 0, 0.309017), Gf.Vec3d(25, 150, 25)),
+            (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-25, 0.0, 25)),
+            (Gf.Quatd(-0.156435, 0, 0, 0.987688), Gf.Vec3d(-25, 50.0, 25)),
+            (Gf.Quatd(0.156434, 0, 0, 0.987688), Gf.Vec3d(-25, 100, 25)),
+            (Gf.Quatd(0.309017, 0, 0, 0.951057), Gf.Vec3d(-25, 150, 25)),
+            (Gf.Quatd(0.760406, 0, 0, -0.649448), Gf.Vec3d(12.5, 0.0, 25)),
+            (Gf.Quatd(0.649448, 0, 0, -0.760406), Gf.Vec3d(12.5, 0.0, 25)),
+            (Gf.Quatd(0.760406, 0, 0, 0.649448), Gf.Vec3d(12.5, 150, 25)),
+            (Gf.Quatd(0.649448, 0, 0, 0.760406), Gf.Vec3d(12.5, 150, 25)),
+        ]
+        return emitter_poses
+
     # Test to make sure that command can create emitter and array without any errors
     # Simulate and stop to make sure it doesn't crash
     # Check to see if data returned matches parameters used to create
@@ -162,6 +179,92 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         await simulate(0.1)
         self._timeline.play()
         await simulate(0.5)
+
+    # TODO: test scenario where you have specified emitter modes and receiver modes but no adjacency list --
+    # it will return a single 2d list, the inner of length numBins where all elements are zeros. This should
+    # instead result in a carbon error
+
+    # Create two emitters, test to make sure that data from them is correct
+    async def test_active_envelope_interface_two_emitters(self):
+
+        result, emitter0 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicEmitterCommand",
+            path="/World/UltrasonicEmitter0",
+            per_ray_intensity=0.4,
+            yaw_offset=0.0,
+            adjacency_list=[0, 1],
+        )
+        result, group_1 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/World/UltrasonicFiringGroup",
+            emitter_modes=[(0, 0), (1, 0), (1, 1)],
+            receiver_modes=[(0, 0), (0, 1), (1, 0), (1, 1)],
+        )
+
+        emitter0.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
+        # Rotate 90 degrees about z
+        emitter0.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(Gf.Vec3d(0, 0, 90))
+
+        result, emitter1 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicEmitterCommand",
+            path="/World/UltrasonicEmitter1",
+            per_ray_intensity=0.4,
+            yaw_offset=0.0,
+            adjacency_list=[0, 1],
+        )
+        emitter1.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
+
+        result, ultrasonic = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicArrayCommand",
+            path="/World/UltrasonicArray",
+            min_range=0.4,
+            max_range=300.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=20.0,
+            vertical_fov=10.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=0.8,
+            num_bins=224,
+            emitter_prims=[emitter0.GetPath(), emitter1.GetPath()],
+            firing_group_prims=[group_1.GetPath()],
+        )
+        self.assertTrue(result)
+
+        await self.add_cube("/World/Cube0", 25.0, Gf.Vec3f(0.0, 100.0, 0.0), physics=False)
+        await self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
+
+        self._timeline.play()
+        await simulate(2.0)
+        # TODO test to make sure that the sensor is firing at correct times
+        # TODO test to make sure that distances are correct
+        active_env = self._ultrasonic.get_active_envelope_array("/World/UltrasonicArray")
+        active_env = np.array(active_env)
+        self.assertEqual(len(active_env), 4)
+        self.assertTrue(
+            np.allclose(
+                active_env[0][50:67],
+                np.array([498.0, 102.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 460.0, 32.0]),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                active_env[1][50:67],
+                np.array([498.0, 102.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                active_env[2][50:67],
+                np.array([498.0, 102.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 460.0, 32.0]),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                active_env[3][50:67],
+                np.array([498.0, 102.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            )
+        )
 
     # Create two emitters, test to make sure that data from them is correct
     async def test_two_emitter(self):
@@ -247,21 +350,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubePath = "/World/Cube"
         cubePrim = await self.add_cube(cubePath, 25.0, Gf.Vec3f(0.0, -90.0, 12.5), physics=False)
 
-        emitter_poses = [
-            (Gf.Quatd(0.951057, 0, 0, -0.309017), Gf.Vec3d(25, 0.0, 25)),
-            (Gf.Quatd(0.987688, 0, 0, -0.156434), Gf.Vec3d(25, 50.0, 25)),
-            (Gf.Quatd(0.987688, 0, 0, 0.156434), Gf.Vec3d(25, 100, 25)),
-            (Gf.Quatd(0.951057, 0, 0, 0.309017), Gf.Vec3d(25, 150, 25)),
-            (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-25, 0.0, 25)),
-            (Gf.Quatd(-0.156435, 0, 0, 0.987688), Gf.Vec3d(-25, 50.0, 25)),
-            (Gf.Quatd(0.156434, 0, 0, 0.987688), Gf.Vec3d(-25, 100, 25)),
-            (Gf.Quatd(0.309017, 0, 0, 0.951057), Gf.Vec3d(-25, 150, 25)),
-            (Gf.Quatd(0.760406, 0, 0, -0.649448), Gf.Vec3d(12.5, 0.0, 25)),
-            (Gf.Quatd(0.649448, 0, 0, -0.760406), Gf.Vec3d(12.5, 0.0, 25)),
-            (Gf.Quatd(0.760406, 0, 0, 0.649448), Gf.Vec3d(12.5, 150, 25)),
-            (Gf.Quatd(0.649448, 0, 0, 0.760406), Gf.Vec3d(12.5, 150, 25)),
-        ]
-
+        emitter_poses = self.get_full_array_poses()
         emitters = []
         for pose in emitter_poses:
             result, emitter_prim = omni.kit.commands.execute(
@@ -327,20 +416,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubePath = "/World/Cube"
         cubePrim = await self.add_cube(cubePath, 25.0, Gf.Vec3f(0.0, -90.0, 12.5), physics=False)
 
-        emitter_poses = [
-            (Gf.Quatd(0.951057, 0, 0, -0.309017), Gf.Vec3d(25, 0.0, 25)),
-            (Gf.Quatd(0.987688, 0, 0, -0.156434), Gf.Vec3d(25, 50.0, 25)),
-            (Gf.Quatd(0.987688, 0, 0, 0.156434), Gf.Vec3d(25, 100, 25)),
-            (Gf.Quatd(0.951057, 0, 0, 0.309017), Gf.Vec3d(25, 150, 25)),
-            (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-25, 0.0, 25)),
-            (Gf.Quatd(-0.156435, 0, 0, 0.987688), Gf.Vec3d(-25, 50.0, 25)),
-            (Gf.Quatd(0.156434, 0, 0, 0.987688), Gf.Vec3d(-25, 100, 25)),
-            (Gf.Quatd(0.309017, 0, 0, 0.951057), Gf.Vec3d(-25, 150, 25)),
-            (Gf.Quatd(0.760406, 0, 0, -0.649448), Gf.Vec3d(12.5, 0.0, 25)),
-            (Gf.Quatd(0.649448, 0, 0, -0.760406), Gf.Vec3d(12.5, 0.0, 25)),
-            (Gf.Quatd(0.760406, 0, 0, 0.649448), Gf.Vec3d(12.5, 150, 25)),
-            (Gf.Quatd(0.649448, 0, 0, 0.760406), Gf.Vec3d(12.5, 150, 25)),
-        ]
+        emitter_poses = self.get_full_array_poses()
 
         emitters = []
         for pose in emitter_poses:
@@ -545,3 +621,125 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(np.allclose(envelope_arr[0][35:37], np.array([249.0, 51.0])))
         self.assertTrue(np.allclose(envelope_arr[1][35:37], np.array([170.0, 130.0])))
         self.assertTrue(np.allclose(envelope_arr[2][35:37], np.array([170.0, 130.0])))
+
+    async def test_firing_modes(self):
+        result, group_0 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/World/UltrasonicFiringGroup_0",
+            emitter_modes=[(0, 1), (3, 0), (4, 1), (7, 0), (8, 1), (11, 0)],
+            receiver_modes=[
+                (0, 1),
+                (1, 1),
+                (2, 0),
+                (3, 0),
+                (3, 1),
+                (4, 0),
+                (4, 1),
+                (5, 1),
+                (6, 0),
+                (7, 0),
+                (7, 1),
+                (8, 0),
+                (8, 1),
+                (9, 1),
+                (10, 0),
+                (11, 0),
+            ],
+        )
+
+        result, group_1 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/World/UltrasonicFiringGroup_1",
+            emitter_modes=[(1, 1), (2, 0), (5, 1), (6, 0), (9, 1), (10, 0)],
+            receiver_modes=[
+                (0, 1),
+                (1, 0),
+                (1, 1),
+                (2, 0),
+                (2, 1),
+                (3, 0),
+                (4, 1),
+                (5, 1),
+                (6, 0),
+                (7, 0),
+                (8, 1),
+                (9, 0),
+                (9, 1),
+                (10, 0),
+                (10, 1),
+                (11, 0),
+            ],
+        )
+        adjacency = [
+            [0, 1],
+            [0, 1, 2],
+            [1, 2, 3],
+            [2, 3, 4],
+            [3, 4, 5],
+            [4, 5],
+            [6, 7],
+            [6, 7, 8],
+            [7, 8, 9],
+            [8, 9, 10],
+            [9, 10, 11],
+            [10, 11],
+        ]
+        emitter_poses = self.get_full_array_poses()
+        emitters = []
+        for i in range(len(emitter_poses)):
+            pose = emitter_poses[i]
+            adjacent = adjacency[i]
+            result, emitter_prim = omni.kit.commands.execute(
+                "CreateRangeSensorUltrasonicEmitterCommand",
+                path="/World/UltrasonicEmitter",
+                per_ray_intensity=0.4,
+                yaw_offset=0.0,
+                adjacency_list=adjacent,
+            )
+            emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set(pose[1])
+            emitter_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(
+                Gf.Rotation(pose[0]).Decompose((1, 0, 0), (0, 1, 0), (0, 0, 1))
+            )
+            emitters.append(emitter_prim)
+        emitter_paths = [emitter.GetPath() for emitter in emitters]
+
+        # Add ultrasonic
+        ultrasonicPath = "/World/UltrasonicArray"
+        result, ultrasonic = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicArrayCommand",
+            path=ultrasonicPath,
+            min_range=0.4,
+            max_range=2.0,
+            draw_points=True,
+            horizontal_fov=10.0,
+            vertical_fov=30.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=0.8,
+            num_bins=224,
+            emitter_prims=emitter_paths,
+            firing_group_prims=[group_0.GetPath(), group_1.GetPath()],
+        )
+
+        await self.add_cube("/World/Cube0", 25.0, Gf.Vec3f(0.0, 100.0, 0.0), physics=False)
+        await self.add_cube("/World/Cube1", 25.0, Gf.Vec3f(0.0, -90.0, 0.0), physics=False)
+        await self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
+        await self.add_cube("/World/Cube3", 25.0, Gf.Vec3f(-70.0, 0.0, 0.0), physics=False)
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        # await simulate(2.0)
+        envelope_arr = self._ultrasonic.get_active_envelope_array(ultrasonicPath)
+        # print(envelope_arr)
+        print("Group A")
+        await omni.kit.app.get_app().next_update_async()
+        emitter_info = self._ultrasonic.get_emitter_firing_info(ultrasonicPath)
+        print("emitter info:", emitter_info)
+
+        receiver_info = self._ultrasonic.get_receiver_firing_info(ultrasonicPath)
+        print("receiver info:", receiver_info)
+        await omni.kit.app.get_app().next_update_async()
+        print("Group B")
+        emitter_info = self._ultrasonic.get_emitter_firing_info(ultrasonicPath)
+        print("emitter info:", emitter_info)
+
+        receiver_info = self._ultrasonic.get_receiver_firing_info(ultrasonicPath)
+        print("receiver info:", receiver_info)

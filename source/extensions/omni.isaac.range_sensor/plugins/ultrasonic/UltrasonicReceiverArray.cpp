@@ -7,6 +7,30 @@
 
 
 // produce the vector of combined envelopes, one for each receiver
+std::vector<USSEnvelope> UltrasonicReceiverArray::getCombinedActiveEnvelopeList(
+    const int numBins,
+    const float maxDist,
+    const std::vector<std::vector<uint8_t>>& adjacency,
+    const std::vector<bool>& isFiring,
+    const std::vector<bool>& isReceiving,
+    const std::vector<::physx::PxVec3>& emitterOrigins,
+    const std::vector<::physx::PxVec3>& receiverOrigins,
+    const std::vector<std::vector<::physx::PxVec3>>& worldPoints)
+{
+    std::vector<USSEnvelope> envelopeList = getCombinedEnvelopeList(
+        numBins, maxDist, adjacency, isFiring, isReceiving, emitterOrigins, receiverOrigins, worldPoints);
+    std::vector<USSEnvelope> activeEnvelopeList;
+    for (size_t i = 0; i < envelopeList.size(); i++)
+    {
+        if (isReceiving[i])
+        {
+            activeEnvelopeList.push_back(envelopeList[i]);
+        }
+    }
+    return envelopeList;
+}
+
+// produce the vector of combined envelopes, one for each receiver
 std::vector<USSEnvelope> UltrasonicReceiverArray::getCombinedEnvelopeList(
     const int numBins,
     const float maxDist,
@@ -24,7 +48,10 @@ std::vector<USSEnvelope> UltrasonicReceiverArray::getCombinedEnvelopeList(
     {
         for (size_t j = 0; j < envelopeMatrix[i].size(); j++)
         {
-            envelopeList[i] = envelopeList[i] + envelopeMatrix[i][j];
+            if (envelopeMatrix[i][j].isValid)
+            {
+                envelopeList[i] = envelopeList[i] + envelopeMatrix[i][j];
+            }
         }
     }
     return envelopeList;
@@ -50,9 +77,18 @@ std::vector<std::vector<USSEnvelope>> UltrasonicReceiverArray::getEnvelopeMatrix
     {
         for (size_t j = 0; j < totalPathLengths[i].size(); j++)
         {
-            // no attenuation of intensity based on angle, for now
-            std::vector<float> intensities(totalPathLengths[i][j].size(), 1.f);
-            envelopeMatrix[i][j].updateEnvelope(totalPathLengths[i][j], intensities);
+            if (shouldProduceEnvelope(adjacency, isFiring, isReceiving, i, j))
+            {
+                // no attenuation of intensity based on angle, for now
+                std::vector<float> intensities(totalPathLengths[i][j].size(), 1.f);
+                envelopeMatrix[i][j].updateEnvelope(totalPathLengths[i][j], intensities);
+            }
+            else
+            {
+                // give the envelope a negative value so we know to skip it when returning
+                envelopeMatrix[i][j] = USSEnvelope(numBins, invalidEnvelopeFloat);
+                envelopeMatrix[i][j].isValid = false;
+            }
         }
     }
     return envelopeMatrix;
