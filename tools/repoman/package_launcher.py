@@ -67,12 +67,12 @@ if __name__ == "__main__":
     print(f"omniverse-kit version: {kit_sdk_version}")
 
     # WAR for different version schemes
-    kit_launcher_version = kit_sdk_version.replace(f"-{platform_target}-{config}", f".{platform_target}.{config}")
-    print(f"kit-launcher version: {kit_launcher_version}")
+    # kit_launcher_version = kit_sdk_version.replace(f"-{platform_target}-{config}", f".{platform_target}.{config}")
+    # print(f"kit-launcher version: {kit_launcher_version}")
 
-    # Here we switch from omniverse-kit package to smaller kit-launcher package on the same folder link.
-    # Then we package it in and in the end switch back. That is almost as if kit sdkwas coming from launcher itself.
-    packmanapi.install("kit-launcher", kit_launcher_version, link_path=f"{REPO_ROOT}/_build/kit_release")
+    # # Here we switch from omniverse-kit package to smaller kit-launcher package on the same folder link.
+    # # Then we package it in and in the end switch back. That is almost as if kit sdkwas coming from launcher itself.
+    # packmanapi.install("kit-launcher", kit_launcher_version, link_path=f"{REPO_ROOT}/_build/kit_release")
 
     # Package launcher using this package as a root:
     print("Packaging launcher...")
@@ -83,4 +83,4 @@ if __name__ == "__main__":
     print(f"##teamcity[publishArtifacts '_build/packages/*']")
 
     # revert back
-    packmanapi.install("omniverse-kit", kit_sdk_version, link_path=f"{REPO_ROOT}/_build/kit_release")
+    # packmanapi.install("omniverse-kit", kit_sdk_version, link_path=f"{REPO_ROOT}/_build/kit_release")
