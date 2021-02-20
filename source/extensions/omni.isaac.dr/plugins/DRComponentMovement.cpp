@@ -234,7 +234,7 @@ void DRComponentMovement::tick()
             float z = randomRangeFloat(mZRange[0], mZRange[1]);
             if (mTargetPoints.size() > 0)
             {
-                randIndex = randomRangeInt(0, mTargetPoints.size() - 1);
+                randIndex = randomRangeInt(0, static_cast<int>(mTargetPoints.size()) - 1);
                 if (mEnableSequentialBehavior)
                     randIndex = mSequentialIndex;
                 x = mTargetPoints[randIndex][0];
@@ -261,7 +261,7 @@ void DRComponentMovement::tick()
                 if (mLookAtTargetPoints.size() > 0)
                 {
                     if (randIndex == -1)
-                        randIndex = randomRangeInt(0, mLookAtTargetPoints.size() - 1);
+                        randIndex = randomRangeInt(0, static_cast<int>(mLookAtTargetPoints.size()) - 1);
                     averagelookAtTarget = mLookAtTargetPoints[randIndex];
                 }
                 else if (mLookAtTargetPaths.size() > 0)
