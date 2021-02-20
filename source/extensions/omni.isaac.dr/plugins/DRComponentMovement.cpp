@@ -132,6 +132,18 @@ void DRComponentMovement::onComponentChange()
         }
     }
 
+    mTargetPoints.clear();
+    pxr::VtArray<pxr::GfVec3f> targetPoints;
+    movPrim.GetTargetPointsAttr().Get<pxr::VtArray<pxr::GfVec3f>>(&targetPoints);
+    for (unsigned int ind = 0; ind < targetPoints.size(); ind++)
+        mTargetPoints.push_back(targetPoints[ind]);
+    mLookAtTargetPoints.clear();
+    pxr::VtArray<pxr::GfVec3f> lookAtTargetPoints;
+    movPrim.GetLookAtTargetPointsAttr().Get<pxr::VtArray<pxr::GfVec3f>>(&lookAtTargetPoints);
+    for (unsigned int ind = 0; ind < lookAtTargetPoints.size(); ind++)
+        mLookAtTargetPoints.push_back(lookAtTargetPoints[ind]);
+    movPrim.GetEnableSequentialBehaviorAttr().Get(&mEnableSequentialBehavior);
+
     update();
     CARB_LOG_INFO("Movement Update: %s", mCompName.c_str());
 }
@@ -215,10 +227,20 @@ void DRComponentMovement::tick()
     {
         if (prim)
         {
+            int randIndex = -1;
             // Set random translation
             float x = randomRangeFloat(mXRange[0], mXRange[1]);
             float y = randomRangeFloat(mYRange[0], mYRange[1]);
             float z = randomRangeFloat(mZRange[0], mZRange[1]);
+            if (mTargetPoints.size() > 0)
+            {
+                randIndex = randomRangeInt(0, mTargetPoints.size() - 1);
+                if (mEnableSequentialBehavior)
+                    randIndex = mSequentialIndex;
+                x = mTargetPoints[randIndex][0];
+                y = mTargetPoints[randIndex][1];
+                z = mTargetPoints[randIndex][2];
+            }
             pxr::GfVec3d eyeUsd(x, y, z);
             if (mPolygonPoints.size() > 2)
             {
@@ -236,7 +258,13 @@ void DRComponentMovement::tick()
                 // Compute transformation if look at is enabled
                 pxr::GfMatrix4d matrix;
                 pxr::GfVec3d averagelookAtTarget(0.0, 0.0, 0.0);
-                if (mLookAtTargetPaths.size() > 0)
+                if (mLookAtTargetPoints.size() > 0)
+                {
+                    if (randIndex == -1)
+                        randIndex = randomRangeInt(0, mLookAtTargetPoints.size() - 1);
+                    averagelookAtTarget = mLookAtTargetPoints[randIndex];
+                }
+                else if (mLookAtTargetPaths.size() > 0)
                 {
                     for (std::string& targetPath : mLookAtTargetPaths)
                     {
@@ -291,6 +319,12 @@ void DRComponentMovement::tick()
                 omni::usd::UsdUtils::setLocalTransformMatrix(prim, scaledTransformMat);
             }
         }
+    }
+    if (mEnableSequentialBehavior)
+    {
+        mSequentialIndex++;
+        if (mSequentialIndex == mTargetPoints.size())
+            mSequentialIndex = 0;
     }
 }
 

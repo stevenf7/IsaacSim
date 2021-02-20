@@ -50,11 +50,12 @@ private:
     std::vector<std::string> mPaths, mLookAtTargetPaths;
     pxr::GfVec2f mXRange, mYRange, mZRange;
     std::vector<pxr::UsdPrim> mAllPrims;
-    bool mEnableLookAtTarget, mDrawPolygon;
+    bool mEnableLookAtTarget, mDrawPolygon, mEnableSequentialBehavior;
     pxr::GfVec3d mLookAtTargetOffset = pxr::GfVec3d(0.0, 0.0, 0.0);
     pxr::GfVec3d mUpUsd;
-    std::vector<pxr::GfVec3f> mPolygonPoints;
+    std::vector<pxr::GfVec3f> mPolygonPoints, mTargetPoints, mLookAtTargetPoints;
     omni::renderer::IDebugDraw* mDebugDrawPtr;
+    unsigned int mSequentialIndex = 0;
 };
 
 }
