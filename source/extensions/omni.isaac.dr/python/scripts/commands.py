@@ -99,6 +99,9 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         target_paths=None,
         polygon_points=[],
         draw_polygon=False,
+        target_points=[],
+        lookat_target_points=[],
+        enable_sequential_behavior=False,
         duration=0.0,
         include_children=False,
         seed=12345,
@@ -111,6 +114,9 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         self._target_paths = target_paths
         self._polygon_points = polygon_points
         self._draw_polygon = draw_polygon
+        self._target_points = target_points
+        self._lookat_target_points = lookat_target_points
+        self._enable_sequential_behavior = enable_sequential_behavior
         self._duration = duration
         self._include_children = include_children
         self._seed = seed
@@ -150,6 +156,9 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         prim.CreateSeedAttr().Set(int(self._seed))
         prim.CreatePolygonPointsAttr().Set(self._polygon_points)
         prim.CreateDrawPolygonAttr().Set(self._draw_polygon)
+        prim.CreateTargetPointsAttr().Set(self._target_points)
+        prim.CreateLookAtTargetPointsAttr().Set(self._lookat_target_points)
+        prim.CreateEnableSequentialBehaviorAttr().Set(self._enable_sequential_behavior)
         return prim
 
 
