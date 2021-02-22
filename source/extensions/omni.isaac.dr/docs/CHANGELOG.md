@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[0.1.3] - 2021-02-22
+========================
+
+Added
+-------
+- Point based movement randomization: random and sequence behavior
+- update to python 3.7
+- update to omni.kit.uiapp
+
 [0.1.2] - 2021-01-28
 ========================
 
