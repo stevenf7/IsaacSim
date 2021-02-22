@@ -28,11 +28,12 @@ def simple_yaml_load(file):
     d = {}
     with open(file, "r") as f:
         for line in f.readlines():
-            key, value = line.split(":", maxsplit=1)
-            value = value.strip()
-            if value.startswith("b'"):
-                value = value[2:-1]
-            d[key.strip()] = value
+            if line != "\n":
+                key, value = line.split(":", maxsplit=1)
+                value = value.strip()
+                if value.startswith("b'"):
+                    value = value[2:-1]
+                d[key.strip()] = value
     return d
 
 
