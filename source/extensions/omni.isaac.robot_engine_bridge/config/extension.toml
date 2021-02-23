@@ -1,5 +1,18 @@
 display_name = "Robot Engine Bridge"
 
+[package]
+version = "0.1.0"
+title = "Robot Engine Bridge"
+description = "Communication bridge for Isaac SDK and GXF"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim"
+keywords = ["isaac"]
+changelog = "docs/CHANGELOG.md"
+category = "Simulation"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.graph.core" = {} # needed for fastcache

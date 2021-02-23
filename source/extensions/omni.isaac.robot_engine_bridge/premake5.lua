@@ -29,6 +29,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/pxshared/include",
         "%{root}/_build/target-deps/isaac_engine/include",
+        "%{root}/_build/target-deps/isaac_engine/gxf/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
@@ -41,6 +42,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
             "%{root}/_build/target-deps/nv_usd/release/lib",
             "%{root}/_build/target-deps/isaac_engine/lib",
+            "%{root}/_build/target-deps/isaac_engine/gxf/lib",
             "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
             "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
             "%{kit_sdk_bin_dir}/plugins",
@@ -51,6 +53,9 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
         "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "capnp", "omni.usd", 
         "rangeSensorSchema", "robotEngineBridgeSchema", "physxSchema", "omni.isaac.occupancy_map.generator"
+    }
+    links{
+        "gxf_core", "gxf_isaac_messages", "gxf_isaac_message_generators"
     }
 
     linkoptions{"-Wl,--whole-archive %{root}/_build/target-deps/isaac_engine/lib/libkj.a -Wl,--no-whole-archive"}
@@ -78,11 +83,15 @@ repo_build.prebuild_link {
     { "%{root}/_build/target-deps/isaac_engine/data", ext.target_dir.."/resources/isaac_engine/" },
     { "%{root}/_build/target-deps/isaac_engine/packages", ext.target_dir.."/packages/" },
     { "%{root}/_build/target-deps/isaac_engine/packages/pyalice", ext.target_dir.."/omni/isaac/pyalice" },
+    { "%{root}/_build/target-deps/isaac_engine/gxf", ext.target_dir.."/gxf" },
 }
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/robot_engine_bridge" },
     { "%{root}/_build/target-deps/isaac_engine/lib/**", ext.target_dir.."/bin" },
+    { "%{root}/_build/target-deps/isaac_engine/gxf/lib/*.*so*", ext.target_dir.."/bin" },
+    { "%{root}/_build/target-deps/isaac_engine/gxf/lib/libgxf_core.so", ext.target_dir.."/bin" },
+    { "%{root}/_build/target-deps/isaac_engine/lib/libnpp*.so*", ext.target_dir.."/packages/viewers" },
     { "%{root}/_build/target-deps/isaac_engine/*.whl", ext.target_dir.."/pip-packages/" },
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RobotEngineBridgeSchema/**", ext.target_dir.."/omni/isaac/RobotEngineBridgeSchema" },
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}robotEngineBridgeSchema${lib_ext}", ext.target_dir.."/bin"},

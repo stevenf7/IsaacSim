@@ -152,7 +152,8 @@ std::vector<float> UltrasonicReceiverArray::getTotalPathLength(const ::physx::Px
                   << "V_r = " << V_r[0] << " " << V_r[1] << " " << V_r[2] << std::endl
                   << "mag(D) = " << D.magnitude() << std::endl
                   << "mag(V_r) = " << V_r.magnitude() << std::endl;*/
-        echo.push_back(totalDist);
+        // We want the output to be in meters
+        echo.push_back(totalDist * mMetersPerUnit);
     }
     return echo;
 }

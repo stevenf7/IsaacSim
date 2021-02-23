@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <carb/logging/Log.h>
+
 #include <packages/engine_c_api/isaac_c_api.h>
 
 #include <dlfcn.h>
@@ -77,6 +79,10 @@ public:
     IsaacCApi()
     {
         g_c_api_handle = dlopen("libisaac_c_api.so", RTLD_LAZY | RTLD_DEEPBIND);
+        if (!g_c_api_handle)
+        {
+            CARB_LOG_ERROR("libisaac_c_api.so dlopen failed");
+        }
         BINDFUNCTION(isaac_create_application, g_c_api_handle);
         BINDFUNCTION(isaac_destroy_application, g_c_api_handle);
         BINDFUNCTION(isaac_start_application, g_c_api_handle);
@@ -116,7 +122,10 @@ public:
      */
     ~IsaacCApi()
     {
-        dlclose(g_c_api_handle);
+        if (g_c_api_handle)
+        {
+            dlclose(g_c_api_handle);
+        }
         g_c_api_handle = nullptr;
     }
     DEFINEBINDING(isaac_create_application);

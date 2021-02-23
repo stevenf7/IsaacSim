@@ -25,10 +25,10 @@ struct RobotEngineBridge
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::robot_engine_bridge::RobotEngineBridge", 0, 1);
 
-    bool(CARB_ABI* createApplication)(std::string asset_path,
-                                      std::string app_file,
-                                      std::vector<const char*> module_paths,
-                                      std::vector<const char*> json_files);
+    bool(CARB_ABI* createApplication)(std::string assetPath,
+                                      std::string appFile,
+                                      std::vector<const char*> modulePaths,
+                                      std::vector<const char*> jsonFiles);
     bool(CARB_ABI* destroyApplication)();
     bool(CARB_ABI* tickComponent)(const std::string& primPath);
     std::string const(CARB_ABI* getLastError)();
@@ -37,6 +37,12 @@ struct RobotEngineBridge
                                           const std::string& cameraRequestChannelName,
                                           const std::string& outputComponent,
                                           const std::string& replyChannelName);
+
+    // GXF Bridge
+    bool(CARB_ABI* createGxfApplication)(const std::string& basePath,
+                                         const std::string& manifestFile,
+                                         const std::vector<std::string>& graphFiles);
+    bool(CARB_ABI* destroyGxfApplication)();
 };
 }
 }

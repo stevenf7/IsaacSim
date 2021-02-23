@@ -2,8 +2,7 @@ import omni
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.range_sensor import _range_sensor
-import omni.isaac.RangeSensorSchema as RangeSensorSchema
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
+from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 from omni.physx.scripts.physicsUtils import *
 import asyncio
 import weakref
@@ -123,64 +122,108 @@ class Extension(omni.ext.IExt):
             UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
 
             # List of poses that define the emitter prims
+            origin = Gf.Vec3d(4.8, 6.4, 0.0)
+
             emitter_poses = [
-                (Gf.Quatd(0.951057, 0, 0, -0.309017), Gf.Vec3d(25, 0.0, 25)),
-                (Gf.Quatd(0.987688, 0, 0, -0.156434), Gf.Vec3d(25, 50.0, 25)),
-                (Gf.Quatd(0.987688, 0, 0, 0.156434), Gf.Vec3d(25, 100, 25)),
-                (Gf.Quatd(0.951057, 0, 0, 0.309017), Gf.Vec3d(25, 150, 25)),
-                (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-25, 0.0, 25)),
-                (Gf.Quatd(-0.156435, 0, 0, 0.987688), Gf.Vec3d(-25, 50.0, 25)),
-                (Gf.Quatd(0.156434, 0, 0, 0.987688), Gf.Vec3d(-25, 100, 25)),
-                (Gf.Quatd(0.309017, 0, 0, 0.951057), Gf.Vec3d(-25, 150, 25)),
-                (Gf.Quatd(0.760406, 0, 0, -0.649448), Gf.Vec3d(12.5, 0.0, 25)),
-                (Gf.Quatd(0.649448, 0, 0, -0.760406), Gf.Vec3d(12.5, 0.0, 25)),
-                (Gf.Quatd(0.760406, 0, 0, 0.649448), Gf.Vec3d(12.5, 150, 25)),
-                (Gf.Quatd(0.649448, 0, 0, 0.760406), Gf.Vec3d(12.5, 150, 25)),
+                ((0, 0, 75.0), Gf.Vec3d(3.844, 0.9384, 0.525)),
+                ((0, 0, 30.0), Gf.Vec3d(4.046, 0.7735, 0.56)),
+                ((0, 0, 11.8), Gf.Vec3d(4.172, 0.3256, 0.591)),
+                ((0, 0, -11.8), Gf.Vec3d(4.172, -0.3256, 0.591)),
+                ((0, 0, -30.0), Gf.Vec3d(4.046, -0.7735, 0.561)),
+                ((0, 0, -75.0), Gf.Vec3d(3.844, -0.9384, 0.525)),
+                ((0, 0, 99.2), Gf.Vec3d(-1.454, 0.9352, 0.5367)),
+                ((0, 0, 150.0), Gf.Vec3d(-1.789, 0.788, 0.558)),
+                ((0, 0, 175.5), Gf.Vec3d(-1.887, 0.36, 0.6249)),
+                ((0, 0, -175.5), Gf.Vec3d(-1.887, -0.36, 0.6249)),
+                ((0, 0, -150.0), Gf.Vec3d(-1.789, -0.788, 0.558)),
+                ((0, 0, -99.2), Gf.Vec3d(-1.454, -0.9352, 0.5367)),
             ]
 
+            adjacency = [
+                [0, 1],
+                [0, 1, 2],
+                [1, 2, 3],
+                [2, 3, 4],
+                [3, 4, 5],
+                [4, 5],
+                [6, 7],
+                [6, 7, 8],
+                [7, 8, 9],
+                [8, 9, 10],
+                [9, 10, 11],
+                [10, 11],
+            ]
             emitters = []
-            for pose in emitter_poses:
+            for i in range(len(emitter_poses)):
+                pose = emitter_poses[i]
+                adjacent = adjacency[i]
                 result, emitter_prim = omni.kit.commands.execute(
                     "CreateRangeSensorUltrasonicEmitterCommand",
                     path="/World/UltrasonicEmitter",
                     per_ray_intensity=0.4,
                     yaw_offset=0.0,
-                    adjacency_list=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+                    adjacency_list=adjacent,
                 )
-
-                emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set(pose[1])
-                emitter_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(
-                    Gf.Rotation(pose[0]).Decompose((1, 0, 0), (0, 1, 0), (0, 0, 1))
-                )
+                emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set((origin + pose[1]) / 0.01)
+                emitter_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(pose[0])
                 emitters.append(emitter_prim)
-
-            # create the ULTRASONIC.  Before we can set any attributes on our ULTRASONIC, we must first create the prim using our
-            # ULTRASONIC schema, and then populate it with the parameters we will be manipulating.  If you try to manipulate
-            # a parameter before creating it, you will get a runtime error
-
             emitter_paths = [emitter.GetPath() for emitter in emitters]
 
             result, group_1 = omni.kit.commands.execute(
                 "CreateRangeSensorUltrasonicFiringGroupCommand",
-                path="/World/UltrasonicFiringGroup",
-                emitter_modes=[(0, 0), (1, 1)],
-                receiver_modes=[(0, 0), (1, 0)],
+                path="/World/UltrasonicFiringGroup_0",
+                emitter_modes=[(0, 1), (3, 0), (4, 1), (7, 0), (8, 1), (11, 0)],
+                receiver_modes=[
+                    (0, 1),
+                    (1, 1),
+                    (2, 0),
+                    (3, 0),
+                    (3, 1),
+                    (4, 0),
+                    (4, 1),
+                    (5, 1),
+                    (6, 0),
+                    (7, 0),
+                    (7, 1),
+                    (8, 0),
+                    (8, 1),
+                    (9, 1),
+                    (10, 0),
+                    (11, 0),
+                ],
             )
+
             result, group_2 = omni.kit.commands.execute(
                 "CreateRangeSensorUltrasonicFiringGroupCommand",
-                path="/World/UltrasonicFiringGroup",
-                emitter_modes=[(5, 1)],
-                receiver_modes=[(5, 1)],
+                path="/World/UltrasonicFiringGroup_1",
+                emitter_modes=[(1, 1), (2, 0), (5, 1), (6, 0), (9, 1), (10, 0)],
+                receiver_modes=[
+                    (0, 1),
+                    (1, 0),
+                    (1, 1),
+                    (2, 0),
+                    (2, 1),
+                    (3, 0),
+                    (4, 1),
+                    (5, 1),
+                    (6, 0),
+                    (7, 0),
+                    (8, 1),
+                    (9, 0),
+                    (9, 1),
+                    (10, 0),
+                    (10, 1),
+                    (11, 0),
+                ],
             )
             self.ultrasonicPath = "/World/UltrasonicArray"
 
-            print(type(group_1))
             result, self.ultrasonic = omni.kit.commands.execute(
                 "CreateRangeSensorUltrasonicArrayCommand",
                 path=self.ultrasonicPath,
                 # Min and max range for the ULTRASONIC.  This defines the starting and stopping locations for the linetrace
                 min_range=0.4,
-                max_range=300.0,
+                max_range=4.5,
                 # These attributes affect drawing the ultrasonic in the viewport.  High Level Of Detail (HighLod) = True will draw
                 # all rays.  If false it will only draw horizontal rays.  Draw Ultrasonic Points = True will draw the actual
                 # ULTRASONIC rays in the viewport.
@@ -189,9 +232,9 @@ class Extension(omni.ext.IExt):
                 # Horizontal and vertical resolution in degrees.  Rays will be fired on the bin boundries defined by the
                 # resolution.  If your FOV is 45 degrees and your resolution is 15 degrees, you will get rays at
                 # 0, 15, 30, and 45 degrees.
-                horizontal_fov=15.0,  # set wedge vertical extent in degrees
-                vertical_fov=10.0,  # set wedge horizontal extent in degrees
-                horizontal_resolution=0.5,
+                horizontal_fov=90.0,  # set wedge vertical extent in degrees
+                vertical_fov=15.0,  # set wedge horizontal extent in degrees
+                horizontal_resolution=0.3,
                 vertical_resolution=0.5,
                 num_bins=224,
                 emitter_prims=emitter_paths,

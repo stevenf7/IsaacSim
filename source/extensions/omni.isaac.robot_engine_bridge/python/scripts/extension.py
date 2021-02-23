@@ -1,6 +1,6 @@
 import os
+import carb
 import omni.ext
-import carb.tokens
 import omni.ui
 import omni.kit.menu
 import weakref
@@ -14,22 +14,18 @@ EXTENSION_NAME = "Robot Engine Bridge"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
 
-        # active script
-        self._script = None
-
         self._settings = carb.settings.get_settings()
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._reb_extension_path = ext_manager.get_extension_path(ext_id)
+
         json_path_input = self._settings.get("/isaac/robot_engine_bridge/json")
 
         # The default app json is copied to the resources folder as part of the build process
         # exec_folder resolves automatically to the folder containing the kit binary
-        json_path = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve(
-                "${app}/../exts/omni.isaac.robot_engine_bridge/resources/isaac_engine/json/isaacsim.app.json"
-            )
-        )
+        json_path = self._reb_extension_path + "/resources/isaac_engine/json/isaacsim.app.json"
 
         if json_path_input is not None:
             json_path = json_path_input
@@ -94,23 +90,23 @@ class Extension(omni.ext.IExt):
                             self._scene_loader["create_sdk"] = omni.ui.Button(
                                 "Create Application", height=0, clicked_fn=self._on_create_destroy_sdk_app_fn
                             )
-                # with omni.ui.CollapsableFrame("Experimental GXF Bridge", height=0, collapsed=True):
-                #     with omni.ui.VStack(height=0):
-                #         with omni.ui.HStack():
-                #             omni.ui.Label("Manifest Path ")
-                #             self._scene_loader["gxf_manifest"] = omni.ui.StringField().model
-                #             self._scene_loader["gxf_manifest"].set_value(
-                #                 "/home/hmazhar/repos/omni_isaac_sim/_build/target-deps/isaac_sim_gxf/gxf/gxe/manifest.yaml"
-                #             )
-                #         with omni.ui.HStack():
-                #             omni.ui.Label("Graph Path ")
-                #             self._scene_loader["gxf_graph"] = omni.ui.StringField().model
-                #             self._scene_loader["gxf_graph"].set_value(
-                #                 "/home/hmazhar/repos/omni_isaac_sim/source/extensions/omni.isaac.robot_engine_bridge/data/config/tcp_multi_channel.yaml"
-                #             )
-                #         self._scene_loader["create_gxf"] = omni.ui.Button(
-                #             "Create Application", height=0, clicked_fn=self._on_create_destroy_gxf_app_fn
-                #         )
+                with omni.ui.CollapsableFrame("GXF Bridge", height=0, collapsed=False):
+                    with omni.ui.VStack(height=0):
+                        # with omni.ui.HStack():
+                        #     omni.ui.Label("Manifest Path ")
+                        #     self._scene_loader["gxf_manifest"] = omni.ui.StringField().model
+                        #     self._scene_loader["gxf_manifest"].set_value(
+                        #         "manifest.yaml"
+                        #     )
+                        with omni.ui.HStack():
+                            omni.ui.Label("Graph Path ", width=0)
+                            self._scene_loader["gxf_graph"] = omni.ui.StringField().model
+                            self._scene_loader["gxf_graph"].set_value(
+                                self._reb_extension_path + "/data/config/visualize_uss.yaml"
+                            )
+                        self._scene_loader["create_gxf"] = omni.ui.Button(
+                            "Create Application", height=0, clicked_fn=self._on_create_destroy_gxf_app_fn
+                        )
 
         self._menu = RobotEngineBridgeMenu()
         self._is_created = False
@@ -136,11 +132,8 @@ class Extension(omni.ext.IExt):
 
     def _on_create_destroy_sdk_app_fn(self):
         if self._is_created is False:
-            asset_path = os.path.abspath(
-                carb.tokens.get_tokens_interface().resolve("${app}/../exts/omni.isaac.robot_engine_bridge/")
-            )
             self._re_bridge.create_application(
-                asset_path, self._scene_loader["json_path"].get_value_as_string(), [], []
+                self._reb_extension_path, self._scene_loader["json_path"].get_value_as_string(), [], []
             )
             self._re_bridge.initialize_stage_loader(
                 self._scene_loader["input_component"].get_value_as_string(),
@@ -156,15 +149,21 @@ class Extension(omni.ext.IExt):
             self._is_created = False
             self._scene_loader["create_sdk"].text = "Create Application"
 
-    # def _on_create_destroy_gxf_app_fn(self):
-    #     if self._is_gxf_created is False:
-    #         self._re_bridge.create_gxf_application(
-    #             self._scene_loader["gxf_manifest"].get_value_as_string(),
-    #             self._scene_loader["gxf_graph"].get_value_as_string(),
-    #         )
-    #         self._is_gxf_created = True
-    #         self._scene_loader["create_gxf"].text = "Destroy Application"
-    #     else:
-    #         self._re_bridge.destroy_gxf_application()
-    #         self._is_gxf_created = False
-    #         self._scene_loader["create_gxf"].text = "Create Application"
+    def _on_create_destroy_gxf_app_fn(self):
+        if self._is_gxf_created is False:
+
+            self._re_bridge.create_gxf_application(
+                self._reb_extension_path + "/gxf/lib",
+                "manifest.yaml",
+                # self._scene_loader["gxf_manifest"].get_value_as_string(),
+                [
+                    self._reb_extension_path + "/data/config/isaac_sim_allocator.yaml",
+                    self._scene_loader["gxf_graph"].get_value_as_string(),
+                ],
+            )
+            self._is_gxf_created = True
+            self._scene_loader["create_gxf"].text = "Destroy Application"
+        else:
+            self._re_bridge.destroy_gxf_application()
+            self._is_gxf_created = False
+            self._scene_loader["create_gxf"].text = "Create Application"

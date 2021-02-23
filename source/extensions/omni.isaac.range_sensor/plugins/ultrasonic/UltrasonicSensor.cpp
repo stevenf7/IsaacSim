@@ -162,6 +162,8 @@ void UltrasonicSensor::onComponentChange()
             }
         }
     }
+
+    mReceiverArray.mMetersPerUnit = mMetersPerUnit;
 }
 
 
