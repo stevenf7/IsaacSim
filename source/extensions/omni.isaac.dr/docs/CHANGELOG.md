@@ -7,6 +7,7 @@ CHANGELOG
 
 Added
 -------
+- Load DR components as a layer
 - Point based movement randomization: random and sequence behavior
 - update to python 3.7
 - update to omni.kit.uiapp
@@ -27,7 +28,7 @@ Fixed
 
 Added
 -------
-- Improved python APIs based on omni.kit.commads
+- Improved python APIs based on omni.kit.commands
 - Added more samples
 - Updated documentation: https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/domain-randomization.html
 
