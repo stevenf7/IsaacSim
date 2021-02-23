@@ -218,7 +218,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             "CreateRangeSensorUltrasonicArrayCommand",
             path="/World/UltrasonicArray",
             min_range=0.4,
-            max_range=300.0,
+            max_range=3.0,
             draw_points=True,
             draw_lines=True,
             horizontal_fov=20.0,
@@ -522,7 +522,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             "CreateRangeSensorUltrasonicArrayCommand",
             path=self.ultrasonicPath,
             min_range=0.4,
-            max_range=300.0,
+            max_range=3.0,
             draw_points=False,
             draw_lines=True,
             horizontal_fov=15.0,  # set wedge vertical extent in degrees
@@ -563,7 +563,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             "CreateRangeSensorUltrasonicArrayCommand",
             path=self.ultrasonicPath,
             min_range=0.4,
-            max_range=300.0,
+            max_range=3.0,
             draw_points=False,
             draw_lines=True,
             horizontal_fov=15.0,  # set wedge vertical extent in degrees
@@ -601,7 +601,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             "CreateRangeSensorUltrasonicArrayCommand",
             path=self.ultrasonicPath,
             min_range=0.4,
-            max_range=300.0,
+            max_range=3.0,
             draw_points=False,
             draw_lines=True,
             horizontal_fov=15.0,  # set wedge vertical extent in degrees

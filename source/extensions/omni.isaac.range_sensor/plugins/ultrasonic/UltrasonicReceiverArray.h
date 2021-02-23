@@ -49,6 +49,7 @@ public:
                                const std::vector<bool>& isReceiving,
                                const size_t i,
                                const size_t j);
+    float mMetersPerUnit = 1.0;
 
 private:
     std::vector<float> getTotalPathLength(const ::physx::PxVec3& receiverOrigin,

@@ -43,6 +43,7 @@
 #include "Core/IsaacMessage.h"
 #include "Core/IsaacCApi.h"
 #include "Core/IsaacApplication.h"
+#include "Core/GxfContext.h"
 
 #include <dlfcn.h>
 
@@ -77,6 +78,7 @@ pxr::UsdStageWeakPtr g_stage = nullptr;
 
 std::unique_ptr<omni::isaac::robot_engine_bridge::IsaacCApi> g_c_api;
 std::unique_ptr<omni::isaac::robot_engine_bridge::IsaacApplication> g_application_handle;
+std::unique_ptr<omni::isaac::robot_engine_bridge::gxf_bridge::GxfContext> g_gxf_context_handle;
 
 
 bool CARB_ABI createApplication(std::string asset_path,
@@ -135,6 +137,41 @@ void CARB_ABI initializeStageLoader(const std::string& inputComponent,
         inputComponent, requestChannelName, cameraRequestChannelName, outputComponent, replyChannelName);
 }
 
+
+bool CARB_ABI createGxfApplication(const std::string& basePath,
+                                   const std::string& manifestFile,
+                                   const std::vector<std::string>& graphFiles)
+{
+
+
+    gxf_result_t error = g_gxf_context_handle->create(basePath, manifestFile, graphFiles);
+    if (error != gxf_result_t::GXF_SUCCESS)
+    {
+        return false;
+    }
+    error = g_gxf_context_handle->start();
+    if (error != gxf_result_t::GXF_SUCCESS)
+    {
+        return false;
+    }
+    return true;
+}
+bool CARB_ABI destroyGxfApplication()
+{
+    gxf_result_t error = g_gxf_context_handle->stop();
+    if (error != gxf_result_t::GXF_SUCCESS)
+    {
+        return false;
+    }
+    error = g_gxf_context_handle->destroy();
+    if (error != gxf_result_t::GXF_SUCCESS)
+    {
+        return false;
+    }
+    return true;
+}
+
+
 void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
     pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
@@ -150,6 +187,11 @@ void onAttach(long int stageId, double metersPerUnit, void* userData)
         g_application_handle->initialize(g_stage);
         g_application_handle->initComponents();
     }
+    if (g_gxf_context_handle)
+    {
+        g_gxf_context_handle->initialize(g_stage);
+        g_gxf_context_handle->initComponents();
+    }
 }
 void onDetach(void* userData)
 {
@@ -157,6 +199,10 @@ void onDetach(void* userData)
     if (g_application_handle)
     {
         g_application_handle->deleteAllComponents();
+    }
+    if (g_gxf_context_handle)
+    {
+        g_gxf_context_handle->deleteAllComponents();
     }
 }
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
@@ -169,6 +215,10 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
     if (g_application_handle)
     {
         g_application_handle->tick(elapsedSecs);
+    }
+    if (g_gxf_context_handle)
+    {
+        g_gxf_context_handle->tick(elapsedSecs);
     }
 }
 void onResume(float currentTime, void* userData)
@@ -184,12 +234,16 @@ void onStop(void* userData)
     {
         g_application_handle->onStop();
     }
+    if (g_stage && g_gxf_context_handle)
+    {
+        g_gxf_context_handle->onStop();
+    }
 }
 void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 {
     // printf("++ REB: Prim Add: %s\n", primPath,
     //        g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
-    if (g_application_handle)
+    if (g_application_handle || g_gxf_context_handle)
     {
         pxr::UsdPrim addedPrim = g_stage->GetPrimAtPath(primPath);
         if (!addedPrim)
@@ -197,13 +251,27 @@ void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
             return;
         }
         // Add the root prim
-        g_application_handle->onComponentAdd(addedPrim);
+        if (g_application_handle)
+        {
+            g_application_handle->onComponentAdd(addedPrim);
+        }
+        if (g_gxf_context_handle)
+        {
+            g_gxf_context_handle->onComponentAdd(addedPrim);
+        }
         // Check if it has any descendants that need to be added
         pxr::UsdPrimSubtreeRange range = addedPrim.GetDescendants();
         for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
         {
             pxr::UsdPrim prim = *iter;
-            g_application_handle->onComponentAdd(prim);
+            if (g_application_handle)
+            {
+                g_application_handle->onComponentAdd(prim);
+            }
+            if (g_gxf_context_handle)
+            {
+                g_gxf_context_handle->onComponentAdd(prim);
+            }
         }
     }
 }
@@ -215,6 +283,10 @@ void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
     {
         g_application_handle->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
     }
+    if (g_stage && g_gxf_context_handle)
+    {
+        g_gxf_context_handle->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
+    }
 }
 
 void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
@@ -223,6 +295,10 @@ void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
     if (g_application_handle)
     {
         g_application_handle->onComponentRemove(primPath);
+    }
+    if (g_gxf_context_handle)
+    {
+        g_gxf_context_handle->onComponentRemove(primPath);
     }
 }
 }
@@ -259,6 +335,8 @@ CARB_EXPORT void carbOnPluginStartup()
     g_application_handle = std::make_unique<omni::isaac::robot_engine_bridge::IsaacApplication>(
         g_c_api.get(), g_dynamicControl, g_jsonSerializer, g_iDict);
 
+    g_gxf_context_handle = std::make_unique<omni::isaac::robot_engine_bridge::gxf_bridge::GxfContext>(g_dynamicControl);
+
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "IsaacRobotEngineBridge";
     desc.onAttach = onAttach;
@@ -278,6 +356,7 @@ CARB_EXPORT void carbOnPluginShutdown()
 {
     g_c_api.reset();
     g_application_handle.reset();
+    g_gxf_context_handle.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
 }
 
@@ -292,4 +371,7 @@ void fillInterface(omni::isaac::robot_engine_bridge::RobotEngineBridge& iface)
     iface.tickComponent = tickComponent;
     iface.getLastError = getLastError;
     iface.initializeStageLoader = initializeStageLoader;
+
+    iface.createGxfApplication = createGxfApplication;
+    iface.destroyGxfApplication = destroyGxfApplication;
 }

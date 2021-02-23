@@ -215,6 +215,10 @@ auto TaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
 
 void IsaacApplication::tick(double dt)
 {
+    if (!mAppHandle)
+    {
+        return;
+    }
     CARB_PROFILE_ZONE(0, "REB IsaacApplication Tick");
     // omni::isaac::utils::ScopedTimer TimerApp("IsaacApplication");
     // only update time difference to bridge app if the step size is greater than zero

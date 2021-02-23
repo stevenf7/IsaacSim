@@ -118,7 +118,7 @@ workspace "isaac-sim"
 
     -- Debug configuration settings
     filter { "configurations:debug" }
-        defines { "DEBUG" }
+        defines { "_DEBUG" }
         optimize "Off"
 
     -- Release configuration settings

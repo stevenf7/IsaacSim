@@ -895,4 +895,32 @@ class TickRobotEngineBridgeComponentCommand(omni.kit.commands.Command):
         pass
 
 
+class CreateGXFApplicationCommand(omni.kit.commands.Command):
+    def __init__(self, base_path: str, manifest_file: str, graph_files: []):
+        self._base_path = base_path
+        self._manifest_file = manifest_file
+        self._graph_files = graph_files
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        pass
+
+    def do(self) -> bool:
+
+        return self._re_bridge.create_gxf_application(self._base_path, self._manifest_file, self._graph_file)
+
+    def undo(self):
+        pass
+
+
+class DestroyGXFApplicationCommand(omni.kit.commands.Command):
+    def __init__(self):
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        pass
+
+    def do(self) -> bool:
+        return self._re_bridge.destroy_gxf_application()
+
+    def undo(self):
+        pass
+
+
 omni.kit.commands.register_all_commands_in_module(__name__)
