@@ -281,6 +281,127 @@ class CreateScaleComponentCommand(omni.kit.commands.Command):
         return prim
 
 
+class CreateTransformComponentCommand(omni.kit.commands.Command):
+    """Commands class to create a transform randomization component.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "CreateTransformComponentCommand",
+                prim_paths=["/World/Cube", "/World/Cube1"],
+                min_range=(0.0, 0.0, 0.0),
+                max_range=(100.0, 100.0, 100.0),
+                duration=1.0,
+                include_children=False,
+            )
+    """
+
+    def __init__(
+        self,
+        path=None,
+        prim_paths=[],
+        translate_min_range=(0.0, 0.0, 0.0),
+        translate_max_range=(100.0, 100.0, 100.0),
+        rotate_min_range=(0.0, 0.0, 0.0),
+        rotate_max_range=(0.0, 0.0, 0.0),
+        scale_min_range=(0.0, 0.0, 0.0),
+        scale_max_range=(0.0, 0.0, 0.0),
+        target_position=None,
+        target_paths=None,
+        polygon_points=[],
+        draw_polygon=False,
+        target_points=[],
+        lookat_target_points=[],
+        enable_sequential_behavior=False,
+        duration=0.0,
+        include_children=False,
+        seed=12345,
+    ):
+        self._path = path
+        self._prim_paths = prim_paths
+        self._translate_min_range = translate_min_range
+        self._translate_max_range = translate_max_range
+        self._rotate_min_range = rotate_min_range
+        self._rotate_max_range = rotate_max_range
+        self._scale_min_range = scale_min_range
+        self._scale_max_range = scale_max_range
+        self._target_position = target_position
+        self._target_paths = target_paths
+        self._polygon_points = polygon_points
+        self._draw_polygon = draw_polygon
+        self._target_points = target_points
+        self._lookat_target_points = lookat_target_points
+        self._enable_sequential_behavior = enable_sequential_behavior
+        self._duration = duration
+        self._include_children = include_children
+        self._seed = seed
+
+    def do(self):
+        """Create a transform randomization component, if target position or paths are specified the object will point towards that target"""
+        stage = omni.usd.get_context().get_stage()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        if self._path is None:
+            self._path = omni.kit.utils.get_stage_next_free_path(
+                stage, default_prim_path + "/transform_component", False
+            )
+        prim = DrSchema.TransformComponent.Define(stage, Sdf.Path(self._path))
+        prim.CreateCompNameAttr().Set(str(self._path))
+
+        # Set attributes for DR transform component
+        rel_paths = prim.CreatePrimPathsRel()
+        for path in self._prim_paths:
+            rel_paths.AddTarget(path)
+        prim.CreateTranslateMinAttr().Set(
+            (
+                float(self._translate_min_range[0]),
+                float(self._translate_min_range[1]),
+                float(self._translate_min_range[2]),
+            )
+        )
+        prim.CreateTranslateMaxAttr().Set(
+            (
+                float(self._translate_max_range[0]),
+                float(self._translate_max_range[1]),
+                float(self._translate_max_range[2]),
+            )
+        )
+        prim.CreateRotateMinAttr().Set(
+            (float(self._rotate_min_range[0]), float(self._rotate_min_range[1]), float(self._rotate_min_range[2]))
+        )
+        prim.CreateRotateMaxAttr().Set(
+            (float(self._rotate_max_range[0]), float(self._rotate_max_range[1]), float(self._rotate_max_range[2]))
+        )
+        prim.CreateScaleMinAttr().Set(
+            (float(self._scale_min_range[0]), float(self._scale_min_range[1]), float(self._scale_min_range[2]))
+        )
+        prim.CreateScaleMaxAttr().Set(
+            (float(self._scale_max_range[0]), float(self._scale_max_range[1]), float(self._scale_max_range[2]))
+        )
+        if self._target_position is not None or self._target_paths is not None:
+            prim.CreateEnableLookAtTargetAttr().Set(bool(True))
+        else:
+            prim.CreateEnableLookAtTargetAttr().Set(bool(False))
+        target_rel_paths = prim.CreateLookAtTargetPathsRel()
+        # if multiple targets are specified, the average of all positions is taken
+        if self._target_paths is not None:
+            for path in self._target_paths:
+                target_rel_paths.AddTarget(path)
+        # if no target prim is specified, this value used as the target, if a prim is specified this acts like an offset.
+        if self._target_position is not None:
+            prim.CreateLookAtTargetOffsetAttr().Set(self._target_position)
+        prim.CreateDurationAttr().Set(self._duration)
+        prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
+        prim.CreateSeedAttr().Set(int(self._seed))
+        prim.CreatePolygonPointsAttr().Set(self._polygon_points)
+        prim.CreateDrawPolygonAttr().Set(self._draw_polygon)
+        prim.CreateTargetPointsAttr().Set(self._target_points)
+        prim.CreateLookAtTargetPointsAttr().Set(self._lookat_target_points)
+        prim.CreateEnableSequentialBehaviorAttr().Set(self._enable_sequential_behavior)
+        return prim
+
+
 class CreateLightComponentCommand(omni.kit.commands.Command):
     """Commands class to create a light randomization component.
 
@@ -602,6 +723,7 @@ omni.kit.commands.register(CreateColorComponentCommand)
 omni.kit.commands.register(CreateMovementComponentCommand)
 omni.kit.commands.register(CreateRotationComponentCommand)
 omni.kit.commands.register(CreateScaleComponentCommand)
+omni.kit.commands.register(CreateTransformComponentCommand)
 omni.kit.commands.register(CreateLightComponentCommand)
 omni.kit.commands.register(CreateTextureComponentCommand)
 omni.kit.commands.register(CreateMaterialComponentCommand)
