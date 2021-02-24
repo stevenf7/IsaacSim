@@ -16,6 +16,7 @@
 #include "GxfContext.h"
 #include "GxfComponent.h"
 #include "../Gxf/UltrasonicComponent.h"
+#include "../Gxf/LidarComponent.h"
 #include <gxf/std/unbounded_allocator.hpp>
 
 namespace omni
@@ -317,6 +318,11 @@ void GxfContext::onComponentAdd(const pxr::UsdPrim& prim)
     {
         component = std::make_unique<UltrasonicComponent>();
         component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineUltrasonic(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineLidar>())
+    {
+        component = std::make_unique<LidarComponent>();
+        component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineLidar(prim), mStage);
     }
     if (component)
     {
