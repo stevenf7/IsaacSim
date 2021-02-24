@@ -92,7 +92,7 @@ void UltrasonicSensor::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetVerticalResolutionAttr(), mVerticalResolution);
 
     isaac::utils::safeGetAttribute(typedPrim.GetNumBinsAttr(), mNumBins);
-
+    isaac::utils::safeGetAttribute(typedPrim.GetUseBRDFAttr(), mUseBRDF);
 
     // we have to have atleast one beam so the FOV can never be smaller than resolution
     mHorizontalResolution = pxr::GfClamp(mHorizontalResolution, 0.005f, 1024);
@@ -182,6 +182,7 @@ void UltrasonicSensor::tick()
         const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
 
         std::vector<std::vector<::physx::PxVec3>> worldPoints(mEmitters.size());
+        std::vector<std::vector<::physx::PxVec3>> normals(mEmitters.size());
         std::vector<::physx::PxVec3> origins = omni::isaac::range_sensor::extractOrigins(mEmitters, mFastCachePtr);
         std::vector<std::vector<uint8_t>> adjacency = omni::isaac::range_sensor::extractAdjacencyVectors(mEmitters);
 
@@ -213,13 +214,14 @@ void UltrasonicSensor::tick()
                 if (worldPoints[emitterMode[0]].size() == 0)
                 {
                     worldPoints[emitterMode[0]] = mEmitters[emitterMode[0]].mHitPosWorld;
+                    normals[emitterMode[0]] = mEmitters[emitterMode[0]].mNormals;
                 }
                 // TODO Use the goup.mReceiverModes array to do envelope calculation
             }
 
             envelopeList[currentFreqId] = mReceiverArray.getCombinedEnvelopeList(
                 mNumBins, mMaxDepth * mMetersPerUnit, adjacency, mIsFiring[currentFreqId], mIsReceiving[currentFreqId],
-                origins, origins, worldPoints);
+                origins, origins, worldPoints, normals, mUseBRDF);
         }
         // this is mode 0; do mode 1
         for (size_t j = 0; j < envelopeList[0].size(); j++)

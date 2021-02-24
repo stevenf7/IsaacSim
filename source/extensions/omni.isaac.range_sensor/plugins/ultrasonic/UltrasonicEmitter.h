@@ -123,7 +123,7 @@ public:
                 // Project the start point out to prevent collisions from origin
                 bool hit = raycast(origin + unitDir * minDepth, unitDir, maxDepth, raycastHit, physxScenePtr);
                 mHitPosWorld[i] = raycastHit.position;
-
+                mNormals[i] = raycastHit.normal;
                 if (hit)
                 {
                     // the distance of the ray should be from center of lidar
@@ -240,12 +240,14 @@ public:
         mDepth.resize(mRows * mCols);
         mHitPos.resize(mRows * mCols);
         mHitPosWorld.resize(mRows * mCols);
+        mNormals.resize(mRows * mCols);
 
         mLinearDepth.assign(mRows * mCols, 0);
         mIntensity.assign(mRows * mCols, 0);
         mDepth.assign(mRows * mCols, 0);
         mHitPos.assign(mRows * mCols, { 0, 0, 0 });
         mHitPosWorld.assign(mRows * mCols, { 0, 0, 0 });
+        mNormals.assign(mRows * mCols, { 0, 0, 0 });
         onComponentChange();
     }
 
@@ -328,6 +330,7 @@ public:
     std::vector<uint16_t> mDepth;
     std::vector<carb::Float3> mHitPos;
     std::vector<::physx::PxVec3> mHitPosWorld;
+    std::vector<::physx::PxVec3> mNormals;
     pxr::VtArray<int> mAdjacencyList;
     int mRows = 0;
     int mCols = 0;

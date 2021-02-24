@@ -400,7 +400,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(envelope_diff[11].any())
 
     # # ensures that envelope changes when cube is moved progressively further away from sensor
-    async def test_move_box_to_muliple_distances(self):
+    async def test_move_box_to_multiple_distances(self):
         # Plane
         omni.kit.commands.execute(
             "AddGroundPlaneCommand",
@@ -743,3 +743,167 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         receiver_info = self._ultrasonic.get_receiver_firing_info(ultrasonicPath)
         print("receiver info:", receiver_info)
+
+    # Create two emitters, test to make sure that data from them is correct when using cos(theta)
+    # to weight the
+    async def test_active_envelope_interface_two_emitters_with_brdf(self):
+
+        result, emitter0 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicEmitterCommand",
+            path="/World/UltrasonicEmitter0",
+            per_ray_intensity=0.4,
+            yaw_offset=0.0,
+            adjacency_list=[0, 1],
+        )
+        result, group_1 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            path="/World/UltrasonicFiringGroup",
+            emitter_modes=[(0, 0), (1, 0), (1, 1)],
+            receiver_modes=[(0, 0), (0, 1), (1, 0), (1, 1)],
+        )
+
+        emitter0.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
+        # Rotate 90 degrees about z
+        emitter0.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(Gf.Vec3d(0, 0, 90))
+
+        result, emitter1 = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicEmitterCommand",
+            path="/World/UltrasonicEmitter1",
+            per_ray_intensity=0.4,
+            yaw_offset=0.0,
+            adjacency_list=[0, 1],
+        )
+        emitter1.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
+
+        result, ultrasonic = omni.kit.commands.execute(
+            "CreateRangeSensorUltrasonicArrayCommand",
+            path="/World/UltrasonicArray",
+            min_range=0.4,
+            max_range=3.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=20.0,
+            vertical_fov=10.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=0.8,
+            num_bins=224,
+            use_brdf=True,
+            emitter_prims=[emitter0.GetPath(), emitter1.GetPath()],
+            firing_group_prims=[group_1.GetPath()],
+        )
+        self.assertTrue(result)
+
+        await self.add_cube("/World/Cube0", 25.0, Gf.Vec3f(0.0, 100.0, 0.0), physics=False)
+        await self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
+
+        self._timeline.play()
+        await simulate(2.0)
+        # TODO test to make sure that the sensor is firing at correct times
+        # TODO test to make sure that distances are correct
+        active_env = self._ultrasonic.get_active_envelope_array("/World/UltrasonicArray")
+        active_env = np.array(active_env)
+        self.assertEqual(len(active_env), 4)
+        self.assertTrue(
+            np.allclose(
+                active_env[0][50:67],
+                np.array(
+                    [
+                        487.57147217,
+                        97.42268372,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        436.76654053,
+                        0.0,
+                    ]
+                ),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                active_env[1][50:67],
+                np.array(
+                    [
+                        487.57147217,
+                        97.42268372,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                    ]
+                ),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                active_env[2][50:67],
+                np.array(
+                    [
+                        487.57147217,
+                        97.42268372,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        436.76654053,
+                        0.0,
+                    ]
+                ),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                active_env[3][50:67],
+                np.array(
+                    [
+                        487.57147217,
+                        97.42268372,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                    ]
+                ),
+            )
+        )

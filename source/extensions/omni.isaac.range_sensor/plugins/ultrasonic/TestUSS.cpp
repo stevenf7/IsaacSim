@@ -8,6 +8,7 @@
 //
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "BRDF.h"
 #include "USSEnvelope.h"
 #include "UltrasonicArrayEmissionTimer.h"
 #include "UltrasonicReceiver.h"
@@ -241,9 +242,14 @@ TEST_CASE("main")
     {
         std::vector<::physx::PxVec3> emitterCenters{ { 1.f, 1.f, 0.f }, { 2.f, 1.f, 0.f }, { 3.f, 1.f, 0.f } };
 
-        std::vector<std::vector<::physx::PxVec3>> worldPoints{ { { 2.f, 2.f, 0.f }, { 3.f, 3.f, 0.f } }, {}, {} };
-
+        std::vector<std::vector<::physx::PxVec3>> worldPoints{ { { 2.f, 2.f, 0.f }, { 3.f, 3.f, 0.f } },
+                                                               { { 3.f, 3.f, 0.f } },
+                                                               { { 3.f, 3.f, 0.f } } };
+        std::vector<std::vector<::physx::PxVec3>> normals{ { { 1.f, 1.f, 1.f }, { 1.f, 1.f, 1.f } },
+                                                           { { 1.f, 1.f, 1.f } },
+                                                           { { 1.f, 1.f, 1.f } } };
         std::vector<::physx::PxVec3> receiverCenters{ { 1.f, 1.f, 0.f }, { 2.f, 1.f, 0.f }, { 3.f, 1.f, 0.f } };
+
 
         std::vector<std::vector<uint8_t>> adjacency{ { 0, 1 }, // adjacency for receiver zero
                                                      { 0, 1, 2 }, // adjacency for receiver one
@@ -264,8 +270,9 @@ TEST_CASE("main")
 
         int numBins = 10;
         float maxDist = 3.0; // not roundtrip
-        auto envelopeList = receiverArr.getCombinedEnvelopeList(
-            numBins, maxDist, adjacency, isFiring, isReceiving, emitterCenters, receiverCenters, worldPoints);
+        auto envelopeList =
+            receiverArr.getCombinedEnvelopeList(numBins, maxDist, adjacency, isFiring, isReceiving, emitterCenters,
+                                                receiverCenters, worldPoints, normals, false);
         int receiverIndex = 1;
         CHECK(envelopeList[receiverIndex].getEnvelope()[8] == 1);
         CHECK(envelopeList[receiverIndex].getEnvelope()[4] == 1);
@@ -273,5 +280,44 @@ TEST_CASE("main")
         {
             std::cout << envelopeList[i] << std::endl;
         }
+    }
+    SUBCASE("Check BRDF mirror ray calculation")
+    {
+        ::physx::PxVec3 emitterOrigin = { 5.f, 5.f, 0.f };
+        BRDF brdf(emitterOrigin);
+        ::physx::PxVec3 normal = { 0.f, 1.f, 0.f };
+        ::physx::PxVec3 surfaceCollisionPoint{ 0.f, 0.f, 0.f };
+        ::physx::PxVec3 mirrorRay = brdf.getMirrorRay(normal, surfaceCollisionPoint);
+        CHECK(doctest::Approx(mirrorRay[0]) == -5.f);
+        CHECK(doctest::Approx(mirrorRay[1]) == 5.f);
+        CHECK(doctest::Approx(mirrorRay[2]) == 0.f);
+    }
+
+    SUBCASE("Check BRDF perfect reflected intensity")
+    {
+        ::physx::PxVec3 emitterOrigin = { 5.f, 5.f, 0.f };
+        BRDF brdf(emitterOrigin);
+        ::physx::PxVec3 normal = { 0.f, 1.f, 0.f };
+        ::physx::PxVec3 surfaceCollisionPoint{ 0.f, 0.f, 0.f };
+        ::physx::PxVec3 receiverOrigin = { -5.f, 5.f, 0.f };
+        float incidentIntensity = 1.f;
+        float returnedIntensity =
+            brdf.getReturnedIntensity(receiverOrigin, normal, surfaceCollisionPoint, incidentIntensity);
+        CHECK(doctest::Approx(returnedIntensity) == 1.f);
+    }
+
+    // far from an ideal position for the receiver to capture the intensity from the emitter
+    SUBCASE("Check BRDF receiver _above_ emitter")
+    {
+        ::physx::PxVec3 emitterOrigin = { 5.f, 5.f, 0.f };
+        BRDF brdf(emitterOrigin);
+        ::physx::PxVec3 normal = { 0.f, 1.f, 0.f };
+        ::physx::PxVec3 surfaceCollisionPoint{ 0.f, 0.f, 0.f };
+        // note that the receiver is "above" the emitter in a 2d world
+        ::physx::PxVec3 receiverOrigin = { 5.f, 10.f, 0.f };
+        float incidentIntensity = 1.f;
+        float returnedIntensity =
+            brdf.getReturnedIntensity(receiverOrigin, normal, surfaceCollisionPoint, incidentIntensity);
+        CHECK(doctest::Approx(returnedIntensity) == 0.3162277f);
     }
 }

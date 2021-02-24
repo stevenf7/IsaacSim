@@ -190,6 +190,7 @@ private:
     std::vector<std::vector<bool>> mIsFiring; //(2, std::vector<bool>());
 
     int mNumBins = 224;
+    bool mUseBRDF = false;
     float mHorizontalFov = 60.0f;
     float mVerticalFov = 30.0f;
     float mHorizontalResolution = 0.4f;
