@@ -28,6 +28,7 @@
 #include <drSchema/movementComponent.h>
 #include <drSchema/rotationComponent.h>
 #include <drSchema/scaleComponent.h>
+#include <drSchema/transformComponent.h>
 #include <drSchema/textureComponent.h>
 #include <drSchema/materialComponent.h>
 #include <drSchema/meshComponent.h>
@@ -114,6 +115,7 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
         !(prim.GetTypeName().GetString() == "MovementComponent") &&
         !(prim.GetTypeName().GetString() == "RotationComponent") &&
         !(prim.GetTypeName().GetString() == "ScaleComponent") &&
+        !(prim.GetTypeName().GetString() == "TransformComponent") &&
         !(prim.GetTypeName().GetString() == "LightComponent") && !(prim.GetTypeName().GetString() == "MeshComponent") &&
         !(prim.GetTypeName().GetString() == "VisibilityComponent"))
         return;
@@ -163,6 +165,11 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
     {
         component = std::make_unique<DRComponentScale>();
         component->initialize(pxr::DrSchemaScaleComponent(prim), mStage);
+    }
+    else if (prim.GetTypeName().GetString() == "TransformComponent")
+    {
+        component = std::make_unique<DRComponentTransform>(mDynamicControlPtr, mDebugDrawPtr);
+        component->initialize(pxr::DrSchemaTransformComponent(prim), mStage);
     }
     else if (prim.GetTypeName().GetString() == "LightComponent")
     {

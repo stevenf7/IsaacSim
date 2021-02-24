@@ -18,6 +18,7 @@
 #include "DRComponentRotation.h"
 #include "DRComponentScale.h"
 #include "DRComponentTexture.h"
+#include "DRComponentTransform.h"
 #include "DRComponentVisibility.h"
 #include "plugins/bridge/BridgeApplication.h"
 

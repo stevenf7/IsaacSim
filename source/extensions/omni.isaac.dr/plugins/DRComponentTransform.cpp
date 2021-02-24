@@ -11,7 +11,7 @@
 #include "UsdPCH.h"
 // clang-format on
 
-#include "DRComponentMovement.h"
+#include "DRComponentTransform.h"
 #include "DRUtils.h"
 
 #include <boost/algorithm/string.hpp>
@@ -19,7 +19,7 @@
 #include <carb/Types.h>
 #include <carb/InterfaceUtils.h>
 #include <carb/filesystem/IFileSystem.h>
-#include <drSchema/movementComponent.h>
+#include <drSchema/transformComponent.h>
 
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
@@ -35,22 +35,22 @@ using omni::isaac::dynamic_control::DcHandle;
 using omni::isaac::dynamic_control::DcObjectType;
 using omni::isaac::dynamic_control::DcTransform;
 
-DRComponentMovement::DRComponentMovement(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
-                                         omni::renderer::IDebugDraw* debugDrawPtr)
+DRComponentTransform::DRComponentTransform(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
+                                           omni::renderer::IDebugDraw* debugDrawPtr)
     : DRComponentBase(), mDynamicControlPtr(dynamicControlPtr), mDebugDrawPtr(debugDrawPtr)
 {
 }
-DRComponentMovement::~DRComponentMovement()
+DRComponentTransform::~DRComponentTransform()
 {
     stop();
 }
-void DRComponentMovement::initialize(const pxr::DrSchemaMovementComponent& prim, pxr::UsdStageWeakPtr stage)
+void DRComponentTransform::initialize(const pxr::DrSchemaTransformComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     DRComponentBase::initialize(prim, stage);
 }
-void DRComponentMovement::onStart()
+void DRComponentTransform::onStart()
 {
-    CARB_LOG_INFO("DR Movement Component Started");
+    CARB_LOG_INFO("DR Transform Component Started");
     mEnableLookAtTarget = false;
     if (pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z)
         mUpUsd = { 0.0, 0.0, 1.0 };
@@ -58,7 +58,7 @@ void DRComponentMovement::onStart()
         mUpUsd = { 0.0, 1.0, 0.0 };
     onComponentChange();
 }
-void DRComponentMovement::update()
+void DRComponentTransform::update()
 {
     mAllPrims.clear();
     for (auto& path : mPaths)
@@ -78,13 +78,16 @@ void DRComponentMovement::update()
         }
     }
 }
-void DRComponentMovement::onComponentChange()
+void DRComponentTransform::onComponentChange()
 {
-    const pxr::DrSchemaMovementComponent& movPrim = (pxr::DrSchemaMovementComponent)mPrim;
+    const pxr::DrSchemaTransformComponent& movPrim = (pxr::DrSchemaTransformComponent)mPrim;
     movPrim.GetCompNameAttr().Get(&mCompName);
-    movPrim.GetXRangeAttr().Get(&mXRange);
-    movPrim.GetYRangeAttr().Get(&mYRange);
-    movPrim.GetZRangeAttr().Get(&mZRange);
+    movPrim.GetTranslateMinAttr().Get(&mTranslateMin);
+    movPrim.GetTranslateMaxAttr().Get(&mTranslateMax);
+    movPrim.GetRotateMinAttr().Get(&mRotateMin);
+    movPrim.GetRotateMaxAttr().Get(&mRotateMax);
+    movPrim.GetScaleMinAttr().Get(&mScaleMin);
+    movPrim.GetScaleMaxAttr().Get(&mScaleMax);
     movPrim.GetEnableLookAtTargetAttr().Get(&mEnableLookAtTarget);
     movPrim.GetLookAtTargetOffsetAttr().Get(&mLookAtTargetOffset);
     movPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
@@ -146,14 +149,14 @@ void DRComponentMovement::onComponentChange()
     movPrim.GetEnableSequentialBehaviorAttr().Get(&mEnableSequentialBehavior);
 
     update();
-    CARB_LOG_INFO("Movement Update: %s", mCompName.c_str());
+    CARB_LOG_INFO("Transform Update: %s", mCompName.c_str());
 }
-void DRComponentMovement::stop()
+void DRComponentTransform::stop()
 {
-    CARB_LOG_INFO("DR Movement Component Stopped");
+    CARB_LOG_INFO("DR Transform Component Stopped");
     releaseDebugLineList(mDebugDrawPtr);
 }
-pxr::GfVec3f DRComponentMovement::randomPointTriangle(std::vector<pxr::GfVec3f>& samplePoints)
+pxr::GfVec3f DRComponentTransform::randomPointTriangle(std::vector<pxr::GfVec3f>& samplePoints)
 {
     double r1 = randomRangeFloat(0, 1);
     double r2 = randomRangeFloat(0, 1);
@@ -162,7 +165,7 @@ pxr::GfVec3f DRComponentMovement::randomPointTriangle(std::vector<pxr::GfVec3f>&
     // CARB_LOG_WARN("New point: (%lf, %lf, %lf)", randomPoint[0], randomPoint[1], randomPoint[2]);
     return randomPoint;
 }
-pxr::GfVec3f DRComponentMovement::randomPointPolygon(std::vector<pxr::GfVec3f>& samplePoints)
+pxr::GfVec3f DRComponentTransform::randomPointPolygon(std::vector<pxr::GfVec3f>& samplePoints)
 {
     pxr::GfVec3f randomPoint(0, 0, 0);
     std::vector<std::vector<pxr::GfVec3f>> allTriangles = triangulatePolygon(samplePoints);
@@ -181,7 +184,7 @@ pxr::GfVec3f DRComponentMovement::randomPointPolygon(std::vector<pxr::GfVec3f>& 
     // CARB_LOG_WARN("Area: %lf, Index: %d", randomArea, randomIndex);
     return randomPointTriangle(allTriangles[randomIndex]);
 }
-void DRComponentMovement::tick()
+void DRComponentTransform::tick()
 {
     for (auto& prim : mAllPrims)
     {
@@ -189,9 +192,9 @@ void DRComponentMovement::tick()
         {
             int randIndex = -1;
             // Set random translation
-            float x = randomRangeFloat(mXRange[0], mXRange[1]);
-            float y = randomRangeFloat(mYRange[0], mYRange[1]);
-            float z = randomRangeFloat(mZRange[0], mZRange[1]);
+            float x = randomRangeFloat(mTranslateMin[0], mTranslateMax[0]);
+            float y = randomRangeFloat(mTranslateMin[1], mTranslateMax[1]);
+            float z = randomRangeFloat(mTranslateMin[2], mTranslateMax[2]);
             if (mTargetPoints.size() > 0)
             {
                 randIndex = randomRangeInt(0, static_cast<int>(mTargetPoints.size()) - 1);
@@ -243,11 +246,35 @@ void DRComponentMovement::tick()
                 // Get current rotation
                 pxr::GfTransform bodyPose;
                 bodyPose.SetTranslation(eyeUsd);
-                bodyPose.SetRotation(currentTr.GetRotation());
+                if (mRotateMin == pxr::GfVec3f(0.0, 0.0, 0.0) && mRotateMax == pxr::GfVec3f(0.0, 0.0, 0.0))
+                {
+                    bodyPose.SetRotation(currentTr.GetRotation());
+                }
+                else
+                {
+                    float rotX = randomRangeFloat(mRotateMin[0], mRotateMax[0]);
+                    float rotY = randomRangeFloat(mRotateMin[1], mRotateMax[1]);
+                    float rotZ = randomRangeFloat(mRotateMin[2], mRotateMax[2]);
+                    pxr::GfRotation rowRot(pxr::GfVec3d(1, 0, 0), rotX), pitchRot(pxr::GfVec3d(0, 1, 0), rotY),
+                        yawRot(pxr::GfVec3d(0, 0, 1), rotZ);
+                    bodyPose.SetRotation(rowRot * pitchRot * yawRot);
+                }
                 finalTransformMat = bodyPose.GetMatrix();
             }
-            // Get current scale
-            scaleMat.SetScale(currentTr.GetScale());
+            if (mScaleMin == pxr::GfVec3f(0.0, 0.0, 0.0) && mScaleMax == pxr::GfVec3f(0.0, 0.0, 0.0))
+            {
+                // Get current scale
+                scaleMat.SetScale(currentTr.GetScale());
+            }
+            else
+            {
+                float scaleX = randomRangeFloat(mScaleMin[0], mScaleMax[0]);
+                float scaleY = randomRangeFloat(mScaleMin[1], mScaleMax[1]);
+                float scaleZ = randomRangeFloat(mScaleMin[2], mScaleMax[2]);
+                pxr::GfVec3d doubleScale(scaleX, scaleY, scaleZ);
+                scaleMat.SetScale(doubleScale);
+            }
+
             // Multiply current scale with random pose
             scaledTransformMat = scaleMat * finalTransformMat;
 

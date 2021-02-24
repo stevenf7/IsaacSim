@@ -15,7 +15,7 @@ class DRMenu:
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._window.dock_order = 4
         self._dr = domain_randomizer_interface
-        self.num_components = 9
+        self.num_components = 10
 
         menu_items = [
             MenuItemDescription(name="Color Component", onclick_fn=lambda a=weakref.proxy(self): a.add_color_menu()),
@@ -26,6 +26,9 @@ class DRMenu:
                 name="Rotation Component", onclick_fn=lambda a=weakref.proxy(self): a.add_rotation_menu()
             ),
             MenuItemDescription(name="Scale Component", onclick_fn=lambda a=weakref.proxy(self): a.add_scale_menu()),
+            MenuItemDescription(
+                name="Transform Component", onclick_fn=lambda a=weakref.proxy(self): a.add_transform_menu()
+            ),
             MenuItemDescription(name="Light Component", onclick_fn=lambda a=weakref.proxy(self): a.add_light_menu()),
             MenuItemDescription(
                 name="Texture Component", onclick_fn=lambda a=weakref.proxy(self): a.add_texture_menu()
@@ -130,6 +133,34 @@ class DRMenu:
             min_range=(0.5, 0.5, 0.5),
             max_range=(1.0, 1.0, 1.0),
             uniform_scaling=False,
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
+        pass
+
+    def add_transform_menu(self):
+        parent = self._get_current_state(9, "TransformComponent")
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, parent + "/transform_component_" + str(self.component_count[1]), False
+            )
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, "/transform_component_" + str(self.component_count[1]), True
+            )
+
+        result, prim = omni.kit.commands.execute(
+            "CreateTransformComponentCommand",
+            path=path,
+            translate_min_range=(0.0, 0.0, 0.0),
+            translate_max_range=(100.0, 100.0, 100.0),
+            rotate_min_range=(0.0, 0.0, 0.0),
+            rotate_max_range=(0.0, 0.0, 0.0),
+            scale_min_range=(0.0, 0.0, 0.0),
+            scale_max_range=(0.0, 0.0, 0.0),
+            target_position=None,
+            target_paths=None,
             duration=1.0,
             include_children=False,
             seed=12345,
