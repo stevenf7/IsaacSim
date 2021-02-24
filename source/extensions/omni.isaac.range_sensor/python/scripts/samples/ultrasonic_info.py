@@ -278,15 +278,7 @@ class Extension(omni.ext.IExt):
         collisionAPI = UsdPhysics.CollisionAPI.Apply(cubePrim)
         defaultPrimPath = str(stage.GetDefaultPrim().GetPath())
 
-    def _get_info_function(self):
-        maxDepth = self.ultrasonic.GetMaxRangeAttr().Get()
-
-        # The ULTRASONIC itself exists as a C++ object.  In order to retrieve data from this object we need to call
-        # C++ code, but this is handled for us through the use of python bindings.  Here we get the depth value of
-        # each ray, and the spherical coordinates of each ray in (azimuth, zenith).
-        depth = self._ul.get_depth_data(self.ultrasonicPath, 5)
-        zenith = self._ul.get_zenith_data(self.ultrasonicPath)
-        azimuth = self._ul.get_azimuth_data(self.ultrasonicPath)
+    def _draw_envelope_frame(self):
         envelope_arr = self._ul.get_envelope_array(self.ultrasonicPath)
 
         with self._envelope_frame:
@@ -306,6 +298,18 @@ class Extension(omni.ext.IExt):
                             style={"color": 0xFFFFFFFF},
                         )
                     ui.Spacer(height=1)
+
+    def _get_info_function(self):
+        maxDepth = self.ultrasonic.GetMaxRangeAttr().Get()
+
+        # The ULTRASONIC itself exists as a C++ object.  In order to retrieve data from this object we need to call
+        # C++ code, but this is handled for us through the use of python bindings.  Here we get the depth value of
+        # each ray, and the spherical coordinates of each ray in (azimuth, zenith).
+        depth = self._ul.get_depth_data(self.ultrasonicPath, 5)
+        zenith = self._ul.get_zenith_data(self.ultrasonicPath)
+        azimuth = self._ul.get_azimuth_data(self.ultrasonicPath)
+
+        self._draw_envelope_frame()
 
         # most of the below is string formatting in order to display our data in a nice table within our GUI.
         tableString = ""

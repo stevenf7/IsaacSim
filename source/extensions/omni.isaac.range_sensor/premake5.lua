@@ -82,7 +82,9 @@ project "test.unit.range_sensor"
            "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicReceiverArray.h",
            "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/USSEnvelope.h",
            "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/FiringModeUtils.h",
-           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicEmitter.h"}
+           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/UltrasonicEmitter.h",
+           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/BRDF.h",
+           "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/BRDF.cpp"}
     filter { "configurations:debug" }
       defines { "_DEBUG" }
     filter { "configurations:release" }
