@@ -120,11 +120,11 @@ class Extension(omni.ext.IExt):
     def _on_init_stage_load_fn(self, widget):
         result, status = omni.kit.commands.execute(
             "InitRobotEngineBridgeStageLoaderCommand",
-            self._scene_loader["input_component"].get_value_as_string(),
-            self._scene_loader["request_channel"].get_value_as_string(),
-            self._scene_loader["camera_control"].get_value_as_string(),
-            self._scene_loader["output_component"].get_value_as_string(),
-            self._scene_loader["reply_channel"].get_value_as_string(),
+            input_component=self._scene_loader["input_component"].get_value_as_string(),
+            request_channel=self._scene_loader["request_channel"].get_value_as_string(),
+            camera_control=self._scene_loader["camera_control"].get_value_as_string(),
+            output_component=self._scene_loader["output_component"].get_value_as_string(),
+            reply_channel=self._scene_loader["reply_channel"].get_value_as_string(),
         )
 
     def _on_create_destroy_sdk_app_fn(self):
