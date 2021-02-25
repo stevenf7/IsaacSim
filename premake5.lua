@@ -208,7 +208,7 @@ group "exts"
     include ("source/extensions/omni.isaac.synthetic_utils")
     include ("source/extensions/omni.isaac.tests")
     include ("source/extensions/omni.isaac.step_importer")
-    include ("source/extensions/omni.isaac.exploded_view")
+    -- include ("source/extensions/omni.isaac.exploded_view")
     include ("source/extensions/omni.isaac.internal_tools")
     include ("source/extensions/omni.isaac.app.setup")
     include ("source/extensions/omni.isaac.app.launcher")

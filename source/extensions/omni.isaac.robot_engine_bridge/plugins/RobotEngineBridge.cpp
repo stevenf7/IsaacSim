@@ -21,6 +21,7 @@
 #include <carb/syntheticdata/SyntheticData.h>
 
 #include <omni/kit/IStageUpdate.h>
+#include <omni/kit/IApp.h>
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -170,7 +171,11 @@ bool CARB_ABI destroyGxfApplication()
     }
     return true;
 }
+bool CARB_ABI executeCommand(const std::string& command)
+{
 
+    return carb::getCachedInterface<omni::kit::IApp>()->getPythonScripting()->executeString(command.c_str());
+}
 
 void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
@@ -374,4 +379,5 @@ void fillInterface(omni::isaac::robot_engine_bridge::RobotEngineBridge& iface)
 
     iface.createGxfApplication = createGxfApplication;
     iface.destroyGxfApplication = destroyGxfApplication;
+    iface.executeCommand = executeCommand;
 }

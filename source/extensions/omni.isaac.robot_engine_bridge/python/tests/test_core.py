@@ -8,6 +8,7 @@ import gc
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from .common import create_application, simulate
+from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -22,6 +23,7 @@ class TestREBCore(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        await omni.kit.app.get_app().next_update_async()
         gc.collect()
         pass
 
@@ -66,3 +68,17 @@ class TestREBCore(omni.kit.test.AsyncTestCase):
         await simulate(1.0)
         self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
         self._timeline.stop()
+
+    async def test_execute_command(self):
+
+        cubePrim = self._stage.GetPrimAtPath("/cube")
+        self.assertFalse(cubePrim)
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        imports = "import omni.kit.commands\n"
+        command = "omni.kit.commands.execute('CreatePrimCommand', prim_path='/cube', prim_type='Cube')"
+        self._re_bridge.execute_command(imports + command)
+        await omni.kit.app.get_app().next_update_async()
+
+        cubePrim = self._stage.GetPrimAtPath("/cube")
+
+        self.assertTrue(cubePrim)

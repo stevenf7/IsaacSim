@@ -326,8 +326,8 @@ void GxfContext::onComponentAdd(const pxr::UsdPrim& prim)
     }
     if (component)
     {
-        CARB_LOG_ERROR("Create: Prim %s with type: %s", prim.GetPath().GetString().c_str(),
-                       component->getPrim().GetPrim().GetTypeName().GetString().c_str());
+        CARB_LOG_INFO("Create: Prim %s with type: %s", prim.GetPath().GetString().c_str(),
+                      component->getPrim().GetPrim().GetTypeName().GetString().c_str());
         mComponents[prim.GetPath().GetString()] = std::move(component);
     }
 }
