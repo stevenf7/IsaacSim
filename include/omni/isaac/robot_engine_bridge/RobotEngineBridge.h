@@ -43,6 +43,7 @@ struct RobotEngineBridge
                                          const std::string& manifestFile,
                                          const std::vector<std::string>& graphFiles);
     bool(CARB_ABI* destroyGxfApplication)();
+    bool(CARB_ABI* executeCommand)(const std::string& command);
 };
 }
 }

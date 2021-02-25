@@ -43,6 +43,7 @@ PYBIND11_MODULE(_robot_engine_bridge, m)
         .def("create_gxf_application", wrapInterfaceFunction(&RobotEngineBridge::createGxfApplication))
         .def("destroy_gxf_application", wrapInterfaceFunction(&RobotEngineBridge::destroyGxfApplication))
         .def("get_last_error", wrapInterfaceFunction(&RobotEngineBridge::getLastError))
-        .def("initialize_stage_loader", wrapInterfaceFunction(&RobotEngineBridge::initializeStageLoader));
+        .def("initialize_stage_loader", wrapInterfaceFunction(&RobotEngineBridge::initializeStageLoader))
+        .def("execute_command", wrapInterfaceFunction(&RobotEngineBridge::executeCommand));
 }
 }
