@@ -161,28 +161,6 @@ public:
         // Entity //component
         // Channel //channel
 
-
-        // // Get memory allocator (can I make this instead of accessing the existing one?)
-        // gxf_uid_t tcp_eid;
-        // GxfEntityFind(mContext, mNodeName, &tcp_eid);
-        // gxf_tid_t allocator_tid;
-        // GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::BlockMemoryPool>(), &allocator_tid);
-        // gxf_uid_t allocator_cid;
-        // GxfComponentFind(mContext, tcp_eid, allocator_tid, "allocator", nullptr, &allocator_cid);
-        // auto allocator_ = nvidia::gxf::Handle<nvidia::gxf::Allocator>::Create(mContext, allocator_cid);
-        // //TODO Handle case where allocator is not found
-
-
-        // // Create a new message
-        // auto message = nvidia::gxf::Entity::New(mContext);
-        // auto timestamp = message.value().add<nvidia::gxf::Timestamp>("timestamp");
-        // timestamp.value()->acqtime =
-        //     this->mTimeNanoSeconds + mComponentTimeOffsetNanoSeconds; // TODO:  + mTimeDifferenceNanoSeconds;
-        // // auto struct = message.value().add<data>(channel.c_str());
-
-
-        // publish this tensor
-
         gxf_result_t result;
         gxf_uid_t tcp_eid;
         if ((result = GxfEntityFind(mContext, mNodeName.c_str(), &tcp_eid)))
@@ -222,39 +200,51 @@ public:
     }
 
     /**
-     * @brief General receive function without buffers
+     * @brief General receive function
      *
      * @tparam T
      * @param component
      * @param channel
-     * @param header
      * @param data
-     * @return true
-     * @return false
+     * @return gxf_result_t
      */
-    template <class T>
-    gxf_result_t receive()
+    gxf_result_t receive(const std::string& component, const std::string& channel, nvidia::gxf::Entity& data)
     {
+        gxf_result_t result;
+        gxf_uid_t tcp_eid;
+        if ((result = GxfEntityFind(mContext, mNodeName.c_str(), &tcp_eid)))
+        {
+            CARB_LOG_ERROR("GxfEntityFind, %s", GxfResultStr(result));
+            return result;
+        }
+        gxf_tid_t pub_tid;
+        if ((result =
+                 GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &pub_tid)))
+        {
+            CARB_LOG_ERROR("GxfComponentTypeId, %s", GxfResultStr(result));
+            return result;
+        }
+        gxf_uid_t pub_cid;
+        if ((result = GxfComponentFind(mContext, tcp_eid, pub_tid, component.c_str(), nullptr, &pub_cid)))
+        {
+            CARB_LOG_ERROR("GxfComponentFind, %s", GxfResultStr(result));
+            return result;
+        }
+        auto pub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(mContext, pub_cid);
+        if ((result = pub_handle.value()->sync_abi()))
+        {
+            CARB_LOG_ERROR("sync_abi, %s", GxfResultStr(result));
+            return result;
+        }
+        auto message = pub_handle.value()->receive();
+        if (!message)
+        {
+            return gxf_result_t::GXF_FAILURE;
+        }
+        data = std::move(message);
         return gxf_result_t::GXF_SUCCESS;
     }
 
-    // /**
-    //  * @brief General receive function with buffers
-    //  *
-    //  * @tparam T
-    //  * @param component
-    //  * @param channel
-    //  * @param header
-    //  * @param data
-    //  * @param buffers
-    //  * @return true
-    //  * @return false
-    //  */
-    // template <class T>
-    // gxf_result_t receive()
-    // {
-    //     return gxf_result_t::GXF_SUCCESS;
-    // }
 
     /**
      * @brief Set the Gxf Context
