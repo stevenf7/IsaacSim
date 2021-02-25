@@ -81,11 +81,15 @@ void DRComponentMaterial::update()
             for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
             {
                 pxr::UsdPrim prim = *iter;
-                // Check for classes to be ignored
-                if (mIsIgnore && prim && !ignoreClass(prim.GetPath().GetString(), mGroupClassList))
-                    mAllPrims.push_back(prim);
-                if (!mIsIgnore && prim)
-                    mAllPrims.push_back(prim);
+                // Filter children based on prim types
+                if (prim && (prim.IsA<pxr::UsdGeomXform>() || prim.IsA<pxr::UsdGeomGprim>()))
+                {
+                    // Check for classes to be ignored
+                    if (mIsIgnore && prim && !ignoreClass(prim.GetPath().GetString(), mGroupClassList))
+                        mAllPrims.push_back(prim);
+                    if (!mIsIgnore && prim)
+                        mAllPrims.push_back(prim);
+                }
             }
         }
     }
@@ -94,8 +98,7 @@ void DRComponentMaterial::update()
     mPrimClassMap.clear();
     for (auto& prim : mAllPrims)
     {
-        auto primType = prim.GetTypeName().GetString();
-        if (prim && (primType == "Mesh" || primType == "Xform"))
+        if (prim)
         {
             pxr::UsdShadeMaterialBindingAPI materialBinding(prim);
             mPrimMaterialBindingsMap.insert(std::make_pair(prim.GetPath().GetString(), materialBinding));
