@@ -24,7 +24,6 @@ def setup_receiver(prim, component: str, channel: str):
     prim.CreateInputChannelAttr(channel)
 
 
-# this command is used to create each REB prim, it also handles undo so that each individual prim command doesn't have to
 class CreateRobotEngineBridgeApplicationCommand(omni.kit.commands.Command):
     def __init__(self, asset_path: str, app_file: str, module_paths: list = [], json_files: list = []):
         self._asset_path = asset_path
@@ -51,6 +50,31 @@ class DestroyRobotEngineBridgeApplicationCommand(omni.kit.commands.Command):
 
     def do(self) -> bool:
         return self._re_bridge.destroy_application()
+
+    def undo(self):
+        pass
+
+
+class InitRobotEngineBridgeStageLoaderCommand(omni.kit.commands.Command):
+    def __init__(
+        self, input_component: str, request_channel: str, camera_control: str, output_component: str, reply_channel: str
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        pass
+
+    def do(self) -> bool:
+        self._re_bridge.initialize_stage_loader(
+            self._input_component,
+            self._request_channel,
+            self._camera_control,
+            self._output_component,
+            self._reply_channel,
+        )
+        return True
 
     def undo(self):
         pass
@@ -895,29 +919,29 @@ class TickRobotEngineBridgeComponentCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateGXFApplicationCommand(omni.kit.commands.Command):
+class CreateGxfApplicationCommand(omni.kit.commands.Command):
     def __init__(self, base_path: str, manifest_file: str, graph_files: []):
         self._base_path = base_path
         self._manifest_file = manifest_file
         self._graph_files = graph_files
-        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        self._gxf_bridge = _robot_engine_bridge.acquire_gxf_bridge_interface()
         pass
 
     def do(self) -> bool:
 
-        return self._re_bridge.create_gxf_application(self._base_path, self._manifest_file, self._graph_file)
+        return self._gxf_bridge.create_application(self._base_path, self._manifest_file, self._graph_files)
 
     def undo(self):
         pass
 
 
-class DestroyGXFApplicationCommand(omni.kit.commands.Command):
+class DestroyGxfApplicationCommand(omni.kit.commands.Command):
     def __init__(self):
-        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        self._gxf_bridge = _robot_engine_bridge.acquire_gxf_bridge_interface()
         pass
 
     def do(self) -> bool:
-        return self._re_bridge.destroy_gxf_application()
+        return self._gxf_bridge.destroy_application()
 
     def undo(self):
         pass

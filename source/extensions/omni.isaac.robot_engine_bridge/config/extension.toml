@@ -54,3 +54,6 @@ archiveDirs = ["pip-packages"]
 # We need to enable fastcache for this extension for plan visualizer
 [settings]
 persistent.physics.useFastCache = true
+
+[fswatcher.paths]
+exclude = ["*/__pycache__*", "*/.git*", "*/packages", "*/gxf"]

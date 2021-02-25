@@ -83,14 +83,13 @@ repo_build.prebuild_link {
     { "%{root}/_build/target-deps/isaac_engine/data", ext.target_dir.."/resources/isaac_engine/" },
     { "%{root}/_build/target-deps/isaac_engine/packages", ext.target_dir.."/packages/" },
     { "%{root}/_build/target-deps/isaac_engine/packages/pyalice", ext.target_dir.."/omni/isaac/pyalice" },
-    { "%{root}/_build/target-deps/isaac_engine/gxf", ext.target_dir.."/gxf" },
 }
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/robot_engine_bridge" },
     { "%{root}/_build/target-deps/isaac_engine/lib/**", ext.target_dir.."/bin" },
+    { "%{root}/_build/target-deps/isaac_engine/gxf/lib", ext.target_dir.."/gxf/lib" },
     { "%{root}/_build/target-deps/isaac_engine/gxf/lib/*.*so*", ext.target_dir.."/bin" },
-    { "%{root}/_build/target-deps/isaac_engine/gxf/lib/libgxf_core.so", ext.target_dir.."/bin" },
     { "%{root}/_build/target-deps/isaac_engine/lib/libnpp*.so*", ext.target_dir.."/packages/viewers" },
     { "%{root}/_build/target-deps/isaac_engine/*.whl", ext.target_dir.."/pip-packages/" },
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RobotEngineBridgeSchema/**", ext.target_dir.."/omni/isaac/RobotEngineBridgeSchema" },

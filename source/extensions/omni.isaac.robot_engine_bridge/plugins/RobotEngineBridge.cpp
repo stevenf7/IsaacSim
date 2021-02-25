@@ -51,7 +51,9 @@
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.robot_engine_bridge.plugin", "Isaac Robot Engine bridge",
                                                   "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
 
-CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::robot_engine_bridge::RobotEngineBridge)
+CARB_PLUGIN_IMPL(kPluginImpl,
+                 omni::isaac::robot_engine_bridge::RobotEngineBridge,
+                 omni::isaac::robot_engine_bridge::GxfBridge)
 CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
                       carb::syntheticdata::SyntheticData,
@@ -376,8 +378,16 @@ void fillInterface(omni::isaac::robot_engine_bridge::RobotEngineBridge& iface)
     iface.tickComponent = tickComponent;
     iface.getLastError = getLastError;
     iface.initializeStageLoader = initializeStageLoader;
+    iface.executeCommand = executeCommand;
+}
+void fillInterface(omni::isaac::robot_engine_bridge::GxfBridge& iface)
+{
+    using namespace omni::isaac::robot_engine_bridge;
 
-    iface.createGxfApplication = createGxfApplication;
-    iface.destroyGxfApplication = destroyGxfApplication;
+    memset(&iface, 0, sizeof(iface));
+
+    iface.createApplication = createGxfApplication;
+    iface.destroyApplication = destroyGxfApplication;
+    iface.tickComponent = tickComponent;
     iface.executeCommand = executeCommand;
 }
