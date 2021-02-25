@@ -6,7 +6,6 @@ import omni.kit.menu
 import weakref
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-from .. import _robot_engine_bridge
 from .menu import RobotEngineBridgeMenu
 
 
@@ -15,8 +14,6 @@ EXTENSION_NAME = "Robot Engine Bridge"
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
-
         self._settings = carb.settings.get_settings()
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._reb_extension_path = ext_manager.get_extension_path(ext_id)
@@ -119,10 +116,10 @@ class Extension(omni.ext.IExt):
         self._menu.shutdown()
         self._menu = None
         remove_menu_items(self._menu_items, "Window")
-        _robot_engine_bridge.release_robot_engine_bridge_interface(self._re_bridge)
 
     def _on_init_stage_load_fn(self, widget):
-        self._re_bridge.initialize_stage_loader(
+        result, status = omni.kit.commands.execute(
+            "InitRobotEngineBridgeStageLoaderCommand",
             self._scene_loader["input_component"].get_value_as_string(),
             self._scene_loader["request_channel"].get_value_as_string(),
             self._scene_loader["camera_control"].get_value_as_string(),
@@ -132,38 +129,46 @@ class Extension(omni.ext.IExt):
 
     def _on_create_destroy_sdk_app_fn(self):
         if self._is_created is False:
-            self._re_bridge.create_application(
-                self._reb_extension_path, self._scene_loader["json_path"].get_value_as_string(), [], []
+            result, status = omni.kit.commands.execute(
+                "CreateRobotEngineBridgeApplicationCommand",
+                asset_path=self._reb_extension_path,
+                app_file=self._scene_loader["json_path"].get_value_as_string(),
+                module_paths=[],
+                json_files=[],
             )
-            self._re_bridge.initialize_stage_loader(
-                self._scene_loader["input_component"].get_value_as_string(),
-                self._scene_loader["request_channel"].get_value_as_string(),
-                self._scene_loader["camera_control"].get_value_as_string(),
-                self._scene_loader["output_component"].get_value_as_string(),
-                self._scene_loader["reply_channel"].get_value_as_string(),
+
+            result, status = omni.kit.commands.execute(
+                "InitRobotEngineBridgeStageLoaderCommand",
+                input_component=self._scene_loader["input_component"].get_value_as_string(),
+                request_channel=self._scene_loader["request_channel"].get_value_as_string(),
+                camera_control=self._scene_loader["camera_control"].get_value_as_string(),
+                output_component=self._scene_loader["output_component"].get_value_as_string(),
+                reply_channel=self._scene_loader["reply_channel"].get_value_as_string(),
             )
             self._is_created = True
             self._scene_loader["create_sdk"].text = "Destroy Application"
         else:
-            self._re_bridge.destroy_application()
+            result, status = omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")
             self._is_created = False
             self._scene_loader["create_sdk"].text = "Create Application"
 
     def _on_create_destroy_gxf_app_fn(self):
         if self._is_gxf_created is False:
 
-            self._re_bridge.create_gxf_application(
-                self._reb_extension_path + "/gxf/lib",
-                "manifest.yaml",
-                # self._scene_loader["gxf_manifest"].get_value_as_string(),
-                [
+            result, status = omni.kit.commands.execute(
+                "CreateGxfApplicationCommand",
+                base_path=self._reb_extension_path + "/gxf/lib",
+                manifest_file="manifest.yaml",
+                graph_files=[
                     self._reb_extension_path + "/data/config/isaac_sim_allocator.yaml",
                     self._scene_loader["gxf_graph"].get_value_as_string(),
                 ],
             )
+
             self._is_gxf_created = True
             self._scene_loader["create_gxf"].text = "Destroy Application"
         else:
-            self._re_bridge.destroy_gxf_application()
+            result, status = omni.kit.commands.execute("DestroyGxfApplicationCommand")
+
             self._is_gxf_created = False
             self._scene_loader["create_gxf"].text = "Create Application"
