@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.urdf": "xml",
+        "*.kit": "toml",
         "array": "cpp",
         "atomic": "cpp",
         "*.tcc": "cpp",
@@ -103,7 +104,9 @@
         "hash_set": "cpp",
         "*.hlslh": "cpp",
         "*.ipp": "cpp",
-        "*.hlsl": "cpp"
+        "*.hlsl": "cpp",
+        "strstream": "cpp",
+        "any": "cpp"
     },
     "editor.rulers": [120],
     "files.watcherExclude": {
