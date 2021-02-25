@@ -125,7 +125,7 @@ void DRComponentColor::update()
             for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
             {
                 pxr::UsdPrim prim = *iter;
-                if (prim && prim.GetTypeName().GetString() == "Xform")
+                if (prim && (prim.IsA<pxr::UsdGeomXform>() || prim.IsA<pxr::UsdGeomGprim>()))
                     mAllPrims.push_back(prim);
             }
         }
