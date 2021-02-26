@@ -14,7 +14,6 @@ from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from omni.isaac.pyalice import Message
 from pxr import UsdPhysics, Sdf, UsdGeom
 from .common import PyaliceApp, create_application, simulate
-from omni.physx.scripts import utils
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -154,7 +153,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
-        utils.setCollider(cubePrim)
+        UsdPhysics.CollisionAPI.Apply(cubePrim)
 
         return cubePrim
 

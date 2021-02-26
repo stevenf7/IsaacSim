@@ -18,8 +18,13 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
+"omni.usdphysics" = {}
 "omni.kit.window.toolbar" = {} # Needed for simulation to occur
 "omni.kit.numpy.common" = {}
+"omni.kit.menu.utils" = {}
+"omni.kit.window.viewport" = {}
+"omni.graph.core" = {}
+"omni.usd" = {}
 
 [[python.module]]
 name = "omni.isaac.dynamic_control"

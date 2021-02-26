@@ -15,7 +15,7 @@ from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from .common import PyaliceApp, create_application, simulate
 from omni.isaac.pyalice import Message, Composite
 
-from pxr import Gf, Sdf, UsdPhysics, UsdGeom
+from pxr import Gf, UsdPhysics, UsdGeom, PhysicsSchemaTools
 import numpy as np
 
 
@@ -116,15 +116,8 @@ class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCase):
         self.assertTrue(result)
 
         stage = omni.usd.get_context().get_stage()
-        omni.kit.commands.execute(
-            "AddGroundPlaneCommand",
-            stage=stage,
-            planePath="/groundPlane",
-            axis="Z",
-            size=1500.0,
-            position=Gf.Vec3f(0, 0, 0),
-            color=Gf.Vec3f(0.5),
-        )
+
+        PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5))
 
         self.assertTrue(result)
 

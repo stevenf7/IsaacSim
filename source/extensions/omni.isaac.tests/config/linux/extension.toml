@@ -6,9 +6,14 @@ display_name = "Isaac Tests"
 "omni.kit.window.tests" = {}
 "omni.kit.window.toolbar" = {} # needed for simulation to happen
 "omni.kit.primitive.mesh" = {} # needed for mesh creation commands
+"omni.graph.core" = {}
+"omni.kit.material.library" = {}
 
 [[python.module]]
 name = "omni.isaac.tests"
 
 [[python.module]]
 name = "omni.isaac.tests.tests"
+
+[python.pipapi]
+requirements = ["numpy==1.19.0"]

@@ -8,7 +8,6 @@ import carb.tokens
 import os
 import asyncio
 import numpy as np
-from omni.physx.scripts import utils
 
 from pxr import UsdPhysics, Sdf, UsdGeom, PhysxSchema
 
@@ -51,7 +50,7 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
-        utils.setCollider(cubePrim)
+        UsdPhysics.CollisionAPI.Apply(cubePrim)
 
         return cubeGeom
 

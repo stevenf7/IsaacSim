@@ -3,8 +3,7 @@ import omni.kit.commands
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.range_sensor import _range_sensor
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
-from omni.physx.scripts import utils
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools
 import numpy as np
 import os
 import carb.tokens
@@ -87,21 +86,17 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
         await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
-        utils.setRigidBody(cubePrim, "convexHull", False)
+        rigid_api = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+        rigid_api.CreateRigidBodyEnabledAttr(True)
+        UsdPhysics.CollisionAPI.Apply(cubePrim)
 
         return cubeGeom
 
     # Tests a static lidar with a cube in front of it
     async def test_static_lidar(self):
         # Plane
-        omni.kit.commands.execute(
-            "AddGroundPlaneCommand",
-            stage=self._stage,
-            planePath="/World/groundPlane",
-            axis="Z",
-            size=1500.0,
-            position=Gf.Vec3f(0),
-            color=Gf.Vec3f(0.5),
+        PhysicsSchemaTools.addGroundPlane(
+            self._stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
         )
 
         # Add a cube
@@ -144,14 +139,8 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Tests a lidar on a falling cube, with a cube in front of it after it lands
     async def test_dynamic_lidar(self):
         # Plane
-        omni.kit.commands.execute(
-            "AddGroundPlaneCommand",
-            stage=self._stage,
-            planePath="/World/groundPlane",
-            axis="Z",
-            size=1500.0,
-            position=Gf.Vec3f(0),
-            color=Gf.Vec3f(0.5),
+        PhysicsSchemaTools.addGroundPlane(
+            self._stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
         )
         # Add a cube
         cubePath = "/World/Cube"
@@ -197,14 +186,8 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_parameter_ranges(self):
         # Plane
-        omni.kit.commands.execute(
-            "AddGroundPlaneCommand",
-            stage=self._stage,
-            planePath="/World/groundPlane",
-            axis="Z",
-            size=1500.0,
-            position=Gf.Vec3f(0),
-            color=Gf.Vec3f(0.5),
+        PhysicsSchemaTools.addGroundPlane(
+            self._stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
         )
         cubePath2 = "/World/Cube2"
         await self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
