@@ -4,7 +4,7 @@
 import omni.kit.test
 import omni.kit.commands
 import os
-from pxr import Sdf, Gf, UsdShade
+from pxr import Sdf, Gf, UsdShade, PhysicsSchemaTools
 import asyncio
 
 
@@ -224,15 +224,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         scene.CreateGravityMagnitudeAttr().Set(981.0)
 
         # add ground plane
-        omni.kit.commands.execute(
-            "AddGroundPlaneCommand",
-            stage=stage,
-            planePath="/groundPlane",
-            axis="Z",
-            size=1500.0,
-            position=Gf.Vec3f(0, 0, -50),
-            color=Gf.Vec3f(0.5),
-        )
+        PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -50), Gf.Vec3f(0.5))
 
         # add lighting
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))

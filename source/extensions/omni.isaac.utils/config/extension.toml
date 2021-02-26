@@ -17,6 +17,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.physx" = {}
+"omni.usdphysics" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.graph.core" = {}
 

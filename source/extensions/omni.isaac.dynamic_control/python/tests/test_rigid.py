@@ -7,23 +7,18 @@ import carb.tokens
 
 # carb data types are used as return values, need this
 import carb
-import os
 import asyncio
-import numpy as np
 from pxr import Gf, PhysxSchema, UsdPhysics, Sdf, UsdGeom
-import omni.physx as _physx
-from omni.physx.scripts import utils
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 from .common import load_test_file, set_scene_physics_type
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-        self._physxIFace = _physx.acquire_physx_interface()
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -57,9 +52,9 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubeGeom.AddTranslateOp().Set(offset)
         await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
         if physics:
-            utils.setRigidBody(cubePrim, "convexHull", False)
-        else:
-            utils.setCollider(cubePrim)
+            rigid_api = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+            rigid_api.CreateRigidBodyEnabledAttr(True)
+        UsdPhysics.CollisionAPI.Apply(cubePrim)
 
         return cubePrim
 

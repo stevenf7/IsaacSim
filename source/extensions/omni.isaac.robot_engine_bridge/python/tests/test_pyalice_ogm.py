@@ -13,7 +13,6 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from .common import PyaliceApp, create_application, simulate
 from pxr import Gf, UsdGeom, UsdPhysics, Sdf
-from omni.physx.scripts import utils
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCase):
@@ -56,7 +55,7 @@ class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCase):
 
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
-        utils.setCollider(cubePrim)
+        UsdPhysics.CollisionAPI.Apply(cubePrim)
 
         return cubeGeom
 

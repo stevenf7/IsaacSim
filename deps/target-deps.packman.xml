@@ -44,12 +44,12 @@
   <dependency name="usd_ext_physics_${config}" linkPath="../_build/target-deps/usd_ext_physics/${config}" />
 
   <!-- Extensions from View -->
-  <dependency name="omni.kit.utility.icon_modifier" linkPath="../_build/windows-x86_64/${config}/exts/omni.kit.utility.icon_modifier">
+  <!-- <dependency name="omni.kit.utility.icon_modifier" linkPath="../_build/windows-x86_64/${config}/exts/omni.kit.utility.icon_modifier">
     <package name="omni.kit.utility.icon_modifier" version="0.1.2+${platform}.${config}" platforms="windows-x86_64" />
-  </dependency>
+  </dependency> -->
 
   <!-- Miscellaneous Extensions-->
-  <dependency name="omni.kit.tools.surface_instancer" linkPath="../_build/${platform}/${config}/exts/omni.kit.tools.surface_instancer">
+  <!-- <dependency name="omni.kit.tools.surface_instancer" linkPath="../_build/${platform}/${config}/exts/omni.kit.tools.surface_instancer">
     <package name="omni.kit.tools.surface_instancer" version="0.1.12" platforms="windows-x86_64 linux-x86_64"/>
   </dependency>
 
@@ -60,6 +60,6 @@
   <dependency name="omni.blast" linkPath="../_build/${platform}/${config}/exts/omni.blast-0.6.5">
     <package name="omni_blast" version="0.6.5-kit_100.3-272-f7f6633a-${platform}" platforms="windows-x86_64" />
     <package name="omni_blast" version="0.6.5-kit_100.3-272-f7f6633a-${platform}" platforms="linux-x86_64" />
-  </dependency>
+  </dependency> -->
 </project>
 

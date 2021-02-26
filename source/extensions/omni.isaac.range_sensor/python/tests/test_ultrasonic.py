@@ -3,8 +3,7 @@ import omni.kit.commands
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.range_sensor import _range_sensor
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
-from omni.physx.scripts import utils
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import asyncio
 import numpy as np
@@ -96,9 +95,9 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubeGeom.AddTranslateOp().Set(offset)
         await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
         if physics:
-            utils.setRigidBody(cubePrim, "convexHull", False)
-        else:
-            utils.setCollider(cubePrim)
+            rigid_api = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+            rigid_api.CreateRigidBodyEnabledAttr(True)
+        UsdPhysics.CollisionAPI.Apply(cubePrim)
 
         return cubePrim
 
@@ -336,14 +335,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
     # # ensures that envelope changes when cube is moved
     async def test_static_ultrasonic_moving_box(self):
         # Plane
-        omni.kit.commands.execute(
-            "AddGroundPlaneCommand",
-            stage=self._stage,
-            planePath="/World/groundPlane",
-            axis="Z",
-            size=1500.0,
-            position=Gf.Vec3f(0),
-            color=Gf.Vec3f(0.5),
+        PhysicsSchemaTools.addGroundPlane(
+            self._stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
         )
 
         # Add a cube
@@ -402,14 +395,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
     # # ensures that envelope changes when cube is moved progressively further away from sensor
     async def test_move_box_to_multiple_distances(self):
         # Plane
-        omni.kit.commands.execute(
-            "AddGroundPlaneCommand",
-            stage=self._stage,
-            planePath="/World/groundPlane",
-            axis="Z",
-            size=1500.0,
-            position=Gf.Vec3f(0),
-            color=Gf.Vec3f(0.5),
+        PhysicsSchemaTools.addGroundPlane(
+            self._stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
         )
 
         # Add a cube

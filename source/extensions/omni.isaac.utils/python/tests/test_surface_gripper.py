@@ -42,10 +42,14 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubeGeom.CreateDisplayColorAttr().Set([color])
         await omni.kit.app.get_app().next_update_async()
         UsdPhysics.CollisionAPI.Apply(cubePrim)
+        rigid_api = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+
         if mass > 0:
             massAPI = UsdPhysics.MassAPI.Apply(cubePrim)
             massAPI.CreateMassAttr(mass)
-        UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+        else:
+            rigid_api.CreateKinematicEnabledAttr(True)
+
         await omni.kit.app.get_app().next_update_async()
         UsdPhysics.CollisionAPI(cubePrim)
         print(cubePrim.GetPath().pathString)
@@ -56,19 +60,10 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         UsdGeom.SetStageUpAxis(self.stage, UsdGeom.Tokens.z)
         UsdGeom.SetStageMetersPerUnit(self.stage, 0.01)
-        scene = UsdPhysics.Scene.Define(self.stage, Sdf.Path("/physicsScene"))
-        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        scene.CreateGravityMagnitudeAttr().Set(981.0)
+        self._scene = UsdPhysics.Scene.Define(self.stage, Sdf.Path("/physicsScene"))
+        self._scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        self._scene.CreateGravityMagnitudeAttr().Set(981.0)
 
-        omni.kit.commands.execute(
-            "AddGroundPlaneCommand",
-            stage=self.stage,
-            planePath="/groundPlane",
-            axis="Z",
-            size=100.0,
-            position=Gf.Vec3f(0),
-            color=Gf.Vec3f(0.5),
-        )
         self.assertFalse(self._dc.is_simulating())
 
         # Create two cubes and set them to be rigid bodies
@@ -86,7 +81,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc = dc.acquire_dynamic_control_interface()
         self.box0 = "/box0"
         self.box1 = "/box1"
-        self.box0_props = [self.box0, 300, [1, 1, 2.0], [-50, 0, 100], [0, 0, 0, 1], [80, 80, 255]]
+        self.box0_props = [self.box0, 0.0, [1, 1, 2.0], [-50, 0, 100], [0, 0, 0, 1], [80, 80, 255]]
         self.box1_props = [self.box1, 1.0, [0.1, 0.1, 0.1], [6, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
         self.d6FixedJoint = "/box0/d6FixedJoint"
 
@@ -236,12 +231,16 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_close_surface_gripper_and_move(self):
-
+        self.box0_props[1] = 300.0
         self.box0_props[2] = [0.1, 0.1, 0.1]
         self.box0_props[3] = [-5, 0, 5]
-        box1_props = [self.box1, 10.0, [0.1, 0.1, 0.1], [6, 0, 5], [0, 0, 0, 1], [255, 80, 80]]
+        box1_props = [self.box1, 10.0, [0.1, 0.1, 0.1], [5, 0, 5], [0, 0, 0, 1], [255, 80, 80]]
 
         await self.setup_physics(box1_props)
+
+        # Disable gravity for this test
+        self._scene.CreateGravityMagnitudeAttr().Set(0.0)
+
         self.surface_gripper = Surface_Gripper(self._dc)
         # Start Simulation and wait
         self._timeline.play()
@@ -267,7 +266,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.set_rigid_body_linear_velocity(box1, [0.0, 0.0, 0.0])
         self._dc.set_rigid_body_angular_velocity(box1, [0.0, 0.0, 0.0])
         self.assertTrue(self.surface_gripper.close())
-        for i in range(600):
+        for i in range(100):
             await omni.kit.app.get_app().next_update_async()
             self._dc.set_rigid_body_linear_velocity(box0, [0, 0.0, 50])
             self._dc.set_rigid_body_angular_velocity(box0, [-20.0, 0.0, 10])

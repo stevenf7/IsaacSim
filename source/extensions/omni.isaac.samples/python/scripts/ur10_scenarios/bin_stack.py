@@ -812,7 +812,7 @@ class BinStack(Scenario):
                     wait_time=5.0,
                 )
 
-    def create_UR10(self, *args):
+    def create_UR10(self, background=True):
         super().create_UR10()
         if self.asset_path is None:
             return
@@ -839,9 +839,10 @@ class BinStack(Scenario):
         c = [Gf.Vec3d(-50000 - 50 * i, 150, 0) for i in range(self.max_bins)]
         create_objects(self._stage, a, b, c)
 
-        create_background(
-            self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
-        )
+        if background:
+            create_background(
+                self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
+            )
 
         # Setup physics simulation
         setup_physics(self._stage)

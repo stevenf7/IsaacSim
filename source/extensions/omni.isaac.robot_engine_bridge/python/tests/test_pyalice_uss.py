@@ -13,7 +13,6 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from .common import PyaliceApp, create_application, simulate
 from pxr import Gf, UsdGeom, UsdPhysics, Sdf
-from omni.physx.scripts import utils
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 
 
@@ -58,7 +57,7 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
 
         cubeGeom.CreateSizeAttr(size)
         cubeGeom.AddTranslateOp().Set(offset)
-        utils.setCollider(cubePrim)
+        UsdPhysics.CollisionAPI.Apply(cubePrim)
 
         return cubeGeom
 
