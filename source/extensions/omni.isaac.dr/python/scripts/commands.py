@@ -314,7 +314,9 @@ class CreateTransformComponentCommand(omni.kit.commands.Command):
         draw_polygon=False,
         target_points=[],
         lookat_target_points=[],
+        target_point_instancer_paths=None,
         enable_sequential_behavior=False,
+        combine_random_range=False,
         duration=0.0,
         include_children=False,
         seed=12345,
@@ -333,7 +335,9 @@ class CreateTransformComponentCommand(omni.kit.commands.Command):
         self._draw_polygon = draw_polygon
         self._target_points = target_points
         self._lookat_target_points = lookat_target_points
+        self._target_point_instancer_paths = target_point_instancer_paths
         self._enable_sequential_behavior = enable_sequential_behavior
+        self._combine_random_range = combine_random_range
         self._duration = duration
         self._include_children = include_children
         self._seed = seed
@@ -391,6 +395,10 @@ class CreateTransformComponentCommand(omni.kit.commands.Command):
         # if no target prim is specified, this value used as the target, if a prim is specified this acts like an offset.
         if self._target_position is not None:
             prim.CreateLookAtTargetOffsetAttr().Set(self._target_position)
+        target_point_instancer_rel_paths = prim.CreateTargetPointInstancersRel()
+        if self._target_point_instancer_paths is not None:
+            for path in self._target_point_instancer_paths:
+                target_point_instancer_rel_paths.AddTarget(path)
         prim.CreateDurationAttr().Set(self._duration)
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateSeedAttr().Set(int(self._seed))
@@ -399,6 +407,7 @@ class CreateTransformComponentCommand(omni.kit.commands.Command):
         prim.CreateTargetPointsAttr().Set(self._target_points)
         prim.CreateLookAtTargetPointsAttr().Set(self._lookat_target_points)
         prim.CreateEnableSequentialBehaviorAttr().Set(self._enable_sequential_behavior)
+        prim.CreateCombineRandomRangeAttr().Set(self._combine_random_range)
         return prim
 
 

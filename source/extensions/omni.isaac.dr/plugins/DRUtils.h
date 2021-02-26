@@ -28,6 +28,12 @@ double dist(pxr::GfVec3f p1, pxr::GfVec3f p2);
 double areaTriangle(std::vector<pxr::GfVec3f> trianglePts);
 
 std::vector<double> generateDistribution(std::vector<std::vector<pxr::GfVec3f>> allTriangles);
+
+void getEulerAngles(const pxr::GfQuath& q, pxr::GfVec3f& angles);
+
+float radianToAngle(float radian);
+
+pxr::GfRotation getCombinedRotation(pxr::UsdPrim& prim, pxr::GfRotation roll, pxr::GfRotation pitch, pxr::GfRotation yaw);
 }
 }
 }

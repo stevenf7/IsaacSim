@@ -56,6 +56,62 @@ std::vector<double> generateDistribution(std::vector<std::vector<pxr::GfVec3f>> 
         cumulativeAreaDistribution[i] /= totalArea;
     return cumulativeAreaDistribution;
 }
+void getEulerAngles(const pxr::GfQuath& q, pxr::GfVec3f& angles)
+{
+    // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+    pxr::GfVec3h imag = q.GetImaginary();
+    pxr::GfHalf real = q.GetReal();
+
+    const float sinr_cosp = 2 * (real * imag[0] + imag[1] * imag[2]);
+    const float cosr_cosp = 1 - 2 * (imag[0] * imag[0] + imag[1] * imag[1]);
+    angles[0] = atan2f(sinr_cosp, cosr_cosp);
+
+    // pitch (y-axis rotation)
+    const float sinp = 2 * (real * imag[1] - imag[2] * imag[0]);
+    if (fabsf(sinp) >= 1)
+        angles[1] = copysignf(float(1.57079632679489661923), sinp); // use 90 degrees if out of range
+    else
+        angles[1] = asinf(sinp);
+
+    // yaw (z-axis rotation)
+    const float siny_cosp = 2 * (real * imag[2] + imag[0] * imag[1]);
+    const float cosy_cosp = 1 - 2 * (imag[1] * imag[1] + imag[2] * imag[2]);
+    angles[2] = atan2f(siny_cosp, cosy_cosp);
+}
+
+float radianToAngle(float radian)
+{
+    return (90.0f * radian) / float(1.57079632679489661923);
+}
+
+pxr::GfRotation getCombinedRotation(pxr::UsdPrim& prim, pxr::GfRotation roll, pxr::GfRotation pitch, pxr::GfRotation yaw)
+{
+    pxr::UsdGeomXformable xform(prim);
+    bool resetXFormStack;
+    auto xformOps = xform.GetOrderedXformOps(&resetXFormStack);
+    PXR_NS::VtTokenArray xformOpOrders;
+    xform.GetXformOpOrderAttr().Get(&xformOpOrders);
+
+    for (auto xformOp : xformOps)
+    {
+        // set based on prim's rotation order
+        if (xformOp.GetOpType() == pxr::UsdGeomXformOp::TypeRotateXYZ)
+            return roll * pitch * yaw;
+        else if (xformOp.GetOpType() == pxr::UsdGeomXformOp::TypeRotateXZY)
+            return roll * yaw * pitch;
+        else if (xformOp.GetOpType() == pxr::UsdGeomXformOp::TypeRotateYXZ)
+            return pitch * roll * yaw;
+        else if (xformOp.GetOpType() == pxr::UsdGeomXformOp::TypeRotateYZX)
+            return pitch * yaw * roll;
+        else if (xformOp.GetOpType() == pxr::UsdGeomXformOp::TypeRotateZXY)
+            return yaw * roll * pitch;
+        else if (xformOp.GetOpType() == pxr::UsdGeomXformOp::TypeRotateZYX)
+            return yaw * pitch * roll;
+    }
+    // Default rotation order is XYZ
+    return roll * pitch * yaw;
+}
 }
 }
 }

@@ -50,10 +50,11 @@ private:
     std::vector<std::string> mPaths, mLookAtTargetPaths;
     pxr::GfVec3f mTranslateMin, mTranslateMax, mRotateMin, mRotateMax, mScaleMin, mScaleMax;
     std::vector<pxr::UsdPrim> mAllPrims;
-    bool mEnableLookAtTarget, mDrawPolygon, mEnableSequentialBehavior;
+    bool mEnableLookAtTarget, mDrawPolygon, mEnableSequentialBehavior, mCombineRandomRange;
     pxr::GfVec3d mLookAtTargetOffset = pxr::GfVec3d(0.0, 0.0, 0.0);
     pxr::GfVec3d mUpUsd;
     std::vector<pxr::GfVec3f> mPolygonPoints, mTargetPoints, mLookAtTargetPoints;
+    std::vector<pxr::GfVec3f> mPointInstancersTranslate, mPointInstancersOrient;
     omni::renderer::IDebugDraw* mDebugDrawPtr;
     unsigned int mSequentialIndex = 0;
 };
