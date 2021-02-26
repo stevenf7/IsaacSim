@@ -111,6 +111,30 @@ void DRComponentTransform::onComponentChange()
     for (auto target : lookAtTargets)
         mLookAtTargetPaths.push_back(target.GetString());
 
+    mPointInstancersTranslate.clear();
+    mPointInstancersOrient.clear();
+    pxr::UsdRelationship pointInstancerPaths = movPrim.GetTargetPointInstancersRel();
+    pxr::SdfPathVector targetPaths;
+    pointInstancerPaths.GetTargets(&targetPaths);
+    for (auto targetPath : targetPaths)
+    {
+        pxr::UsdPrim pointInstancerPrim = mStage->GetPrimAtPath(targetPath);
+        pxr::VtArray<pxr::GfVec3f> pointInstancerPositions;
+        pxr::VtArray<pxr::GfQuath> pointInstancerOrientations;
+        pointInstancerPrim.GetAttribute(pxr::TfToken("positions")).Get(&pointInstancerPositions);
+        pointInstancerPrim.GetAttribute(pxr::TfToken("orientations")).Get(&pointInstancerOrientations);
+        for (pxr::GfVec3f position : pointInstancerPositions)
+        {
+            mPointInstancersTranslate.push_back(position);
+        }
+        for (pxr::GfQuath orientation : pointInstancerOrientations)
+        {
+            pxr::GfVec3f angles;
+            getEulerAngles(orientation, angles);
+            mPointInstancersOrient.push_back(angles);
+        }
+    }
+
     mPolygonPoints.clear();
     pxr::VtArray<pxr::GfVec3f> polygonPoints;
     movPrim.GetPolygonPointsAttr().Get<pxr::VtArray<pxr::GfVec3f>>(&polygonPoints);
@@ -147,6 +171,7 @@ void DRComponentTransform::onComponentChange()
     for (unsigned int ind = 0; ind < lookAtTargetPoints.size(); ind++)
         mLookAtTargetPoints.push_back(lookAtTargetPoints[ind]);
     movPrim.GetEnableSequentialBehaviorAttr().Get(&mEnableSequentialBehavior);
+    movPrim.GetCombineRandomRangeAttr().Get(&mCombineRandomRange);
 
     update();
     CARB_LOG_INFO("Transform Update: %s", mCompName.c_str());
@@ -199,10 +224,37 @@ void DRComponentTransform::tick()
             {
                 randIndex = randomRangeInt(0, static_cast<int>(mTargetPoints.size()) - 1);
                 if (mEnableSequentialBehavior)
-                    randIndex = mSequentialIndex;
-                x = mTargetPoints[randIndex][0];
-                y = mTargetPoints[randIndex][1];
-                z = mTargetPoints[randIndex][2];
+                    randIndex = mSequentialIndex % mTargetPoints.size();
+                if (mCombineRandomRange)
+                {
+                    x += mTargetPoints[randIndex][0];
+                    y += mTargetPoints[randIndex][1];
+                    z += mTargetPoints[randIndex][2];
+                }
+                else
+                {
+                    x = mTargetPoints[randIndex][0];
+                    y = mTargetPoints[randIndex][1];
+                    z = mTargetPoints[randIndex][2];
+                }
+            }
+            else if (mPointInstancersTranslate.size() > 0)
+            {
+                randIndex = randomRangeInt(0, static_cast<int>(mPointInstancersTranslate.size()) - 1);
+                if (mEnableSequentialBehavior)
+                    randIndex = mSequentialIndex % mPointInstancersTranslate.size();
+                if (mCombineRandomRange)
+                {
+                    x += mPointInstancersTranslate[randIndex][0];
+                    y += mPointInstancersTranslate[randIndex][1];
+                    z += mPointInstancersTranslate[randIndex][2];
+                }
+                else
+                {
+                    x = mPointInstancersTranslate[randIndex][0];
+                    y = mPointInstancersTranslate[randIndex][1];
+                    z = mPointInstancersTranslate[randIndex][2];
+                }
             }
             pxr::GfVec3d eyeUsd(x, y, z);
             if (mPolygonPoints.size() > 2)
@@ -246,7 +298,8 @@ void DRComponentTransform::tick()
                 // Get current rotation
                 pxr::GfTransform bodyPose;
                 bodyPose.SetTranslation(eyeUsd);
-                if (mRotateMin == pxr::GfVec3f(0.0, 0.0, 0.0) && mRotateMax == pxr::GfVec3f(0.0, 0.0, 0.0))
+                if ((mRotateMin == pxr::GfVec3f(0.0, 0.0, 0.0) && mRotateMax == pxr::GfVec3f(0.0, 0.0, 0.0)) &&
+                    mPointInstancersOrient.size() == 0)
                 {
                     bodyPose.SetRotation(currentTr.GetRotation());
                 }
@@ -255,9 +308,27 @@ void DRComponentTransform::tick()
                     float rotX = randomRangeFloat(mRotateMin[0], mRotateMax[0]);
                     float rotY = randomRangeFloat(mRotateMin[1], mRotateMax[1]);
                     float rotZ = randomRangeFloat(mRotateMin[2], mRotateMax[2]);
-                    pxr::GfRotation rowRot(pxr::GfVec3d(1, 0, 0), rotX), pitchRot(pxr::GfVec3d(0, 1, 0), rotY),
+                    if (mPointInstancersOrient.size() > 0)
+                    {
+                        randIndex = randomRangeInt(0, static_cast<int>(mPointInstancersOrient.size()) - 1);
+                        if (mEnableSequentialBehavior)
+                            randIndex = mSequentialIndex % mPointInstancersOrient.size();
+                        if (mCombineRandomRange)
+                        {
+                            rotX += radianToAngle(mPointInstancersOrient[randIndex][0]);
+                            rotY += radianToAngle(mPointInstancersOrient[randIndex][1]);
+                            rotZ += radianToAngle(mPointInstancersOrient[randIndex][2]);
+                        }
+                        else
+                        {
+                            rotX = radianToAngle(mPointInstancersOrient[randIndex][0]);
+                            rotY = radianToAngle(mPointInstancersOrient[randIndex][1]);
+                            rotZ = radianToAngle(mPointInstancersOrient[randIndex][2]);
+                        }
+                    }
+                    pxr::GfRotation rollRot(pxr::GfVec3d(1, 0, 0), rotX), pitchRot(pxr::GfVec3d(0, 1, 0), rotY),
                         yawRot(pxr::GfVec3d(0, 0, 1), rotZ);
-                    bodyPose.SetRotation(rowRot * pitchRot * yawRot);
+                    bodyPose.SetRotation(getCombinedRotation(prim, rollRot, pitchRot, yawRot));
                 }
                 finalTransformMat = bodyPose.GetMatrix();
             }
@@ -310,8 +381,6 @@ void DRComponentTransform::tick()
     if (mEnableSequentialBehavior)
     {
         mSequentialIndex++;
-        if (mSequentialIndex == mTargetPoints.size())
-            mSequentialIndex = 0;
     }
 }
 

@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[0.1.4] - 2021-02-26
+========================
+
+Added
+-------
+- Transform randomization component
+- Point Instancer based transform randomization: random and sequence behavior based on the position and orientation specified in the point instancers
+- Parameterize position and orientation offset in transform randomization
+
 [0.1.3] - 2021-02-22
 ========================
 
