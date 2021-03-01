@@ -124,13 +124,13 @@ enabled = true
 
 [repo_package]
 
-[repo_package.packages.isaac_sim]
+[repo_package.packages.isaac-sim]
 omniverse_flow_version_scheme = true
 ziponly = false
 package_per_config = true
 "platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
 
-[repo_package.packages.isaac_sim-launcher]
+[repo_package.packages.isaac-sim.standalone]
 omniverse_flow_version_scheme = true
 ziponly = false
 "platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
@@ -167,7 +167,7 @@ strip_package_infos = true
 
 [repo_publish]
 enabled = true
-packages = ["isaac_sim*"]
+packages = ["isaac-sim*"]
 
 ########################################################################################################################
 # Launcher publish and deploy

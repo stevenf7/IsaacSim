@@ -82,7 +82,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         # publish first
         if not options.test_run:
             packages, labels = omni.repo.man.publish.get_packages_and_labels(
-                "isaac_sim-launcher*", repo_folders["packages"], None
+                "isaac-sim.standalone*", repo_folders["packages"], None
             )
             if len(packages) == 0:
                 logger.error("No packages found.")
