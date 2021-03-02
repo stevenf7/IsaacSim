@@ -146,17 +146,17 @@ omniverse_flow_version_scheme = true
 ziponly = true
 
 # to generate laucnher images package
-[repo_package.packages.isaac_sim-pipeline-images-dl]
+[repo_package.packages.isaac-sim-pipeline-images-dl]
 omniverse_flow_version_scheme = true
 archive_format = "zip"
 strip_package_infos = true
 
-[repo_package.packages.isaac_sim-pipeline-images-rc]
+[repo_package.packages.isaac-sim-pipeline-images-rc]
 omniverse_flow_version_scheme = true
 archive_format = "zip"
 strip_package_infos = true
 
-[repo_package.packages.isaac_sim-pipeline-images-prod]
+[repo_package.packages.isaac-sim-pipeline-images-prod]
 omniverse_flow_version_scheme = true
 archive_format = "zip"
 strip_package_infos = true
@@ -183,7 +183,7 @@ template_path = "${root}/tools/repoman/launcher-pipeline-template"
 [repo_test]
 
 # When running from package, look for package using that path/pattern:
-archive_pattern = "${root}/_build/packages/isaac_sim-*.7z"
+archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
 
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
