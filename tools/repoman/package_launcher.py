@@ -78,7 +78,7 @@ if __name__ == "__main__":
     # Package launcher using this package as a root:
     print("Packaging launcher...")
     repo_exec = f"{REPO_ROOT}/repo.bat" if platform_target == "windows-x86_64" else f"{REPO_ROOT}/repo.sh"
-    omni.repo.man.run_process([repo_exec, "package", "-m", "isaac_sim-launcher", "-c", config], exit_on_error=True)
+    omni.repo.man.run_process([repo_exec, "package", "-m", "isaac-sim-standalone", "-c", config], exit_on_error=True)
 
     # Make package TC artifact:
     print(f"##teamcity[publishArtifacts '_build/packages/*']")

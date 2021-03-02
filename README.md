@@ -13,9 +13,9 @@ This is where the Robotics experiece for Omniverse is developed
 
 [Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/overview.html)
 
-[Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Master_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac_sim-launcher%40%7Bbuild.number%7D.linux-x86_64.release.7z)
+[Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Master_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
 
-[Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac_sim-launcher%40%7Bbuild.number%7D.linux-x86_64.release.7z)
+[Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
 
 
 ### Filing Bugs and Feature Requests

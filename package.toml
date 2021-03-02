@@ -33,10 +33,10 @@
 files = []
 
 ########################################################################################################################
-# isaac_sim package
+# isaac-sim package
 ########################################################################################################################
 
-[isaac_sim]
+[isaac-sim]
 files = [
     ["_build/$platform/$config"],
     ["_build/target-deps/usd_ext_isaac/$config/share/usd/plugins"],
@@ -47,13 +47,13 @@ files = [
     ["source/ros_samples", "ros_samples"]
 ]
 
-[isaac_sim.windows-x86_64]
+[isaac-sim.windows-x86_64]
 files = []
 
-[isaac_sim.linux-x86_64]
+[isaac-sim.linux-x86_64]
 files_exclude = []
 
-[isaac_sim-launcher.release]
+[isaac-sim-standalone.release]
 files = [
     ["_build/$platform/$config"],
     ["_build/kit_release"],
@@ -71,7 +71,7 @@ files_exclude = [
     ["_build/kit_release/_exts/omni.rtx.settings.dev"]
 ]
 
-[isaac_sim-launcher.linux-x86_64]
+[isaac-sim-standalone.linux-x86_64]
 files_exclude = [
 ]
 
@@ -87,7 +87,7 @@ files_strip_exclude = [
 ]
 
 
-[isaac_sim-launcher.windows-x86_64]
+[isaac-sim-standalone.windows-x86_64]
 files = [
     # WAR: repo_fileutils fails to package folder starting with dot on windows unless specified explicitly. The reason is that 
     # python's std glob module doesn't support finding them. Fixing that turned out to be quite hard.
@@ -95,7 +95,7 @@ files = [
     # ["_build/kit_release/_exts/omni.kit.pip_archive/pip_prebundle/numpy/.libs"],
 ]
 
-[isaac_sim-launcher.debug]
+[isaac-sim-standalone.debug]
 files = []
 
 
