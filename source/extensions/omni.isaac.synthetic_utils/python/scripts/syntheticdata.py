@@ -326,12 +326,12 @@ class SyntheticDataHelper:
         """
         stage = omni.usd.get_context().get_stage()
         mappings = self.get_instance_mappings()
-        pose = {}
+        pose = []
         for m in mappings:
             prim_path = m[0]
             prim = stage.GetPrimAtPath(prim_path)
             prim_tf = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(0.0)
-            pose[str(prim_path)] = prim_tf
+            pose.append((str(prim_path), m[1], str(m[2]), np.array(prim_tf)))
         return pose
 
     def compute_3d_bounding_box_oobb(self):
