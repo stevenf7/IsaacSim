@@ -99,6 +99,10 @@ class DataWriter:
                         groundtruth["DATA"]["RGB"],
                         groundtruth["METADATA"][gt_type]["NPY"],
                     )
+                elif gt_type == "CAMERA":
+                    np.save(self.camera_folder + filename + ".npy", data)
+                elif gt_type == "POSES":
+                    np.save(self.poses_folder + filename + ".npy", data)
                 else:
                     raise NotImplementedError
             self.q.task_done()
@@ -221,3 +225,9 @@ class DataWriter:
         self.bbox_2d_loose_folder = self.data_dir + "/bbox_2d_loose/"
         if not os.path.exists(self.bbox_2d_loose_folder):
             os.mkdir(self.bbox_2d_loose_folder)
+        self.camera_folder = self.data_dir + "/camera/"
+        if not os.path.exists(self.camera_folder):
+            os.mkdir(self.camera_folder)
+        self.poses_folder = self.data_dir + "/poses/"
+        if not os.path.exists(self.poses_folder):
+            os.mkdir(self.poses_folder)
