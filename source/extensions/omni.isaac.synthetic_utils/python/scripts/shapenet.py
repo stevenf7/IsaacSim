@@ -56,41 +56,56 @@ LABEL_TO_SYNSET = {
 SYNSET_TO_LABEL = {v: k for k, v in LABEL_TO_SYNSET.items()}
 
 
+def get_local_shape_loc():
+    g_local_shape_loc = None
+    env_path = os.getenv("SHAPENET_LOCAL_DIR")
+    if env_path == None:
+        resolved_data_path = carb.tokens.get_tokens_interface().resolve("${data}")
+        g_local_shape_loc = resolved_data_path + "/shapenet"
+        print(f"env var SHAPENET_LOCAL_DIR not set, using default data dir {g_local_shape_loc}")
+    else:
+        g_local_shape_loc = env_path
+        print(f"Using local env var SHAPENET_LOCAL_DIR {env_path}")
+
+    return g_local_shape_loc
+
+
 async def convert(in_file, out_file, load_materials=False):
     # This import causes conflicts when global
-    from omni.isaac import shapenet
-    import omni.kit.tool.asset_importer.native_bindings as assetimport
+    import omni.kit.asset_converter
 
-    # A No-Material version of the omni.isaac.shapenet convert function
-    # You really should only call this from the MainThread because there will be a deadlock on the GIL when this
-    # calls C++ code from python.
-    # flags can be OMNI_CONVERTER_FLAGS_IGNORE_ANIMATION, OMNI_CONVERTER_FLAGS_IGNORE_MATERIALS,
-    #              OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE, or OMNI_CONVERTER_FLAGS_GEN_SMOOTH_NORMALS
-    # print(in_file, ' is being converted and saved as ', out_file, ', please standby, and remember to tip your waitress.' )
+    def progress_callback(progress, total_steps):
+        pass
 
-    flags = assetimport.OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE
-    if load_materials is False:
-        flags = flags | assetimport.OMNI_CONVERTER_FLAGS_IGNORE_MATERIALS
+    converter_context = omni.kit.asset_converter.AssetConverterContext()
+    # setup converter and flags
+    converter_context.ignore_material = not load_materials
+    # converter_context.ignore_animation = False
+    # converter_context.ignore_cameras = True
+    # converter_context.single_mesh = True
+    # converter_context.smooth_normals = True
+    # converter_context.preview_surface = False
+    # converter_context.support_point_instancer = False
+    # converter_context.embed_mdl_in_usd = False
+    # converter_context.use_meter_as_world_unit = True
+    # converter_context.create_world_as_default_root_prim = False
+    instance = omni.kit.asset_converter.get_instance()
+    task = instance.create_converter_task(in_file, out_file, progress_callback, converter_context)
 
-    future = assetimport.omniConverterCreateUSD(in_file, out_file, flags)
-    status = assetimport.OmniConverterStatus.eOK
+    success = True
     while True:
-        status = assetimport.omniConverterCheckFutureStatus(future)
-        if status == assetimport.OmniConverterStatus.eInProgress:
+        success = await task.wait_until_finished()
+        if not success:
             await asyncio.sleep(0.1)
         else:
             break
-    shapenet.g_futures_to_release.put(future)
-    return status
+    return success
 
 
 def shapenet_convert(args):
 
     # This import needs to occur after kit is loaded so that physx can be discovered
-    from omni.isaac import shapenet
-    import omni.kit.tool.asset_importer.native_bindings as assetimport
-
-    local_shapenet = shapenet.get_local_shape_loc()
+    local_shapenet = get_local_shape_loc()
     local_shapenet_output = f"{os.path.abspath(local_shapenet)}_nomat"
     if args.load_materials:
         local_shapenet_output = f"{os.path.abspath(local_shapenet)}_mat"
@@ -122,6 +137,6 @@ def shapenet_convert(args):
             out_path = os.path.join(out_dir, f"{shape_name}.usd")
             if not os.path.exists(out_path):
                 status = asyncio.get_event_loop().run_until_complete(convert(local_path, out_path, args.load_materials))
-                if not status == assetimport.OmniConverterStatus.eOK:
+                if not status:
                     print(f"ERROR OmniConverterStatus is {status}")
                 print(f"---Added {out_path}")
