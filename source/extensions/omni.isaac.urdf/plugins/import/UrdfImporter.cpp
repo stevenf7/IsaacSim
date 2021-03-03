@@ -666,7 +666,7 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
     if (urdfRobot.links.size() >= 64)
     {
         CARB_LOG_WARN("URDF cannot have more than 63 links to be imported as a physx articulation");
-        CARB_LOG_WARN("URDF has %lu links", urdfRobot.links.size());
+        CARB_LOG_WARN("URDF has %d links", static_cast<int>(urdfRobot.links.size()));
         return "";
     }
 

@@ -63,6 +63,8 @@ class Extension(omni.ext.IExt):
         self._filepicker = None
         self._content_browser = None
 
+        self._extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
+
     def build_ui(self):
         from omni.kit.window.filepicker import FilePickerDialog
         from omni.kit.window.content_browser import get_content_window
@@ -79,8 +81,7 @@ class Extension(omni.ext.IExt):
             item_filter_fn=on_filter_item,
         )
 
-        # extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
-        # self._filepicker.toggle_bookmark_from_path("Built In URDFs", extension_path + "/data/urdf", True)
+        self._filepicker.toggle_bookmark_from_path("Built In URDF Files", (self._extension_path + "/data/urdf"), True)
         self._filepicker.hide()
 
         with self._window.frame:
@@ -517,6 +518,9 @@ class Extension(omni.ext.IExt):
             self._filepicker._widget._click_apply_handler = None
             self._filepicker._widget._file_bar._click_cancel_handler = None
             self._filepicker._widget._click_cancel_handler = None
+            self._filepicker.toggle_bookmark_from_path(
+                "Built In URDF Files", (self._extension_path + "/data/urdf"), False
+            )
             self._filepicker = None
 
         if self._window:
