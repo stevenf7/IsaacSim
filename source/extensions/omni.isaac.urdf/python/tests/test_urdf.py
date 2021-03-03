@@ -249,3 +249,12 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         # In this case because we want to do velocity control this should be set to zero
         left_wheel_drive.GetStiffnessAttr().Set(0)
         right_wheel_drive.GetStiffnessAttr().Set(0)
+
+    # Make sure that a urdf with more than 63 links does not import
+    async def test_64(self):
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_large.urdf")
+        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        stage = omni.usd.get_context().get_stage()
+        prim = stage.GetPrimAtPath("/test_large")
+        self.assertFalse(prim)

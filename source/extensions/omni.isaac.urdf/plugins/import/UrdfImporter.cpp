@@ -663,6 +663,13 @@ void UrdfImporter::addMaterials(pxr::UsdStageWeakPtr stage, const UrdfRobot& rob
 
 std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& urdfRobot)
 {
+    if (urdfRobot.links.size() >= 64)
+    {
+        CARB_LOG_WARN("URDF cannot have more than 63 links to be imported as a physx articulation");
+        CARB_LOG_WARN("URDF has %lu links", urdfRobot.links.size());
+        return "";
+    }
+
     if (config.createPhysicsScene)
     {
         // Create physics scene
