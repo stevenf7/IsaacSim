@@ -55,8 +55,10 @@ class Extension(omni.ext.IExt):
                 self._reset_btn = ui.Button("Reset", enabled=False)
                 self._reset_btn.set_clicked_fn(self._sample.reset)
                 self._reset_btn.set_tooltip("Reset Robot to default position")
+
+                ui.Spacer(height=3)
                 with ui.HStack(height=0):
-                    ui.Label("Output Directory:", width=0)
+                    ui.Label("Output Directory:", width=100)
                     default_dir = os.path.join(os.getcwd(), "output.txt")
                     self._ui_dir_name = ui.StringField()
                     self._ui_dir_name.model.set_value(default_dir)
@@ -64,9 +66,7 @@ class Extension(omni.ext.IExt):
                         self._sample.save_dir(self._ui_dir_name.model.get_value_as_string())
                     )
                     ui.Spacer(width=5)
-                    ui.Label("Save Data", width=0)
-                    ui.Spacer(width=5)
-                    self._save_data_btn = ui.Button("Start Saving Data", enabled=False, width=0)
+                    self._save_data_btn = ui.Button("Start Saving Data", enabled=False, width=200, height=50)
                     self._save_data_btn.set_clicked_fn(self._sample.saving_data)
 
     def _on_window(self, status):
@@ -109,7 +109,7 @@ class Extension(omni.ext.IExt):
 
     def _on_simulation_step(self, step):
         if self._sample.created:
-            self._create_robot_btn.text = "Robot Already Loaded"
+            self._create_robot_btn.text = "Reload Robot"
             if self._timeline.is_playing():
                 self._sample.step(step)
                 if self._sample.obstacle_on:
@@ -177,7 +177,6 @@ class Extension(omni.ext.IExt):
         self._viewport.set_camera_position("/OmniverseKit_Persp", 142, -127, 56, True)
         self._viewport.set_camera_target("/OmniverseKit_Persp", -180, 234, -27, True)
 
-        self._create_robot_btn.enabled = False
         self._reset_btn.enabled = True
 
     def on_shutdown(self):
