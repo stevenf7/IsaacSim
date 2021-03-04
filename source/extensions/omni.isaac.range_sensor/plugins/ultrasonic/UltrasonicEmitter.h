@@ -108,6 +108,8 @@ public:
 
         ::physx::PxVec3 azimuthDir = ::physx::PxVec3(0.0f, 0.0f, 1.0f);
         ::physx::PxVec3 zenithDir = ::physx::PxVec3(0.0f, 1.0f, 0.0f);
+        mHitPosWorld.clear();
+        mNormals.clear();
 
         for (int colPreMod = start; colPreMod < stop; colPreMod++)
         {
@@ -122,10 +124,12 @@ public:
                 ::physx::PxRaycastHit raycastHit;
                 // Project the start point out to prevent collisions from origin
                 bool hit = raycast(origin + unitDir * minDepth, unitDir, maxDepth, raycastHit, physxScenePtr);
-                mHitPosWorld[i] = raycastHit.position;
-                mNormals[i] = raycastHit.normal;
+
                 if (hit)
                 {
+                    mHitPosWorld.push_back(raycastHit.position);
+                    mNormals.push_back(raycastHit.normal);
+
                     // the distance of the ray should be from center of lidar
                     mDepth[i] = static_cast<uint16_t>((raycastHit.distance + minDepth) * invMaxDepth * 65535.0f);
                     mLinearDepth[i] = (raycastHit.distance + minDepth) * metersPerUnit; // in meters
@@ -239,15 +243,11 @@ public:
         mIntensity.resize(mRows * mCols);
         mDepth.resize(mRows * mCols);
         mHitPos.resize(mRows * mCols);
-        mHitPosWorld.resize(mRows * mCols);
-        mNormals.resize(mRows * mCols);
 
         mLinearDepth.assign(mRows * mCols, 0);
         mIntensity.assign(mRows * mCols, 0);
         mDepth.assign(mRows * mCols, 0);
         mHitPos.assign(mRows * mCols, { 0, 0, 0 });
-        mHitPosWorld.assign(mRows * mCols, { 0, 0, 0 });
-        mNormals.assign(mRows * mCols, { 0, 0, 0 });
         onComponentChange();
     }
 

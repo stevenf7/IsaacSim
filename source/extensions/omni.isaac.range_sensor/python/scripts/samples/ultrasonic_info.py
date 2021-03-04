@@ -253,8 +253,12 @@ class Extension(omni.ext.IExt):
     def _on_spawn_obstacles_button(self):
         stage = omni.usd.get_context().get_stage()
         self.CubePath = "/World/Cube"
-        offset = Gf.Vec3f(-200.0, 0.0, 50.0)
+        self.CylinderPath = "/World/Cylinder"
+        offset = Gf.Vec3f(-46.36036, 728.20291, 61.8376)
+        offset_cylinder = Gf.Vec3f(384.92474, 205.46415, 68.68243)
         size = 100
+        cylinder_height = 200
+        radius = 10
 
         # Define a light so we can see the obstacle better
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
@@ -264,18 +268,25 @@ class Extension(omni.ext.IExt):
         # we will need the primitive later, we query the prim from the stage. If the prim already exists, skip creation
         if stage.GetPrimAtPath(self.CubePath):
             return
+
+        cylinderGeom = UsdGeom.Cylinder.Define(stage, self.CylinderPath)
         cubeGeom = UsdGeom.Cube.Define(stage, self.CubePath)
         cubePrim = stage.GetPrimAtPath(self.CubePath)
+        cylinderPrim = stage.GetPrimAtPath(self.CylinderPath)
 
         # Remember!  Attributes do not exist until they are created.  Here we set the value to the non defualt at
         # creation.  Note that moving the cube to a different location involves adding a translation operation to
         # our primitive.
         cubeGeom.CreateSizeAttr(size)
+        cylinderGeom.CreateHeightAttr(cylinder_height)
+        cylinderGeom.CreateRadiusAttr(radius)
         cubeGeom.AddTranslateOp().Set(offset)
+        cylinderGeom.AddTranslateOp().Set(offset_cylinder)
 
         # In order for our cube to interact with the ULTRASONIC, it needs to be able to colide with our physX line traces.
         # to do this, we give our cube the collision API, and set it's material and collision group.
         collisionAPI = UsdPhysics.CollisionAPI.Apply(cubePrim)
+        collisionAPI = UsdPhysics.CollisionAPI.Apply(cylinderPrim)
         defaultPrimPath = str(stage.GetDefaultPrim().GetPath())
 
     def _draw_envelope_frame(self):

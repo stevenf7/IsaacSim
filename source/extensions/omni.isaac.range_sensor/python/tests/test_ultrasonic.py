@@ -810,8 +810,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
                         0.0,
                         0.0,
                         0.0,
-                        436.76654053,
-                        0.0,
+                        452.21047974,
+                        30.72865677,
                     ]
                 ),
             )
@@ -862,8 +862,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
                         0.0,
                         0.0,
                         0.0,
-                        436.76654053,
-                        0.0,
+                        452.21047974,
+                        30.72865677,
                     ]
                 ),
             )
