@@ -44,3 +44,6 @@ name = "omni.isaac.samples.scripts.simple_navigation_preview"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.rmp_sample"
+
+[[python.module]]
+name = "omni.isaac.samples.scripts.replay_sample"
