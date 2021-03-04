@@ -8,6 +8,7 @@ display_name = "Isaac Tests"
 "omni.kit.primitive.mesh" = {} # needed for mesh creation commands
 "omni.graph.core" = {}
 "omni.kit.material.library" = {}
+"omni.kit.window.viewport" = {}
 
 [[python.module]]
 name = "omni.isaac.tests"
