@@ -174,6 +174,7 @@ void UltrasonicSensor::tick()
         CARB_LOG_ERROR("Physics Scene does not exist");
         return;
     }
+
     // TODO @markb: there's a lot of work happening both when there are and aren't firing groups;
     // a lot of this should probably be abstracted away into UltrasonicReceiver or similar
     if (mFiringGroups.size() > 0)
@@ -242,6 +243,8 @@ void UltrasonicSensor::tick()
             mEmitters[i].doScan(mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth);
             std::vector<float> totalDepth;
             // all direct intensity; low + high = 1
+            // to clarify this, look at setEnvelopes in UltrasonicEmitter
+            // it combines the low and the high
             std::vector<float> intensities(mEmitters[i].mLinearDepth.size(), 0.5f);
             for (size_t j = 0; j < mEmitters[i].mLinearDepth.size(); j++)
             {
@@ -249,6 +252,7 @@ void UltrasonicSensor::tick()
             }
             USSEnvelope env(mNumBins, mMaxDepth * mMetersPerUnit);
             env.updateEnvelope(totalDepth, intensities);
+            // low and high set to the same; effectively doubled
             mEmitters[i].setEnvelopes(env, env, true, true);
         }
     }

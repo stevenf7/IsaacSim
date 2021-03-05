@@ -57,13 +57,13 @@ class RMPSample:
         self._save_dir = None
         self._ar = _dynamic_control.INVALID_HANDLE
         self._termination_criteria = FrameTerminationCriteria(orig_thresh=0.001)
-        pass
 
     def create_robot(self):
         """ load robot from USD
         """
 
         self._stage = omni.usd.get_context().get_stage()
+        self._ar = _dynamic_control.INVALID_HANDLE
 
         ## unit conversions: RMP is in meters, kit is by default in cm
         self._meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
@@ -376,5 +376,5 @@ class RMPSample:
 
         dof_states = self._dc.get_articulation_dof_states(self._ar, _dynamic_control.STATE_POS)
 
-        self.state_dict_save["joint command"].append(dof_position_target)
-        self.state_dict_save["joint state"].append(dof_states["pos"])
+        self.state_dict_save["joint command"].append(dof_position_target.tolist())
+        self.state_dict_save["joint state"].append(dof_states["pos"].tolist())

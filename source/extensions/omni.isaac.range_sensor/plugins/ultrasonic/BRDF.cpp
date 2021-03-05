@@ -1,5 +1,6 @@
 #include "BRDF.h"
 
+#include <algorithm>
 #include <iostream>
 
 /**
@@ -18,7 +19,7 @@ float BRDF::getReturnedIntensity(const ::physx::PxVec3& receiverOrigin,
 
     // cos(theta) = M V / (||M||||V||)
     float cosTheta = M.dot(V);
-    float returnedIntensity = incidentIntensity * cosTheta;
+    float returnedIntensity = std::max(0.f, incidentIntensity * cosTheta);
     return returnedIntensity;
 }
 
