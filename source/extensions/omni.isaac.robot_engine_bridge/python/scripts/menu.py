@@ -44,6 +44,8 @@ class RobotEngineBridgeMenu:
             MenuItemDescription(
                 name="Polyline Visualizer", onclick_fn=lambda a=weakref.proxy(self): a._add_polyline_visualizer()
             ),
+            MenuItemDescription(name="Simulation Command", onclick_fn=lambda a=weakref.proxy(self): a._add_command()),
+            MenuItemDescription(name="Pose Tree", onclick_fn=lambda a=weakref.proxy(self): a._add_pose_tree()),
         ]
 
         self._menu_items = [
@@ -324,7 +326,30 @@ class RobotEngineBridgeMenu:
             color=Gf.Vec4f(1.0, 1.0, 1.0, 1.0),
             offset=Gf.Vec3f(0, 0, 0),
         )
+        pass
 
+    def _add_command(self, *args, **kwargs):
+        result, prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgeCommandCommand",
+            path="/REB_Command",
+            parent=self._get_stage_and_path(),
+            input_component="command",
+            input_channel="input",
+        )
+        pass
+
+    def _add_pose_tree(self, *args, **kwargs):
+        result, prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePoseTreeCommand",
+            path="/REB_PoseTree",
+            parent=self._get_stage_and_path(),
+            node_name="atlas",
+            output_component="",
+            output_channel="frontend",
+            prims_rel=None,
+            depth_limits=[],
+            prim_regex="",
+        )
         pass
 
     def shutdown(self):

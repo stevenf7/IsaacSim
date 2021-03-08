@@ -19,6 +19,8 @@
 #include <rangeSensorSchema/lidar.h>
 
 #include "../Core/GxfComponent.h"
+#include "gems/composite/composite_from_tensor.hpp"
+#include "gems/range_scan/range_scan_types.hpp"
 
 #include "LidarComponent.h"
 #include <carb/logging/Log.h>
@@ -87,13 +89,12 @@ void LidarComponent::publishAllMessages()
         return;
     }
 
-    int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
-    int numRows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str());
-    // int numBeams = numColsTicked * numRows;
+    int numHorizontalAngles = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
+    int numVerticalAngles = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str());
+    int numBeams = numHorizontalAngles * numVerticalAngles;
 
     // Create the message
-    auto maybe_message = nvidia::isaac::CreateRangescanMessage(
-        mContext, mAllocator, numColsTicked /* horizontal angles */, numRows /* vertical angles */);
+    auto maybe_message = nvidia::isaac::CreateRangeScanMessage(mContext, mAllocator, numBeams);
     if (!maybe_message)
     {
         // return maybe_message.error();
@@ -113,27 +114,29 @@ void LidarComponent::publishAllMessages()
         lidarPrim.GetMaxRangeAttr().Get(&maxRange);
     }
 
-    for (int i = 0; i < numColsTicked; i++)
+    for (int i = 0, ray_idx = 0; i < numHorizontalAngles; i++)
     {
-        message.horizontal_angles(i) = static_cast<double>(theta[i]);
-    }
-    for (int j = 0; j < numRows; j++)
-    {
-        message.vertical_angles(j) = static_cast<double>(phi[j]);
-    }
-    for (int i = 0; i < numColsTicked; i++)
-    {
-        for (int j = 0; j < numRows; j++)
+        for (int j = 0; j < numVerticalAngles; j++, ray_idx++)
         {
-            message.ranges(i, j) = static_cast<double>(ranges[i * numRows + j]);
+            auto maybe_beam =
+                nvidia::isaac::CompositeFromTensor<nvidia::isaac::RangeScanView<double>>(message.beams.slice(ray_idx));
+            if (!maybe_beam)
+            {
+                CARB_LOG_ERROR("could not create RangeScanView for ray %d, %d", ray_idx, maybe_message.error());
+                return;
+            }
+            nvidia::isaac::RangeScanView<double>& beam = maybe_beam.value();
+            // TODO: fill this from spinning lidar model
+            beam.relative_time() = 0.0;
+            beam.horizontal_angle() = static_cast<double>(theta[i]);
+            beam.vertical_angle() = static_cast<double>(phi[j]);
+            beam.range() = static_cast<double>(ranges[ray_idx]);
             // TODO: use getIntensityData()
-            message.intensities(i, j) = 1.0;
+            beam.intensity() = 1.0;
         }
     }
 
     // Fill in meta data
-    message.info->range_denormalizer = 1.0;
-    message.info->intensity_denormalizer = 1.0;
     message.info->delta_time = 0.0;
     message.info->invalid_range = 0.0;
     message.info->out_of_range = static_cast<double>(maxRange);

@@ -40,12 +40,34 @@ public = false
 name = "omni.isaac.robot_engine_bridge.scripts.samples.vehicle_control"
 public = false
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 
-[[libraries]]
+[[native.library]]
 path = "bin/${lib_prefix}robotEngineBridgeSchema${lib_ext}"
+
+[[native.library]]
+path = "lib/libcudart.so.10.2"
+
+[[native.library]]
+path = "lib/libnppc.so.10"
+
+[[native.library]]
+path = "lib/libnppial.so.10"
+
+[[native.library]]
+path = "lib/libnppidei.so.10"
+
+[[native.library]]
+path = "lib/libnppif.so.10"
+
+[[native.library]]
+path = "lib/libnppig.so.10"
+
+[[native.library]]
+path = "lib/libnpps.so.10"
+
 
 [python.pipapi]
 requirements = ["numpy==1.19.0", "numpy-quaternion==2020.9.5.14.42.2", "pycapnp==1.0.0", "numba==0.51.2", "scipy==1.5.4"]
