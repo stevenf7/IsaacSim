@@ -17,6 +17,9 @@
 #include "GxfComponent.h"
 #include "../Gxf/UltrasonicComponent.h"
 #include "../Gxf/LidarComponent.h"
+#include "../Gxf/CameraComponent.h"
+#include "../Gxf/PoseTreeComponent.h"
+#include "../Gxf/CommandComponent.h"
 #include <gxf/std/unbounded_allocator.hpp>
 
 namespace omni
@@ -153,6 +156,7 @@ gxf_result_t GxfContext::start()
         // {
         //     CARB_LOG_ERROR("CAN ALLOCATE B: %d", mAllocator.get()->is_available(100));
         // }
+        mPoseTreeMap.clear();
         mRunning = true;
 
         // This GXF app just started, set context and allocator for existing components
@@ -160,6 +164,7 @@ gxf_result_t GxfContext::start()
         {
             component.second.get()->setGxfContext(mContext);
             component.second.get()->setGxfAllocator(mAllocator);
+            component.second.get()->setPoseTreeMap(&mPoseTreeMap);
         }
     }
     else
@@ -262,6 +267,7 @@ gxf_result_t GxfContext::stop()
     if (mRunning == true)
     {
         mRunning = false;
+        mPoseTreeMap.clear();
         if ((result = GxfGraphInterrupt(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphInterrupt");
@@ -323,6 +329,21 @@ void GxfContext::onComponentAdd(const pxr::UsdPrim& prim)
     {
         component = std::make_unique<LidarComponent>();
         component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineLidar(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineCamera>())
+    {
+        component = std::make_unique<CameraComponent>();
+        component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineCamera(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEnginePoseTree>())
+    {
+        component = std::make_unique<PoseTreeComponent>(mDynamicControlPtr);
+        component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEnginePoseTree(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineCommand>())
+    {
+        component = std::make_unique<CommandComponent>();
+        component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineCommand(prim), mStage);
     }
     if (component)
     {

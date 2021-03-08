@@ -55,8 +55,9 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
         "rangeSensorSchema", "robotEngineBridgeSchema", "physxSchema", "omni.isaac.occupancy_map.generator"
     }
     links{
-        "gxf_core", "gxf_isaac_messages", "gxf_isaac_message_generators"
+        "gxf_core", "isaac_c_api", "gxf_isaac_messages", "gxf_isaac_message_generators"
     }
+    runpathdirs { ext.target_dir.."/gxf/lib", ext.target_dir.."/lib" }
 
     linkoptions{"-Wl,--whole-archive %{root}/_build/target-deps/isaac_engine/lib/libkj.a -Wl,--no-whole-archive"}
 
@@ -82,15 +83,17 @@ repo_build.prebuild_link {
     { "data", ext.target_dir.."/data" },
     { "%{root}/_build/target-deps/isaac_engine/data", ext.target_dir.."/resources/isaac_engine/" },
     { "%{root}/_build/target-deps/isaac_engine/packages", ext.target_dir.."/packages/" },
+    { "%{root}/_build/target-deps/isaac_engine/gxf", ext.target_dir.."/gxf/" },
+    { "%{root}/_build/target-deps/isaac_engine/lib", ext.target_dir.."/lib/" },
     { "%{root}/_build/target-deps/isaac_engine/packages/pyalice", ext.target_dir.."/omni/isaac/pyalice" },
 }
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/robot_engine_bridge" },
-    { "%{root}/_build/target-deps/isaac_engine/lib/**", ext.target_dir.."/bin" },
-    { "%{root}/_build/target-deps/isaac_engine/gxf/lib", ext.target_dir.."/gxf/lib" },
-    { "%{root}/_build/target-deps/isaac_engine/gxf/lib/*.*so*", ext.target_dir.."/bin" },
-    { "%{root}/_build/target-deps/isaac_engine/lib/libnpp*.so*", ext.target_dir.."/packages/viewers" },
+    -- { "%{root}/_build/target-deps/isaac_engine/lib/**", ext.target_dir.."/bin" },
+    -- { "%{root}/_build/target-deps/isaac_engine/gxf/lib", ext.target_dir.."/gxf/lib" },
+    -- { "%{root}/_build/target-deps/isaac_engine/gxf/lib/*.*so*", ext.target_dir.."/bin" },
+    -- { "%{root}/_build/target-deps/isaac_engine/lib/libnpp*.so*", ext.target_dir.."/packages/viewers" },
     { "%{root}/_build/target-deps/isaac_engine/*.whl", ext.target_dir.."/pip-packages/" },
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RobotEngineBridgeSchema/**", ext.target_dir.."/omni/isaac/RobotEngineBridgeSchema" },
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}robotEngineBridgeSchema${lib_ext}", ext.target_dir.."/bin"},

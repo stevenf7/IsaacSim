@@ -902,6 +902,82 @@ class CreateRobotEngineBridgePolylineVisualizerCommand(omni.kit.commands.Command
         pass
 
 
+class CreateRobotEngineBridgeCommandCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path: str = "/REB_Command",
+        parent=None,
+        enabled: bool = True,
+        input_component: str = "command",
+        input_channel: str = "input",
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            enabled=self._enabled,
+            scehma_type=REBSchema.RobotEngineCommand,
+        )
+        if success and self._prim:
+            setup_receiver(self._prim, self._input_component, self._input_channel)
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
+class CreateRobotEngineBridgePoseTreeCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path: str = "/REB_PoseTree",
+        parent=None,
+        enabled: bool = True,
+        node_name: str = "atlas",
+        output_component: str = "",
+        output_channel: str = "frontend",
+        prims_rel: [] = None,
+        depth_limits: [int] = [],
+        prim_regex: str = "",
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRobotEngineBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            enabled=self._enabled,
+            scehma_type=REBSchema.RobotEnginePoseTree,
+        )
+        if success and self._prim:
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+
+            prim_paths = self._prim.CreatePrimsRel()
+            if self._prims_rel is not None:
+                for path in self._prims_rel:
+                    prim_paths.AddTarget(path)
+
+            self._prim.CreateDepthLimitsAttr().Set(self._depth_limits)
+            self._prim.CreatePrimRegexAttr().Set(self._prim_regex)
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
 class TickRobotEngineBridgeComponentCommand(omni.kit.commands.Command):
     def __init__(self, path: str):
         # condensed way to copy all input arguments into self with an underscore prefix

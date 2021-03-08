@@ -11,6 +11,7 @@
 
 #pragma once
 #include "GxfComponent.h"
+#include "GxfPoseTreeMap.h"
 #include "gxf/core/gxf.h"
 #include "plugins/bridge/BridgeApplication.h"
 
@@ -44,6 +45,7 @@ public:
 
 private:
     gxf_context_t mContext = nullptr;
+    GxfPoseTreeMap mPoseTreeMap;
     int64_t mTimeDifferenceNanoSeconds = 0;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
     nvidia::gxf::Handle<nvidia::gxf::Allocator> mAllocator;

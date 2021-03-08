@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "GxfPoseTreeMap.h"
 #include "GxfStructs.h"
 #include "gxf/core/gxf.h"
 #include "plugins/core/Component.h"
@@ -19,12 +20,14 @@
 #include <engine/core/time.hpp>
 #include <gxf/core/entity.hpp>
 #include <gxf/std/double_buffer_receiver.hpp>
+#include <gxf/std/double_buffer_transmitter.hpp>
 #include <gxf/std/tensor.hpp>
 #include <gxf/std/timestamp.hpp>
 #include <packages/engine_c_api/isaac_c_api_error.h>
 #include <robotEngineBridgeSchema/robotEngineBridgeComponent.h>
 
 #include <inttypes.h>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -163,22 +166,24 @@ public:
 
         gxf_result_t result;
         gxf_uid_t tcp_eid;
-        if ((result = GxfEntityFind(mContext, mNodeName.c_str(), &tcp_eid)))
+        const std::string entityName = getEntityName(component, channel);
+        if ((result = GxfEntityFind(mContext, entityName.c_str(), &tcp_eid)))
         {
-            CARB_LOG_ERROR("GxfEntityFind, %s", GxfResultStr(result));
+            CARB_LOG_ERROR("GxfEntityFind %s, %s", entityName.c_str(), GxfResultStr(result));
             return result;
         }
         gxf_tid_t pub_tid;
         if ((result =
                  GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &pub_tid)))
         {
-            CARB_LOG_ERROR("GxfComponentTypeId, %s", GxfResultStr(result));
+            CARB_LOG_ERROR("GxfComponentTypeId DoubleBufferReceiver, %s", GxfResultStr(result));
             return result;
         }
+        const std::string receiverName = getComponentName(component, channel);
         gxf_uid_t pub_cid;
-        if ((result = GxfComponentFind(mContext, tcp_eid, pub_tid, component.c_str(), nullptr, &pub_cid)))
+        if ((result = GxfComponentFind(mContext, tcp_eid, pub_tid, receiverName.c_str(), nullptr, &pub_cid)))
         {
-            CARB_LOG_ERROR("GxfComponentFind, %s", GxfResultStr(result));
+            CARB_LOG_ERROR("GxfComponentFind %s, %s", receiverName.c_str(), GxfResultStr(result));
             return result;
         }
         auto pub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(mContext, pub_cid);
@@ -208,13 +213,16 @@ public:
      * @param data
      * @return gxf_result_t
      */
-    gxf_result_t receive(const std::string& component, const std::string& channel, nvidia::gxf::Entity& data)
+    gxf_result_t receive(const std::string& component,
+                         const std::string& channel,
+                         nvidia::gxf::Expected<nvidia::gxf::Entity>& data)
     {
         gxf_result_t result;
         gxf_uid_t tcp_eid;
+        const std::string entityName = getEntityName(component, channel);
         if ((result = GxfEntityFind(mContext, mNodeName.c_str(), &tcp_eid)))
         {
-            CARB_LOG_ERROR("GxfEntityFind, %s", GxfResultStr(result));
+            CARB_LOG_ERROR("GxfEntityFind: %s, %s", entityName.c_str(), GxfResultStr(result));
             return result;
         }
         gxf_tid_t pub_tid;
@@ -224,25 +232,47 @@ public:
             CARB_LOG_ERROR("GxfComponentTypeId, %s", GxfResultStr(result));
             return result;
         }
+        const std::string receiverName = getComponentName(component, channel);
         gxf_uid_t pub_cid;
-        if ((result = GxfComponentFind(mContext, tcp_eid, pub_tid, component.c_str(), nullptr, &pub_cid)))
+        if ((result = GxfComponentFind(mContext, tcp_eid, pub_tid, receiverName.c_str(), nullptr, &pub_cid)))
         {
-            CARB_LOG_ERROR("GxfComponentFind, %s", GxfResultStr(result));
+            CARB_LOG_ERROR("GxfComponentFind: %s, %s", receiverName.c_str(), GxfResultStr(result));
             return result;
         }
-        auto pub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(mContext, pub_cid);
-        if ((result = pub_handle.value()->sync_abi()))
+        auto sub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(mContext, pub_cid);
+        if ((result = sub_handle.value()->sync_abi()))
         {
             CARB_LOG_ERROR("sync_abi, %s", GxfResultStr(result));
             return result;
         }
-        auto message = pub_handle.value()->receive();
-        if (!message)
+        if (sub_handle.value()->size() == 0)
         {
             return gxf_result_t::GXF_FAILURE;
         }
-        data = std::move(message);
-        return gxf_result_t::GXF_SUCCESS;
+
+
+        gxf_uid_t uid;
+        const gxf_result_t code = sub_handle.value()->pop_abi(&uid);
+
+        // if ((result = sub_handle.value()->sync_abi()))
+        // {
+        //     CARB_LOG_ERROR("sync_abi, %s", GxfResultStr(result));
+        //     return result;
+        // }
+
+
+        if (code == gxf_result_t::GXF_SUCCESS)
+        {
+            auto message = nvidia::gxf::Entity::Own(mContext, uid);
+            data = std::move(message);
+            return gxf_result_t::GXF_SUCCESS;
+        }
+        else
+        {
+            auto message = nvidia::gxf::Unexpected{ code };
+            data = std::move(message);
+            return gxf_result_t::GXF_FAILURE;
+        }
     }
 
 
@@ -261,14 +291,31 @@ public:
         CARB_LOG_WARN("setGxfAllocator");
         mAllocator = allocator;
     }
+    virtual void setPoseTreeMap(GxfPoseTreeMap* poseTreeMap)
+    {
+        CARB_LOG_WARN("setPoseTreeMap");
+        mPoseTreeMap = poseTreeMap;
+    }
 
 protected:
+    // Returns the gxf entity name
+    std::string getEntityName(const std::string& component, const std::string& channel) const
+    {
+        return component.empty() ? mNodeName : mNodeName + "." + component;
+    }
+    // Returns the gxf component name
+    std::string getComponentName(const std::string& component, const std::string& channel) const
+    {
+        return channel;
+    }
+
     gxf_context_t mContext = nullptr;
     nvidia::gxf::Handle<nvidia::gxf::Allocator> mAllocator;
     std::string mNodeName = "interface";
     gxf_result_t mError = gxf_result_t::GXF_SUCCESS;
     int64_t mTimeDifferenceNanoSeconds = 0;
     int64_t mComponentTimeOffsetNanoSeconds = 0;
+    GxfPoseTreeMap* mPoseTreeMap;
 };
 
 
