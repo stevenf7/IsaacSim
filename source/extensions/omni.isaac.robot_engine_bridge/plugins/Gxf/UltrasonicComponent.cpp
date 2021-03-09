@@ -90,7 +90,6 @@ void UltrasonicComponent::publishAllMessages()
     pxr::SdfPathVector emitterTargets;
     ultrasonicPrim.GetEmitterPrimsRel().GetTargets(&emitterTargets);
     int numSensors = static_cast<int>(emitterTargets.size());
-    CARB_LOG_WARN("Got %d USS sensors", numSensors);
 
     // std::vector<float> data =
     // mUltrasonicSensorInterface->getEnvelopeArrayFlattened(mUltrasonicPath.GetString().c_str());

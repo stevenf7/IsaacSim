@@ -24,7 +24,7 @@ namespace gxf_bridge
 void GxfPoseTreeMap::clear()
 {
     std::unique_lock<std::shared_timed_mutex> lock(mMutex);
-    CARB_LOG_ERROR("Cleared");
+    // CARB_LOG_ERROR("Cleared");
     mPoseUidMap.clear();
 }
 
@@ -47,7 +47,7 @@ nvidia::isaac::PoseTree::expected_t<nvidia::isaac::PoseTree::frame_t> GxfPoseTre
         const auto maybeUid = poseTree.findOrCreateFrame(path.c_str());
         if (maybeUid)
         {
-            CARB_LOG_WARN("Created named frame Prim %s", path.c_str());
+            // CARB_LOG_WARN("Created named frame Prim %s", path.c_str());
             mPoseUidMap.emplace(path, maybeUid.value());
         }
         return maybeUid;
@@ -68,7 +68,7 @@ nvidia::isaac::PoseTree::expected_t<nvidia::isaac::PoseTree::frame_t> GxfPoseTre
         const auto maybeUid = poseTree.createFrame();
         if (maybeUid)
         {
-            CARB_LOG_WARN("Created unnamed frame Prim %s", path.c_str());
+            // CARB_LOG_WARN("Created unnamed frame Prim %s", path.c_str());
             mPoseUidMap.emplace(path, maybeUid.value());
         }
         return maybeUid;

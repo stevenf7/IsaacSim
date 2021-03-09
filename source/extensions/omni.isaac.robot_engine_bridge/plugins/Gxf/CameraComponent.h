@@ -78,12 +78,11 @@ public:
 
 private:
     /// Publish camera intrinsics with pinhole parameters
-    void publishIntrinsics(std::string outputComponent,
-                           std::string channelName,
-                           const carb::sensors::SensorInfo& info,
-                           float focalLength,
-                           float horizontalAperture,
-                           float verticalAperture);
+    void setIntrinsics(const nvidia::gxf::Handle<::isaac::geometry::PinholeD>& intrinsics,
+                       const carb::sensors::SensorInfo& info,
+                       float focalLength,
+                       float horizontalAperture,
+                       float verticalAperture);
     carb::Framework* mFramework = nullptr;
     carb::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
     carb::sensors::Sensors* mSensorsInterface = nullptr;
