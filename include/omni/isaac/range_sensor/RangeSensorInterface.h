@@ -77,6 +77,30 @@ struct RadarSensorInterface
     bool(CARB_ABI* isRadarSensor)(const char* sensorPath);
 };
 
+struct GenericSensorInterface
+{
+    CARB_PLUGIN_INTERFACE("omni::isaac::range_sensor::GenericSensorInterface", 0, 1);
+    bool(CARB_ABI* isGenericSensor)(const char* sensorPath);
+
+    int(CARB_ABI* getNumSamplesTicked)(const char* sensorPath);
+    uint16_t*(CARB_ABI* getDepthData)(const char* sensorPath);
+    float*(CARB_ABI* getLinearDepthData)(const char* sensorPath);
+    uint8_t*(CARB_ABI* getIntensityData)(const char* sensorPath);
+    float*(CARB_ABI* getZenithData)(const char* sensorPath);
+    float*(CARB_ABI* getAzimuthData)(const char* sensorPath);
+    carb::Float3*(CARB_ABI* getHitPosData)(const char* sensorPath);
+    carb::Float3*(CARB_ABI* getOffsetData)(const char* sensorPath);
+
+    bool(CARB_ABI* sendNextBatch)(const char* sensorPath);
+    void(CARB_ABI* setNextBatchRays)(const char* sensorPath,
+                                     const float* azimuth_angles,
+                                     const float* zenith_angles,
+                                     const int sample_length);
+
+    void(CARB_ABI* setNextBatchOffsets)(const char* sensorPath, const float* origin_offsets, const int sample_length);
+};
+
+
 }
 }
 }

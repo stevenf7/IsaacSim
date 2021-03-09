@@ -17,8 +17,11 @@
 
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <pybind11/pybind11/numpy.h>
+#include <pybind11/pybind11/stl.h>
 
 CARB_BINDINGS("omni.isaac.range_sensor.python")
+// PYBIND11_MAKE_OPAQUE(std::vector<carb::Float2>);
+// PYBIND11_MAKE_OPAQUE(std::vector<carb::Float3>);
 
 
 namespace omni
@@ -437,5 +440,147 @@ PYBIND11_MODULE(_range_sensor, m)
                 
                 Returns:
                 :obj:`bool`: True if a sensor exists at the give path, False otherwise)pbdoc");
+
+
+    defineInterfaceClass<GenericSensorInterface>(
+        m, "GenericSensorInterface", "acquire_generic_sensor_interface", "release_generic_sensor_interface")
+        .def("is_generic_sensor", wrapInterfaceFunction(&GenericSensorInterface::isGenericSensor),
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`bool`: True if a sensor exists at the give path, False otherwise)pbdoc")
+
+        .def("send_next_batch", wrapInterfaceFunction(&GenericSensorInterface::sendNextBatch), "ready for next batch")
+
+        .def("set_next_batch_rays",
+             [](const GenericSensorInterface* gs, const char* sensorPath, py::array_t<float> x) {
+                 if (!gs)
+                     return;
+                 const auto& r = x.unchecked<2>();
+                 gs->setNextBatchRays(sensorPath, r.data(0, 0), r.data(1, 0), static_cast<int>(r.shape(1)));
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                    arg1 (:obj:`numpy.ndaray`): The azimuth and zenith angles in radians for each column)pbdoc")
+
+
+        .def("set_next_batch_offsets",
+             [](const GenericSensorInterface* gs, const char* sensorPath, py::array_t<float> x) {
+                 if (!gs)
+                     return;
+                 const auto& r = x.unchecked<>();
+                 gs->setNextBatchOffsets(sensorPath, r.data(), static_cast<int>(r.shape(0)));
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                    arg1 (:obj:`numpy.ndaray`): The offset xyz, a 2D array for individual rays, or 1D array for a constant offset)pbdoc")
+
+        .def("get_num_samples_ticked", wrapInterfaceFunction(&GenericSensorInterface::getNumSamplesTicked),
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                     :obj:`int`: The number of sample points the sensor completed in the last simulation step,
+                                 0 if error occurred.)pbdoc")
+        .def("get_depth_data",
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+                 if (!gs)
+                     return py::none();
+                 uint16_t* data = gs->getDepthData(sensorPath);
+                 int samples = gs->getNumSamplesTicked(sensorPath);
+                 return py::array(py::buffer_info(data, sizeof(uint16_t), py::format_descriptor<uint16_t>::value, 1,
+                                                  { samples }, { sizeof(uint16_t) }));
+             },
+             R"pbdoc(
+            Args:
+                arg0 (:obj:`str`): USD path to sensor as a string
+
+            Returns:
+            :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and scaled
+                                  by min and max distance)pbdoc")
+
+        .def("get_linear_depth_data",
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+                 if (!gs)
+                     return py::none();
+                 float* data = gs->getLinearDepthData(sensorPath);
+                 int samples = gs->getNumSamplesTicked(sensorPath);
+                 return py::array(py::buffer_info(
+                     data, sizeof(float), py::format_descriptor<float>::value, 1, { samples }, { sizeof(float) }));
+             },
+             R"pbdoc(
+            Args:
+                arg0 (:obj:`str`): USD path to sensor as a string
+
+            Returns:
+            :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in meters)pbdoc")
+
+        .def("get_intensity_data",
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+                 if (!gs)
+                     return py::none();
+                 uint8_t* data = gs->getIntensityData(sensorPath);
+                 int samples = gs->getNumSamplesTicked(sensorPath);
+                 return py::array(py::buffer_info(data, sizeof(uint8_t), py::format_descriptor<uint8_t>::value, 1,
+                                                  { samples }, { sizeof(uint8_t) }));
+             },
+             R"pbdoc(
+            Args:
+                arg0 (:obj:`str`): USD path to sensor as a string
+
+            Returns:
+            :obj:`numpy.ndarray`: The observed specular intensity of each beam, 255 if hit, 0 if not)pbdoc")
+
+        .def("get_zenith_data",
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+                 if (!gs)
+                     return py::none();
+                 float* data = gs->getZenithData(sensorPath);
+                 int samples = gs->getNumSamplesTicked(sensorPath);
+                 return py::array(py::buffer_info(
+                     data, sizeof(float), py::format_descriptor<float>::value, 1, { samples }, { sizeof(float) }));
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The zenith angle in radians for each row)pbdoc")
+
+        .def("get_azimuth_data",
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+                 if (!gs)
+                     return py::none();
+                 float* data = gs->getAzimuthData(sensorPath);
+                 int samples = gs->getNumSamplesTicked(sensorPath);
+                 return py::array(py::buffer_info(
+                     data, sizeof(float), py::format_descriptor<float>::value, 1, { samples }, { sizeof(float) }));
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The azimuth angle in radians for each column)pbdoc")
+        .def("get_hit_pos_data",
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+                 if (!gs)
+                     return py::none();
+                 carb::Float3* data = gs->getHitPosData(sensorPath);
+                 int samples = gs->getNumSamplesTicked(sensorPath);
+                 return py::array(py::buffer_info(data, sizeof(float), py::format_descriptor<float>::value, 2,
+                                                  { samples, 3 }, { sizeof(float) * 3, sizeof(float) }));
+             },
+             R"pbdoc(
+                Args: 
+                    arg0 (:obj:`str`): USD path to sensor as a string
+                
+                Returns:
+                :obj:`numpy.ndarray`: The hit position in xyz relative to the sensor origin, not accounting for individual ray offsets)pbdoc");
 }
 }
