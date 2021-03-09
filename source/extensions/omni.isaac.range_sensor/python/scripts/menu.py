@@ -23,6 +23,7 @@ class RangeSensorMenu:
                     ),
                 ],
             ),
+            MenuItemDescription(name="Generic", onclick_fn=lambda a=weakref.proxy(self): a._add_generic()),
         ]
 
         self._menu_items = [
@@ -93,6 +94,18 @@ class RangeSensorMenu:
             parent=self._get_stage_and_path(),
             emitter_modes=[],
             receiver_modes=[],
+        )
+
+    def _add_generic(self, *args, **kwargs):
+        result, prim = omni.kit.commands.execute(
+            "CreateRangeSensorGenericCommand",
+            path="/GenericSensor",
+            parent=self._get_stage_and_path(),
+            min_range=0.4,
+            max_range=100.0,
+            draw_points=False,
+            draw_lines=False,
+            sampling_rate=60,
         )
 
     def shutdown(self):
