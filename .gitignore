@@ -87,8 +87,6 @@ symbols.txt
 # petert: temp file i create for debugging
 output.txt
 
-PACKAGE-LICENSES/
-
 # OVAT files 
 gcn_local.yml
 _venv/
