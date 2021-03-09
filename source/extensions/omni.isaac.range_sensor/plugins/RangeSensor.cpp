@@ -23,6 +23,8 @@
 #include "lidar/LidarSensor.h"
 #include "ultrasonic/UltrasonicSensor.h"
 #include "radar/RadarSensor.h"
+#include "generic/GenericSensor.h"
+
 
 #include <carb/imgui/ImGui.h>
 
@@ -50,7 +52,8 @@ const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.range_sensor.plugi
 CARB_PLUGIN_IMPL(kPluginImpl,
                  omni::isaac::range_sensor::LidarSensorInterface,
                  omni::isaac::range_sensor::UltrasonicSensorInterface,
-                 omni::isaac::range_sensor::RadarSensorInterface)
+                 omni::isaac::range_sensor::RadarSensorInterface,
+                 omni::isaac::range_sensor::GenericSensorInterface)
 
 
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
@@ -731,6 +734,270 @@ bool CARB_ABI isRadarSensor(const char* primPath)
 
 }
 
+namespace generic
+{
+bool CARB_ABI isGenericSensor(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::GenericSensor* sensor =
+            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return true;
+        }
+        else
+        {
+            CARB_LOG_ERROR("Generic Sensor does not exist");
+            return false;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Generic Sensor Manager does not exist");
+        return false;
+    }
+}
+
+bool CARB_ABI sendNextBatch(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::GenericSensor* sensor =
+            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return sensor->sendNextBatch();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Generic Sensor does not exist");
+            return false;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Generic Sensor Manager does not exist");
+        return false;
+    }
+}
+
+
+void CARB_ABI setNextBatchRays(const char* primPath,
+                               const float* azimuth_angles,
+                               const float* zenith_angles,
+                               const int sample_length)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::GenericSensor* sensor =
+            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            sensor->setNextBatchRays(azimuth_angles, zenith_angles, sample_length);
+        }
+        else
+        {
+            CARB_LOG_ERROR("Generic Sensor does not exist");
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Generic Sensor Manager does not exist");
+    }
+}
+
+void CARB_ABI setNextBatchOffsets(const char* primPath, const float* origin_offsets, const int sample_length)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::GenericSensor* sensor =
+            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            sensor->setNextBatchOffsets(origin_offsets, sample_length);
+        }
+        else
+        {
+            CARB_LOG_ERROR("Generic Sensor does not exist");
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Generic Sensor Manager does not exist");
+    }
+}
+
+
+int CARB_ABI getNumSamplesTicked(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::GenericSensor* sensor =
+            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getNumSamplesTicked();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Generic Sensor does not exist");
+            return 0;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Generic Sensor Manager does not exist");
+        return 0;
+    }
+}
+
+uint16_t* CARB_ABI getDepthData(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::GenericSensor* sensor =
+            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getDepthData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Generic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Generic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+float* CARB_ABI getLinearDepthData(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::GenericSensor* sensor =
+            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getLinearDepthData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Generic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Generic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+uint8_t* CARB_ABI getIntensityData(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::GenericSensor* sensor =
+            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getIntensityData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Generic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Generic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+float* CARB_ABI getZenithData(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::GenericSensor* sensor =
+            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getZenithData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Generic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Generic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+float* CARB_ABI getAzimuthData(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::GenericSensor* sensor =
+            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getAzimuthData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Generic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Generic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+carb::Float3* CARB_ABI getHitPosData(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::GenericSensor* sensor =
+            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return sensor->getHitPosData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Generic Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Generic Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
+}
+
+
 void onAttach(long stageId, double metersPerUnit, void* data)
 {
     g_stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
@@ -947,4 +1214,22 @@ void fillInterface(omni::isaac::range_sensor::RadarSensorInterface& iface)
     using namespace omni::isaac::range_sensor;
     memset(&iface, 0, sizeof(iface));
     iface.isRadarSensor = radar::isRadarSensor;
+}
+
+
+void fillInterface(omni::isaac::range_sensor::GenericSensorInterface& iface)
+{
+    using namespace omni::isaac::range_sensor;
+    memset(&iface, 0, sizeof(iface));
+    iface.getNumSamplesTicked = generic::getNumSamplesTicked;
+    iface.getDepthData = generic::getDepthData;
+    iface.getLinearDepthData = generic::getLinearDepthData;
+    iface.getIntensityData = generic::getIntensityData;
+    iface.getZenithData = generic::getZenithData;
+    iface.getAzimuthData = generic::getAzimuthData;
+    iface.getHitPosData = generic::getHitPosData;
+    iface.isGenericSensor = generic::isGenericSensor;
+    iface.sendNextBatch = generic::sendNextBatch;
+    iface.setNextBatchRays = generic::setNextBatchRays;
+    iface.setNextBatchOffsets = generic::setNextBatchOffsets;
 }

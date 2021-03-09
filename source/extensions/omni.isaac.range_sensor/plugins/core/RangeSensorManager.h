@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "../generic/GenericSensor.h"
 #include "../lidar/LidarSensor.h"
 #include "../radar/RadarSensor.h"
 #include "../ultrasonic/UltrasonicSensor.h"
@@ -223,6 +224,12 @@ public:
             component = std::make_unique<RadarSensor>(mPhysxPtr, mFastCachePtr);
             component->initialize(pxr::RangeSensorSchemaRadar(prim), mStage);
         }
+        else if (prim.IsA<pxr::RangeSensorSchemaGeneric>())
+        {
+            component = std::make_unique<GenericSensor>(mPhysxPtr, mFastCachePtr);
+            component->initialize(pxr::RangeSensorSchemaGeneric(prim), mStage);
+        }
+
 
         if (component)
         {
@@ -286,6 +293,18 @@ public:
         }
         return nullptr;
     }
+    GenericSensor* getGenericSensor(const pxr::UsdPrim& prim)
+    {
+        if (prim)
+        {
+            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            {
+                return dynamic_cast<GenericSensor*>(mComponents[prim.GetPath().GetString()].get());
+            }
+        }
+        return nullptr;
+    }
+
 
 private:
     void createDebugLineList(size_t size)

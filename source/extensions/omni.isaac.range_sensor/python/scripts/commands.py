@@ -241,4 +241,45 @@ class CreateRangeSensorUltrasonicFiringGroupCommand(omni.kit.commands.Command):
         pass
 
 
+class CreateRangeSensorGenericCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path: str = "/GenericSensor",
+        parent=None,
+        min_range: float = 0.4,
+        max_range: float = 100.0,
+        draw_points: bool = False,
+        draw_lines: bool = False,
+        sampling_rate: int = 60,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        self._prim = None
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "CreateRangeSensorPrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=RangeSensorSchema.Generic,
+            draw_points=self._draw_points,
+            draw_lines=self._draw_lines,
+            min_range=self._min_range,
+            max_range=self._max_range,
+        )
+        if success and self._prim:
+            self._prim.CreateSamplingRateAttr().Set(self._sampling_rate)
+        else:
+            carb.log.error("Could not create generic sensor prim")
+        return self._prim
+
+    def undo(self):
+        if self._prim_path is not None:
+            return self._stage.RemovePrim(self._prim_path)
+        pass
+
+
 omni.kit.commands.register_all_commands_in_module(__name__)

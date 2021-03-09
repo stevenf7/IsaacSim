@@ -8,6 +8,8 @@ class Extension(omni.ext.IExt):
         self._lidar = _range_sensor.acquire_lidar_sensor_interface()
         self._ultrasonic = _range_sensor.acquire_ultrasonic_sensor_interface()
         self._radar = _range_sensor.acquire_radar_sensor_interface()
+        self._generic = _range_sensor.acquire_generic_sensor_interface()
+
         self._menu = RangeSensorMenu()
 
     def on_shutdown(self):
@@ -17,3 +19,4 @@ class Extension(omni.ext.IExt):
         _range_sensor.release_lidar_sensor_interface(self._lidar)
         _range_sensor.release_ultrasonic_sensor_interface(self._ultrasonic)
         _range_sensor.release_radar_sensor_interface(self._radar)
+        _range_sensor.release_generic_sensor_interface(self._generic)
