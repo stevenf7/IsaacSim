@@ -1,14 +1,17 @@
 import os
-import sys
+
+# import sys
 import argparse
-import distutils.dir_util
-import glob
+
+# import distutils.dir_util
+# import glob
 
 import logging
 
 from typing import Dict, Callable
-from string import Template
-from pathlib import Path
+
+# from string import Template
+# from pathlib import Path
 
 import omni.repo.man
 
@@ -37,6 +40,16 @@ def parse_version(full_version: Version):
     return parsed_version
 
 
+def bump_version_file(version_file_path):
+    version = open(version_file_path).readline()
+    start, end = version.rsplit(".", maxsplit=1)
+    new_version = "{}.{}".format(start, int(end) + 1)
+    with open(version_file_path, "w") as f:
+        f.write(new_version)
+    print(f"Version in '{version_file_path}' bumped to: {new_version}")
+    return new_version
+
+
 def call_git_safe(root, args):
     print("> git {}".format(" ".join(args)))
     with omni.repo.man.change_cwd(root):
@@ -56,30 +69,44 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.add_argument("-t", "--test", dest="test_run", required=False, action="store_true", help="Test run.")
 
     def run_repo_tool(options: Dict, config: Dict):
-        repo_folders = config["repo"]["folders"]
-        root = repo_folders["root"]
+        # repo_folders = config["repo"]["folders"]
+        # root = repo_folders["root"]
 
         tool_config = config["bump_version"]
-        #git_url = tool_config["git_url"]
-        #template_path = tool_config["template_path"]
-
-        # if not os.path.exists(template_path):
-        #     logger.error(f"template_path: '{template_path}' doesn't exist.")
-        #     sys.exit(-1)
+        git_url = tool_config["git_url"]
+        branch_name = tool_config["branch_name"]
 
         # Bump version in file
         with omni.repo.man.TemporaryDirectory() as temp_dir:
             logger.info(f"Working in temp folder: {temp_dir}")
 
-            # Read version file
-            version = open(f"{root}/VERSION.md").readline().strip()
-            parsed_version = parse_version(version)
-            logger.info(f"parsed_version: {parsed_version}")
+            # version = open(f"{root}/VERSION.md").readline().strip()
+            # parsed_version = parse_version(version)
 
-        if not options.skip_commit:
-            # push/commit everything
-            call_git_safe(root, ["add", "-A"])
-            call_git_safe(root, ["commit", "-m", f"deploy version: {version}"])
-            #call_git_safe(root, ["push", git_url, branch_name])
+            repo_name = "isaac-sim_bump_repo"
+
+            # clone repo
+            call_git_safe(temp_dir, ["clone", git_url, repo_name])
+            cloned_repo_dir = os.path.join(temp_dir, repo_name)
+
+            # create branch
+            # branch_name = "develop-bump-test"
+            call_git_safe(cloned_repo_dir, ["checkout", "-b", branch_name])
+            try:
+                call_git_safe(cloned_repo_dir, ["pull", git_url, branch_name])
+            except:
+                print(f"This is fine. The branch is new and have not been pushed yet.")
+
+            # increment version
+            new_version = bump_version_file(f"{cloned_repo_dir}/VERSION.md")
+
+            if not options.skip_commit:
+                # push/commit everything
+                logger.info("push/commit everything")
+                call_git_safe(cloned_repo_dir, ["add", "VERSION.md"])
+                call_git_safe(cloned_repo_dir, ["config", "user.email", '"teamcity@nvidia.com"'])
+                call_git_safe(cloned_repo_dir, ["config", "user.name", '"Team City"'])
+                call_git_safe(cloned_repo_dir, ["commit", "-m", f"Bumped version: {new_version}"])
+                call_git_safe(cloned_repo_dir, ["push", git_url, branch_name])
 
     return run_repo_tool

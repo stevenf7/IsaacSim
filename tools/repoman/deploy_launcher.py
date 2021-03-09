@@ -126,7 +126,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 else:
                     package_url_linux = package_url
 
-        # Now deploay
+        # Now deploy
         print(f"package_url_windows: {package_url_windows}")
         print(f"package_url_linux: {package_url_linux}")
         with omni.repo.man.TemporaryDirectory() as temp_dir:
