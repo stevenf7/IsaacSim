@@ -99,7 +99,7 @@ class Extension(omni.ext.IExt):
                             omni.ui.Label("Graph Path ", width=0)
                             self._scene_loader["gxf_graph"] = omni.ui.StringField().model
                             self._scene_loader["gxf_graph"].set_value(
-                                self._reb_extension_path + "/data/config/visualize_uss.yaml"
+                                self._reb_extension_path + "/data/config/recorder.yaml"
                             )
                         self._scene_loader["create_gxf"] = omni.ui.Button(
                             "Create Application", height=0, clicked_fn=self._on_create_destroy_gxf_app_fn
