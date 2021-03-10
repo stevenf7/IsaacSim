@@ -85,6 +85,12 @@ void CameraComponent::tick()
 
     pxr::SdfPath path(cameraPath);
     pxr::UsdPrim prim = mStage->GetPrimAtPath(path);
+    auto maybePoseUid = mPoseTreeMap->findFrame(cameraPath);
+    if (!maybePoseUid)
+    {
+        CARB_LOG_WARN("Cannot find pose uid for camera %s", cameraPath);
+    }
+    const nvidia::isaac::PoseTree::frame_t poseUid = maybePoseUid ? maybePoseUid.value() : 0u;
 
     pxr::UsdGeomCamera cameraPrim(prim);
 
@@ -112,7 +118,7 @@ void CameraComponent::tick()
             return;
         }
         // Create the message. TODO: create CUDA tensor message
-        auto maybe_message = nvidia::isaac::CreateTensorMessage<uint8_t, 3>(mContext, mAllocator, { rows, cols, 3 });
+        auto maybe_message = nvidia::isaac::CreateCameraImageMessage<uint8_t>(mContext, mAllocator, { rows, cols, 3 });
         if (!maybe_message)
         {
             // return maybe_message.error();
@@ -129,12 +135,15 @@ void CameraComponent::tick()
         // use cuda kernel to reorganize buffer and write to final destination
         rgbaToRgb(mRgbBuffers[0]->data(), (uint8_t*)mRgbSensorData, rgbInfo.tex.width, rgbInfo.tex.height,
                   rgbInfo.tex.rowSize);
-        cudaMemcpy(static_cast<byte*>(message.tensor_view.element_wise_begin()), mRgbBuffers[0]->data(), bufferSize,
-                   cudaMemcpyDeviceToHost);
+        cudaMemcpy(static_cast<byte*>(message.image_tensor_view.element_wise_begin()), mRgbBuffers[0]->data(),
+                   bufferSize, cudaMemcpyDeviceToHost);
+
+        // Set camera intrinsics value
+        setIntrinsics(message.intrinsics_info, rgbInfo, focalLength, horizontalAperture, verticalAperture);
+        // Set pose frame uid
+        message.pose_frame_uid->uid = poseUid;
 
         publish(mRgbOutputComponent, mRgbChannelName, std::move(message.entity));
-        //        publishIntrinsics(
-        //            mRgbOutputComponent, mRgbChannelName, rgbInfo, focalLength, horizontalAperture, verticalAperture);
     }
 
 
@@ -152,11 +161,11 @@ void CameraComponent::tick()
             return;
         }
         // Create the message. TODO: create CUDA tensor message
-        auto maybe_message = nvidia::isaac::CreateTensorMessage<float, 3>(mContext, mAllocator, { rows, cols, 1 });
+        auto maybe_message = nvidia::isaac::CreateCameraImageMessage<float>(mContext, mAllocator, { rows, cols, 1 });
         if (!maybe_message)
         {
             // return maybe_message.error();
-            CARB_LOG_ERROR("could not create rgb image message, %d", maybe_message.error());
+            CARB_LOG_ERROR("could not create depth image message, %d", maybe_message.error());
             return;
         }
         auto message = std::move(maybe_message.value());
@@ -169,13 +178,15 @@ void CameraComponent::tick()
         mDepthSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthSensor);
         CUDA_CHECK(cudaMemcpy(mDepthBuffers[0]->data(), mDepthSensorData, bufferSize, cudaMemcpyDeviceToDevice));
 
-        cudaMemcpy(reinterpret_cast<byte*>(message.tensor_view.element_wise_begin()), mDepthBuffers[0]->data(),
+        cudaMemcpy(reinterpret_cast<byte*>(message.image_tensor_view.element_wise_begin()), mDepthBuffers[0]->data(),
                    bufferSize, cudaMemcpyDeviceToHost);
 
+        // Set camera intrinsics value
+        setIntrinsics(message.intrinsics_info, depthInfo, focalLength, horizontalAperture, verticalAperture);
+        // Set pose frame uid
+        message.pose_frame_uid->uid = poseUid;
+
         publish(mDepthOutputComponent, mDepthChannelName, std::move(message.entity));
-        //        publishIntrinsics(
-        //            mDepthOutputComponent, mDepthChannelName, depthInfo, focalLength, horizontalAperture,
-        //            verticalAperture);
     }
 
     // TODO can we turn on mSegmentationSensor && mSemanticSensor separately
@@ -197,46 +208,54 @@ void CameraComponent::tick()
 
         const int rows = semanticInfo.tex.height;
         const int cols = semanticInfo.tex.width;
-
+        if (rows == 0 || cols == 0)
+        {
+            CARB_LOG_ERROR("Image row/col is zero");
+            return;
+        }
 
         // TODO : The instance and semantic segmentation should be refactored into one method
         // Instance segmentation
         {
-            //            const size_t bufferSize = rows * cols * sizeof(uint16_t);
-            //            // Create the message. TODO: create CUDA tensor message
-            //            auto maybe_message = nvidia::isaac::CreateTensorMessage<uint16_t, 3>(mContext, mAllocator, {
-            //            rows, cols, 1 });
-            //            if (!maybe_message)
-            //            {
-            //                // return maybe_message.error();
-            //                CARB_LOG_ERROR("could not create rgb image message, %d", maybe_message.error());
-            //                return;
-            //            }
-            //            auto message = std::move(maybe_message.value());
-            //
-            //            message.timestamp->acqtime = this->mTimeNanoSeconds + mComponentTimeOffsetNanoSeconds;
-            //            message.timestamp->pubtime = ::isaac::NowCount();
-            //
-            //            mSegmentationBuffers[0]->resize(bufferSize);
-            //            uint32ToUint16((uint16_t*)mSegmentationBuffers[0]->data(), (uint32_t*)mSegmentationSensorData,
-            //            cols, rows,
-            //                           segmentationInfo.tex.rowSize);
-            //            cudaMemcpy(reinterpret_cast<byte*>(message.tensor_view.element_wise_begin()),
-            //                       mSegmentationBuffers[0]->data(), bufferSize, cudaMemcpyDeviceToHost);
-            //
-            //            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_instance",
-            //            std::move(message.entity));
+            const size_t bufferSize = rows * cols * sizeof(uint16_t);
+            // Create the message. TODO: create CUDA tensor message
+            auto maybe_message =
+                nvidia::isaac::CreateCameraImageMessage<uint16_t>(mContext, mAllocator, { rows, cols, 1 });
+            if (!maybe_message)
+            {
+                // return maybe_message.error();
+                CARB_LOG_ERROR("could not create instance image message, %d", maybe_message.error());
+                return;
+            }
+            auto message = std::move(maybe_message.value());
+
+            message.timestamp->acqtime = this->mTimeNanoSeconds + mComponentTimeOffsetNanoSeconds;
+            message.timestamp->pubtime = ::isaac::NowCount();
+
+            mSegmentationBuffers[0]->resize(bufferSize);
+            uint32ToUint16((uint16_t*)mSegmentationBuffers[0]->data(), (uint32_t*)mSegmentationSensorData, cols, rows,
+                           segmentationInfo.tex.rowSize);
+            cudaMemcpy(reinterpret_cast<byte*>(message.image_tensor_view.element_wise_begin()),
+                       mSegmentationBuffers[0]->data(), bufferSize, cudaMemcpyDeviceToHost);
+
+            // Set camera intrinsics value
+            setIntrinsics(message.intrinsics_info, semanticInfo, focalLength, horizontalAperture, verticalAperture);
+            // Set pose frame uid
+            message.pose_frame_uid->uid = poseUid;
+
+            publish(mSegmentationOutputComponent, mSegmentationChannelName + "_instance", std::move(message.entity));
         }
 
         // Semantic segmentation
         {
             const size_t bufferSize = rows * cols * sizeof(uint8_t);
             // Create the message. TODO: create CUDA tensor message
-            auto maybe_message = nvidia::isaac::CreateTensorMessage<uint8_t, 3>(mContext, mAllocator, { rows, cols, 1 });
+            auto maybe_message =
+                nvidia::isaac::CreateCameraImageMessage<uint8_t>(mContext, mAllocator, { rows, cols, 1 });
             if (!maybe_message)
             {
                 // return maybe_message.error();
-                CARB_LOG_ERROR("could not create rgb image message, %d", maybe_message.error());
+                CARB_LOG_ERROR("could not create class image message, %d", maybe_message.error());
                 return;
             }
             auto message = std::move(maybe_message.value());
@@ -247,8 +266,13 @@ void CameraComponent::tick()
             mSemanticBuffers[0]->resize(bufferSize);
             uint32ToUint8(
                 mSemanticBuffers[0]->data(), (uint32_t*)mSemanticSensorData, cols, rows, semanticInfo.tex.rowSize);
-            cudaMemcpy(static_cast<byte*>(message.tensor_view.element_wise_begin()), mSemanticBuffers[0]->data(),
+            cudaMemcpy(static_cast<byte*>(message.image_tensor_view.element_wise_begin()), mSemanticBuffers[0]->data(),
                        bufferSize, cudaMemcpyDeviceToHost);
+
+            // Set camera intrinsics value
+            setIntrinsics(message.intrinsics_info, semanticInfo, focalLength, horizontalAperture, verticalAperture);
+            // Set pose frame uid
+            message.pose_frame_uid->uid = poseUid;
 
             publish(mSegmentationOutputComponent, mSegmentationChannelName + "_class", std::move(message.entity));
         }
@@ -651,38 +675,20 @@ void CameraComponent::onComponentChange()
     }
 }
 
-void CameraComponent::publishIntrinsics(std::string outputComponent,
-                                        std::string channelName,
-                                        const carb::sensors::SensorInfo& info,
-                                        float focalLength,
-                                        float horizontalAperture,
-                                        float verticalAperture)
+void CameraComponent::setIntrinsics(const nvidia::gxf::Handle<::isaac::geometry::PinholeD>& intrinsics,
+                                    const carb::sensors::SensorInfo& info,
+                                    float focalLength,
+                                    float horizontalAperture,
+                                    float verticalAperture)
 {
-    auto message = nvidia::gxf::Entity::New(mContext);
-    auto tensor = message.value().add<nvidia::gxf::Tensor>("tensor");
-    auto timestamp = message.value().add<nvidia::gxf::Timestamp>("timestamp");
-
-    timestamp.value()->acqtime = this->mTimeNanoSeconds + mComponentTimeOffsetNanoSeconds;
-    timestamp.value()->pubtime = ::isaac::NowCount();
-
-    // IsaacMessage<isaac_message::CameraIntrinsics> intrinsicsMessage;
-    // auto intrinsicsProto = intrinsicsMessage.initProto();
-
-    // auto pinhole = intrinsicsProto.initPinhole();
-    // pinhole.setRows(info.tex.height);
-    // pinhole.setCols(info.tex.width);
-    // auto focal = pinhole.initFocal();
-    // // We have to ignore the vertical aperture number because our pixels are square
-    // // Compute it directly from the image size and horizontal aperture
-    // verticalAperture = static_cast<float>(info.tex.height) / static_cast<float>(info.tex.width) * horizontalAperture;
-    // focal.setX(info.tex.height * focalLength / verticalAperture);
-    // focal.setY(info.tex.width * focalLength / horizontalAperture);
-    // auto center = pinhole.initCenter();
-    // center.setX(info.tex.height * 0.5f);
-    // center.setY(info.tex.width * 0.5f);
-
-    publish(outputComponent, channelName + "_intrinsics", std::move(message.value()));
+    intrinsics->dimensions[0] = info.tex.height; // rows
+    intrinsics->dimensions[1] = info.tex.width; // columns
+    intrinsics->focal[0] = info.tex.height * focalLength / verticalAperture;
+    intrinsics->focal[1] = info.tex.width * focalLength / horizontalAperture;
+    intrinsics->center[0] = info.tex.height * 0.5;
+    intrinsics->center[1] = info.tex.width * 0.5;
 }
+
 }
 }
 }

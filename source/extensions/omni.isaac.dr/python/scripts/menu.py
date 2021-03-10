@@ -15,7 +15,7 @@ class DRMenu:
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._window.dock_order = 4
         self._dr = domain_randomizer_interface
-        self.num_components = 10
+        self.num_components = 11
 
         menu_items = [
             MenuItemDescription(name="Color Component", onclick_fn=lambda a=weakref.proxy(self): a.add_color_menu()),
@@ -39,6 +39,9 @@ class DRMenu:
             MenuItemDescription(name="Mesh Component", onclick_fn=lambda a=weakref.proxy(self): a.add_mesh_menu()),
             MenuItemDescription(
                 name="Visibility Component", onclick_fn=lambda a=weakref.proxy(self): a.add_visibility_menu()
+            ),
+            MenuItemDescription(
+                name="Attribute Component", onclick_fn=lambda a=weakref.proxy(self): a.add_attribute_menu()
             ),
         ]
         self._menu_items = [
@@ -143,11 +146,11 @@ class DRMenu:
         parent = self._get_current_state(9, "TransformComponent")
         if parent:
             path = omni.kit.utils.get_stage_next_free_path(
-                self._stage, parent + "/transform_component_" + str(self.component_count[1]), False
+                self._stage, parent + "/transform_component_" + str(self.component_count[9]), False
             )
         else:
             path = omni.kit.utils.get_stage_next_free_path(
-                self._stage, "/transform_component_" + str(self.component_count[1]), True
+                self._stage, "/transform_component_" + str(self.component_count[9]), True
             )
 
         result, prim = omni.kit.commands.execute(
@@ -282,6 +285,28 @@ class DRMenu:
             path=path,
             prim_paths=[],
             num_visible_range=(1, 1),
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
+
+        pass
+
+    def add_attribute_menu(self):
+        parent = self._get_current_state(10, "AttributeComponent")
+        if parent:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, parent + "/attribute_component_" + str(self.component_count[10]), False
+            )
+        else:
+            path = omni.kit.utils.get_stage_next_free_path(
+                self._stage, "/attribute_component_" + str(self.component_count[10]), True
+            )
+
+        result, prim = omni.kit.commands.execute(
+            "CreateAttributeComponentCommand",
+            path=path,
+            prim_paths=[],
             duration=1.0,
             include_children=False,
             seed=12345,

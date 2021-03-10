@@ -1,11 +1,11 @@
 <project toolsVersion="5.0">
     <dependency name="usd_ext_isaac_release" linkPath="../_build/target-deps/usd_ext_isaac/release">
-        <package name="usd_ext_isaac" version="20.08.199.50d59763-win64_py37_release-master" platforms="windows-x86_64"/>
-        <package name="usd_ext_isaac" version="20.08.199.50d59763-linux-x86_64_py37_release-master" platforms="linux-x86_64"/>
+        <package name="usd_ext_isaac" version="20.08.203.b4885f86-win64_py37_release-master" platforms="windows-x86_64"/>
+        <package name="usd_ext_isaac" version="20.08.203.b4885f86-linux-x86_64_py37_release-master" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="usd_ext_isaac_debug" linkPath="../_build/target-deps/usd_ext_isaac/debug">
-        <package name="usd_ext_isaac" version="20.08.199.50d59763-win64_py37_debug-master" platforms="windows-x86_64"/>
-        <package name="usd_ext_isaac" version="20.08.199.50d59763-linux-x86_64_py37_debug-master" platforms="linux-x86_64"/>
+        <package name="usd_ext_isaac" version="20.08.203.b4885f86-win64_py37_debug-master" platforms="windows-x86_64"/>
+        <package name="usd_ext_isaac" version="20.08.203.b4885f86-linux-x86_64_py37_debug-master" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
         <package name="nv_ros" version="melodic_20200605_045b485-linux64_boost_1.68.0_release-master" platforms="linux-x86_64"/>
@@ -14,7 +14,7 @@
         <package name="lula" version="linux_x64_linbuild_20200415_a36cb37" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
-        <package name="isaac_engine" version="linux_x64_9b6575c_20210305_review_qian_lin_gxf_bridge_sim_9d121941e" platforms="linux-x86_64"/>
+        <package name="isaac_engine" version="linux_x64_7711092_20210309_review_qian_lin_gxf_sim_bridge_21f39a5f6" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="step_reader" linkPath="../_build/target-deps/stepreader">
         <package name="step_reader" version="linux_x64_linbuild_20201005_1f9616f" platforms="linux-x86_64" />
