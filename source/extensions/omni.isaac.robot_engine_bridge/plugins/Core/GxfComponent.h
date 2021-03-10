@@ -283,17 +283,17 @@ public:
      */
     virtual void setGxfContext(const gxf_context_t& gxfContext)
     {
-        CARB_LOG_WARN("setGxfContext");
+        // CARB_LOG_WARN("setGxfContext");
         mContext = gxfContext;
     }
     virtual void setGxfAllocator(const nvidia::gxf::Handle<nvidia::gxf::Allocator>& allocator)
     {
-        CARB_LOG_WARN("setGxfAllocator");
+        // CARB_LOG_WARN("setGxfAllocator");
         mAllocator = allocator;
     }
     virtual void setPoseTreeMap(GxfPoseTreeMap* poseTreeMap)
     {
-        CARB_LOG_WARN("setPoseTreeMap");
+        // CARB_LOG_WARN("setPoseTreeMap");
         mPoseTreeMap = poseTreeMap;
     }
 

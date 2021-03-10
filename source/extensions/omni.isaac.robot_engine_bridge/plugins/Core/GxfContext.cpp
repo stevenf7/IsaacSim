@@ -65,7 +65,7 @@ gxf_result_t GxfContext::create(const std::string& basePath,
             CARB_LOG_WARN("Loading Graph: %s", graph.c_str());
             if ((result = GxfGraphLoadFile(mContext, graph.c_str())))
             {
-                CARB_LOG_ERROR("GxfLoadExtensions failed");
+                CARB_LOG_ERROR("GxfLoadGraph failed");
                 return result;
             }
         }

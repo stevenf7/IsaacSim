@@ -87,6 +87,10 @@ void UltrasonicComponent::publishAllMessages()
         return;
     }
 
+    pxr::SdfPathVector emitterTargets;
+    ultrasonicPrim.GetEmitterPrimsRel().GetTargets(&emitterTargets);
+    int numSensors = static_cast<int>(emitterTargets.size());
+
     // std::vector<float> data =
     // mUltrasonicSensorInterface->getEnvelopeArrayFlattened(mUltrasonicPath.GetString().c_str());
 
@@ -109,7 +113,7 @@ void UltrasonicComponent::publishAllMessages()
     std::vector<std::vector<float>> data =
         mUltrasonicSensorInterface->getActiveEnvelopeArray(mUltrasonicPath.GetString().c_str());
 
-    auto maybe_message = nvidia::isaac::CreateUssEnvelopesMessage(mContext, mAllocator, data.size(), numBins);
+    auto maybe_message = nvidia::isaac::CreateUssEnvelopesMessage(mContext, mAllocator, data.size(), numBins, numSensors);
     if (!maybe_message)
     {
         // return maybe_message.error();
@@ -171,7 +175,21 @@ void UltrasonicComponent::publishAllMessages()
         message.firing_info->envelopes[i].sensor_id = receiver_info[i].x;
         message.firing_info->envelopes[i].mode = receiver_info[i].y;
     }
-
+    // Fill in pose uid
+    for (int i = 0; i < numSensors; i++)
+    {
+        const std::string path = emitterTargets[i].GetString();
+        auto maybeUid = mPoseTreeMap->findFrame(path);
+        if (!maybeUid)
+        {
+            CARB_LOG_WARN("Cannot find pose uid for emitter %s", path.c_str());
+            message.pose_frame_uids[i]->uid = 0u;
+        }
+        else
+        {
+            message.pose_frame_uids[i]->uid = maybeUid.value();
+        }
+    }
 
     message.sensor_info->range_max = maxRange;
     message.sensor_info->range_min = minRange;
