@@ -1,4 +1,4 @@
-from pxr import Gf, Usd, UsdGeom, Sdf
+from pxr import Gf, Usd, UsdGeom, Sdf, Vt
 import omni.isaac.DrSchema as DrSchema
 import omni.kit
 import omni.usd
@@ -728,13 +728,50 @@ class CreateVisibilityComponentCommand(omni.kit.commands.Command):
         return prim
 
 
-omni.kit.commands.register(CreateColorComponentCommand)
-omni.kit.commands.register(CreateMovementComponentCommand)
-omni.kit.commands.register(CreateRotationComponentCommand)
-omni.kit.commands.register(CreateScaleComponentCommand)
-omni.kit.commands.register(CreateTransformComponentCommand)
-omni.kit.commands.register(CreateLightComponentCommand)
-omni.kit.commands.register(CreateTextureComponentCommand)
-omni.kit.commands.register(CreateMaterialComponentCommand)
-omni.kit.commands.register(CreateMeshComponentCommand)
-omni.kit.commands.register(CreateVisibilityComponentCommand)
+class CreateAttributeComponentCommand(omni.kit.commands.Command):
+    """Commands class to create a visibility randomization component.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "CreateAttributeCommand",
+                prim_paths=["/World/Cube", "/World/Cube1", "/World/Cube2", "/World/Cube3", "/World/Cube4"],
+                duration=1.0,
+            )
+    """
+
+    def __init__(self, path=None, prim_paths=[], custom_data=dict(), duration=0.0, include_children=False, seed=12345):
+        self._path = path
+        self._prim_paths = prim_paths
+        self._custom_data = custom_data
+        self._duration = duration
+        self._include_children = include_children
+        self._seed = seed
+
+    def do(self):
+        """Create a attribute randomization component"""
+        stage = omni.usd.get_context().get_stage()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        if self._path is None:
+            self._path = omni.kit.utils.get_stage_next_free_path(
+                stage, default_prim_path + "/attribute_component", False
+            )
+        prim = DrSchema.AttributeComponent.Define(stage, Sdf.Path(self._path))
+        path_split = self._path.split("/")
+        prim.CreateCompNameAttr().Set(str(path_split[len(path_split) - 1]))
+        usd_prim = stage.GetPrimAtPath(Sdf.Path(self._path))
+        usd_prim.SetCustomData(self._custom_data)
+
+        # Set attributes for DR attribute component
+        rel_paths = prim.CreatePrimPathsRel()
+        for path in self._prim_paths:
+            rel_paths.AddTarget(path)
+        prim.CreateDurationAttr().Set(self._duration)
+        prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
+        prim.CreateSeedAttr().Set(int(self._seed))
+        return prim
+
+
+omni.kit.commands.register_all_commands_in_module(__name__)

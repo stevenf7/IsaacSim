@@ -33,6 +33,7 @@
 #include <drSchema/materialComponent.h>
 #include <drSchema/meshComponent.h>
 #include <drSchema/visibilityComponent.h>
+#include <drSchema/attributeComponent.h>
 
 namespace omni
 {
@@ -117,7 +118,8 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
         !(prim.GetTypeName().GetString() == "ScaleComponent") &&
         !(prim.GetTypeName().GetString() == "TransformComponent") &&
         !(prim.GetTypeName().GetString() == "LightComponent") && !(prim.GetTypeName().GetString() == "MeshComponent") &&
-        !(prim.GetTypeName().GetString() == "VisibilityComponent"))
+        !(prim.GetTypeName().GetString() == "VisibilityComponent") &&
+        !(prim.GetTypeName().GetString() == "AttributeComponent"))
         return;
 
     std::string primPath = prim.GetPath().GetString();
@@ -185,6 +187,11 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
     {
         component = std::make_unique<DRComponentVisibility>();
         component->initialize(pxr::DrSchemaVisibilityComponent(prim), mStage);
+    }
+    else if (prim.GetTypeName().GetString() == "AttributeComponent")
+    {
+        component = std::make_unique<DRComponentAttribute>();
+        component->initialize(pxr::DrSchemaAttributeComponent(prim), mStage);
     }
     if (component)
     {
