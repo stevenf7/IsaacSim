@@ -167,13 +167,17 @@ void UltrasonicComponent::publishAllMessages()
     // Fill in firing info
     for (size_t i = 0; i < emitter_info.size(); i++)
     {
-        message.firing_info->emissions[i].sensor_id = emitter_info[i].x;
-        message.firing_info->emissions[i].mode = emitter_info[i].y;
+        auto& sensingMode = message.firing_info->emissions[i];
+        sensingMode.sensor_id = emitter_info[i].x;
+        sensingMode.mode = emitter_info[i].y;
+        sensingMode.relative_time = 0u;
     }
     for (size_t i = 0; i < receiver_info.size(); i++)
     {
-        message.firing_info->envelopes[i].sensor_id = receiver_info[i].x;
-        message.firing_info->envelopes[i].mode = receiver_info[i].y;
+        auto& sensingMode = message.firing_info->envelopes[i];
+        sensingMode.sensor_id = receiver_info[i].x;
+        sensingMode.mode = receiver_info[i].y;
+        sensingMode.relative_time = 0u;
     }
     // Fill in pose uid
     for (int i = 0; i < numSensors; i++)
