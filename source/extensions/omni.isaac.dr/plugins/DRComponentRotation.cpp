@@ -65,6 +65,8 @@ void DRComponentRotation::update()
             }
         }
     }
+    mAllAttributeParamsMap.clear();
+    getCustomDataAsDictionary(mStage, mPrim.GetPath());
 }
 void DRComponentRotation::onComponentChange()
 {
@@ -105,6 +107,15 @@ void DRComponentRotation::tick()
             float x = randomRangeFloat(mXRange[0], mXRange[1]);
             float y = randomRangeFloat(mYRange[0], mYRange[1]);
             float z = randomRangeFloat(mZRange[0], mZRange[1]);
+            // Per attribution distribution
+            if (mAllAttributeParamsMap.find("rotate") != mAllAttributeParamsMap.end())
+            {
+                std::map<std::string, float> distributionParams;
+                getDistributionParams(mAllAttributeParamsMap["rotate"], distributionParams);
+                x = randomFloat(mAllAttributeParamsMap["rotate"]["distribution"], distributionParams);
+                y = randomFloat(mAllAttributeParamsMap["rotate"]["distribution"], distributionParams);
+                z = randomFloat(mAllAttributeParamsMap["rotate"]["distribution"], distributionParams);
+            }
             // Set random rotation
             pxr::GfTransform bodyPose;
             pxr::GfRotation rowRot(pxr::GfVec3d(1, 0, 0), x), pitchRot(pxr::GfVec3d(0, 1, 0), y),
