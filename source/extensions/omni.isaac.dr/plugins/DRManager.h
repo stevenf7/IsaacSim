@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "DRComponentAttribute.h"
 #include "DRComponentBase.h"
 #include "DRComponentColor.h"
 #include "DRComponentLight.h"
