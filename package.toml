@@ -44,7 +44,8 @@ files = [
     ["tools/packman"],
     ["tools/autopull"],
     ["source/python_samples", "python_samples"],
-    ["source/ros_samples", "ros_samples"]
+    ["source/ros_samples", "ros_samples"],
+    ["_build/PACKAGE-LICENSES", "PACKAGE-LICENSES"],
 ]
 
 [isaac-sim.windows-x86_64]
@@ -61,7 +62,8 @@ files = [
     ["_build/$platform/$config/appshortcuts/*", "."],
     ["launcher.toml"],
     ["source/python_samples", "python_samples"],
-    ["source/ros_samples", "ros_samples"]
+    ["source/ros_samples", "ros_samples"],
+    ["_build/PACKAGE-LICENSES", "PACKAGE-LICENSES"],
 ]
 files_exclude = [
     ["**/*.pdb"],

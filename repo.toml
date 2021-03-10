@@ -203,3 +203,11 @@ default = true
 executables = [
 	"${test_root}/_build/${platform}/${config}/test.unit.range_sensor${exe_ext}",
 ]
+
+########################################################################################################################
+# Bump version
+########################################################################################################################
+
+[bump_version]
+git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/Isaac/omni_isaac_sim.git"
+branch_name = "develop"
