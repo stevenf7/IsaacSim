@@ -270,17 +270,20 @@ gxf_result_t GxfContext::stop()
         mPoseTreeMap.clear();
         if ((result = GxfGraphInterrupt(mContext)))
         {
-            CARB_LOG_ERROR("GxfGraphInterrupt");
+            CARB_LOG_ERROR("GxfGraphInterrupt %s", GxfResultStr(result));
+            mContext = 0;
             return result;
         }
         if ((result = GxfGraphWait(mContext)))
         {
-            CARB_LOG_ERROR("GxfGraphWait");
+            CARB_LOG_ERROR("GxfGraphWait %s", GxfResultStr(result));
+            mContext = 0;
             return result;
         }
         if ((result = GxfGraphDeactivate(mContext)))
         {
-            CARB_LOG_ERROR("GxfGraphDeactivate");
+            CARB_LOG_ERROR("GxfGraphDeactivate %s", GxfResultStr(result));
+            mContext = 0;
             return result;
         }
     }
@@ -292,14 +295,13 @@ gxf_result_t GxfContext::stop()
 }
 gxf_result_t GxfContext::destroy()
 {
-    gxf_result_t result;
+    gxf_result_t result = GXF_SUCCESS;
     if ((result = GxfContextDestroy(mContext)))
     {
-        CARB_LOG_ERROR("GxfContextDestroy");
-        return result;
+        CARB_LOG_ERROR("GxfContextDestroy %s", GxfResultStr(result));
     }
     mContext = 0;
-    return GXF_SUCCESS;
+    return result;
 }
 
 void GxfContext::onStop()
