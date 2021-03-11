@@ -60,7 +60,9 @@ class CreateROSBridgeClockCommand(omni.kit.commands.Command):
 
 
 class CreateROSBridgeCameraCommand(omni.kit.commands.Command):
-    def __init__(self, path: str = "/ROS_Camera", parent=None):
+    def __init__(
+        self, path: str = "/ROS_Camera", parent=None, camera_prim_rel=None, use_existing_viewport: bool = True
+    ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
@@ -73,6 +75,14 @@ class CreateROSBridgeCameraCommand(omni.kit.commands.Command):
             "CreateROSBridgePrimCommand", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosCamera
         )
         if success and self._prim:
+            rel_paths = self._prim.CreateCameraPrimRel()
+            if self._camera_prim_rel is not None:
+                if len(self._camera_prim_rel) == 1:
+                    rel_paths.AddTarget(self._camera_prim_rel[0])
+                else:
+                    carb.log_warn("only one camera prim rel target can be specified")
+            self._prim.CreateUseExistingViewportAttr(self._use_existing_viewport)
+
             self._prim.CreateCameraInfoPubTopicAttr("/camera_info")
             self._prim.CreateRgbPubTopicAttr("/rgb")
             self._prim.CreateDepthPubTopicAttr("/depth")

@@ -137,6 +137,7 @@ Launches and configures OmniKit and exposes useful functions.
             f'--/omni.kit.plugin/syncUsdLoads={self.config["sync_loads"]}',
             # TODO: Is this still needed
             "--/app/content/emptyStageOnStart=False",  # This is required due to a infinite loop but results in errors on launch
+            "--/app/asyncRendering=False",
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',
             f'--/app/extensions/folders2/0="{os.path.abspath(os.environ["CARB_APP_PATH"])}/exts"',  # adding to json doesn't work

@@ -13,14 +13,12 @@ the results.
 """
 
 import os
+import omni
 import random
 import numpy as np
 from pxr import UsdGeom, Semantics
 from omni.isaac.synthetic_utils import OmniKitHelper
-from omni.isaac.synthetic_utils import visualization as vis
-from omni.isaac.synthetic_utils import camera
 from omni.isaac.synthetic_utils import SyntheticDataHelper
-from omni.isaac.synthetic_utils import utils as ut
 import matplotlib.pyplot as plt
 
 
@@ -33,6 +31,7 @@ def main():
         {"renderer": "RayTracedLighting", "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit'}
     )
     sd_helper = SyntheticDataHelper()
+    from omni.syntheticdata import visualize, helpers
 
     # SCENE SETUP
     # Get the current stage
@@ -59,6 +58,7 @@ def main():
         sem.GetSemanticDataAttr().Set(prim_type)
 
     # Get groundtruth
+    viewport = omni.kit.viewport.get_default_viewport_window()
     gt = sd_helper.get_groundtruth(
         [
             "rgb",
@@ -69,7 +69,8 @@ def main():
             "semanticSegmentation",
             "boundingBox3D",
             "camera",
-        ]
+        ],
+        viewport,
     )
 
     # GROUNDTRUTH VISUALIZATION
@@ -83,61 +84,45 @@ def main():
     # RGB
     axes[0].set_title("RGB")
     for ax in axes[:-1]:
-        ax.imshow(ut.to_numpy(gt["rgb"]))
+        ax.imshow(gt["rgb"])
 
     # DEPTH
     axes[1].set_title("Depth")
-    axes[1].imshow(ut.to_numpy(gt["depth"]))
+    depth_data = np.clip(gt["depth"], 0, 255)
+    axes[1].imshow(visualize.colorize_depth(depth_data.squeeze()))
 
     # BBOX2D TIGHT
     random.seed(1)
     axes[2].set_title("BBox 2D Tight")
-    bboxes = gt["boundingBox2DTight"][["x_min", "y_min", "x_max", "y_max"]]
-    labels = gt["boundingBox2DTight"]["semanticLabel"]
-    label_ids = gt["boundingBox2DTight"]["semanticId"]
-    label_colours = vis.random_colours(max(label_ids) + 1)
-    colours = [label_colours[label_id] for label_id in label_ids]
-    vis.plot_boxes(axes[2], bboxes, labels=labels, colours=colours)
+    axes[2].imshow(visualize.colorize_bboxes(gt["boundingBox2DTight"], gt["rgb"]))
 
     # BBOX2D LOOSE
     random.seed(1)
     axes[3].set_title("BBox 2D Loose")
-    bboxes = gt["boundingBox2DLoose"][["x_min", "y_min", "x_max", "y_max"]]
-    labels = gt["boundingBox2DLoose"]["semanticLabel"]
-    label_ids = gt["boundingBox2DLoose"]["semanticId"]
-    label_colours = vis.random_colours(max(label_ids) + 1)
-    colours = [label_colours[label_id] for label_id in label_ids]
-    vis.plot_boxes(axes[3], bboxes, labels=labels, colours=colours)
+    axes[3].imshow(visualize.colorize_bboxes(gt["boundingBox2DLoose"], gt["rgb"]))
 
     # INSTANCE SEGMENTATION
     random.seed(1)
     axes[4].set_title("Instance Segmentation")
-    _, instance_seg = gt["instanceSegmentation"]
-    instance_rgb = vis.instance_segmentation_to_rgb(ut.to_numpy(instance_seg))
+    instance_seg = gt["instanceSegmentation"][0]
+    instance_rgb = visualize.colorize_instance(instance_seg)
     axes[4].imshow(instance_rgb, alpha=0.7)
 
     # SEMANTIC SEGMENTATION
     random.seed(1)
     axes[5].set_title("Semantic Segmentation")
-    _, semantic_seg = gt["semanticSegmentation"]
-    semantic_rgb = vis.semantic_segmentation_to_rgb(ut.to_numpy(semantic_seg))
+    semantic_seg = gt["semanticSegmentation"]
+    semantic_rgb = visualize.colorize_semantic_raw(semantic_seg)
     axes[5].imshow(semantic_rgb, alpha=0.7)
 
     # BBOX 3D
     axes[6].set_title("BBox 3D")
-
-    width = gt["camera"]["resolution"]["width"]
-    height = gt["camera"]["resolution"]["height"]
-    view_proj_mat = gt["camera"]["view_projection_matrix"]
-    points = gt["boundingBox3D"].reshape(-1, 3)
-    projected = camera.project_points(view_proj_mat, points)[..., :2] * np.array([[width, height]])
-
-    face_idx_list = [[0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 7, 6], [0, 1, 5, 4], [0, 2, 6, 4], [1, 3, 7, 5]]
-    colours = vis.random_colours(len(face_idx_list))
-    for p in projected.reshape(-1, 8, 2):
-        for face_idxs, colour in zip(face_idx_list, colours):
-            face = plt.Polygon(p[face_idxs], alpha=0.3, color=colour)
-            axes[6].add_patch(face)
+    bbox_3d_data = gt["boundingBox3D"]
+    bboxes_3d_corners = bbox_3d_data["corners"]
+    projected_corners = helpers.project_to_viewport(bboxes_3d_corners.reshape(-1, 3), viewport)
+    projected_corners = projected_corners.reshape(-1, 8, 3)
+    bboxes3D_rgb = visualize.colorize_bboxes_3d(projected_corners, gt["rgb"])
+    axes[6].imshow(bboxes3D_rgb)
 
     # Display figure
     plt.tight_layout()

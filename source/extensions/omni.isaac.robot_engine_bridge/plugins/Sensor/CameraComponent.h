@@ -16,7 +16,8 @@
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
 #include <carb/sensors/Sensors.h>
-#include <carb/syntheticdata/SyntheticData.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
+#include <omni/kit/IViewport.h>
 #include <carb/profiler/Profile.h>
 #include <robotEngineBridgeSchema/robotEngineCamera.h>
 
@@ -83,8 +84,15 @@ private:
                            float horizontalAperture,
                            float verticalAperture);
     carb::Framework* mFramework = nullptr;
-    carb::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
+    omni::kit::IViewport* mViewportInterface = nullptr;
+    omni::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
     carb::sensors::Sensors* mSensorsInterface = nullptr;
+
+    omni::kit::IViewportWindow* mViewportWindow = nullptr;
+    pxr::SdfPath mCameraPath;
+    pxr::UsdPrim mCameraPrim;
+    bool mUseExistingViewport;
+    pxr::GfVec2i mResolution;
 
     carb::sensors::Sensor* mRgbSensor = nullptr;
     void* mRgbSensorData = nullptr;

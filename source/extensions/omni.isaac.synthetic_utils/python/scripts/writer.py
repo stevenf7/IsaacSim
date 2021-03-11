@@ -139,7 +139,7 @@ class DataWriter:
         rgb_img = Image.fromarray(bboxes_2d_rgb)
         rgb_img_draw = ImageDraw.Draw(rgb_img)
         for bbox_2d in bboxes_2d_data:
-            if bbox_2d[1] > 0:
+            if bbox_2d[5] > 0:
                 semantic_id_list.append(bbox_2d[1])
                 bbox_2d_list.append(bbox_2d)
         semantic_id_list_np = np.unique(np.array(semantic_id_list))
@@ -148,7 +148,7 @@ class DataWriter:
             index = np.where(semantic_id_list_np == bbox_2d[1])[0][0]
             bbox_color = color_list[index]
             rgb_img_draw.rectangle(
-                [(bbox_2d[2], bbox_2d[3]), (bbox_2d[4], bbox_2d[5])],
+                [(bbox_2d[6], bbox_2d[7]), (bbox_2d[8], bbox_2d[9])],
                 outline=(int(255 * bbox_color[0]), int(255 * bbox_color[1]), int(255 * bbox_color[2])),
                 width=2,
             )

@@ -133,6 +133,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.camera = self.kit.create_prim("/World/CameraRig/Camera", "Camera", translation=(0.0, 0.0, CAMERA_DISTANCE))
         vpi = omni.kit.viewport.get_viewport_interface()
         vpi.get_viewport_window().set_active_camera(str(self.camera.GetPath()))
+        self.viewport = omni.kit.viewport.get_default_viewport_window()
+        self.kit.update()
 
         # create DR components
         self.create_dr_comp()
@@ -284,8 +286,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
         while self.kit.is_loading():
             self.kit.update()
         print("done")
+        self.kit.update()
         # Collect Groundtruth
-        gt = self.sd_helper.get_groundtruth(["rgb", "boundingBox2DTight", "instanceSegmentation"])
+        gt = self.sd_helper.get_groundtruth(["rgb", "boundingBox2DTight", "instanceSegmentation"], self.viewport)
 
         # RGB
         # Drop alpha channel
@@ -312,7 +315,11 @@ class RandomObjects(torch.utils.data.IterableDataset):
         valid_areas = (areas > 0.0) * (areas < (image.shape[1] * image.shape[2]))
 
         # Instance Segmentation
-        _, masks = gt["instanceSegmentation"]
+        instance_data, instance_mappings = gt["instanceSegmentation"][0], gt["instanceSegmentation"][1]
+        instance_list = [im[0] for im in instance_mappings]
+        masks = np.zeros((len(instance_list), *instance_data.shape), dtype=np.bool)
+        for i, instances in enumerate(instance_list):
+            masks[i] = np.isin(instance_data, instances)
         if isinstance(masks, np.ndarray):
             masks = torch.tensor(masks, device="cuda")
 

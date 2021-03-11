@@ -18,7 +18,8 @@
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <carb/sensors/Sensors.h>
-#include <carb/syntheticdata/SyntheticData.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
+#include <omni/kit/IViewport.h>
 
 #include <omni/kit/IStageUpdate.h>
 
@@ -46,7 +47,8 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::isaac::dynamic_control::DynamicControl,
                       omni::kit::IStageUpdate,
                       omni::isaac::range_sensor::LidarSensorInterface,
-                      carb::syntheticdata::SyntheticData,
+                      omni::syntheticdata::SyntheticData,
+                      omni::kit::IViewport,
                       omni::physx::IPhysx,
                       carb::sensors::Sensors,
                       carb::tasking::ITasking)
