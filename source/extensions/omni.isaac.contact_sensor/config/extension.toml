@@ -21,6 +21,7 @@ icon = "data/icon.png"
 "omni.kit.window.toolbar" = {} # Needed for simulation to occur
 "omni.graph.core" = {}
 "omni.kit.numpy.common" = {}
+"omni.kit.window.viewport" = {}
 
 [[python.modules]]
 name = "omni.isaac.contact_sensor"

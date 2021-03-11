@@ -40,7 +40,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/source/extensions/omni.isaac.ros_bridge/msgs/melodic",
         "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/client_library/include",
-        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
