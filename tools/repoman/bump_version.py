@@ -89,6 +89,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             call_git_safe(temp_dir, ["clone", git_url, repo_name])
             cloned_repo_dir = os.path.join(temp_dir, repo_name)
 
+            # setup user
+            call_git_safe(cloned_repo_dir, ["config", "user.email", '"teamcity@nvidia.com"'])
+            call_git_safe(cloned_repo_dir, ["config", "user.name", '"Team City"'])
+
             # create branch
             # branch_name = "develop-bump-test"
             call_git_safe(cloned_repo_dir, ["checkout", "-b", branch_name])
