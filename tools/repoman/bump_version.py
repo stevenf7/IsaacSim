@@ -95,11 +95,11 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
 
             # create branch
             # branch_name = "develop-bump-test"
-            call_git_safe(cloned_repo_dir, ["checkout", "-b", branch_name])
+            call_git_safe(cloned_repo_dir, ["checkout", branch_name])
             try:
                 call_git_safe(cloned_repo_dir, ["pull", git_url, branch_name])
             except:
-                print(f"This is fine. The branch is new and have not been pushed yet.")
+                print(f"ERROR: Branch does not exists.")
 
             # increment version
             new_version = bump_version_file(f"{cloned_repo_dir}/VERSION.md")
@@ -111,6 +111,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 call_git_safe(cloned_repo_dir, ["config", "user.email", '"teamcity@nvidia.com"'])
                 call_git_safe(cloned_repo_dir, ["config", "user.name", '"Team City"'])
                 call_git_safe(cloned_repo_dir, ["commit", "-m", f"Bumped version: {new_version}"])
+                call_git_safe(cloned_repo_dir, ["lfs", "fetch", "--all"])
                 call_git_safe(cloned_repo_dir, ["push", git_url, branch_name])
 
     return run_repo_tool
