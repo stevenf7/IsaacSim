@@ -160,8 +160,8 @@ class Extension(omni.ext.IExt):
                 base_path=self._reb_extension_path + "/gxf/lib",
                 manifest_file="manifest.yaml",
                 graph_files=[
-                    self._reb_extension_path + "/data/config/isaac_sim_allocator.yaml",
                     self._scene_loader["gxf_graph"].get_value_as_string(),
+                    self._reb_extension_path + "/data/config/isaac_sim_allocator.yaml",
                 ],
             )
 
