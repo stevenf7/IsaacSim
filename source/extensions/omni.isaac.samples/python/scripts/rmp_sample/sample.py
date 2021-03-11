@@ -180,6 +180,8 @@ class RMPSample:
                 UsdPhysics.RigidBodyAPI.Apply(self._block_prim)
                 await omni.kit.app.get_app().next_update_async()
                 UsdPhysics.CollisionAPI.Apply(self._block_prim)
+                massAPI = UsdPhysics.MassAPI.Apply(self._block_prim)
+                massAPI.CreateMassAttr(0.08)
 
             asyncio.ensure_future(setup_block_physics())
 
