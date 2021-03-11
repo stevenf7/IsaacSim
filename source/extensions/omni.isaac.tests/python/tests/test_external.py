@@ -20,12 +20,6 @@ class TestExternalDependencies(omni.kit.test.AsyncTestCase):
         gc.collect()
         pass
 
-    async def test_synthetic_viz(self):
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self.assertTrue(ext_manager.set_extension_enabled_immediate("syntheticdata.viz", True))
-        await omni.kit.app.get_app().next_update_async()
-        self.assertTrue(ext_manager.set_extension_enabled_immediate("syntheticdata.viz", False))
-
     async def test_semantic_schema_editor(self):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self.assertTrue(ext_manager.set_extension_enabled_immediate("semantics.schema.editor", True))

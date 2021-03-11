@@ -184,7 +184,7 @@ group "apps"
     -- We reuse the isaac sim config and add additional args to it
     local headless_args = "--no-window --enable omni.kit.livestream.core "
         .."--/app/window/width=1280 --/app/window/height=800 --/app/window/drawMouse=true "
-        .."--/ngx/enabled=false --/app/livestream/proto=tcp --/app/livestream/logLevel=info "
+        .."--/ngx/enabled=false --/app/livestream/proto=tcp "
     define_local_experience("isaac-sim.headless", "isaac-sim", 
                             "--enable  omni.kit.livestream.native "..headless_args)
     define_local_experience("isaac-sim.headless.webrtc", "isaac-sim", 
