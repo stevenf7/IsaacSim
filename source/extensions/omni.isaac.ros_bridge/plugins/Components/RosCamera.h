@@ -14,8 +14,9 @@
 #include "../Core/RosNode.h"
 
 #include <carb/sensors/Sensors.h>
-#include <carb/syntheticdata/SyntheticData.h>
 
+#include <omni/kit/IViewport.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <rosBridgeSchema/rosCamera.h>
 
 namespace omni
@@ -50,8 +51,14 @@ public:
 private:
     carb::Framework* mFramework = nullptr;
 
-    carb::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
+    omni::kit::IViewport* mViewportInterface = nullptr;
+    omni::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
     carb::sensors::Sensors* mSensorsInterface = nullptr;
+
+    omni::kit::IViewportWindow* mViewportWindow = nullptr;
+    pxr::SdfPath mCameraPath;
+    pxr::UsdPrim mCameraPrim;
+    bool mUseExistingViewport;
 
     carb::sensors::Sensor* mRgbSensor = nullptr;
     void* mRgbSensorData = nullptr;

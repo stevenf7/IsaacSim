@@ -23,9 +23,8 @@ project_with_location("omni.isaac.occupancy_map.generator")
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-    --     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
+        "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
     --     "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/plugins",             
         "%{root}/_build/target-deps/octomap/lib",
     --     "%{root}/_build/target-deps/omni_physics/lib",
     }
@@ -63,7 +62,7 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
         "%{root}/_build/target-deps/client_library/include",
     }
     libdirs {
-        "%{kit_sdk_bin_dir}/plugins",             
+        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
     }
     links {"usdUtils", "omni.isaac.occupancy_map.generator"}
     filter { "system:linux" }

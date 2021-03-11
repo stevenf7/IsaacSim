@@ -18,7 +18,8 @@
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <carb/sensors/Sensors.h>
-#include <carb/syntheticdata/SyntheticData.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
+#include <omni/kit/IViewport.h>
 
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/IApp.h>
@@ -56,7 +57,8 @@ CARB_PLUGIN_IMPL(kPluginImpl,
                  omni::isaac::robot_engine_bridge::GxfBridge)
 CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
-                      carb::syntheticdata::SyntheticData,
+                      omni::syntheticdata::SyntheticData,
+                      omni::kit::IViewport,
                       carb::sensors::Sensors,
                       carb::settings::ISettings,
                       carb::tasking::ITasking,

@@ -53,10 +53,17 @@ RosCamera::RosCamera()
         return;
     }
 
-    mSyntheticDataInterface = mFramework->acquireInterface<carb::syntheticdata::SyntheticData>();
+    mViewportInterface = mFramework->acquireInterface<omni::kit::IViewport>();
+    if (!mViewportInterface)
+    {
+        CARB_LOG_ERROR("Failed to acquire omni::kit::IViewport interface");
+        return;
+    }
+
+    mSyntheticDataInterface = mFramework->acquireInterface<omni::syntheticdata::SyntheticData>();
     if (!mSyntheticDataInterface)
     {
-        CARB_LOG_ERROR("Failed to acquire carb::sensors::syntheticdata::SyntheticData interface");
+        CARB_LOG_ERROR("Failed to acquire omni::syntheticdata::SyntheticData interface");
         return;
     }
 
@@ -117,6 +124,7 @@ void RosCamera::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
     isaac::utils::safeGetAttribute(typedPrim.GetFrameIdAttr(), mFrameId);
 
+    isaac::utils::safeGetAttribute(typedPrim.GetUseExistingViewportAttr(), mUseExistingViewport);
     isaac::utils::safeGetAttribute(typedPrim.GetRgbEnabledAttr(), mEnableRgb);
     isaac::utils::safeGetAttribute(typedPrim.GetDepthEnabledAttr(), mEnableDepth);
     isaac::utils::safeGetAttribute(typedPrim.GetSegmentationEnabledAttr(), mEnableSegmentation);
@@ -154,10 +162,31 @@ void RosCamera::onComponentChange()
     if (filterClassList3D != "")
         boost::split(mBoundingBox3DClassList, filterClassList3D, [](char c) { return c == ','; });
 
+    mCameraPath = pxr::SdfPath("/OmniverseKit_Persp");
+    pxr::SdfPathVector targets;
+    typedPrim.GetCameraPrimRel().GetTargets(&targets);
+    if (targets.size() > 0)
+    {
+        mCameraPath = targets[0];
+    }
+    mCameraPrim = mStage->GetPrimAtPath(mCameraPath);
+
+    if (!mViewportWindow)
+    {
+        if (mUseExistingViewport)
+        {
+            mViewportWindow = kit::getDefaultViewportWindow();
+        }
+        else
+        {
+            mViewportWindow = mViewportInterface->getViewportWindow(mViewportInterface->createViewportWindow());
+        }
+    }
+    mViewportWindow->setActiveCamera(mCameraPath.GetString().c_str());
 
     if (mEnableRgb)
     {
-        mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb);
+        mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb, mViewportWindow);
     }
     else
     {
@@ -168,7 +197,7 @@ void RosCamera::onComponentChange()
     if (mEnableDepth)
     {
 
-        mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear);
+        mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
     }
     else
     {
@@ -178,8 +207,10 @@ void RosCamera::onComponentChange()
 
     if (mEnableSegmentation)
     {
-        mSemanticSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation);
-        mSegmentationSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation);
+        mSemanticSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
+        mSegmentationSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
     }
     else
     {
@@ -191,7 +222,8 @@ void RosCamera::onComponentChange()
 
     if (mEnableBoundingBox2D)
     {
-        mBoundingBox2DSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight);
+        mBoundingBox2DSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
     }
     else
     {
@@ -201,7 +233,8 @@ void RosCamera::onComponentChange()
 
     if (mEnableBoundingBox3D)
     {
-        mBoundingBox3DSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D);
+        mBoundingBox3DSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);
     }
     else
     {
@@ -212,7 +245,7 @@ void RosCamera::onComponentChange()
 
 void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
 {
-    const char* cameraPath = kit::getDefaultViewportWindow()->getActiveCamera();
+    const char* cameraPath = mViewportWindow->getActiveCamera();
     if (!cameraPath)
         return;
 
@@ -230,11 +263,11 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
     cameraPrim.GetHorizontalApertureAttr().Get(&horizontalAperture);
     cameraPrim.GetVerticalApertureAttr().Get(&verticalAperture);
     carb::sensors::SensorInfo imgInfo;
-    if (mEnableRgb)
+    if (mEnableRgb && mSyntheticDataInterface->isSensorInitialized(mRgbSensor))
     {
         imgInfo = mSensorsInterface->getSensorInfo(mRgbSensor);
     }
-    else if (mEnableDepth)
+    else if (mEnableDepth && mSyntheticDataInterface->isSensorInitialized(mDepthSensor))
     {
         imgInfo = mSensorsInterface->getSensorInfo(mDepthSensor);
     }
@@ -282,6 +315,13 @@ void RosCamera::rgbPubCallback(ros::Publisher* pub)
     {
         return;
     }
+    if (!mSyntheticDataInterface->isSensorInitialized(mRgbSensor))
+    {
+        mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb, mViewportWindow);
+        return;
+    }
+    // CARB_LOG_WARN("%s RGB Status (tick): %d", mViewportWindow->getWindowName(),
+    //               mSyntheticDataInterface->isSensorInitialized(mRgbSensor));
     const carb::sensors::SensorInfo& rgbInfo = mSensorsInterface->getSensorInfo(mRgbSensor);
 
     const int color_channels = 3;
@@ -315,6 +355,13 @@ void RosCamera::depthPubCallback(ros::Publisher* pub)
     {
         return;
     }
+    if (!mSyntheticDataInterface->isSensorInitialized(mDepthSensor))
+    {
+        mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+        return;
+    }
+    // CARB_LOG_WARN("%s Depth Status (tick): %d", mViewportWindow->getWindowName(),
+    //               mSyntheticDataInterface->isSensorInitialized(mDepthSensor));
     const carb::sensors::SensorInfo& depthInfo = mSensorsInterface->getSensorInfo(mDepthSensor);
 
     const int depth_channels = 1;
@@ -343,6 +390,14 @@ void RosCamera::instancePubCallback(ros::Publisher* pub)
     {
         return;
     }
+    if (!mSyntheticDataInterface->isSensorInitialized(mSegmentationSensor))
+    {
+        mSegmentationSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
+        return;
+    }
+    // CARB_LOG_WARN("Segmentation Status (tick): %d",
+    // mSyntheticDataInterface->isSensorInitialized(mSegmentationSensor));
     mSegmentationSensorData = mSyntheticDataInterface->getSensorDeviceData(mSegmentationSensor);
     const carb::sensors::SensorInfo& instanceInfo = mSensorsInterface->getSensorInfo(mSegmentationSensor);
 
@@ -373,6 +428,13 @@ void RosCamera::semanticPubCallback(ros::Publisher* pub)
     {
         return;
     }
+    if (!mSyntheticDataInterface->isSensorInitialized(mSemanticSensor))
+    {
+        mSemanticSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
+        return;
+    }
+    // CARB_LOG_WARN("Semantic Status (tick): %d", mSyntheticDataInterface->isSensorInitialized(mSemanticSensor));
     mSemanticSensorData = mSyntheticDataInterface->getSensorDeviceData(mSemanticSensor);
     const carb::sensors::SensorInfo& semanticInfo = mSensorsInterface->getSensorInfo(mSemanticSensor);
 
@@ -402,6 +464,13 @@ void RosCamera::labelPubCallback(ros::Publisher* pub)
     {
         return;
     }
+    if (!mSyntheticDataInterface->isSensorInitialized(mSemanticSensor))
+    {
+        mSemanticSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
+        return;
+    }
+    // CARB_LOG_WARN("Semantic Status (tick): %d", mSyntheticDataInterface->isSensorInitialized(mSemanticSensor));
 
     std::string labels;
     labels.append("{");
@@ -430,6 +499,13 @@ void RosCamera::boundingbox2dPubCallback(ros::Publisher* pub)
     {
         return;
     }
+    if (!mSyntheticDataInterface->isSensorInitialized(mBoundingBox2DSensor))
+    {
+        mBoundingBox2DSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
+        return;
+    }
+    // CARB_LOG_WARN("Bbox 2D Status (tick): %d", mSyntheticDataInterface->isSensorInitialized(mBoundingBox2DSensor));
 
     mBoundingBox2DSensorData = mSyntheticDataInterface->getSensorHostData(mBoundingBox2DSensor);
 
@@ -504,6 +580,13 @@ void RosCamera::boundingbox3dPubCallback(ros::Publisher* pub)
         return;
     }
 
+    if (!mSyntheticDataInterface->isSensorInitialized(mBoundingBox3DSensor))
+    {
+        mBoundingBox3DSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);
+        return;
+    }
+    // CARB_LOG_WARN("Bbox 3D Status (tick): %d", mSyntheticDataInterface->isSensorInitialized(mBoundingBox3DSensor));
 
     mBoundingBox3DSensorData = mSyntheticDataInterface->getSensorHostData(mBoundingBox3DSensor);
 

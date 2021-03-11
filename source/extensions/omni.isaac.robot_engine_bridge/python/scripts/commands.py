@@ -624,6 +624,9 @@ class CreateRobotEngineBridgeCameraCommand(omni.kit.commands.Command):
         segmentaion_enabled: bool = False,
         bbox2d_enabled: bool = False,
         bbox3d_enabled: bool = False,
+        camera_prim_rel=None,
+        use_existing_viewport: bool = True,
+        resolution: Gf.Vec2i = Gf.Vec2i(1280, 720),
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -640,6 +643,15 @@ class CreateRobotEngineBridgeCameraCommand(omni.kit.commands.Command):
             scehma_type=REBSchema.RobotEngineCamera,
         )
         if success and self._prim:
+            rel_paths = self._prim.CreateCameraPrimRel()
+            if self._camera_prim_rel is not None:
+                if len(self._camera_prim_rel) == 1:
+                    rel_paths.AddTarget(self._camera_prim_rel[0])
+                else:
+                    carb.log_warn("only one camera prim rel target can be specified")
+            self._prim.CreateUseExistingViewportAttr(self._use_existing_viewport)
+            self._prim.CreateResolutionAttr(self._resolution)
+
             self._prim.CreateRgbOutputComponentAttr(self._rgb_output_component)
             self._prim.CreateRgbOutputChannelAttr(self._rgb_output_channel)
 

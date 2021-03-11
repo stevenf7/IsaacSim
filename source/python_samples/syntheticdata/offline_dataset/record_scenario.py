@@ -23,8 +23,9 @@ from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, DataW
 
 # Default rendering parameters
 RENDER_CONFIG = {
-    "renderer": "PathTracing",
+    "renderer": "RayTracedLighting",
     "samples_per_pixel_per_frame": 12,
+    "headless": False,
     "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
 }
 
@@ -84,15 +85,18 @@ class RandomScenario(torch.utils.data.IterableDataset):
             self.kit.update()
 
         # Collect Groundtruth
+        viewport = omni.kit.viewport.get_default_viewport_window()
         gt = self.sd_helper.get_groundtruth(
             [
                 "rgb",
+                "depth",
                 "depthLinear",
                 "instanceSegmentation",
                 "semanticSegmentation",
                 "boundingBox2DTight",
                 "boundingBox2DLoose",
-            ]
+            ],
+            viewport,
         )
 
         # RGB
@@ -140,13 +144,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # Depth
         if self._enable_depth:
-            groundtruth["DATA"]["DEPTH"] = gt["depthLinear"]
+            groundtruth["DATA"]["DEPTH"] = gt["depthLinear"].squeeze()
             groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self._enable_depth_colorize
             groundtruth["METADATA"]["DEPTH"]["NPY"] = self._enable_depth_npy
 
-        # Instance Segmentation
+        # # Instance Segmentation
         if self._enable_instance:
-            instance_data = self.sd_helper._get_sensor_data(self.sd_helper.sd.SensorType.InstanceSegmentation, "uint32")
+            instance_data = gt["instanceSegmentation"][0]
             instance_data_shape = instance_data.shape
             groundtruth["DATA"]["INSTANCE"] = instance_data
             groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data_shape[1]
@@ -154,9 +158,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
             groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self._enable_instance_colorize
             groundtruth["METADATA"]["INSTANCE"]["NPY"] = self._enable_instance_npy
 
-        # Semantic Segmentation
+        # # Semantic Segmentation
         if self._enable_semantic:
-            semantic_data = self.sd_helper._get_sensor_data(self.sd_helper.sd.SensorType.SemanticSegmentation, "uint32")
+            semantic_data = gt["semanticSegmentation"]
             semantic_data_shape = semantic_data.shape
             groundtruth["DATA"]["SEMANTIC"] = semantic_data
             groundtruth["METADATA"]["SEMANTIC"]["WIDTH"] = semantic_data_shape[1]
@@ -166,23 +170,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # 2D Tight BBox
         if self._enable_bbox_2d_tight:
-            bboxes_2d_tight_sensor = self.sd_helper.sd.SensorType.BoundingBox2DTight
-            bboxes_2d_tight_size = self.sd_helper.sd_interface.get_sensor_size(bboxes_2d_tight_sensor)
-            bboxes_2d_tight_data = self.sd_helper.sd_interface.get_sensor_host_bounding_box_2d_buffer_array(
-                bboxes_2d_tight_sensor, bboxes_2d_tight_size
-            )
-            groundtruth["DATA"]["BBOX2DTIGHT"] = bboxes_2d_tight_data
+            groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
             groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self._enable_bbox_2d_tight_colorize
             groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = self._enable_bbox_2d_tight_npy
 
         # 2D Loose BBox
         if self._enable_bbox_2d_loose:
-            bboxes_2d_loose_sensor = self.sd_helper.sd.SensorType.BoundingBox2DLoose
-            bboxes_2d_loose_size = self.sd_helper.sd_interface.get_sensor_size(bboxes_2d_loose_sensor)
-            bboxes_2d_loose_data = self.sd_helper.sd_interface.get_sensor_host_bounding_box_2d_buffer_array(
-                bboxes_2d_loose_sensor, bboxes_2d_loose_size
-            )
-            groundtruth["DATA"]["BBOX2DLOOSE"] = bboxes_2d_loose_data
+            groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
             groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self._enable_bbox_2d_loose_colorize
             groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = self._enable_bbox_2d_loose_npy
 

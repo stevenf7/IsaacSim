@@ -25,6 +25,8 @@ import weakref
 from carb.settings import get_settings
 from PIL import Image, ImageDraw
 from omni.isaac.synthetic_utils import visualization as vis
+from omni.isaac.synthetic_utils import SyntheticDataHelper
+from omni.syntheticdata import visualize
 
 EXTENSION_NAME = "Synthetic Data Recorder"
 
@@ -120,6 +122,7 @@ class DataWriter:
             image_data = np.frombuffer(data, dtype=np.uint8).reshape(*data.shape, -1)
             num_colors = 20 if data_type == "SEMANTIC" else None
             color_image = vis.colorize_segmentation(image_data, width, height, 3, num_colors)
+            # color_image = visualize.colorize_instance(image_data)
             color_image_rgb = Image.fromarray(color_image, "RGB")
             if data_type == "INSTANCE":
                 color_image_rgb.save(f"{self.instance_folder}/{filename}.png")
@@ -207,6 +210,7 @@ class Extension(omni.ext.IExt):
         self._build_window_ui()
         self._accumulated_time = 0
         self.data_writer = None
+        self.sd_helper = SyntheticDataHelper()
 
     def on_shutdown(self):
         """Called when the extesion us unloaded"""
@@ -240,7 +244,6 @@ class Extension(omni.ext.IExt):
 
                         def toggle_rgb_sensor(self, value):
                             self._enable_rgb = value
-                            self._settings.set("/syntheticdata/sensors/rgbSensor", value)
                             if value == False:
                                 self.bbox_2d_tight_colorize_checkbox.enabled = value
                                 self.bbox_2d_loose_colorize_checkbox.enabled = value
@@ -252,7 +255,6 @@ class Extension(omni.ext.IExt):
 
                         def toggle_depth_sensor(self, value):
                             self._enable_depth = value
-                            self._settings.set("/syntheticdata/sensors/depthLinearSensor", value)
                             self.depth_colorize_checkbox.enabled = value
                             self.depth_npy_checkbox.enabled = value
 
@@ -264,7 +266,6 @@ class Extension(omni.ext.IExt):
 
                         def toggle_instance_segmentation_sensor(self, value):
                             self._enable_instance = value
-                            self._settings.set("/syntheticdata/sensors/instanceSegmentationSensor", value)
                             self.instance_colorize_checkbox.enabled = value
                             self.instance_npy_checkbox.enabled = value
 
@@ -276,7 +277,6 @@ class Extension(omni.ext.IExt):
 
                         def toggle_semantic_segmentation_sensor(self, value):
                             self._enable_semantic = value
-                            self._settings.set("/syntheticdata/sensors/semanticSegmentationSensor", value)
                             self.semantic_colorize_checkbox.enabled = value
                             self.semantic_npy_checkbox.enabled = value
 
@@ -288,7 +288,6 @@ class Extension(omni.ext.IExt):
 
                         def toggle_bbox_2d_tight_sensor(self, value):
                             self._enable_bbox_2d_tight = value
-                            self._settings.set("/syntheticdata/sensors/boundingBox2DTightSensor", value)
                             self.bbox_2d_tight_colorize_checkbox.enabled = value
                             self.bbox_2d_tight_npy_checkbox.enabled = value
                             if value:
@@ -302,7 +301,6 @@ class Extension(omni.ext.IExt):
 
                         def toggle_bbox_2d_loose_sensor(self, value):
                             self._enable_bbox_2d_loose = value
-                            self._settings.set("/syntheticdata/sensors/boundingBox2DLooseSensor", value)
                             self.bbox_2d_loose_colorize_checkbox.enabled = value
                             self.bbox_2d_loose_npy_checkbox.enabled = value
                             if value:
@@ -497,12 +495,6 @@ class Extension(omni.ext.IExt):
             self.data_writer.start_threads()
 
         self._render_mode = str(self._settings.get("/rtx/rendermode"))
-        self._enable_rgb = self._settings.get("/syntheticdata/sensors/rgbSensor")
-        self._enable_depth = self._settings.get("/syntheticdata/sensors/depthLinearSensor")
-        self._enable_instance = self._settings.get("/syntheticdata/sensors/instanceSegmentationSensor")
-        self._enable_semantic = self._settings.get("/syntheticdata/sensors/semanticSegmentationSensor")
-        self._enable_bbox_2d_tight = self._settings.get("/syntheticdata/sensors/boundingBox2DTightSensor")
-        self._enable_bbox_2d_loose = self._settings.get("/syntheticdata/sensors/boundingBox2DLooseSensor")
 
         groundtruth = {
             "METADATA": {
@@ -515,82 +507,59 @@ class Extension(omni.ext.IExt):
             },
             "DATA": {},
         }
+
+        viewport = omni.kit.viewport.get_default_viewport_window()
+        gt = self.sd_helper.get_groundtruth(
+            [
+                "rgb",
+                "depth",
+                "depthLinear",
+                "boundingBox2DTight",
+                "boundingBox2DLoose",
+                "instanceSegmentation",
+                "semanticSegmentation",
+                "boundingBox3D",
+                "camera",
+            ],
+            viewport,
+        )
         # RGB
         if self._enable_rgb:
-            rgb_sensor = gt.SensorType.Rgb
-            rgb_width = self._interface.get_sensor_width(rgb_sensor)
-            rgb_height = self._interface.get_sensor_height(rgb_sensor)
-            rgb_row_size = self._interface.get_sensor_row_size(rgb_sensor)
-            rgb_data = self._interface.get_sensor_host_uint32_texture_array(
-                rgb_sensor, rgb_width, rgb_height, rgb_row_size
-            )
-            rgb_image_data = np.frombuffer(rgb_data, dtype=np.uint8).reshape(*rgb_data.shape, -1)
-            groundtruth["DATA"]["RGB"] = rgb_image_data
+            groundtruth["DATA"]["RGB"] = gt["rgb"]
 
         # Depth
         if self._enable_depth:
-            depth_sensor = gt.SensorType.DepthLinear
-            depth_width = self._interface.get_sensor_width(depth_sensor)
-            depth_height = self._interface.get_sensor_height(depth_sensor)
-            depth_row_size = self._interface.get_sensor_row_size(depth_sensor)
-            depth_data = self._interface.get_sensor_host_float_texture_array(
-                depth_sensor, depth_width, depth_height, depth_row_size
-            )
-            groundtruth["DATA"]["DEPTH"] = depth_data
+            groundtruth["DATA"]["DEPTH"] = gt["depthLinear"].squeeze()
             groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self._enable_depth_colorize
             groundtruth["METADATA"]["DEPTH"]["NPY"] = self._enable_depth_npy
 
         # Instance Segmentation
         if self._enable_instance:
-            instance_sensor = gt.SensorType.InstanceSegmentation
-            instance_width = self._interface.get_sensor_width(instance_sensor)
-            instance_height = self._interface.get_sensor_height(instance_sensor)
-            instance_row_size = self._interface.get_sensor_row_size(instance_sensor)
-            instance_size = self._interface.get_sensor_size(instance_sensor)
-            instance_data = self._interface.get_sensor_host_uint32_texture_array(
-                instance_sensor, instance_width, instance_height, instance_row_size
-            )
+            instance_data = gt["instanceSegmentation"]
             groundtruth["DATA"]["INSTANCE"] = instance_data
-            groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_width
-            groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_height
+            groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
+            groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data.shape[0]
             groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self._enable_instance_colorize
             groundtruth["METADATA"]["INSTANCE"]["NPY"] = self._enable_instance_npy
 
         # Semantic Segmentation
         if self._enable_semantic:
-            semantic_sensor = gt.SensorType.SemanticSegmentation
-            semantic_width = self._interface.get_sensor_width(semantic_sensor)
-            semantic_height = self._interface.get_sensor_height(semantic_sensor)
-            semantic_row_size = self._interface.get_sensor_row_size(semantic_sensor)
-            semantic_size = self._interface.get_sensor_size(semantic_sensor)
-            semantic_data = self._interface.get_sensor_host_uint32_texture_array(
-                semantic_sensor, semantic_width, semantic_height, semantic_row_size
-            )
+            semantic_data = gt["semanticSegmentation"]
             groundtruth["DATA"]["SEMANTIC"] = semantic_data
-            groundtruth["METADATA"]["SEMANTIC"]["WIDTH"] = semantic_width
-            groundtruth["METADATA"]["SEMANTIC"]["HEIGHT"] = semantic_height
+            groundtruth["METADATA"]["SEMANTIC"]["WIDTH"] = semantic_data.shape[1]
+            groundtruth["METADATA"]["SEMANTIC"]["HEIGHT"] = semantic_data.shape[0]
             groundtruth["METADATA"]["SEMANTIC"]["COLORIZE"] = self._enable_semantic_colorize
             groundtruth["METADATA"]["SEMANTIC"]["NPY"] = self._enable_semantic_npy
 
         # 2D Tight BBox
         if self._enable_bbox_2d_tight:
-            bboxes_2d_tight_sensor = gt.SensorType.BoundingBox2DTight
-            bboxes_2d_tight_size = self._interface.get_sensor_size(bboxes_2d_tight_sensor)
-            bboxes_2d_tight_data = self._interface.get_sensor_host_bounding_box_2d_buffer_array(
-                bboxes_2d_tight_sensor, bboxes_2d_tight_size
-            )
-            groundtruth["DATA"]["BBOX2DTIGHT"] = bboxes_2d_tight_data
+            groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
             groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self._enable_bbox_2d_tight_colorize
             groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = self._enable_bbox_2d_tight_npy
 
         # 2D Loose BBox
         if self._enable_bbox_2d_loose:
-            bboxes_2d_loose_sensor = gt.SensorType.BoundingBox2DLoose
-            bboxes_2d_loose_size = self._interface.get_sensor_size(bboxes_2d_loose_sensor)
-            bboxes_2d_loose_data = self._interface.get_sensor_host_bounding_box_2d_buffer_array(
-                bboxes_2d_loose_sensor, bboxes_2d_loose_size
-            )
-            groundtruth["DATA"]["BBOX2DLOOSE"] = bboxes_2d_loose_data
+            groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
             groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self._enable_bbox_2d_loose_colorize
             groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = self._enable_bbox_2d_loose_npy
 

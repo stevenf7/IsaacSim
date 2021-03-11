@@ -15,6 +15,7 @@
 #include <carb/cuda/CudaRuntime.h>
 
 #include <boost/algorithm/string.hpp>
+#include <omni/kit/KitUtils.h>
 #include <omni/kit/ViewportWindowUtils.h>
 
 #include <algorithm>
@@ -42,7 +43,14 @@ CameraComponent::CameraComponent() : GxfComponent()
         return;
     }
 
-    mSyntheticDataInterface = mFramework->acquireInterface<carb::syntheticdata::SyntheticData>();
+    mViewportInterface = mFramework->acquireInterface<omni::kit::IViewport>();
+    if (!mViewportInterface)
+    {
+        CARB_LOG_ERROR("Failed to acquire omni::kit::IViewport interface");
+        return;
+    }
+
+    mSyntheticDataInterface = mFramework->acquireInterface<omni::syntheticdata::SyntheticData>();
     if (!mSyntheticDataInterface)
     {
         CARB_LOG_ERROR("Failed to acquire carb::sensors::syntheticdata::SyntheticData interface");
@@ -77,9 +85,29 @@ void CameraComponent::tick()
     }
 
     if (!mRgbSensor && !mDepthSensor && !mSegmentationSensor && !mSemanticSensor && !mBoundingBox2DSensor)
+    {
+        // Re-initialize sensors if not initialized yet
+        if (mEnableRgb && !mSyntheticDataInterface->isSensorInitialized(mRgbSensor))
+            mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb, mViewportWindow);
+        if (mEnableDepth && !mSyntheticDataInterface->isSensorInitialized(mDepthSensor))
+            mDepthSensor =
+                mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+        if (mEnableSegmentation && !mSyntheticDataInterface->isSensorInitialized(mSegmentationSensor))
+            mSegmentationSensor =
+                mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
+        if (mEnableSegmentation && !mSyntheticDataInterface->isSensorInitialized(mSemanticSensor))
+            mSemanticSensor =
+                mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
+        if (mEnableBoundingBox2D && !mSyntheticDataInterface->isSensorInitialized(mBoundingBox2DSensor))
+            mBoundingBox2DSensor =
+                mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
+        if (mEnableBoundingBox3D && !mSyntheticDataInterface->isSensorInitialized(mBoundingBox3DSensor))
+            mBoundingBox3DSensor =
+                mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);
         return;
+    }
 
-    const char* cameraPath = kit::getDefaultViewportWindow()->getActiveCamera();
+    const char* cameraPath = mViewportWindow->getActiveCamera();
     if (!cameraPath)
         return;
 
@@ -516,37 +544,37 @@ void CameraComponent::onStop()
 {
     if (mRgbSensor)
     {
-        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eRgb);
+        mSyntheticDataInterface->destroySensor(mRgbSensor);
         mRgbSensor = nullptr;
         mRgbSensorData = nullptr;
     }
     if (mDepthSensor)
     {
-        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eDepthLinear);
+        mSyntheticDataInterface->destroySensor(mDepthSensor);
         mDepthSensor = nullptr;
         mDepthSensorData = nullptr;
     }
     if (mSegmentationSensor)
     {
-        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eInstanceSegmentation);
+        mSyntheticDataInterface->destroySensor(mSegmentationSensor);
         mSegmentationSensor = nullptr;
         mSegmentationSensorData = nullptr;
     }
     if (mSemanticSensor)
     {
-        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eSemanticSegmentation);
+        mSyntheticDataInterface->destroySensor(mSemanticSensor);
         mSemanticSensor = nullptr;
         mSemanticSensorData = nullptr;
     }
     if (mBoundingBox2DSensor)
     {
-        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eBoundingBox2DTight);
+        mSyntheticDataInterface->destroySensor(mBoundingBox2DSensor);
         mBoundingBox2DSensor = nullptr;
         mBoundingBox2DSensorData = nullptr;
     }
     if (mBoundingBox3DSensor)
     {
-        mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eBoundingBox3D);
+        mSyntheticDataInterface->destroySensor(mBoundingBox3DSensor);
         mBoundingBox3DSensor = nullptr;
         mBoundingBox3DSensorData = nullptr;
     }
@@ -558,6 +586,9 @@ void CameraComponent::onComponentChange()
     GxfComponent::onComponentChange();
 
     const pxr::RobotEngineBridgeSchemaRobotEngineCamera& typedPrim = (pxr::RobotEngineBridgeSchemaRobotEngineCamera)mPrim;
+
+    isaac::utils::safeGetAttribute(typedPrim.GetUseExistingViewportAttr(), mUseExistingViewport);
+    isaac::utils::safeGetAttribute(typedPrim.GetResolutionAttr(), mResolution);
 
     // RGB attributes
     isaac::utils::safeGetAttribute(typedPrim.GetRgbOutputComponentAttr(), mRgbOutputComponent);
@@ -596,10 +627,35 @@ void CameraComponent::onComponentChange()
     if (filterClassList3D != "")
         boost::split(mBoundingBox3DClassList, filterClassList3D, [](char c) { return c == ','; });
 
+    mCameraPath = pxr::SdfPath("/OmniverseKit_Persp");
+    pxr::SdfPathVector targets;
+    typedPrim.GetCameraPrimRel().GetTargets(&targets);
+    if (targets.size() > 0)
+    {
+        mCameraPath = targets[0];
+    }
+    mCameraPrim = mStage->GetPrimAtPath(mCameraPath);
+
+    if (!mViewportWindow)
+    {
+        if (mUseExistingViewport)
+        {
+            mViewportWindow = kit::getDefaultViewportWindow();
+        }
+        else
+        {
+            mViewportWindow = mViewportInterface->getViewportWindow(mViewportInterface->createViewportWindow());
+        }
+        auto settings = kit::getSettings();
+        settings->setInt("/app/renderer/resolution/height", -1);
+        settings->setInt("/app/renderer/resolution/width", -1);
+    }
+    mViewportWindow->setActiveCamera(mCameraPath.GetString().c_str());
+    mViewportWindow->setWindowSize(mResolution[0] + 8, mResolution[1] + 30); // fixed offset
 
     if (mEnableRgb)
     {
-        mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb);
+        mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb, mViewportWindow);
         mRgbBuffers.resize(1);
         mRgbBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
     }
@@ -612,7 +668,7 @@ void CameraComponent::onComponentChange()
 
     if (mEnableDepth)
     {
-        mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear);
+        mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
         mDepthBuffers.resize(1);
         mDepthBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
     }
@@ -626,8 +682,10 @@ void CameraComponent::onComponentChange()
     if (mEnableSegmentation)
     {
 
-        mSegmentationSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation);
-        mSemanticSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation);
+        mSegmentationSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
+        mSemanticSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
         mSegmentationBuffers.resize(1);
         mSegmentationBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
         mSemanticBuffers.resize(1);
@@ -656,7 +714,8 @@ void CameraComponent::onComponentChange()
 
     if (mEnableBoundingBox2D)
     {
-        mBoundingBox2DSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight);
+        mBoundingBox2DSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
     }
     else
     {
@@ -666,7 +725,8 @@ void CameraComponent::onComponentChange()
 
     if (mEnableBoundingBox3D)
     {
-        mBoundingBox3DSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D);
+        mBoundingBox3DSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);
     }
     else
     {

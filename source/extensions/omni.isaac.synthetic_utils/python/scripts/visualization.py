@@ -113,7 +113,7 @@ def colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb, num_channels=3):
     rgb_img = Image.fromarray(bboxes_2d_rgb)
     rgb_img_draw = ImageDraw.Draw(rgb_img)
     for bbox_2d in bboxes_2d_data:
-        if bbox_2d[1] > 0:
+        if bbox_2d[5] > 0:
             semantic_id_list.append(bbox_2d[1])
             bbox_2d_list.append(bbox_2d)
     semantic_id_list_np = np.unique(np.array(semantic_id_list))
@@ -129,6 +129,6 @@ def colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb, num_channels=3):
                 int(255 * bbox_color[2]),
                 int(255 * bbox_color[3]),
             )
-        rgb_img_draw.rectangle([(bbox_2d[2], bbox_2d[3]), (bbox_2d[4], bbox_2d[5])], outline=outline, width=2)
+        rgb_img_draw.rectangle([(bbox_2d[6], bbox_2d[7]), (bbox_2d[8], bbox_2d[9])], outline=outline, width=2)
     bboxes_2d_rgb = np.array(rgb_img)
     return bboxes_2d_rgb

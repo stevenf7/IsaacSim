@@ -36,6 +36,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/client_library/include",
+        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
      }
      libdirs {
         "%{root}/_build/target-deps/python/libs", 

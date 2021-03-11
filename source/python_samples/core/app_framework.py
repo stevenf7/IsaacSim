@@ -30,6 +30,9 @@ class PythonApp:
         # Run headless
         sys.argv.append("--no-window")
 
+        # Set some settings
+        sys.argv.append("--/app/asyncRendering=False")
+
         # Start the default Kit Experience App
         self.app.startup("kit", app_root, sys.argv)
 
