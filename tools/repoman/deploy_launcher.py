@@ -167,10 +167,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             for file in ["description.toml", "package.toml"]:
                 substitute_tokens_in_file(os.path.join(cloned_repo_dir, file), tokens)
 
-        if not options.skip_commit:
-            # push/commit everything
-            call_git_safe(cloned_repo_dir, ["add", "-A"])
-            call_git_safe(cloned_repo_dir, ["commit", "-m", f"deploy version: {version}"])
-            call_git_safe(cloned_repo_dir, ["push", git_url, branch_name])
+            if not options.skip_commit:
+                # push/commit everything
+                call_git_safe(cloned_repo_dir, ["add", "-A"])
+                call_git_safe(cloned_repo_dir, ["commit", "-m", f"deploy version: {version}"])
+                call_git_safe(cloned_repo_dir, ["push", git_url, branch_name])
 
     return run_repo_tool
