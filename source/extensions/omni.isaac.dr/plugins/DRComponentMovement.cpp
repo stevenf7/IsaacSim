@@ -77,6 +77,8 @@ void DRComponentMovement::update()
             }
         }
     }
+    mAllAttributeParamsMap.clear();
+    getCustomDataAsDictionary(mStage, mPrim.GetPath());
 }
 void DRComponentMovement::onComponentChange()
 {
@@ -192,6 +194,15 @@ void DRComponentMovement::tick()
             float x = randomRangeFloat(mXRange[0], mXRange[1]);
             float y = randomRangeFloat(mYRange[0], mYRange[1]);
             float z = randomRangeFloat(mZRange[0], mZRange[1]);
+            // Per attribution distribution
+            if (mAllAttributeParamsMap.find("translate") != mAllAttributeParamsMap.end())
+            {
+                std::map<std::string, float> distributionParams;
+                getDistributionParams(mAllAttributeParamsMap["translate"], distributionParams);
+                x = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
+                y = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
+                z = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
+            }
             if (mTargetPoints.size() > 0)
             {
                 randIndex = randomRangeInt(0, static_cast<int>(mTargetPoints.size()) - 1);

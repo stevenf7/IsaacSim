@@ -153,6 +153,8 @@ void DRComponentColor::update()
             materialBinding.Bind(materialShade, pxr::UsdShadeTokens->strongerThanDescendants);
         }
     }
+    mAllAttributeParamsMap.clear();
+    getCustomDataAsDictionary(mStage, mPrim.GetPath());
 }
 void DRComponentColor::onComponentChange()
 {
@@ -230,17 +232,42 @@ void DRComponentColor::tick()
             float r = randomRangeFloat(mRRange[0], mRRange[1]);
             float g = randomRangeFloat(mGRange[0], mGRange[1]);
             float b = randomRangeFloat(mBRange[0], mBRange[1]);
+            // Per attribution distribution
+            if (mAllAttributeParamsMap.find("color") != mAllAttributeParamsMap.end())
+            {
+                std::map<std::string, float> distributionParams;
+                getDistributionParams(mAllAttributeParamsMap["color"], distributionParams);
+                r = randomFloat(mAllAttributeParamsMap["color"]["distribution"], distributionParams);
+                g = randomFloat(mAllAttributeParamsMap["color"]["distribution"], distributionParams);
+                b = randomFloat(mAllAttributeParamsMap["color"]["distribution"], distributionParams);
+            }
             primColor.Set(pxr::GfVec3f(r, g, b));
         }
         auto primRoughness = materialShade.GetInput(pxr::TfToken("reflection_roughness_constant"));
         if (primRoughness)
         {
-            primRoughness.Set(randomRangeFloat(mRoughnessRange[0], mRoughnessRange[1]));
+            // Per attribution distribution
+            if (mAllAttributeParamsMap.find("roughness") != mAllAttributeParamsMap.end())
+            {
+                std::map<std::string, float> distributionParams;
+                getDistributionParams(mAllAttributeParamsMap["roughness"], distributionParams);
+                primRoughness.Set(randomFloat(mAllAttributeParamsMap["roughness"]["distribution"], distributionParams));
+            }
+            else
+                primRoughness.Set(randomRangeFloat(mRoughnessRange[0], mRoughnessRange[1]));
         }
         auto primMetallic = materialShade.GetInput(pxr::TfToken("metallic_constant"));
         if (primMetallic)
         {
-            primMetallic.Set(randomRangeFloat(mMetallicRange[0], mMetallicRange[1]));
+            // Per attribution distribution
+            if (mAllAttributeParamsMap.find("metallic") != mAllAttributeParamsMap.end())
+            {
+                std::map<std::string, float> distributionParams;
+                getDistributionParams(mAllAttributeParamsMap["metallic"], distributionParams);
+                primMetallic.Set(randomFloat(mAllAttributeParamsMap["metallic"]["distribution"], distributionParams));
+            }
+            else
+                primMetallic.Set(randomRangeFloat(mMetallicRange[0], mMetallicRange[1]));
         }
     }
 }

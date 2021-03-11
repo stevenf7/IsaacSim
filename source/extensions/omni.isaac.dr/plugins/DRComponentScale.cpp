@@ -66,6 +66,8 @@ void DRComponentScale::update()
             }
         }
     }
+    mAllAttributeParamsMap.clear();
+    getCustomDataAsDictionary(mStage, mPrim.GetPath());
 }
 void DRComponentScale::onComponentChange()
 {
@@ -108,6 +110,15 @@ void DRComponentScale::tick()
             float x = randomRangeFloat(mXRange[0], mXRange[1]);
             float y = randomRangeFloat(mYRange[0], mYRange[1]);
             float z = randomRangeFloat(mZRange[0], mZRange[1]);
+            // Per attribution distribution
+            if (mAllAttributeParamsMap.find("scale") != mAllAttributeParamsMap.end())
+            {
+                std::map<std::string, float> distributionParams;
+                getDistributionParams(mAllAttributeParamsMap["scale"], distributionParams);
+                x = randomFloat(mAllAttributeParamsMap["scale"]["distribution"], distributionParams);
+                y = randomFloat(mAllAttributeParamsMap["scale"]["distribution"], distributionParams);
+                z = randomFloat(mAllAttributeParamsMap["scale"]["distribution"], distributionParams);
+            }
             if (mEnableUniform)
                 z = y = x;
             pxr::GfVec3d doubleScale(x, y, z);

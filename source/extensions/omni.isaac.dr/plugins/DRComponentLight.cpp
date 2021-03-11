@@ -67,6 +67,8 @@ void DRComponentLight::update()
             }
         }
     }
+    mAllAttributeParamsMap.clear();
+    getCustomDataAsDictionary(mStage, mPrim.GetPath());
 }
 void DRComponentLight::onComponentChange()
 {
@@ -120,6 +122,15 @@ void DRComponentLight::tick()
                 float r = randomRangeFloat(mLrRange[0], mLrRange[1]);
                 float g = randomRangeFloat(mLgRange[0], mLgRange[1]);
                 float b = randomRangeFloat(mLbRange[0], mLbRange[1]);
+                // Per attribution distribution
+                if (mAllAttributeParamsMap.find("color") != mAllAttributeParamsMap.end())
+                {
+                    std::map<std::string, float> distributionParams;
+                    getDistributionParams(mAllAttributeParamsMap["color"], distributionParams);
+                    r = randomFloat(mAllAttributeParamsMap["color"]["distribution"], distributionParams);
+                    g = randomFloat(mAllAttributeParamsMap["color"]["distribution"], distributionParams);
+                    b = randomFloat(mAllAttributeParamsMap["color"]["distribution"], distributionParams);
+                }
                 pxr::GfVec3f usdColor(r, g, b);
                 primColor.Set(usdColor);
             }
@@ -129,7 +140,16 @@ void DRComponentLight::tick()
             if (primIntensity)
             {
                 float i = randomRangeFloat(mLiRange[0], mLiRange[1]);
-                primIntensity.Set(i);
+                // Per attribution distribution
+                if (mAllAttributeParamsMap.find("intensity") != mAllAttributeParamsMap.end())
+                {
+                    std::map<std::string, float> distributionParams;
+                    getDistributionParams(mAllAttributeParamsMap["intensity"], distributionParams);
+                    primIntensity.Set(
+                        randomFloat(mAllAttributeParamsMap["intensity"]["distribution"], distributionParams));
+                }
+                else
+                    primIntensity.Set(i);
             }
 
             // Randomized Light color temperature parameters
@@ -142,7 +162,16 @@ void DRComponentLight::tick()
                 if (primColorTemperature)
                 {
                     float t = randomRangeFloat(mLtRange[0], mLtRange[1]);
-                    primColorTemperature.Set(t);
+                    // Per attribution distribution
+                    if (mAllAttributeParamsMap.find("colorTemperature") != mAllAttributeParamsMap.end())
+                    {
+                        std::map<std::string, float> distributionParams;
+                        getDistributionParams(mAllAttributeParamsMap["colorTemperature"], distributionParams);
+                        primColorTemperature.Set(randomFloat(
+                            mAllAttributeParamsMap["colorTemperature"]["distribution"], distributionParams));
+                    }
+                    else
+                        primColorTemperature.Set(t);
                 }
             }
         }

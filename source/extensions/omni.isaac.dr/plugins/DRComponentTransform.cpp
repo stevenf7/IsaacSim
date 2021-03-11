@@ -77,6 +77,8 @@ void DRComponentTransform::update()
             }
         }
     }
+    mAllAttributeParamsMap.clear();
+    getCustomDataAsDictionary(mStage, mPrim.GetPath());
 }
 void DRComponentTransform::onComponentChange()
 {
@@ -220,6 +222,15 @@ void DRComponentTransform::tick()
             float x = randomRangeFloat(mTranslateMin[0], mTranslateMax[0]);
             float y = randomRangeFloat(mTranslateMin[1], mTranslateMax[1]);
             float z = randomRangeFloat(mTranslateMin[2], mTranslateMax[2]);
+            // Per attribution distribution
+            if (mAllAttributeParamsMap.find("translate") != mAllAttributeParamsMap.end())
+            {
+                std::map<std::string, float> distributionParams;
+                getDistributionParams(mAllAttributeParamsMap["translate"], distributionParams);
+                x = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
+                y = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
+                z = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
+            }
             if (mTargetPoints.size() > 0)
             {
                 randIndex = randomRangeInt(0, static_cast<int>(mTargetPoints.size()) - 1);
@@ -299,7 +310,8 @@ void DRComponentTransform::tick()
                 pxr::GfTransform bodyPose;
                 bodyPose.SetTranslation(eyeUsd);
                 if ((mRotateMin == pxr::GfVec3f(0.0, 0.0, 0.0) && mRotateMax == pxr::GfVec3f(0.0, 0.0, 0.0)) &&
-                    mPointInstancersOrient.size() == 0)
+                    mPointInstancersOrient.size() == 0 &&
+                    mAllAttributeParamsMap.find("rotate") == mAllAttributeParamsMap.end())
                 {
                     bodyPose.SetRotation(currentTr.GetRotation());
                 }
@@ -308,6 +320,15 @@ void DRComponentTransform::tick()
                     float rotX = randomRangeFloat(mRotateMin[0], mRotateMax[0]);
                     float rotY = randomRangeFloat(mRotateMin[1], mRotateMax[1]);
                     float rotZ = randomRangeFloat(mRotateMin[2], mRotateMax[2]);
+                    // Per attribution distribution
+                    if (mAllAttributeParamsMap.find("rotate") != mAllAttributeParamsMap.end())
+                    {
+                        std::map<std::string, float> distributionParams;
+                        getDistributionParams(mAllAttributeParamsMap["rotate"], distributionParams);
+                        rotX = randomFloat(mAllAttributeParamsMap["rotate"]["distribution"], distributionParams);
+                        rotY = randomFloat(mAllAttributeParamsMap["rotate"]["distribution"], distributionParams);
+                        rotZ = randomFloat(mAllAttributeParamsMap["rotate"]["distribution"], distributionParams);
+                    }
                     if (mPointInstancersOrient.size() > 0)
                     {
                         randIndex = randomRangeInt(0, static_cast<int>(mPointInstancersOrient.size()) - 1);
@@ -332,7 +353,8 @@ void DRComponentTransform::tick()
                 }
                 finalTransformMat = bodyPose.GetMatrix();
             }
-            if (mScaleMin == pxr::GfVec3f(0.0, 0.0, 0.0) && mScaleMax == pxr::GfVec3f(0.0, 0.0, 0.0))
+            if (mScaleMin == pxr::GfVec3f(0.0, 0.0, 0.0) && mScaleMax == pxr::GfVec3f(0.0, 0.0, 0.0) &&
+                mAllAttributeParamsMap.find("scale") == mAllAttributeParamsMap.end())
             {
                 // Get current scale
                 scaleMat.SetScale(currentTr.GetScale());
@@ -342,6 +364,15 @@ void DRComponentTransform::tick()
                 float scaleX = randomRangeFloat(mScaleMin[0], mScaleMax[0]);
                 float scaleY = randomRangeFloat(mScaleMin[1], mScaleMax[1]);
                 float scaleZ = randomRangeFloat(mScaleMin[2], mScaleMax[2]);
+                // Per attribution distribution
+                if (mAllAttributeParamsMap.find("scale") != mAllAttributeParamsMap.end())
+                {
+                    std::map<std::string, float> distributionParams;
+                    getDistributionParams(mAllAttributeParamsMap["scale"], distributionParams);
+                    scaleX = randomFloat(mAllAttributeParamsMap["scale"]["distribution"], distributionParams);
+                    scaleY = randomFloat(mAllAttributeParamsMap["scale"]["distribution"], distributionParams);
+                    scaleZ = randomFloat(mAllAttributeParamsMap["scale"]["distribution"], distributionParams);
+                }
                 pxr::GfVec3d doubleScale(scaleX, scaleY, scaleZ);
                 scaleMat.SetScale(doubleScale);
             }
