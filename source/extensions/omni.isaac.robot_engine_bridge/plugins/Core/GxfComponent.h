@@ -173,34 +173,27 @@ public:
             return result;
         }
         gxf_tid_t pub_tid;
-        if ((result =
-                 GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &pub_tid)))
+        if ((result = GxfComponentTypeId(
+                 mContext, nvidia::TypenameAsString<nvidia::gxf::DoubleBufferTransmitter>(), &pub_tid)))
         {
-            CARB_LOG_ERROR("GxfComponentTypeId DoubleBufferReceiver, %s", GxfResultStr(result));
+            CARB_LOG_ERROR("GxfComponentTypeId Transmitter, %s", GxfResultStr(result));
             return result;
         }
-        const std::string receiverName = getComponentName(component, channel);
+        const std::string transmitterName = getComponentName(component, channel);
         gxf_uid_t pub_cid;
-        if ((result = GxfComponentFind(mContext, tcp_eid, pub_tid, receiverName.c_str(), nullptr, &pub_cid)))
+        if ((result = GxfComponentFind(mContext, tcp_eid, pub_tid, transmitterName.c_str(), nullptr, &pub_cid)))
         {
-            CARB_LOG_ERROR("GxfComponentFind %s, %s", receiverName.c_str(), GxfResultStr(result));
+            CARB_LOG_ERROR("GxfComponentFind %s, %s", transmitterName.c_str(), GxfResultStr(result));
             return result;
         }
-        auto pub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(mContext, pub_cid);
+        auto pub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferTransmitter>::Create(mContext, pub_cid);
 
         if ((result = pub_handle.value()->push_abi(data.eid())))
         {
             CARB_LOG_ERROR("push_abi, %s", GxfResultStr(result));
             return result;
         }
-        // CARB_LOG_ERROR("receiver size: %lu %lu", pub_handle.value()->size_abi(),
-        // pub_handle.value()->back_size_abi());
-        if ((result = pub_handle.value()->sync_abi()))
-        {
-            CARB_LOG_ERROR("sync_abi, %s", GxfResultStr(result));
-            return result;
-        }
-
+        // CARB_LOG_WARN("Publish to %s/%s", entityName.c_str(), transmitterName.c_str());
         return gxf_result_t::GXF_SUCCESS;
     }
 
@@ -232,11 +225,11 @@ public:
             CARB_LOG_ERROR("GxfComponentTypeId, %s", GxfResultStr(result));
             return result;
         }
-        const std::string receiverName = getComponentName(component, channel);
+        const std::string transmitterName = getComponentName(component, channel);
         gxf_uid_t pub_cid;
-        if ((result = GxfComponentFind(mContext, tcp_eid, pub_tid, receiverName.c_str(), nullptr, &pub_cid)))
+        if ((result = GxfComponentFind(mContext, tcp_eid, pub_tid, transmitterName.c_str(), nullptr, &pub_cid)))
         {
-            CARB_LOG_ERROR("GxfComponentFind: %s, %s", receiverName.c_str(), GxfResultStr(result));
+            CARB_LOG_ERROR("GxfComponentFind: %s, %s", transmitterName.c_str(), GxfResultStr(result));
             return result;
         }
         auto sub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(mContext, pub_cid);
