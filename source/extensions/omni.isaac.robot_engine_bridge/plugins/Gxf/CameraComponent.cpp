@@ -646,12 +646,12 @@ void CameraComponent::onComponentChange()
         {
             mViewportWindow = mViewportInterface->getViewportWindow(mViewportInterface->createViewportWindow());
         }
-        auto settings = kit::getSettings();
-        settings->setInt("/app/renderer/resolution/height", -1);
-        settings->setInt("/app/renderer/resolution/width", -1);
+        // auto settings = kit::getSettings();
+        // settings->setInt("/app/renderer/resolution/height", -1);
+        // settings->setInt("/app/renderer/resolution/width", -1);
     }
     mViewportWindow->setActiveCamera(mCameraPath.GetString().c_str());
-    mViewportWindow->setWindowSize(mResolution[0] + 8, mResolution[1] + 30); // fixed offset
+    // mViewportWindow->setWindowSize(mResolution[0] + 8, mResolution[1] + 30); // fixed offset
 
     if (mEnableRgb)
     {
