@@ -25,6 +25,7 @@ project_ext_bindings ({
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/pxshared/include",
+        "%{root}/_build/target-deps/client_library/include",
     }
 
     libdirs {   
@@ -32,7 +33,7 @@ project_ext_bindings ({
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_usd/release/lib"
     }
-    links {"gf", "sdf"}
+    links {"arch", "gf", "sdf", "tf", "vt", "pcp", "usd", "usdGeom", "usdUtils"}
 
     filter { "system:linux", "platforms:x86_64" }
         links {"tbb", "boost_python37" }

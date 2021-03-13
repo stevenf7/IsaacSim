@@ -82,7 +82,7 @@ void CommandComponent::tick()
     CARB_PROFILE_ZONE(0, "REB CommandComponent Tick");
     auto message = nvidia::gxf::Entity::New(mContext);
 
-    if (receive(mInputComponent, "", message) != gxf_result_t::GXF_SUCCESS)
+    if (receive(mInputComponent, mInputChannel, message) != gxf_result_t::GXF_SUCCESS)
     {
         return;
     }

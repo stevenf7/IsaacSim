@@ -8,6 +8,7 @@ import gc
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 from .common import create_application, get_selected_path, simulate
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 from pxr import Gf
 
@@ -19,20 +20,26 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
+
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
+        self._nucleus_path = nucleus_server + "/Isaac"
+
         pass
 
     # After running each test
     async def tearDown(self):
         self._stage = None
         self._timeline = None
-        await omni.usd.get_context().new_stage_async()
         gc.collect()
         pass
 
     # Run all commands
     async def test_command_basic(self):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeDifferentialBaseCommand",
+            "RobotEngineBridgeCreateDifferentialBase",
             path="/REB_DifferentialBase",
             parent=get_selected_path(),
             input_component="input",
@@ -51,7 +58,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeHolonomicBaseCommand",
+            "RobotEngineBridgeCreateHolonomicBase",
             path="/REB_HolonomicBase",
             parent=get_selected_path(),
             input_component="input",
@@ -71,7 +78,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeVehicleCommand",
+            "RobotEngineBridgeCreateVehicle",
             path="/REB_Vehicle",
             parent=get_selected_path(),
             input_component="input",
@@ -82,7 +89,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeJointControlCommand",
+            "RobotEngineBridgeCreateJointControl",
             path="/REB_JointControl",
             parent=get_selected_path(),
             input_component="input",
@@ -93,7 +100,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeScissorLiftCommand",
+            "RobotEngineBridgeCreateScissorLift",
             path="/REB_ScissorLift",
             parent=get_selected_path(),
             input_component="input",
@@ -105,7 +112,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeSurfaceGripperCommand",
+            "RobotEngineBridgeCreateSurfaceGripper",
             path="/REB_SurfaceGripper",
             parent=get_selected_path(),
             input_component="input",
@@ -126,7 +133,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeTwoFingerGripperCommand",
+            "RobotEngineBridgeCreateTwoFingerGripper",
             path="/REB_TwoFingerGripper",
             parent=get_selected_path(),
             input_component="input",
@@ -142,7 +149,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeRigidBodySinkCommand",
+            "RobotEngineBridgeCreateRigidBodySink",
             path="/REB_RigidBodySink",
             parent=get_selected_path(),
             output_component="output",
@@ -151,7 +158,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeTeleportCommand",
+            "RobotEngineBridgeCreateTeleport",
             path="/REB_Teleport",
             parent=get_selected_path(),
             input_component="input",
@@ -159,7 +166,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeScenarioFromMessageCommand",
+            "RobotEngineBridgeCreateScenarioFromMessage",
             path="/REB_ScenarioFromMessage",
             parent=get_selected_path(),
             input_component="input",
@@ -171,7 +178,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeCameraCommand",
+            "RobotEngineBridgeCreateCamera",
             path="/REB_Camera",
             parent=get_selected_path(),
             rgb_output_component="output",
@@ -194,7 +201,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeLidarCommand",
+            "RobotEngineBridgeCreateLidar",
             path="/REB_Lidar",
             parent=get_selected_path(),
             output_component="output",
@@ -203,7 +210,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeOccupancyGridMapCommand",
+            "RobotEngineBridgeCreateOccupancyGridMap",
             path="/REB_OccupancyGridMap",
             parent=None,
             output_component="output",
@@ -223,7 +230,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeUltrasonicCommand",
+            "RobotEngineBridgeCreateUltrasonic",
             path="/REB_Ultrasonic",
             parent=get_selected_path(),
             output_component="output",
@@ -232,7 +239,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeContactMonitorCommand",
+            "RobotEngineBridgeCreateContactMonitor",
             path="/REB_ContactMonitor",
             parent=get_selected_path(),
             output_component="output",
@@ -243,7 +250,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         )
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePolylineVisualizerCommand",
+            "RobotEngineBridgeCreatePolylineVisualizer",
             path="/REB_PolylineVisualizer",
             parent=get_selected_path(),
             input_component="input",
@@ -260,18 +267,16 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         await simulate(1)
         await self.test_command_basic()
         await simulate(1)
-        self.assertTrue(omni.kit.commands.execute("TickRobotEngineBridgeComponentCommand", path="/REB_Lidar")[1])
-        self.assertFalse(
-            omni.kit.commands.execute("TickRobotEngineBridgeComponentCommand", path="/REB_DOESNT_EXIST")[1]
-        )
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeTickComponent", path="/REB_Lidar")[1])
+        self.assertFalse(omni.kit.commands.execute("RobotEngineBridgeTickComponent", path="/REB_DOESNT_EXIST")[1])
         await simulate(0.25)
-        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         self._timeline.stop()
 
     # TODO make this generic and automatically randomize all parameters
     async def test_diffbase_update(self):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeDifferentialBaseCommand",
+            "RobotEngineBridgeCreateDifferentialBase",
             path="/REB_DifferentialBase",
             parent=get_selected_path(),
             input_component="input",

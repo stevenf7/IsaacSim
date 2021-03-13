@@ -119,7 +119,7 @@ class Extension(omni.ext.IExt):
 
     def _on_init_stage_load_fn(self, widget):
         result, status = omni.kit.commands.execute(
-            "InitRobotEngineBridgeStageLoaderCommand",
+            "RobotEngineBridgeInitStageLoader",
             input_component=self._scene_loader["input_component"].get_value_as_string(),
             request_channel=self._scene_loader["request_channel"].get_value_as_string(),
             camera_control=self._scene_loader["camera_control"].get_value_as_string(),
@@ -130,7 +130,7 @@ class Extension(omni.ext.IExt):
     def _on_create_destroy_sdk_app_fn(self):
         if self._is_created is False:
             result, status = omni.kit.commands.execute(
-                "CreateRobotEngineBridgeApplicationCommand",
+                "RobotEngineBridgeCreateApplication",
                 asset_path=self._reb_extension_path,
                 app_file=self._scene_loader["json_path"].get_value_as_string(),
                 module_paths=[],
@@ -138,7 +138,7 @@ class Extension(omni.ext.IExt):
             )
 
             result, status = omni.kit.commands.execute(
-                "InitRobotEngineBridgeStageLoaderCommand",
+                "RobotEngineBridgeInitStageLoader",
                 input_component=self._scene_loader["input_component"].get_value_as_string(),
                 request_channel=self._scene_loader["request_channel"].get_value_as_string(),
                 camera_control=self._scene_loader["camera_control"].get_value_as_string(),
@@ -148,7 +148,7 @@ class Extension(omni.ext.IExt):
             self._is_created = True
             self._scene_loader["create_sdk"].text = "Destroy Application"
         else:
-            result, status = omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")
+            result, status = omni.kit.commands.execute("DestroyRobotEngineBridgeApplication")
             self._is_created = False
             self._scene_loader["create_sdk"].text = "Create Application"
 
@@ -156,7 +156,7 @@ class Extension(omni.ext.IExt):
         if self._is_gxf_created is False:
 
             result, status = omni.kit.commands.execute(
-                "CreateGxfApplicationCommand",
+                "RobotEngineBridgeCreateGxfApplication",
                 base_path=self._reb_extension_path + "/gxf/lib",
                 manifest_file="manifest.yaml",
                 graph_files=[
@@ -168,7 +168,7 @@ class Extension(omni.ext.IExt):
             self._is_gxf_created = True
             self._scene_loader["create_gxf"].text = "Destroy Application"
         else:
-            result, status = omni.kit.commands.execute("DestroyGxfApplicationCommand")
+            result, status = omni.kit.commands.execute("RobotEngineBridgeDestroyGxfApplication")
 
             self._is_gxf_created = False
             self._scene_loader["create_gxf"].text = "Create Application"

@@ -46,14 +46,14 @@ class TestREBPyaliceCamera(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
-        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         gc.collect()
         pass
 
     def add_camera(self, cameraPath):
 
         result, camera_prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeCameraCommand",
+            "RobotEngineBridgeCreateCamera",
             path=cameraPath,
             parent=None,
             rgb_output_component="output",

@@ -25,6 +25,9 @@ icon = "data/icon.png"
 name = "omni.isaac.utils"
 
 [[python.module]]
+name = "omni.isaac.utils.tests"
+
+[[python.module]]
 name = "omni.isaac.utils.scripts.physics_inspector"
 
 [[python.module]]

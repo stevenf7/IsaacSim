@@ -24,7 +24,7 @@ def setup_receiver(prim, component: str, channel: str):
     prim.CreateInputChannelAttr(channel)
 
 
-class CreateRobotEngineBridgeApplicationCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateApplication(omni.kit.commands.Command):
     def __init__(self, asset_path: str, app_file: str, module_paths: list = [], json_files: list = []):
         self._asset_path = asset_path
         self._app_file = app_file
@@ -43,7 +43,7 @@ class CreateRobotEngineBridgeApplicationCommand(omni.kit.commands.Command):
         pass
 
 
-class DestroyRobotEngineBridgeApplicationCommand(omni.kit.commands.Command):
+class RobotEngineBridgeDestroyApplication(omni.kit.commands.Command):
     def __init__(self):
         self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
         pass
@@ -55,7 +55,7 @@ class DestroyRobotEngineBridgeApplicationCommand(omni.kit.commands.Command):
         pass
 
 
-class InitRobotEngineBridgeStageLoaderCommand(omni.kit.commands.Command):
+class RobotEngineBridgeInitStageLoader(omni.kit.commands.Command):
     def __init__(
         self, input_component: str, request_channel: str, camera_control: str, output_component: str, reply_channel: str
     ):
@@ -81,7 +81,7 @@ class InitRobotEngineBridgeStageLoaderCommand(omni.kit.commands.Command):
 
 
 # this command is used to create each REB prim, it also handles undo so that each individual prim command doesn't have to
-class CreateRobotEngineBridgePrimCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreatePrim(omni.kit.commands.Command):
     def __init__(self, path: str, parent: str, scehma_type, enabled: bool = True, node_name: str = "interface"):
         for name, value in vars().items():
             if name != "self":
@@ -105,7 +105,7 @@ class CreateRobotEngineBridgePrimCommand(omni.kit.commands.Command):
             return self._stage.RemovePrim(self._prim_path)
 
 
-class CreateRobotEngineBridgeDifferentialBaseCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateDifferentialBase(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_DifferentialBase",
@@ -134,7 +134,7 @@ class CreateRobotEngineBridgeDifferentialBaseCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -169,7 +169,7 @@ class CreateRobotEngineBridgeDifferentialBaseCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeHolonomicBaseCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateHolonomicBase(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_HolonomicBase",
@@ -198,7 +198,7 @@ class CreateRobotEngineBridgeHolonomicBaseCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -233,7 +233,7 @@ class CreateRobotEngineBridgeHolonomicBaseCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeVehicleCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateVehicle(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_Vehicle",
@@ -253,7 +253,7 @@ class CreateRobotEngineBridgeVehicleCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -276,7 +276,7 @@ class CreateRobotEngineBridgeVehicleCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeJointControlCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateJointControl(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_JointControl",
@@ -296,7 +296,7 @@ class CreateRobotEngineBridgeJointControlCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -320,7 +320,7 @@ class CreateRobotEngineBridgeJointControlCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeScissorLiftCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateScissorLift(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_ScissorLift",
@@ -341,7 +341,7 @@ class CreateRobotEngineBridgeScissorLiftCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -366,7 +366,7 @@ class CreateRobotEngineBridgeScissorLiftCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeSurfaceGripperCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateSurfaceGripper(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_SurfaceGripper",
@@ -396,7 +396,7 @@ class CreateRobotEngineBridgeSurfaceGripperCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -437,7 +437,7 @@ class CreateRobotEngineBridgeSurfaceGripperCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeTwoFingerGripperCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateTwoFingerGripper(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_TwoFingerGripper",
@@ -462,7 +462,7 @@ class CreateRobotEngineBridgeTwoFingerGripperCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -489,7 +489,7 @@ class CreateRobotEngineBridgeTwoFingerGripperCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeRigidBodySinkCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateRigidBodySink(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_RigidBodySink",
@@ -507,7 +507,7 @@ class CreateRobotEngineBridgeRigidBodySinkCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -526,7 +526,7 @@ class CreateRobotEngineBridgeRigidBodySinkCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeTeleportCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateTeleport(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_Teleport",
@@ -543,7 +543,7 @@ class CreateRobotEngineBridgeTeleportCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -559,7 +559,7 @@ class CreateRobotEngineBridgeTeleportCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeScenarioFromMessageCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateScenarioFromMessage(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_ScenarioFromMessage",
@@ -580,7 +580,7 @@ class CreateRobotEngineBridgeScenarioFromMessageCommand(omni.kit.commands.Comman
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -601,7 +601,7 @@ class CreateRobotEngineBridgeScenarioFromMessageCommand(omni.kit.commands.Comman
         pass
 
 
-class CreateRobotEngineBridgeCameraCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateCamera(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_Camera",
@@ -636,7 +636,7 @@ class CreateRobotEngineBridgeCameraCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -682,7 +682,7 @@ class CreateRobotEngineBridgeCameraCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeLidarCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateLidar(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_Lidar",
@@ -700,7 +700,7 @@ class CreateRobotEngineBridgeLidarCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -721,7 +721,7 @@ class CreateRobotEngineBridgeLidarCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeOccupancyGridMapCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateOccupancyGridMap(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_OccupancyGridMap",
@@ -750,7 +750,7 @@ class CreateRobotEngineBridgeOccupancyGridMapCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -783,7 +783,7 @@ class CreateRobotEngineBridgeOccupancyGridMapCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeUltrasonicCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateUltrasonic(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_Ultrasonic",
@@ -801,7 +801,7 @@ class CreateRobotEngineBridgeUltrasonicCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -822,7 +822,7 @@ class CreateRobotEngineBridgeUltrasonicCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgeContactMonitorCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateContactMonitor(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_ContactMonitor",
@@ -842,7 +842,7 @@ class CreateRobotEngineBridgeContactMonitorCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -868,7 +868,7 @@ class CreateRobotEngineBridgeContactMonitorCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgePolylineVisualizerCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreatePolylineVisualizer(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_PolylineVisualizer",
@@ -889,7 +889,7 @@ class CreateRobotEngineBridgePolylineVisualizerCommand(omni.kit.commands.Command
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -914,7 +914,7 @@ class CreateRobotEngineBridgePolylineVisualizerCommand(omni.kit.commands.Command
         pass
 
 
-class CreateRobotEngineBridgeCommandCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateCommand(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_Command",
@@ -931,7 +931,7 @@ class CreateRobotEngineBridgeCommandCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -946,7 +946,7 @@ class CreateRobotEngineBridgeCommandCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRobotEngineBridgePoseTreeCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreatePoseTree(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/REB_PoseTree",
@@ -967,7 +967,7 @@ class CreateRobotEngineBridgePoseTreeCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePrimCommand",
+            "RobotEngineBridgeCreatePrim",
             path=self._path,
             parent=self._parent,
             enabled=self._enabled,
@@ -990,7 +990,7 @@ class CreateRobotEngineBridgePoseTreeCommand(omni.kit.commands.Command):
         pass
 
 
-class TickRobotEngineBridgeComponentCommand(omni.kit.commands.Command):
+class RobotEngineBridgeTickComponent(omni.kit.commands.Command):
     def __init__(self, path: str):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -1007,7 +1007,7 @@ class TickRobotEngineBridgeComponentCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateGxfApplicationCommand(omni.kit.commands.Command):
+class RobotEngineBridgeCreateGxfApplication(omni.kit.commands.Command):
     def __init__(self, base_path: str, manifest_file: str, graph_files: []):
         self._base_path = base_path
         self._manifest_file = manifest_file
@@ -1023,7 +1023,7 @@ class CreateGxfApplicationCommand(omni.kit.commands.Command):
         pass
 
 
-class DestroyGxfApplicationCommand(omni.kit.commands.Command):
+class RobotEngineBridgeDestroyGxfApplication(omni.kit.commands.Command):
     def __init__(self):
         self._gxf_bridge = _robot_engine_bridge.acquire_gxf_bridge_interface()
         pass

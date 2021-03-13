@@ -31,28 +31,28 @@ class TestREBCore(omni.kit.test.AsyncTestCase):
     async def test_spawn_app(self):
         # Base create destroy test
         self.assertTrue(create_application()[1])
-        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         # destroy should not fail even if called multiple times
-        self.assertFalse(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertFalse(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
 
     async def test_spawn_twice(self):
         # should only create app successfully once and destroy once
         self.assertTrue(create_application()[1])
         self.assertFalse(create_application()[1])
-        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
-        self.assertFalse(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
+        self.assertFalse(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
 
     async def test_destroy_app(self):
         # try to destroy app that was never created, should always return false
-        self.assertFalse(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
-        self.assertFalse(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertFalse(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
+        self.assertFalse(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
 
     async def test_spawn_app_fail(self):
         # Try to create app with non existent json
         self.assertFalse(create_application("does_not_exist.json")[1])
-        self.assertFalse(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertFalse(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         # appwas already destroyed, should return false
-        self.assertFalse(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertFalse(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
 
     async def test_spawn_app_active(self):
         # Create after play
@@ -60,13 +60,13 @@ class TestREBCore(omni.kit.test.AsyncTestCase):
         self.assertTrue(create_application()[1])
         await simulate(1.0)
         self._timeline.stop()
-        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
 
         # Create before play
         self.assertTrue(create_application()[1])
         self._timeline.play()
         await simulate(1.0)
-        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         self._timeline.stop()
 
     async def test_execute_command(self):

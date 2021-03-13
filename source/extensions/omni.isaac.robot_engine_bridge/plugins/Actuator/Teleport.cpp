@@ -16,6 +16,7 @@
 #include <carb/InterfaceUtils.h>
 
 #include <omni/isaac/utils/Transforms.h>
+#include "../Utils/IsaacConversions.h"
 
 #include "Teleport.h"
 
@@ -61,8 +62,7 @@ void Teleport::tick()
             auto isaacBodyScale = bodies[i].getScales();
             pxr::GfVec3f pxBodyTranslation(
                 isaacBodyTranslation.getX(), isaacBodyTranslation.getY(), isaacBodyTranslation.getZ());
-            pxr::GfVec4f pxBodyRotation(
-                isaacBodyRotation.getX(), isaacBodyRotation.getY(), isaacBodyRotation.getZ(), isaacBodyRotation.getW());
+            pxr::GfQuatf pxBodyRotation = toGfQuatf(isaacBodyRotation);
             pxr::GfVec3f pxBodyScale(isaacBodyScale.getX(), isaacBodyScale.getY(), isaacBodyScale.getZ());
 
             std::string inputName = names[i].cStr();

@@ -46,14 +46,14 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # After running each test
     async def tearDown(self):
-        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         gc.collect()
         pass
 
     async def test_actor_spawner(self):
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeScenarioFromMessageCommand",
+            "RobotEngineBridgeCreateScenarioFromMessage",
             path="/REB_ScenarioFromMessage",
             parent=None,
             input_component="input",
@@ -162,7 +162,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
         cube_prim = self.add_cube("/cube", 100, (0, 0, 10))
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeRigidBodySinkCommand",
+            "RobotEngineBridgeCreateRigidBodySink",
             path="/REB_RigidBodySink",
             parent=None,
             enabled=False,
@@ -189,9 +189,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         msg = test_app.app.receive("simulation.interface", "output", "bodies")
         self.assertFalse(msg)
         # Publish data manually
-        self.assertTrue(
-            omni.kit.commands.execute("TickRobotEngineBridgeComponentCommand", path="/REB_RigidBodySink")[1]
-        )
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeTickComponent", path="/REB_RigidBodySink")[1])
         # move cube and simulate time so that message is received
         # This also makes sure that the component isn't publishing the pose while simulating
         cube_prim.GetAttribute("xformOp:translate").Set((100, 100, 100))
@@ -201,9 +199,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(msg)
         self.assertAlmostEqual(msg.proto.bodies[0].refTBody.translation.z, 0.1, delta=0.001)
         # publish again, now we will get latest pose
-        self.assertTrue(
-            omni.kit.commands.execute("TickRobotEngineBridgeComponentCommand", path="/REB_RigidBodySink")[1]
-        )
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeTickComponent", path="/REB_RigidBodySink")[1])
 
         await simulate(0.5)
         msg = test_app.app.receive("simulation.interface", "output", "bodies")
@@ -219,7 +215,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
     # This test is failing currently, need to investigate and file a bug
     # async def test_actor_spawner_dynamic(self):
     #     result, prim = omni.kit.commands.execute(
-    #         "CreateRobotEngineBridgeScenarioFromMessageCommand",
+    #         "RobotEngineBridgeCreateScenarioFromMessage",
     #         path="/REB_ScenarioFromMessage",
     #         parent=None,
     #         input_component="input",

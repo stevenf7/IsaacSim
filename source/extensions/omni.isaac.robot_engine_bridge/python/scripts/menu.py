@@ -65,7 +65,7 @@ class RobotEngineBridgeMenu:
 
     def _add_differential_base(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeDifferentialBaseCommand",
+            "RobotEngineBridgeCreateDifferentialBase",
             path="/REB_DifferentialBase",
             parent=self._get_stage_and_path(),
             input_component="input",
@@ -87,7 +87,7 @@ class RobotEngineBridgeMenu:
 
     def _add_holonomic_base(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeHolonomicBaseCommand",
+            "RobotEngineBridgeCreateHolonomicBase",
             path="/REB_HolonomicBase",
             parent=self._get_stage_and_path(),
             input_component="input",
@@ -109,7 +109,7 @@ class RobotEngineBridgeMenu:
 
     def _add_vehicle(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeVehicleCommand",
+            "RobotEngineBridgeCreateVehicle",
             path="/REB_Vehicle",
             parent=self._get_stage_and_path(),
             input_component="input",
@@ -122,7 +122,7 @@ class RobotEngineBridgeMenu:
 
     def _add_joint_control(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeJointControlCommand",
+            "RobotEngineBridgeCreateJointControl",
             path="/REB_JointControl",
             parent=self._get_stage_and_path(),
             input_component="input",
@@ -135,7 +135,7 @@ class RobotEngineBridgeMenu:
 
     def _add_scissor_lift_simulator(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeScissorLiftCommand",
+            "RobotEngineBridgeCreateScissorLift",
             path="/REB_ScissorLift",
             parent=self._get_stage_and_path(),
             input_component="input",
@@ -149,7 +149,7 @@ class RobotEngineBridgeMenu:
 
     def _add_surface_gripper(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeSurfaceGripperCommand",
+            "RobotEngineBridgeCreateSurfaceGripper",
             path="/REB_SurfaceGripper",
             parent=self._get_stage_and_path(),
             input_component="input",
@@ -172,7 +172,7 @@ class RobotEngineBridgeMenu:
 
     def _add_twofinger_gripper(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeTwoFingerGripperCommand",
+            "RobotEngineBridgeCreateTwoFingerGripper",
             path="/REB_TwoFingerGripper",
             parent=self._get_stage_and_path(),
             input_component="input",
@@ -191,7 +191,7 @@ class RobotEngineBridgeMenu:
 
     def _add_rigid_body_sink(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeRigidBodySinkCommand",
+            "RobotEngineBridgeCreateRigidBodySink",
             path="/REB_RigidBodySink",
             parent=self._get_stage_and_path(),
             output_component="output",
@@ -203,7 +203,7 @@ class RobotEngineBridgeMenu:
 
     def _add_teleport(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeTeleportCommand",
+            "RobotEngineBridgeCreateTeleport",
             path="/REB_Teleport",
             parent=self._get_stage_and_path(),
             input_component="input",
@@ -214,7 +214,7 @@ class RobotEngineBridgeMenu:
 
     def _add_scenario_from_message(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeScenarioFromMessageCommand",
+            "RobotEngineBridgeCreateScenarioFromMessage",
             path="/REB_ScenarioFromMessage",
             parent=self._get_stage_and_path(),
             input_component="input",
@@ -229,7 +229,7 @@ class RobotEngineBridgeMenu:
 
     def _add_camera(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeCameraCommand",
+            "RobotEngineBridgeCreateCamera",
             path="/REB_Camera",
             parent=self._get_stage_and_path(),
             rgb_output_component="output",
@@ -255,7 +255,7 @@ class RobotEngineBridgeMenu:
 
     def _add_lidar(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeLidarCommand",
+            "RobotEngineBridgeCreateLidar",
             path="/REB_Lidar",
             parent=self._get_stage_and_path(),
             output_component="output",
@@ -267,7 +267,7 @@ class RobotEngineBridgeMenu:
 
     def _add_occupancy_grid_map(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeOccupancyGridMapCommand",
+            "RobotEngineBridgeCreateOccupancyGridMap",
             path="/REB_OccupancyGridMap",
             parent=None,
             output_component="output",
@@ -290,7 +290,7 @@ class RobotEngineBridgeMenu:
 
     def _add_ultrasonic(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeUltrasonicCommand",
+            "RobotEngineBridgeCreateUltrasonic",
             path="/REB_Ultrasonic",
             parent=self._get_stage_and_path(),
             output_component="output",
@@ -302,7 +302,7 @@ class RobotEngineBridgeMenu:
 
     def _add_contact_monitor(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeContactMonitorCommand",
+            "RobotEngineBridgeCreateContactMonitor",
             path="/REB_ContactMonitor",
             parent=self._get_stage_and_path(),
             output_component="output",
@@ -316,7 +316,7 @@ class RobotEngineBridgeMenu:
 
     def _add_polyline_visualizer(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePolylineVisualizerCommand",
+            "RobotEngineBridgeCreatePolylineVisualizer",
             path="/REB_PolylineVisualizer",
             parent=self._get_stage_and_path(),
             input_component="input",
@@ -330,7 +330,7 @@ class RobotEngineBridgeMenu:
 
     def _add_command(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeCommandCommand",
+            "RobotEngineBridgeCreateCommand",
             path="/REB_Command",
             parent=self._get_stage_and_path(),
             input_component="command",
@@ -340,7 +340,7 @@ class RobotEngineBridgeMenu:
 
     def _add_pose_tree(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePoseTreeCommand",
+            "RobotEngineBridgeCreatePoseTree",
             path="/REB_PoseTree",
             parent=self._get_stage_and_path(),
             node_name="atlas",
