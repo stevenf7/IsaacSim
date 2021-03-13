@@ -1,0 +1,47 @@
+%YAML 1.2
+---
+name: replayer
+components:
+  - name: output
+    type: nvidia::gxf::DoubleBufferTransmitter
+  - name: allocator
+    type: nvidia::gxf::UnboundedAllocator
+  - name: tensor_serializer
+    type: nvidia::gxf::StdSerializer
+    parameters:
+      allocator: allocator
+  - name: meta_serializer
+    type: nvidia::isaac::TrivialComponentSerializer
+  - type: nvidia::gxf::EntityReplayer
+    parameters:
+      filename: "/tmp/uss.log"
+      transmitter: output
+      serializers: [ tensor_serializer, meta_serializer ]
+  - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
+    parameters:
+      transmitter: output
+      min_size: 1
+---
+name: print_tensor
+components:
+  - name: input
+    type: nvidia::gxf::DoubleBufferReceiver
+  - type: nvidia::gxf::test::PrintTensor
+    parameters:
+      tensors: input
+  - type: nvidia::gxf::MessageAvailableSchedulingTerm
+    parameters:
+      receiver: input
+      min_size: 1
+---
+components:
+  - type: nvidia::gxf::Connection
+    parameters:
+      source: replayer/output
+      target: print_tensor/input
+---
+components:
+  - type: nvidia::gxf::GreedyScheduler
+    parameters:
+      realtime: false
+      max_duration_ms: 1000

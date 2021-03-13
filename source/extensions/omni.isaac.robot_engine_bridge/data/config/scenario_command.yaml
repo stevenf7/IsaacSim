@@ -1,0 +1,37 @@
+%YAML 1.2
+---
+name: interface.input
+components:
+- name: scenario_command
+  type: nvidia::gxf::DoubleBufferReceiver
+---
+name: generator
+components:
+  - name: output
+    type: nvidia::gxf::DoubleBufferTransmitter
+  - type: nvidia::gxf::PeriodicSchedulingTerm
+    parameters:
+      recess_period: 100
+  - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
+    parameters:
+      transmitter: output
+      min_size: 1
+  - name: generator
+    type: nvidia::isaac::SimulationCommandGenerator
+    parameters:
+      radius: 2.0
+      simulation_command: output
+---
+components:
+  - type: nvidia::gxf::Connection
+    parameters:
+      source: generator/output
+      target: interface.input/scenario_command
+---
+components:
+  - type: nvidia::gxf::GreedyScheduler
+    parameters:
+      realtime: true
+      max_duration_ms: 100000000
+      stop_on_deadlock: false
+      timeout_ms: 200000
