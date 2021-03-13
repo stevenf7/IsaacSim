@@ -1,0 +1,81 @@
+%YAML 1.2
+---
+name: atlas_pose_tree
+components:
+  - name: pose_tree
+    type: nvidia::isaac::PoseTree
+  - type: nvidia::isaac::PoseTreeSetup
+    parameters:
+      maximum_frame_count: 1024
+      maximum_edge_count: 16384
+      maximum_pose_count: 1048576
+      default_number_edges: 64
+      default_history_length: 1024
+      edge_chunk_size: 4
+      history_chunk_size: 16
+      pose_tree: pose_tree
+---
+name: atlas
+components:
+  - name: frontend
+    type: nvidia::isaac::AtlasFrontend
+    parameters:
+      pose_tree: atlas_pose_tree/pose_tree
+---
+name: sight
+components:
+  - type: nvidia::gxf::PeriodicSchedulingTerm
+    parameters:
+      recess_period: 10
+  - name: sight_router
+    type: nvidia::isaac::SightRouter
+  - type: nvidia::isaac::SightWebserver
+    parameters:
+      sight_router: sight_router
+      latency: 1.0
+      port: 3000
+      webroot: /isaac/sdk/packages/sight/webroot
+      asset_root: ../isaac_assets
+      asset_prefix: /apps/assets/
+      app_name: lidar_demo/sight
+---
+name: pose_json_bridge
+components:
+  - name: pose_tx
+    type: nvidia::isaac::SightTransmitter
+  - name: bridge
+    type: nvidia::isaac::PoseTreeSightBridge
+    parameters:
+      pose_tree: atlas_pose_tree/pose_tree
+      sight_transmitter: pose_tx
+  - type: nvidia::gxf::PeriodicSchedulingTerm
+    parameters:
+      recess_period: 1000
+---
+name: shape_visualizer
+components:
+  - name: robot_tx
+    type: nvidia::isaac::SightTransmitter
+    parameters:
+      capacity: 100
+  - name: visualizer
+    type: nvidia::isaac::ActorVisualizer
+    parameters:
+      atlas: atlas/frontend
+      reference_frame: sim
+      actor_pose_frames: []
+      actor_color: [180, 0, 30]
+      actor_heading_length: 2.0
+      actor_circle_radius: 1.0
+      sight_tx: robot_tx
+  - type: nvidia::gxf::PeriodicSchedulingTerm
+    parameters:
+      recess_period: 100
+---
+components:
+  - type: nvidia::gxf::GreedyScheduler
+    parameters:
+      realtime: true
+      max_duration_ms: 100000000
+      stop_on_deadlock: false
+      timeout_ms: 200000
