@@ -33,6 +33,10 @@ name = "omni.isaac.pyalice"
 public = false
 
 [[python.module]]
+name = "omni.isaac.gxf"
+public = false
+
+[[python.module]]
 name = "omni.isaac.robot_engine_bridge.tests"
 public = false
 

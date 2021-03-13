@@ -54,6 +54,16 @@ void toSO3d(const pxr::GfQuatd& usdQuat, ::isaac::SO3d& isaacSO3d)
     isaacSO3d = ::isaac::SO3d::FromQuaternion(::isaac::Quaterniond(
         usdQuat.GetReal(), usdQuat.GetImaginary()[0], usdQuat.GetImaginary()[1], usdQuat.GetImaginary()[2]));
 }
+
+pxr::GfQuatd toGfQuatd(const QuaterniondProto::Reader& isaacSO3dProto)
+{
+    return pxr::GfQuatd(isaacSO3dProto.getW(), isaacSO3dProto.getX(), isaacSO3dProto.getY(), isaacSO3dProto.getZ());
+}
+
+pxr::GfQuatf toGfQuatf(const QuaterniondProto::Reader& isaacSO3dProto)
+{
+    return pxr::GfQuatf(isaacSO3dProto.getW(), isaacSO3dProto.getX(), isaacSO3dProto.getY(), isaacSO3dProto.getZ());
+}
 }
 }
 }

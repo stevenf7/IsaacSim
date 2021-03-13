@@ -16,6 +16,7 @@
 #include <omni/isaac/utils/SurfaceGripper.h>
 #include <omni/isaac/utils/Math.h>
 #include <omni/isaac/utils/Conversions.h>
+#include <omni/isaac/utils/Transforms.h>
 
 CARB_BINDINGS("omni.isaac.utils.python")
 
@@ -514,6 +515,31 @@ PYBIND11_MODULE(_isaac_utils, m)
                     :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: Interpolated transform
                     
                 )pbdoc");
+    auto transforms = m.def_submodule("transforms");
+
+    transforms.def("set_transform", [](DynamicControl* dynamicControlPtr, const long int stageId,
+                                       const std::string primPath, const carb::Float3& translation,
+                                       const carb::Float4& rotation) {
+        pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+
+        pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
+
+        if (prim)
+        {
+
+            omni::isaac::utils::transforms::setTransform(dynamicControlPtr, prim,
+                                                         omni::isaac::utils::conversions::asGfVec3f(translation),
+                                                         omni::isaac::utils::conversions::asGfQuatf(rotation));
+        }
+        else
+        {
+            CARB_LOG_ERROR("Set Transform Prim Not Valid");
+        }
+
+        // return new
+        // // MapGenerator(physXPtr, stage);
+    });
+
     // {
     //     using namespace omni::isaac::utils::conversions;
     //     math.def("look_at", [](const carb::Float3& a, carb::Float3& b, carb::Float3& c) {

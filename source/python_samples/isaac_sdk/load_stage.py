@@ -26,7 +26,7 @@ class UsdLoadSample:
 
     def stop(self):
         self.kit.stop()
-        omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")
+        omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")
 
     def load_stage(self, args):
         from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
@@ -47,7 +47,7 @@ class UsdLoadSample:
         app_file = f"{reb_extension_path}/resources/isaac_engine/json/{json_file}"
         carb.log_info(f"create application with: {reb_extension_path} {app_file}")
         return omni.kit.commands.execute(
-            "CreateRobotEngineBridgeApplicationCommand", asset_path=reb_extension_path, app_file=app_file
+            "RobotEngineBridgeCreateApplicationCommand", asset_path=reb_extension_path, app_file=app_file
         )
 
 

@@ -44,7 +44,7 @@ class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
-        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         gc.collect()
         pass
 
@@ -67,7 +67,7 @@ class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCase):
 
     async def test_component(self):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeOccupancyGridMapCommand",
+            "RobotEngineBridgeCreateOccupancyGridMap",
             path="/REB_OccupancyGridMap",
             parent=None,
             output_component="output",
@@ -92,7 +92,7 @@ class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCase):
     async def test_occupancy_grid_map(self):
 
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeOccupancyGridMapCommand",
+            "RobotEngineBridgeCreateOccupancyGridMap",
             path="/REB_OccupancyGridMap",
             parent=None,
             output_component="output",

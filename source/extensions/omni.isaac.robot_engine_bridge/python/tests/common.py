@@ -42,7 +42,7 @@ def create_application(json_file: str = "isaacsim.app.json"):
     app_file = f"{reb_extension_path}/resources/isaac_engine/json/{json_file}"
     carb.log_info(f"create application with: {reb_extension_path} {app_file}")
     return omni.kit.commands.execute(
-        "CreateRobotEngineBridgeApplicationCommand", asset_path=reb_extension_path, app_file=app_file
+        "RobotEngineBridgeCreateApplication", asset_path=reb_extension_path, app_file=app_file
     )
 
 

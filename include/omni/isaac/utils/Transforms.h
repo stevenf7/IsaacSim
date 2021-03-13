@@ -16,6 +16,10 @@
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
 // clang-format on
+
+#include <omni/isaac/utils/Conversions.h>
+
+
 namespace omni
 {
 namespace isaac
@@ -38,17 +42,12 @@ using omni::isaac::dynamic_control::DcTransform;
 inline void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
                          pxr::UsdPrim& prim,
                          pxr::GfVec3f pxBodyTranslation,
-                         pxr::GfVec4f pxBodyRotation)
+                         pxr::GfQuatf pxBodyRotation)
 {
     // TODO: Handle world rotation as well
-    DcTransform t;
-    pxr::GfMatrix4d parentToWorldMat =
-        pxr::UsdGeomXformable(prim).ComputeParentToWorldTransform(pxr::UsdTimeCode::Default());
     // NOTE: reverting this for now, rigid body sink publishes global so teleport should be global too
-    auto newTranslation = pxBodyTranslation; // + parentToWorldMat.ExtractTranslation();
-
-    t.p = { newTranslation[0], newTranslation[1], newTranslation[2] };
-    t.r = { pxBodyRotation[0], pxBodyRotation[1], pxBodyRotation[2], pxBodyRotation[3] };
+    // auto newTranslation = pxBodyTranslation; // + parentToWorldMat.ExtractTranslation();
+    DcTransform t = omni::isaac::utils::conversions::asDcTransform(pxBodyTranslation, pxBodyRotation);
 
     DcObjectType primType = mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
     if (primType == omni::isaac::dynamic_control::eDcObjectArticulation)
@@ -76,12 +75,14 @@ inline void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicC
     {
         pxr::GfTransform usdBodyPose;
         usdBodyPose.SetTranslation(pxBodyTranslation);
-        usdBodyPose.SetRotation(
-            pxr::GfRotation(pxr::GfQuatf(pxBodyRotation[3], pxBodyRotation[0], pxBodyRotation[1], pxBodyRotation[2])));
+        usdBodyPose.SetRotation(pxr::GfRotation(pxBodyRotation));
         // Pose is global so offset by parent pose
+        pxr::GfMatrix4d parentToWorldMat =
+            pxr::UsdGeomXformable(prim).ComputeParentToWorldTransform(pxr::UsdTimeCode::Default());
         omni::usd::UsdUtils::setLocalTransformMatrix(prim, usdBodyPose.GetMatrix() * parentToWorldMat.GetInverse());
     }
 }
+
 /**
  * @brief Sets the scale of the object
  *

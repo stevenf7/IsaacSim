@@ -42,7 +42,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
-        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         gc.collect()
         pass
 
@@ -79,7 +79,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
     # TODO add checks for this test
     async def test_polyline_visualizer_2d(self):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePolylineVisualizerCommand",
+            "RobotEngineBridgeCreatePolylineVisualizer",
             path="/REB_PolylineVisualizer",
             parent=None,
             input_component="input",
@@ -148,7 +148,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCase):
 
     async def test_polyline_visualizer_3d(self):
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgePolylineVisualizerCommand",
+            "RobotEngineBridgeCreatePolylineVisualizer",
             path="/REB_PolylineVisualizer",
             parent=None,
             input_component="input",

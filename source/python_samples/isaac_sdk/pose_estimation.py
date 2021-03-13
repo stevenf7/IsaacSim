@@ -48,7 +48,7 @@ class DualCameraSample:
 
     def stop(self):
         self.kit.stop()
-        omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")
+        omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")
 
     def create_stage(self):
         # open base stage and set up axis to Z
@@ -175,7 +175,7 @@ class DualCameraSample:
         app_file = f"{reb_extension_path}/resources/isaac_engine/json/{json_file}"
         carb.log_info(f"create application with: {reb_extension_path} {app_file}")
         return omni.kit.commands.execute(
-            "CreateRobotEngineBridgeApplicationCommand", asset_path=reb_extension_path, app_file=app_file
+            "RobotEngineBridgeCreateApplicationCommand", asset_path=reb_extension_path, app_file=app_file
         )
 
     def configure_randomization(self):

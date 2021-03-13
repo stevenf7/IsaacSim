@@ -46,7 +46,7 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # After running each test
     async def tearDown(self):
-        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         self._pyalice_app = None
         await omni.usd.get_context().new_stage_async()
         gc.collect()
@@ -121,7 +121,7 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Make sure the stage loaded
         self.assertTrue(result)
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeDifferentialBaseCommand",
+            "RobotEngineBridgeCreateDifferentialBase",
             path="/REB_DifferentialBase",
             parent=get_selected_path(),
             input_component="input",

@@ -26,6 +26,8 @@
 #include "../Core/IsaacComponent.h"
 #include "../Monitor/RigidBodiesSink.h"
 #include "../Actuator/Teleport.h"
+#include "../Utils/IsaacConversions.h"
+
 
 #include <robotEngineBridgeSchema/robotEngineTeleport.h>
 #include <robotEngineBridgeSchema/robotEngineRigidBodySink.h>
@@ -148,11 +150,9 @@ void ScenarioFromMessage::LoadScenarioFromMessage(isaac_message::ActorGroup::Rea
                     auto isaacBodyRotation = isaacBodypose.getRotation().getQ();
                     pxr::GfVec3f pxBodyTranslation(
                         isaacBodyTranslation.getX(), isaacBodyTranslation.getY(), isaacBodyTranslation.getZ());
-                    pxr::GfVec4f pxBodyRotation(isaacBodyRotation.getX(), isaacBodyRotation.getY(),
-                                                isaacBodyRotation.getZ(), isaacBodyRotation.getW());
 
                     isaac::utils::transforms::setTransform(
-                        mDynamicControlPtr, prim, pxBodyTranslation * mInvUnitScale, pxBodyRotation);
+                        mDynamicControlPtr, prim, pxBodyTranslation * mInvUnitScale, toGfQuatf(isaacBodyRotation));
                 }
                 AddObject(actorName, prim);
             }

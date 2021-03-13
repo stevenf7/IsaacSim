@@ -46,7 +46,7 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
-        self.assertTrue(omni.kit.commands.execute("DestroyRobotEngineBridgeApplicationCommand")[1])
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         gc.collect()
         pass
 
@@ -121,7 +121,7 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
     async def test_component(self):
         self.add_ultrasonic("/uss_array")
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeUltrasonicCommand",
+            "RobotEngineBridgeCreateUltrasonic",
             path="/REB_Ultrasonic",
             parent=None,
             output_component="output",
@@ -136,7 +136,7 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
 
         self.add_ultrasonic("/uss_array")
         result, prim = omni.kit.commands.execute(
-            "CreateRobotEngineBridgeUltrasonicCommand",
+            "RobotEngineBridgeCreateUltrasonic",
             path="/REB_Ultrasonic",
             parent=None,
             output_component="output",

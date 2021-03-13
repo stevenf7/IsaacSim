@@ -71,6 +71,21 @@ void toSO3dProto(const pxr::GfQuatd& usdQuat, isaac_message::SO3d::Builder& isaa
  */
 void toSO3d(const pxr::GfQuatd& usdQuat, ::isaac::SO3d& isaacSO3d);
 
+/**
+ * @brief Converts a robot engine QuaterniondProto to a GfQuatd
+ *
+ * @param isaacSO3dProto
+ */
+pxr::GfQuatd toGfQuatd(const QuaterniondProto::Reader& isaacSO3dProto);
+
+/**
+ * @brief Converts a robot engine QuaterniondProto to a GfQuatf
+ *
+ * @param isaacSO3d
+ */
+pxr::GfQuatf toGfQuatf(const QuaterniondProto::Reader& isaacSO3dProto);
+
+
 }
 }
 }

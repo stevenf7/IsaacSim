@@ -87,6 +87,7 @@ repo_build.prebuild_link {
     { "%{root}/_build/target-deps/isaac_engine/gxf", ext.target_dir.."/gxf/" },
     { "%{root}/_build/target-deps/isaac_engine/lib", ext.target_dir.."/lib/" },
     { "%{root}/_build/target-deps/isaac_engine/packages/pyalice", ext.target_dir.."/omni/isaac/pyalice" },
+    { "%{root}/_build/target-deps/isaac_engine/gxf/python", ext.target_dir.."/omni/isaac/gxf" },
 }
 
 repo_build.prebuild_copy {
