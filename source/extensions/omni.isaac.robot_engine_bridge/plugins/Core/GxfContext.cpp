@@ -20,6 +20,7 @@
 #include "../Gxf/CameraComponent.h"
 #include "../Gxf/PoseTreeComponent.h"
 #include "../Gxf/CommandComponent.h"
+#include "../Gxf/VehicleSimulator.h"
 #include <gxf/std/unbounded_allocator.hpp>
 
 namespace omni
@@ -346,6 +347,11 @@ void GxfContext::onComponentAdd(const pxr::UsdPrim& prim)
     {
         component = std::make_unique<CommandComponent>();
         component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineCommand(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineVehicle>())
+    {
+        component = std::make_unique<VehicleSimulator>();
+        component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineVehicle(prim), mStage);
     }
     if (component)
     {
