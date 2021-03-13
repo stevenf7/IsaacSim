@@ -213,7 +213,7 @@ public:
         gxf_result_t result;
         gxf_uid_t tcp_eid;
         const std::string entityName = getEntityName(component, channel);
-        if ((result = GxfEntityFind(mContext, mNodeName.c_str(), &tcp_eid)))
+        if ((result = GxfEntityFind(mContext, entityName.c_str(), &tcp_eid)))
         {
             CARB_LOG_ERROR("GxfEntityFind: %s, %s", entityName.c_str(), GxfResultStr(result));
             return result;
