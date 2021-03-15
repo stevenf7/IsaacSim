@@ -120,7 +120,7 @@ class DataWriter:
             np.save(self.semantic_folder + filename + ".npy", data)
         if display_rgb:
             image_data = np.frombuffer(data, dtype=np.uint8).reshape(*data.shape, -1)
-            num_colors = 20 if data_type == "SEMANTIC" else None
+            num_colors = 50 if data_type == "SEMANTIC" else None
             color_image = vis.colorize_segmentation(image_data, width, height, 3, num_colors)
             # color_image = visualize.colorize_instance(image_data)
             color_image_rgb = Image.fromarray(color_image, "RGB")
@@ -535,7 +535,7 @@ class Extension(omni.ext.IExt):
 
         # Instance Segmentation
         if self._enable_instance:
-            instance_data = gt["instanceSegmentation"]
+            instance_data = gt["instanceSegmentation"][0]
             groundtruth["DATA"]["INSTANCE"] = instance_data
             groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
             groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data.shape[0]
@@ -545,6 +545,7 @@ class Extension(omni.ext.IExt):
         # Semantic Segmentation
         if self._enable_semantic:
             semantic_data = gt["semanticSegmentation"]
+            semantic_data[semantic_data == 65535] = 0  # deals with invalid semantic id
             groundtruth["DATA"]["SEMANTIC"] = semantic_data
             groundtruth["METADATA"]["SEMANTIC"]["WIDTH"] = semantic_data.shape[1]
             groundtruth["METADATA"]["SEMANTIC"]["HEIGHT"] = semantic_data.shape[0]

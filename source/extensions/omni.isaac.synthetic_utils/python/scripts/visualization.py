@@ -22,6 +22,7 @@ def random_colours(N, enable_random=True, num_channels=3):
     """
     start = 0
     if enable_random:
+        random.seed(10)
         start = random.random()
     hues = [(start + i / N) % 1.0 for i in range(N)]
     colours = [list(colorsys.hsv_to_rgb(h, 0.9, 1.0)) for i, h in enumerate(hues)]
@@ -94,7 +95,7 @@ def colorize_segmentation(segmentation_image, width, height, num_channels=3, num
     segmentation_list = np.unique(segmentation_mappings)
     if num_colors is None:
         num_colors = np.max(segmentation_list) + 1
-    color_pixels = random_colours(num_colors, False, num_channels)
+    color_pixels = random_colours(num_colors, True, num_channels)
     color_pixels = [[color_pixel[i] * 255 for i in range(num_channels)] for color_pixel in color_pixels]
     segmentation_masks = np.zeros((len(segmentation_list), *segmentation_mappings.shape), dtype=np.bool)
     index_list = []
@@ -103,7 +104,7 @@ def colorize_segmentation(segmentation_image, width, height, num_channels=3, num
         index_list.append(segmentation_id)
     color_image = np.zeros((height, width, num_channels), dtype=np.uint8)
     for index, mask, colour in zip(index_list, segmentation_masks, color_pixels):
-        color_image[mask] = color_pixels[index]
+        color_image[mask] = color_pixels[index] if index > 0 else 0
     return color_image
 
 
@@ -117,7 +118,7 @@ def colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb, num_channels=3):
             semantic_id_list.append(bbox_2d[1])
             bbox_2d_list.append(bbox_2d)
     semantic_id_list_np = np.unique(np.array(semantic_id_list))
-    color_list = random_colours(len(semantic_id_list_np.tolist()), False, num_channels)
+    color_list = random_colours(len(semantic_id_list_np.tolist()), True, num_channels)
     for bbox_2d in bbox_2d_list:
         index = np.where(semantic_id_list_np == bbox_2d[1])[0][0]
         bbox_color = color_list[index]
