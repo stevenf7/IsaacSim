@@ -1,0 +1,19 @@
+name = "Isaac Sim"
+slug = "isaac_sim"
+kind = "app"
+version = "${version}"
+
+# [[package.windows-x86_64.packman]]
+# name = "Isaac Sim"
+# url = "${package_url_windows}"
+# location = "$${base}"
+
+[[package.linux-x86_64.packman]]
+name = "Isaac Sim"
+url = "${package_url_linux}"
+location = "$${base}"
+
+[images]
+name = "Isaac-Sim-Images"
+url = "https://d4i3qtqj3r0z5.cloudfront.net/isaac-sim-pipeline-images-rc%402021.1.0-dl.12%2Bdevelop.24.99cf1ffb.teamcity.windows-x86_64.zip"
+
