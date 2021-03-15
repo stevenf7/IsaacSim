@@ -36,6 +36,7 @@ def parse_version(full_version: Version):
         parsed_version.pretag, parsed_version.prebuild = parsed_version.prerelease.split(".", maxsplit=1)
     else:
         parsed_version.major, parsed_version.minor, parsed_version.patch = full_version.split(".", maxsplit=2)
+        parsed_version.core = full_version
     return parsed_version
 
 
@@ -71,6 +72,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         tool_config = config["deploy_launcher"]
         git_url = tool_config["git_url"]
         template_path = tool_config["template_path"]
+        branch_prefix = tool_config["branch_prefix"]
 
         if not os.path.exists(template_path):
             logger.error(f"template_path: '{template_path}' doesn't exist.")
@@ -134,6 +136,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
 
             version = open(f"{root}/VERSION.md").readline().strip()
             parsed_version = parse_version(version)
+            if len(parsed_version.pretag) == 0:
+                branch_name = f"{branch_prefix}-{parsed_version.core}"
+            else:
+                branch_name = f"{branch_prefix}-{parsed_version.core}-{parsed_version.pretag}"
 
             pipeline_repo = "pipeline_repo"
 
@@ -146,7 +152,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             call_git_safe(cloned_repo_dir, ["config", "user.name", '"Team City"'])
 
             # create branch
-            branch_name = f"integ-{parsed_version.core}-{parsed_version.pretag}"
             call_git_safe(cloned_repo_dir, ["checkout", "-b", branch_name])
             try:
                 call_git_safe(cloned_repo_dir, ["pull", git_url, branch_name])
