@@ -19,6 +19,7 @@
 
 // #include <omni/isaac/contact_sensor/ContactSensor.h>
 #include <PxActor.h>
+#include <PxArticulationLink.h>
 #include <PxRigidDynamic.h>
 #include <physxSchema/physxContactReportAPI.h>
 
@@ -121,27 +122,39 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
             actor = pxr::SdfPath(rawContact[0].body1);
         // CS_LOG_INFO("getting PxActor");
         pxr::GfTransform parentPose;
+        pxr::GfVec3d pose(mProps.position.x, mProps.position.y, mProps.position.z);
         ::physx::PxActor* pxActor =
             (::physx::PxActor*)gPhysXInterface->getPhysXPtr(actor, omni::physx::PhysXType::ePTActor);
         // CS_LOG_INFO("used Physx interface");
-        pxr::GfVec3d pose(mProps.position.x, mProps.position.y, mProps.position.z);
         if (pxActor)
         {
             // CS_LOG_INFO("Found PxActor");
-            if (pxActor->getType() == ::physx::PxActorType::eRIGID_DYNAMIC)
-            {
-                ::physx::PxRigidDynamic* rd = (::physx::PxRigidDynamic*)pxActor;
-                ::physx::PxTransform _pose = rd->getGlobalPose();
-                parentPose.SetTranslation(pxr::GfVec3d(_pose.p.x, _pose.p.y, _pose.p.z));
-                parentPose.SetRotation(
-                    pxr::GfRotation(pxr::GfQuatd(_pose.q.w, pxr::GfVec3d(_pose.q.x, _pose.q.y, _pose.q.z))));
-            }
+            ::physx::PxRigidActor* rd = (::physx::PxRigidActor*)pxActor;
+            ::physx::PxTransform _pose = rd->getGlobalPose();
+            parentPose.SetTranslation(pxr::GfVec3d(_pose.p.x, _pose.p.y, _pose.p.z));
+            parentPose.SetRotation(
+                pxr::GfRotation(pxr::GfQuatd(_pose.q.w, pxr::GfVec3d(_pose.q.x, _pose.q.y, _pose.q.z))));
+            // CS_LOG_INFO("Parent Pose: %f %f %f", _pose.p.x, _pose.p.y, _pose.p.z);
         }
+        else
+        {
+            // CS_LOG_INFO("PxLink");
+            ::physx::PxArticulationLink* link =
+                (::physx::PxArticulationLink*)gPhysXInterface->getPhysXPtr(actor, omni::physx::PhysXType::ePTLink);
+            ::physx::PxTransform _pose = link->getGlobalPose();
+            parentPose.SetTranslation(pxr::GfVec3d(_pose.p.x, _pose.p.y, _pose.p.z));
+            parentPose.SetRotation(
+                pxr::GfRotation(pxr::GfQuatd(_pose.q.w, pxr::GfVec3d(_pose.q.x, _pose.q.y, _pose.q.z))));
+            // CS_LOG_INFO("Parent Pose: %f %f %f", _pose.p.x, _pose.p.y, _pose.p.z);
+        }
+
         pose = parentPose.GetMatrix().Transform(pose);
         for (size_t i = 0; i < size; ++i)
         {
-            auto distance =
-                pose - pxr::GfVec3d(rawContact[i].position.x, rawContact[i].position.y, rawContact[i].position.z);
+            pxr::GfVec3d contactPoint(rawContact[i].position.x, rawContact[i].position.y, rawContact[i].position.z);
+            // CS_LOG_INFO("contact Pose: %f %f %f", contactPoint[0], contactPoint[1], contactPoint[2]);
+            // CS_LOG_INFO("sensor Pose: %f %f %f", pose[0],pose[1], pose[2]);
+            auto distance = pose - contactPoint;
             // CS_LOG_INFO("Distance: %lf %lf", distance.GetLength(), pose.GetLength());
             // Check if distance from sensor to contact position is within sensor radius
             if (mProps.radius < 0 || distance.GetLength() < mProps.radius)
