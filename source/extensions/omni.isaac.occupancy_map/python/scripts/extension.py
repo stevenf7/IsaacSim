@@ -240,16 +240,16 @@ class Extension(omni.ext.IExt):
             im.save(folder + "/" + file)
             self._filepicker.hide()
 
-        def _on_filter_png_files(item: FileBrowserItem) -> bool:
-            """Callback to filter the choices of file names in the open or save dialog"""
-            if not item or item.is_folder:
-                return True
-            # Show only files with listed extensions
-            return os.path.splitext(item.path)[1] == ".png"
-
         def save_file():
             from omni.kit.window.filepicker import FilePickerDialog
             from omni.kit.widget.filebrowser import FileBrowserItem
+
+            def _on_filter_png_files(item: FileBrowserItem) -> bool:
+                """Callback to filter the choices of file names in the open or save dialog"""
+                if not item or item.is_folder:
+                    return True
+                # Show only files with listed extensions
+                return os.path.splitext(item.path)[1] == ".png"
 
             self._filepicker = None
             self._filepicker = FilePickerDialog(
