@@ -31,7 +31,9 @@ class RadarSensor : public RangeSensorComponent
 {
 
 public:
-    RadarSensor(omni::physx::IPhysx* physxPtr, carb::fastcache::FastCache* fastCachePtr);
+    RadarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
+                omni::physx::IPhysx* physxPtr,
+                carb::fastcache::FastCache* fastCachePtr);
     ~RadarSensor();
 
     virtual void onStart();

@@ -10,6 +10,7 @@
 // clang-format off
 #include "UsdPCH.h"
 // clang-format on
+#include <iostream>
 
 namespace omni
 {

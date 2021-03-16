@@ -264,6 +264,37 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertLess(depth[0, 0], 2000)
         self.assertEqual(depth[450, 0], 65535)
 
+    # Prints out average fps for an expensive lidar
+    async def test_lidar_fps(self):
+        self._viewport = omni.kit.viewport.get_viewport_interface()
+        # Add lidar
+        result, lidar = omni.kit.commands.execute(
+            "CreateRangeSensorLidarCommand",
+            path="/World/Lidar",
+            parent=None,
+            min_range=0.4,
+            max_range=100.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=360.0,
+            vertical_fov=45.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=0.4,
+            rotation_rate=0.0,
+            high_lod=True,
+            yaw_offset=0.0,
+        )
+
+        # Run for a second
+        self._timeline.play()
+        for frame in range(int(60 * 5)):
+            await omni.kit.app.get_app().next_update_async()
+            if frame % 60 == 0:
+                print("FPS: ", self._viewport.get_viewport_window().get_fps())
+        self._timeline.pause()
+
+        self._timeline.play()
+
     # test currently not working
     # async def test_raycast_targets(self):
 

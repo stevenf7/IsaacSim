@@ -15,14 +15,12 @@
 // clang-format on
 
 #include "GenericSensor.h"
-#include "../RangeSensorUtils.h"
 
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 
 #include <carb/InterfaceUtils.h>
 
-#include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
 
@@ -41,8 +39,10 @@ namespace range_sensor
 {
 
 
-GenericSensor::GenericSensor(omni::physx::IPhysx* physxPtr, carb::fastcache::FastCache* fastCachePtr)
-    : RangeSensorComponent(physxPtr, fastCachePtr)
+GenericSensor::GenericSensor(omni::renderer::IDebugDraw* debugDrawPtr,
+                             omni::physx::IPhysx* physxPtr,
+                             carb::fastcache::FastCache* fastCachePtr)
+    : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr)
 {
 }
 
@@ -181,169 +181,6 @@ void GenericSensor::setNextBatchOffsets(const float* origin_offsets, const int s
 }
 
 
-bool raycastClose(const ::physx::PxVec3& pos,
-                  const ::physx::PxVec3& dir,
-                  float distance,
-                  ::physx::PxRaycastHit& hit,
-                  ::physx::PxScene* physxScene)
-{
-
-    if (!physxScene)
-    {
-        return false;
-    }
-    // ::physx::PxRaycastHit hit;
-    ::physx::PxHitFlags hitFlags = PxHitFlag::eDEFAULT | PxHitFlag::eMESH_BOTH_SIDES;
-
-    const bool ret = ::physx::PxSceneQueryExt::raycastSingle(*physxScene, pos, dir, distance, hitFlags, hit);
-    // if (ret)
-    // {
-    //     outHit.distance = hit.distance;
-    //     outHit.normal = (const Float3&)hit.normal;
-    //     outHit.position = (const Float3&)hit.position;
-    //     outHit.faceIndex = hit.faceIndex;
-    //     const InternalHandle shapeIndex = (InternalHandle)hit.shape->userData;
-    //     const InternalHandle bodyIndex = (InternalHandle)hit.actor->userData;
-    //     outHit.collision = shapeIndex < gInternalScene->getRecords().size() ?
-    //                            gInternalScene->getRecords()[shapeIndex].mPrim.GetPath().GetText() :
-    //                            nullptr;
-    //     outHit.rigidBody = bodyIndex < gInternalScene->getRecords().size() ?
-    //                            gInternalScene->getRecords()[bodyIndex].mPrim.GetPath().GetText() :
-    //                            nullptr;
-    // }
-    return ret;
-}
-
-template <bool drawPoints, bool drawLines>
-void scan(const ::physx::PxVec3& sensor_origin,
-          const ::physx::PxQuat& worldRotation,
-          omni::physx::IPhysx* physxPtr,
-          ::physx::PxScene* physxScenePtr,
-          std::vector<omni::isaac::range_sensor::DebugData>& debugLines,
-          std::vector<uint16_t>& depth,
-          std::vector<carb::Float3>& hitPosition,
-          std::vector<float>& linearDepth,
-          std::vector<uint8_t>& intensity,
-          std::vector<float>& zenith,
-          std::vector<float>& azimuth,
-          std::vector<carb::Float3>& origin_offset,
-          float maxDepth,
-          float minDepth,
-          float metersPerUnit,
-          bool zUp)
-{
-
-    float invMaxDepth = 1.0f / maxDepth;
-    // This isn't correct because the same prim (like carter) would have a different lidar axis if it was in a Y up vs Z
-    // up stage. So commented this out and using the pure Z up rotation version
-    // ::physx::PxVec3 azimuthDir = zUp ? ::physx::PxVec3(0.0f, 0.0f, 1.0f) : ::physx::PxVec3(0.0f, 1.0f, 0.0f);
-    // ::physx::PxVec3 zenithDir = zUp ? ::physx::PxVec3(0.0f, 1.0f, 0.0f) : ::physx::PxVec3(0.0f, 0.0f, 1.0f);
-
-    ::physx::PxVec3 azimuthDir = ::physx::PxVec3(0.0f, 0.0f, 1.0f);
-    ::physx::PxVec3 zenithDir = ::physx::PxVec3(0.0f, 1.0f, 0.0f);
-
-    size_t n_scan = azimuth.size();
-    for (size_t i = 0; i < n_scan; i++)
-    {
-        // Pitch then yaw
-        ::physx::PxQuat mainrot = worldRotation * ::physx::PxQuat(azimuth[i], azimuthDir);
-        ::physx::PxQuat rot = mainrot * ::physx::PxQuat(zenith[i], zenithDir);
-        ::physx::PxVec3 unitDir = rot.rotate(::physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized();
-        ::physx::PxRaycastHit raycastHit;
-        // Project the start point out to prevent collisions from origin
-        ::physx::PxVec3 origin = sensor_origin + utils::conversions::asPxVec3(origin_offset[i]);
-        bool hit = raycastClose(origin + unitDir * minDepth, unitDir, maxDepth, raycastHit, physxScenePtr);
-
-        if (hit)
-        {
-            // the distance of the ray should be from center of lidar
-            depth[i] = static_cast<uint16_t>((raycastHit.distance + minDepth) * invMaxDepth * 65535.0f);
-            linearDepth[i] = (raycastHit.distance + minDepth) * metersPerUnit; // in meters
-            intensity[i] = 255;
-
-            // if (linearDepth[i] < minDepth * metersPerUnit)
-            // {
-            //     depth[i] = 0;
-            //     linearDepth[i] = minDepth * metersPerUnit; // in meters
-            //     intensity[i] = 0;
-            //     continue;
-            // }
-            carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
-            // ::physx::PxVec3 hitPosRelRay = worldRotation.rotateInv(raycastHit.position - origin);
-            // hitPosRay[i] = { hitPosRelRay.x, hitPosRelRay.y, hitPosRelRay.z }; // relative to the ray's origin
-            ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - sensor_origin);
-            hitPosition[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor's origin, not
-                                                                        // accounting for individual ray origin offset
-            if (drawPoints)
-            {
-                omni::isaac::range_sensor::DebugData data;
-
-                ::physx::PxVec3 diff = raycastHit.position - origin;
-                // TODO: replace lines with dots.
-
-                data.startPos = hitPos;
-                auto temp = raycastHit.position - diff.getNormalized();
-                data.endPos = { temp.x, temp.y, temp.z };
-                // set ratio for color.  should be zero at minDepth and unity at maxDepth
-                auto ratio = (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
-                data.color = dist_to_color(ratio, true);
-                debugLines.push_back(data);
-            }
-
-            else if (drawLines)
-            {
-                omni::isaac::range_sensor::DebugData data;
-
-                ::physx::PxVec3 diff = raycastHit.position - origin;
-                auto temp = origin + diff.getNormalized() * minDepth;
-                data.startPos = { temp.x, temp.y, temp.z };
-                data.endPos = hitPos;
-                // set ratio for color.  should be zero at minDepth and unity at maxDepth
-                auto ratio = (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
-                data.color = dist_to_color(ratio, true);
-                debugLines.push_back(data);
-            }
-        }
-        else
-        {
-            depth[i] = 65535;
-            linearDepth[i] = maxDepth * metersPerUnit; // in meters
-            intensity[i] = 0;
-            ::physx::PxVec3 hitPos = origin + unitDir * (maxDepth + minDepth);
-            // ::physx::PxVec3 hitPosRelRay = worldRotation.rotateInv(hitPos - origin);
-            // hitPosRay[i] = { hitPosRelRay.x, hitPosRelRay.y, hitPosRelRay.z }; // relative to the ray's origin
-            ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - sensor_origin);
-            hitPosition[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor's origin, not
-                                                                        // accounting for individual ray origin offset
-            if (drawPoints)
-            {
-
-                omni::isaac::range_sensor::DebugData data;
-
-                ::physx::PxVec3 diff = hitPos - origin;
-                // TODO: replace lines with dots.
-
-                data.startPos = { hitPos.x, hitPos.y, hitPos.z };
-                auto temp = hitPos - diff.getNormalized();
-                data.endPos = { temp.x, temp.y, temp.z };
-                data.color = 255 + (255 << 8) + (255 << 16) + (255 << 24);
-                debugLines.push_back(data);
-            }
-
-            else if (drawLines)
-            {
-                omni::isaac::range_sensor::DebugData data;
-
-                auto temp = origin + unitDir * minDepth;
-                data.startPos = { temp.x, temp.y, temp.z };
-                data.endPos = { hitPos.x, hitPos.y, hitPos.z };
-                data.color = 255 + (255 << 8) + (255 << 16) + (50 << 24);
-                debugLines.push_back(data);
-            }
-        }
-    }
-}
-
 void GenericSensor::wrapData(int start)
 {
 
@@ -445,6 +282,9 @@ void GenericSensor::dumpData()
 
 void GenericSensor::tick()
 {
+    mLineDrawing->clear();
+    mPointDrawing->clear();
+
     if (!mPxScene)
     {
         CARB_LOG_ERROR("Physics Scene does not exist");
@@ -466,7 +306,6 @@ void GenericSensor::tick()
         finalRotation = parentRot * finalRotation;
     }
 
-    mDebugLines.clear();
     bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
 
     // scanning
@@ -487,23 +326,25 @@ void GenericSensor::tick()
     if (pActiveAzimuth != NULL)
     {
         wrapData(mLastSample);
-        if (mDrawLines)
+        if (mDrawLines && mDrawPoints)
         {
-            scan<false, true>(finalTranslation, finalRotation, mPhysx, mPxScene, mDebugLines, mDepth, mHitPos,
-                              mLinearDepth, mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth,
-                              mMetersPerUnit, zUp);
+            scan<true, true>(finalTranslation, finalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
+                             mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+        }
+        else if (mDrawLines)
+        {
+            scan<false, true>(finalTranslation, finalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
+                              mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
         else if (mDrawPoints)
         {
-            scan<true, false>(finalTranslation, finalRotation, mPhysx, mPxScene, mDebugLines, mDepth, mHitPos,
-                              mLinearDepth, mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth,
-                              mMetersPerUnit, zUp);
+            scan<true, false>(finalTranslation, finalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
+                              mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
         else
         {
-            scan<false, false>(finalTranslation, finalRotation, mPhysx, mPxScene, mDebugLines, mDepth, mHitPos,
-                               mLinearDepth, mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth,
-                               mMetersPerUnit, zUp);
+            scan<false, false>(finalTranslation, finalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
+                               mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
         dumpData();
     }

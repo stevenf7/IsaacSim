@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "../RangeSensorUtils.h"
 #include "../core/RangeSensorComponent.h"
 
 #include <extensions/PxSceneQueryExt.h>
@@ -31,7 +32,9 @@ class LidarSensor : public RangeSensorComponent
 {
 
 public:
-    LidarSensor(omni::physx::IPhysx* physxPtr, carb::fastcache::FastCache* fastCachePtr);
+    LidarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
+                omni::physx::IPhysx* physxPtr,
+                carb::fastcache::FastCache* fastCachePtr);
     ~LidarSensor();
 
     virtual void onStart();
@@ -82,6 +85,150 @@ public:
 private:
     void dumpData(int start, int stop, double elapsedTime);
 
+    template <bool drawPoints, bool drawLines>
+    void scan(int start,
+              int stop,
+              int rows,
+              int cols,
+              const ::physx::PxVec3& origin,
+              const ::physx::PxQuat& worldRotation,
+              bool zUp)
+    {
+        if (!mPxScene)
+        {
+            return;
+        }
+        int i = start * rows;
+        int j = start;
+        float invMaxDepth = 1.0f / mMaxDepth;
+        // This isn't correct because the same prim (like carter) would have a different lidar axis if it was in a Y up
+        // vs Z up stage. So commented this out and using the pure Z up rotation version
+        // ::physx::PxVec3 azimuthDir = zUp ? ::physx::PxVec3(0.0f, 0.0f, 1.0f) : ::physx::PxVec3(0.0f, 1.0f, 0.0f);
+        // ::physx::PxVec3 zenithDir = zUp ? ::physx::PxVec3(0.0f, 1.0f, 0.0f) : ::physx::PxVec3(0.0f, 0.0f, 1.0f);
+
+        ::physx::PxVec3 azimuthDir = ::physx::PxVec3(0.0f, 0.0f, 1.0f);
+        ::physx::PxVec3 zenithDir = ::physx::PxVec3(0.0f, 1.0f, 0.0f);
+
+        for (int colPreMod = start; colPreMod < stop; colPreMod++)
+        {
+            int col = colPreMod % cols;
+            ::physx::PxQuat mainrot = worldRotation * ::physx::PxQuat(mAzimuth[col], azimuthDir);
+
+            for (int row = 0; row < rows; row++)
+            {
+                // Pitch then yaw
+                ::physx::PxQuat rot = mainrot * ::physx::PxQuat(mZenith[row], zenithDir);
+                ::physx::PxVec3 unitDir = rot.rotate(::physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized();
+                ::physx::PxRaycastHit raycastHit;
+                // Project the start point out to prevent collisions from origin
+
+                const bool hit = ::physx::PxSceneQueryExt::raycastSingle(
+                    *mPxScene, origin + unitDir * mMinDepth, unitDir, mMaxDepth, mHitFlags, raycastHit);
+                // if (hit)
+                // {
+                //     outHit.distance = hit.distance;
+                //     outHit.normal = (const Float3&)hit.normal;
+                //     outHit.position = (const Float3&)hit.position;
+                //     outHit.faceIndex = hit.faceIndex;
+                //     const InternalHandle shapeIndex = (InternalHandle)hit.shape->userData;
+                //     const InternalHandle bodyIndex = (InternalHandle)hit.actor->userData;
+                //     outHit.collision = shapeIndex < gInternalScene->getRecords().size() ?
+                //                            gInternalScene->getRecords()[shapeIndex].mPrim.GetPath().GetText() :
+                //                            nullptr;
+                //     outHit.rigidBody = bodyIndex < gInternalScene->getRecords().size() ?
+                //                            gInternalScene->getRecords()[bodyIndex].mPrim.GetPath().GetText() :
+                //                            nullptr;
+                // }
+
+                if (hit)
+                {
+                    // the distance of the ray should be from center of lidar
+                    mDepth[i] = static_cast<uint16_t>((raycastHit.distance + mMinDepth) * invMaxDepth * 65535.0f);
+                    mLinearDepth[i] = (raycastHit.distance + mMinDepth) * mMetersPerUnit; // in meters
+                    mIntensity[i] = 255;
+
+                    // if (mLinearDepth[i] < mMinDepth * mMetersPerUnit)
+                    // {
+                    //     mDepth[i] = 0;
+                    //     mLinearDepth[i] = mMinDepth * mMetersPerUnit; // in meters
+                    //     mIntensity[i] = 0;
+                    //     continue;
+                    // }
+                    carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
+                    ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - origin);
+                    mHitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
+                    if (drawPoints)
+                    {
+                        carb::scenerenderer::PrimitiveVertex data;
+
+                        // ::physx::PxVec3 diff = raycastHit.position - origin;
+
+                        // auto temp = raycastHit.position - diff.getNormalized();
+                        // set ratio for color.  should be zero at mMinDepth and unity at mMaxDepth
+                        auto ratio =
+                            (mLinearDepth[i] - mMinDepth * mMetersPerUnit) / ((mMaxDepth - mMinDepth) * mMetersPerUnit);
+
+                        data.position = hitPos;
+                        data.color = distToRgba(ratio);
+                        data.width = 5.0;
+
+                        mPointDrawing->addVertex(data);
+                        // data.position = { temp.x, temp.y, temp.z };
+                        // mPointDrawing->addVertex(data);
+                    }
+
+                    if (drawLines)
+                    {
+                        carb::scenerenderer::PrimitiveVertex data;
+
+                        ::physx::PxVec3 diff = raycastHit.position - origin;
+                        auto temp = origin + diff.getNormalized() * mMinDepth;
+                        // set ratio for color.  should be zero at mMinDepth and unity at mMaxDepth
+                        auto ratio =
+                            (mLinearDepth[i] - mMinDepth * mMetersPerUnit) / ((mMaxDepth - mMinDepth) * mMetersPerUnit);
+
+                        data.position = { temp.x, temp.y, temp.z };
+                        data.color = distToRgba(ratio);
+                        data.width = 1.0;
+
+                        mLineDrawing->addVertex(data);
+                        data.position = hitPos;
+                        mLineDrawing->addVertex(data);
+                    }
+                }
+                else
+                {
+                    mDepth[i] = 65535;
+                    mLinearDepth[i] = mMaxDepth * mMetersPerUnit; // in meters
+                    mIntensity[i] = 0;
+                    ::physx::PxVec3 hitPos = origin + unitDir * (mMaxDepth + mMinDepth);
+                    ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - origin);
+                    mHitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
+                    if (drawLines)
+                    {
+                        carb::scenerenderer::PrimitiveVertex data;
+
+                        auto temp = origin + unitDir * mMinDepth;
+
+                        data.position = { temp.x, temp.y, temp.z };
+                        data.color = { 1, 1, 1, 50.0f / 255.0f };
+                        data.width = 1.0;
+
+                        mLineDrawing->addVertex(data);
+                        data.position = { hitPos.x, hitPos.y, hitPos.z };
+                        mLineDrawing->addVertex(data);
+                    }
+                }
+
+                if (mZenith[row] == 0.0f)
+                {
+                    ++j %= cols;
+                }
+                ++i %= (cols * rows);
+            }
+        }
+    }
+
     // From the prim
     float mRotationRate = 20.0f;
     bool mHighLod = true;
@@ -112,6 +259,8 @@ private:
 
     std::vector<uint16_t> mDepth, mLastDepth;
     std::vector<carb::Float3> mHitPos;
+
+    const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
 };
 
 

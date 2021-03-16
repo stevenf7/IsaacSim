@@ -108,6 +108,7 @@ function define_ext_test_experience(ext_name, args)
         "--/rtx/materialDb/syncLoads=true",
         "--/persistent/app/viewport/displayOptions=0", -- Disable all ui elements in viewport
         "--/app/settings/persistent=false",
+        "--/app/asyncRendering=False", -- improve determinism
         "--no-assert-dialog",
     }
     -- Allow passing additional args

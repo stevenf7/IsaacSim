@@ -38,8 +38,10 @@ namespace range_sensor
 {
 
 
-UltrasonicSensor::UltrasonicSensor(omni::physx::IPhysx* physxPtr, carb::fastcache::FastCache* fastCachePtr)
-    : RangeSensorComponent(physxPtr, fastCachePtr),
+UltrasonicSensor::UltrasonicSensor(omni::renderer::IDebugDraw* debugDrawPtr,
+                                   omni::physx::IPhysx* physxPtr,
+                                   carb::fastcache::FastCache* fastCachePtr)
+    : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr),
       mIsReceiving(2, std::vector<bool>()),
       mIsFiring(2, std::vector<bool>())
 {
@@ -141,7 +143,8 @@ void UltrasonicSensor::onComponentChange()
         {
             const pxr::RangeSensorSchemaUltrasonicEmitter& typedPrim = (pxr::RangeSensorSchemaUltrasonicEmitter)prim;
             mEmitters.push_back(UltrasonicEmitter());
-            mEmitters[i].initialize(typedPrim, mStage, mNumBins, mMaxDepth * mMetersPerUnit, mRows, mCols);
+            mEmitters[i].initialize(
+                typedPrim, mStage, mNumBins, mMaxDepth * mMetersPerUnit, mRows, mCols, mLineDrawing, mPointDrawing);
         }
     }
 
@@ -169,6 +172,8 @@ void UltrasonicSensor::onComponentChange()
 
 void UltrasonicSensor::tick()
 {
+    mLineDrawing->clear();
+    mPointDrawing->clear();
     if (!mPxScene)
     {
         CARB_LOG_ERROR("Physics Scene does not exist");
@@ -210,7 +215,7 @@ void UltrasonicSensor::tick()
                 pxr::GfVec2i emitterMode = group.mEmitterModes[i];
                 // TODO use emitterMode[1] which contains the mode data
                 mEmitters[emitterMode[0]].doScan(
-                    mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth);
+                    mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth, mDrawLines, mDrawPoints);
 
                 if (worldPoints[emitterMode[0]].size() == 0)
                 {
@@ -240,7 +245,8 @@ void UltrasonicSensor::tick()
         // Fire everything if there is no group info
         for (size_t i = 0; i < mEmitters.size(); i++)
         {
-            mEmitters[i].doScan(mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth);
+            mEmitters[i].doScan(
+                mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth, mDrawLines, mDrawPoints);
             std::vector<float> totalDepth;
             // all direct intensity; low + high = 1
             // to clarify this, look at setEnvelopes in UltrasonicEmitter
@@ -255,15 +261,6 @@ void UltrasonicSensor::tick()
             // low and high set to the same; effectively doubled
             mEmitters[i].setEnvelopes(env, env, true, true);
         }
-    }
-
-
-    mDebugLines.clear();
-    for (auto& emitter : mEmitters)
-    {
-        mDebugLines.insert(mDebugLines.end(), emitter.mEmitterDebugLines.begin(), emitter.mEmitterDebugLines.end());
-        // TODO move this to the emitter code?:
-        emitter.mEmitterDebugLines.clear();
     }
 }
 void UltrasonicSensor::onEmitterChange(const pxr::UsdPrim& prim)
