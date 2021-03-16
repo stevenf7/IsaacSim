@@ -57,7 +57,9 @@ public:
                 std::vector<float>& zenith,
                 std::vector<float>& azimuth,
                 float maxDepth,
-                float minDepth)
+                float minDepth,
+                bool drawLines,
+                bool drawPoints)
     {
 
         carb::fastcache::Transform parentTrans;
@@ -75,9 +77,26 @@ public:
         }
 
         bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
-
-        scan_<true, true>(0, mCols, mRows, mCols, origin, theta0, physxPtr, physxScenePtr, zenith, azimuth, mYawOffset,
-                          maxDepth, minDepth, mMetersPerUnit, zUp);
+        if (drawLines && drawPoints)
+        {
+            scan_<true, true>(0, mCols, mRows, mCols, origin, theta0, physxPtr, physxScenePtr, zenith, azimuth,
+                              mYawOffset, maxDepth, minDepth, mMetersPerUnit, zUp);
+        }
+        else if (drawLines)
+        {
+            scan_<false, true>(0, mCols, mRows, mCols, origin, theta0, physxPtr, physxScenePtr, zenith, azimuth,
+                               mYawOffset, maxDepth, minDepth, mMetersPerUnit, zUp);
+        }
+        else if (drawPoints)
+        {
+            scan_<true, false>(0, mCols, mRows, mCols, origin, theta0, physxPtr, physxScenePtr, zenith, azimuth,
+                               mYawOffset, maxDepth, minDepth, mMetersPerUnit, zUp);
+        }
+        else
+        {
+            scan_<false, false>(0, mCols, mRows, mCols, origin, theta0, physxPtr, physxScenePtr, zenith, azimuth,
+                                mYawOffset, maxDepth, minDepth, mMetersPerUnit, zUp);
+        }
     }
 
     template <bool drawPoints, bool drawLines>
@@ -97,7 +116,10 @@ public:
                float metersPerUnit,
                bool zUp)
     {
-
+        if (!physxScenePtr)
+        {
+            return;
+        }
         int i = start * rows;
         int j = start;
         float invMaxDepth = 1.0f / maxDepth;
@@ -140,32 +162,37 @@ public:
 
                     if (drawPoints)
                     {
-                        omni::isaac::range_sensor::DebugData data;
+                        carb::scenerenderer::PrimitiveVertex data;
 
-                        ::physx::PxVec3 diff = raycastHit.position - origin;
+                        // ::physx::PxVec3 diff = raycastHit.position - origin;
 
-                        data.startPos = hitPos;
-                        auto temp = raycastHit.position - diff.getNormalized();
-                        data.endPos = { temp.x, temp.y, temp.z };
+                        data.position = hitPos;
+                        // auto temp = raycastHit.position - diff.getNormalized();
+                        // data.endPos = { temp.x, temp.y, temp.z };
                         // set ratio for color.  should be zero at minDepth and unity at maxDepth
                         auto ratio =
                             (mLinearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
-                        data.color = dist_to_color(ratio, true);
-                        mEmitterDebugLines.push_back(data);
+                        data.color = distToRgba(ratio);
+                        data.width = 5.0;
+                        mPointDrawing->addVertex(data);
                     }
 
                     if (drawLines)
                     {
-                        omni::isaac::range_sensor::DebugData data;
+                        carb::scenerenderer::PrimitiveVertex data;
                         ::physx::PxVec3 diff = raycastHit.position - origin;
                         auto temp = origin + diff.getNormalized() * minDepth;
-                        data.startPos = { temp.x, temp.y, temp.z };
-                        data.endPos = hitPos;
                         // set ratio for color.  should be zero at minDepth and unity at maxDepth
                         auto ratio =
                             (mLinearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
-                        data.color = dist_to_color(ratio, true);
-                        mEmitterDebugLines.push_back(data);
+
+                        data.position = { temp.x, temp.y, temp.z };
+                        data.color = distToRgba(ratio);
+                        data.width = 1.0;
+
+                        mLineDrawing->addVertex(data);
+                        data.position = hitPos;
+                        mLineDrawing->addVertex(data);
                     }
                 }
                 else
@@ -176,30 +203,21 @@ public:
                     ::physx::PxVec3 hitPos = origin + unitDir * (maxDepth + minDepth);
                     ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - origin);
                     mHitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
-                    if (drawPoints)
-                    {
-
-                        omni::isaac::range_sensor::DebugData data;
-
-                        ::physx::PxVec3 diff = hitPos - origin;
-                        // TODO: replace lines with dots.
-
-                        data.startPos = { hitPos.x, hitPos.y, hitPos.z };
-                        auto temp = hitPos - diff.getNormalized();
-                        data.endPos = { temp.x, temp.y, temp.z };
-                        data.color = 255 + (255 << 8) + (255 << 16) + (255 << 24);
-                        mEmitterDebugLines.push_back(data);
-                    }
 
                     if (drawLines)
                     {
-                        omni::isaac::range_sensor::DebugData data;
+                        carb::scenerenderer::PrimitiveVertex data;
 
                         auto temp = origin + unitDir * minDepth;
-                        data.startPos = { temp.x, temp.y, temp.z };
-                        data.endPos = { hitPos.x, hitPos.y, hitPos.z };
-                        data.color = 255 + (255 << 8) + (255 << 16) + (50 << 24);
-                        mEmitterDebugLines.push_back(data);
+
+
+                        data.position = { temp.x, temp.y, temp.z };
+                        data.color = { 1, 1, 1, 50.0f / 255.0f };
+                        data.width = 1.0;
+
+                        mLineDrawing->addVertex(data);
+                        data.position = { hitPos.x, hitPos.y, hitPos.z };
+                        mLineDrawing->addVertex(data);
                     }
                 }
 
@@ -228,7 +246,9 @@ public:
                     const size_t numBins,
                     const float maxDepth,
                     const int rows,
-                    const int cols)
+                    const int cols,
+                    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> lineDrawing,
+                    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> pointDrawing)
     {
         utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicEmitter>::initialize(prim, stage);
 
@@ -249,6 +269,9 @@ public:
         mDepth.assign(mRows * mCols, 0);
         mHitPos.assign(mRows * mCols, { 0, 0, 0 });
         onComponentChange();
+
+        mLineDrawing = lineDrawing;
+        mPointDrawing = pointDrawing;
     }
 
 
@@ -324,7 +347,7 @@ public:
     }
 
 
-    std::vector<omni::isaac::range_sensor::DebugData> mEmitterDebugLines;
+    std::vector<carb::scenerenderer::PrimitiveVertex> mEmitterDebugLines;
     std::vector<float> mLinearDepth;
     std::vector<uint8_t> mIntensity;
     std::vector<uint16_t> mDepth;
@@ -348,13 +371,8 @@ private:
                  ::physx::PxScene* physxScene)
     {
 
-        if (!physxScene)
-        {
-            return false;
-        }
 
-        ::physx::PxHitFlags hitFlags = PxHitFlag::eDEFAULT | PxHitFlag::eMESH_BOTH_SIDES;
-        const bool ret = ::physx::PxSceneQueryExt::raycastSingle(*physxScene, pos, dir, distance, hitFlags, hit);
+        const bool ret = ::physx::PxSceneQueryExt::raycastSingle(*physxScene, pos, dir, distance, mHitFlags, hit);
         return ret;
     }
     float mYawOffset = 0.0f;
@@ -363,6 +381,11 @@ private:
     float mMetersPerUnit = 1.0f;
 
     pxr::UsdPrim mParentPrim;
+
+    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> mLineDrawing;
+    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> mPointDrawing;
+
+    const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
 };
 }
 }

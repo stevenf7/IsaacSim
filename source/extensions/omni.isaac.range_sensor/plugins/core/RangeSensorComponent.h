@@ -15,8 +15,10 @@
 #include <carb/renderer/Renderer.h>
 
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
+#include <omni/renderer/IDebugDraw.h>
 #include <rangeSensorSchema/rangeSensor.h>
 #include <usdPhysics/scene.h>
 
@@ -46,10 +48,20 @@ public:
     /**
      * @brief Construct a new Isaac Component
      */
-    RangeSensorComponentBase(omni::physx::IPhysx* physxPtr, carb::fastcache::FastCache* fastCachePtr)
+    RangeSensorComponentBase(omni::renderer::IDebugDraw* debugDrawPtr,
+                             omni::physx::IPhysx* physxPtr,
+                             carb::fastcache::FastCache* fastCachePtr)
     {
         mPhysx = physxPtr;
         mFastCachePtr = fastCachePtr;
+
+        mLineDrawing = std::make_shared<omni::isaac::utils::drawing::PrimitiveDrawingHelper>(
+            omni::usd::UsdContext::getContext(), debugDrawPtr,
+            omni::isaac::utils::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
+
+        mPointDrawing = std::make_shared<omni::isaac::utils::drawing::PrimitiveDrawingHelper>(
+            omni::usd::UsdContext::getContext(), debugDrawPtr,
+            omni::isaac::utils::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
     }
     /**
      * @brief Destroy the Range Sensor Component Base object
@@ -57,7 +69,8 @@ public:
      */
     ~RangeSensorComponentBase()
     {
-        mDebugLines.clear();
+        mLineDrawing.reset();
+        mPointDrawing.reset();
     }
     /**
      * @brief Initialize various pointers and handles in the component
@@ -103,11 +116,33 @@ public:
     }
 
     /**
-     * @brief Called every frame
+     * @brief Called every frame in parallel
      *
      */
     virtual void tick() = 0;
 
+    /**
+     * @brief Called after all sensors have simulated to perform any drawing related tasks.
+     *
+     */
+    virtual void draw()
+    {
+
+        mLineDrawing->draw();
+        mPointDrawing->draw();
+    }
+
+    /**
+     * @brief Run when stop is pressed
+     *
+     */
+    virtual void onStop()
+    {
+        mLineDrawing->clear();
+        mPointDrawing->clear();
+        mLineDrawing->draw();
+        mPointDrawing->draw();
+    };
     /**
      * @brief Called every time the Prim is changed
      *
@@ -139,7 +174,6 @@ public:
         mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
         // printf("PARENT: %s\n", mParentPrim.GetPath().GetString().c_str());
         mMetersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->mStage));
-        mDebugLines.clear();
     }
 
     /**
@@ -178,11 +212,6 @@ public:
         return mDrawLines;
     }
 
-    std::vector<DebugData>& getDebugLines()
-    {
-        return mDebugLines;
-    }
-
     std::vector<carb::Float3>& getPointCloud()
     {
         return mLastHitPos;
@@ -192,7 +221,6 @@ public:
 protected:
     bool mDrawPoints = false;
     bool mDrawLines = false;
-    std::vector<omni::isaac::range_sensor::DebugData> mDebugLines;
     std::vector<carb::Float3> mLastHitPos;
 
     float mMinRange = 0.4f;
@@ -206,6 +234,8 @@ protected:
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
     omni::physx::IPhysx* mPhysx = nullptr;
     ::physx::PxScene* mPxScene = nullptr;
+    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> mLineDrawing;
+    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> mPointDrawing;
 };
 
 typedef RangeSensorComponentBase<pxr::RangeSensorSchemaRangeSensor> RangeSensorComponent;

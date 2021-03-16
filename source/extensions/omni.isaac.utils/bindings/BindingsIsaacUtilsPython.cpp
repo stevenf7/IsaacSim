@@ -17,6 +17,7 @@
 #include <omni/isaac/utils/Math.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/isaac/utils/Transforms.h>
+#include <omni/isaac/utils/DebugDraw.h>
 
 CARB_BINDINGS("omni.isaac.utils.python")
 
@@ -34,6 +35,7 @@ namespace
 {
 PYBIND11_MODULE(_isaac_utils, m)
 {
+    using namespace carb;
     using namespace omni::isaac::utils::math;
     using namespace omni::isaac::utils;
     using namespace omni::isaac::dynamic_control;
@@ -555,5 +557,18 @@ PYBIND11_MODULE(_isaac_utils, m)
     //     convert.def("as_gf_matrix", &asGfMatrix4f);
     //     convert.def("as_gf_matrix_t", &asGfMatrix4fT);
     // }
+
+    auto debug_draw = m.def_submodule("debug_draw");
+
+    defineInterfaceClass<DebugDraw>(
+        debug_draw, "DebugDraw", "acquire_debug_draw_interface", "release_debug_draw_interface")
+
+        .def("draw_points", wrapInterfaceFunction(&DebugDraw::drawPoints))
+        .def("clear_points", wrapInterfaceFunction(&DebugDraw::clearPoints))
+        .def("get_num_points", wrapInterfaceFunction(&DebugDraw::getNumPoints))
+        .def("draw_lines", wrapInterfaceFunction(&DebugDraw::drawLines))
+        .def("draw_lines_spline", wrapInterfaceFunction(&DebugDraw::drawLinesSpline))
+        .def("clear_lines", wrapInterfaceFunction(&DebugDraw::clearLines))
+        .def("get_num_lines", wrapInterfaceFunction(&DebugDraw::getNumLines));
 }
 }

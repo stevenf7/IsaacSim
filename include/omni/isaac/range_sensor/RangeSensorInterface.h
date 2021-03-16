@@ -22,13 +22,6 @@ namespace range_sensor
 using RangeSensorHandle = uint64_t;
 constexpr RangeSensorHandle kInvalidHandle = RangeSensorHandle(0);
 
-struct DebugData
-{
-    carb::Float3 startPos;
-    carb::Float3 endPos;
-    uint32_t color;
-};
-
 struct LidarSensorInterface
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::range_sensor::LidarSensorInterface", 0, 1);

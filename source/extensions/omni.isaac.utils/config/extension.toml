@@ -20,12 +20,16 @@ icon = "data/icon.png"
 "omni.usdphysics" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.graph.core" = {}
+"omni.debugdraw" = {}
 
 [[python.module]]
 name = "omni.isaac.utils"
 
 [[python.module]]
 name = "omni.isaac.utils.tests"
+
+[[python.module]]
+name = "omni.isaac.utils.scripts.debug_draw"
 
 [[python.module]]
 name = "omni.isaac.utils.scripts.physics_inspector"
@@ -36,3 +40,7 @@ name = "omni.isaac.utils.scripts.samples.surface_gripper"
 [[python.module]]
 name = "omni.isaac.utils.scripts.merge_mesh_tool"
 public = false
+
+[[native.plugins]]
+path = "bin/*.plugin"
+recursive = false

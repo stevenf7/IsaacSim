@@ -26,6 +26,7 @@
 #include <carb/renderer/Renderer.h>
 #include <carb/settings/ISettings.h>
 
+#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
 #include <omni/kit/IViewport.h>
 #include <omni/kit/KitUtils.h>
 #include <omni/physx/IPhysx.h>
@@ -85,8 +86,6 @@ public:
         mFastCachePtr = fastCachePtr;
         mTasking = taskingPtr;
         mTaskCounter = mTasking->createCounter();
-        mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
-        mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
     }
 
     /**
@@ -97,7 +96,6 @@ public:
     {
         mViewportUiEventSub = nullptr;
         mTasking->yieldUntilCounter(mTaskCounter);
-        releaseDebugLineList();
         mTasking->destroyCounter(mTaskCounter);
         mComponents.clear();
     }
@@ -108,6 +106,7 @@ public:
      */
     void tick(double dt)
     {
+        CARB_PROFILE_ZONE(0, "Isaac Range Sensor Tick");
         if (mComponents.size() == 0)
         {
             return;
@@ -150,40 +149,11 @@ public:
         }
 #endif
 
-
-        size_t mShapeDebugIndex = 0;
-        bool shouldDraw = false;
-        size_t count = 0;
         for (auto& component : mComponents)
         {
-            if (component.second.get()->getDrawPoints() || component.second.get()->getDrawLines())
-            {
-                auto& debugLines = component.second.get()->getDebugLines();
-                if (debugLines.size() > 0)
-                {
-                    shouldDraw = true;
-                    count += debugLines.size();
-                }
-            }
+            component.second.get()->draw();
         }
-        if (shouldDraw)
-        {
-            releaseDebugLineList();
-            createDebugLineList(count);
-            for (auto& component : mComponents)
-            {
-                if (component.second.get()->getDrawPoints() || component.second.get()->getDrawLines())
-                {
-                    auto& debugLines = component.second.get()->getDebugLines();
-                    for (const auto& line : debugLines)
-                    {
-                        // mDebugLineVector.push_back(line);
-                        mDebugDrawPtr->setLine(mShapeDebugLineBuffer, mShapeDebugIndex++, line.startPos, line.color,
-                                               line.endPos, line.color);
-                    }
-                }
-            }
-        }
+
         this->mTimeSeconds += dt;
         this->mTimeNanoSeconds = static_cast<int64_t>(mTimeSeconds * 1e9);
     }
@@ -197,8 +167,8 @@ public:
         for (auto& component : mComponents)
         {
             component.second->mDoStart = true;
+            component.second->onStop();
         }
-        releaseDebugLineList();
     }
     /**
      * @brief Create a supported component in this manager
@@ -211,22 +181,22 @@ public:
 
         if (prim.IsA<pxr::RangeSensorSchemaLidar>())
         {
-            component = std::make_unique<LidarSensor>(mPhysxPtr, mFastCachePtr);
+            component = std::make_unique<LidarSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr);
             component->initialize(pxr::RangeSensorSchemaLidar(prim), mStage);
         }
         else if (prim.IsA<pxr::RangeSensorSchemaUltrasonicArray>())
         {
-            component = std::make_unique<UltrasonicSensor>(mPhysxPtr, mFastCachePtr);
+            component = std::make_unique<UltrasonicSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr);
             component->initialize(pxr::RangeSensorSchemaUltrasonicArray(prim), mStage);
         }
         else if (prim.IsA<pxr::RangeSensorSchemaRadar>())
         {
-            component = std::make_unique<RadarSensor>(mPhysxPtr, mFastCachePtr);
+            component = std::make_unique<RadarSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr);
             component->initialize(pxr::RangeSensorSchemaRadar(prim), mStage);
         }
         else if (prim.IsA<pxr::RangeSensorSchemaGeneric>())
         {
-            component = std::make_unique<GenericSensor>(mPhysxPtr, mFastCachePtr);
+            component = std::make_unique<GenericSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr);
             component->initialize(pxr::RangeSensorSchemaGeneric(prim), mStage);
         }
 
@@ -307,39 +277,10 @@ public:
 
 
 private:
-    void createDebugLineList(size_t size)
-    {
-        if (mShapeDebugLineBuffer == omni::renderer::IDebugDraw::eInvalidBuffer)
-        {
-            mShapeDebugLineBuffer = mDebugDrawPtr->allocateLineBuffer(size);
-            mShapeDebugRenderInstanceBuffer = mDebugDrawPtr->allocateRenderInstanceBuffer(mShapeDebugLineBuffer, 1);
-            float transform[16] = {};
-            transform[0] = 1.f;
-            transform[1 + 4] = 1.f;
-            transform[2 + 8] = 1.f;
-            transform[3 + 12] = 1.f;
-
-            mDebugDrawPtr->setRenderInstance(mShapeDebugRenderInstanceBuffer, 0, &transform[0], 0);
-        }
-    }
-
-    void releaseDebugLineList()
-    {
-        if (mShapeDebugLineBuffer != omni::renderer::IDebugDraw::eInvalidBuffer)
-        {
-            mDebugDrawPtr->deallocateLineBuffer(mShapeDebugLineBuffer);
-            mDebugDrawPtr->deallocateRenderInstanceBuffer(mShapeDebugRenderInstanceBuffer);
-            mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
-            mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
-        }
-    }
-
     omni::physx::IPhysx* mPhysxPtr = nullptr;
     omni::renderer::IDebugDraw* mDebugDrawPtr = nullptr;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
 
-    omni::renderer::LineBuffer mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
-    omni::renderer::RenderInstanceBuffer mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
     carb::events::ISubscriptionPtr mViewportUiEventSub;
     carb::tasking::ITasking* mTasking = nullptr;
     carb::tasking::Counter* mTaskCounter = nullptr;

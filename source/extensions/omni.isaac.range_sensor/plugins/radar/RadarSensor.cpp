@@ -38,8 +38,10 @@ namespace range_sensor
 {
 
 
-RadarSensor::RadarSensor(omni::physx::IPhysx* physxPtr, carb::fastcache::FastCache* fastCachePtr)
-    : RangeSensorComponent(physxPtr, fastCachePtr)
+RadarSensor::RadarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
+                         omni::physx::IPhysx* physxPtr,
+                         carb::fastcache::FastCache* fastCachePtr)
+    : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr)
 {
 }
 
