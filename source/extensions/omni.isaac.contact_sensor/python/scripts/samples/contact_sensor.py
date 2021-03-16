@@ -25,18 +25,19 @@ class Contact_sensor_demo(omni.ext.IExt):
             MenuItemDescription(
                 name="Samples",
                 sub_menu=[
-                    MenuItemDescription(name="Contact Sensor", onclick_fn=lambda a=weakref.proxy(self): a.build_ai())
+                    MenuItemDescription(name="Contact Sensor", onclick_fn=lambda a=weakref.proxy(self): a.build_ui())
                 ],
             )
         ]
         add_menu_items(self._menu_items, "Isaac")
+        self.meters_per_unit = 0.01
         self._window = None
 
     def _on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.CLOSED):
             self.on_shutdown()
 
-    def build_ai(self):
+    def build_ui(self):
         if self._window is None:
             self._cs = _contact_sensor.acquire_contact_sensor_interface()
 
@@ -95,7 +96,7 @@ class Contact_sensor_demo(omni.ext.IExt):
                 # print(reading)
                 if reading.shape[0]:
                     self.sliders[i].model.set_value(
-                        float(reading[-1]["value"]) / 100
+                        float(reading[-1]["value"]) * self.meters_per_unit
                     )  # readings are in kg⋅m⋅s−2, converting to Newtons
                 else:
                     self.sliders[i].model.set_value(0)
@@ -103,6 +104,9 @@ class Contact_sensor_demo(omni.ext.IExt):
     def create_scenario(self):
 
         # Add Contact Sensor
+
+        self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
+
         props = _contact_sensor.SensorProperties()
         props.radius = 12  # Cover the entire leg tip
         props.minThreshold = 0
