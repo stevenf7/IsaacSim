@@ -82,7 +82,7 @@ files_strip = [
 ]
 
 files_strip_exclude = [
-    ["_build/kit_release/_exts/omni.kit.pip_archive/pip_prebundle/PIL/**"],
+    ["_build/kit_release/_build/linux-x86_64/release/extscore/omni.kit.pip_archive/pip_prebundle/PIL/**"],
     ["_build/linux-x86_64/release/exts/omni.isaac.robot_engine_bridge/lib/**"],
     ["_build/linux-x86_64/release/exts/omni.isaac.robot_engine_bridge/gxf/lib/**"]
 ]
