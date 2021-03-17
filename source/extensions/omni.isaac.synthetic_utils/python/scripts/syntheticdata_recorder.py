@@ -191,6 +191,7 @@ class Extension(omni.ext.IExt):
         self._display_paths = []
         self._interface = gt.acquire_syntheticdata_interface()
         self._enable_record = False
+        self._enable_timeline_record = False
         self._counter = 0
         self._window = ui.Window(EXTENSION_NAME, width=600, height=400)
         self._menu_items = [
@@ -345,6 +346,9 @@ class Extension(omni.ext.IExt):
                         def toggle_bbox_2d_loose_npy(self, value):
                             self._enable_bbox_2d_loose_npy = value
 
+                        def toggle_record_anim(self, value):
+                            self._enable_timeline_record = value
+
                         with ui.HStack(height=30):
                             ui.Spacer(width=10)
                             ui.Label("Sensor Name", height=0, width=150)
@@ -470,6 +474,13 @@ class Extension(omni.ext.IExt):
                             self._max_queue_size = ui.IntField(width=250)
                             self._max_queue_size.model.set_value(500)
                         with ui.HStack():
+                            ui.Spacer(width=10)
+                            self._ui_anim_label = ui.Label("Record Animation", width=150)
+                            self.record_anim_checkbox = ui.CheckBox(width=75)
+                            self.record_anim_checkbox.model.add_value_changed_fn(
+                                lambda a, this=self: toggle_record_anim(self, a.get_value_as_bool())
+                            )
+                        with ui.HStack():
                             ui.Spacer(width=5)
                             self._capture_btn = ui.Button("Start Recording", width=100)
                             self._capture_btn.set_clicked_fn(self.generate_data_fn)
@@ -481,6 +492,14 @@ class Extension(omni.ext.IExt):
             print("Generating Data!")
             self.data_writer = None
             self._capture_btn.text = "Stop Recording"
+            if self._enable_timeline_record:
+                # rewind
+                self._timeline.set_current_time(0)
+                # disable automatic time update in timeline
+                self._timeline.set_auto_update(False)
+                # set usd time code second to target frame rate
+                self._saved_timecodes_per_second = self._timeline.get_time_codes_per_seconds()
+
         else:
             self._capture_btn.text = "Start Recording"
 
@@ -510,6 +529,10 @@ class Extension(omni.ext.IExt):
             self._enable_record = False
             self.rename_button()
             return
+
+        if self._enable_timeline_record:
+            self._timeline.set_prerolling(False)
+            self._timeline.set_current_time(self._counter / self._saved_timecodes_per_second)
 
         dt = e.payload["dt"]
         if self._accumulated_time < self._capture_period.model.get_value_as_float():
