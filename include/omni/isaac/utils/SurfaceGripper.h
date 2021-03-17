@@ -170,7 +170,7 @@ public:
 
             if (hit.hit)
             {
-                CARB_LOG_INFO("Gripping prim %s", mDc->getRigidBodyPath(hit.rigidBody));
+                CARB_LOG_INFO("Gripping prim %s at distance %f", mDc->getRigidBodyPath(hit.rigidBody), hit.distance);
                 DcTransform t_1 = inverse(mDc->getRigidBodyPose(hit.rigidBody)) * _t_0;
 
                 mJointProperties.body0 = rb_0;
@@ -216,6 +216,10 @@ public:
                 mDc->setD6JointProperties(mJointHandle, &mJointProperties);
 
                 mIsClosed = true;
+            }
+            else
+            {
+                CARB_LOG_INFO("Raycast Failed");
             }
             return hit.hit;
         }
