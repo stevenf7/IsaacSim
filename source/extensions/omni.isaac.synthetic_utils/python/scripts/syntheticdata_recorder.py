@@ -13,6 +13,7 @@ import omni.syntheticdata._syntheticdata as gt
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
+import asyncio
 import atexit
 import colorsys
 import queue
@@ -237,6 +238,7 @@ class Extension(omni.ext.IExt):
         self._enable_semantic_npy = False
         self._enable_bbox_2d_tight_npy = False
         self._enable_bbox_2d_loose_npy = False
+        viewport = omni.kit.viewport.get_default_viewport_window()
         with self._window.frame:
             with ui.VStack(spacing=5):
                 with ui.CollapsableFrame("Sensor Settings"):
@@ -248,6 +250,9 @@ class Extension(omni.ext.IExt):
                                 self.bbox_2d_tight_colorize_checkbox.enabled = value
                                 self.bbox_2d_loose_colorize_checkbox.enabled = value
                             else:
+                                asyncio.ensure_future(
+                                    self.sd_helper.initialize_async(viewport, [self.sd_helper.sd.SensorType.Rgb])
+                                )
                                 if self._enable_bbox_2d_tight:
                                     self.bbox_2d_tight_colorize_checkbox.enabled = value
                                 if self._enable_bbox_2d_loose:
@@ -257,6 +262,12 @@ class Extension(omni.ext.IExt):
                             self._enable_depth = value
                             self.depth_colorize_checkbox.enabled = value
                             self.depth_npy_checkbox.enabled = value
+                            if value:
+                                asyncio.ensure_future(
+                                    self.sd_helper.initialize_async(
+                                        viewport, [self.sd_helper.sd.SensorType.DepthLinear]
+                                    )
+                                )
 
                         def toggle_depth_colorize(self, value):
                             self._enable_depth_colorize = value
@@ -268,6 +279,12 @@ class Extension(omni.ext.IExt):
                             self._enable_instance = value
                             self.instance_colorize_checkbox.enabled = value
                             self.instance_npy_checkbox.enabled = value
+                            if value:
+                                asyncio.ensure_future(
+                                    self.sd_helper.initialize_async(
+                                        viewport, [self.sd_helper.sd.SensorType.InstanceSegmentation]
+                                    )
+                                )
 
                         def toggle_instance_colorize(self, value):
                             self._enable_instance_colorize = value
@@ -279,6 +296,12 @@ class Extension(omni.ext.IExt):
                             self._enable_semantic = value
                             self.semantic_colorize_checkbox.enabled = value
                             self.semantic_npy_checkbox.enabled = value
+                            if value:
+                                asyncio.ensure_future(
+                                    self.sd_helper.initialize_async(
+                                        viewport, [self.sd_helper.sd.SensorType.SemanticSegmentation]
+                                    )
+                                )
 
                         def toggle_semantic_colorize(self, value):
                             self._enable_semantic_colorize = value
@@ -292,6 +315,11 @@ class Extension(omni.ext.IExt):
                             self.bbox_2d_tight_npy_checkbox.enabled = value
                             if value:
                                 self.bbox_2d_tight_colorize_checkbox.enabled = self._enable_rgb
+                                asyncio.ensure_future(
+                                    self.sd_helper.initialize_async(
+                                        viewport, [self.sd_helper.sd.SensorType.BoundingBox2DTight]
+                                    )
+                                )
 
                         def toggle_bbox_2d_tight_colorize(self, value):
                             self._enable_bbox_2d_tight_colorize = value
@@ -305,6 +333,11 @@ class Extension(omni.ext.IExt):
                             self.bbox_2d_loose_npy_checkbox.enabled = value
                             if value:
                                 self.bbox_2d_loose_colorize_checkbox.enabled = self._enable_rgb
+                                asyncio.ensure_future(
+                                    self.sd_helper.initialize_async(
+                                        viewport, [self.sd_helper.sd.SensorType.BoundingBox2DLoose]
+                                    )
+                                )
 
                         def toggle_bbox_2d_loose_colorize(self, value):
                             self._enable_bbox_2d_loose_colorize = value
@@ -508,33 +541,34 @@ class Extension(omni.ext.IExt):
             "DATA": {},
         }
 
-        viewport = omni.kit.viewport.get_default_viewport_window()
-        gt = self.sd_helper.get_groundtruth(
-            [
-                "rgb",
-                "depth",
-                "depthLinear",
-                "boundingBox2DTight",
-                "boundingBox2DLoose",
-                "instanceSegmentation",
-                "semanticSegmentation",
-                "boundingBox3D",
-                "camera",
-            ],
-            viewport,
-        )
-        # RGB
+        gt_list = []
         if self._enable_rgb:
+            gt_list.append("rgb")
+        if self._enable_depth:
+            gt_list.append("depthLinear")
+        if self._enable_bbox_2d_tight:
+            gt_list.append("boundingBox2DTight")
+        if self._enable_bbox_2d_loose:
+            gt_list.append("boundingBox2DLoose")
+        if self._enable_instance:
+            gt_list.append("instanceSegmentation")
+        if self._enable_semantic:
+            gt_list.append("semanticSegmentation")
+
+        viewport = omni.kit.viewport.get_default_viewport_window()
+        gt = self.sd_helper.get_groundtruth(gt_list, viewport, verify_sensor_init=False)
+        # RGB
+        if self._enable_rgb and gt["state"]["rgb"]:
             groundtruth["DATA"]["RGB"] = gt["rgb"]
 
         # Depth
-        if self._enable_depth:
+        if self._enable_depth and gt["state"]["depthLinear"]:
             groundtruth["DATA"]["DEPTH"] = gt["depthLinear"].squeeze()
             groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self._enable_depth_colorize
             groundtruth["METADATA"]["DEPTH"]["NPY"] = self._enable_depth_npy
 
         # Instance Segmentation
-        if self._enable_instance:
+        if self._enable_instance and gt["state"]["instanceSegmentation"]:
             instance_data = gt["instanceSegmentation"][0]
             groundtruth["DATA"]["INSTANCE"] = instance_data
             groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
@@ -543,7 +577,7 @@ class Extension(omni.ext.IExt):
             groundtruth["METADATA"]["INSTANCE"]["NPY"] = self._enable_instance_npy
 
         # Semantic Segmentation
-        if self._enable_semantic:
+        if self._enable_semantic and gt["state"]["semanticSegmentation"]:
             semantic_data = gt["semanticSegmentation"]
             semantic_data[semantic_data == 65535] = 0  # deals with invalid semantic id
             groundtruth["DATA"]["SEMANTIC"] = semantic_data
@@ -553,13 +587,13 @@ class Extension(omni.ext.IExt):
             groundtruth["METADATA"]["SEMANTIC"]["NPY"] = self._enable_semantic_npy
 
         # 2D Tight BBox
-        if self._enable_bbox_2d_tight:
+        if self._enable_bbox_2d_tight and gt["state"]["boundingBox2DTight"]:
             groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
             groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self._enable_bbox_2d_tight_colorize
             groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = self._enable_bbox_2d_tight_npy
 
         # 2D Loose BBox
-        if self._enable_bbox_2d_loose:
+        if self._enable_bbox_2d_loose and gt["state"]["boundingBox2DLoose"]:
             groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
             groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self._enable_bbox_2d_loose_colorize
             groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = self._enable_bbox_2d_loose_npy

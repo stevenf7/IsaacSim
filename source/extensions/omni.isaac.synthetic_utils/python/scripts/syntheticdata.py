@@ -24,6 +24,7 @@ segmentation (instance and semantic), and camera parameters.
 import math
 import carb
 import omni
+import time
 from pxr import UsdGeom, Semantics, Gf
 
 import numpy as np
@@ -137,7 +138,30 @@ class SyntheticDataHelper:
             pose.append((str(prim_path), m[1], str(m[2]), np.array(prim_tf)))
         return pose
 
-    def get_groundtruth(self, gt_sensors, viewport):
+    async def initialize_async(self, viewport, sensor_types, timeout=10):
+        """ Initialize sensors in the list provided.
+
+
+        Args:
+            viewport (omni.kit.viewport._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
+            sensor_types (list of omni.syntheticdata._syntheticdata.SensorType): List of sensor types to initialize.
+            timeout (int): Maximum time in seconds to attempt to initialize sensors.
+        """
+        start = time.time()
+        is_initialized = False
+        while not is_initialized and time.time() < (start + timeout):
+            sensors = []
+            for sensor_type in sensor_types:
+                sensors.append(self.sensor_helper_lib.create_or_retrieve_sensor(viewport, sensor_type))
+            await omni.kit.app.get_app_interface().next_update_async()
+            is_initialized = not any([not self.sd_interface.is_sensor_initialized(s) for s in sensors])
+        if not is_initialized:
+            unititialized = [s for s in sensors if not self.sd_interface.is_sensor_initialized(s)]
+            raise TimeoutError(f"Unable to initialized sensors: [{unititialized}] within {timeout} seconds.")
+
+        await omni.kit.app.get_app_interface().next_update_async()  # Extra frame required to prevent access violation error
+
+    def get_groundtruth(self, gt_sensors, viewport, verify_sensor_init=True):
         """Get groundtruth from specified gt_sensors.
 
         Args:
@@ -153,7 +177,7 @@ class SyntheticDataHelper:
             gt_sensors = (gt_sensors,)
 
         # Create and initialize sensors
-        while True:
+        while verify_sensor_init:
             flag = 0
             # Render frame
             self.app.update()
@@ -171,6 +195,7 @@ class SyntheticDataHelper:
                 break
 
         gt = {}
+        sensor_state = {}
         # Process non-RT-only sensors
         for sensor in gt_sensors:
             if sensor == "instanceSegmentation":
@@ -179,6 +204,10 @@ class SyntheticDataHelper:
                 gt[sensor] = self.sensor_helpers[sensor](viewport, parsed=False, return_corners=True)
             else:
                 gt[sensor] = self.sensor_helpers[sensor](viewport)
+            current_sensor = self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor])
+            current_sensor_state = self.sd_interface.is_sensor_initialized(current_sensor)
+            sensor_state[sensor] = current_sensor_state
+        gt["state"] = sensor_state
 
         return gt
 
