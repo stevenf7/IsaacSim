@@ -143,8 +143,8 @@ void UltrasonicSensor::onComponentChange()
         {
             const pxr::RangeSensorSchemaUltrasonicEmitter& typedPrim = (pxr::RangeSensorSchemaUltrasonicEmitter)prim;
             mEmitters.push_back(UltrasonicEmitter());
-            mEmitters[i].initialize(
-                typedPrim, mStage, mNumBins, mMaxDepth * mMetersPerUnit, mRows, mCols, mLineDrawing, mPointDrawing);
+            mEmitters[i].initialize(typedPrim, mStage, mFastCachePtr, mPhysx, mNumBins, mMaxDepth * mMetersPerUnit,
+                                    mRows, mCols, mLineDrawing, mPointDrawing, mDrawLines, mDrawPoints);
         }
     }
 
@@ -167,11 +167,24 @@ void UltrasonicSensor::onComponentChange()
     }
 
     mReceiverArray.mMetersPerUnit = mMetersPerUnit;
+    mReceiverArray.mUseBRDF = mUseBRDF;
+    mReceiverArray.mNumBins = mNumBins;
+    mReceiverArray.mMaxDist = mMaxDepth * mMetersPerUnit;
+
+    // we support low and high firing modes currently
+    mEnvelopeList.push_back(std::vector<USSEnvelope>(0, USSEnvelope(mNumBins, mMaxDepth * mMetersPerUnit)));
+    mEnvelopeList.push_back(std::vector<USSEnvelope>(0, USSEnvelope(mNumBins, mMaxDepth * mMetersPerUnit)));
+
+    mWorldPoints.resize(mEmitters.size());
+    mNormals.resize(mEmitters.size());
+
+    mAdjacency = omni::isaac::range_sensor::extractAdjacencyVectors(mEmitters);
 }
 
 
 void UltrasonicSensor::tick()
 {
+
     mLineDrawing->clear();
     mPointDrawing->clear();
     if (!mPxScene)
@@ -187,14 +200,10 @@ void UltrasonicSensor::tick()
 
         const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
 
-        std::vector<std::vector<::physx::PxVec3>> worldPoints(mEmitters.size());
-        std::vector<std::vector<::physx::PxVec3>> normals(mEmitters.size());
-        std::vector<::physx::PxVec3> origins = omni::isaac::range_sensor::extractOrigins(mEmitters, mFastCachePtr);
-        std::vector<std::vector<uint8_t>> adjacency = omni::isaac::range_sensor::extractAdjacencyVectors(mEmitters);
+
+        std::vector<::physx::PxVec3> origins = omni::isaac::range_sensor::extractOrigins(mEmitters);
 
         // fire low then high
-        std::vector<std::vector<USSEnvelope>> envelopeList(
-            2, std::vector<USSEnvelope>(0, USSEnvelope(mNumBins, mMaxDepth * mMetersPerUnit)));
 
 
         mIsFiring[mFreqIdLow] =
@@ -206,35 +215,43 @@ void UltrasonicSensor::tick()
             omni::isaac::range_sensor::modesToBooleanVector(group.mReceiverModes, mFreqIdLow, mEmitters.size());
         mIsReceiving[mFreqIdHigh] =
             omni::isaac::range_sensor::modesToBooleanVector(group.mReceiverModes, mFreqIdHigh, mEmitters.size());
-        for (size_t currentFreqId = 0; currentFreqId <= 1; currentFreqId++)
         {
+
+            // The emitters to fire in this group
             for (size_t i = 0; i < group.mEmitterModes.size(); i++)
             {
                 // TODO do both low and high inside of this loop
 
-                pxr::GfVec2i emitterMode = group.mEmitterModes[i];
+                const pxr::GfVec2i& emitterMode = group.mEmitterModes[i];
                 // TODO use emitterMode[1] which contains the mode data
-                mEmitters[emitterMode[0]].doScan(
-                    mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth, mDrawLines, mDrawPoints);
+                mEmitters[emitterMode[0]].doScan(mZenith, mAzimuth, mMaxDepth, mMinDepth, mPxScene);
 
-                if (worldPoints[emitterMode[0]].size() == 0)
+                if (mWorldPoints[emitterMode[0]].size() == 0)
                 {
-                    worldPoints[emitterMode[0]] = mEmitters[emitterMode[0]].mHitPosWorld;
-                    normals[emitterMode[0]] = mEmitters[emitterMode[0]].mNormals;
+                    mWorldPoints[emitterMode[0]] = mEmitters[emitterMode[0]].mHitPosWorld;
+                    mNormals[emitterMode[0]] = mEmitters[emitterMode[0]].mNormals;
                 }
                 // TODO Use the goup.mReceiverModes array to do envelope calculation
             }
-
-            envelopeList[currentFreqId] = mReceiverArray.getCombinedEnvelopeList(
-                mNumBins, mMaxDepth * mMetersPerUnit, adjacency, mIsFiring[currentFreqId], mIsReceiving[currentFreqId],
-                origins, origins, worldPoints, normals, mUseBRDF);
         }
-        // this is mode 0; do mode 1
-        for (size_t j = 0; j < envelopeList[0].size(); j++)
         {
-            // set low and hi envelopes
-            mEmitters[j].setEnvelopes(envelopeList[mFreqIdLow][j], envelopeList[mFreqIdHigh][j],
-                                      mIsReceiving[mFreqIdLow][j], mIsReceiving[mFreqIdHigh][j]);
+
+
+            mEnvelopeList[mFreqIdLow] = mReceiverArray.getCombinedEnvelopeList(
+                mAdjacency, mIsFiring[mFreqIdLow], mIsReceiving[mFreqIdLow], origins, origins, mWorldPoints, mNormals);
+
+            mEnvelopeList[mFreqIdHigh] = mReceiverArray.getCombinedEnvelopeList(
+                mAdjacency, mIsFiring[mFreqIdHigh], mIsReceiving[mFreqIdHigh], origins, origins, mWorldPoints, mNormals);
+        }
+        {
+
+            // this is mode 0; do mode 1
+            for (size_t j = 0; j < mEnvelopeList[0].size(); j++)
+            {
+                // set low and hi envelopes
+                mEmitters[j].setEnvelopes(mEnvelopeList[mFreqIdLow][j], mEnvelopeList[mFreqIdHigh][j],
+                                          mIsReceiving[mFreqIdLow][j], mIsReceiving[mFreqIdHigh][j]);
+            }
         }
         // Increment and clamp the firing group
         mCurrentFiringGroup += 1;
@@ -245,8 +262,7 @@ void UltrasonicSensor::tick()
         // Fire everything if there is no group info
         for (size_t i = 0; i < mEmitters.size(); i++)
         {
-            mEmitters[i].doScan(
-                mFastCachePtr, mPhysx, mPxScene, mZenith, mAzimuth, mMaxDepth, mMinDepth, mDrawLines, mDrawPoints);
+            mEmitters[i].doScan(mZenith, mAzimuth, mMaxDepth, mMinDepth, mPxScene);
             std::vector<float> totalDepth;
             // all direct intensity; low + high = 1
             // to clarify this, look at setEnvelopes in UltrasonicEmitter
@@ -272,6 +288,7 @@ void UltrasonicSensor::onEmitterChange(const pxr::UsdPrim& prim)
             emitter.onComponentChange();
         }
     }
+    mAdjacency = omni::isaac::range_sensor::extractAdjacencyVectors(mEmitters);
 }
 void UltrasonicSensor::onFiringGroupChange(const pxr::UsdPrim& prim)
 {

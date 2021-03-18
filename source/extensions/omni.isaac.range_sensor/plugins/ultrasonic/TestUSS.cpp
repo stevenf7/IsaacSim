@@ -258,6 +258,7 @@ TEST_CASE("main")
         std::vector<bool> isFiring{ true, false, false };
         std::vector<bool> isReceiving{ false, true, true };
         UltrasonicReceiverArray receiverArr;
+
         auto distances = receiverArr.getAdjacentDistances(
             adjacency, isFiring, isReceiving, emitterCenters, receiverCenters, worldPoints);
         for (size_t i = 0; i < distances[1].size(); i++)
@@ -270,9 +271,11 @@ TEST_CASE("main")
 
         int numBins = 10;
         float maxDist = 3.0; // not roundtrip
-        auto envelopeList =
-            receiverArr.getCombinedEnvelopeList(numBins, maxDist, adjacency, isFiring, isReceiving, emitterCenters,
-                                                receiverCenters, worldPoints, normals, false);
+        receiverArr.mNumBins = numBins;
+        receiverArr.mMaxDist = maxDist;
+        receiverArr.mUseBRDF = false;
+        auto envelopeList = receiverArr.getCombinedEnvelopeList(
+            adjacency, isFiring, isReceiving, emitterCenters, receiverCenters, worldPoints, normals);
         int receiverIndex = 1;
         CHECK(envelopeList[receiverIndex].getEnvelope()[8] == 1);
         CHECK(envelopeList[receiverIndex].getEnvelope()[4] == 1);

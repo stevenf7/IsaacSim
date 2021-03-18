@@ -13,13 +13,12 @@ namespace isaac
 namespace range_sensor
 {
 
-std::vector<::physx::PxVec3> extractOrigins(std::vector<UltrasonicEmitter>& emitters,
-                                            carb::fastcache::FastCache* fastCachePtr)
+std::vector<::physx::PxVec3> extractOrigins(std::vector<UltrasonicEmitter>& emitters)
 {
     std::vector<::physx::PxVec3> adjacency;
     for (size_t i = 0; i < emitters.size(); i++)
     {
-        adjacency.push_back(emitters[i].getOrigin(fastCachePtr));
+        adjacency.push_back(emitters[i].getOrigin());
     }
     return adjacency;
 }
