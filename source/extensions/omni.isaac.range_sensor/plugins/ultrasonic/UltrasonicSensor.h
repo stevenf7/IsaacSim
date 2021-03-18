@@ -185,8 +185,8 @@ public:
     virtual void onFiringGroupChange(const pxr::UsdPrim& prim);
 
 private:
-    size_t mFreqIdLow = 0;
-    size_t mFreqIdHigh = 1;
+    const size_t mFreqIdLow = 0;
+    const size_t mFreqIdHigh = 1;
 
     std::vector<std::vector<bool>> mIsReceiving; //(2, std::vector<bool>());
     std::vector<std::vector<bool>> mIsFiring; //(2, std::vector<bool>());
@@ -212,8 +212,13 @@ private:
 
     std::vector<UltrasonicEmitter> mEmitters;
     std::vector<UltrasonicFiringGroup> mFiringGroups;
+    std::vector<std::vector<USSEnvelope>> mEnvelopeList; // List of uss envelopes per firing mode
     UltrasonicReceiverArray mReceiverArray;
     size_t mCurrentFiringGroup = 0;
+
+    std::vector<std::vector<::physx::PxVec3>> mWorldPoints;
+    std::vector<std::vector<::physx::PxVec3>> mNormals;
+    std::vector<std::vector<uint8_t>> mAdjacency;
 
     void dumpData(double dt);
     void clampRangeBounds();

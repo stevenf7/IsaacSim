@@ -12,8 +12,7 @@
 
 // produce the vector of combined envelopes, one for each receiver
 /*std::vector<USSEnvelope> UltrasonicReceiverArray::getCombinedActiveEnvelopeList(
-    const int numBins,
-    const float maxDist,
+
     const std::vector<std::vector<uint8_t>>& adjacency,
     const std::vector<bool>& isFiring,
     const std::vector<bool>& isReceiving,
@@ -22,7 +21,7 @@
     const std::vector<std::vector<::physx::PxVec3>>& worldPoints)
 {
     std::vector<USSEnvelope> envelopeList = getCombinedEnvelopeList(
-        numBins, maxDist, adjacency, isFiring, isReceiving, emitterOrigins, receiverOrigins, worldPoints);
+        mNumBins, mMaxDist, adjacency, isFiring, isReceiving, emitterOrigins, receiverOrigins, worldPoints);
     std::vector<USSEnvelope> activeEnvelopeList;
     for (size_t i = 0; i < envelopeList.size(); i++)
     {
@@ -36,21 +35,18 @@
 
 // produce the vector of combined envelopes, one for each receiver
 std::vector<USSEnvelope> UltrasonicReceiverArray::getCombinedEnvelopeList(
-    const int numBins,
-    const float maxDist,
+
     const std::vector<std::vector<uint8_t>>& adjacency,
     const std::vector<bool>& isFiring,
     const std::vector<bool>& isReceiving,
     const std::vector<::physx::PxVec3>& emitterOrigins,
     const std::vector<::physx::PxVec3>& receiverOrigins,
     const std::vector<std::vector<::physx::PxVec3>>& worldPoints,
-    const std::vector<std::vector<::physx::PxVec3>>& normals,
-    const bool useBRDF)
+    const std::vector<std::vector<::physx::PxVec3>>& normals)
 {
     std::vector<std::vector<USSEnvelope>> envelopeMatrix =
-        getEnvelopeMatrix(numBins, maxDist, adjacency, isFiring, isReceiving, emitterOrigins, receiverOrigins,
-                          worldPoints, normals, useBRDF);
-    std::vector<USSEnvelope> envelopeList(receiverOrigins.size(), USSEnvelope(numBins, maxDist));
+        getEnvelopeMatrix(adjacency, isFiring, isReceiving, emitterOrigins, receiverOrigins, worldPoints, normals);
+    std::vector<USSEnvelope> envelopeList(receiverOrigins.size(), USSEnvelope(mNumBins, mMaxDist));
     for (size_t i = 0; i < envelopeMatrix.size(); i++)
     {
         for (size_t j = 0; j < envelopeMatrix[i].size(); j++)
@@ -67,19 +63,17 @@ std::vector<USSEnvelope> UltrasonicReceiverArray::getCombinedEnvelopeList(
 // produce the 2d vector of envelopes where the first index represents the
 // receiver index and the second index represents the emitter index
 std::vector<std::vector<USSEnvelope>> UltrasonicReceiverArray::getEnvelopeMatrix(
-    const int numBins,
-    const float maxDist,
+
     const std::vector<std::vector<uint8_t>>& adjacency,
     const std::vector<bool>& isFiring,
     const std::vector<bool>& isReceiving,
     const std::vector<::physx::PxVec3>& emitterOrigins,
     const std::vector<::physx::PxVec3>& receiverOrigins,
     const std::vector<std::vector<::physx::PxVec3>>& worldPoints,
-    const std::vector<std::vector<::physx::PxVec3>>& normals,
-    const bool useBRDF)
+    const std::vector<std::vector<::physx::PxVec3>>& normals)
 {
     std::vector<std::vector<USSEnvelope>> envelopeMatrix(
-        receiverOrigins.size(), std::vector<USSEnvelope>(emitterOrigins.size(), USSEnvelope(numBins, maxDist)));
+        receiverOrigins.size(), std::vector<USSEnvelope>(emitterOrigins.size(), USSEnvelope(mNumBins, mMaxDist)));
     auto totalPathLengths =
         getAdjacentDistances(adjacency, isFiring, isReceiving, emitterOrigins, receiverOrigins, worldPoints);
 
@@ -90,13 +84,13 @@ std::vector<std::vector<USSEnvelope>> UltrasonicReceiverArray::getEnvelopeMatrix
         // emitter origins are indexed by j
         for (size_t j = 0; j < totalPathLengths[i].size(); j++)
         {
-            if (shouldProduceEnvelope(adjacency, isFiring, isReceiving, i, j) && !useBRDF)
+            if (shouldProduceEnvelope(adjacency, isFiring, isReceiving, i, j) && !mUseBRDF)
             {
                 // no attenuation of intensity based on angle, for now
                 std::vector<float> intensities(totalPathLengths[i][j].size(), 1.f);
                 envelopeMatrix[i][j].updateEnvelope(totalPathLengths[i][j], intensities);
             }
-            else if (shouldProduceEnvelope(adjacency, isFiring, isReceiving, i, j) && useBRDF)
+            else if (shouldProduceEnvelope(adjacency, isFiring, isReceiving, i, j) && mUseBRDF)
             {
                 // no attenuation of intensity based on angle, for now
                 std::vector<float> intensities(totalPathLengths[i][j].size(), 1.f);
@@ -107,7 +101,7 @@ std::vector<std::vector<USSEnvelope>> UltrasonicReceiverArray::getEnvelopeMatrix
             else
             {
                 // give the envelope a negative value so we know there's an issue if debugging
-                envelopeMatrix[i][j] = USSEnvelope(numBins, invalidEnvelopeFloat);
+                envelopeMatrix[i][j] = USSEnvelope(mNumBins, invalidEnvelopeFloat);
                 envelopeMatrix[i][j].isValid = false;
             }
         }

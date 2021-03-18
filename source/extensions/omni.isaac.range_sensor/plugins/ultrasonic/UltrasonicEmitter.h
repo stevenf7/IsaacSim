@@ -7,6 +7,8 @@
 //
 #include <omni/usd/UsdUtils.h>
 //
+#include "plugins/core/ScopedTimer.h"
+
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/utils/Conversions.h>
@@ -33,7 +35,7 @@ public:
     {
     }
 
-    ::physx::PxVec3 getOrigin(carb::fastcache::FastCache* fastCachePtr)
+    ::physx::PxVec3 getOrigin()
     {
         carb::fastcache::Transform parentTrans;
         parentTrans.orientation = { 0, 0, 0, 1 };
@@ -43,7 +45,7 @@ public:
         // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
         if (mParentPrim.IsA<pxr::UsdGeomXformable>())
         {
-            fastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
+            mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
             ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
             origin = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(origin);
             theta0 = parentRot * theta0;
@@ -51,17 +53,18 @@ public:
         return origin;
     }
 
-    void doScan(carb::fastcache::FastCache* fastCachePtr,
-                omni::physx::IPhysx* physxPtr,
-                ::physx::PxScene* physxScenePtr,
-                std::vector<float>& zenith,
+    void doScan(std::vector<float>& zenith,
                 std::vector<float>& azimuth,
                 float maxDepth,
                 float minDepth,
-                bool drawLines,
-                bool drawPoints)
+                ::physx::PxScene* pxScenePtr)
     {
+        mPxScene = pxScenePtr;
 
+        if (!mPxScene)
+        {
+            return;
+        }
         carb::fastcache::Transform parentTrans;
         parentTrans.orientation = { 0, 0, 0, 1 };
         auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
@@ -70,58 +73,47 @@ public:
         // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
         if (mParentPrim.IsA<pxr::UsdGeomXformable>())
         {
-            fastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
+            mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
             ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
             origin = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(origin);
             theta0 = parentRot * theta0;
         }
+        mHitPosWorld.clear();
+        mNormals.clear();
 
         bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
-        if (drawLines && drawPoints)
+        if (mDrawLines && mDrawPoints)
         {
-            scan_<true, true>(0, mCols, mRows, mCols, origin, theta0, physxPtr, physxScenePtr, zenith, azimuth,
-                              mYawOffset, maxDepth, minDepth, mMetersPerUnit, zUp);
+            scan_<true, true>(mRows, mCols, origin, theta0, zenith, azimuth, maxDepth, minDepth, zUp);
         }
-        else if (drawLines)
+        else if (mDrawLines)
         {
-            scan_<false, true>(0, mCols, mRows, mCols, origin, theta0, physxPtr, physxScenePtr, zenith, azimuth,
-                               mYawOffset, maxDepth, minDepth, mMetersPerUnit, zUp);
+            scan_<false, true>(mRows, mCols, origin, theta0, zenith, azimuth, maxDepth, minDepth, zUp);
         }
-        else if (drawPoints)
+        else if (mDrawPoints)
         {
-            scan_<true, false>(0, mCols, mRows, mCols, origin, theta0, physxPtr, physxScenePtr, zenith, azimuth,
-                               mYawOffset, maxDepth, minDepth, mMetersPerUnit, zUp);
+            scan_<true, false>(mRows, mCols, origin, theta0, zenith, azimuth, maxDepth, minDepth, zUp);
         }
         else
         {
-            scan_<false, false>(0, mCols, mRows, mCols, origin, theta0, physxPtr, physxScenePtr, zenith, azimuth,
-                                mYawOffset, maxDepth, minDepth, mMetersPerUnit, zUp);
+            scan_<false, false>(mRows, mCols, origin, theta0, zenith, azimuth, maxDepth, minDepth, zUp);
         }
     }
 
     template <bool drawPoints, bool drawLines>
-    void scan_(int start,
-               int stop,
-               int rows,
+    void scan_(int rows,
                int cols,
                const ::physx::PxVec3& origin,
                const ::physx::PxQuat& worldRotation,
-               omni::physx::IPhysx* physxPtr,
-               ::physx::PxScene* physxScenePtr,
                std::vector<float>& zenith,
                std::vector<float>& azimuth,
-               float yawOffset,
                float maxDepth,
                float minDepth,
-               float metersPerUnit,
                bool zUp)
     {
-        if (!physxScenePtr)
-        {
-            return;
-        }
-        int i = start * rows;
-        int j = start;
+
+        int i = 0 * rows;
+        int j = 0;
         float invMaxDepth = 1.0f / maxDepth;
         // This isn't correct because the same prim (like carter) would have a different lidar axis if it was in a Y up
         // vs Z up stage. So commented this out and using the pure Z up rotation version
@@ -130,13 +122,12 @@ public:
 
         ::physx::PxVec3 azimuthDir = ::physx::PxVec3(0.0f, 0.0f, 1.0f);
         ::physx::PxVec3 zenithDir = ::physx::PxVec3(0.0f, 1.0f, 0.0f);
-        mHitPosWorld.clear();
-        mNormals.clear();
 
-        for (int colPreMod = start; colPreMod < stop; colPreMod++)
+
+        for (int colPreMod = 0; colPreMod < cols; colPreMod++)
         {
             int col = colPreMod % cols;
-            ::physx::PxQuat mainrot = worldRotation * ::physx::PxQuat(azimuth[col] + yawOffset, azimuthDir);
+            ::physx::PxQuat mainrot = worldRotation * ::physx::PxQuat(azimuth[col] + mYawOffset, azimuthDir);
 
             for (int row = 0; row < rows; row++)
             {
@@ -145,7 +136,7 @@ public:
                 ::physx::PxVec3 unitDir = rot.rotate(::physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized();
                 ::physx::PxRaycastHit raycastHit;
                 // Project the start point out to prevent collisions from origin
-                bool hit = raycast(origin + unitDir * minDepth, unitDir, maxDepth, raycastHit, physxScenePtr);
+                bool hit = raycast(origin + unitDir * minDepth, unitDir, maxDepth, raycastHit, mPxScene);
 
                 if (hit)
                 {
@@ -154,7 +145,7 @@ public:
 
                     // the distance of the ray should be from center of lidar
                     mDepth[i] = static_cast<uint16_t>((raycastHit.distance + minDepth) * invMaxDepth * 65535.0f);
-                    mLinearDepth[i] = (raycastHit.distance + minDepth) * metersPerUnit; // in meters
+                    mLinearDepth[i] = (raycastHit.distance + minDepth) * mMetersPerUnit; // in meters
                     mIntensity[i] = 255;
                     carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
                     ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - origin);
@@ -171,7 +162,7 @@ public:
                         // data.endPos = { temp.x, temp.y, temp.z };
                         // set ratio for color.  should be zero at minDepth and unity at maxDepth
                         auto ratio =
-                            (mLinearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
+                            (mLinearDepth[i] - minDepth * mMetersPerUnit) / ((maxDepth - minDepth) * mMetersPerUnit);
                         data.color = distToRgba(ratio);
                         data.width = 5.0;
                         mPointDrawing->addVertex(data);
@@ -184,7 +175,7 @@ public:
                         auto temp = origin + diff.getNormalized() * minDepth;
                         // set ratio for color.  should be zero at minDepth and unity at maxDepth
                         auto ratio =
-                            (mLinearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
+                            (mLinearDepth[i] - minDepth * mMetersPerUnit) / ((maxDepth - minDepth) * mMetersPerUnit);
 
                         data.position = { temp.x, temp.y, temp.z };
                         data.color = distToRgba(ratio);
@@ -198,7 +189,7 @@ public:
                 else
                 {
                     mDepth[i] = 65535;
-                    mLinearDepth[i] = maxDepth * metersPerUnit; // in meters
+                    mLinearDepth[i] = maxDepth * mMetersPerUnit; // in meters
                     mIntensity[i] = 0;
                     ::physx::PxVec3 hitPos = origin + unitDir * (maxDepth + minDepth);
                     ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - origin);
@@ -222,7 +213,9 @@ public:
                 }
 
                 if (zenith[row] == 0.0f)
+                {
                     ++j %= cols;
+                }
                 ++i %= (cols * rows);
             }
         }
@@ -243,14 +236,21 @@ public:
 
     void initialize(const pxr::RangeSensorSchemaUltrasonicEmitter& prim,
                     pxr::UsdStageWeakPtr stage,
+                    carb::fastcache::FastCache* fastCachePtr,
+                    omni::physx::IPhysx* physxPtr,
                     const size_t numBins,
                     const float maxDepth,
                     const int rows,
                     const int cols,
                     std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> lineDrawing,
-                    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> pointDrawing)
+                    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> pointDrawing,
+                    bool drawLines,
+                    bool drawPoints)
     {
         utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicEmitter>::initialize(prim, stage);
+
+        mFastCachePtr = fastCachePtr;
+        mPhysx = physxPtr;
 
         mRows = rows;
         mCols = cols;
@@ -272,6 +272,9 @@ public:
 
         mLineDrawing = lineDrawing;
         mPointDrawing = pointDrawing;
+
+        mDrawLines = drawLines;
+        mDrawPoints = drawPoints;
     }
 
 
@@ -386,6 +389,11 @@ private:
     std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> mPointDrawing;
 
     const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
+    carb::fastcache::FastCache* mFastCachePtr = nullptr;
+    omni::physx::IPhysx* mPhysx = nullptr;
+    ::physx::PxScene* mPxScene = nullptr;
+    bool mDrawLines = false;
+    bool mDrawPoints = false;
 };
 }
 }
