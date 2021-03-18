@@ -109,30 +109,51 @@ void DRComponentAttribute::tick()
                 std::map<std::string, float> distributionParams;
                 getDistributionParams(attributeParamMap, distributionParams);
 
-                pxr::UsdAttribute attr = prim.GetAttribute(pxr::TfToken(attributeName.c_str()));
-                std::string attrTypeName = attr.GetTypeName().GetAsToken().GetString();
-                float index1 = randomFloat(distribution, distributionParams);
-                float index2 = randomFloat(distribution, distributionParams);
-                float index3 = randomFloat(distribution, distributionParams);
-                if (attrTypeName.find("3") != std::string::npos)
+                if (attributeName == "shadingVariant")
                 {
-                    if (attrTypeName.find("3d") != std::string::npos || attrTypeName.find("double3") != std::string::npos)
-                        attr.Set(pxr::GfVec3d(index1, index2, index3));
-                    else if (attrTypeName.find("3f") != std::string::npos ||
-                             attrTypeName.find("float3") != std::string::npos)
-                        attr.Set(pxr::GfVec3f(index1, index2, index3));
-                }
-                else if (attrTypeName.find("2") != std::string::npos)
-                {
-                    if (attrTypeName.find("2d") != std::string::npos || attrTypeName.find("double2") != std::string::npos)
-                        attr.Set(pxr::GfVec2d(index1, index2));
-                    else if (attrTypeName.find("2f") != std::string::npos ||
-                             attrTypeName.find("float2") != std::string::npos)
-                        attr.Set(pxr::GfVec2f(index1, index2));
+                    std::vector<std::string> variantNamesList;
+                    std::string variantNames = attributeParamMap["variantNames"];
+                    if (variantNames != "")
+                        boost::split(variantNamesList, variantNames, [](char c) { return c == ','; });
+                    auto primVariantSets = prim.GetVariantSets();
+                    if (primVariantSets.HasVariantSet(attributeName))
+                    {
+                        auto primVariantSet = primVariantSets.GetVariantSet(attributeName);
+                        if (variantNamesList.size() == 0)
+                            variantNamesList = primVariantSet.GetVariantNames();
+                        primVariantSet.SetVariantSelection(
+                            variantNamesList[randomRangeInt(0, static_cast<int>(variantNamesList.size()) - 1)]);
+                    }
                 }
                 else
                 {
-                    attr.Set(index1);
+                    pxr::UsdAttribute attr = prim.GetAttribute(pxr::TfToken(attributeName.c_str()));
+                    std::string attrTypeName = attr.GetTypeName().GetAsToken().GetString();
+                    float index1 = randomFloat(distribution, distributionParams);
+                    float index2 = randomFloat(distribution, distributionParams);
+                    float index3 = randomFloat(distribution, distributionParams);
+                    if (attrTypeName.find("3") != std::string::npos)
+                    {
+                        if (attrTypeName.find("3d") != std::string::npos ||
+                            attrTypeName.find("double3") != std::string::npos)
+                            attr.Set(pxr::GfVec3d(index1, index2, index3));
+                        else if (attrTypeName.find("3f") != std::string::npos ||
+                                 attrTypeName.find("float3") != std::string::npos)
+                            attr.Set(pxr::GfVec3f(index1, index2, index3));
+                    }
+                    else if (attrTypeName.find("2") != std::string::npos)
+                    {
+                        if (attrTypeName.find("2d") != std::string::npos ||
+                            attrTypeName.find("double2") != std::string::npos)
+                            attr.Set(pxr::GfVec2d(index1, index2));
+                        else if (attrTypeName.find("2f") != std::string::npos ||
+                                 attrTypeName.find("float2") != std::string::npos)
+                            attr.Set(pxr::GfVec2f(index1, index2));
+                    }
+                    else
+                    {
+                        attr.Set(index1);
+                    }
                 }
             }
         }
