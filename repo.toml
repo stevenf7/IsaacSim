@@ -59,6 +59,7 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/kit_$config/_build/$platform/$config/extsPhysics/*/",
   "$root/_build/kit_$config/_build/$platform/$config/extscore/*",
   "$root/_build/kit_$config/_build/$platform/$config/extscore/omni.kit.pip_archive/pip_prebundle",
+  "$root/_build/kit_$config/_exts/omni.kit.pip_archive/pip_prebundle",
   "$root/_build/kit_$config/_build/$platform/$config/extensions/extensions-bundled",
   "$root/_build/kit_$config/_build/$platform/$config/plugins/bindings-python",
 ]
