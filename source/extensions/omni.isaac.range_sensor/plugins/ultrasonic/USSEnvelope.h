@@ -72,11 +72,9 @@ public:
             // use m_maxTimestamp not final rightBinBoundary as a guard because of accumulation of error on sum
             if ((sortedEcho[i] > m_maxTimestamp) || (sortedEcho[i] < 0))
             {
-                std::stringstream ss;
-                ss << "Reflected point is outside of ray boundaries: rightBinBoundary = " << rightBinBoundary
-                   << ", sortedEcho[i] = " << sortedEcho[i] << ", i= " << i << ", currentBin = " << currentBin
-                   << ", m_numBins = " << m_numBins << ", m_maxDist = " << m_maxDist << ", " << std::endl;
-                throw std::invalid_argument(ss.str());
+                printf(
+                    "Reflected point is outside of ray boundaries: rightBinBoundary = %f, sortedEcho[i] = %f, i= %zu, currentBin = %zu, m_numBins = %zu, m_maxDist = %f, \n",
+                    rightBinBoundary, sortedEcho[i], i, currentBin, m_numBins, m_maxDist);
             }
             else
             {
@@ -115,10 +113,8 @@ public:
         }
         else
         {
-            std::stringstream ss;
-            ss << "Size of b (" << b.size() << ") must equal size of this object's envelope on addition ("
-               << m_envelope.size() << ")." << std::endl;
-            throw std::invalid_argument(ss.str());
+            printf("Size of b (%zu) must equal size of this object's envelope on addition (%zu).\n", b.size(),
+                   m_envelope.size());
         }
         return env;
     }
@@ -135,10 +131,8 @@ public:
         }
         else
         {
-            std::stringstream ss;
-            ss << "Size of b (" << b.size() << ") must equal size of this object's envelope when assigning ("
-               << m_envelope.size() << ")." << std::endl;
-            throw std::invalid_argument(ss.str());
+            printf("Size of b (%zu) must equal size of this object's envelope when assigning (%zu).\n", b.size(),
+                   m_envelope.size());
         }
         return *this;
     }

@@ -13,34 +13,31 @@ namespace isaac
 namespace range_sensor
 {
 
-std::vector<::physx::PxVec3> extractOrigins(std::vector<UltrasonicEmitter>& emitters)
+std::vector<::physx::PxVec3> extractOrigins(std::vector<std::unique_ptr<UltrasonicEmitter>>& emitters)
 {
     std::vector<::physx::PxVec3> adjacency;
     for (size_t i = 0; i < emitters.size(); i++)
     {
-        adjacency.push_back(emitters[i].getOrigin());
+        adjacency.push_back(emitters[i]->getOrigin());
     }
     return adjacency;
 }
 
-std::vector<std::vector<uint8_t>> extractAdjacencyVectors(std::vector<UltrasonicEmitter>& emitters)
+std::vector<std::vector<uint8_t>> extractAdjacencyVectors(std::vector<std::unique_ptr<UltrasonicEmitter>>& emitters)
 {
     std::vector<std::vector<uint8_t>> adjacency(emitters.size());
     for (size_t i = 0; i < emitters.size(); i++)
     {
-        for (size_t j = 0; j < emitters[i].mAdjacencyList.size(); j++)
+        for (size_t j = 0; j < emitters[i]->mAdjacencyList.size(); j++)
         {
-            if ((emitters[i].mAdjacencyList[j] >= 0) &&
-                (static_cast<size_t>(emitters[i].mAdjacencyList[j]) < emitters.size()))
+            if ((emitters[i]->mAdjacencyList[j] >= 0) &&
+                (static_cast<size_t>(emitters[i]->mAdjacencyList[j]) < emitters.size()))
             {
-                adjacency[i].push_back(static_cast<uint8_t>(emitters[i].mAdjacencyList[j]));
+                adjacency[i].push_back(static_cast<uint8_t>(emitters[i]->mAdjacencyList[j]));
             }
             else
             {
-                std::stringstream errMsg;
-                errMsg << "Adjacency list contained an emitter that does not exist: " << emitters[i].mAdjacencyList[j]
-                       << std::endl;
-                throw std::out_of_range(errMsg.str());
+                printf("Adjacency list contained an emitter that does not exist: %d\n", emitters[i]->mAdjacencyList[j]);
             }
         }
     }

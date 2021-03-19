@@ -40,15 +40,18 @@ namespace range_sensor
 
 UltrasonicSensor::UltrasonicSensor(omni::renderer::IDebugDraw* debugDrawPtr,
                                    omni::physx::IPhysx* physxPtr,
-                                   carb::fastcache::FastCache* fastCachePtr)
-    : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr),
-      mIsReceiving(2, std::vector<bool>()),
-      mIsFiring(2, std::vector<bool>())
+                                   carb::fastcache::FastCache* fastCachePtr,
+                                   carb::tasking::ITasking* taskingPtr)
+    : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr)
 {
+    mTasking = taskingPtr;
+    mTaskCounter = mTasking->createCounter();
 }
 
 UltrasonicSensor::~UltrasonicSensor()
 {
+    mTasking->yieldUntilCounter(mTaskCounter);
+    mTasking->destroyCounter(mTaskCounter);
 }
 
 void UltrasonicSensor::onStart()
@@ -142,9 +145,9 @@ void UltrasonicSensor::onComponentChange()
         if (prim.IsA<pxr::RangeSensorSchemaUltrasonicEmitter>())
         {
             const pxr::RangeSensorSchemaUltrasonicEmitter& typedPrim = (pxr::RangeSensorSchemaUltrasonicEmitter)prim;
-            mEmitters.push_back(UltrasonicEmitter());
-            mEmitters[i].initialize(typedPrim, mStage, mFastCachePtr, mPhysx, mNumBins, mMaxDepth * mMetersPerUnit,
-                                    mRows, mCols, mLineDrawing, mPointDrawing, mDrawLines, mDrawPoints);
+            mEmitters.push_back(std::make_unique<UltrasonicEmitter>());
+            mEmitters[i]->initialize(typedPrim, mStage, mFastCachePtr, mPhysx, mNumBins, mMaxDepth * mMetersPerUnit,
+                                     mRows, mCols, mDrawLines, mDrawPoints, mZenith, mAzimuth);
         }
     }
 
@@ -161,7 +164,7 @@ void UltrasonicSensor::onComponentChange()
                 const pxr::RangeSensorSchemaUltrasonicFiringGroup& typedPrim =
                     (pxr::RangeSensorSchemaUltrasonicFiringGroup)prim;
                 mFiringGroups.push_back(UltrasonicFiringGroup());
-                mFiringGroups[i].initialize(typedPrim, mStage);
+                mFiringGroups[i].initialize(typedPrim, mStage, mEmitters.size());
             }
         }
     }
@@ -182,6 +185,19 @@ void UltrasonicSensor::onComponentChange()
 }
 
 
+struct USSTaskData
+{
+    float maxDepth;
+    float minDepth;
+    ::physx::PxScene* pxScene;
+    UltrasonicEmitter* emitter;
+};
+
+auto USSTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
+    USSTaskData* taskData = reinterpret_cast<USSTaskData*>(taskArg);
+    taskData->emitter->doScan(taskData->maxDepth, taskData->minDepth, taskData->pxScene);
+};
+
 void UltrasonicSensor::tick()
 {
 
@@ -193,55 +209,76 @@ void UltrasonicSensor::tick()
         return;
     }
 
-    // TODO @markb: there's a lot of work happening both when there are and aren't firing groups;
-    // a lot of this should probably be abstracted away into UltrasonicReceiver or similar
     if (mFiringGroups.size() > 0)
     {
 
         const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
-
-
+        // This needs to happen each frame because the emitter moves.
         std::vector<::physx::PxVec3> origins = omni::isaac::range_sensor::extractOrigins(mEmitters);
 
         // fire low then high
 
-
-        mIsFiring[mFreqIdLow] =
-            omni::isaac::range_sensor::modesToBooleanVector(group.mEmitterModes, mFreqIdLow, mEmitters.size());
-        mIsFiring[mFreqIdHigh] =
-            omni::isaac::range_sensor::modesToBooleanVector(group.mEmitterModes, mFreqIdHigh, mEmitters.size());
-
-        mIsReceiving[mFreqIdLow] =
-            omni::isaac::range_sensor::modesToBooleanVector(group.mReceiverModes, mFreqIdLow, mEmitters.size());
-        mIsReceiving[mFreqIdHigh] =
-            omni::isaac::range_sensor::modesToBooleanVector(group.mReceiverModes, mFreqIdHigh, mEmitters.size());
         {
-
+            USSTaskData* taskArray = new USSTaskData[group.mEmitterModes.size()];
+            int index = 0;
             // The emitters to fire in this group
             for (size_t i = 0; i < group.mEmitterModes.size(); i++)
             {
-                // TODO do both low and high inside of this loop
-
                 const pxr::GfVec2i& emitterMode = group.mEmitterModes[i];
-                // TODO use emitterMode[1] which contains the mode data
-                mEmitters[emitterMode[0]].doScan(mZenith, mAzimuth, mMaxDepth, mMinDepth, mPxScene);
 
-                if (mWorldPoints[emitterMode[0]].size() == 0)
+                // TODO do both low and high inside of this loop
+                taskArray[index].maxDepth = mMaxDepth;
+                taskArray[index].minDepth = mMinDepth;
+                taskArray[index].pxScene = mPxScene;
+                taskArray[index].emitter = mEmitters[emitterMode[0]].get();
+                // TODO use emitterMode[1] which contains the mode data
+                carb::tasking::TaskDesc bigTask{};
+                bigTask.priority = carb::tasking::Priority::eHigh;
+                bigTask.task = USSTaskFunction;
+                bigTask.taskArg = (void*)(taskArray + index);
+                mTasking->addTask(bigTask, mTaskCounter);
+                index++;
+            }
+            mTasking->yieldUntilCounter(mTaskCounter);
+            delete[] taskArray;
+
+            for (size_t i = 0; i < group.mEmitterModes.size(); i++)
+            {
+                const pxr::GfVec2i& emitterMode = group.mEmitterModes[i];
+                // mEmitters[emitterMode[0]]->doScan(mMaxDepth, mMinDepth, mPxScene);
+                mWorldPoints[emitterMode[0]].clear();
+                mNormals[emitterMode[0]].clear();
+
+                if (mDrawLines)
                 {
-                    mWorldPoints[emitterMode[0]] = mEmitters[emitterMode[0]].mHitPosWorld;
-                    mNormals[emitterMode[0]] = mEmitters[emitterMode[0]].mNormals;
+                    mLineDrawing->addVertices(mEmitters[emitterMode[0]]->mLines);
                 }
-                // TODO Use the goup.mReceiverModes array to do envelope calculation
+
+                if (mDrawPoints)
+                {
+                    mPointDrawing->addVertices(mEmitters[emitterMode[0]]->mPoints);
+                }
+
+                for (size_t j = 0; j < mEmitters[emitterMode[0]]->mIntensity.size(); j++)
+                {
+                    if (mEmitters[emitterMode[0]]->mIntensity[j] != 0)
+                    {
+                        mWorldPoints[emitterMode[0]].push_back(mEmitters[emitterMode[0]]->mHitPosWorld[j]);
+                        mNormals[emitterMode[0]].push_back(mEmitters[emitterMode[0]]->mNormals[j]);
+                    }
+                }
             }
         }
+        // TODO Use the goup.mReceiverModes array to do envelope calculation
+
         {
-
-
-            mEnvelopeList[mFreqIdLow] = mReceiverArray.getCombinedEnvelopeList(
-                mAdjacency, mIsFiring[mFreqIdLow], mIsReceiving[mFreqIdLow], origins, origins, mWorldPoints, mNormals);
+            mEnvelopeList[mFreqIdLow] = mReceiverArray.getCombinedEnvelopeList(mAdjacency, group.mIsFiring[mFreqIdLow],
+                                                                               group.mIsReceiving[mFreqIdLow], origins,
+                                                                               origins, mWorldPoints, mNormals);
 
             mEnvelopeList[mFreqIdHigh] = mReceiverArray.getCombinedEnvelopeList(
-                mAdjacency, mIsFiring[mFreqIdHigh], mIsReceiving[mFreqIdHigh], origins, origins, mWorldPoints, mNormals);
+                mAdjacency, group.mIsFiring[mFreqIdHigh], group.mIsReceiving[mFreqIdHigh], origins, origins,
+                mWorldPoints, mNormals);
         }
         {
 
@@ -249,8 +286,8 @@ void UltrasonicSensor::tick()
             for (size_t j = 0; j < mEnvelopeList[0].size(); j++)
             {
                 // set low and hi envelopes
-                mEmitters[j].setEnvelopes(mEnvelopeList[mFreqIdLow][j], mEnvelopeList[mFreqIdHigh][j],
-                                          mIsReceiving[mFreqIdLow][j], mIsReceiving[mFreqIdHigh][j]);
+                mEmitters[j]->setEnvelopes(mEnvelopeList[mFreqIdLow][j], mEnvelopeList[mFreqIdHigh][j],
+                                           group.mIsReceiving[mFreqIdLow][j], group.mIsReceiving[mFreqIdHigh][j]);
             }
         }
         // Increment and clamp the firing group
@@ -262,20 +299,30 @@ void UltrasonicSensor::tick()
         // Fire everything if there is no group info
         for (size_t i = 0; i < mEmitters.size(); i++)
         {
-            mEmitters[i].doScan(mZenith, mAzimuth, mMaxDepth, mMinDepth, mPxScene);
+            mEmitters[i]->doScan(mMaxDepth, mMinDepth, mPxScene);
             std::vector<float> totalDepth;
             // all direct intensity; low + high = 1
             // to clarify this, look at setEnvelopes in UltrasonicEmitter
             // it combines the low and the high
-            std::vector<float> intensities(mEmitters[i].mLinearDepth.size(), 0.5f);
-            for (size_t j = 0; j < mEmitters[i].mLinearDepth.size(); j++)
+            std::vector<float> intensities(mEmitters[i]->mLinearDepth.size(), 0.5f);
+            for (size_t j = 0; j < mEmitters[i]->mLinearDepth.size(); j++)
             {
-                totalDepth.push_back(mEmitters[i].mLinearDepth[j] * 2.f);
+                totalDepth.push_back(mEmitters[i]->mLinearDepth[j] * 2.f);
             }
             USSEnvelope env(mNumBins, mMaxDepth * mMetersPerUnit);
             env.updateEnvelope(totalDepth, intensities);
             // low and high set to the same; effectively doubled
-            mEmitters[i].setEnvelopes(env, env, true, true);
+            mEmitters[i]->setEnvelopes(env, env, true, true);
+
+            if (mDrawLines)
+            {
+                mLineDrawing->addVertices(mEmitters[i]->mLines);
+            }
+
+            if (mDrawPoints)
+            {
+                mPointDrawing->addVertices(mEmitters[i]->mPoints);
+            }
         }
     }
 }
@@ -283,9 +330,9 @@ void UltrasonicSensor::onEmitterChange(const pxr::UsdPrim& prim)
 {
     for (auto& emitter : mEmitters)
     {
-        if (emitter.getPrim().GetPrim() == prim)
+        if (emitter->getPrim().GetPrim() == prim)
         {
-            emitter.onComponentChange();
+            emitter->onComponentChange();
         }
     }
     mAdjacency = omni::isaac::range_sensor::extractAdjacencyVectors(mEmitters);
