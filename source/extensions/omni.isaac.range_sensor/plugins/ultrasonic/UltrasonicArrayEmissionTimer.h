@@ -66,9 +66,8 @@ public:
         }
         else
         {
-            std::stringstream errMsg;
-            errMsg << "Queried an emitter that does not exist. " << index << " >= " << mNumEmitters;
-            throw std::out_of_range(errMsg.str());
+            printf("Queried a USS emitter that does not exist. %zu >= %zu\n", index, mNumEmitters);
+            return false;
         }
     }
     void setEmitterDelay(size_t index, double delay)

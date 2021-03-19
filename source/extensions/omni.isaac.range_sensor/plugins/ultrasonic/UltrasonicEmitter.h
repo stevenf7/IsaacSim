@@ -53,11 +53,7 @@ public:
         return origin;
     }
 
-    void doScan(std::vector<float>& zenith,
-                std::vector<float>& azimuth,
-                float maxDepth,
-                float minDepth,
-                ::physx::PxScene* pxScenePtr)
+    void doScan(float maxDepth, float minDepth, ::physx::PxScene* pxScenePtr)
     {
         mPxScene = pxScenePtr;
 
@@ -78,25 +74,25 @@ public:
             origin = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(origin);
             theta0 = parentRot * theta0;
         }
-        mHitPosWorld.clear();
-        mNormals.clear();
+        // mHitPosWorld.clear();
+        // mNormals.clear();
 
         bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
         if (mDrawLines && mDrawPoints)
         {
-            scan_<true, true>(mRows, mCols, origin, theta0, zenith, azimuth, maxDepth, minDepth, zUp);
+            scan_<true, true>(mRows, mCols, origin, theta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
         }
         else if (mDrawLines)
         {
-            scan_<false, true>(mRows, mCols, origin, theta0, zenith, azimuth, maxDepth, minDepth, zUp);
+            scan_<false, true>(mRows, mCols, origin, theta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
         }
         else if (mDrawPoints)
         {
-            scan_<true, false>(mRows, mCols, origin, theta0, zenith, azimuth, maxDepth, minDepth, zUp);
+            scan_<true, false>(mRows, mCols, origin, theta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
         }
         else
         {
-            scan_<false, false>(mRows, mCols, origin, theta0, zenith, azimuth, maxDepth, minDepth, zUp);
+            scan_<false, false>(mRows, mCols, origin, theta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
         }
     }
 
@@ -112,8 +108,7 @@ public:
                bool zUp)
     {
 
-        int i = 0 * rows;
-        int j = 0;
+        int i = 0;
         float invMaxDepth = 1.0f / maxDepth;
         // This isn't correct because the same prim (like carter) would have a different lidar axis if it was in a Y up
         // vs Z up stage. So commented this out and using the pure Z up rotation version
@@ -124,9 +119,8 @@ public:
         ::physx::PxVec3 zenithDir = ::physx::PxVec3(0.0f, 1.0f, 0.0f);
 
 
-        for (int colPreMod = 0; colPreMod < cols; colPreMod++)
+        for (int col = 0; col < cols; col++)
         {
-            int col = colPreMod % cols;
             ::physx::PxQuat mainrot = worldRotation * ::physx::PxQuat(azimuth[col] + mYawOffset, azimuthDir);
 
             for (int row = 0; row < rows; row++)
@@ -140,8 +134,16 @@ public:
 
                 if (hit)
                 {
-                    mHitPosWorld.push_back(raycastHit.position);
-                    mNormals.push_back(raycastHit.normal);
+                    mHitPosWorld[i] = raycastHit.position;
+                    mNormals[i] = raycastHit.normal;
+                    // if (i != static_cast<int>(mHitPosWorld.size()))
+                    // {
+                    //     printf("i %d %zu\n", i, mHitPosWorld.size());
+                    // }
+
+                    // mHitPosWorld.push_back(raycastHit.position);
+                    // mNormals.push_back(raycastHit.normal);
+
 
                     // the distance of the ray should be from center of lidar
                     mDepth[i] = static_cast<uint16_t>((raycastHit.distance + minDepth) * invMaxDepth * 65535.0f);
@@ -165,7 +167,7 @@ public:
                             (mLinearDepth[i] - minDepth * mMetersPerUnit) / ((maxDepth - minDepth) * mMetersPerUnit);
                         data.color = distToRgba(ratio);
                         data.width = 5.0;
-                        mPointDrawing->addVertex(data);
+                        mPoints[i] = data;
                     }
 
                     if (drawLines)
@@ -181,9 +183,9 @@ public:
                         data.color = distToRgba(ratio);
                         data.width = 1.0;
 
-                        mLineDrawing->addVertex(data);
+                        mLines[i * 2 + 0] = data;
                         data.position = hitPos;
-                        mLineDrawing->addVertex(data);
+                        mLines[i * 2 + 1] = data;
                     }
                 }
                 else
@@ -195,6 +197,23 @@ public:
                     ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - origin);
                     mHitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
 
+                    mHitPosWorld[i] = ::physx::PxVec3(0, 0, 0);
+                    mNormals[i] = ::physx::PxVec3(0, 0, 0);
+                    if (drawPoints)
+                    {
+                        carb::scenerenderer::PrimitiveVertex data;
+
+                        // ::physx::PxVec3 diff = raycastHit.position - origin;
+                        data.position = { origin.x, origin.y, origin.z };
+                        // auto temp = raycastHit.position - diff.getNormalized();
+                        // data.endPos = { temp.x, temp.y, temp.z };
+                        // set ratio for color.  should be zero at minDepth and unity at maxDepth
+                        auto ratio =
+                            (mLinearDepth[i] - minDepth * mMetersPerUnit) / ((maxDepth - minDepth) * mMetersPerUnit);
+                        data.color = distToRgba(ratio);
+                        data.width = 5.0;
+                        mPoints[i] = data;
+                    }
                     if (drawLines)
                     {
                         carb::scenerenderer::PrimitiveVertex data;
@@ -206,17 +225,14 @@ public:
                         data.color = { 1, 1, 1, 50.0f / 255.0f };
                         data.width = 1.0;
 
-                        mLineDrawing->addVertex(data);
+                        mLines[i * 2 + 0] = data;
                         data.position = { hitPos.x, hitPos.y, hitPos.z };
-                        mLineDrawing->addVertex(data);
+                        mLines[i * 2 + 1] = data;
                     }
                 }
 
-                if (zenith[row] == 0.0f)
-                {
-                    ++j %= cols;
-                }
-                ++i %= (cols * rows);
+
+                ++i;
             }
         }
 
@@ -242,10 +258,10 @@ public:
                     const float maxDepth,
                     const int rows,
                     const int cols,
-                    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> lineDrawing,
-                    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> pointDrawing,
                     bool drawLines,
-                    bool drawPoints)
+                    bool drawPoints,
+                    const std::vector<float>& zenith,
+                    const std::vector<float>& azimuth)
     {
         utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicEmitter>::initialize(prim, stage);
 
@@ -263,18 +279,24 @@ public:
         mIntensity.resize(mRows * mCols);
         mDepth.resize(mRows * mCols);
         mHitPos.resize(mRows * mCols);
-
+        mHitPosWorld.resize(mRows * mCols);
+        mNormals.resize(mRows * mCols);
         mLinearDepth.assign(mRows * mCols, 0);
         mIntensity.assign(mRows * mCols, 0);
         mDepth.assign(mRows * mCols, 0);
         mHitPos.assign(mRows * mCols, { 0, 0, 0 });
+        mHitPosWorld.assign(mRows * mCols, ::physx::PxVec3(0, 0, 0));
+        mNormals.assign(mRows * mCols, ::physx::PxVec3(0, 0, 0));
         onComponentChange();
 
-        mLineDrawing = lineDrawing;
-        mPointDrawing = pointDrawing;
+        mLines.resize(mRows * mCols * 2); // 2 points per line
+        mPoints.resize(mRows * mCols);
+
 
         mDrawLines = drawLines;
         mDrawPoints = drawPoints;
+        mZenith = zenith;
+        mAzimuth = azimuth;
     }
 
 
@@ -350,7 +372,6 @@ public:
     }
 
 
-    std::vector<carb::scenerenderer::PrimitiveVertex> mEmitterDebugLines;
     std::vector<float> mLinearDepth;
     std::vector<uint8_t> mIntensity;
     std::vector<uint16_t> mDepth;
@@ -361,6 +382,8 @@ public:
     int mRows = 0;
     int mCols = 0;
     size_t mNumBins = 0;
+    std::vector<carb::scenerenderer::PrimitiveVertex> mLines;
+    std::vector<carb::scenerenderer::PrimitiveVertex> mPoints;
 
 private:
     std::unique_ptr<USSEnvelope> mEnvelopeCombined;
@@ -384,16 +407,15 @@ private:
     float mMetersPerUnit = 1.0f;
 
     pxr::UsdPrim mParentPrim;
-
-    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> mLineDrawing;
-    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> mPointDrawing;
-
     const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
     omni::physx::IPhysx* mPhysx = nullptr;
     ::physx::PxScene* mPxScene = nullptr;
     bool mDrawLines = false;
     bool mDrawPoints = false;
+
+    std::vector<float> mZenith;
+    std::vector<float> mAzimuth;
 };
 }
 }

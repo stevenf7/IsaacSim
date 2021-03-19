@@ -37,7 +37,8 @@ class UltrasonicSensor : public RangeSensorComponent
 public:
     UltrasonicSensor(omni::renderer::IDebugDraw* debugDrawPtr,
                      omni::physx::IPhysx* physxPtr,
-                     carb::fastcache::FastCache* fastCachePtr);
+                     carb::fastcache::FastCache* fastCachePtr,
+                     carb::tasking::ITasking* taskingPtr);
     ~UltrasonicSensor();
 
     virtual void onStart();
@@ -64,17 +65,17 @@ public:
     // std::vector<uint16_t>& getDepthData() { return mLastDepth[3]; }
     std::vector<uint16_t>& getDepthData(int emitterIndex)
     {
-        return mEmitters[emitterIndex].mDepth;
+        return mEmitters[emitterIndex]->mDepth;
     }
 
     std::vector<float>& getLinearDepthData(int emitterIndex)
     {
-        return mEmitters[emitterIndex].mLinearDepth;
+        return mEmitters[emitterIndex]->mLinearDepth;
     }
 
     std::vector<float>& getEnvelope(int emitterIndex)
     {
-        return mEmitters[emitterIndex].getEnvelope();
+        return mEmitters[emitterIndex]->getEnvelope();
     }
 
     std::vector<std::vector<float>> getEnvelopeArray()
@@ -82,23 +83,24 @@ public:
         std::vector<std::vector<float>> env;
         for (size_t i = 0; i < mEmitters.size(); i++)
         {
-            env.push_back(mEmitters[i].getEnvelope());
+            env.push_back(mEmitters[i]->getEnvelope());
         }
         return env;
     }
 
     std::vector<std::vector<float>> getActiveEnvelopeArray()
     {
+        const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
         std::vector<std::vector<float>> envelopes;
         for (size_t i = 0; i < mEmitters.size(); i++)
         {
-            if (mIsReceiving[mFreqIdLow][i])
+            if (group.mIsReceiving[mFreqIdLow][i])
             {
-                envelopes.push_back(mEmitters[i].getEnvelopeLow());
+                envelopes.push_back(mEmitters[i]->getEnvelopeLow());
             }
-            if (mIsReceiving[mFreqIdHigh][i])
+            if (group.mIsReceiving[mFreqIdHigh][i])
             {
-                envelopes.push_back(mEmitters[i].getEnvelopeHigh());
+                envelopes.push_back(mEmitters[i]->getEnvelopeHigh());
             }
         }
         return envelopes;
@@ -119,21 +121,21 @@ public:
     }
     std::vector<uint8_t>& getIntensityData(int emitterIndex)
     {
-        return mEmitters[emitterIndex].mIntensity;
+        return mEmitters[emitterIndex]->mIntensity;
     }
 
     std::vector<carb::Int2> getEmitterFiringInfo()
     {
-        // const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
+        const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
 
         std::vector<carb::Int2> info;
         for (size_t i = 0; i < mEmitters.size(); i++)
         {
-            if (mIsFiring[mFreqIdLow][i])
+            if (group.mIsFiring[mFreqIdLow][i])
             {
                 info.push_back(carb::Int2({ static_cast<int>(i), static_cast<int>(mFreqIdLow) }));
             }
-            if (mIsFiring[mFreqIdHigh][i])
+            if (group.mIsFiring[mFreqIdHigh][i])
             {
                 info.push_back(carb::Int2({ static_cast<int>(i), static_cast<int>(mFreqIdHigh) }));
             }
@@ -147,17 +149,17 @@ public:
     }
     std::vector<carb::Int2> getReceiverFiringInfo()
     {
-        // const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
+        const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
 
         std::vector<carb::Int2> info;
 
         for (size_t i = 0; i < mEmitters.size(); i++)
         {
-            if (mIsReceiving[mFreqIdLow][i])
+            if (group.mIsReceiving[mFreqIdLow][i])
             {
                 info.push_back(carb::Int2({ static_cast<int>(i), static_cast<int>(mFreqIdLow) }));
             }
-            if (mIsReceiving[mFreqIdHigh][i])
+            if (group.mIsReceiving[mFreqIdHigh][i])
             {
                 info.push_back(carb::Int2({ static_cast<int>(i), static_cast<int>(mFreqIdHigh) }));
             }
@@ -188,8 +190,8 @@ private:
     const size_t mFreqIdLow = 0;
     const size_t mFreqIdHigh = 1;
 
-    std::vector<std::vector<bool>> mIsReceiving; //(2, std::vector<bool>());
-    std::vector<std::vector<bool>> mIsFiring; //(2, std::vector<bool>());
+    // std::vector<std::vector<bool>> mIsReceiving; //(2, std::vector<bool>());
+    // std::vector<std::vector<bool>> mIsFiring; //(2, std::vector<bool>());
 
     int mNumBins = 224;
     bool mUseBRDF = false;
@@ -210,7 +212,7 @@ private:
     std::vector<float> mAzimuth;
 
 
-    std::vector<UltrasonicEmitter> mEmitters;
+    std::vector<std::unique_ptr<UltrasonicEmitter>> mEmitters;
     std::vector<UltrasonicFiringGroup> mFiringGroups;
     std::vector<std::vector<USSEnvelope>> mEnvelopeList; // List of uss envelopes per firing mode
     UltrasonicReceiverArray mReceiverArray;
@@ -223,6 +225,9 @@ private:
     void dumpData(double dt);
     void clampRangeBounds();
     void updateDepthBounds();
+
+    carb::tasking::ITasking* mTasking = nullptr;
+    carb::tasking::Counter* mTaskCounter = nullptr;
 };
 
 

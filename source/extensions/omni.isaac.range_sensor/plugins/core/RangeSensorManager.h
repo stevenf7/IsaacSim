@@ -186,7 +186,7 @@ public:
         }
         else if (prim.IsA<pxr::RangeSensorSchemaUltrasonicArray>())
         {
-            component = std::make_unique<UltrasonicSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr);
+            component = std::make_unique<UltrasonicSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr, mTasking);
             component->initialize(pxr::RangeSensorSchemaUltrasonicArray(prim), mStage);
         }
         else if (prim.IsA<pxr::RangeSensorSchemaRadar>())
