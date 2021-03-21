@@ -15,7 +15,7 @@
 
 #include <omni/isaac/occupancy_map/OccupancyMap.h>
 #include <omni/isaac/occupancy_map/MapGenerator.h>
-
+#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/logging/Log.h>
@@ -50,6 +50,7 @@ carb::Float3 inputOrigin = { 0, 0, 0 };
 carb::Float2 inputMinPoint = { -100, -100 };
 carb::Float2 inputMaxPoint = { 100, 100 };
 std::unique_ptr<omni::isaac::occupancy_map::MapGenerator> gGenerator = nullptr;
+std::unique_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> gLineDrawing;
 
 }
 
@@ -79,52 +80,40 @@ void CARB_ABI SetTransform(carb::Float3 origin, carb::Float2 minimum, carb::Floa
 
 
 omni::renderer::IDebugDraw* g_debugDraw = nullptr;
-omni::renderer::LineBuffer mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
-omni::renderer::RenderInstanceBuffer mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
-void createDebugLineList(size_t size)
-{
-    if (mShapeDebugLineBuffer == omni::renderer::IDebugDraw::eInvalidBuffer)
-    {
-        mShapeDebugLineBuffer = g_debugDraw->allocateLineBuffer(size);
-        mShapeDebugRenderInstanceBuffer = g_debugDraw->allocateRenderInstanceBuffer(mShapeDebugLineBuffer, 1);
-        float transform[16] = {};
-        transform[0] = 1.f;
-        transform[1 + 4] = 1.f;
-        transform[2 + 8] = 1.f;
-        transform[3 + 12] = 1.f;
-
-        g_debugDraw->setRenderInstance(mShapeDebugRenderInstanceBuffer, 0, &transform[0], 0);
-    }
-}
-
-void releaseDebugLineList()
-{
-    if (mShapeDebugLineBuffer != omni::renderer::IDebugDraw::eInvalidBuffer)
-    {
-        g_debugDraw->deallocateLineBuffer(mShapeDebugLineBuffer);
-        g_debugDraw->deallocateRenderInstanceBuffer(mShapeDebugRenderInstanceBuffer);
-        mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
-        mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
-    }
-}
 
 void CARB_ABI Update()
 {
-    releaseDebugLineList();
-    createDebugLineList(4);
-    uint32_t color = 255 + (255 << 8) + (255 << 16) + (255 << 24);
-    g_debugDraw->setLine(mShapeDebugLineBuffer, 0,
-                         { inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }, color,
-                         { inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }, color);
-    g_debugDraw->setLine(mShapeDebugLineBuffer, 1,
-                         { inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }, color,
-                         { inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }, color);
-    g_debugDraw->setLine(mShapeDebugLineBuffer, 2,
-                         { inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }, color,
-                         { inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }, color);
-    g_debugDraw->setLine(mShapeDebugLineBuffer, 3,
-                         { inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }, color,
-                         { inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }, color);
+    gLineDrawing->clear();
+    float w = 2.0f;
+
+    carb::ColorRgba color = { 1, 1, 1, 1 };
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }), color, w);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }), color, w);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }), color, w);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }), color, w);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }), color, w);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }), color, w);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }), color, w);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }), color, w);
+
+
+    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x + 100, inputOrigin.y, inputOrigin.z }), { 1, 0, 0, 1 }, w);
+    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x - 100, inputOrigin.y, inputOrigin.z }), { 1, 0, 0, 1 }, w);
+
+    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x, inputOrigin.y + 100, inputOrigin.z }), { 0, 1, 0, 1 }, w);
+    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x, inputOrigin.y - 100, inputOrigin.z }), { 0, 1, 0, 1 }, w);
+
+    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x, inputOrigin.y, inputOrigin.z + 100 }), { 0, 0, 1, 1 }, w);
+    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x, inputOrigin.y, inputOrigin.z - 100 }), { 0, 0, 1, 1 }, w);
+    gLineDrawing->draw();
 }
 std::vector<carb::Float2> GetOccupiedPositions()
 {
@@ -201,8 +190,15 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
     }
 
     gStage = stage;
+
+    gLineDrawing = std::make_unique<omni::isaac::utils::drawing::PrimitiveDrawingHelper>(
+        omni::usd::UsdContext::getContext(), g_debugDraw, omni::isaac::utils::drawing::PrimitiveDrawingHelper::eLines);
 }
 
+static void onDetach(void* data)
+{
+    gLineDrawing.reset();
+}
 
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
 {
@@ -234,6 +230,7 @@ CARB_EXPORT void carbOnPluginStartup()
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "OccupancyMap";
     desc.onAttach = onAttach;
+    desc.onDetach = onDetach;
     // Create the stage update node and make sure it runs after physx
     size_t index = gStageUpdate->getStageUpdateNodeCount();
     gStageUpdateNode = gStageUpdate->createStageUpdateNode(desc);
@@ -242,8 +239,8 @@ CARB_EXPORT void carbOnPluginStartup()
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
-    releaseDebugLineList();
     gStageUpdate->destroyStageUpdateNode(gStageUpdateNode);
+    gLineDrawing.reset();
 }
 
 void fillInterface(omni::isaac::occupancy_map::OccupancyMap& iface)

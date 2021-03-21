@@ -7,7 +7,6 @@ project_with_location("omni.isaac.occupancy_map.generator")
     kind "SharedLib"
     language "C++"
     
-
     include_physx()
     add_files("impl", "library")
     add_files("iface", "%{root}/include/omni/isaac/occupancy_map/**")
@@ -49,6 +48,7 @@ project_with_location("omni.isaac.occupancy_map.generator")
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
     dependson {"omni.isaac.occupancy_map.generator"}
+    dependson {"omni.isaac.utils.primitive_drawing"}
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/occupancy_map/**")
@@ -63,8 +63,9 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+        "%{kit_sdk_bin_dir}/plugins",
     }
-    links {"usdUtils", "omni.isaac.occupancy_map.generator"}
+    links {"usdUtils", "omni.isaac.occupancy_map.generator", "omni.usd", "omni.isaac.utils.primitive_drawing"}
     filter { "system:linux" }
         disablewarnings {"error=pragmas"}
         includedirs {

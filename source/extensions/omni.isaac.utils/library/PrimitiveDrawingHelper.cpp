@@ -28,6 +28,7 @@ PrimitiveDrawingHelper::PrimitiveDrawingHelper(omni::usd::UsdContext* usdContext
 }
 PrimitiveDrawingHelper::~PrimitiveDrawingHelper()
 {
+    clear();
     releaseList();
 }
 
@@ -156,7 +157,7 @@ void PrimitiveDrawingHelper::createList()
 }
 void PrimitiveDrawingHelper::releaseList()
 {
-    if (mPrimitiveList)
+    if (mPrimitiveList && mUsdContext && mUsdContext->getSceneRenderer() && mUsdContext->getSceneRendererContext())
     {
         mUsdContext->getSceneRenderer()->destroyPrimitiveList(mUsdContext->getSceneRendererContext(), mPrimitiveList);
         mPrimitiveList = nullptr;
