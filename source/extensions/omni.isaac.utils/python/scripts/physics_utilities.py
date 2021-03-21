@@ -1,0 +1,207 @@
+# Copyright (c) 2018-2020, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
+import gc
+import omni.ext
+import omni.usd
+import omni.ui as ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+import omni.kit.utils
+import omni.kit.commands
+from pxr import Usd, UsdGeom, Sdf, UsdShade, UsdPhysics
+import weakref
+from omni.physx.scripts import utils
+import asyncio
+
+EXTENSION_NAME = "Physics Utilities"
+
+
+class Extension(omni.ext.IExt):
+    def on_startup(self):
+        self._usd_context = omni.usd.get_context()
+        self._selected_prim = None
+        self._selection = self._usd_context.get_selection()
+
+        self._window = omni.ui.Window(
+            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        )
+
+        self._menu_items = [
+            MenuItemDescription(
+                name="Isaac",
+                sub_menu=[
+                    MenuItemDescription(
+                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    )
+                ],
+            )
+        ]
+        add_menu_items(self._menu_items, "Window")
+
+        with self._window.frame:
+            with ui.VStack(spacing=10):
+                with ui.CollapsableFrame("Collision"):
+                    with ui.VStack(spacing=5):
+                        ui.Label("NOTE: this supports applying/clearing collision for static geometry only", height=0)
+                        with ui.HStack(height=0, spacing=10):
+                            ui.Label("Apply to children", width=0)
+                            self._children_checkbox = ui.CheckBox().model
+                            self._children_checkbox.set_value(True)
+                        with ui.HStack(height=0, spacing=10):
+                            ui.Label("Visibile Only", width=0)
+                            self._visible_checkbox = ui.CheckBox().model
+                            self._visible_checkbox.set_value(True)
+                        ui.Button("Apply Static Collision To Selected", clicked_fn=self.apply_collision_on_selected)
+                        ui.Button("Clear Static Collision On Selected", clicked_fn=self.clear_collision_on_selected)
+                ui.Label(
+                    "NOTE: This cannot delete usd prims on referenced assets, but will still unapply apis", height=0
+                )
+                ui.Button("Remove All Physics APIs", clicked_fn=self.remove_physics_apis_on_selected)
+                self._progress_bar = ui.ProgressBar(height=0).model
+                self._progress_bar.set_value(0)
+
+        pass
+
+    def _menu_callback(self):
+        self._window.visible = not self._window.visible
+
+    def apply_collision_on_selected(self):
+        async def _task():
+            self._stage = self._usd_context.get_stage()
+            selection = self._selection.get_selected_prim_paths()
+            if (len(selection)) == 0:
+                return
+            all_prims = self.traverse_prims(selection)
+            count = len(all_prims)
+            index = 0
+            for prim in all_prims:
+                self.apply_collision_to_prim(prim)
+                index = index + 1
+                self._progress_bar.set_value(index / count)
+                await omni.kit.app.get_app().next_update_async()
+
+        asyncio.ensure_future(_task())
+
+    def clear_collision_on_selected(self):
+        async def _task():
+            self._stage = self._usd_context.get_stage()
+            selection = self._selection.get_selected_prim_paths()
+            if (len(selection)) == 0:
+                return
+            all_prims = self.traverse_prims(selection, include_xform=True)
+            count = len(all_prims)
+            index = 0
+            for prim in all_prims:
+                self.unapply_collision_on_prim(prim)
+                index = index + 1
+                self._progress_bar.set_value(index / count)
+                await omni.kit.app.get_app().next_update_async()
+
+        asyncio.ensure_future(_task())
+
+        pass
+
+    def remove_physics_apis_on_selected(self):
+        async def _task():
+            self._stage = self._usd_context.get_stage()
+            selection = self._selection.get_selected_prim_paths()
+            if (len(selection)) == 0:
+                return
+            all_prims = self.traverse_prims(selection, include_xform=True)
+            count = len(all_prims)
+            index = 0
+            for prim in all_prims:
+                self.remove_physics_apis_on_prim(prim)
+                index = index + 1
+                self._progress_bar.set_value(index / count)
+                await omni.kit.app.get_app().next_update_async()
+
+        asyncio.ensure_future(_task())
+
+        pass
+
+    def traverse_prims(self, selection, include_xform=False):
+        count = 0
+        prims = []
+        for s in selection:
+            curr_prim = self._stage.GetPrimAtPath(s)
+            if self._children_checkbox.get_value_as_bool():
+                prim_range_iter = iter(Usd.PrimRange(curr_prim))
+                for prim in prim_range_iter:
+                    imageable = UsdGeom.Imageable(prim)
+
+                    # If a prim is hidden and visible only is checked, skip all children of that prim
+                    if self._visible_checkbox.get_value_as_bool():
+                        if prim.GetMetadata("hide_in_stage_window"):
+                            prim_range_iter.PruneChildren()
+                            continue
+                        if imageable:
+                            visibility = imageable.ComputeVisibility(Usd.TimeCode.Default())
+                            if visibility == UsdGeom.Tokens.invisible:
+                                prim_range_iter.PruneChildren()
+                                continue
+                    # Ignore rigid bodies and its children
+                    if utils.hasSchema(prim, "PhysicsRigidBodyAPI"):
+                        prim_range_iter.PruneChildren()
+                        continue
+                    if self.prim_is_valid(prim, include_xform, self._visible_checkbox.get_value_as_bool()):
+                        prims.append(prim)
+            else:
+                if self.prim_is_valid(curr_prim, include_xform, self._visible_checkbox.get_value_as_bool()):
+                    prims.append(curr_prim)
+        return prims
+
+    def prim_is_valid(self, prim, include_xform=False, visible_only=True):
+        if (
+            prim.IsA(UsdGeom.Cylinder)
+            or prim.IsA(UsdGeom.Capsule)
+            or prim.IsA(UsdGeom.Cone)
+            or prim.IsA(UsdGeom.Sphere)
+            or prim.IsA(UsdGeom.Cube)
+        ):
+            return True
+        elif prim.IsA(UsdGeom.Mesh):
+            return True
+        elif include_xform and prim.IsA(UsdGeom.Xformable):
+            return True
+        return False
+        pass
+
+    def apply_collision_to_prim(self, prim, approximationShape="None"):
+        # TODO: add checks for rigid body parent type, we cannot use regular collision mesh in that case
+        utils.setCollider(prim, approximationShape)
+
+    def unapply_collision_on_prim(self, prim):
+        utils.removeCollider(prim)
+
+    def remove_physics_apis_on_prim(self, prim):
+        apis = [
+            "PhysicsRigidBodyAPI",
+            "PhysicsCollisionAPI",
+            "PhysicsArticulationRootAPI",
+            "CharacterControllerAPI",
+            "ContactReportAPI",
+            "PhysicsFilteredPairsAPI",
+            "TriggerAPI",
+            "PhysicsMaterialAPI",
+            "PhysicsMassAPI",
+            "PhysicsRevoluteJoint",
+            "PhysicsPrismaticJoint",
+            "PhysicsSphericalJoint",
+            "PhysicsDistanceJoint",
+            "PhysicsFixedJoint",
+            "PhysicsLimit",
+            "PhysicsDrive",
+        ]
+        for component in apis:
+            omni.kit.commands.execute("RemovePhysicsComponentCommand", usd_prim=prim, component=component)
+
+    def on_shutdown(self):
+        remove_menu_items(self._menu_items, "Window")
+        pass
