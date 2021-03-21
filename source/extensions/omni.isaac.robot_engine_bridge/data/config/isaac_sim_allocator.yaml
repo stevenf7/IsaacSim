@@ -5,15 +5,5 @@ components:
   - name: allocator
     type: nvidia::gxf::UnboundedAllocator
     parameters:
-      storage_type: 0
       do_not_use_cuda_malloc_host: true
----
-name: scheduler
-components:
-  - type: nvidia::gxf::GreedyScheduler
-    parameters:
-      max_duration_ms: 100000000
-      stop_on_deadlock: false
-      clock: clock
-  - name: clock
-    type: nvidia::gxf::RealtimeClock
+
