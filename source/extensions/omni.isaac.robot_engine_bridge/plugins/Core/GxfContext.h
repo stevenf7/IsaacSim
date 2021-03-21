@@ -15,6 +15,7 @@
 #include "gxf/core/gxf.h"
 #include "plugins/bridge/BridgeApplication.h"
 
+#include <gxf/std/clock.hpp>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 
 #include <string>
@@ -49,6 +50,7 @@ private:
     int64_t mTimeDifferenceNanoSeconds = 0;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
     nvidia::gxf::Handle<nvidia::gxf::Allocator> mAllocator;
+    nvidia::gxf::Handle<nvidia::gxf::Clock> mClock;
     bool mRunning = false;
 };
 }

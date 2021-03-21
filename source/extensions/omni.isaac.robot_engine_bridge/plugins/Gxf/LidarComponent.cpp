@@ -76,6 +76,15 @@ void LidarComponent::publishAllMessages()
     }
     CARB_PROFILE_ZONE(0, "REB LidarComponent Tick");
 
+    // Fill in pose uid
+    const std::string path = mLidarPath.GetString();
+    auto maybeUid = mPoseTreeMap->findFrame(path);
+    if (!maybeUid)
+    {
+        CARB_LOG_WARN("Cannot find pose uid for lidar %s", path.c_str());
+        return;
+    }
+
     pxr::UsdPrim prim = mStage->GetPrimAtPath(mLidarPath);
     if (!prim.IsA<pxr::RangeSensorSchemaLidar>())
     {
@@ -140,19 +149,8 @@ void LidarComponent::publishAllMessages()
     message.info->delta_time = 0.0;
     message.info->invalid_range = 0.0;
     message.info->out_of_range = static_cast<double>(maxRange);
-    // Fill in pose uid
-    const std::string path = mLidarPath.GetString();
-    auto maybeUid = mPoseTreeMap->findFrame(path);
-    if (!maybeUid)
-    {
-        CARB_LOG_WARN("Cannot find pose uid for lidar %s", path.c_str());
-        message.pose_frame_uid->uid = 0u;
-    }
-    else
-    {
-        message.pose_frame_uid->uid = maybeUid.value();
-    }
 
+    message.pose_frame_uid->uid = maybeUid.value();
     message.timestamp->acqtime = this->mTimeNanoSeconds + mComponentTimeOffsetNanoSeconds;
     message.timestamp->pubtime = ::isaac::NowCount();
 
