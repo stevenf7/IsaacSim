@@ -77,7 +77,9 @@ class Extension(omni.ext.IExt):
             selection = self._selection.get_selected_prim_paths()
             if (len(selection)) == 0:
                 return
-            all_prims = self.traverse_prims(selection, visible_only=self._visible_checkbox.get_value_as_bool())
+            all_prims = self.traverse_prims(
+                selection, include_xform=False, visible_only=self._visible_checkbox.get_value_as_bool()
+            )
             count = len(all_prims)
             index = 0
             for prim in all_prims:
@@ -136,6 +138,9 @@ class Extension(omni.ext.IExt):
             if self._children_checkbox.get_value_as_bool():
                 prim_range_iter = iter(Usd.PrimRange(curr_prim))
                 for prim in prim_range_iter:
+                    # process the current prim if its an instance, but prune children as we cannot process them anyways
+                    if prim.IsInstanceable():
+                        prim_range_iter.PruneChildren()
                     imageable = UsdGeom.Imageable(prim)
                     # ignore non stage prims
                     if prim.GetMetadata("hide_in_stage_window"):
@@ -152,10 +157,14 @@ class Extension(omni.ext.IExt):
                     if ignore_rigid and utils.hasSchema(prim, "PhysicsRigidBodyAPI"):
                         prim_range_iter.PruneChildren()
                         continue
-                    if self.prim_is_valid(prim, include_xform, self._visible_checkbox.get_value_as_bool()):
+                    if self.prim_is_valid(
+                        prim, include_xform or prim.IsInstanceable(), self._visible_checkbox.get_value_as_bool()
+                    ):
                         prims.append(prim)
             else:
-                if self.prim_is_valid(curr_prim, include_xform, self._visible_checkbox.get_value_as_bool()):
+                if self.prim_is_valid(
+                    curr_prim, include_xform or prim.IsInstanceable(), self._visible_checkbox.get_value_as_bool()
+                ):
                     prims.append(curr_prim)
         return prims
 
@@ -177,7 +186,11 @@ class Extension(omni.ext.IExt):
 
     def apply_collision_to_prim(self, prim, approximationShape="None"):
         # TODO: add checks for rigid body parent type, we cannot use regular collision mesh in that case
-        utils.setCollider(prim, approximationShape)
+        if prim.IsInstanceable():
+            UsdPhysics.CollisionAPI.Apply(prim)
+            UsdPhysics.MeshCollisionAPI.Apply(prim)
+        else:
+            utils.setCollider(prim, approximationShape)
 
     def unapply_collision_on_prim(self, prim):
         utils.removeCollider(prim)
