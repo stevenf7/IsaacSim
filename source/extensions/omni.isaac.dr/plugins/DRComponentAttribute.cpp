@@ -109,21 +109,19 @@ void DRComponentAttribute::tick()
                 std::map<std::string, float> distributionParams;
                 getDistributionParams(attributeParamMap, distributionParams);
 
-                if (attributeName == "shadingVariant")
+
+                auto primVariantSets = prim.GetVariantSets();
+                if (primVariantSets.HasVariantSet(attributeName))
                 {
                     std::vector<std::string> variantNamesList;
                     std::string variantNames = attributeParamMap["variantNames"];
                     if (variantNames != "")
                         boost::split(variantNamesList, variantNames, [](char c) { return c == ','; });
-                    auto primVariantSets = prim.GetVariantSets();
-                    if (primVariantSets.HasVariantSet(attributeName))
-                    {
-                        auto primVariantSet = primVariantSets.GetVariantSet(attributeName);
-                        if (variantNamesList.size() == 0)
-                            variantNamesList = primVariantSet.GetVariantNames();
-                        primVariantSet.SetVariantSelection(
-                            variantNamesList[randomRangeInt(0, static_cast<int>(variantNamesList.size()) - 1)]);
-                    }
+                    auto primVariantSet = primVariantSets.GetVariantSet(attributeName);
+                    if (variantNamesList.size() == 0)
+                        variantNamesList = primVariantSet.GetVariantNames();
+                    primVariantSet.SetVariantSelection(
+                        variantNamesList[randomRangeInt(0, static_cast<int>(variantNamesList.size()) - 1)]);
                 }
                 else
                 {
