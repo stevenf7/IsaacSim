@@ -77,7 +77,7 @@ class Extension(omni.ext.IExt):
             selection = self._selection.get_selected_prim_paths()
             if (len(selection)) == 0:
                 return
-            all_prims = self.traverse_prims(selection)
+            all_prims = self.traverse_prims(selection, visible_only=self._visible_checkbox.get_value_as_bool())
             count = len(all_prims)
             index = 0
             for prim in all_prims:
@@ -94,7 +94,9 @@ class Extension(omni.ext.IExt):
             selection = self._selection.get_selected_prim_paths()
             if (len(selection)) == 0:
                 return
-            all_prims = self.traverse_prims(selection, include_xform=True)
+            all_prims = self.traverse_prims(
+                selection, include_xform=True, visible_only=self._visible_checkbox.get_value_as_bool()
+            )
             count = len(all_prims)
             index = 0
             for prim in all_prims:
@@ -113,7 +115,7 @@ class Extension(omni.ext.IExt):
             selection = self._selection.get_selected_prim_paths()
             if (len(selection)) == 0:
                 return
-            all_prims = self.traverse_prims(selection, include_xform=True)
+            all_prims = self.traverse_prims(selection, include_xform=True, ignore_rigid=False, visible_only=False)
             count = len(all_prims)
             index = 0
             for prim in all_prims:
@@ -126,7 +128,7 @@ class Extension(omni.ext.IExt):
 
         pass
 
-    def traverse_prims(self, selection, include_xform=False):
+    def traverse_prims(self, selection, include_xform=False, ignore_rigid=True, visible_only=True):
         count = 0
         prims = []
         for s in selection:
@@ -137,7 +139,7 @@ class Extension(omni.ext.IExt):
                     imageable = UsdGeom.Imageable(prim)
 
                     # If a prim is hidden and visible only is checked, skip all children of that prim
-                    if self._visible_checkbox.get_value_as_bool():
+                    if visible_only:
                         if prim.GetMetadata("hide_in_stage_window"):
                             prim_range_iter.PruneChildren()
                             continue
@@ -147,7 +149,7 @@ class Extension(omni.ext.IExt):
                                 prim_range_iter.PruneChildren()
                                 continue
                     # Ignore rigid bodies and its children
-                    if utils.hasSchema(prim, "PhysicsRigidBodyAPI"):
+                    if ignore_rigid and utils.hasSchema(prim, "PhysicsRigidBodyAPI"):
                         prim_range_iter.PruneChildren()
                         continue
                     if self.prim_is_valid(prim, include_xform, self._visible_checkbox.get_value_as_bool()):

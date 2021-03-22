@@ -18,6 +18,7 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
+"omni.physx.vehicle" = {}
 "omni.graph.core" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_planning" = {}
@@ -47,3 +48,6 @@ name = "omni.isaac.samples.scripts.rmp_sample"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.replay_sample"
+
+[[python.module]]
+name = "omni.isaac.samples.scripts.create_vehicle"
