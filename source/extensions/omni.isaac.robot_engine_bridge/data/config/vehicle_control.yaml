@@ -1,5 +1,10 @@
 %YAML 1.2
 ---
+name: clock
+components:
+  - name: default
+    type: nvidia::gxf::RealtimeClock
+---
 name: interface.input
 components:
   - name: vehicle_command
@@ -41,30 +46,10 @@ components:
       policy: 0
   - name: ping_signal
     type: nvidia::gxf::DoubleBufferTransmitter
-  - type: nvidia::gxf::test::PingTx
-    parameters:
-      signal: ping_signal
+  - type: nvidia::isaac::TickCounter
   - type: nvidia::gxf::PeriodicSchedulingTerm
     parameters:
-      recess_period: 5
----
-name: ping_rx
-components:
-  - name: signal
-    type: nvidia::gxf::DoubleBufferReceiver
-  - type: nvidia::gxf::MessageAvailableSchedulingTerm
-    parameters:
-      receiver: signal
-      min_size: 1
-  - type: nvidia::gxf::test::PingRx
-    parameters:
-      signal: signal
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: interface.output/ping_signal
-      target: ping_rx/signal
+      recess_period: 100 Hz
 ---
 name: vehicle_state_serializer
 components:
@@ -93,10 +78,9 @@ components:
       source: interface.output/vehicle_state
       target: vehicle_state_serializer/input
 ---
+name: scheduler
 components:
   - type: nvidia::gxf::GreedyScheduler
     parameters:
-      realtime: true
-      max_duration_ms: 100000000
       stop_on_deadlock: false
-      timeout_ms: 200000
+      clock: clock/default

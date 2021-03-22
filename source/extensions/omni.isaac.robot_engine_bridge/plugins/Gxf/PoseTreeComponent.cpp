@@ -66,16 +66,10 @@ void PoseTreeComponent::onStart()
     // CARB_LOG_ERROR("PoseTreeComponent Start");
     onComponentChange();
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
-    mSkipFirstFrame = true;
 }
 
 void PoseTreeComponent::tick()
 {
-    if (mSkipFirstFrame)
-    {
-        mSkipFirstFrame = false;
-        return;
-    }
     CARB_PROFILE_ZONE(0, "REB PoseTreeComponent Tick");
 
     if (!getAtlasFrontend())

@@ -117,8 +117,9 @@ void CameraComponent::tick()
     if (!maybePoseUid)
     {
         CARB_LOG_WARN("Cannot find pose uid for camera %s", cameraPath);
+        return;
     }
-    const nvidia::isaac::PoseTree::frame_t poseUid = maybePoseUid ? maybePoseUid.value() : 0u;
+    const nvidia::isaac::PoseTree::frame_t poseUid = maybePoseUid.value();
 
     pxr::UsdGeomCamera cameraPrim(prim);
 

@@ -1,5 +1,10 @@
 %YAML 1.2
 ---
+name: clock
+components:
+  - name: default
+    type: nvidia::gxf::RealtimeClock
+---
 name: interface.input
 components:
 - name: scenario_command
@@ -11,7 +16,7 @@ components:
     type: nvidia::gxf::DoubleBufferTransmitter
   - type: nvidia::gxf::PeriodicSchedulingTerm
     parameters:
-      recess_period: 100
+      recess_period: 30 Hz
   - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
     parameters:
       transmitter: output
@@ -28,10 +33,9 @@ components:
       source: generator/output
       target: interface.input/scenario_command
 ---
+name: scheduler
 components:
   - type: nvidia::gxf::GreedyScheduler
     parameters:
-      realtime: true
-      max_duration_ms: 100000000
       stop_on_deadlock: false
-      timeout_ms: 200000
+      clock: clock/default

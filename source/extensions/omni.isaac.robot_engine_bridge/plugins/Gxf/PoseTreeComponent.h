@@ -86,7 +86,6 @@ private:
     nvidia::isaac::PoseTree::frame_t mRootUid;
     bool mPoseTreeInitialized = false;
 
-    bool mSkipFirstFrame = true;
     double mUnitScale = 1.0;
 };
 }

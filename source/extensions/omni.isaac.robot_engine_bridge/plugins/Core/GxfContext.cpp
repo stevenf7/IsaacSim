@@ -143,14 +143,34 @@ gxf_result_t GxfContext::start()
             return result;
         }
         {
-            gxf_uid_t tcp_eid;
-            GxfEntityFind(mContext, "isaac_sim_allocator", &tcp_eid);
-            gxf_tid_t allocator_tid;
-            GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::UnboundedAllocator>(), &allocator_tid);
-            gxf_uid_t allocator_cid;
-            GxfComponentFind(mContext, tcp_eid, allocator_tid, "allocator", nullptr, &allocator_cid);
-            auto allocator = nvidia::gxf::Handle<nvidia::gxf::Allocator>::Create(mContext, allocator_cid);
+            gxf_uid_t eid;
+            GxfEntityFind(mContext, "isaac_sim_allocator", &eid);
+            gxf_tid_t tid;
+            GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::UnboundedAllocator>(), &tid);
+            gxf_uid_t cid;
+            GxfComponentFind(mContext, eid, tid, "allocator", nullptr, &cid);
+            auto allocator = nvidia::gxf::Handle<nvidia::gxf::Allocator>::Create(mContext, cid);
+            if (!allocator)
+            {
+                CARB_LOG_ERROR("Allocator not found");
+                return nvidia::gxf::ToResultCode(allocator);
+            }
             mAllocator = std::move(allocator.value());
+        }
+        {
+            gxf_uid_t eid;
+            GxfEntityFind(mContext, "clock", &eid);
+            gxf_tid_t tid;
+            GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::Clock>(), &tid);
+            gxf_uid_t cid;
+            GxfComponentFind(mContext, eid, tid, "default", nullptr, &cid);
+            auto clock = nvidia::gxf::Handle<nvidia::gxf::Clock>::Create(mContext, cid);
+            if (!clock)
+            {
+                CARB_LOG_ERROR("Clock not found");
+                return nvidia::gxf::ToResultCode(clock);
+            }
+            mClock = std::move(clock.value());
         }
 
         // if (mAllocator.get())
@@ -166,6 +186,7 @@ gxf_result_t GxfContext::start()
             component.second.get()->setGxfContext(mContext);
             component.second.get()->setGxfAllocator(mAllocator);
             component.second.get()->setPoseTreeMap(&mPoseTreeMap);
+            component.second->mDoStart = true;
         }
     }
     else
@@ -203,7 +224,8 @@ void GxfContext::tick(double dt)
             }
         }
 
-
+        mTimeSeconds = mClock->time();
+        mTimeNanoSeconds = mTimeSeconds * 1e9;
         for (auto& component : mComponents)
         {
             component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
@@ -253,8 +275,8 @@ void GxfContext::tick(double dt)
         // mSceneLoaderComponent->tick();
     }
     // TODO: do this before or after tick?
-    mTimeSeconds += dt;
-    mTimeNanoSeconds = mTimeSeconds * 1e9;
+    //    mTimeSeconds += dt;
+    //    mTimeNanoSeconds = mTimeSeconds * 1e9;
     // gxf_result_t result;
     // if ((result = GxfGraphWait(mContext)))
     // {
@@ -272,20 +294,14 @@ gxf_result_t GxfContext::stop()
         if ((result = GxfGraphInterrupt(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphInterrupt %s", GxfResultStr(result));
-            mContext = 0;
-            return result;
         }
         if ((result = GxfGraphWait(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphWait %s", GxfResultStr(result));
-            mContext = 0;
-            return result;
         }
         if ((result = GxfGraphDeactivate(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphDeactivate %s", GxfResultStr(result));
-            mContext = 0;
-            return result;
         }
     }
     else

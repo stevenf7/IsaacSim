@@ -121,8 +121,20 @@ void UltrasonicComponent::publishAllMessages()
     }
     auto message = std::move(maybe_message.value());
 
-    // // ::isaac::Fill(message.envelopes, 0.0f);
+    // Fill in pose uid
+    for (int i = 0; i < numSensors; i++)
+    {
+        const std::string path = emitterTargets[i].GetString();
+        auto maybeUid = mPoseTreeMap->findFrame(path);
+        if (!maybeUid)
+        {
+            CARB_LOG_WARN("Cannot find pose uid for emitter %s", path.c_str());
+            return;
+        }
+        message.pose_frame_uids[i]->uid = maybeUid.value();
+    }
 
+    // // ::isaac::Fill(message.envelopes, 0.0f);
 
     // auto message = nvidia::gxf::Entity::New(mContext);
     // auto tensor = message.value().add<nvidia::gxf::Tensor>("tensor");
@@ -178,21 +190,6 @@ void UltrasonicComponent::publishAllMessages()
         sensingMode.sensor_id = receiver_info[i].x;
         sensingMode.mode = receiver_info[i].y;
         sensingMode.relative_time = 0u;
-    }
-    // Fill in pose uid
-    for (int i = 0; i < numSensors; i++)
-    {
-        const std::string path = emitterTargets[i].GetString();
-        auto maybeUid = mPoseTreeMap->findFrame(path);
-        if (!maybeUid)
-        {
-            CARB_LOG_WARN("Cannot find pose uid for emitter %s", path.c_str());
-            message.pose_frame_uids[i]->uid = 0u;
-        }
-        else
-        {
-            message.pose_frame_uids[i]->uid = maybeUid.value();
-        }
     }
 
     message.sensor_info->range_max = maxRange;
