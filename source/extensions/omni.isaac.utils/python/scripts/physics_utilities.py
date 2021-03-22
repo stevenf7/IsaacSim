@@ -137,12 +137,12 @@ class Extension(omni.ext.IExt):
                 prim_range_iter = iter(Usd.PrimRange(curr_prim))
                 for prim in prim_range_iter:
                     imageable = UsdGeom.Imageable(prim)
-
+                    # ignore non stage prims
+                    if prim.GetMetadata("hide_in_stage_window"):
+                        prim_range_iter.PruneChildren()
+                        continue
                     # If a prim is hidden and visible only is checked, skip all children of that prim
                     if visible_only:
-                        if prim.GetMetadata("hide_in_stage_window"):
-                            prim_range_iter.PruneChildren()
-                            continue
                         if imageable:
                             visibility = imageable.ComputeVisibility(Usd.TimeCode.Default())
                             if visibility == UsdGeom.Tokens.invisible:
