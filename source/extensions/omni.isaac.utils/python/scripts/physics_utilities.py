@@ -163,7 +163,7 @@ class Extension(omni.ext.IExt):
                         prims.append(prim)
             else:
                 if self.prim_is_valid(
-                    curr_prim, include_xform or prim.IsInstanceable(), self._visible_checkbox.get_value_as_bool()
+                    curr_prim, include_xform or curr_prim.IsInstanceable(), self._visible_checkbox.get_value_as_bool()
                 ):
                     prims.append(curr_prim)
         return prims
