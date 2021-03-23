@@ -323,6 +323,11 @@ gxf_result_t GxfContext::destroy()
 
 void GxfContext::onStop()
 {
+    for (auto& component : mComponents)
+    {
+        component.second->onStop();
+        component.second->mDoStart = true;
+    }
 }
 void GxfContext::onComponentAdd(const pxr::UsdPrim& prim)
 {

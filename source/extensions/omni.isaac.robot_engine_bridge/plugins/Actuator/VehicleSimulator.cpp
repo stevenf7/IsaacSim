@@ -139,7 +139,11 @@ void VehicleSimulator::onStart()
 void VehicleSimulator::onStop()
 {
     mAveragedAcceleration.clear();
-    mCache.state = 0;
+    if (mCache.wheels)
+    {
+        delete mCache.wheels;
+    }
+    mCache = Cache();
     mPrevForwardSpeed = 0;
     mCurrentSteeringAngle = 0;
 }

@@ -148,7 +148,7 @@ class Extension(omni.ext.IExt):
             self._is_created = True
             self._scene_loader["create_sdk"].text = "Destroy Application"
         else:
-            result, status = omni.kit.commands.execute("DestroyRobotEngineBridgeApplication")
+            result, status = omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")
             self._is_created = False
             self._scene_loader["create_sdk"].text = "Create Application"
 
