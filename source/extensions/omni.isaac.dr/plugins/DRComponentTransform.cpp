@@ -303,6 +303,20 @@ void DRComponentTransform::tick()
                 averagelookAtTarget += mLookAtTargetOffset;
                 matrix.SetLookAt(eyeUsd, averagelookAtTarget, mUpUsd);
                 finalTransformMat = matrix.GetInverse();
+                // If eyeUsd asset is not a camera
+                if (prim.GetTypeName().GetString() != "Camera")
+                {
+                    pxr::GfMatrix4d newMatrix(0.0);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        newMatrix[0][i] = finalTransformMat[2][i];
+                        newMatrix[1][i] = finalTransformMat[0][i];
+                        newMatrix[2][i] = finalTransformMat[1][i];
+                        newMatrix[3][i] = finalTransformMat[3][i];
+                    }
+                    pxr::GfRotation invertRot(mUpUsd, 180);
+                    finalTransformMat.SetRotateOnly(newMatrix.ExtractRotation() * invertRot);
+                }
             }
             else
             {
@@ -396,10 +410,13 @@ void DRComponentTransform::tick()
                     rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
                 }
                 auto newTranslation = pxr::GfVec3f(scaledTransformMat.ExtractTranslation());
-                auto pxBodyRotation = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
+                auto newRotation = scaledTransformMat.ExtractRotationQuat();
+                const pxr::GfVec3d imag = newRotation.GetImaginary();
+                const double w = newRotation.GetReal();
+                // auto pxBodyRotation = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
                 DcTransform t;
                 t.p = { newTranslation[0], newTranslation[1], newTranslation[2] };
-                t.r = pxBodyRotation.r;
+                t.r = { (float)imag[0], (float)imag[1], (float)imag[2], (float)w };
                 mDynamicControlPtr->wakeUpRigidBody(rigidBodyHandle);
                 mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
             }
