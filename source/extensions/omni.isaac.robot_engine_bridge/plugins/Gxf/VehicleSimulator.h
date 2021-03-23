@@ -80,10 +80,7 @@ struct Cache
 
     size_t vehicleId;
     ::physx::PxVehicleWheels* mVehiclePtr = nullptr;
-    union
-    {
-        std::vector<WheelCache>* wheels;
-    };
+    std::vector<WheelCache>* wheels = nullptr;
     float peakDriveTorque; // only used for DriveType::eBASIC
     DriveType::Enum driveType;
     uint8_t state;
