@@ -14,6 +14,7 @@
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
+#include <omni/timeline/ITimeline.h>
 #include <pxr/usd/usd/inherits.h>
 #include <rangeSensorSchema/ultrasonicEmitter.h>
 
@@ -33,26 +34,47 @@ class UltrasonicEmitter : public utils::ComponentBase<pxr::RangeSensorSchemaUltr
 public:
     UltrasonicEmitter()
     {
+        mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
     }
 
     ::physx::PxVec3 getOrigin()
     {
+        return mOrigin;
+    }
+    void updatePose()
+    {
+
+        mParentPrimTimeCode = pxr::UsdTimeCode::Default();
+        if (mIsParentPrimTimeSampled)
+        {
+            mParentPrimTimeCode = round(mTimeline->getCurrentTime() * mStage->GetTimeCodesPerSecond());
+        }
+
         carb::fastcache::Transform parentTrans;
         parentTrans.orientation = { 0, 0, 0, 1 };
         auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
-        ::physx::PxVec3 origin = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
-        ::physx::PxQuat theta0 = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
+        mOrigin = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
+        mTheta0 = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
         // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
         if (mParentPrim.IsA<pxr::UsdGeomXformable>())
         {
-            mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
+#if 0
+        mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
             ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
-            origin = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(origin);
-            theta0 = parentRot * theta0;
-        }
-        return origin;
-    }
+            mOrigin = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(mOrigin);
+            mTheta0 = parentRot * mTheta0;
+#else
 
+            pxr::GfMatrix4d parentUSDTransform =
+                omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode);
+            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.ExtractRotationQuat());
+            mOrigin = utils::conversions::asPxVec3(parentUSDTransform.ExtractTranslation()) + parentRot.rotate(mOrigin);
+            mTheta0 = parentRot * mTheta0;
+            // CARB_LOG_ERROR("%f %f %f", parentUSDTransform.ExtractTranslation()[0],
+            //                parentUSDTransform.ExtractTranslation()[1], parentUSDTransform.ExtractTranslation()[2]);
+#endif
+        }
+    }
     void doScan(float maxDepth, float minDepth, ::physx::PxScene* pxScenePtr)
     {
         mPxScene = pxScenePtr;
@@ -61,38 +83,26 @@ public:
         {
             return;
         }
-        carb::fastcache::Transform parentTrans;
-        parentTrans.orientation = { 0, 0, 0, 1 };
-        auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
-        ::physx::PxVec3 origin = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
-        ::physx::PxQuat theta0 = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
-        // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
-        if (mParentPrim.IsA<pxr::UsdGeomXformable>())
-        {
-            mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
-            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
-            origin = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(origin);
-            theta0 = parentRot * theta0;
-        }
+
         // mHitPosWorld.clear();
         // mNormals.clear();
 
         bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
         if (mDrawLines && mDrawPoints)
         {
-            scan_<true, true>(mRows, mCols, origin, theta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
+            scan_<true, true>(mRows, mCols, mOrigin, mTheta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
         }
         else if (mDrawLines)
         {
-            scan_<false, true>(mRows, mCols, origin, theta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
+            scan_<false, true>(mRows, mCols, mOrigin, mTheta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
         }
         else if (mDrawPoints)
         {
-            scan_<true, false>(mRows, mCols, origin, theta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
+            scan_<true, false>(mRows, mCols, mOrigin, mTheta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
         }
         else
         {
-            scan_<false, false>(mRows, mCols, origin, theta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
+            scan_<false, false>(mRows, mCols, mOrigin, mTheta0, mZenith, mAzimuth, maxDepth, minDepth, zUp);
         }
     }
 
@@ -316,6 +326,14 @@ public:
         isaac::utils::safeGetAttribute(mPrim.GetAdjacencyListAttr(), mAdjacencyList);
 
         mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
+
+        if (mParentPrim.IsA<pxr::UsdGeomXformable>())
+        {
+            std::vector<double> times;
+            pxr::UsdGeomXformable(mParentPrim).GetTimeSamples(&times);
+
+            mIsParentPrimTimeSampled = times.size() > 1;
+        }
     }
 
     std::vector<float>& getEnvelope()
@@ -411,11 +429,17 @@ private:
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
     omni::physx::IPhysx* mPhysx = nullptr;
     ::physx::PxScene* mPxScene = nullptr;
+    omni::timeline::ITimeline* mTimeline = nullptr;
     bool mDrawLines = false;
     bool mDrawPoints = false;
 
     std::vector<float> mZenith;
     std::vector<float> mAzimuth;
+    ::physx::PxVec3 mOrigin;
+    ::physx::PxQuat mTheta0;
+
+    pxr::UsdTimeCode mParentPrimTimeCode;
+    bool mIsParentPrimTimeSampled = false;
 };
 }
 }

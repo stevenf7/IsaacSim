@@ -42,6 +42,7 @@ public:
     ~UltrasonicSensor();
 
     virtual void onStart();
+    virtual void preTick();
     virtual void tick();
     virtual void onComponentChange();
 

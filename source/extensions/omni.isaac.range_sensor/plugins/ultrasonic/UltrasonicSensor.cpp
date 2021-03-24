@@ -197,7 +197,13 @@ auto USSTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
     USSTaskData* taskData = reinterpret_cast<USSTaskData*>(taskArg);
     taskData->emitter->doScan(taskData->maxDepth, taskData->minDepth, taskData->pxScene);
 };
-
+void UltrasonicSensor::preTick()
+{
+    for (size_t i = 0; i < mEmitters.size(); i++)
+    {
+        mEmitters[i]->updatePose();
+    }
+}
 void UltrasonicSensor::tick()
 {
 
