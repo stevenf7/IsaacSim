@@ -53,7 +53,8 @@ Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildTyp
 
 #### Linux/Windows
 - Install Ubuntu 18.04 (linux-x86_64) / Windows 10 version 1809 (windows-x86_64 and DXR)
-- Install NVIDIA driver 450.57 (Linux) / NVIDIA driver 451.48 (Windows)
+- Install NVIDIA driver 460.62 (Linux) / NVIDIA driver 451.48 (Windows)
+    * [Linux] (http://eris-dl-b006.nvidia.com)
 - Install VS Code (recommended) or VS2017 with [SDK 10.17763+](https://go.microsoft.com/fwlink/?LinkID=2023014)
 - (Optional) Install Vulkan SDK 1.2.148.1:
     * Required for debug builds and validation layers only.
