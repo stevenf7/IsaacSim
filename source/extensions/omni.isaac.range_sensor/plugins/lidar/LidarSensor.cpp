@@ -196,6 +196,41 @@ void LidarSensor::dumpData(int start, int stop, double dt)
     }
 }
 
+void LidarSensor::preTick()
+{
+    // auto usdStageId = PXR_NS::UsdUtilsStageCache::Get().GetId(mStage).ToLongInt();
+    // mStageInProgress->prefetchPrim(usdStageId, asInt(mPrim.GetPath()));
+    // When fastcache is called the first time, we have a race condition if multiple sensors try to access fastcache
+    carb::fastcache::Transform parentTrans;
+    parentTrans.orientation = { 0, 0, 0, 1 };
+    auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
+    mFinalTranslation = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
+    mFinalRotation = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
+    // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
+    if (mParentPrim.IsA<pxr::UsdGeomXformable>())
+    {
+#if 0
+        mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
+        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
+        mFinalTranslation = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(mFinalTranslation);
+#else
+
+        pxr::GfMatrix4d parentUSDTransform =
+            omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode);
+        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.ExtractRotationQuat());
+        mFinalTranslation =
+            utils::conversions::asPxVec3(parentUSDTransform.ExtractTranslation()) + parentRot.rotate(mFinalTranslation);
+        // CARB_LOG_ERROR("%f %f %f", parentUSDTransform.ExtractTranslation()[0],
+        //                parentUSDTransform.ExtractTranslation()[1], parentUSDTransform.ExtractTranslation()[2]);
+#endif
+        mFinalRotation = parentRot * mFinalRotation;
+    }
+    // else
+    // {
+    // CARB_LOG_ERROR("NOT UsdGeomXformable");
+    // }
+    // CARB_LOG_ERROR("PRE TICK");
+}
 
 void LidarSensor::tick()
 {
@@ -208,19 +243,6 @@ void LidarSensor::tick()
         return;
     }
 
-    carb::fastcache::Transform parentTrans;
-    parentTrans.orientation = { 0, 0, 0, 1 };
-    auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
-    ::physx::PxVec3 finalTranslation = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
-    ::physx::PxQuat finalRotation = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
-    // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
-    if (mParentPrim.IsA<pxr::UsdGeomXformable>())
-    {
-        mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
-        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
-        finalTranslation = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(finalTranslation);
-        finalRotation = parentRot * finalRotation;
-    }
 
     double elapsedTime = mTimeDelta;
     bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
@@ -232,19 +254,19 @@ void LidarSensor::tick()
 
         if (mDrawLines && mDrawPoints)
         {
-            scan<true, true>(0, mCols, mRows, mCols, finalTranslation, finalRotation, zUp);
+            scan<true, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
         }
         else if (mDrawLines)
         {
-            scan<false, true>(0, mCols, mRows, mCols, finalTranslation, finalRotation, zUp);
+            scan<false, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
         }
         else if (mDrawPoints)
         {
-            scan<true, false>(0, mCols, mRows, mCols, finalTranslation, finalRotation, zUp);
+            scan<true, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
         }
         else
         {
-            scan<false, false>(0, mCols, mRows, mCols, finalTranslation, finalRotation, zUp);
+            scan<false, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
         }
         dumpData(0, mCols, elapsedTime);
 
@@ -273,22 +295,23 @@ void LidarSensor::tick()
         // Now scan the columns and dump the data
         if (mDrawLines && mDrawPoints)
         {
-            scan<true, true>(mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation, zUp);
+            scan<true, true>(
+                mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
         }
         else if (mDrawLines)
         {
             scan<false, true>(
-                mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation, zUp);
+                mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
         }
         else if (mDrawPoints)
         {
             scan<true, false>(
-                mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation, zUp);
+                mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
         }
         else
         {
             scan<false, false>(
-                mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, finalTranslation, finalRotation, zUp);
+                mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
         }
         dumpData(mLastCol, mLastCol + mLastNumColsTicked, simulateTime);
 

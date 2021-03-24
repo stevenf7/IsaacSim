@@ -280,6 +280,33 @@ void GenericSensor::dumpData()
 }
 
 
+void GenericSensor::preTick()
+{
+
+    carb::fastcache::Transform parentTrans;
+    parentTrans.orientation = { 0, 0, 0, 1 };
+    auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
+    mFinalTranslation = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
+    mFinalRotation = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
+    // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
+    if (mParentPrim.IsA<pxr::UsdGeomXformable>())
+    {
+#if 0
+        mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
+        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
+        mFinalTranslation = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(mFinalTranslation);
+#else
+
+        pxr::GfMatrix4d parentUSDTransform =
+            omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode);
+        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.ExtractRotationQuat());
+        mFinalTranslation =
+            utils::conversions::asPxVec3(parentUSDTransform.ExtractTranslation()) + parentRot.rotate(mFinalTranslation);
+#endif
+        mFinalRotation = parentRot * mFinalRotation;
+    }
+}
+
 void GenericSensor::tick()
 {
     mLineDrawing->clear();
@@ -289,21 +316,6 @@ void GenericSensor::tick()
     {
         CARB_LOG_ERROR("Physics Scene does not exist");
         return;
-    }
-
-
-    carb::fastcache::Transform parentTrans;
-    parentTrans.orientation = { 0, 0, 0, 1 };
-    auto genericLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
-    ::physx::PxVec3 finalTranslation = utils::conversions::asPxVec3(genericLocalTrans.ExtractTranslation());
-    ::physx::PxQuat finalRotation = utils::conversions::asPxQuat(genericLocalTrans.ExtractRotation().GetQuat());
-    // Make sure the parent prim has a transform, otherwise use local transform from the generic prim itself
-    if (mParentPrim.IsA<pxr::UsdGeomXformable>())
-    {
-        mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
-        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
-        finalTranslation = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(finalTranslation);
-        finalRotation = parentRot * finalRotation;
     }
 
     bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
@@ -328,22 +340,22 @@ void GenericSensor::tick()
         wrapData(mLastSample);
         if (mDrawLines && mDrawPoints)
         {
-            scan<true, true>(finalTranslation, finalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
+            scan<true, true>(mFinalTranslation, mFinalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
                              mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
         else if (mDrawLines)
         {
-            scan<false, true>(finalTranslation, finalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
+            scan<false, true>(mFinalTranslation, mFinalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
                               mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
         else if (mDrawPoints)
         {
-            scan<true, false>(finalTranslation, finalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
+            scan<true, false>(mFinalTranslation, mFinalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
                               mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
         else
         {
-            scan<false, false>(finalTranslation, finalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
+            scan<false, false>(mFinalTranslation, mFinalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
                                mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
         }
         dumpData();

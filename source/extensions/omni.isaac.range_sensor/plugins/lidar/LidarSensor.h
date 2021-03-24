@@ -38,6 +38,7 @@ public:
     ~LidarSensor();
 
     virtual void onStart();
+    virtual void preTick();
     virtual void tick();
     virtual void onComponentChange();
 
@@ -261,6 +262,8 @@ private:
     std::vector<carb::Float3> mHitPos;
 
     const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
+    ::physx::PxVec3 mFinalTranslation;
+    ::physx::PxQuat mFinalRotation;
 };
 
 

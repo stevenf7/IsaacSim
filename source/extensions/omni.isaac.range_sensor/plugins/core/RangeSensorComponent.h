@@ -19,6 +19,7 @@
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/renderer/IDebugDraw.h>
+#include <omni/timeline/ITimeline.h>
 #include <rangeSensorSchema/rangeSensor.h>
 #include <usdPhysics/scene.h>
 
@@ -54,6 +55,7 @@ public:
     {
         mPhysx = physxPtr;
         mFastCachePtr = fastCachePtr;
+        mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
 
         mLineDrawing = std::make_shared<omni::isaac::utils::drawing::PrimitiveDrawingHelper>(
             omni::usd::UsdContext::getContext(), debugDrawPtr,
@@ -114,6 +116,11 @@ public:
             }
         }
     }
+    /**
+     * @brief Called before tick, sequential, used to get sensor transforms
+     *
+     */
+    virtual void preTick(){};
 
     /**
      * @brief Called every frame in parallel
@@ -174,6 +181,14 @@ public:
         mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
         // printf("PARENT: %s\n", mParentPrim.GetPath().GetString().c_str());
         mMetersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->mStage));
+
+        if (mParentPrim.IsA<pxr::UsdGeomXformable>())
+        {
+            std::vector<double> times;
+            pxr::UsdGeomXformable(mParentPrim).GetTimeSamples(&times);
+
+            mIsParentPrimTimeSampled = times.size() > 1;
+        }
     }
 
     /**
@@ -188,6 +203,12 @@ public:
         this->mTimeNanoSeconds = timeNano;
         this->mTimeSeconds = timeSeconds;
         this->mTimeDelta = dt;
+
+        mParentPrimTimeCode = pxr::UsdTimeCode::Default();
+        if (mIsParentPrimTimeSampled)
+        {
+            mParentPrimTimeCode = round(mTimeline->getCurrentTime() * this->mStage->GetTimeCodesPerSecond());
+        }
     }
 
     /**
@@ -234,8 +255,12 @@ protected:
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
     omni::physx::IPhysx* mPhysx = nullptr;
     ::physx::PxScene* mPxScene = nullptr;
+    omni::timeline::ITimeline* mTimeline = nullptr;
     std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> mLineDrawing;
     std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> mPointDrawing;
+
+    pxr::UsdTimeCode mParentPrimTimeCode;
+    bool mIsParentPrimTimeSampled = false;
 };
 
 typedef RangeSensorComponentBase<pxr::RangeSensorSchemaRangeSensor> RangeSensorComponent;

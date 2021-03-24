@@ -119,6 +119,7 @@ public:
                 component.second->onStart();
                 component.second->mDoStart = false;
             }
+            component.second->preTick();
         }
 
 #if 1
