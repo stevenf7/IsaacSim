@@ -16,6 +16,7 @@
 #include <carb/Types.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/timeline/ITimeline.h>
 #include <robotEngineBridgeSchema/robotEnginePoseTree.h>
 
 #include <string>
@@ -72,6 +73,7 @@ private:
                            bool useLocalPose);
 
     carb::Framework* framework = nullptr;
+    omni::timeline::ITimeline* mTimeline = nullptr;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
 
     /// The name of the channel for AtlasFrontend component
