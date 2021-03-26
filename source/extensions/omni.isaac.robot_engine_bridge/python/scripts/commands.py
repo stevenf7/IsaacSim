@@ -244,6 +244,9 @@ class RobotEngineBridgeCreateVehicle(omni.kit.commands.Command):
         output_component: str = "output",
         output_channel: str = "vehicle_state",
         vehicle_prim_rel=None,
+        history_length=100,
+        use_pid=False,
+        controller_pid_values=(1, 1, 1),
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -269,6 +272,9 @@ class RobotEngineBridgeCreateVehicle(omni.kit.commands.Command):
                     rel_paths.AddTarget(self._vehicle_prim_rel[0])
                 else:
                     carb.log_warn("only one vehicle prim rel target can be specified")
+            self._prim.CreateHistoryLengthAttr(self._history_length)
+            self._prim.CreateUsePIDAttr(self._use_pid)
+            self._prim.CreateControllerPIDValuesAttr(self._controller_pid_values)
         return self._prim
 
     def undo(self):

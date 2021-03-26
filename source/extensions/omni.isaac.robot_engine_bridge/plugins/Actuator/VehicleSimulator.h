@@ -9,6 +9,7 @@
 
 #pragma once
 #include "../Core/IsaacComponent.h"
+#include "../Utils/IsaacPID.h"
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/physx/IPhysx.h>
@@ -151,8 +152,13 @@ private:
     float mCurrentSteeringAngle = 0.0f;
 
     float mPrevForwardSpeed = 0;
+    float mForwardAcceleration = 0;
+    float mPrevForwardAcceleration = 0;
     std::deque<float> mAveragedAcceleration;
-    const size_t mMovingAverageSize = 200;
+    int mMovingAverageSize = 200;
+
+    std::unique_ptr<PIDController> mPID;
+    bool mUsePID = false;
 };
 }
 }
