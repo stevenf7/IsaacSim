@@ -55,6 +55,8 @@ PoseTreeComponent::PoseTreeComponent(omni::isaac::dynamic_control::DynamicContro
         CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
         return;
     }
+
+    mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
 }
 
 PoseTreeComponent::~PoseTreeComponent()
@@ -194,17 +196,27 @@ void PoseTreeComponent::addPrimToPoseTree(const pxr::UsdPrim& prim,
     else if (prim_type == omni::isaac::dynamic_control::eDcObjectNone)
     {
         // Calculate pose
+
+        pxr::UsdTimeCode primTimeCode = pxr::UsdTimeCode::Default();
+        std::vector<double> times;
+        pxr::UsdGeomXformable(prim).GetTimeSamples(&times);
+
+        if (times.size() > 1)
+        {
+            primTimeCode = round(mTimeline->getCurrentTime() * this->mStage->GetTimeCodesPerSecond());
+        }
+
         pxr::GfQuatd usdBodyRotation;
         pxr::GfVec3d usdBodyTranslation;
         if (useLocalPose)
         {
-            const pxr::GfTransform usdBodyPose(omni::usd::UsdUtils::getLocalTransformMatrix(prim));
+            const pxr::GfTransform usdBodyPose(omni::usd::UsdUtils::getLocalTransformMatrix(prim, primTimeCode));
             usdBodyTranslation = usdBodyPose.GetTranslation();
             usdBodyRotation = usdBodyPose.GetRotation().GetQuat();
         }
         else
         {
-            const pxr::GfTransform usdBodyPose(omni::usd::UsdUtils::getWorldTransformMatrix(prim));
+            const pxr::GfTransform usdBodyPose(omni::usd::UsdUtils::getWorldTransformMatrix(prim, primTimeCode));
             usdBodyTranslation = usdBodyPose.GetTranslation();
             usdBodyRotation = usdBodyPose.GetRotation().GetQuat();
         }
