@@ -38,6 +38,8 @@
 #include <physxSchema/physxVehicleGlobalSettings.h>
 
 #include "gems/control_types/ackermann_drive.hpp"
+
+
 namespace omni
 {
 namespace isaac
@@ -189,7 +191,7 @@ void VehicleSimulator::tick()
             dynamicActor->getGlobalPose().transform(dynamicActor->getCMassLocalPose());
         float forwardSpeed = dynamicActor->getLinearVelocity().dot(vehicleChassisTrnsfm.q.rotate(mCache.forward));
         float accel = (forwardSpeed - mPrevForwardSpeed) / mTimeDelta;
-        if (mAveragedAcceleration.size() > mMovingAverageSize)
+        if (mAveragedAcceleration.size() > static_cast<size_t>(mMovingAverageSize))
         {
             mAveragedAcceleration.pop_front();
         }
@@ -234,20 +236,25 @@ void VehicleSimulator::tick()
 
                 ::physx::PxVehicleNoDrive* vehicleNoDrive = static_cast<::physx::PxVehicleNoDrive*>(mCache.mVehiclePtr);
                 // const float signMultiplier = mInReverse ? -1.0f : 1.0f;
-                const float acceleration = control.acceleration() / mUnitScale; // m/s^2 -> cm/s^2
+                const float requestedAcceleration = control.acceleration() / mUnitScale; // m/s^2 -> cm/s^2
 
                 // CARB_LOG_ERROR("Chassis speed forward %f cm/s, computed forward accel: %f cm/s^2",
                 // mPrevForwardSpeed,
                 //                mForwardAcceleration);
 
-
+                float commandedAcceleration = requestedAcceleration;
+                if (mUsePID)
+                {
+                    commandedAcceleration =
+                        mPID->update(requestedAcceleration, mForwardAcceleration, mPrevForwardAcceleration);
+                }
                 float driveTorque = 0;
 
-                driveTorque = acceleration * (*mCache.wheels)[0].radius * mCache.totalMass / mCache.numDrivenWheels;
+                driveTorque =
+                    commandedAcceleration * (*mCache.wheels)[0].radius * mCache.totalMass / mCache.numDrivenWheels;
 
-                // CARB_LOG_ERROR("requested acceleration: %f cm/s^2, drive torque: %f N*cm on %d wheels",
-                // acceleration,
-                //                driveTorque, mCache.numDrivenWheels);
+                // CARB_LOG_INFO("requested acceleration: %f commanded %f, drive torque: %f", requestedAcceleration,
+                //               commandedAcceleration, driveTorque);
 
 
                 // steering angle in radians
@@ -302,6 +309,8 @@ void VehicleSimulator::tick()
 
         publish(mOutputComponent, mStateChannelName, std::move(maybe_message.value()));
     }
+
+    mPrevForwardAcceleration = mForwardAcceleration;
 }
 
 void VehicleSimulator::fillCache()
@@ -555,6 +564,18 @@ void VehicleSimulator::onComponentChange()
 
     mVehiclePath = targets[0];
     mVehiclePrim = mStage->GetPrimAtPath(mVehiclePath);
+
+    isaac::utils::safeGetAttribute(typedPrim.GetHistoryLengthAttr(), mMovingAverageSize);
+    isaac::utils::safeGetAttribute(typedPrim.GetUsePIDAttr(), mUsePID);
+
+    mAveragedAcceleration.clear(); // clear this in case the requested average moving size was changed.
+
+    if (mUsePID)
+    {
+        pxr::GfVec3f pidValues;
+        isaac::utils::safeGetAttribute(typedPrim.GetControllerPIDValuesAttr(), pidValues);
+        mPID = std::make_unique<PIDController>(pidValues[0], pidValues[1], pidValues[2]);
+    }
 }
 }
 }
