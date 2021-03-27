@@ -540,6 +540,7 @@ class RobotEngineBridgeCreateTeleport(omni.kit.commands.Command):
         enabled: bool = True,
         input_component: str = "input",
         input_channel: str = "teleport",
+        teleport_prims_rel=None,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -557,7 +558,10 @@ class RobotEngineBridgeCreateTeleport(omni.kit.commands.Command):
         )
         if success and self._prim:
             setup_receiver(self._prim, self._input_component, self._input_channel)
-            self._prim.CreateTeleportPrimsRel()
+            rel_paths = self._prim.CreateTeleportPrimsRel()
+            if self._teleport_prims_rel is not None:
+                for path in self._teleport_prims_rel:
+                    rel_paths.AddTarget(path)
         return self._prim
 
     def undo(self):
