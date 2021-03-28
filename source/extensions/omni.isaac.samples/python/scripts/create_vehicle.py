@@ -231,6 +231,31 @@ class Extension(omni.ext.IExt):
             wheel_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set((0, 0, -90))
             wheel_prim.SetInstanceable(False)
 
+            # Set wheel physics parameters
+            for wheel_path in ["/LeftWheel1", "/RightWheel1", "/LeftWheel2", "/RightWheel2"]:
+                wheel_prim = PhysxSchema.PhysxVehicleWheel(self._stage.GetPrimAtPath(data.rootVehiclePath + wheel_path))
+                wheel_prim.GetMoiAttr().Set(34.34439)
+                wheel_prim.GetDampingRateAttr().Set(7.00906)
+                wheel_prim.GetMaxBrakeTorqueAttr().Set(100930.4375)
+                wheel_prim.GetMaxHandBrakeTorqueAttr().Set(0)
+
+            # Set suspension parameters
+            suspension_prim = PhysxSchema.PhysxVehicleSuspension(
+                self._stage.GetPrimAtPath(data.rootVehiclePath + "/Suspension1")
+            )
+            suspension_prim.GetSpringStrengthAttr().Set(42857.14062)
+            suspension_prim.GetSpringDamperRateAttr().Set(2634.93018)
+            suspension_prim.GetMaxCompressionAttr().Set(0.52949)
+            suspension_prim.GetMaxDroopAttr().Set(0.52949)
+
+            suspension_prim = PhysxSchema.PhysxVehicleSuspension(
+                self._stage.GetPrimAtPath(data.rootVehiclePath + "/Suspension2")
+            )
+            suspension_prim.GetSpringStrengthAttr().Set(42857.14062)
+            suspension_prim.GetSpringDamperRateAttr().Set(2634.93018)
+            suspension_prim.GetMaxCompressionAttr().Set(0.52949)
+            suspension_prim.GetMaxDroopAttr().Set(0.52949)
+
             # because we moved the wheels and chassis com, recompute everything
             omni.kit.commands.execute("PhysXVehicleWheelSimTransformsAutocomputeCommand", primPath=parent_path)
             # 1.63374 offset from origin
