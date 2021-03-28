@@ -2,6 +2,19 @@
 CHANGELOG
 **********
 
+[0.1.5] - 2021-03-28
+========================
+
+Added
+-------
+- Attribute randomization component: Randomize any usd attribute and variant
+- Specify different distribution per attribute
+
+Fixed
+------
+- Look-at movement behavior for non-camera assets
+- Set rotation properly for rigid body assets
+
 [0.1.4] - 2021-02-26
 ========================
 
