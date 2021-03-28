@@ -14,7 +14,7 @@ import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import omni.kit.utils
 import omni.kit.commands
-from pxr import Usd, UsdGeom, Sdf, UsdShade, UsdPhysics, Gf, PhysxSchema
+from pxr import Usd, UsdGeom, Sdf, UsdShade, UsdPhysics, Gf, PhysxSchema, UsdLux
 import weakref
 from omni.physx.scripts import utils
 from omni.physxvehicle.scripts.wizards.physxVehicleWizard import VehicleData, DRIVE_TYPE_NONE
@@ -31,7 +31,7 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            EXTENSION_NAME, width=600, height=400, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
 
         self._menu_items = [
@@ -62,7 +62,7 @@ class Extension(omni.ext.IExt):
     def _menu_callback(self):
         self._window.visible = not self._window.visible
 
-    def create_env(self):
+    def setup(self):
         self._usdContext = omni.usd.get_context()
         self._stage = self._usdContext.get_stage()
         UsdGeom.SetStageUpAxis(self._stage, UsdGeom.Tokens.z)
@@ -70,13 +70,15 @@ class Extension(omni.ext.IExt):
         self._metersPerUnit = UsdGeom.GetStageMetersPerUnit(self._stage)
         self._lengthScale = 1.0 / self._metersPerUnit
 
+    async def create_env(self):
+
         omni.kit.commands.execute(
             "AddGroundPlaneCommand",
             stage=self._stage,
             planePath="/groundPlane",
             axis="Z",
             size=1500.0,
-            position=Gf.Vec3f(0, 0, -1.0),
+            position=Gf.Vec3f(0, 0, 0.0),
             color=Gf.Vec3f(0.5),
         )
         gravityScale = 9.81 * self._lengthScale
@@ -92,11 +94,29 @@ class Extension(omni.ext.IExt):
         physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
         physxSceneAPI.CreateSolverTypeAttr("TGS")
 
+        await omni.kit.app.get_app().next_update_async()
+        omni.kit.commands.execute("DeletePrimsCommand", paths=["/World/defaultLight"])
+        await omni.kit.app.get_app().next_update_async()
+        omni.kit.commands.execute(
+            "CreatePrimCommand",
+            prim_path="/World/dometLight",
+            prim_type="DomeLight",
+            select_new_prim=False,
+            attributes={
+                UsdLux.Tokens.intensity: 1000,
+                UsdLux.Tokens.specular: 1,
+                UsdLux.Tokens.textureFile: "omniverse://ov-isaac-dev/Library/Materials/HDR/aircraft_workshop_01_2k.hdr",
+                UsdLux.Tokens.textureFormat: UsdLux.Tokens.latlong,
+                UsdGeom.Tokens.visibility: "inherited",
+            },
+        )
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     def create_vehicle(self):
-        # Create a simple env that the vehicle can drive on, will not be
-        self.create_env()
+        # Create a simple env that the vehicle can drive on
+        self.setup()
+        asyncio.ensure_future(self.create_env())
 
         data = VehicleData()
         # set paths for where vehicle prims are created
@@ -109,13 +129,16 @@ class Extension(omni.ext.IExt):
         data.side = data.forward.GetCross(data.up)
 
         # units are in meters, and then scaled by the stage units
-        data.chassisLength = 4.0 * self._lengthScale
-        data.chassisWidth = 2.0 * self._lengthScale
+        data.chassisLength = 4.7 * self._lengthScale
+        data.chassisWidth = 0.87749 * 2.0 * self._lengthScale
         data.chassisHeight = 1.0 * self._lengthScale
-        data.chassisMass = 1800.0  # KG
+        data.chassisMass = 1711.1156  # KG
         # set the radius scale which is multiplied by the chassis length inside of the reset_axles function
-        data._defaultRadiusScale = 0.35 / data.chassisLength
-        data.driveTypeIndex = DRIVE_TYPE_NONE
+        data._defaultRadiusScale = 0.4051 / data.chassisLength
+        data._defaultWidthScale = 0.29608 / (data._defaultRadiusScale * data.chassisLength)
+        # we need to set this if sdk control is enabled, by default the vehicle can be driven by keyboard
+        if self._reb.get_value_as_bool():
+            data.driveTypeIndex = DRIVE_TYPE_NONE
 
         data.reset_axles()
         # reset_axels also resets steering and drive, so do it after
@@ -123,6 +146,8 @@ class Extension(omni.ext.IExt):
         data.maxSteerAngle[1] = 0.0  # rear axle doesn't have steering
         data.driven[0] = True
         data.driven[1] = False  # Rear axle is not driven
+        # data.weightDistribution[0]=100
+        # data.weightDistribution[1]=0
 
         # Made the initialization part async so we can run updates between steps to make sure everything is initialized properly in usd
         async def _task():
@@ -138,6 +163,7 @@ class Extension(omni.ext.IExt):
 
             vehicle_chassis = self._stage.GetPrimAtPath(parent_path)
             vehicle_chassis.GetPrim().GetAttribute("xformOp:translate").Set((0, 0, 0))
+
             self._timeline.play()
             await omni.kit.app.get_app().next_update_async()
             self._timeline.stop()
@@ -145,6 +171,72 @@ class Extension(omni.ext.IExt):
             # recompute offsets because chassis moved
             omni.kit.commands.execute("PhysXVehicleWheelSimTransformsAutocomputeCommand", primPath=parent_path)
             await omni.kit.app.get_app().next_update_async()
+
+            mass_api = UsdPhysics.MassAPI.Get(self._stage, Sdf.Path(parent_path))
+            mass_api.GetCenterOfMassAttr().Set(Gf.Vec3d(1.54077, 0, 0.45238))
+            chassis_prim = self._stage.GetPrimAtPath(parent_path + "/ChassisCollision")
+            chassis_prim.GetPrim().GetAttribute("xformOp:translate").Set((1.63374, 0, 0.75185))
+
+            wheel_path = "omniverse://drivesim2-dev/Projects/ds2_content/common_assets/vehicles/mercedes/vision_eqs/2021/USD/instance/wheel.usd"
+            chassis_path = "omniverse://drivesim2-dev/Projects/ds2_content/common_assets/vehicles/mercedes/vision_eqs/2021/USD/instance/body.usd"
+            chassis_lights_path = (
+                "omniverse://drivesim2-dev/Users/hmazhar@nvidia.com/mercedes/vision_eqs/2021/USD/light_prims.usd"
+            )
+            omni.kit.commands.execute("DeletePrimsCommand", paths=[parent_path + "/ChassisRender"])
+            chassis_prim = self._stage.DefinePrim(parent_path + "/ChassisRender", "Xform")
+            chassis_prim.GetReferences().AddReference(chassis_path)
+            chassis_prim.GetPrim().GetAttribute("xformOp:translate").Set((1.63374, 0, 0))
+            chassis_prim.SetInstanceable(False)
+
+            chassis_lights = self._stage.DefinePrim(parent_path + "/ChassisLights", "Xform")
+            chassis_lights.GetReferences().AddReference(chassis_lights_path)
+            chassis_lights.GetPrim().GetAttribute("xformOp:translate").Set((0, 0, 0))
+            chassis_lights.SetInstanceable(False)
+
+            wheel_prim = self._stage.GetPrimAtPath(parent_path + "/LeftWheel1References")
+            wheel_prim.GetAttribute("xformOp:translate").Set((3.26394, 0.87749, 0.40457))
+
+            wheel_prim = self._stage.GetPrimAtPath(parent_path + "/RightWheel1References")
+            wheel_prim.GetAttribute("xformOp:translate").Set((3.26394, -0.87749, 0.40457))
+
+            wheel_prim = self._stage.GetPrimAtPath(parent_path + "/LeftWheel2References")
+            wheel_prim.GetAttribute("xformOp:translate").Set((0, 0.87749, 0.40457))
+
+            wheel_prim = self._stage.GetPrimAtPath(parent_path + "/RightWheel2References")
+            wheel_prim.GetAttribute("xformOp:translate").Set((0, -0.87749, 0.40457))
+
+            # Delete existing wheel visuals
+            omni.kit.commands.execute("DeletePrimsCommand", paths=[parent_path + "/LeftWheel1References/Render"])
+            omni.kit.commands.execute("DeletePrimsCommand", paths=[parent_path + "/RightWheel1References/Render"])
+            omni.kit.commands.execute("DeletePrimsCommand", paths=[parent_path + "/LeftWheel2References/Render"])
+            omni.kit.commands.execute("DeletePrimsCommand", paths=[parent_path + "/RightWheel2References/Render"])
+
+            wheel_prim = self._stage.DefinePrim(parent_path + "/LeftWheel1References/Render", "Xform")
+            wheel_prim.GetReferences().AddReference(wheel_path)
+            wheel_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set((0, 0, 90))
+            wheel_prim.SetInstanceable(False)
+
+            wheel_prim = self._stage.DefinePrim(parent_path + "/RightWheel1References/Render", "Xform")
+            wheel_prim.GetReferences().AddReference(wheel_path)
+            wheel_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set((0, 0, -90))
+            wheel_prim.SetInstanceable(False)
+
+            wheel_prim = self._stage.DefinePrim(parent_path + "/LeftWheel2References/Render", "Xform")
+            wheel_prim.GetReferences().AddReference(wheel_path)
+            wheel_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set((0, 0, 90))
+            wheel_prim.SetInstanceable(False)
+
+            wheel_prim = self._stage.DefinePrim(parent_path + "/RightWheel2References/Render", "Xform")
+            wheel_prim.GetReferences().AddReference(wheel_path)
+            wheel_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set((0, 0, -90))
+            wheel_prim.SetInstanceable(False)
+
+            # because we moved the wheels and chassis com, recompute everything
+            omni.kit.commands.execute("PhysXVehicleWheelSimTransformsAutocomputeCommand", primPath=parent_path)
+            # 1.63374 offset from origin
+            # 0/1 3.26394, +/- 0.87749, 0.40457
+            # 2/3 0, +/- 0.87749, 0.40457
+
             if self._reb.get_value_as_bool():
                 result, prim = omni.kit.commands.execute(
                     "RobotEngineBridgeCreateVehicle",
@@ -157,17 +249,17 @@ class Extension(omni.ext.IExt):
                     vehicle_prim_rel=[parent_path],
                 )
             await self.create_imu(parent_path)
-
             await self.create_cameras(parent_path)
-            await self.create_lidars(parent_path, data.chassisLength * 0.5, data.chassisWidth * 0.5)
-            await self.create_ultrasonic(parent_path)
+            await self.create_lidars(
+                parent_path, data.chassisLength * 0.5, data.chassisWidth * 0.5, Gf.Vec3d(1.63374, 0, 0)
+            )
+            await self.create_ultrasonic(parent_path, Gf.Vec3d(1.63374, 0, 0))
 
             # move camera to location vehicle will be created at
-
-        self._viewport.set_camera_position(
-            "/OmniverseKit_Persp", data.chassisLength * 2, data.chassisWidth * 2, data.chassisHeight * 2, True
-        )
-        self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            self._viewport.set_camera_position(
+                "/OmniverseKit_Persp", data.chassisLength * 1.5, data.chassisWidth * 2, data.chassisHeight * 2, True
+            )
+            self._viewport.set_camera_target("/OmniverseKit_Persp", 2.0, 0, 0, True)
 
         asyncio.ensure_future(_task())
 
@@ -233,16 +325,20 @@ class Extension(omni.ext.IExt):
                 )
         pass
 
-    async def create_lidars(self, parent, chassis_length, chassis_width):
+    async def create_lidars(self, parent, chassis_length, chassis_width, sensor_offset):
         await omni.kit.app.get_app().next_update_async()
-        lidar_offset = 0.1 * self._lengthScale
+        # Sensor paths
         names = ["/Lidar_FrontLeft", "/Lidar_FrontRight", "/Lidar_RearLeft", "/Lidar_RearRight"]
+        # specify the REB path, channel, timing offset
         reb_data = [
             ("/REB_Lidar_FrontLeft", "output", "rangescan", 0.0),
             ("/REB_Lidar_FrontRight", "output", "rangescan_2", 100.0),
             ("/REB_Lidar_RearLeft", "output", "rangescan_3", 200.0),
             ("/REB_Lidar_RearRight", "output", "rangescan_4", 300.0),
         ]
+        # move the lidar sensor out from the chassis by a fixed amount
+        lidar_offset = 0.1 * self._lengthScale
+        # specify poses and forward directions
         poses = [
             (Gf.Vec3d(chassis_length + lidar_offset, chassis_width + lidar_offset, 0.0), Gf.Vec3d(0, 0, 45)),
             (Gf.Vec3d(-(chassis_length + lidar_offset), chassis_width + lidar_offset, 0.0), Gf.Vec3d(0, 0, 135)),
@@ -267,7 +363,7 @@ class Extension(omni.ext.IExt):
                 high_lod=False,
                 yaw_offset=yaw_offsets[i],
             )
-            lidar.GetPrim().GetAttribute("xformOp:translate").Set(poses[i][0])
+            lidar.GetPrim().GetAttribute("xformOp:translate").Set(poses[i][0] + sensor_offset)
             lidar.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(poses[i][1])
             if self._reb.get_value_as_bool():
                 result, prim = omni.kit.commands.execute(
@@ -282,7 +378,7 @@ class Extension(omni.ext.IExt):
             await omni.kit.app.get_app().next_update_async()
             pass
 
-    async def create_ultrasonic(self, parent):
+    async def create_ultrasonic(self, parent, emitter_offset):
         await omni.kit.app.get_app().next_update_async()
         # position units are in meters, and then scaled by stage units
         emitter_poses = [
@@ -375,7 +471,7 @@ class Extension(omni.ext.IExt):
                 yaw_offset=0.0,
                 adjacency_list=adjacent,
             )
-            emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set(pose[1] * self._lengthScale)
+            emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set((pose[1] + emitter_offset) * self._lengthScale)
             emitter_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(pose[0])
             emitters.append(emitter_prim)
         emitter_paths = [emitter.GetPath() for emitter in emitters]
