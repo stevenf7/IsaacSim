@@ -261,24 +261,29 @@ class Extension(omni.ext.IExt):
             # 1.63374 offset from origin
             # 0/1 3.26394, +/- 0.87749, 0.40457
             # 2/3 0, +/- 0.87749, 0.40457
-
+            reb_root = parent_path + "/REB"
+            sensor_root = parent_path + "/Sensors"
+            camera_root = parent_path + "/Cameras"
             if self._reb.get_value_as_bool():
                 result, prim = omni.kit.commands.execute(
                     "RobotEngineBridgeCreateVehicle",
                     path="/REB_Vehicle",
-                    parent=parent_path,
+                    parent=reb_root,
                     input_component="input",
                     input_channel="vehicle_command",
                     output_component="output",
                     output_channel="vehicle_state",
                     vehicle_prim_rel=[parent_path],
+                    history_length=5,
+                    use_pid=True,
+                    controller_pid_values=(2.0, 0.5, 1.0),
                 )
-            await self.create_imu(parent_path)
-            await self.create_cameras(parent_path)
+            await self.create_imu(reb_root)
+            await self.create_cameras(reb_root, camera_root, Gf.Vec3d(1.63374, 0, 0))
             await self.create_lidars(
-                parent_path, data.chassisLength * 0.5, data.chassisWidth * 0.5, Gf.Vec3d(1.63374, 0, 0)
+                reb_root, sensor_root, data.chassisLength * 0.5, data.chassisWidth * 0.5, Gf.Vec3d(1.63374, 0, 0)
             )
-            await self.create_ultrasonic(parent_path, Gf.Vec3d(1.63374, 0, 0))
+            await self.create_ultrasonic(reb_root, sensor_root, Gf.Vec3d(1.63374, 0, 0))
 
             # move camera to location vehicle will be created at
             self._viewport.set_camera_position(
@@ -304,19 +309,19 @@ class Extension(omni.ext.IExt):
         # TODO add IMU rigid body + joint
         pass
 
-    async def create_cameras(self, parent):
+    async def create_cameras(self, reb_parent, sensor_parent, offset):
         cameras = [
-            ("/BEV_Camera", (0, 0, 5), (0, 0, 90), 74, "orthographic"),
-            ("/FOV120_frontcenter", (0.162, 0, 1.47), (90, 0, -90), 83.04, "perspective"),
-            ("/FOV120_backcenter", (-1.77, 0, 1.47), (90, 0.0, 90), 83.04, "perspective"),
+            ("/BEV_Camera", Gf.Vec3d(0, 0, 5), (0, 0, 90), 74, "orthographic"),
+            ("/FOV120_frontcenter", Gf.Vec3d(0.162, 0, 1.47), (90, 0, -90), 83.04, "perspective"),
+            ("/FOV120_backcenter", Gf.Vec3d(-1.77, 0, 1.47), (90, 0.0, 90), 83.04, "perspective"),
         ]
         reb_data = [("/REB_BEV_Camera", True), ("/REB_FOV120_frontcenter", False), ("/REB_FOV120_backcenter", False)]
         for i in range(len(cameras)):
             camera = cameras[i]
-            camera_prim = UsdGeom.Camera(self._stage.DefinePrim(parent + camera[0], "Camera"))
+            camera_prim = UsdGeom.Camera(self._stage.DefinePrim(sensor_parent + camera[0], "Camera"))
             xform_api = UsdGeom.XformCommonAPI(camera_prim)
             xform_api.SetRotate(camera[2], UsdGeom.XformCommonAPI.RotationOrderXYZ)
-            xform_api.SetTranslate(camera[1])
+            xform_api.SetTranslate(camera[1] + offset)
             # camera_prim.GetFocalLengthAttr().Set(FOCAL_LENGTH)
             camera_prim.GetHorizontalApertureAttr().Set(camera[3])
             camera_prim.GetProjectionAttr().Set(camera[4])
@@ -326,7 +331,7 @@ class Extension(omni.ext.IExt):
                 result, camera_prim = omni.kit.commands.execute(
                     "RobotEngineBridgeCreateCamera",
                     path=reb_data[i][0],
-                    parent=parent,
+                    parent=reb_parent,
                     rgb_output_component="output",
                     rgb_output_channel="color",
                     depth_output_component="output",
@@ -350,7 +355,7 @@ class Extension(omni.ext.IExt):
                 )
         pass
 
-    async def create_lidars(self, parent, chassis_length, chassis_width, sensor_offset):
+    async def create_lidars(self, reb_parent, sensor_parent, chassis_length, chassis_width, sensor_offset):
         await omni.kit.app.get_app().next_update_async()
         # Sensor paths
         names = ["/Lidar_FrontLeft", "/Lidar_FrontRight", "/Lidar_RearLeft", "/Lidar_RearRight"]
@@ -375,7 +380,7 @@ class Extension(omni.ext.IExt):
             result, lidar = omni.kit.commands.execute(
                 "CreateRangeSensorLidarCommand",
                 path=names[i],
-                parent=parent,
+                parent=sensor_parent,
                 min_range=0.4,
                 max_range=100.0,
                 draw_points=False,
@@ -394,7 +399,7 @@ class Extension(omni.ext.IExt):
                 result, prim = omni.kit.commands.execute(
                     "RobotEngineBridgeCreateLidar",
                     path=reb_data[i][0],
-                    parent=parent,
+                    parent=reb_parent,
                     output_component=reb_data[i][1],
                     output_channel=reb_data[i][2],
                     lidar_prim_rel=[lidar.GetPrim().GetPrimPath()],
@@ -403,7 +408,7 @@ class Extension(omni.ext.IExt):
             await omni.kit.app.get_app().next_update_async()
             pass
 
-    async def create_ultrasonic(self, parent, emitter_offset):
+    async def create_ultrasonic(self, reb_parent, sensor_parent, emitter_offset):
         await omni.kit.app.get_app().next_update_async()
         # position units are in meters, and then scaled by stage units
         emitter_poses = [
@@ -424,7 +429,7 @@ class Extension(omni.ext.IExt):
         result, group_0 = omni.kit.commands.execute(
             "CreateRangeSensorUltrasonicFiringGroupCommand",
             path="/UltrasonicFiringGroup_0",
-            parent=parent,
+            parent=sensor_parent,
             emitter_modes=[(0, 1), (3, 0), (4, 1), (7, 0), (8, 1), (11, 0)],
             receiver_modes=[
                 (0, 1),
@@ -449,7 +454,7 @@ class Extension(omni.ext.IExt):
         result, group_1 = omni.kit.commands.execute(
             "CreateRangeSensorUltrasonicFiringGroupCommand",
             path="/UltrasonicFiringGroup_1",
-            parent=parent,
+            parent=sensor_parent,
             emitter_modes=[(1, 1), (2, 0), (5, 1), (6, 0), (9, 1), (10, 0)],
             receiver_modes=[
                 (0, 1),
@@ -491,7 +496,7 @@ class Extension(omni.ext.IExt):
             result, emitter_prim = omni.kit.commands.execute(
                 "CreateRangeSensorUltrasonicEmitterCommand",
                 path="/UltrasonicEmitter",
-                parent=parent,
+                parent=sensor_parent,
                 per_ray_intensity=0.4,
                 yaw_offset=0.0,
                 adjacency_list=adjacent,
@@ -505,7 +510,7 @@ class Extension(omni.ext.IExt):
         result, ultrasonic_array = omni.kit.commands.execute(
             "CreateRangeSensorUltrasonicArrayCommand",
             path="/UltrasonicArray",
-            parent=parent,
+            parent=sensor_parent,
             min_range=0.4,
             max_range=4.5,
             draw_points=False,
@@ -524,7 +529,7 @@ class Extension(omni.ext.IExt):
             result, prim = omni.kit.commands.execute(
                 "RobotEngineBridgeCreateUltrasonic",
                 path="/REB_Ultrasonic",
-                parent=parent,
+                parent=reb_parent,
                 output_component="output",
                 output_channel="uss_envelopes",
                 ultrasonic_prim_rel=[ultrasonic_array.GetPrim().GetPrimPath()],
