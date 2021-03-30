@@ -31,7 +31,7 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
 
         self._menu_items = [
