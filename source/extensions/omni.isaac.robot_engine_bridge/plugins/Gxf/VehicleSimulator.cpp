@@ -288,6 +288,13 @@ void VehicleSimulator::tick()
     }
 
     {
+        std::string path = mVehiclePath.GetString();
+        auto maybeUid = mPoseTreeMap->findFrame(path);
+        if (!maybeUid)
+        {
+            CARB_LOG_WARN("Cannot find pose uid for vehicle %s", path.c_str());
+            return;
+        }
 
         auto maybe_message = nvidia::gxf::Entity::New(mContext);
 
@@ -296,7 +303,7 @@ void VehicleSimulator::tick()
                                                    nvidia::isaac::AckermannDynamicState<double>::kDimension, false);
         maybe_message_parts.value().timestamp->acqtime = this->mTimeNanoSeconds + mComponentTimeOffsetNanoSeconds;
         maybe_message_parts.value().timestamp->pubtime = ::isaac::NowCount();
-        // maybe_message_parts.value().pose_frame_uid = 0;
+        maybe_message_parts.value().pose_frame_uid->uid = maybeUid.value();
         // maybe_message_parts.value().composite_schema_uid = 0;
 
         nvidia::isaac::AckermannDynamicStateView<double> state_view;

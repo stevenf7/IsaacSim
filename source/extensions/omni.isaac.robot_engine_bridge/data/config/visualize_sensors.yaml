@@ -48,7 +48,7 @@ components:
 #########
 # Atlas #
 #########
-name: pose_tree
+name: atlas.pose_tree
 components:
   - name: pose_tree
     type: nvidia::isaac::PoseTree
@@ -63,19 +63,24 @@ components:
       history_chunk_size: 16
       pose_tree: pose_tree
 ---
-name: pose_frames
+name: atlas.pose_frames
 components:
   - name: sim
     type: nvidia::isaac::PoseTreeFrame
     parameters:
-      pose_tree: pose_tree/pose_tree
+      pose_tree: atlas.pose_tree/pose_tree
+  - name: robot
+    type: nvidia::isaac::PoseTreeFrame
+    parameters:
+      frame_name: /car/Vehicle
+      pose_tree: atlas.pose_tree/pose_tree
 ---
 name: atlas
 components:
   - name: frontend
     type: nvidia::isaac::AtlasFrontend
     parameters:
-      pose_tree: pose_tree/pose_tree
+      pose_tree: atlas.pose_tree/pose_tree
 ---
 #########
 # Sight #
@@ -147,7 +152,7 @@ components:
       capacity: 10
   - type: nvidia::isaac::PoseTreeSightBridge
     parameters:
-      pose_tree: pose_tree/pose_tree
+      pose_tree: atlas.pose_tree/pose_tree
       sight_transmitter: pose_tree_tx
   - type: nvidia::gxf::PeriodicSchedulingTerm
     parameters:
@@ -279,6 +284,55 @@ components:
 ###################
 # USS Visualizers #
 ###################
+name: uss_post_processing
+components:
+  - name: in
+    type: nvidia::gxf::DoubleBufferReceiver
+    parameters:
+      policy: 0
+  - name: out
+    type: nvidia::gxf::DoubleBufferTransmitter
+    parameters:
+      policy: 0
+  - name: white_noise
+    type: nvidia::isaac::UssPostProcessorWhiteNoise
+    parameters:
+      standard_deviation: 2.0
+  - name: amplify
+    type: nvidia::isaac::UssPostProcessorAmplify
+    parameters:
+      exponent: 1
+  - name: normalize
+    type: nvidia::isaac::UssPostProcessorNormalize
+    parameters:
+      saturation: 1.0
+      threshold: 0.1
+  - name: blur
+    type: nvidia::isaac::UssPostProcessorBlur
+    parameters:
+      allocator: allocator/default
+      kernel: [0.02, 0.08, 0.2, 0.4, 0.2, 0.08, 0.02]
+      start_index: -3
+  - name: normalize
+    type: nvidia::isaac::UssPostProcessorNormalize
+    parameter:
+      threshold: 0.5
+      saturation: 1.0
+  - type: nvidia::isaac::UssPostProcessing
+    parameters:
+      allocator: allocator/default
+      envelopes_in: in
+      envelopes_out: out
+      processors: [blur, white_noise, amplify]
+  - type: nvidia::gxf::MessageAvailableSchedulingTerm
+    parameters:
+      receiver: in
+      min_size: 1
+  - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
+    parameters:
+      transmitter: out
+      min_size: 1
+---
 name: uss_broadcast
 components:
   - name: input
@@ -326,7 +380,7 @@ components:
       sensor_fov: uss_sensor_fov
       sensor_mode: uss_sensor_mode
       mode_colors: [[214, 39, 40], [118, 185, 0]]
-      robot_frame: pose_frames/sim
+      robot_frame: atlas.pose_frames/sim
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
       receiver: envelopes
@@ -336,12 +390,16 @@ name: unprojection_lattice_generator
 components:
   - name: lattice
     type: nvidia::gxf::DoubleBufferTransmitter
+  - name: unprojection_lattice
+    type: nvidia::isaac::PoseTreeFrame
+    parameters:
+      pose_tree: atlas.pose_tree/pose_tree
   - type: nvidia::isaac::LatticeGenerator
     parameters:
       cell_size: 0.05
       relative_offset: [-0.5, -0.5]
       grid_dimensions: [256, 256]
-      reference_frame: /World/Mercedes_REB/Vehicle
+      reference_frame: atlas.pose_frames/robot
       lattice_frame: unprojection_lattice
       lattice: lattice
       atlas: atlas/frontend
@@ -405,6 +463,7 @@ components:
       grid_map_lattice: lattice
       grid_map: map
       atlas: atlas/frontend
+      intensity_normalization: 10.0
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
       receiver: envelopes
@@ -415,7 +474,7 @@ components:
       min_size: 1
   - type: nvidia::gxf::PeriodicSchedulingTerm
     parameters:
-      recess_period: 10 Hz
+      recess_period: 30 Hz
 ---
 name: unprojection_tensor_visualizer
 components:
@@ -451,6 +510,12 @@ components:
   - type: nvidia::gxf::Connection
     parameters:
       source: interface.output/uss_envelopes
+      target: uss_post_processing/in
+---
+components:
+  - type: nvidia::gxf::Connection
+    parameters:
+      source: uss_post_processing/out
       target: uss_broadcast/input
 ---
 components:
