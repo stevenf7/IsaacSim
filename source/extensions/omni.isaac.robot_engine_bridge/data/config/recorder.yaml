@@ -29,16 +29,12 @@ components:
     type: nvidia::gxf::DoubleBufferTransmitter
     parameters:
       capacity: 500
-      policy: 1
   - type: nvidia::isaac::PoseTreeFeed
     parameters:
       pose_tree: pose_tree/pose_tree
       buffer_size: 500
       pose_tree_operation: operation
       clock: clock/default
-  - type: nvidia::gxf::PeriodicSchedulingTerm
-    parameters:
-      recess_period: 100 Hz
 ---
 name: atlas
 components:
@@ -53,7 +49,6 @@ components:
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
       capacity: 500
-      policy: 1
   - type: nvidia::gxf::EntityRecorder
     parameters:
       receiver: input
@@ -100,22 +95,7 @@ components:
     type: nvidia::gxf::DoubleBufferTransmitter
     parameters:
       capacity: 10
-  - name: rangescan_2
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 10
-  - name: rangescan_3
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 10
-  - name: rangescan_4
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 10
   - type: nvidia::isaac::TickCounter
-  - type: nvidia::gxf::PeriodicSchedulingTerm
-    parameters:
-      recess_period: 100 Hz
 ---
 #############
 # Recorders #
@@ -142,7 +122,7 @@ components:
       receiver: input
       serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
       directory: /tmp
-      basename: camera_front_color
+      basename: camera_color
       flush_on_tick: true
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
@@ -166,7 +146,7 @@ components:
       receiver: input
       serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
       directory: /tmp
-      basename: camera_front_depth
+      basename: camera_depth
       flush_on_tick: true
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
@@ -190,7 +170,7 @@ components:
       receiver: input
       serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
       directory: /tmp
-      basename: camera_front_segmentation_class
+      basename: camera_segmentation_class
       flush_on_tick: true
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
@@ -214,7 +194,7 @@ components:
       receiver: input
       serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
       directory: /tmp
-      basename: camera_front_segmentation_instance
+      basename: camera_segmentation_instance
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
       receiver: input
@@ -261,7 +241,7 @@ components:
       receiver: input
       serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
       directory: /tmp
-      basename: lidar_front_left_rangescan
+      basename: lidar_rangescan
       flush_on_tick: true
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
@@ -273,78 +253,6 @@ components:
     parameters:
       source: interface.output/rangescan
       target: rangescan_serializer/input
----
-name: rangescan2_serializer
-components:
-  - name: input
-    type: nvidia::gxf::DoubleBufferReceiver
-    parameters:
-      capacity: 10
-  - type: nvidia::gxf::EntityRecorder
-    parameters:
-      receiver: input
-      serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
-      directory: /tmp
-      basename: lidar_front_right_rangescan
-      flush_on_tick: true
-  - type: nvidia::gxf::MessageAvailableSchedulingTerm
-    parameters:
-      receiver: input
-      min_size: 1
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: interface.output/rangescan_2
-      target: rangescan2_serializer/input
----
-name: rangescan3_serializer
-components:
-  - name: input
-    type: nvidia::gxf::DoubleBufferReceiver
-    parameters:
-      capacity: 10
-  - type: nvidia::gxf::EntityRecorder
-    parameters:
-      receiver: input
-      serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
-      directory: /tmp
-      basename: lidar_rear_left_rangescan
-      flush_on_tick: true
-  - type: nvidia::gxf::MessageAvailableSchedulingTerm
-    parameters:
-      receiver: input
-      min_size: 1
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: interface.output/rangescan_3
-      target: rangescan3_serializer/input
----
-name: rangescan4_serializer
-components:
-  - name: input
-    type: nvidia::gxf::DoubleBufferReceiver
-    parameters:
-      capacity: 10
-  - type: nvidia::gxf::EntityRecorder
-    parameters:
-      receiver: input
-      serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
-      directory: /tmp
-      basename: lidar_rear_right_rangescan
-      flush_on_tick: true
-  - type: nvidia::gxf::MessageAvailableSchedulingTerm
-    parameters:
-      receiver: input
-      min_size: 1
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: interface.output/rangescan_4
-      target: rangescan3_serializer/input
 ---
 name: scheduler
 components:
