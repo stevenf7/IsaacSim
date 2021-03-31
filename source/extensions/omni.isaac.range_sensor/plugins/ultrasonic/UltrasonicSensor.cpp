@@ -217,6 +217,9 @@ void UltrasonicSensor::tick()
 
     if (mFiringGroups.size() > 0)
     {
+        // Increment and clamp the firing group
+        mCurrentFiringGroup += 1;
+        mCurrentFiringGroup = mCurrentFiringGroup % mFiringGroups.size();
 
         const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
         // This needs to happen each frame because the emitter moves.
@@ -296,9 +299,6 @@ void UltrasonicSensor::tick()
                                            group.mIsReceiving[mFreqIdLow][j], group.mIsReceiving[mFreqIdHigh][j]);
             }
         }
-        // Increment and clamp the firing group
-        mCurrentFiringGroup += 1;
-        mCurrentFiringGroup = mCurrentFiringGroup % mFiringGroups.size();
     }
     else
     {
