@@ -118,6 +118,7 @@ void UltrasonicComponent::publishAllMessages()
     {
         // return maybe_message.error();
         CARB_LOG_ERROR("could not create envelopes message, %d", maybe_message.error());
+        return;
     }
     auto message = std::move(maybe_message.value());
 
@@ -194,7 +195,7 @@ void UltrasonicComponent::publishAllMessages()
 
     message.sensor_info->range_max = maxRange;
     message.sensor_info->range_min = minRange;
-    message.sensor_info->bin_size = (maxRange - minRange) / float(numBins);
+    message.sensor_info->bin_size = maxRange / float(numBins);
     message.sensor_info->horizontal_fov = horizFov * M_PI / 180.0;
 
     message.timestamp->acqtime = this->mTimeNanoSeconds + mComponentTimeOffsetNanoSeconds;
