@@ -173,6 +173,8 @@ void UltrasonicSensor::onComponentChange()
     mReceiverArray.mUseBRDF = mUseBRDF;
     mReceiverArray.mNumBins = mNumBins;
     mReceiverArray.mMaxDist = mMaxDepth * mMetersPerUnit;
+    mReceiverArray.mHorizontalFov = 0.5f * mHorizontalFov * static_cast<float>(M_PI / 180.0);
+    mReceiverArray.mVerticalFov = 0.5f * mVerticalFov * static_cast<float>(M_PI / 180.0);
 
     // we support low and high firing modes currently
     mEnvelopeList.push_back(std::vector<USSEnvelope>(0, USSEnvelope(mNumBins, mMaxDepth * mMetersPerUnit)));
@@ -223,7 +225,7 @@ void UltrasonicSensor::tick()
 
         const UltrasonicFiringGroup& group = mFiringGroups[mCurrentFiringGroup];
         // This needs to happen each frame because the emitter moves.
-        std::vector<::physx::PxVec3> origins = omni::isaac::range_sensor::extractOrigins(mEmitters);
+        std::vector<::physx::PxTransform> origins = omni::isaac::range_sensor::extractOrigins(mEmitters);
 
         // fire low then high
 

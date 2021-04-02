@@ -39,8 +39,8 @@ std::vector<USSEnvelope> UltrasonicReceiverArray::getCombinedEnvelopeList(
     const std::vector<std::vector<uint8_t>>& adjacency,
     const std::vector<bool>& isFiring,
     const std::vector<bool>& isReceiving,
-    const std::vector<::physx::PxVec3>& emitterOrigins,
-    const std::vector<::physx::PxVec3>& receiverOrigins,
+    const std::vector<::physx::PxTransform>& emitterOrigins,
+    const std::vector<::physx::PxTransform>& receiverOrigins,
     const std::vector<std::vector<::physx::PxVec3>>& worldPoints,
     const std::vector<std::vector<::physx::PxVec3>>& normals)
 {
@@ -67,8 +67,8 @@ std::vector<std::vector<USSEnvelope>> UltrasonicReceiverArray::getEnvelopeMatrix
     const std::vector<std::vector<uint8_t>>& adjacency,
     const std::vector<bool>& isFiring,
     const std::vector<bool>& isReceiving,
-    const std::vector<::physx::PxVec3>& emitterOrigins,
-    const std::vector<::physx::PxVec3>& receiverOrigins,
+    const std::vector<::physx::PxTransform>& emitterOrigins,
+    const std::vector<::physx::PxTransform>& receiverOrigins,
     const std::vector<std::vector<::physx::PxVec3>>& worldPoints,
     const std::vector<std::vector<::physx::PxVec3>>& normals)
 {
@@ -80,7 +80,7 @@ std::vector<std::vector<USSEnvelope>> UltrasonicReceiverArray::getEnvelopeMatrix
     // receiver origins are indexed by i
     for (size_t i = 0; i < totalPathLengths.size(); i++)
     {
-        BRDF brdf(emitterOrigins[i]);
+        BRDF brdf(emitterOrigins[i].p);
         // emitter origins are indexed by j
         for (size_t j = 0; j < totalPathLengths[i].size(); j++)
         {
@@ -95,7 +95,7 @@ std::vector<std::vector<USSEnvelope>> UltrasonicReceiverArray::getEnvelopeMatrix
                 // no attenuation of intensity based on angle, for now
                 std::vector<float> intensities(totalPathLengths[i][j].size(), 1.f);
                 std::vector<float> attenuatedIntensities =
-                    brdf.getReturnedIntensities(receiverOrigins[i], normals[j], worldPoints[j], intensities);
+                    brdf.getReturnedIntensities(receiverOrigins[i].p, normals[j], worldPoints[j], intensities);
                 envelopeMatrix[i][j].updateEnvelope(totalPathLengths[i][j], attenuatedIntensities);
             }
             else
@@ -113,8 +113,8 @@ std::vector<std::vector<std::vector<float>>> UltrasonicReceiverArray::getAdjacen
     const std::vector<std::vector<uint8_t>>& adjacency,
     const std::vector<bool>& isFiring,
     const std::vector<bool>& isReceiving,
-    const std::vector<::physx::PxVec3>& emitterOrigins,
-    const std::vector<::physx::PxVec3>& receiverOrigins,
+    const std::vector<::physx::PxTransform>& emitterOrigins,
+    const std::vector<::physx::PxTransform>& receiverOrigins,
     const std::vector<std::vector<::physx::PxVec3>>& worldPoints)
 {
     std::vector<std::vector<std::vector<float>>> totalPathLengths(
@@ -146,18 +146,48 @@ bool UltrasonicReceiverArray::shouldProduceEnvelope(const std::vector<std::vecto
 }
 
 
-std::vector<float> UltrasonicReceiverArray::getTotalPathLength(const ::physx::PxVec3& receiverOrigin,
-                                                               const ::physx::PxVec3& emitterOrigin,
+std::vector<float> UltrasonicReceiverArray::getTotalPathLength(const ::physx::PxTransform& receiverOrigin,
+                                                               const ::physx::PxTransform& emitterOrigin,
                                                                const std::vector<::physx::PxVec3>& worldPoints)
 {
+    const ::physx::PxTransform receiverInv = receiverOrigin.getInverse();
+    const ::physx::PxTransform delta = receiverInv * emitterOrigin;
+    bool isCross = delta.p.magnitude() > 1e-3f || delta.q.getAngle() > 1e-3f;
 
     std::vector<float> echo;
     for (size_t i = 0; i < worldPoints.size(); i++)
     {
-        ::physx::PxVec3 D = worldPoints[i] - emitterOrigin;
-        ::physx::PxVec3 V_r = worldPoints[i] - receiverOrigin;
-        auto totalDist = D.magnitude() + V_r.magnitude();
-        echo.push_back(totalDist * mMetersPerUnit);
+        ::physx::PxVec3 D = worldPoints[i] - emitterOrigin.p;
+        ::physx::PxVec3 V_r = receiverInv.transform(worldPoints[i]);
+
+        if (isCross && !inFieldOfView(V_r))
+        {
+            // Set a value larger than 2x max range so it's ignored
+            echo.push_back(mMaxDist * 10.0f);
+        }
+        else
+        {
+            const float totalDist = (D.magnitude() + V_r.magnitude()) * mMetersPerUnit;
+            echo.push_back(totalDist);
+        }
     }
     return echo;
+}
+
+bool UltrasonicReceiverArray::inFieldOfView(const ::physx::PxVec3& r)
+{
+    const float r2NormSquared = r.x * r.x + r.y * r.y;
+    const float r2Norm = sqrt(r2NormSquared);
+    if (r2Norm > 0.0f && std::abs(atan2f(r.y / r2Norm, r.x / r2Norm)) > mHorizontalFov)
+    {
+        return false;
+    }
+    // CARB_LOG_WARN("Horizontal %f | %f", atan2f(r.y / r2Norm, r.x / r2Norm), mHorizontalFov);
+    const float r3Norm = sqrt(r2NormSquared + r.z * r.z);
+    if (r3Norm > 0.0f && std::abs(asinf(r.z / r3Norm)) > mVerticalFov)
+    {
+        return false;
+    }
+    // CARB_LOG_WARN("Vertical %f | %f", asinf(r.z / r3Norm), mVerticalFov);
+    return true;
 }
