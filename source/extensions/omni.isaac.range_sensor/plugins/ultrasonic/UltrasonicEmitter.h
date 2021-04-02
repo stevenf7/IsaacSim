@@ -41,6 +41,11 @@ public:
     {
         return mOrigin;
     }
+    ::physx::PxTransform getPose()
+    {
+        return ::physx::PxTransform(mOrigin, mTheta0);
+    }
+
     void updatePose()
     {
 

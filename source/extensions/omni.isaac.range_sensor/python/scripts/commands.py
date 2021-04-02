@@ -7,9 +7,9 @@ from pxr import Gf, UsdGeom
 
 def get_path(stage, path: str, parent=None) -> str:
     if parent:
-        path = omni.usd.get_stage_next_free_path(stage, parent + path, False)
+        path = omni.kit.utils.get_stage_next_free_path(stage, parent + path, False)
     else:
-        path = omni.usd.get_stage_next_free_path(stage, path, True)
+        path = omni.kit.utils.get_stage_next_free_path(stage, path, True)
     return path
 
 

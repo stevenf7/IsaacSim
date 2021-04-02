@@ -2,6 +2,7 @@
 
 #include "USSEnvelope.h"
 
+#include <foundation/PxTransform.h>
 #include <foundation/PxVec3.h>
 
 #include <vector>
@@ -13,30 +14,30 @@ public:
         const std::vector<std::vector<uint8_t>>& adjacency,
         const std::vector<bool>& isFiring,
         const std::vector<bool>& isReceiving,
-        const std::vector<::physx::PxVec3>& emitterOrigins,
-        const std::vector<::physx::PxVec3>& receiverOrigins,
+        const std::vector<::physx::PxTransform>& emitterOrigins,
+        const std::vector<::physx::PxTransform>& receiverOrigins,
         const std::vector<std::vector<::physx::PxVec3>>& worldPoints);
 
     std::vector<std::vector<USSEnvelope>> getEnvelopeMatrix(const std::vector<std::vector<uint8_t>>& adjacency,
                                                             const std::vector<bool>& isFiring,
                                                             const std::vector<bool>& isReceiving,
-                                                            const std::vector<::physx::PxVec3>& emitterOrigins,
-                                                            const std::vector<::physx::PxVec3>& receiverOrigins,
+                                                            const std::vector<::physx::PxTransform>& emitterOrigins,
+                                                            const std::vector<::physx::PxTransform>& receiverOrigins,
                                                             const std::vector<std::vector<::physx::PxVec3>>& worldPoints,
                                                             const std::vector<std::vector<::physx::PxVec3>>& normals);
 
     std::vector<USSEnvelope> getCombinedActiveEnvelopeList(const std::vector<std::vector<uint8_t>>& adjacency,
                                                            const std::vector<bool>& isFiring,
                                                            const std::vector<bool>& isReceiving,
-                                                           const std::vector<::physx::PxVec3>& emitterOrigins,
-                                                           const std::vector<::physx::PxVec3>& receiverOrigins,
+                                                           const std::vector<::physx::PxTransform>& emitterOrigins,
+                                                           const std::vector<::physx::PxTransform>& receiverOrigins,
                                                            const std::vector<std::vector<::physx::PxVec3>>& worldPoints);
 
     std::vector<USSEnvelope> getCombinedEnvelopeList(const std::vector<std::vector<uint8_t>>& adjacency,
                                                      const std::vector<bool>& isFiring,
                                                      const std::vector<bool>& isReceiving,
-                                                     const std::vector<::physx::PxVec3>& emitterOrigins,
-                                                     const std::vector<::physx::PxVec3>& receiverOrigins,
+                                                     const std::vector<::physx::PxTransform>& emitterOrigins,
+                                                     const std::vector<::physx::PxTransform>& receiverOrigins,
                                                      const std::vector<std::vector<::physx::PxVec3>>& worldPoints,
                                                      const std::vector<std::vector<::physx::PxVec3>>& normals);
 
@@ -49,10 +50,15 @@ public:
     bool mUseBRDF = false;
     int mNumBins = 224;
     float mMaxDist = 0.0f;
+    float mHorizontalFov = 60.0f;
+    float mVerticalFov = 30.0f;
 
 private:
-    std::vector<float> getTotalPathLength(const ::physx::PxVec3& receiverOrigin,
-                                          const ::physx::PxVec3& emitterOrigin,
+    std::vector<float> getTotalPathLength(const ::physx::PxTransform& receiverOrigin,
+                                          const ::physx::PxTransform& emitterOrigin,
                                           const std::vector<::physx::PxVec3>& worldPoints);
+
+    bool inFieldOfView(const ::physx::PxVec3& r);
+
     const float invalidEnvelopeFloat = -100.1f;
 };
