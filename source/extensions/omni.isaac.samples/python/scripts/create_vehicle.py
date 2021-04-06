@@ -177,11 +177,9 @@ class Extension(omni.ext.IExt):
             chassis_prim = self._stage.GetPrimAtPath(parent_path + "/ChassisCollision")
             chassis_prim.GetPrim().GetAttribute("xformOp:translate").Set((1.63374, 0, 0.75185))
 
-            wheel_path = "omniverse://drivesim2-dev/Projects/ds2_content/common_assets/vehicles/mercedes/vision_eqs/2021/USD/instance/wheel.usd"
-            chassis_path = "omniverse://drivesim2-dev/Projects/ds2_content/common_assets/vehicles/mercedes/vision_eqs/2021/USD/instance/body.usd"
-            chassis_lights_path = (
-                "omniverse://drivesim2-dev/Users/hmazhar@nvidia.com/mercedes/vision_eqs/2021/USD/light_prims.usd"
-            )
+            wheel_path = ""
+            chassis_path = ""
+            chassis_lights_path = ""
             omni.kit.commands.execute("DeletePrimsCommand", paths=[parent_path + "/ChassisRender"])
             chassis_prim = self._stage.DefinePrim(parent_path + "/ChassisRender", "Xform")
             chassis_prim.GetReferences().AddReference(chassis_path)
