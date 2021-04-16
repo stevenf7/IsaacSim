@@ -11,7 +11,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._stage = omni.usd.get_context().get_stage()
         carb.settings.get_settings().set("persistent/app/stage/upAxis", "Z")
         # force editor and physics to have the same rate (should be 60)
-        self._physics_rate = carb.settings.get_settings().get("/physics/timeStepsPerSecond")
+        self._physics_rate = 60
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(1))

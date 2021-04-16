@@ -22,6 +22,9 @@
 #include <carb/profiler/Profile.h>
 #include <omni/physx/IPhysx.h>
 
+#include <omni/isaac/utils/Conversions.h>
+#include <omni/usd/UtilsIncludes.h>
+#include <omni/usd/UsdUtils.h>
 
 namespace omni
 {
@@ -51,6 +54,7 @@ OccupancyGridMapComponent::OccupancyGridMapComponent() : IsaacComponent()
         CARB_LOG_ERROR("*** Failed to acquire FastCache interface\n");
         return;
     }
+    mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
 }
 
 OccupancyGridMapComponent::~OccupancyGridMapComponent()
@@ -77,27 +81,36 @@ void OccupancyGridMapComponent::publishAllMessages()
         return;
     }
     CARB_PROFILE_ZONE(0, "REB OccupancyGridMapComponent Tick");
-    carb::fastcache::Transform parentTrans;
-    parentTrans.position = { 0, 0, 0 };
-    if (mParentPrimPath != pxr::SdfPath())
+    pxr::GfMatrix4d parentUSDTransform = pxr::GfMatrix4d(1);
+    ;
+    if (mParentPrim.IsA<pxr::UsdGeomXformable>())
     {
-        mFastCachePtr->getTransform(mParentPrimPath, parentTrans);
-    }
-    carb::Float2 inputMinPoint = {
-        parentTrans.position.x + mOffset[0] - (mCellSize * static_cast<float>(mMapSize[0])) * 0.5f,
-        parentTrans.position.y + mOffset[1] - (mCellSize * static_cast<float>(mMapSize[1])) * 0.5f
-    };
+        // mFastCachePtr->getTransform(mParentPrimPath, parentTrans);
 
-    carb::Float2 inputMaxPoint = {
-        parentTrans.position.x + mOffset[0] + (mCellSize * static_cast<float>(mMapSize[0])) * 0.5f,
-        parentTrans.position.y + mOffset[1] + (mCellSize * static_cast<float>(mMapSize[1])) * 0.5f
-    };
+        pxr::UsdTimeCode parentPrimTimeCode = pxr::UsdTimeCode::Default();
+        std::vector<double> times;
+        pxr::UsdGeomXformable(mParentPrim).GetTimeSamples(&times);
+
+        if (times.size() > 1)
+        {
+            parentPrimTimeCode = round(mTimeline->getCurrentTime() * this->mStage->GetTimeCodesPerSecond());
+        }
+
+        parentUSDTransform = omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, parentPrimTimeCode);
+    }
+    carb::Float3 trans = utils::conversions::asCarbFloat3(parentUSDTransform.ExtractTranslation());
+
+    carb::Float2 inputMinPoint = { trans.x + mOffset[0] - (mCellSize * static_cast<float>(mMapSize[0])) * 0.5f,
+                                   trans.y + mOffset[1] - (mCellSize * static_cast<float>(mMapSize[1])) * 0.5f };
+
+    carb::Float2 inputMaxPoint = { trans.x + mOffset[0] + (mCellSize * static_cast<float>(mMapSize[0])) * 0.5f,
+                                   trans.y + mOffset[1] + (mCellSize * static_cast<float>(mMapSize[1])) * 0.5f };
     inputMinPoint = { inputMinPoint.x / mStageUnits, inputMinPoint.y / mStageUnits };
     inputMaxPoint = { inputMaxPoint.x / mStageUnits, inputMaxPoint.y / mStageUnits };
 
     if (mGenerator)
     {
-        mGenerator->setTransform(parentTrans.position, inputMinPoint, inputMaxPoint);
+        mGenerator->setTransform(trans, inputMinPoint, inputMaxPoint);
         mGenerator->generate();
     }
     else

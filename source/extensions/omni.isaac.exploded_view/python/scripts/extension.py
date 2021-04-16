@@ -242,7 +242,7 @@ class Exploded_view_manager:
 
         stage = self._context.get_stage()
 
-        self.explode_base = omni.kit.utils.get_stage_next_free_path(stage, "/Exploded", False)
+        self.explode_base = omni.usd.get_stage_next_free_path(stage, "/Exploded", False)
         self.session_layer_id = get_session_layer_identifier()
         # Get current authoring layer
         auth_layer = self._layers.get_authoring_layer_identifier()

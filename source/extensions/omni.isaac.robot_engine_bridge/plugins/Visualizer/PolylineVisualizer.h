@@ -15,6 +15,7 @@
 #include <carb/fastcache/FastCache.h>
 
 #include <omni/renderer/IDebugDraw.h>
+#include <omni/timeline/ITimeline.h>
 #include <robotEngineBridgeSchema/robotEnginePolylineVisualizer.h>
 
 #include <string>
@@ -87,6 +88,8 @@ private:
     omni::renderer::IDebugDraw* mDebugDrawPtr = nullptr;
     carb::dictionary::ISerializer* mJsonSerializer = nullptr;
     carb::dictionary::IDictionary* mIDict = nullptr;
+    omni::timeline::ITimeline* mTimeline = nullptr;
+
     omni::renderer::LineBuffer mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
     omni::renderer::RenderInstanceBuffer mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
 
@@ -96,6 +99,7 @@ private:
     float mWidth = 1.0f;
     pxr::GfVec4f mColor = pxr::GfVec4f(1, 1, 1, 1);
     pxr::SdfPath mParentPath = pxr::SdfPath("");
+    pxr::UsdPrim mParentPrim;
     double mUnitScale;
     pxr::GfVec3f mOffset = pxr::GfVec3f(0, 0, 0);
     std::vector<DebugData> mLineData;

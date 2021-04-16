@@ -10,7 +10,7 @@ import time
 import omni
 import carb
 import numpy as np
-from pxr import Usd, UsdGeom, Gf
+from pxr import Usd, UsdGeom, Gf, UsdPhysics, PhysxSchema
 from omni.isaac.motion_planning import _motion_planning
 
 from . import math_utils
@@ -211,8 +211,16 @@ class UR10:
             "ee_suction_link",
             True,
         )
-        settings = carb.settings.get_settings()
-        self.mp.setFrequency(self.rmp_handle, settings.get("/physics/timeStepsPerSecond"))
+        physxSceneAPI = None
+        for prim in stage.Traverse():
+            if prim.IsA(UsdPhysics.Scene):
+                physxSceneAPI = PhysxSchema.PhysxSceneAPI.Apply(prim)
+
+        if physxSceneAPI is not None:
+            self.mp.setFrequency(self.rmp_handle, physxSceneAPI.GetTimeStepsPerSecondAttr().Get())
+        else:
+            self.mp.setFrequency(self.rmp_handle, 60)
+
         print("UR10 rmp handle", self.rmp_handle)
         if world is not None:
             self.world = world

@@ -21,7 +21,7 @@ icon = "data/icon.png"
 [[python.module]]
 name = "omni.isaac.manip"
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 

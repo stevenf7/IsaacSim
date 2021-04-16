@@ -6,6 +6,7 @@ display_name = "ROS Bridge"
 "omni.isaac.range_sensor" = {}
 "omni.syntheticdata" = {}
 "omni.isaac.utils" = {}
+"omni.usd.schema.isaac" = {}
 
 [[python.module]]
 name = "omni.isaac.ros_bridge"
@@ -20,14 +21,6 @@ name = "omni.isaac.ros_bridge.scripts.samples.rostopics"
 [[python.module]]
 name = "omni.isaac.ros_bridge.scripts.samples.rosservices"
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
-
-[[python.module]]
-name = "omni.isaac.RosBridgeSchema"
-public = false
-
-
-[[libraries]]
-path = "bin/${lib_prefix}rosBridgeSchema${lib_ext}"

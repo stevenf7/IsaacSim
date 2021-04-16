@@ -99,3 +99,5 @@ outputs.yml
 
 .vscode/.python_samples.env
 .vscode/.pxr_plugin.env
+# vscode settings are copied and filled in from 'settings.json.template'
+.vscode/settings.json

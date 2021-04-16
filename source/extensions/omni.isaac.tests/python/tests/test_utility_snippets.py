@@ -1,5 +1,4 @@
 import omni.kit.test
-import omni.physx.scripts.commands
 
 ################################################################################
 ### !!!IMPORTANT!!!

@@ -28,7 +28,7 @@ name = "omni.isaac.occupancy_map"
 [[python.module]]
 name = "omni.isaac.occupancy_map.tests"
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 

@@ -13,7 +13,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 from omni.isaac.synthetic_utils import visualization as vis
-from omni.isaac.synthetic_utils import OmniKitHelper
+from omni.isaac.python_app import OmniKitHelper
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 
 from jetbot import Jetbot

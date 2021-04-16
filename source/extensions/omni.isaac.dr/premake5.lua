@@ -54,8 +54,3 @@ repo_build.prebuild_link {
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/dr" },
 }
-
-repo_build.prebuild_copy {
-    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/DrSchema/**", ext.target_dir.."/omni/isaac/DrSchema" },
-    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}drSchema${lib_ext}", ext.target_dir.."/bin"},
-}

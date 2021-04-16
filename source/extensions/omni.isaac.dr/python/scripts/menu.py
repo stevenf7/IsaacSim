@@ -52,11 +52,11 @@ class DRMenu:
     def add_color_menu(self):
         parent = self._get_current_state(0, "ColorComponent")
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, parent + "/color_component_" + str(self.component_count[0]), False
             )
         else:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, "/color_component_" + str(self.component_count[0]), True
             )
 
@@ -77,11 +77,11 @@ class DRMenu:
     def add_movement_menu(self):
         parent = self._get_current_state(1, "MovementComponent")
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, parent + "/movement_component_" + str(self.component_count[1]), False
             )
         else:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, "/movement_component_" + str(self.component_count[1]), True
             )
 
@@ -101,11 +101,11 @@ class DRMenu:
     def add_rotation_menu(self):
         parent = self._get_current_state(5, "RotationComponent")
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, parent + "/rotation_component_" + str(self.component_count[5]), False
             )
         else:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, "/rotation_component_" + str(self.component_count[5]), True
             )
 
@@ -123,11 +123,11 @@ class DRMenu:
     def add_scale_menu(self):
         parent = self._get_current_state(2, "ScaleComponent")
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, parent + "/scale_component_" + str(self.component_count[2]), False
             )
         else:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, "/scale_component_" + str(self.component_count[2]), True
             )
         result, prim = omni.kit.commands.execute(
@@ -145,11 +145,11 @@ class DRMenu:
     def add_transform_menu(self):
         parent = self._get_current_state(9, "TransformComponent")
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, parent + "/transform_component_" + str(self.component_count[9]), False
             )
         else:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, "/transform_component_" + str(self.component_count[9]), True
             )
 
@@ -173,11 +173,11 @@ class DRMenu:
     def add_light_menu(self):
         parent = self._get_current_state(3, "LightComponent")
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, parent + "/light_component_" + str(self.component_count[3]), False
             )
         else:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, "/light_component_" + str(self.component_count[3]), True
             )
 
@@ -199,11 +199,11 @@ class DRMenu:
     def add_texture_menu(self):
         parent = self._get_current_state(4, "TextureComponent")
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, parent + "/texture_component_" + str(self.component_count[4]), False
             )
         else:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, "/texture_component_" + str(self.component_count[4]), True
             )
 
@@ -224,11 +224,11 @@ class DRMenu:
     def add_material_menu(self):
         parent = self._get_current_state(6, "MaterialComponent")
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, parent + "/material_component_" + str(self.component_count[6]), False
             )
         else:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, "/material_component_" + str(self.component_count[6]), True
             )
         result, prim = omni.kit.commands.execute(
@@ -248,11 +248,11 @@ class DRMenu:
     def add_mesh_menu(self):
         parent = self._get_current_state(7, "MeshComponent")
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, parent + "/mesh_component_" + str(self.component_count[7]), False
             )
         else:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, "/mesh_component_" + str(self.component_count[7]), True
             )
 
@@ -272,11 +272,11 @@ class DRMenu:
     def add_visibility_menu(self):
         parent = self._get_current_state(8, "VisibilityComponent")
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, parent + "/visibility_component_" + str(self.component_count[8]), False
             )
         else:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, "/visibility_component_" + str(self.component_count[8]), True
             )
 
@@ -295,11 +295,11 @@ class DRMenu:
     def add_attribute_menu(self):
         parent = self._get_current_state(10, "AttributeComponent")
         if parent:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, parent + "/attribute_component_" + str(self.component_count[10]), False
             )
         else:
-            path = omni.kit.utils.get_stage_next_free_path(
+            path = omni.usd.get_stage_next_free_path(
                 self._stage, "/attribute_component_" + str(self.component_count[10]), True
             )
 

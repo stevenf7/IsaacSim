@@ -24,6 +24,11 @@
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/isaac/utils/Curves.h>
 #include "../Thirdparty/csscolorparser.hpp"
+
+#include <omni/isaac/utils/Conversions.h>
+#include <omni/usd/UtilsIncludes.h>
+#include <omni/usd/UsdUtils.h>
+
 namespace omni
 {
 namespace isaac
@@ -69,6 +74,7 @@ PolylineVisualizer::PolylineVisualizer() : IsaacComponent()
         CARB_LOG_ERROR("Failed to acquire carb::dictionary::IDictionary interface");
         return;
     }
+    mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
 }
 
 PolylineVisualizer::~PolylineVisualizer()
@@ -290,11 +296,20 @@ void PolylineVisualizer::tick()
     }
     pxr::GfMatrix4d trans = pxr::GfMatrix4d(1);
 
-    if (mParentPath != pxr::SdfPath())
+    if (mParentPrim.IsA<pxr::UsdGeomXformable>())
     {
-        carb::fastcache::Transform parentTrans;
-        mFastCachePtr->getTransform(mParentPath, parentTrans);
-        trans = utils::conversions::asGfMatrix4d(parentTrans);
+        // mFastCachePtr->getTransform(mParentPrimPath, parentTrans);
+
+        pxr::UsdTimeCode parentPrimTimeCode = pxr::UsdTimeCode::Default();
+        std::vector<double> times;
+        pxr::UsdGeomXformable(mParentPrim).GetTimeSamples(&times);
+
+        if (times.size() > 1)
+        {
+            parentPrimTimeCode = round(mTimeline->getCurrentTime() * this->mStage->GetTimeCodesPerSecond());
+        }
+
+        trans = omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, parentPrimTimeCode);
     }
 
 
@@ -353,6 +368,11 @@ void PolylineVisualizer::onComponentChange()
         return;
     }
     mParentPath = targets[0];
+    mParentPrim = mStage->GetPrimAtPath(mParentPath);
+    if (!mParentPrim)
+    {
+        CARB_LOG_ERROR("Parent Prim %s not valid", mParentPath.GetString().c_str());
+    }
 }
 
 

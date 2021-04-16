@@ -9,7 +9,7 @@
 import time
 import os
 import numpy as np
-from pxr import Usd, UsdGeom, Gf
+from pxr import Usd, UsdGeom, Gf, UsdPhysics, PhysxSchema
 import omni.kit.settings
 from omni.isaac.motion_planning import _motion_planning
 import carb
@@ -253,8 +253,15 @@ class Franka:
             self.world.rmp_handle = self.rmp_handle
             self.world.register_parent(self.base, self.prim, "panda_link0")
 
-        settings = carb.settings.get_settings()
-        self.mp.setFrequency(self.rmp_handle, settings.get("/physics/timeStepsPerSecond"))
+        physxSceneAPI = None
+        for prim in stage.Traverse():
+            if prim.IsA(UsdPhysics.Scene):
+                physxSceneAPI = PhysxSchema.PhysxSceneAPI.Apply(prim)
+
+        if physxSceneAPI is not None:
+            self.mp.setFrequency(self.rmp_handle, physxSceneAPI.GetTimeStepsPerSecondAttr().Get())
+        else:
+            self.mp.setFrequency(self.rmp_handle, 60)
 
         self.end_effector = EndEffector(self.dc, self.mp, self.ar, self.rmp_handle)
         if default_config:

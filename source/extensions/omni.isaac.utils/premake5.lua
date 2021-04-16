@@ -18,8 +18,6 @@ project_with_location("omni.isaac.utils.primitive_drawing")
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
-    --     "%{root}/_build/target-deps/client_library/include",
-    --     "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
     }
     libdirs {
         "%{root}/_build/target-deps/python/libs", 

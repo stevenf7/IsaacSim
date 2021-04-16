@@ -9,7 +9,8 @@
 
 import os
 import pprint
-from omni.isaac.synthetic_utils import OmniKitHelper, shapenet
+from omni.isaac.python_app import OmniKitHelper
+from omni.isaac.synthetic_utils import shapenet
 
 
 """Convert ShapeNetCore V2 to USD without materials.

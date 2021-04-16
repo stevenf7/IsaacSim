@@ -42,7 +42,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.assertTrue(create_application()[1])
 
-        self._physics_rate = carb.settings.get_settings().get("/physics/timeStepsPerSecond")
+        self._physics_rate = 60
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(1))

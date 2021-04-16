@@ -68,7 +68,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Make cube Xformable
         xformable = UsdGeom.Xformable(cube)
         # Create DR component and check if it exists
-        path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/color_component", False)
+        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/color_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateColorComponentCommand",
             path=path,
@@ -116,7 +116,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         xformable = UsdGeom.Xformable(cube)
         transform_matrix_1 = xformable.GetLocalTransformation()
         # Create DR component and check if it exists
-        path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/movement_component", False)
+        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/movement_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateMovementComponentCommand",
             path=path,
@@ -259,7 +259,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         xformable = UsdGeom.Xformable(cube)
         transform_matrix_1 = xformable.GetLocalTransformation()
         # Create DR component and check if it exists
-        path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/rotation_component", False)
+        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/rotation_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateRotationComponentCommand",
             path=path,
@@ -302,7 +302,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         xformable = UsdGeom.Xformable(cube)
         transform_matrix_1 = xformable.GetLocalTransformation()
         # Create DR component and check if it exists
-        path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/scale_component", False)
+        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/scale_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateScaleComponentCommand",
             path=path,
@@ -341,7 +341,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._timeline.play()
         # Create DR component and check if it exists
-        path = omni.kit.utils.get_stage_next_free_path(self._stage, default_prim_path + "/light_component", False)
+        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/light_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateLightComponentCommand",
             path=path,

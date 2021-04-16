@@ -120,7 +120,7 @@ PYBIND11_MODULE(_range_sensor, m)
     using namespace omni::isaac::range_sensor;
 
     m.doc() = R"pbdoc(
-        This extension provides an interface to a `omni.isaac.RangeSensorSchemaLidar` prim defined in a stage. 
+        This extension provides an interface to a `pxr.RangeSensorSchemaLidar` prim defined in a stage. 
         
         Example:
             To use this interface you must first call the acquire interface function.

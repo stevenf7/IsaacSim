@@ -17,7 +17,7 @@ import random
 import numpy as np
 from pxr import UsdGeom, Semantics
 from omni.isaac.synthetic_utils import visualization as vis
-from omni.isaac.synthetic_utils import OmniKitHelper
+from omni.isaac.python_app import OmniKitHelper
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 import matplotlib.pyplot as plt
 

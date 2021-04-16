@@ -11,7 +11,7 @@ import argparse
 import asyncio
 import omni
 import os
-from omni.isaac.synthetic_utils import OmniKitHelper
+from omni.isaac.python_app import OmniKitHelper
 
 
 async def convert(in_file, out_file, load_materials=False):

@@ -127,7 +127,7 @@ class Environment:
         self.dr.create_color_comp(prim_paths=["/World/Room"])
 
     def generate_lights(self):
-        prim_path = omni.kit.utils.get_stage_next_free_path(self.omni_kit.get_stage(), "/World/Env/Light", False)
+        prim_path = omni.usd.get_stage_next_free_path(self.omni_kit.get_stage(), "/World/Env/Light", False)
         self.prims.append(prim_path)
         self.omni_kit.create_prim(
             prim_path,
@@ -222,7 +222,7 @@ class Environment:
 
     def create_tile(self, stage, path, location, rotation):
         prefix = "/World/Env/Tiles/Tile"
-        prim_path = omni.kit.utils.get_stage_next_free_path(stage, prefix, False)
+        prim_path = omni.usd.get_stage_next_free_path(stage, prefix, False)
         self.prims.append(prim_path)
         tile_prim = stage.DefinePrim(prim_path, "Xform")
         tile_prim.GetReferences().AddReference(path)

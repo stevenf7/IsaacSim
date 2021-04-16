@@ -54,7 +54,7 @@ class DomainRandomization:
         """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/color_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/color_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateColorComponentCommand",
             path=path,
@@ -94,7 +94,7 @@ class DomainRandomization:
         """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/movement_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/movement_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateMovementComponentCommand",
             path=path,
@@ -130,7 +130,7 @@ class DomainRandomization:
         """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/rotation_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/rotation_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateRotationComponentCommand",
             path=path,
@@ -166,7 +166,7 @@ class DomainRandomization:
         """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/scale_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/scale_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateScaleComponentCommand",
             path=path,
@@ -208,7 +208,7 @@ class DomainRandomization:
 
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/light_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/light_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateLightComponentCommand",
             path=path,
@@ -250,7 +250,7 @@ class DomainRandomization:
 
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/texture_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/texture_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateTextureComponentCommand",
             path=path,
@@ -289,7 +289,7 @@ class DomainRandomization:
 
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/material_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/material_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateMaterialComponentCommand",
             path=path,
@@ -319,7 +319,7 @@ class DomainRandomization:
         """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateMeshComponentCommand",
             path=path,
@@ -346,7 +346,7 @@ class DomainRandomization:
         """
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/visibility_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/visibility_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateVisibilityComponentCommand",
             path=path,

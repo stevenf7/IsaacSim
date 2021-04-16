@@ -21,7 +21,7 @@ if %errorlevel% neq 0 ( exit /b %errorlevel% )
 :: if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Package
-call "%~dp0..\..\..\package.bat"
+call "%~dp0..\..\..\..\repo.bat" package -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: publish artifacts to teamcity

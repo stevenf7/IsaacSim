@@ -6,7 +6,7 @@ display_name = "Decals"
 [[python.module]]
 name = "omni.isaac.decals"
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 

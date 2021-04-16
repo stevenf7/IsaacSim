@@ -36,7 +36,6 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "pxr_plugin_path",
             "envFile": "${workspaceFolder}/.vscode/.pxr_plugin.env",
         },
         {
@@ -59,7 +58,6 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "pxr_plugin_path",
             "envFile": "${workspaceFolder}/.vscode/.pxr_plugin.env",
         },
     ]

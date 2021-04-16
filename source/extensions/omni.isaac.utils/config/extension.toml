@@ -19,7 +19,7 @@ icon = "data/icon.png"
 "omni.physx" = {}
 "omni.usdphysics" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.graph.core" = {}
+# "omni.graph.core" = {}
 "omni.debugdraw" = {}
 
 [[python.module]]
@@ -45,6 +45,6 @@ public = false
 name = "omni.isaac.utils.scripts.physics_utilities"
 public = false
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false

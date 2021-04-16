@@ -23,11 +23,14 @@ icon = "data/icon.png"
 "omni.kit.numpy.common" = {}
 "omni.kit.menu.utils" = {}
 "omni.kit.window.viewport" = {}
-"omni.graph.core" = {}
+# "omni.graph.core" = {}
 "omni.usd" = {}
 
 [[python.module]]
 name = "omni.isaac.dynamic_control"
+
+[[python.module]]
+name = "omni.isaac.dynamic_control.tests"
 
 [[python.module]]
 name = "omni.isaac.dynamic_control.scripts.samples.articulation"
@@ -35,7 +38,7 @@ name = "omni.isaac.dynamic_control.scripts.samples.articulation"
 [[python.module]]
 name = "omni.isaac.dynamic_control.scripts.samples.joint_monkey"
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 

@@ -1,6 +1,6 @@
 import os
 from pxr import UsdGeom, Usd, Gf
-from omni.isaac.synthetic_utils import OmniKitHelper
+from omni.isaac.python_app import OmniKitHelper
 import carb
 import omni
 

@@ -6,7 +6,7 @@ import signal
 import argparse
 from argparse import Namespace
 
-from omni.isaac.synthetic_utils import OmniKitHelper
+from omni.isaac.python_app import OmniKitHelper
 
 from jetracer_env import JetracerEnv
 from jetracer_model import CustomCNN

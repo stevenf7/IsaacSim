@@ -13,7 +13,7 @@ omni.isaac.ros_bridge: ROS Bridge
 Generated USD Schema API
 ========================
 
-.. automodule:: omni.isaac.RosBridgeSchema
+.. automodule:: pxr.RosBridgeSchema
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:

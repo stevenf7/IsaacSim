@@ -31,6 +31,7 @@
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/fastcache/FastCache.h>
 #include <omni/physx/IPhysx.h>
+#include <omni/physx/IPhysxUsdLoad.h>
 #include <omni/renderer/IDebugDraw.h>
 
 #include <unordered_map>
@@ -66,6 +67,7 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::kit::IStageUpdate,
                       omni::renderer::IDebugDraw,
                       omni::physx::IPhysx,
+                      omni::physx::usdparser::IPhysxUsdLoad,
                       omni::isaac::dynamic_control::DynamicControl,
                       omni::isaac::range_sensor::LidarSensorInterface,
                       omni::isaac::range_sensor::UltrasonicSensorInterface)

@@ -124,7 +124,7 @@ class Extension(omni.ext.IExt):
                     self.models["subset"].model.set_value(total_subsets)
                     self.models["materials"].model.set_value(len(materials))
                     merged_path = "/Merged/" + str(curr_prim.GetName())
-                    merged_path = omni.kit.utils.get_stage_next_free_path(stage, merged_path, False)
+                    merged_path = omni.usd.get_stage_next_free_path(stage, merged_path, False)
                     self.models["output_mesh"].model.set_value(merged_path)
                     self.models["output_subset"].model.set_value(len(materials))
 
@@ -205,7 +205,7 @@ class Extension(omni.ext.IExt):
                     all_mats[subset[0]].extend([*(x + range_offset for x in subset[1])])
             range_offset = range_offset + len(mesh["vertex_counts"])
         merged_path = "/Merged/" + str(curr_prim.GetName())
-        merged_path = omni.kit.utils.get_stage_next_free_path(stage, merged_path, False)
+        merged_path = omni.usd.get_stage_next_free_path(stage, merged_path, False)
         print("merging to path: ", merged_path)
         merged_mesh = UsdGeom.Mesh.Define(stage, merged_path)
         xform = UsdGeom.Xformable(merged_mesh)

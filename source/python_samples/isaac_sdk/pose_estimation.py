@@ -2,7 +2,7 @@ import random
 import os
 import omni
 from pxr import UsdGeom, Usd, Gf
-from omni.isaac.synthetic_utils import OmniKitHelper
+from omni.isaac.python_app import OmniKitHelper
 from omni.isaac.synthetic_utils import DomainRandomization
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 

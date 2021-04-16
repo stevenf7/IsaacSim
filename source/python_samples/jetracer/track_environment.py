@@ -98,7 +98,7 @@ class Environment:
 
     def generate_lights(self):
         # TODO: center this onto the track
-        prim_path = omni.kit.utils.get_stage_next_free_path(self.omni_kit.get_stage(), "/World/Env/Light", False)
+        prim_path = omni.usd.get_stage_next_free_path(self.omni_kit.get_stage(), "/World/Env/Light", False)
         # self.prims.append(prim_path)
         # LOCMOD revisit (don't add so it won't be removed on reset)
         self.omni_kit.create_prim(
@@ -141,7 +141,7 @@ class Environment:
             return
         path = nucleus_server + "/Isaac/Environments/Jetracer/jetracer_track_solid.usd"
         prefix = "/World/Env/Track"
-        prim_path = omni.kit.utils.get_stage_next_free_path(stage, prefix, False)
+        prim_path = omni.usd.get_stage_next_free_path(stage, prefix, False)
         # self.prims.append(prim_path) #(don't add so the jetracer track won't be removed on reset)
         track_prim = stage.DefinePrim(prim_path, "Xform")
         track_prim.GetReferences().AddReference(path)
