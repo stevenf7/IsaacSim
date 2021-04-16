@@ -27,7 +27,8 @@ import signal
 import omni
 from pxr import UsdGeom, UsdShade, Sdf, Semantics
 
-from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, shapenet
+from omni.isaac.python_app import OmniKitHelper
+from omni.isaac.synthetic_utils import SyntheticDataHelper, shapenet
 
 
 # Setup default generation variables

@@ -215,7 +215,7 @@ class SyntheticDataHelper:
 if __name__ == "__main__":
     # Example usage
     import random
-    from omni.isaac.synthetic_utils import OmniKitHelper
+    from omni.isaac.python_app import OmniKitHelper
 
     kit = OmniKitHelper()
 

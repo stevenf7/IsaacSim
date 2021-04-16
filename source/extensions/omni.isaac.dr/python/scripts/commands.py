@@ -50,7 +50,7 @@ class CreateColorComponentCommand(omni.kit.commands.Command):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         if self._path is None:
-            self._path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/color_component", False)
+            self._path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/color_component", False)
         prim = DrSchema.ColorComponent.Define(stage, Sdf.Path(self._path))
         path_split = self._path.split("/")
         prim.CreateCompNameAttr().Set(str(path_split[len(path_split) - 1]))
@@ -126,9 +126,7 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         if self._path is None:
-            self._path = omni.kit.utils.get_stage_next_free_path(
-                stage, default_prim_path + "/movement_component", False
-            )
+            self._path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/movement_component", False)
         prim = DrSchema.MovementComponent.Define(stage, Sdf.Path(self._path))
         prim.CreateCompNameAttr().Set(str(self._path))
 
@@ -202,9 +200,7 @@ class CreateRotationComponentCommand(omni.kit.commands.Command):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         if self._path is None:
-            self._path = omni.kit.utils.get_stage_next_free_path(
-                stage, default_prim_path + "/rotation_component", False
-            )
+            self._path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/rotation_component", False)
         prim = DrSchema.RotationComponent.Define(stage, Sdf.Path(self._path))
         prim.CreateCompNameAttr().Set(str(self._path))
 
@@ -263,7 +259,7 @@ class CreateScaleComponentCommand(omni.kit.commands.Command):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         if self._path is None:
-            self._path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/scale_component", False)
+            self._path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/scale_component", False)
         prim = DrSchema.ScaleComponent.Define(stage, Sdf.Path(self._path))
         prim.CreateCompNameAttr().Set(str(self._path))
 
@@ -347,9 +343,7 @@ class CreateTransformComponentCommand(omni.kit.commands.Command):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         if self._path is None:
-            self._path = omni.kit.utils.get_stage_next_free_path(
-                stage, default_prim_path + "/transform_component", False
-            )
+            self._path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/transform_component", False)
         prim = DrSchema.TransformComponent.Define(stage, Sdf.Path(self._path))
         prim.CreateCompNameAttr().Set(str(self._path))
 
@@ -461,7 +455,7 @@ class CreateLightComponentCommand(omni.kit.commands.Command):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         if self._path is None:
-            self._path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/light_component", False)
+            self._path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/light_component", False)
         prim = DrSchema.LightComponent.Define(stage, Sdf.Path(self._path))
         prim.CreateCompNameAttr().Set(str(self._path))
 
@@ -533,7 +527,7 @@ class CreateTextureComponentCommand(omni.kit.commands.Command):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         if self._path is None:
-            self._path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/texture_component", False)
+            self._path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/texture_component", False)
         prim = DrSchema.TextureComponent.Define(stage, Sdf.Path(self._path))
         path_split = self._path.split("/")
         prim.CreateCompNameAttr().Set(str(path_split[len(path_split) - 1]))
@@ -600,9 +594,7 @@ class CreateMaterialComponentCommand(omni.kit.commands.Command):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         if self._path is None:
-            self._path = omni.kit.utils.get_stage_next_free_path(
-                stage, default_prim_path + "/material_component", False
-            )
+            self._path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/material_component", False)
         prim = DrSchema.MaterialComponent.Define(stage, Sdf.Path(self._path))
         path_split = self._path.split("/")
         prim.CreateCompNameAttr().Set(str(path_split[len(path_split) - 1]))
@@ -664,7 +656,7 @@ class CreateMeshComponentCommand(omni.kit.commands.Command):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         if self._path is None:
-            self._path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
+            self._path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
         prim = DrSchema.MeshComponent.Define(stage, Sdf.Path(self._path))
         path_split = self._path.split("/")
         prim.CreateCompNameAttr().Set(str(path_split[len(path_split) - 1]))
@@ -710,9 +702,7 @@ class CreateVisibilityComponentCommand(omni.kit.commands.Command):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         if self._path is None:
-            self._path = omni.kit.utils.get_stage_next_free_path(
-                stage, default_prim_path + "/visibility_component", False
-            )
+            self._path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/visibility_component", False)
         prim = DrSchema.VisibilityComponent.Define(stage, Sdf.Path(self._path))
         path_split = self._path.split("/")
         prim.CreateCompNameAttr().Set(str(path_split[len(path_split) - 1]))
@@ -755,9 +745,7 @@ class CreateAttributeComponentCommand(omni.kit.commands.Command):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         if self._path is None:
-            self._path = omni.kit.utils.get_stage_next_free_path(
-                stage, default_prim_path + "/attribute_component", False
-            )
+            self._path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/attribute_component", False)
         prim = DrSchema.AttributeComponent.Define(stage, Sdf.Path(self._path))
         path_split = self._path.split("/")
         prim.CreateCompNameAttr().Set(str(path_split[len(path_split) - 1]))

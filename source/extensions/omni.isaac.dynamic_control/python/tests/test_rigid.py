@@ -25,7 +25,7 @@ class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
-        self._physics_rate = carb.settings.get_settings().get("/physics/timeStepsPerSecond")
+        self._physics_rate = 60
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(1))
@@ -66,11 +66,10 @@ class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
         scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
         scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
         scene.CreateGravityMagnitudeAttr().Set(981.0)
-
-        self._timeline.play()
+        prim = await self.add_cube("/cube", 100, (0, 0, 100))
         await omni.kit.app.get_app().next_update_async()
 
-        prim = await self.add_cube("/cube", 100, (0, 0, 100))
+        self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         handle = self._dc.get_rigid_body("/cube")
 

@@ -10,19 +10,9 @@ repo_build = require("omni/repo/build")
 -- Repo root
 root = repo_build.get_abs_path(".")
 
--- Resolved path to kit SDK (without %{} tokens), for creating experiences
-KIT_SDK_RESOLVED = {
-    ["debug"] = root.."/_build/kit_debug",
-    ["release"] = root.."/_build/kit_release",
-}
-
--- Path to kit sdk
-kit_sdk = "%{root}/_build/kit_%{config}"
-kit_sdk_bin_dir = kit_sdk.."/_build/%{platform}/%{config}"
-
 -- Include Kit SDK public premake, it defines few global variables and helper functions. Look inside to get more info.
-include("_build/kit_release/premake5-public.lua")
-
+local build_path = "_build/"..os.target().."-x86_64/"
+local _ = dofileopt(build_path.."release/kit/dev/premake5-public.lua") or dofileopt(build_path.."debug/kit/dev/premake5-public.lua")
 
 -- Shared build scripts from isaac sim
 include("isaac_sim_premake5.lua")
@@ -63,6 +53,7 @@ workspace "isaac-sim"
         "_build/target-deps/carb_sdk_plugins/include",
         "%{kit_sdk}/include",
         "%{kit_sdk}/_build/target-deps/",
+        "%{kit_dev_dir}/include",
     }
 
     -- Carbonite carb lib
@@ -83,7 +74,19 @@ workspace "isaac-sim"
     repo_build.prebuild_link {
         -- Link app configs in target dir for easier edit
         { "source/apps", bin_dir.."/apps" },
+
+        -- Link all licenses
+        { "_build/PACKAGE-LICENSES", bin_dir.."/PACKAGE-LICENSES" },
+        
+        -- TODO:
+        -- Link python app sources in target dir for easier edit
+        -- { "source/pythonapps/target", bin_dir.."/pythonapps" },
     }
+    -- TODO: 
+    -- repo_build.prebuild_copy {
+    --     -- Copy python app running scripts in target dir
+    --     {"source/pythonapps/runscripts/$config/*$shell_ext", bin_dir}
+    -- }
 
     -- Windows platform settings
     filter { "system:windows" }
@@ -202,6 +205,7 @@ group "apps"
 group "exts"
     -- Windows and Linux
     -- include ("source/extensions/omni.isaac.decals")
+    include ("source/extensions/omni.usd.schema.isaac")
     include ("source/extensions/omni.isaac.dr")
     include ("source/extensions/omni.isaac.dynamic_control")
     include ("source/extensions/omni.isaac.contact_sensor")
@@ -220,6 +224,7 @@ group "exts"
     include ("source/extensions/omni.isaac.app.setup")
     include ("source/extensions/omni.isaac.app.launcher")
     include ("source/extensions/omni.isaac.splash")
+    include ("source/extensions/omni.isaac.python_app")
 
     include ("source/extensions/omni.kit.property.isaac")
     include ("source/extensions/omni.kit.loop-isaac")

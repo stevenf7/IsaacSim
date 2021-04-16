@@ -1,0 +1,11 @@
+display_name = "Isaac Python App"
+
+[dependencies]
+"omni.kit.loop-isaac" = {}
+
+[[python.module]]
+name = "omni.isaac.python_app"
+
+
+[python.pipapi]
+requirements = []

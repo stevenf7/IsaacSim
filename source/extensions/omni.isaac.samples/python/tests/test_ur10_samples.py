@@ -32,13 +32,13 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physx = physx.acquire_physx_interface()
         await omni.usd.get_context().new_stage_async()
 
-        physics_rate = carb.settings.get_settings().get("/physics/timeStepsPerSecond")
+        self._physics_rate = 60
         self.phys_num_steps = carb.settings.get_settings().get("persistent/physics/maxNumSteps")
         carb.settings.get_settings().set_int(
             "persistent/physics/maxNumSteps", int(1)
         )  # Enforce single timestep per stage update
-        self.time_step = 1.0 / physics_rate
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(physics_rate))
+        self._time_step = 1.0 / self._physics_rate
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         self._limit_fps = carb.settings.get_settings().get("/app/runLoops/main/rateLimitEnabled")
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
 
@@ -103,12 +103,12 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         # self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         self._scenario.stop_tasks()
-        self._scenario.step(self.time_step)
+        self._scenario.step(self._time_step)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        self._scenario.step(self.time_step)
+        self._scenario.step(self._time_step)
         await omni.kit.app.get_app().next_update_async()
-        self._scenario.step(self.time_step)
+        self._scenario.step(self._time_step)
         await self.execute_stack_scene()
         pass
 
@@ -123,7 +123,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
             while self._scenario.pick_and_place.current_state == self.current_state:
                 await omni.kit.app.get_app().next_update_async()
                 self.assertTrue(self._dc.is_simulating())
-                self._scenario.step(self.time_step)
+                self._scenario.step(self._time_step)
             next_state = (self.state_idx + 1) % len(self.default_sequence)
             self.assertEqual(self._scenario.pick_and_place.current_state, self.default_sequence[next_state])
             self.state_idx = next_state
@@ -159,7 +159,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
                 timeout += 1
                 await omni.kit.app.get_app().next_update_async()
                 self.assertTrue(self._dc.is_simulating())
-                self._scenario.step(self.time_step)
+                self._scenario.step(self._time_step)
             self.assertLessEqual(timeout, timeout_max)
             timeout = 0
             if self.current_state == bin_stack.SM_states.ATTACH and stop_when_attached:

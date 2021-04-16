@@ -25,7 +25,7 @@ icon = "data/img/icon.png"
 [[python.module]]
 name = "omni.isaac.step_importer"
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 

@@ -15,18 +15,15 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.uiapp" = {}
-"omni.graph.core" = {} # needed for fastcache
+# "omni.graph.core" = {} # needed for fastcache
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.range_sensor" = {}
 "omni.isaac.utils" = {}
 "omni.syntheticdata" = {}
+"omni.usd.schema.isaac" = {}
 
 [[python.module]]
 name = "omni.isaac.robot_engine_bridge"
-
-[[python.module]]
-name = "omni.isaac.RobotEngineBridgeSchema"
-public = false
 
 [[python.module]]
 name = "omni.isaac.pyalice"
@@ -47,9 +44,6 @@ public = false
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
-
-[[native.library]]
-path = "bin/${lib_prefix}robotEngineBridgeSchema${lib_ext}"
 
 [[native.library]]
 path = "lib/libcudart.so.10.2"

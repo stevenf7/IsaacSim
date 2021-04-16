@@ -19,6 +19,7 @@ icon = "data/icon.png"
 "omni.isaac.dynamic_control" = {}
 "omni.kit.window.toolbar" = {}
 "omni.debugdraw" = {}
+"omni.usd.schema.isaac" = {}
 
 [[python.module]]
 name = "omni.isaac.dr"
@@ -29,13 +30,6 @@ name = "omni.isaac.dr.scripts.samples"
 [[python.module]]
 name = "omni.isaac.dr.scripts.random_room_sample"
 
-[[python.module]]
-name = "omni.isaac.DrSchema"
-public = false
-
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
-
-[[native.library]]
-path = "bin/${lib_prefix}drSchema${lib_ext}"

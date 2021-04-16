@@ -19,21 +19,21 @@ icon = "data/icon.png"
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
 "omni.kit.window.toolbar" = {} # Needed for simulation to occur
-"omni.graph.core" = {}
+# "omni.graph.core" = {}
 "omni.kit.numpy.common" = {}
 "omni.kit.window.viewport" = {}
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.contact_sensor"
 
 [[python.module]]
 name = "omni.isaac.contact_sensor.tests"
 public = false
 
-[[python.modules]]
+[[python.module]]
 name = "omni.isaac.contact_sensor.scripts.samples.contact_sensor"
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 

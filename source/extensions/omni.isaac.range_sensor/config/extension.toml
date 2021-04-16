@@ -18,12 +18,13 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.kit.menu.utils" = {}
-"omni.graph.core" ={} # needed for fastcache
+# "omni.graph.core" = {} # needed for fastcache
 "omni.physx" = {}
 "omni.usdphysics" = {}
 "omni.debugdraw" = {}
 "omni.kit.window.toolbar" = {} # needed for simulation to start
 "omni.kit.window.viewport" = {}
+"omni.usd.schema.isaac" = {}
 
 [[python.module]]
 name = "omni.isaac.range_sensor"
@@ -41,20 +42,9 @@ name = "omni.isaac.range_sensor.scripts.samples.generic_info"
 name = "omni.isaac.range_sensor.tests"
 public = false
 
-[[python.module]]
-name = "omni.isaac.RangeSensorSchema"
-public = false
-
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 
-[[libraries]]
-path = "bin/${lib_prefix}rangeSensorSchema${lib_ext}"
-
 [python.pipapi]
 requirements = ["numpy==1.19.0"]
-
-# We need to enable fastcache for this extension because thats how the sensor pose is acquired
-[settings]
-persistent.physics.useFastCache = true

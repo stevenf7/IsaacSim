@@ -3,7 +3,10 @@
 ########################################################################################################################
 
 [repo]
-logging = "info"
+logging = "warn"
+extra_tool_paths = [
+	"${root}/_build/$platform/release/kit/dev"
+]
 
 
 ########################################################################################################################
@@ -25,21 +28,10 @@ fetch.packman_target_files_to_pull = [
     "${root}/deps/isaac-sim.packman.xml",
 ]
 
-# List of pip files to pip install from (in order)
-fetch.pip_files_to_pull = [
-    "${root}/deps/pip.toml"
-]
+stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/$platform/debug/kit"
+stage_files.extra_mapping.kit_sdk_release = "${root}/_build/$platform/release/kit"
 
-fetch.enable_exclude_configs_tags = false
-
-
-stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/kit_debug"
-stage_files.extra_mapping.kit_sdk_release = "${root}/_build/kit_release"
-
-# This allows us to write to files outside of _build
-stage_files.allowed_paths=[]
-
-vscode.python = "${root}/_build/kit_debug/_build/target-deps/python"
+vscode.python = "${root}/_build/$platform/release/kit/python"
 
 vscode.python_env.PYTHONPATH= [
   "$$$${PYTHONPATH}",
@@ -51,39 +43,35 @@ vscode.python_env.PYTHONPATH= [
   "$repo_deps/repo_format",
   "$repo_deps/repo_package",
   "$root/tools/repoman",
-  "$root/_build/$platform/$config/extensions",
-  "$root/_build/$platform/$config/exts",
-  "$root/_build/$platform/$config/bindings-python",
   "$root/_build/$platform/$config/exts/*",
-  "$root/_build/kit_$config/_exts/*/",
-  "$root/_build/kit_$config/_build/$platform/$config/extsPhysics/*/",
-  "$root/_build/kit_$config/_build/$platform/$config/extscore/*",
-  "$root/_build/kit_$config/_build/$platform/$config/extscore/omni.kit.pip_archive/pip_prebundle",
-  "$root/_build/kit_$config/_exts/omni.kit.pip_archive/pip_prebundle",
-  "$root/_build/kit_$config/_build/$platform/$config/extensions/extensions-bundled",
-  "$root/_build/kit_$config/_build/$platform/$config/plugins/bindings-python",
+  "$root/_build/$platform/$config/kit/exts/*",
+  "$root/_build/$platform/$config/kit/extscore/*",
+  "$root/_build/$platform/$config/kit/extensions/extensions-bundled",
+  "$root/_build/$platform/$config/kit/plugins/bindings-python/",
+  "$root/_build/$platform/$config/kit/extscore/omni.kit.pip_archive/pip_prebundle",
 ]
 
-vscode.python_env.PATH= ["$$$${PATH}", "$root/_build/$platform/$config",
-  "$root/_build/kit_$config/_build/$platform/$config",
-  "$root/_build/kit_$config/_build/$platform/$config/plugins",
-  "$root/_build/kit_$config/_build/$platform/$config/plugins/carb_gfx",
-  "$root/_build/kit_$config/_build/$platform/$config/plugins/rtx",
-  "$root/_build/kit_$config/_build/$platform/$config/libs/mdl",
-  "$root/_build/kit_$config/_build/$platform/$config/libs/iray",
-  "$root/_build/kit_$config/_exts/*/bin",
-  "$root/_build/kit_$config/_build/$platform/$config/extsPhysics/*/bin",
-  "$root/_build/kit_$config/_build/$platform/$config/extscore/*/bin",
-  "$root/_build/kit_$config/_build/$platform/$config/extensions/extensions-bundled/bin",
-  "$root/_build/kit_$config/_build/$platform/$config/plugins/bindings-python/bin",
-  # "$root/_build/$platform/$config/exts/omni.isaac.*/bin",
+vscode.python_env.PATH= [
+  "$$$${PATH}", 
+  "$root/_build/$platform/$config",
+  "$root/_build/$platform/$config/kit",
+  "$root/_build/$platform/$config/kit/exts/*/bin",
+  "$root/_build/$platform/$config/kit/extscore/*/bin",
+  "$root/_build/$platform/$config/kit/extsPhysics/*/bin",
+  "$root/_build/$platform/$config/kit/libs/iray",
+  "$root/_build/$platform/$config/kit/plugins",
+  "$root/_build/$platform/$config/kit/plugins/bindings-python",
+  "$root/_build/$platform/$config/kit/plugins/carb_gfx",
+  "$root/_build/$platform/$config/kit/plugins/rtx",
+  "$root/_build/$platform/$config/kit/extensions/extensions-bundled/bin",
+
 ]
 # These paths are used by python samples
-vscode.python_env.CARB_APP_PATH= ["$root/_build/kit_$config/_build/$platform/$config"]
+vscode.python_env.CARB_APP_PATH= ["$root/_build/${platform}/${config}/kit"]
 vscode.python_env.ISAAC_PATH= ["$root/_build/$platform/$config"]
-# TODO
-# vscode.python_env.PXR_PLUGINPATH_NAME= ["$root/_build/"]
 
+vscode.write_python_paths_in_settings_json = true
+vscode.generate_python_env_file = false
 
 msbuild.sln_file = "isaac-sim.sln"
 msbuild.vs_version = "vs2017"
@@ -91,9 +79,8 @@ msbuild.vs_version = "vs2017"
 stage_files.error_if_missing = true
 
 licensing.enabled = true
-#licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/target-deps.packman.xml", "${root}/deps/isaac-sim.packman.xml"]
 licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/target-deps.packman.xml"]
-licensing.fail_on_missing = false
+licensing.fail_on_missing = true
 
 
 ########################################################################################################################
@@ -104,7 +91,7 @@ licensing.fail_on_missing = false
 enabled = true
 
 # Use python from kit sdk
-python_path =  "${root}/_build/kit_${config}/_build/${platform}/${config}/python${shell_ext}"
+python_path =  "${root}/_build/kit/${config}/_build/${platform}/${config}/python${shell_ext}"
 
 # differentiate debug/release docs
 enable_build_config_choice = true
@@ -113,6 +100,7 @@ enable_build_config_choice = true
 extra_sys_paths = [
     "${root}/_build/${platform}/${config}/exts/*"
 ]
+
 
 ########################################################################################################################
 # Build Number 
@@ -126,15 +114,15 @@ enabled = true
 # Packaging 
 ########################################################################################################################
 
-[repo_package]
-
 [repo_package.packages.isaac-sim]
+root = "_build/$${platform}/$${config}"
 omniverse_flow_version_scheme = true
 ziponly = false
 package_per_config = true
 "platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
 
 [repo_package.packages.isaac-sim-standalone]
+root = "_build/$${platform}/$${config}"
 omniverse_flow_version_scheme = true
 ziponly = false
 "platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
@@ -187,16 +175,18 @@ branch_prefix = "integ"
 ########################################################################################################################
 [repo_test]
 
+test_root = "$root/_build/$platform/$config"
+
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
 
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
-path = "${test_root}/_build/${platform}/${config}"
+path = "${test_root}"
   [[repo_test.suites.pythontests.group]]
   include = ["tests-*${shell_ext}"]
   exclude =[]
-  args = ["--portable-root ${test_root}/_build/portable_root"]
+  args = ["--portable-root ${test_root}/portable_root"]
   tc_report_enabled = false
   timeout = 480
 
@@ -206,7 +196,7 @@ path = "${test_root}/_build/${platform}/${config}"
 kind = "catch2"
 default = true
 executables = [
-	"${test_root}/_build/${platform}/${config}/test.unit.range_sensor${exe_ext}",
+	"${test_root}/test.unit.range_sensor${exe_ext}",
 ]
 
 ########################################################################################################################

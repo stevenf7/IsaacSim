@@ -19,7 +19,8 @@ import signal
 
 import carb
 import omni
-from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, DataWriter, DomainRandomization
+from omni.isaac.python_app import OmniKitHelper
+from omni.isaac.synthetic_utils import SyntheticDataHelper, DataWriter, DomainRandomization
 
 # Default rendering parameters
 RENDER_CONFIG = {

@@ -24,7 +24,7 @@ name = "omni.isaac.motion_planning"
 [[python.module]]
 name = "omni.isaac.motion_planning.tests"
 
-[[native.plugins]]
+[[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 

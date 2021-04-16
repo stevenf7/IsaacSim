@@ -24,9 +24,8 @@ class PythonApp:
         sys.argv.insert(1, f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit')
 
         # Add paths to extensions
-        sys.argv.append(f'--/app/extensions/folders2/0="{os.path.abspath(os.environ["CARB_APP_PATH"])}/exts"')
-        sys.argv.append(f'--/app/extensions/folders2/1="{os.path.abspath(os.environ["CARB_APP_PATH"])}/extsPhysics"')
-        sys.argv.append(f'--/app/extensions/folders2/2="{os.path.abspath(os.environ["ISAAC_PATH"])}/exts"')
+        sys.argv.append(f"--ext-folder")
+        sys.argv.append(f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts')
         # Run headless
         sys.argv.append("--no-window")
 

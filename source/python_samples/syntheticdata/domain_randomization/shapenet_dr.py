@@ -28,7 +28,8 @@ import carb
 import omni
 from pxr import UsdGeom, UsdShade, Sdf
 
-from omni.isaac.synthetic_utils import OmniKitHelper, SyntheticDataHelper, shapenet, DomainRandomization
+from omni.isaac.python_app import OmniKitHelper
+from omni.isaac.synthetic_utils import SyntheticDataHelper, shapenet, DomainRandomization
 
 # Setup default generation variables
 # Value are (min, max) ranges

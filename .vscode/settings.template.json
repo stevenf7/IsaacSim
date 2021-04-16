@@ -1,7 +1,5 @@
 {
     "files.associations": {
-        "*.urdf": "xml",
-        "*.kit": "toml",
         "array": "cpp",
         "atomic": "cpp",
         "*.tcc": "cpp",
@@ -101,12 +99,7 @@
         "xthread": "cpp",
         "xmemory0": "cpp",
         "hash_map": "cpp",
-        "hash_set": "cpp",
-        "*.hlslh": "cpp",
-        "*.ipp": "cpp",
-        "*.hlsl": "cpp",
-        "strstream": "cpp",
-        "any": "cpp"
+        "hash_set": "cpp"
     },
     "editor.rulers": [120],
     "files.watcherExclude": {
@@ -132,16 +125,18 @@
         "asciidoc"
     ],
 
-    
-    // For intellisense to work you need python 3.6 available on your system:
-    "python.pythonPath": "${workspaceFolder}/_build/host-deps/python", 
+    // This enables python language server. Seems to work slightly better than jedi:
+    "python.jediEnabled": false,
+
+    // Those paths are automatically filled by build system, see `repo.toml` for configuration:
+    "python.analysis.extraPaths": [
+    ],
+
+    "python.languageServer": "Pylance",
+    "python.pythonPath": "${workspaceFolder}/_build/windows-x86_64/release/kit/python/python.exe",
 
     // This enables python language server. Seems to work slightly better than jedi:
     "python.jediEnabled": false, 
-
-    // Python env file is generated buring build step. It points python to binary bindings files for intellisense to work.
-    // If you are building only release configuration you can switch this to "python_release.env":
-    "python.envFile": "${workspaceFolder}/_build/python_debug.env",
 
     // We use "black" as a formatter:
     "python.formatting.provider": "black",
@@ -150,6 +145,5 @@
     // Use flake8 for linting
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
-    "python.languageServer": "Microsoft",
-    "restructuredtext.confPath": ""
+    "python.languageServer": "Pylance"
 }

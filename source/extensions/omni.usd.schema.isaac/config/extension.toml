@@ -1,0 +1,42 @@
+[core]
+reloadable = false
+# Load at the start, load all schemas with order -100 (with order -1000 the USD libs are loaded)
+order = -100
+
+[package]
+category = "Simulation"
+authors = ["Isaac Sim team"]
+title = "USD Isaac schema"
+description="USD Isaac schema"
+repository="https://gitlab-master.nvidia.com/isaac/usd-ext-isaac"
+keywords = ["isaac", "usd"]
+
+[dependencies]
+"omni.usd.libs" = { }
+
+[[python.module]]
+name = "omni.isaac.DrSchema"
+
+[[python.module]]
+name = "omni.isaac.RangeSensorSchema"
+
+[[python.module]]
+name = "omni.isaac.RobotEngineBridgeSchema"
+
+[[python.module]]
+name = "omni.isaac.RosBridgeSchema"
+
+[[python.module]]
+name = "usd.schema.isaac"
+
+[[native.library]]
+path = "bin/${lib_prefix}drSchema${lib_ext}"
+
+[[native.library]]
+path = "bin/${lib_prefix}rangeSensorSchema${lib_ext}"
+
+[[native.library]]
+path = "bin/${lib_prefix}robotEngineBridgeSchema${lib_ext}"
+
+[[native.library]]
+path = "bin/${lib_prefix}rosBridgeSchema${lib_ext}"

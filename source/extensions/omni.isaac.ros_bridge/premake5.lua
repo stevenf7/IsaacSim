@@ -82,6 +82,4 @@ repo_build.prebuild_link {
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/ros_bridge" },
     { "%{root}/_build/target-deps/nv_ros/lib/lib**", ext.target_dir.."/bin" },
-    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RosBridgeSchema/**", ext.target_dir.."/omni/isaac/RosBridgeSchema" },
-    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}rosBridgeSchema${lib_ext}", ext.target_dir.."/bin"},
 }

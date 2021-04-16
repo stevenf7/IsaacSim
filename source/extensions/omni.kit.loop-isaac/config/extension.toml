@@ -1,15 +1,10 @@
 [package]
 # Semantic Versionning is used: https://semver.org/
 version = "0.1.0"
-
 category = "Internal"
-
 authors = ["Isaac Sim team"]
-
 title = "Isaac Loop Runner"
-
 repository=""
-
 keywords = ["isaac", "loop"]
 
 # More info on writing changelog: https://keepachangelog.com/en/1.0.0/

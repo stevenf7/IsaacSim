@@ -10,6 +10,7 @@
 #pragma once
 #include "../Core/IsaacComponent.h"
 #include "../Utils/IsaacPID.h"
+#include "../Utils/IsaacVehicleController.h"
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/physx/IPhysx.h>
@@ -26,76 +27,6 @@ namespace isaac
 {
 namespace robot_engine_bridge
 {
-
-struct WheelFlag
-{
-    enum Enum
-    {
-        eHAS_WHEEL_CONTROLLER = (1 << 0),
-        eHAS_DRIVE = (1 << 1), // only valid for DriveType::eBASIC
-        eHAS_STEER = (1 << 2), // only valid for DriveType::eBASIC
-        eHAS_BRAKE = (1 << 3) // only valid for DriveType::eBASIC
-    };
-};
-struct WheelCache
-{
-    pxr::SdfPath usdPath;
-    int32_t index;
-    uint32_t wheelFlags;
-    float maxSteerAngle;
-    float maxBrakeTorque;
-    float maxHandBrakeTorque;
-    float mass;
-    float radius;
-
-    static const uint32_t sInitialWheelCapacity = 4;
-};
-
-
-struct DriveType
-{
-    enum Enum
-    {
-        eNONE = 0, // user wants to control wheels directly
-        eBASIC, // simple steering support and max brake/drive torque
-        eSTANDARD // full engine, gears etc. setup
-    };
-};
-
-struct CacheStateFlag
-{
-    enum Enum
-    {
-        eUSD = (1 << 0), // USD properties have been cached
-        eINTERNAL = (1 << 1), // internal object handles etc. have been cached
-        eVALID = eUSD | eINTERNAL
-    };
-};
-
-struct Cache
-{
-    Cache() : state(0)
-    {
-    }
-
-    size_t vehicleId;
-    ::physx::PxVehicleWheels* mVehiclePtr = nullptr;
-    std::vector<WheelCache>* wheels = nullptr;
-    float peakDriveTorque; // only used for DriveType::eBASIC
-    DriveType::Enum driveType;
-    uint8_t state;
-    bool hasController; // whether the vehicle has any sort of controller (VehicleControllerAPI or
-                        // WheelControllerAPI). Ideally, we would rather not create a VehicleController instance to
-                        // begin with if there is no controller API though.
-    float rearWidth = 0.0f;
-    float axleSeparation = 0.0f;
-    int numDrivenWheels = 0; // Lets us divide torque evenly between all driven wheels
-    int numBrakedWheels = 0; // Lets us divide torque evenly between all braked wheels
-    float chassisMass = 0;
-    float totalMass = 0;
-
-    ::physx::PxVec3 forward = ::physx::PxVec3(1, 0, 0);
-};
 
 
 /**
@@ -127,8 +58,6 @@ public:
 
 
 private:
-    void fillCache();
-    void setAckermannSteering(const float steeringAngle, const int leftWheel, const int rightWheel);
     pxr::SdfPath mVehiclePath;
     pxr::UsdPrim mVehiclePrim;
     double mUnitScale;
@@ -143,7 +72,6 @@ private:
 
     omni::physx::IPhysx* mPhysxPtr = nullptr;
     // omni::physx::IPhysxVehicle* mPhysxVehiclePtr = nullptr;
-    Cache mCache;
 
     const float mReverseTime = 0.5f;
     const float mReverseSpeed = 1.0f;
@@ -159,6 +87,8 @@ private:
 
     std::unique_ptr<PIDController> mPID;
     bool mUsePID = false;
+
+    VehicleController mVehicleController;
 };
 }
 }

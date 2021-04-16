@@ -65,7 +65,10 @@ project "test.unit.range_sensor"
               "%{root}/_build/target-deps/carb_sdk_plugins/_build/linux-x86_64/%{cfg.buildcfg}"}
     links {"carb"}
 
-    runpathdirs { "%{root}/_build/kit_release/_build/linux-x86_64/release/plugins/" }
+    runpathdirs {
+                "%{root}/_build/%{platform}/%{config}/kit/plugins",
+                "%{root}/_build/%{platform}/%{config}/kit/extscore/omni.usd.libs/bin/" 
+            }
     filter { "system:linux" }
             buildoptions { "-pthread" }
             links { "pthread" }
@@ -109,6 +112,4 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/range_sensor" },
-    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RangeSensorSchema/**", ext.target_dir.."/omni/isaac/RangeSensorSchema" },
-    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}rangeSensorSchema${lib_ext}", ext.target_dir.."/bin"},
 }

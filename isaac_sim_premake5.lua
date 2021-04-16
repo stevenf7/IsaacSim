@@ -132,42 +132,42 @@ function define_ext_test_experience(ext_name, args)
     define_experience("tests-"..suite.."-"..ext_name, exp_args)
 end
 
--- Isaac Sim needs this redefined here because we have a custom PXR_PLUGINPATH_NAME export to handle runtime USD
--- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
-function create_experience_runner(name, config_path, config, kit_sdk_config, extra_args)
-    if os.target() == "windows" then
-        local bat_file_dir = root.."/_build/windows-x86_64/"..config
-        local bat_file_path = bat_file_dir.."/"..name..".bat"
-        local kit_bin_relative = path.getrelative(bat_file_dir, KIT_SDK_RESOLVED[config].."/_build/windows-x86_64/"..kit_sdk_config)
-        kit_bin_relative = path.normalize(kit_bin_relative):gsub("/", "\\")
-        local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
-        local f = io.open(bat_file_path, 'w')
-        f:write(string.format([[
-@echo off
-setlocal
-call "%%~dp0%s\kit.exe" %s %s %%*
-        ]], kit_bin_relative, config_path, extra_args))
-        f:close()
-    else
-        local sh_file_dir = root.."/_build/linux-x86_64/"..config
-        local sh_file_path = sh_file_dir.."/"..name..".sh"
-        local kit_bin_relative = path.getrelative(sh_file_dir, KIT_SDK_RESOLVED[config].."/_build/linux-x86_64/"..kit_sdk_config)
-        local usd_ext_isaac_schema_relative = path.normalize(path.getrelative(sh_file_dir, root.."/_build/target-deps/usd_ext_isaac/"))
-        local usd_ext_isaac_schema_path="/"..config.."/share/usd/plugins/*/resources/"
-        kit_bin_relative = path.normalize(kit_bin_relative)
-        local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
-        local f = io.open(sh_file_path, 'w')
-        f:write(string.format([[
-#!/bin/bash
-set -e
-SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-export PXR_PLUGINPATH_NAME="$(readlink -e $SCRIPT_DIR/%s)%s":$PXR_PLUGINPATH_NAME
-"$SCRIPT_DIR/%s/kit" %s %s $@
-        ]], usd_ext_isaac_schema_relative, usd_ext_isaac_schema_path,  kit_bin_relative, config_path, extra_args))
-        f:close()
-        os.chmod(sh_file_path, 755)
-    end
-end
+-- -- Isaac Sim needs this redefined here because we have a custom PXR_PLUGINPATH_NAME export to handle runtime USD
+-- -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
+-- function create_experience_runner(name, config_path, config, kit_sdk_config, extra_args)
+--     if os.target() == "windows" then
+--         local bat_file_dir = root.."/_build/windows-x86_64/"..config
+--         local bat_file_path = bat_file_dir.."/"..name..".bat"
+--         local kit_bin_relative = path.getrelative(bat_file_dir, KIT_SDK_RESOLVED[config].."/_build/windows-x86_64/"..kit_sdk_config)
+--         kit_bin_relative = path.normalize(kit_bin_relative):gsub("/", "\\")
+--         local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
+--         local f = io.open(bat_file_path, 'w')
+--         f:write(string.format([[
+-- @echo off
+-- setlocal
+-- call "%%~dp0%s\kit.exe" %s %s %%*
+--         ]], kit_bin_relative, config_path, extra_args))
+--         f:close()
+--     else
+--         local sh_file_dir = root.."/_build/linux-x86_64/"..config
+--         local sh_file_path = sh_file_dir.."/"..name..".sh"
+--         local kit_bin_relative = path.getrelative(sh_file_dir, KIT_SDK_RESOLVED[config].."/_build/linux-x86_64/"..kit_sdk_config)
+--         local usd_ext_isaac_schema_relative = path.normalize(path.getrelative(sh_file_dir, root.."/_build/target-deps/usd_ext_isaac/"))
+--         local usd_ext_isaac_schema_path="/"..config.."/share/usd/plugins/*/resources/"
+--         kit_bin_relative = path.normalize(kit_bin_relative)
+--         local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
+--         local f = io.open(sh_file_path, 'w')
+--         f:write(string.format([[
+-- #!/bin/bash
+-- set -e
+-- SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+-- export PXR_PLUGINPATH_NAME="$(readlink -e $SCRIPT_DIR/%s)%s":$PXR_PLUGINPATH_NAME
+-- "$SCRIPT_DIR/%s/kit" %s %s $@
+--         ]], usd_ext_isaac_schema_relative, usd_ext_isaac_schema_path,  kit_bin_relative, config_path, extra_args))
+--         f:close()
+--         os.chmod(sh_file_path, 755)
+--     end
+-- end
 
 function python_sample_test(name, sample_path, args)
     local extra_args = args or ""

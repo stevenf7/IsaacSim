@@ -11,7 +11,7 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 "$SCRIPT_DIR/../../../../build.sh" -x
 
 # Package
-"$SCRIPT_DIR/../../../package.sh"
+"$SCRIPT_DIR/../../../../repo.sh" package -c release
 
 # publish artifacts to teamcity
 echo "##teamcity[publishArtifacts '_build/packages']"

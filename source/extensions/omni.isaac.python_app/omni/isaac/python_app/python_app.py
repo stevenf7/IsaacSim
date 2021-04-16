@@ -11,12 +11,10 @@
 import carb
 import omni.kit.app
 import omni.kit
-from pxr import UsdGeom, Semantics, Usd
 
 import os
 import sys
 import time
-import atexit
 import asyncio
 import argparse
 
@@ -75,7 +73,6 @@ Launches and configures OmniKit and exposes useful functions.
         # initialize vars
         self._exiting = False
         self._is_dirty_instance_mappings = True
-        # atexit.register(self._cleanup)
         self.config = DEFAULT_CONFIG
         if config is not None:
             self.config.update(config)
@@ -131,7 +128,7 @@ Launches and configures OmniKit and exposes useful functions.
             # TODO Make this a config setting?
             "--/persistent/physics/overrideGPUSettings=0",  # force CPU physx
             # "--/persistent/physics/updateToUsd=True",
-            # "--/persistent/physics/useFastCache=True",
+            # "--/persistent/physics/useFastCache=False",
             # Forces kit to not render until all USD files are loaded
             f'--/rtx-defaults/materialDb/syncLoads={self.config["sync_loads"]}',
             f'--/omni.kit.plugin/syncUsdLoads={self.config["sync_loads"]}',
@@ -140,9 +137,8 @@ Launches and configures OmniKit and exposes useful functions.
             "--/app/asyncRendering=False",
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',
-            f'--/app/extensions/folders2/0="{os.path.abspath(os.environ["CARB_APP_PATH"])}/exts"',  # adding to json doesn't work
-            f'--/app/extensions/folders2/1="{os.path.abspath(os.environ["CARB_APP_PATH"])}/extsPhysics"',  # adding to json doesn't work
-            f'--/app/extensions/folders2/2="{os.path.abspath(os.environ["ISAAC_PATH"])}/exts"',  # adding to json doesn't work
+            f"--ext-folder",
+            f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',  # adding to json doesn't work
         ]
         if self.config.get("headless"):
             args.append("--no-window")
@@ -342,6 +338,8 @@ Launches and configures OmniKit and exposes useful functions.
             semantic_label (str, optional): Semantic label.
             attributes (dict, optional): Key-value pairs of prim attributes to set.
         """
+        from pxr import UsdGeom, Semantics
+
         prim = self.get_stage().DefinePrim(path, prim_type)
 
         for k, v in attributes.items():
@@ -363,12 +361,14 @@ Launches and configures OmniKit and exposes useful functions.
             xform_api.SetTranslate(translation)
         return prim
 
-    def set_up_axis(self, axis=UsdGeom.Tokens.z):
+    def set_up_axis(self, axis):
         """Change the up axis of the current stage
         
         Args:
             axis: valid values are `UsdGeom.Tokens.y`, or `UsdGeom.Tokens.z`
         """
+        from pxr import UsdGeom, Usd
+
         stage = self.get_stage()
         rootLayer = stage.GetRootLayer()
         rootLayer.SetPermissionToEdit(True)

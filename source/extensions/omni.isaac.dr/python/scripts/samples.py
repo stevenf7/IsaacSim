@@ -117,7 +117,7 @@ class Extension(omni.ext.IExt):
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR color component
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/color_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/color_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateColorComponentCommand",
             path=path,
@@ -136,7 +136,7 @@ class Extension(omni.ext.IExt):
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR movement component
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/movement_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/movement_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateMovementComponentCommand",
             path=path,
@@ -155,7 +155,7 @@ class Extension(omni.ext.IExt):
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR rotation component
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/rotation_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/rotation_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateRotationComponentCommand",
             path=path,
@@ -172,7 +172,7 @@ class Extension(omni.ext.IExt):
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR scale component
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/scale_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/scale_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateScaleComponentCommand",
             path=path,
@@ -196,7 +196,7 @@ class Extension(omni.ext.IExt):
         if imageable:
             imageable.MakeInvisible()
         # Create DR light component
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/light_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/light_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateLightComponentCommand",
             path=path,
@@ -216,7 +216,7 @@ class Extension(omni.ext.IExt):
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR texture component
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/texture_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/texture_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateTextureComponentCommand",
             path=path,
@@ -242,7 +242,7 @@ class Extension(omni.ext.IExt):
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
         # Create DR material component
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/material_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/material_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateMaterialComponentCommand",
             path=path,
@@ -267,7 +267,7 @@ class Extension(omni.ext.IExt):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         # Create DR mesh component
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateMeshComponentCommand",
             mesh_list=[
@@ -282,7 +282,7 @@ class Extension(omni.ext.IExt):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         # Create DR visibility component
-        path = omni.kit.utils.get_stage_next_free_path(stage, default_prim_path + "/visibility_component", False)
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/visibility_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateVisibilityComponentCommand",
             prim_paths=["/World/Cube", "/World/Cube_01", "/World/Cube_02", "/World/Cube_03", "/World/Cube_04"],

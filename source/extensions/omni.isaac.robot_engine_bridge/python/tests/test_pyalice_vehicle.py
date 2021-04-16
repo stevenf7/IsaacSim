@@ -52,7 +52,7 @@ class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Test diffbase component that was loaded from usd
     async def test_basic_vehicle(self):
-        (result, error) = await load_test_file(self._nucleus_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_REB.usd")
+        (result, error) = await load_test_file(self._nucleus_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_M_REB.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
 

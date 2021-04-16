@@ -35,7 +35,7 @@ class Jetbot:
     def spawn(self, location, rotation):
         stage = self.omni_kit.get_stage()
         prefix = "/World/Robot/Jetbot"
-        prim_path = omni.kit.utils.get_stage_next_free_path(stage, prefix, False)
+        prim_path = omni.usd.get_stage_next_free_path(stage, prefix, False)
         self.robot_prim = stage.DefinePrim(prim_path, "Xform")
         self.robot_prim.GetReferences().AddReference(self.usd_path)
         xform = UsdGeom.Xformable(self.robot_prim)

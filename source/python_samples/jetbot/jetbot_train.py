@@ -7,7 +7,7 @@ import json
 import argparse
 from argparse import Namespace
 
-from omni.isaac.synthetic_utils import OmniKitHelper
+from omni.isaac.python_app import OmniKitHelper
 
 from jetbot_env import JetbotEnv
 from jetbot_model import CustomCNN

@@ -16,6 +16,7 @@
 
 #include <omni/isaac/occupancy_map/MapGenerator.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/timeline/ITimeline.h>
 #include <robotEngineBridgeSchema/robotEngineOccupancyGridMap.h>
 
 #include <string>
@@ -86,6 +87,7 @@ private:
     std::unique_ptr<omni::isaac::occupancy_map::MapGenerator> mGenerator = nullptr;
     omni::physx::IPhysx* mPhysx = nullptr;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
+    omni::timeline::ITimeline* mTimeline = nullptr;
 
     bool mSkipFirstFrame = true;
     bool mDebugDraw = false;

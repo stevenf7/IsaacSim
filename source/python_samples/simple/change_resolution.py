@@ -1,6 +1,6 @@
 import os
 import carb
-from omni.isaac.synthetic_utils import OmniKitHelper
+from omni.isaac.python_app import OmniKitHelper
 import random
 
 CONFIG = {
