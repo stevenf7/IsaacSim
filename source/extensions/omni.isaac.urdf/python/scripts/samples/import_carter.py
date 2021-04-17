@@ -28,7 +28,7 @@ class Extension(omni.ext.IExt):
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
         with self._window.frame:
             with ui.VStack(height=0):
                 ui.Button("Load Robot", clicked_fn=self._on_load_robot)
@@ -37,7 +37,7 @@ class Extension(omni.ext.IExt):
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Samples")
         self._window = None
 
     def _menu_callback(self):

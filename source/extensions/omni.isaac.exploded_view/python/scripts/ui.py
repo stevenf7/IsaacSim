@@ -22,16 +22,9 @@ class Exploded_view(omni.ext.IExt):
         self._window = None
 
         self._menu_items = [
-            MenuItemDescription(
-                name="Isaac",
-                sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
-            )
+            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Window")
+        add_menu_items(self._menu_items, "Isaac Tools")
 
     def _menu_callback(self):
         if self._window:
@@ -96,5 +89,5 @@ class Exploded_view(omni.ext.IExt):
             )
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Window")
+        remove_menu_items(self._menu_items, "Isaac Tools")
         self._exploded_view_manager.shutdown()

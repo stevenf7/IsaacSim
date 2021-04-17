@@ -61,7 +61,7 @@ class Extension(omni.ext.IExt):
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._create_ui()
 
@@ -229,6 +229,6 @@ class Extension(omni.ext.IExt):
         self._rc = None
         self._timeline.stop()
         self._editor_event_subscription = None
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Samples")
         self._window = None
         gc.collect()

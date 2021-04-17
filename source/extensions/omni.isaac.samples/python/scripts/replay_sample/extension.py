@@ -27,7 +27,7 @@ class Extension(omni.ext.IExt):
             )
         ]
 
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
         self._replay = Replay()
@@ -140,6 +140,6 @@ class Extension(omni.ext.IExt):
         self._timeline.stop()
         self._replay.stop_tasks()
         self._replay = None
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Samples")
         gc.collect()
         pass

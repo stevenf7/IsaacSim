@@ -11,16 +11,9 @@ EXTENSION_NAME = "Internal Tools"
 class InternalTools(omni.ext.IExt):
     def on_startup(self):
         self._menu_items = [
-            MenuItemDescription(
-                name="Isaac",
-                sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
-            )
+            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Window")
+        add_menu_items(self._menu_items, "Isaac Tools")
         self._window = ui.Window(
             title=EXTENSION_NAME, width=800, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
@@ -35,7 +28,7 @@ class InternalTools(omni.ext.IExt):
                 ui.Button("Check for assets that cannot be released", clicked_fn=self.get_unreleasable)
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Window")
+        remove_menu_items(self._menu_items, "Isaac Tools")
         self._window = None
 
     def _menu_callback(self):

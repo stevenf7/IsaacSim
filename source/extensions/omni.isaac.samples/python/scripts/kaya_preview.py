@@ -61,7 +61,7 @@ class Extension(omni.ext.IExt):
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
 
     def _menu_callback(self):
         self._build_ui()
@@ -159,6 +159,6 @@ class Extension(omni.ext.IExt):
         self._timeline.stop()
         self._physx_subs = None
         self.kaya = None
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Samples")
         self._window = None
         gc.collect()

@@ -41,7 +41,7 @@ class Extension(omni.ext.IExt):
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
 
         # Kit GUIs are defined by a tree of layouts, and leaf layouts contain GUI elements (like buttons or
         # text entry fields).  You can learn more about Layouts and GUIs in the python manual at
@@ -88,7 +88,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Samples")
         self._window = None
 
     def _menu_callback(self):

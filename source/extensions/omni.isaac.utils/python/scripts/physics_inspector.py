@@ -23,16 +23,9 @@ class Extension(omni.ext.IExt):
             )
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
         self._menu_items = [
-            MenuItemDescription(
-                name="Isaac",
-                sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
-            )
+            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Window")
+        add_menu_items(self._menu_items, "Isaac Tools")
         self._physx = omni.physx.acquire_physx_interface()
 
         self._data = {}
@@ -216,6 +209,6 @@ class Extension(omni.ext.IExt):
             # )
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Window")
+        remove_menu_items(self._menu_items, "Isaac Tools")
         self._window = None
         gc.collect()

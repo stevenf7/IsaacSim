@@ -195,16 +195,9 @@ class Extension(omni.ext.IExt):
         self._counter = 0
         self._window = ui.Window(EXTENSION_NAME, width=600, height=400)
         self._menu_items = [
-            MenuItemDescription(
-                name="Isaac",
-                sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
-            )
+            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Window")
+        add_menu_items(self._menu_items, "Isaac Tools")
         self._window.visible = False
         self._window.deferred_dock_in("Content")
         self.sub_update = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._update)
@@ -216,7 +209,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         """Called when the extesion us unloaded"""
-        remove_menu_items(self._menu_items, "Window")
+        remove_menu_items(self._menu_items, "Isaac Tools")
         self._window = None
 
     def _menu_callback(self):

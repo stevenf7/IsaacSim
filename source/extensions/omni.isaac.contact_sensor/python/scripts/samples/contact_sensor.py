@@ -29,7 +29,7 @@ class Contact_sensor_demo(omni.ext.IExt):
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
         self.meters_per_unit = 0.01
         self._window = None
 
@@ -86,7 +86,7 @@ class Contact_sensor_demo(omni.ext.IExt):
             self.sub = None
             self._timeline = None
             self._stage_event_subscription = None
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Samples")
         self._window = None
 
     def _on_update(self, dt):

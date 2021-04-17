@@ -72,7 +72,7 @@ class Extension(omni.ext.IExt):
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
 
     def _menu_callback(self):
         self._build_ui()
@@ -254,5 +254,5 @@ class Extension(omni.ext.IExt):
         self._editor_event_subscription = None
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
         self._physx_subs = None
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Samples")
         self._window = None
