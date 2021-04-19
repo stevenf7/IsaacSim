@@ -69,7 +69,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         repo_folders = config["repo"]["folders"]
         root = repo_folders["root"]
 
-        tool_config = config["deploy_launcher"]
+        tool_config = config["publish_launcher"]
         git_url = tool_config["git_url"]
         template_path = tool_config["template_path"]
         branch_prefix = tool_config["branch_prefix"]
