@@ -1,0 +1,26 @@
+[package]
+title = "Isaac Sim Headless"
+description = "An Authoring application for USD and Omniverse Content"
+version = "2021.1.0"
+
+# That makes it browsable in UI with "experience" filter
+keywords = ["experience", "app", "usd"]
+
+[dependencies]
+# We depend on the full omniverse app for simplicity
+"omni.isaac.sim.headless" = {}
+"omni.kit.livestream.native" = {}
+
+[settings.app.livestream]
+proto = "ws"
+
+[settings.app.window]
+title = "Isaac Sim Headless"
+hideUi = false
+
+width = 1920
+height = 1080
+drawMouse = true
+
+[settings.ngx]
+enabled = false

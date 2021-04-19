@@ -77,7 +77,7 @@ persistent.app.window.uiStyle = "NvidiaDark"
 
 # Splash Setup
 ################################
-exts."omni.kit.window.splash".imagePath = "${app}/../exts/omni.isaac.splash/data/create_splash_screen@1x.png"
+exts."omni.kit.window.splash".imagePath = "${app}/../exts/omni.isaac.splash/data/isaac_splash_screen_daily@1x.png"
 exts.'omni.kit.splash'.splash_app = "${app}/omni.isaac.app.splash.kit"
 
 # hide NonToggleable Exts
@@ -159,6 +159,9 @@ nucleus.default = "omniverse://ov-isaac-dev"
 "omni.isaac.tests" = {}
 "omni.kit.property.isaac" = {}
 "omni.isaac.contact_sensor" = {}
+
+#"omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
+#"omni.isaac.splash" = {}
 
 # Non Isaac Sim Extensions
 ######################

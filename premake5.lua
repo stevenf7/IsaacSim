@@ -182,17 +182,10 @@ group "apps"
         write_version_file(config)
     end
 
-    define_local_experience("isaac-sim")
-    define_local_experience("isaac-sim.launcher")
-    -- We reuse the isaac sim config and add additional args to it
-    local headless_args = "--no-window --enable omni.kit.livestream.core "
-        .."--/app/window/width=1280 --/app/window/height=800 --/app/window/drawMouse=true "
-        .."--/ngx/enabled=false --/app/livestream/proto=tcp "
-    define_local_experience("isaac-sim.headless", "isaac-sim", 
-                            "--enable  omni.kit.livestream.native "..headless_args)
-    define_local_experience("isaac-sim.headless.webrtc", "isaac-sim", 
-                            "--enable  omni.kit.livestream.webrtc "..headless_args)
-
+    define_local_experience("isaac-sim", "omni.isaac.sim.base")
+    define_local_experience("isaac-sim.launcher", "omni.isaac.sim.launcher")
+    define_local_experience("isaac-sim.headless", "omni.isaac.sim.headless.native", "--no-window ")
+    define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window ")
 
     -- -- Test runner experience:
     -- args = {

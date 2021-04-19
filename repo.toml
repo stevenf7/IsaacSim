@@ -165,7 +165,7 @@ packages = ["isaac-sim*"]
 # Launcher publish and deploy
 ########################################################################################################################
 
-[deploy_launcher]
+[publish_launcher]
 git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac_sim-release-pipeline.git"
 template_path = "${root}/tools/repoman/launcher-pipeline-template/dl"
 branch_prefix = "integ"
