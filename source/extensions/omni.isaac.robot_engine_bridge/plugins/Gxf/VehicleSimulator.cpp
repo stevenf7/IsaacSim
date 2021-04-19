@@ -72,11 +72,17 @@ void VehicleSimulator::onStop()
 {
     mAveragedAcceleration.clear();
     mPrevForwardSpeed = 0;
-    mCurrentSteeringAngle = 0;
 }
 void VehicleSimulator::tick()
 {
     CARB_PROFILE_ZONE(0, "REB VehicleSimulator Tick");
+
+    if (!mVehiclePrim)
+    {
+        CARB_LOG_ERROR("Vehicle Prim is not valid");
+        return;
+    }
+
     mVehicleController.fillCache();
 
     {
@@ -139,7 +145,11 @@ void VehicleSimulator::tick()
                         mPID->update(requestedAcceleration, mForwardAcceleration, mPrevForwardAcceleration);
                 }
                 // steering angle in radians
-                mVehicleController.setAckermannSteering(mCurrentSteeringAngle);
+                double steeringAngle =
+                    std::atan(control.curvature() * double(mVehicleController.getAxleSeparation())); // convert from
+                                                                                                     // turning radius
+                                                                                                     // to angle
+                mVehicleController.setAckermannSteering(steeringAngle);
                 mVehicleController.setAcceleration(commandedAcceleration);
             }
             else
@@ -177,7 +187,7 @@ void VehicleSimulator::tick()
 
         state_view.speed() = double(mPrevForwardSpeed);
         state_view.acceleration() = double(mForwardAcceleration);
-        state_view.curvature() = double(mVehicleController.getCurvature(mCurrentSteeringAngle));
+        state_view.curvature() = double(mVehicleController.getCurvature());
         state_view.curvature_derivative() = 0.0;
 
         publish(mOutputComponent, mStateChannelName, std::move(maybe_message.value()));

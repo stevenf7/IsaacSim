@@ -69,12 +69,17 @@ void VehicleSimulator::onStop()
 {
     mAveragedAcceleration.clear();
     mPrevForwardSpeed = 0;
-    mCurrentSteeringAngle = 0;
 }
 
 void VehicleSimulator::tick()
 {
     CARB_PROFILE_ZONE(0, "REB VehicleSimulator Tick");
+
+    if (!mVehiclePrim)
+    {
+        CARB_LOG_ERROR("Vehicle Prim is not valid");
+        return;
+    }
     mVehicleController.fillCache();
 
 
@@ -123,11 +128,11 @@ void VehicleSimulator::tick()
             }
             mPrevForwardAcceleration = mForwardAcceleration;
 
-            CARB_LOG_ERROR("requested acceleration: %f", requestedAcceleration);
+            // CARB_LOG_ERROR("requested acceleration: %f", requestedAcceleration);
 
 
             // steering angle in radians
-            mVehicleController.setAckermannSteering(mCurrentSteeringAngle);
+            mVehicleController.setAckermannSteering(elements[1]);
             mVehicleController.setAcceleration(commandedAcceleration);
         }
     }
@@ -147,10 +152,8 @@ void VehicleSimulator::tick()
             quantities[i].setElementType(ElementType::FLOAT64);
         }
         std::vector<double> elements = {
-            mCurrentSteeringAngle,
-            mVehicleController.getWheelRotationSpeed(0),
-            mVehicleController.getWheelRotationSpeed(1),
-            mVehicleController.getWheelRotationSpeed(2),
+            mVehicleController.getSteeringAngle(),       mVehicleController.getWheelRotationSpeed(0),
+            mVehicleController.getWheelRotationSpeed(1), mVehicleController.getWheelRotationSpeed(2),
             mVehicleController.getWheelRotationSpeed(3),
         };
 

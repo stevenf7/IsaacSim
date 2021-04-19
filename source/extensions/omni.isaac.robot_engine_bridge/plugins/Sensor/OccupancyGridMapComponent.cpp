@@ -82,8 +82,8 @@ void OccupancyGridMapComponent::publishAllMessages()
     }
     CARB_PROFILE_ZONE(0, "REB OccupancyGridMapComponent Tick");
     pxr::GfMatrix4d parentUSDTransform = pxr::GfMatrix4d(1);
-    ;
-    if (mParentPrim.IsA<pxr::UsdGeomXformable>())
+
+    if (mParentPrim && mParentPrim.IsA<pxr::UsdGeomXformable>())
     {
         // mFastCachePtr->getTransform(mParentPrimPath, parentTrans);
 

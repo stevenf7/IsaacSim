@@ -3,7 +3,7 @@
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit
-
+import asyncio
 import carb
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -22,12 +22,10 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline = omni.timeline.get_timeline_interface()
         self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._sample.step)
         self._physics_rate = 60
-        self.phys_num_steps = carb.settings.get_settings().get("persistent/physics/maxNumSteps")
         carb.settings.get_settings().set_int(
             "persistent/physics/maxNumSteps", int(1)
         )  # Enforce single timestep per stage update
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        self._limit_fps = carb.settings.get_settings().get("/app/runLoops/main/rateLimitEnabled")
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
@@ -35,11 +33,13 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # After running each test
     async def tearDown(self):
+        # In some cases the test will end before the asset is loaded, in this case wait for assets to load
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         self._sample = None
         self._physx_subs = None
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", self._limit_fps)
-        carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(self.phys_num_steps))
         await omni.kit.app.get_app().next_update_async()
         pass
 
