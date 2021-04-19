@@ -85,7 +85,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_rigid_body(self):
 
-        carb.settings.get_settings().set_int("persistent/physics/useFastCache", True)
+        carb.settings.get_settings().set_int("persistent/physics/useFastCache", False)
         carb.settings.get_settings().set_int("persistent/physics/updateToUsd", True)
 
         dt = 1.0 / self._physics_rate
@@ -106,10 +106,14 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         cubePrim = self._stage.GetPrimAtPath(cubePath)
         await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
         rigidBodyAPI = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+        await omni.kit.app.get_app().next_update_async()
 
         # test acceleration, velocity, position
         omni.timeline.get_timeline_interface().play()
         # warm up simulation
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         # get initial position
         a = -981.0

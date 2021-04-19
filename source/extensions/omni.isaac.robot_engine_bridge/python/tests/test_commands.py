@@ -38,6 +38,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
 
     # Run all commands
     async def test_command_basic(self):
+        self._stage.DefinePrim("/World/test", "Xform")
         result, prim = omni.kit.commands.execute(
             "RobotEngineBridgeCreateDifferentialBase",
             path="/REB_DifferentialBase",
@@ -120,7 +121,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
             output_component="output",
             output_channel="io_state",
             d6_joint_prim_rel=None,
-            parent_prim_rel=None,
+            parent_prim_rel=["/World/test"],
             gripper_entity="gripper",
             grip_threshold=1,
             force_limit=1e10,

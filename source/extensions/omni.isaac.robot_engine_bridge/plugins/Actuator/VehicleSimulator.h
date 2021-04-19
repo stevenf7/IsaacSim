@@ -77,7 +77,6 @@ private:
     const float mReverseSpeed = 1.0f;
     bool mInReverse = false;
     float mBrakeTimer = 0.0f;
-    float mCurrentSteeringAngle = 0.0f;
 
     float mPrevForwardSpeed = 0;
     float mForwardAcceleration = 0;

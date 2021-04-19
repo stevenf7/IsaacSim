@@ -126,14 +126,10 @@ public:
                 wheelAttachmentAPI.GetDrivenAttr().Get(&driven);
                 if (driven)
                 {
-                    CARB_LOG_ERROR("Wheel HAD DRIVE");
                     wheelCache.wheelFlags |= WheelFlag::eHAS_DRIVE;
                     mCache.numDrivenWheels++;
                 }
-                else
-                {
-                    CARB_LOG_ERROR("Wheel NO DRIVE");
-                }
+
 
                 if (subPrim.HasAPI<pxr::PhysxSchemaPhysxVehicleWheelAPI>())
                 {
@@ -181,46 +177,53 @@ public:
             if (massAPI.GetMassAttr())
             {
                 massAPI.GetMassAttr().Get(&mCache.chassisMass);
-                CARB_LOG_ERROR("Chassis mass: %f", mCache.chassisMass);
+                CARB_LOG_INFO("Chassis mass: %f", mCache.chassisMass);
             }
             else
             {
                 mCache.chassisMass = 100;
-                CARB_LOG_WARN("NO Chassis Mass using deault %f", mCache.chassisMass);
+                CARB_LOG_WARN("No chassis mass, using deault value of %f", mCache.chassisMass);
             }
             mCache.totalMass += mCache.chassisMass;
         }
 
-        CARB_LOG_ERROR("Vehicle Rear Width: %f, Axle Separation: %f", mCache.rearWidth, mCache.axleSeparation);
+        CARB_LOG_INFO("Vehicle Rear Width: %f, Axle Separation: %f", mCache.rearWidth, mCache.axleSeparation);
         mCacheFilled = true;
     }
     float getForwardSpeed()
     {
         return mCache.vehiclePtr->computeForwardSpeed();
     }
-    float getCurvature(float steeringAngle)
+    float getCurvature()
     {
-        return std::tan(steeringAngle) / mCache.axleSeparation;
+        return std::tan(mCurrentSteeringAngle) / mCache.axleSeparation;
     }
     float getWheelRotationSpeed(const size_t index)
     {
         return mCache.vehiclePtr->mWheelsDynData.getWheelRotationSpeed(index);
     }
-
+    float getSteeringAngle()
+    {
+        return mCurrentSteeringAngle;
+    }
+    float getAxleSeparation()
+    {
+        return mCache.axleSeparation;
+    }
     void setAckermannSteering(float steeringAngle)
     {
         float maxSteerAngle = (mCache.wheels)[0].maxSteerAngle;
-        steeringAngle = pxr::GfClamp(steeringAngle, -maxSteerAngle, maxSteerAngle);
-        float leftAngle =
-            atan((2.0f * mCache.axleSeparation * sin(steeringAngle)) /
-                 (2.0f * mCache.axleSeparation * cos(steeringAngle) - mCache.rearWidth * sin(steeringAngle)));
-        float rightAngle =
-            atan((2.0f * mCache.axleSeparation * sin(steeringAngle)) /
-                 (2.0f * mCache.axleSeparation * cos(steeringAngle) + mCache.rearWidth * sin(steeringAngle)));
+        mCurrentSteeringAngle = pxr::GfClamp(steeringAngle, -maxSteerAngle, maxSteerAngle);
+        float leftAngle = atan(
+            (2.0f * mCache.axleSeparation * sin(mCurrentSteeringAngle)) /
+            (2.0f * mCache.axleSeparation * cos(mCurrentSteeringAngle) - mCache.rearWidth * sin(mCurrentSteeringAngle)));
+        float rightAngle = atan(
+            (2.0f * mCache.axleSeparation * sin(mCurrentSteeringAngle)) /
+            (2.0f * mCache.axleSeparation * cos(mCurrentSteeringAngle) + mCache.rearWidth * sin(mCurrentSteeringAngle)));
         // CARB_LOG_ERROR("Ackermann Angles: left: %f right: %f", leftAngle, rightAngle);
 
-        mCache.vehiclePtr->setSteerAngle((mCache.wheels)[0].index, leftAngle);
-        mCache.vehiclePtr->setSteerAngle((mCache.wheels)[1].index, rightAngle);
+        mCache.vehiclePtr->setSteerAngle(mCache.wheels[0].index, leftAngle);
+        mCache.vehiclePtr->setSteerAngle(mCache.wheels[1].index, rightAngle);
     }
 
     void setAcceleration(const float commandedAcceleration)
@@ -263,6 +266,8 @@ private:
     Cache mCache;
     omni::physx::IPhysx* mPhysxPtr = nullptr;
     pxr::UsdStageWeakPtr mStage = nullptr;
+    float mCurrentSteeringAngle = 0.0f;
+
     // omni::physx::usdparser::IPhysxUsdLoad* mPhysxUsdLoad = nullptr;
 };
 }

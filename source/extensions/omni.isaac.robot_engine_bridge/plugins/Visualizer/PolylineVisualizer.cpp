@@ -296,7 +296,7 @@ void PolylineVisualizer::tick()
     }
     pxr::GfMatrix4d trans = pxr::GfMatrix4d(1);
 
-    if (mParentPrim.IsA<pxr::UsdGeomXformable>())
+    if (mParentPrim && mParentPrim.IsA<pxr::UsdGeomXformable>())
     {
         // mFastCachePtr->getTransform(mParentPrimPath, parentTrans);
 

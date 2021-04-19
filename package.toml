@@ -45,6 +45,7 @@ files_exclude = [
     ["**/*.pyc"],
     ["**/*.pdb"],
     ["**/*.exp"],
+    ["kit/data/**"], # This can contain portable files we don't want to package
 ]
 
 [isaac-sim-standalone.release]
@@ -55,6 +56,7 @@ files_exclude = [
     ["**/*.pyc"],
     ["**/*.pdb"],
     ["**/*.exp"],
+    ["kit/data/**"], # This can contain portable files we don't want to package
 ]
 
 [isaac-sim-standalone.linux-x86_64]

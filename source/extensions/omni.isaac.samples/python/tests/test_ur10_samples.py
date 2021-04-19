@@ -33,13 +33,11 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.usd.get_context().new_stage_async()
 
         self._physics_rate = 60
-        self.phys_num_steps = carb.settings.get_settings().get("persistent/physics/maxNumSteps")
         carb.settings.get_settings().set_int(
             "persistent/physics/maxNumSteps", int(1)
         )  # Enforce single timestep per stage update
         self._time_step = 1.0 / self._physics_rate
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        self._limit_fps = carb.settings.get_settings().get("/app/runLoops/main/rateLimitEnabled")
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
 
         self.assertFalse(self._dc.is_simulating())
@@ -86,9 +84,6 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._mp = None
         self._physx = None
         gc.collect()
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", self._limit_fps)
-        carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(self.phys_num_steps))
-
         await omni.usd.get_context().new_stage_async()
         pass
 
