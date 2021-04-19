@@ -114,14 +114,9 @@ class StepImporter(omni.ext.IExt):
         self._style = "NvidiaDark"
 
         self._menu_items = [
-            MenuItemDescription(
-                name="Isaac",
-                sub_menu=[
-                    MenuItemDescription(name="Step Importer", onclick_fn=lambda a=weakref.proxy(self): a.build_ui())
-                ],
-            )
+            MenuItemDescription(name="Step Importer", onclick_fn=lambda a=weakref.proxy(self): a.build_ui())
         ]
-        add_menu_items(self._menu_items, "Window")
+        add_menu_items(self._menu_items, "Isaac Tools")
 
         if self._style == "NvidiaLight":
             self.tree_style = tree_style_light
@@ -502,7 +497,7 @@ class StepImporter(omni.ext.IExt):
 
     def on_shutdown(self):
         self._unregister_menus()
-        remove_menu_items(self._menu_items, "Window")
+        remove_menu_items(self._menu_items, "Isaac Tools")
         if self.asset_importer:
             self.asset_importer.on_shutdown()
         if self.step_file:

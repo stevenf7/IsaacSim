@@ -22,7 +22,7 @@ class Extension(omni.ext.IExt):
         ]
 
         self._menu_items = [MenuItemDescription(name="Domain Randomizer", sub_menu=menu_items)]
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
         with self._window.frame:
             with ui.VStack(height=0):
                 ui.Spacer(width=5)
@@ -35,7 +35,7 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Samples")
         self._window = None
         self._usd_context = None
         self._stage = None

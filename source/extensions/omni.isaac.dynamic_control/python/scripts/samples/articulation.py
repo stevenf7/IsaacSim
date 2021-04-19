@@ -82,7 +82,7 @@ class Extension(omni.ext.IExt):
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
 
     def _menu_callback(self):
         self._build_ui()

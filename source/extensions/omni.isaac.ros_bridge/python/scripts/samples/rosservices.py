@@ -36,7 +36,7 @@ class Extension(omni.ext.IExt):
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
 
         with self._window.frame:
             with ui.VStack():
@@ -52,7 +52,7 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Samples")
         self._window = None
 
     def _menu_callback(self):

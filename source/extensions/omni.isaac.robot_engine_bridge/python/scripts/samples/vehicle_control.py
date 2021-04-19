@@ -77,7 +77,7 @@ class Extension(omni.ext.IExt):
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
         self._pyalice_app = None
@@ -190,6 +190,6 @@ class Extension(omni.ext.IExt):
         if self._pyalice_app:
             self._pyalice_app.stop()
         self._pyalice_app = None
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Samples")
         gc.collect()
         pass

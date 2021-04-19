@@ -8,7 +8,13 @@ import weakref
 class RangeSensorMenu:
     def __init__(self):
         menu_items = [
-            MenuItemDescription(name="Lidar", onclick_fn=lambda a=weakref.proxy(self): a._add_lidar()),
+            MenuItemDescription(
+                name="Lidar",
+                sub_menu=[
+                    MenuItemDescription(name="Rotating", onclick_fn=lambda a=weakref.proxy(self): a._add_lidar()),
+                    MenuItemDescription(name="Generic", onclick_fn=lambda a=weakref.proxy(self): a._add_generic()),
+                ],
+            ),
             MenuItemDescription(
                 name="Ultrasonic",
                 sub_menu=[
@@ -23,11 +29,12 @@ class RangeSensorMenu:
                     ),
                 ],
             ),
-            MenuItemDescription(name="Generic", onclick_fn=lambda a=weakref.proxy(self): a._add_generic()),
         ]
 
         self._menu_items = [
-            MenuItemDescription(name="Isaac", sub_menu=[MenuItemDescription(name="Sensors", sub_menu=menu_items)])
+            MenuItemDescription(
+                name="Isaac", glyph="plug.svg", sub_menu=[MenuItemDescription(name="Sensors", sub_menu=menu_items)]
+            )
         ]
         add_menu_items(self._menu_items, "Create")
 

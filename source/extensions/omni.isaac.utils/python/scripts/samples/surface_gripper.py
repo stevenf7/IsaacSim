@@ -46,7 +46,7 @@ class Extension(omni.ext.IExt):
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac")
+        add_menu_items(self._menu_items, "Isaac Samples")
         self._models = {}
         with self._window.frame:
             with ui.VStack(height=0):
@@ -83,7 +83,7 @@ class Extension(omni.ext.IExt):
         self._stage_id = -1
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Samples")
         self._physx_subs = None
         self._window = None
 
