@@ -82,11 +82,14 @@ workspace "isaac-sim"
         -- Link python app sources in target dir for easier edit
         -- { "source/pythonapps/target", bin_dir.."/pythonapps" },
     }
-    -- TODO: 
-    -- repo_build.prebuild_copy {
+
+    repo_build.prebuild_copy {
+        -- Copy launcher file
+        { "launcher.toml", bin_dir },
+
     --     -- Copy python app running scripts in target dir
     --     {"source/pythonapps/runscripts/$config/*$shell_ext", bin_dir}
-    -- }
+    }
 
     -- Windows platform settings
     filter { "system:windows" }

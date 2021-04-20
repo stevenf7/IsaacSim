@@ -9,7 +9,7 @@ slug = "isaac_sim"
 ## install and launch instructions by environment
 [defaults.windows-x86_64]
 url = ""
-entrypoint = "${productRoot}/_build/windows-x86_64/release/isaac-sim.launcher.bat"
+entrypoint = "${productRoot}/isaac-sim.launcher.bat"
 args = []
 
 [defaults.windows-x86_64.environment]
@@ -32,7 +32,7 @@ post-uninstall-args = []
 
 [defaults.linux-x86_64]
 url = ""
-entrypoint = "${productRoot}/_build/linux-x86_64/release/isaac-sim.launcher.sh"
+entrypoint = "${productRoot}/isaac-sim.launcher.sh"
 args = []
 [defaults.linux-x86_64.environment]
 
