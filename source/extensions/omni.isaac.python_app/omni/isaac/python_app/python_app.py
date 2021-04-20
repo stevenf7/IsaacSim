@@ -73,6 +73,7 @@ Launches and configures OmniKit and exposes useful functions.
         # initialize vars
         self._exiting = False
         self._is_dirty_instance_mappings = True
+        self._previous_physics_dt = 1.0 / 60.0
         self.config = DEFAULT_CONFIG
         if config is not None:
             self.config.update(config)
@@ -215,6 +216,32 @@ Launches and configures OmniKit and exposes useful functions.
         else:
             raise ValueError(f"Value of type {type(value)} is not supported.")
 
+    def set_physics_dt(self, physics_dt: float = 1.0 / 60.0, physics_substeps: int = 1):
+        """Specify the physics step size to use when simulating, default is 1/60. 
+        Note that a physics scene has to be in the stage for this to do anything
+
+        Args:
+            physics_dt (float): Use this value for physics step
+        """
+        if self.get_stage() is None:
+            return
+        if physics_dt == self._previous_physics_dt:
+            return
+        if physics_substeps is None or physics_substeps <= 1:
+            physics_substeps = 1
+        self._previous_physics_dt = physics_dt
+        from pxr import UsdPhysics, PhysxSchema
+
+        physxSceneAPI = None
+        for prim in self.get_stage().Traverse():
+            if prim.IsA(UsdPhysics.Scene):
+                physxSceneAPI = PhysxSchema.PhysxSceneAPI.Apply(prim)
+        if physxSceneAPI is not None:
+            physxSceneAPI.GetTimeStepsPerSecondAttr().Set(int(1.0 / physics_dt) * physics_substeps)
+
+        settings = carb.settings.get_settings()
+        settings.set_int("persistent/simulation/minFrameRate", int(1.0 / physics_dt))
+
     def update(self, dt=0.0, physics_dt=None, physics_substeps=None):
         """Render one frame. Optionally specify dt in seconds, specify None to use wallclock. 
         Specify physics_dt and  physics_substeps to decouple the physics step size from rendering
@@ -232,27 +259,20 @@ Launches and configures OmniKit and exposes useful functions.
         # dont update if exit was called
         if self._exiting:
             return
-        settings = carb.settings.get_settings()
-        if physics_substeps is not None and physics_substeps > 0:
-            settings.set_int("persistent/physics/maxNumSteps", int(physics_substeps))
-        if dt is not None:
-            if dt > 0.0:
-                if physics_dt is None or physics_dt <= 0.0:
-                    settings.set_float("persistent/physics/timeStepsPerSecond", float(1.0 / dt))
-                else:
-                    settings.set_float("persistent/physics/timeStepsPerSecond", float(1.0 / physics_dt))
-            self.loop_runner.set_runner_dt(dt)
+        if physics_dt is not None and physics_dt > 0.0:
+            self.set_physics_dt(physics_dt, physics_substeps)
 
+        if dt is not None and dt > 0.0:
+            if physics_dt is None:
+                self.set_physics_dt(dt)
+            self.loop_runner.set_runner_dt(dt)
             self.app.update()
         else:
             time_now = time.time()
             dt = time_now - self.last_update_t
+            if physics_dt is None:
+                self.set_physics_dt(1.0 / 60.0, 4)
             self.last_update_t = time_now
-            if settings and dt > 0.0:
-                if physics_dt is None or physics_dt <= 0.0:
-                    settings.set_float("persistent/physics/timeStepsPerSecond", float(1.0 / dt))
-                else:
-                    settings.set_float("persistent/physics/timeStepsPerSecond", float(1.0 / physics_dt))
             self.loop_runner.set_runner_dt(dt)
             self.app.update()
 

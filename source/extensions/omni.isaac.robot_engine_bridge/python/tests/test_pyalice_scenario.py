@@ -6,6 +6,7 @@ import omni.kit.test
 import omni.kit.usd
 import carb.tokens
 import gc
+import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
@@ -47,6 +48,10 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
     # After running each test
     async def tearDown(self):
         self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
+        # In some cases the test will end before the asset is loaded, in this case wait for assets to load
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
         gc.collect()
         pass
 

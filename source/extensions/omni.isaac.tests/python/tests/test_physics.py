@@ -14,7 +14,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physics_rate = 60
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(1))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
         self._scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
 
     # simple fastcache smoke test
@@ -111,9 +111,6 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         # test acceleration, velocity, position
         omni.timeline.get_timeline_interface().play()
         # warm up simulation
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         # get initial position
         a = -981.0

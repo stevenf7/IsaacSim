@@ -12,6 +12,9 @@ if __name__ == "__main__":
     # Example usage, with step size test
     kit = OmniKitHelper(config=CONFIG)
     import omni.physx
+    from pxr import UsdPhysics, Sdf
+
+    UsdPhysics.Scene.Define(kit.get_stage(), Sdf.Path("/World/physicsScene"))
 
     # Create callbacks to both editor and physics step callbacks
     def editor_update(e: carb.events.IEvent):
