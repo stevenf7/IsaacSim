@@ -47,7 +47,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physics_rate = 60
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(1))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
 
         self._ultrasonic = _range_sensor.acquire_ultrasonic_sensor_interface()
         self._timeline = omni.timeline.get_timeline_interface()

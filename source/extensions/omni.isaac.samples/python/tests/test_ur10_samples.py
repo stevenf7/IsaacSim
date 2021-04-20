@@ -33,12 +33,10 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.usd.get_context().new_stage_async()
 
         self._physics_rate = 60
-        carb.settings.get_settings().set_int(
-            "persistent/physics/maxNumSteps", int(1)
-        )  # Enforce single timestep per stage update
         self._time_step = 1.0 / self._physics_rate
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
 
         self.assertFalse(self._dc.is_simulating())
         # Start Simulation and wait

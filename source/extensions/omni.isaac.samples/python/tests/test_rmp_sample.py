@@ -22,11 +22,10 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline = omni.timeline.get_timeline_interface()
         self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._sample.step)
         self._physics_rate = 60
-        carb.settings.get_settings().set_int(
-            "persistent/physics/maxNumSteps", int(1)
-        )  # Enforce single timestep per stage update
+
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         pass

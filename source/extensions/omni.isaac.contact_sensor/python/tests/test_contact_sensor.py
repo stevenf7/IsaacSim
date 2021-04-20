@@ -8,7 +8,7 @@ import carb.tokens
 import os
 import asyncio
 import numpy as np
-from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
+from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux, UsdPhysics, PhysxSchema
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.contact_sensor import _contact_sensor
@@ -23,7 +23,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physics_rate = 60
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        carb.settings.get_settings().set_int("persistent/physics/maxNumSteps", int(1))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
 
         self._cs = _contact_sensor.acquire_contact_sensor_interface()
         self._omni_pbr_data = os.path.abspath(

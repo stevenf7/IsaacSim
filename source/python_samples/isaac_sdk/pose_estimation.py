@@ -1,11 +1,7 @@
 import random
 import os
 import omni
-from pxr import UsdGeom, Usd, Gf
 from omni.isaac.python_app import OmniKitHelper
-from omni.isaac.synthetic_utils import DomainRandomization
-from omni.isaac.synthetic_utils import SyntheticDataHelper
-
 import carb.tokens
 import argparse
 
@@ -31,6 +27,9 @@ class DualCameraSample:
     def __init__(self):
         self.kit = OmniKitHelper(config=CONFIG)
         import omni.physx
+        from pxr import UsdGeom, Usd, Gf
+        from omni.isaac.synthetic_utils import DomainRandomization
+        from omni.isaac.synthetic_utils import SyntheticDataHelper
         from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 
         self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
@@ -39,6 +38,9 @@ class DualCameraSample:
         self.dr_helper = DomainRandomization()
         self.sd_helper = SyntheticDataHelper()
         self.frame = 0
+        self.Gf = Gf
+        self.UsdGeom = UsdGeom
+        self.Usd = Usd
 
     def shutdown(self):
         self.kit.shutdown()
@@ -55,8 +57,8 @@ class DualCameraSample:
         stage = self.kit.get_stage()
         rootLayer = stage.GetRootLayer()
         rootLayer.SetPermissionToEdit(True)
-        with Usd.EditContext(stage, rootLayer):
-            UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
+        with self.Usd.EditContext(stage, rootLayer):
+            self.UsdGeom.SetStageUpAxis(stage, self.UsdGeom.Tokens.z)
         # make two prims, one for env and one for just the room
         # this allows us to add other prims to environment for randomization and still hide them all at once
         self._environment = stage.DefinePrim("/environment", "Xform")
@@ -100,73 +102,74 @@ class DualCameraSample:
         self._camera_proxy = self.kit.create_prim("/World/Camera/proxy", "Xform", rotation=(180, 0, 0))
 
     def create_bridge_components(self):
-        import omni.isaac.RobotEngineBridgeSchema as REBSchema
+        result, self.occluded_provider = omni.kit.commands.execute(
+            "RobotEngineBridgeCreateCamera",
+            path="/World/REB_Occluded_Provider",
+            parent=None,
+            rgb_output_component="output",
+            rgb_output_channel="encoder_color",
+            depth_output_component="output",
+            depth_output_channel="encoder_depth",
+            segmentation_output_component="output",
+            segmentation_output_channel="encoder_segmentation",
+            bbox2d_output_component="output",
+            bbox2d_output_channel="encoder_bbox",
+            bbox2d_class_list="",
+            bbox3d_output_component="output",
+            bbox3d_output_channel="encoder_bbox3d",
+            bbox3d_class_list="",
+            rgb_enabled=True,
+            depth_enabled=False,
+            segmentaion_enabled=True,
+            bbox2d_enabled=False,
+            bbox3d_enabled=False,
+            camera_prim_rel=[self._camera.GetPath()],
+            use_existing_viewport=True,
+            resolution=self.Gf.Vec2i(1280, 720),
+        )
 
-        stage = self.kit.get_stage()
+        result, self.unoccluded_provider = omni.kit.commands.execute(
+            "RobotEngineBridgeCreateCamera",
+            path="/World/REB_Unoccluded_Provider",
+            parent=None,
+            rgb_output_component="output",
+            rgb_output_channel="decoder_color",
+            depth_output_component="output",
+            depth_output_channel="decoder_depth",
+            segmentation_output_component="output",
+            segmentation_output_channel="decoder_segmentation",
+            bbox2d_output_component="output",
+            bbox2d_output_channel="decoder_bbox",
+            bbox2d_class_list="",
+            bbox3d_output_component="output",
+            bbox3d_output_channel="decoder_bbox3d",
+            bbox3d_class_list="",
+            rgb_enabled=True,
+            depth_enabled=False,
+            segmentaion_enabled=True,
+            bbox2d_enabled=False,
+            bbox3d_enabled=False,
+            camera_prim_rel=[self._camera.GetPath()],
+            use_existing_viewport=True,
+            resolution=self.Gf.Vec2i(1280, 720),
+        )
 
-        def setup_base_component(prim, time_offset):
-            prim.CreateNodeNameAttr("interface")
-            prim.CreateEnabledAttr(True)
-            prim.CreateTimeOffsetAttr(time_offset)
-
-        self.occluded_provider = REBSchema.RobotEngineCamera.Define(stage, "/World/REB_Occluded_Provider")
-        setup_base_component(self.occluded_provider, 0.0)
-        self.occluded_provider.CreateRgbOutputComponentAttr("output")
-        self.occluded_provider.CreateRgbOutputChannelAttr("encoder_color")
-
-        self.occluded_provider.CreateDepthOutputComponentAttr("output")
-        self.occluded_provider.CreateDepthOutputChannelAttr("encoder_depth")
-
-        self.occluded_provider.CreateSegmentationOutputComponentAttr("output")
-        self.occluded_provider.CreateSegmentationOutputChannelAttr("encoder_segmentation")
-
-        self.occluded_provider.CreateBoundingBox2DOutputComponentAttr("output")
-        self.occluded_provider.CreateBoundingBox2DOutputChannelAttr("encoder_bbox")
-        self.occluded_provider.CreateBoundingBox2DClassListAttr("")
-
-        self.occluded_provider.CreateBoundingBox3DOutputComponentAttr("output")
-        self.occluded_provider.CreateBoundingBox3DOutputChannelAttr("encoder_bbox3d")
-        self.occluded_provider.CreateBoundingBox3DClassListAttr("")
-
-        self.occluded_provider.CreateRgbEnabledAttr(True)
-        self.occluded_provider.CreateDepthEnabledAttr(False)
-        self.occluded_provider.CreateSegmentationEnabledAttr(True)
-        self.occluded_provider.CreateBoundingBox2DEnabledAttr(False)
-        self.occluded_provider.CreateBoundingBox3DEnabledAttr(False)
-
-        self.unoccluded_provider = REBSchema.RobotEngineCamera.Define(stage, "/World/REB_Unoccluded_Provider")
-        setup_base_component(self.unoccluded_provider, 0.0)
-        self.unoccluded_provider.CreateRgbOutputComponentAttr("output")
-        self.unoccluded_provider.CreateRgbOutputChannelAttr("decoder_color")
-
-        self.unoccluded_provider.CreateDepthOutputComponentAttr("output")
-        self.unoccluded_provider.CreateDepthOutputChannelAttr("decoder_depth")
-
-        self.unoccluded_provider.CreateSegmentationOutputComponentAttr("output")
-        self.unoccluded_provider.CreateSegmentationOutputChannelAttr("decoder_segmentation")
-
-        self.unoccluded_provider.CreateBoundingBox2DOutputComponentAttr("output")
-        self.unoccluded_provider.CreateBoundingBox2DOutputChannelAttr("decoder_bbox")
-        self.unoccluded_provider.CreateBoundingBox2DClassListAttr("")
-
-        self.unoccluded_provider.CreateBoundingBox3DOutputComponentAttr("output")
-        self.unoccluded_provider.CreateBoundingBox3DOutputChannelAttr("decoder_bbox3d")
-        self.unoccluded_provider.CreateBoundingBox3DClassListAttr("")
-
-        self.unoccluded_provider.CreateRgbEnabledAttr(True)
-        self.unoccluded_provider.CreateDepthEnabledAttr(False)
-        self.unoccluded_provider.CreateSegmentationEnabledAttr(True)
-        self.unoccluded_provider.CreateBoundingBox2DEnabledAttr(False)
-        self.unoccluded_provider.CreateBoundingBox3DEnabledAttr(False)
+        # turn both cameras off so that we don't send an image when time is stepped
+        self.occluded_provider.GetEnabledAttr().Set(False)
+        self.unoccluded_provider.GetEnabledAttr().Set(False)
 
         # create rigid body sink to publish ground truth pose information
-        self.rbs_provider = REBSchema.RobotEngineRigidBodySink.Define(stage, "/World/REB_RigidBodiesSink")
-        setup_base_component(self.rbs_provider, 0.0)
-        self.rbs_provider.CreateOutputComponentAttr("output")
-        self.rbs_provider.CreateOutputChannelAttr("bodies")
-        self.rbs_provider.CreateRigidBodyPrimsRel().SetTargets(
-            [self._camera_proxy.GetPath(), self._target_prim.GetPath()]
+        result, self.rbs_provider = omni.kit.commands.execute(
+            "RobotEngineBridgeCreateRigidBodySink",
+            path="/World/REB_RigidBodiesSink",
+            parent=None,
+            enabled=False,
+            output_component="output",
+            output_channel="bodies",
+            rigid_body_prims_rel=[self._camera_proxy.GetPath(), self._target_prim.GetPath()],
         )
+        # disable rigid body sink until the final image is sent out so its only published once
+        self.rbs_provider.GetEnabledAttr().Set(False)
 
     def configure_bridge(self, json_file: str = "isaacsim.app.json"):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -175,7 +178,7 @@ class DualCameraSample:
         app_file = f"{reb_extension_path}/resources/isaac_engine/json/{json_file}"
         carb.log_info(f"create application with: {reb_extension_path} {app_file}")
         return omni.kit.commands.execute(
-            "RobotEngineBridgeCreateApplicationCommand", asset_path=reb_extension_path, app_file=app_file
+            "RobotEngineBridgeCreateApplication", asset_path=reb_extension_path, app_file=app_file
         )
 
     def configure_randomization(self):
@@ -214,7 +217,7 @@ class DualCameraSample:
         # get target pose and point camera at it
         pose = omni.usd.get_world_transform_matrix(self._target_prim)
         # can specify an offset on target position
-        target = pose.ExtractTranslation() + Gf.Vec3d(0, 0, 0)
+        target = pose.ExtractTranslation() + self.Gf.Vec3d(0, 0, 0)
 
         self._viewport.get_viewport_window().set_camera_target(
             str(self._camera.GetPath()), target[0], target[1], target[2], True
@@ -224,7 +227,7 @@ class DualCameraSample:
         self.dr_helper.randomize_once()
 
     def toggle_environment(self, state):
-        imageable = UsdGeom.Imageable(self._environment)
+        imageable = self.UsdGeom.Imageable(self._environment)
         if state:
             imageable.MakeVisible()
         else:
@@ -237,28 +240,16 @@ class DualCameraSample:
         if self.frame % RANDOMIZE_SCENE_EVERY_N_STEPS == 0:
             self.randomize_scene()
 
-        # turn both cameras off so that we don't send an image when time is stepped
-        self.occluded_provider.GetEnabledAttr().Set(False)
-        self.unoccluded_provider.GetEnabledAttr().Set(False)
-        # disable rigid body sink until the final image is sent out so its only published once
-        self.rbs_provider.GetEnabledAttr().Set(False)
         self.toggle_environment(True)
         self.kit.update(1.0 / 60.0)
         # render occluded view
-        self.occluded_provider.GetEnabledAttr().Set(True)
-        self.unoccluded_provider.GetEnabledAttr().Set(False)
-        self.kit.update(0)
+        omni.kit.commands.execute("RobotEngineBridgeTickComponent", path=str(self.occluded_provider.GetPath()))
         # hide everything but the object
-        self.occluded_provider.GetEnabledAttr().Set(False)
-        self.unoccluded_provider.GetEnabledAttr().Set(False)
         self.toggle_environment(False)
         self.kit.update(0)
         # render unoccluded view
-        self.occluded_provider.GetEnabledAttr().Set(False)
-        self.unoccluded_provider.GetEnabledAttr().Set(True)
-        self.rbs_provider.GetEnabledAttr().Set(True)
-        self.kit.update(0)
-
+        omni.kit.commands.execute("RobotEngineBridgeTickComponent", path=str(self.unoccluded_provider.GetPath()))
+        omni.kit.commands.execute("RobotEngineBridgeTickComponent", path=str(self.rbs_provider.GetPath()))
         # output fps every 100 frames
         if self.frame % 100 == 0:
             print("FPS: ", self._viewport.get_viewport_window().get_fps())
