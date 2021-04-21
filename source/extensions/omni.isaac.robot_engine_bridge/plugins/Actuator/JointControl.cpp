@@ -90,12 +90,16 @@ void JointControl::tick()
                     }
                     if (props.hasLimits)
                     {
-                        // Joints become unstable if we get close to 2*pi limit. Artificially limit as a workaround
                         elementValue = CARB_CLAMP(elementValue, props.lower, props.upper);
-                        elementValue = CARB_CLAMP(elementValue, -6.25, 6.25);
                     }
                     if (measure == isaac_message::Composite::Measure::POSITION)
                     {
+                        if (props.type == omni::isaac::dynamic_control::DcDofType::eRotation)
+                        {
+                            // Joints become unstable if we get close to 2*pi limit. Artificially limit as a workaround
+                            elementValue = CARB_CLAMP(elementValue, -6.25, 6.25);
+                        }
+
                         mDynamicControlPtr->setDofPositionTarget(handle, elementValue);
                     }
                     else if (measure == isaac_message::Composite::Measure::SPEED)

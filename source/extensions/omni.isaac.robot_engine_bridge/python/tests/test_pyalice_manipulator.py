@@ -57,6 +57,11 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         gc.collect()
         pass
 
+    def create_joint_command_message(self, joints, values):
+        quantities = [[x, "position", 1] for x in joints]
+        values = np.array(values, dtype=np.dtype("float64"))
+        return quantities, Composite.create_composite_message(quantities, values)
+
     async def test_ur10_basic(self):
         (result, error) = await load_test_file(self._nucleus_path + "/Samples/Isaac_SDK/Scenario/ur10_basic.usd")
         self.assertTrue(result)
@@ -173,4 +178,93 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app.stop()
         test_app = None
 
+        pass
+
+    async def test_revolute(self):
+        (result, error) = await load_test_file(
+            self._nucleus_path + "/Samples/Isaac_SDK/Robots/Simple_Articulation_REB.usd"
+        )
+        self.assertTrue(result)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        test_app = PyaliceApp()
+        test_app.app.load(
+            filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
+        )
+        sim_in = test_app.app.nodes["simulation.interface"]["input"]
+        sim_out = test_app.app.nodes["simulation.interface"]["output"]
+
+        test_app.start()
+        # Run test so tcp is connected
+        await simulate(1)
+
+        async def check_joint(joints, values, actual_value, time=1.0):
+
+            # Send commands to move arm and test joint limits
+            quantities, cmd_msg = self.create_joint_command_message(joints, values)
+            test_app.app.publish("simulation.interface", "input", "joint_position", cmd_msg)
+
+            # Run test for a while for the arm to move
+            await simulate(time)
+
+            # validate joint angles
+            state_msg = test_app.app.receive("simulation.interface", "output", "joint_state")
+            self.assertIsNotNone(state_msg)
+            states = Composite.parse_composite_message(state_msg, quantities)
+            self.assertIsNotNone(states)
+            delta = np.abs(states - actual_value)
+            self.assertTrue(np.max(delta) < 0.03)
+
+        await check_joint(["RevoluteJoint"], [0], [0])
+        await check_joint(["RevoluteJoint"], [6], [6])
+        await check_joint(["RevoluteJoint"], [7], [6.25])
+        self._timeline.stop()
+        test_app.stop()
+        test_app = None
+        pass
+
+    async def test_prismatic(self):
+        (result, error) = await load_test_file(
+            self._nucleus_path + "/Samples/Isaac_SDK/Robots/Simple_Articulation_REB.usd"
+        )
+        self.assertTrue(result)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        test_app = PyaliceApp()
+        test_app.app.load(
+            filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
+        )
+        sim_in = test_app.app.nodes["simulation.interface"]["input"]
+        sim_out = test_app.app.nodes["simulation.interface"]["output"]
+
+        test_app.start()
+        # Run test so tcp is connected
+        await simulate(1)
+
+        async def check_joint(joints, values, actual_value, time=1.0):
+
+            # Send commands to move arm and test joint limits
+            quantities, cmd_msg = self.create_joint_command_message(joints, values)
+            test_app.app.publish("simulation.interface", "input", "joint_position", cmd_msg)
+
+            # Run test for a while for the arm to move
+            await simulate(time)
+
+            # validate joint angles
+            state_msg = test_app.app.receive("simulation.interface", "output", "joint_state")
+            self.assertIsNotNone(state_msg)
+            states = Composite.parse_composite_message(state_msg, quantities)
+            self.assertIsNotNone(states)
+            delta = np.abs(states - actual_value)
+            self.assertTrue(np.max(delta) < 0.03)
+
+        await check_joint(["PrismaticJoint"], [0], [0])
+        await check_joint(["PrismaticJoint"], [-100], [-1])
+        await check_joint(["PrismaticJoint"], [100], [100])
+        self._timeline.stop()
+        test_app.stop()
+        test_app = None
         pass
