@@ -23,13 +23,11 @@ class Contact_sensor_demo(omni.ext.IExt):
     def on_startup(self):
         self._menu_items = [
             MenuItemDescription(
-                name="Samples",
-                sub_menu=[
-                    MenuItemDescription(name="Contact Sensor", onclick_fn=lambda a=weakref.proxy(self): a.build_ui())
-                ],
+                name="Sensing",
+                sub_menu=[MenuItemDescription(name="Contact", onclick_fn=lambda a=weakref.proxy(self): a.build_ui())],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        add_menu_items(self._menu_items, "Isaac Examples")
         self.meters_per_unit = 0.01
         self._window = None
 
@@ -86,7 +84,7 @@ class Contact_sensor_demo(omni.ext.IExt):
             self.sub = None
             self._timeline = None
             self._stage_event_subscription = None
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
 
     def _on_update(self, dt):

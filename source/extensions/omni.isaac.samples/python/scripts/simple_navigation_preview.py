@@ -51,17 +51,15 @@ class Extension(omni.ext.IExt):
         self._stage = self._usd_context.get_stage()
         self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
         self._window.deferred_dock_in("Content")
+        menu_items = [
+            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+        ]
         self._menu_items = [
             MenuItemDescription(
-                name="Samples",
-                sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
+                name="Controlling", sub_menu=[MenuItemDescription(name="Navigation", sub_menu=menu_items)]
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        add_menu_items(self._menu_items, "Isaac Examples")
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._create_ui()
 
@@ -229,6 +227,6 @@ class Extension(omni.ext.IExt):
         self._rc = None
         self._timeline.stop()
         self._editor_event_subscription = None
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
         gc.collect()

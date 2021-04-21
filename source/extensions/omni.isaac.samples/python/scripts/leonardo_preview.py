@@ -64,15 +64,15 @@ class Extension(omni.ext.IExt):
 
         self._menu_items = [
             MenuItemDescription(
-                name="Samples",
+                name="Scenes",
                 sub_menu=[
                     MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                        name="Franka Block Stacking", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
                     )
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        add_menu_items(self._menu_items, "Isaac Examples")
 
     def _menu_callback(self):
         self._build_ui()
@@ -254,5 +254,5 @@ class Extension(omni.ext.IExt):
         self._editor_event_subscription = None
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
         self._physx_subs = None
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None

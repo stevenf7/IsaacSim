@@ -85,17 +85,15 @@ class Extension(omni.ext.IExt):
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._extension_path = ext_manager.get_extension_path(ext_id)
+        menu_items = [
+            MenuItemDescription(name="Joint Controller", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+        ]
         self._menu_items = [
             MenuItemDescription(
-                name="Dynamic Control",
-                sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
+                name="Controlling", sub_menu=[MenuItemDescription(name="Dynamic Control", sub_menu=menu_items)]
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        add_menu_items(self._menu_items, "Isaac Examples")
 
     def _menu_callback(self):
         self._build_ui()
@@ -119,7 +117,7 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         self._sub_stage_event = None
         self._physx_subscription = None
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
 
     async def _setup_camera(self, task):

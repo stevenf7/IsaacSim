@@ -17,7 +17,7 @@ import weakref
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties, Surface_Gripper
 
 
-EXTENSION_NAME = "Surface Gripper Example"
+EXTENSION_NAME = "Surface Gripper"
 
 
 class Extension(omni.ext.IExt):
@@ -36,17 +36,25 @@ class Extension(omni.ext.IExt):
             title=EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.set_visibility_changed_fn(self._on_window)
+        menu_items = [
+            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+        ]
         self._menu_items = [
             MenuItemDescription(
-                name="Samples",
-                sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
+                name="Controlling", sub_menu=[MenuItemDescription(name="Manipulation", sub_menu=menu_items)]
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        # self._menu_items = [
+        #     MenuItemDescription(
+        #         name="Samples",
+        #         sub_menu=[
+        #             MenuItemDescription(
+        #                 name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+        #             )
+        #         ],
+        #     )
+        # ]
+        add_menu_items(self._menu_items, "Isaac Examples")
         self._models = {}
         with self._window.frame:
             with ui.VStack(height=0):
@@ -83,7 +91,7 @@ class Extension(omni.ext.IExt):
         self._stage_id = -1
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._physx_subs = None
         self._window = None
 

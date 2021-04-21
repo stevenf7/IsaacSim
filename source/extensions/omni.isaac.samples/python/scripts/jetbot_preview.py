@@ -54,18 +54,15 @@ class Extension(omni.ext.IExt):
         self._window = None
         self._load_jetbot_btn = None
         self._reset_btn = False
-
+        menu_items = [
+            MenuItemDescription(name="Jetbot Keyboard", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+        ]
         self._menu_items = [
             MenuItemDescription(
-                name="Samples",
-                sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
+                name="Controlling", sub_menu=[MenuItemDescription(name="Input Devices", sub_menu=menu_items)]
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        add_menu_items(self._menu_items, "Isaac Examples")
 
     def _menu_callback(self):
         self._build_ui()
@@ -247,6 +244,6 @@ class Extension(omni.ext.IExt):
         self._editor_event_subscription = None
         self._stop_tasks()
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
         gc.collect()

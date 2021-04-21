@@ -50,18 +50,15 @@ class Extension(omni.ext.IExt):
         self._window = None
         self._load_kaya_btn = None
         self._gamepad_setup_btn = None
-
+        menu_items = [
+            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+        ]
         self._menu_items = [
             MenuItemDescription(
-                name="Samples",
-                sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
+                name="Controlling", sub_menu=[MenuItemDescription(name="Input Devices", sub_menu=menu_items)]
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        add_menu_items(self._menu_items, "Isaac Examples")
 
     def _menu_callback(self):
         self._build_ui()
@@ -159,6 +156,6 @@ class Extension(omni.ext.IExt):
         self._timeline.stop()
         self._physx_subs = None
         self.kaya = None
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
         gc.collect()

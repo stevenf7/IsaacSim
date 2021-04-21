@@ -62,17 +62,13 @@ class Extension(omni.ext.IExt):
         self._dc_extension_path = ext_manager.get_extension_path(ext_id)
         # setting up the UI on the menu bar for this example
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
-        self._menu_items = [
-            MenuItemDescription(
-                name="ROS",
-                sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
-            )
+        menu_items = [
+            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        self._menu_items = [
+            MenuItemDescription(name="Communicating", sub_menu=[MenuItemDescription(name="ROS", sub_menu=menu_items)])
+        ]
+        add_menu_items(self._menu_items, "Isaac Examples")
         with self._window.frame:
             with ui.VStack():
                 ui.Button("Load Robot", tooltip="Loads robot into stage", clicked_fn=self._on_load_robot)
@@ -103,7 +99,7 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
 
     def _menu_callback(self):

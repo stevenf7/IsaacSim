@@ -33,15 +33,13 @@ class Extension(omni.ext.IExt):
 
         self._menu_items = [
             MenuItemDescription(
-                name="Range Sensor",
+                name="Sensing",
                 sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
+                    MenuItemDescription(name="LIDAR", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        add_menu_items(self._menu_items, "Isaac Examples")
 
         # Kit GUIs are defined by a tree of layouts, and leaf layouts contain GUI elements (like buttons or
         # text entry fields).  You can learn more about Layouts and GUIs in the python manual at
@@ -88,7 +86,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
 
     def _menu_callback(self):

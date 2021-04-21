@@ -21,15 +21,13 @@ class Extension(omni.ext.IExt):
         )
         self._menu_items = [
             MenuItemDescription(
-                name="URDF",
+                name="Importing",
                 sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
+                    MenuItemDescription(name="Kaya URDF", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        add_menu_items(self._menu_items, "Isaac Examples")
         with self._window.frame:
             with ui.VStack(height=0):
                 ui.Button("Load Robot", clicked_fn=self._on_load_robot)
@@ -39,7 +37,7 @@ class Extension(omni.ext.IExt):
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
 
     def _menu_callback(self):
