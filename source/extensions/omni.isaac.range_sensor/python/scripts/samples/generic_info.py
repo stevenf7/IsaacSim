@@ -45,18 +45,17 @@ class Extension(omni.ext.IExt):
         self._window = omni.ui.Window(
             EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
         )
-
         self._menu_items = [
             MenuItemDescription(
-                name="Range Sensor",
+                name="Sensing",
                 sub_menu=[
                     MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                        name="Generic Range Sensor", onclick_fn=lambda a=weakref.proxy(self): a.build_ui()
                     )
                 ],
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        add_menu_items(self._menu_items, "Isaac Examples")
 
         self._test = False
         self.generic = False
@@ -122,7 +121,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
 
     def _menu_callback(self):

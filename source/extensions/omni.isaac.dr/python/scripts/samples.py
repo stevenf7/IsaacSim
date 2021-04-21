@@ -20,18 +20,17 @@ class Extension(omni.ext.IExt):
 
         menu_items = [
             MenuItemDescription(
-                name="Component Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_component_sample()
+                name="Component Randomizer", onclick_fn=lambda a=weakref.proxy(self): a.add_component_sample()
             ),
-            MenuItemDescription(
-                name="Simple Room Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_simple_room_scene()
-            ),
-            MenuItemDescription(
-                name="Warehouse Sample", onclick_fn=lambda a=weakref.proxy(self): a.add_warehouse_scene()
-            ),
+            MenuItemDescription(name="Simple Room", onclick_fn=lambda a=weakref.proxy(self): a.add_simple_room_scene()),
+            MenuItemDescription(name="Warehouse", onclick_fn=lambda a=weakref.proxy(self): a.add_warehouse_scene()),
         ]
-
-        self._menu_items = [MenuItemDescription(name="Domain Randomizer", sub_menu=menu_items)]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        self._menu_items = [
+            MenuItemDescription(
+                name="Training", sub_menu=[MenuItemDescription(name="Domain Randomization", sub_menu=menu_items)]
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac Examples")
 
     def add_component_sample(self):
         self._window = ui.Window(
@@ -62,7 +61,7 @@ class Extension(omni.ext.IExt):
                 load_comp_btn.set_clicked_fn(self._on_load_component)
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
         self._usd_context = None
         self._stage = None

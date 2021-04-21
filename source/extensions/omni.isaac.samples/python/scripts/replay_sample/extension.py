@@ -18,16 +18,16 @@ class Extension(omni.ext.IExt):
         self._window.set_visibility_changed_fn(self._on_window)
         self._menu_items = [
             MenuItemDescription(
-                name="Samples",
+                name="Misc",
                 sub_menu=[
                     MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                        name="Joint Trajectory Replay", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
                     )
                 ],
             )
         ]
 
-        add_menu_items(self._menu_items, "Isaac Samples")
+        add_menu_items(self._menu_items, "Isaac Examples")
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
         self._replay = Replay()
@@ -140,6 +140,6 @@ class Extension(omni.ext.IExt):
         self._timeline.stop()
         self._replay.stop_tasks()
         self._replay = None
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         gc.collect()
         pass

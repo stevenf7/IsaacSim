@@ -16,17 +16,25 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
         self._window.set_visibility_changed_fn(self._on_window)
+        menu_items = [
+            MenuItemDescription(name="RMP Example", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+        ]
         self._menu_items = [
             MenuItemDescription(
-                name="Samples",
-                sub_menu=[
-                    MenuItemDescription(
-                        name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
+                name="Controlling", sub_menu=[MenuItemDescription(name="Manipulation", sub_menu=menu_items)]
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        # self._menu_items = [
+        #     MenuItemDescription(
+        #         name="Samples",
+        #         sub_menu=[
+        #             MenuItemDescription(
+        #                 name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+        #             )
+        #         ],
+        #     )
+        # ]
+        add_menu_items(self._menu_items, "Isaac Examples")
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
         self._sample = RMPSample()
@@ -187,6 +195,6 @@ class Extension(omni.ext.IExt):
         self._timeline.stop()
         self._sample.stop_tasks()
         self._sample = None
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         gc.collect()
         pass

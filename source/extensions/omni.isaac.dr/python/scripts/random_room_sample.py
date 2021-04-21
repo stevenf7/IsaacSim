@@ -17,12 +17,15 @@ class Extension(omni.ext.IExt):
 
         menu_items = [
             MenuItemDescription(
-                name="Simple Room Python Sample", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                name="Simple Room (Python)", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
             )
         ]
-
-        self._menu_items = [MenuItemDescription(name="Domain Randomizer", sub_menu=menu_items)]
-        add_menu_items(self._menu_items, "Isaac Samples")
+        self._menu_items = [
+            MenuItemDescription(
+                name="Training", sub_menu=[MenuItemDescription(name="Domain Randomization", sub_menu=menu_items)]
+            )
+        ]
+        add_menu_items(self._menu_items, "Isaac Examples")
         with self._window.frame:
             with ui.VStack(height=0):
                 ui.Spacer(width=5)
@@ -35,7 +38,7 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Samples")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
         self._usd_context = None
         self._stage = None
