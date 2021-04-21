@@ -17,6 +17,7 @@
 #include "../Components/RosLidar.h"
 #include "../Components/RosJointState.h"
 #include "../Components/RosPoseTree.h"
+#include "../Components/RosSurfaceGripper.h"
 #include "../Components/RosTeleport.h"
 
 #include "plugins/core/ScopedTimer.h"
@@ -116,6 +117,11 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     {
         component = std::make_unique<RosTeleport>(mDynamicControlPtr);
         component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosTeleport(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RosBridgeSchemaRosSurfaceGripper>())
+    {
+        component = std::make_unique<RosSurfaceGripper>(mDynamicControlPtr);
+        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosSurfaceGripper(prim), mStage);
     }
     if (component)
     {

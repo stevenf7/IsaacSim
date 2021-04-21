@@ -2,6 +2,7 @@ import carb
 import omni.kit.commands
 
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from pxr import Gf
 import weakref
 
 
@@ -17,6 +18,9 @@ class RosBridgeMenu:
             MenuItemDescription(name="Lidar", onclick_fn=lambda a=weakref.proxy(self): a.add_lidar()),
             MenuItemDescription(name="Pose Tree", onclick_fn=lambda a=weakref.proxy(self): a.add_pose_tree()),
             MenuItemDescription(name="Teleport", onclick_fn=lambda a=weakref.proxy(self): a.add_teleport()),
+            MenuItemDescription(
+                name="Surface Gripper", onclick_fn=lambda a=weakref.proxy(self): a.add_surface_gripper()
+            ),
         ]
 
         self._menu_items = [
@@ -85,6 +89,25 @@ class RosBridgeMenu:
             "CreateROSBridgeTeleportCommand", path="/ROS_Teleport", parent=self._get_stage_and_path()
         )
 
+        pass
+
+    def add_surface_gripper(self, *args, **kwargs):
+        result, prim = omni.kit.commands.execute(
+            "CreateROSBridgeSurfaceGripperCommand",
+            path="/ROS_SurfaceGripper",
+            parent=self._get_stage_and_path(),
+            d6_joint_prim_rel=None,
+            parent_prim_rel=None,
+            gripper_entity="gripper",
+            grip_threshold=1,
+            force_limit=1e10,
+            torque_limit=1e10,
+            bend_angle=0,
+            stiffness=1e10,
+            damping=1e3,
+            offset_position=Gf.Vec3f(0, 0, 0),
+            offset_rotation=Gf.Quatf(1.0),
+        )
         pass
 
     def shutdown(self):
