@@ -10,6 +10,9 @@
     <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
         <package name="nv_ros" version="melodic_20200605_045b485-linux64_boost_1.68.0_release-master" platforms="linux-x86_64"/>
     </dependency>
+    <dependency name="nv_ros2" linkPath="../_build/target-deps/nv_ros2">
+        <package name="nv_ros2" version="eloquent_20210420_57ab206-linux64-master" platforms="linux-x86_64"/>
+    </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
         <package name="lula" version="linux_x64_linbuild_20200415_a36cb37" platforms="linux-x86_64"/>
     </dependency>
