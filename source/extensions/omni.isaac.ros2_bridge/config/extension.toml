@@ -1,0 +1,9 @@
+display_name = "ROS2 Bridge"
+
+[dependencies]
+
+[[python.module]]
+name = "omni.isaac.rclpy"
+
+[fswatcher.paths]
+exclude = ["*/omni/isaac/rclpy"]
