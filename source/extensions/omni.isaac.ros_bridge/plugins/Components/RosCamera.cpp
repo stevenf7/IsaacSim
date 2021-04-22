@@ -275,6 +275,10 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
     {
         return;
     }
+    // We have to ignore the vertical aperture number because our pixels are square
+    // Compute it directly from the image size and horizontal aperture
+    verticalAperture =
+        static_cast<float>(imgInfo.tex.height) / static_cast<float>(imgInfo.tex.width) * horizontalAperture;
 
     sensor_msgs::CameraInfo cam_info_msg;
     cam_info_msg.header.seq = 0;
