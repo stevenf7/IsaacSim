@@ -25,7 +25,7 @@ namespace isaac
 {
 namespace robot_engine_bridge
 {
-
+using omni::isaac::dynamic_control::DcDofProperties;
 using omni::isaac::dynamic_control::DcDofState;
 using omni::isaac::dynamic_control::DcDofType;
 using omni::isaac::dynamic_control::DcHandle;
@@ -100,9 +100,12 @@ void ScissorLiftSimulator::tick()
         }
     }
     {
-        mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
         auto handle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, mLiftJointName.c_str());
-
+        if (!handle)
+        {
+            CARB_LOG_ERROR("Scissor lift joint not found in articulation");
+            return;
+        }
         float currentPosition = mDynamicControlPtr->getDofPosition(handle);
         if (mState == LiftState::Raised && pxr::GfIsClose(currentPosition, 0.0f, 0.0001f))
         {
@@ -110,19 +113,23 @@ void ScissorLiftSimulator::tick()
             mCurrentHeight = 0.0f;
         }
 
+        DcDofProperties props;
+        mDynamicControlPtr->getDofProperties(handle, &props);
+
+        if (!props.hasLimits)
+        {
+            CARB_LOG_ERROR("Scissor lift joint must have minimum and maximum joint limits specified");
+            return;
+        }
+
         if (mState == LiftState::Raising)
         {
-            if (mCurrentHeight < mMaxHeight)
+            if (mCurrentHeight < props.upper)
             {
-                mCurrentHeight += mDeltaHeight;
-                if (handle)
-                {
-                    mDynamicControlPtr->setDofPositionTarget(handle, mCurrentHeight * static_cast<float>(mUnitScale));
-                }
-                else
-                {
-                    CARB_LOG_ERROR("Entity not found in articulation");
-                }
+                mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
+                mCurrentHeight += mLiftSpeed * static_cast<float>(mUnitScale) * mTimeDelta;
+
+                mDynamicControlPtr->setDofPositionTarget(handle, mCurrentHeight);
             }
             else
             {
@@ -131,17 +138,12 @@ void ScissorLiftSimulator::tick()
         }
         else if (mState == LiftState::Lowering)
         {
-            if (mCurrentHeight > 0.0f)
+            if (mCurrentHeight > props.lower)
             {
-                mCurrentHeight -= mDeltaHeight;
-                if (handle)
-                {
-                    mDynamicControlPtr->setDofPositionTarget(handle, mCurrentHeight * static_cast<float>(mUnitScale));
-                }
-                else
-                {
-                    CARB_LOG_ERROR("Entity not found in articulation");
-                }
+                mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
+                mCurrentHeight -= mLiftSpeed * static_cast<float>(mUnitScale) * mTimeDelta;
+
+                mDynamicControlPtr->setDofPositionTarget(handle, mCurrentHeight);
             }
             else
             {
@@ -188,6 +190,7 @@ void ScissorLiftSimulator::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetOutputComponentAttr(), mOutputComponent);
     isaac::utils::safeGetAttribute(typedPrim.GetOutputChannelAttr(), mStateChannelName);
     isaac::utils::safeGetAttribute(typedPrim.GetLiftJointNameAttr(), mLiftJointName);
+    isaac::utils::safeGetAttribute(typedPrim.GetLiftSpeedAttr(), mLiftSpeed);
 
     pxr::SdfPathVector targets;
     typedPrim.GetArticulationPrimRel().GetTargets(&targets);

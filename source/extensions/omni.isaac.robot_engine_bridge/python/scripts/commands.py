@@ -338,6 +338,7 @@ class RobotEngineBridgeCreateScissorLift(omni.kit.commands.Command):
         output_channel: str = "joint_state",
         articulation_prim_rel=None,
         lift_joint_name: str = "lift_joint",
+        lift_speed: float = 0.02,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -364,6 +365,7 @@ class RobotEngineBridgeCreateScissorLift(omni.kit.commands.Command):
                 else:
                     carb.log_warn("only one articulation prim rel target can be specified")
             self._prim.CreateLiftJointNameAttr(self._lift_joint_name)
+            self._prim.CreateLiftSpeedAttr(self._lift_speed)
 
         return self._prim
 
