@@ -117,8 +117,6 @@ void onPause(void* userData)
 }
 void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 {
-    // printf("++ REB: Prim Add: %s\n", primPath,
-    //        g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
     if (g_application_handle)
     {
         pxr::UsdPrim addedPrim = g_stage->GetPrimAtPath(primPath);
@@ -139,8 +137,7 @@ void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 }
 void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
-    // printf("++ REB: Prim Change: %s of type %s\n", primPath,
-    //        g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
+
     if (g_stage && g_application_handle)
     {
         g_application_handle->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
@@ -149,7 +146,6 @@ void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 
 void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
-    // printf("++ REB: Prim Remove: %s\n", primPath);
     if (g_application_handle)
     {
         g_application_handle->onComponentRemove(primPath);
@@ -191,7 +187,6 @@ CARB_EXPORT void carbOnPluginStartup()
         return;
     }
 
-    g_application_handle = std::make_unique<omni::isaac::ros_bridge::IsaacApplication>(g_dynamicControl);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "IsaacRosBridge";
@@ -208,6 +203,11 @@ CARB_EXPORT void carbOnPluginStartup()
 
 
     ros::M_string args;
+    if (!ros::ok() || !ros::master::check())
+    {
+        CARB_LOG_ERROR("ROS Master is not running, please start ROS master before enabling this extension");
+        return;
+    }
     if (!ros::isInitialized())
     {
         ros::init(args, "OmniIsaacRosBridge");
@@ -215,8 +215,10 @@ CARB_EXPORT void carbOnPluginStartup()
     }
     else
     {
-        CARB_LOG_WARN("Ros already initialized");
+        CARB_LOG_WARN("ROS already initialized");
     }
+
+    g_application_handle = std::make_unique<omni::isaac::ros_bridge::IsaacApplication>(g_dynamicControl);
 
     // if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Error))
     // {
@@ -226,6 +228,12 @@ CARB_EXPORT void carbOnPluginStartup()
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
+    if (ros::isInitialized())
+    {
+        ros::shutdown();
+        ros::Time::shutdown();
+    }
+
     g_application_handle.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
 }
