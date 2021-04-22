@@ -43,8 +43,6 @@ class Extension(omni.ext.IExt):
                 )
 
         self._viewport = omni.kit.viewport.get_default_viewport_window()
-        self._viewport.set_camera_position("/OmniverseKit_Persp", 103.4, 13.8, 19.8, True)
-        self._viewport.set_camera_target("/OmniverseKit_Persp", -225.0, -23.78, -26.17, True)
         self._timeline = omni.timeline.get_timeline_interface()
 
     def on_shutdown(self):
