@@ -146,6 +146,7 @@ class RobotEngineBridgeMenu:
             output_channel="lift_state",
             articulation_prim_rel=None,
             lift_joint_name="lift_joint",
+            lift_speed=0.02,
         )
         pass
 

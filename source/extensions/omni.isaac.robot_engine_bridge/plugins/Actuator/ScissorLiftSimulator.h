@@ -71,11 +71,8 @@ private:
     /// Trigger raising and lowering of the lift
     bool mRaiseRequest, mLowerRequest;
 
-    /// Maximum height that the lift raises up from default
-    float mMaxHeight = 0.04f;
-
-    /// Height change in each simulation timestemp
-    float mDeltaHeight = 0.0003f;
+    /// Speed in m/s that the lift lowers and raises
+    float mLiftSpeed = 0.02f;
 
     /// current state of the lift
     enum LiftState
