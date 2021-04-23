@@ -2,7 +2,7 @@ import carb
 import omni
 import numpy as np
 
-from pxr import UsdGeom, Gf, Sdf, UsdPhysics, PhysxSchema, PhysicsSchemaTools
+from pxr import UsdGeom, Gf, Sdf, UsdPhysics 
 from jetbot_city.road_map import *
 from jetbot_city.road_map_path_helper import *
 from jetbot_city.road_map_generator import *
@@ -233,6 +233,7 @@ class Environment:
         xform_op.Set(mat)
 
     def setup_physics(self):
+        from pxr import PhysxSchema, PhysicsSchemaTools
         stage = self.omni_kit.get_stage()
         # Add physics scene
         scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))

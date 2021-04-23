@@ -12,6 +12,7 @@ import asyncio
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+import omni
 from omni.isaac.synthetic_utils import visualization as vis
 from omni.isaac.python_app import OmniKitHelper
 from omni.isaac.synthetic_utils import SyntheticDataHelper
@@ -157,7 +158,8 @@ class JetbotEnv:
         # device.  stable baselines 3 is expecting a numpy array, so we pull the data to the host
         # additional sensors that could be of interest and can be added to this list:
         # "depth", "instanceSegmentation", "semanticSegmentation"
-        gt = self.sd_helper.get_groundtruth(["rgb", "camera"])
+        viewport = omni.kit.viewport.get_default_viewport_window()
+        gt = self.sd_helper.get_groundtruth(["rgb"], viewport)
 
         # we only need the rgb channels of the rgb image
         currentState = gt["rgb"][:, :, :3]
@@ -211,7 +213,8 @@ class JetbotEnv:
             while self.omniverse_kit.is_loading():
                 self.omniverse_kit.update(self.dt)
 
-        gt = self.sd_helper.get_groundtruth(["rgb", "camera"])
+        viewport = omni.kit.viewport.get_default_viewport_window()
+        gt = self.sd_helper.get_groundtruth(["rgb"], viewport)
         currentState = gt["rgb"][:, :, :3]
         currentState = self.transform_state_image(currentState)
 
