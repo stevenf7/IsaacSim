@@ -4,6 +4,7 @@ import PIL
 import numpy as np
 
 import carb
+import omni
 import omni.kit.app
 
 from pxr import UsdGeom, Gf, Sdf, Usd, Semantics
@@ -202,7 +203,8 @@ class JetracerEnv:
                 self.omniverse_kit.update(self.dt)
                 frame += 1
 
-        gt = self.sd_helper.get_groundtruth(["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "camera"])
+        viewport = omni.kit.viewport.get_default_viewport_window()
+        gt = self.sd_helper.get_groundtruth(["rgb"], viewport)
         currentState = gt["rgb"][:, :, :3]
         currentState = self.transform_state_image(currentState)
 
@@ -265,13 +267,8 @@ class JetracerEnv:
             total_reward += reward
             frame = frame + 1
 
-        gt = self.sd_helper.get_groundtruth(["rgb", "depth", "instanceSegmentation", "semanticSegmentation", "camera"])
-
-        depth = np.expand_dims(gt["depth"], -1)
-        depth = self.transform_state_image(depth)
-
-        segmentation = vis.semantic_segmentation_to_rgb(ut.to_numpy(gt["semanticSegmentation"][1]))
-        segmentation = self.transform_state_image(segmentation)
+        viewport = omni.kit.viewport.get_default_viewport_window()
+        gt = self.sd_helper.get_groundtruth(["rgb"], viewport)
 
         currentState = gt["rgb"][:, :, :3]
         currentState = self.transform_state_image(currentState)

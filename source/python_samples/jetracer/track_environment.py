@@ -1,7 +1,7 @@
 import carb
 import omni
 import random
-from pxr import UsdGeom, Gf, Sdf, UsdPhysics, PhysxSchema, PhysicsSchemaTools
+from pxr import UsdGeom, Gf, Sdf, UsdPhysics
 
 from omni.isaac.synthetic_utils import DomainRandomization
 from gtc2020_track_utils import *
@@ -152,6 +152,8 @@ class Environment:
         # xform_op.Set(mat)
 
     def setup_physics(self):
+        from pxr import PhysxSchema, PhysicsSchemaTools
+        
         stage = self.omni_kit.get_stage()
         # Add physics scene
         scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))

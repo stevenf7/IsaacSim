@@ -9,7 +9,6 @@ from argparse import Namespace
 
 from omni.isaac.python_app import OmniKitHelper
 
-from jetbot_env import JetbotEnv
 from jetbot_model import CustomCNN
 
 from stable_baselines3 import PPO
@@ -25,6 +24,10 @@ def train(args):
         "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
     }
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
+
+    # need to construct OmniKitHelp before importing physics, etc
+    from jetbot_env import JetbotEnv
+    import omni.physx
 
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
