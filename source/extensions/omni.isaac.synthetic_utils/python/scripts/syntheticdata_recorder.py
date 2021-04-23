@@ -16,6 +16,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 import asyncio
 import atexit
 import colorsys
+import copy
 import queue
 import random
 import os
@@ -43,6 +44,7 @@ class DataWriter:
         self.q = queue.Queue(max_queue_size)
         self.threads = []
 
+        self._viewport = omni.kit.viewport.get_viewport_interface()
         self.check_for_output_folder()
 
     def start_threads(self):
@@ -72,16 +74,19 @@ class DataWriter:
             if groundtruth is None:
                 break
             filename = groundtruth["METADATA"]["image_id"]
+            viewport_name = groundtruth["METADATA"]["viewport_name"]
             for gt_type, data in groundtruth["DATA"].items():
                 if gt_type == "RGB":
-                    self.save_image(gt_type, data, filename)
+                    self.save_image(viewport_name, gt_type, data, filename)
                 elif gt_type == "DEPTH":
                     if groundtruth["METADATA"]["DEPTH"]["NPY"]:
+                        self.depth_folder = self.data_dir + "/" + str(viewport_name) + "/depth/"
                         np.save(self.depth_folder + filename + ".npy", data)
                     if groundtruth["METADATA"]["DEPTH"]["COLORIZE"]:
-                        self.save_image(gt_type, data, filename)
+                        self.save_image(viewport_name, gt_type, data, filename)
                 elif gt_type == "INSTANCE":
                     self.save_segmentation(
+                        viewport_name,
                         gt_type,
                         data,
                         filename,
@@ -92,6 +97,7 @@ class DataWriter:
                     )
                 elif gt_type == "SEMANTIC":
                     self.save_segmentation(
+                        viewport_name,
                         gt_type,
                         data,
                         filename,
@@ -102,6 +108,7 @@ class DataWriter:
                     )
                 elif gt_type in ["BBOX2DTIGHT", "BBOX2DLOOSE"]:
                     self.save_bbox(
+                        viewport_name,
                         gt_type,
                         data,
                         filename,
@@ -113,7 +120,11 @@ class DataWriter:
                     raise NotImplementedError
             self.q.task_done()
 
-    def save_segmentation(self, data_type, data, filename, width=1280, height=720, display_rgb=True, save_npy=True):
+    def save_segmentation(
+        self, viewport_name, data_type, data, filename, width=1280, height=720, display_rgb=True, save_npy=True
+    ):
+        self.instance_folder = self.data_dir + "/" + str(viewport_name) + "/instance/"
+        self.semantic_folder = self.data_dir + "/" + str(viewport_name) + "/semantic/"
         # Save ground truth data locally as npy
         if data_type == "INSTANCE" and save_npy:
             np.save(self.instance_folder + filename + ".npy", data)
@@ -130,7 +141,9 @@ class DataWriter:
             if data_type == "SEMANTIC":
                 color_image_rgb.save(f"{self.semantic_folder}/{filename}.png")
 
-    def save_image(self, img_type, image_data, filename):
+    def save_image(self, viewport_name, img_type, image_data, filename):
+        self.rgb_folder = self.data_dir + "/" + str(viewport_name) + "/rgb/"
+        self.depth_folder = self.data_dir + "/" + str(viewport_name) + "/depth/"
         if img_type == "RGB":
             # Save ground truth data locally as png
             rgb_img = Image.fromarray(image_data, "RGBA")
@@ -147,7 +160,9 @@ class DataWriter:
             depth_img = Image.fromarray((image_data * 255.0).astype(np.uint8))
             depth_img.save(f"{self.depth_folder}/{filename}.png")
 
-    def save_bbox(self, data_type, data, filename, display_rgb=True, rgb_data=None, save_npy=True):
+    def save_bbox(self, viewport_name, data_type, data, filename, display_rgb=True, rgb_data=None, save_npy=True):
+        self.bbox_2d_tight_folder = self.data_dir + "/" + str(viewport_name) + "/bbox_2d_tight/"
+        self.bbox_2d_loose_folder = self.data_dir + "/" + str(viewport_name) + "/bbox_2d_loose/"
         # Save ground truth data locally as npy
         if data_type == "BBOX2DTIGHT" and save_npy:
             np.save(self.bbox_2d_tight_folder + filename + ".npy", data)
@@ -162,26 +177,32 @@ class DataWriter:
                 color_image_rgb.save(f"{self.bbox_2d_loose_folder}/{filename}.png")
 
     def check_for_output_folder(self):
+        viewports = self._viewport.get_instance_list()
+        viewport_names = [self._viewport.get_viewport_window_name(vp) for vp in viewports]
         if not os.path.exists(self.data_dir):
             os.mkdir(self.data_dir)
-        self.rgb_folder = self.data_dir + "/rgb/"
-        if not os.path.exists(self.rgb_folder):
-            os.mkdir(self.rgb_folder)
-        self.depth_folder = self.data_dir + "/depth/"
-        if not os.path.exists(self.depth_folder):
-            os.mkdir(self.depth_folder)
-        self.instance_folder = self.data_dir + "/instance_segmentation/"
-        if not os.path.exists(self.instance_folder):
-            os.mkdir(self.instance_folder)
-        self.semantic_folder = self.data_dir + "/semantic_segmentation/"
-        if not os.path.exists(self.semantic_folder):
-            os.mkdir(self.semantic_folder)
-        self.bbox_2d_tight_folder = self.data_dir + "/bbox_2d_tight/"
-        if not os.path.exists(self.bbox_2d_tight_folder):
-            os.mkdir(self.bbox_2d_tight_folder)
-        self.bbox_2d_loose_folder = self.data_dir + "/bbox_2d_loose/"
-        if not os.path.exists(self.bbox_2d_loose_folder):
-            os.mkdir(self.bbox_2d_loose_folder)
+        for viewport_name in viewport_names:
+            viewport_folder = self.data_dir + "/" + str(viewport_name)
+            if not os.path.exists(viewport_folder):
+                os.mkdir(viewport_folder)
+            rgb_folder = viewport_folder + "/rgb/"
+            if not os.path.exists(rgb_folder):
+                os.mkdir(rgb_folder)
+            depth_folder = viewport_folder + "/depth/"
+            if not os.path.exists(depth_folder):
+                os.mkdir(depth_folder)
+            instance_folder = viewport_folder + "/instance/"
+            if not os.path.exists(instance_folder):
+                os.mkdir(instance_folder)
+            semantic_folder = viewport_folder + "/semantic/"
+            if not os.path.exists(semantic_folder):
+                os.mkdir(semantic_folder)
+            bbox_2d_tight_folder = viewport_folder + "/bbox_2d_tight/"
+            if not os.path.exists(bbox_2d_tight_folder):
+                os.mkdir(bbox_2d_tight_folder)
+            bbox_2d_loose_folder = viewport_folder + "/bbox_2d_loose/"
+            if not os.path.exists(bbox_2d_loose_folder):
+                os.mkdir(bbox_2d_loose_folder)
 
 
 class Extension(omni.ext.IExt):
@@ -202,6 +223,11 @@ class Extension(omni.ext.IExt):
         self._window.deferred_dock_in("Content")
         self.sub_update = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._update)
         self._settings = get_settings()
+        self._viewport = omni.kit.viewport.get_viewport_interface()
+        self._viewport_names = []
+        self._num_viewports = 0
+        self._sensor_settings = {}
+        self._sensor_settings_ui = {}
         self._build_window_ui()
         self._accumulated_time = 0
         self.data_writer = None
@@ -216,224 +242,316 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     def _build_window_ui(self):
-        self._enable_rgb = False
-        self._enable_depth = False
-        self._enable_instance = False
-        self._enable_semantic = False
-        self._enable_bbox_2d_tight = False
-        self._enable_bbox_2d_loose = False
-        self._enable_depth_colorize = False
-        self._enable_instance_colorize = False
-        self._enable_semantic_colorize = False
-        self._enable_bbox_2d_tight_colorize = False
-        self._enable_bbox_2d_loose_colorize = False
-        self._enable_depth_npy = False
-        self._enable_instance_npy = False
-        self._enable_semantic_npy = False
-        self._enable_bbox_2d_tight_npy = False
-        self._enable_bbox_2d_loose_npy = False
-        viewport = omni.kit.viewport.get_default_viewport_window()
+        sensor_settings_default = {
+            "rgb": {"enabled": False},
+            "depth": {"enabled": False, "colorize": False, "npy": False},
+            "instance": {"enabled": False, "colorize": False, "npy": False},
+            "semantic": {"enabled": False, "colorize": False, "npy": False},
+            "bbox_2d_tight": {"enabled": False, "colorize": False, "npy": False},
+            "bbox_2d_loose": {"enabled": False, "colorize": False, "npy": False},
+        }
+        sensor_settings_ui_default = {
+            "rgb": {"checkbox": None},
+            "depth": {"checkbox": None, "colorize": None, "npy": None},
+            "instance": {"checkbox": None, "colorize": None, "npy": None},
+            "semantic": {"checkbox": None, "colorize": None, "npy": None},
+            "bbox_2d_tight": {"checkbox": None, "colorize": None, "npy": None},
+            "bbox_2d_loose": {"checkbox": None, "colorize": None, "npy": None},
+        }
+        viewports = self._viewport.get_instance_list()
+        self._viewport_names = [self._viewport.get_viewport_window_name(vp) for vp in viewports]
+        self._num_viewports = len(self._viewport_names)
+        for viewport_name in self._viewport_names:
+            self._sensor_settings[viewport_name] = copy.deepcopy(sensor_settings_default)
+            self._sensor_settings_ui[viewport_name] = copy.deepcopy(sensor_settings_ui_default)
+
         with self._window.frame:
             with ui.VStack(spacing=5):
-                with ui.CollapsableFrame("Sensor Settings"):
-                    with ui.VStack(spacing=5):
+                for viewport_name in self._viewport_names:
+                    viewport = self._viewport.get_viewport_window(self._viewport.get_instance(viewport_name))
+                    with ui.CollapsableFrame(viewport_name + ": Sensor Settings", height=0):
+                        with ui.VStack(spacing=5):
 
-                        def toggle_rgb_sensor(self, value):
-                            self._enable_rgb = value
-                            if value == False:
-                                self.bbox_2d_tight_colorize_checkbox.enabled = value
-                                self.bbox_2d_loose_colorize_checkbox.enabled = value
-                            else:
-                                asyncio.ensure_future(
-                                    self.sd_helper.initialize_async(viewport, [self.sd_helper.sd.SensorType.Rgb])
-                                )
-                                if self._enable_bbox_2d_tight:
-                                    self.bbox_2d_tight_colorize_checkbox.enabled = value
-                                if self._enable_bbox_2d_loose:
-                                    self.bbox_2d_loose_colorize_checkbox.enabled = value
+                            def toggle_rgb_sensor(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["rgb"]["enabled"] = value
+                                if value == False:
+                                    self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["colorize"].enabled = value
+                                    self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["colorize"].enabled = value
+                                else:
+                                    asyncio.ensure_future(
+                                        self.sd_helper.initialize_async(viewport, [self.sd_helper.sd.SensorType.Rgb])
+                                    )
+                                    if self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"]:
+                                        self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
+                                            "colorize"
+                                        ].enabled = value
+                                    if self._sensor_settings[viewport_name]["bbox_2d_loose"]["enabled"]:
+                                        self._sensor_settings_ui[viewport_name]["bbox_2d_loose"][
+                                            "colorize"
+                                        ].enabled = value
 
-                        def toggle_depth_sensor(self, value):
-                            self._enable_depth = value
-                            self.depth_colorize_checkbox.enabled = value
-                            self.depth_npy_checkbox.enabled = value
-                            if value:
-                                asyncio.ensure_future(
-                                    self.sd_helper.initialize_async(
-                                        viewport, [self.sd_helper.sd.SensorType.DepthLinear]
+                            def toggle_depth_sensor(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["depth"]["enabled"] = value
+                                self._sensor_settings_ui[viewport_name]["depth"]["colorize"].enabled = value
+                                self._sensor_settings_ui[viewport_name]["depth"]["npy"].enabled = value
+                                if value:
+                                    asyncio.ensure_future(
+                                        self.sd_helper.initialize_async(
+                                            viewport, [self.sd_helper.sd.SensorType.DepthLinear]
+                                        )
+                                    )
+
+                            def toggle_depth_colorize(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["depth"]["colorize"] = value
+
+                            def toggle_depth_npy(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["depth"]["npy"] = value
+
+                            def toggle_instance_segmentation_sensor(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["instance"]["enabled"] = value
+                                self._sensor_settings_ui[viewport_name]["instance"]["colorize"].enabled = value
+                                self._sensor_settings_ui[viewport_name]["instance"]["npy"].enabled = value
+                                if value:
+                                    asyncio.ensure_future(
+                                        self.sd_helper.initialize_async(
+                                            viewport, [self.sd_helper.sd.SensorType.InstanceSegmentation]
+                                        )
+                                    )
+
+                            def toggle_instance_colorize(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["instance"]["colorize"] = value
+
+                            def toggle_instance_npy(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["instance"]["npy"] = value
+
+                            def toggle_semantic_segmentation_sensor(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["semantic"]["enabled"] = value
+                                self._sensor_settings_ui[viewport_name]["semantic"]["colorize"].enabled = value
+                                self._sensor_settings_ui[viewport_name]["semantic"]["npy"].enabled = value
+                                if value:
+                                    asyncio.ensure_future(
+                                        self.sd_helper.initialize_async(
+                                            viewport, [self.sd_helper.sd.SensorType.SemanticSegmentation]
+                                        )
+                                    )
+
+                            def toggle_semantic_colorize(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["semantic"]["colorize"] = value
+
+                            def toggle_semantic_npy(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["semantic"]["npy"] = value
+
+                            def toggle_bbox_2d_tight_sensor(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"] = value
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["colorize"].enabled = value
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["npy"].enabled = value
+                                if value:
+                                    self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
+                                        "colorize"
+                                    ].enabled = self._sensor_settings[viewport_name]["rgb"]["enabled"]
+                                    asyncio.ensure_future(
+                                        self.sd_helper.initialize_async(
+                                            viewport, [self.sd_helper.sd.SensorType.BoundingBox2DTight]
+                                        )
+                                    )
+
+                            def toggle_bbox_2d_tight_colorize(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["bbox_2d_tight"]["colorize"] = value
+
+                            def toggle_bbox_2d_tight_npy(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["bbox_2d_tight"]["npy"] = value
+
+                            def toggle_bbox_2d_loose_sensor(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["bbox_2d_loose"]["enabled"] = value
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["colorize"].enabled = value
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["npy"].enabled = value
+                                if value:
+                                    self._sensor_settings_ui[viewport_name]["bbox_2d_loose"][
+                                        "colorize"
+                                    ].enabled = self._sensor_settings[viewport_name]["rgb"]["enabled"]
+                                    asyncio.ensure_future(
+                                        self.sd_helper.initialize_async(
+                                            viewport, [self.sd_helper.sd.SensorType.BoundingBox2DLoose]
+                                        )
+                                    )
+
+                            def toggle_bbox_2d_loose_colorize(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["bbox_2d_loose"]["colorize"] = value
+
+                            def toggle_bbox_2d_loose_npy(self, viewport_name, value):
+                                self._sensor_settings[viewport_name]["bbox_2d_loose"]["npy"] = value
+
+                            def toggle_record_anim(self, value):
+                                self._enable_timeline_record = value
+
+                            with ui.HStack(height=30):
+                                ui.Spacer(width=10)
+                                ui.Label("Sensor Name", height=0, width=150)
+                                ui.Label("Status", height=0, width=75)
+                                ui.Label("Colorize", height=0, width=75)
+                                ui.Label("Save array", height=0, width=75)
+
+                            with ui.HStack(height=30):
+                                ui.Spacer(width=10)
+                                ui.Label("RGB", height=0, width=150)
+                                self._sensor_settings_ui[viewport_name]["rgb"]["checkbox"] = ui.CheckBox()
+                                self._sensor_settings_ui[viewport_name]["rgb"]["checkbox"].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_rgb_sensor(
+                                        self, v, a.get_value_as_bool()
                                     )
                                 )
-
-                        def toggle_depth_colorize(self, value):
-                            self._enable_depth_colorize = value
-
-                        def toggle_depth_npy(self, value):
-                            self._enable_depth_npy = value
-
-                        def toggle_instance_segmentation_sensor(self, value):
-                            self._enable_instance = value
-                            self.instance_colorize_checkbox.enabled = value
-                            self.instance_npy_checkbox.enabled = value
-                            if value:
-                                asyncio.ensure_future(
-                                    self.sd_helper.initialize_async(
-                                        viewport, [self.sd_helper.sd.SensorType.InstanceSegmentation]
+                            with ui.HStack(height=30):
+                                ui.Spacer(width=10)
+                                ui.Label("Depth", height=0, width=150)
+                                self._sensor_settings_ui[viewport_name]["depth"]["checkbox"] = ui.CheckBox(width=75)
+                                self._sensor_settings_ui[viewport_name]["depth"]["checkbox"].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_depth_sensor(
+                                        self, v, a.get_value_as_bool()
                                     )
                                 )
-
-                        def toggle_instance_colorize(self, value):
-                            self._enable_instance_colorize = value
-
-                        def toggle_instance_npy(self, value):
-                            self._enable_instance_npy = value
-
-                        def toggle_semantic_segmentation_sensor(self, value):
-                            self._enable_semantic = value
-                            self.semantic_colorize_checkbox.enabled = value
-                            self.semantic_npy_checkbox.enabled = value
-                            if value:
-                                asyncio.ensure_future(
-                                    self.sd_helper.initialize_async(
-                                        viewport, [self.sd_helper.sd.SensorType.SemanticSegmentation]
+                                self._sensor_settings_ui[viewport_name]["depth"]["colorize"] = ui.CheckBox(
+                                    enabled=False, width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["depth"]["colorize"].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_depth_colorize(
+                                        self, v, a.get_value_as_bool()
                                     )
                                 )
-
-                        def toggle_semantic_colorize(self, value):
-                            self._enable_semantic_colorize = value
-
-                        def toggle_semantic_npy(self, value):
-                            self._enable_semantic_npy = value
-
-                        def toggle_bbox_2d_tight_sensor(self, value):
-                            self._enable_bbox_2d_tight = value
-                            self.bbox_2d_tight_colorize_checkbox.enabled = value
-                            self.bbox_2d_tight_npy_checkbox.enabled = value
-                            if value:
-                                self.bbox_2d_tight_colorize_checkbox.enabled = self._enable_rgb
-                                asyncio.ensure_future(
-                                    self.sd_helper.initialize_async(
-                                        viewport, [self.sd_helper.sd.SensorType.BoundingBox2DTight]
+                                self._sensor_settings_ui[viewport_name]["depth"]["npy"] = ui.CheckBox(
+                                    enabled=False, width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["depth"]["npy"].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_depth_npy(
+                                        self, v, a.get_value_as_bool()
                                     )
                                 )
-
-                        def toggle_bbox_2d_tight_colorize(self, value):
-                            self._enable_bbox_2d_tight_colorize = value
-
-                        def toggle_bbox_2d_tight_npy(self, value):
-                            self._enable_bbox_2d_tight_npy = value
-
-                        def toggle_bbox_2d_loose_sensor(self, value):
-                            self._enable_bbox_2d_loose = value
-                            self.bbox_2d_loose_colorize_checkbox.enabled = value
-                            self.bbox_2d_loose_npy_checkbox.enabled = value
-                            if value:
-                                self.bbox_2d_loose_colorize_checkbox.enabled = self._enable_rgb
-                                asyncio.ensure_future(
-                                    self.sd_helper.initialize_async(
-                                        viewport, [self.sd_helper.sd.SensorType.BoundingBox2DLoose]
+                            with ui.HStack(height=30):
+                                ui.Spacer(width=10)
+                                ui.Label("Semantic Segmentation", height=0, width=150)
+                                self._sensor_settings_ui[viewport_name]["semantic"]["checkbox"] = ui.CheckBox(width=75)
+                                self._sensor_settings_ui[viewport_name]["semantic"][
+                                    "checkbox"
+                                ].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_semantic_segmentation_sensor(
+                                        self, v, a.get_value_as_bool()
                                     )
                                 )
-
-                        def toggle_bbox_2d_loose_colorize(self, value):
-                            self._enable_bbox_2d_loose_colorize = value
-
-                        def toggle_bbox_2d_loose_npy(self, value):
-                            self._enable_bbox_2d_loose_npy = value
-
-                        def toggle_record_anim(self, value):
-                            self._enable_timeline_record = value
-
-                        with ui.HStack(height=30):
-                            ui.Spacer(width=10)
-                            ui.Label("Sensor Name", height=0, width=150)
-                            ui.Label("Status", height=0, width=75)
-                            ui.Label("Colorize", height=0, width=75)
-                            ui.Label("Save array", height=0, width=75)
-
-                        with ui.HStack(height=30):
-                            ui.Spacer(width=10)
-                            ui.Label("RGB", height=0, width=150)
-                            self.rgb_checkbox = ui.CheckBox()
-                            self.rgb_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_rgb_sensor(self, a.get_value_as_bool())
-                            )
-                        with ui.HStack(height=30):
-                            ui.Spacer(width=10)
-                            ui.Label("Depth", height=0, width=150)
-                            self.depth_checkbox = ui.CheckBox(width=75)
-                            self.depth_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_depth_sensor(self, a.get_value_as_bool())
-                            )
-                            self.depth_colorize_checkbox = ui.CheckBox(enabled=False, width=75)
-                            self.depth_colorize_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_depth_colorize(self, a.get_value_as_bool())
-                            )
-                            self.depth_npy_checkbox = ui.CheckBox(enabled=False, width=75)
-                            self.depth_npy_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_depth_npy(self, a.get_value_as_bool())
-                            )
-                        with ui.HStack(height=30):
-                            ui.Spacer(width=10)
-                            ui.Label("Semantic Segmentation", height=0, width=150)
-                            self.semantic_checkbox = ui.CheckBox(width=75)
-                            self.semantic_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_semantic_segmentation_sensor(self, a.get_value_as_bool())
-                            )
-                            self.semantic_colorize_checkbox = ui.CheckBox(enabled=False, width=75)
-                            self.semantic_colorize_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_semantic_colorize(self, a.get_value_as_bool())
-                            )
-                            self.semantic_npy_checkbox = ui.CheckBox(enabled=False, width=75)
-                            self.semantic_npy_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_semantic_npy(self, a.get_value_as_bool())
-                            )
-                        with ui.HStack(height=30):
-                            ui.Spacer(width=10)
-                            ui.Label("Instance Segmentation", height=0, width=150)
-                            self.instance_checkbox = ui.CheckBox(width=75)
-                            self.instance_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_instance_segmentation_sensor(self, a.get_value_as_bool())
-                            )
-                            self.instance_colorize_checkbox = ui.CheckBox(enabled=False, width=75)
-                            self.instance_colorize_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_instance_colorize(self, a.get_value_as_bool())
-                            )
-                            self.instance_npy_checkbox = ui.CheckBox(enabled=False, width=75)
-                            self.instance_npy_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_instance_npy(self, a.get_value_as_bool())
-                            )
-                        with ui.HStack(height=30):
-                            ui.Spacer(width=10)
-                            bbox_2d_tight_label = ui.Label("2D Tight Bounding Box", height=0, width=150)
-                            bbox_2d_tight_label.set_tooltip("To colorize sensor output, enable RGB")
-                            self.bbox_2d_tight_checkbox = ui.CheckBox(width=75)
-                            self.bbox_2d_tight_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_bbox_2d_tight_sensor(self, a.get_value_as_bool())
-                            )
-                            self.bbox_2d_tight_colorize_checkbox = ui.CheckBox(enabled=False, width=75)
-                            self.bbox_2d_tight_colorize_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_bbox_2d_tight_colorize(self, a.get_value_as_bool())
-                            )
-                            self.bbox_2d_tight_npy_checkbox = ui.CheckBox(enabled=False, width=75)
-                            self.bbox_2d_tight_npy_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_bbox_2d_tight_npy(self, a.get_value_as_bool())
-                            )
-                        with ui.HStack(height=30):
-                            ui.Spacer(width=10)
-                            bbox_2d_loose_label = ui.Label("2D Loose Bounding Box", height=0, width=150)
-                            bbox_2d_loose_label.set_tooltip("To colorize sensor output, enable RGB")
-                            self.bbox_2d_loose_checkbox = ui.CheckBox(width=75)
-                            self.bbox_2d_loose_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_bbox_2d_loose_sensor(self, a.get_value_as_bool())
-                            )
-                            self.bbox_2d_loose_colorize_checkbox = ui.CheckBox(enabled=False, width=75)
-                            self.bbox_2d_loose_colorize_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_bbox_2d_loose_colorize(self, a.get_value_as_bool())
-                            )
-                            self.bbox_2d_loose_npy_checkbox = ui.CheckBox(enabled=False, width=75)
-                            self.bbox_2d_loose_npy_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_bbox_2d_loose_npy(self, a.get_value_as_bool())
-                            )
-                with ui.CollapsableFrame("Recorder Settings"):
+                                self._sensor_settings_ui[viewport_name]["semantic"]["colorize"] = ui.CheckBox(
+                                    enabled=False, width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["semantic"][
+                                    "colorize"
+                                ].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_semantic_colorize(
+                                        self, v, a.get_value_as_bool()
+                                    )
+                                )
+                                self._sensor_settings_ui[viewport_name]["semantic"]["npy"] = ui.CheckBox(
+                                    enabled=False, width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["semantic"]["npy"].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_semantic_npy(
+                                        self, v, a.get_value_as_bool()
+                                    )
+                                )
+                            with ui.HStack(height=30):
+                                ui.Spacer(width=10)
+                                ui.Label("Instance Segmentation", height=0, width=150)
+                                self._sensor_settings_ui[viewport_name]["instance"]["checkbox"] = ui.CheckBox(width=75)
+                                self._sensor_settings_ui[viewport_name]["instance"][
+                                    "checkbox"
+                                ].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_instance_segmentation_sensor(
+                                        self, v, a.get_value_as_bool()
+                                    )
+                                )
+                                self._sensor_settings_ui[viewport_name]["instance"]["colorize"] = ui.CheckBox(
+                                    enabled=False, width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["instance"][
+                                    "colorize"
+                                ].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_instance_colorize(
+                                        self, v, a.get_value_as_bool()
+                                    )
+                                )
+                                self._sensor_settings_ui[viewport_name]["instance"]["npy"] = ui.CheckBox(
+                                    enabled=False, width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["instance"]["npy"].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_instance_npy(
+                                        self, v, a.get_value_as_bool()
+                                    )
+                                )
+                            with ui.HStack(height=30):
+                                ui.Spacer(width=10)
+                                bbox_2d_tight_label = ui.Label("2D Tight Bounding Box", height=0, width=150)
+                                bbox_2d_tight_label.set_tooltip("To colorize sensor output, enable RGB")
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["checkbox"] = ui.CheckBox(
+                                    width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
+                                    "checkbox"
+                                ].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_tight_sensor(
+                                        self, v, a.get_value_as_bool()
+                                    )
+                                )
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["colorize"] = ui.CheckBox(
+                                    enabled=False, width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
+                                    "colorize"
+                                ].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_tight_colorize(
+                                        self, v, a.get_value_as_bool()
+                                    )
+                                )
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["npy"] = ui.CheckBox(
+                                    enabled=False, width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
+                                    "npy"
+                                ].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_tight_npy(
+                                        self, v, a.get_value_as_bool()
+                                    )
+                                )
+                            with ui.HStack(height=30):
+                                ui.Spacer(width=10)
+                                bbox_2d_loose_label = ui.Label("2D Loose Bounding Box", height=0, width=150)
+                                bbox_2d_loose_label.set_tooltip("To colorize sensor output, enable RGB")
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["checkbox"] = ui.CheckBox(
+                                    width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"][
+                                    "checkbox"
+                                ].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_loose_sensor(
+                                        self, v, a.get_value_as_bool()
+                                    )
+                                )
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["colorize"] = ui.CheckBox(
+                                    enabled=False, width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"][
+                                    "colorize"
+                                ].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_loose_colorize(
+                                        self, v, a.get_value_as_bool()
+                                    )
+                                )
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["npy"] = ui.CheckBox(
+                                    enabled=False, width=75
+                                )
+                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"][
+                                    "npy"
+                                ].model.add_value_changed_fn(
+                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_loose_npy(
+                                        self, v, a.get_value_as_bool()
+                                    )
+                                )
+                with ui.CollapsableFrame("Recorder Settings", height=0):
                     with ui.VStack(spacing=5):
                         with ui.HStack():
                             ui.Spacer(width=10)
@@ -505,6 +623,7 @@ class Extension(omni.ext.IExt):
         elif current_render_index == 2:
             self._settings.set_string("/rtx/rendermode", "PathTracing")
             self._settings.set_float("/rtx/pathtracing/spp", self._spp_value.model.get_value_as_float())
+            self._settings.set_float("/rtx/pathtracing/totalSpp", self._spp_value.model.get_value_as_float())
             carb.log_warn("Switching to PathTracing Mode")
         else:
             carb.log_warn("Keeping current Render Mode")
@@ -514,6 +633,11 @@ class Extension(omni.ext.IExt):
         self._counter = 0
 
     def _update(self, e: carb.events.IEvent):
+        if len(self._viewport.get_instance_list()) != self._num_viewports:
+            self._num_viewports = len(self._viewport.get_instance_list())
+            self._window.frame.clear()
+            self._build_window_ui()
+
         if self._enable_record == False:
             return
 
@@ -545,75 +669,91 @@ class Extension(omni.ext.IExt):
 
         self._render_mode = str(self._settings.get("/rtx/rendermode"))
 
-        groundtruth = {
-            "METADATA": {
-                "image_id": str(self._counter),
-                "DEPTH": {},
-                "INSTANCE": {},
-                "SEMANTIC": {},
-                "BBOX2DTIGHT": {},
-                "BBOX2DLOOSE": {},
-            },
-            "DATA": {},
-        }
+        for viewport_name in self._viewport_names:
+            groundtruth = {
+                "METADATA": {
+                    "image_id": str(self._counter),
+                    "viewport_name": viewport_name,
+                    "DEPTH": {},
+                    "INSTANCE": {},
+                    "SEMANTIC": {},
+                    "BBOX2DTIGHT": {},
+                    "BBOX2DLOOSE": {},
+                },
+                "DATA": {},
+            }
 
-        gt_list = []
-        if self._enable_rgb:
-            gt_list.append("rgb")
-        if self._enable_depth:
-            gt_list.append("depthLinear")
-        if self._enable_bbox_2d_tight:
-            gt_list.append("boundingBox2DTight")
-        if self._enable_bbox_2d_loose:
-            gt_list.append("boundingBox2DLoose")
-        if self._enable_instance:
-            gt_list.append("instanceSegmentation")
-        if self._enable_semantic:
-            gt_list.append("semanticSegmentation")
+            gt_list = []
+            if self._sensor_settings[viewport_name]["rgb"]["enabled"]:
+                gt_list.append("rgb")
+            if self._sensor_settings[viewport_name]["depth"]["enabled"]:
+                gt_list.append("depthLinear")
+            if self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"]:
+                gt_list.append("boundingBox2DTight")
+            if self._sensor_settings[viewport_name]["bbox_2d_loose"]["enabled"]:
+                gt_list.append("boundingBox2DLoose")
+            if self._sensor_settings[viewport_name]["instance"]["enabled"]:
+                gt_list.append("instanceSegmentation")
+            if self._sensor_settings[viewport_name]["semantic"]["enabled"]:
+                gt_list.append("semanticSegmentation")
+            # print(viewport_name, " : ", gt_list)
 
-        viewport = omni.kit.viewport.get_default_viewport_window()
-        gt = self.sd_helper.get_groundtruth(gt_list, viewport, verify_sensor_init=False)
-        # RGB
-        if self._enable_rgb and gt["state"]["rgb"]:
-            groundtruth["DATA"]["RGB"] = gt["rgb"]
+            # viewport = omni.kit.viewport.get_default_viewport_window()
+            viewport = self._viewport.get_viewport_window(self._viewport.get_instance(viewport_name))
+            gt = self.sd_helper.get_groundtruth(gt_list, viewport, verify_sensor_init=False)
+            # RGB
+            if self._sensor_settings[viewport_name]["rgb"]["enabled"] and gt["state"]["rgb"]:
+                groundtruth["DATA"]["RGB"] = gt["rgb"]
 
-        # Depth
-        if self._enable_depth and gt["state"]["depthLinear"]:
-            groundtruth["DATA"]["DEPTH"] = gt["depthLinear"].squeeze()
-            groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self._enable_depth_colorize
-            groundtruth["METADATA"]["DEPTH"]["NPY"] = self._enable_depth_npy
+            # Depth
+            if self._sensor_settings[viewport_name]["depth"]["enabled"] and gt["state"]["depthLinear"]:
+                groundtruth["DATA"]["DEPTH"] = gt["depthLinear"].squeeze()
+                groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self._sensor_settings[viewport_name]["depth"]["colorize"]
+                groundtruth["METADATA"]["DEPTH"]["NPY"] = self._sensor_settings[viewport_name]["depth"]["npy"]
 
-        # Instance Segmentation
-        if self._enable_instance and gt["state"]["instanceSegmentation"]:
-            instance_data = gt["instanceSegmentation"][0]
-            groundtruth["DATA"]["INSTANCE"] = instance_data
-            groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
-            groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data.shape[0]
-            groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self._enable_instance_colorize
-            groundtruth["METADATA"]["INSTANCE"]["NPY"] = self._enable_instance_npy
+            # Instance Segmentation
+            if self._sensor_settings[viewport_name]["instance"]["enabled"] and gt["state"]["instanceSegmentation"]:
+                instance_data = gt["instanceSegmentation"][0]
+                groundtruth["DATA"]["INSTANCE"] = instance_data
+                groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
+                groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data.shape[0]
+                groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self._sensor_settings[viewport_name]["instance"][
+                    "colorize"
+                ]
+                groundtruth["METADATA"]["INSTANCE"]["NPY"] = self._sensor_settings[viewport_name]["instance"]["npy"]
 
-        # Semantic Segmentation
-        if self._enable_semantic and gt["state"]["semanticSegmentation"]:
-            semantic_data = gt["semanticSegmentation"]
-            semantic_data[semantic_data == 65535] = 0  # deals with invalid semantic id
-            groundtruth["DATA"]["SEMANTIC"] = semantic_data
-            groundtruth["METADATA"]["SEMANTIC"]["WIDTH"] = semantic_data.shape[1]
-            groundtruth["METADATA"]["SEMANTIC"]["HEIGHT"] = semantic_data.shape[0]
-            groundtruth["METADATA"]["SEMANTIC"]["COLORIZE"] = self._enable_semantic_colorize
-            groundtruth["METADATA"]["SEMANTIC"]["NPY"] = self._enable_semantic_npy
+            # Semantic Segmentation
+            if self._sensor_settings[viewport_name]["semantic"]["enabled"] and gt["state"]["semanticSegmentation"]:
+                semantic_data = gt["semanticSegmentation"]
+                semantic_data[semantic_data == 65535] = 0  # deals with invalid semantic id
+                groundtruth["DATA"]["SEMANTIC"] = semantic_data
+                groundtruth["METADATA"]["SEMANTIC"]["WIDTH"] = semantic_data.shape[1]
+                groundtruth["METADATA"]["SEMANTIC"]["HEIGHT"] = semantic_data.shape[0]
+                groundtruth["METADATA"]["SEMANTIC"]["COLORIZE"] = self._sensor_settings[viewport_name]["semantic"][
+                    "colorize"
+                ]
+                groundtruth["METADATA"]["SEMANTIC"]["NPY"] = self._sensor_settings[viewport_name]["semantic"]["npy"]
 
-        # 2D Tight BBox
-        if self._enable_bbox_2d_tight and gt["state"]["boundingBox2DTight"]:
-            groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
-            groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self._enable_bbox_2d_tight_colorize
-            groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = self._enable_bbox_2d_tight_npy
+            # 2D Tight BBox
+            if self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"] and gt["state"]["boundingBox2DTight"]:
+                groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
+                groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self._sensor_settings[viewport_name][
+                    "bbox_2d_tight"
+                ]["colorize"]
+                groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = self._sensor_settings[viewport_name]["bbox_2d_tight"][
+                    "npy"
+                ]
 
-        # 2D Loose BBox
-        if self._enable_bbox_2d_loose and gt["state"]["boundingBox2DLoose"]:
-            groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
-            groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self._enable_bbox_2d_loose_colorize
-            groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = self._enable_bbox_2d_loose_npy
+            # 2D Loose BBox
+            if self._sensor_settings[viewport_name]["bbox_2d_loose"]["enabled"] and gt["state"]["boundingBox2DLoose"]:
+                groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
+                groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self._sensor_settings[viewport_name][
+                    "bbox_2d_loose"
+                ]["colorize"]
+                groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = self._sensor_settings[viewport_name]["bbox_2d_loose"][
+                    "npy"
+                ]
 
-        self.data_writer.q.put(groundtruth)
+            self.data_writer.q.put(groundtruth)
 
         self._counter = self._counter + 1
