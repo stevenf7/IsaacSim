@@ -153,7 +153,7 @@ class Environment:
 
     def setup_physics(self):
         from pxr import PhysxSchema, PhysicsSchemaTools
-        
+
         stage = self.omni_kit.get_stage()
         # Add physics scene
         scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/Env/PhysicsScene"))

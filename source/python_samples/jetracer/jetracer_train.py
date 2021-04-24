@@ -26,6 +26,7 @@ def train(args):
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
 
     from jetracer_env import JetracerEnv
+
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
 
