@@ -138,7 +138,7 @@ void RosSurfaceGripper::subCallback(const sensor_msgs::JointState::ConstPtr& msg
 
         if (itr == msg->name.end())
         {
-            CARB_LOG_ERROR("Element not found");
+            CARB_LOG_ERROR("Gripper command joint name does not match usd property %s", mGripperEntityName.c_str());
             return;
         }
         int actuatorIndex = std::distance(msg->name.begin(), itr);

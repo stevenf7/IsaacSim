@@ -40,7 +40,7 @@ public:
     void subCallback(const sensor_msgs::JointState::ConstPtr& msg);
 
 private:
-    std::string mJointStatePubTopic = "/joint_state";
+    std::string mJointStatePubTopic = "/joint_states";
     std::string mJointStateSubTopic = "/joint_command";
     int mQueueSize = 0;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;

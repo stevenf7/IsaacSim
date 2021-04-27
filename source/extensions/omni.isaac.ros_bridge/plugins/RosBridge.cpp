@@ -81,7 +81,6 @@ void onAttach(long int stageId, double metersPerUnit, void* userData)
     if (g_application_handle)
     {
         g_application_handle->initialize(g_stage);
-        g_application_handle->initComponents();
     }
 }
 void onDetach(void* userData)
@@ -101,10 +100,19 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
     }
     if (!ros::master::check())
     {
+        CARB_LOG_INFO("ROS Master is not running");
+        g_application_handle->setRosState(false);
         return;
     }
+
     if (g_application_handle)
     {
+        if (g_application_handle->getRosState() == false)
+        {
+            g_application_handle->initComponents();
+            g_application_handle->setRosState(true);
+            return;
+        }
         g_application_handle->tick(elapsedSecs);
     }
 }
@@ -202,14 +210,14 @@ CARB_EXPORT void carbOnPluginStartup()
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
 
 
-    ros::M_string args;
-    if (!ros::ok() || !ros::master::check())
-    {
-        CARB_LOG_ERROR("ROS Master is not running, please start ROS master before enabling this extension");
-        return;
-    }
+    // if (!ros::ok() || !ros::master::check())
+    // {
+    //     CARB_LOG_ERROR("ROS Master is not running, please start ROS master before enabling this extension");
+    //     return;
+    // }
     if (!ros::isInitialized())
     {
+        ros::M_string args;
         ros::init(args, "OmniIsaacRosBridge");
         ros::Time::init();
     }

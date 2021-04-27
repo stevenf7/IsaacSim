@@ -1,7 +1,5 @@
 local ext = get_current_extension_info()
-project_ext (ext, { 
-    define_test = false
-})
+project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
 
@@ -82,4 +80,9 @@ repo_build.prebuild_link {
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/ros_bridge" },
     { "%{root}/_build/target-deps/nv_ros/lib/lib**", ext.target_dir.."/bin" },
+}
+
+repo_build.prebuild_copy {
+    { "rospy/*.py", ext.target_dir.."/omni/isaac/rospy" },
+    { "%{root}/_build/target-deps/nv_ros/", ext.target_dir.."/noetic" },
 }

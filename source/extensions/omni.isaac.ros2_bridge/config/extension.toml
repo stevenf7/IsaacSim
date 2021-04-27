@@ -1,6 +1,28 @@
-display_name = "ROS2 Bridge"
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "ROS2 Bridge"
+description = "ROS2 Bridge"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.ros2_bridge"
+keywords = ["isaac", "ROS2"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [dependencies]
+"omni.kit.uiapp" = {}
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.range_sensor" = {}
+"omni.syntheticdata" = {}
+"omni.isaac.utils" = {}
+"omni.usd.schema.isaac" = {}
+"omni.isaac.ros_ui" = {}
 
 [[python.module]]
 name = "omni.isaac.rclpy"

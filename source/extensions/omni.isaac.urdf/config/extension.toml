@@ -44,4 +44,4 @@ path = "bin/*.plugin"
 recursive = false
 
 [python.pipapi]
-requirements = ["graphviz==0.14.1", "pillow==7.2.0"]
+requirements = ["graphviz==0.14.1", "pillow==8.1.1"]

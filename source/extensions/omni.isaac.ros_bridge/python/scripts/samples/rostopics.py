@@ -131,10 +131,10 @@ class Extension(omni.ext.IExt):
         # setup Rostopic to publish and receive joint state info
         js_prim = ROSSchema.RosJointState.Define(self._stage, Sdf.Path("/ROS_JointState"))
 
-        # adding prefix to the published /joint_state topic if needed
+        # adding prefix to the published /joint_states topic if needed
         js_prim.CreateEnabledAttr(True)
         # publisher topic
-        js_prim.CreateJointStatePubTopicAttr("/joint_state")
+        js_prim.CreateJointStatePubTopicAttr("/joint_states")
         # subscriber topic
         js_prim.CreateJointStateSubTopicAttr("/joint_command")
 

@@ -1,6 +1,6 @@
 import os
 import omni.ext
-from .. import _ros_bridge
+from .. import _ros2_bridge
 import carb
 
 
@@ -20,8 +20,8 @@ class Extension(omni.ext.IExt):
             os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
             print("ROS_MASTER_URI not set, using default, ROS_MASTER_URI=", os.environ["ROS_MASTER_URI"])
 
-        self._rosbridge = _ros_bridge.acquire_rosbridge_interface()
+        self._rosbridge = _ros2_bridge.acquire_rosbridge_interface()
 
     def on_shutdown(self):
         if self._rosbridge is not None:
-            _ros_bridge.release_rosbridge_interface(self._rosbridge)
+            _ros2_bridge.release_rosbridge_interface(self._rosbridge)

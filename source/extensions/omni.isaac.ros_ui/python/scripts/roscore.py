@@ -28,12 +28,12 @@ class Roscore(object):
             raise Exception("You can't create more than 1 instance of Roscore.")
         Roscore.__initialized = True
 
-    def startup(self):
+    def startup(self, python_path, ros_path, prefix):
         ros_env = {}
         # Get ros env parameters from bash setup script
         try:
             self.bash_process = subprocess.check_output(
-                "source /opt/ros/melodic/setup.sh; env -0", shell=True, executable="/bin/bash"
+                f"export {prefix}={ros_path}; source {ros_path}/setup.sh; env -0", shell=True, executable="/bin/bash"
             )
             for line in self.bash_process.decode("ascii").split("\0"):
                 result = line.split("=")
@@ -45,7 +45,9 @@ class Roscore(object):
             raise e
 
         try:
-            self.roscore_process = subprocess.Popen(["roscore"], env=ros_env)
+            # append path to specified python bin folder
+            ros_env["PATH"] = f"{python_path}:" + ros_env["PATH"]
+            self.roscore_process = subprocess.Popen(["roscore"], cwd=f"{ros_path}", env=ros_env)
             self.roscore_pid = self.roscore_process.pid  # pid of the roscore process (which has child processes)
         except OSError as e:
             sys.stderr.write("roscore could not be run")

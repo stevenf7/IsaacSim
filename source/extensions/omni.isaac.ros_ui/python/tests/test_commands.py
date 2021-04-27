@@ -8,7 +8,6 @@ import gc
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 
-
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosBridgeCommands(omni.kit.test.AsyncTestCase):
     # Before running each test
