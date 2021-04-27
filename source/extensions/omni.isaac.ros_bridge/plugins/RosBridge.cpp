@@ -94,15 +94,21 @@ void onDetach(void* userData)
 }
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
 {
+    if (!ros::master::check())
+    {
+        if (g_application_handle->getRosState() == true)
+        {
+            CARB_LOG_INFO("ROS Master was/is not running, cleaning up any running nodes");
+        }
+        g_application_handle->setRosState(false);
+        g_application_handle->deleteAllComponents();
+        g_application_handle->deleteRosNodes();
+        return;
+    }
+
     // Tick app
     if (!settings->isPlaying)
     {
-        return;
-    }
-    if (!ros::master::check())
-    {
-        CARB_LOG_INFO("ROS Master is not running");
-        g_application_handle->setRosState(false);
         return;
     }
 
@@ -126,7 +132,9 @@ void onPause(void* userData)
 }
 void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 {
-    if (g_application_handle)
+    // Adding prims also initializes ROS nodes, which will cause errors if ROS is not running
+    // Only add components if ros state is good
+    if (g_application_handle && g_application_handle->getRosState() == true)
     {
         pxr::UsdPrim addedPrim = g_stage->GetPrimAtPath(primPath);
         if (!addedPrim)
@@ -218,13 +226,15 @@ CARB_EXPORT void carbOnPluginStartup()
     // }
     if (!ros::isInitialized())
     {
-        ros::M_string args;
-        ros::init(args, "OmniIsaacRosBridge");
+        CARB_LOG_INFO("Initialize ROS Node");
+        int argc = 0;
+        char** argv = nullptr;
+        ros::init(argc, argv, "OmniIsaacRosBridge", ros::init_options::NoSigintHandler);
         ros::Time::init();
     }
     else
     {
-        CARB_LOG_WARN("ROS already initialized");
+        CARB_LOG_INFO("ROS already initialized");
     }
 
     g_application_handle = std::make_unique<omni::isaac::ros_bridge::IsaacApplication>(g_dynamicControl);
@@ -237,13 +247,20 @@ CARB_EXPORT void carbOnPluginStartup()
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
+    g_application_handle.reset();
     if (ros::isInitialized())
     {
-        ros::shutdown();
+        // CARB_LOG_INFO("Shutdown ROS Node");
         ros::Time::shutdown();
+        ros::shutdown();
+        // ros::spinOnce();
+        // while (ros::ok())
+        // {
+        //     CARB_LOG_INFO("SPIN");
+        //     ros::spinOnce();
+        // }
     }
 
-    g_application_handle.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
 }
 

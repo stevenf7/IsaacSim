@@ -12,7 +12,7 @@ import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.ros_ui.scripts.roscore import Roscore
-from .common import create_joint_state, set_rotate, set_translate, simulate
+from .common import create_joint_state, set_rotate, set_translate, simulate, wait_for_rosmaster
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from omni.isaac.utils.scripts.test_utils import load_test_file
 import rospy
@@ -38,7 +38,8 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         kit_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
         self._roscore = Roscore()
         self._roscore.startup(kit_folder + "/python/bin", self._ros_extension_path + "/noetic", "_CATKIN_SETUP_DIR")
-
+        await wait_for_rosmaster()
+        await omni.kit.app.get_app().next_update_async()
         rospy.init_node("isaac_sim_test_rospy", anonymous=True, disable_signals=True)
         print("STARTUP")
         pass

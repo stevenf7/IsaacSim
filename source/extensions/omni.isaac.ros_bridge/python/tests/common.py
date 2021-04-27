@@ -1,4 +1,5 @@
 import omni
+import asyncio
 
 
 def create_joint_state(name, position, velocity=[], effort=[]):
@@ -59,3 +60,25 @@ def set_rotate(prim, rot_mat):
 async def simulate(seconds, steps_per_sec=60):
     for frame in range(int(steps_per_sec * seconds)):
         await omni.kit.app.get_app().next_update_async()
+
+
+async def wait_for_rosmaster():
+    print("Waiting for rosmaster to start")
+    import rosgraph
+
+    tries = 0
+    while True:
+        if tries > 10:
+            print(f"ROS master was not found after {tries} tries")
+            return
+
+        try:
+            tries = tries + 1
+            rosgraph.Master("/rostopic").getPid()
+        except:
+            print("ROS master is not running yet...")
+            await asyncio.sleep(1.0)
+            continue
+        else:
+            print("ROS master is running, continuing")
+            break

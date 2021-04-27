@@ -75,6 +75,15 @@ public:
         mROSInitialize = state;
     }
     /**
+     * @brief Deletes all rosnodes.
+     * Call this if roscore was disconnected to force rosnodes to be re-created
+     *
+     */
+    void deleteRosNodes()
+    {
+        mRosNodes.clear();
+    }
+    /**
      * @brief Get the Ros State object
      *
      */

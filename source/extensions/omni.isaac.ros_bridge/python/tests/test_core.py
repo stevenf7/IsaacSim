@@ -9,6 +9,7 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 from omni.isaac.ros_ui.scripts.roscore import Roscore
+from .common import wait_for_rosmaster
 import rospy
 import carb
 
@@ -25,6 +26,7 @@ class TestRosBridge(omni.kit.test.AsyncTestCase):
         kit_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
         self._roscore = Roscore()
         self._roscore.startup(kit_folder + "/python/bin", self._ros_extension_path + "/noetic", "_CATKIN_SETUP_DIR")
+        await wait_for_rosmaster()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
         pass
 

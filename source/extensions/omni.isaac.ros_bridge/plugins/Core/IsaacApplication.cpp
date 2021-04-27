@@ -77,9 +77,9 @@ RosNode* IsaacApplication::getRosNode(const pxr::UsdPrim& prim)
     std::string nodeName = "";
     isaac::utils::safeGetAttribute(typedPrim.GetRosNodePrefixAttr(), nodeName);
 
-
     if (mRosNodes.find(nodeName) == mRosNodes.end())
     {
+        CARB_LOG_INFO("Creating Ros Node with prefix: %s", nodeName.c_str());
         mRosNodes[nodeName] = std::make_unique<RosNode>(nodeName);
     }
     return mRosNodes[nodeName].get();
