@@ -82,6 +82,38 @@ licensing.enabled = true
 licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/target-deps.packman.xml"]
 licensing.fail_on_missing = true
 
+post_build.commands = [
+    ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}"] 
+]
+
+
+########################################################################################################################
+# Extensions precacher
+########################################################################################################################
+
+[repo_precache_exts]
+enabled = true
+
+# Extra args to pass to kit
+kit_extra_args = []
+
+# Folder to store cache extensions into
+cache_path = "${root}/_build/${platform}/${config}/exts"
+
+ext_folders = [
+  "${root}/_build/$platform/$config/exts"
+]
+
+# Apps to run and precache
+apps = [
+    "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.kit"
+]
+
+# Registries to use
+registries = [
+    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+]
+
 
 ########################################################################################################################
 # Documentation building
