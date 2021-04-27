@@ -81,6 +81,7 @@ void onAttach(long int stageId, double metersPerUnit, void* userData)
     if (g_application_handle)
     {
         g_application_handle->initialize(g_stage);
+        g_application_handle->setRosState(false);
     }
 }
 void onDetach(void* userData)

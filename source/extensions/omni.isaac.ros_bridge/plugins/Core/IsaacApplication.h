@@ -91,7 +91,7 @@ private:
     carb::tasking::Counter* mTaskCounter = nullptr;
 
     int64_t mTimeDifferenceNanoSeconds = 0;
-    bool mROSInitialize = false;
+    bool mROSInitialize = true;
 
     std::unordered_map<std::string, std::unique_ptr<RosNode>> mRosNodes;
 };

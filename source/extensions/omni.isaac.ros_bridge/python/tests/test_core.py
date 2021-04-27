@@ -13,10 +13,10 @@ import rospy
 import carb
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRospy(omni.kit.test.AsyncTestCase):
+class TestRosBridge(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        await omni.usd.get_context().new_stage_async()
+        # await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -26,38 +26,21 @@ class TestRospy(omni.kit.test.AsyncTestCase):
         self._roscore = Roscore()
         self._roscore.startup(kit_folder + "/python/bin", self._ros_extension_path + "/noetic", "_CATKIN_SETUP_DIR")
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
-        rospy.init_node("isaac_sim_test_rospy", anonymous=True, disable_signals=True)
         pass
 
     # After running each test
     async def tearDown(self):
         self._stage = None
         self._timeline = None
-        rospy.signal_shutdown("test_complete")
         self._roscore.shutdown()
         self._roscore = None
 
-        await omni.usd.get_context().new_stage_async()
+        # await omni.usd.get_context().new_stage_async()
         gc.collect()
         pass
 
-    async def test_rospy(self):
-        from std_msgs.msg import String
-
-        pub = rospy.Publisher("topic_name", String, queue_size=10)
-        await asyncio.sleep(1.0)
-        pub.publish("hello world")
-        await asyncio.sleep(1.0)
-        # TODO receive this message and check
-
-        pass
-
-    async def test_clock(self):
-        await asyncio.sleep(4.0)
-        result, prim = omni.kit.commands.execute("CreateROSBridgeClockCommand", path="/ROS_Clock")
+    async def test_core(self):
         self._timeline.play()
-        await asyncio.sleep(4.0)
+        await asyncio.sleep(1.0)
         self._timeline.stop()
-        # TODO receive this message and check
-
         pass
