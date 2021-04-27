@@ -24,9 +24,16 @@ namespace ros_bridge
 {
 RosNode::RosNode(std::string name)
 {
-    CARB_LOG_INFO("Ros Node %s Was Created", name.c_str());
+    // std::string fullName = ros::this_node::getName();
+    // if (name.size() > 0)
+    // {
+    //     fullName = ros::names::clean(ros::this_node::getName() + "/" + name);
+    // }
+    CARB_LOG_INFO("Ros Node Was Created");
     rosnode_ = std::make_unique<ros::NodeHandle>(name);
     rosnode_->setCallbackQueue(&(callbackQueue_));
+    // CARB_LOG_INFO("Ros Node Resolved Namespace: %s Unresolved: %s", rosnode_->getNamespace().c_str(),
+    //               rosnode_->getUnresolvedNamespace().c_str());
 }
 void RosNode::start()
 {
@@ -39,17 +46,18 @@ void RosNode::start()
 }
 void RosNode::stop()
 {
-    // for (size_t i = 0; i < mMessages.size(); i++)
-    // {
-    //     msg.second = nullptr;
-    // }
-    // mMessages.clear();
+    for (auto& msg : mMessages)
+    {
+        msg.second = nullptr;
+    }
+    mMessages.clear();
 
-    // if (rosnode_)
-    // {
-    //     rosnode_->shutdown();
-    // }
-    // rosnode_ = nullptr;
+    if (rosnode_)
+    {
+        CARB_LOG_INFO("Ros Node Was Shutdown");
+        rosnode_->shutdown();
+    }
+    rosnode_ = nullptr;
 }
 void RosNode::tick()
 {
