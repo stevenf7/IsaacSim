@@ -65,6 +65,24 @@ public:
      */
     void onComponentAdd(const pxr::UsdPrim& prim);
 
+    /**
+     * @brief Set the Ros State object
+     *
+     * @param state
+     */
+    void setRosState(const bool state)
+    {
+        mROSInitialize = state;
+    }
+    /**
+     * @brief Get the Ros State object
+     *
+     */
+    bool getRosState()
+    {
+        return mROSInitialize;
+    }
+
 private:
     RosNode* getRosNode(const pxr::UsdPrim& prim);
     std::string mAppFilename;
@@ -73,7 +91,7 @@ private:
     carb::tasking::Counter* mTaskCounter = nullptr;
 
     int64_t mTimeDifferenceNanoSeconds = 0;
-    bool mRunning = false;
+    bool mROSInitialize = false;
 
     std::unordered_map<std::string, std::unique_ptr<RosNode>> mRosNodes;
 };

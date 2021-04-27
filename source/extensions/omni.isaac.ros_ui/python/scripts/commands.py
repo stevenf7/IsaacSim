@@ -123,7 +123,7 @@ class CreateROSBridgeJointStateCommand(omni.kit.commands.Command):
             "CreateROSBridgePrimCommand", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosJointState
         )
         if success and self._prim:
-            self._prim.CreateJointStatePubTopicAttr("/joint_state")
+            self._prim.CreateJointStatePubTopicAttr("/joint_states")
             self._prim.CreateJointStateSubTopicAttr("/joint_command")
             self._prim.CreateArticulationPrimRel()
             self._prim.CreateQueueSizeAttr(0)

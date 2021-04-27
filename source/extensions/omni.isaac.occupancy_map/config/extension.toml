@@ -33,4 +33,4 @@ path = "bin/*.plugin"
 recursive = false
 
 [python.pipapi]
-requirements = ["pillow==7.2.0"]
+requirements = ["pillow==8.1.1"]
