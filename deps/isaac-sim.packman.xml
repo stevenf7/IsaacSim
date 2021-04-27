@@ -8,7 +8,7 @@
         <package name="usd_ext_isaac" version="20.08.216.0a54ae9c-linux-x86_64_py37_debug-master" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
-        <package name="nv_ros" version="noetic_20210426_9da8c1c-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros" version="noetic_20210426_1345e29-linux64_release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="nv_ros2" linkPath="../_build/target-deps/nv_ros2">
         <package name="nv_ros2" version="foxy_20210425_af9e1ab-linux64_release" platforms="linux-x86_64"/>
