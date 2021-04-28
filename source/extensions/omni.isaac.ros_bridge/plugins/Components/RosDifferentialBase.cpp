@@ -1,0 +1,273 @@
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
+//
+// NVIDIA CORPORATION and its licensors retain all intellectual property
+// and proprietary rights in and to this software, related documentation
+// and any modifications thereto. Any use, reproduction, disclosure or
+// distribution of this software and related documentation without an express
+// license agreement from NVIDIA CORPORATION is strictly prohibited.
+//
+
+// clang-format off
+#include <UsdPCH.h>
+// clang-format on
+
+#include "RosDifferentialBase.h"
+
+#include <carb/Framework.h>
+#include "geometry_msgs/Twist.h"
+#include "nav_msgs/Odometry.h"
+#include <omni/isaac/utils/Conversions.h>
+
+namespace omni
+{
+namespace isaac
+{
+using utils::conversions::asGfRotation;
+using utils::conversions::asGfVec3d;
+namespace ros_bridge
+{
+
+using namespace omni::isaac::dynamic_control;
+
+RosDifferentialBase::RosDifferentialBase(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
+    : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
+{
+}
+
+RosDifferentialBase::~RosDifferentialBase()
+{
+    CARB_LOG_INFO("RosDifferentialBase Destroyed");
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mStatePubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mTfPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mCommandSubTopic);
+}
+
+void RosDifferentialBase::initialize(RosNode* rosNode,
+                                     const pxr::RosBridgeSchemaRosBridgeComponent& prim,
+                                     pxr::UsdStageWeakPtr stage)
+{
+    IsaacComponent::initialize(rosNode, prim, stage);
+    mZUp = UsdGeomGetStageUpAxis(mStage) == "Z" ? true : false;
+    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
+    onComponentChange();
+}
+
+void RosDifferentialBase::onComponentChange()
+{
+
+    IsaacComponent::onComponentChange();
+
+    const pxr::RosBridgeSchemaRosDifferentialBase& typedPrim = (pxr::RosBridgeSchemaRosDifferentialBase)mPrim;
+    // Destroy the old message, in case the topic changes
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mStatePubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mTfPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mCommandSubTopic);
+
+    isaac::utils::safeGetAttribute(typedPrim.GetStatePubTopicAttr(), mStatePubTopic);
+    isaac::utils::safeGetAttribute(typedPrim.GetCommandSubTopicAttr(), mCommandSubTopic);
+    isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
+    isaac::utils::safeGetAttribute(typedPrim.GetOdomFrameIdAttr(), mOdomFrameId);
+    isaac::utils::safeGetAttribute(typedPrim.GetBaseFrameIdAttr(), mBaseFrameId);
+
+    mRosNode->createPublisher<nav_msgs::Odometry>(
+        mPrim.GetPath().GetString(), mStatePubTopic, mQueueSize, &RosDifferentialBase::pubCallback, this);
+    mRosNode->createPublisher<tf2_msgs::TFMessage>(
+        mPrim.GetPath().GetString(), mTfPubTopic, mQueueSize, &RosDifferentialBase::tfPubCallback, this);
+    mRosNode->createSubscriber<geometry_msgs::Twist>(
+        mPrim.GetPath().GetString(), mCommandSubTopic, mQueueSize, &RosDifferentialBase::subCallback, this);
+
+    // Parse parameters
+
+    isaac::utils::safeGetAttribute(typedPrim.GetRobotFrontAttr(), mRobotFront);
+    isaac::utils::safeGetAttribute(typedPrim.GetMaxSpeedAttr(), mMaximumSpeed);
+    isaac::utils::safeGetAttribute(typedPrim.GetMaxTimeWithoutCommandAttr(), mMaximumTimeWithoutCommand);
+    isaac::utils::safeGetAttribute(typedPrim.GetAccelerationSmoothingAttr(), mAccelerationSmoothing);
+    isaac::utils::safeGetAttribute(typedPrim.GetWheelRadiusAttr(), mWheelRadius);
+    mWheelRadius = mWheelRadius / mUnitScale;
+
+    isaac::utils::safeGetAttribute(typedPrim.GetWheelBaseAttr(), mWheelBase);
+    mWheelBase = mWheelBase / mUnitScale;
+
+    pxr::SdfPath chassisPath;
+    std::string wheelFLName;
+    std::string wheelFRName;
+
+    pxr::SdfPathVector targets;
+    typedPrim.GetChassisPrimRel().GetTargets(&targets);
+    if (targets.size() == 0)
+    {
+        return;
+    }
+
+    chassisPath = targets[0];
+
+    if (mDynamicControlPtr->peekObjectType(chassisPath.GetString().c_str()) ==
+        omni::isaac::dynamic_control::eDcObjectArticulation)
+    {
+        mArticulationHandle = mDynamicControlPtr->getArticulation(chassisPath.GetString().c_str());
+    }
+    else
+    {
+        CARB_LOG_ERROR("chassisPrim is not a valid articulation");
+        return;
+    }
+    if (!mArticulationHandle)
+    {
+        CARB_LOG_ERROR("Articulation not found for chassisPrim");
+        return;
+    }
+    mChassisHandle = mDynamicControlPtr->getArticulationRootBody(mArticulationHandle);
+
+
+    isaac::utils::safeGetAttribute(typedPrim.GetLeftWheelJointNameAttr(), wheelFLName);
+
+    mWheelFLHandle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, wheelFLName.c_str());
+    // Get the wheel prim from the joint
+    if (!mWheelFLHandle)
+    {
+        CARB_LOG_ERROR("leftWheelJointPrim %s not valid", wheelFLName.c_str());
+        return;
+    }
+    isaac::utils::safeGetAttribute(typedPrim.GetRightWheelJointNameAttr(), wheelFRName);
+
+
+    mWheelFRHandle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, wheelFRName.c_str());
+
+    if (!mWheelFRHandle)
+    {
+        CARB_LOG_ERROR("rightWheelJointPrim %s not valid", wheelFRName.c_str());
+        return;
+    }
+}
+
+void RosDifferentialBase::pubCallback(ros::Publisher* pub)
+{
+    nav_msgs::Odometry odomMsg;
+    odomMsg.header.seq = 0;
+    odomMsg.header.stamp.fromSec(mTimeSeconds);
+    odomMsg.header.frame_id = mOdomFrameId;
+    odomMsg.child_frame_id = mBaseFrameId;
+
+    auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
+    auto chassisLinVel = mDynamicControlPtr->getRigidBodyLinearVelocity(mChassisHandle);
+    auto chassisAngVel = mDynamicControlPtr->getRigidBodyAngularVelocity(mChassisHandle);
+
+    // CARB_LOG_ERROR("[%f %f %f] [%f %f %f] [%f %f %f]", chassisPose.p.x, chassisPose.p.y, chassisPose.p.z,
+    // chassisLinVel.x, chassisLinVel.y, chassisLinVel.z, chassisAngVel.x, chassisAngVel.y, chassisAngVel.z);
+
+    pxr::GfVec3d vecForward =
+        asGfRotation(chassisPose.r).TransformDir(pxr::GfVec3d(mRobotFront[0], mRobotFront[1], mRobotFront[2]));
+
+    pxr::GfVec2d measuredSpeed = pxr::GfVec2d(
+        pxr::GfDot(asGfVec3d(chassisLinVel), vecForward) * mUnitScale, mZUp ? chassisAngVel.z : chassisAngVel.y);
+    pxr::GfVec2d measuredAcceleration = (measuredSpeed - mLastSpeed) / mTimeDelta;
+    mLastAcceleration +=
+        timedSmoothingFactor(mTimeDelta, mAccelerationSmoothing) * (measuredAcceleration - mLastAcceleration);
+
+    odomMsg.twist.twist.linear.x = measuredSpeed[0];
+    if (mZUp)
+        odomMsg.twist.twist.angular.z = measuredSpeed[1];
+    else
+        odomMsg.twist.twist.angular.y = measuredSpeed[1];
+    odomMsg.pose.pose.position.x = chassisPose.p.x * mUnitScale;
+    odomMsg.pose.pose.position.y = chassisPose.p.y * mUnitScale;
+    odomMsg.pose.pose.position.z = chassisPose.p.z * mUnitScale;
+    odomMsg.pose.pose.orientation.w = chassisPose.r.w;
+    odomMsg.pose.pose.orientation.x = chassisPose.r.x;
+    odomMsg.pose.pose.orientation.y = chassisPose.r.y;
+    odomMsg.pose.pose.orientation.z = chassisPose.r.z;
+
+    pub->publish(odomMsg);
+}
+void RosDifferentialBase::tfPubCallback(ros::Publisher* pub)
+{
+    tf2_msgs::TFMessage tfMsg;
+    geometry_msgs::TransformStamped msg;
+    msg.header.seq = 0;
+    msg.header.stamp.fromSec(mTimeSeconds);
+    msg.header.frame_id = "world";
+    msg.child_frame_id = mOdomFrameId;
+
+    auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
+
+    msg.transform.translation.x = chassisPose.p.x * mUnitScale;
+    msg.transform.translation.y = chassisPose.p.y * mUnitScale;
+    msg.transform.translation.z = chassisPose.p.z * mUnitScale;
+    msg.transform.rotation.w = chassisPose.r.w;
+    msg.transform.rotation.x = chassisPose.r.x;
+    msg.transform.rotation.y = chassisPose.r.y;
+    msg.transform.rotation.z = chassisPose.r.z;
+
+    tfMsg.transforms.push_back(msg);
+    pub->publish(tfMsg);
+}
+void RosDifferentialBase::subCallback(const geometry_msgs::Twist::ConstPtr& msg)
+{
+    mCommandedSpeed[0] = pxr::GfClamp(msg->linear.x, double(-mMaximumSpeed[0]), double(mMaximumSpeed[0])) / mUnitScale;
+    mCommandedSpeed[1] =
+        pxr::GfClamp(mZUp ? msg->angular.z : msg->angular.y, double(-mMaximumSpeed[1]), double(mMaximumSpeed[1]));
+
+    mLastCommandTime = mTimeSeconds;
+
+    // Compute new velocities
+    getWheelDesireSpeed(mCommandedSpeed);
+    // CARB_LOG_ERROR("Speeds %f %f", mWheelDesiredSpeed[0], mWheelDesiredSpeed[1]);
+    if (mArticulationHandle)
+    {
+        mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
+    }
+    else
+    {
+        CARB_LOG_ERROR("Differential Base Articulation Handle Is Invalid");
+        return;
+    }
+    // Apply velocities
+    if (mWheelFLHandle)
+    {
+        mDynamicControlPtr->setDofVelocityTarget(mWheelFLHandle, mWheelDesiredSpeed[0]);
+    }
+    else
+    {
+        CARB_LOG_ERROR("Differential Base Left Wheel Invalid");
+        return;
+    }
+    if (mWheelFRHandle)
+    {
+        mDynamicControlPtr->setDofVelocityTarget(mWheelFRHandle, mWheelDesiredSpeed[1]);
+    }
+    else
+    {
+        CARB_LOG_ERROR("Differential Base Right Wheel Invalid");
+        return;
+    }
+}
+
+void RosDifferentialBase::getWheelDesireSpeed(const pxr::GfVec2d& mCommandedSpeed)
+{
+    mBrakeRequested =
+        pxr::GfIsClose(mCommandedSpeed[0], 0.0f, FLT_EPSILON) && pxr::GfIsClose(mCommandedSpeed[1], 0.0f, FLT_EPSILON);
+    // mCommandedSpeed[0] is in stageunits/s
+    // mCommandedSpeed[1] is in rad/s
+    // mWheelBase is in stageunits
+    // mWheelRadius is in stageunits
+    // mWheelDesiredSpeed is in rad/s
+
+    mWheelDesiredSpeed[0] = (mCommandedSpeed[0] - mCommandedSpeed[1] * mWheelBase) / mWheelRadius;
+    mWheelDesiredSpeed[1] = (mCommandedSpeed[0] + mCommandedSpeed[1] * mWheelBase) / mWheelRadius;
+}
+
+float RosDifferentialBase::timedSmoothingFactor(float dt, float lambda)
+{
+    if (lambda <= dt * 0.01f)
+    {
+        return 0.0;
+    }
+    else
+    {
+        return 1.0f - std::exp(-dt / lambda);
+    }
+}
+
+}
+}
+}

@@ -21,6 +21,9 @@ class RosBridgeMenu:
             MenuItemDescription(
                 name="Surface Gripper", onclick_fn=lambda a=weakref.proxy(self): a.add_surface_gripper()
             ),
+            MenuItemDescription(
+                name="Differential Base", onclick_fn=lambda a=weakref.proxy(self): a.add_differential_base()
+            ),
         ]
 
         self._menu_items = [
@@ -107,6 +110,24 @@ class RosBridgeMenu:
             damping=1e3,
             offset_position=Gf.Vec3f(0, 0, 0),
             offset_rotation=Gf.Quatf(1.0),
+        )
+        pass
+
+    def add_differential_base(self, *args, **kwargs):
+        result, prim = omni.kit.commands.execute(
+            "CreateROSBridgeDifferentialBaseCommand",
+            path="/ROS_DifferentialBase",
+            parent=self._get_stage_and_path(),
+            enabled=True,
+            chassis_prim_rel=None,
+            left_wheel_joint_name="",
+            right_wheel_joint_name="",
+            robot_front=Gf.Vec3f(1, 0, 0),
+            wheel_radius=0.1,
+            wheel_base=0.5,
+            max_speed=Gf.Vec2f(1.5, 1.0),
+            time_without_command=0.2,
+            acceleration_smoothing=1.0,
         )
         pass
 
