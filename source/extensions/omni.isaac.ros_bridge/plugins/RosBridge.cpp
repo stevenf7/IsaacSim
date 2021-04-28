@@ -51,7 +51,8 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::kit::IViewport,
                       omni::physx::IPhysx,
                       carb::sensors::Sensors,
-                      carb::tasking::ITasking)
+                      carb::tasking::ITasking,
+                      carb::settings::ISettings)
 
 // private stuff
 namespace
@@ -64,6 +65,7 @@ omni::isaac::dynamic_control::DynamicControl* g_dynamicControl = nullptr;
 carb::dictionary::IDictionary* g_iDict = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
 omni::physx::IPhysx* g_physx = nullptr;
+carb::settings::ISettings* g_settings = nullptr;
 
 std::unique_ptr<omni::isaac::ros_bridge::IsaacApplication> g_application_handle;
 
@@ -203,8 +205,12 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("Failed to acquire PhysX interface");
         return;
     }
-
-
+    g_settings = g_framework->acquireInterface<carb::settings::ISettings>();
+    if (!g_settings)
+    {
+        CARB_LOG_ERROR("Failed to acquire Settings interface");
+        return;
+    }
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "IsaacRosBridge";
     desc.onAttach = onAttach;
@@ -224,12 +230,18 @@ CARB_EXPORT void carbOnPluginStartup()
     //     CARB_LOG_ERROR("ROS Master is not running, please start ROS master before enabling this extension");
     //     return;
     // }
+    g_settings->setDefaultString("/exts/omni.isaac.ros_bridge/nodeName", "OmniIsaacRosBridge");
+    std::string nodeName = g_settings->get<const char*>("/exts/omni.isaac.ros_bridge/nodeName");
+    if (nodeName.size() == 0)
+    {
+        nodeName = "OmniIsaacRosBridge";
+    }
     if (!ros::isInitialized())
     {
-        CARB_LOG_INFO("Initialize ROS Node");
+        CARB_LOG_INFO("ros::init()");
         int argc = 0;
         char** argv = nullptr;
-        ros::init(argc, argv, "OmniIsaacRosBridge", ros::init_options::NoSigintHandler);
+        ros::init(argc, argv, nodeName, ros::init_options::NoSigintHandler);
         ros::Time::init();
     }
     else
@@ -250,7 +262,7 @@ CARB_EXPORT void carbOnPluginShutdown()
     g_application_handle.reset();
     if (ros::isInitialized())
     {
-        // CARB_LOG_INFO("Shutdown ROS Node");
+        CARB_LOG_INFO("ros::shutdown()");
         ros::Time::shutdown();
         ros::shutdown();
         // ros::spinOnce();
