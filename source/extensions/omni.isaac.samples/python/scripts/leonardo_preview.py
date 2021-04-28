@@ -74,6 +74,8 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
 
+        self._first_step = True
+
     def _menu_callback(self):
         self._build_ui()
 
@@ -111,6 +113,7 @@ class Extension(omni.ext.IExt):
         """
         done, pending = await asyncio.wait({task})
         if task not in done:
+            await omni.kit.app.get_app().next_update_async()
             return
 
         self._stage = self._usd_context.get_stage()
@@ -118,6 +121,7 @@ class Extension(omni.ext.IExt):
             self._dc, self._mp
         )
 
+        self._first_step = True
         self._create_franka_btn.enabled = False
         self._selected_scenario.enabled = False
 
@@ -133,11 +137,10 @@ class Extension(omni.ext.IExt):
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()
 
-        self._scenario.register_assets()
-
-        self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
         self._physxIFace.release_physics_objects()
         self._physxIFace.force_load_physics_from_usd()
+
+        self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
         self._stop_task_btn.enabled = True
         self._toggle_obstacle_btn.enabled = True
 
@@ -178,6 +181,9 @@ class Extension(omni.ext.IExt):
         Arguments:
             step (float): elapsed time between steps
         """
+        if self._first_step:
+            self._scenario.register_assets()
+            self._first_step = False
         self._scenario.step(step)
 
     def _on_stage_event(self, event):
