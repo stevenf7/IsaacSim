@@ -44,6 +44,7 @@ IsaacApplication::~IsaacApplication()
     mTasking->destroyCounter(mTaskCounter);
 
     deleteAllComponents();
+    deleteRosNodes();
 }
 
 void IsaacApplication::initialize(pxr::UsdStageWeakPtr stage)

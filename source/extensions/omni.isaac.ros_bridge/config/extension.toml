@@ -46,3 +46,7 @@ recursive = false
 
 [fswatcher.paths]
 exclude = ["*/noetic"]
+
+
+[settings]
+exts."omni.isaac.ros_bridge".nodeName = "OmniIsaacRosBridge"
