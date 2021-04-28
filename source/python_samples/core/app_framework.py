@@ -21,7 +21,7 @@ class PythonApp:
         app_root = os.environ["CARB_APP_PATH"]
 
         # Inject experience config:
-        sys.argv.insert(1, f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit')
+        sys.argv.insert(1, f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit')
 
         # Add paths to extensions
         sys.argv.append(f"--ext-folder")

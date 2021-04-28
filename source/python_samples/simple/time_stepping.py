@@ -3,7 +3,7 @@ import carb
 from omni.isaac.python_app import OmniKitHelper
 
 CONFIG = {
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
+    "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
     "renderer": "RayTracedLighting",
     "headless": True,
 }

@@ -1,28 +1,32 @@
-# Deep Learning Examples
-This repo contains simple examples of DL applications within Omniverse Kit.
+# Python samples
 
-## Requirements
-- Anaconda
+This folder contains samples that use the omniverse python loop to execute.
 
-## Setup
+## Built in python 3.7 environment
+
+Navigate to the parent directory and execute
+
+```
+./python.sh path/to/script.py
+```
+
+## Anaconda
+
+-   Anaconda
+
+### Setup
+
 Create and activate the conda environment
+
 ```
 conda env create -f environment.yml
 conda activate isaac-sim
 ```
 
-install custom torch wrapper
-```
-python setup.py install
-```
+Use `setenv` script to add the omniverse kit python environment to your active PYTHONPATH
 
-### Setup Environment Variables
-Use `setenv` script to add Omni Kit libraries to PYTHONPATH and Add CARB_PATH
-#### Windows
-`setenv.bat`
-
-#### Linux
 `source setenv.sh`
 
 ## How To Run
+
 See the Isaac Sim documentation for how to run the samples in this folder

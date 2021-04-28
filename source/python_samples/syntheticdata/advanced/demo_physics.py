@@ -38,7 +38,7 @@ CUSTOM_CONFIG = {
     "subdiv_refinement_level": 2,
     "headless": True,
     "sync_loads": True,
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
+    "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
 }
 
 
