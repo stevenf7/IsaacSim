@@ -7,7 +7,7 @@ import omni
 # This sample loads a usd stage and creates a robot engine bridge application and starts simulation
 # Useful for testing an Isaac SDK sample scene using python
 CONFIG = {
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
+    "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
     "width": 1280,
     "height": 720,
     "sync_loads": True,

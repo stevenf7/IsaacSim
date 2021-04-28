@@ -240,6 +240,11 @@ repo_build.prebuild_link {
     { "source/ros_samples", "_build/%{platform}/%{config}/ros_samples" },
 }
 
+repo_build.prebuild_copy {
+    {"source/scripts/python.sh",  "_build/%{platform}/%{config}"},
+    {"source/apps/omni.isaac.sim.python.kit",  "_build/%{platform}/%{config}/apps"},
+}
+
 group "python_samples"
     python_sample_test("tests-python.core.app_framework", "core/app_framework.py")
     python_sample_test("tests-python.core.helper", "core/helper.py")

@@ -6,7 +6,7 @@ import carb.tokens
 import argparse
 
 CONFIG = {
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
+    "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
     "width": 1280,
     "height": 720,
     "sync_loads": True,

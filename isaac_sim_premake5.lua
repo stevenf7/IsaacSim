@@ -184,8 +184,8 @@ function create_python_sample_runner(name, sample_path, config, extra_args)
         f:write(string.format([[
 #!/bin/bash
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-SCRIPT_DIR=$SCRIPT_DIR/python_samples
-"$SCRIPT_DIR/python.sh" $SCRIPT_DIR/%s %s $@
+SAMPLE_DIR=$SCRIPT_DIR/python_samples
+"$SCRIPT_DIR/python.sh" $SAMPLE_DIR/%s %s $@
 
         ]], sample_path, extra_args))
         f:close()

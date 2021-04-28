@@ -44,7 +44,7 @@ BBOX_AREA_THRESH = 16
 RENDER_CONFIG = {
     "renderer": "PathTracing",
     "samples_per_pixel_per_frame": 12,
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
+    "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
 }
 
 

@@ -3,7 +3,7 @@ import carb
 from omni.isaac.python_app import OmniKitHelper
 
 CONFIG = {
-    "experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit',
+    "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
     "renderer": "RayTracedLighting",
     "headless": True,
 }
@@ -12,7 +12,7 @@ if __name__ == "__main__":
     # Example usage, with step size test
     kit = OmniKitHelper(config=CONFIG)
     import omni.kit.commands
-    from pxr import Sdf, Gf, UsdPhysics, UsdLux
+    from pxr import Sdf, Gf, UsdPhysics, UsdLux, PhysxSchema
 
     # setting up import configuration:
     status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
@@ -39,6 +39,14 @@ if __name__ == "__main__":
     # set gravity
     scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
     scene.CreateGravityMagnitudeAttr().Set(981.0)
+    # Set solver settings
+    PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physicsScene"))
+    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/physicsScene")
+    physxSceneAPI.CreateEnableCCDAttr(True)
+    physxSceneAPI.CreateEnableStabilizationAttr(True)
+    physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+    physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+    physxSceneAPI.CreateSolverTypeAttr("TGS")
 
     # add ground plane
     omni.kit.commands.execute(

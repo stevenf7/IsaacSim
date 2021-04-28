@@ -77,7 +77,7 @@ def asset_convert(args):
 
 
 if __name__ == "__main__":
-    CONFIG = {"experience": f'{os.environ["EXP_PATH"]}/isaac-sim.python.kit'}
+    CONFIG = {"experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit'}
     kit = OmniKitHelper(config=CONFIG)
 
     parser = argparse.ArgumentParser("Convert OBJ/STL assets to USD")
