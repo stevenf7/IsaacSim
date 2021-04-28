@@ -267,4 +267,62 @@ class CreateROSBridgeSurfaceGripperCommand(omni.kit.commands.Command):
         pass
 
 
+class CreateROSBridgeDifferentialBaseCommand(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path: str = "/ROS_DifferentialBase",
+        parent=None,
+        enabled: bool = True,
+        chassis_prim_rel=None,
+        left_wheel_joint_name: str = "",
+        right_wheel_joint_name: str = "",
+        robot_front: Gf.Vec2f = Gf.Vec3f(1, 0, 0),
+        wheel_radius: float = 0.1,
+        wheel_base: float = 0.5,
+        max_speed: Gf.Vec2f = Gf.Vec2f(1.5, 1.0),
+        time_without_command: float = 0.2,
+        acceleration_smoothing: float = 1.0,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        self._prim = None
+        pass
+
+    def do(self) -> bool:
+        success, self._prim = omni.kit.commands.execute(
+            "CreateROSBridgePrimCommand",
+            path=self._path,
+            parent=self._parent,
+            scehma_type=ROSSchema.RosDifferentialBase,
+        )
+        if success and self._prim:
+            self._prim.CreateStatePubTopicAttr("/odom")
+            self._prim.CreateCommandSubTopicAttr("/cmd_vel")
+            self._prim.CreateQueueSizeAttr(0)
+            self._prim.CreateOdomFrameIdAttr("/odom")
+            self._prim.CreateBaseFrameIdAttr("/base_link")
+            rel_paths = self._prim.CreateChassisPrimRel()
+            if self._chassis_prim_rel is not None:
+                if len(self._chassis_prim_rel) == 1:
+                    rel_paths.AddTarget(self._chassis_prim_rel[0])
+                else:
+                    carb.log_warn("only one chassis prim rel target can be specified")
+
+            self._prim.CreateLeftWheelJointNameAttr(self._left_wheel_joint_name)
+            self._prim.CreateRightWheelJointNameAttr(self._right_wheel_joint_name)
+
+            self._prim.CreateRobotFrontAttr(self._robot_front)
+            self._prim.CreateWheelRadiusAttr(self._wheel_radius)
+            self._prim.CreateWheelBaseAttr(self._wheel_base)
+            self._prim.CreateMaxSpeedAttr(self._max_speed)
+            self._prim.CreateMaxTimeWithoutCommandAttr(self._time_without_command)
+            self._prim.CreateAccelerationSmoothingAttr(self._acceleration_smoothing)
+        return self._prim
+
+    def undo(self):
+        pass
+
+
 omni.kit.commands.register_all_commands_in_module(__name__)

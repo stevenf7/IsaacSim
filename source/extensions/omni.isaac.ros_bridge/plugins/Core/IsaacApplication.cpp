@@ -14,6 +14,7 @@
 #include "IsaacApplication.h"
 #include "../Components/RosClock.h"
 #include "../Components/RosCamera.h"
+#include "../Components/RosDifferentialBase.h"
 #include "../Components/RosLidar.h"
 #include "../Components/RosJointState.h"
 #include "../Components/RosPoseTree.h"
@@ -123,6 +124,11 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     {
         component = std::make_unique<RosSurfaceGripper>(mDynamicControlPtr);
         component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosSurfaceGripper(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RosBridgeSchemaRosDifferentialBase>())
+    {
+        component = std::make_unique<RosDifferentialBase>(mDynamicControlPtr);
+        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosDifferentialBase(prim), mStage);
     }
     if (component)
     {
