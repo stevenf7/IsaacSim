@@ -24,6 +24,10 @@ icon = "data/icon.png"
 "omni.usd.schema.isaac" = {}
 "omni.isaac.ros_ui" = {}
 
+
+[[python.module]]
+name = "omni.isaac.ros2_bridge"
+
 [[python.module]]
 name = "omni.isaac.rclpy"
 
