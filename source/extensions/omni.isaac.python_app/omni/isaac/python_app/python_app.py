@@ -232,15 +232,17 @@ Launches and configures OmniKit and exposes useful functions.
         self._previous_physics_dt = physics_dt
         from pxr import UsdPhysics, PhysxSchema
 
+        steps_per_second = int(1.0 / physics_dt)
+        min_steps = int(steps_per_second / physics_substeps)
         physxSceneAPI = None
         for prim in self.get_stage().Traverse():
             if prim.IsA(UsdPhysics.Scene):
                 physxSceneAPI = PhysxSchema.PhysxSceneAPI.Apply(prim)
         if physxSceneAPI is not None:
-            physxSceneAPI.GetTimeStepsPerSecondAttr().Set(int(1.0 / physics_dt) * physics_substeps)
+            physxSceneAPI.GetTimeStepsPerSecondAttr().Set(steps_per_second)
 
         settings = carb.settings.get_settings()
-        settings.set_int("persistent/simulation/minFrameRate", int(1.0 / physics_dt))
+        settings.set_int("persistent/simulation/minFrameRate", min_steps)
 
     def update(self, dt=0.0, physics_dt=None, physics_substeps=None):
         """Render one frame. Optionally specify dt in seconds, specify None to use wallclock. 
