@@ -32,11 +32,11 @@ if __name__ == "__main__":
     physics_sub = omni.physx.acquire_physx_interface().subscribe_physics_step_events(physics_update)
 
     # perform step experiments
-    print("Rendering and Physics with 1 second step size:")
+    print(f"Rendering and Physics with {1} second step size:")
     kit.update(1.0)
-    print("Rendering and Physics with 1/60 seconds step:")
+    print(f"Rendering and Physics with {1/60} seconds step:")
     kit.update(1.0 / 60.0)
-    print("Rendering 1/30 seconds step size and Physics 1/120 seconds step size:")
+    print(f"Rendering {1/30} seconds step size and Physics {1/120} seconds step size:")
     kit.update(1.0 / 30.0, 1.0 / 120.0, 4)
 
     # cleanup
