@@ -65,7 +65,8 @@ public:
     {
         if (topic.size() == 0)
         {
-            CARB_LOG_ERROR("Publisher topic empty");
+            CARB_LOG_ERROR("Publisher topic empty, cannot create %s", uniquePrefix.c_str());
+            return;
         }
 
         if (!callback && callbackFn)
