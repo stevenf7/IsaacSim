@@ -23,8 +23,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from dataset import RandomObjects
-from omni.isaac.synthetic_utils import visualization as vis
-from omni.isaac.synthetic_utils import shapenet
 
 
 def main(args):
@@ -35,6 +33,9 @@ def main(args):
         args.root, args.categories, num_assets_min=3, num_assets_max=5, max_asset_size=args.max_asset_size
     )
     train_loader = DataLoader(train_set, batch_size=2, collate_fn=lambda x: tuple(zip(*x)))
+
+    from omni.isaac.synthetic_utils import visualization as vis
+    from omni.isaac.synthetic_utils import shapenet
 
     # Setup Model
     model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=False, num_classes=1 + len(args.categories))
@@ -85,18 +86,22 @@ def main(args):
 
                 score_filter = [i for i in range(len(pred["scores"])) if pred["scores"][i] > score_thresh]
                 num_instances = len(score_filter)
-                colours = vis.random_colours(num_instances)
+                colours = vis.random_colours(num_instances, enable_random=False)
 
                 overlay = np.zeros_like(np_image)
                 for mask, colour in zip(pred["masks"], colours):
                     overlay[mask.squeeze().cpu().numpy() > mask_thresh, :3] = colour
 
                 axes[1].imshow(overlay, alpha=0.5)
+                # If ShapeNet categories are specified with their names, convert to synset ID
+                # Remove this if using with a different dataset than ShapeNet
+                args.categories = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
                 mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
                 labels = [shapenet.SYNSET_TO_LABEL[mapping[label.item()]] for label in pred["labels"]]
                 vis.plot_boxes(axes[1], pred["boxes"], labels=labels, colours=colours)
 
                 plt.draw()
+                plt.savefig("train.png")
                 plt.pause(0.01)
 
 
@@ -127,9 +132,5 @@ if __name__ == "__main__":
     # If root is not specified use the environment variable SHAPENET_LOCAL_DIR with the _nomat suffix as root
     if args.root is None:
         args.root = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_nomat"
-
-    # If ShapeNet categories are specified with their names, convert to synset ID
-    # Remove this if using with a different dataset than ShapeNet
-    args.categories = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
 
     main(args)

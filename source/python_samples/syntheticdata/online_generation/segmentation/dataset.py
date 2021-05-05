@@ -25,10 +25,7 @@ import numpy as np
 import signal
 
 import omni
-from pxr import UsdGeom, UsdShade, Sdf, Semantics
-
 from omni.isaac.python_app import OmniKitHelper
-from omni.isaac.synthetic_utils import SyntheticDataHelper, shapenet
 
 
 # Setup default generation variables
@@ -75,12 +72,18 @@ class RandomObjects(torch.utils.data.IterableDataset):
         assert (split > 0) and (split <= 1.0)
 
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
+        from omni.isaac.synthetic_utils import SyntheticDataHelper
+        from omni.isaac.synthetic_utils import shapenet
+
         self.sd_helper = SyntheticDataHelper()
         self.stage = self.kit.get_stage()
 
-        self.categories = categories
+        # If ShapeNet categories are specified with their names, convert to synset ID
+        # Remove this if using with a different dataset than ShapeNet
+        category_ids = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in categories]
+        self.categories = category_ids
         self.range_num_assets = (num_assets_min, max(num_assets_min, num_assets_max))
-        self.references = self._find_usd_assets(root, categories, max_asset_size, split, train)
+        self.references = self._find_usd_assets(root, category_ids, max_asset_size, split, train)
 
         self._setup_world()
         self.cur_idx = 0
@@ -93,6 +96,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.exiting = True
 
     def _setup_world(self):
+        from pxr import UsdGeom
+
         """Setup lights, walls, floor, ceiling and camera"""
         # In a practical setting, the room parameters should attempt to match those of the
         # target domain. Here, we insteady choose for simplicity.
@@ -159,6 +164,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         return references
 
     def _add_preview_surface(self, prim, diffuse, roughness, metallic):
+        from pxr import UsdShade, Sdf
+
         """Add a preview surface material using the metallic workflow."""
         path = f"{prim.GetPath()}/mat"
         material = UsdShade.Material.Define(self.stage, path)
@@ -173,6 +180,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         UsdShade.MaterialBindingAPI(prim).Bind(material)
 
     def load_single_asset(self, ref, semantic_label, suffix=""):
+        from pxr import UsdGeom
+
         """Load a USD asset with random pose.
         args
             ref (str): Path to the USD that this prim will reference.
@@ -297,7 +306,6 @@ if __name__ == "__main__":
     "Typical usage"
     import argparse
     import matplotlib.pyplot as plt
-    from omni.isaac.synthetic_utils import visualization as vis
 
     parser = argparse.ArgumentParser("Dataset test")
     parser.add_argument("--categories", type=str, nargs="+", required=True, help="List of object classes to use")
@@ -319,11 +327,11 @@ if __name__ == "__main__":
     if args.root is None:
         args.root = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_nomat"
 
-    # If ShapeNet categories are specified with their names, convert to synset ID
-    # Remove this if using with a different dataset than ShapeNet
-    args.categories = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
-
     dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size)
+    from omni.isaac.synthetic_utils import visualization as vis
+    from omni.isaac.synthetic_utils import shapenet
+
+    categories = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
 
     # Iterate through dataset and visualize the output
     plt.ion()
@@ -338,17 +346,20 @@ if __name__ == "__main__":
         axes[0].imshow(np_image)
 
         num_instances = len(target["boxes"])
-        colours = vis.random_colours(num_instances)
+        colours = vis.random_colours(num_instances, enable_random=False)
         overlay = np.zeros_like(np_image)
         for mask, colour in zip(target["masks"].cpu().numpy(), colours):
             overlay[mask, :3] = colour
 
         axes[1].imshow(overlay)
-        mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
+        mapping = {i + 1: cat for i, cat in enumerate(categories)}
         labels = [shapenet.SYNSET_TO_LABEL[mapping[label.item()]] for label in target["labels"]]
         vis.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
 
         plt.draw()
         plt.pause(0.01)
+        plt.savefig("dataset.png")
         if dataset.exiting:
             break
+    # cleanup
+    dataset.kit.shutdown()

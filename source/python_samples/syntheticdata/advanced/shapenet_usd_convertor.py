@@ -10,7 +10,6 @@
 import os
 import pprint
 from omni.isaac.python_app import OmniKitHelper
-from omni.isaac.synthetic_utils import shapenet
 
 
 """Convert ShapeNetCore V2 to USD without materials.
@@ -20,9 +19,10 @@ large datasets or for online training of Deep Learning models.
 
 if __name__ == "__main__":
     RENDER_CONFIG = {"experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit'}
-    OmniKitHelper(config=RENDER_CONFIG)
+    kit = OmniKitHelper(config=RENDER_CONFIG)
 
     import argparse
+    from omni.isaac.synthetic_utils import shapenet
 
     parser = argparse.ArgumentParser("Convert ShapeNet assets to USD")
     parser.add_argument(
@@ -55,3 +55,5 @@ if __name__ == "__main__":
 
     # Ensure Omniverse Kit is launched via OmniKitHelper before shapenet_convert() is called
     shapenet.shapenet_convert(args)
+    # cleanup
+    kit.shutdown()

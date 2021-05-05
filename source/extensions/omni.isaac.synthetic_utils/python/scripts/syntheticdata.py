@@ -198,15 +198,18 @@ class SyntheticDataHelper:
         sensor_state = {}
         # Process non-RT-only sensors
         for sensor in gt_sensors:
-            if sensor == "instanceSegmentation":
-                gt[sensor] = self.sensor_helpers[sensor](viewport, parsed=True, return_mapping=True)
-            elif sensor == "boundingBox3D":
-                gt[sensor] = self.sensor_helpers[sensor](viewport, parsed=False, return_corners=True)
+            if sensor_name not in ["camera", "pose"]:
+                if sensor == "instanceSegmentation":
+                    gt[sensor] = self.sensor_helpers[sensor](viewport, parsed=True, return_mapping=True)
+                elif sensor == "boundingBox3D":
+                    gt[sensor] = self.sensor_helpers[sensor](viewport, parsed=True, return_corners=True)
+                else:
+                    gt[sensor] = self.sensor_helpers[sensor](viewport)
+                current_sensor = self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor])
+                current_sensor_state = self.sd_interface.is_sensor_initialized(current_sensor)
+                sensor_state[sensor] = current_sensor_state
             else:
                 gt[sensor] = self.sensor_helpers[sensor](viewport)
-            current_sensor = self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor])
-            current_sensor_state = self.sd_interface.is_sensor_initialized(current_sensor)
-            sensor_state[sensor] = current_sensor_state
         gt["state"] = sensor_state
 
         return gt

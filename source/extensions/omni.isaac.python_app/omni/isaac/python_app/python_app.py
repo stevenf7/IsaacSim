@@ -135,6 +135,7 @@ Launches and configures OmniKit and exposes useful functions.
             f'--/omni.kit.plugin/syncUsdLoads={self.config["sync_loads"]}',
             # TODO: Is this still needed
             "--/app/content/emptyStageOnStart=False",  # This is required due to a infinite loop but results in errors on launch
+            "--/app/hydraEngine/waitIdle=True",
             "--/app/asyncRendering=False",
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',

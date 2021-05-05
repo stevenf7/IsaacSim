@@ -12,16 +12,12 @@
 the results. This advanced sample also simulates physics and uses a custom glass material
 """
 
+import copy
 import os
 import random
 import numpy as np
-from pxr import UsdGeom, Semantics
-from omni.isaac.synthetic_utils import visualization as vis
 from omni.isaac.python_app import OmniKitHelper
-from omni.isaac.synthetic_utils import SyntheticDataHelper
 import matplotlib.pyplot as plt
-
-from pxr import Gf, Sdf, UsdShade
 
 TRANSLATION_RANGE = 300.0
 SCALE = 50.0
@@ -44,6 +40,9 @@ CUSTOM_CONFIG = {
 
 def main():
     kit = OmniKitHelper(CUSTOM_CONFIG)
+    from pxr import Gf, Sdf, UsdShade, UsdGeom, Semantics
+    from omni.isaac.synthetic_utils import SyntheticDataHelper
+
     sd_helper = SyntheticDataHelper()
 
     from omni.syntheticdata import visualize, helpers
@@ -66,7 +65,7 @@ def main():
     # Add physics scene
     scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
     # Set gravity vector
-    scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, -1.0, 0.0))
+    scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
     scene.CreateGravityMagnitudeAttr().Set(981.0)
     # Set physics scene to use cpu physics
     PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/World/physicsScene"))
@@ -78,7 +77,7 @@ def main():
     physxSceneAPI.CreateSolverTypeAttr("TGS")
 
     # Create a ground plane
-    PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Y", 1000, Gf.Vec3f(0, -100, 0), Gf.Vec3f(1.0))
+    PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1000, Gf.Vec3f(0, 0, -100), Gf.Vec3f(1.0))
 
     # Create 10 randomly positioned and coloured spheres and cube
     # We will assign each a semantic label based on their shape (sphere/cube/cone)
@@ -154,7 +153,6 @@ def main():
     gt = sd_helper.get_groundtruth(
         [
             "rgb",
-            "camera",
             "depth",
             "boundingBox2DTight",
             "boundingBox2DLoose",
@@ -186,43 +184,45 @@ def main():
     axes[1].imshow(visualize.colorize_depth(depth_data.squeeze()))
 
     # BBOX2D TIGHT
-    random.seed(1)
     axes[2].set_title("BBox 2D Tight")
-    axes[2].imshow(visualize.colorize_bboxes(gt["boundingBox2DTight"], gt["rgb"]))
+    rgb_data = copy.deepcopy(gt["rgb"])
+    axes[2].imshow(visualize.colorize_bboxes(gt["boundingBox2DTight"], rgb_data))
 
     # BBOX2D LOOSE
-    random.seed(1)
     axes[3].set_title("BBox 2D Loose")
-    axes[3].imshow(visualize.colorize_bboxes(gt["boundingBox2DLoose"], gt["rgb"]))
+    rgb_data = copy.deepcopy(gt["rgb"])
+    axes[3].imshow(visualize.colorize_bboxes(gt["boundingBox2DLoose"], rgb_data))
 
     # INSTANCE SEGMENTATION
-    random.seed(1)
     axes[4].set_title("Instance Segmentation")
     instance_seg = gt["instanceSegmentation"][0]
-    instance_rgb = visualize.colorize_instance(instance_seg)
+    instance_rgb = visualize.colorize_segmentation(instance_seg)
     axes[4].imshow(instance_rgb, alpha=0.7)
 
     # SEMANTIC SEGMENTATION
-    random.seed(1)
     axes[5].set_title("Semantic Segmentation")
     semantic_seg = gt["semanticSegmentation"]
-    semantic_rgb = visualize.colorize_semantic_raw(semantic_seg)
+    semantic_rgb = visualize.colorize_segmentation(semantic_seg)
     axes[5].imshow(semantic_rgb, alpha=0.7)
 
     # BBOX 3D
     axes[6].set_title("BBox 3D")
     bbox_3d_data = gt["boundingBox3D"]
     bboxes_3d_corners = bbox_3d_data["corners"]
-    projected_corners = helpers.project_to_viewport(bboxes_3d_corners.reshape(-1, 3), viewport)
+    projected_corners = helpers.world_to_image(bboxes_3d_corners.reshape(-1, 3), viewport)
     projected_corners = projected_corners.reshape(-1, 8, 3)
-    bboxes3D_rgb = visualize.colorize_bboxes_3d(projected_corners, gt["rgb"])
+    rgb_data = copy.deepcopy(gt["rgb"])
+    bboxes3D_rgb = visualize.colorize_bboxes_3d(projected_corners, rgb_data)
     axes[6].imshow(bboxes3D_rgb)
 
     # Display figure
-    plt.tight_layout()
-    plt.show()
-    # uncomment to save to disk
-    # plt.savefig("demo_physics.png")
+    # plt.tight_layout()
+    # plt.show()
+    # Save figure
+    plt.savefig("visualize_groundtruth_physics.png")
+
+    # cleanup
+    kit.shutdown()
 
 
 if __name__ == "__main__":

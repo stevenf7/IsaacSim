@@ -23,7 +23,7 @@ async def convert(in_file, out_file, load_materials=False):
 
     converter_context = omni.kit.asset_converter.AssetConverterContext()
     # setup converter and flags
-    converter_context.ignore_material = not load_materials
+    converter_context.ignore_materials = not load_materials
     # converter_context.ignore_animation = False
     # converter_context.ignore_cameras = True
     # converter_context.single_mesh = True
