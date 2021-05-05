@@ -20,7 +20,6 @@ import signal
 import carb
 import omni
 from omni.isaac.python_app import OmniKitHelper
-from omni.isaac.synthetic_utils import SyntheticDataHelper, DataWriter, DomainRandomization
 
 # Default rendering parameters
 RENDER_CONFIG = {
@@ -35,8 +34,11 @@ class RandomScenario(torch.utils.data.IterableDataset):
     def __init__(self, scenario_path, max_queue_size):
 
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
+        from omni.isaac.synthetic_utils import SyntheticDataHelper, DataWriter, DomainRandomization
+
         self.sd_helper = SyntheticDataHelper()
         self.dr_helper = DomainRandomization()
+        self.writer_helper = DataWriter
         self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
         self.result = True
@@ -125,7 +127,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # Write to disk
         if self.data_writer is None:
-            self.data_writer = DataWriter(self._output_folder, self._num_worker_threads, self.max_queue_size)
+            self.data_writer = self.writer_helper(self._output_folder, self._num_worker_threads, self.max_queue_size)
             self.data_writer.start_threads()
 
         groundtruth = {
@@ -208,3 +210,5 @@ if __name__ == "__main__":
                 break
             if dataset.exiting:
                 break
+        # cleanup
+        dataset.kit.shutdown()

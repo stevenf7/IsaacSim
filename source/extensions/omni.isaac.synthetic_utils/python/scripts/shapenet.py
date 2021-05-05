@@ -9,8 +9,6 @@
 
 
 import os
-import asyncio
-import omni
 
 
 LABEL_TO_SYNSET = {
@@ -72,6 +70,7 @@ def get_local_shape_loc():
 
 async def convert(in_file, out_file, load_materials=False):
     # This import causes conflicts when global
+    import asyncio
     import omni.kit.asset_converter
 
     def progress_callback(progress, total_steps):
@@ -79,7 +78,7 @@ async def convert(in_file, out_file, load_materials=False):
 
     converter_context = omni.kit.asset_converter.AssetConverterContext()
     # setup converter and flags
-    converter_context.ignore_material = not load_materials
+    converter_context.ignore_materials = not load_materials
     # converter_context.ignore_animation = False
     # converter_context.ignore_cameras = True
     # converter_context.single_mesh = True
@@ -103,6 +102,7 @@ async def convert(in_file, out_file, load_materials=False):
 
 
 def shapenet_convert(args):
+    import asyncio
 
     # This import needs to occur after kit is loaded so that physx can be discovered
     local_shapenet = get_local_shape_loc()

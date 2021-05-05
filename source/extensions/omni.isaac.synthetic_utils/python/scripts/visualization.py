@@ -56,25 +56,6 @@ def plot_boxes(ax, bboxes, labels=None, colours=None, label_size=10):
                 ax.text(bb[0], bb[1], label, fontdict=font)
 
 
-def instance_segmentation_to_rgb(instance_segmentation):
-    num_instance, height, width = instance_segmentation.shape
-    colours = random_colours(num_instance)
-
-    instance_rgb = np.zeros((height, width, 3))
-    for mask, colour in zip(instance_segmentation, colours):
-        instance_rgb[mask] = colour
-    return instance_rgb
-
-
-def semantic_segmentation_to_rgb(semantic_segmentation):
-    num_labels, height, width = semantic_segmentation.shape
-    colours = random_colours(num_labels)
-    semantic_rgb = np.zeros((height, width, 3))
-    for mask, colour in zip(semantic_segmentation, colours):
-        semantic_rgb[mask] = colour
-    return semantic_rgb
-
-
 def colorize_depth(depth_image, width, height, num_channels=3):
     colorized_image = np.zeros((height, width, num_channels))
     depth_image[depth_image == 0.0] = 1e-5

@@ -12,15 +12,13 @@
 the results.
 """
 
+import copy
 import os
 import omni
 import random
 import numpy as np
-from pxr import UsdGeom, Semantics
 from omni.isaac.python_app import OmniKitHelper
-from omni.isaac.synthetic_utils import SyntheticDataHelper
 import matplotlib.pyplot as plt
-
 
 TRANSLATION_RANGE = 300.0
 SCALE = 50.0
@@ -30,6 +28,9 @@ def main():
     kit = OmniKitHelper(
         {"renderer": "RayTracedLighting", "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit'}
     )
+    from pxr import UsdGeom, Semantics
+    from omni.isaac.synthetic_utils import SyntheticDataHelper
+
     sd_helper = SyntheticDataHelper()
     from omni.syntheticdata import visualize, helpers
 
@@ -58,6 +59,7 @@ def main():
         sem.GetSemanticDataAttr().Set(prim_type)
 
     # Get groundtruth
+    kit.update()
     viewport = omni.kit.viewport.get_default_viewport_window()
     gt = sd_helper.get_groundtruth(
         [
@@ -68,7 +70,6 @@ def main():
             "instanceSegmentation",
             "semanticSegmentation",
             "boundingBox3D",
-            "camera",
         ],
         viewport,
     )
@@ -92,42 +93,45 @@ def main():
     axes[1].imshow(visualize.colorize_depth(depth_data.squeeze()))
 
     # BBOX2D TIGHT
-    random.seed(1)
     axes[2].set_title("BBox 2D Tight")
-    axes[2].imshow(visualize.colorize_bboxes(gt["boundingBox2DTight"], gt["rgb"]))
+    rgb_data = copy.deepcopy(gt["rgb"])
+    axes[2].imshow(visualize.colorize_bboxes(gt["boundingBox2DTight"], rgb_data))
 
     # BBOX2D LOOSE
-    random.seed(1)
     axes[3].set_title("BBox 2D Loose")
-    axes[3].imshow(visualize.colorize_bboxes(gt["boundingBox2DLoose"], gt["rgb"]))
+    rgb_data = copy.deepcopy(gt["rgb"])
+    axes[3].imshow(visualize.colorize_bboxes(gt["boundingBox2DLoose"], rgb_data))
 
     # INSTANCE SEGMENTATION
-    random.seed(1)
     axes[4].set_title("Instance Segmentation")
     instance_seg = gt["instanceSegmentation"][0]
-    instance_rgb = visualize.colorize_instance(instance_seg)
+    instance_rgb = visualize.colorize_segmentation(instance_seg)
     axes[4].imshow(instance_rgb, alpha=0.7)
 
     # SEMANTIC SEGMENTATION
-    random.seed(1)
     axes[5].set_title("Semantic Segmentation")
     semantic_seg = gt["semanticSegmentation"]
-    semantic_rgb = visualize.colorize_semantic_raw(semantic_seg)
+    semantic_rgb = visualize.colorize_segmentation(semantic_seg)
     axes[5].imshow(semantic_rgb, alpha=0.7)
 
     # BBOX 3D
     axes[6].set_title("BBox 3D")
     bbox_3d_data = gt["boundingBox3D"]
     bboxes_3d_corners = bbox_3d_data["corners"]
-    projected_corners = helpers.project_to_viewport(bboxes_3d_corners.reshape(-1, 3), viewport)
+    projected_corners = helpers.world_to_image(bboxes_3d_corners.reshape(-1, 3), viewport)
     projected_corners = projected_corners.reshape(-1, 8, 3)
-    bboxes3D_rgb = visualize.colorize_bboxes_3d(projected_corners, gt["rgb"])
+    rgb_data = copy.deepcopy(gt["rgb"])
+    bboxes3D_rgb = visualize.colorize_bboxes_3d(projected_corners, rgb_data)
     axes[6].imshow(bboxes3D_rgb)
 
     # Display figure
-    plt.tight_layout()
-    plt.show()
-    plt.savefig("out.png")
+    # plt.tight_layout()
+    # plt.show()
+    # Save figure
+    plt.savefig("visualize_groundtruth.png")
+
+    # cleanup
+    kit.shutdown()
 
 
 if __name__ == "__main__":

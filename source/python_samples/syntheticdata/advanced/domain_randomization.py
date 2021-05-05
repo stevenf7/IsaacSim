@@ -26,10 +26,8 @@ import signal
 
 import carb
 import omni
-from pxr import UsdGeom, UsdShade, Sdf
 
 from omni.isaac.python_app import OmniKitHelper
-from omni.isaac.synthetic_utils import SyntheticDataHelper, shapenet, DomainRandomization
 
 # Setup default generation variables
 # Value are (min, max) ranges
@@ -75,6 +73,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
         assert (split > 0) and (split <= 1.0)
 
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
+        from omni.isaac.synthetic_utils import SyntheticDataHelper, DomainRandomization
+        from omni.isaac.synthetic_utils import shapenet
+
         self.sd_helper = SyntheticDataHelper()
         self.dr_helper = DomainRandomization()
         self.dr_helper.toggle_manual_mode()
@@ -88,9 +89,12 @@ class RandomObjects(torch.utils.data.IterableDataset):
             return
         self.asset_path = nucleus_server + "/Isaac"
 
-        self.categories = categories
+        # If ShapeNet categories are specified with their names, convert to synset ID
+        # Remove this if using with a different dataset than ShapeNet
+        category_ids = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in categories]
+        self.categories = category_ids
         self.range_num_assets = (num_assets_min, max(num_assets_min, num_assets_max))
-        self.references = self._find_usd_assets(root, categories, max_asset_size, split, train)
+        self.references = self._find_usd_assets(root, category_ids, max_asset_size, split, train)
 
         self._setup_world()
         self.cur_idx = 0
@@ -103,6 +107,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.exiting = True
 
     def _setup_world(self):
+        from pxr import UsdGeom
+
         """Setup lights, walls, floor, ceiling and camera"""
         # In a practical setting, the room parameters should attempt to match those of the
         # target domain. Here, we insteady choose for simplicity.
@@ -174,6 +180,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         return references
 
     def load_single_asset(self, ref, semantic_label, suffix=""):
+        from pxr import UsdGeom
+
         """Load a USD asset with random pose.
         args
             ref (str): Path to the USD that this prim will reference.
@@ -263,6 +271,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
     def __next__(self):
         # Generate a new scene
         self.populate_scene()
+        self.randomize_camera()
 
         """The below update calls set the paths of prims that need to be randomized
         with the settings provided in their corresponding DR create component
@@ -317,7 +326,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         # Instance Segmentation
         instance_data, instance_mappings = gt["instanceSegmentation"][0], gt["instanceSegmentation"][1]
-        instance_list = [im[0] for im in instance_mappings]
+        instance_list = [im[0] for im in gt_bbox]
         masks = np.zeros((len(instance_list), *instance_data.shape), dtype=np.bool)
         for i, instances in enumerate(instance_list):
             masks[i] = np.isin(instance_data, instances)
@@ -341,7 +350,6 @@ if __name__ == "__main__":
     "Typical usage"
     import argparse
     import matplotlib.pyplot as plt
-    from omni.isaac.synthetic_utils import visualization as vis
 
     parser = argparse.ArgumentParser("Dataset test")
     parser.add_argument("--categories", type=str, nargs="+", required=True, help="List of object classes to use")
@@ -363,11 +371,11 @@ if __name__ == "__main__":
     if args.root is None:
         args.root = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_mat"
 
-    # If ShapeNet categories are specified with their names, convert to synset ID
-    # Remove this if using with a different dataset than ShapeNet
-    args.categories = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
-
     dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size)
+    from omni.isaac.synthetic_utils import visualization as vis
+    from omni.isaac.synthetic_utils import shapenet
+
+    categories = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
 
     # Iterate through dataset and visualize the output
     plt.ion()
@@ -388,11 +396,14 @@ if __name__ == "__main__":
             overlay[mask, :3] = colour
 
         axes[1].imshow(overlay)
-        mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
+        mapping = {i + 1: cat for i, cat in enumerate(categories)}
         labels = [shapenet.SYNSET_TO_LABEL[mapping[label.item()]] for label in target["labels"]]
         vis.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
 
         plt.draw()
         plt.pause(0.01)
+        plt.savefig("domain_randomization.png")
         if dataset.exiting:
             break
+    # cleanup
+    dataset.kit.shutdown()
