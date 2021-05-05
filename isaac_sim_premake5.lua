@@ -104,10 +104,12 @@ function define_ext_test_experience(ext_name, args)
         "--ext-folder \""..script_dir_token.."/exts\" ",
         "--ext-folder \""..script_dir_token.."/apps\" ",
         "--/isaac/nucleus/default=\"omniverse://ov-isaac-dev\"", -- Default server used for isaac samples
-        "--/omni.kit.plugin/syncUsdLoads=1", -- Force USD to fully load before rendering
+        "--/omni.kit.plugin/syncUsdLoads=true", -- Force USD to fully load before rendering
+        "--/rtx/hydra/materialSyncLoads=true",
         "--/rtx/materialDb/syncLoads=true",
         "--/persistent/app/viewport/displayOptions=0", -- Disable all ui elements in viewport
         "--/app/settings/persistent=false",
+        "--/app/hydraEngine/waitIdle=true",
         "--/app/asyncRendering=False", -- improve determinism
         "--no-assert-dialog",
     }
