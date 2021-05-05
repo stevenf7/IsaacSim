@@ -128,10 +128,9 @@ Launches and configures OmniKit and exposes useful functions.
             "--/persistent/app/viewport/displayOptions=0",  # hide extra stuff in viewport
             # TODO Make this a config setting?
             "--/persistent/physics/overrideGPUSettings=0",  # force CPU physx
-            # "--/persistent/physics/updateToUsd=True",
-            # "--/persistent/physics/useFastCache=False",
             # Forces kit to not render until all USD files are loaded
-            f'--/rtx-defaults/materialDb/syncLoads={self.config["sync_loads"]}',
+            f'--/rtx/materialDb/syncLoads={self.config["sync_loads"]}',
+            f'--/rtx/hydra/materialSyncLoads={self.config["sync_loads"]}'
             f'--/omni.kit.plugin/syncUsdLoads={self.config["sync_loads"]}',
             # TODO: Is this still needed
             "--/app/content/emptyStageOnStart=False",  # This is required due to a infinite loop but results in errors on launch
@@ -139,7 +138,7 @@ Launches and configures OmniKit and exposes useful functions.
             "--/app/asyncRendering=False",
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',
-            f"--ext-folder",
+            "--ext-folder",
             f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',  # adding to json doesn't work
         ]
         if self.config.get("headless"):

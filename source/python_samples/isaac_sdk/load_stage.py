@@ -1,5 +1,4 @@
 import os
-from pxr import UsdGeom, Usd, Gf
 from omni.isaac.python_app import OmniKitHelper
 import carb
 import omni
@@ -17,7 +16,8 @@ CONFIG = {
 
 
 class UsdLoadSample:
-    def __init__(self):
+    def __init__(self, args):
+        CONFIG["headless"] = args.headless
         self.kit = OmniKitHelper(config=CONFIG)
         self.usd_path = ""
 
@@ -27,6 +27,7 @@ class UsdLoadSample:
     def stop(self):
         self.kit.stop()
         omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")
+        self.kit.shutdown()
 
     def load_stage(self, args):
         from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
@@ -38,6 +39,9 @@ class UsdLoadSample:
         self._asset_path = nucleus_server + "/Isaac"
         self.usd_path = self._asset_path + args.usd_path
         omni.usd.get_context().open_stage(self.usd_path, None)
+        # Wait two frames so that stage starts loading
+        self.kit.app.update()
+        self.kit.app.update()
         return True
 
     def configure_bridge(self, json_file: str = "isaacsim.app.json"):
@@ -55,14 +59,22 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser("Usd Load sample")
-    parser.add_argument("--usd_path", type=str, help="path to usd file")
+    parser.add_argument("--usd_path", type=str, help="Path to usd file", required=True)
+    parser.add_argument("--headless", default=False, action="store_true", help="Run stage headless")
+    parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
     args, unknown = parser.parse_known_args()
-    sample = UsdLoadSample()
+    sample = UsdLoadSample(args)
     if sample.load_stage(args):
+        print("Loading stage...")
         while sample.kit.is_loading():
             sample.kit.update(1.0 / 60.0)
+        print("Loading Complete")
         sample.configure_bridge()
         sample.start()
-        while sample.kit.app.is_running():
-            sample.kit.update(1.0 / 60.0)
+        if args.test is True:
+            for i in range(10):
+                sample.kit.update(1.0 / 60.0)
+        else:
+            while sample.kit.app.is_running():
+                sample.kit.update(1.0 / 60.0)
         sample.stop()
