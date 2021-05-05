@@ -12,7 +12,7 @@
 :: See the License for the specific language governing permissions and
 :: limitations under the License.
 
-set PM_PACKMAN_VERSION=6.32
+set PM_PACKMAN_VERSION=6.33.2
 
 :: Specify where packman command is rooted
 set PM_INSTALL_PATH=%~dp0..
@@ -70,7 +70,7 @@ if not exist "%PM_PYTHON_BASE_DIR%" call :CREATE_PYTHON_BASE_DIR
 set PM_PYTHON_PACKAGE=python@%PM_PYTHON_VERSION%.cab
 for /f "delims=" %%a in ('powershell -ExecutionPolicy ByPass -NoLogo -NoProfile -File "%~dp0\generate_temp_file_name.ps1"') do set TEMP_FILE_NAME=%%a
 set TARGET=%TEMP_FILE_NAME%.zip
-call "%~dp0fetch_file_from_s3.cmd" %PM_PYTHON_PACKAGE% "%TARGET%"
+call "%~dp0fetch_file_from_packman_bootstrap.cmd" %PM_PYTHON_PACKAGE% "%TARGET%"
 if %errorlevel% neq 0 (
     echo !!! Error fetching python from CDN !!!
     goto ERROR
@@ -119,7 +119,7 @@ if exist "%PM_MODULE%" goto ENSURE_7ZA
 set PM_MODULE_PACKAGE=packman-common@%PM_PACKMAN_VERSION%.zip
 for /f "delims=" %%a in ('powershell -ExecutionPolicy ByPass -NoLogo -NoProfile -File "%~dp0\generate_temp_file_name.ps1"') do set TEMP_FILE_NAME=%%a
 set TARGET=%TEMP_FILE_NAME%
-call "%~dp0fetch_file_from_s3.cmd" %PM_MODULE_PACKAGE% "%TARGET%"
+call "%~dp0fetch_file_from_packman_bootstrap.cmd" %PM_MODULE_PACKAGE% "%TARGET%"
 if %errorlevel% neq 0 (
     echo !!! Error fetching packman from CDN !!!
     goto ERROR
