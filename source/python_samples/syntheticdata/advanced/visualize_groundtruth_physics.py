@@ -219,6 +219,7 @@ def main():
     # plt.tight_layout()
     # plt.show()
     # Save figure
+    print("saving figure to: ", os.getcwd() + "/visualize_groundtruth_physics.png")
     plt.savefig("visualize_groundtruth_physics.png")
 
     # cleanup
