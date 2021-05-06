@@ -26,11 +26,15 @@ tags = [
 kind = "app"
 #string array, each line is a new line, keep lines under 256 char and keep lines under 4
 description = [
- "NVIDIA Omniverse™ Isaac Sim is built on NVIDIA Omniverse simulation platform, it leverages Omniverse Kit and has been enhanced with robotics specific extensions. Isaac Sim provides the essential features for building virtual robotic worlds and experiments. Isaac Sim supports navigation and manipulation applications through Isaac SDK and ROS, with RGB-D, Lidar and IMU sensors, Domain Randomization, ground truth labeling, segmentation, and bounding boxes."
+ "NVIDIA Omniverse™ Isaac Sim is built on NVIDIA Omniverse simulation platform, it leverages Omniverse Kit and has been enhanced with robotics specific extensions. Isaac Sim provides the essential features for building virtual robotic worlds and experiments. Isaac Sim supports navigation and manipulation applications through Isaac SDK and ROS, with RGB-D, Lidar and IMU sensors, Domain Randomization, ground truth labeling, segmentation, and bounding boxes.",
+ "Note: The System Requirements section below may not be correct. The updated Isaac Sim requirements link is located in the Learn more section at the bottom."
 ]
 
 #array of links for more info on product
 
+[[links]]
+title = "System Requirements"
+url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/requirements.html"
 [[links]]
 title = "Release Notes"
 url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/release_notes.html"
