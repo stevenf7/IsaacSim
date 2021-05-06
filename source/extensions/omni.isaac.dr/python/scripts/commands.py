@@ -377,7 +377,7 @@ class CreateTransformComponentCommand(omni.kit.commands.Command):
         prim.CreateScaleMaxAttr().Set(
             (float(self._scale_max_range[0]), float(self._scale_max_range[1]), float(self._scale_max_range[2]))
         )
-        if self._target_position is not None or self._target_paths is not None:
+        if self._target_position is not None or self._target_paths is not None or len(self._lookat_target_points) > 0:
             prim.CreateEnableLookAtTargetAttr().Set(bool(True))
         else:
             prim.CreateEnableLookAtTargetAttr().Set(bool(False))
