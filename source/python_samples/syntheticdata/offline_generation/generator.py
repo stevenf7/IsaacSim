@@ -87,24 +87,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
         while self.kit.is_loading():
             self.kit.update()
 
-        # Collect Groundtruth
-        viewport = omni.kit.viewport.get_default_viewport_window()
-        gt = self.sd_helper.get_groundtruth(
-            [
-                "rgb",
-                "depth",
-                "depthLinear",
-                "instanceSegmentation",
-                "semanticSegmentation",
-                "boundingBox2DTight",
-                "boundingBox2DLoose",
-            ],
-            viewport,
-        )
-
-        # RGB
-        image = gt["rgb"]
-
         # Enable/disable sensor output and their format
         self._enable_rgb = True
         self._enable_depth = True
@@ -130,9 +112,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
             self.data_writer = self.writer_helper(self._output_folder, self._num_worker_threads, self.max_queue_size)
             self.data_writer.start_threads()
 
+        viewport_iface = omni.kit.viewport.get_viewport_interface()
+        viewport_name = "Viewport"
+        viewport = viewport_iface.get_viewport_window(viewport_iface.get_instance(viewport_name))
         groundtruth = {
             "METADATA": {
                 "image_id": str(self.cur_idx),
+                "viewport_name": viewport_name,
                 "DEPTH": {},
                 "INSTANCE": {},
                 "SEMANTIC": {},
@@ -141,7 +127,26 @@ class RandomScenario(torch.utils.data.IterableDataset):
             },
             "DATA": {},
         }
+
+        gt_list = []
+        if self._enable_rgb:
+            gt_list.append("rgb")
+        if self._enable_depth:
+            gt_list.append("depthLinear")
+        if self._enable_bbox_2d_tight:
+            gt_list.append("boundingBox2DTight")
+        if self._enable_bbox_2d_loose:
+            gt_list.append("boundingBox2DLoose")
+        if self._enable_instance:
+            gt_list.append("instanceSegmentation")
+        if self._enable_semantic:
+            gt_list.append("semanticSegmentation")
+
+        # Collect Groundtruth
+        gt = self.sd_helper.get_groundtruth(gt_list, viewport)
+
         # RGB
+        image = gt["rgb"]
         if self._enable_rgb:
             groundtruth["DATA"]["RGB"] = gt["rgb"]
 
@@ -151,7 +156,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self._enable_depth_colorize
             groundtruth["METADATA"]["DEPTH"]["NPY"] = self._enable_depth_npy
 
-        # # Instance Segmentation
+        # Instance Segmentation
         if self._enable_instance:
             instance_data = gt["instanceSegmentation"][0]
             instance_data_shape = instance_data.shape
@@ -161,7 +166,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self._enable_instance_colorize
             groundtruth["METADATA"]["INSTANCE"]["NPY"] = self._enable_instance_npy
 
-        # # Semantic Segmentation
+        # Semantic Segmentation
         if self._enable_semantic:
             semantic_data = gt["semanticSegmentation"]
             semantic_data_shape = semantic_data.shape
@@ -193,7 +198,7 @@ if __name__ == "__main__":
     "Typical usage"
     import argparse
 
-    parser = argparse.ArgumentParser("Dataset test")
+    parser = argparse.ArgumentParser("Dataset generator")
     parser.add_argument("--scenario", type=str, help="Scenario to load from omniverse server")
     parser.add_argument("--num_frames", type=int, default=10, help="Number of frames to record")
     parser.add_argument("--max_queue_size", type=int, default=500, help="Max size of queue to store and process data")

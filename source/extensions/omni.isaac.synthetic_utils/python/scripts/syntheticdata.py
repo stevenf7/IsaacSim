@@ -198,7 +198,7 @@ class SyntheticDataHelper:
         sensor_state = {}
         # Process non-RT-only sensors
         for sensor in gt_sensors:
-            if sensor_name not in ["camera", "pose"]:
+            if sensor not in ["camera", "pose"]:
                 if sensor == "instanceSegmentation":
                     gt[sensor] = self.sensor_helpers[sensor](viewport, parsed=True, return_mapping=True)
                 elif sensor == "boundingBox3D":
