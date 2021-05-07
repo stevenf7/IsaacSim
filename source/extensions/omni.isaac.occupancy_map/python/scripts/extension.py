@@ -227,6 +227,7 @@ class Extension(omni.ext.IExt):
         def save_image(file, folder):
             from PIL import Image
 
+            file = file if file[-4:].lower() == ".png" else "{}.png".format(file)
             dims = self._om.get_dimensions()
             im = Image.frombytes("RGBA", (dims.x, dims.y), bytes(image))
             print("Saving occupancy map image to", folder + "/" + file)

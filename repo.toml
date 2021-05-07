@@ -228,7 +228,7 @@ path = "${test_root}"
 kind = "catch2"
 default = true
 executables = [
-	"${test_root}/test.unit.range_sensor${exe_ext}",
+	"${test_root}/tests-unit-omni.isaac.range_sensor${exe_ext}",
 ]
 
 ########################################################################################################################

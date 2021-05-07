@@ -141,20 +141,24 @@ Launches and configures OmniKit and exposes useful functions.
             "--ext-folder",
             f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',  # adding to json doesn't work
         ]
-        if self.config.get("headless"):
-            args.append("--no-window")
-            # args.append("--/app/window/hideUi=true")
         if self.config.get("active_gpu"):
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
         # parse any extra command line args here
         parser = argparse.ArgumentParser()
         parser.add_argument("--portable-root")
+        parser.add_argument("--allow-root", default=False, action="store_true")
+        parser.add_argument("--no-window", default=False, action="store_true")
         parsed_args, unknown_args = parser.parse_known_args()
         if parsed_args.portable_root is not None:
             args.append(f"--portable-root")
             args.append(f"{parsed_args.portable_root}")
         else:
             args.append(f"--portable")
+
+        if parsed_args.allow_root:
+            args.append(f"--allow-root")
+        if parsed_args.no_window or self.config.get("headless"):
+            args.append(f"--no-window")
         self.app.startup("kit", os.environ["CARB_APP_PATH"], args)
 
     def __del__(self):
