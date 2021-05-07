@@ -1,19 +1,17 @@
-import omni.kit.tool.asset_importer.native_bindings as assetimport
 import omni.client
-import omni.kit.editor
+import omni.kit
 import omni.usd
 
 import asyncio
-import json
 import os
 from pxr import UsdGeom, Gf, Tf
-from queue import Queue
-from omni.physx.scripts import physicsUtils, utils
+from omni.physx.scripts import utils
 
+omni.kit.pipapi.install("requests")
+import requests
 import urllib.request
 import shutil
 import sys
-import threading
 
 from .globals import *
 
@@ -62,12 +60,15 @@ def file_exists_on_omni(file_path):
 
 
 async def create_folder_on_omni(folder_path):
-    if not await file_exists_on_omni(folder_path):
-        result = await omni.client.create_folder_async(path)
+    if not file_exists_on_omni(folder_path):
+        result = await omni.client.create_folder_async(folder_path)
         return result == omni.client.Result.OK
 
 
 async def convert(in_file, out_file):
+    # This import causes conflicts when global?
+    import omni.kit.asset_converter as assetimport
+
     # Folders must be created first through usd_ext of omni won't be able to create the files creted in them in the current session.
     out_folder = out_file[0 : out_file.rfind("/") + 1]
 
@@ -75,42 +76,31 @@ async def convert(in_file, out_file):
     if out_file.startswith("omniverse://"):
         await create_folder_on_omni(out_folder + "materials")
 
-    # You really should only call this from the MainThread because there will be a deadlock on the GIL when this
-    # calls C++ code from python.
-    # flags can be OMNI_CONVERTER_FLAGS_IGNORE_ANIMATION, OMNI_CONVERTER_FLAGS_IGNORE_MATERIALS,
-    #              OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE, or OMNI_CONVERTER_FLAGS_GEN_SMOOTH_NORMALS
-    # print(in_file, " is being converted and saved as ", out_file, ", please standby, and remember to tip your waitress." )
-    future = assetimport.omniConverterCreateUSD(
-        in_file,
-        out_file,
-        assetimport.OMNI_CONVERTER_FLAGS_EXPORT_AS_SHAPENET | assetimport.OMNI_CONVERTER_FLAGS_SINGLE_MESH_FILE,
-    )
+    def progress_callback(progress, total_steps):
+        pass
 
-    status = assetimport.OmniConverterStatus.eOK
+    converter_context = omni.kit.asset_converter.AssetConverterContext()
+    # setup converter and flags
+    converter_context.as_shapenet = True
+    converter_context.single_mesh = True
+    instance = omni.kit.asset_converter.get_instance()
+    task = instance.create_converter_task(in_file, out_file, progress_callback, converter_context)
+
+    success = True
     while True:
-        status = assetimport.omniConverterCheckFutureStatus(future)
-        if status == assetimport.OmniConverterStatus.eInProgress:
+        success = await task.wait_until_finished()
+        if not success:
             await asyncio.sleep(0.1)
         else:
             break
-    g_futures_to_release.put(future)
-    return status
+    return success
 
 
 # This is the main entry point for any function that wants to add a shape to the scene.
 # Care must be taken when running this on a seperate thread from the main thread because
 # it calls c++ modules from python which hold the GIL.
 def addShapePrim(
-    use_async,
-    omniverseServer,
-    synsetId,
-    modelId,
-    pos,
-    rot,
-    scale,
-    auto_add_physics=False,
-    use_convex_decomp=False,
-    do_not_place=False,
+    omniverseServer, synsetId, modelId, pos, rot, scale, auto_add_physics, use_convex_decomp, do_not_place=False
 ):
     # use shapenet v2 for models
     shape_url = g_shapenet_url + "2/" + synsetId + "/" + modelId + "/"
@@ -132,12 +122,6 @@ def addShapePrim(
     )  # don't forget to add the name at the end and .usd
     omni_modified_path = omni_shape_loc + "/n" + synsetId + "/i" + modelId + "/modified/"
 
-    # Know we want to introduce an instance of the shapenet model onto the stage.
-    # Before we do that, we may have some work to do.
-    editor_interface = omni.kit.editor.get_editor_interface()
-    if not editor_interface:
-        return "ERROR Could not get the editor interface from kit."
-
     stage = omni.usd.get_context().get_stage()
     if not stage:
         return "ERROR Could not get the stage."
@@ -152,6 +136,7 @@ def addShapePrim(
     global g_shapenet_db
     g_shapenet_db = get_database()
     if g_shapenet_db == None:
+        shape_name = ""
         print("Please create an Shapenet ID Database with the menu.")
     else:
         shape_name = Tf.MakeValidIdentifier(g_shapenet_db[synsetId][modelId][4])
@@ -195,17 +180,10 @@ def addShapePrim(
             # Add The file to omniverse here, if you add them asyncronously, then you have to do the
             # rest of the scene adding later.
             print(f"---Converting {shape_name}...")
-            if g_converters.empty() or not use_async:
-                status = asyncio.get_event_loop().run_until_complete(convert(local_path, omni_path))
-                if not status == assetimport.OmniConverterStatus.eOK:
-                    return f"ERROR OmniConverterStatus is {status}"
-                print(f"---Added to Omniverse as {omni_path}.")
-            else:
-                print("---Added to Omniverse Asyncronously.")
-                thread_num = g_converters.get()
-                place_later = True
-                # TODO Add thr running of the conversion in teh other thread, and when it is done, add to a queue
-                # the addition of the over, and teh placement if it should be placed.
+            status = asyncio.get_event_loop().run_until_complete(convert(local_path, omni_path))
+            if not status:
+                return f"ERROR OmniConverterStatus is {status}"
+            print(f"---Added to Omniverse as {omni_path}.")
 
         # Add the over reference of the omni file to the stage here.
         print(f"----Adding over of {over_path} to stage.")
