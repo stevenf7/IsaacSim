@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 from omni.isaac.synthetic_utils import visualization as vis
 from omni.isaac.python_app import OmniKitHelper
 from omni.isaac.synthetic_utils import SyntheticDataHelper
-from omni.isaac.synthetic_utils import utils as ut
 
 from jetracer import Jetracer
 from track_environment import Environment
