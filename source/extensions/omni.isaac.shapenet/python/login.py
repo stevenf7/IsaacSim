@@ -1,19 +1,11 @@
-import carb
-import carb.settings
-from omni.kit.settings import create_setting_widget, create_setting_widget_combo, SettingType
-import omni.kit.ui
-import omni.kit.commands
 import time
-from pxr import Gf
-from collections import OrderedDict
 from .globals import *
 from .shape import get_links, download_file
-import random
 import os
-from omni import ui
+import omni.kit.pipapi
+import omni.ui as ui
 
-EXTENSION_NAME = "Create Shapenet ID Database"
-EXTENSION_DESC = "Create Shapenet ID Database"
+
 WIDGET_WIDTH = 130
 
 # this function is used to make sure the user can log into shapenet.org.  It should be used before creating the pickle.
@@ -128,21 +120,17 @@ def save_and_testDB(snDb, out_file):
 
 
 class ShapenetLogin:
-    def get_name(self):
-        return EXTENSION_NAME
-
-    def get_description(self):
-        return EXTENSION_DESC
-
     def __init__(self, shapenetMenu):
         self._shapenetMenu = shapenetMenu
-        self._settings = carb.settings.get_settings()
 
         self.build_window()
 
     def build_window(self):
         """ build ShapeNet Login window"""
-        self._window = ui.Window("ShapeNet Login", width=400, height=150)
+        self._window = ui.Window(
+            title="ShapeNet Login", width=400, height=150, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        )
+
         with self._window.frame:
             with ui.VStack():
                 with ui.HStack(height=20):

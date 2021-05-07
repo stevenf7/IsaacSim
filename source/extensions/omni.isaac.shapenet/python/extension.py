@@ -6,8 +6,8 @@
     machine--fetching to the local machine from the web if needed--and upoad it to
     omniverse if there is a connection.
 """
-
 import omni.ext
+import omni.kit
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
@@ -15,9 +15,7 @@ import os
 import threading
 from time import sleep, time
 
-import omni.kit.tool.asset_importer.native_bindings as assetimport
 from .comm import process_request_in_thread
-from .exceptions import ShapenetException
 from .globals import *
 from .menu import ShapenetMenu
 
@@ -77,27 +75,33 @@ def run_server(httpd):
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        ext_folder = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-        lib_path = omni.kit.extensions.build_plugin_path(ext_folder, "omni.isaac.shapenet.plugin")
+        if DEBUG_PRINT_ON:
+            print("\nI STARTED I STARTED!\n")
         self._menu = ShapenetMenu()
-        self._editor = omni.kit.editor.get_editor_interface()
+
+        if DEBUG_PRINT_ON:
+            print("\nafter ShapenetMenu\n")
         # Creat the TCPServer and run it in another thread, but keep handle to it so
         # we can call shutdown loater.
         server_address = (g_bind_address[0], int(g_bind_address[1]))
         self._http_server = HTTPServer(server_address, ShapeNetRequestHandler)
-        self.thread = threading.Thread(target=run_server, args=(self._http_server,))
-        # get an event loop for each thread that we are going to run converters in.
-        for x in range(g_num_converters):
-            new_loop = asyncio.new_event_loop()
-            t = Thread(target=start_loop, args=(new_loop,))
-            g_converter_loops.append(new_loop)
-            g_converter_threds.append(t)
 
-        self.sub = self._editor.subscribe_to_update_events(self._on_update)
+        if DEBUG_PRINT_ON:
+            print("\nafter http_server\n")
+        self.thread = threading.Thread(target=run_server, args=(self._http_server,))
+
+        if DEBUG_PRINT_ON:
+            print("\nafter threading\n")
         self.thread.start()
-        for x in range(g_num_converters):
-            g_converters.put(x)
-            g_converter_threads[x].start()
+
+        if DEBUG_PRINT_ON:
+            print("\nafter threading.start\n")
+        self.update_events = (
+            omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_update)
+        )
+
+        if DEBUG_PRINT_ON:
+            print("\nafter update_events\n")
 
     def on_shutdown(self):
         if DEBUG_PRINT_ON:
@@ -109,11 +113,6 @@ class Extension(omni.ext.IExt):
         if DEBUG_PRINT_ON:
             print("After self.thread.join() in on_shutdown")
 
-        for x in range(g_num_converters):
-            g_converter_loops[x].stop()
-            g_converter_loops[x].close()
-            g_converter_threads[x].join()
-
         self._menu.shutdown()
         if DEBUG_PRINT_ON:
             print("After self._menu.shutdown() in on_shutdown")
@@ -122,10 +121,6 @@ class Extension(omni.ext.IExt):
             print("After self._menu = None in on_shutdown")
 
     def _on_update(self, dt):
-        while not g_futures_to_release.empty():
-            future = g_futures_to_release.get()
-            assetimport.omniConverterReleaseFuture(future)
-
         if not g_requests.empty():
             request = g_requests.get()
             if DEBUG_PRINT_ON:

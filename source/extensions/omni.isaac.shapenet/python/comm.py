@@ -1,6 +1,5 @@
 from pxr import Gf
 import traceback
-from .menu import ShapenetMenu
 from .globals import *
 from .shape import addShapePrim
 
@@ -68,11 +67,17 @@ def process_request_in_thread(thread_type, responses_queue, menu, request):
         g_root_usd_namespace_path = request["g_root_usd_namespace_path"]
         response["message"] += f"g_root_usd_namespace_path = {g_root_usd_namespace_path}. "
 
-    if "use_async" not in request:
-        use_async = 1
+    if "auto_add_physics" not in request:
+        auto_add_physics = 0
     else:
-        use_async = request["use_async"]
-        response["message"] += f"use_async = {use_async}. "
+        auto_add_physics = request["auto_add_physics"]
+        response["message"] += f"auto_add_physics = {auto_add_physics}. "
+
+    if "use_convex_decomp" not in request:
+        use_convex_decomp = 0
+    else:
+        use_convex_decomp = request["use_convex_decomp"]
+        response["message"] += f"use_convex_decomp = {use_convex_decomp}. "
 
     if "do_not_place" not in request:
         do_not_place = 0
@@ -84,21 +89,22 @@ def process_request_in_thread(thread_type, responses_queue, menu, request):
         try:
             # This is where all the work is done once the message is decoded.
             added_prim = addShapePrim(
-                use_async,
                 request["omniverseServer"],
                 request["synsetId"],
                 request["modelId"],
                 pos,
                 rot,
                 scale,
+                auto_add_physics,
+                use_convex_decomp,
                 do_not_place,
             )
             if added_prim is None:
                 response["message"] += "Didn't add object."
             else:
-                response["message"] += "Added object: " + added_prim.GetPath()
+                response["message"] += "Added object: " + added_prim.GetPath().pathString
         except:
-            response["message"] += " had Error, so ould not run addShapePrim."
+            response["message"] += " had Error, so could not run addShapePrim."
             response["success"] = False
             traceback.print_exc()
 

@@ -1,10 +1,8 @@
 local ext = get_current_extension_info()
-project_ext (ext)
+project_ext (ext, { 
+    define_test = false
+})
 
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir.."/omni/isaac/shapenet/scripts" },
-}
-
-repo_build.prebuild_copy {
-    { "python/*.py", ext.target_dir.."/omni/isaac/shapenet" },
+    { "python", ext.target_dir.."/omni/isaac/shapenet" },
 }
