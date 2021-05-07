@@ -98,7 +98,7 @@ class Extension(omni.ext.IExt):
             attributes={
                 UsdLux.Tokens.intensity: 1000,
                 UsdLux.Tokens.specular: 1,
-                UsdLux.Tokens.textureFile: "omniverse://ov-isaac-dev/Library/Materials/HDR/aircraft_workshop_01_2k.hdr",
+                UsdLux.Tokens.textureFile: "omniverse://ov-isaac-dev.nvidia.com/Library/Materials/HDR/aircraft_workshop_01_2k.hdr",
                 UsdLux.Tokens.textureFormat: UsdLux.Tokens.latlong,
                 UsdGeom.Tokens.visibility: "inherited",
             },
