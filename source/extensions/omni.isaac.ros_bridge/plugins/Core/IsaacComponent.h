@@ -57,7 +57,12 @@ public:
     virtual void onStart()
     {
     }
-
+    /** @brief Function that runs after stop is pressed
+     *
+     */
+    virtual void onStop()
+    {
+    }
     /**
      * @brief Called every frame
      *

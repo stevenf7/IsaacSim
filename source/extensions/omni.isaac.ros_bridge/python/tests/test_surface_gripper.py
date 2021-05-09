@@ -36,11 +36,23 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
             return
         self._nucleus_path = nucleus_server + "/Isaac"
         kit_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
+
+        self._physics_rate = 60
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+        await omni.kit.app.get_app().next_update_async()
+
         self._roscore = Roscore()
         self._roscore.startup(kit_folder + "/python/bin", self._ros_extension_path + "/noetic", "_CATKIN_SETUP_DIR")
         await wait_for_rosmaster()
         await omni.kit.app.get_app().next_update_async()
-        rospy.init_node("isaac_sim_test_rospy", anonymous=True, disable_signals=True)
+
+        try:
+            rospy.init_node("isaac_sim_test_rospy", anonymous=True, disable_signals=True)
+        except rospy.exceptions.ROSException as e:
+            print("Node has already been initialized, do nothing")
+
         print("STARTUP")
         pass
 
@@ -50,7 +62,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
-        rospy.signal_shutdown("test_complete")
+        # rospy.signal_shutdown("test_complete")
         self._roscore.shutdown()
         self._roscore = None
         self._timeline = None
@@ -87,7 +99,12 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
 
         pub = rospy.Publisher("joint_command", JointState, queue_size=10)
         suction_pub = rospy.Publisher("gripper_command", JointState, queue_size=10)
+        self._gripper_state = -1.0
 
+        def suction_callback(data):
+            self._gripper_state = data.position[0]
+
+        suction_sub = rospy.Subscriber("gripper_state", JointState, suction_callback)
         joints = [
             "shoulder_pan_joint",
             "shoulder_lift_joint",
@@ -167,7 +184,20 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         await simulate(2)
         self.assertGreater(self._dc.get_rigid_body_pose(handle_3).p.z, 10)
 
+        # Check to make sure that stopping simulation clears gripper state
         send_open_message()
         await simulate(2)
+        send_joint_message(states["bin_3"]["lift"])
+        await simulate(2)
+        send_joint_message(states["bin_3"]["grab"])
+        await simulate(2)
+        send_close_message()
+        await simulate(2)
+        self.assertEqual(self._gripper_state, 1.0)
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        await simulate(2)
+        self.assertEqual(self._gripper_state, 0.0)
         self._timeline.stop()
         pass

@@ -28,14 +28,17 @@ class TestRospy(omni.kit.test.AsyncTestCase):
         self._roscore.startup(kit_folder + "/python/bin", self._ros_extension_path + "/noetic", "_CATKIN_SETUP_DIR")
         await wait_for_rosmaster()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
-        rospy.init_node("isaac_sim_test_rospy", anonymous=True, disable_signals=True)
+        try:
+            rospy.init_node("isaac_sim_test_gripper", anonymous=True, disable_signals=True)
+        except rospy.exceptions.ROSException as e:
+            print("Node has already been initialized, do nothing")
         pass
 
     # After running each test
     async def tearDown(self):
         self._stage = None
         self._timeline = None
-        rospy.signal_shutdown("test_complete")
+        # rospy.signal_shutdown("test_complete")
         self._roscore.shutdown()
         self._roscore = None
 

@@ -36,6 +36,7 @@ public:
                             const pxr::RosBridgeSchemaRosBridgeComponent& prim,
                             pxr::UsdStageWeakPtr stage);
 
+    virtual void onStop();
     virtual void onComponentChange();
     void pubCallback(ros::Publisher* pub);
     void subCallback(const sensor_msgs::JointState::ConstPtr& msg);
