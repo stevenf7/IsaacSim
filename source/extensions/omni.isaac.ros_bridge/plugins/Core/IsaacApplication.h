@@ -59,6 +59,11 @@ public:
 
     void tick(double dt);
     /**
+     * @brief Call stop on all components to do any cleanup
+     *
+     */
+    void onStop();
+    /**
      * @brief Create a supported component in this application
      *
      * @param prim

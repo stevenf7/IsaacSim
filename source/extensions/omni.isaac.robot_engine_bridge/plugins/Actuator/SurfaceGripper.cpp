@@ -44,7 +44,10 @@ void SurfaceGripper::onStart()
 {
     onComponentChange();
 }
-
+void SurfaceGripper::onStop()
+{
+    mGripperJoint->open();
+}
 void SurfaceGripper::tick()
 {
     CARB_PROFILE_ZONE(0, "REB SurfaceGripper Tick");
