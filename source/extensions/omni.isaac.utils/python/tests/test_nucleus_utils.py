@@ -24,16 +24,21 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             # specify default saved server does doesn't have /Isaac folder, and one that doesn't
             carb.settings.get_settings().set(
                 "/persistent/app/omniverse/mountedDrives",
-                json.dumps({"ov-isaac-dev": "omniverse://ov-isaac-dev", "ov-content": "omniverse://ov-content"}),
+                json.dumps(
+                    {
+                        "ov-isaac-dev.nvidia.com": "omniverse://ov-isaac-dev.nvidia.com",
+                        "ov-content.nvidia.com": "omniverse://ov-content.nvidia.com",
+                    }
+                ),
             )
             carb.settings.get_settings().set("/isaac/nucleus/default", "")
             result, nucleus_server = find_nucleus_server()
             self.assertTrue(result)
             carb.settings.get_settings().set("/persistent/app/omniverse/mountedDrives", "{}")
 
-        # check if the "/isaac/nucleus/default" setting works, clear saved servers to force ov-isaac-dev
+        # check if the "/isaac/nucleus/default" setting works, clear saved servers to force ov-isaac-dev.nvidia.com
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "")
-        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-isaac-dev")
+        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-isaac-dev.nvidia.com")
         result, nucleus_server = find_nucleus_server()
         self.assertTrue(result)
         # result should be false because no servers are specified in default or saved
@@ -42,33 +47,39 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         result, nucleus_server = find_nucleus_server()
         self.assertFalse(result)
         # specify default saved server that doesn't have /Isaac folder
-        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "ov-content")
+        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "ov-content.nvidia.com")
         carb.settings.get_settings().set("/isaac/nucleus/default", "")
         result, nucleus_server = find_nucleus_server()
         self.assertFalse(result)
         # specify default saved server does doesn't have /Isaac folder, and one that doesn't
-        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "ov-content;ov-isaac-dev")
+        carb.settings.get_settings().set(
+            "/persistent/app/omniverse/savedServers", "ov-content.nvidia.com;ov-isaac-dev.nvidia.com"
+        )
         carb.settings.get_settings().set("/isaac/nucleus/default", "")
         result, nucleus_server = find_nucleus_server()
         self.assertTrue(result)
         # test if adding localhost messes anything up
-        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "localhost;ov-content;ov-isaac-dev")
+        carb.settings.get_settings().set(
+            "/persistent/app/omniverse/savedServers", "localhost;ov-content.nvidia.com;ov-isaac-dev.nvidia.com"
+        )
         carb.settings.get_settings().set("/isaac/nucleus/default", "")
         result, nucleus_server = find_nucleus_server()
         self.assertTrue(result)
         # test if default server + saved servers that don't have /Isaac works
-        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "localhost;ov-content")
-        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-isaac-dev")
+        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "localhost;ov-content.nvidia.com")
+        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-isaac-dev.nvidia.com")
         result, nucleus_server = find_nucleus_server()
         self.assertTrue(result)
         # test if default server + saved servers that have /Isaac works
-        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "localhost;ov-content;ov-isaac-dev")
-        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-isaac-dev")
+        carb.settings.get_settings().set(
+            "/persistent/app/omniverse/savedServers", "localhost;ov-content.nvidia.com;ov-isaac-dev.nvidia.com"
+        )
+        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-isaac-dev.nvidia.com")
         result, nucleus_server = find_nucleus_server()
         self.assertTrue(result)
         # result should be false because no servers contain /Isaac
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "")
-        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-content")
+        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-content.nvidia.com")
         result, nucleus_server = find_nucleus_server()
         self.assertFalse(result)
         # result should be false because no servers contain /Isaac
