@@ -66,6 +66,8 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertEqual(self._sample.has_arrived(), False)  # not enough time passed for it to reach target
         await simulate(2)
         self.assertEqual(self._sample.has_arrived(), True)
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # enable following target, check that we reached it
@@ -87,6 +89,8 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         left, right = self._sample.gripper_state()
         self.assertAlmostEqual(left, 0.0, delta=0.1)
         self.assertAlmostEqual(right, 0.0, delta=0.1)
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     async def test_obstacle(self):
@@ -120,6 +124,8 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._sample.move_target(Gf.Vec3d(30.0, 30.0, 0))
         await simulate(4)
         self.assertEqual(self._sample.has_arrived(), False)
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
 
     async def test_data_collection(self):
         self._sample.create_robot()
@@ -128,11 +134,13 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._sample.follow_target()
         await simulate(4)
         self._sample.reset_action_state_dict()
+        print("Collect data")
         self._sample.collect_action_state()
         state_action_dict = self._sample.get_action_state_dict()
 
         import numpy as np
 
+        print("Checking collected data")
         np.testing.assert_almost_equal(
             state_action_dict["joint command"][0],
             np.array([-0.00882683, -0.78860676, 0.00875621, -2.84749961, 0.00704176, 2.05903769, 0.77942944, 0.0, 0.0]),
@@ -143,6 +151,8 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
             np.array([-8.8267e-03, -7.8861e-01, 8.75626e-03, -2.8475, 7.04182e-03, 2.0590, 7.7940e-01, 0.0, 0.0]),
             decimal=3,
         )
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
 
     # Run all functions with simulation enabled
     async def test_simulation(self):
@@ -166,4 +176,6 @@ class TestRMPSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         await simulate(1)
         self._sample.stop_tasks()
         await simulate(1)
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
         pass

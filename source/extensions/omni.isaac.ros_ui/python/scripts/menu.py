@@ -45,32 +45,32 @@ class RosBridgeMenu:
 
     def add_camera(self):
         result, prim = omni.kit.commands.execute(
-            "CreateROSBridgeCameraCommand", path="/ROS_Camera", parent=self._get_stage_and_path()
+            "ROSBridgeCreateCamera", path="/ROS_Camera", parent=self._get_stage_and_path()
         )
 
         pass
 
     def add_clock(self):
         result, prim = omni.kit.commands.execute(
-            "CreateROSBridgeClockCommand", path="/ROS_Clock", parent=self._get_stage_and_path()
+            "ROSBridgeCreateClock", path="/ROS_Clock", parent=self._get_stage_and_path()
         )
         pass
 
     def add_joint_state(self):
         result, prim = omni.kit.commands.execute(
-            "CreateROSBridgeJointStateCommand", path="/ROS_JointState", parent=self._get_stage_and_path()
+            "ROSBridgeCreateJointState", path="/ROS_JointState", parent=self._get_stage_and_path()
         )
         pass
 
     def add_lidar(self):
         result, prim = omni.kit.commands.execute(
-            "CreateROSBridgeLidarCommand", path="/ROS_Lidar", parent=self._get_stage_and_path()
+            "ROSBridgeCreateLidar", path="/ROS_Lidar", parent=self._get_stage_and_path()
         )
         pass
 
     def add_pose_tree(self):
         result, prim = omni.kit.commands.execute(
-            "CreateROSBridgePoseTreeCommand", path="/ROS_PoseTree", parent=self._get_stage_and_path()
+            "ROSBridgeCreatePoseTree", path="/ROS_PoseTree", parent=self._get_stage_and_path()
         )
 
         pass
@@ -89,14 +89,14 @@ class RosBridgeMenu:
 
     def add_teleport(self):
         result, prim = omni.kit.commands.execute(
-            "CreateROSBridgeTeleportCommand", path="/ROS_Teleport", parent=self._get_stage_and_path()
+            "ROSBridgeCreateTeleport", path="/ROS_Teleport", parent=self._get_stage_and_path()
         )
 
         pass
 
     def add_surface_gripper(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateROSBridgeSurfaceGripperCommand",
+            "ROSBridgeCreateSurfaceGripper",
             path="/ROS_SurfaceGripper",
             parent=self._get_stage_and_path(),
             d6_joint_prim_rel=None,
@@ -115,7 +115,7 @@ class RosBridgeMenu:
 
     def add_differential_base(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateROSBridgeDifferentialBaseCommand",
+            "ROSBridgeCreateDifferentialBase",
             path="/ROS_DifferentialBase",
             parent=self._get_stage_and_path(),
             enabled=True,

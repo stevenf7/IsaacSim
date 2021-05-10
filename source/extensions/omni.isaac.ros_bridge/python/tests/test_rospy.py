@@ -59,7 +59,7 @@ class TestRospy(omni.kit.test.AsyncTestCase):
 
     async def test_clock(self):
         await asyncio.sleep(4.0)
-        result, prim = omni.kit.commands.execute("CreateROSBridgeClockCommand", path="/ROS_Clock")
+        result, prim = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock")
         self._timeline.play()
         await asyncio.sleep(4.0)
         self._timeline.stop()

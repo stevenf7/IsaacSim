@@ -189,14 +189,21 @@ void RosJointState::subCallback(const sensor_msgs::JointState::ConstPtr& msg)
             {
                 DcDofProperties props;
                 mDynamicControlPtr->getDofProperties(dof, &props);
+                float elementValue = static_cast<float>(msg->position[actuator_idx]);
                 if (props.type == DcDofType::eTranslation)
                 {
-                    mDynamicControlPtr->setDofPositionTarget(dof, msg->position[actuator_idx] * mUnitScale);
+                    elementValue *= mUnitScale;
                 }
-                else
+                if (props.hasLimits)
                 {
-                    mDynamicControlPtr->setDofPositionTarget(dof, msg->position[actuator_idx]);
+                    elementValue = CARB_CLAMP(elementValue, props.lower, props.upper);
                 }
+                if (props.type == DcDofType::eRotation)
+                {
+                    // Joints become unstable if we get close to 2*pi limit. Artificially limit as a workaround
+                    elementValue = CARB_CLAMP(elementValue, -6.25, 6.25);
+                }
+                mDynamicControlPtr->setDofPositionTarget(dof, elementValue);
             }
         }
     }
@@ -215,15 +222,14 @@ void RosJointState::subCallback(const sensor_msgs::JointState::ConstPtr& msg)
             {
                 float velocityValue = static_cast<float>(msg->velocity[actuator_idx]);
                 DcDofProperties props;
-                if (props.hasLimits)
-                {
-                    velocityValue = std::min(velocityValue, props.maxVelocity);
-                }
                 mDynamicControlPtr->getDofProperties(dof, &props);
+                // Clamp after scale to stage units
                 if (props.type == DcDofType::eTranslation)
                 {
                     velocityValue *= mUnitScale;
                 }
+                velocityValue = std::min(velocityValue, props.maxVelocity);
+
                 mDynamicControlPtr->setDofVelocityTarget(dof, velocityValue);
             }
             else
@@ -234,7 +240,7 @@ void RosJointState::subCallback(const sensor_msgs::JointState::ConstPtr& msg)
     }
     else
     {
-        CARB_LOG_ERROR("Only Position and Velocity Controls are supported");
+        CARB_LOG_ERROR("Only Position and Velocity joint commands are supported");
         return;
     }
 }
