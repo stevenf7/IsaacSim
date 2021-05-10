@@ -88,12 +88,13 @@ void JointControl::tick()
                     {
                         elementValue *= mUnitScale;
                     }
-                    if (props.hasLimits)
-                    {
-                        elementValue = CARB_CLAMP(elementValue, props.lower, props.upper);
-                    }
                     if (measure == isaac_message::Composite::Measure::POSITION)
                     {
+                        // Clamp after scale to stage units
+                        if (props.hasLimits)
+                        {
+                            elementValue = CARB_CLAMP(elementValue, props.lower, props.upper);
+                        }
                         if (props.type == omni::isaac::dynamic_control::DcDofType::eRotation)
                         {
                             // Joints become unstable if we get close to 2*pi limit. Artificially limit as a workaround
@@ -104,6 +105,8 @@ void JointControl::tick()
                     }
                     else if (measure == isaac_message::Composite::Measure::SPEED)
                     {
+
+                        elementValue = std::min(elementValue, props.maxVelocity);
                         mDynamicControlPtr->setDofVelocityTarget(handle, elementValue);
                     }
                 }

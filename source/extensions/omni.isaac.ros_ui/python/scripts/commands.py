@@ -17,7 +17,7 @@ def setup_base_prim(prim):
 
 
 # this command is used to create each REB prim, it also handles undo so that each individual prim command doesn't have to
-class CreateROSBridgePrimCommand(omni.kit.commands.Command):
+class RosBridgeCreatePrim(omni.kit.commands.Command):
     def __init__(self, path: str, parent: str, scehma_type):
         self._path = path
         self._parent = parent
@@ -38,7 +38,7 @@ class CreateROSBridgePrimCommand(omni.kit.commands.Command):
             return self._stage.RemovePrim(self._prim_path)
 
 
-class CreateROSBridgeClockCommand(omni.kit.commands.Command):
+class ROSBridgeCreateClock(omni.kit.commands.Command):
     def __init__(self, path: str = "/ROS_Clock", parent=None):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -49,7 +49,7 @@ class CreateROSBridgeClockCommand(omni.kit.commands.Command):
 
     def do(self) -> bool:
         success, self._prim = omni.kit.commands.execute(
-            "CreateROSBridgePrimCommand", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosClock
+            "RosBridgeCreatePrim", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosClock
         )
         if success and self._prim:
             self._prim.CreateClockPubTopicAttr("/clock")
@@ -60,7 +60,7 @@ class CreateROSBridgeClockCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateROSBridgeCameraCommand(omni.kit.commands.Command):
+class ROSBridgeCreateCamera(omni.kit.commands.Command):
     def __init__(
         self, path: str = "/ROS_Camera", parent=None, camera_prim_rel=None, use_existing_viewport: bool = True
     ):
@@ -73,7 +73,7 @@ class CreateROSBridgeCameraCommand(omni.kit.commands.Command):
 
     def do(self) -> bool:
         success, self._prim = omni.kit.commands.execute(
-            "CreateROSBridgePrimCommand", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosCamera
+            "RosBridgeCreatePrim", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosCamera
         )
         if success and self._prim:
             rel_paths = self._prim.CreateCameraPrimRel()
@@ -109,7 +109,7 @@ class CreateROSBridgeCameraCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateROSBridgeJointStateCommand(omni.kit.commands.Command):
+class ROSBridgeCreateJointState(omni.kit.commands.Command):
     def __init__(self, path: str = "/ROS_JointState", parent=None):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -120,7 +120,7 @@ class CreateROSBridgeJointStateCommand(omni.kit.commands.Command):
 
     def do(self) -> bool:
         success, self._prim = omni.kit.commands.execute(
-            "CreateROSBridgePrimCommand", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosJointState
+            "RosBridgeCreatePrim", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosJointState
         )
         if success and self._prim:
             self._prim.CreateJointStatePubTopicAttr("/joint_states")
@@ -133,7 +133,7 @@ class CreateROSBridgeJointStateCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateROSBridgeLidarCommand(omni.kit.commands.Command):
+class ROSBridgeCreateLidar(omni.kit.commands.Command):
     def __init__(self, path: str = "/ROS_Lidar", parent=None):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -144,7 +144,7 @@ class CreateROSBridgeLidarCommand(omni.kit.commands.Command):
 
     def do(self) -> bool:
         success, self._prim = omni.kit.commands.execute(
-            "CreateROSBridgePrimCommand", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosLidar
+            "RosBridgeCreatePrim", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosLidar
         )
         if success and self._prim:
             self._prim.CreateLaserScanPubTopicAttr("/laser_scan")
@@ -160,7 +160,7 @@ class CreateROSBridgeLidarCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateROSBridgePoseTreeCommand(omni.kit.commands.Command):
+class ROSBridgeCreatePoseTree(omni.kit.commands.Command):
     def __init__(self, path: str = "/ROS_PoseTree", parent=None):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -171,7 +171,7 @@ class CreateROSBridgePoseTreeCommand(omni.kit.commands.Command):
 
     def do(self) -> bool:
         success, self._prim = omni.kit.commands.execute(
-            "CreateROSBridgePrimCommand", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosPoseTree
+            "RosBridgeCreatePrim", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosPoseTree
         )
         if success and self._prim:
             self._prim.CreatePoseTreePubTopicAttr("/tf")
@@ -183,7 +183,7 @@ class CreateROSBridgePoseTreeCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateROSBridgeTeleportCommand(omni.kit.commands.Command):
+class ROSBridgeCreateTeleport(omni.kit.commands.Command):
     def __init__(self, path: str = "/ROS_Teleport", parent=None):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -194,7 +194,7 @@ class CreateROSBridgeTeleportCommand(omni.kit.commands.Command):
 
     def do(self) -> bool:
         success, self._prim = omni.kit.commands.execute(
-            "CreateROSBridgePrimCommand", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosTeleport
+            "RosBridgeCreatePrim", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosTeleport
         )
         if success and self._prim:
             self._prim.CreatePoseSrvTopicAttr("/teleport_pos")
@@ -205,7 +205,7 @@ class CreateROSBridgeTeleportCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateROSBridgeSurfaceGripperCommand(omni.kit.commands.Command):
+class ROSBridgeCreateSurfaceGripper(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/ROS_SurfaceGripper",
@@ -231,7 +231,7 @@ class CreateROSBridgeSurfaceGripperCommand(omni.kit.commands.Command):
 
     def do(self) -> bool:
         success, self._prim = omni.kit.commands.execute(
-            "CreateROSBridgePrimCommand", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosSurfaceGripper
+            "RosBridgeCreatePrim", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosSurfaceGripper
         )
         if success and self._prim:
             self._prim.CreateSurfaceGripperPubTopicAttr("/gripper_state")
@@ -267,7 +267,7 @@ class CreateROSBridgeSurfaceGripperCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateROSBridgeDifferentialBaseCommand(omni.kit.commands.Command):
+class ROSBridgeCreateDifferentialBase(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/ROS_DifferentialBase",
@@ -292,10 +292,7 @@ class CreateROSBridgeDifferentialBaseCommand(omni.kit.commands.Command):
 
     def do(self) -> bool:
         success, self._prim = omni.kit.commands.execute(
-            "CreateROSBridgePrimCommand",
-            path=self._path,
-            parent=self._parent,
-            scehma_type=ROSSchema.RosDifferentialBase,
+            "RosBridgeCreatePrim", path=self._path, parent=self._parent, scehma_type=ROSSchema.RosDifferentialBase
         )
         if success and self._prim:
             self._prim.CreateStatePubTopicAttr("/odom")
