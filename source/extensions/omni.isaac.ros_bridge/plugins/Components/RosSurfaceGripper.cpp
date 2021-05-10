@@ -45,7 +45,10 @@ void RosSurfaceGripper::initialize(RosNode* rosNode,
     IsaacComponent::initialize(rosNode, prim, stage);
     onComponentChange();
 }
-
+void RosSurfaceGripper::onStop()
+{
+    mGripperJoint->open();
+}
 void RosSurfaceGripper::onComponentChange()
 {
 

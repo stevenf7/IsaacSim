@@ -71,7 +71,15 @@ void IsaacApplication::tick(double dt)
     mTimeSeconds += dt;
     mTimeNanoSeconds = mTimeSeconds * 1e9;
 }
+void IsaacApplication::onStop()
+{
 
+    for (auto& component : mComponents)
+    {
+        component.second->onStop();
+        component.second->mDoStart = true;
+    }
+}
 RosNode* IsaacApplication::getRosNode(const pxr::UsdPrim& prim)
 {
     const pxr::RosBridgeSchemaRosBridgeComponent& typedPrim = pxr::RosBridgeSchemaRosBridgeComponent(prim);

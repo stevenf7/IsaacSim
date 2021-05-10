@@ -28,12 +28,14 @@ class TestRosBridgeCommands(omni.kit.test.AsyncTestCase):
     # Run all commands
     async def test_command(self):
 
-        result, prim = omni.kit.commands.execute("CreateROSBridgeCameraCommand", path="/ROS_Camera")
-        result, prim = omni.kit.commands.execute("CreateROSBridgeClockCommand", path="/ROS_Clock")
-        result, prim = omni.kit.commands.execute("CreateROSBridgeJointStateCommand", path="/ROS_JointState")
-        result, prim = omni.kit.commands.execute("CreateROSBridgeLidarCommand", path="/ROS_Lidar")
-        result, prim = omni.kit.commands.execute("CreateROSBridgePoseTreeCommand", path="/ROS_PoseTree")
-        result, prim = omni.kit.commands.execute("CreateROSBridgeTeleportCommand", path="/ROS_Teleport")
+        result, prim = omni.kit.commands.execute("ROSBridgeCreateCamera", path="/ROS_Camera")
+        result, prim = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock")
+        result, prim = omni.kit.commands.execute("ROSBridgeCreateJointState", path="/ROS_JointState")
+        result, prim = omni.kit.commands.execute("ROSBridgeCreateLidar", path="/ROS_Lidar")
+        result, prim = omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree")
+        result, prim = omni.kit.commands.execute("ROSBridgeCreateTeleport", path="/ROS_Teleport")
+        result, prim = omni.kit.commands.execute("ROSBridgeCreateSurfaceGripper", path="/ROS_SurfaceGripper")
+        result, prim = omni.kit.commands.execute("ROSBridgeCreateDifferentialBase", path="/ROS_DifferentialBase")
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()

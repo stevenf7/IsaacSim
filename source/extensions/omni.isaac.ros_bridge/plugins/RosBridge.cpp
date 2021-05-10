@@ -132,6 +132,13 @@ void onResume(float currentTime, void* userData)
 void onPause(void* userData)
 {
 }
+void onStop(void* userData)
+{
+    if (g_stage && g_application_handle)
+    {
+        g_application_handle->onStop();
+    }
+}
 void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 {
     // Adding prims also initializes ROS nodes, which will cause errors if ROS is not running
@@ -218,6 +225,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onUpdate = onUpdate;
     desc.onResume = onResume;
     desc.onPause = onPause;
+    desc.onStop = onStop;
     desc.onPrimAdd = onPrimAdd;
     desc.onPrimOrPropertyChange = onComponentChange;
     desc.onPrimRemove = onPrimRemove;

@@ -14,6 +14,7 @@ import numpy as np
 from omni.isaac.utils._isaac_utils import math as mu
 from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics
 import omni.physx as physx
+from .common import simulate
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.samples.scripts.ur10_scenarios.scenario import Scenario
@@ -37,6 +38,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+        await omni.kit.app.get_app().next_update_async()
 
         self.assertFalse(self._dc.is_simulating())
         # Start Simulation and wait
@@ -68,6 +70,8 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # After running each test
     async def tearDown(self):
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -77,18 +81,12 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
             self._scenario.stop_tasks()
             self._scenario = None
         await omni.kit.app.get_app().next_update_async()
-
         self._dc = None
         self._mp = None
         self._physx = None
         gc.collect()
         await omni.usd.get_context().new_stage_async()
         pass
-
-    # async def test_bmw_demo_run(self):
-    #     await self.load_bmw_demo_scene()
-    #     await self.execute_stack_scene()
-    #     pass
 
     async def test_bin_stack_run(self):
         await self.load_bin_stack_scene()
@@ -108,8 +106,9 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_fill_bin_run(self):
 
         await self.load_fill_bin_scene()
+        await omni.kit.app.get_app().next_update_async()
         self._scenario.perform_tasks()
-
+        await omni.kit.app.get_app().next_update_async()
         self.current_state = self.default_sequence[0]
         self.state_idx = 0
         while self.total_pass < 1:
@@ -123,6 +122,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
             self.current_state = self.default_sequence[next_state]
             if next_state == 0:
                 self.total_pass += 1
+        await simulate(1)
         pass
 
     async def check_box_pose(self):

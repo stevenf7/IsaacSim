@@ -18,6 +18,9 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.usd.schema.isaac" = {}
+"omni.kit.commands" = {}
+"omni.kit.menu.utils" = {}
+"omni.usd" = {}
 
 [[python.module]]
 name = "omni.isaac.ros_ui"

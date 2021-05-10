@@ -1,0 +1,5 @@
+hurry.filesize
+websockets==8.1
+xattr
+aiohttp
+ijson

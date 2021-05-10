@@ -110,7 +110,10 @@ function define_ext_test_experience(ext_name, args)
         "--/persistent/app/viewport/displayOptions=0", -- Disable all ui elements in viewport
         "--/app/settings/persistent=false",
         "--/app/hydraEngine/waitIdle=true",
-        "--/app/asyncRendering=False", -- improve determinism
+        "--/app/asyncRendering=false", -- improve determinism
+        "--/app/renderer/skipWhileMinimized=false",
+        "--/app/renderer/sleepMsOnFocus=0",
+        "--/app/renderer/sleepMsOutOfFocus=0",
         "--no-assert-dialog",
     }
     -- Allow passing additional args
