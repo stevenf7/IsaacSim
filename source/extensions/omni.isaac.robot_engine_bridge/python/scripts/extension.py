@@ -6,8 +6,6 @@ import omni.kit.menu
 import weakref
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-from .menu import RobotEngineBridgeMenu
-
 
 EXTENSION_NAME = "Robot Engine Bridge"
 
@@ -98,7 +96,6 @@ class Extension(omni.ext.IExt):
                             "Create Application", height=0, clicked_fn=self._on_create_destroy_gxf_app_fn
                         )
 
-        self._menu = RobotEngineBridgeMenu()
         self._is_created = False
         self._is_gxf_created = False
 
@@ -106,8 +103,6 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     def on_shutdown(self):
-        self._menu.shutdown()
-        self._menu = None
         remove_menu_items(self._menu_items, "Isaac Tools")
 
     def _on_init_stage_load_fn(self, widget):

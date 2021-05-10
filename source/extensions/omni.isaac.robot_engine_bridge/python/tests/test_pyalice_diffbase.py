@@ -7,6 +7,7 @@ import omni.kit.usd
 import carb.tokens
 import numpy as np
 import gc
+import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
@@ -48,6 +49,9 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         self._pyalice_app = None
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
         await omni.usd.get_context().new_stage_async()
         gc.collect()
         pass
