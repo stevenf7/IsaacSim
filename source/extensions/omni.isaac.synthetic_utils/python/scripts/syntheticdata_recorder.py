@@ -48,8 +48,6 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
         add_menu_items(self._menu_items, "Isaac Utils")
-        self._window.visible = False
-        self._window.deferred_dock_in("Content")
         self.sub_update = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._update)
         self._settings = get_settings()
         self._viewport = omni.kit.viewport.get_viewport_interface()
@@ -61,7 +59,6 @@ class Extension(omni.ext.IExt):
         self._accumulated_time = 0
         self.data_writer = None
         self.sd_helper = SyntheticDataHelper()
-        self._menu_callback()
 
     def on_shutdown(self):
         """Called when the extesion us unloaded"""

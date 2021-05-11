@@ -47,17 +47,17 @@ components:
     webroot: /home/qianl/isaac/sdk/packages/sight/webroot
     asset_root: ../isaac_assets
     asset_prefix: /apps/assets/
-    app_name: sight_app/sight_node
+    app_name: isaac_sim
     app_config: '{
         "windows": {
-          "sight_node - 2d": {
+          "Map - 2d": {
             "renderer":"2d",
             "channels":[
-               {"name":"sight_app/sight_node/map_transmitter/map"},
-               {"name":"sight_app/sight_node/path2_transmitter/path"},
-               {"name":"sight_app/sight_node/ego_actor_gt_transmitter/actors"},
-               {"name":"sight_app/sight_node/trajectory_transmitter/path"},
-               {"name":"sight_app/sight_node/ego_actor_transmitter/actors"}
+               {"name":"isaac_sim/map_visualizer/map_transmitter/map"},
+               {"name":"isaac_sim/path2_visualizer/path2_transmitter/path"},
+               {"name":"isaac_sim/ego_actor_visualizer/ego_actor_gt_transmitter/actors"},
+               {"name":"isaac_sim/trajectory_visualizer/trajectory_transmitter/path"},
+               {"name":"isaac_sim/ego_actor_visualizer/ego_actor_transmitter/actors"}
             ]
           }
         }
@@ -148,8 +148,8 @@ components:
     parent_frame: world
     frame_name: odometry
     initial_pose:
-      translation: [77.0, 30.0, 0.0]
-      rotation_rpy: [0.0, 0.0, 90.0]
+      translation: [78.34, 23.5, 0.0]
+      rotation_rpy: [0.0, 0.0, 105.0]
 - type: nvidia::isaac::PoseTreeFrame
   parameters:
     pose_tree: atlas_pose_tree/pose_tree
@@ -158,15 +158,19 @@ components:
     initial_pose:
       translation: [0.0, 0.0, 0.0]
       rotation_rpy: [0.0, 0.0, 0.0]
-- name: ground_truth_initializer
+- name: sim
   type: nvidia::isaac::PoseTreeFrame
   parameters:
     pose_tree: atlas_pose_tree/pose_tree
     parent_frame: world
-    frame_name: ego_actor_gt
     initial_pose:
-      translation: [77.0, 30.0, 0.0]
-      rotation_rpy: [0.0, 0.0, 90.0]
+      translation: [ 27.66,  486.93, -427.316 ]
+      rotation_rpy: [0.0, 0.0, 30.763]
+- name: ego_actor_gt
+  type: nvidia::isaac::PoseTreeFrame
+  parameters:
+    pose_tree: atlas_pose_tree/pose_tree
+    frame_name: /car/Vehicle
 - type: nvidia::isaac::PoseTreeFrame
   parameters:
     pose_tree: atlas_pose_tree/pose_tree
@@ -179,6 +183,34 @@ components:
 ###################
 # Path Generators #
 ###################
+name: path2_generator_0
+components:
+  - name: path_out
+    type: nvidia::gxf::DoubleBufferTransmitter
+  - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
+    parameters:
+      transmitter: path_out
+      min_size: 1
+  - name: generator
+    type: nvidia::isaac::Path2Generator
+    parameters:
+      poses:
+        - translation: [77.0, 30.0]
+          rotation: 1.57
+      frame: world
+      atlas: atlas/frontend
+  - type: nvidia::isaac::CompositePublisher
+    parameters:
+      generator: generator
+      allocator: storage/path_generator_allocator
+      composite: path_out
+  - type: nvidia::gxf::CountSchedulingTerm
+    parameters:
+      count: 1
+  - type: nvidia::gxf::PeriodicSchedulingTerm
+    parameters:
+      recess_period: 5.5s
+---
 name: path2_generator_1
 components:
 - name: path_out
@@ -191,8 +223,8 @@ components:
   type: nvidia::isaac::Path2Generator
   parameters:
     poses:
-      - translation: [77.0, 55.0]
-        rotation: 1.57
+    - translation: [77.0, 55.25]
+      rotation: 1.57
     frame: world
     atlas: atlas/frontend
 - type: nvidia::isaac::CompositePublisher
@@ -205,7 +237,7 @@ components:
     count: 1
 - type: nvidia::gxf::PeriodicSchedulingTerm
   parameters:
-    recess_period: 3s
+    recess_period: 10s
 ---
 name: path2_generator_2
 components:
@@ -219,8 +251,8 @@ components:
   type: nvidia::isaac::Path2Generator
   parameters:
     poses:
-      - translation: [72.0, 64.0]
-        rotation: 3.2
+    - translation: [76.0, 60.75]
+      rotation: 2.2
     frame: world
     atlas: atlas/frontend
 - type: nvidia::isaac::CompositePublisher
@@ -233,7 +265,7 @@ components:
     count: 1
 - type: nvidia::gxf::PeriodicSchedulingTerm
   parameters:
-    recess_period: 13s
+    recess_period: 24s
 ---
 name: path2_generator_3
 components:
@@ -247,8 +279,8 @@ components:
   type: nvidia::isaac::Path2Generator
   parameters:
     poses:
-    - translation: [82, 60.0]
-      rotation: 3.14
+    - translation: [72.25, 62.6]
+      rotation: 3.2
     frame: world
     atlas: atlas/frontend
 - type: nvidia::isaac::CompositePublisher
@@ -261,7 +293,7 @@ components:
     count: 1
 - type: nvidia::gxf::PeriodicSchedulingTerm
   parameters:
-    recess_period: 150s
+    recess_period: 27s
 ---
 name: path2_gatherer
 components:
@@ -273,6 +305,8 @@ components:
   parameters:
     transmitter: out
     min_size: 1
+- name: source_0
+  type: nvidia::gxf::DoubleBufferReceiver
 - name: source_1
   type: nvidia::gxf::DoubleBufferReceiver
 - name: source_2
@@ -305,6 +339,12 @@ components:
 - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
   parameters:
     transmitter: out_2
+    min_size: 1
+- name: out_3
+  type: nvidia::gxf::DoubleBufferTransmitter
+- type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
+  parameters:
+    transmitter: out_3
     min_size: 1
 - type: nvidia::gxf::Broadcast
   parameters:
@@ -373,7 +413,7 @@ components:
     path: path
     robot_frame: ego_actor
     path_frame: world
-    minimum_turning_radius: 0.1
+    minimum_turning_radius: 0.5
     atlas: atlas/frontend
 ---
 name: dac_sampler
@@ -426,6 +466,7 @@ components:
 - name: ackermann_control
   type: nvidia::isaac::AckermannControlOperator
   parameters:
+    atlas: atlas/frontend
     allocator: storage/controller_allocator
     state: state
     trajectory: trajectory
@@ -461,8 +502,9 @@ components:
     in: in
     out: out
     pool: storage/odometry_allocator
-    prediction_noise: [0.5, 0.5, 1.0, 5.0, 0.5, 10.0, 0.5]
-    observation_noise: [0.01, 0.01, 0.01, 10.0]
+    prediction_noise: [0.1, 0.1, 0.3, 0.2, 0.3, 2.0, 3.0]
+    # speed (m/s), acceleration (m/s^2), curvature (1/m, 1.0 ~= 60deg), curvature_d (1/m/s)
+    observation_noise: [0.1, 1.0, 0.1, 1.0]
     robot_frame: ego_actor
     odometry_frame: odometry
 ---
@@ -478,6 +520,9 @@ components:
   parameters:
     transmitter: trajectory
     min_size: 1
+- type: nvidia::gxf::PeriodicSchedulingTerm
+  parameters:
+    recess_period: 25ms
 - name: trajectory
   type: nvidia::gxf::DoubleBufferTransmitter
 - name: ackermann dynamics
@@ -492,7 +537,10 @@ components:
     dynamics: ackermann dynamics
     state_name: odometry
     maximum_number_controls: 100
-    number_controls: 15
+    number_controls: 30
+    starting_number_controls: 5
+    increment_number_controls: 5
+    use_incremental_number_controls_in_solver: true
     step_time: 0.1
     trajectory_frame: odometry
     atlas: atlas/frontend
@@ -504,7 +552,7 @@ components:
   type: nvidia::isaac::LqrCostSmoothLinearTarget
   parameters:
     target: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    scaler: [0.0, 0.0, 0.0, 7.0, 1.0, 0.0, 0.75]
+    scaler: [0.0, 0.0, 0.0, 7.0, 1.0, 0.5, 0.75]
     epsilon: 1.0
     gain: 1.0
     state_size: 7
@@ -512,8 +560,8 @@ components:
 - name: boundaries
   type: nvidia::isaac::LqrCostQuadraticBoundaries
   parameters:
-    state_minimum_limits: [0.0, 0.0, 0.0, 0.0, -10.0, -20.0, -10.0]
-    state_maximum_limits: [0.0, 0.0, 0.0, 2.0, 10.0, 20.0, 0.5]
+    state_minimum_limits: [0.0, 0.0, 0.0, -10.0, 0.0, -10.0, -5.0]
+    state_maximum_limits: [0.0, 0.0, 0.0, 10.0, 2.0, 10.0, 0.5]
     state_gains: [0.0, 0.0, 0.0, 1.0, 0.75, 0.0, 1.0]
     control_minimum_limits: [-50.0, -120]
     control_maximum_limits: [50.0, 120]
@@ -528,7 +576,9 @@ components:
     path: path
     gain: 7.0
     speed_reward: 1.1
-    minimum_distance_for_reward: 1.0
+    minimum_distance_for_reward: 3.0
+    attractor_influence_distance: 1.0
+    rotation_distance_factor: 3.0
     indices: [0, 1, 2, 4]
     atlas: atlas/frontend
     planning_frame: odometry
@@ -648,7 +698,7 @@ components:
 - type: nvidia::isaac::ActorVisualizer
   parameters:
     atlas: atlas/frontend
-    actor_pose_frames: [ego_actor_gt]
+    actor_pose_frames: [/car/Vehicle]
     reference_frame: world
     actor_circle_radius: 0.0
     actor_color: [0, 255, 0]
@@ -664,6 +714,10 @@ components:
 # Connections #
 ###############
 components:
+- type: nvidia::gxf::Connection
+  parameters:
+    source: path2_generator_0/path_out
+    target: path2_gatherer/source_0
 - type: nvidia::gxf::Connection
   parameters:
     source: path2_generator_1/path_out
@@ -772,6 +826,44 @@ components:
     storage_type: 0
     block_size: 768
     num_blocks: 4
+---
+#############
+# Recorders #
+#############
+name: serializers
+components:
+  - name: std
+    type: nvidia::gxf::StdSerializer
+  - name: trivial
+    type: nvidia::isaac::TrivialComponentSerializer
+  - name: pose_frame
+    type: nvidia::isaac::PoseFrameUidSerializer
+    parameters:
+      pose_tree: atlas_pose_tree/pose_tree
+---
+name: plan_serializer
+components:
+  - name: input
+    type: nvidia::gxf::DoubleBufferReceiver
+    parameters:
+      capacity: 10
+  - type: nvidia::gxf::EntityRecorder
+    parameters:
+      receiver: input
+      serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
+      directory: /tmp
+      basename: plan
+      flush_on_tick: true
+  - type: nvidia::gxf::MessageAvailableSchedulingTerm
+    parameters:
+      receiver: input
+      min_size: 1
+---
+components:
+  - type: nvidia::gxf::Connection
+    parameters:
+      source: path2_broadcaster/out_3
+      target: plan_serializer/input
 ---
 #############
 # Scheduler #

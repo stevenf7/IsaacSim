@@ -49,7 +49,7 @@ components:
   - name: robot
     type: nvidia::isaac::PoseTreeFrame
     parameters:
-      frame_name: /car/Vehicle
+      frame_name: /World/Mercedes_REB/Vehicle
       pose_tree: atlas.pose_tree/pose_tree
 ---
 name: atlas

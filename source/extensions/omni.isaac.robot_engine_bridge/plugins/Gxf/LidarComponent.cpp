@@ -138,7 +138,7 @@ void LidarComponent::publishAllMessages()
             // TODO: fill this from spinning lidar model
             beam.relative_time() = 0.0;
             beam.horizontal_angle() = static_cast<double>(theta[i]);
-            beam.vertical_angle() = static_cast<double>(phi[j]);
+            beam.vertical_angle() = -static_cast<double>(phi[j]);
             beam.range() = static_cast<double>(ranges[ray_idx]);
             // TODO: use getIntensityData()
             beam.intensity() = 1.0;

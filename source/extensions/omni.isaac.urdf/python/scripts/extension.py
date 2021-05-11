@@ -6,6 +6,8 @@ import weakref
 import gc
 import weakref
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.kit.window.filepicker import FilePickerDialog
+from omni.kit.window.content_browser import get_content_window
 
 from .link_model import *
 from .. import _urdf
@@ -62,8 +64,6 @@ class Extension(omni.ext.IExt):
         self._menu_callback()
 
     def build_ui(self):
-        from omni.kit.window.filepicker import FilePickerDialog
-        from omni.kit.window.content_browser import get_content_window
 
         self._content_browser = get_content_window()
         self._init_context_menu()
@@ -494,12 +494,13 @@ class Extension(omni.ext.IExt):
             self._filepicker.hide()
 
     def _init_context_menu(self):
-        self._context_menu = self._content_browser.add_context_menu(
-            "Convert URDF to USD",
-            "upload.svg",
-            lambda menu, path: weakref.proxy(self)._parse_and_import(path=path),
-            is_urdf_file,
-        )
+        if self._content_browser:
+            self._context_menu = self._content_browser.add_context_menu(
+                "Convert URDF to USD",
+                "upload.svg",
+                lambda menu, path: weakref.proxy(self)._parse_and_import(path=path),
+                is_urdf_file,
+            )
 
     def _unregister_menus(self):
         if self._content_browser:
