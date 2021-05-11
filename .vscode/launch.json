@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "env": {
-                "EXP_PATH": "${workspaceFolder}/source/python_samples/experiences"
+                "EXP_PATH": "${workspaceFolder}/source/apps"
             },
             "envFile": "${workspaceFolder}/.vscode/.python_samples.env",
             "preLaunchTask": "setup_python_env"
@@ -20,8 +20,8 @@
             "name": "(Linux) isaac-sim [release]",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/_build/kit_release/_build/linux-x86_64/release/kit",
-            "args": ["${workspaceFolder}/_build/linux-x86_64/release/apps/isaac-sim.kit",
+            "program": "${workspaceFolder}/_build/linux-x86_64/release/kit/kit",
+            "args": ["${workspaceFolder}/_build/linux-x86_64/release/apps/omni.isaac.sim.kit",
                 "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/release/exts",
                 "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/release/apps"],
             "stopAtEntry": false,
@@ -36,14 +36,13 @@
                     "ignoreFailures": true
                 }
             ],
-            "envFile": "${workspaceFolder}/.vscode/.pxr_plugin.env",
         },
         {
             "name": "(Linux) isaac-sim [debug]",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/_build/kit_debug/_build/linux-x86_64/debug/kit",
-            "args": ["${workspaceFolder}/_build/linux-x86_64/debug/apps/isaac-sim.kit",
+            "program": "${workspaceFolder}/_build/linux-x86_64/debug/kit/kit",
+            "args": ["${workspaceFolder}/_build/linux-x86_64/debug/apps/omni.isaac.sim.kit",
                 "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/debug/exts",
                 "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/debug/apps"],
             "stopAtEntry": false,
@@ -58,7 +57,6 @@
                     "ignoreFailures": true
                 }
             ],
-            "envFile": "${workspaceFolder}/.vscode/.pxr_plugin.env",
         },
     ]
 }
