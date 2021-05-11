@@ -14,7 +14,7 @@ class InternalTools(omni.ext.IExt):
         self._menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Tools")
+        add_menu_items(self._menu_items, "Isaac Utils")
         self._window = ui.Window(
             title=EXTENSION_NAME, width=800, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
@@ -30,7 +30,7 @@ class InternalTools(omni.ext.IExt):
                 ui.Button("Check for deprecated physics schema", clicked_fn=self.check_physics_schema)
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Tools")
+        remove_menu_items(self._menu_items, "Isaac Utils")
         self._window = None
 
     def _menu_callback(self):

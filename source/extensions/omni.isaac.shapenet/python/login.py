@@ -120,22 +120,27 @@ def save_and_testDB(snDb, out_file):
 
 
 class ShapenetLogin:
-    def __init__(self, shapenetMenu):
+    def __init__(self, shapenetMenu, icon_path):
         self._shapenetMenu = shapenetMenu
 
+        self._models = {}
+        self.icon_path = icon_path
         self.build_window()
 
     def build_window(self):
         """ build ShapeNet Login window"""
         self._window = ui.Window(
-            title="ShapeNet Login", width=400, height=150, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            title="ShapeNet Loader", width=400, height=150, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
-
+        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         with self._window.frame:
             with ui.VStack():
                 with ui.HStack(height=20):
                     ui.Label("Username or Email: ", alignment=ui.Alignment.CENTER, width=WIDGET_WIDTH)
                     self._username = ui.StringField()
+                    img_url = str(self.icon_path.joinpath("help.png"))
+                    ui.Spacer(width=6)
+                    self._models["help_button"] = ui.Image(img_url, width=20, tooltip="Help")
                 ui.Spacer(height=10)
                 with ui.HStack(height=20):
                     ui.Label("Password:", alignment=ui.Alignment.CENTER, width=WIDGET_WIDTH)

@@ -21,11 +21,12 @@ class Extension(omni.ext.IExt):
             self._stage_event_sub = self._events.create_subscription_to_pop(
                 self._on_stage_event, name="physics inspector stage event"
             )
-        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
+        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=True)
+        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Tools")
+        add_menu_items(self._menu_items, "Isaac Utils")
         self._physx = omni.physx.acquire_physx_interface()
 
         self._data = {}
@@ -209,6 +210,6 @@ class Extension(omni.ext.IExt):
             # )
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Tools")
+        remove_menu_items(self._menu_items, "Isaac Utils")
         self._window = None
         gc.collect()

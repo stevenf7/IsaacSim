@@ -34,7 +34,7 @@ class Extension(omni.ext.IExt):
         self._menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Tools")
+        add_menu_items(self._menu_items, "Isaac Utils")
 
         self._scene_loader = {}
         with self._window.frame:
@@ -103,7 +103,7 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Tools")
+        remove_menu_items(self._menu_items, "Isaac Utils")
 
     def _on_init_stage_load_fn(self, widget):
         result, status = omni.kit.commands.execute(

@@ -26,12 +26,13 @@ class Extension(omni.ext.IExt):
 
         self._stage = omni.usd.get_context().get_stage()
         self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            EXTENSION_NAME, width=600, height=400, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
+        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Tools")
+        add_menu_items(self._menu_items, "Isaac Utils")
         self.models = {}
         with self._window.frame:
             with ui.HStack():
@@ -264,6 +265,6 @@ class Extension(omni.ext.IExt):
     #         meshes_to_process = None
     def on_shutdown(self):
         """Called when the extesion us unloaded"""
-        remove_menu_items(self._menu_items, "Isaac Tools")
+        remove_menu_items(self._menu_items, "Isaac Utils")
         self._window = None
         gc.collect()

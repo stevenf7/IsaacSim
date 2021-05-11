@@ -4,7 +4,7 @@ import weakref
 from .login import ShapenetLogin
 from .settings import ShapenetSettings
 from .globals import *
-
+from pathlib import Path
 
 #   "Keep Help text the width of this line or shorter -------------------------------",
 ADD_DB_TEXT = (
@@ -28,12 +28,15 @@ HELP_TEXT = (
     "\t\tsource\\extensions\\omni.isaac\\shapenet\\python"
 )
 
+EXTENSION_NAME = "ShapeNet Loader"
+
 
 class ShapenetMenu:
-    def __init__(self):
+    def __init__(self, icon_path):
         self._settings_window = None
         self._login_window = None
         self._help_window = None
+        self.icon_path = icon_path
 
         self._sub_menu = []
         if pickle_file_exists():
@@ -53,14 +56,16 @@ class ShapenetMenu:
             MenuItemDescription(name="Help", onclick_fn=lambda a=weakref.proxy(self): a._on_help_menu_click())
         )
 
-        self._menu_items = [MenuItemDescription(name="Shapenet", sub_menu=self._sub_menu)]
-        add_menu_items(self._menu_items, "Isaac Tools")
+        self._menu_items = [MenuItemDescription(name=EXTENSION_NAME, sub_menu=self._sub_menu)]
+        add_menu_items(self._menu_items, "Isaac Utils")
+
+        self._on_create_database_click()
 
     def _on_create_database_click(self):
         if self._login_window != None:
             self._login_window.visible = True
         else:
-            self._login_window = ShapenetLogin(self)
+            self._login_window = ShapenetLogin(self, self.icon_path)
 
     def _on_settings_menu_click(self):
         if self._settings_window != None:
@@ -92,7 +97,7 @@ class ShapenetMenu:
             rebuild_menus()
 
     def shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Tools")
+        remove_menu_items(self._menu_items, "Isaac Utils")
         self._help_window = None
         self._settings_window = None
         self._login_window = None

@@ -116,7 +116,7 @@ class StepImporter(omni.ext.IExt):
         self._menu_items = [
             MenuItemDescription(name="Step Importer", onclick_fn=lambda a=weakref.proxy(self): a.build_ui())
         ]
-        add_menu_items(self._menu_items, "Isaac Tools")
+        add_menu_items(self._menu_items, "Isaac Utils")
 
         if self._style == "NvidiaLight":
             self.tree_style = tree_style_light
@@ -129,6 +129,7 @@ class StepImporter(omni.ext.IExt):
         self._delegate = AssemblyDelegate()
 
         # self.show_window(None, True)
+        self._build_ui()
 
     def _init_context_menu(self):
         self._context_menu = self._content_browser.add_context_menu(
@@ -439,6 +440,7 @@ class StepImporter(omni.ext.IExt):
             self._window = ui.Window(
                 title=EXTENSION_NAME, width=800, height=400, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
+            self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
             self._window.set_visibility_changed_fn(self.on_visibility_change)
             self._assembly_model = AssemblyTreeModel()
             self.props = {}
@@ -497,7 +499,7 @@ class StepImporter(omni.ext.IExt):
 
     def on_shutdown(self):
         self._unregister_menus()
-        remove_menu_items(self._menu_items, "Isaac Tools")
+        remove_menu_items(self._menu_items, "Isaac Utils")
         if self.asset_importer:
             self.asset_importer.on_shutdown()
         if self.step_file:

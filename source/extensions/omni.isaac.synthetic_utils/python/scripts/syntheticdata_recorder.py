@@ -42,11 +42,12 @@ class Extension(omni.ext.IExt):
         self._enable_record = False
         self._enable_timeline_record = False
         self._counter = 0
-        self._window = ui.Window(EXTENSION_NAME, width=600, height=400)
+        self._window = ui.Window(EXTENSION_NAME, width=600, height=400, visible=True)
+        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Tools")
+        add_menu_items(self._menu_items, "Isaac Utils")
         self._window.visible = False
         self._window.deferred_dock_in("Content")
         self.sub_update = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._update)
@@ -60,10 +61,11 @@ class Extension(omni.ext.IExt):
         self._accumulated_time = 0
         self.data_writer = None
         self.sd_helper = SyntheticDataHelper()
+        self._menu_callback()
 
     def on_shutdown(self):
         """Called when the extesion us unloaded"""
-        remove_menu_items(self._menu_items, "Isaac Tools")
+        remove_menu_items(self._menu_items, "Isaac Utils")
         self._window = None
 
     def _menu_callback(self):

@@ -41,10 +41,11 @@ class Extension(omni.ext.IExt):
         self._window = omni.ui.Window(
             EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
+        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Tools")
+        add_menu_items(self._menu_items, "Isaac Utils")
         self._file_picker = None
 
         self.models = {}
@@ -57,6 +58,8 @@ class Extension(omni.ext.IExt):
         self._content_browser = None
 
         self._extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
+
+        self._menu_callback()
 
     def build_ui(self):
         from omni.kit.window.filepicker import FilePickerDialog
@@ -504,7 +507,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         self._unregister_menus()
-        remove_menu_items(self._menu_items, "Isaac Tools")
+        remove_menu_items(self._menu_items, "Isaac Utils")
         if self._filepicker:
             # self._filepicker.toggle_bookmark_from_path("Built In URDFs", "", False)
             self._filepicker._widget._file_bar._click_apply_handler = None

@@ -31,13 +31,13 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            EXTENSION_NAME, width=600, height=400, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
-
+        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Tools")
+        add_menu_items(self._menu_items, "Isaac Utils")
 
         with self._window.frame:
             with ui.VStack(spacing=10):
@@ -528,5 +528,5 @@ class Extension(omni.ext.IExt):
         pass
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Tools")
+        remove_menu_items(self._menu_items, "Isaac Utils")
         pass
