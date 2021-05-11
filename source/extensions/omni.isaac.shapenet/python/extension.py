@@ -21,7 +21,10 @@ from .menu import ShapenetMenu
 
 from queue import Queue
 
+from pathlib import Path
+
 DEBUG_PRINT_ON = False
+EXTENSION_NAME = "ShapeNet Loader"
 
 # The listener thread will fill these so that main thread can consume them.
 g_requests = Queue()
@@ -74,10 +77,13 @@ def run_server(httpd):
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         if DEBUG_PRINT_ON:
             print("\nI STARTED I STARTED!\n")
-        self._menu = ShapenetMenu()
+        manager = omni.kit.app.get_app().get_extension_manager()
+        extension_path = manager.get_extension_path(ext_id)
+        self.icon_path = Path(extension_path).joinpath("data/icons")
+        self._menu = ShapenetMenu(self.icon_path)
 
         if DEBUG_PRINT_ON:
             print("\nafter ShapenetMenu\n")
@@ -126,3 +132,7 @@ class Extension(omni.ext.IExt):
             if DEBUG_PRINT_ON:
                 print("Call process_request_in_thread with request: ", request)
             process_request_in_thread("new", g_responses, self._menu, request)
+
+    def get_name(self):
+        """Return the name of the extension"""
+        return EXTENSION_NAME

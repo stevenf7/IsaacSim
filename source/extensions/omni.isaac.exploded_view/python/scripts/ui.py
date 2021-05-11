@@ -24,7 +24,7 @@ class Exploded_view(omni.ext.IExt):
         self._menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Tools")
+        add_menu_items(self._menu_items, "Isaac Utils")
 
     def _menu_callback(self):
         if self._window:
@@ -89,5 +89,5 @@ class Exploded_view(omni.ext.IExt):
             )
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Tools")
+        remove_menu_items(self._menu_items, "Isaac Utils")
         self._exploded_view_manager.shutdown()

@@ -33,11 +33,12 @@ def create_xyz(init=0, all_axis=["X", "Y", "Z"], callback=None):
 class Extension(omni.ext.IExt):
     def on_startup(self):
         EXTENSION_NAME = "Occupancy Map"
-        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
+        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=True)
+        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Tools")
+        add_menu_items(self._menu_items, "Isaac Utils")
         self._om = _occupancy_map.acquire_occupancy_map_interface()
         self._layers = omni.usd.get_context().get_layers()
         self._filepicker = None
@@ -285,5 +286,5 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         if self._filepicker:
             self._filepicker = None
-        remove_menu_items(self._menu_items, "Isaac Tools")
+        remove_menu_items(self._menu_items, "Isaac Utils")
         gc.collect()
