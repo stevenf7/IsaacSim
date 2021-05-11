@@ -34,6 +34,8 @@ class Extension(omni.ext.IExt):
         self._labels = {}
         self._frame = {}
         self._selected_prim = None
+        self._selected_handle = dc.INVALID_HANDLE
+        self._app_event_sub = None
 
         for axis in ["x", "y", "z"]:
             self._data[f"lin_vel_{axis}"] = collections.deque([0.0] * 360, maxlen=360)
@@ -69,6 +71,20 @@ class Extension(omni.ext.IExt):
                         ui.Spacer(height=10)
                         self._add_plot(label="lin_acc", title="Linear Acceleration: [0.0, 0.0, 0.0] cm/s^2")
                         ui.Spacer(height=10)
+        selection = self._selection.get_selected_prim_paths()
+        if len(selection) == 0:
+            self._selected_prim = None
+            self._selected_handle = dc.INVALID_HANDLE
+        else:
+            self._selected_prim = self._usd_context.get_stage().GetPrimAtPath(selection[0])
+            self._selected_handle = dc.INVALID_HANDLE
+        if self._selected_prim is not None:
+            if not self._app_event_sub:
+                self._app_event_sub = (
+                    omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step)
+                )
+        else:
+            self._app_event_sub = None
 
     def _on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.OPENED):
@@ -85,9 +101,10 @@ class Extension(omni.ext.IExt):
                 self._selected_prim = self._usd_context.get_stage().GetPrimAtPath(selection[0])
                 self._selected_handle = dc.INVALID_HANDLE
             if self._selected_prim is not None:
-                self._app_event_sub = (
-                    omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step)
-                )
+                if not self._app_event_sub:
+                    self._app_event_sub = (
+                        omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step)
+                    )
             else:
                 self._app_event_sub = None
 
@@ -211,5 +228,6 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         remove_menu_items(self._menu_items, "Isaac Utils")
+        self._app_event_sub = None
         self._window = None
         gc.collect()
