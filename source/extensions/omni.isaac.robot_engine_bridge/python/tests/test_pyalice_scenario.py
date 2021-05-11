@@ -132,6 +132,10 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(msg)
         self.assertAlmostEqual(msg.proto.bodies[0].refTBody.translation.x, -1.0, delta=0.001)
 
+        # Wait for prims to completeley load before deleting
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         # Destroy
         msg = Message.create_message_builder("ActorGroupProto")
         proto = msg.proto

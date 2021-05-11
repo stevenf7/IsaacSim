@@ -256,7 +256,8 @@ components:
 ---
 name: scheduler
 components:
-  - type: nvidia::gxf::GreedyScheduler
+  - type: nvidia::gxf::MultiThreadScheduler
     parameters:
       stop_on_deadlock: false
       clock: clock/default
+      worker_thread_number: 4

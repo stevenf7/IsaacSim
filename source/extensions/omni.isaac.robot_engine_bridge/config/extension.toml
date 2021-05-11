@@ -69,7 +69,7 @@ path = "lib/libnpps.so.10"
 
 
 [python.pipapi]
-requirements = ["numpy==1.19.0", "numpy-quaternion==2020.9.5.14.42.2", "pycapnp==1.0.0", "numba==0.51.2", "scipy==1.5.4"]
+requirements = ["numpy==1.19.0", "numpy-quaternion==2020.9.5.14.42.2", "pycapnp==1.0.0", "numba==0.51.2", "scipy==1.5.4", "construct==2.10.61"]
 archiveDirs = ["pip-packages"]
 
 [fswatcher.paths]

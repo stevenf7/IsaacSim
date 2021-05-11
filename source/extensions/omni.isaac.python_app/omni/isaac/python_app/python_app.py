@@ -100,11 +100,11 @@ Launches and configures OmniKit and exposes useful functions.
 
         # Wait for new stage to open
         new_stage_task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
-
+        print("OmniKitHelper Starting up ...")
         while not new_stage_task.done():
             time.sleep(0.001)  # This sleep prevents a deadlock in certain cases
             self.update()
-
+        self.update()
         # Dock windows  if they exist
         main_dockspace = omni.ui.Workspace.get_window("DockSpace")
 
@@ -114,12 +114,18 @@ Launches and configures OmniKit and exposes useful functions.
                 window.dock_in(space, location)
             return window
 
-        dock_window(main_dockspace, "Viewport", omni.ui.DockPosition.TOP)
-        sensors = dock_window(main_dockspace, "Synthetic Data Sensors", omni.ui.DockPosition.BOTTOM)
-        dock_window(sensors, "Robot Engine Bridge", omni.ui.DockPosition.SAME)
-        dock_window(sensors, "Domain Randomizer", omni.ui.DockPosition.SAME)
-        prop = dock_window(main_dockspace, "Property", omni.ui.DockPosition.RIGHT)
-        dock_window(prop, "RTX Settings", omni.ui.DockPosition.SAME)
+        view = dock_window(main_dockspace, "Viewport", omni.ui.DockPosition.TOP)
+        self.update()
+        console = dock_window(view, "Console", omni.ui.DockPosition.BOTTOM)
+        prop = dock_window(view, "Property", omni.ui.DockPosition.RIGHT)
+        dock_window(view, "Main ToolBar", omni.ui.DockPosition.LEFT)
+        self.update()
+        # dock_window(console, "Synthetic Data Sensors", omni.ui.DockPosition.SAME)
+        # dock_window(console, "Robot Engine Bridge", omni.ui.DockPosition.SAME)
+        # dock_window(console, "Domain Randomizer", omni.ui.DockPosition.SAME)
+        dock_window(prop, "Render Settings", omni.ui.DockPosition.SAME)
+        self.update()
+        print("OmniKitHelper Startup Complete")
 
     def _start_app(self):
         args = [

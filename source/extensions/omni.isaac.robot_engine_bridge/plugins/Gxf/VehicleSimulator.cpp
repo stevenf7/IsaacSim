@@ -110,7 +110,7 @@ void VehicleSimulator::tick()
 
         if (receive(mInputComponent, mCommandChannelName, message) == gxf_result_t::GXF_SUCCESS)
         {
-            auto maybe_message_parts = nvidia::isaac::ParseCompositeMessage(message.value());
+            auto maybe_message_parts = nvidia::isaac::ParseCompositeMessage(std::move(message.value()));
 
             if (maybe_message_parts)
             {

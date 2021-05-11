@@ -29,7 +29,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/pxshared/include",
         "%{root}/_build/target-deps/isaac_engine/include",
-        "%{root}/_build/target-deps/isaac_engine/gxf/include",
+        "%{root}/_build/target-deps/isaac_gxf/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
@@ -44,7 +44,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
             "%{root}/_build/target-deps/nv_usd/release/lib",
             "%{root}/_build/target-deps/isaac_engine/lib",
-            "%{root}/_build/target-deps/isaac_engine/gxf/lib",
+            "%{root}/_build/target-deps/isaac_gxf/lib",
             "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
             "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
             "%{kit_sdk_bin_dir}/plugins",
@@ -85,10 +85,10 @@ repo_build.prebuild_link {
     { "data", ext.target_dir.."/data" },
     { "%{root}/_build/target-deps/isaac_engine/data", ext.target_dir.."/resources/isaac_engine/" },
     { "%{root}/_build/target-deps/isaac_engine/packages", ext.target_dir.."/packages/" },
-    { "%{root}/_build/target-deps/isaac_engine/gxf", ext.target_dir.."/gxf/" },
+    { "%{root}/_build/target-deps/isaac_gxf", ext.target_dir.."/gxf/" },
     { "%{root}/_build/target-deps/isaac_engine/lib", ext.target_dir.."/lib/" },
     { "%{root}/_build/target-deps/isaac_engine/packages/pyalice", ext.target_dir.."/omni/isaac/pyalice" },
-    { "%{root}/_build/target-deps/isaac_engine/gxf/python", ext.target_dir.."/omni/isaac/gxf" },
+    { "%{root}/_build/target-deps/isaac_gxf/gxf/python", ext.target_dir.."/omni/isaac/gxf" },
 }
 
 repo_build.prebuild_copy {

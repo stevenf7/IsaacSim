@@ -81,7 +81,7 @@ components:
       webroot: /home/qianl/isaac/sdk/packages/sight/webroot
       asset_root: ../isaac_assets
       asset_prefix: /apps/assets/
-      app_name: visualize_egm/sight
+      app_name: visualize_egm
 ---
 ########################
 # Rangescan Flattening #
@@ -106,8 +106,8 @@ components:
       allocator: allocator/default
       range_scan: range_scan
       flatscan: flatscan
-      height_minimum: -0.9
-      height_maximum: 0.5
+      height_minimum: -0.25
+      height_maximum: 1.0
 ---
 components:
   - type: nvidia::gxf::Connection
@@ -338,7 +338,8 @@ components:
 ---
 name: scheduler
 components:
-  - type: nvidia::gxf::GreedyScheduler
+  - type: nvidia::gxf::MultiThreadScheduler
     parameters:
       stop_on_deadlock: false
       clock: clock/default
+      worker_thread_number: 3

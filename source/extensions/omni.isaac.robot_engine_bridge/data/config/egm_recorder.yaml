@@ -81,7 +81,7 @@ components:
       webroot: /home/qianl/isaac/sdk/packages/sight/webroot
       asset_root: ../isaac_assets
       asset_prefix: /apps/assets/
-      app_name: visualize_egm/sight
+      app_name: visualize_egm
 ---
 ########################
 # Rangescan Flattening #
@@ -212,7 +212,7 @@ components:
   - name: rx_flatscan
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
-      capacity: 1
+      capacity: 2
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
       receiver: rx_flatscan
@@ -252,7 +252,7 @@ components:
   - name: sensor_evidence_grid
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
-      capacity: 1
+      capacity: 2
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
       receiver: sensor_evidence_grid
@@ -329,31 +329,6 @@ components:
       source: egm.classical_fusion/fused_evidence_grid
       target: egm.inpaint/map_to_paint
 ---
-name: egm.egm_to_binary
-components:
-  - name: rx_egm
-    type: nvidia::gxf::DoubleBufferReceiver
-    parameters:
-      capacity: 1
-  - type: nvidia::gxf::MessageAvailableSchedulingTerm
-    parameters:
-      receiver: rx_egm
-      min_size: 1
-  - type: nvidia::isaac::EvidenceToBinaryMap
-    parameters:
-      allocator: allocator/default
-      evidence: rx_egm
-      binary_map: binary_map
-      is_optimistic: true
-  - name: binary_map
-    type: nvidia::gxf::DoubleBufferTransmitter
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: egm.inpaint/painted_evidence_map
-      target: egm.egm_to_binary/rx_egm
----
 name: egm
 components:
   - name: rx_egm
@@ -373,12 +348,68 @@ components:
 components:
   - type: nvidia::gxf::Connection
     parameters:
-      source: egm.egm_to_binary/binary_map
+      source: egm.inpaint/painted_evidence_map
       target: egm/rx_egm
 ---
 ####################
 ## USS Accumulator #
 ####################
+name: uss_post_processing
+components:
+  - name: in
+    type: nvidia::gxf::DoubleBufferReceiver
+  - name: out
+    type: nvidia::gxf::DoubleBufferTransmitter
+  - name: smoke_mirrors
+    type: nvidia::isaac::UssPostProcessorBlur
+    parameters:
+      allocator: allocator/default
+      kernel: [0.25, 0, 0, 0, 0, 0, 0, 0, 0.25]
+      start_index: -4
+  - name: salt_pepper_strong_low
+    type: nvidia::isaac::UssPostProcessorSaltPepper
+    parameters:
+      frequency: 0.0005
+      min_strength: 0.3
+      max_strength: 0.7
+  - name: blur
+    type: nvidia::isaac::UssPostProcessorBlur
+    parameters:
+      allocator: allocator/default
+      kernel: [0.01, 0.09, 0.8, 0.09, 0.01]
+      start_index: -2
+  - name: salt_pepper_weak_high
+    type: nvidia::isaac::UssPostProcessorSaltPepper
+    parameters:
+      frequency: 0.5
+      min_strength: -0.05
+      max_strength: 0.08
+  - name: normalize
+    type: nvidia::isaac::UssPostProcessorNormalize
+    parameter:
+      threshold: 0.2
+      saturation: 1.0
+  - type: nvidia::isaac::UssPostProcessing
+    parameters:
+      allocator: allocator/default
+      envelopes_in: in
+      envelopes_out: out
+      processors: [normalize, blur]
+  - type: nvidia::gxf::MessageAvailableSchedulingTerm
+    parameters:
+      receiver: in
+      min_size: 1
+  - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
+    parameters:
+      transmitter: out
+      min_size: 1
+---
+components:
+  - type: nvidia::gxf::Connection
+    parameters:
+      source: interface.output/uss_envelopes
+      target: uss_post_processing/in
+---
 name: uss_accumulator
 components:
   - name: envelopes
@@ -398,6 +429,7 @@ components:
       allocator: allocator/default
       static_frame: atlas.pose_frames/odometry
       robot_frame: atlas.pose_frames/robot
+      batch_bins_count: 260
       adjacency: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [6, 7], [7, 8], [8, 9], [9, 10], [10, 11]]
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
@@ -413,7 +445,7 @@ components:
 components:
   - type: nvidia::gxf::Connection
     parameters:
-      source: interface.output/uss_envelopes
+      source: uss_post_processing/out
       target: uss_accumulator/envelopes
 ---
 ##############
@@ -485,7 +517,8 @@ components:
 ---
 name: scheduler
 components:
-  - type: nvidia::gxf::GreedyScheduler
+  - type: nvidia::gxf::MultiThreadScheduler
     parameters:
       stop_on_deadlock: false
       clock: clock/default
+      worker_thread_number: 6
