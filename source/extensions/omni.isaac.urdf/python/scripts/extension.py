@@ -24,7 +24,7 @@ def is_urdf_file(path: str):
 
 def on_filter_item(item) -> bool:
     if not item or item.is_folder:
-        return not (item.name == "Omniverse" or isinstance(item, omni.kit.widget.filebrowser.nucleus_model.NucleusItem))
+        return not (item.name == "Omniverse" or item.path.startswith("omniverse:"))
     return is_urdf_file(item.path)
 
 
@@ -75,6 +75,7 @@ class Extension(omni.ext.IExt):
             click_apply_handler=weakref.proxy(self)._select_picked_file_callback,
             click_cancel_handler=weakref.proxy(self)._on_picker_cancel,
             item_filter_fn=on_filter_item,
+            enable_versioning_pane=True,
         )
 
         self._filepicker.toggle_bookmark_from_path("Built In URDF Files", (self._extension_path + "/data/urdf"), True)
@@ -453,6 +454,7 @@ class Extension(omni.ext.IExt):
 
     def _parse_urdf(self):
         self._filepicker.show()
+        self._filepicker.navigate_to(self._extension_path + "/data/urdf")
 
     def _load_robot(self):
         if self.root_path:
