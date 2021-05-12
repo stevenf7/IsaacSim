@@ -68,6 +68,41 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(dof_states is not None)
         pass
 
+    async def test_articulation_start_stop(self, gpu=False):
+
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+        set_scene_physics_type(gpu)
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        obj_type = self._dc.peek_object_type("/panda")
+        self.assertEqual(obj_type, _dynamic_control.ObjectType.OBJECT_ARTICULATION)
+        art = self._dc.get_articulation("/panda")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+        # make sure that articulation was registered properly
+        dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+        self.assertTrue(dof_states is not None)
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        await self.simulate(2, art)
+        await omni.kit.app.get_app().next_update_async()
+        dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+        self.assertTrue(dof_states is not None)
+        dof_pos = dof_states["pos"]
+        dof_old = dof_pos[3] + 0.5
+        dof_pos += 0.5
+        self.assertTrue(self._dc.set_articulation_dof_position_targets(art, dof_pos))
+        await self.simulate(2, art)
+        dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+        self.assertAlmostEqual(dof_old, dof_states["pos"][3], delta=0.01)
+        self._timeline.stop()
+        pass
+
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_articulation_non_sim(self, gpu=False):
 
