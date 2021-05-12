@@ -67,6 +67,13 @@ def filter_usd(item) -> bool:
     return False
 
 
+def filter_mdl(item) -> bool:
+    _, ext = os.path.splitext(item)
+    if ext in [".mdl"]:
+        return True
+    return False
+
+
 def check_for_abs_paths(base_path):
     abs_items = {}
     for item in list_sub_files(base_path, filter_usd):
