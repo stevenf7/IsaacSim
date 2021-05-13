@@ -271,10 +271,13 @@ class Environment:
     # Computes an approximate forward vector based on the current spawn point and nearby valid path point
     def get_forward_direction(self, loc):
         if self.road_path_helper is not None:
-            k = 20
+            k = 100
             dists, pts = self.road_path_helper.get_k_nearest_path_points(np.array([self.get_tile_from_pose(loc)]), k)
             pointa = pts[0][0]
             pointb = pts[0][k - 1]
+
+            if random.choice([False, True]):
+                pointa, pointb = pointb, pointa
             return math.degrees(math.atan2(pointb[1] - pointa[1], pointb[0] - pointa[0]))
 
     # Compute the x,y tile location from the robot pose

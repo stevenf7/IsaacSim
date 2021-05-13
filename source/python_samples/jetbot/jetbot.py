@@ -5,7 +5,7 @@ from pxr import UsdGeom, Gf, UsdPhysics
 import numpy as np
 
 # Camera parameters
-FOCAL_LENGTH = 3.150
+FOCAL_LENGTH = 0.75
 HORIZONTAL_APERTURE = 2.350
 VERTICAL_APERTURE = 2.350
 
@@ -115,7 +115,7 @@ class Jetbot:
 
     # idealized motor model
     def wheel_speed_from_motor_value(self, input):
-        return input * 2.0
+        return input
 
     def observations(self):
         if self.ar is None:

@@ -38,8 +38,8 @@ def train(args):
         save_freq=args.save_freq, save_path="./params/", name_prefix=args.checkpoint_name
     )
 
-    net_arch = [512, 256, dict(pi=[128, 64, 32], vf=[128, 64, 32])]
-    policy_kwargs = {"net_arch": net_arch, "features_extractor_class": CustomCNN, "activation_fn": torch.nn.ReLU}
+    net_arch = [256, 256, dict(pi=[128, 64, 32], vf=[128, 64, 32])]
+    policy_kwargs = {"net_arch": net_arch, "activation_fn": torch.nn.ReLU}
 
     if args.loaded_checkpoint == "":
         model = PPO(
@@ -50,6 +50,9 @@ def train(args):
             policy_kwargs=policy_kwargs,
             device="cuda",
             n_steps=args.step_freq,
+            batch_size=2048,
+            n_epochs=50,
+            learning_rate=0.0001,
         )
 
     else:
@@ -118,20 +121,20 @@ if __name__ == "__main__":
 
     parser.add_argument("--evaluation_dir", help="path to evaluation log directory", default="eval_log", type=str)
 
-    parser.add_argument("--save_freq", help="number of steps before saving a checkpoint", default=1000, type=int)
+    parser.add_argument("--save_freq", help="number of steps before saving a checkpoint", default=4096 * 8, type=int)
 
-    parser.add_argument("--eval_freq", help="number of steps before running an evaluation", default=1000, type=int)
+    parser.add_argument("--eval_freq", help="number of steps before running an evaluation", default=4096 * 8, type=int)
 
-    parser.add_argument("--step_freq", help="number of steps before executing a PPO update", default=1000, type=int)
+    parser.add_argument("--step_freq", help="number of steps before executing a PPO update", default=10240, type=int)
 
     parser.add_argument(
-        "--rand_freq", help="number of environment resets before domain randomization", default=10, type=int
+        "--rand_freq", help="number of environment resets before domain randomization", default=1, type=int
     )
 
     parser.add_argument(
         "--total_steps",
         help="the total number of steps before exiting and saving a final checkpoint",
-        default=250000,
+        default=250000000,
         type=int,
     )
 
