@@ -80,7 +80,7 @@ class Extension(omni.ext.IExt):
         self._physxIFace = _physx.acquire_physx_interface()
         self._physx_subscription = None
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+
         self.ar = _dynamic_control.INVALID_HANDLE
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -123,6 +123,7 @@ class Extension(omni.ext.IExt):
     async def _setup_camera(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
+            self._viewport = omni.kit.viewport.get_default_viewport_window()
             self._viewport.set_camera_position("/OmniverseKit_Persp", 150, -150, 150, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
 
