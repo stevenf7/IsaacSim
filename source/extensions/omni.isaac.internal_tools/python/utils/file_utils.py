@@ -113,6 +113,14 @@ def get_assets_ref_count(base_path):
     return items
 
 
+def check_for_missing_refs(base_path):
+    items = {item: 0 for item in list_sub_files(base_path, filter_usd)}
+    for item in items.keys():
+        (all_layers, all_assets, unresolved_paths) = UsdUtils.ComputeAllDependencies(item)
+        if len(unresolved_paths) > 0:
+            print(item, unresolved_paths)
+
+
 def check_if_exists(path):
     result, entries = omni.client.stat(path)
     if result == Result.OK:

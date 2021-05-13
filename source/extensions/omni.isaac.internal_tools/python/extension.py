@@ -18,13 +18,16 @@ class InternalTools(omni.ext.IExt):
         self._window = ui.Window(
             title=EXTENSION_NAME, width=800, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
+        default_server = carb.settings.get_settings().get("/isaac/nucleus/default")
         with self._window.frame:
             with ui.VStack(height=0):
                 with ui.HStack(height=0):
                     ui.Label("Base Path:", width=0)
                     self.path_txt = ui.StringField()
+                    self.path_txt.model.set_value(default_server)
                 ui.Button("Check for Absolute Path References", clicked_fn=self.check_for_abs_paths)
                 ui.Button("Check for References Outside base folder", clicked_fn=self.check_for_external_refs)
+                ui.Button("Check for missing refs", clicked_fn=self.check_for_missing_refs)
                 ui.Button("Assets not referenced by other assets", clicked_fn=self.get_assets_ref_count)
                 ui.Button("Check for assets that cannot be released", clicked_fn=self.get_unreleasable)
                 ui.Button("Check for deprecated physics schema", clicked_fn=self.check_physics_schema)
@@ -52,6 +55,11 @@ class InternalTools(omni.ext.IExt):
                 print(key, value)
         else:
             print("No external references found")
+
+    def check_for_missing_refs(self):
+        print("checking for missing refs")
+        check_for_missing_refs(self.path_txt.model.get_value_as_string())
+        print("done checking")
 
     def get_assets_ref_count(self):
         items = get_assets_ref_count(self.path_txt.model.get_value_as_string())
