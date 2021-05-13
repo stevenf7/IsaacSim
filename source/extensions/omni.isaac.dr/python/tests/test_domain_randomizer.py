@@ -4,6 +4,7 @@
 import omni.kit.test
 
 import omni.kit.commands
+import carb
 import carb.tokens
 import os
 import asyncio
@@ -15,6 +16,7 @@ from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.kit.builtin.commands.usd_commands import *
 from .common import load_test_file, set_scene_physics_type
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -35,6 +37,14 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
+        self._viewport = omni.kit.viewport.get_viewport_interface()
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", False)
+
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
+        self._nucleus_path = nucleus_server + "/Isaac"
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -375,4 +385,102 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertFalse(Gf.IsClose(light_color_value_1, light_color_value_2, 0.00001))
         self.assertFalse(Gf.IsClose(light_color_temp_value_1, light_color_temp_value_2, 0.00001))
         self.assertFalse(Gf.IsClose(light_color_intensity_value_1, light_color_intensity_value_2, 0.00001))
+        pass
+
+    # Unit test for color component performance
+    async def test_color_component_fps(self):
+        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
+        # Create cube
+        cubeGeom = UsdGeom.Cube.Define(self._stage, default_prim_path + "/Cube")
+        # make sure the prim exists
+        cube_path = default_prim_path + "/Cube"
+        cube = self._stage.GetPrimAtPath(cube_path)
+        self.assertTrue(cube)
+        # Start Simulation
+        self._timeline.play()
+        # Create DR component and check if it exists
+        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/color_component", False)
+        result, prim = omni.kit.commands.execute(
+            "CreateColorComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            first_color_range=(0.0, 0.0, 0.0),
+            second_color_range=(1.0, 1.0, 1.0),
+            roughness_range=(0.0, 1.0),
+            metallic_range=(0.0, 1.0),
+            duration=0.0,
+            include_children=False,
+        )
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        color_comp_path = default_prim_path + "/color_component"
+        color_comp = self._stage.GetPrimAtPath(color_comp_path)
+        self.assertTrue(color_comp)
+        # Let the material load
+        await omni.kit.app.get_app().next_update_async()
+        while self.is_loading():
+            await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        await omni.kit.app.get_app().next_update_async()
+        # Calculate average fps
+        tot_fps = 0
+        num_frames = 1000
+        for frame in range(num_frames):
+            await omni.kit.app.get_app().next_update_async()
+            tot_fps += self._viewport.get_viewport_window().get_fps()
+        self._timeline.pause()
+        print("Avg FPS: ", tot_fps / num_frames)
+        pass
+
+    # Unit test for texture component performance
+    async def test_texture_component_fps(self):
+        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
+        # Create cube
+        cubeGeom = UsdGeom.Cube.Define(self._stage, default_prim_path + "/Cube")
+        # make sure the prim exists
+        cube_path = default_prim_path + "/Cube"
+        cube = self._stage.GetPrimAtPath(cube_path)
+        self.assertTrue(cube)
+        # Start Simulation
+        self._timeline.play()
+        # Create DR component and check if it exists
+        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/texture_component", False)
+        result, prim = omni.kit.commands.execute(
+            "CreateTextureComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            enable_project_uvw=True,
+            texture_list=[
+                self._nucleus_path + "/Samples/DR/Materials/Textures/checkered.png",
+                self._nucleus_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+                self._nucleus_path + "/Samples/DR/Materials/Textures/picture_a.png",
+                self._nucleus_path + "/Samples/DR/Materials/Textures/picture_b.png",
+                self._nucleus_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+                self._nucleus_path + "/Samples/DR/Materials/Textures/checkered_color.png",
+            ],
+            ignored_class_list=[],
+            grouped_class_list=[],
+            duration=0.0,
+            include_children=False,
+            seed=12345,
+        )
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        texture_comp_path = default_prim_path + "/texture_component"
+        texture_comp = self._stage.GetPrimAtPath(texture_comp_path)
+        self.assertTrue(texture_comp)
+        # Let the material load
+        await omni.kit.app.get_app().next_update_async()
+        while self.is_loading():
+            await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        await omni.kit.app.get_app().next_update_async()
+        # Calculate average fps
+        tot_fps = 0
+        num_frames = 1000
+        for frame in range(num_frames):
+            await omni.kit.app.get_app().next_update_async()
+            tot_fps += self._viewport.get_viewport_window().get_fps()
+        self._timeline.pause()
+        print("Avg FPS: ", tot_fps / num_frames)
         pass
