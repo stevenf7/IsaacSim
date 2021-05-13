@@ -59,8 +59,8 @@ class Extension(omni.ext.IExt):
             )
 
             viewport = omni.kit.viewport.get_default_viewport_window()
-            viewport.set_camera_position("/OmniverseKit_Persp", 122, -124, 113, True)
-            viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
+            viewport.set_camera_position("/OmniverseKit_Persp", 200, -200, 50, True)
+            viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
 
     def _on_config_robot(self):
         stage = omni.usd.get_context().get_stage()

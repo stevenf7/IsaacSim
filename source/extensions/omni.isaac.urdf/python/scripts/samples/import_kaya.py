@@ -71,7 +71,7 @@ class Extension(omni.ext.IExt):
         scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
         scene.CreateGravityMagnitudeAttr().Set(981.0)
 
-        omni.kit.commands.execute(
+        result, plane_path = omni.kit.commands.execute(
             "AddGroundPlaneCommand",
             stage=stage,
             planePath="/groundPlane",
@@ -79,6 +79,10 @@ class Extension(omni.ext.IExt):
             size=1500.0,
             position=Gf.Vec3f(0, 0, -25),
             color=Gf.Vec3f(0.5),
+        )
+        # make sure the ground plane is under root prim and not robot
+        omni.kit.commands.execute(
+            "MovePrimCommand", path_from=plane_path, path_to="/groundPlane", keep_world_transform=True
         )
 
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
