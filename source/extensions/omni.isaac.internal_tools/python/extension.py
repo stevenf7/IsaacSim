@@ -31,7 +31,8 @@ class InternalTools(omni.ext.IExt):
                 ui.Button("Assets not referenced by other assets", clicked_fn=self.get_assets_ref_count)
                 ui.Button("Check for assets that cannot be released", clicked_fn=self.get_unreleasable)
                 ui.Button("Check for deprecated physics schema", clicked_fn=self.check_physics_schema)
-                ui.Button("Print All MDLs", clicked_fn=self.print_mdls)
+                ui.Button("List All MDLs", clicked_fn=self.print_mdls)
+                ui.Button("Check If Instances Exist", clicked_fn=self.check_instancing)
 
     def on_shutdown(self):
         remove_menu_items(self._menu_items, "Isaac Utils")
@@ -128,3 +129,15 @@ class InternalTools(omni.ext.IExt):
         base_path = self.path_txt.model.get_value_as_string()
         for item in list_sub_files(base_path, filter_mdl):
             print(item)
+
+    def check_instancing(self):
+        import pxr
+
+        print("Starting check for any instances")
+        base_path = self.path_txt.model.get_value_as_string()
+        for item in list_sub_files(base_path, filter_usd):
+            stage = pxr.Usd.Stage.Open(item)
+            for prim in stage.Traverse():
+                if prim.IsInstanceable():
+                    print(item, prim)
+        print("Instance check complete")
