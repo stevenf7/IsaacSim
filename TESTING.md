@@ -16,6 +16,11 @@ This set of tests run per extension and are user defined. Any extension specifie
 These tests are run using the following script:
 ``./tools/ci/testing/test-linux-x86_64-release/step.sh``
 
+### Python Sample Tests
+These are tests for the source/python_samples. Search for an example like "python_sample_test("tests-python.isaac_sdk.pose_estimation", "isaac_sdk/pose_estimation.py", "--test")."
+
+It'll generate tests-python.isaac_sdk.pose_estimation.sh in the _build/linux-x86_64/release folder that you can run.
+
 ## Writing Unit Tests
 Writing unit tests involves three steps
 1. Creating a python file with tests in the source folder for that extension
@@ -60,28 +65,11 @@ class TestFoo(omni.kit.test.AsyncTestCaseFailOnLogError):
 ```
 
 ### 2. Loading the test into the extension
-
-``extension.py`` generally has the following format, the important part is to import any tests from that extensions scripts/tests folder. 
-
-```
-import omni.ext
-from .. import _extension
-
-# Any unit tests for the extension should be imported here
-from .tests.test_extension import *
-
-class Extension(omni.ext.IExt):
-    def on_startup(self):
-        ...
-
-    def on_shutdown(self):
-        ...
-
-```
+You can add your extension tests in its __init__.py 
 
 Tests can be structured into multiple python files as it makes sense. 
 For an example of how to set up a test see the motion_planning extension
 
-### 3. Add test to app config json
-
-modify ``source/experiences/test-isaac-sim.json`` and add the extension to the list of extensions loaded on startup, the test will automatically get picked up by the test-runner extension and run. 
+### 3. Running your tests
+Team City will pick up all these tests.
+To run your tests locally in Kit, you can run those test-*.sh in the release folder. Or use the Kit's UI Window / Test Runner and search for your tests.
