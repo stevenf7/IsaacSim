@@ -43,6 +43,9 @@ void RosSurfaceGripper::initialize(RosNode* rosNode,
                                    pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
+}
+void RosSurfaceGripper::onStart()
+{
     onComponentChange();
 }
 void RosSurfaceGripper::onStop()
@@ -122,7 +125,14 @@ void RosSurfaceGripper::pubCallback(ros::Publisher* pub)
 {
     sensor_msgs::JointState msg;
     msg.header.seq = 0;
-    msg.header.stamp.fromSec(mTimeSeconds);
+    if (mUseSimTime)
+    {
+        msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
     msg.name.push_back(mGripperEntityName);
     bool gripperStatus = mGripperJoint->isClosed();
     if (gripperStatus)

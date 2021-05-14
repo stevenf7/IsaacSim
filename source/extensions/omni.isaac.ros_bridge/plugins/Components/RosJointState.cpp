@@ -49,7 +49,13 @@ void RosJointState::initialize(RosNode* rosNode,
     IsaacComponent::initialize(rosNode, prim, stage);
     onComponentChange();
 }
-
+void RosJointState::onStart()
+{
+    onComponentChange();
+}
+void RosJointState::onStop()
+{
+}
 void RosJointState::onComponentChange()
 {
 
@@ -121,7 +127,14 @@ void RosJointState::pubCallback(ros::Publisher* pub)
     double stageUnits = 1.0 / mUnitScale;
     sensor_msgs::JointState msg;
     msg.header.seq = 0;
-    msg.header.stamp.fromSec(mTimeSeconds);
+    if (mUseSimTime)
+    {
+        msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
 
 
     mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);

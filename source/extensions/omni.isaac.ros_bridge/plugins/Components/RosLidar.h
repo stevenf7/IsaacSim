@@ -36,6 +36,8 @@ public:
                             const pxr::RosBridgeSchemaRosBridgeComponent& prim,
                             pxr::UsdStageWeakPtr stage);
 
+    virtual void onStart();
+    virtual void onStop();
     virtual void onComponentChange();
     void pubCallback(ros::Publisher* pub);
     void pointCloudPubCallback(ros::Publisher* pub);

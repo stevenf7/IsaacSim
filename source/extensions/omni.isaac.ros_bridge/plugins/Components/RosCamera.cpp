@@ -85,14 +85,58 @@ RosCamera::~RosCamera()
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mLabelPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mBoundingBox2DPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mBoundingBox3DPubTopic);
+    onStop();
 }
 
 void RosCamera::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
+}
+
+void RosCamera::onStart()
+{
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
 
     onComponentChange();
+}
+void RosCamera::onStop()
+{
+    if (mRgbSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mRgbSensor);
+        mRgbSensor = nullptr;
+        mRgbSensorData = nullptr;
+    }
+    if (mDepthSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mDepthSensor);
+        mDepthSensor = nullptr;
+        mDepthSensorData = nullptr;
+    }
+    if (mSegmentationSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mSegmentationSensor);
+        mSegmentationSensor = nullptr;
+        mSegmentationSensorData = nullptr;
+    }
+    if (mSemanticSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mSemanticSensor);
+        mSemanticSensor = nullptr;
+        mSemanticSensorData = nullptr;
+    }
+    if (mBoundingBox2DSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mBoundingBox2DSensor);
+        mBoundingBox2DSensor = nullptr;
+        mBoundingBox2DSensorData = nullptr;
+    }
+    if (mBoundingBox3DSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mBoundingBox3DSensor);
+        mBoundingBox3DSensor = nullptr;
+        mBoundingBox3DSensorData = nullptr;
+    }
 }
 
 void RosCamera::onComponentChange()
@@ -283,7 +327,15 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
     sensor_msgs::CameraInfo cam_info_msg;
     cam_info_msg.header.seq = 0;
     cam_info_msg.header.frame_id = mFrameId;
-    cam_info_msg.header.stamp.fromSec(mTimeSeconds);
+    if (mUseSimTime)
+    {
+        cam_info_msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        cam_info_msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
+
     cam_info_msg.height = imgInfo.tex.height;
     cam_info_msg.width = imgInfo.tex.width;
     cam_info_msg.distortion_model = "plumb_bob";
@@ -334,7 +386,14 @@ void RosCamera::rgbPubCallback(ros::Publisher* pub)
     sensor_msgs::Image color_msg;
     color_msg.header.seq = 0;
     color_msg.header.frame_id = mFrameId;
-    color_msg.header.stamp.fromSec(mTimeSeconds);
+    if (mUseSimTime)
+    {
+        color_msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        color_msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
     color_msg.width = rgbInfo.tex.width;
     color_msg.height = rgbInfo.tex.height;
     color_msg.step = color_step;
@@ -375,7 +434,14 @@ void RosCamera::depthPubCallback(ros::Publisher* pub)
     sensor_msgs::Image depth_msg;
     depth_msg.header.seq = 0;
     depth_msg.header.frame_id = mFrameId;
-    depth_msg.header.stamp.fromSec(mTimeSeconds);
+    if (mUseSimTime)
+    {
+        depth_msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        depth_msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
     depth_msg.width = depthInfo.tex.width;
     depth_msg.height = depthInfo.tex.height;
     depth_msg.step = depth_step;
@@ -413,7 +479,14 @@ void RosCamera::instancePubCallback(ros::Publisher* pub)
     sensor_msgs::Image instance_msg;
     instance_msg.header.seq = 0;
     instance_msg.header.frame_id = mFrameId;
-    instance_msg.header.stamp.fromSec(mTimeSeconds);
+    if (mUseSimTime)
+    {
+        instance_msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        instance_msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
     instance_msg.width = instanceInfo.tex.width;
     instance_msg.height = instanceInfo.tex.height;
     instance_msg.step = instance_step;
@@ -449,7 +522,14 @@ void RosCamera::semanticPubCallback(ros::Publisher* pub)
     sensor_msgs::Image semantic_msg;
     semantic_msg.header.seq = 0;
     semantic_msg.header.frame_id = mFrameId;
-    semantic_msg.header.stamp.fromSec(mTimeSeconds);
+    if (mUseSimTime)
+    {
+        semantic_msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        semantic_msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
     semantic_msg.width = semanticInfo.tex.width;
     semantic_msg.height = semanticInfo.tex.height;
     semantic_msg.step = semantic_step;

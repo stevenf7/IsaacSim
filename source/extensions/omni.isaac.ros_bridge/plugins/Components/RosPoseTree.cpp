@@ -50,9 +50,14 @@ void RosPoseTree::initialize(RosNode* rosNode,
                              pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
+}
+void RosPoseTree::onStart()
+{
     onComponentChange();
 }
-
+void RosPoseTree::onStop()
+{
+}
 void RosPoseTree::onComponentChange()
 {
 
@@ -119,8 +124,14 @@ void RosPoseTree::pubCallback(ros::Publisher* pub)
     tf2_msgs::TFMessage tf_msg;
     geometry_msgs::TransformStamped msg;
     msg.header.seq = 0; // TODO: use frame number?
-    msg.header.stamp.fromSec(mTimeSeconds);
-
+    if (mUseSimTime)
+    {
+        msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
     int bodyIndex = 0;
     for (auto& object : mObjects)
     {

@@ -52,3 +52,4 @@ requirements = ["psutil==5.7.2"]
 
 [settings]
 exts."omni.isaac.ros_bridge".nodeName = "OmniIsaacRosBridge"
+exts."omni.isaac.ros_bridge".useSimTime = true

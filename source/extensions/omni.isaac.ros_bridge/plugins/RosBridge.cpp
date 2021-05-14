@@ -75,7 +75,7 @@ void onAttach(long int stageId, double metersPerUnit, void* userData)
     pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
     if (!stage)
     {
-        CARB_LOG_ERROR("Isaac Robot Engine Bridge could not find USD stage");
+        CARB_LOG_ERROR("Isaac ROS Bridge could not find USD stage");
         return;
     }
 
@@ -180,6 +180,14 @@ void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 }
 
 
+void CARB_ABI setUseSimTime(const bool useSimTime)
+{
+    if (g_application_handle)
+    {
+        CARB_LOG_INFO("ROS will use %s time for publishers", useSimTime ? "simulation" : "system");
+        g_application_handle->setUseSimTime(useSimTime);
+    }
+}
 CARB_EXPORT void carbOnPluginStartup()
 {
     g_framework = carb::getFramework();
@@ -259,6 +267,9 @@ CARB_EXPORT void carbOnPluginStartup()
 
     g_application_handle = std::make_unique<omni::isaac::ros_bridge::IsaacApplication>(g_dynamicControl);
 
+    g_settings->setDefaultBool("/exts/omni.isaac.ros_bridge/useSimTime", true);
+    bool useSimTime = g_settings->get<bool>("/exts/omni.isaac.ros_bridge/useSimTime");
+    setUseSimTime(useSimTime);
     // if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Error))
     // {
     //     ros::console::notifyLoggerLevelsChanged();
@@ -289,4 +300,5 @@ void fillInterface(omni::isaac::ros_bridge::RosBridge& iface)
     using namespace omni::isaac::ros_bridge;
 
     memset(&iface, 0, sizeof(iface));
+    iface.setUseSimTime = setUseSimTime;
 }

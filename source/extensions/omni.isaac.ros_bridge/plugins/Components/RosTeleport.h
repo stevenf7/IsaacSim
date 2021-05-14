@@ -36,7 +36,8 @@ public:
     virtual void initialize(RosNode* rosNode,
                             const pxr::RosBridgeSchemaRosBridgeComponent& prim,
                             pxr::UsdStageWeakPtr stage);
-
+    virtual void onStart();
+    virtual void onStop();
     virtual void onComponentChange();
     bool srvCallback(isaac_bridge::IsaacPose::Request& req, isaac_bridge::IsaacPose::Response& res);
 
