@@ -72,7 +72,7 @@ class Extension(omni.ext.IExt):
         ]
         self._menu_items = [
             MenuItemDescription(
-                name="Controlling", sub_menu=[MenuItemDescription(name="Robot Engine Bridge", sub_menu=menu_items)]
+                name="Communicating", sub_menu=[MenuItemDescription(name="Robot Engine Bridge", sub_menu=menu_items)]
             )
         ]
         add_menu_items(self._menu_items, "Isaac Examples")

@@ -38,24 +38,29 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items, "Isaac Utils")
 
         with self._window.frame:
-            with ui.VStack(spacing=10):
-                with ui.CollapsableFrame("Collision"):
-                    with ui.VStack(spacing=5):
-                        ui.Label("NOTE: this supports applying/clearing collision for static geometry only", height=0)
-                        with ui.HStack(height=0, spacing=10):
-                            ui.Label("Apply to children", width=0)
-                            self._children_checkbox = ui.CheckBox().model
-                            self._children_checkbox.set_value(True)
-                        with ui.HStack(height=0, spacing=10):
-                            ui.Label("Visibile Only", width=0)
-                            self._visible_checkbox = ui.CheckBox().model
-                            self._visible_checkbox.set_value(True)
-                        ui.Button("Apply Static Collision To Selected", clicked_fn=self.apply_collision_on_selected)
-                        ui.Button("Clear Static Collision On Selected", clicked_fn=self.clear_collision_on_selected)
+            with ui.VStack(spacing=5):
+                with ui.CollapsableFrame("Collision", height=0):
+                    with ui.HStack():
+                        with ui.VStack(spacing=5):
+                            ui.Label(
+                                "NOTE: this supports applying/clearing collision for static geometry only", height=0
+                            )
+                            with ui.HStack(height=0, spacing=10):
+                                ui.Label("Apply to children", width=0)
+                                self._children_checkbox = ui.CheckBox().model
+                                self._children_checkbox.set_value(True)
+                            with ui.HStack(height=0, spacing=10):
+                                ui.Label("Visibile Only", width=0)
+                                self._visible_checkbox = ui.CheckBox().model
+                                self._visible_checkbox.set_value(True)
+                        with ui.VStack(height=0):
+                            ui.Button("Apply Static Collision To Selected", clicked_fn=self.apply_collision_on_selected)
+                            ui.Button("Clear Static Collision On Selected", clicked_fn=self.clear_collision_on_selected)
                 ui.Label(
-                    "NOTE: This cannot delete usd prims on referenced assets, but will still unapply apis", height=0
+                    "NOTE: This cannot delete usd prims on referenced assets, but will still unapply USD APIs", height=0
                 )
-                ui.Button("Remove All Physics APIs", clicked_fn=self.remove_physics_apis_on_selected)
+                ui.Button("Remove All Physics APIs", clicked_fn=self.remove_physics_apis_on_selected, height=0)
+                ui.Spacer()
                 self._progress_bar = ui.ProgressBar(height=0).model
                 self._progress_bar.set_value(0)
 

@@ -29,7 +29,7 @@ class ToolBarUtilities(omni.ui.ToolBar):
 
         self._toolbar = ui.ToolBar("Isaac Utilities Toolbar", noTabBar=False)
         with self._toolbar.frame:
-            with ui.VStack(style=self._style, height=h, spacing=5):
+            with ui.VStack(style=self._style, height=h):
                 tb_width = 75
                 icon_size = 25
 

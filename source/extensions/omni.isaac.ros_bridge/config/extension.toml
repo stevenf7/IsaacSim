@@ -47,6 +47,8 @@ recursive = false
 [fswatcher.paths]
 exclude = ["*/noetic"]
 
+[python.pipapi]
+requirements = ["psutil==5.7.2"]
 
 [settings]
 exts."omni.isaac.ros_bridge".nodeName = "OmniIsaacRosBridge"

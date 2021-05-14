@@ -73,7 +73,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._robot_wheels_speed = [2, 2]
 
         set_up_z_axis(self._stage)
-        add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0), Gf.Vec3f(1.0))
+        add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
         setup_physics(self._stage)
 
         # setup high-level robot prim
@@ -146,8 +146,8 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         roll, pitch, yaw = math_utils.quaternionToEulerAngles(
             Gf.Quaternion(imu_pose.r.w, Gf.Vec3d(imu_pose.r.x, imu_pose.r.y, imu_pose.r.z))
         )
-        self.assertAlmostEqual(imu_pose.p.x, 100, delta=1.0)
-        self.assertAlmostEqual(imu_pose.p.y, 100, delta=1.0)
+        self.assertAlmostEqual(imu_pose.p.x, 100, delta=2.0)
+        self.assertAlmostEqual(imu_pose.p.y, 100, delta=2.0)
         self.assertAlmostEqual(yaw, 1.57, delta=0.1)
         pass
 
@@ -162,7 +162,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._rc.control_command(1, 1)
         await simulate(1)
         imu_pose = self._dc.get_rigid_body_pose(self.imu)
-        self.assertGreater(imu_pose.p.z, 0.0)
+        self.assertGreater(imu_pose.p.x, 0.0)
         # Stop and play
         self._rc.control_command(0, 0)
         await simulate(1)
@@ -174,5 +174,5 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._rc.control_command(1, 1)
         await simulate(1)
         imu_pose_new = self._dc.get_rigid_body_pose(self.imu)
-        self.assertAlmostEqual(imu_pose_new.p.x, 2 * imu_pose.p.x, delta=1.0)
+        self.assertAlmostEqual(imu_pose_new.p.x, imu_pose.p.x, delta=1.0)
         pass

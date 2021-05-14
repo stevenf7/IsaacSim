@@ -31,9 +31,6 @@ EXTENSION_NAME = "Isaac Sim Utilities Manager"
 # ---SENSING---
 # Occupancy Map
 
-# ---CONFIG---
-# Vehicle Config Tool
-
 # ---GEOMETRY---
 # Mesh Merge Tool
 
@@ -45,9 +42,8 @@ UTILITIES = {
     "Import": ["URDF Importer", "Step Importer"],
     "Sensing": ["Occupancy Map"],
     "Comms": ["Robot Engine Bridge"],
-    "Config": ["Vehicle Config Tool"],
     "Geometry": ["Mesh Merge Tool"],
-    "Training": ["Synthetic Data Recorder", "ShapeNet Loader"],
+    "Training": ["Synthetic Data Recorder"],
 }
 
 DEBUG_PRINT_ON = False
@@ -78,7 +74,7 @@ class Extension(omni.ext.IExt):
             self.dock_utilities()
             await omni.kit.app.get_app().next_update_async()
             # Move the Property panel so it makes room our toolbar to go full height
-            self.dock_window(ui.Workspace.get_window("Stage"), "Property", omni.ui.DockPosition.BOTTOM)
+            # self.dock_window(ui.Workspace.get_window("Stage"), "Property", omni.ui.DockPosition.SAME)
 
         asyncio.ensure_future(dock_windows())
 
@@ -87,7 +83,7 @@ class Extension(omni.ext.IExt):
         if DEBUG_PRINT_ON:
             # print(ui.Workspace.get_windows())
             print("DOCKING TOOLBAR")
-        tgt = ui.Workspace.get_window("Stage")
+        tgt = ui.Workspace.get_window("Console")
         self.dock_window(tgt, "Isaac Utilities Toolbar", omni.ui.DockPosition.RIGHT, 0.9)
         # tgt = ui.Workspace.get_window("DockSpace") # <-- causes seg fault for some reason
         # self.dock_window(tgt, "Isaac Utilities Toolbar", omni.ui.DockPosition.RIGHT, .2)
@@ -101,24 +97,25 @@ class Extension(omni.ext.IExt):
         prev_group = ""
         for group in UTILITIES:
             if prev_group == "":
-                tgt = ui.Workspace.get_window("Stage")
-                self.dock_window(tgt, UTILITIES[group][0], omni.ui.DockPosition.RIGHT)
-            else:
-                tgt = ui.Workspace.get_window(UTILITIES[prev_group][0])
-                self.dock_window(tgt, UTILITIES[group][0], omni.ui.DockPosition.BOTTOM, pos)
+                tgt = ui.Workspace.get_window("Console")
+                self.dock_window(tgt, UTILITIES[group][0], omni.ui.DockPosition.SAME)
+            # else:
+            #     tgt = ui.Workspace.get_window(UTILITIES[prev_group][0])
+            #     self.dock_window(tgt, UTILITIES[group][0], omni.ui.DockPosition.BOTTOM, pos)
             prev_group = group
         # Add multiples of any given group category
         for group in UTILITIES:
-            i = 0
+            # i = 0
             for ext in UTILITIES[group]:
-                if i > 0:
-                    tgt = ui.Workspace.get_window(UTILITIES[group][0])
-                    self.dock_window(tgt, ext, omni.ui.DockPosition.SAME)
-                i += 1
+                # if i > 0:
+                # tgt = ui.Workspace.get_window(UTILITIES[group][0])
+                tgt = ui.Workspace.get_window("Console")
+                self.dock_window(tgt, ext, omni.ui.DockPosition.SAME)
+            # i += 1
 
         # Move the Property panel so it gives our extension the full height
-        tgt = ui.Workspace.get_window("Stage")
-        self.dock_window(tgt, "Property", omni.ui.DockPosition.BOTTOM)
+        # tgt = ui.Workspace.get_window("Stage")
+        # self.dock_window(tgt, "Property", omni.ui.DockPosition.BOTTOM)
 
     def show_utilities(self):
         """Makes all Extension Utilities visible in the Toolbar"""
@@ -156,14 +153,15 @@ class Extension(omni.ext.IExt):
             ui.Workspace.get_window(ext).visible = True
 
         # Dock the group next to the Stage
-        tgt = ui.Workspace.get_window("Stage")
+        tgt = ui.Workspace.get_window("Console")
         window = ui.Workspace.get_window(UTILITIES[name][0])
-        window.dock_in(tgt, omni.ui.DockPosition.RIGHT)
+        window.dock_in(tgt, omni.ui.DockPosition.SAME)
 
         i = 0
         for ext in UTILITIES[name]:
             if i > 0:
-                tgt = ui.Workspace.get_window(UTILITIES[name][0])
+                # tgt = ui.Workspace.get_window(UTILITIES[name][0])
+                tgt = ui.Workspace.get_window("Console")
                 window = ui.Workspace.get_window(ext)
                 window.dock_in(tgt, omni.ui.DockPosition.SAME)
             i += 1
@@ -217,9 +215,9 @@ class Extension(omni.ext.IExt):
             self.hide_utilities()
             self.dock_toolbar()
 
-            # reposition the Property panel under the Stage
-            tgt = ui.Workspace.get_window("Stage")
-            self.dock_window(tgt, "Property", omni.ui.DockPosition.BOTTOM)
+            # # reposition the Property panel under the Stage
+            # tgt = ui.Workspace.get_window("Stage")
+            # self.dock_window(tgt, "Property", omni.ui.DockPosition.BOTTOM)
 
         if DEBUG_PRINT_ON:
             print()

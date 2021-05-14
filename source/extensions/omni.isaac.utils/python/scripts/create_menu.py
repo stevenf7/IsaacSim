@@ -60,7 +60,7 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(name="Manipulators", sub_menu=manip_menu),
             MenuItemDescription(name="Mobile Bases", sub_menu=mobile_menu),
         ]
-        from_menu = [MenuItemDescription(name="From Libray", sub_menu=robot_menu)]
+        from_menu = [MenuItemDescription(name="From Library", sub_menu=robot_menu)]
 
         env_menu = [
             MenuItemDescription(
