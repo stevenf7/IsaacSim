@@ -67,7 +67,7 @@ class Extension(omni.ext.IExt):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._window = None
         self._physxIFace = _physx.acquire_physx_interface()
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -137,6 +137,7 @@ class Extension(omni.ext.IExt):
         # wait for the stage load task to finish before setting camera and starting simulation
         done, pending = await asyncio.wait({task})
         if task in done:
+            self._viewport = omni.kit.viewport.get_default_viewport_window()
             self._viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 50, True)
             self._timeline.play()
