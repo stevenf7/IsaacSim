@@ -74,6 +74,13 @@ public:
             CARB_LOG_ERROR("Publisher callback not valid %s", topic.c_str());
             return;
         }
+        std::string validate_result;
+
+        if (!ros::names::validate(topic, validate_result))
+        {
+            CARB_LOG_ERROR("Topic name %s not valid %s", topic.c_str(), validate_result.c_str());
+            return;
+        }
         // // if we already have a message on this topic, delete the previous one and recreate
         // if (mMessages.find(topic) != mMessages.end())
         // {
@@ -99,11 +106,23 @@ public:
                           void (Callback::*callbackFn)(const typename MessageType::ConstPtr&),
                           Callback* callback)
     {
+        if (topic.size() == 0)
+        {
+            CARB_LOG_ERROR("Subscriber topic empty, cannot create %s", uniquePrefix.c_str());
+            return;
+        }
         if (!callback && callbackFn)
         {
             CARB_LOG_ERROR("Subscriber callback not valid");
+            return;
         }
-        if (rosnode_ && topic.size())
+        std::string validate_result;
+        if (!ros::names::validate(topic, validate_result))
+        {
+            CARB_LOG_ERROR("Topic name %s not valid %s", topic.c_str(), validate_result.c_str());
+            return;
+        }
+        if (rosnode_)
         {
             std::unique_ptr<RosSubscriber> subscriber = std::make_unique<RosSubscriber>();
             subscriber->init<MessageType>(rosnode_.get(), topic, queue_size, callbackFn, callback);
@@ -112,7 +131,7 @@ public:
         }
         else
         {
-            CARB_LOG_ERROR("Could Not Create Subscriber");
+            CARB_LOG_ERROR("Could Not Create Subscriber on %s", topic.c_str());
         }
     }
 
@@ -144,11 +163,22 @@ public:
                        bool (Callback::*callbackFn)(typename MessageType::Request&, typename MessageType::Response&),
                        Callback* callback)
     {
+        if (topic.size() == 0)
+        {
+            CARB_LOG_ERROR("Service topic empty, cannot create %s", uniquePrefix.c_str());
+            return;
+        }
+        std::string validate_result;
+        if (!ros::names::validate(topic, validate_result))
+        {
+            CARB_LOG_ERROR("Topic name %s not valid %s", topic.c_str(), validate_result.c_str());
+            return;
+        }
         if (!callback && callbackFn)
         {
             CARB_LOG_ERROR("Service callback not valid");
         }
-        if (rosnode_ && topic.size())
+        if (rosnode_)
         {
             std::unique_ptr<RosService> srv_ = std::make_unique<RosService>();
             srv_->init<MessageType>(rosnode_.get(), topic, callbackFn, callback);

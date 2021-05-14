@@ -15,8 +15,10 @@
 
 #include <rosBridgeSchema/rosBridgeComponent.h>
 
+#include <chrono>
 #include <string>
 #include <vector>
+
 namespace omni
 {
 namespace isaac
@@ -92,17 +94,32 @@ public:
      * @param dt
      * @param timeNano
      */
-    virtual void updateTimestamp(double timeSeconds, double dt, int64_t timeNano)
+    virtual void updateTimestamp(double timeSeconds,
+                                 double dt,
+                                 int64_t timeNano,
+                                 std::chrono::_V2::system_clock::rep systemTimeNano)
     {
         this->mTimeNanoSeconds = timeNano;
         this->mTimeSeconds = timeSeconds;
         this->mTimeDelta = dt;
+        mSystemTimeNanoSeconds = systemTimeNano;
     }
 
+    /**
+     * @brief Sets whether or not this component publishes its header with sim time or system time
+     *
+     * @param useSimTime
+     */
+    virtual void setUseSimTime(const bool useSimTime)
+    {
+        mUseSimTime = useSimTime;
+    }
 
 protected:
     std::string mRosNodePrefix = "";
     RosNode* mRosNode;
+    std::chrono::_V2::system_clock::rep mSystemTimeNanoSeconds = 0;
+    bool mUseSimTime = true;
 };
 
 

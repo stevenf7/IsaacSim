@@ -20,6 +20,7 @@
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <rosBridgeSchema/rosBridgeComponent.h>
 
+#include <chrono>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -97,6 +98,8 @@ public:
         return mROSInitialize;
     }
 
+    void setUseSimTime(const bool useSimTime);
+
 private:
     RosNode* getRosNode(const pxr::UsdPrim& prim);
     std::string mAppFilename;
@@ -106,6 +109,8 @@ private:
 
     int64_t mTimeDifferenceNanoSeconds = 0;
     bool mROSInitialize = true;
+    std::chrono::_V2::system_clock::rep mSystemTimeNanoSeconds = 0;
+    bool mUseSimTime = true;
 
     std::unordered_map<std::string, std::unique_ptr<RosNode>> mRosNodes;
 };

@@ -57,11 +57,15 @@ RosLidar::~RosLidar()
 void RosLidar::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
+}
+void RosLidar::onStart()
+{
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
-
     onComponentChange();
 }
-
+void RosLidar::onStop()
+{
+}
 void RosLidar::onComponentChange()
 {
 
@@ -131,7 +135,14 @@ void RosLidar::pubCallback(ros::Publisher* pub)
     sensor_msgs::LaserScan laser_msg;
     laser_msg.header.seq = 0;
     laser_msg.header.frame_id = mFrameId;
-    laser_msg.header.stamp.fromSec(mTimeSeconds);
+    if (mUseSimTime)
+    {
+        laser_msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        laser_msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
 
     int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
     int numRows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str()); // should be 1
@@ -178,7 +189,15 @@ void RosLidar::pointCloudPubCallback(ros::Publisher* pub)
     sensor_msgs::PointCloud point_cloud_msg;
     point_cloud_msg.header.seq = 0;
     point_cloud_msg.header.frame_id = mFrameId;
-    point_cloud_msg.header.stamp.fromSec(mTimeSeconds);
+    if (mUseSimTime)
+    {
+        point_cloud_msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        point_cloud_msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
+
 
     carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(mLidarPath.GetString().c_str());
     int rows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str());

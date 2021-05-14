@@ -47,11 +47,16 @@ void RosDifferentialBase::initialize(RosNode* rosNode,
                                      pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
+}
+void RosDifferentialBase::onStart()
+{
     mZUp = UsdGeomGetStageUpAxis(mStage) == "Z" ? true : false;
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
     onComponentChange();
 }
-
+void RosDifferentialBase::onStop()
+{
+}
 void RosDifferentialBase::onComponentChange()
 {
 
@@ -144,7 +149,14 @@ void RosDifferentialBase::pubCallback(ros::Publisher* pub)
 {
     nav_msgs::Odometry odomMsg;
     odomMsg.header.seq = 0;
-    odomMsg.header.stamp.fromSec(mTimeSeconds);
+    if (mUseSimTime)
+    {
+        odomMsg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        odomMsg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
     odomMsg.header.frame_id = mOdomFrameId;
     odomMsg.child_frame_id = mBaseFrameId;
 
@@ -184,7 +196,16 @@ void RosDifferentialBase::tfPubCallback(ros::Publisher* pub)
     tf2_msgs::TFMessage tfMsg;
     geometry_msgs::TransformStamped msg;
     msg.header.seq = 0;
-    msg.header.stamp.fromSec(mTimeSeconds);
+
+    if (mUseSimTime)
+    {
+        msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
+
     msg.header.frame_id = "world";
     msg.child_frame_id = mOdomFrameId;
 

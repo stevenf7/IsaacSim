@@ -56,9 +56,22 @@ void IsaacApplication::initialize(pxr::UsdStageWeakPtr stage)
 
 void IsaacApplication::tick(double dt)
 {
+    // System time is calculated the start of the frame
+    mSystemTimeNanoSeconds =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
     for (auto& component : mComponents)
     {
-        component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds);
+        if (component.second->mDoStart == true)
+        {
+            component.second->onStart();
+            component.second->mDoStart = false;
+        }
+    }
+
+    for (auto& component : mComponents)
+    {
+        component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mSystemTimeNanoSeconds);
     }
 
     for (auto& node : mRosNodes)
@@ -142,7 +155,17 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     {
         CARB_LOG_INFO("Create: Prim %s with type: %s", prim.GetPath().GetString().c_str(),
                       component->getPrim().GetPrim().GetTypeName().GetString().c_str());
+        component->setUseSimTime(mUseSimTime);
         mComponents[prim.GetPath().GetString()] = std::move(component);
+    }
+}
+
+void IsaacApplication::setUseSimTime(const bool useSimTime)
+{
+    mUseSimTime = useSimTime;
+    for (auto& component : mComponents)
+    {
+        component.second.get()->setUseSimTime(mUseSimTime);
     }
 }
 

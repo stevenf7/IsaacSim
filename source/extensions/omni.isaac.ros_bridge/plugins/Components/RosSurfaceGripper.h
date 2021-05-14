@@ -35,7 +35,7 @@ public:
     virtual void initialize(RosNode* rosNode,
                             const pxr::RosBridgeSchemaRosBridgeComponent& prim,
                             pxr::UsdStageWeakPtr stage);
-
+    virtual void onStart();
     virtual void onStop();
     virtual void onComponentChange();
     void pubCallback(ros::Publisher* pub);

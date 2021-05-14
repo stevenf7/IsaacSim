@@ -48,9 +48,14 @@ void RosTeleport::initialize(RosNode* rosNode,
                              pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
+}
+void RosTeleport::onStart()
+{
     onComponentChange();
 }
-
+void RosTeleport::onStop()
+{
+}
 void RosTeleport::onComponentChange()
 {
 

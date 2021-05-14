@@ -20,7 +20,6 @@
 #include "std_msgs/UInt8.h"
 #include "std_srvs/Empty.h"
 #include <time.h>
-
 namespace omni
 {
 namespace isaac
@@ -37,9 +36,14 @@ RosClock::~RosClock()
 void RosClock::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     IsaacComponent::initialize(rosNode, prim, stage);
+}
+void RosClock::onStart()
+{
     onComponentChange();
 }
-
+void RosClock::onStop()
+{
+}
 void RosClock::onComponentChange()
 {
 
@@ -50,7 +54,7 @@ void RosClock::onComponentChange()
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mClockPubTopic);
 
     isaac::utils::safeGetAttribute(typedPrim.GetClockPubTopicAttr(), mClockPubTopic);
-    // isaac::utils::safeGetAttribute(typedPrim.GetSimTimeAttr(), mSimTime);
+    isaac::utils::safeGetAttribute(typedPrim.GetSimTimeAttr(), mSimTime);
 
 
     mRosNode->createPublisher<rosgraph_msgs::Clock>(
@@ -65,7 +69,14 @@ void RosClock::pubCallback(ros::Publisher* pub)
     }
     rosgraph_msgs::Clock time_msg;
     ros::Time t;
-    t.fromSec(mTimeSeconds);
+    if (mSimTime)
+    {
+        t.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        t.fromNSec(mSystemTimeNanoSeconds);
+    }
     time_msg.clock = t;
     pub->publish(time_msg);
 }
