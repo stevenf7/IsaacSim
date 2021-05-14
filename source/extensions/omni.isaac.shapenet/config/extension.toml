@@ -17,3 +17,6 @@ keywords = ["kit", "shapenet", "data"]
 
 [[python.module]]
 name = "omni.isaac.shapenet"
+
+[python.pipapi]
+requirements = ["webbot==0.34", "requests==2.23.0"]

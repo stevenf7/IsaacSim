@@ -11,9 +11,7 @@ from .globals import g_default_omni_server
 class ShapenetSettings:
     def __init__(self):
         """ build ShapeNet Settings window"""
-        self._window = ui.Window(
-            title="Shapenet Settings", width=800, height=600, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
-        )
+        self._window = ui.Window(title="Shapenet Settings", visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM)
 
         self._settings = carb.settings.get_settings()
 
@@ -36,19 +34,10 @@ class ShapenetSettings:
 
     def _build_window_ui(self):
         """ Add Shape Settings """
-        style = {
-            "CollapsableFrame": {
-                "border_color": 0xFF965B00,
-                "border_radius": 4,
-                "border_width": 2,
-                "padding": 0,
-                "margin": 0,
-            }
-        }
         with self._window.frame:
             with ui.VStack(height=-0):
-                with ui.CollapsableFrame(title="create_setting_widget", style=style):
-                    with ui.VStack():
+                with ui.CollapsableFrame(title="create_setting_widget"):
+                    with ui.VStack(spacing=2):
                         with ui.HStack(height=24):
                             ui.Label("Omniverse Server", word_wrap=True, width=ui.Percent(35))
                             create_setting_widget("/isaac/shapenet/omniverseServer", SettingType.STRING)

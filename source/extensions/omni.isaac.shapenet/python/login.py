@@ -5,12 +5,30 @@ import os
 import omni.kit.pipapi
 import omni.ui as ui
 
+#   "Keep Help text the width of this line or shorter -------------------------------",
+ADD_DB_TEXT = (
+    "    Please register an account at https://www.shapenet.org/ so you can make the "
+    "database of ShapeNetCore.V1 csv files necessary to run this extension.  Once you "
+    "have a validate shapenet.org login, use the menu to create the database.  You "
+    "should only have to do this once.\n\n"
+)
+
+HELP_TEXT = (
+    "    This omni.isaac.shapenet plugin allows you to add ShapeNetCore.V2 models from shapenet.org to your stage in Omniverse Kit.\n\n"
+    "    You can use the ShapeNet menu to add shapes.\n\n"
+    "    You can also use an external python session to send json formatted commands via http and load shapes with comm_kit.py.\n\n"
+    "    See comm_kit.test_comm() or run:\n"
+    "\t>  jupyter notebook ShapeNet Python Example.ipynb\n"
+    "for examples.\n\n"
+    "    If you already have ShapeNetCore V2 installed locally, this plugin can use the local files.  Use the env var SHAPENET_LOCAL_DIR to set that location (IMPORTANT NOTE: Make sure there are no periods, ., in the path name), otherwise, omni.isaac.shapenet will use the default ${data}/shapenet folder.  By using local folders, you can edit shapenet models before their conversion to usd.  If you want to keep the original file, just save the modified file as "
+    ' "models/modified/model.obj" in that shape\'s /models folder.\n\n'
+    "    If the shape is already on the omniverse server at g_omni_shape_loc (defaults to /Projects/shapenet), then that model will be used instead of the downloaded original or locally saved or modified shapenet obj file.\n\n"
+)
 
 WIDGET_WIDTH = 130
 
 # this function is used to make sure the user can log into shapenet.org.  It should be used before creating the pickle.
 def try_login(username, password):
-    omni.kit.pipapi.install("webbot")
     import webbot
 
     b = webbot.Browser()
@@ -122,7 +140,6 @@ def save_and_testDB(snDb, out_file):
 class ShapenetLogin:
     def __init__(self, shapenetMenu, icon_path):
         self._shapenetMenu = shapenetMenu
-
         self._models = {}
         self.icon_path = icon_path
         self.build_window()
@@ -140,7 +157,10 @@ class ShapenetLogin:
                     self._username = ui.StringField()
                     img_url = str(self.icon_path.joinpath("help.png"))
                     ui.Spacer(width=6)
-                    self._models["help_button"] = ui.Image(img_url, width=20, tooltip="Help")
+                    self._models["help_button"] = ui.Button(
+                        "Help", width=0, clicked_fn=lambda b=None: self._on_help_menu_click()
+                    )
+                    # ui.Image(img_url, width=20, tooltip="Help")
                 ui.Spacer(height=10)
                 with ui.HStack(height=20):
                     ui.Label("Password:", alignment=ui.Alignment.CENTER, width=WIDGET_WIDTH)
@@ -149,6 +169,19 @@ class ShapenetLogin:
                 ui.Spacer(height=10)
                 with ui.HStack(height=20):
                     ui.Button("Sign In to shapenet.org", clicked_fn=lambda b=None: self._on_login_fn(b))
+
+    def _on_help_menu_click(self):
+        help_message = ""
+        if not pickle_file_exists():
+            help_message = ADD_DB_TEXT
+        help_message = help_message + HELP_TEXT
+
+        flags = ui.WINDOW_FLAGS_NO_RESIZE | ui.WINDOW_FLAGS_MODAL
+        flags |= ui.WINDOW_FLAGS_NO_SCROLLBAR
+        self._help_window = ui.Window("Shapenet Help", width=500, height=0, flags=flags)
+        with self._help_window.frame:
+            with ui.VStack(name="root", style={"VStack::root": {"margin": 10}}, height=0, spacing=20):
+                ui.Label(help_message, alignment=ui.Alignment.LEFT, word_wrap=True)
 
     def _on_login_fn(self, widget):
         csv_location = get_local_shape_loc() + "/v1_csv/"

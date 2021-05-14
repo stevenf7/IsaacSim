@@ -7,7 +7,6 @@ import os
 from pxr import UsdGeom, Gf, Tf
 from omni.physx.scripts import utils
 
-omni.kit.pipapi.install("requests")
 import requests
 import urllib.request
 import shutil
