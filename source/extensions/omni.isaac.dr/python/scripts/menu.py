@@ -11,45 +11,40 @@ class DRMenu:
     def __init__(self, domain_randomizer_interface):
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._window = ui.Window("Domain Randomizer", dockPreference=omni.ui.DockPreference.LEFT_BOTTOM)
+        self._window = ui.Window("DR Manual Mode", dockPreference=omni.ui.DockPreference.LEFT_BOTTOM)
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._window.dock_order = 4
+        self._window.visible = False
         self._dr = domain_randomizer_interface
         self.num_components = 11
 
         menu_items = [
-            MenuItemDescription(name="Color Component", onclick_fn=lambda a=weakref.proxy(self): a.add_color_menu()),
-            MenuItemDescription(
-                name="Movement Component", onclick_fn=lambda a=weakref.proxy(self): a.add_movement_menu()
-            ),
-            MenuItemDescription(
-                name="Rotation Component", onclick_fn=lambda a=weakref.proxy(self): a.add_rotation_menu()
-            ),
-            MenuItemDescription(name="Scale Component", onclick_fn=lambda a=weakref.proxy(self): a.add_scale_menu()),
-            MenuItemDescription(
-                name="Transform Component", onclick_fn=lambda a=weakref.proxy(self): a.add_transform_menu()
-            ),
-            MenuItemDescription(name="Light Component", onclick_fn=lambda a=weakref.proxy(self): a.add_light_menu()),
-            MenuItemDescription(
-                name="Texture Component", onclick_fn=lambda a=weakref.proxy(self): a.add_texture_menu()
-            ),
-            MenuItemDescription(
-                name="Material Component", onclick_fn=lambda a=weakref.proxy(self): a.add_material_menu()
-            ),
-            MenuItemDescription(name="Mesh Component", onclick_fn=lambda a=weakref.proxy(self): a.add_mesh_menu()),
-            MenuItemDescription(
-                name="Visibility Component", onclick_fn=lambda a=weakref.proxy(self): a.add_visibility_menu()
-            ),
-            MenuItemDescription(
-                name="Attribute Component", onclick_fn=lambda a=weakref.proxy(self): a.add_attribute_menu()
-            ),
+            MenuItemDescription(name="Color", onclick_fn=lambda a=weakref.proxy(self): a.add_color_menu()),
+            MenuItemDescription(name="Movement", onclick_fn=lambda a=weakref.proxy(self): a.add_movement_menu()),
+            MenuItemDescription(name="Rotation", onclick_fn=lambda a=weakref.proxy(self): a.add_rotation_menu()),
+            MenuItemDescription(name="Scale", onclick_fn=lambda a=weakref.proxy(self): a.add_scale_menu()),
+            MenuItemDescription(name="Transform", onclick_fn=lambda a=weakref.proxy(self): a.add_transform_menu()),
+            MenuItemDescription(name="Light", onclick_fn=lambda a=weakref.proxy(self): a.add_light_menu()),
+            MenuItemDescription(name="Texture", onclick_fn=lambda a=weakref.proxy(self): a.add_texture_menu()),
+            MenuItemDescription(name="Material", onclick_fn=lambda a=weakref.proxy(self): a.add_material_menu()),
+            MenuItemDescription(name="Mesh", onclick_fn=lambda a=weakref.proxy(self): a.add_mesh_menu()),
+            MenuItemDescription(name="Visibility", onclick_fn=lambda a=weakref.proxy(self): a.add_visibility_menu()),
+            MenuItemDescription(name="Attribute", onclick_fn=lambda a=weakref.proxy(self): a.add_attribute_menu()),
         ]
         self._menu_items = [
             MenuItemDescription(
-                name="Isaac", glyph="plug.svg", sub_menu=[MenuItemDescription(name="DR", sub_menu=menu_items)]
-            )
+                name="Domain Randomization", sub_menu=[MenuItemDescription(name="Components", sub_menu=menu_items)]
+            ),
+            MenuItemDescription(
+                name="Domain Randomization",
+                sub_menu=[
+                    MenuItemDescription(
+                        name="Manual Mode", onclick_fn=lambda a=weakref.proxy(self): a.toggle_manual_menu()
+                    )
+                ],
+            ),
         ]
-        add_menu_items(self._menu_items, "Create")
+        add_menu_items(self._menu_items, "Synthetic Data")
 
     def add_color_menu(self):
         parent = self._get_current_state(0, "ColorComponent")
@@ -316,6 +311,10 @@ class DRMenu:
 
         pass
 
+    def toggle_manual_menu(self):
+        self._window.visible = not self._window.visible
+        pass
+
     def _get_current_state(self, index, component_type):
         self._stage = self._usd_context.get_stage()
         self.component_count = [0] * self.num_components
@@ -333,14 +332,13 @@ class DRMenu:
     def _build_dr_ui(self):
         with self._window.frame:
             with ui.VStack(spacing=5):
-                with ui.CollapsableFrame("Manual Mode"):
-                    with ui.VStack(spacing=5):
-                        with ui.HStack():
-                            ui.Spacer(width=5)
-                            self.btn_manual_comp = ui.Button("Enable Manual Mode", width=100, height=30)
-                            self.btn_manual_comp.set_clicked_fn(self._toggle_manual_mode)
-                            self.btn_randomize_once = ui.Button("Randomize Once", width=100, height=30)
-                            self.btn_randomize_once.set_clicked_fn(self._randomize_once)
+                with ui.VStack(spacing=5):
+                    with ui.HStack():
+                        ui.Spacer(width=5)
+                        self.btn_manual_comp = ui.Button("Enable Manual Mode", width=100, height=30)
+                        self.btn_manual_comp.set_clicked_fn(self._toggle_manual_mode)
+                        self.btn_randomize_once = ui.Button("Randomize Once", width=100, height=30)
+                        self.btn_randomize_once.set_clicked_fn(self._randomize_once)
 
     def _toggle_manual_mode(self):
         if str(self.btn_manual_comp.text) == "Enable Manual Mode":
@@ -353,5 +351,5 @@ class DRMenu:
         self._dr.randomize_once()
 
     def shutdown(self):
-        remove_menu_items(self._menu_items, "Create")
+        remove_menu_items(self._menu_items, "Synthetic Data")
         self._window = None
