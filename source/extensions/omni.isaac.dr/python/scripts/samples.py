@@ -27,10 +27,10 @@ class Extension(omni.ext.IExt):
         ]
         self._menu_items = [
             MenuItemDescription(
-                name="Training", sub_menu=[MenuItemDescription(name="Domain Randomization", sub_menu=menu_items)]
+                name="Domain Randomization", sub_menu=[MenuItemDescription(name="Samples", sub_menu=menu_items)]
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Examples")
+        add_menu_items(self._menu_items, "Synthetic Data")
 
     def add_component_sample(self):
         self._window = ui.Window(

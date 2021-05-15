@@ -22,10 +22,10 @@ class Extension(omni.ext.IExt):
         ]
         self._menu_items = [
             MenuItemDescription(
-                name="Training", sub_menu=[MenuItemDescription(name="Domain Randomization", sub_menu=menu_items)]
+                name="Domain Randomization", sub_menu=[MenuItemDescription(name="Samples", sub_menu=menu_items)]
             )
         ]
-        add_menu_items(self._menu_items, "Isaac Examples")
+        add_menu_items(self._menu_items, "Synthetic Data")
         with self._window.frame:
             with ui.VStack(height=0):
                 ui.Spacer(width=5)
