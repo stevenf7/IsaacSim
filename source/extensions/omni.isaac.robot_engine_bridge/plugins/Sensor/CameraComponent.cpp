@@ -488,103 +488,8 @@ void CameraComponent::onStart()
     mSkipFirstFrame = true;
 
     onComponentChange();
-}
-void CameraComponent::onStop()
-{
-    if (mRgbSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mRgbSensor);
-        mRgbSensor = nullptr;
-        mRgbSensorData = nullptr;
-    }
-    if (mDepthSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mDepthSensor);
-        mDepthSensor = nullptr;
-        mDepthSensorData = nullptr;
-    }
-    if (mSegmentationSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mSegmentationSensor);
-        mSegmentationSensor = nullptr;
-        mSegmentationSensorData = nullptr;
-    }
-    if (mSemanticSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mSemanticSensor);
-        mSemanticSensor = nullptr;
-        mSemanticSensorData = nullptr;
-    }
-    if (mBoundingBox2DSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mBoundingBox2DSensor);
-        mBoundingBox2DSensor = nullptr;
-        mBoundingBox2DSensorData = nullptr;
-    }
-    if (mBoundingBox3DSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mBoundingBox3DSensor);
-        mBoundingBox3DSensor = nullptr;
-        mBoundingBox3DSensorData = nullptr;
-    }
-}
 
-void CameraComponent::onComponentChange()
-{
-    // CARB_LOG_ERROR("CameraComponent Update");
-    IsaacComponent::onComponentChange();
-
-    const pxr::RobotEngineBridgeSchemaRobotEngineCamera& typedPrim = (pxr::RobotEngineBridgeSchemaRobotEngineCamera)mPrim;
-
-    isaac::utils::safeGetAttribute(typedPrim.GetUseExistingViewportAttr(), mUseExistingViewport);
-    isaac::utils::safeGetAttribute(typedPrim.GetResolutionAttr(), mResolution);
-
-    // RGB attributes
-    isaac::utils::safeGetAttribute(typedPrim.GetRgbOutputComponentAttr(), mRgbOutputComponent);
-    isaac::utils::safeGetAttribute(typedPrim.GetRgbOutputChannelAttr(), mRgbChannelName);
-    isaac::utils::safeGetAttribute(typedPrim.GetRgbEnabledAttr(), mEnableRgb);
-
-    // Depth attributes
-    isaac::utils::safeGetAttribute(typedPrim.GetDepthOutputComponentAttr(), mDepthOutputComponent);
-    isaac::utils::safeGetAttribute(typedPrim.GetDepthOutputChannelAttr(), mDepthChannelName);
-    isaac::utils::safeGetAttribute(typedPrim.GetDepthEnabledAttr(), mEnableDepth);
-
-    // Segmentation attributes
-    isaac::utils::safeGetAttribute(typedPrim.GetSegmentationOutputComponentAttr(), mSegmentationOutputComponent);
-    isaac::utils::safeGetAttribute(typedPrim.GetSegmentationOutputChannelAttr(), mSegmentationChannelName);
-    isaac::utils::safeGetAttribute(typedPrim.GetSegmentationEnabledAttr(), mEnableSegmentation);
-
-    // Bounding Box attributes
-    std::string filterClassList;
-    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DOutputComponentAttr(), mBoundingBox2DOutputComponent);
-    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DOutputChannelAttr(), mBoundingBox2DChannelName);
-    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DClassListAttr(), filterClassList);
-    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DEnabledAttr(), mEnableBoundingBox2D);
-
-    // Bounding Box 3D attributes
-    std::string filterClassList3D;
-    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DOutputComponentAttr(), mBoundingBox3DOutputComponent);
-    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DOutputChannelAttr(), mBoundingBox3DChannelName);
-    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DClassListAttr(), filterClassList3D);
-    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DEnabledAttr(), mEnableBoundingBox3D);
-
-    mBoundingBox2DClassList.clear();
-    if (filterClassList != "")
-        boost::split(mBoundingBox2DClassList, filterClassList, [](char c) { return c == ','; });
-
-    mBoundingBox3DClassList.clear();
-    if (filterClassList3D != "")
-        boost::split(mBoundingBox3DClassList, filterClassList3D, [](char c) { return c == ','; });
-
-    mCameraPath = pxr::SdfPath("/OmniverseKit_Persp");
-    pxr::SdfPathVector targets;
-    typedPrim.GetCameraPrimRel().GetTargets(&targets);
-    if (targets.size() > 0)
-    {
-        mCameraPath = targets[0];
-    }
-    mCameraPrim = mStage->GetPrimAtPath(mCameraPath);
-
+    // Wait until start is called to configure viewports
     if (!mViewportWindow)
     {
         if (mUseExistingViewport)
@@ -680,6 +585,101 @@ void CameraComponent::onComponentChange()
         mBoundingBox3DSensor = nullptr;
         mBoundingBox3DSensorData = nullptr;
     }
+}
+void CameraComponent::onStop()
+{
+    if (mRgbSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mRgbSensor);
+        mRgbSensor = nullptr;
+        mRgbSensorData = nullptr;
+    }
+    if (mDepthSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mDepthSensor);
+        mDepthSensor = nullptr;
+        mDepthSensorData = nullptr;
+    }
+    if (mSegmentationSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mSegmentationSensor);
+        mSegmentationSensor = nullptr;
+        mSegmentationSensorData = nullptr;
+    }
+    if (mSemanticSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mSemanticSensor);
+        mSemanticSensor = nullptr;
+        mSemanticSensorData = nullptr;
+    }
+    if (mBoundingBox2DSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mBoundingBox2DSensor);
+        mBoundingBox2DSensor = nullptr;
+        mBoundingBox2DSensorData = nullptr;
+    }
+    if (mBoundingBox3DSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mBoundingBox3DSensor);
+        mBoundingBox3DSensor = nullptr;
+        mBoundingBox3DSensorData = nullptr;
+    }
+}
+
+void CameraComponent::onComponentChange()
+{
+    IsaacComponent::onComponentChange();
+
+    const pxr::RobotEngineBridgeSchemaRobotEngineCamera& typedPrim = (pxr::RobotEngineBridgeSchemaRobotEngineCamera)mPrim;
+
+    isaac::utils::safeGetAttribute(typedPrim.GetUseExistingViewportAttr(), mUseExistingViewport);
+    isaac::utils::safeGetAttribute(typedPrim.GetResolutionAttr(), mResolution);
+
+    // RGB attributes
+    isaac::utils::safeGetAttribute(typedPrim.GetRgbOutputComponentAttr(), mRgbOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetRgbOutputChannelAttr(), mRgbChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetRgbEnabledAttr(), mEnableRgb);
+
+    // Depth attributes
+    isaac::utils::safeGetAttribute(typedPrim.GetDepthOutputComponentAttr(), mDepthOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetDepthOutputChannelAttr(), mDepthChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetDepthEnabledAttr(), mEnableDepth);
+
+    // Segmentation attributes
+    isaac::utils::safeGetAttribute(typedPrim.GetSegmentationOutputComponentAttr(), mSegmentationOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetSegmentationOutputChannelAttr(), mSegmentationChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetSegmentationEnabledAttr(), mEnableSegmentation);
+
+    // Bounding Box attributes
+    std::string filterClassList;
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DOutputComponentAttr(), mBoundingBox2DOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DOutputChannelAttr(), mBoundingBox2DChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DClassListAttr(), filterClassList);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DEnabledAttr(), mEnableBoundingBox2D);
+
+    // Bounding Box 3D attributes
+    std::string filterClassList3D;
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DOutputComponentAttr(), mBoundingBox3DOutputComponent);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DOutputChannelAttr(), mBoundingBox3DChannelName);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DClassListAttr(), filterClassList3D);
+    isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DEnabledAttr(), mEnableBoundingBox3D);
+
+    mBoundingBox2DClassList.clear();
+    if (filterClassList != "")
+        boost::split(mBoundingBox2DClassList, filterClassList, [](char c) { return c == ','; });
+
+    mBoundingBox3DClassList.clear();
+    if (filterClassList3D != "")
+        boost::split(mBoundingBox3DClassList, filterClassList3D, [](char c) { return c == ','; });
+
+    mCameraPath = pxr::SdfPath("/OmniverseKit_Persp");
+    pxr::SdfPathVector targets;
+    typedPrim.GetCameraPrimRel().GetTargets(&targets);
+    if (targets.size() > 0)
+    {
+        mCameraPath = targets[0];
+    }
+    mCameraPrim = mStage->GetPrimAtPath(mCameraPath);
 }
 
 void CameraComponent::publishIntrinsics(std::string outputComponent,

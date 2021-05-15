@@ -80,6 +80,11 @@ void ScenarioFromMessage::tick()
     mRigidBodiesSink->publishAllMessages();
 }
 
+void ScenarioFromMessage::onStart()
+{
+    onComponentChange();
+}
+
 void ScenarioFromMessage::onComponentChange()
 {
 
