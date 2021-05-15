@@ -234,8 +234,14 @@ void IsaacApplication::tick(double dt)
         {
             if (component.second->mDoStart == true)
             {
-                component.second->onStart();
-                component.second->mDoStart = false;
+                // if the component has not started yet, check to see if its enabled
+                // if not enabled, do not start
+                component.second->IsaacComponent::onComponentChange();
+                if (component.second->getEnabled())
+                {
+                    component.second->onStart();
+                    component.second->mDoStart = false;
+                }
             }
         }
 

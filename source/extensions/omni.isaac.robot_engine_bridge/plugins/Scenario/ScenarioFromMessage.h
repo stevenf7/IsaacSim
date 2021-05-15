@@ -60,6 +60,13 @@ public:
      *
      */
     virtual void tick();
+
+    /**
+     * @brief
+     *
+     */
+    virtual void onStart();
+
     /**
      * @brief
      *
