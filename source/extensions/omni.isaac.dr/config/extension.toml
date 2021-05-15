@@ -17,6 +17,7 @@ icon = "data/icon.png"
 "omni.kit.uiapp" = {}
 "omni.client" = {}
 "omni.isaac.dynamic_control" = {}
+"omni.isaac.utils" = {}
 "omni.kit.window.toolbar" = {}
 "omni.debugdraw" = {}
 "omni.usd.schema.isaac" = {}
