@@ -40,10 +40,10 @@ EXTENSION_NAME = "Isaac Sim Utilities Manager"
 UTILITIES = {
     "Physics": ["Inspect Physics", "Physics Utilities"],
     "Import": ["URDF Importer", "Step Importer"],
-    "Sensing": ["Occupancy Map"],
-    "Comms": ["Robot Engine Bridge"],
+    "Mapping": ["Occupancy Map"],
+    "Isaac SDK": ["Robot Engine Bridge"],
     "Geometry": ["Mesh Merge Tool"],
-    "Training": ["Synthetic Data Recorder"],
+    # "Training": ["Synthetic Data Recorder"],
 }
 
 DEBUG_PRINT_ON = False
