@@ -35,6 +35,9 @@ name = "omni.isaac.samples.scripts.kaya_preview"
 name = "omni.isaac.samples.scripts.jetbot_preview"
 
 [[python.module]]
+name = "omni.isaac.samples.scripts.dofbot_preview"
+
+[[python.module]]
 name = "omni.isaac.samples.scripts.leonardo_preview"
 
 [[python.module]]
