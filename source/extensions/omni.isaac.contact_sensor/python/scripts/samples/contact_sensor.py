@@ -20,7 +20,10 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 
 
 class Contact_sensor_demo(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._extension_path = ext_manager.get_extension_path(ext_id)
+
         self._menu_items = [
             MenuItemDescription(
                 name="Sensing",
@@ -71,12 +74,9 @@ class Contact_sensor_demo(omni.ext.IExt):
                             style["secondary_color"] = self.colors[i]
                             self.sliders.append(ui.FloatDrag(min=0.0, max=15.0, step=0.001, style=style))
                             self.sliders[-1].enabled = False
-            ext_manager = omni.kit.app.get_app().get_extension_manager()
-            ext_id = ext_manager.get_enabled_extension_id("omni.isaac.contact_sensor")
-            self._extension_path = ext_manager.get_extension_path(ext_id)
-            omni.usd.get_context().open_stage_with_callback(
-                self._extension_path + "/data/ant.usd", lambda a, b: self.create_scenario()
-            )
+
+            asyncio.ensure_future(self.create_scenario())
+
         self._window.visible = True
 
     def on_shutdown(self):
@@ -99,9 +99,11 @@ class Contact_sensor_demo(omni.ext.IExt):
                 else:
                     self.sliders[i].model.set_value(0)
 
-    def create_scenario(self):
+    async def create_scenario(self):
 
         # Add Contact Sensor
+        await omni.usd.get_context().open_stage_async(self._extension_path + "/data/ant.usd")
+        await omni.kit.app.get_app().next_update_async()
 
         self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
 
