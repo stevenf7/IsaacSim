@@ -83,6 +83,7 @@ private:
                            float focalLength,
                            float horizontalAperture,
                            float verticalAperture);
+    void updateViewportSettings();
     carb::Framework* mFramework = nullptr;
     omni::kit::IViewport* mViewportInterface = nullptr;
     omni::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;

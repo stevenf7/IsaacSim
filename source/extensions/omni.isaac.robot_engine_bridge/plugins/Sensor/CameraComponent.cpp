@@ -490,101 +490,8 @@ void CameraComponent::onStart()
     onComponentChange();
 
     // Wait until start is called to configure viewports
-    if (!mViewportWindow)
-    {
-        if (mUseExistingViewport)
-        {
-            mViewportWindow = kit::getDefaultViewportWindow();
-        }
-        else
-        {
-            mViewportWindow = mViewportInterface->getViewportWindow(mViewportInterface->createViewportWindow());
-        }
-    }
-    mViewportWindow->setActiveCamera(mCameraPath.GetString().c_str());
-    if (mResolution[0] != 0 && mResolution[1] != 0)
-        mViewportWindow->setTextureResolution(mResolution[0], mResolution[1]);
-
-    if (mEnableRgb)
-    {
-        mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb, mViewportWindow);
-        mRgbBuffers.resize(1);
-        mRgbBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
-    }
-    else
-    {
-        mRgbSensor = nullptr;
-        mRgbSensorData = nullptr;
-        mRgbBuffers.clear();
-    }
-
-    if (mEnableDepth)
-    {
-        mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
-        mDepthBuffers.resize(1);
-        mDepthBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
-    }
-    else
-    {
-        mDepthSensor = nullptr;
-        mDepthSensorData = nullptr;
-        mDepthBuffers.clear();
-    }
-
-    if (mEnableSegmentation)
-    {
-
-        mSegmentationSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
-        mSemanticSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
-        mSegmentationBuffers.resize(1);
-        mSegmentationBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
-        mSemanticBuffers.resize(1);
-        mSemanticBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
-        // build segmentation ID to label map
-        mSegmentationIDLabelMap.clear();
-        for (int i = 0; i < 256; ++i)
-        {
-            std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(i));
-            if (!semanticLabel.empty())
-            {
-                mSegmentationIDLabelMap[i] = semanticLabel;
-                // CARB_LOG_ERROR("The initial segmentation labels are %i %s", i, mSegmentationIDLabelMap[i].c_str());
-            }
-        }
-    }
-    else
-    {
-        mSegmentationSensor = nullptr;
-        mSegmentationSensorData = nullptr;
-        mSemanticSensor = nullptr;
-        mSemanticSensorData = nullptr;
-        mSegmentationBuffers.clear();
-        mSemanticBuffers.clear();
-    }
-
-    if (mEnableBoundingBox2D)
-    {
-        mBoundingBox2DSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
-    }
-    else
-    {
-        mBoundingBox2DSensor = nullptr;
-        mBoundingBox2DSensorData = nullptr;
-    }
-
-    if (mEnableBoundingBox3D)
-    {
-        mBoundingBox3DSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);
-    }
-    else
-    {
-        mBoundingBox3DSensor = nullptr;
-        mBoundingBox3DSensorData = nullptr;
-    }
+    if (mDoStart)
+        updateViewportSettings();
 }
 void CameraComponent::onStop()
 {
@@ -680,6 +587,108 @@ void CameraComponent::onComponentChange()
         mCameraPath = targets[0];
     }
     mCameraPrim = mStage->GetPrimAtPath(mCameraPath);
+
+    if (!mDoStart)
+        updateViewportSettings();
+}
+
+void CameraComponent::updateViewportSettings()
+{
+    if (!mViewportWindow)
+    {
+        if (mUseExistingViewport)
+        {
+            mViewportWindow = kit::getDefaultViewportWindow();
+        }
+        else
+        {
+            mViewportWindow = mViewportInterface->getViewportWindow(mViewportInterface->createViewportWindow());
+        }
+    }
+    mViewportWindow->setActiveCamera(mCameraPath.GetString().c_str());
+    if (mResolution[0] != 0 && mResolution[1] != 0)
+        mViewportWindow->setTextureResolution(mResolution[0], mResolution[1]);
+
+    if (mEnableRgb)
+    {
+        mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb, mViewportWindow);
+        mRgbBuffers.resize(1);
+        mRgbBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
+    }
+    else
+    {
+        mRgbSensor = nullptr;
+        mRgbSensorData = nullptr;
+        mRgbBuffers.clear();
+    }
+
+    if (mEnableDepth)
+    {
+        mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+        mDepthBuffers.resize(1);
+        mDepthBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
+    }
+    else
+    {
+        mDepthSensor = nullptr;
+        mDepthSensorData = nullptr;
+        mDepthBuffers.clear();
+    }
+
+    if (mEnableSegmentation)
+    {
+
+        mSegmentationSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
+        mSemanticSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
+        mSegmentationBuffers.resize(1);
+        mSegmentationBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
+        mSemanticBuffers.resize(1);
+        mSemanticBuffers[0] = std::make_unique<IsaacDeviceBuffer>();
+        // build segmentation ID to label map
+        mSegmentationIDLabelMap.clear();
+        for (int i = 0; i < 256; ++i)
+        {
+            std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(i));
+            if (!semanticLabel.empty())
+            {
+                mSegmentationIDLabelMap[i] = semanticLabel;
+                // CARB_LOG_ERROR("The initial segmentation labels are %i %s", i, mSegmentationIDLabelMap[i].c_str());
+            }
+        }
+    }
+    else
+    {
+        mSegmentationSensor = nullptr;
+        mSegmentationSensorData = nullptr;
+        mSemanticSensor = nullptr;
+        mSemanticSensorData = nullptr;
+        mSegmentationBuffers.clear();
+        mSemanticBuffers.clear();
+    }
+
+    if (mEnableBoundingBox2D)
+    {
+        mBoundingBox2DSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
+    }
+    else
+    {
+        mBoundingBox2DSensor = nullptr;
+        mBoundingBox2DSensorData = nullptr;
+    }
+
+    if (mEnableBoundingBox3D)
+    {
+        mBoundingBox3DSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);
+    }
+    else
+    {
+        mBoundingBox3DSensor = nullptr;
+        mBoundingBox3DSensorData = nullptr;
+    }
 }
 
 void CameraComponent::publishIntrinsics(std::string outputComponent,

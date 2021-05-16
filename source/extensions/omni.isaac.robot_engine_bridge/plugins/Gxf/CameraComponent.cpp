@@ -540,6 +540,10 @@ void CameraComponent::onStart()
     mSkipFirstFrame = true;
 
     onComponentChange();
+
+    // Wait until start is called to configure viewports
+    if (mDoStart)
+        updateViewportSettings();
 }
 void CameraComponent::onStop()
 {
@@ -637,6 +641,12 @@ void CameraComponent::onComponentChange()
     }
     mCameraPrim = mStage->GetPrimAtPath(mCameraPath);
 
+    if (!mDoStart)
+        updateViewportSettings();
+}
+
+void CameraComponent::updateViewportSettings()
+{
     if (!mViewportWindow)
     {
         if (mUseExistingViewport)
