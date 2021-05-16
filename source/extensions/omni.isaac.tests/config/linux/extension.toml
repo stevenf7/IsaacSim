@@ -8,6 +8,7 @@ display_name = "Isaac Tests"
 "omni.kit.window.toolbar" = {} # needed for simulation to happen
 "omni.kit.primitive.mesh" = {} # needed for mesh creation commands
 # "omni.graph.core" = {}
+"omni.isaac.utils" = {}
 "omni.kit.material.library" = {}
 "omni.kit.window.viewport" = {}
 

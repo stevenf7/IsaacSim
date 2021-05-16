@@ -32,8 +32,3 @@ icon = "data/icon.png"
 
 [[python.module]]
 name = "omni.isaac.utils_manager"
-
-
-[[native.plugin]]
-path = "bin/*.plugin"
-recursive = false
