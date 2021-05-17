@@ -52,6 +52,7 @@ IsaacApplication::IsaacApplication(IsaacCApi* isaacCApiPtr,
     mTaskCounter = mTasking->createCounter();
     mSettings = framework->acquireInterface<carb::settings::ISettings>();
     mSettings->setDefaultInt("/exts/omni.isaac.robot_engine_bridge/IsaacSDKLogLevel", 3);
+    mViewportInterface = framework->acquireInterface<omni::kit::IViewport>();
 }
 
 
@@ -74,6 +75,8 @@ void IsaacApplication::initialize(pxr::UsdStageWeakPtr stage)
     mSceneLoaderComponent = std::make_unique<SceneLoader>(mDynamicControlPtr, mJsonSerializer, mIDict);
     pxr::RobotEngineBridgeSchemaRobotEngineBridgeComponent prim;
     mSceneLoaderComponent->initialize(mIsaacCApiPtr, mAppHandle, prim, mStage);
+
+    mViewportManager = std::make_unique<utils::ViewportManager>(mViewportInterface);
 }
 
 isaac_error_t IsaacApplication::create(std::string assetPath,
@@ -382,7 +385,7 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     }
     else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineCamera>())
     {
-        component = std::make_unique<CameraComponent>();
+        component = std::make_unique<CameraComponent>(mViewportManager.get());
         component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineCamera(prim), mStage);
     }
     else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineOccupancyGridMap>())
