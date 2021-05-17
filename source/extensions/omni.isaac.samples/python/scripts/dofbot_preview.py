@@ -65,6 +65,9 @@ class Extension(omni.ext.IExt):
             [90, 50, 45, 90, 90, 150],
         ]
 
+        # spend 1000ms or 1 second for each action
+        self.cube_picking_trajectory_sim_time = [1000, 1000, 1000, 1000, 1000, 1000]
+
         self.curr_action_index = 0
         self.ready_for_next_action = True
         self.use_sim_only = False  # can't connect to the real dofbot
@@ -85,9 +88,8 @@ class Extension(omni.ext.IExt):
             self._on_stage_event
         )
 
-        self._dofbot_exists = False  # is dofbot loaded and exist
+        self._dofbot_articulation = _dynamic_control.INVALID_HANDLE
 
-        self._dofbot_articulation = self._dc.get_articulation("/World/dofbot")
         self._window = None
         self._load_dofbot_btn = None
         self._send_current_joints_btn = False
@@ -277,6 +279,8 @@ class Extension(omni.ext.IExt):
             print("no connection to the real dofbot")
             return
 
+        self.use_sim_only = False
+
         base_joint_pos_orig = self._dc.get_dof_position(self._base_joint)
         base_joint_pos = toDegree(base_joint_pos_orig) + self.real_to_sim_angle_offset
 
@@ -354,7 +358,7 @@ class Extension(omni.ext.IExt):
             self._editor_event_subscription = (
                 omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
             )
-            self._dofbot_exists = True
+
             self.count = 0
 
     def _on_environment_setup(self):
@@ -380,8 +384,10 @@ class Extension(omni.ext.IExt):
                 self._timeline.stop()
                 self._stop_tasks()
 
+        if event.type == int(omni.usd.StageEventType.CLOSED):
+            self._dofbot_articulation = _dynamic_control.INVALID_HANDLE
+
     def _stop_tasks(self):
-        self._dofbot_exists = None
         gc.collect()
 
     def _on_editor_step(self, step):
@@ -392,6 +398,7 @@ class Extension(omni.ext.IExt):
             self._send_current_joints_btn.enabled = False
             self._pickup_cube_btn.text = "Press Play to Enable Controller"
             self._pickup_cube_btn.enabled = False
+            return
 
         if not self._dc or not self._dc.is_simulating():
             return
@@ -399,7 +406,7 @@ class Extension(omni.ext.IExt):
             self._retrieve_joints()
 
         # Wake up articulation every move command to ensure commands are applied
-        if self._dofbot_exists:
+        if self._dofbot_articulation != _dynamic_control.INVALID_HANDLE:
             self._dc.wake_up_articulation(self._dofbot_articulation)
 
             self._send_current_joints_btn.text = "Send current joint states to real DofBot"
@@ -414,25 +421,43 @@ class Extension(omni.ext.IExt):
                 # Time since last message sent in ms
                 currTime = (time.time() * 1000) - self.start_time
 
-                # Keep sim 1 sub-action behind real until self.real_bot_delay has elapsed
-                if self.curr_action_index > 0:
-                    self.curr_sim_position = self.cube_picking_trajectory[self.curr_action_index - 1]
+                # sim only path
+                if self.use_sim_only:
+                    # print(
+                    #     currTime,
+                    #     " > ",
+                    #     self.cube_picking_trajectory_sim_time[self.curr_action_index],
+                    #     " ",
+                    #     self.curr_action_index,
+                    # )
+                    if currTime > self.cube_picking_trajectory_sim_time[self.curr_action_index]:
+                        self.curr_action_index += 1
+                        self.curr_sim_position = self.cube_picking_trajectory[self.curr_action_index]
+                        self.start_time = time.time() * 1000
 
-                if currTime > self.real_bot_delay or self.use_sim_only:
-                    self.curr_sim_position = self.cube_picking_trajectory[self.curr_action_index]
+                    if self.curr_action_index >= len(self.cube_picking_trajectory) - 1:  # Last action
+                        self._pickup_button_pressed = False
+
+                else:  # both sim and real dofbot
+                    # Keep sim 1 sub-action behind real until self.real_bot_delay has elapsed
+                    if self.curr_action_index > 0:
+                        self.curr_sim_position = self.cube_picking_trajectory[self.curr_action_index - 1]
+
+                    if currTime > self.real_bot_delay:
+                        self.curr_sim_position = self.cube_picking_trajectory[self.curr_action_index]
+
+                    # We've received the ack, move forward 1 sub-action
+                    if self.ready_for_next_action:
+                        if self.curr_action_index >= len(self.cube_picking_trajectory) - 1:  # Last action
+                            self._pickup_button_pressed = False
+                            self._set_joints_real_dofbot()
+                        else:
+                            self.curr_action_index += 1
+                            # Set joints on real dofbot
+                            self._set_joints_real_dofbot()
 
                 # Set position in sim
                 self._set_joints_in_sim(self.curr_sim_position)
-
-                # We've received the ack, move forward 1 sub-action
-                if self.ready_for_next_action:
-                    if self.curr_action_index >= len(self.cube_picking_trajectory) - 1:  # Last action
-                        self._pickup_button_pressed = False
-                        self._set_joints_real_dofbot()
-                    else:
-                        self.curr_action_index += 1
-                        # Set joints on real dofbot
-                        self._set_joints_real_dofbot()
 
         else:
             self._load_dofbot_btn.enabled = True
@@ -474,6 +499,6 @@ class Extension(omni.ext.IExt):
         self._dc = None
         self._editor_event_subscription = None
         self._stop_tasks()
-        remove_menu_items(self._menu_items, "Isaac")
+        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
         gc.collect()
