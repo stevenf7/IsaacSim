@@ -39,65 +39,46 @@ class Extension(omni.ext.IExt):
         self._scene_loader = {}
         with self._window.frame:
             with omni.ui.VStack(style={"margin": 1}):
-                with omni.ui.CollapsableFrame("Isaac SDK Bridge", height=0):
-                    with omni.ui.VStack(height=0):
-                        with omni.ui.CollapsableFrame("Scene Loader Settings", height=0, collapsed=True):
-                            with omni.ui.VStack(height=0):
-                                with omni.ui.HStack():
-                                    omni.ui.Label("Input Component")
-                                    self._scene_loader["input_component"] = omni.ui.StringField().model
-                                    self._scene_loader["input_component"].set_value("input")
-                                    self._scene_loader["input_component"].add_end_edit_fn(self._on_init_stage_load_fn)
-                                with omni.ui.HStack():
-                                    omni.ui.Label("Request Channel")
-                                    self._scene_loader["request_channel"] = omni.ui.StringField().model
-                                    self._scene_loader["request_channel"].set_value("scenario_control")
-                                    self._scene_loader["request_channel"].add_end_edit_fn(self._on_init_stage_load_fn)
-                                with omni.ui.HStack():
-                                    omni.ui.Label("Camera Control")
-                                    self._scene_loader["camera_control"] = omni.ui.StringField().model
-                                    self._scene_loader["camera_control"].set_value("camera_switch")
-                                    self._scene_loader["camera_control"].add_end_edit_fn(self._on_init_stage_load_fn)
-                                with omni.ui.HStack():
-                                    omni.ui.Label("Output Component")
-                                    self._scene_loader["output_component"] = omni.ui.StringField().model
-                                    self._scene_loader["output_component"].set_value("output")
-                                    self._scene_loader["output_component"].add_end_edit_fn(self._on_init_stage_load_fn)
-                                with omni.ui.HStack():
-                                    omni.ui.Label("Reply Channel")
-                                    self._scene_loader["reply_channel"] = omni.ui.StringField().model
-                                    self._scene_loader["reply_channel"].set_value("scenario_reply")
-                                    self._scene_loader["reply_channel"].add_end_edit_fn(self._on_init_stage_load_fn)
-                        with omni.ui.VStack(
-                            height=0,
-                            tooltip='Can specify with: --carb/isaac/robot_engine_bridge/json="path/to/app.json" \n Or by entering in this text box',
-                        ):
-                            omni.ui.Label("Application JSON Path: ")
-                            self._scene_loader["json_path"] = omni.ui.StringField().model
-                            self._scene_loader["json_path"].set_value(json_path)
-                            self._scene_loader["create_sdk"] = omni.ui.Button(
-                                "Create Application", height=0, clicked_fn=self._on_create_destroy_sdk_app_fn
-                            )
-                with omni.ui.CollapsableFrame("GXF Bridge", height=0, collapsed=False):
-                    with omni.ui.VStack(height=0):
-                        # with omni.ui.HStack():
-                        #     omni.ui.Label("Manifest Path ")
-                        #     self._scene_loader["gxf_manifest"] = omni.ui.StringField().model
-                        #     self._scene_loader["gxf_manifest"].set_value(
-                        #         "manifest.yaml"
-                        #     )
-                        with omni.ui.HStack():
-                            omni.ui.Label("Graph Path ", width=0)
-                            self._scene_loader["gxf_graph"] = omni.ui.StringField().model
-                            self._scene_loader["gxf_graph"].set_value(
-                                self._reb_extension_path + "/data/config/recorder.yaml"
-                            )
-                        self._scene_loader["create_gxf"] = omni.ui.Button(
-                            "Create Application", height=0, clicked_fn=self._on_create_destroy_gxf_app_fn
+                with omni.ui.VStack(height=0):
+                    with omni.ui.CollapsableFrame("Scene Loader Settings", height=0, collapsed=True):
+                        with omni.ui.VStack(height=0):
+                            with omni.ui.HStack():
+                                omni.ui.Label("Input Component")
+                                self._scene_loader["input_component"] = omni.ui.StringField().model
+                                self._scene_loader["input_component"].set_value("input")
+                                self._scene_loader["input_component"].add_end_edit_fn(self._on_init_stage_load_fn)
+                            with omni.ui.HStack():
+                                omni.ui.Label("Request Channel")
+                                self._scene_loader["request_channel"] = omni.ui.StringField().model
+                                self._scene_loader["request_channel"].set_value("scenario_control")
+                                self._scene_loader["request_channel"].add_end_edit_fn(self._on_init_stage_load_fn)
+                            with omni.ui.HStack():
+                                omni.ui.Label("Camera Control")
+                                self._scene_loader["camera_control"] = omni.ui.StringField().model
+                                self._scene_loader["camera_control"].set_value("camera_switch")
+                                self._scene_loader["camera_control"].add_end_edit_fn(self._on_init_stage_load_fn)
+                            with omni.ui.HStack():
+                                omni.ui.Label("Output Component")
+                                self._scene_loader["output_component"] = omni.ui.StringField().model
+                                self._scene_loader["output_component"].set_value("output")
+                                self._scene_loader["output_component"].add_end_edit_fn(self._on_init_stage_load_fn)
+                            with omni.ui.HStack():
+                                omni.ui.Label("Reply Channel")
+                                self._scene_loader["reply_channel"] = omni.ui.StringField().model
+                                self._scene_loader["reply_channel"].set_value("scenario_reply")
+                                self._scene_loader["reply_channel"].add_end_edit_fn(self._on_init_stage_load_fn)
+                    with omni.ui.VStack(
+                        height=0,
+                        tooltip='Can specify with: --carb/isaac/robot_engine_bridge/json="path/to/app.json" \n Or by entering in this text box',
+                    ):
+                        omni.ui.Label("Application JSON Path: ")
+                        self._scene_loader["json_path"] = omni.ui.StringField().model
+                        self._scene_loader["json_path"].set_value(json_path)
+                        self._scene_loader["create_sdk"] = omni.ui.Button(
+                            "Create Application", height=0, clicked_fn=self._on_create_destroy_sdk_app_fn
                         )
 
         self._is_created = False
-        self._is_gxf_created = False
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
@@ -139,24 +120,3 @@ class Extension(omni.ext.IExt):
             result, status = omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")
             self._is_created = False
             self._scene_loader["create_sdk"].text = "Create Application"
-
-    def _on_create_destroy_gxf_app_fn(self):
-        if self._is_gxf_created is False:
-
-            result, status = omni.kit.commands.execute(
-                "RobotEngineBridgeCreateGxfApplication",
-                base_path=self._reb_extension_path + "/gxf/lib",
-                manifest_file="manifest.yaml",
-                graph_files=[
-                    self._scene_loader["gxf_graph"].get_value_as_string(),
-                    self._reb_extension_path + "/data/config/isaac_sim_allocator.yaml",
-                ],
-            )
-
-            self._is_gxf_created = True
-            self._scene_loader["create_gxf"].text = "Destroy Application"
-        else:
-            result, status = omni.kit.commands.execute("RobotEngineBridgeDestroyGxfApplication")
-
-            self._is_gxf_created = False
-            self._scene_loader["create_gxf"].text = "Create Application"

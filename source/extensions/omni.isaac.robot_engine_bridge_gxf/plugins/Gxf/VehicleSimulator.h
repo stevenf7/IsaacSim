@@ -8,7 +8,7 @@
 //
 
 #pragma once
-#include "../Core/IsaacComponent.h"
+#include "../Core/GxfComponent.h"
 #include "../Utils/IsaacVehicleController.h"
 #include "omni/isaac/utils/PIDController.h"
 
@@ -25,15 +25,14 @@ namespace omni
 {
 namespace isaac
 {
-namespace robot_engine_bridge
+namespace robot_engine_bridge_gxf
 {
-
 
 /**
  * @brief A simulated differential-base driver based on speed commands.
  *
  */
-class VehicleSimulator : public IsaacComponent
+class VehicleSimulator : public GxfComponent
 {
 public:
     VehicleSimulator();

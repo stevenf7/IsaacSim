@@ -43,12 +43,5 @@ PYBIND11_MODULE(_robot_engine_bridge, m)
         .def("get_last_error", wrapInterfaceFunction(&RobotEngineBridge::getLastError))
         .def("initialize_stage_loader", wrapInterfaceFunction(&RobotEngineBridge::initializeStageLoader))
         .def("execute_command", wrapInterfaceFunction(&RobotEngineBridge::executeCommand));
-
-
-    defineInterfaceClass<GxfBridge>(m, "GxfBridge", "acquire_gxf_bridge_interface", "release_gxf_bridge_interface")
-        .def("create_application", wrapInterfaceFunction(&GxfBridge::createApplication))
-        .def("destroy_application", wrapInterfaceFunction(&GxfBridge::destroyApplication))
-        .def("tick_component", wrapInterfaceFunction(&GxfBridge::tickComponent))
-        .def("execute_command", wrapInterfaceFunction(&GxfBridge::executeCommand));
 }
 }

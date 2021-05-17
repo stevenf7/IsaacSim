@@ -1,9 +1,9 @@
-display_name = "Robot Engine Bridge"
+display_name = "Robot Engine Bridge GXF"
 
 [package]
 version = "0.1.0"
-title = "Robot Engine Bridge"
-description = "Communication bridge for Isaac SDK"
+title = "Robot Engine Bridge GXF"
+description = "Communication bridge for the Isaac SDK GXF backend"
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim"
 keywords = ["isaac"]
@@ -24,18 +24,14 @@ icon = "data/icon.png"
 "omni.isaac.robot_engine_bridge_ui" = {}
 
 [[python.module]]
-name = "omni.isaac.robot_engine_bridge"
+name = "omni.isaac.robot_engine_bridge_gxf"
 
 [[python.module]]
-name = "omni.isaac.pyalice"
+name = "omni.isaac.pygxf"
 public = false
 
 [[python.module]]
-name = "omni.isaac.robot_engine_bridge.tests"
-public = false
-
-[[python.module]]
-name = "omni.isaac.robot_engine_bridge.scripts.samples.vehicle_control"
+name = "omni.isaac.robot_engine_bridge_gxf.tests"
 public = false
 
 [[native.plugin]]
@@ -63,24 +59,8 @@ path = "lib/libnppig.so.10"
 [[native.library]]
 path = "lib/libnpps.so.10"
 
-
 [python.pipapi]
-requirements = ["numpy==1.19.0", "numpy-quaternion==2020.9.5.14.42.2", "pycapnp==1.0.0", "numba==0.51.2", "scipy==1.5.4", "construct==2.10.61"]
-archiveDirs = ["pip-packages"]
+requirements = ["construct==2.10.61"]
 
 [fswatcher.paths]
-exclude = ["*/__pycache__*", "*/.git*", "*/packages"]
-
-[settings]
-# this setting controls the log level of the isaac sdk application 
-# A utility case which can be used for `SetSeverity` to disable all severity levels.
-# NONE = -2,
-# A utility case which can be used for `Redirect` and `SetSeverity`
-# ALL = -1,
-# The five different log severities in use from most severe to least severe.
-# PANIC = 0,  
-# ERROR = 1
-# WARNING = 2
-# INFO = 3
-# DEBUG = 4
-exts."omni.isaac.robot_engine_bridge".IsaacSDKLogLevel = 3
+exclude = ["*/__pycache__*", "*/.git*", "*/packages", "*/gxf"]

@@ -209,7 +209,7 @@ void VehicleSimulator::onComponentChange()
     {
         pxr::GfVec3f pidValues;
         isaac::utils::safeGetAttribute(typedPrim.GetControllerPIDValuesAttr(), pidValues);
-        mPID = std::make_unique<PIDController>(pidValues[0], pidValues[1], pidValues[2]);
+        mPID = std::make_unique<utils::PIDController>(pidValues[0], pidValues[1], pidValues[2]);
     }
 
     mVehicleController.Initialize(mPhysxPtr, mStage, mVehiclePrim);

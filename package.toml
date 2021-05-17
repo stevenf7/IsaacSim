@@ -67,7 +67,7 @@ files_strip = [
 files_strip_exclude = [
     ["kit/extscore/omni.kit.pip_archive/pip_prebundle/PIL/**"],
     ["exts/omni.isaac.robot_engine_bridge/lib/**"],
-    ["exts/omni.isaac.robot_engine_bridge/gxf/lib/**"]
+    ["exts/omni.isaac.robot_engine_bridge_gxf/lib/**"]
 ]
 
 [isaac-sim-standalone.windows-x86_64]
