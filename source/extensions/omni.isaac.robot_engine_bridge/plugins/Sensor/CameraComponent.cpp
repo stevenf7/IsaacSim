@@ -31,9 +31,10 @@ extern "C" void rgbaToRgb(uint8_t* dest, const uint8_t* src, int width, int heig
 extern "C" void uint32ToUint16(uint16_t* dest, const uint32_t* src, int width, int height, int srcStride);
 extern "C" void uint32ToUint8(uint8_t* dest, const uint32_t* src, int width, int height, int srcStride);
 
-CameraComponent::CameraComponent() : IsaacComponent()
+CameraComponent::CameraComponent(utils::ViewportManager* viewportManager) : IsaacComponent()
 {
 
+    mViewportManager = viewportManager;
     mFramework = carb::getFramework();
     if (!mFramework)
     {
@@ -75,6 +76,9 @@ CameraComponent::~CameraComponent()
 void CameraComponent::tick()
 {
     CARB_PROFILE_ZONE(0, "CameraComponent Tick");
+
+    if (mViewportWindow == nullptr)
+        return;
 
     if (mSkipFirstFrame)
     {
@@ -594,17 +598,28 @@ void CameraComponent::onComponentChange()
 
 void CameraComponent::updateViewportSettings()
 {
-    if (!mViewportWindow)
+    std::string primPath = mPrim.GetPath().GetString();
+    if (mViewportWindow == nullptr)
     {
-        if (mUseExistingViewport)
+        if (mEnabled)
         {
-            mViewportWindow = kit::getDefaultViewportWindow();
-        }
-        else
-        {
-            mViewportWindow = mViewportInterface->getViewportWindow(mViewportInterface->createViewportWindow());
+            std::string viewportWindowName = mViewportManager->getViewport();
+            mViewportWindow = mViewportInterface->getViewportWindow(
+                mViewportInterface->getViewportWindowInstance(viewportWindowName.c_str()));
+            mViewportManager->registerViewport(viewportWindowName, primPath);
         }
     }
+    else
+    {
+        if (!mEnabled)
+        {
+            mViewportWindow = nullptr;
+            mViewportManager->unregisterViewport(primPath);
+        }
+    }
+    if (mViewportWindow == nullptr)
+        return;
+
     mViewportWindow->setActiveCamera(mCameraPath.GetString().c_str());
     if (mResolution[0] != 0 && mResolution[1] != 0)
         mViewportWindow->setTextureResolution(mResolution[0], mResolution[1]);

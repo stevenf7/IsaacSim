@@ -19,6 +19,7 @@
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/kit/IViewport.h>
 #include <carb/profiler/Profile.h>
+#include "plugins/core/ViewportManager.h"
 #include <robotEngineBridgeSchema/robotEngineCamera.h>
 
 #include <carb/Types.h>
@@ -42,7 +43,7 @@ public:
      * @brief Construct a new Camera Component object
      *
      */
-    CameraComponent();
+    CameraComponent(utils::ViewportManager* viewportManager);
 
     /**
      * @brief Destroy the Camera Component object
@@ -88,6 +89,7 @@ private:
     omni::kit::IViewport* mViewportInterface = nullptr;
     omni::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
     carb::sensors::Sensors* mSensorsInterface = nullptr;
+    utils::ViewportManager* mViewportManager = nullptr;
 
     omni::kit::IViewportWindow* mViewportWindow = nullptr;
     pxr::SdfPath mCameraPath;

@@ -13,12 +13,14 @@
 #include "IsaacCApi.h"
 #include "IsaacComponent.h"
 #include "plugins/bridge/BridgeApplication.h"
+#include "plugins/core/ViewportManager.h"
 
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>
 #include <carb/tasking/ITasking.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/kit/IViewport.h>
 #include <packages/engine_c_api/isaac_c_api.h>
 #include <robotEngineBridgeSchema/robotEngineBridgeComponent.h>
 
@@ -165,6 +167,8 @@ private:
     carb::tasking::Counter* mTaskCounter = nullptr;
     carb::settings::ISettings* mSettings = nullptr;
 
+    omni::kit::IViewport* mViewportInterface = nullptr;
+    std::unique_ptr<utils::ViewportManager> mViewportManager = nullptr;
 
     int64_t mTimeDifferenceNanoSeconds = 0;
     bool mRunning = false;
