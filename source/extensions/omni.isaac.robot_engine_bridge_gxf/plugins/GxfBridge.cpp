@@ -14,45 +14,40 @@
 #include <pxr/usd/usd/inherits.h>
 // clang-format on
 
-#include <omni/isaac/robot_engine_bridge/RobotEngineBridge.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#include <carb/sensors/Sensors.h>
-#include <omni/kit/syntheticdata/SyntheticData.h>
-#include <omni/kit/IViewport.h>
-
-#include <omni/kit/IStageUpdate.h>
-#include <omni/kit/IApp.h>
+#include "Core/GxfContext.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
-#include <carb/logging/Log.h>
-#include <carb/settings/ISettings.h>
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/fastcache/FastCache.h>
+#include <carb/logging/Log.h>
+#include <carb/sensors/Sensors.h>
+#include <carb/settings/ISettings.h>
+
+#include <messages/uuid.capnp.h>
+#include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/robot_engine_bridge_gxf/GxfBridge.h>
+#include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/kit/IApp.h>
+#include <omni/kit/IStageUpdate.h>
+#include <omni/kit/IViewport.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxUsdLoad.h>
 #include <omni/renderer/IDebugDraw.h>
-
-#include <unordered_map>
-#include <string>
-#include <vector>
-#include <memory>
-
 #include <packages/engine_c_api/isaac_c_api.h>
-
-#include <messages/uuid.capnp.h>
 #include <uuid/uuid.h>
-#include "Core/IsaacMessage.h"
-#include "Core/IsaacCApi.h"
-#include "Core/IsaacApplication.h"
 
 #include <dlfcn.h>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.robot_engine_bridge.plugin", "Isaac Robot Engine bridge",
+const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.robot_engine_bridge_gxf.plugin", "Isaac Gxf bridge",
                                                   "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
 
-CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::robot_engine_bridge::RobotEngineBridge)
+CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::robot_engine_bridge_gxf::GxfBridge)
 CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
                       omni::syntheticdata::SyntheticData,
@@ -80,67 +75,51 @@ omni::isaac::dynamic_control::DynamicControl* g_dynamicControl = nullptr;
 carb::dictionary::IDictionary* g_iDict = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
 
-std::unique_ptr<omni::isaac::robot_engine_bridge::IsaacCApi> g_c_api;
-std::unique_ptr<omni::isaac::robot_engine_bridge::IsaacApplication> g_application_handle;
+std::unique_ptr<omni::isaac::robot_engine_bridge_gxf::GxfContext> g_gxf_context_handle;
 
 
-bool CARB_ABI createApplication(std::string asset_path,
-                                std::string app_file,
-                                std::vector<const char*> module_paths,
-                                std::vector<const char*> json_files)
+// bool CARB_ABI tickComponent(const std::string& primPath)
+// {
+//     if (g_stage)
+//     {
+//         return g_application_handle->tickComponent(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+//     }
+//     return false;
+// }
+
+
+bool CARB_ABI createGxfApplication(const std::string& basePath,
+                                   const std::string& manifestFile,
+                                   const std::vector<std::string>& graphFiles)
 {
 
 
-    isaac_error_t error = g_application_handle->create(asset_path, app_file, module_paths, json_files);
-    if (error != isaac_error_t::isaac_error_success)
+    gxf_result_t error = g_gxf_context_handle->create(basePath, manifestFile, graphFiles);
+    if (error != gxf_result_t::GXF_SUCCESS)
     {
         return false;
     }
-    error = g_application_handle->start();
-    if (error != isaac_error_t::isaac_error_success)
-    {
-        return false;
-    }
-    return true;
-}
-bool CARB_ABI destroyApplication()
-{
-    isaac_error_t error = g_application_handle->stop();
-    if (error != isaac_error_t::isaac_error_success)
-    {
-        return false;
-    }
-    error = g_application_handle->destroy();
-    if (error != isaac_error_t::isaac_error_success)
+    error = g_gxf_context_handle->start();
+    if (error != gxf_result_t::GXF_SUCCESS)
     {
         return false;
     }
     return true;
 }
-
-bool CARB_ABI tickComponent(const std::string& primPath)
+bool CARB_ABI destroyGxfApplication()
 {
-    if (g_stage)
+    gxf_result_t error = g_gxf_context_handle->stop();
+    if (error != gxf_result_t::GXF_SUCCESS)
     {
-        return g_application_handle->tickComponent(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        return false;
     }
-    return false;
+    error = g_gxf_context_handle->destroy();
+    if (error != gxf_result_t::GXF_SUCCESS)
+    {
+        return false;
+    }
+    return true;
 }
-std::string const CARB_ABI getLastError()
-{
-    return g_application_handle->getLastError();
-}
-void CARB_ABI initializeStageLoader(const std::string& inputComponent,
-                                    const std::string& requestChannelName,
-                                    const std::string& cameraRequestChannelName,
-                                    const std::string& outputComponent,
-                                    const std::string& replyChannelName)
-{
-    g_application_handle->initializeStageLoader(
-        inputComponent, requestChannelName, cameraRequestChannelName, outputComponent, replyChannelName);
-}
-
-
 bool CARB_ABI executeCommand(const std::string& command)
 {
 
@@ -157,18 +136,20 @@ void onAttach(long int stageId, double metersPerUnit, void* userData)
     }
 
     g_stage = stage;
-    if (g_application_handle)
+
+    if (g_gxf_context_handle)
     {
-        g_application_handle->initialize(g_stage);
-        g_application_handle->initComponents();
+        g_gxf_context_handle->initialize(g_stage);
+        g_gxf_context_handle->initComponents();
     }
 }
 void onDetach(void* userData)
 {
     // Delete all components
-    if (g_application_handle)
+
+    if (g_gxf_context_handle)
     {
-        g_application_handle->deleteAllComponents();
+        g_gxf_context_handle->deleteAllComponents();
     }
 }
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
@@ -178,9 +159,10 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
     {
         return;
     }
-    if (g_application_handle)
+
+    if (g_gxf_context_handle)
     {
-        g_application_handle->tick(elapsedSecs);
+        g_gxf_context_handle->tick(elapsedSecs);
     }
 }
 void onResume(float currentTime, void* userData)
@@ -192,16 +174,17 @@ void onPause(void* userData)
 }
 void onStop(void* userData)
 {
-    if (g_stage && g_application_handle)
+
+    if (g_stage && g_gxf_context_handle)
     {
-        g_application_handle->onStop();
+        g_gxf_context_handle->onStop();
     }
 }
 void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
 {
     // printf("++ REB: Prim Add: %s\n", primPath,
     //        g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
-    if (g_application_handle)
+    if (g_gxf_context_handle)
     {
         pxr::UsdPrim addedPrim = g_stage->GetPrimAtPath(primPath);
         if (!addedPrim)
@@ -209,19 +192,18 @@ void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
             return;
         }
         // Add the root prim
-        if (g_application_handle)
+        if (g_gxf_context_handle)
         {
-            g_application_handle->onComponentAdd(addedPrim);
+            g_gxf_context_handle->onComponentAdd(addedPrim);
         }
-
         // Check if it has any descendants that need to be added
         pxr::UsdPrimSubtreeRange range = addedPrim.GetDescendants();
         for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
         {
             pxr::UsdPrim prim = *iter;
-            if (g_application_handle)
+            if (g_gxf_context_handle)
             {
-                g_application_handle->onComponentAdd(prim);
+                g_gxf_context_handle->onComponentAdd(prim);
             }
         }
     }
@@ -230,18 +212,18 @@ void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
     // printf("++ REB: Prim Change: %s of type %s\n", primPath,
     //        g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
-    if (g_stage && g_application_handle)
+    if (g_stage && g_gxf_context_handle)
     {
-        g_application_handle->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
+        g_gxf_context_handle->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
     }
 }
 
 void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
     // printf("++ REB: Prim Remove: %s\n", primPath);
-    if (g_application_handle)
+    if (g_gxf_context_handle)
     {
-        g_application_handle->onComponentRemove(primPath);
+        g_gxf_context_handle->onComponentRemove(primPath);
     }
 }
 }
@@ -273,14 +255,11 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("Failed to acquire carb::dictionary::IDictionary interface");
         return;
     }
-    g_c_api = std::make_unique<omni::isaac::robot_engine_bridge::IsaacCApi>();
 
-    g_application_handle = std::make_unique<omni::isaac::robot_engine_bridge::IsaacApplication>(
-        g_c_api.get(), g_dynamicControl, g_jsonSerializer, g_iDict);
-
+    g_gxf_context_handle = std::make_unique<omni::isaac::robot_engine_bridge_gxf::GxfContext>(g_dynamicControl);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
-    desc.displayName = "IsaacRobotEngineBridge";
+    desc.displayName = "GxfBridge";
     desc.onAttach = onAttach;
     desc.onDetach = onDetach;
     desc.onUpdate = onUpdate;
@@ -296,21 +275,18 @@ CARB_EXPORT void carbOnPluginStartup()
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
-    g_c_api.reset();
-    g_application_handle.reset();
+    g_gxf_context_handle.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
 }
 
-void fillInterface(omni::isaac::robot_engine_bridge::RobotEngineBridge& iface)
+void fillInterface(omni::isaac::robot_engine_bridge_gxf::GxfBridge& iface)
 {
-    using namespace omni::isaac::robot_engine_bridge;
+    using namespace omni::isaac::robot_engine_bridge_gxf;
 
     memset(&iface, 0, sizeof(iface));
 
-    iface.createApplication = createApplication;
-    iface.destroyApplication = destroyApplication;
-    iface.tickComponent = tickComponent;
-    iface.getLastError = getLastError;
-    iface.initializeStageLoader = initializeStageLoader;
+    iface.createApplication = createGxfApplication;
+    iface.destroyApplication = destroyGxfApplication;
+    // iface.tickComponent = tickComponent;
     iface.executeCommand = executeCommand;
 }

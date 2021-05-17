@@ -30,6 +30,7 @@
 #include "../Monitor/ContactMonitor.h"
 #include "../Visualizer/PolylineVisualizer.h"
 #include "plugins/core/ScopedTimer.h"
+#include "core/logger.hpp"
 
 namespace omni
 {
@@ -49,6 +50,8 @@ IsaacApplication::IsaacApplication(IsaacCApi* isaacCApiPtr,
     carb::Framework* framework = carb::getFramework();
     mTasking = framework->acquireInterface<carb::tasking::ITasking>();
     mTaskCounter = mTasking->createCounter();
+    mSettings = framework->acquireInterface<carb::settings::ISettings>();
+    mSettings->setDefaultInt("/exts/omni.isaac.robot_engine_bridge/IsaacSDKLogLevel", 3);
 }
 
 
@@ -80,6 +83,8 @@ isaac_error_t IsaacApplication::create(std::string assetPath,
 {
     if (mAppHandle == 0)
     {
+        int logLevel = mSettings->get<int>("/exts/omni.isaac.robot_engine_bridge/IsaacSDKLogLevel");
+        ::isaac::logger::SetSeverity(static_cast<::isaac::logger::Severity>(logLevel));
         mError =
             (mIsaacCApiPtr->isaac_create_application)(assetPath.c_str(), appFile.c_str(), &modulePaths[0],
                                                       modulePaths.size(), &jsonFiles[0], jsonFiles.size(), &mAppHandle);

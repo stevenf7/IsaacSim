@@ -163,6 +163,8 @@ private:
     std::unique_ptr<SceneLoader> mSceneLoaderComponent = nullptr;
     carb::tasking::ITasking* mTasking = nullptr;
     carb::tasking::Counter* mTaskCounter = nullptr;
+    carb::settings::ISettings* mSettings = nullptr;
+
 
     int64_t mTimeDifferenceNanoSeconds = 0;
     bool mRunning = false;

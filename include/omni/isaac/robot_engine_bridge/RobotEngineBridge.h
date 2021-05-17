@@ -40,17 +40,6 @@ struct RobotEngineBridge
     bool(CARB_ABI* executeCommand)(const std::string& command);
 };
 
-
-struct GxfBridge
-{
-    CARB_PLUGIN_INTERFACE("omni::isaac::robot_engine_bridge::GxfBridge", 0, 1);
-    bool(CARB_ABI* createApplication)(const std::string& basePath,
-                                      const std::string& manifestFile,
-                                      const std::vector<std::string>& graphFiles);
-    bool(CARB_ABI* destroyApplication)();
-    bool(CARB_ABI* tickComponent)(const std::string& primPath);
-    bool(CARB_ABI* executeCommand)(const std::string& command);
-};
 }
 }
 }

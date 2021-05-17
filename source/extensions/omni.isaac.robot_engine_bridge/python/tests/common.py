@@ -9,11 +9,12 @@ import logging
 class PyaliceApp:
     def __init__(self):
         from omni.isaac.pyalice import Application
+        from omni.isaac.pyalice.bindings import set_severity, severity
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
         self._reb_extension_path = ext_manager.get_extension_path(ext_id)
-
+        set_severity(severity.ERROR)
         self.app = Application(name="test", asset_path=self._reb_extension_path)
         self.app.logger.setLevel(logging.ERROR)
         self._stopped = True
