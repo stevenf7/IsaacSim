@@ -60,6 +60,7 @@ class Extension(omni.ext.IExt):
         self._accumulated_time = 0
         self.data_writer = None
         self.sd_helper = SyntheticDataHelper()
+        # self._menu_callback()
 
     def on_shutdown(self):
         """Called when the extesion us unloaded"""

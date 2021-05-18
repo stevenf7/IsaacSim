@@ -6,7 +6,6 @@ from .settings import ShapenetSettings
 from .globals import *
 from pathlib import Path
 
-
 EXTENSION_NAME = "ShapeNet Loader"
 
 
