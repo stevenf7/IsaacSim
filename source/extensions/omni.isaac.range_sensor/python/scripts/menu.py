@@ -64,6 +64,7 @@ class RangeSensorMenu:
             rotation_rate=20.0,
             high_lod=False,
             yaw_offset=0.0,
+            enable_semantics=False,
         )
 
     def _add_ultrasonic_array(self, *args, **kwargs):

@@ -29,6 +29,7 @@
 #include <omni/isaac/utils/PrimitiveDrawingHelper.h>
 #include <omni/kit/IViewport.h>
 #include <omni/kit/KitUtils.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
@@ -79,11 +80,13 @@ public:
     RangeSensorManager(omni::renderer::IDebugDraw* debugDrawPtr,
                        omni::physx::IPhysx* physxPtr,
                        carb::fastcache::FastCache* fastCachePtr,
+                       omni::syntheticdata::SyntheticData* syntheticDataPtr,
                        carb::tasking::ITasking* taskingPtr)
     {
         mDebugDrawPtr = debugDrawPtr;
         mPhysxPtr = physxPtr;
         mFastCachePtr = fastCachePtr;
+        mSyntheticDataPtr = syntheticDataPtr;
         mTasking = taskingPtr;
         mTaskCounter = mTasking->createCounter();
     }
@@ -182,7 +185,7 @@ public:
 
         if (prim.IsA<pxr::RangeSensorSchemaLidar>())
         {
-            component = std::make_unique<LidarSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr);
+            component = std::make_unique<LidarSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr, mSyntheticDataPtr);
             component->initialize(pxr::RangeSensorSchemaLidar(prim), mStage);
         }
         else if (prim.IsA<pxr::RangeSensorSchemaUltrasonicArray>())
@@ -281,6 +284,7 @@ private:
     omni::physx::IPhysx* mPhysxPtr = nullptr;
     omni::renderer::IDebugDraw* mDebugDrawPtr = nullptr;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
+    omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
 
     carb::events::ISubscriptionPtr mViewportUiEventSub;
     carb::tasking::ITasking* mTasking = nullptr;

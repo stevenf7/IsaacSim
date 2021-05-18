@@ -16,6 +16,7 @@
 
 #include "LidarSensor.h"
 
+#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 
@@ -26,6 +27,7 @@
 #include <omni/usd/UsdUtils.h>
 
 #include <iostream>
+#include <numeric>
 
 using namespace ::physx;
 using namespace pxr;
@@ -40,9 +42,11 @@ namespace range_sensor
 
 LidarSensor::LidarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
                          omni::physx::IPhysx* physxPtr,
-                         carb::fastcache::FastCache* fastCachePtr)
+                         carb::fastcache::FastCache* fastCachePtr,
+                         omni::syntheticdata::SyntheticData* syntheticDataPtr)
     : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr)
 {
+    mSyntheticDataPtr = syntheticDataPtr;
 }
 
 LidarSensor::~LidarSensor()
@@ -94,6 +98,10 @@ void LidarSensor::onComponentChange()
     if (typedPrim.GetYawOffsetAttr().HasValue())
     {
         typedPrim.GetYawOffsetAttr().Get(&mYawOffset);
+    }
+    if (typedPrim.GetEnableSemanticsAttr().HasValue())
+    {
+        typedPrim.GetEnableSemanticsAttr().Get(&mEnableSemantics);
     }
 
 
@@ -152,6 +160,15 @@ void LidarSensor::onComponentChange()
     mLastCol = 0;
     mLastNumColsTicked = 0;
     mRemainingTime = 0.0f;
+
+    mSemanticID.assign(mRows * mCols, 0);
+    mNumSemanticIDs = 100;
+    if (mSemanticToRandomID.size() == 0)
+    {
+        mSemanticToRandomID.resize(mNumSemanticIDs);
+        std::iota(mSemanticToRandomID.begin(), mSemanticToRandomID.end(), 1);
+        std::random_shuffle(mSemanticToRandomID.begin(), mSemanticToRandomID.end());
+    }
 }
 
 
