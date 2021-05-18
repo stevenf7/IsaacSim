@@ -61,7 +61,7 @@ class Extension(omni.ext.IExt):
                 load_comp_btn.set_clicked_fn(self._on_load_component)
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Examples")
+        remove_menu_items(self._menu_items, "Synthetic Data")
         self._window = None
         self._usd_context = None
         self._stage = None

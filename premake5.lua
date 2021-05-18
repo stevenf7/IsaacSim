@@ -236,7 +236,6 @@ group "exts"
         include ("source/extensions/omni.isaac.ros2_bridge")
         include ("source/extensions/omni.isaac.occupancy_map")
         include ("source/extensions/omni.isaac.utils_manager")
-        -- include ("source/extensions/omni.isaac.osc")
     end
 
 

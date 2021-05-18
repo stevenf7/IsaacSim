@@ -25,24 +25,23 @@ EXTENSION_NAME = "Isaac Sim Utilities Manager"
 # Step Importer
 # URDF Importer
 
-# ---COMMS---
+# ---Isaac SDK---
 # Robot Engine Bridge
 
-# ---SENSING---
+# ---MAPPING---
 # Occupancy Map
 
 # ---GEOMETRY---
 # Mesh Merge Tool
+# ShapeNet Loader
 
-# ---TRAINING---
-# Synthetic Data Recorder
 
 UTILITIES = {
     "Physics": ["Inspect Physics", "Physics Utilities"],
     "Import": ["URDF Importer", "Step Importer"],
     "Mapping": ["Occupancy Map"],
     "Isaac SDK": ["Robot Engine Bridge"],
-    "Geometry": ["Mesh Merge Tool"],
+    "Geometry": ["Mesh Merge Tool", "ShapeNet Loader"],
     # "Training": ["Synthetic Data Recorder"],
 }
 
@@ -73,8 +72,8 @@ class Extension(omni.ext.IExt):
             await omni.kit.app.get_app().next_update_async()
             self.dock_utilities()
             await omni.kit.app.get_app().next_update_async()
-            # Move the Property panel so it makes room our toolbar to go full height
-            # self.dock_window(ui.Workspace.get_window("Stage"), "Property", omni.ui.DockPosition.SAME)
+            self.hide_utilities()
+            await omni.kit.app.get_app().next_update_async()
 
         asyncio.ensure_future(dock_windows())
 
@@ -83,7 +82,7 @@ class Extension(omni.ext.IExt):
         if DEBUG_PRINT_ON:
             # print(ui.Workspace.get_windows())
             print("DOCKING TOOLBAR")
-        tgt = ui.Workspace.get_window("Console")
+        tgt = ui.Workspace.get_window("Content")
         self.dock_window(tgt, "Isaac Utilities Toolbar", omni.ui.DockPosition.RIGHT, 0.9)
         # tgt = ui.Workspace.get_window("DockSpace") # <-- causes seg fault for some reason
         # self.dock_window(tgt, "Isaac Utilities Toolbar", omni.ui.DockPosition.RIGHT, .2)
@@ -97,7 +96,7 @@ class Extension(omni.ext.IExt):
         prev_group = ""
         for group in UTILITIES:
             if prev_group == "":
-                tgt = ui.Workspace.get_window("Console")
+                tgt = ui.Workspace.get_window("Content")
                 self.dock_window(tgt, UTILITIES[group][0], omni.ui.DockPosition.SAME)
             # else:
             #     tgt = ui.Workspace.get_window(UTILITIES[prev_group][0])
@@ -109,7 +108,7 @@ class Extension(omni.ext.IExt):
             for ext in UTILITIES[group]:
                 # if i > 0:
                 # tgt = ui.Workspace.get_window(UTILITIES[group][0])
-                tgt = ui.Workspace.get_window("Console")
+                tgt = ui.Workspace.get_window("Content")
                 self.dock_window(tgt, ext, omni.ui.DockPosition.SAME)
             # i += 1
 
@@ -124,9 +123,9 @@ class Extension(omni.ext.IExt):
         # Update the btn image url
         self._toolbar._models["visibility"].image_url = str(self.icon_path.joinpath("tray_close.png"))
 
-        # Reset all the toolbar buttons to False
+        # Reset all the toolbar buttons to True
         for group in UTILITIES:
-            self._toolbar._models[group].set_value(False)
+            self._toolbar._models[group].set_value(True)
 
         # Make each Utility visible & dock
         for group in UTILITIES:
@@ -152,8 +151,8 @@ class Extension(omni.ext.IExt):
         for ext in UTILITIES[name]:
             ui.Workspace.get_window(ext).visible = True
 
-        # Dock the group next to the Stage
-        tgt = ui.Workspace.get_window("Console")
+        # Dock the group next to the Content
+        tgt = ui.Workspace.get_window("Content")
         window = ui.Workspace.get_window(UTILITIES[name][0])
         window.dock_in(tgt, omni.ui.DockPosition.SAME)
 
@@ -161,7 +160,7 @@ class Extension(omni.ext.IExt):
         for ext in UTILITIES[name]:
             if i > 0:
                 # tgt = ui.Workspace.get_window(UTILITIES[name][0])
-                tgt = ui.Workspace.get_window("Console")
+                tgt = ui.Workspace.get_window("Content")
                 window = ui.Workspace.get_window(ext)
                 window.dock_in(tgt, omni.ui.DockPosition.SAME)
             i += 1
@@ -230,11 +229,11 @@ class Extension(omni.ext.IExt):
         async def async_toggle():
             if model.get_value_as_bool():
                 # Hide the other utilities
-                for g in UTILITIES:
-                    if g != group:
-                        await omni.kit.app.get_app().next_update_async()
-                        self.hide_utility(g)
-                        await omni.kit.app.get_app().next_update_async()
+                # for g in UTILITIES:
+                #     if g != group:
+                #         await omni.kit.app.get_app().next_update_async()
+                #         self.hide_utility(g)
+                #         await omni.kit.app.get_app().next_update_async()
                 # Show this utility
                 await omni.kit.app.get_app().next_update_async()
                 self.show_utility(group)
