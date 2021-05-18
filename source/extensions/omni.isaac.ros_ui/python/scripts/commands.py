@@ -62,7 +62,7 @@ class ROSBridgeCreateClock(omni.kit.commands.Command):
 
 class ROSBridgeCreateCamera(omni.kit.commands.Command):
     def __init__(
-        self, path: str = "/ROS_Camera", parent=None, camera_prim_rel=None, use_existing_viewport: bool = True
+        self, path: str = "/ROS_Camera", parent=None, camera_prim_rel=None, resolution: Gf.Vec2i = Gf.Vec2i(1280, 720)
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -82,7 +82,7 @@ class ROSBridgeCreateCamera(omni.kit.commands.Command):
                     rel_paths.AddTarget(self._camera_prim_rel[0])
                 else:
                     carb.log_warn("only one camera prim rel target can be specified")
-            self._prim.CreateUseExistingViewportAttr(self._use_existing_viewport)
+            self._prim.CreateResolutionAttr(self._resolution)
 
             self._prim.CreateCameraInfoPubTopicAttr("/camera_info")
             self._prim.CreateRgbPubTopicAttr("/rgb")

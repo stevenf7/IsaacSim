@@ -12,6 +12,7 @@
 // #include "RosCallback.h"
 #include "../Core/IsaacComponent.h"
 #include "../Core/RosNode.h"
+#include "plugins/core/ViewportManager.h"
 
 #include <carb/sensors/Sensors.h>
 
@@ -31,7 +32,7 @@ class RosCamera : public IsaacComponent
 {
 
 public:
-    RosCamera();
+    RosCamera(utils::ViewportManager* viewportManager);
     // Virtual so that it can be called when object is destroyed
     virtual ~RosCamera();
     virtual void initialize(RosNode* rosNode,
@@ -50,16 +51,18 @@ public:
     void boundingbox3dPubCallback(ros::Publisher* pub);
 
 private:
+    void updateViewportSettings();
     carb::Framework* mFramework = nullptr;
 
     omni::kit::IViewport* mViewportInterface = nullptr;
     omni::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
     carb::sensors::Sensors* mSensorsInterface = nullptr;
+    utils::ViewportManager* mViewportManager = nullptr;
 
     omni::kit::IViewportWindow* mViewportWindow = nullptr;
     pxr::SdfPath mCameraPath;
     pxr::UsdPrim mCameraPrim;
-    bool mUseExistingViewport;
+    pxr::GfVec2i mResolution;
 
     carb::sensors::Sensor* mRgbSensor = nullptr;
     void* mRgbSensorData = nullptr;

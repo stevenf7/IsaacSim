@@ -36,6 +36,7 @@ IsaacApplication::IsaacApplication(omni::isaac::dynamic_control::DynamicControl*
     carb::Framework* framework = carb::getFramework();
     mTasking = framework->acquireInterface<carb::tasking::ITasking>();
     mTaskCounter = mTasking->createCounter();
+    mViewportInterface = framework->acquireInterface<omni::kit::IViewport>();
 }
 
 
@@ -51,6 +52,7 @@ IsaacApplication::~IsaacApplication()
 void IsaacApplication::initialize(pxr::UsdStageWeakPtr stage)
 {
     utils::BridgeApplicationBase<IsaacComponent>::initialize(stage);
+    mViewportManager = std::make_unique<utils::ViewportManager>(mViewportInterface);
 }
 
 
@@ -118,7 +120,7 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosCamera>())
     {
-        component = std::make_unique<RosCamera>();
+        component = std::make_unique<RosCamera>(mViewportManager.get());
         component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosCamera(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosJointState>())

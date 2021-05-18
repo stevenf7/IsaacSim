@@ -543,7 +543,6 @@ void CameraComponent::onComponentChange()
 
     const pxr::RobotEngineBridgeSchemaRobotEngineCamera& typedPrim = (pxr::RobotEngineBridgeSchemaRobotEngineCamera)mPrim;
 
-    isaac::utils::safeGetAttribute(typedPrim.GetUseExistingViewportAttr(), mUseExistingViewport);
     isaac::utils::safeGetAttribute(typedPrim.GetResolutionAttr(), mResolution);
 
     // RGB attributes

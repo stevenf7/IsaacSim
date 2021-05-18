@@ -94,7 +94,6 @@ private:
     omni::kit::IViewportWindow* mViewportWindow = nullptr;
     pxr::SdfPath mCameraPath;
     pxr::UsdPrim mCameraPrim;
-    bool mUseExistingViewport;
     pxr::GfVec2i mResolution;
 
     carb::sensors::Sensor* mRgbSensor = nullptr;

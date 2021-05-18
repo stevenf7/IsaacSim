@@ -35,6 +35,9 @@ namespace robot_engine_bridge_gxf
 GxfContext::GxfContext(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
 {
     mDynamicControlPtr = dynamicControlPtr;
+    carb::Framework* framework = carb::getFramework();
+    mViewportInterface = framework->acquireInterface<omni::kit::IViewport>();
+    mViewportManager = std::make_unique<utils::ViewportManager>(mViewportInterface);
 }
 
 GxfContext::~GxfContext()
@@ -363,7 +366,7 @@ void GxfContext::onComponentAdd(const pxr::UsdPrim& prim)
     }
     else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineCamera>())
     {
-        component = std::make_unique<CameraComponent>();
+        component = std::make_unique<CameraComponent>(mViewportManager.get());
         component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineCamera(prim), mStage);
     }
     else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEnginePoseTree>())
@@ -385,6 +388,7 @@ void GxfContext::onComponentAdd(const pxr::UsdPrim& prim)
     {
         CARB_LOG_INFO("Create: Prim %s with type: %s", prim.GetPath().GetString().c_str(),
                       component->getPrim().GetPrim().GetTypeName().GetString().c_str());
+        component->setPoseTreeMap(&mPoseTreeMap);
         mComponents[prim.GetPath().GetString()] = std::move(component);
     }
 }
