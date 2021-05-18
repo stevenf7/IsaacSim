@@ -10,9 +10,9 @@
 #pragma once
 
 // #include "RosCallback.h"
-#include "../../msgs/melodic/IsaacPose.h"
 #include "../Core/IsaacComponent.h"
 #include "../Core/RosNode.h"
+#include "isaac_ros_messages/IsaacPose.h"
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <rosBridgeSchema/rosTeleport.h>
@@ -39,7 +39,7 @@ public:
     virtual void onStart();
     virtual void onStop();
     virtual void onComponentChange();
-    bool srvCallback(isaac_bridge::IsaacPose::Request& req, isaac_bridge::IsaacPose::Response& res);
+    bool srvCallback(isaac_ros_messages::IsaacPose::Request& req, isaac_ros_messages::IsaacPose::Response& res);
 
 private:
     void addObject(const std::string& actorName, pxr::UsdPrim& prim);

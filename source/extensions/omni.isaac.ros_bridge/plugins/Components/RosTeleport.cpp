@@ -68,7 +68,7 @@ void RosTeleport::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetPoseSrvTopicAttr(), mPoseSrvTopic);
 
 
-    mRosNode->createService<isaac_bridge::IsaacPose>(
+    mRosNode->createService<isaac_ros_messages::IsaacPose>(
         mPrim.GetPath().GetString(), mPoseSrvTopic, &RosTeleport::srvCallback, this);
 
     pxr::SdfPathVector targets;
@@ -110,7 +110,7 @@ void RosTeleport::eraseObject(const std::string& actorName)
     }
 }
 
-bool RosTeleport::srvCallback(isaac_bridge::IsaacPose::Request& req, isaac_bridge::IsaacPose::Response& res)
+bool RosTeleport::srvCallback(isaac_ros_messages::IsaacPose::Request& req, isaac_ros_messages::IsaacPose::Response& res)
 {
     const unsigned int num_actors = req.names.size();
     for (size_t req_idx = 0; req_idx < num_actors; req_idx++)

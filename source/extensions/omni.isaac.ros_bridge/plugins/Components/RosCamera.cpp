@@ -23,10 +23,10 @@
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/image_encodings.h"
-#include "../../msgs/melodic/IsaacBoundingBox.h"
-#include "../../msgs/melodic/IsaacBoundingBoxArray.h"
-#include "../../msgs/melodic/BoundingBox3D.h"
-#include "../../msgs/melodic/BoundingBox3DArray.h"
+#include "isaac_ros_messages/IsaacBoundingBox.h"
+#include "isaac_ros_messages/IsaacBoundingBoxArray.h"
+#include "isaac_ros_messages/BoundingBox3D.h"
+#include "isaac_ros_messages/BoundingBox3DArray.h"
 
 #include <boost/algorithm/string.hpp>
 #include <omni/kit/ViewportWindowUtils.h>
@@ -197,9 +197,9 @@ void RosCamera::onComponentChange()
         mPrim.GetPath().GetString(), mSemanticPubTopic, mQueueSize, &RosCamera::semanticPubCallback, this);
     mRosNode->createPublisher<std_msgs::String>(
         mPrim.GetPath().GetString(), mLabelPubTopic, mQueueSize, &RosCamera::labelPubCallback, this);
-    mRosNode->createPublisher<isaac_bridge::IsaacBoundingBoxArray>(
+    mRosNode->createPublisher<isaac_ros_messages::IsaacBoundingBoxArray>(
         mPrim.GetPath().GetString(), mBoundingBox2DPubTopic, mQueueSize, &RosCamera::boundingbox2dPubCallback, this);
-    mRosNode->createPublisher<isaac_bridge::BoundingBox3DArray>(
+    mRosNode->createPublisher<isaac_ros_messages::BoundingBox3DArray>(
         mPrim.GetPath().GetString(), mBoundingBox3DPubTopic, mQueueSize, &RosCamera::boundingbox3dPubCallback, this);
 
 
@@ -647,7 +647,7 @@ void RosCamera::boundingbox2dPubCallback(ros::Publisher* pub)
             numValidBoundingBoxes++;
         }
 
-        isaac_bridge::IsaacBoundingBoxArray bbox_msg;
+        isaac_ros_messages::IsaacBoundingBoxArray bbox_msg;
         if (numValidBoundingBoxes > 0)
         {
             data = reinterpret_cast<carb::sensors::BoundingBox2DValues*>(mBoundingBox2DSensorData);
@@ -665,7 +665,7 @@ void RosCamera::boundingbox2dPubCallback(ros::Publisher* pub)
                         continue;
                     }
                 }
-                isaac_bridge::IsaacBoundingBox bbox_single;
+                isaac_ros_messages::IsaacBoundingBox bbox_single;
                 bbox_single.name = semanticLabel;
                 bbox_single.confidence = 1.0;
                 bbox_single.xmin = data->x_min;
@@ -728,7 +728,7 @@ void RosCamera::boundingbox3dPubCallback(ros::Publisher* pub)
             numValidBoundingBoxes++;
         }
 
-        isaac_bridge::BoundingBox3DArray bbox_msg;
+        isaac_ros_messages::BoundingBox3DArray bbox_msg;
         if (numValidBoundingBoxes > 0)
         {
             data = reinterpret_cast<carb::sensors::BoundingBox3DValues*>(mBoundingBox3DSensorData);
@@ -760,7 +760,7 @@ void RosCamera::boundingbox3dPubCallback(ros::Publisher* pub)
                 pxr::GfVec3d scaleValue = gfTransform.GetScale() * mUnitScale;
 
                 // Get min and max values of 3D bounding box in local space
-                isaac_bridge::BoundingBox3D bbox_single;
+                isaac_ros_messages::BoundingBox3D bbox_single;
                 bbox_single.name = semanticLabel;
                 bbox_single.confidence = 1.0;
                 bbox_single.center.position.x = translationValue[0] * mUnitScale;

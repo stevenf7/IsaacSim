@@ -20,11 +20,11 @@ class Extension(omni.ext.IExt):
             os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
             print("ROS_MASTER_URI not set, using default, ROS_MASTER_URI=", os.environ["ROS_MASTER_URI"])
 
-        self._rosbridge = _ros_bridge.acquire_rosbridge_interface()
+        self._rosbridge = _ros_bridge.acquire_ros_bridge_interface()
 
     def on_shutdown(self):
         if self._rosbridge is not None:
-            _ros_bridge.release_rosbridge_interface(self._rosbridge)
+            _ros_bridge.release_ros_bridge_interface(self._rosbridge)
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         if ext_manager.is_extension_enabled("omni.isaac.ros2_bridge") is False:
             ext_manager.set_extension_enabled("omni.isaac.ros_ui", False)

@@ -72,8 +72,8 @@ protected:
 //     ~RosCallbackJointState() = default;
 //     void buildMessage(const sensor_msgs::JointState::ConstPtr& msg, const bool teleport = false);
 //     void subCallback(const sensor_msgs::JointState::ConstPtr& msg);
-//     bool srvCallback(isaac_bridge::IsaacJointStates::Request& req, isaac_bridge::IsaacJointStates::Response& res);
-//     virtual void pubCallback(ros::Publisher* pub);
+//     bool srvCallback(isaac_ros_messages::IsaacJointStates::Request& req,
+//     isaac_ros_messages::IsaacJointStates::Response& res); virtual void pubCallback(ros::Publisher* pub);
 // };
 
 // class RosCallbackTF : public RosCallback
@@ -95,7 +95,7 @@ protected:
 //     ~RosCallbackPose() = default;
 //     virtual void pubCallback(ros::Publisher* pub);
 //     void subCallback(const geometry_msgs::PoseStamped::ConstPtr& msg);
-//     bool srvCallback(isaac_bridge::IsaacPose::Request& req, isaac_bridge::IsaacPose::Response& res);
+//     bool srvCallback(isaac_ros_messages::IsaacPose::Request& req, isaac_ros_messages::IsaacPose::Response& res);
 // };
 
 // class RosCallbackSimState : public RosCallback

@@ -1,0 +1,113 @@
+// Copyright (c) 2018-2021, NVIDIA CORPORATION. All rights reserved.
+//
+// NVIDIA CORPORATION and its licensors retain all intellectual property
+// and proprietary rights in and to this software, related documentation
+// and any modifications thereto. Any use, reproduction, disclosure or
+// distribution of this software and related documentation without an express
+// license agreement from NVIDIA CORPORATION is strictly prohibited.
+//
+
+#pragma once
+
+// #include "RosCallback.h"
+#include "../Core/IsaacComponent.h"
+#include "../Core/RosNode.h"
+#include "plugins/core/ViewportManager.h"
+
+#include <carb/sensors/Sensors.h>
+
+#include <omni/kit/IViewport.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
+#include <rosBridgeSchema/rosCamera.h>
+
+namespace omni
+{
+namespace isaac
+{
+namespace ros2_bridge
+{
+
+
+class RosCamera : public IsaacComponent
+{
+
+public:
+    RosCamera(utils::ViewportManager* viewportManager);
+    // Virtual so that it can be called when object is destroyed
+    virtual ~RosCamera();
+    virtual void initialize(RosNode* rosNode,
+                            const pxr::RosBridgeSchemaRosBridgeComponent& prim,
+                            pxr::UsdStageWeakPtr stage);
+    virtual void onStart();
+    virtual void onStop();
+    virtual void onComponentChange();
+    void cameraInfoPubCallback(rclcpp::PublisherBase* pub);
+    void rgbPubCallback(rclcpp::PublisherBase* pub);
+    void depthPubCallback(rclcpp::PublisherBase* pub);
+    void semanticPubCallback(rclcpp::PublisherBase* pub);
+    void instancePubCallback(rclcpp::PublisherBase* pub);
+    void labelPubCallback(rclcpp::PublisherBase* pub);
+    void boundingbox2dPubCallback(rclcpp::PublisherBase* pub);
+    void boundingbox3dPubCallback(rclcpp::PublisherBase* pub);
+
+private:
+    void updateViewportSettings();
+    carb::Framework* mFramework = nullptr;
+
+    omni::kit::IViewport* mViewportInterface = nullptr;
+    omni::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
+    carb::sensors::Sensors* mSensorsInterface = nullptr;
+    utils::ViewportManager* mViewportManager = nullptr;
+
+    omni::kit::IViewportWindow* mViewportWindow = nullptr;
+    pxr::SdfPath mCameraPath;
+    pxr::UsdPrim mCameraPrim;
+    pxr::GfVec2i mResolution;
+
+    carb::sensors::Sensor* mRgbSensor = nullptr;
+    void* mRgbSensorData = nullptr;
+    bool mEnableRgb = false;
+
+    carb::sensors::Sensor* mDepthSensor = nullptr;
+    void* mDepthSensorData = nullptr;
+    bool mEnableDepth = false;
+
+    carb::sensors::Sensor* mInstanceSensor = nullptr;
+    void* mInstanceSensorData = nullptr;
+    bool mEnableInstance = false;
+
+    carb::sensors::Sensor* mSegmentationSensor = nullptr;
+    void* mSegmentationSensorData = nullptr;
+    bool mEnableSegmentation = false;
+
+    carb::sensors::Sensor* mSemanticSensor = nullptr;
+    void* mSemanticSensorData = nullptr;
+    bool mEnableSemantic = false;
+
+    carb::sensors::Sensor* mBoundingBox2DSensor = nullptr;
+    void* mBoundingBox2DSensorData = nullptr;
+    bool mEnableBoundingBox2D = false;
+    std::vector<std::string> mBoundingBox2DClassList;
+
+    carb::sensors::Sensor* mBoundingBox3DSensor = nullptr;
+    void* mBoundingBox3DSensorData = nullptr;
+    bool mEnableBoundingBox3D = false;
+    std::vector<std::string> mBoundingBox3DClassList;
+
+
+    double mUnitScale;
+
+    std::string mCameraInfoPubTopic = "/camera_info";
+    std::string mRgbPubTopic = "/rgb";
+    std::string mDepthPubTopic = "/depth";
+    std::string mFrameId = "/sim_camera";
+    std::string mInstancePubTopic = "/instance";
+    std::string mSemanticPubTopic = "/semantic";
+    std::string mLabelPubTopic = "/label";
+    std::string mBoundingBox2DPubTopic = "/bbox_2d";
+    std::string mBoundingBox3DPubTopic = "/bbox_3d";
+    int mQueueSize = 10;
+};
+}
+}
+}

@@ -35,7 +35,7 @@ PYBIND11_MODULE(_ros_bridge, m)
     m.doc() = "Isaac ROS bridge bindings";
 
     {
-        defineInterfaceClass<RosBridge>(m, "RosBridge", "acquire_rosbridge_interface", "release_rosbridge_interface")
+        defineInterfaceClass<RosBridge>(m, "RosBridge", "acquire_ros_bridge_interface", "release_ros_bridge_interface")
             .def("use_sim_time", wrapInterfaceFunction(&RosBridge::setUseSimTime));
     }
 }

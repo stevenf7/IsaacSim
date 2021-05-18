@@ -35,7 +35,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
-        "%{root}/source/extensions/omni.isaac.ros_bridge/msgs/melodic",
+        "%{root}/source/extensions/omni.isaac.ros_bridge",
         "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/client_library/include",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",

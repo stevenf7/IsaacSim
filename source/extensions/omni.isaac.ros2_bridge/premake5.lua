@@ -1,7 +1,130 @@
 local ext = get_current_extension_info()
-project_ext (ext, { 
-    define_test = false
-})
+project_ext (ext)
+
+project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
+
+    disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
+
+    add_files("impl", "plugins")
+    add_files("iface", "%{root}/include/omni/isaac/ros2_bridge/**")
+
+    filter { "files:**.cu", "system:linux", "configurations:debug"}
+        make_nvcc_command("-fPIC -g", "-g")
+    filter { "files:**.cu", "system:linux", "configurations:release" }
+        make_nvcc_command("-fPIC", "")
+    filter {}
+
+    filter { "system:linux", "platforms:x86_64" }
+        libdirs { "%{root}/_build/target-deps/cuda/lib64" }
+        links { "cudart_static" }
+    filter {}
+
+    includedirs {
+        "%{root}/source/pch",
+        "%{root}/source/extensions/omni.isaac.utils", 
+        "%{root}/_build/target-deps/physx/include",
+        "%{root}/_build/target-deps/pxshared/include",
+        "%{root}/_build/target-deps/carbonite/include",
+        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
+        "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/include", 
+        "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
+        "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/include",
+        "%{root}/_build/target-deps/python/include/python3.7m",
+        "%{root}/_build/target-deps/nv_ros2/include",
+        "%{root}/_build/target-deps/rtx_plugins/include",
+        "%{root}/_build/target-deps/omni_physics/include",
+        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
+        "%{root}/source/extensions/omni.isaac.ros2_bridge",
+        "%{root}/_build/target-deps/cuda/include",
+        "%{root}/_build/target-deps/client_library/include",
+        "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
+        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
+     }
+     libdirs {
+        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+        "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/lib",
+        "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
+        "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
+        "%{root}/_build/target-deps/nv_ros2/lib",
+        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
+        "%{root}/_build/target-deps/cuda/lib64"
+    }
+
+     links {
+        "gf", "sdf", "usdGeom", "usdUtils", "rmw_fastrtps_cpp", "tf2", "tf2_ros", "rclcpp" , "rosBridgeSchema", "cudart_static", "rangeSensorSchema",
+        "tf2_msgs__rosidl_typesupport_cpp",
+        "geometry_msgs__rosidl_typesupport_cpp",
+        "move_base_msgs__rosidl_typesupport_cpp",
+        "test_msgs__rosidl_typesupport_cpp",
+        "actionlib_msgs__rosidl_typesupport_cpp",
+        "diagnostic_msgs__rosidl_typesupport_cpp",
+        "pendulum_msgs__rosidl_typesupport_cpp",
+        "map_msgs__rosidl_typesupport_cpp",
+        "action_msgs__rosidl_typesupport_cpp",
+        "rmw_dds_common__rosidl_typesupport_cpp",
+        "libstatistics_collector_test_msgs__rosidl_typesupport_cpp",
+        "stereo_msgs__rosidl_typesupport_cpp",
+        "composition_interfaces__rosidl_typesupport_cpp",
+        "statistics_msgs__rosidl_typesupport_cpp",
+        "unique_identifier_msgs__rosidl_typesupport_cpp",
+        "nav_msgs__rosidl_typesupport_cpp",
+        "std_srvs__rosidl_typesupport_cpp",
+        "std_msgs__rosidl_typesupport_cpp",
+        "rcl_interfaces__rosidl_typesupport_cpp",
+        "lifecycle_msgs__rosidl_typesupport_cpp",
+        "trajectory_msgs__rosidl_typesupport_cpp",
+        "rosgraph_msgs__rosidl_typesupport_cpp",
+        "sensor_msgs__rosidl_typesupport_cpp",
+        "shape_msgs__rosidl_typesupport_cpp",
+        "builtin_interfaces__rosidl_typesupport_cpp",
+        "rosidl_typesupport_cpp",
+        "visualization_msgs__rosidl_typesupport_cpp",
+        "isaac_ros2_messages__rosidl_typesupport_cpp",
+        "actionlib_msgs__rosidl_typesupport_fastrtps_cpp",
+        "action_msgs__rosidl_typesupport_fastrtps_cpp",
+        "builtin_interfaces__rosidl_typesupport_fastrtps_cpp",
+        "composition_interfaces__rosidl_typesupport_fastrtps_cpp",
+        "diagnostic_msgs__rosidl_typesupport_fastrtps_cpp",
+        "geometry_msgs__rosidl_typesupport_fastrtps_cpp",
+        "isaac_ros2_messages__rosidl_typesupport_fastrtps_cpp",
+        "libstatistics_collector_test_msgs__rosidl_typesupport_fastrtps_cpp",
+        "lifecycle_msgs__rosidl_typesupport_fastrtps_cpp",
+        "map_msgs__rosidl_typesupport_fastrtps_cpp",
+        "move_base_msgs__rosidl_typesupport_fastrtps_cpp",
+        "nav_msgs__rosidl_typesupport_fastrtps_cpp",
+        "pendulum_msgs__rosidl_typesupport_fastrtps_cpp",
+        "rcl_interfaces__rosidl_typesupport_fastrtps_cpp",
+        "rmw_dds_common__rosidl_typesupport_fastrtps_cpp",
+        "rosgraph_msgs__rosidl_typesupport_fastrtps_cpp",
+        "rosidl_typesupport_fastrtps_cpp",
+        "sensor_msgs__rosidl_typesupport_fastrtps_cpp",
+        "shape_msgs__rosidl_typesupport_fastrtps_cpp",
+        "statistics_msgs__rosidl_typesupport_fastrtps_cpp",
+        "std_msgs__rosidl_typesupport_fastrtps_cpp",
+        "std_srvs__rosidl_typesupport_fastrtps_cpp",
+        "stereo_msgs__rosidl_typesupport_fastrtps_cpp",
+        "test_msgs__rosidl_typesupport_fastrtps_cpp",
+        "tf2_msgs__rosidl_typesupport_fastrtps_cpp",
+        "trajectory_msgs__rosidl_typesupport_fastrtps_cpp",
+        "unique_identifier_msgs__rosidl_typesupport_fastrtps_cpp",
+        "visualization_msgs__rosidl_typesupport_fastrtps_cpp",
+    }
+
+    filter { "configurations:debug" }
+        defines { "_DEBUG" }
+    filter { "configurations:release" }
+        defines { "NDEBUG" }
+    filter {}
+    
+-- Python Bindings for Carobnite Plugin
+project_ext_bindings {
+    ext = ext,
+    project_name = "omni.isaac.ros2_bridge.python",
+    module = "_ros2_bridge",
+    src = "bindings",
+    target_subdir = "omni/isaac/ros2_bridge"
+}
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/ros2_bridge/scripts" },
@@ -10,9 +133,9 @@ repo_build.prebuild_link {
     { "data", ext.target_dir.."/data" },
 }
 
-
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/ros2_bridge" },
     { "rclpy/*.py", ext.target_dir.."/omni/isaac/rclpy" },
+    { "%{root}/_build/target-deps/nv_ros2/lib/lib**", ext.target_dir.."/bin" },
     { "%{root}/_build/target-deps/nv_ros2/lib/python3.7/site-packages", ext.target_dir.."/omni/isaac/rclpy" },
 }
