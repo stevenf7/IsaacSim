@@ -39,6 +39,7 @@
 
 #include <omni/kit/IViewport.h>
 #include <omni/kit/KitUtils.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/renderer/IDebugDraw.h>
@@ -61,6 +62,7 @@ CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       omni::kit::IStageUpdate,
                       carb::fastcache::FastCache,
                       omni::renderer::IDebugDraw,
+                      omni::syntheticdata::SyntheticData,
                       carb::tasking::ITasking)
 
 // private stuff
@@ -75,6 +77,7 @@ carb::imgui::ImGui* g_imGuiInterface = nullptr;
 carb::fastcache::FastCache* g_FastCache = nullptr;
 omni::physx::IPhysx* g_physx = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
+omni::syntheticdata::SyntheticData* g_SyntheticDataInterface = nullptr;
 carb::tasking::ITasking* gTasking = nullptr;
 
 
@@ -1131,11 +1134,18 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
         return;
     }
+
+    g_SyntheticDataInterface = framework->acquireInterface<omni::syntheticdata::SyntheticData>();
+    if (!g_SyntheticDataInterface)
+    {
+        CARB_LOG_ERROR("Failed to acquire carb::sensors::syntheticdata::SyntheticData interface");
+        return;
+    }
     gTasking = framework->acquireInterface<carb::tasking::ITasking>();
 
 
-    gRangeSensorManager =
-        std::make_unique<omni::isaac::range_sensor::RangeSensorManager>(g_debugDraw, g_physx, g_FastCache, gTasking);
+    gRangeSensorManager = std::make_unique<omni::isaac::range_sensor::RangeSensorManager>(
+        g_debugDraw, g_physx, g_FastCache, g_SyntheticDataInterface, gTasking);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Range Sensor Interface";

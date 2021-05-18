@@ -20,6 +20,8 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/client_library/include",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
+        "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
+        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",

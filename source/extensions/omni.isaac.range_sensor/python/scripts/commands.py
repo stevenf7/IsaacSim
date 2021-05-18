@@ -77,6 +77,7 @@ class CreateRangeSensorLidarCommand(omni.kit.commands.Command):
         rotation_rate: float = 20.0,
         high_lod: bool = False,
         yaw_offset: float = 0.0,
+        enable_semantics: bool = False,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():

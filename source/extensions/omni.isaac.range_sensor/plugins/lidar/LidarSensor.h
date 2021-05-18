@@ -15,6 +15,7 @@
 
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
 #include <rangeSensorSchema/lidar.h>
@@ -34,7 +35,8 @@ class LidarSensor : public RangeSensorComponent
 public:
     LidarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
                 omni::physx::IPhysx* physxPtr,
-                carb::fastcache::FastCache* fastCachePtr);
+                carb::fastcache::FastCache* fastCachePtr,
+                omni::syntheticdata::SyntheticData* syntheticDataPtr);
     ~LidarSensor();
 
     virtual void onStart();
@@ -158,6 +160,27 @@ private:
                     carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
                     ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - origin);
                     mHitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
+                    if (mEnableSemantics)
+                    {
+                        const char* hitActorName = raycastHit.actor->getName();
+                        pxr::UsdPrim hitActor = mStage->GetPrimAtPath(pxr::SdfPath(hitActorName));
+
+                        std::string semanticData = "", semanticType = "";
+                        auto semanticTypeAttr =
+                            hitActor.GetAttribute(pxr::TfToken("semantic:Semantics:params:semanticType"));
+                        auto semanticDataAttr =
+                            hitActor.GetAttribute(pxr::TfToken("semantic:Semantics:params:semanticData"));
+                        if (semanticTypeAttr && semanticDataAttr)
+                        {
+                            semanticTypeAttr.Get(&semanticType);
+                            semanticDataAttr.Get(&semanticData);
+                            if (semanticType == "class")
+                            {
+                                mSemanticID[i] = mSyntheticDataPtr->getSemanticIdFromData(semanticData.c_str());
+                                // CARB_LOG_WARN("%s : %d", semanticData.c_str(), mSemanticID[i]);
+                            }
+                        }
+                    }
                     if (drawPoints)
                     {
                         carb::scenerenderer::PrimitiveVertex data;
@@ -168,6 +191,8 @@ private:
                         // set ratio for color.  should be zero at mMinDepth and unity at mMaxDepth
                         auto ratio =
                             (mLinearDepth[i] - mMinDepth * mMetersPerUnit) / ((mMaxDepth - mMinDepth) * mMetersPerUnit);
+                        if (mEnableSemantics && mSemanticID[i] != 0)
+                            ratio = mSemanticToRandomID[mSemanticID[i] % mNumSemanticIDs] / (mNumSemanticIDs * 1.0f);
 
                         data.position = hitPos;
                         data.color = distToRgba(ratio);
@@ -264,6 +289,11 @@ private:
     const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
     ::physx::PxVec3 mFinalTranslation;
     ::physx::PxQuat mFinalRotation;
+
+    omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
+    bool mEnableSemantics;
+    std::vector<uint16_t> mSemanticID, mSemanticToRandomID;
+    int mNumSemanticIDs;
 };
 
 

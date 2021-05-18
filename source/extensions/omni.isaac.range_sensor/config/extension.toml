@@ -25,6 +25,7 @@ icon = "data/icon.png"
 "omni.kit.window.toolbar" = {} # needed for simulation to start
 "omni.kit.window.viewport" = {}
 "omni.usd.schema.isaac" = {}
+"omni.syntheticdata" = {}
 
 [[python.module]]
 name = "omni.isaac.range_sensor"
