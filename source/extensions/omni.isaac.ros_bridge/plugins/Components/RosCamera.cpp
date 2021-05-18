@@ -43,9 +43,10 @@ namespace ros_bridge
 {
 extern "C" void rgbaToRgb(uint8_t* dest, const uint8_t* src, int width, int height, int srcStride);
 
-RosCamera::RosCamera()
+RosCamera::RosCamera(utils::ViewportManager* viewportManager)
 {
 
+    mViewportManager = viewportManager;
     mFramework = carb::getFramework();
     if (!mFramework)
     {
@@ -98,6 +99,10 @@ void RosCamera::onStart()
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
 
     onComponentChange();
+
+    // Wait until start is called to configure viewports
+    if (mDoStart)
+        updateViewportSettings();
 }
 void RosCamera::onStop()
 {
@@ -168,7 +173,7 @@ void RosCamera::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
     isaac::utils::safeGetAttribute(typedPrim.GetFrameIdAttr(), mFrameId);
 
-    isaac::utils::safeGetAttribute(typedPrim.GetUseExistingViewportAttr(), mUseExistingViewport);
+    isaac::utils::safeGetAttribute(typedPrim.GetResolutionAttr(), mResolution);
     isaac::utils::safeGetAttribute(typedPrim.GetRgbEnabledAttr(), mEnableRgb);
     isaac::utils::safeGetAttribute(typedPrim.GetDepthEnabledAttr(), mEnableDepth);
     isaac::utils::safeGetAttribute(typedPrim.GetSegmentationEnabledAttr(), mEnableSegmentation);
@@ -215,18 +220,37 @@ void RosCamera::onComponentChange()
     }
     mCameraPrim = mStage->GetPrimAtPath(mCameraPath);
 
-    if (!mViewportWindow)
+    if (!mDoStart)
+        updateViewportSettings();
+}
+
+void RosCamera::updateViewportSettings()
+{
+    std::string primPath = mPrim.GetPath().GetString();
+    if (mViewportWindow == nullptr)
     {
-        if (mUseExistingViewport)
+        if (mEnabled)
         {
-            mViewportWindow = kit::getDefaultViewportWindow();
-        }
-        else
-        {
-            mViewportWindow = mViewportInterface->getViewportWindow(mViewportInterface->createViewportWindow());
+            std::string viewportWindowName = mViewportManager->getViewport();
+            mViewportWindow = mViewportInterface->getViewportWindow(
+                mViewportInterface->getViewportWindowInstance(viewportWindowName.c_str()));
+            mViewportManager->registerViewport(viewportWindowName, primPath);
         }
     }
+    else
+    {
+        if (!mEnabled)
+        {
+            mViewportWindow = nullptr;
+            mViewportManager->unregisterViewport(primPath);
+        }
+    }
+    if (mViewportWindow == nullptr)
+        return;
+
     mViewportWindow->setActiveCamera(mCameraPath.GetString().c_str());
+    if (mResolution[0] != 0 && mResolution[1] != 0)
+        mViewportWindow->setTextureResolution(mResolution[0], mResolution[1]);
 
     if (mEnableRgb)
     {
@@ -289,6 +313,8 @@ void RosCamera::onComponentChange()
 
 void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
 {
+    if (mViewportWindow == nullptr)
+        return;
     const char* cameraPath = mViewportWindow->getActiveCamera();
     if (!cameraPath)
         return;
@@ -367,7 +393,7 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
 
 void RosCamera::rgbPubCallback(ros::Publisher* pub)
 {
-    if (!mEnableRgb || !mRgbSensor)
+    if (!mEnableRgb || !mRgbSensor || mViewportWindow == nullptr)
     {
         return;
     }
@@ -414,7 +440,7 @@ void RosCamera::rgbPubCallback(ros::Publisher* pub)
 void RosCamera::depthPubCallback(ros::Publisher* pub)
 {
 
-    if (!mEnableDepth || !mDepthSensor)
+    if (!mEnableDepth || !mDepthSensor || mViewportWindow == nullptr)
     {
         return;
     }
@@ -456,7 +482,7 @@ void RosCamera::depthPubCallback(ros::Publisher* pub)
 
 void RosCamera::instancePubCallback(ros::Publisher* pub)
 {
-    if (!mEnableSegmentation || !mSegmentationSensor)
+    if (!mEnableSegmentation || !mSegmentationSensor || mViewportWindow == nullptr)
     {
         return;
     }
@@ -501,7 +527,7 @@ void RosCamera::instancePubCallback(ros::Publisher* pub)
 
 void RosCamera::semanticPubCallback(ros::Publisher* pub)
 {
-    if (!mEnableSegmentation || !mSemanticSensor)
+    if (!mEnableSegmentation || !mSemanticSensor || mViewportWindow == nullptr)
     {
         return;
     }
@@ -544,7 +570,7 @@ void RosCamera::semanticPubCallback(ros::Publisher* pub)
 
 void RosCamera::labelPubCallback(ros::Publisher* pub)
 {
-    if (!mEnableSegmentation || !mSemanticSensor)
+    if (!mEnableSegmentation || !mSemanticSensor || mViewportWindow == nullptr)
     {
         return;
     }
@@ -579,7 +605,7 @@ void RosCamera::labelPubCallback(ros::Publisher* pub)
 void RosCamera::boundingbox2dPubCallback(ros::Publisher* pub)
 {
 
-    if (!mEnableBoundingBox2D || !mBoundingBox2DSensor)
+    if (!mEnableBoundingBox2D || !mBoundingBox2DSensor || mViewportWindow == nullptr)
     {
         return;
     }
@@ -659,7 +685,7 @@ void RosCamera::boundingbox2dPubCallback(ros::Publisher* pub)
 
 void RosCamera::boundingbox3dPubCallback(ros::Publisher* pub)
 {
-    if (!mEnableBoundingBox3D || !mBoundingBox3DSensor)
+    if (!mEnableBoundingBox3D || !mBoundingBox3DSensor || mViewportWindow == nullptr)
     {
         return;
     }

@@ -224,8 +224,6 @@ class Extension(omni.ext.IExt):
         camera_prim.CreateDepthPubTopicAttr("/depth")
         camera_prim.CreateFrameIdAttr("/sim_camera")
 
-        # enable existing viewport
-        camera_prim.CreateUseExistingViewportAttr(True)
         # enable RGB
         camera_prim.CreateRgbEnabledAttr(True)
         # enable depth

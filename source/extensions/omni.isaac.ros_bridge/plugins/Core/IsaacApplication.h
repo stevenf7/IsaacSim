@@ -12,12 +12,14 @@
 #include "IsaacComponent.h"
 #include "RosNode.h"
 #include "plugins/bridge/BridgeApplication.h"
+#include "plugins/core/ViewportManager.h"
 
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>
 #include <carb/tasking/ITasking.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/kit/IViewport.h>
 #include <rosBridgeSchema/rosBridgeComponent.h>
 
 #include <chrono>
@@ -106,6 +108,9 @@ private:
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
     carb::tasking::ITasking* mTasking = nullptr;
     carb::tasking::Counter* mTaskCounter = nullptr;
+
+    omni::kit::IViewport* mViewportInterface = nullptr;
+    std::unique_ptr<utils::ViewportManager> mViewportManager = nullptr;
 
     int64_t mTimeDifferenceNanoSeconds = 0;
     bool mROSInitialize = true;

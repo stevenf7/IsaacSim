@@ -14,9 +14,11 @@
 #include "GxfPoseTreeMap.h"
 #include "gxf/core/gxf.h"
 #include "plugins/bridge/BridgeApplication.h"
+#include "plugins/core/ViewportManager.h"
 
 #include <gxf/std/clock.hpp>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/kit/IViewport.h>
 
 #include <string>
 
@@ -48,6 +50,8 @@ private:
     GxfPoseTreeMap mPoseTreeMap;
     int64_t mTimeDifferenceNanoSeconds = 0;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
+    omni::kit::IViewport* mViewportInterface = nullptr;
+    std::unique_ptr<utils::ViewportManager> mViewportManager = nullptr;
     nvidia::gxf::Handle<nvidia::gxf::Allocator> mAllocator;
     nvidia::gxf::Handle<nvidia::gxf::Clock> mClock;
     bool mRunning = false;

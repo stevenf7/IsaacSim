@@ -124,7 +124,6 @@ class DualCameraSample:
             bbox2d_enabled=False,
             bbox3d_enabled=False,
             camera_prim_rel=[self._camera.GetPath()],
-            use_existing_viewport=True,
             resolution=self.Gf.Vec2i(1280, 720),
         )
 
@@ -150,7 +149,6 @@ class DualCameraSample:
             bbox2d_enabled=False,
             bbox3d_enabled=False,
             camera_prim_rel=[self._camera.GetPath()],
-            use_existing_viewport=True,
             resolution=self.Gf.Vec2i(1280, 720),
         )
 

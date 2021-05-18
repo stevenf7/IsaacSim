@@ -347,7 +347,6 @@ class Extension(omni.ext.IExt):
                     bbox2d_enabled=False,
                     bbox3d_enabled=False,
                     camera_prim_rel=[camera_prim.GetPrim().GetPrimPath()],
-                    use_existing_viewport=reb_data[i][1],
                     resolution=Gf.Vec2i(800, 600),
                 )
         pass

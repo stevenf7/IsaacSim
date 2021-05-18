@@ -80,7 +80,6 @@ class TestREBPyaliceCamera(omni.kit.test.AsyncTestCase):
             bbox2d_enabled=False,
             bbox3d_enabled=False,
             camera_prim_rel=None,
-            use_existing_viewport=False,
             resolution=Gf.Vec2i(800, 600),
         )
 
