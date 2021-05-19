@@ -5,12 +5,12 @@ import omni.kit.test
 
 import omni.kit.usd
 from omni.isaac.dynamic_control import _dynamic_control as dc
-import os
 import gc
 import asyncio
 import carb
 from pxr import Gf
 from .common import simulate
+import math
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.physx.scripts.physicsUtils import add_ground_plane
@@ -91,7 +91,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
             self._robot_chassis,
             self._robot_wheels,
             self._robot_wheels_speed,
-            [1, 0.05],
+            [3, 0.05],
         )
         self._rc.control_setup()
         self.imu = self._dc.get_rigid_body(self._robot_chassis)
@@ -141,14 +141,17 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._rc.set_goal(100, 100, 90)
         self._rc.enable_navigation(True)
 
-        await simulate(60)
+        for frame in range(int(60 * 60)):
+            await omni.kit.app.get_app().next_update_async()
+            if self._rc.reached_goal():
+                break
         imu_pose = self._dc.get_rigid_body_pose(self.imu)
         roll, pitch, yaw = math_utils.quaternionToEulerAngles(
             Gf.Quaternion(imu_pose.r.w, Gf.Vec3d(imu_pose.r.x, imu_pose.r.y, imu_pose.r.z))
         )
-        self.assertAlmostEqual(imu_pose.p.x, 100, delta=2.0)
-        self.assertAlmostEqual(imu_pose.p.y, 100, delta=2.0)
-        self.assertAlmostEqual(yaw, 1.57, delta=0.1)
+        self.assertAlmostEqual(imu_pose.p.x, self._rc.get_goal()[0], delta=2.0)
+        self.assertAlmostEqual(imu_pose.p.y, self._rc.get_goal()[1], delta=2.0)
+        self.assertAlmostEqual(yaw, math.radians(self._rc.get_goal()[2]), delta=0.1)
         pass
 
     # Send forward command, check if it moved forward, stop and play and then repeat

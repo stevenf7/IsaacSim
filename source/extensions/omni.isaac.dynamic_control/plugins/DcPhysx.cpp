@@ -908,14 +908,8 @@ bool DcContext::refreshPhysicsPointers(DcJoint* joint, bool verbose)
     }
 
     // we only support articulation joints, for now
-    PxArticulationJointReducedCoordinate* pxArticulationJoint = nullptr;
-    if (physx->isRunning())
-    {
-        auto id = physx->getObjectId(joint->path, omni::physx::PhysXType::ePTLinkJoint);
-
-        pxArticulationJoint = (PxArticulationJointReducedCoordinate*)physx->getPhysXPtrFast(id);
-        // physx->getPhysXPtr(joint->path, omni::physx::PhysXType::ePTLinkJoint);
-    }
+    PxArticulationJointReducedCoordinate* pxArticulationJoint =
+        (PxArticulationJointReducedCoordinate*)physx->getPhysXPtr(joint->path, omni::physx::PhysXType::ePTLinkJoint);
 
     if (pxArticulationJoint)
     {

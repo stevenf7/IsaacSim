@@ -8,7 +8,7 @@
 #
 import math
 
-from pxr import UsdGeom, Gf
+from pxr import Gf
 from . import math_utils
 from omni.isaac.dynamic_control import _dynamic_control
 
@@ -138,5 +138,14 @@ class RobotController:
     def set_goal(self, x, y, theta):
         self._goal = [x, y, theta]
 
+    def get_goal(self):
+        return self._goal
+
     def enable_navigation(self, flag):
         self._enable_navigation = flag
+
+    def reached_goal(self):
+        if self._reached_goal[0] is True and self._reached_goal[1] is True:
+            return True
+        else:
+            return False

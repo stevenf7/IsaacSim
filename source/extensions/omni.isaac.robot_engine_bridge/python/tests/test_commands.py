@@ -4,6 +4,7 @@
 import omni.kit.test
 import omni.kit.usd
 import gc
+import carb
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands

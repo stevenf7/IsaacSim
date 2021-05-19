@@ -535,7 +535,7 @@ PYBIND11_MODULE(_isaac_utils, m)
         }
         else
         {
-            CARB_LOG_ERROR("Set Transform Prim Not Valid");
+            CARB_LOG_ERROR("Set Transform Prim %s Not Valid", primPath.c_str());
         }
 
         // return new

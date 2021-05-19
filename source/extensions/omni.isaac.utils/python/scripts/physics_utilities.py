@@ -14,7 +14,7 @@ import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import omni.kit.utils
 import omni.kit.commands
-from pxr import Usd, UsdGeom, Sdf, UsdShade, UsdPhysics
+from pxr import Usd, UsdGeom, UsdPhysics
 import weakref
 from omni.physx.scripts import utils
 import asyncio
@@ -29,7 +29,7 @@ class Extension(omni.ext.IExt):
         self._selection = self._usd_context.get_selection()
 
         self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [
@@ -217,4 +217,5 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         remove_menu_items(self._menu_items, "Isaac Utils")
+        gc.collect()
         pass

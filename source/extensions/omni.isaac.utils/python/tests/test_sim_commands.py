@@ -5,16 +5,15 @@ import omni.kit.test
 import omni.kit.usd
 import gc
 import carb
+import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-from pxr import Gf
-
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
+class TestIsaacSimCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
@@ -31,6 +30,9 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         self._stage = None
         self._timeline = None
@@ -57,6 +59,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         omni.kit.commands.execute(
             "IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka", translation=(0, 0, 0)
         )
+        await omni.kit.app.get_app().next_update_async()
         omni.kit.commands.execute("IsaacSimTeleportPrim", prim_path="/franka", translation=(-100, -100, 0))
 
     async def test_destroy_command(self):

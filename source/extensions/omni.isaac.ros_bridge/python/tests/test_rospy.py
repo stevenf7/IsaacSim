@@ -29,7 +29,7 @@ class TestRospy(omni.kit.test.AsyncTestCase):
         await wait_for_rosmaster()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
         try:
-            rospy.init_node("isaac_sim_test_gripper", anonymous=True, disable_signals=True)
+            rospy.init_node("isaac_sim_test_gripper", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
         except rospy.exceptions.ROSException as e:
             print("Node has already been initialized, do nothing")
         pass

@@ -14,9 +14,9 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from .common import PyaliceApp, create_application, simulate
-from omni.isaac.pyalice import Message, Composite
+from omni.isaac.pyalice import Composite
 
-from pxr import Gf, UsdPhysics, UsdGeom, PhysicsSchemaTools
+from pxr import Gf, UsdGeom, PhysicsSchemaTools
 import numpy as np
 
 
@@ -57,7 +57,7 @@ def set_rotate(prim, rot_mat):
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCase):
+class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()

@@ -67,7 +67,7 @@ class TestJetBotLoading(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Start Simulation and wait
         self._timeline.play()
-        await asyncio.sleep(0.125)
+        await omni.kit.app.get_app().next_update_async()
 
         # get the dofbot
         self.ar = self.dc.get_articulation("/jetbot")

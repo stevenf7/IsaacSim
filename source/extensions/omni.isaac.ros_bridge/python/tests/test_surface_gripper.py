@@ -49,7 +49,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         try:
-            rospy.init_node("isaac_sim_test_rospy", anonymous=True, disable_signals=True)
+            rospy.init_node("isaac_sim_test_rospy", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
         except rospy.exceptions.ROSException as e:
             print("Node has already been initialized, do nothing")
 
