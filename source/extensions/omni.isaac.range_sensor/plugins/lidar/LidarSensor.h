@@ -84,6 +84,11 @@ public:
         return mLastAzimuth;
     }
 
+    std::vector<uint16_t>& getSemanticData()
+    {
+        return mSemanticID;
+    }
+
 
 private:
     void dumpData(int start, int stop, double elapsedTime);

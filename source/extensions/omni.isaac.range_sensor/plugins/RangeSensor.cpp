@@ -302,6 +302,30 @@ carb::Float3* CARB_ABI getPointCloud(const char* primPath)
     }
 }
 
+uint16_t* CARB_ABI getSemanticData(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+
+            return sensor->getSemanticData().data();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Lidar Sensor does not exist");
+            return nullptr;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Lidar Sensor Manager does not exist");
+        return nullptr;
+    }
+}
+
 bool CARB_ABI isLidarSensor(const char* primPath)
 {
     if (g_stage && gRangeSensorManager)
@@ -1192,6 +1216,7 @@ void fillInterface(omni::isaac::range_sensor::LidarSensorInterface& iface)
     iface.getZenithData = lidar::getZenithData;
     iface.getAzimuthData = lidar::getAzimuthData;
     iface.getPointCloud = lidar::getPointCloud;
+    iface.getSemanticData = lidar::getSemanticData;
     iface.isLidarSensor = lidar::isLidarSensor;
 }
 
