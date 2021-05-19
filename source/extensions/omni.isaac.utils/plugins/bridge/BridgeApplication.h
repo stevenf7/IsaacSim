@@ -50,14 +50,13 @@ public:
             if (path.IsAbsoluteRootOrPrimPath())
             {
                 // CARB_LOG_WARN("ResyncedPaths: %s", path.GetText());
-                auto primPath =
-                    mStage->GetPseudoRoot().GetPath() == path ? mStage->GetPseudoRoot().GetPath() : path.GetPrimPath();
+                const auto& primPath = (path == PXR_NS::SdfPath::AbsoluteRootPath() ? path : path.GetPrimPath());
 
                 // If prim is removed, remove it and its descendants from selection.
                 pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
 
-                // CARB_LOG_WARN("Prim valid %d", prim.IsValid());
-                if (prim.IsValid() == false) // remove prim
+                // CARB_LOG_INFO("Prim %s valid %d", primPath.GetString().c_str(), prim.IsValid());
+                if (prim.IsValid() == false) // removed prim
                 {
                     mManager->onComponentRemove(primPath);
                 }
@@ -167,12 +166,20 @@ public:
      */
     virtual void onComponentRemove(const pxr::SdfPath& primPath)
     {
-        // delete component for this prim
-        if (mComponents.find(primPath.GetString()) != mComponents.end())
+        // Delete component for any children of this prim
+        for (auto it = mComponents.begin(); it != mComponents.end();)
         {
-            // CARB_LOG_WARN("Delete: Prim %s", primPath.GetString().c_str());
-            mComponents[primPath.GetString()].reset();
-            mComponents.erase(primPath.GetString());
+            // CARB_LOG_WARN("Check: Prim %s %s", primPath.GetString().c_str(), it->first.c_str());
+            if ((it->first).find(primPath.GetString()) != std::string::npos)
+            {
+                CARB_LOG_INFO("Delete: Prim %s %s", primPath.GetString().c_str(), it->first.c_str());
+                it->second.reset();
+                it = mComponents.erase(it);
+            }
+            else
+            {
+                it++;
+            }
         }
     }
 

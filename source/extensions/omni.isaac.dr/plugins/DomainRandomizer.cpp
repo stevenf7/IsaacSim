@@ -126,9 +126,17 @@ void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
     {
         // Initializes DR components when loaded as a layer
         if (primPath == pxr::SdfPath("/"))
+        {
             Manager->initComponents();
+        }
         else
-            Manager->onComponentAdd(g_stage->GetPrimAtPath(primPath));
+        {
+            pxr::UsdPrim prim = g_stage->GetPrimAtPath(primPath);
+            if (prim)
+            {
+                Manager->onComponentAdd(prim);
+            }
+        }
     }
 }
 

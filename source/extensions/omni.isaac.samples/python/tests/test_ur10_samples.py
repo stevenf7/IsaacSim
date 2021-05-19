@@ -85,7 +85,6 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._mp = None
         self._physx = None
         gc.collect()
-        await omni.usd.get_context().new_stage_async()
         pass
 
     async def test_bin_stack_run(self):

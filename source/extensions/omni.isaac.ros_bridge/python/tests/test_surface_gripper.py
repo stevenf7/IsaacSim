@@ -58,7 +58,6 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
-        print("TEARDOWN")
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
@@ -66,7 +65,6 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         self._roscore.shutdown()
         self._roscore = None
         self._timeline = None
-        # await omni.usd.get_context().new_stage_async()
         gc.collect()
         pass
 

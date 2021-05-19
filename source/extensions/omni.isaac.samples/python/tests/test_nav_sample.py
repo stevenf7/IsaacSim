@@ -57,7 +57,6 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._rc = None
         self._editor_event_subscription = None
         gc.collect()
-        # await omni.usd.get_context().new_stage_async()
         pass
 
     async def load_nav_scene(self):
