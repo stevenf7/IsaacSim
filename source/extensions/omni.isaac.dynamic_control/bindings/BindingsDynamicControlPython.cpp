@@ -103,6 +103,7 @@ PYBIND11_MODULE(_dynamic_control, m)
     m.attr("STATE_NONE") = py::int_(kDcStateNone);
     m.attr("STATE_POS") = py::int_(kDcStatePos);
     m.attr("STATE_VEL") = py::int_(kDcStateVel);
+    m.attr("STATE_EFFORT") = py::int_(kDcStateEffort);
     m.attr("STATE_ALL") = py::int_(kDcStateAll);
 
     // axis flags
@@ -502,19 +503,22 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def_readwrite(
             "vel", &DcDofState::vel,
             "DOF velocity, in radians/s if it's a revolute DOF, or stage_units/s (m/s, cm/s, etc), if it's a prismatic DOF (:obj:`float`)")
-        .def(py::init([](const float& pos, const float& vel) {
+        .def_readwrite("effort", &DcDofState::effort,
+                       "DOF effort, torque if it's a revolute DOF, or force if it's a prismatic DOF (:obj:`float`)")
+        .def(py::init([](const float& pos, const float& vel, const float& effort) {
                  DcDofState state;
                  state.pos = pos;
                  state.vel = vel;
+                 state.effort = effort;
                  return state;
              }),
-             py::arg("pos") = nullptr, py::arg("vel") = nullptr)
+             py::arg("pos") = nullptr, py::arg("vel") = nullptr, py::arg("effort") = nullptr)
         .def(py::init<>())
         .def_property_readonly_static(
             "dtype", [](const py::object&) { return py::dtype::of<DcDofState>(); }, "return the numpy structured dtype")
-        .def(py::pickle([](const DcDofState& s) { return py::make_tuple(s.pos, s.vel); },
+        .def(py::pickle([](const DcDofState& s) { return py::make_tuple(s.pos, s.vel, s.effort); },
                         [](py::tuple t) {
-                            return DcDofState{ t[0].cast<float>(), t[1].cast<float>() };
+                            return DcDofState{ t[0].cast<float>(), t[1].cast<float>(), t[2].cast<float>() };
                         }));
 
     py::class_<DcRigidBodyProperties>(m, "RigidBodyProperties", "Rigid Body Properties")
@@ -664,7 +668,7 @@ PYBIND11_MODULE(_dynamic_control, m)
     PYBIND11_NUMPY_DTYPE(DcTransform, p, r);
     PYBIND11_NUMPY_DTYPE(DcVelocity, linear, angular);
     PYBIND11_NUMPY_DTYPE(DcRigidBodyState, pose, vel);
-    PYBIND11_NUMPY_DTYPE(DcDofState, pos, vel);
+    PYBIND11_NUMPY_DTYPE(DcDofState, pos, vel, effort);
     PYBIND11_NUMPY_DTYPE(
         DcDofProperties, type, hasLimits, lower, upper, driveMode, maxVelocity, maxEffort, stiffness, damping);
     PYBIND11_NUMPY_DTYPE(DcRigidBodyProperties, mass, moment);

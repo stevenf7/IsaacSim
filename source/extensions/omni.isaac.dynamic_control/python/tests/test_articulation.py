@@ -451,6 +451,54 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
             dof_target_new = self._dc.get_dof_position_target(dof_ptr)
             self.assertAlmostEqual(dof_target_new, new_pos, delta=0.01)
 
+    async def test_articulation_effort_simple(self, gpu=False):
+
+        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/simple/simple_articulation.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+        set_scene_physics_type(gpu)
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        art = self._dc.get_articulation("/Articulation")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+
+        dof_ptr = self._dc.find_articulation_dof(art, "RevoluteJoint")
+
+        # change dof target: modifying current state
+        dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+        self.assertTrue(dof_states is not None)
+        dof_pos = dof_states["pos"]
+        dof_old = dof_pos[0] + 3
+        dof_pos += 3
+        self.assertTrue(self._dc.set_articulation_dof_position_targets(art, dof_pos))
+        # for frame in range(4):
+        #     if art is not None:
+        #         self._dc.wake_up_articulation(art)
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        for frame in range(60 * 1):
+            if art is not None:
+                self._dc.wake_up_articulation(art)
+            await omni.kit.app.get_app().next_update_async()
+            dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+            self.assertLess(dof_states[0][2], -1000)
+            # print(dof_states[0][2])
+        dof_pos -= 6
+        self.assertTrue(self._dc.set_articulation_dof_position_targets(art, dof_pos))
+
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        for frame in range(60 * 1):
+            if art is not None:
+                self._dc.wake_up_articulation(art)
+            await omni.kit.app.get_app().next_update_async()
+            dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+            # print(dof_states[0][2])
+            self.assertGreater(dof_states[0][2], 1000)
+
     # async def test_articulation_load_gpu(self):
     #     await self.test_articulation_load(True)
 
