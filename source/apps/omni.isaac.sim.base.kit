@@ -176,22 +176,26 @@ nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
 "omni.isaac.range_sensor" = {}
 "omni.isaac.manip" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.motion_planning" = {}
-"omni.isaac.occupancy_map" = {}
-"omni.isaac.samples" = {}
 "omni.isaac.step_importer" = {}
 "omni.isaac.synthetic_utils" = {}
-"omni.isaac.robot_engine_bridge" = {}
 "omni.isaac.dr" = {}
 "omni.isaac.shapenet" = {}
 "omni.isaac.tests" = {}
 "omni.kit.property.isaac" = {}
 "omni.isaac.contact_sensor" = {}
-"omni.isaac.utils_manager" = {}
 
 "omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
 #"omni.isaac.splash" = {}
 
+#linux only extensions
+[dependencies."filter:platform"."linux-x86_64"]
+"omni.isaac.motion_planning" = {}
+"omni.isaac.occupancy_map" = {}
+"omni.isaac.robot_engine_bridge" = {}
+"omni.isaac.utils_manager" = {}
+"omni.isaac.samples" = {}
+
 # Non Isaac Sim Extensions
 ######################
+[dependencies]
 "semantics.schema.editor" = { optional = true }
