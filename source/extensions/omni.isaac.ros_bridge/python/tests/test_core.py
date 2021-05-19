@@ -10,11 +10,10 @@ import asyncio
 import omni.kit.commands
 from omni.isaac.ros_ui.scripts.roscore import Roscore
 from .common import wait_for_rosmaster
-import rospy
 import carb
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRosBridge(omni.kit.test.AsyncTestCase):
+class TestRosBridge(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         # await omni.usd.get_context().new_stage_async()
@@ -37,11 +36,12 @@ class TestRosBridge(omni.kit.test.AsyncTestCase):
         self._roscore.shutdown()
         self._roscore = None
 
-        # await omni.usd.get_context().new_stage_async()
         gc.collect()
         pass
 
-    async def test_core(self):
+    async def test_ros_bridge_core(self):
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await asyncio.sleep(1.0)
         self._timeline.stop()

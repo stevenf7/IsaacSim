@@ -16,7 +16,7 @@ from .common import PyaliceApp, create_application, simulate
 from pxr import Gf, UsdGeom, UsdPhysics, Sdf
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCase):
+class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()

@@ -14,11 +14,10 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from .common import PyaliceApp, create_application, simulate
 from pxr import Gf, UsdGeom, UsdPhysics, Sdf
-import omni.isaac.RangeSensorSchema as RangeSensorSchema
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
+class TestREBPyaliceUSS(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()

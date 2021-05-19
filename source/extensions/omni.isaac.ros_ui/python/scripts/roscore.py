@@ -1,7 +1,6 @@
 import subprocess
 import sys
 import signal
-import os
 import psutil
 
 
@@ -67,7 +66,8 @@ class Roscore(object):
             ros_env["PATH"] = f"{python_path}:{ros_path}/bin:/bin"
             # + ros_env["PATH"]
             # print(ros_env)
-            self.roscore_process = subprocess.Popen(["roscore"], shell=True, cwd=f"{ros_path}", env=ros_env)
+            # running roscore will output logs, rosmaster --core disables rosout
+            self.roscore_process = subprocess.Popen(["rosmaster --core"], shell=True, cwd=f"{ros_path}", env=ros_env)
             self.roscore_pid = self.roscore_process.pid  # pid of the roscore process (which has child processes)
         except OSError as e:
             sys.stderr.write("roscore could not be run")

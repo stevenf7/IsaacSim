@@ -1,7 +1,7 @@
 import omni.kit.commands
 import omni.kit.utils
 import carb
-from pxr import Gf, Sdf
+from pxr import Sdf
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils._isaac_utils import transforms
 import asyncio

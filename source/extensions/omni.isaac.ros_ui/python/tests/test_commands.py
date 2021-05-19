@@ -9,7 +9,7 @@ import gc
 import omni.kit.commands
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRosBridgeCommands(omni.kit.test.AsyncTestCase):
+class TestRosBridgeCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
@@ -26,7 +26,7 @@ class TestRosBridgeCommands(omni.kit.test.AsyncTestCase):
         pass
 
     # Run all commands
-    async def test_command(self):
+    async def test_ros_command(self):
 
         result, prim = omni.kit.commands.execute("ROSBridgeCreateCamera", path="/ROS_Camera")
         result, prim = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock")

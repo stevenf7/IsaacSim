@@ -178,8 +178,9 @@ void OccupancyGridMapComponent::onComponentChange()
     }
 
 
-    printf("Comp: %f %f %f %f %d %f %f %f\n", mCellSize / mStageUnits, mSurfaceOffset / mStageUnits, mDegreesPerRay,
-           mOccupancyThreshold, mMaxRays, mOccupiedValue, mUnoccupiedValue, mUnknownValue);
+    // CARB_LOG_INFO("Occupancy Grid Map Settings: %f %f %f %f %d %f %f %f\n", mCellSize / mStageUnits, mSurfaceOffset /
+    // mStageUnits, mDegreesPerRay,
+    //        mOccupancyThreshold, mMaxRays, mOccupiedValue, mUnoccupiedValue, mUnknownValue);
 
     mGenerator->updateSettings(mCellSize / mStageUnits, mOccupancyThreshold, mSurfaceOffset / mStageUnits,
                                mDegreesPerRay, mMaxRays, mOccupiedValue, mUnoccupiedValue, mUnknownValue);

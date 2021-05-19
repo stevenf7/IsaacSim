@@ -5,8 +5,6 @@ import omni.kit.test
 
 import omni.kit.usd
 import carb.tokens
-import os
-import asyncio
 import numpy as np
 
 from pxr import UsdPhysics, Sdf, UsdGeom, PhysxSchema

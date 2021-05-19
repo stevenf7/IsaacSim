@@ -24,10 +24,8 @@ from pxr import Gf, UsdGeom, UsdPhysics
 from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics, create_background
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-import binascii
 import socket
 import struct
-import sys
 import time
 import threading
 
