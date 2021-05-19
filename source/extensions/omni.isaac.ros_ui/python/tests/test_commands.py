@@ -21,7 +21,6 @@ class TestRosBridgeCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         self._stage = None
         self._timeline = None
-        await omni.usd.get_context().new_stage_async()
         gc.collect()
         pass
 

@@ -42,7 +42,6 @@ class TestRospy(omni.kit.test.AsyncTestCase):
         self._roscore.shutdown()
         self._roscore = None
 
-        await omni.usd.get_context().new_stage_async()
         gc.collect()
         pass
 
