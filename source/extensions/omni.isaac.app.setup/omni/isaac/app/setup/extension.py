@@ -169,7 +169,7 @@ class CreateSetupExtension(omni.ext.IExt):
     def __menu_update(self):
         # Remove some Menu Items
         editor_menu = omni.kit.ui.get_editor_menu()
-        editor_menu.remove_item("Window/New Viewport Window")
+        # editor_menu.remove_item("Window/New Viewport Window")
 
         editor_menu.set_priority("Rendering/Render Settings", -100)
         editor_menu.set_priority("Rendering/Movie Capture", 100)
