@@ -105,6 +105,7 @@ class CreateRangeSensorLidarCommand(omni.kit.commands.Command):
             self._prim.CreateVerticalResolutionAttr().Set(self._vertical_resolution)
             self._prim.CreateHighLodAttr().Set(self._high_lod)
             self._prim.CreateYawOffsetAttr().Set(self._yaw_offset)
+            self._prim.CreateEnableSemanticsAttr().Set(self._enable_semantics)
         else:
             carb.log.error("Could not create lidar prim")
         return self._prim

@@ -3,7 +3,8 @@ import omni.kit.commands
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.range_sensor import _range_sensor
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools
+from omni.syntheticdata.tests.utils import add_semantics
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools, Semantics
 import numpy as np
 import os
 import carb.tokens
@@ -293,6 +294,59 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
                 print("FPS: ", self._viewport.get_viewport_window().get_fps())
         self._timeline.pause()
 
+        self._timeline.play()
+
+    # Tests a static lidar with a cube in front of it and get semantic id for hit points
+    async def test_static_lidar_semantic(self):
+        # Plane
+        PhysicsSchemaTools.addGroundPlane(
+            self._stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
+        )
+
+        # Add a cube
+        cubePath = "/World/Cube"
+        await self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, -100.0, 50.0))
+        cubePrim = self._stage.GetPrimAtPath(cubePath)
+        add_semantics(cubePrim, "cube")
+
+        # Add another cube
+        cubePath = "/World/Cube1"
+        await self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 100.0, 50.0))
+        cubePrim = self._stage.GetPrimAtPath(cubePath)
+        add_semantics(cubePrim, "cube1")
+
+        # Add lidar
+        result, lidar = omni.kit.commands.execute(
+            "CreateRangeSensorLidarCommand",
+            path="/World/Lidar",
+            parent=None,
+            min_range=0.4,
+            max_range=100.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=360.0,
+            vertical_fov=30.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=4.0,
+            rotation_rate=0.0,
+            high_lod=False,
+            yaw_offset=0.0,
+            enable_semantics=True,
+        )
+        lidarPath = str(lidar.GetPath())
+
+        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 25.0))
+
+        # Run for a second
+        self._timeline.play()
+        await simulate(1.0)
+        self._timeline.pause()
+
+        # Get semantic data of hit points, and check that we get two non-zero semantic IDs
+        semantic = self._lidar.get_semantic_data(lidarPath)
+
+        # print(np.unique(semantic))
+        self.assertEqual(len(np.unique(semantic)), 3)
         self._timeline.play()
 
     # test currently not working
