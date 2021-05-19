@@ -38,6 +38,8 @@ dev_build = false
 [settings.app.window]
 title = "Isaac Sim"
 hideUi = false
+_iconSize = 256
+iconPath = "${app}/../exts/omni.isaac.app.setup/data/nvidia-omniverse-isaacsim.ico"
 
 # width = 1700
 # height = 900
@@ -73,6 +75,7 @@ app.asyncRendering = false
 ################################
 app.versionFile = "${app}/../VERSION"
 app.name = "Isaac Sim"
+app.version = "2021.1"
 persistent.app.window.uiStyle = "NvidiaDark"
 
 # Splash Setup
@@ -109,6 +112,28 @@ enabledDeprecated = [
         "omni.kit.builtin.init",
         "omni.kit.builtin.menu",
     ]
+
+[settings.exts."omni.kit.window.modifier.titlebar"]
+titleFormatString = "  Isaac Sim  {version:${app}/../SHORT_VERSION,font_color=0x909090,font_size=16} {separator} {file, board=true}"
+showFileFullPath = true
+icon.file = "${app}/../exts/omni.isaac.app.setup/data/nvidia-omniverse-isaacsim.ico"
+icon.size = 256
+# defaultFont.name = "OpenSans-SemiBold"
+defaultFont.name = "Arial"
+defaultFont.size = 16
+defaultFont.color = 0xD0D0D0
+separator.color = 0x00B976
+separator.width = 1
+windowBorder.color = 0x333333
+windowBorder.width = 3
+
+
+# Register extension folder from this repo in kit
+[settings.app.exts]
+folders.'++' = ["${app}/../exts" ]
+
+[settings.crashreporter.data]
+experience = "Isaac Sim"
 
 # Isaac Sim: disabling this for now
 # [settings.crashreporter.data]
@@ -164,7 +189,7 @@ nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
 "omni.isaac.contact_sensor" = {}
 "omni.isaac.utils_manager" = {}
 
-#"omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
+"omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
 #"omni.isaac.splash" = {}
 
 # Non Isaac Sim Extensions

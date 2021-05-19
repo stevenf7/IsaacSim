@@ -25,6 +25,15 @@ function write_version_file(config)
     local cmd
     if os.target() == "windows" then
         local dir = root.."/_build/windows-x86_64/"..config
+
+        local file = io.open(root.."/VERSION.md", "r")
+        local ver_str = file:read("*a")
+        file:close()
+
+        file = io.open(dir.."/SHORT_VERSION", "w")
+        file:write(ver_str)
+        file:close()
+
         cmd = "repo.bat build_number -o "..dir.."/VERSION"
     else
         local dir = root.."/_build/linux-x86_64/"..config
