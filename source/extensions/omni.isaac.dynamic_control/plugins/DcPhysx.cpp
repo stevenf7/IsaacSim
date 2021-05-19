@@ -407,6 +407,10 @@ bool DcArticulation::refreshCache() const
     pxArticulation->computeJointForce(*pxArticulationCache);
     //    cacheAge = ctx->frameno;
     //}
+    if (pxArticulation->getArticulationFlags() & PxArticulationFlag::eCOMPUTE_JOINT_FORCES)
+    {
+        pxArticulation->copyInternalStateToCache(*pxArticulationCache, PxArticulationCacheFlag::eJOINT_SOLVER_FORCES);
+    }
 
     return true;
 }
@@ -1785,7 +1789,16 @@ DcDofState* CARB_ABI DcGetArticulationDofStates(DcHandle artHandle, DcStateFlags
     {
         return nullptr;
     }
-
+    // if effors are requested, make sure the joint force flag is set of the articulation
+    if (flags & kDcStateEffort)
+    {
+        if (!(art->pxArticulation->getArticulationFlags() & PxArticulationFlag::eCOMPUTE_JOINT_FORCES))
+        {
+            art->pxArticulation->setArticulationFlag(PxArticulationFlag::eCOMPUTE_JOINT_FORCES, true);
+            // Zero cache if this was the first frame we set this flag.
+            ZeroArray(art->pxArticulationCache->jointSolverForces, art->pxArticulation->getDofs());
+        }
+    }
     int numDofs = art->numDofs();
     for (int i = 0; i < numDofs; i++)
     {
@@ -1796,6 +1809,10 @@ DcDofState* CARB_ABI DcGetArticulationDofStates(DcHandle artHandle, DcStateFlags
         if (flags & kDcStateVel)
         {
             art->dofStateCache[i].vel = art->pxArticulationCache->jointVelocity[art->dofs[i]->cacheIdx];
+        }
+        if (flags & kDcStateEffort)
+        {
+            art->dofStateCache[i].effort = art->pxArticulationCache->jointSolverForces[art->dofs[i]->cacheIdx];
         }
     }
 
@@ -1848,6 +1865,7 @@ DcDofState* CARB_ABI DcGetArticulationDofStateDerivatives(DcHandle artHandle, co
         const int LLInd = art->dofs[i]->cacheIdx;
         art->dofStateCache[i].pos = art->pxArticulationCache->jointVelocity[LLInd];
         art->dofStateCache[i].vel = art->pxArticulationCache->jointAcceleration[LLInd];
+        art->dofStateCache[i].effort = 0; // art->pxArticulationCache->jointSolverForces[LLInd];
     }
 
     return art->dofStateCache.data();

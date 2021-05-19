@@ -78,7 +78,8 @@ using DcStateFlags = int;
 constexpr DcStateFlags kDcStateNone = 0; //!< No state selected
 constexpr DcStateFlags kDcStatePos = 1 << 0; //!< Position states
 constexpr DcStateFlags kDcStateVel = 1 << 1; //!< Velocity states
-constexpr DcStateFlags kDcStateAll = (kDcStatePos | kDcStateVel); //!< All states
+constexpr DcStateFlags kDcStateEffort = 1 << 2; //!< Forces/Torques states
+constexpr DcStateFlags kDcStateAll = (kDcStatePos | kDcStateVel | kDcStateEffort); //!< All states
 /** @} */ // end of DcStateFlags group
 
 /// Drive modes for degrees-of-freedom.
@@ -122,6 +123,7 @@ struct DcDofState
 {
     float pos; //!< DOF position, in radians if it's a revolute DOF, or meters, if it's a prismatic DOF
     float vel; //!< DOF velocity, in radians/s if it's a revolute DOF, or m/s, if it's a prismatic DOF
+    float effort; //!< DOF effort, torque if it's a revolute DOF, or force if it's a prismatic DOF
 };
 
 /// Types of joint

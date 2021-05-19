@@ -26,7 +26,7 @@ class TestPickles(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_pickles(self):
-        print("Testing pickles")
+        print("Testing pickling")
 
         print("Float3:")
         f3_src = carb.Float3(2.0, -1.5, 13.37)
@@ -76,13 +76,15 @@ class TestPickles(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(error_vel_angular, 0)
 
         print("DofState:")
-        ds_src = _dynamic_control.DofState(2.0, -1.5)
+        ds_src = _dynamic_control.DofState(2.0, -1.5, 5.5)
         ds_bytes = pickle.dumps(ds_src)
         ds_dst = pickle.loads(ds_bytes)
         error_pos = abs(np.array(ds_src.pos)) - abs(np.array(ds_dst.pos))
         error_vel = abs(np.array(ds_src.vel)) - abs(np.array(ds_dst.vel))
+        error_effort = abs(np.array(ds_src.effort)) - abs(np.array(ds_dst.effort))
         self.assertAlmostEqual(error_pos, 0)
         self.assertAlmostEqual(error_vel, 0)
+        self.assertAlmostEqual(error_effort, 0)
 
         print("DofProperties:")
         dp_src = _dynamic_control.DofProperties()
