@@ -8,6 +8,7 @@ import gc
 import os
 from .utils import update_location, compute_coordinates, generate_image
 import weakref
+import asyncio
 
 
 def create_xyz(init=0, all_axis=["X", "Y", "Z"], callback=None):
@@ -33,6 +34,7 @@ def create_xyz(init=0, all_axis=["X", "Y", "Z"], callback=None):
 class Extension(omni.ext.IExt):
     def on_startup(self):
         EXTENSION_NAME = "Occupancy Map"
+        self._timeline = omni.timeline.get_timeline_interface()
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=True)
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [
@@ -173,13 +175,24 @@ class Extension(omni.ext.IExt):
     def _generate_map(self):
         self.on_update_location()
 
-        self._om.generate(
-            self.cell_size.model.get_value_as_float(),
-            self.deg_per_ray.model.get_value_as_float(),
-            self.min_search_dist.model.get_value_as_float(),
-            self.occupancy_threshold.model.get_value_as_float(),
-            self.max_rays.model.get_value_as_int(),
-        )
+        async def generate_task():
+            do_stop = False
+            if not self._timeline.is_playing():
+                self._timeline.play()
+                do_stop = True
+            await omni.kit.app.get_app().next_update_async()
+            self._om.generate(
+                self.cell_size.model.get_value_as_float(),
+                self.deg_per_ray.model.get_value_as_float(),
+                self.min_search_dist.model.get_value_as_float(),
+                self.occupancy_threshold.model.get_value_as_float(),
+                self.max_rays.model.get_value_as_int(),
+            )
+            await omni.kit.app.get_app().next_update_async()
+            if do_stop:
+                self._timeline.stop()
+
+        asyncio.ensure_future(generate_task())
         self.generate_image_btn.visible = True
         # self.draw_voxel_btn.visible = True
 

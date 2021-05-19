@@ -7,7 +7,7 @@ import carb
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
-        # self._rosbridge = None
+        self._ros2bridge = None
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         if ext_manager.is_extension_enabled("omni.isaac.ros_bridge"):
             carb.log_error("ROS Bridge extension cannot be enabled if ROS Bridge is enabled")
@@ -29,7 +29,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         if self._ros2bridge is not None:
-            _ros2_bridge.release_ros2_bridge_interface(self._ros2_bridge)
+            _ros2_bridge.release_ros2_bridge_interface(self._ros2bridge)
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         if ext_manager.is_extension_enabled("omni.isaac.ros_bridge") is False:
             ext_manager.set_extension_enabled("omni.isaac.ros_ui", False)
