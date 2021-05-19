@@ -1,3 +1,7 @@
+[core]
+reloadable = true
+order = 0
+
 [package]
 # Loads models from: https://shapenet.org/
 version = "1.0.0"
@@ -14,9 +18,10 @@ keywords = ["kit", "shapenet", "data"]
 "omni.kit.menu.utils" = {}
 "omni.kit.pipapi" = {}
 "omni.kit.widget.settings" = {}
+"omni.physx" = {}
 
 [[python.module]]
 name = "omni.isaac.shapenet"
 
 [python.pipapi]
-requirements = ["webbot==0.34", "requests==2.23.0"]
+requirements = ["webbot==0.34", "requests==2.25.1"]

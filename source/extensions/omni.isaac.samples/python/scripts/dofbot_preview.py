@@ -142,7 +142,7 @@ class Extension(omni.ext.IExt):
 
                     omni.ui.Label("Real DofBot IP Address: ")
                     self._ip_address = omni.ui.StringField().model
-                    hostNums = ["192.168.0.174"]
+                    hostNums = ["0.0.0.0"]
                     self._ip_address.set_value(hostNums[0])
 
                     self._load_dofbot_btn.enabled = True
@@ -494,10 +494,10 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         """Cleanup objects on extension shutdown
         """
-        asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         self._timeline.stop()
         self._dc = None
         self._editor_event_subscription = None
+        self._sub_stage_event = None
         self._stop_tasks()
         remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None

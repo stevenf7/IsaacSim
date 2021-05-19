@@ -197,6 +197,7 @@ class Extension(omni.ext.IExt):
         if not self._timeline.is_playing():
             self._reset_btn.text = "Press Play to Enable Controller"
             self._reset_btn.enabled = False
+            return
         if not self._dc.is_simulating():
             return
         if not self._wheel_check:
