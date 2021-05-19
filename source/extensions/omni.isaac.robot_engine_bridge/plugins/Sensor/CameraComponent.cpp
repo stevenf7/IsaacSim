@@ -490,6 +490,7 @@ void CameraComponent::onStart()
 {
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
     mSkipFirstFrame = true;
+    mPrevResolution = pxr::GfVec2i(0, 0);
 
     onComponentChange();
 
@@ -620,8 +621,16 @@ void CameraComponent::updateViewportSettings()
         return;
 
     mViewportWindow->setActiveCamera(mCameraPath.GetString().c_str());
-    if (mResolution[0] != 0 && mResolution[1] != 0)
-        mViewportWindow->setTextureResolution(mResolution[0], mResolution[1]);
+    if (mResolution[0] != 0 && mResolution[1] != 0 && mResolution != mPrevResolution)
+    {
+        if (mDoStart)
+        {
+            mViewportWindow->setTextureResolution(mResolution[0], mResolution[1]);
+            mPrevResolution = mResolution;
+        }
+        else
+            CARB_LOG_WARN("Resolution will change once you stop and start simulation");
+    }
 
     if (mEnableRgb)
     {
