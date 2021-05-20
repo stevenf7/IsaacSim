@@ -28,14 +28,12 @@ ext.'omni.isaac.launcher'.experimental_apps = []
 
 # Some default for the Launcher Flow 
 ext.'omni.isaac.launcher'.default_app = "isaac-sim"
+ext.'omni.isaac.launcher'.auto_launch = false
+ext.'omni.isaac.launcher'.persistent_launcher = false
+ext.'omni.isaac.launcher'.show_console = true
 
-# enable to disable auto-launch for when this App is started from Isaac Sim
-app.auto_launch = false
 # then the app is launcher from Isaac Sim it doesn't have $app token 
-app.folder = ""
-
-# persistent settings that enable constant auto-launch
-persistent.ext.'omni.isaac.launcher'.auto_launch = false
+# app.folder = ""
 
 # controled update rate
 app.runLoops.main.rateLimitEnabled = true

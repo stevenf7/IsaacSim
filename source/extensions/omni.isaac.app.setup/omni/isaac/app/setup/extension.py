@@ -142,7 +142,7 @@ class CreateSetupExtension(omni.ext.IExt):
 
     def _show_launcher(self):
         """ show the omniverse ui documentation as an external Application """
-        self._launch_app("omni.create.launcher.kit", console=False, custom_args={"--/app/auto_launch=false"})
+        self._launch_app("omni.isaac.sim.launcher.kit", console=False, custom_args={"--/app/auto_launch=false"})
 
     async def __dock_windows(self):
         """ setup all the docking properly for create """

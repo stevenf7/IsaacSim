@@ -138,9 +138,11 @@ class LauncherWindow:
             if self._appid_to_title(app_id) == "Isaac-sim":
                 app_title = "Isaac Sim"
             elif self._appid_to_title(app_id) == "Isaac-sim Headless":
-                app_title = "Isaac Sim (Headless)"
+                app_title = "Isaac Sim (Headless Kit Remote)"
             elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
                 app_title = "Isaac Sim (Headless WebRTC)"
+            elif self._appid_to_title(app_id) == "Isaac-sim Headless Websocket":
+                app_title = "Isaac Sim (Headless WebSocket)"
             ui.Label(app_title, name="app_label", height=0, alignment=ui.Alignment.CENTER)
             ui.Spacer(height=20)
 
@@ -158,9 +160,11 @@ class LauncherWindow:
                 if self._appid_to_title(app_id) == "Isaac-sim":
                     app_title = "Isaac Sim"
                 elif self._appid_to_title(app_id) == "Isaac-sim Headless":
-                    app_title = "Isaac Sim (Headless)"
+                    app_title = "Isaac Sim (Headless Kit Remote)"
                 elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
                     app_title = "Isaac Sim (Headless WebRTC)"
+                elif self._appid_to_title(app_id) == "Isaac-sim Headless Websocket":
+                    app_title = "Isaac Sim (Headless WebSocket)"
                 ui.RadioButton(
                     text=app_title,
                     image_width=ui.Pixel(40),
@@ -194,9 +198,11 @@ class LauncherWindow:
                 if self._appid_to_title(app_id) == "Isaac-sim":
                     description = "This runs the main Isaac Sim Application"
                 elif self._appid_to_title(app_id) == "Isaac-sim Headless":
-                    description = "This runs Isaac Sim without a GUI"
+                    description = "This runs Isaac Sim without a GUI with Livestream via Kit Remote"
                 elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
-                    description = "This runs Isaac Sim without a GUI with WebRTC"
+                    description = "This runs Isaac Sim without a GUI with Livestream via WebRTC"
+                elif self._appid_to_title(app_id) == "Isaac-sim Headless Websocket":
+                    description = "This runs Isaac Sim without a GUI with Livestream via WebSocket"
 
                 ui.Label(
                     " ? ",
@@ -291,9 +297,11 @@ class LauncherWindow:
         if self._appid_to_title(app_id) == "Isaac-sim":
             app_title = "Isaac Sim"
         elif self._appid_to_title(app_id) == "Isaac-sim Headless":
-            app_title = "Isaac Sim (Headless)"
+            app_title = "Isaac Sim (Headless Kit Remote)"
         elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
             app_title = "Isaac Sim (Headless WebRTC)"
+        elif self._appid_to_title(app_id) == "Isaac-sim Headless Websocket":
+            app_title = "Isaac Sim (Headless WebSocket)"
         self._detail_label.text = app_title
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()

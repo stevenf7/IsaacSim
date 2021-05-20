@@ -19,7 +19,7 @@ import omni.ext
 import omni.kit.app
 
 from .launcher_window import LauncherWindow
-from .settings import AUTO_LAUNCH_SETTING, DEFAULT_APP_SETTING, PERSISTENT_LAUNCHER_SETTING
+from .settings import AUTO_LAUNCH_SETTING, DEFAULT_APP_SETTING, PERSISTENT_LAUNCHER_SETTING, SHOW_CONSOLE_SETTING
 
 from .launch_app import launch_app
 
@@ -32,20 +32,41 @@ class CreateLauncherExtension(omni.ext.IExt):
         self._launcher_window = None
 
     def on_startup(self, ext_id: str):
-        # if we are in auto_launch mode and the extensions is also setup we start immediatly the default app
-        # this avoid going to the App Window
+        # Initialize settings
+        default_app = self._settings.get(DEFAULT_APP_SETTING)
         user_auto_launch = self._settings.get(AUTO_LAUNCH_SETTING)
-        # first startup
-        if user_auto_launch is None:
-            self._settings.set(AUTO_LAUNCH_SETTING, True)
+        close_on_launch = not self._settings.get(PERSISTENT_LAUNCHER_SETTING)
+        user_show_console = self._settings.get(SHOW_CONSOLE_SETTING)
 
-        # if user_auto_launch is still None ( not set ) then we are auto-starting
-        if self._settings.get("/app/auto_launch") and (user_auto_launch or user_auto_launch is None):
+        if default_app is None:
+            default_app = self._settings.get("/ext/omni.isaac.launcher/default_app")
+            self._settings.set(DEFAULT_APP_SETTING, default_app)
+        if default_app is None:
+            self._settings.set(DEFAULT_APP_SETTING, "isaac-sim")
+
+        if user_auto_launch is None:
+            user_auto_launch = self._settings.get("/ext/omni.isaac.launcher/auto_launch")
+            self._settings.set(AUTO_LAUNCH_SETTING, user_auto_launch)
+        if user_auto_launch is None:
+            self._settings.set(AUTO_LAUNCH_SETTING, False)
+
+        if close_on_launch is None:
+            close_on_launch = not self._settings.get("/ext/omni.isaac.launcher/persistent_launcher")
+            self._settings.set(PERSISTENT_LAUNCHER_SETTING, not close_on_launch)
+        if close_on_launch is None:
+            self._settings.set(PERSISTENT_LAUNCHER_SETTING, False)
+
+        user_show_console = self._settings.get("/ext/omni.isaac.launcher/show_console")
+        self._settings.set(SHOW_CONSOLE_SETTING, user_show_console)
+        if user_show_console is None:
+            self._settings.set(SHOW_CONSOLE_SETTING, True)
+
+        # Auto-starting default app
+        if user_auto_launch:
             default_app = self._settings.get(DEFAULT_APP_SETTING)
             if not default_app:
                 default_app = self._settings.get("/ext/omni.isaac.launcher/default_app")
 
-            close_on_launch = not self._settings.get(PERSISTENT_LAUNCHER_SETTING)
             launch_app(app_id=default_app, app_become_new_default=False, close_on_launch=close_on_launch)
             if close_on_launch:
                 return
