@@ -9,13 +9,13 @@ keywords = ["experience", "app", "usd"]
 [dependencies]
 # We depend on the full omniverse app for simplicity
 "omni.isaac.sim.headless" = {}
-"omni.services.streamclient.webrtc" = {}
+"omni.services.streamclient.websocket" = {}
 
-# [settings.app.livestream]
-# proto = "tcp"
+[settings.app.livestream]
+proto = "ws"
 
 [settings.app.window]
-title = "Isaac Sim Headless WebRTC"
+title = "Isaac Sim Headless Websocket"
 hideUi = false
 
 width = 1700
