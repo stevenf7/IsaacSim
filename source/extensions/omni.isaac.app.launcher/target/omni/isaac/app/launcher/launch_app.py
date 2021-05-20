@@ -37,8 +37,9 @@ def launch_app(app_id: str, app_become_new_default=False, close_on_launch=False)
         if _settings.get(SHOW_CONSOLE_SETTING):
             kwargs["creationflags"] |= subprocess.CREATE_NEW_CONSOLE
     else:
-        kwargs["shell"] = True
-        launch_args = f"gnome-terminal -- ./{launch_args[0]}"
+        if _settings.get(SHOW_CONSOLE_SETTING):
+            kwargs["shell"] = True
+            launch_args = f"gnome-terminal -- {launch_args[0]}"
     subprocess.Popen(launch_args, **kwargs)
 
     if close_on_launch:

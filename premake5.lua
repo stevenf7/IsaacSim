@@ -198,6 +198,7 @@ group "apps"
     define_local_experience("isaac-sim.launcher", "omni.isaac.sim.launcher")
     define_local_experience("isaac-sim.headless", "omni.isaac.sim.headless.native", "--no-window ")
     define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window ")
+    define_local_experience("isaac-sim.headless.websocket", "omni.isaac.sim.headless.websocket", "--no-window ")
 
     -- -- Test runner experience:
     -- args = {
