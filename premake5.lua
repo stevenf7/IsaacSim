@@ -257,6 +257,7 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     {"source/scripts/python.sh",  "_build/%{platform}/%{config}"},
+    {"source/scripts/run_all_tests.sh",  "_build/%{platform}/%{config}"},
     {"source/apps/omni.isaac.sim.python.kit",  "_build/%{platform}/%{config}/apps"},
 }
 
