@@ -32,7 +32,7 @@ namespace isaac
 namespace ros2_bridge
 {
 using namespace omni::isaac::dynamic_control;
-
+using omni::isaac::utils::conversions::asPxTransform;
 
 RosPoseTree::RosPoseTree(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
@@ -69,23 +69,23 @@ void RosPoseTree::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetPoseTreePubTopicAttr(), mPoseTreePubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
 
+    pxr::SdfPathVector parent;
+    typedPrim.GetParentPrimRel().GetTargets(&parent);
+    if (parent.size() == 0)
+    {
+        mParentPath = pxr::SdfPath();
+        mParentPrim = pxr::UsdPrim();
+    }
+    else
+    {
+        mParentPath = parent[0];
+        mParentPrim = mStage->GetPrimAtPath(mParentPath);
+    }
 
-    pxr::SdfPathVector targets;
-    typedPrim.GetTargetPrimsRel().GetTargets(&targets);
-    if (targets.size() == 0)
+    typedPrim.GetTargetPrimsRel().GetTargets(&mTargets);
+    if (mTargets.size() == 0)
     {
         return;
-    }
-    for (pxr::SdfPath eachRigidBodyPath : targets)
-    {
-        pxr::UsdPrim rigidBodyPrim = mStage->GetPrimAtPath(eachRigidBodyPath);
-        const std::string actorName = eachRigidBodyPath.GetString();
-        if (rigidBodyPrim)
-        {
-            if (mObjects.find(actorName) != mObjects.end())
-                eraseObject(actorName);
-            addObject(actorName, rigidBodyPrim);
-        }
     }
 
 
@@ -97,24 +97,6 @@ void RosPoseTree::onComponentChange()
     mStageUnits = UsdGeomGetStageMetersPerUnit(mStage);
 }
 
-void RosPoseTree::addObject(const std::string& actorName, pxr::UsdPrim& prim)
-{
-    mObjects[actorName] = std::pair<size_t, pxr::UsdPrim>(mObjects.size(), prim);
-}
-void RosPoseTree::eraseObject(const std::string& actorName)
-{
-    const size_t removed_index = mObjects[actorName].first;
-    mObjects.erase(actorName);
-
-    for (auto& object : mObjects)
-    {
-        // Once the index is removed, all items "higher" should be decremented by one
-        if (object.second.first > removed_index)
-        {
-            object.second.first -= 1;
-        }
-    }
-}
 void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
 {
     if (!mEnabled)
@@ -132,24 +114,52 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
     {
         msg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
     }
-    int bodyIndex = 0;
-    for (auto& object : mObjects)
+
+    // Get the parent body pose
+    physx::PxTransform parent_pose = physx::PxTransform();
+    std::string parent_frame = "world";
+
+    if (mParentPrim)
     {
-        // For each rigid body
-        bodyIndex = object.second.first;
-        pxr::UsdPrim prim = object.second.second;
+        parent_frame = mParentPrim.GetName().GetString();
+
+        DcObjectType type = mDynamicControlPtr->peekObjectType(mParentPrim.GetPath().GetString().c_str());
+
+        if (type == eDcObjectRigidBody)
+        {
+            DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(mParentPrim.GetPath().GetString().c_str());
+            parent_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle));
+        }
+        else if (type == eDcObjectNone)
+        {
+            parent_pose = asPxTransform(omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim));
+        }
+    }
+
+
+    for (pxr::SdfPath object : mTargets)
+    {
+        pxr::UsdPrim prim = mStage->GetPrimAtPath(object);
         // Set actor name
-        std::string actorName = object.first;
         DcObjectType type = mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
 
-        if (type == omni::isaac::dynamic_control::eDcObjectArticulation)
+        if (type == eDcObjectArticulation)
         {
             DcHandle artculationHandle = mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
             DcHandle rootBody = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
-            DcTransform trans = mDynamicControlPtr->getRigidBodyPose(rootBody);
-            msg.header.frame_id = "world";
+            physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rootBody));
+            msg.header.frame_id = parent_frame;
             msg.child_frame_id = mDynamicControlPtr->getRigidBodyName(rootBody);
-            msg.transform = asRosTransform(trans, mStageUnits);
+
+            physx::PxTransform trans(parent_pose.transformInv(body1_pose));
+            if (mParentPrim)
+            {
+                msg.transform = asRosTransform(trans, mStageUnits);
+            }
+            else
+            {
+                msg.transform = asRosTransform(body1_pose, mStageUnits);
+            }
 
             tf_msg.transforms.push_back(msg);
             int num_dofs = mDynamicControlPtr->getArticulationBodyCount(artculationHandle);
@@ -162,10 +172,8 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
                     DcHandle joint = mDynamicControlPtr->getRigidBodyChildJoint(parent_body, k);
                     DcHandle child_body = mDynamicControlPtr->getJointChildBody(joint);
 
-                    physx::PxTransform body0_pose =
-                        omni::isaac::utils::conversions::asPxTransform(mDynamicControlPtr->getRigidBodyPose(parent_body));
-                    physx::PxTransform body1_pose =
-                        omni::isaac::utils::conversions::asPxTransform(mDynamicControlPtr->getRigidBodyPose(child_body));
+                    physx::PxTransform body0_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(parent_body));
+                    physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(child_body));
                     physx::PxTransform pos0_1(body0_pose.transformInv(body1_pose));
 
                     msg.header.frame_id = mDynamicControlPtr->getRigidBodyName(parent_body);
@@ -175,21 +183,39 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
                 }
             }
         }
-        else if (type == omni::isaac::dynamic_control::eDcObjectRigidBody)
+        else if (type == eDcObjectRigidBody)
         {
             DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
-            DcTransform trans = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
-            msg.header.frame_id = "world";
+            physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle));
+            physx::PxTransform trans(parent_pose.transformInv(body1_pose));
+            msg.header.frame_id = parent_frame;
             msg.child_frame_id = prim.GetName().GetString();
-            msg.transform = asRosTransform(trans, mStageUnits);
+            if (mParentPrim)
+            {
+                msg.transform = asRosTransform(trans, mStageUnits);
+            }
+            else
+            {
+                msg.transform = asRosTransform(body1_pose, mStageUnits);
+            }
+
             tf_msg.transforms.push_back(msg);
         }
-        else if (type == omni::isaac::dynamic_control::eDcObjectNone)
+        else if (type == eDcObjectNone)
         {
-            const pxr::GfTransform body_0_world(omni::usd::UsdUtils::getWorldTransformMatrix(prim));
-            msg.header.frame_id = "world";
+            physx::PxTransform body1_pose = asPxTransform(omni::usd::UsdUtils::getWorldTransformMatrix(prim));
+            physx::PxTransform trans(parent_pose.transformInv(body1_pose));
+            msg.header.frame_id = parent_frame;
             msg.child_frame_id = prim.GetName().GetString();
-            msg.transform = asRosTransform(body_0_world, mStageUnits);
+            if (mParentPrim)
+            {
+                msg.transform = asRosTransform(trans, mStageUnits);
+            }
+            else
+            {
+                msg.transform = asRosTransform(body1_pose, mStageUnits);
+            }
+
             tf_msg.transforms.push_back(msg);
         }
     }

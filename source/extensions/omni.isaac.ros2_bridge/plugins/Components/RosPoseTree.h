@@ -40,14 +40,14 @@ public:
     void pubCallback(rclcpp::PublisherBase* pub);
 
 private:
-    void addObject(const std::string& actorName, pxr::UsdPrim& prim);
-    void eraseObject(const std::string& actorName);
-
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     double mStageUnits = 1;
     std::unordered_map<std::string, std::pair<size_t, pxr::UsdPrim>> mObjects;
     int mQueueSize = 0;
     std::string mPoseTreePubTopic = "/tf";
+    pxr::SdfPath mParentPath;
+    pxr::UsdPrim mParentPrim;
+    pxr::SdfPathVector mTargets;
 };
 }
 }
