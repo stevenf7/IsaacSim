@@ -481,7 +481,7 @@ class Extension(omni.ext.IExt):
             self._timeline.set_current_time(self._counter / self._saved_timecodes_per_second)
 
         dt = e.payload["dt"]
-        if self._accumulated_time < self._capture_period.model.get_value_as_float():
+        if self._accumulated_time + dt < self._capture_period.model.get_value_as_float():
             self._accumulated_time += dt
             return
 
