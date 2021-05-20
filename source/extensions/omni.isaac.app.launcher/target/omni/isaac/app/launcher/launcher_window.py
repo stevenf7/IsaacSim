@@ -1,4 +1,5 @@
 import sys
+import os
 
 import carb.settings
 import carb.tokens
@@ -133,6 +134,13 @@ class LauncherWindow:
                     radio_collection=self._radio_collection,
                 )
             app_title = self._appid_to_title(app_id)
+            # Override the app title
+            if self._appid_to_title(app_id) == "Isaac-sim":
+                app_title = "Isaac Sim"
+            elif self._appid_to_title(app_id) == "Isaac-sim Headless":
+                app_title = "Isaac Sim (Headless)"
+            elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
+                app_title = "Isaac Sim (Headless WebRTC)"
             ui.Label(app_title, name="app_label", height=0, alignment=ui.Alignment.CENTER)
             ui.Spacer(height=20)
 
@@ -146,6 +154,13 @@ class LauncherWindow:
                     bg_color = "active_bg"
                 ui.Rectangle(name=bg_color)
                 app_title = self._appid_to_title(app_id)
+                # Override the app title
+                if self._appid_to_title(app_id) == "Isaac-sim":
+                    app_title = "Isaac Sim"
+                elif self._appid_to_title(app_id) == "Isaac-sim Headless":
+                    app_title = "Isaac Sim (Headless)"
+                elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
+                    app_title = "Isaac Sim (Headless WebRTC)"
                 ui.RadioButton(
                     text=app_title,
                     image_width=ui.Pixel(40),
@@ -175,6 +190,13 @@ class LauncherWindow:
                 #     description = ext_dict["package"]["description"]
                 #     if "details_description" in ext_dict["package"]:
                 #         description = ext_dict["package"]["details_description"]
+                # Override the tooltip description
+                if self._appid_to_title(app_id) == "Isaac-sim":
+                    description = "This runs the main Isaac Sim Application"
+                elif self._appid_to_title(app_id) == "Isaac-sim Headless":
+                    description = "This runs Isaac Sim without a GUI"
+                elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
+                    description = "This runs Isaac Sim without a GUI with WebRTC"
 
                 ui.Label(
                     " ? ",
@@ -239,6 +261,20 @@ class LauncherWindow:
                 for an_app in self._experimental_apps:
                     self._build_compact_app_widget(an_app)
 
+                with ui.HStack(height=0):
+
+                    # @TODO: Add fn to open in file browser
+                    def on_console_value_changed(model):
+                        value = model.get_value_as_bool()
+                        # self._settings.set(SHOW_CONSOLE_SETTING, value)
+
+                    ui.Button(
+                        "Open in File Browser",
+                        # clicked_fn=lambda: self._exit(),
+                        width=ui.Percent(30),
+                        style={"background_color": 0xFFBBBBBB, "color": 0xFF444444},
+                    )
+
             default_index = 0
             if self._default_app:
                 try:
@@ -251,6 +287,13 @@ class LauncherWindow:
 
     def _show_details(self, app_id):
         app_title = self._appid_to_title(app_id)
+        # Override the app title
+        if self._appid_to_title(app_id) == "Isaac-sim":
+            app_title = "Isaac Sim"
+        elif self._appid_to_title(app_id) == "Isaac-sim Headless":
+            app_title = "Isaac Sim (Headless)"
+        elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
+            app_title = "Isaac Sim (Headless WebRTC)"
         self._detail_label.text = app_title
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
