@@ -254,6 +254,7 @@ group "exts"
 repo_build.prebuild_link {
     { "source/python_samples", "_build/%{platform}/%{config}/python_samples" },
     { "source/ros_samples", "_build/%{platform}/%{config}/ros_samples" },
+    { "source/ros2_samples", "_build/%{platform}/%{config}/ros2_samples" },
 }
 
 repo_build.prebuild_copy {
