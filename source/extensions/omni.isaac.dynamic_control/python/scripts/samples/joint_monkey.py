@@ -18,7 +18,7 @@ ANIM_SEEK_UPPER = 2
 ANIM_SEEK_DEFAULT = 3
 ANIM_FINISHED = 4
 
-EXTENSION_NAME = "Joint Monkey"
+EXTENSION_NAME = "Joint Controller"
 
 
 def get_data_file(file_name: str):
