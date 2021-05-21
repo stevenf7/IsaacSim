@@ -92,6 +92,7 @@ void DRComponentTransform::onComponentChange()
     movPrim.GetScaleMaxAttr().Get(&mScaleMax);
     movPrim.GetEnableLookAtTargetAttr().Get(&mEnableLookAtTarget);
     movPrim.GetLookAtTargetOffsetAttr().Get(&mLookAtTargetOffset);
+    movPrim.GetExcludedTargetOffsetAttr().Get(&mExcludedTargetOffset);
     movPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
     movPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
     movPrim.GetSeedAttr().Get(&mSeed);
@@ -103,15 +104,20 @@ void DRComponentTransform::onComponentChange()
 
     mPaths.clear();
     mLookAtTargetPaths.clear();
+    mExcludedTargetPaths.clear();
     pxr::UsdRelationship primPaths = movPrim.GetPrimPathsRel();
     pxr::UsdRelationship lookAtTargetPrimPaths = movPrim.GetLookAtTargetPathsRel();
-    pxr::SdfPathVector targets, lookAtTargets;
+    pxr::UsdRelationship excludedTargetPrimPaths = movPrim.GetExcludedTargetPathsRel();
+    pxr::SdfPathVector targets, lookAtTargets, excludedTargets;
     primPaths.GetTargets(&targets);
     lookAtTargetPrimPaths.GetTargets(&lookAtTargets);
+    excludedTargetPrimPaths.GetTargets(&excludedTargets);
     for (auto target : targets)
         mPaths.push_back(target.GetString());
     for (auto target : lookAtTargets)
         mLookAtTargetPaths.push_back(target.GetString());
+    for (auto target : excludedTargets)
+        mExcludedTargetPaths.push_back(target.GetString());
 
     mPointInstancersTranslate.clear();
     mPointInstancersOrient.clear();
@@ -211,6 +217,26 @@ pxr::GfVec3f DRComponentTransform::randomPointPolygon(std::vector<pxr::GfVec3f>&
     // CARB_LOG_WARN("Area: %lf, Index: %d", randomArea, randomIndex);
     return randomPointTriangle(allTriangles[randomIndex]);
 }
+
+bool DRComponentTransform::checkOverlap(pxr::GfRange3d inputRange)
+{
+    pxr::TfTokenVector includedPurposes;
+    includedPurposes.push_back(pxr::TfToken("default"));
+    auto mBboxCache = pxr::UsdGeomBBoxCache(pxr::UsdTimeCode::Default(), includedPurposes);
+    mBboxCache.Clear();
+    if (mExcludedTargetPaths.size() > 0)
+    {
+        for (std::string excludedTargetPath : mExcludedTargetPaths)
+        {
+            pxr::UsdPrim excludedPrim = mStage->GetPrimAtPath(pxr::SdfPath(excludedTargetPath.c_str()));
+            auto bound = mBboxCache.ComputeWorldBound(excludedPrim).ComputeAlignedRange();
+            if (!inputRange.IsOutside(bound))
+                return true;
+        }
+    }
+    return false;
+}
+
 void DRComponentTransform::tick()
 {
     for (auto& prim : mAllPrims)
@@ -218,19 +244,30 @@ void DRComponentTransform::tick()
         if (prim)
         {
             int randIndex = -1;
-            // Set random translation
-            float x = randomRangeFloat(mTranslateMin[0], mTranslateMax[0]);
-            float y = randomRangeFloat(mTranslateMin[1], mTranslateMax[1]);
-            float z = randomRangeFloat(mTranslateMin[2], mTranslateMax[2]);
-            // Per attribution distribution
-            if (mAllAttributeParamsMap.find("translate") != mAllAttributeParamsMap.end())
+            float x = 0.0f, y = 0.0f, z = 0.0f;
+            int overlapCheckCount = 0;
+            // Test for overlap with targets in excluded list
+            do
             {
-                std::map<std::string, float> distributionParams;
-                getDistributionParams(mAllAttributeParamsMap["translate"], distributionParams);
-                x = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
-                y = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
-                z = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
-            }
+                // Set random translation
+                x = randomRangeFloat(mTranslateMin[0], mTranslateMax[0]);
+                y = randomRangeFloat(mTranslateMin[1], mTranslateMax[1]);
+                z = randomRangeFloat(mTranslateMin[2], mTranslateMax[2]);
+                // Per attribution distribution
+                if (mAllAttributeParamsMap.find("translate") != mAllAttributeParamsMap.end())
+                {
+                    std::map<std::string, float> distributionParams;
+                    getDistributionParams(mAllAttributeParamsMap["translate"], distributionParams);
+                    x = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
+                    y = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
+                    z = randomFloat(mAllAttributeParamsMap["translate"]["distribution"], distributionParams);
+                }
+                overlapCheckCount++;
+                if (overlapCheckCount == 100 || mExcludedTargetPaths.size() == 0)
+                    break;
+            } while (checkOverlap(pxr::GfRange3d(
+                pxr::GfVec3d(x, y, z) - mExcludedTargetOffset, pxr::GfVec3d(x, y, z) + mExcludedTargetOffset)));
+
             if (mTargetPoints.size() > 0)
             {
                 randIndex = randomRangeInt(0, static_cast<int>(mTargetPoints.size()) - 1);
