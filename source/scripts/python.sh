@@ -18,4 +18,10 @@ source ${SCRIPT_DIR}/setup_python_env.sh
 # By default use our python, but allow overriding it by checking if PYTHONEXE env var is defined:
 python_exe=${PYTHONEXE:-"${SCRIPT_DIR}/kit/python/bin/python3"}
 
+
+if ! [[ -z "${CONDA_PREFIX}" ]]; then
+  echo "Warning: running in conda env, please deactivate before executing this script"
+  echo "If conda is desired please source python_samples/setenv.sh in your python 3.7 conda env and run python normally"
+fi
+
 $python_exe $@ || error_exit
