@@ -1,5 +1,7 @@
 import sys
 import os
+import subprocess
+import textwrap
 
 import carb.settings
 import carb.tokens
@@ -165,6 +167,25 @@ class LauncherWindow:
                     app_title = "Isaac Sim (Headless WebRTC)"
                 elif self._appid_to_title(app_id) == "Isaac-sim Headless Websocket":
                     app_title = "Isaac Sim (Headless WebSocket)"
+
+                ext_manager = omni.kit.app.get_app().get_extension_manager()
+                ext_dict = ext_manager.get_extension_dict(f"{app_id}-2021.1.0")
+
+                description = "Descriptions To Come"
+                # if ext_dict:
+                #     description = ext_dict["package"]["description"]
+                #     if "details_description" in ext_dict["package"]:
+                #         description = ext_dict["package"]["details_description"]
+                # Override the tooltip description
+                if self._appid_to_title(app_id) == "Isaac-sim":
+                    description = "This runs the main Isaac Sim Application"
+                elif self._appid_to_title(app_id) == "Isaac-sim Headless":
+                    description = "This runs Isaac Sim without a GUI with Livestream via Kit Remote"
+                elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
+                    description = "This runs Isaac Sim without a GUI with Livestream via WebRTC"
+                elif self._appid_to_title(app_id) == "Isaac-sim Headless Websocket":
+                    description = "This runs Isaac Sim without a GUI with Livestream via WebSocket"
+
                 ui.RadioButton(
                     text=app_title,
                     image_width=ui.Pixel(40),
@@ -182,34 +203,7 @@ class LauncherWindow:
                     # clicked_fn=lambda app=app_id: self._show_details(app),
                     mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._launch_app(app),
                     radio_collection=self._radio_collection,
-                )
-            with ui.ZStack(style={"ZStack": {"margin": 14}}, width=40):
-                ui.Rectangle(style={"background_color": BLUE, "border_radius": 3})
-
-                ext_manager = omni.kit.app.get_app().get_extension_manager()
-                ext_dict = ext_manager.get_extension_dict(f"{app_id}-2021.1.0")
-
-                description = "Desciptions To Come"
-                # if ext_dict:
-                #     description = ext_dict["package"]["description"]
-                #     if "details_description" in ext_dict["package"]:
-                #         description = ext_dict["package"]["details_description"]
-                # Override the tooltip description
-                if self._appid_to_title(app_id) == "Isaac-sim":
-                    description = "This runs the main Isaac Sim Application"
-                elif self._appid_to_title(app_id) == "Isaac-sim Headless":
-                    description = "This runs Isaac Sim without a GUI with Livestream via Kit Remote"
-                elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
-                    description = "This runs Isaac Sim without a GUI with Livestream via WebRTC"
-                elif self._appid_to_title(app_id) == "Isaac-sim Headless Websocket":
-                    description = "This runs Isaac Sim without a GUI with Livestream via WebSocket"
-
-                ui.Label(
-                    " ? ",
-                    style={"color": BLACK, "font_size": 20},
-                    height=0,
-                    alignment=ui.Alignment.CENTER,
-                    tooltip=description,
+                    tooltip=textwrap.fill(description, 40),
                 )
 
     def _build_app_list(self):
@@ -268,17 +262,45 @@ class LauncherWindow:
                     self._build_compact_app_widget(an_app)
 
                 with ui.HStack(height=0):
-
-                    # @TODO: Add fn to open in file browser
-                    def on_console_value_changed(model):
-                        value = model.get_value_as_bool()
-                        # self._settings.set(SHOW_CONSOLE_SETTING, value)
-
+                    app_folder = self._settings.get_as_string("/app/folder")
+                    if app_folder == "":
+                        app_folder = carb.tokens.get_tokens_interface().resolve("${app}/../")
+                    package_path = os.path.abspath(app_folder)
+                    ui.Label("Package Path:", width=0)
+                    ui.Spacer(width=5)
+                    ui.StringField(tooltip=textwrap.fill(package_path, 60), read_only=True).model.set_value(
+                        package_path
+                    )
+                    ui.Button(
+                        width=25,
+                        height=25,
+                        style={
+                            "color": 0xFF000000,
+                            "Button": {"background_color": GRAY},
+                            "Button:hovered": {"background_color": LIGHT_GRAY},
+                        },
+                        image_url=f"{ICON_PATH}/copy.svg",
+                        clicked_fn=lambda: self._copy_to_clipboard(to_copy=package_path),
+                        tooltip="Copy path to clipboard",
+                    )
+                with ui.HStack(height=0):
                     ui.Button(
                         "Open in File Browser",
-                        # clicked_fn=lambda: self._exit(),
+                        clicked_fn=lambda: self._open_file_browser(),
                         width=ui.Percent(30),
-                        style={"background_color": 0xFFBBBBBB, "color": 0xFF444444},
+                        style={
+                            "Button": {"background_color": GRAY},
+                            "Button:hovered": {"background_color": LIGHT_GRAY},
+                        },
+                    )
+                    ui.Button(
+                        "Open in Terminal",
+                        clicked_fn=lambda: self._open_terminal(),
+                        width=ui.Percent(30),
+                        style={
+                            "Button": {"background_color": GRAY},
+                            "Button:hovered": {"background_color": LIGHT_GRAY},
+                        },
                     )
 
             default_index = 0
@@ -424,7 +446,11 @@ class LauncherWindow:
                 ui.Button(
                     "CLOSE",
                     clicked_fn=lambda: self._exit(),
-                    style={"background_color": 0xFFBBBBBB, "color": 0xFF444444},
+                    style={
+                        "color": 0xFF444444,
+                        "Button": {"background_color": 0xFFBBBBBB},
+                        "Button:hovered": {"background_color": LIGHT_GRAY},
+                    },
                 )
 
     def _build_nvidia_status_bar(self):
@@ -466,3 +492,38 @@ class LauncherWindow:
                     self._build_detail_panel()
 
                 self._build_nvidia_status_bar()
+
+    def _open_file_browser(self):
+        app_folder = self._settings.get_as_string("/app/folder")
+        if app_folder == "":
+            app_folder = carb.tokens.get_tokens_interface().resolve("${app}/../")
+
+        if sys.platform == "win32":
+            # subprocess.Popen(['start', os.path.abspath(app_folder)], shell= True)
+            print("windows not supported")
+        else:
+            try:
+                subprocess.Popen(["xdg-open", os.path.abspath(app_folder)])
+            except OSError:
+                print("could not open file browser")
+
+    def _open_terminal(self):
+        app_folder = self._settings.get_as_string("/app/folder")
+        if app_folder == "":
+            app_folder = carb.tokens.get_tokens_interface().resolve("${app}/../")
+
+        if sys.platform == "win32":
+            print("windows not supported")
+        else:
+            try:
+                subprocess.Popen(["gnome-terminal", os.path.abspath(app_folder)])
+            except OSError:
+                print("could not open file browser")
+
+    def _copy_to_clipboard(self, to_copy):
+        try:
+            import pyperclip
+
+            pyperclip.copy(to_copy)
+        except ImportError:
+            carb.log_warn("Could not import pyperclip.")
