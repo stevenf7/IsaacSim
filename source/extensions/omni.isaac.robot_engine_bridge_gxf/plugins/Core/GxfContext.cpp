@@ -379,11 +379,11 @@ void GxfContext::onComponentAdd(const pxr::UsdPrim& prim)
         component = std::make_unique<CommandComponent>();
         component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineCommand(prim), mStage);
     }
-    // else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineVehicle>())
-    // {
-    //     component = std::make_unique<VehicleSimulator>();
-    //     component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineVehicle(prim), mStage);
-    // }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineVehicle>())
+    {
+        component = std::make_unique<VehicleSimulator>();
+        component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineVehicle(prim), mStage);
+    }
     if (component)
     {
         CARB_LOG_INFO("Create: Prim %s with type: %s", prim.GetPath().GetString().c_str(),
