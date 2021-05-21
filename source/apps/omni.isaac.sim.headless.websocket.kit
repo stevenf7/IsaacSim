@@ -1,15 +1,19 @@
 [package]
-title = "Isaac Sim Headless WebRTC"
-description = "An Authoring application for USD and Omniverse Content"
+title = "Isaac Sim (Headless WebSocket)"
+description = "Headless Isaac Sim with Livestream using WebSocket"
 version = "2021.1.0"
+execFile = "isaac-sim.headless.websocket"
 
 # That makes it browsable in UI with "experience" filter
 keywords = ["experience", "app", "usd"]
 
 [dependencies]
-# We depend on the full omniverse app for simplicity
-"omni.isaac.sim.headless" = {}
+"omni.isaac.sim.headless.base" = {}
 "omni.services.streamclient.websocket" = {}
+
+[settings]
+app.name = "Isaac Sim"
+app.version = "2021.1.0"
 
 [settings.app.livestream]
 proto = "ws"

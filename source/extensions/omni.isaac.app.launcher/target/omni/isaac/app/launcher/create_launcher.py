@@ -90,13 +90,13 @@ class CreateLauncherExtension(omni.ext.IExt):
         if not app_version:
             app_launch_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
             app_version = open(f"{app_launch_folder}/VERSION").read()
+            if app_version:
+                app_version, _ = app_version.split("+")
+                app_version, _ = app_version.split("-")
 
-        if app_version:
-            app_version, _ = app_version.split("+")
-            app_version, _ = app_version.split("-")
-            window_title.set_app_version(app_version)
+        window_title.set_app_version(app_version)
 
-        self._launcher_window = LauncherWindow(extension_path)
+        self._launcher_window = LauncherWindow(extension_path, app_version)
         self.__build_task = asyncio.ensure_future(self.__build_layout())
 
     async def __build_layout(self):

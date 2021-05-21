@@ -9,7 +9,7 @@ import carb.tokens
 import omni.kit.app
 
 
-def launch_app(app_id: str, app_become_new_default=False, close_on_launch=False):
+def launch_app(app_id: str, app_version: str, app_become_new_default=False, close_on_launch=False):
     """ show the omniverse ui documentation as an external Application """
     _settings = carb.settings.get_settings()
 
@@ -28,8 +28,14 @@ def launch_app(app_id: str, app_become_new_default=False, close_on_launch=False)
     if not sys.platform == "win32":
         script_extension = "sh"
 
+    app_execFile = app_id
+    ext_manager = omni.kit.app.get_app().get_extension_manager()
+    ext_dict = ext_manager.get_extension_dict(f"{app_id}-{app_version}")
+    if ext_dict:
+        app_execFile = ext_dict["package"]["execFile"]
+
     app_launch_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
-    launch_args = [f"{app_launch_folder}/{app_id}.{script_extension}"]
+    launch_args = [f"{app_launch_folder}/{app_execFile}.{script_extension}"]
 
     kwargs: Dict[str, Any] = {"close_fds": False}
     if platform.system().lower() == "windows":

@@ -44,12 +44,13 @@ launcher_style = {
 
 
 class LauncherWindow:
-    def __init__(self, ext_path: str) -> None:
+    def __init__(self, ext_path: str, app_version: str) -> None:
         """ create the window """
 
         self._settings = carb.settings.get_settings()
         self._radio_collection = None
         self._ext_path = ext_path
+        self._app_version = app_version
 
         self._auto_launch = None
         self._app_as_default = None
@@ -73,10 +74,11 @@ class LauncherWindow:
         all_apps.extend(self._settings.get(EXPERIMENTAL_APPS_SETTING))
         return all_apps
 
-    def _launch_app(self, app_id: str):
+    def _launch_app(self, app_id: str, app_version: str):
         """ wrapper function to help collecting the right settings to be used in the class """
         launch_app(
             app_id=app_id,
+            app_version=app_version,
             app_become_new_default=self._app_as_default.get_value_as_bool(),
             close_on_launch=not self._persistent_launcher.get_value_as_bool(),
         )
@@ -89,7 +91,7 @@ class LauncherWindow:
 
     def _launch_selected_app(self):
         app_id = self._get_selected_app_id()
-        self._launch_app(app_id=app_id)
+        self._launch_app(app_id=app_id, app_version=self._app_version)
         if self._persistent_launcher.get_value_as_bool():
             # update the default app display if needed
             self._default_app = self._settings.get(DEFAULT_APP_SETTING)
@@ -110,7 +112,25 @@ class LauncherWindow:
         if app_id in self._experimental_apps:
             app_title = f"{app_title} [Experimental]"
 
+        # Override the app title
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_dict = ext_manager.get_extension_dict(f"{app_id}-{self._app_version}")
+        if ext_dict:
+            app_title = ext_dict["package"]["title"]
+
         return app_title
+
+    def _appid_to_description(self, app_id: str):
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_dict = ext_manager.get_extension_dict(f"{app_id}-{self._app_version}")
+
+        description = ""
+        if ext_dict:
+            description = ext_dict["package"]["description"]
+            if "details_description" in ext_dict["package"]:
+                description = ext_dict["package"]["details_description"]
+
+        return description
 
     def _exit(self):
         omni.kit.app.get_app().post_quit()
@@ -132,19 +152,10 @@ class LauncherWindow:
                     height=175,
                     width=175,
                     clicked_fn=lambda app=app_id: self._show_details(app),
-                    mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._launch_app(app),
+                    mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._launch_app(app, self._app_version),
                     radio_collection=self._radio_collection,
                 )
             app_title = self._appid_to_title(app_id)
-            # Override the app title
-            if self._appid_to_title(app_id) == "Isaac-sim":
-                app_title = "Isaac Sim"
-            elif self._appid_to_title(app_id) == "Isaac-sim Headless":
-                app_title = "Isaac Sim (Headless Kit Remote)"
-            elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
-                app_title = "Isaac Sim (Headless WebRTC)"
-            elif self._appid_to_title(app_id) == "Isaac-sim Headless Websocket":
-                app_title = "Isaac Sim (Headless WebSocket)"
             ui.Label(app_title, name="app_label", height=0, alignment=ui.Alignment.CENTER)
             ui.Spacer(height=20)
 
@@ -158,33 +169,7 @@ class LauncherWindow:
                     bg_color = "active_bg"
                 ui.Rectangle(name=bg_color)
                 app_title = self._appid_to_title(app_id)
-                # Override the app title
-                if self._appid_to_title(app_id) == "Isaac-sim":
-                    app_title = "Isaac Sim"
-                elif self._appid_to_title(app_id) == "Isaac-sim Headless":
-                    app_title = "Isaac Sim (Headless Kit Remote)"
-                elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
-                    app_title = "Isaac Sim (Headless WebRTC)"
-                elif self._appid_to_title(app_id) == "Isaac-sim Headless Websocket":
-                    app_title = "Isaac Sim (Headless WebSocket)"
-
-                ext_manager = omni.kit.app.get_app().get_extension_manager()
-                ext_dict = ext_manager.get_extension_dict(f"{app_id}-2021.1.0")
-
-                description = "Descriptions To Come"
-                # if ext_dict:
-                #     description = ext_dict["package"]["description"]
-                #     if "details_description" in ext_dict["package"]:
-                #         description = ext_dict["package"]["details_description"]
-                # Override the tooltip description
-                if self._appid_to_title(app_id) == "Isaac-sim":
-                    description = "This runs the main Isaac Sim Application"
-                elif self._appid_to_title(app_id) == "Isaac-sim Headless":
-                    description = "This runs Isaac Sim without a GUI with Livestream via Kit Remote"
-                elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
-                    description = "This runs Isaac Sim without a GUI with Livestream via WebRTC"
-                elif self._appid_to_title(app_id) == "Isaac-sim Headless Websocket":
-                    description = "This runs Isaac Sim without a GUI with Livestream via WebSocket"
+                description = self._appid_to_description(app_id)
 
                 ui.RadioButton(
                     text=app_title,
@@ -201,7 +186,7 @@ class LauncherWindow:
                     image_url=f"{ICON_PATH}/{app_id}.png",
                     name="app",
                     # clicked_fn=lambda app=app_id: self._show_details(app),
-                    mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._launch_app(app),
+                    mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._launch_app(app, self._app_version),
                     radio_collection=self._radio_collection,
                     tooltip=textwrap.fill(description, 40),
                 )
@@ -315,23 +300,12 @@ class LauncherWindow:
 
     def _show_details(self, app_id):
         app_title = self._appid_to_title(app_id)
-        # Override the app title
-        if self._appid_to_title(app_id) == "Isaac-sim":
-            app_title = "Isaac Sim"
-        elif self._appid_to_title(app_id) == "Isaac-sim Headless":
-            app_title = "Isaac Sim (Headless Kit Remote)"
-        elif self._appid_to_title(app_id) == "Isaac-sim Headless Webrtc":
-            app_title = "Isaac Sim (Headless WebRTC)"
-        elif self._appid_to_title(app_id) == "Isaac-sim Headless Websocket":
-            app_title = "Isaac Sim (Headless WebSocket)"
         self._detail_label.text = app_title
 
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_dict = ext_manager.get_extension_dict(f"{app_id}-2021.1.0")
+        # ext_manager = omni.kit.app.get_app().get_extension_manager()
+        # ext_dict = ext_manager.get_extension_dict(f"{app_id}-{self._app_version}")
 
-        description = ext_dict["package"]["description"]
-        if "details_description" in ext_dict["package"]:
-            description = ext_dict["package"]["details_description"]
+        description = self._appid_to_description(app_id)
 
         self._detail_description.text = description
 
@@ -379,7 +353,7 @@ class LauncherWindow:
             with ui.HStack(height=0):
                 ui.Spacer(width=10)
                 self._app_as_default = ui.CheckBox(height=10, width=30).model
-                ui.Label("Set selection as new default", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
+                ui.Label("Set selection as new default app", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
 
                 def on_selection_as_default_changed(model):
                     value = model.get_value_as_bool()
@@ -415,7 +389,7 @@ class LauncherWindow:
                 self._persistent_launcher.set_value(self._settings.get(PERSISTENT_LAUNCHER_SETTING))
                 self._persistent_launcher.add_value_changed_fn(on_persistent_launcher_value_changed)
 
-                ui.Label("Keep Launcher Open on App Launch", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
+                ui.Label("Keep App Launcher window opened", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
 
             ui.Spacer(height=5)
             with ui.HStack(height=0):
@@ -516,7 +490,7 @@ class LauncherWindow:
             print("windows not supported")
         else:
             try:
-                subprocess.Popen(["gnome-terminal", os.path.abspath(app_folder)])
+                subprocess.Popen(["gnome-terminal", f"--working-directory={os.path.abspath(app_folder)}"])
             except OSError:
                 print("could not open file browser")
 
