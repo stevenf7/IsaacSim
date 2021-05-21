@@ -45,13 +45,15 @@ private:
     void stop();
     pxr::GfVec3f randomPointTriangle(std::vector<pxr::GfVec3f>& samplePoints);
     pxr::GfVec3f randomPointPolygon(std::vector<pxr::GfVec3f>& samplePoints);
+    bool checkOverlap(pxr::GfRange3d inputRange);
 
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
-    std::vector<std::string> mPaths, mLookAtTargetPaths;
+    std::vector<std::string> mPaths, mLookAtTargetPaths, mExcludedTargetPaths;
     pxr::GfVec3f mTranslateMin, mTranslateMax, mRotateMin, mRotateMax, mScaleMin, mScaleMax;
     std::vector<pxr::UsdPrim> mAllPrims;
     bool mEnableLookAtTarget, mDrawPolygon, mEnableSequentialBehavior, mCombineRandomRange;
     pxr::GfVec3d mLookAtTargetOffset = pxr::GfVec3d(0.0, 0.0, 0.0);
+    pxr::GfVec3d mExcludedTargetOffset = pxr::GfVec3d(0.0, 0.0, 0.0);
     pxr::GfVec3d mUpUsd;
     std::vector<pxr::GfVec3f> mPolygonPoints, mTargetPoints, mLookAtTargetPoints;
     std::vector<pxr::GfVec3f> mPointInstancersTranslate, mPointInstancersOrient;
