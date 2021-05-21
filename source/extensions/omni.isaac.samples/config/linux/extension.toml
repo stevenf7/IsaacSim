@@ -51,6 +51,3 @@ name = "omni.isaac.samples.scripts.rmp_sample"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.replay_sample"
-
-[[python.module]]
-name = "omni.isaac.samples.scripts.create_vehicle"

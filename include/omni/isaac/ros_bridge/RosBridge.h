@@ -38,6 +38,7 @@ struct RosBridge
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::ros_bridge::RosBridge", 0, 1);
     void(CARB_ABI* setUseSimTime)(const bool useSimTime);
+    bool(CARB_ABI* rosMasterCheck)();
 };
 }
 }

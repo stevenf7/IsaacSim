@@ -22,7 +22,7 @@ DEFAULT_CONFIG = {
     "width": 1024,
     "height": 800,
     "renderer": "PathTracing",  # Can also be RayTracedLighting
-    "anti_aliasing": 0,
+    "anti_aliasing": 3,  # 3 for dlss, 2 for fxaa, 1 for taa, 0 to disable aa
     "samples_per_pixel_per_frame": 64,
     "denoiser": True,
     "subdiv_refinement_level": 0,
@@ -38,17 +38,16 @@ DEFAULT_CONFIG = {
 class OmniKitHelper:
     """Helper class for launching OmniKit from a Python environment.
 
-Launches and configures OmniKit and exposes useful functions.
+    Launches and configures OmniKit and exposes useful functions.
 
-    Typical usage example:
-    
-    ::
+        Typical usage example:
 
-        config = {'width': 800, 'height': 600, 'renderer': 'PathTracing'}
-        kit = OmniKitHelper(config)   # Start omniverse kit
-        # <Code to generate or load a scene>
-        kit.update()    # Render a single frame
-"""
+        ::
+
+            config = {'width': 800, 'height': 600, 'renderer': 'PathTracing'}
+            kit = OmniKitHelper(config)   # Start omniverse kit
+            # <Code to generate or load a scene>
+            kit.update()    # Render a single frame"""
 
     def __init__(self, config=DEFAULT_CONFIG):
         """The config variable is a dictionary containing the following entries
@@ -65,7 +64,7 @@ Launches and configures OmniKit and exposes useful functions.
             max_specular_transmission_bounces(int): Maximum number of bounces for specular or transmission, used for `PathTracing` only. Defaults to 6
             max_volume_bounces(int): Maximum number of bounces for volumetric, used for `PathTracing` only. Defaults to 4
             sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
-            experience (str): The config json used to launch the application. 
+            experience (str): The config json used to launch the application.
         """
         # only import custom loop runner if we create this object
         from omni.kit.loop import _loop
@@ -227,7 +226,7 @@ Launches and configures OmniKit and exposes useful functions.
             raise ValueError(f"Value of type {type(value)} is not supported.")
 
     def set_physics_dt(self, physics_dt: float = 1.0 / 60.0, physics_substeps: int = 1):
-        """Specify the physics step size to use when simulating, default is 1/60. 
+        """Specify the physics step size to use when simulating, default is 1/60.
         Note that a physics scene has to be in the stage for this to do anything
 
         Args:
@@ -255,7 +254,7 @@ Launches and configures OmniKit and exposes useful functions.
         settings.set_int("persistent/simulation/minFrameRate", min_steps)
 
     def update(self, dt=0.0, physics_dt=None, physics_substeps=None):
-        """Render one frame. Optionally specify dt in seconds, specify None to use wallclock. 
+        """Render one frame. Optionally specify dt in seconds, specify None to use wallclock.
         Specify physics_dt and  physics_substeps to decouple the physics step size from rendering
 
         For example: to render with a dt of 1/30 and simulate physics at 1/120 use:
@@ -312,7 +311,7 @@ Launches and configures OmniKit and exposes useful functions.
 
     def is_loading(self):
         """convenience function to see if any files are being loaded
-        
+
         Returns:
             bool: True if loading, False otherwise
         """
@@ -351,6 +350,7 @@ Launches and configures OmniKit and exposes useful functions.
 
         # Experimental, forces kit to not render until all USD files are loaded
         self.set_setting(rtx_mode + "/materialDb/syncLoads", self.config["sync_loads"])
+        self.set_setting(rtx_mode + "/hydra/materialSyncLoads", self.config["sync_loads"])
         self.set_setting("/omni.kit.plugin/syncUsdLoads", self.config["sync_loads"])
 
     def create_prim(
@@ -395,7 +395,7 @@ Launches and configures OmniKit and exposes useful functions.
 
     def set_up_axis(self, axis):
         """Change the up axis of the current stage
-        
+
         Args:
             axis: valid values are `UsdGeom.Tokens.y`, or `UsdGeom.Tokens.z`
         """

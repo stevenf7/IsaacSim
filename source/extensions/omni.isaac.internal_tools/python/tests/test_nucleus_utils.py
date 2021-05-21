@@ -6,7 +6,7 @@ from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 import carb
 import json
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+# This test is part of internal utils because it needs internal servers
 class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def setUp(self):
         pass

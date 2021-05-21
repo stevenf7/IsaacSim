@@ -36,7 +36,8 @@ PYBIND11_MODULE(_ros_bridge, m)
 
     {
         defineInterfaceClass<RosBridge>(m, "RosBridge", "acquire_ros_bridge_interface", "release_ros_bridge_interface")
-            .def("use_sim_time", wrapInterfaceFunction(&RosBridge::setUseSimTime));
+            .def("use_sim_time", wrapInterfaceFunction(&RosBridge::setUseSimTime))
+            .def("ros_master_check", wrapInterfaceFunction(&RosBridge::rosMasterCheck));
     }
 }
 }
