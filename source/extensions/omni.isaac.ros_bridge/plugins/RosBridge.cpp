@@ -188,6 +188,12 @@ void CARB_ABI setUseSimTime(const bool useSimTime)
         g_application_handle->setUseSimTime(useSimTime);
     }
 }
+
+bool CARB_ABI rosMasterCheck()
+{
+    return ros::master::check();
+}
+
 CARB_EXPORT void carbOnPluginStartup()
 {
     g_framework = carb::getFramework();
@@ -301,4 +307,5 @@ void fillInterface(omni::isaac::ros_bridge::RosBridge& iface)
 
     memset(&iface, 0, sizeof(iface));
     iface.setUseSimTime = setUseSimTime;
+    iface.rosMasterCheck = rosMasterCheck;
 }

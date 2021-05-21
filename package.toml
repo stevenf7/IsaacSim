@@ -46,6 +46,7 @@ files_exclude = [
     ["**/*.pdb"],
     ["**/*.exp"],
     ["kit/data/**"], # This can contain portable files we don't want to package
+    ["exts/omni.isaac.internal_tools/**"]
 ]
 
 [isaac-sim-standalone.release]

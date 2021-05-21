@@ -73,8 +73,9 @@ if __name__ == "__main__":
         sample.start()
         if args.test is True:
             for i in range(10):
-                sample.kit.update(1.0 / 60.0)
+                sample.kit.update()
         else:
             while sample.kit.app.is_running():
-                sample.kit.update(1.0 / 60.0)
+                # Run in realtime mode, we don't specify the step size
+                sample.kit.update()
         sample.stop()

@@ -1,5 +1,6 @@
 import omni
 import asyncio
+import carb
 
 
 def create_joint_state(name, position, velocity=[], effort=[]):
@@ -63,22 +64,37 @@ async def simulate(seconds, steps_per_sec=60):
 
 
 async def wait_for_rosmaster():
-    print("Waiting for rosmaster to start")
+    carb.log_info("Waiting for rosmaster to start")
     import rosgraph
 
     tries = 0
     while True:
         if tries > 10:
-            print(f"ROS master was not found after {tries} tries")
+            carb.log_info(f"ROS master was not found after {tries} tries")
             return
 
         try:
             tries = tries + 1
             rosgraph.Master("/rostopic").getPid()
         except:
-            print("ROS master is not running yet...")
+            carb.log_info("ROS master is not running yet...")
             await asyncio.sleep(1.0)
             continue
         else:
-            print("ROS master is running, continuing")
+            carb.log_info("ROS master is running, continuing")
             break
+
+
+async def bridge_rosmaster_connect(_rosbridge):
+
+    tries = 0
+    while True:
+        if tries > 100:
+            carb.log_info(f"ROS master was not found after {tries} tries")
+            return
+        if _rosbridge.ros_master_check():
+            carb.log_info(f"ROS master was found after {tries} tries")
+            return
+        else:
+            await omni.kit.app.get_app().next_update_async()
+            tries = tries + 1

@@ -170,7 +170,8 @@ public:
         for (auto it = mComponents.begin(); it != mComponents.end();)
         {
             // CARB_LOG_WARN("Check: Prim %s %s", primPath.GetString().c_str(), it->first.c_str());
-            if ((it->first).find(primPath.GetString()) != std::string::npos)
+            // if ((it->first).find(primPath.GetString()) != std::string::npos)
+            if (pxr::SdfPath(it->first).HasPrefix(primPath))
             {
                 CARB_LOG_INFO("Delete: Prim %s %s", primPath.GetString().c_str(), it->first.c_str());
                 it->second.reset();
