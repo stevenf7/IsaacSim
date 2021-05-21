@@ -204,8 +204,8 @@ void RosDifferentialBase::tfPubCallback(rclcpp::PublisherBase* pub)
         msg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
     }
 
-    msg.header.frame_id = "world";
-    msg.child_frame_id = mOdomFrameId;
+    msg.header.frame_id = mOdomFrameId;
+    msg.child_frame_id = mBaseFrameId;
 
     auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
 
