@@ -8,7 +8,7 @@ sys.path.append(f"{bin_path}/../lib")
 import nvidia.pyenv.bootstrap.v5_0 as bs
 
 bs.bootstrap(
-    runtime_dir="../../_deps/acl",
+    runtime_dir="../../_deps_acl",
     pip_requirements_file="pip.requirements.txt",
     packman_project_file="packman-dependencies.xml",
     subdirs={"ovc": "python", "common": "lib"},
