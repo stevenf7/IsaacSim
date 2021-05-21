@@ -95,6 +95,7 @@ class Extension(omni.ext.IExt):
                                 name="min search dist", min=0.01, max=2, step=0.01, height=0, h_spacing=5
                             )
                             self.occupancy_threshold.model.set_value(1)
+                        ui.Spacer(height=5)
                         with ui.HStack(height=0):
                             ui.Label("Max Rays", width=0, height=0)
                             ui.Spacer(width=10)
@@ -108,11 +109,9 @@ class Extension(omni.ext.IExt):
                 ui.Spacer(width=10)
                 with ui.VStack():
                     with ui.HStack(height=0):
-
                         ui.Label("Occupied Color", width=0, height=0)
                         ui.Spacer(width=10)
                         self.occupied_color_model = ui.ColorWidget(0, 0, 0, 1, width=0).model
-
                         ui.Spacer(width=10)
                         ui.Label("Freespace Color", width=0, height=0)
                         ui.Spacer(width=10)
@@ -121,7 +120,12 @@ class Extension(omni.ext.IExt):
                         ui.Label("Unknown Color", width=0, height=0)
                         ui.Spacer(width=10)
                         self.unknown_color_model = ui.ColorWidget(0.5, 0.5, 0.5, 1, width=0).model
+                    ui.Spacer(height=10)
+                    with ui.HStack(height=0):
+                        ui.Label("Rotation", width=0, height=0, tooltip="Clockwise rotation")
+                        ui.Spacer(width=10)
 
+                        self._selected_image_rotation = ui.ComboBox(0, "0", "-90", "90", "180", height=0, width=200)
                     self.generate_image_btn = ui.Button("Generate Image", clicked_fn=self._generate_image)
                     self.generate_image_btn.visible = False
                     # self.draw_voxel_btn = ui.Button("Draw Voxels", clicked_fn=self._draw_instances)
@@ -199,7 +203,21 @@ class Extension(omni.ext.IExt):
     def _generate_image(self):
 
         scale = self.cell_size.model.get_value_as_float()
-        top_left, top_right, bottom_left, bottom_right, image_coords = compute_coordinates(self._om, scale)
+
+        # Clockwise rotation
+        rotate_image_angle = 0
+        current_image_rotation_index = self._selected_image_rotation.model.get_item_value_model().as_int
+        if current_image_rotation_index == 0:
+            top_left, top_right, bottom_left, bottom_right, image_coords = compute_coordinates(self._om, scale)
+        elif current_image_rotation_index == 1:  # -90 degrees
+            top_right, bottom_right, top_left, bottom_left, image_coords = compute_coordinates(self._om, scale)
+            rotate_image_angle = -90
+        elif current_image_rotation_index == 2:  # 90 degrees
+            bottom_left, top_left, bottom_right, top_right, image_coords = compute_coordinates(self._om, scale)
+            rotate_image_angle = 90
+        elif current_image_rotation_index == 3:  # 180 degrees
+            bottom_right, bottom_left, top_right, top_left, image_coords = compute_coordinates(self._om, scale)
+            rotate_image_angle = 180
 
         print("World coordinates for image in stage units:")
         print("Top left: ", top_left)
@@ -236,14 +254,21 @@ class Extension(omni.ext.IExt):
             [self.start_location["X"].model.get_value_as_float(), self.start_location["Y"].model.get_value_as_float()],
         )
 
+        from PIL import Image
+
+        dims = self._om.get_dimensions()
+        im = Image.frombytes("RGBA", (dims.x, dims.y), bytes(image))
+        im = im.rotate(-rotate_image_angle, expand=True)
+        image = list(im.tobytes())
+
+        image_width = im.width
+        image_height = im.height
+
         self._visualize_window = omni.ui.Window("Visualization", width=300, height=300)
 
         def save_image(file, folder):
-            from PIL import Image
-
             file = file if file[-4:].lower() == ".png" else "{}.png".format(file)
-            dims = self._om.get_dimensions()
-            im = Image.frombytes("RGBA", (dims.x, dims.y), bytes(image))
+            im = Image.frombytes("RGBA", (image_width, image_height), bytes(image))
             print("Saving occupancy map image to", folder + "/" + file)
             im.save(folder + "/" + file)
             self._filepicker.hide()
@@ -269,31 +294,56 @@ class Extension(omni.ext.IExt):
                 item_filter_fn=_on_filter_png_files,
             )
 
-        min_b = self._om.get_min_bound()
-        max_b = self._om.get_max_bound()
         size = [0, 0, 0]
 
-        size[0] = max_b[0] - min_b[0]
-        size[1] = max_b[1] - min_b[1]
+        size[0] = image_width * self.cell_size.model.get_value_as_float()
+        size[1] = image_height * self.cell_size.model.get_value_as_float()
 
         with self._visualize_window.frame:
             self._rgb_byte_provider = omni.ui.ByteImageProvider()
             self._rgb_byte_provider.set_bytes_data(image, [int(size[0] / scale), int(size[1] / scale)])
             with ui.VStack():
                 with ui.VStack(height=0):
-                    ui.Label(
-                        f"Coordinates in stage space: \nTop Left: {top_left}\t\t Top Right: {top_right}\n Bottom Left: {bottom_left}\t\t Bottom Right: {bottom_right}",
-                        alignment=ui.Alignment.LEFT,
+                    self._selected_data_output = ui.ComboBox(
+                        0,
+                        "Cooordinates in stage space",
+                        "ROS Occupancy Map Parameters file (YAML)",
+                        height=0,
+                        width=300,
                     )
+
                     ui.Spacer(height=5)
-                    ui.Label(
-                        f"Coordinates of top left of image (pixel 0,0) as origin, + X down, + Y right:\n{float(image_coords[0][0]), float(image_coords[1][0])}",
-                        alignment=ui.Alignment.LEFT,
+                    data = ui.StringField(height=100, multiline=True).model
+
+                    image_details_text = f"Top Left: {top_left}\t\t Top Right: {top_right}\n Bottom Left: {bottom_left}\t\t Bottom Right: {bottom_right}"
+                    image_details_text += f"\nCoordinates of top left of image (pixel 0,0) as origin, + X down, + Y right:\n{float(image_coords[0][0]), float(image_coords[1][0])}"
+                    image_details_text += f"\nImage size in pixels: {int(size[0] / scale)}, {int(size[1] / scale)}"
+
+                    scale_to_meters = 100.0
+                    ros_yaml_file_text = "image: carter_2dnav_map.png"
+                    ros_yaml_file_text += (
+                        f"\nresolution: {float(self.cell_size.model.get_value_as_float() / scale_to_meters)}"
                     )
+                    ros_yaml_file_text += f"\norigin: [{float(bottom_left[0]/scale_to_meters)}, {float(bottom_left[1]/scale_to_meters)}, 0.0000]"
+                    ros_yaml_file_text += "\nnegate: 0"
+                    ros_yaml_file_text += f"\noccupied_thresh: {self.occupancy_threshold.model.get_value_as_float()}"
+                    ros_yaml_file_text += "\nfree_thresh: 0.196"
+                    data.set_value(image_details_text)
+
+                    def update_data_output(combo_box_model, item):
+                        current_data_output_index = self._selected_data_output.model.get_item_value_model().as_int
+                        if current_data_output_index == 0:
+                            data_text = image_details_text
+                        elif current_data_output_index == 1:
+                            data_text = ros_yaml_file_text
+                        data.set_value(data_text)
+
+                    self._selected_data_output.model.add_item_changed_fn(update_data_output)
+
+                ui.Spacer(height=10)
+                with ui.VStack():
+                    omni.ui.ImageWithProvider(self._rgb_byte_provider)
                 ui.Spacer(height=5)
-                omni.ui.ImageWithProvider(self._rgb_byte_provider)
-                with ui.VStack(height=0):
-                    ui.Label(f"Image size in pixels: {int(size[0] / scale)}, {int(size[1] / scale)}")
                 ui.Button("Save Image", clicked_fn=save_file, height=0)
 
     def on_shutdown(self):
