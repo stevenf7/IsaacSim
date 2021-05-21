@@ -20,14 +20,14 @@
   <dependency name="ovcp">
     <package
        name="omniverse_connection_py"
-       version="11.6-master+gitlab.21695527.4fd7d804"
+       version="11.11+merge-requests-1849.gitlab.17255.496dfc4b"
     />
   </dependency>
 
   <dependency name="ovsvcpy">
     <package
        name="omniverse_service_py"
-       version="11.6-merge-requests-1830+gitlab.21793863.f5413414"
+       version="11.11+merge-requests-1849.gitlab.17227.d819d9f3"
     />
   </dependency>
 
@@ -35,9 +35,14 @@
 	<package 
 		name="idl.py" 
 		platforms="linux-x86_64" 
-		version="0.5.93c7b420-master" 
+		version="0.6.1c5a2d10-master" 
 	/>
  </dependency>
+
+ <!--
+
+
+ -->
 
 
   <dependency name="common">
@@ -55,9 +60,13 @@
   <dependency name="omniverse_discovery_py">
     <package 
         name="omniverse.discovery.client.py"
-        version="0.6.6d3ffe36-dev"
+        version="1.2.0+main.teamcity.420.f305fac1"
      />
   </dependency>
+  <!--
+        version="0.6.6d3ffe36-dev"
+        version="1.2.0+main.teamcity.420.f305fac1"
+  -->
 
   <dependency name="omniverse_auth_py">
     <package 
