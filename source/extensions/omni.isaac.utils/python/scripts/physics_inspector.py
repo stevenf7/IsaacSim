@@ -91,7 +91,7 @@ class Extension(omni.ext.IExt):
             self._selected_prim = None
             self._selected_handle = dc.INVALID_HANDLE
             return
-        if self._window.visible and event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
+        if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
             selection = self._selection.get_selected_prim_paths()
             if len(selection) == 0:
                 self._selected_prim = None
@@ -156,7 +156,7 @@ class Extension(omni.ext.IExt):
         if len(self._selection.get_selected_prim_paths()) == 0:
             self._app_event_sub = None
             return
-        if self._timeline.is_playing() and self._window.visible:
+        if self._dc.is_simulating() and self._window.visible:
             if self._selected_prim and self._selected_handle == dc.INVALID_HANDLE:
                 objectType = self._dc.peek_object_type(str(self._selected_prim.GetPath()))
                 if objectType == dc.ObjectType.OBJECT_RIGIDBODY:

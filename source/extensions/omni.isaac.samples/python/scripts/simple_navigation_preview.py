@@ -49,8 +49,9 @@ class Extension(omni.ext.IExt):
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
-        self._window.deferred_dock_in("Content")
+        self._window = ui.Window(EXTENSION_NAME, width=500, height=175, visible=False)
+        self._window.set_visibility_changed_fn(self._on_window)
+
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
@@ -68,6 +69,8 @@ class Extension(omni.ext.IExt):
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
+
+    def _on_window(self, visible):
         if self._window.visible:
             self._sub_stage_event = self._usd_context.get_stage_event_stream().create_subscription_to_pop(
                 self._on_stage_event

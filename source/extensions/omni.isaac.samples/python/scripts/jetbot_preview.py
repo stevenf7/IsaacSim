@@ -79,21 +79,18 @@ class Extension(omni.ext.IExt):
                     self._load_jetbot_btn = ui.Button(
                         "Load Jetbot",
                         clicked_fn=self._on_environment_setup,
+                        height=0,
                         tooltip="Reset the stage and load the jetbot environment",
                     )
                     self._reset_btn = ui.Button(
-                        "Reset Robot", clicked_fn=self._on_reset, tooltip="Reset Robot to origin"
+                        "Reset Robot", height=0, clicked_fn=self._on_reset, tooltip="Reset Robot to origin"
                     )
 
                     self._load_jetbot_btn.enabled = True
                     self._reset_btn.enabled = False
 
                     ui.Separator(height=3)
-                    ui.Label("keyboard map:")
-                    ui.Label("   w: forward")
-                    ui.Label("   s: reverse")
-                    ui.Label("   a: left spin")
-                    ui.Label("   d: right spin")
+                    ui.Label("keyboard map:\nw: forward\ns: reverse\na: left spin\nd: right spin")
         self._window.visible = True
 
     def _sub_keyboard_event(self, event, *args, **kwargs):
@@ -185,6 +182,7 @@ class Extension(omni.ext.IExt):
                 self._load_jetbot_btn.enabled = True
                 self._reset_btn.enabled = False
                 self._timeline.stop()
+                self._editor_event_subscription = None
                 self._stop_tasks()
 
     def _stop_tasks(self):

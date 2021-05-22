@@ -147,7 +147,7 @@ class ShapenetLogin:
     def build_window(self):
         """ build ShapeNet Login window"""
         self._window = ui.Window(
-            title="ShapeNet Loader", width=400, height=150, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            title="ShapeNet Loader", width=400, height=150, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         with self._window.frame:

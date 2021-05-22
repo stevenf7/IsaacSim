@@ -42,8 +42,7 @@ def toRad(x):
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        """Initialize extension and UI elements
-        """
+        """Initialize extension and UI elements"""
 
         # IP address of the real dofbot if you have one
         self._ip_address = None
@@ -153,7 +152,7 @@ class Extension(omni.ext.IExt):
         self.send_joint_states_to_real_dofbot()
 
     def _set_joints_in_sim(self, joint_position_array):
-        """ Takes in desired positions of each DofBot servo in degrees, sets target position
+        """Takes in desired positions of each DofBot servo in degrees, sets target position
         of sim to that position in radians
         """
         self._dc.wake_up_articulation(self._dofbot_articulation)
@@ -184,8 +183,7 @@ class Extension(omni.ext.IExt):
                 self._dc.set_dof_position_target(self._finger_right_01_joint, -toRad(joint_position_array[i] / 2 - 45))
 
     def _set_joints_real_dofbot(self):
-        """ Send the target positions to the real dofbot via TCP/IP
-        """
+        """Send the target positions to the real dofbot via TCP/IP"""
         currTime = time.time()
         self.ready_for_next_action = False
 
@@ -224,8 +222,7 @@ class Extension(omni.ext.IExt):
             self.use_sim_only = True
 
     def wait_for_ack(self):
-        """ Create a separate thread to wait for ack so sim doesn't get blocked
-        """
+        """Create a separate thread to wait for ack so sim doesn't get blocked"""
         print("wait_for_ack")
 
         try:
@@ -249,8 +246,7 @@ class Extension(omni.ext.IExt):
             print("Error: ", e)
 
     def _on_pickup_cube(self):
-        """ Sends the action stored in self.cube_picking_trajectory to the real JetBot for execution
-        """
+        """Sends the action stored in self.cube_picking_trajectory to the real JetBot for execution"""
         # reset cube position
         cube_body = self._dc.get_rigid_body(self.cube_path)
         new_pose = _dynamic_control.Transform(self.cube_position, (0, 0, 0, 1))
@@ -369,7 +365,7 @@ class Extension(omni.ext.IExt):
         """This function is called when stage events occur.
         Enables UI elements when stage is opened.
         Prevents tasks from being started until all assets are loaded
-        
+
         Arguments:
             event (int): event type
         """
@@ -378,7 +374,7 @@ class Extension(omni.ext.IExt):
                 self._load_dofbot_btn.enabled = True
                 self._send_current_joints_btn.enabled = False
                 self._pickup_cube_btn.enabled = False
-
+                self._editor_event_subscription = None
                 self._timeline.stop()
                 self._stop_tasks()
 
@@ -389,8 +385,7 @@ class Extension(omni.ext.IExt):
         gc.collect()
 
     def _on_editor_step(self, step):
-        """ Updates dofbot Sim physics once per step
-        """
+        """Updates dofbot Sim physics once per step"""
         if not self._timeline.is_playing():
             self._send_current_joints_btn.text = "Press Play to Enable Controller"
             self._send_current_joints_btn.enabled = False
@@ -398,7 +393,7 @@ class Extension(omni.ext.IExt):
             self._pickup_cube_btn.enabled = False
             return
 
-        if not self._dc or not self._dc.is_simulating():
+        if not self._dc.is_simulating():
             return
         if not self._retrieve_joints_check:
             self._retrieve_joints()
@@ -463,8 +458,7 @@ class Extension(omni.ext.IExt):
             self._pickup_cube_btn.enabled = False
 
     def _retrieve_joints(self):
-        """ retrieve articulation joints
-        """
+        """retrieve articulation joints"""
         if self._dofbot_articulation == _dynamic_control.INVALID_HANDLE:
             self._dofbot_articulation = self._dc.get_articulation(str(self.prim.GetPath()))
 
@@ -490,8 +484,7 @@ class Extension(omni.ext.IExt):
         self._retrieve_joints_check = True
 
     def on_shutdown(self):
-        """Cleanup objects on extension shutdown
-        """
+        """Cleanup objects on extension shutdown"""
         self._timeline.stop()
         self._dc = None
         self._editor_event_subscription = None

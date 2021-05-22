@@ -79,6 +79,9 @@ class DualCameraSample:
         self._target_prim = self.kit.create_prim(
             "/objects/cube", "Cube", translation=(0, 0, 100), scale=(10, 10, 50), semantic_label="target"
         )
+        # make sure that we wait for the stage to load
+        self.kit.app.update()
+        self.kit.app.update()
         return True
 
     def create_camera(self):
