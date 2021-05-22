@@ -14,7 +14,7 @@ EXTENSION_NAME = "Replay Sample"
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
+        self._window = ui.Window(EXTENSION_NAME, width=400, height=150, visible=False)
         self._window.set_visibility_changed_fn(self._on_window)
         self._menu_items = [
             MenuItemDescription(
@@ -35,10 +35,10 @@ class Extension(omni.ext.IExt):
         self._button_style = {":disabled": {"color": 0xFF000000}}
         with self._window.frame:
             with omni.ui.VStack(style=self._button_style):
-                self._create_robot_btn = ui.Button("Load Robot", enabled=True)
+                self._create_robot_btn = ui.Button("Load Robot", height=0, enabled=True)
                 self._create_robot_btn.set_clicked_fn(self._on_setup_environment)
                 self._create_robot_btn.set_tooltip("Load robot and environment")
-                self._reset_btn = ui.Button("Reset", enabled=False)
+                self._reset_btn = ui.Button("Reset", height=0, enabled=False)
                 self._reset_btn.set_clicked_fn(self._replay.reset)
                 self._reset_btn.set_tooltip("Reset Robot to default position")
 
@@ -50,9 +50,8 @@ class Extension(omni.ext.IExt):
                     self._ui_dir_name.model.add_end_edit_fn(
                         self._replay.save_dir(self._ui_dir_name.model.get_value_as_string())
                     )
-                    ui.Spacer(width=5)
-                    self._replay_data_btn = ui.Button("Play Saved Trajectory", enabled=False, width=200, height=50)
-                    self._replay_data_btn.set_clicked_fn(self._replay.replay_data)
+                self._replay_data_btn = ui.Button("Play Saved Trajectory", enabled=False, height=0)
+                self._replay_data_btn.set_clicked_fn(self._replay.replay_data)
 
     def _on_window(self, status):
         if status:

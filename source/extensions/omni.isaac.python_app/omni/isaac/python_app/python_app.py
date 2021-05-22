@@ -270,15 +270,18 @@ class OmniKitHelper:
         # dont update if exit was called
         if self._exiting:
             return
+        # a physics dt was specified and is > 0
         if physics_dt is not None and physics_dt > 0.0:
             self.set_physics_dt(physics_dt, physics_substeps)
-
+        # a dt was specified and is > 0
         if dt is not None and dt > 0.0:
+            # if physics dt was not specified, use rendering dt
             if physics_dt is None:
                 self.set_physics_dt(dt)
             self.loop_runner.set_runner_dt(dt)
             self.app.update()
         else:
+            # dt not specified, run in realtime
             time_now = time.time()
             dt = time_now - self.last_update_t
             if physics_dt is None:

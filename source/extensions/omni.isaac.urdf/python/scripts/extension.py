@@ -4,6 +4,7 @@ import omni.ui as ui
 import textwrap
 import weakref
 import gc
+import carb
 import weakref
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.kit.window.filepicker import FilePickerDialog
@@ -47,6 +48,7 @@ class Extension(omni.ext.IExt):
         self._menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
+        self._window.set_visibility_changed_fn(self._on_window)
         add_menu_items(self._menu_items, "Isaac Utils")
         self._file_picker = None
 
@@ -60,8 +62,6 @@ class Extension(omni.ext.IExt):
         self._content_browser = None
 
         self._extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
-
-        self._menu_callback()
 
     def build_ui(self):
 
@@ -255,6 +255,8 @@ class Extension(omni.ext.IExt):
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
+
+    def _on_window(self, visible):
         if self._window.visible:
             self.build_ui()
             self._events = self._usd_context.get_stage_event_stream()

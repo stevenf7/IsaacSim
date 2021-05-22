@@ -175,7 +175,9 @@ class Extension(omni.ext.IExt):
 
         # Hide any GUI panels that are showing
         for ext in UTILITIES[name]:
-            ui.Workspace.get_window(ext).visible = False
+            window = ui.Workspace.get_window(ext)
+            if window:
+                window.visible = False
 
     def enable_ui(self):
         # use weakrefs to self so the extension cleans up properly

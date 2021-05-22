@@ -29,6 +29,7 @@ class Extension(omni.ext.IExt):
             EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
+        self._window.set_visibility_changed_fn(self._on_window)
         self._menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
@@ -71,6 +72,8 @@ class Extension(omni.ext.IExt):
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
+
+    def _on_window(self, visible):
         if self._window.visible:
             self._usd_context = omni.usd.get_context()
             if self._usd_context is not None:
@@ -88,6 +91,8 @@ class Extension(omni.ext.IExt):
                 selection = self._selection.get_selected_prim_paths()
                 stage = self._usd_context.get_stage()
                 if len(selection) == 0:
+                    curr_prim = None
+                    self.models["input_mesh"].model.set_value("No Mesh Selected")
                     pass
                 else:
                     curr_prim = stage.GetPrimAtPath(selection[0])

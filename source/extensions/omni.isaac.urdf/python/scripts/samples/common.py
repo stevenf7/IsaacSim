@@ -4,7 +4,7 @@ import omni
 from pxr import UsdGeom, PhysxSchema, UsdPhysics
 
 
-def set_drive_parameters(drive, target_type, target_value, stiffness, damping, max_force=None):
+def set_drive_parameters(drive, target_type, target_value, stiffness=None, damping=None, max_force=None):
     """Enable velocity drive for a given joint"""
 
     if target_type == "position":
@@ -18,15 +18,17 @@ def set_drive_parameters(drive, target_type, target_value, stiffness, damping, m
         else:
             drive.GetTargetVelocityAttr().Set(target_value)
 
-    if not drive.GetStiffnessAttr():
-        drive.CreateStiffnessAttr(stiffness)
-    else:
-        drive.GetStiffnessAttr().Set(stiffness)
+    if stiffness is not None:
+        if not drive.GetStiffnessAttr():
+            drive.CreateStiffnessAttr(stiffness)
+        else:
+            drive.GetStiffnessAttr().Set(stiffness)
 
-    if not drive.GetDampingAttr():
-        drive.CreateDampingAttr(damping)
-    else:
-        drive.GetDampingAttr().Set(damping)
+    if damping is not None:
+        if not drive.GetDampingAttr():
+            drive.CreateDampingAttr(damping)
+        else:
+            drive.GetDampingAttr().Set(damping)
 
     if max_force is not None:
         if not drive.GetMaxForceAttr():

@@ -33,7 +33,7 @@ class Extension(omni.ext.IExt):
         self._usd_context = omni.usd.get_context()
         # Creates UI window with default size of 600x300
         self._window = omni.ui.Window(
-            title=EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            title=EXTENSION_NAME, width=300, height=200, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.set_visibility_changed_fn(self._on_window)
         menu_items = [
@@ -239,6 +239,7 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_target("/OmniverseKit_Persp", *self.gripper_start_pose.p, True)
 
             self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
+            self._timeline.play()
 
     def _on_create_scenario_button_clicked(self):
         # wait for new stage before creating scenario

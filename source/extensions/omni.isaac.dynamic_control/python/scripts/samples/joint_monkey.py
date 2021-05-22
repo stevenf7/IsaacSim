@@ -86,7 +86,7 @@ class Extension(omni.ext.IExt):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._extension_path = ext_manager.get_extension_path(ext_id)
         menu_items = [
-            MenuItemDescription(name="Joint Controller", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
         self._menu_items = [
             MenuItemDescription(
@@ -101,12 +101,12 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                title=EXTENSION_NAME, width=300, height=200, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME, width=300, height=300, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             with self._window.frame:
                 with ui.VStack():
-                    ui.Button("Load Robot", clicked_fn=self._on_load_robot)
-                    ui.Button("Move Joints", clicked_fn=self._on_move_joints)
+                    ui.Button("Load Robot", height=0, clicked_fn=self._on_load_robot)
+                    ui.Button("Move Joints", height=0, clicked_fn=self._on_move_joints)
 
                     ui.Separator(height=3)
                     with ui.ScrollingFrame():

@@ -133,12 +133,6 @@ class Extension(omni.ext.IExt):
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
-        if not self._window.visible:
-            self._stage_event_sub = None
-        else:
-            self._usd_context = omni.usd.get_context()
-            if self._usd_context is not None:
-                self._selection = self._usd_context.get_selection()
 
     def on_update_location(self):
         update_location(

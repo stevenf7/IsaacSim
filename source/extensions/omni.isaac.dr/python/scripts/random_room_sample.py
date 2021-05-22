@@ -13,7 +13,7 @@ class Extension(omni.ext.IExt):
         self._asset_path = None
         self._window = ui.Window("Simple Room Python Sample", width=600, height=400)
         self._window.visible = False
-        self._window.deferred_dock_in("Content")
+        self._window.deferred_dock_in("Console")
 
         menu_items = [
             MenuItemDescription(

@@ -188,12 +188,12 @@ function create_python_sample_runner(name, sample_path, config, extra_args)
         print(sh_file_path)
         f:write(string.format([[
 #!/bin/bash
-set -e
+echo "##teamcity[testStarted name='%s']" 
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/python_samples
 "$SCRIPT_DIR/python.sh" $SAMPLE_DIR/%s %s $@
-
-        ]], sample_path, extra_args))
+echo "##teamcity[testFinished name='%s']" 
+        ]], sample_path, sample_path, extra_args, sample_path, sample_path))
         f:close()
         os.chmod(sh_file_path, 755)
     end

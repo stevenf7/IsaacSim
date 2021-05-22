@@ -14,7 +14,7 @@ EXTENSION_NAME = "RMP Sample"
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
+        self._window = ui.Window(EXTENSION_NAME, width=400, height=300, visible=False)
         self._window.set_visibility_changed_fn(self._on_window)
         menu_items = [
             MenuItemDescription(name="RMP Example", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
@@ -73,9 +73,8 @@ class Extension(omni.ext.IExt):
                     self._ui_dir_name.model.add_end_edit_fn(
                         self._sample.save_dir(self._ui_dir_name.model.get_value_as_string())
                     )
-                    ui.Spacer(width=5)
-                    self._save_data_btn = ui.Button("Start Saving Data", enabled=False, width=200, height=50)
-                    self._save_data_btn.set_clicked_fn(self._sample.saving_data)
+                self._save_data_btn = ui.Button("Start Saving Data", enabled=False, height=0)
+                self._save_data_btn.set_clicked_fn(self._sample.saving_data)
 
     def _on_window(self, status):
         if status:

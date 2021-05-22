@@ -6,11 +6,11 @@ import gc
 import asyncio
 import weakref
 import os
-import omni.physx as _physx
 from omni.isaac.pyalice import Codelet, Composite
 import logging
 import numpy as np
 import time
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 EXTENSION_NAME = "REB Vehicle Control"
 
@@ -65,8 +65,11 @@ class VehicleControl(Codelet):
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
+        self._window = ui.Window(EXTENSION_NAME, width=300, height=250, visible=False)
         self._window.set_visibility_changed_fn(self._on_window)
+        self._input = None
+        self._keyboard = None
+        self._sub_keyboard = None
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
@@ -83,13 +86,16 @@ class Extension(omni.ext.IExt):
         # Simple button style that grays out the button if disabled
         self._button_style = {":disabled": {"color": 0xFF000000}}
         with self._window.frame:
-            with ui.VStack(height=0):
+            with ui.VStack(height=0, spacing=5):
                 ui.Label(
-                    "Sample to show how pyalice can be used to send vehicle control commands directly from isaac sim"
+                    "Sample shows how pyalice can be used to send\nvehicle control commands directly from isaac sim"
                 )
 
-                ui.Label("Press the Toggle Controller button, and also create the REB application and press play")
-                ui.Label("Use WASD to control")
+                ui.Label(
+                    "Spawn the vehiche (or load your own asset)\nPress the Toggle Controller button\nCreate the REB application\nPress play"
+                )
+                ui.Label("Once connected use WASD to control")
+                ui.Button("Spawn Vehicle", clicked_fn=self._on_environment_setup)
                 ui.Button("Toggle Controller", clicked_fn=self._start_app)
                 # with ui.HStack():
                 #     ui.Label("Command Channel: ")
@@ -103,6 +109,11 @@ class Extension(omni.ext.IExt):
                 #     ui.Label("Steering Gain: ")
                 #     self._steering_gain = ui.FloatField().model
                 #     self._steering_gain.set_value(1.0)
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
+        self._nucleus_path = nucleus_server + "/Isaac"
 
     def _on_window(self, status):
         if status:
@@ -130,6 +141,17 @@ class Extension(omni.ext.IExt):
         ):
             self._vehicle_control.config.accelerator = 0.0
             self._vehicle_control.config.steering = 0.0
+
+    def _on_environment_setup(self):
+        # load REB vehicle stage
+        asyncio.ensure_future(self._spawn_vehicle())
+
+    async def _spawn_vehicle(self):
+        await omni.usd.get_context().open_stage_async(
+            self._nucleus_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_CM_REB.usd"
+        )
+        await omni.kit.app.get_app().next_update_async()
+        self._vehicle_control
 
     def _start_app(self):
         if self._pyalice_app and self._pyalice_app.is_stopped() is False:
@@ -184,10 +206,12 @@ class Extension(omni.ext.IExt):
         return True
 
     def on_shutdown(self):
-        self._sub_keyboard = None
+        if self._input and self._keyboard and self._sub_keyboard:
+            self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
         if self._pyalice_app:
             self._pyalice_app.stop()
         self._pyalice_app = None
+        self._vehicle_control = None
         remove_menu_items(self._menu_items, "Isaac Examples")
         gc.collect()
         pass

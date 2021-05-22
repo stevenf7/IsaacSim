@@ -1122,7 +1122,14 @@ void CARB_ABI DcHello()
 bool CARB_ABI DcIsSimulating()
 {
 #if DC_TRACK_EDITOR_SIMULATION_STATE
-    return g_dcCtx->isSimulating;
+    if (g_dcCtx)
+    {
+        return g_dcCtx->isSimulating;
+    }
+    else
+    {
+        return false;
+    }
 #else
     return false;
 #endif

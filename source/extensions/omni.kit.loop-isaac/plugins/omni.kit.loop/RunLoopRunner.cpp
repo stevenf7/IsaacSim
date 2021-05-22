@@ -82,7 +82,7 @@ public:
     {
         // (hacky) Set first update time ~1/60 sec to avoid dealing with 0 elapsed time
         m_lastUpdateTime -= milliseconds(16);
-        mDeltaTime = 0.0166667;
+        mDeltaTime = 1.0 / 60.0;
     }
 
     ~RunLoopThread()
