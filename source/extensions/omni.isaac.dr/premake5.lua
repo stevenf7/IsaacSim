@@ -26,7 +26,7 @@ project_ext_plugin(ext, "omni.isaac.dr.plugin")
     }
 
      links {
-        "arch", "gf", "pcp", "tf", "sdf", "usd", "usdGeom", "usdShade", "vt", "usdUtils", "audioSchema", "omni.usd", "drSchema"
+        "arch", "gf", "pcp", "tf", "sdf", "usd", "usdGeom", "usdShade", "vt", "usdUtils", "audioSchema", "omni.usd", "drSchema", "work"
     }
 
     filter { "system:linux" }
