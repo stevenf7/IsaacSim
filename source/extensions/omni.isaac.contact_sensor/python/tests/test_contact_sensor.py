@@ -12,7 +12,6 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux, UsdPhysics, PhysxSchema
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.contact_sensor import _contact_sensor
-from omni.kit.builtin.commands.usd_commands import *
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -56,6 +55,9 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         pass
 

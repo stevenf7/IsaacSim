@@ -53,6 +53,9 @@ PYBIND11_MODULE(_contact_sensor, m)
     using namespace carb;
     using namespace omni::isaac::contact_sensor;
 
+    auto carb_module = py::module::import("carb");
+    auto numpy_common_module = py::module::import("omni.kit.numpy.common");
+
     py::class_<CsRawPython>(m, "CsRawData", "Contact Raw Data")
         .def(py::init<>())
         .def_readwrite("time", &CsRawPython::time, "time, (:obj:`float`)")

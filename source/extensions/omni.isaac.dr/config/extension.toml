@@ -26,6 +26,9 @@ icon = "data/icon.png"
 name = "omni.isaac.dr"
 
 [[python.module]]
+name = "omni.isaac.dr.tests"
+
+[[python.module]]
 name = "omni.isaac.dr.scripts.samples"
 
 [[python.module]]

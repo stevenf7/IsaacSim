@@ -14,7 +14,6 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.kit.builtin.commands.usd_commands import *
 from .common import load_test_file, set_scene_physics_type
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
@@ -52,6 +51,9 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         pass
 
