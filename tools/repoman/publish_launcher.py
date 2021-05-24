@@ -134,7 +134,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         with omni.repo.man.TemporaryDirectory() as temp_dir:
             logger.info(f"Working in temp folder: {temp_dir}")
 
-            version = open(f"{root}/VERSION.md").readline().strip()
+            version = open(f"{root}/VERSION").readline().strip()
             parsed_version = parse_version(version)
             if len(parsed_version.pretag) == 0:
                 branch_name = f"{branch_prefix}-{parsed_version.core}"

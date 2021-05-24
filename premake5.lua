@@ -26,7 +26,7 @@ function write_version_file(config)
     if os.target() == "windows" then
         local dir = root.."/_build/windows-x86_64/"..config
 
-        local file = io.open(root.."/VERSION.md", "r")
+        local file = io.open(root.."/VERSION", "r")
         local ver_str = file:read("*a")
         file:close()
 

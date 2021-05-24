@@ -57,7 +57,7 @@ def call_git_safe(root, args):
 
 
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
-    parser.description = "Tool to bump VERSION.md and update repo."
+    parser.description = "Tool to bump VERSION and update repo."
     parser.add_argument(
         "-s",
         "--skip-commit",
@@ -80,7 +80,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         with omni.repo.man.TemporaryDirectory() as temp_dir:
             logger.info(f"Working in temp folder: {temp_dir}")
 
-            # version = open(f"{root}/VERSION.md").readline().strip()
+            # version = open(f"{root}/VERSION").readline().strip()
             # parsed_version = parse_version(version)
 
             repo_name = "isaac-sim_bump_repo"
@@ -102,12 +102,12 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 print(f"ERROR: Branch does not exists.")
 
             # increment version
-            new_version = bump_version_file(f"{cloned_repo_dir}/VERSION.md")
+            new_version = bump_version_file(f"{cloned_repo_dir}/VERSION")
 
             if not options.skip_commit:
                 # push/commit everything
                 logger.info("push/commit everything")
-                call_git_safe(cloned_repo_dir, ["add", "VERSION.md"])
+                call_git_safe(cloned_repo_dir, ["add", "VERSION"])
                 call_git_safe(cloned_repo_dir, ["config", "user.email", '"teamcity@nvidia.com"'])
                 call_git_safe(cloned_repo_dir, ["config", "user.name", '"Team City"'])
                 call_git_safe(cloned_repo_dir, ["commit", "-m", f"Bumped version: {new_version}"])
