@@ -81,7 +81,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def setup_controller(self):
         self._stage = self._usd_context.get_stage()
-        # setup simple robot controller
+        # setup robot controller
         self._rc = RobotController(
             self._stage,
             self._timeline,
