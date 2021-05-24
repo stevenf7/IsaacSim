@@ -42,7 +42,8 @@ class OmniKitHelper:
 
         Typical usage example:
 
-        ::
+        .. highlight:: python
+        .. code-block:: python
 
             config = {'width': 800, 'height': 600, 'renderer': 'PathTracing'}
             kit = OmniKitHelper(config)   # Start omniverse kit

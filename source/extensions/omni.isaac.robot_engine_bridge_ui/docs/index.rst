@@ -1,7 +1,7 @@
-omni.isaac.robot_engine_bridge: Isaac SDK Bridge UI
-################################################
+omni.isaac.robot_engine_bridge_ui: Isaac SDK Bridge UI
+######################################################
 
-.. automodule:: omni.isaac.robot_engine_bridge.commands
+.. automodule:: omni.isaac.robot_engine_bridge_ui
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
@@ -12,7 +12,7 @@ omni.isaac.robot_engine_bridge: Isaac SDK Bridge UI
 Generated USD Schema API
 ========================
 
-.. automodule:: pxr.RobotEngineBridgeSchema
+.. automodule:: omni.isaac.RobotEngineBridgeSchema
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:

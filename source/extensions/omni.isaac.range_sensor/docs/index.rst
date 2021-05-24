@@ -1,5 +1,5 @@
 omni.isaac.range_sensor: Range based sensor Simulation
-##################################
+######################################################
 
 .. automodule:: omni.isaac.range_sensor._range_sensor
     :platform: Windows-x86_64, Linux-x86_64
@@ -14,7 +14,7 @@ Generated USD Schema API
 
 The following USD Schema API was automatically generated, it is provided here as a reference
 
-.. automodule:: pxr.RangeSensorSchema
+.. automodule:: omni.isaac.RangeSensorSchema
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:

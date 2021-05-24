@@ -1,8 +1,8 @@
-omni.isaac.ros2_bridge: ROS2 Bridge
-#################################
+omni.isaac.ros_bridge_ui: ROS Bridge UI
+#######################################
 
 
-.. automodule:: omni.isaac.ros2_bridge._ros2_bridge
+.. automodule:: omni.isaac.ros_bridge_ui
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
@@ -13,7 +13,7 @@ omni.isaac.ros2_bridge: ROS2 Bridge
 Generated USD Schema API
 ========================
 
-.. automodule:: pxr.RosBridgeSchema
+.. automodule:: omni.isaac.RosBridgeSchema
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:

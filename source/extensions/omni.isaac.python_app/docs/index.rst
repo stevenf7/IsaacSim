@@ -1,17 +1,9 @@
-omni.isaac.utils: Isaac Utilities
-#################################
+omni.isaac.python_app: Isaac Python Utilities
+#############################################
 
-This extension provides an interface to the utilities package to be used with :obj:`omni.isaac.dynamic_control`.
+This extension provides convenience functions when running in pure python mode
 
-.. automodule:: omni.isaac.utils._isaac_utils.surface_grippers
-    :platform: Windows-x86_64, Linux-x86_64
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :imported-members:
-    :exclude-members: 
-
-.. automodule:: omni.isaac.utils._isaac_utils.math
+.. automodule:: omni.isaac.python_app
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:

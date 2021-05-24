@@ -1,11 +1,6 @@
 omni.isaac.synthetic_utils: Tools for Generating Synthetic Data
 ###############################################################
 
-.. autoclass:: omni.isaac.synthetic_utils.OmniKitHelper
-    :members:
-    :undoc-members:
-    :no-show-inheritance:
-
 .. autoclass:: omni.isaac.synthetic_utils.DomainRandomization
     :members:
     :undoc-members:

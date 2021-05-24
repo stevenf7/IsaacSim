@@ -62,6 +62,7 @@ vscode.python_env.PYTHONPATH= [
 vscode.python_env.PATH= [
   "$$$${PATH}", 
   "$root/_build/$platform/$config",
+  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/bin",
   "$root/_build/$platform/$config/kit",
   "$root/_build/$platform/$config/kit/exts/*/bin",
   "$root/_build/$platform/$config/kit/extscore/*/bin",
@@ -127,20 +128,59 @@ registries = [
 # Documentation building
 ########################################################################################################################
 
-[repo_build_docs]
+[repo_docs]
+
 enabled = true
 
-# Use python from kit sdk
-python_path =  "${root}/_build/kit/${config}/_build/${platform}/${config}/python${shell_ext}"
+# the name of you project.  should be a single word. used to name files.
+project = "isaac_sim"
 
-# differentiate debug/release docs
-enable_build_config_choice = true
+# a slightly more descriptive name for your project. user visible. keep it short.
+long_name = "Isaac Sim"
+
+# first year in your projects copyright.
+copyright_start = 2018
+
+# # Use python from kit sdk
+python_path =  "${root}/_build/${platform}/${config}/python${shell_ext}"
 
 # Add all extensions to docs sys.path
-extra_sys_paths = [
-    "${root}/_build/${platform}/${config}/exts/*"
-]
+extra_sys_paths = []
 
+# sphinx_conf_py_extra = """
+#     import os
+# """
+
+sphinx_exclude_patterns = [
+    "**/omni.isaac.app",
+    "**/omni.isaac.app.launcher",
+    "**/omni.isaac.app.setup",
+    "**/omni.isaac.decals",
+    "**/omni.isaac.exploded_view",
+    "**/omni.isaac.internal_tools",
+    "**/omni.isaac.manip",
+    "**/omni.isaac.robot_engine_bridge",     #TODO
+    "**/omni.isaac.robot_engine_bridge_gxf",     #TODO
+    "**/omni.isaac.ros2_bridge",     #TODO
+    "**/omni.isaac.ros_bridge",     #TODO
+    "**/omni.isaac.samples",     #TODO?
+    "**/omni.isaac.samples_internal",
+    "**/omni.isaac.shapenet",     #TODO?
+    "**/omni.isaac.splash",
+    "**/omni.isaac.step_importer",     #TODO?
+    "**/omni.isaac.tests",
+    "**/omni.isaac.utils_manager",
+    "**/omni.kit.property.isaac",
+    "**/omni.usd.schema.isaac",     #TODO?
+    "include",
+    "tools",
+    "tests",
+    "**/README.md",
+    "TESTING.md",
+    "**/CHANGELOG.md",
+    "CHANGELOG.md",
+    "**/*LICENSE.md"
+]
 
 ########################################################################################################################
 # Build Number 
