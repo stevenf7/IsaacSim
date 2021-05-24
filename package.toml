@@ -92,7 +92,7 @@ files = [
     ["repo_tools.toml"],
     ["package.toml"],
     ["PACKAGE-INFO.yaml"],
-    ["VERSION.md"],
+    ["VERSION"],
 ]
 
 
