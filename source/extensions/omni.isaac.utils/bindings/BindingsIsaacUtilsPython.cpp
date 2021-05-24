@@ -292,30 +292,27 @@ PYBIND11_MODULE(_isaac_utils, m)
 
              )pbdoc");
     math.def("inverse", py::overload_cast<const carb::Float4&>(&omni::isaac::utils::math::inverse),
-             R"pbdoc(
-                Gets Inverse Quaternion
+             R"pbdoc(Gets Inverse Quaternion
+             Args:
 
-                Args:
+                 arg0 (:obj:`carb.Float4`): quaternion
 
-                    arg0 (:obj:`carb.Float4`): quaternion
-                Returns:
+             Returns:
+             
+                 :obj:`carb.Float4`: The inverse quaternion
 
-                    :obj:`carb.Float4`: The inverse quaternion
-
-                )pbdoc");
+             )pbdoc");
     math.def("inverse", py::overload_cast<const DcTransform&>(&omni::isaac::utils::math::inverse),
-             R"pbdoc(
-                Gets Inverse Transform
+             R"pbdoc(Gets Inverse Transform
+             Args:
 
-                Args:
+                 arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
 
-                    arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
+             Returns:
 
-                Returns:
+                 :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: The inverse Inverse Transform
 
-                    :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: The inverse Inverse Transform
-
-                )pbdoc");
+             )pbdoc");
     math.def("normalize", py::overload_cast<const carb::Float3&>(&omni::isaac::utils::math::normalize),
              R"pbdoc(
                 Gets normalized 3D vector

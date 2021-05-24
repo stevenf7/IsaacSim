@@ -182,7 +182,7 @@ PYBIND11_MODULE(_range_sensor, m)
                     arg0 (:obj:`str`): USD path to sensor as a string
                 
                 Returns:
-                :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and scaled 
+                    :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and scaled 
                                       by min and max distance)pbdoc")
 
         .def("get_linear_depth_data",
@@ -345,7 +345,7 @@ PYBIND11_MODULE(_range_sensor, m)
                     arg0 (:obj:`str`): USD path to sensor as a string
                 
                 Returns:
-                :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and
+                    :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and
                                       scaled by min and max distance)pbdoc")
         .def("get_linear_depth_data",
              [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
@@ -518,7 +518,7 @@ PYBIND11_MODULE(_range_sensor, m)
                 arg0 (:obj:`str`): USD path to sensor as a string
 
             Returns:
-            :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and scaled
+                :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and scaled
                                   by min and max distance)pbdoc")
 
         .def("get_linear_depth_data",
