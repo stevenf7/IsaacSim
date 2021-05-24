@@ -9,7 +9,6 @@ import asyncio
 from pxr import Gf, Kind, Sdf, Usd, UsdGeom, UsdShade
 
 from omni.isaac.decals import _decals
-from omni.kit.builtin.commands.usd_commands import *
 
 
 class TestDecals(omni.kit.test.AsyncTestCaseFailOnLogError):

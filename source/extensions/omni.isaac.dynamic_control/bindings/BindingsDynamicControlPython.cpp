@@ -65,6 +65,7 @@ PYBIND11_MODULE(_dynamic_control, m)
 
     // We use carb data types, must import bindings for them
     auto carb_module = py::module::import("carb");
+    auto numpy_common_module = py::module::import("omni.kit.numpy.common");
 
     m.doc() =
         R"pbdoc(
