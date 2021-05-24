@@ -22,7 +22,7 @@ from .utils.simple_robot_controller import RobotController
 from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics, create_background
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-EXTENSION_NAME = "Simple Robot Navigation"
+EXTENSION_NAME = "Robot Navigation"
 
 
 def create_xyz(init={"X": 100, "Y": 100, "Z": 0}):
@@ -173,7 +173,7 @@ class Extension(omni.ext.IExt):
         done, pending = await asyncio.wait({task})
         if task in done:
             self._stage = self._usd_context.get_stage()
-            # setup simple robot controller
+            # setup robot controller
             self._rc = RobotController(
                 self._stage,
                 self._timeline,
