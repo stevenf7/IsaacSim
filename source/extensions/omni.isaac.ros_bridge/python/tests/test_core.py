@@ -9,7 +9,7 @@ from omni.isaac.ros_bridge import _ros_bridge
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
-from omni.isaac.ros_ui.scripts.roscore import Roscore
+from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
 from .common import wait_for_rosmaster, bridge_rosmaster_connect
 import carb
 

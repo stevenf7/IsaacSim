@@ -11,7 +11,7 @@ import asyncio
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.ros_ui.scripts.roscore import Roscore
+from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
 from .common import create_joint_state, set_rotate, set_translate, simulate, wait_for_rosmaster
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from omni.isaac.utils.scripts.test_utils import load_test_file

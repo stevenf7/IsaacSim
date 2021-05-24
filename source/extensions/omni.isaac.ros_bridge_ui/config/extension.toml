@@ -8,7 +8,7 @@ category = "Simulation"
 title = "ROS UI"
 description = "Contains UI elements and scripts shared by both ROS and ROS2 bridges"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.ros_ui"
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.ros_bridge_ui"
 keywords = ["isaac", "ROS"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -23,8 +23,8 @@ icon = "data/icon.png"
 "omni.usd" = {}
 
 [[python.module]]
-name = "omni.isaac.ros_ui"
+name = "omni.isaac.ros_bridge_ui"
 
 [[python.module]]
-name = "omni.isaac.ros_ui.tests"
+name = "omni.isaac.ros_bridge_ui.tests"
 public = false
