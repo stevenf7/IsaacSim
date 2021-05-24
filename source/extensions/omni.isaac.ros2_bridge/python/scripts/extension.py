@@ -32,5 +32,5 @@ class Extension(omni.ext.IExt):
             _ros2_bridge.release_ros2_bridge_interface(self._ros2bridge)
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         if ext_manager.is_extension_enabled("omni.isaac.ros_bridge") is False:
-            ext_manager.set_extension_enabled("omni.isaac.ros_ui", False)
+            ext_manager.set_extension_enabled("omni.isaac.ros_bridge_ui", False)
             return

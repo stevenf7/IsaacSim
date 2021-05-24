@@ -22,7 +22,7 @@ icon = "data/icon.png"
 "omni.syntheticdata" = {}
 "omni.isaac.utils" = {}
 "omni.usd.schema.isaac" = {}
-"omni.isaac.ros_ui" = {}
+"omni.isaac.ros_bridge_ui" = {}
 
 
 [[python.module]]
