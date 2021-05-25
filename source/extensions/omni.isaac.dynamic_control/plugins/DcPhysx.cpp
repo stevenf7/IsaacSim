@@ -2618,6 +2618,9 @@ bool CARB_ABI DcGetDofProperties(DcHandle dofHandle, DcDofProperties* props)
     PxArticulationDriveType::Enum driveType;
     pxJoint->getDrive(dof->pxAxis, props->stiffness, props->damping, props->maxEffort, driveType);
 
+    // get the max joint velocity.
+    props->maxVelocity = pxJoint->getMaxJointVelocity();
+
     // cached drive mode
     // HMMM... should we take the actual driveType into account?
     props->driveMode = dof->driveMode;
