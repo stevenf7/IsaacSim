@@ -10,11 +10,6 @@ import weakref
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
-        self._nucleus_path = nucleus_server
 
         manip_menu = [
             MenuItemDescription(
@@ -101,7 +96,13 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items, "Create")
 
     def create_asset(self, usd_path, stage_path):
-        print(self._nucleus_path + usd_path)
+
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
+        self._nucleus_path = nucleus_server
+
         omni.kit.commands.execute(
             "CreateReferenceCommand",
             usd_context=omni.usd.get_context(),
