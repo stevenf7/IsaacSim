@@ -10,10 +10,10 @@ pages:
     - wget --no-verbose --output-document=docs.7z --no-check-certificate --http-user=svcgtlautomate '--http-password=@ut0M@t3GTL$cr1pt$' https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndPackaging_OmniDocsBuildLinuxX8664/.lastSuccessful/omniverse-robotics-docs%40%7Bbuild.number%7D.7z
     - wget --no-verbose --output-document=pydocs.zip --no-check-certificate --http-user=svcgtlautomate '--http-password=@ut0M@t3GTL$cr1pt$' https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/docs%40%7Bbuild.number%7D.linux-x86_64.zip
     - 7z x docs.7z -o.public
-    - 7z x pydocs.zip -opy
-    - ls py
-    - mv py .public/
-    - ls .public/py/
+    - 7z x pydocs.zip -oisaacsim
+    - mkdir -p .public/py/
+    - mv isaacsim .public/py/
+    - ls .public/py/isaacsim
     - mv .public public
   artifacts:
     paths:
