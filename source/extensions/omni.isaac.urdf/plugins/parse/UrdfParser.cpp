@@ -11,7 +11,8 @@
 
 #include "../core/PathUtils.h"
 
-//#define VERBOSE_URDF
+#include <carb/logging/Log.h>
+
 namespace omni
 {
 namespace isaac
@@ -1164,9 +1165,7 @@ bool parseUrdf(const std::string& urdfPackagePath, const std::string& urdfFileRe
 
     path = urdfPackagePath + "/" + urdfFileRelativeToPackage;
 
-#ifdef VERBOSE_URDF
-    printf("Loading URDF at '%s'", path.c_str());
-#endif
+    CARB_LOG_INFO("Loading URDF at '%s'", path.c_str());
 
     // Weird stack smashing error with tinyxml2 when the descructor is called
     static tinyxml2::XMLDocument doc;
@@ -1188,9 +1187,7 @@ bool parseUrdf(const std::string& urdfPackagePath, const std::string& urdfFileRe
         return false;
     }
 
-#ifdef VERBOSE_URDF
-    std::cout << urdfRobot << std::endl;
-#endif
+    // std::cout << urdfRobot << std::endl;
 
     return true;
 }

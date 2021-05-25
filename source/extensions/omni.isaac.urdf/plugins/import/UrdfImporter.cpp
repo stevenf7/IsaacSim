@@ -50,7 +50,6 @@
 #include <physxSchema/physxJointAPI.h>
 
 #include "ImportHelpers.h"
-//#define VERBOSE_URDF
 
 namespace omni
 {
@@ -84,7 +83,8 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
                      std::string name,
                      Transform origin,
                      const bool loadMaterials,
-                     const float distanceScale)
+                     const float distanceScale,
+                     const bool flipVisuals)
 {
     pxr::SdfPath path;
     if (geometry.type == UrdfGeometryType::MESH)
@@ -114,11 +114,14 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
             {
                 CARB_LOG_WARN("Asset convert failed as asset cannot be loaded.");
             }
-            if (!sceneRAII->mRootNode)
+            else if (!sceneRAII || !sceneRAII->mRootNode)
             {
                 CARB_LOG_WARN("Asset convert failed as asset file is broken.");
             }
-            path = SimpleImport(stage, name, sceneRAII.get(), loadMaterials);
+            else
+            {
+                path = SimpleImport(stage, name, sceneRAII.get(), loadMaterials, flipVisuals);
+            }
         }
     }
     else if (geometry.type == UrdfGeometryType::SPHERE)
@@ -275,7 +278,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         }
 
         pxr::UsdPrim prim = addMesh(stage, link.visuals[i].geometry, assetRoot_, urdfPath_, meshName,
-                                    link.visuals[i].origin, loadMaterial, config.distanceScale);
+                                    link.visuals[i].origin, loadMaterial, config.distanceScale, false);
 
         if (loadMaterial == false)
         {
@@ -353,7 +356,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         }
 
         pxr::UsdPrim prim = addMesh(stage, link.collisions[i].geometry, assetRoot_, urdfPath_, meshName,
-                                    link.collisions[i].origin, false, config.distanceScale);
+                                    link.collisions[i].origin, false, config.distanceScale, false);
         // Enable collisions on prim
         if (prim)
         {
@@ -447,7 +450,8 @@ void AddSingleJoint(const UrdfJoint& joint,
 
             driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
             driveAPI.CreateStiffnessAttr().Set(joint.dynamics.stiffness);
-            physxJoint.CreateMaxJointVelocityAttr().Set(static_cast<float>(joint.limit.velocity));
+            // Prismatic joint velocity should be scaled to stage units, but not revolute
+            physxJoint.CreateMaxJointVelocityAttr().Set(static_cast<float>(joint.limit.velocity * distanceScale));
         }
         // continuous and revolute are identical except for setting limits
         else if (joint.type == UrdfJointType::REVOLUTE || joint.type == UrdfJointType::CONTINUOUS)
@@ -471,6 +475,7 @@ void AddSingleJoint(const UrdfJoint& joint,
             }
             driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
             driveAPI.CreateStiffnessAttr().Set(joint.dynamics.stiffness);
+            // Convert revolute joint velocity limit to deg/s
             physxJoint.CreateMaxJointVelocityAttr().Set(static_cast<float>(180.0f / M_PI * joint.limit.velocity));
         }
     }
@@ -665,7 +670,8 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
 {
     if (urdfRobot.links.size() >= 64)
     {
-        CARB_LOG_WARN("URDF cannot have more than 63 links to be imported as a physx articulation");
+        CARB_LOG_WARN(
+            "URDF cannot have more than 63 links to be imported as a physx articulation. Try enabling the merge fixed joints option to reduce the number of links.");
         CARB_LOG_WARN("URDF has %d links", static_cast<int>(urdfRobot.links.size()));
         return "";
     }

@@ -61,9 +61,7 @@ bool KinematicChain::computeKinematicChain(const UrdfRobot& urdfRobot)
         {
             if (std::find(childLinkNames.begin(), childLinkNames.end(), link.second.name) == childLinkNames.end())
             {
-#ifdef VERBOSE_URDF
                 CARB_LOG_INFO("Found base link called %s \n", link.second.name.c_str());
-#endif
                 baseLinkName = link.second.name;
                 break;
             }
@@ -91,9 +89,7 @@ void KinematicChain::computeChildNodes(std::unique_ptr<Node>& parentNode, const 
         {
             std::unique_ptr<Node> childNode = std::make_unique<Node>(joint.second.childLinkName, joint.second.name);
             parentNode->childNodes_.push_back(std::move(childNode));
-#ifdef VERBOSE_URDF
             CARB_LOG_INFO("Link %s has child %s \n", parentNode->linkName_.c_str(), joint.second.childLinkName.c_str());
-#endif
         }
     }
 

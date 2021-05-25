@@ -38,6 +38,7 @@ struct ImportConfig
     UrdfAxis upVector = { 0, 0, 1 };
     bool createPhysicsScene = true;
     bool makeDefaultPrim = true;
+    // bool flipVisuals = false;
 };
 
 

@@ -98,6 +98,10 @@ std::string importRobot(const std::string& assetRoot,
     {
         return urdfImporter.addToStage(stage, robot);
     }
+    else
+    {
+        CARB_LOG_ERROR("Stage pointer not valid, could not import urdf to stage");
+    }
     return "";
 }
 }
