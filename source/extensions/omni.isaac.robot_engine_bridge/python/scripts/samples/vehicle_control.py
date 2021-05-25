@@ -109,11 +109,6 @@ class Extension(omni.ext.IExt):
                 #     ui.Label("Steering Gain: ")
                 #     self._steering_gain = ui.FloatField().model
                 #     self._steering_gain.set_value(1.0)
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
-        self._nucleus_path = nucleus_server + "/Isaac"
 
     def _on_window(self, status):
         if status:
@@ -143,6 +138,11 @@ class Extension(omni.ext.IExt):
             self._vehicle_control.config.steering = 0.0
 
     def _on_environment_setup(self):
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
+        self._nucleus_path = nucleus_server + "/Isaac"
         # load REB vehicle stage
         asyncio.ensure_future(self._spawn_vehicle())
 
