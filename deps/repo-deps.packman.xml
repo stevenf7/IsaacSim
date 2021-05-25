@@ -12,7 +12,7 @@
     <package name="repo_package" version="5.2.43" />
   </dependency>
   <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing" tags="non-redist">
-    <package name="repo_licensing" version="0.4.5" />
+    <package name="repo_licensing" version="0.4.6" />
   </dependency>
   <dependency name="repo_codesign" linkPath="../_repo/deps/repo_codesign">
     <package name="repo_codesign" version="1.5" />
@@ -24,7 +24,7 @@
     <package name="repo_test" version="0.1.16" />
   </dependency>
   <dependency name="repo_kit_tools" linkPath="../_repo/deps/repo_kit_tools">
-    <package name="repo_kit_tools" version="0.4.1" />
+    <package name="repo_kit_tools" version="0.4.2" />
   </dependency>
     <dependency name="repo_changelog" linkPath="../_repo/deps/repo_changelog">
     <package name="repo_changelog" version="0.1.13" />
