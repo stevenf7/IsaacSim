@@ -1,4 +1,4 @@
-Kit Sdk: Extensions & Apps Example
+Isaac Sim: Extensions API
 ==================================
 
 .. toctree::
@@ -7,7 +7,6 @@ Kit Sdk: Extensions & Apps Example
    :glob:
 
    docs/manual/overview
-   docs/api/index
    source/extensions/index
 
    

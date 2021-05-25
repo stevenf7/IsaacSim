@@ -13,6 +13,12 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 # Packaging test_runner
 "$SCRIPT_DIR/../../../../repo.sh" package -m test_runner
 
+# Build docs
+"$SCRIPT_DIR/../../../../repo.sh" docs --config release
+
+# Packaging docs
+"$SCRIPT_DIR/../../../../repo.sh" package -m docs
+
 # publish artifacts to teamcity
 echo "##teamcity[publishArtifacts '_build/packages']"
 

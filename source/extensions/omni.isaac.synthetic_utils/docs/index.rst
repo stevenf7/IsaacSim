@@ -17,11 +17,11 @@ omni.isaac.synthetic_utils: Tools for Generating Synthetic Data
     :exclude-members: colorize_bboxes, colorize_segmentation, random_colours, save_bbox, save_image, save_segmentation
     :no-show-inheritance:
 
-.. automodule:: omni.isaac.synthetic_utils.scripts.camera
-    :members:
-    :undoc-members:
-    :private-members:
-    :no-show-inheritance:
+.. .. automodule:: omni.isaac.synthetic_utils.scripts.camera
+..     :members:
+..     :undoc-members:
+..     :private-members:
+..     :no-show-inheritance:
 
 .. automodule:: omni.isaac.synthetic_utils.scripts.shapenet
     :members:
@@ -29,11 +29,11 @@ omni.isaac.synthetic_utils: Tools for Generating Synthetic Data
     :private-members:
     :no-show-inheritance:
 
-.. automodule:: omni.isaac.synthetic_utils.scripts.utils
-    :members:
-    :undoc-members:
-    :private-members:
-    :no-show-inheritance:
+.. .. automodule:: omni.isaac.synthetic_utils.scripts.utils
+..     :members:
+..     :undoc-members:
+..     :private-members:
+..     :no-show-inheritance:
 
 .. automodule:: omni.isaac.synthetic_utils.scripts.visualization
     :members:
