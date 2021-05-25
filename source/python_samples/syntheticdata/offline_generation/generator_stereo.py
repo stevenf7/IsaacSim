@@ -207,6 +207,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
             if self._sensor_settings[viewport_name]["semantic"]["enabled"]:
                 gt_list.append("semanticSegmentation")
 
+            # Render new frame
+            self.kit.update()
+
             # Collect Groundtruth
             viewport = self._viewport.get_viewport_window(self._viewport.get_instance(viewport_name))
             gt = self.sd_helper.get_groundtruth(gt_list, viewport)
