@@ -25,20 +25,23 @@ from omni.isaac.python_app import OmniKitHelper
 RENDER_CONFIG = {
     "renderer": "RayTracedLighting",
     "samples_per_pixel_per_frame": 12,
-    "headless": False,
+    "headless": True,
     "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
+    "width": 1024,
+    "height": 800,
 }
 
 
 class RandomScenario(torch.utils.data.IterableDataset):
-    def __init__(self, scenario_path, max_queue_size):
+    def __init__(self, scenario_path, writer_mode, data_dir, max_queue_size, train_size, classes):
 
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
-        from omni.isaac.synthetic_utils import SyntheticDataHelper, DataWriter, DomainRandomization
+        from omni.isaac.synthetic_utils import SyntheticDataHelper, DataWriter, KittiWriter, DomainRandomization
 
         self.sd_helper = SyntheticDataHelper()
         self.dr_helper = DomainRandomization()
-        self.writer_helper = DataWriter
+        self.writer_mode = writer_mode
+        self.writer_helper = KittiWriter if writer_mode == "kitti" else DataWriter
         self.dr_helper.toggle_manual_mode()
         self.stage = self.kit.get_stage()
         self.result = True
@@ -55,6 +58,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.scenario_path = scenario_path
         self.max_queue_size = max_queue_size
         self.data_writer = None
+        self.data_dir = data_dir
+        self.train_size = train_size
+        self.classes = classes
 
         self._setup_world(scenario_path)
         self.cur_idx = 0
@@ -105,11 +111,19 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self._enable_bbox_2d_tight_npy = True
         self._enable_bbox_2d_loose_npy = True
         self._num_worker_threads = 4
-        self._output_folder = os.getcwd() + "/output"
+        self._output_folder = self.data_dir
 
         # Write to disk
         if self.data_writer is None:
-            self.data_writer = self.writer_helper(self._output_folder, self._num_worker_threads, self.max_queue_size)
+            print(f"Writing data to {self._output_folder}")
+            if self.writer_mode == "kitti":
+                self.data_writer = self.writer_helper(
+                    self._output_folder, self._num_worker_threads, self.max_queue_size, self.train_size, self.classes
+                )
+            else:
+                self.data_writer = self.writer_helper(
+                    self._output_folder, self._num_worker_threads, self.max_queue_size
+                )
             self.data_writer.start_threads()
 
         viewport_iface = omni.kit.viewport.get_viewport_interface()
@@ -141,6 +155,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
             gt_list.append("instanceSegmentation")
         if self._enable_semantic:
             gt_list.append("semanticSegmentation")
+
+        # Render new frame
+        self.kit.update()
 
         # Collect Groundtruth
         gt = self.sd_helper.get_groundtruth(gt_list, viewport)
@@ -187,6 +204,8 @@ class RandomScenario(torch.utils.data.IterableDataset):
             groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
             groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self._enable_bbox_2d_loose_colorize
             groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = self._enable_bbox_2d_loose_npy
+            groundtruth["METADATA"]["BBOX2DLOOSE"]["WIDTH"] = RENDER_CONFIG["width"]
+            groundtruth["METADATA"]["BBOX2DLOOSE"]["HEIGHT"] = RENDER_CONFIG["height"]
 
         self.data_writer.q.put(groundtruth)
 
@@ -201,10 +220,26 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Dataset generator")
     parser.add_argument("--scenario", type=str, help="Scenario to load from omniverse server")
     parser.add_argument("--num_frames", type=int, default=10, help="Number of frames to record")
+    parser.add_argument("--writer_mode", type=str, default="npy", help="Specify output format - npy or kitti")
+    parser.add_argument(
+        "--data_dir", type=str, default=os.getcwd() + "/output", help="Location where data will be output"
+    )
     parser.add_argument("--max_queue_size", type=int, default=500, help="Max size of queue to store and process data")
+    parser.add_argument(
+        "--train_size", type=int, default=8, help="Number of frames for training set, works when writer_mode is kitti"
+    )
+    parser.add_argument(
+        "--classes",
+        type=str,
+        nargs="+",
+        default=[],
+        help="Which classes to write labels for, works when writer_mode is kitti.  Defaults to all classes",
+    )
     args = parser.parse_args()
 
-    dataset = RandomScenario(args.scenario, args.max_queue_size)
+    dataset = RandomScenario(
+        args.scenario, args.writer_mode, args.data_dir, args.max_queue_size, args.train_size, args.classes
+    )
 
     if dataset.result:
         # Iterate through dataset and visualize the output

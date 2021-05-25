@@ -6,4 +6,5 @@ from . import visualization as visualization
 
 from .syntheticdata import SyntheticDataHelper
 from .writer import DataWriter
+from .kitti_writer import KittiWriter
 from .domainrandomization import DomainRandomization
