@@ -151,7 +151,11 @@ static aiMatrix4x4 GetLocalTransform(const aiNode* node)
 }
 
 
-pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage, std::string path, const aiScene* mScene, const bool loadMaterials)
+pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
+                          std::string path,
+                          const aiScene* mScene,
+                          const bool loadMaterials,
+                          const bool flipVisuals)
 {
     std::vector<Mesh> mMeshPrims;
     std::vector<aiNode*> nodesToProcess;
@@ -171,6 +175,15 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage, std::string path, const 
         aiMatrix4x4 transform = GetLocalTransform(node);
         for (size_t i = 0; i < node->mNumMeshes; i++)
         {
+            // if (flipVisuals)
+            // {
+            //     aiMatrix4x4 flip;
+            //     flip[0][0] = 1.0;
+            //     flip[2][1] = 1.0;
+            //     flip[1][2] = -1.0;
+            //     flip[3][3] = 1.0f;
+            //     transform = transform * flip;
+            // }
             meshTransforms.push_back(std::pair<int, aiMatrix4x4>(node->mMeshes[i], transform));
         }
         // process any meshes in this node:

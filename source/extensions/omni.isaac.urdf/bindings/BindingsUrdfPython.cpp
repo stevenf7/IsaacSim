@@ -96,6 +96,7 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("import_inertia_tensor", &ImportConfig::importInertiaTensor,
                        "Import inertia tensor from urdf, if not specified in urdf it will import as identity")
         .def_readwrite("fix_base", &ImportConfig::fixBase, "Create fix joint for base link")
+        // .def_readwrite("flip_visuals", &ImportConfig::flipVisuals, "Flip visuals from Y up to Z up")
         .def_readwrite("self_collision", &ImportConfig::selfCollision, "Self collisions between links in the articulation")
         .def_readwrite("density", &ImportConfig::density, "default density used for links")
         .def_readwrite("default_drive_type", &ImportConfig::defaultDriveType, "default drive type used for joints")
@@ -113,6 +114,7 @@ PYBIND11_MODULE(_urdf, m)
         .def("set_import_inertia_tensor",
              [](ImportConfig& config, const bool value) { config.importInertiaTensor = value; })
         .def("set_fix_base", [](ImportConfig& config, const bool value) { config.fixBase = value; })
+        // .def("set_flip_visuals", [](ImportConfig& config, const bool value) { config.flipVisuals = value; })
         .def("set_self_collision", [](ImportConfig& config, const bool value) { config.selfCollision = value; })
         .def("set_density", [](ImportConfig& config, const float value) { config.density = value; })
         .def("set_default_drive_type",
