@@ -292,3 +292,40 @@ executables = [
 [bump_version]
 git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/Isaac/omni_isaac_sim.git"
 branch_name = "develop"
+
+
+########################################################################################################################
+# Extensions publisher
+########################################################################################################################
+
+[repo_publish_exts]
+enabled = true
+
+kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
+
+publish_root = "${root}/_build/$platform/$config"
+
+ext_folders = [
+  "${publish_root}/exts"
+]
+
+# Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
+exts.include = [
+    "omni.isaac.dynamic_control",
+    "omni.isaac.motion_planning",
+    "omni.isaac.utils",
+    "omni.isaac.manip",
+    "omni.isaac.samples"
+]
+exts.exclude = []
+
+# Registries to publish to.
+registries = [
+    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+]
+
+# verify before publishing
+publish_verification = true
+
+# When running from package, look for package using that path/pattern:
+archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"

@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.6] - 2021-05-24
+========================
+
+Added
+-------
+- Added dofbot sample
+- Updated to latest physics api
 
 [0.1.5] - 2021-03-06
 ========================
