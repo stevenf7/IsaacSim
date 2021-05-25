@@ -120,10 +120,14 @@ class Extension(omni.ext.IExt):
                             with ui.CollapsableFrame("Body States", height=ui.Pixel(0), collapsed=True):
                                 with ui.ScrollingFrame(height=ui.Pixel(150)):
                                     self.body_states_label = ui.Label("")
-                            with ui.CollapsableFrame("DOF States", height=ui.Pixel(0), collapsed=True):
+                            with ui.CollapsableFrame(
+                                "Degree of freedom (DOF) States", height=ui.Pixel(0), collapsed=True
+                            ):
                                 with ui.ScrollingFrame(height=ui.Pixel(100)):
                                     self.dof_states_label = ui.Label("")
-                            with ui.CollapsableFrame("DOF Properties", height=ui.Pixel(0), collapsed=True):
+                            with ui.CollapsableFrame(
+                                "Degree of freedom (DOF) Properties", height=ui.Pixel(0), collapsed=True
+                            ):
                                 with ui.ScrollingFrame(height=ui.Pixel(130)):
                                     self.dof_props_label = ui.Label("")
 

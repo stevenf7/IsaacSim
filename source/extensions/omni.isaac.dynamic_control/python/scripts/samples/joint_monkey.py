@@ -153,14 +153,13 @@ class Extension(omni.ext.IExt):
 
         num_dofs = self._dc.get_articulation_dof_count(self.ar)
         dof_props = self._dc.get_articulation_dof_properties(self.ar)
-        self.dof_props_label.text = str("--- DOF properties:\n") + str(dof_props) + "\n"
 
         dof_types = dof_props["type"]
         has_limits = dof_props["hasLimits"]
         lower_limits = dof_props["lower"]
         upper_limits = dof_props["upper"]
 
-        self.dof_props_label.text = str("--- DOF properties:\n") + str(dof_props) + "\n"
+        self.dof_props_label.text = str("--- Degree of freedom (DOF) properties:\n") + str(dof_props) + "\n"
 
         # allocate dof state buffer
         dof_states = np.zeros(num_dofs, dtype=_dynamic_control.DofState.dtype)
@@ -241,6 +240,6 @@ class Extension(omni.ext.IExt):
             self._dc.wake_up_articulation(self.ar)
             self._dc.set_articulation_dof_position_targets(self.ar, self.dof_positions)
             dof_states = self._dc.get_articulation_dof_states(self.ar, _dynamic_control.STATE_ALL)
-            self.dof_states_label.text = str("--- DOF states:\n") + str(dof_states) + "\n"
+            self.dof_states_label.text = str("--- Degree of freedom (DOF) states:\n") + str(dof_states) + "\n"
 
         return
