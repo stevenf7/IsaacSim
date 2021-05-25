@@ -233,6 +233,12 @@ omniverse_flow_version_scheme = true
 archive_format = "zip"
 strip_package_infos = true
 
+# to generate docs package for isaac sim
+[repo_package.packages.docs]
+omniverse_flow_version_scheme = true
+ziponly = true
+
+
 ########################################################################################################################
 # Package publishing to packman
 ########################################################################################################################

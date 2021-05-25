@@ -2,7 +2,7 @@ Extensions
 ##########
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :glob:
 
    omni.isaac.contact_sensor/docs/index
