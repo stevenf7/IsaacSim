@@ -510,20 +510,14 @@ class StepImporter(omni.ext.IExt):
             del self.part
             self.part = None
         if self._filepicker:
-            self._filepicker._widget._file_bar._click_apply_handler = None
-            self._filepicker._widget._click_apply_handler = None
-            self._filepicker._widget._file_bar._click_cancel_handler = None
-            self._filepicker._widget._click_cancel_handler = None
             self._filepicker.toggle_bookmark_from_path(
                 "Built In STEP Files", (self.extension_path + "/data/step"), False
             )
+            self._filepicker.destroy()
             self._filepicker = None
 
         if self._folder_picker:
-            self._folder_picker._widget._file_bar._click_apply_handler = None
-            self._folder_picker._widget._click_apply_handler = None
-            self._folder_picker._widget._file_bar._click_cancel_handler = None
-            self._folder_picker._widget._click_cancel_handler = None
+            self._folder_picker.destroy()
             self._folder_picker = None
         self._si = None
 
