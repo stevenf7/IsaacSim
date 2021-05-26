@@ -98,3 +98,19 @@ async def bridge_rosmaster_connect(_rosbridge):
         else:
             await omni.kit.app.get_app().next_update_async()
             tries = tries + 1
+
+
+async def add_cube(stage, path, size, offset):
+    from pxr import UsdPhysics, UsdGeom
+
+    cubeGeom = UsdGeom.Cube.Define(stage, path)
+    cubePrim = stage.GetPrimAtPath(path)
+
+    cubeGeom.CreateSizeAttr(size)
+    cubeGeom.AddTranslateOp().Set(offset)
+    await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
+    rigid_api = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+    rigid_api.CreateRigidBodyEnabledAttr(True)
+    UsdPhysics.CollisionAPI.Apply(cubePrim)
+
+    return cubeGeom

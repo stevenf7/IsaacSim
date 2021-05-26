@@ -88,7 +88,7 @@ class ROSBridgeCreateCamera(omni.kit.commands.Command):
             self._prim.CreateCameraInfoPubTopicAttr("/camera_info")
             self._prim.CreateRgbPubTopicAttr("/rgb")
             self._prim.CreateDepthPubTopicAttr("/depth")
-            self._prim.CreateFrameIdAttr("/sim_camera")
+            self._prim.CreateFrameIdAttr("sim_camera")
             self._prim.CreateSemanticPubTopicAttr("/semantic")
             self._prim.CreateInstancePubTopicAttr("/instance")
             self._prim.CreateLabelPubTopicAttr("/label")
@@ -150,7 +150,7 @@ class ROSBridgeCreateLidar(omni.kit.commands.Command):
         if success and self._prim:
             self._prim.CreateLaserScanPubTopicAttr("/laser_scan")
             self._prim.CreateLidarPrimRel()
-            self._prim.CreateFrameIdAttr("/sim_lidar")
+            self._prim.CreateFrameIdAttr("sim_lidar")
             self._prim.CreatePointCloudPubTopicAttr("/point_cloud")
             self._prim.CreatePointCloudEnabledAttr(False)
 
@@ -299,8 +299,8 @@ class ROSBridgeCreateDifferentialBase(omni.kit.commands.Command):
             self._prim.CreateStatePubTopicAttr("/odom")
             self._prim.CreateCommandSubTopicAttr("/cmd_vel")
             self._prim.CreateQueueSizeAttr(0)
-            self._prim.CreateOdomFrameIdAttr("/odom")
-            self._prim.CreateBaseFrameIdAttr("/base_link")
+            self._prim.CreateOdomFrameIdAttr("odom")
+            self._prim.CreateBaseFrameIdAttr("base_link")
             rel_paths = self._prim.CreateChassisPrimRel()
             if self._chassis_prim_rel is not None:
                 if len(self._chassis_prim_rel) == 1:

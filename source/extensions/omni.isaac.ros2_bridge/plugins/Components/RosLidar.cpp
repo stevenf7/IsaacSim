@@ -149,11 +149,12 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
     {
         CARB_LOG_ERROR("High LOD not supported, only 2D Lidar Supported");
     }
-    int numBeams = numColsTicked * numRows;
+    size_t numBeams = numColsTicked * numRows;
 
     float* theta = mLidarSensorInterface->getAzimuthData(mLidarPath.GetString().c_str());
     float* phi = mLidarSensorInterface->getZenithData(mLidarPath.GetString().c_str()); // should have one entry
     float* ranges = mLidarSensorInterface->getLinearDepthData(mLidarPath.GetString().c_str());
+    uint8_t* intensities = mLidarSensorInterface->getIntensityData(mLidarPath.GetString().c_str());
 
     float maxRange = 100;
     float minRange = 0.4;
@@ -166,15 +167,21 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
     isaac::utils::safeGetAttribute(mLidarPrim.GetHorizontalResolutionAttr(), horizontalResolution);
 
 
-    laser_msg.angle_min = theta[0];
-    laser_msg.angle_max = theta[numColsTicked - 1];
+    laser_msg.angle_min = std::min(theta[0], theta[numColsTicked - 1]);
+    laser_msg.angle_max = std::max(theta[0], theta[numColsTicked - 1]);
     laser_msg.angle_increment = horizontalResolution * M_PI / 180.0;
     laser_msg.time_increment = mTimeDelta;
     laser_msg.scan_time = rotationRate ? 1.0 / rotationRate : 0;
     laser_msg.range_min = minRange;
     laser_msg.range_max = maxRange;
     laser_msg.ranges.resize(numBeams);
+    laser_msg.intensities.resize(numBeams);
     std::memcpy(laser_msg.ranges.data(), ranges, numBeams * sizeof(float));
+    // Need to convert from uint8 to float
+    for (size_t i = 0; i < numBeams; i++)
+    {
+        laser_msg.intensities[i] = static_cast<float>(intensities[i]);
+    }
 
     static_cast<rclcpp::Publisher<sensor_msgs::msg::LaserScan, std::allocator<void>>*>(pub)->publish(laser_msg);
 }
