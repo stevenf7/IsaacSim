@@ -75,10 +75,12 @@ PYBIND11_MODULE(_contact_sensor, m)
                        "Position relative to the parent body where the sensor is placed. (:obj:`carb.Float3`)")
         .def_readwrite("radius", &CsProperties::radius,
                        "Sensor radius. Negative values indicate it's a full body sensor. (:obj:`float`)")
-        .def_readwrite("minThreshold", &CsProperties::minThreshold,
-                       "Sensor radius. Negative values indicate it's a full body sensor. (:obj:`float`)")
-        .def_readwrite("maxThreshold", &CsProperties::maxThreshold,
-                       "Sensor radius. Negative values indicate it's a full body sensor. (:obj:`float`)")
+        .def_readwrite(
+            "minThreshold", &CsProperties::minThreshold,
+            "Minimum force that the sensor can read. Forces below this value will not trigger a reading. (:obj:`float`)")
+        .def_readwrite(
+            "maxThreshold", &CsProperties::maxThreshold,
+            "Maximum force that the sensor can register. Forces above this value will be clamped. (:obj:`float`)")
         .def_readwrite("sensorPeriod", &CsProperties::sensorPeriod,
                        "Sensor reading period in seconds. zero means sync with simulation timestep (:obj:`float`)");
 
