@@ -215,6 +215,8 @@ class Extension(omni.ext.IExt):
         # merged_mesh.CreateTriangleSubdivisionRuleAttr("smooth")
         merged_mesh.CreatePointsAttr(all_points)
         merged_mesh.CreateNormalsAttr(all_normals)
+        merged_mesh.SetNormalsInterpolation(UsdGeom.Tokens.faceVarying)
+        merged_mesh.CreateSubdivisionSchemeAttr("none")
         merged_mesh.CreateFaceVertexCountsAttr(all_vertex_counts)
         merged_mesh.CreateFaceVertexIndicesAttr(all_vertex_indices)
         extent = merged_mesh.ComputeExtent(all_points)
