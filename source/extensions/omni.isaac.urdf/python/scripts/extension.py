@@ -299,10 +299,10 @@ class Extension(omni.ext.IExt):
             "Import URDF",
             allow_multi_selection=False,
             apply_button_label="Import",
-            click_apply_handler=lambda filename, path: self._select_picked_file_callback(
+            click_apply_handler=lambda filename, path, c=weakref.proxy(self): c._select_picked_file_callback(
                 self._filepicker, filename, path
             ),
-            click_cancel_handler=lambda a, b: self._filepicker.hide(),
+            click_cancel_handler=lambda a, b, c=weakref.proxy(self): c._filepicker.hide(),
             item_filter_fn=on_filter_item,
             enable_versioning_pane=True,
         )

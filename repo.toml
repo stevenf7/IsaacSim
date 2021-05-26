@@ -315,7 +315,8 @@ exts.include = [
     "omni.isaac.motion_planning",
     "omni.isaac.utils",
     "omni.isaac.manip",
-    "omni.isaac.samples"
+    "omni.isaac.samples",
+    "omni.isaac.urdf"
 ]
 exts.exclude = []
 
