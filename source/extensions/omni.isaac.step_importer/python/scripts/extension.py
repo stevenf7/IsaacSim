@@ -78,16 +78,16 @@ class StepImporter(omni.ext.IExt):
             "Select output",
             allow_multi_selection=False,
             apply_button_label="Select folder",
-            click_apply_handler=weakref.proxy(self)._on_open_folder_selected,
-            click_cancel_handler=weakref.proxy(self)._on_picker_cancel,
+            click_apply_handler=lambda a, b, c=weakref.proxy(self): c._on_open_folder_selected(a, b),
+            click_cancel_handler=lambda a, b, c=weakref.proxy(self): c._on_picker_cancel(a, b),
             item_filter_fn=on_filter_folder,
         )
         self._filepicker = FilePickerDialog(
             "Import STEP",
             allow_multi_selection=False,
             apply_button_label="Import",
-            click_apply_handler=weakref.proxy(self)._select_picked_file_callback,
-            click_cancel_handler=weakref.proxy(self)._on_picker_cancel,
+            click_apply_handler=lambda a, b, c=weakref.proxy(self): c._select_picked_file_callback(a, b),
+            click_cancel_handler=lambda a, b, c=weakref.proxy(self): c._on_picker_cancel(a, b),
             item_filter_fn=on_filter_item,
         )
         self.extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(self.ext_id)
