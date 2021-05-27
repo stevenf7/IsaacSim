@@ -300,21 +300,26 @@ class Extension(omni.ext.IExt):
                 with ui.VStack(height=0):
                     self._selected_data_output = ui.ComboBox(
                         0,
-                        "Cooordinates in stage space",
-                        "ROS Occupancy Map Parameters file (YAML)",
+                        "Cooordinates in Stage Space",
+                        "ROS Occupancy Map Parameters File (YAML)",
                         height=0,
                         width=300,
                     )
 
                     ui.Spacer(height=5)
                     data = ui.StringField(height=100, multiline=True).model
-
                     image_details_text = f"Top Left: {top_left}\t\t Top Right: {top_right}\n Bottom Left: {bottom_left}\t\t Bottom Right: {bottom_right}"
                     image_details_text += f"\nCoordinates of top left of image (pixel 0,0) as origin, + X down, + Y right:\n{float(image_coords[0][0]), float(image_coords[1][0])}"
                     image_details_text += f"\nImage size in pixels: {int(size[0] / scale)}, {int(size[1] / scale)}"
 
                     scale_to_meters = 100.0
-                    ros_yaml_file_text = "image: carter_2dnav_map.png"
+
+                    stage = omni.usd.get_context().get_stage()
+                    root = stage.GetRootLayer()
+                    default_image_name = root.GetDisplayName().rsplit(".", 1)[0]
+                    default_image_name += ".png"
+
+                    ros_yaml_file_text = "image: " + default_image_name
                     ros_yaml_file_text += (
                         f"\nresolution: {float(self.cell_size.model.get_value_as_float() / scale_to_meters)}"
                     )
