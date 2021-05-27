@@ -42,19 +42,27 @@ PYBIND11_MODULE(_manip, m)
            
             ::
 
-                from omni.isaac.manip import _manip
-                manip_interface = _manip.acquire()
-                
-                # bind with gamepad
-                manip_interface.bind_gamepad(bind_callback_fn)
+                from omni.isaac.manip import _manip, GamePadAxis
 
-                # unbind to release the gamepad
-                manip_interface.unbind_gamepad()
+                manip_interface = _manip.acquire_manip_interface()
+                
+                def myfunc(axis: GamePadAxis, data: float):
+                    print("called!  Axis is ", axis, " signal is", data)
+                    if axis == GamePadAxis.eLeftStickX:
+                        print("****in LX")
+                    elif axis == GamePadAxis.eLeftStickY:
+                        print("****in LY")
+                    if axis == GamePadAxis.eRightStickX:
+                        print("****in RX")
+                    elif axis == GamePadAxis.eRightStickY:
+                        print("****in RY")
+                
+                manip_interface.bind_gamepad(myfunc)
         
         Refer to the kaya sample documentation for more examples and usage
                 )pbdoc";
 
-    defineInterfaceClass<Input>(m, "ManipInput", "acquire", "release")
+    defineInterfaceClass<Input>(m, "ManipInput", "acquire_manip_interface", "release_manip_interface")
         .def("bind_gamepad",
              [](Input* iface, std::function<void(int axis, float value)> eventFn) {
                  s_gamepad_binding_fn = std::move(eventFn);

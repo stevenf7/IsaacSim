@@ -123,7 +123,7 @@ class Extension(omni.ext.IExt):
         self.update_sub = None
         self.stage_sub = None
         self.bindings = []
-        self.manip = _manip.acquire()
+        self.manip = _manip.acquire_manip_interface()
 
         self.editor = omni.kit.editor.get_editor_interface()
         self.usd_context = omni.usd.get_context()
@@ -143,7 +143,7 @@ class Extension(omni.ext.IExt):
         self.update_sub = None
         if self.manip is not None:
             self.manip.unbind_gamepad()
-            _manip.release(self.manip)
+            _manip.release_manip_interface(self.manip)
             self.manip = None
         for binding in self.bindings:
             del binding

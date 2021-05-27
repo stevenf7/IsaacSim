@@ -8,3 +8,7 @@ omni.isaac.manip: Joystick Manipulation
     :show-inheritance:
     :imported-members:
     :exclude-members: 
+
+.. autoclass:: omni.isaac.manip.GamePadAxis
+   :members:
+   :undoc-members:
