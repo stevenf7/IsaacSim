@@ -8,6 +8,7 @@ Extensions
    omni.isaac.contact_sensor/docs/index
    omni.isaac.dr/docs/index
    omni.isaac.dynamic_control/docs/index
+   omni.isaac.manip/docs/index
    omni.isaac.motion_planning/docs/index
    omni.isaac.python_app/docs/index
    omni.isaac.range_sensor/docs/index

@@ -20,7 +20,7 @@ import omni.physx as _physx
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.manip import _manip
+from omni.isaac.manip import _manip, GamePadAxis
 
 from pxr import Gf
 
@@ -41,7 +41,7 @@ class Extension(omni.ext.IExt):
         self._stage = self._usd_context.get_stage()
         self.kaya = None
 
-        self._manip = _manip.acquire()
+        self._manip = _manip.acquire_manip_interface()
         self._joystick_deadzone = 0.2
         self._gains = (4, 4, 0.5)
         self._vel_target = np.zeros(3)
@@ -133,11 +133,11 @@ class Extension(omni.ext.IExt):
         if abs(signal) < self._joystick_deadzone:
             signal = 0
 
-        if axis == 1:
+        if axis == GamePadAxis.eLeftStickY:
             self._vel_target[0] = signal * self._gains[0]
-        elif axis == 0:
+        elif axis == GamePadAxis.eLeftStickX:
             self._vel_target[1] = -signal * self._gains[1]
-        elif axis == 2:
+        elif axis == GamePadAxis.eRightStickX:
             self._vel_target[2] = -signal * self._gains[2]
         else:
             pass
