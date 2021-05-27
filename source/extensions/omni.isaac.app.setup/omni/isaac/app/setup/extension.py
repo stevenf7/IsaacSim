@@ -106,6 +106,10 @@ class CreateSetupExtension(omni.ext.IExt):
         window.visible = False
         window = None
 
+        # Let users know when app is ready for use and live-streaming
+        app_title = self._settings.get("/app/window/title")
+        print(f"{app_title} App is loaded.")
+
     def _launch_app(self, app_id, console=True, custom_args=None):
         """launch an other Kit app with the same settings"""
         import sys
