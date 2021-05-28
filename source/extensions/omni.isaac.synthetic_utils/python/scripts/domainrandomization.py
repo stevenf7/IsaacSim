@@ -76,6 +76,11 @@ class DomainRandomization:
         max_range=(100.0, 100.0, 100.0),
         target_position=None,
         target_paths=None,
+        polygon_points=[],
+        draw_polygon=False,
+        target_points=[],
+        lookat_target_points=[],
+        enable_sequential_behavior=False,
         duration=0.0,
         include_children=False,
         seed=12345,
@@ -88,6 +93,11 @@ class DomainRandomization:
             max_range (tuple(float, float, float), optional): Specify the maximum X, Y, Z values for movement along all three axes.
             target_position (tuple(float, float, float), optional): If target prim is not specified, this value is used as the target to look at, if a prim is specified this acts like an offset.
             target_paths (list(str), optional): Specify path of the target prim to look at. If multiple target paths are specified, the average of all of their prim's location is used to determine target location to look at.
+            polygon_points (list(tuple(float, float, float)), optional): Specify the set of points in world coordinates to define a polygon area for randomization. Currently, it only supports 2D polygon.
+            draw_polygon (bool, optional): Enable to visualize the polygon area as defined by polygonPoints.
+            target_points (list(tuple(float, float, float)), optional): Specify the set of points in world coordinates to enable randomization along those points randomly.
+            lookat_target_points (list(tuple(float, float, float)), optional): Specify the set of points in world coordinates to look at.
+            enable_sequential_behavior (bool, optional): Enable to randomize in a sequential order instead of randomly as defined by targetPoints.
             duration (float, optional):  Time interval in seconds between subsequent randomization.
             include_children (bool, optional): Enable if only the child prims need to be included for randomization.
             seed (int, optional): Value to initialize the pseudorandom number generator.
@@ -103,6 +113,11 @@ class DomainRandomization:
             max_range=max_range,
             target_position=target_position,
             target_paths=target_paths,
+            polygon_points=polygon_points,
+            draw_polygon=draw_polygon,
+            target_points=target_points,
+            lookat_target_points=lookat_target_points,
+            enable_sequential_behavior=enable_sequential_behavior,
             duration=duration,
             include_children=include_children,
             seed=seed,

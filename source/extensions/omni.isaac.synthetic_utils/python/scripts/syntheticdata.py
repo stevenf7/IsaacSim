@@ -169,6 +169,7 @@ class SyntheticDataHelper:
                 instanceSegmentation, semanticSegmentation, boundingBox2DTight,
                 boundingBox2DLoose, boundingBox3D, camera
             viewport (omni.kit.viewport._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
+            verify_sensor_init (bool): Additional check to verify creation and initialization of sensors.
 
         Returns:
             Dict of sensor outputs

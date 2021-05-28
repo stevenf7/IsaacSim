@@ -18,7 +18,7 @@ class KittiWriter:
         self.q = queue.Queue(max_queue_size)
         self.threads = []
         self.data_dir = data_dir
-        self.make_output_folders()
+        self.create_output_folders()
         self.train_size = train_size
         self.classes = classes
 
@@ -114,7 +114,7 @@ class KittiWriter:
             rgb_img = Image.fromarray(data["DATA"]["RGB"], "RGBA").convert("RGB")
             rgb_img.save(f"{self.test_folder}/image_2/{data['METADATA']['image_id']}{'.png'}")
 
-    def make_output_folders(self):
+    def create_output_folders(self):
         """Checks if the output folders are created. If not, it creates them."""
         if not os.path.exists(self.data_dir):
             os.mkdir(self.data_dir)

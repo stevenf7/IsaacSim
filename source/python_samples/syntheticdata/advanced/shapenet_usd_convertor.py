@@ -40,20 +40,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.categories is None:
-        print("The following categories and id's are supported:")
-        pprint.pprint(shapenet.LABEL_TO_SYNSET)
-        raise ValueError(f"No categories specified via --categories argument")
-    # Ensure all categories specified are valid
-    invalid_categories = []
-    for c in args.categories:
-        if c not in shapenet.LABEL_TO_SYNSET.keys() and c not in shapenet.LABEL_TO_SYNSET.values():
-            invalid_categories.append(c)
-
-    if invalid_categories:
-        raise ValueError(f"The following are not valid ShapeNet categories: {invalid_categories}")
-
     # Ensure Omniverse Kit is launched via OmniKitHelper before shapenet_convert() is called
-    shapenet.shapenet_convert(args)
+    shapenet.shapenet_convert(args.categories, args.max_models, args.load_materials)
     # cleanup
     kit.shutdown()
