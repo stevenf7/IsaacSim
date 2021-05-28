@@ -252,6 +252,23 @@ PYBIND11_MODULE(_range_sensor, m)
                 Returns:
                 :obj:`numpy.ndarray`: The azimuth angle in radians for each column)pbdoc")
 
+        .def("get_point_cloud_data",
+             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object {
+                 if (!li)
+                     return py::none();
+                 carb::Float3* data = li->getPointCloud(sensorPath);
+                 int rows = li->getNumRows(sensorPath);
+                 int numColsTicked = li->getNumColsTicked(sensorPath);
+                 return py::array(py::buffer_info(data, sizeof(float), py::format_descriptor<float>::value, 3,
+                                                  { numColsTicked, rows, 3 },
+                                                  { sizeof(float) * rows * 3, sizeof(float) * 3, sizeof(float) }));
+             },
+             R"pbdoc(
+                Args:
+                    arg0 (:obj:`str`): USD path to sensor as a string
+
+                Returns:
+                :obj:`numpy.ndarray`: The hit position in xyz relative to the sensor origin, not accounting for individual ray offsets)pbdoc")
         .def("get_semantic_data",
              [](const LidarSensorInterface* li, const char* sensorPath) -> py::object {
                  if (!li)
