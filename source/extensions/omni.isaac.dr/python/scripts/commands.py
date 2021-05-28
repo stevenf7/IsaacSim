@@ -287,8 +287,8 @@ class CreateTransformComponentCommand(omni.kit.commands.Command):
             result, prim = omni.kit.commands.execute(
                 "CreateTransformComponentCommand",
                 prim_paths=["/World/Cube", "/World/Cube1"],
-                min_range=(0.0, 0.0, 0.0),
-                max_range=(100.0, 100.0, 100.0),
+                translate_min_range=(0.0, 0.0, 0.0),
+                translate_max_range=(100.0, 100.0, 100.0),
                 duration=1.0,
                 include_children=False,
             )
@@ -719,15 +719,30 @@ class CreateVisibilityComponentCommand(omni.kit.commands.Command):
 
 
 class CreateAttributeComponentCommand(omni.kit.commands.Command):
-    """Commands class to create a visibility randomization component.
+    """Commands class to create a attribute randomization component.
 
         Typical usage example:
 
         .. code-block:: python
 
+            attribute_dict = {
+                "attribute_3": {
+                    "name": "xformOp:rotateXYZ",
+                    "min": "0.0",
+                    "max": "360.0",
+                    "distribution": "uniform"
+                },
+                "attribute_1": {
+                    "name": "xformOp:translate",
+                    "min": "1.0",
+                    "max": "50.0",
+                    "distribution": "uniform"
+                }
+            }
             result, prim = omni.kit.commands.execute(
-                "CreateAttributeCommand",
-                prim_paths=["/World/Cube", "/World/Cube1", "/World/Cube2", "/World/Cube3", "/World/Cube4"],
+                "CreateAttributeComponentCommand",
+                prim_paths=["/World/Cube"],
+                custom_data = attribute_dict,
                 duration=1.0,
             )
     """

@@ -36,7 +36,7 @@ class DataWriter:
         self.threads = []
 
         self._viewport = omni.kit.viewport.get_viewport_interface()
-        self.check_for_output_folder()
+        self.create_output_folders()
 
     def start_threads(self):
         """Start worker threads."""
@@ -175,7 +175,7 @@ class DataWriter:
             if data_type == "BBOX2DLOOSE":
                 color_image_rgb.save(f"{self.bbox_2d_loose_folder}/{filename}.png")
 
-    def check_for_output_folder(self):
+    def create_output_folders(self):
         """Checks if the output folders are created. If not, it creates them."""
         viewports = self._viewport.get_instance_list()
         viewport_names = [self._viewport.get_viewport_window_name(vp) for vp in viewports]

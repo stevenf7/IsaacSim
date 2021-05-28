@@ -101,17 +101,38 @@ async def convert(in_file, out_file, load_materials=False):
     return success
 
 
-def shapenet_convert(args):
+def shapenet_convert(categories=None, max_models=50, load_materials=False):
+    """Helper to convert shapenet assets to USD
+
+
+    Args:
+            categories (list of string): List of ShapeNet categories to convert.
+            max_models (int): Maximum number of models to convert.
+            load_materials (bool): If true, materials will be loaded from shapenet meshes.
+    """
     import asyncio
+
+    if categories is None:
+        print("The following categories and id's are supported:")
+        pprint.pprint(LABEL_TO_SYNSET)
+        raise ValueError(f"No categories specified via --categories argument")
+    # Ensure all categories specified are valid
+    invalid_categories = []
+    for c in categories:
+        if c not in LABEL_TO_SYNSET.keys() and c not in LABEL_TO_SYNSET.values():
+            invalid_categories.append(c)
+
+    if invalid_categories:
+        raise ValueError(f"The following are not valid ShapeNet categories: {invalid_categories}")
 
     # This import needs to occur after kit is loaded so that physx can be discovered
     local_shapenet = get_local_shape_loc()
     local_shapenet_output = f"{os.path.abspath(local_shapenet)}_nomat"
-    if args.load_materials:
+    if load_materials:
         local_shapenet_output = f"{os.path.abspath(local_shapenet)}_mat"
     os.makedirs(local_shapenet_output, exist_ok=True)
 
-    synsets = args.categories
+    synsets = categories
     if synsets is None:
         synsets = LABEL_TO_SYNSET.values()
 
@@ -123,20 +144,20 @@ def shapenet_convert(args):
 
         model_dirs = os.listdir(os.path.join(local_shapenet, synset))
         for i, model_id in enumerate(model_dirs):
-            if i >= args.max_models:
-                print(f"max models ({args.max_models}) reached, exiting conversion")
+            if i >= max_models:
+                print(f"max models ({max_models}) reached, exiting conversion")
                 break
             local_path = os.path.join(local_shapenet, synset, model_id, "models/model_normalized.obj")
 
             shape_name = "model_normalized_nomat"
-            if args.load_materials:
+            if load_materials:
                 shape_name = "model_normalized_mat"
 
             out_dir = os.path.join(local_shapenet_output, synset, model_id)
             os.makedirs(out_dir, exist_ok=True)
             out_path = os.path.join(out_dir, f"{shape_name}.usd")
             if not os.path.exists(out_path):
-                status = asyncio.get_event_loop().run_until_complete(convert(local_path, out_path, args.load_materials))
+                status = asyncio.get_event_loop().run_until_complete(convert(local_path, out_path, load_materials))
                 if not status:
                     print(f"ERROR OmniConverterStatus is {status}")
                 print(f"---Added {out_path}")

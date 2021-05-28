@@ -57,6 +57,15 @@ def plot_boxes(ax, bboxes, labels=None, colours=None, label_size=10):
 
 
 def colorize_depth(depth_image, width, height, num_channels=3):
+    """ Colorizes depth data for visualization.
+
+
+        Args:
+            depth_image (numpy.ndarray): Depth data from the sensor.
+            width (int): Width of the viewport.
+            height (int): Height of the viewport.
+            num_channels (int): Specify number of channels i.e. 3 or 4.
+    """
     colorized_image = np.zeros((height, width, num_channels))
     depth_image[depth_image == 0.0] = 1e-5
     depth_image = np.clip(depth_image, 0, 255)
@@ -72,6 +81,16 @@ def colorize_depth(depth_image, width, height, num_channels=3):
 
 
 def colorize_segmentation(segmentation_image, width, height, num_channels=3, num_colors=None):
+    """ Colorizes segmentation data for visualization.
+
+
+        Args:
+            segmentation_image (numpy.ndarray): Segmentation data from the sensor.
+            width (int): Width of the viewport.
+            height (int): Height of the viewport.
+            num_channels (int): Specify number of channels i.e. 3 or 4.
+            num_colors (int): Specify number of colors for consistency across frames.
+    """
     segmentation_mappings = segmentation_image[:, :, 0]
     segmentation_list = np.unique(segmentation_mappings)
     if num_colors is None:
@@ -90,6 +109,14 @@ def colorize_segmentation(segmentation_image, width, height, num_channels=3, num
 
 
 def colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb, num_channels=3):
+    """ Colorizes 2D bounding box data for visualization.
+
+
+        Args:
+            bboxes_2d_data (numpy.ndarray): 2D bounding box data from the sensor.
+            bboxes_2d_rgb (numpy.ndarray): RGB data from the sensor to embed bounding box.
+            num_channels (int): Specify number of channels i.e. 3 or 4.
+    """
     semantic_id_list = []
     bbox_2d_list = []
     rgb_img = Image.fromarray(bboxes_2d_rgb)
