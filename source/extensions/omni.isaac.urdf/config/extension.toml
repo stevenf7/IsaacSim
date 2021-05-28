@@ -20,6 +20,7 @@ icon = "data/icon.png"
 "omni.isaac.utils" = {}
 "omni.kit.window.filepicker" = {}
 "omni.kit.window.content_browser" = {}
+"omni.kit.pip_archive" = {} # pulls in pillow
 
 [[python.module]]
 name = "omni.isaac.urdf"
@@ -42,6 +43,3 @@ name = "omni.isaac.urdf.scripts.samples.import_ur10"
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
-
-[python.pipapi]
-requirements = ["graphviz==0.14.1", "pillow==8.1.1"]

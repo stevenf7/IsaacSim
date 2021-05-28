@@ -22,6 +22,7 @@ icon = "data/icon.png"
 # "omni.graph.core" = {}
 "omni.kit.numpy.common" = {}
 "omni.kit.window.viewport" = {}
+"omni.kit.pip_archive" = {} # pulls in numpy
 
 [[python.module]]
 name = "omni.isaac.contact_sensor"
@@ -36,6 +37,3 @@ name = "omni.isaac.contact_sensor.scripts.samples.contact_sensor"
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
-
-[python.pipapi]
-requirements = ["numpy==1.19.0"]
