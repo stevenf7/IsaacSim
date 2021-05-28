@@ -23,6 +23,7 @@ icon = "data/icon.png"
 "omni.isaac.utils" = {}
 "omni.usd.schema.isaac" = {}
 "omni.isaac.ros_bridge_ui" = {}
+"omni.kit.pip_archive" = {} # Pull in pip_archive to make sure psutil is found and not installed
 
 [[python.module]]
 name = "omni.isaac.ros_bridge"
@@ -46,9 +47,6 @@ recursive = false
 
 [fswatcher.paths]
 exclude = ["*/noetic"]
-
-[python.pipapi]
-requirements = ["psutil==5.7.2"]
 
 [settings]
 exts."omni.isaac.ros_bridge".nodeName = "OmniIsaacRosBridge"

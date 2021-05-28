@@ -21,6 +21,7 @@ icon = "data/icon.png"
 "omni.debugdraw" = {}
 "omni.isaac.utils" = {}
 # "omni.kit.window.filepicker" = {}
+"omni.kit.pip_archive" = {} # pulls in pillow
 
 [[python.module]]
 name = "omni.isaac.occupancy_map"
@@ -31,6 +32,3 @@ name = "omni.isaac.occupancy_map.tests"
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
-
-[python.pipapi]
-requirements = ["pillow==8.1.1"]

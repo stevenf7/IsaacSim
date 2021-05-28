@@ -5,7 +5,3 @@ display_name = "Isaac Python App"
 
 [[python.module]]
 name = "omni.isaac.python_app"
-
-
-[python.pipapi]
-requirements = []

@@ -26,6 +26,7 @@ icon = "data/icon.png"
 "omni.kit.window.viewport" = {}
 "omni.usd.schema.isaac" = {}
 "omni.syntheticdata" = {}
+"omni.kit.pip_archive" = {} # pulls in numpy
 
 [[python.module]]
 name = "omni.isaac.range_sensor"
@@ -46,6 +47,3 @@ public = false
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
-
-[python.pipapi]
-requirements = ["numpy==1.19.0"]

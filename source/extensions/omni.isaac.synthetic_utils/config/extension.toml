@@ -19,14 +19,10 @@ icon = "data/icon.png"
 "omni.kit.uiapp" = {}
 "omni.syntheticdata" = {}
 "omni.kit.asset_converter" = {}
-
+"omni.kit.pip_archive" = {} # pulls in pillow
 [[python.module]]
 name = "omni.isaac.synthetic_utils"
 
 [[python.module]]
 name = "omni.isaac.synthetic_utils.scripts.syntheticdata_recorder"
 public = false
-
-[python.pipapi]
-# "matplotlib==3.3.1" Fails on TC, removing temporarily
-requirements = ["pillow==8.1.1"]

@@ -134,3 +134,11 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
             time_elapsed += dt
         omni.timeline.get_timeline_interface().stop()
         pass
+
+    async def test_reparenting(self):
+        timeline = omni.timeline.get_timeline_interface()
+        omni.kit.commands.execute("CreatePrim", prim_type="Xform")
+        await omni.kit.app.get_app().next_update_async()
+        omni.kit.commands.execute("MovePrim", path_from="/Xform", path_to="/AnotherPath")
+        timeline.play()
+        await omni.usd.get_context().new_stage_async()

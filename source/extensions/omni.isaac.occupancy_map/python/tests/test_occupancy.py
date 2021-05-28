@@ -81,7 +81,7 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
-        update_location(self._om, (0, 0, 40), (-500, -500), (500, 500))
+        update_location(self._om, (0, 0, 40 - 95), (-500, -500), (500, 500))
         cell_size = 5
         await omni.kit.app.get_app().next_update_async()
         self._om.generate(cell_size, 5, 1, 1, 1000000)

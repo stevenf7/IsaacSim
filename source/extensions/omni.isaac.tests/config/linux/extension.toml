@@ -11,12 +11,10 @@ display_name = "Isaac Tests"
 "omni.isaac.utils" = {}
 "omni.kit.material.library" = {}
 "omni.kit.window.viewport" = {}
+"omni.kit.pip_archive" = {} # pulls in numpy
 
 [[python.module]]
 name = "omni.isaac.tests"
 
 [[python.module]]
 name = "omni.isaac.tests.tests"
-
-[python.pipapi]
-requirements = ["numpy==1.19.0"]
