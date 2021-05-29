@@ -8,7 +8,6 @@ import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
-from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
 from .common import wait_for_rosmaster
 import rospy
 import carb
@@ -17,6 +16,8 @@ import carb
 class TestRospy(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
+        from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
+
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()

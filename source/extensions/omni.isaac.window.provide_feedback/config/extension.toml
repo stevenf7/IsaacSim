@@ -10,7 +10,7 @@ title = "Kit Provide Feedback Window"
 description=""
 
 # URL of the extension source repository.
-repository="https://gitlab-master.nvidia.com/omniverse/kit"
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/"
 
 # One of categories for UI.
 category = "Internal"

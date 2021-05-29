@@ -1,3 +1,4 @@
+import asyncio
 import omni.ext
 import omni.kit.commands
 import omni.kit.ui
@@ -22,6 +23,10 @@ class Extension(omni.ext.IExt):
                 name="UR10",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UR10/ur10.usd", "/UR10"),
             ),
+            MenuItemDescription(
+                name="Dofbot",
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Dofbot/dofbot.usd", "/Dofbot"),
+            ),
         ]
 
         mobile_menu = [
@@ -32,9 +37,9 @@ class Extension(omni.ext.IExt):
                 ),
             ),
             MenuItemDescription(
-                name="STR",
+                name="AMR",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/STR/STR_V4_Physics_Caster_Sensors.usda", "/STR"
+                    "/Isaac/Robots/STR/STR_V4_Physics_Caster_Sensors.usda", "/AMR"
                 ),
             ),
             MenuItemDescription(
@@ -47,7 +52,9 @@ class Extension(omni.ext.IExt):
             ),
             MenuItemDescription(
                 name="Jetracer",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Jetracer/jetracer.usd", "/STR"),
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Jetracer/jetracer.usd", "/Jetracer"
+                ),
             ),
         ]
 
@@ -83,6 +90,17 @@ class Extension(omni.ext.IExt):
                 ),
             ),
         ]
+        apriltag_menu = [
+            MenuItemDescription(
+                name="tag36h11",
+                onclick_fn=lambda a=weakref.proxy(self): a.create_apriltag(
+                    "/Isaac/Materials/AprilTag/AprilTag.mdl",
+                    "AprilTag",
+                    "/Looks/AprilTag",
+                    "/Isaac/Materials/AprilTag/Textures/tag36h11.png",
+                ),
+            )
+        ]
         self._menu_items = [
             MenuItemDescription(
                 name="Isaac",
@@ -90,6 +108,7 @@ class Extension(omni.ext.IExt):
                 sub_menu=[
                     MenuItemDescription(name="Robots", sub_menu=from_menu),
                     MenuItemDescription(name="Environments", sub_menu=env_menu),
+                    MenuItemDescription(name="April Tag", sub_menu=apriltag_menu),
                 ],
             )
         ]
@@ -112,6 +131,39 @@ class Extension(omni.ext.IExt):
         )
 
         pass
+
+    def create_apriltag(self, usd_path, shader_name, stage_path, tag_path):
+        result, nucleus_server = find_nucleus_server()
+        from pxr import Sdf
+
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
+        self._nucleus_path = nucleus_server
+
+        stage = omni.usd.get_context().get_stage()
+        stage_path = omni.usd.get_stage_next_free_path(stage, stage_path, False)
+
+        async def create_tag():
+            omni.kit.commands.execute(
+                "CreateMdlMaterialPrim",
+                mtl_url=self._nucleus_path + usd_path,
+                mtl_name=shader_name,
+                mtl_path=stage_path,
+                select_new_prim=True,
+            )
+            mtl = stage.GetPrimAtPath(stage_path + "/Shader")
+            # it can take multiple frames after mdl is created to be able to set a property
+            while mtl.GetAttribute("inputs:tag_mosaic").Get() is None:
+                await omni.kit.app.get_app().next_update_async()
+                omni.kit.commands.execute(
+                    "ChangeProperty",
+                    prop_path=Sdf.Path(stage_path + "/Shader.inputs:tag_mosaic"),
+                    value=Sdf.AssetPath(self._nucleus_path + tag_path),
+                    prev=None,
+                )
+
+        asyncio.ensure_future(create_tag())
 
     def on_shutdown(self):
         remove_menu_items(self._menu_items, "Create")
