@@ -51,7 +51,7 @@ files_exclude = [
 
 [isaac-sim-standalone.release]
 files = [
-    ["**"],
+    ["**"]
 ]
 files_exclude = [
     ["**/*.pyc"],
@@ -61,6 +61,9 @@ files_exclude = [
 ]
 
 [isaac-sim-standalone.linux-x86_64]
+files = [
+    ["../../docs/isaac_sim/latest/**", "docs/py/"] # docs are only build on linux
+]
 files_strip = [
     ["**/*.so"],
 ]

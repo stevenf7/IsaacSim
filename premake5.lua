@@ -236,6 +236,9 @@ group "exts"
     include ("source/extensions/omni.kit.property.isaac")
     include ("source/extensions/omni.kit.loop-isaac")
 
+    include ("source/extensions/omni.isaac.window.about")
+    include ("source/extensions/omni.isaac.window.provide_feedback")
+
     -- Linux Only
     if os.target() == "linux" then
         include ("source/extensions/omni.isaac.motion_planning")
