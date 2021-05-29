@@ -7,8 +7,101 @@ version = "2021.1.0"
 keywords = ["experience", "app", "usd"]
 
 [dependencies]
-# We depend on the full omniverse app for simplicity
-"omni.app.full" = {}
+# The Main UI App. Bring everything needed for UI application.
+"omni.kit.uiapp" = {}
+
+# USD file open/close
+"omni.kit.window.file" = {}
+
+# Basic Menus
+"omni.kit.menu.utils" = {}
+"omni.kit.menu.file" = {}
+"omni.kit.menu.edit" = {}
+"omni.kit.menu.create" = {}
+"omni.kit.menu.select" = {}
+"omni.kit.context_menu" = {}
+"omni.kit.selection" = {}
+
+# Stage Templates
+"omni.kit.stage_templates" = {}
+
+# Some Editing Windows
+"omni.kit.window.title" = {}
+"omni.kit.widget.live" = {}
+"omni.kit.window.stage" = {}
+"omni.kit.window.toolbar" = {}
+"omni.kit.widget.filebrowser" = {}
+"omni.kit.window.filepicker" = {}
+"omni.kit.window.content_browser" = {}
+
+# Viewport and Renderer
+"omni.kit.window.viewport" = {}
+"omni.hydra.rtx" = {}
+"omni.kit.renderer.capture" = {}
+
+# # Iray support
+"omni.hydra.iray" = { order = -1000 }
+"omni.iray.settings.core" = {}
+
+# Status Bar
+"omni.kit.window.status_bar" = {}
+
+# Graphics Stats
+"omni.stats" = {}
+
+# Render Settings 2.0
+"omni.rtx.settings.core" = {}
+
+# Dev & Utils Windows
+"omni.kit.window.profiler" = {}
+# "omni.kit.window.about" = {} # Isaac Sim: disable this and replace with our own
+"omni.kit.window.stats" = { order = 1000 }
+"omni.kit.window.script_editor" = {}
+"omni.kit.window.console" = {}
+"omni.kit.window.preferences" = { order = 1000 } # so the menu is in the correct place
+"omni.kit.window.tests" = {}
+
+# Extensions Manager UI
+"omni.kit.window.extensions" = {}
+
+# Property Widgets and Window
+"omni.kit.window.property" = {}
+"omni.kit.property.bundle" = {}
+
+# Misc
+"omni.kit.primitive.mesh" = {}
+
+# # PhysX
+"omni.physx.bundle" = {}
+
+# # Omni Graph
+"omni.graph.core" = {}
+"omni.graph.ui" = {}
+"omni.graph.examples.python" = {}
+
+"omni.kit.window.movie_maker" = {}
+
+# # More Windows and UI elements
+# "omni.kit.window.provide_feedback" = {} # Isaac Sim: disable this and replace with our own
+"omni.kit.window.imageviewer" = {}
+"omni.kit.tagging" = { order = -10 } # should be a dependency of below 
+"omni.kit.filebrowser_column.tags" = {}
+# "omni.kit.window.stats" = { order = 1000 } # Isaac Sim: already included above
+"omni.kit.window.usd_paths" = {}
+"omni.kit.thumbnails.usd" = {}
+# "omni.kit.thumbnails.images" = {}
+
+# # Misc
+"omni.ansel" = {}
+"omni.kit.window.cursor" = {}
+"omni.kit.search.service" = {}
+
+# # Property Widgets and Window
+"omni.kit.property.tagging" = {}
+
+# # Tools
+# "omni.kit.tool.asset_importer" = {}
+"omni.kit.tool.collect" = {}
 
 
 [settings]
@@ -195,6 +288,8 @@ nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
 
 "omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
 #"omni.isaac.splash" = {}
+"omni.isaac.window.about" = {}
+"omni.isaac.window.provide_feedback" = {}
 
 #linux only extensions
 [dependencies."filter:platform"."linux-x86_64"]

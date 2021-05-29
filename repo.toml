@@ -92,7 +92,8 @@ licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/
 licensing.fail_on_missing = true
 
 post_build.commands = [
-    ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}"] 
+    ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}"],
+    ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error", "0"] 
 ]
 
 
@@ -141,8 +142,11 @@ long_name = "Isaac Sim"
 # first year in your projects copyright.
 copyright_start = 2018
 
-# # Use python from kit sdk
+# Use python from kit sdk
 python_path =  "${root}/_build/${platform}/${config}/python${shell_ext}"
+
+# Move api docs to build directory
+# docs_dst = "${root}/_build/${platform}/${config}/docs"
 
 # Add all extensions to docs sys.path
 extra_sys_paths = []
@@ -171,6 +175,8 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.utils_manager",
     "**/omni.kit.property.isaac",
     "**/omni.usd.schema.isaac",     #TODO?
+    "**/omni.isaac.window.about",
+    "**/omni.isaac.window.provide_feedback",
     "include",
     "tools",
     "tests",

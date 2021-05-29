@@ -16,6 +16,7 @@ import carb.settings
 import omni.kit.commands
 import carb.imgui as _imgui
 import carb.tokens
+import webbrowser
 
 import omni.kit.app
 import omni.kit.ui
@@ -288,7 +289,25 @@ class CreateSetupExtension(omni.ext.IExt):
         )
         editor_menu.set_priority(reset_menu_path, 10)
 
+        # set isaac sim python docs menu
+        manual_path = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../docs/py/index.html"))
+        self.manual_url_path = manual_path if os.path.isfile(manual_path) else None
+
+        def on_manual_click(*_):
+            filepath = os.path.abspath(self.manual_url_path)
+            if os.path.exists(filepath):
+                webbrowser.open("file://" + filepath)
+            else:
+                carb.log_warn("Failed to open " + filepath)
+
+        menu_item_title = "Help/Isaac Sim Scripting Manual"
+
+        self._isaac_python_doc_menu_item = editor_menu.add_item(menu_item_title, on_manual_click)
+        if self.manual_url_path is None:
+            omni.kit.ui.get_editor_menu().set_enabled(menu_item_title, False)
+
     def on_shutdown(self):
         self._ui_doc_menu_item = None
         self._launcher_menu = None
         self._reset_menu = None
+        self._isaac_python_doc_menu_item = None
