@@ -83,7 +83,7 @@ class Extension(omni.ext.IExt):
             with omni.ui.VStack():
                 with ui.HStack(height=5):
                     ui.Spacer(width=7)
-                    self._robot_option = ui.ComboBox(0, "STR", "Carter", width=125)
+                    self._robot_option = ui.ComboBox(0, "AMR", "Carter", width=125)
                 with ui.HStack(height=5):
                     ui.Spacer(width=5)
                     self._load_btn = ui.Button("Load Environment", width=125)

@@ -50,7 +50,8 @@ PYBIND11_MODULE(_isaac_utils, m)
         Surface Grippers
         -----------------
 
-        This submodule provides a Helper to create a Surface Gripper joint using a PhysxD6Joint. 
+        This submodule provides a Helper to create a breakable joint using a PhysxD6Joint. 
+        The surface gripper is useful to approximate suction style grippers.
         
         Example:
             To create a surface gripper you need to aquire the :obj:`omni.isaac.dynamic_control`, interface import this submodule, create a Surface_Gripper_Properties, and then create a Surface Gripper:
@@ -60,6 +61,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper
                 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties
                 from omni.isaac.dynamic_control import _dynamic_control
+                import numpy as np
 
                 # Create surface gripper
                 _dc = _dynamic_control.acquire_interface()
@@ -67,11 +69,31 @@ PYBIND11_MODULE(_isaac_utils, m)
                 
                 sgp = Surface_Gripper_Properties()
 
-                # Configure the Gripper Properties here
+                # Configure the Gripper Properties here (Example configuration below)
+                sgp.d6JointPath = ""
+                sgp.parentPath = "/GripperCone"
+                sgp.offset = _dc.Transform()
+                sgp.offset.p.x = 0
+                sgp.offset.p.z = -30.01
+                sgp.offset.r = [0, 0.7171, 0, 0.7171]  # Rotate to point gripper in Z direction
+                sgp.gripThreshold = 2
+                sgp.forceLimit = 1.0e4
+                sgp.torqueLimit = 1.0e5
+                sgp.bendAngle = np.pi / 4
+                sgp.stiffness = 1.0e4
+                sgp.damping = 1.0e3
 
-                #Initialize the gripper with the properties
+                # Initialize the gripper with the properties
                 surface_gripper.initialize(sgp)
-            
+
+
+        Then, on every simulation step, the gripper must be updated to check if the joint has been broken due to external forces, and update its status, by calling the ``gripper.update()`` method.
+
+        In order to grip an object, the user should call ``gripper.close()``, which will return whether it was successful at gripping something.
+
+        If you want to check if the gripper is holding an object, you can use the method ``gripper.is_closed()``, which returns its status.
+
+        To release the gripped object, call ``gripper.release()``
         
         )pbdoc";
 

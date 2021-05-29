@@ -11,7 +11,6 @@ import asyncio
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
 from .common import add_cube, simulate, wait_for_rosmaster
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from omni.isaac.utils.scripts.test_utils import load_test_file
@@ -22,6 +21,8 @@ from pxr import Gf, PhysicsSchemaTools
 class TestLidar(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
+        from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
+
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()

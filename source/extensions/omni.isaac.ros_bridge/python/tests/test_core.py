@@ -9,7 +9,6 @@ from omni.isaac.ros_bridge import _ros_bridge
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
-from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
 from .common import wait_for_rosmaster, bridge_rosmaster_connect
 import carb
 
@@ -17,6 +16,8 @@ import carb
 class TestRosBridge(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
+        from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
+
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         self._timeline = omni.timeline.get_timeline_interface()
