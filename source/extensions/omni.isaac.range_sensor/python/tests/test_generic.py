@@ -93,7 +93,7 @@ class TestGeneric(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add sensor
         result, sensor = omni.kit.commands.execute(
-            "CreateRangeSensorGenericCommand",
+            "RangeSensorCreateGeneric",
             path="/World/Generic",
             parent=None,
             min_range=0.4,
@@ -142,7 +142,7 @@ class TestGeneric(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add sensor
         result, sensor = omni.kit.commands.execute(
-            "CreateRangeSensorGenericCommand",
+            "RangeSensorCreateGeneric",
             path="/World/Generic",
             parent=None,
             min_range=0.4,

@@ -374,7 +374,7 @@ class Extension(omni.ext.IExt):
         yaw_offsets = [0, 0, 0, 0]
         for i in range(len(poses)):
             result, lidar = omni.kit.commands.execute(
-                "CreateRangeSensorLidarCommand",
+                "RangeSensorCreateLidar",
                 path=names[i],
                 parent=sensor_parent,
                 min_range=0.4,
@@ -423,7 +423,7 @@ class Extension(omni.ext.IExt):
         ]
 
         result, group_0 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/UltrasonicFiringGroup_0",
             parent=sensor_parent,
             emitter_modes=[(0, 1), (3, 0), (4, 1), (7, 0), (8, 1), (11, 0)],
@@ -448,7 +448,7 @@ class Extension(omni.ext.IExt):
         )
 
         result, group_1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/UltrasonicFiringGroup_1",
             parent=sensor_parent,
             emitter_modes=[(1, 1), (2, 0), (5, 1), (6, 0), (9, 1), (10, 0)],
@@ -490,7 +490,7 @@ class Extension(omni.ext.IExt):
             pose = emitter_poses[i]
             adjacent = adjacency[i]
             result, emitter_prim = omni.kit.commands.execute(
-                "CreateRangeSensorUltrasonicEmitterCommand",
+                "RangeSensorCreateUltrasonicEmitter",
                 path="/UltrasonicEmitter",
                 parent=sensor_parent,
                 per_ray_intensity=0.4,
@@ -504,7 +504,7 @@ class Extension(omni.ext.IExt):
 
         # Add ultrasonic
         result, ultrasonic_array = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path="/UltrasonicArray",
             parent=sensor_parent,
             min_range=0.4,

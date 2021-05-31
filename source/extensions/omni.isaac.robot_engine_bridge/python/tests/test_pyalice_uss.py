@@ -90,7 +90,7 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCaseFailOnLogError):
         emitters = []
         for pose in emitter_poses:
             result, emitter_prim = omni.kit.commands.execute(
-                "CreateRangeSensorUltrasonicEmitterCommand",
+                "RangeSensorCreateUltrasonicEmitter",
                 path="/World/UltrasonicEmitter",
                 per_ray_intensity=0.4,
                 yaw_offset=0.0,
@@ -105,7 +105,7 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add ultrasonic
         result, ultrasonic = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path=ultrasonicPath,
             min_range=0.4,
             max_range=2.0,

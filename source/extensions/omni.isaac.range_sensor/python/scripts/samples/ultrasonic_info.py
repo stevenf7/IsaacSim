@@ -156,7 +156,7 @@ class Extension(omni.ext.IExt):
                 pose = emitter_poses[i]
                 adjacent = adjacency[i]
                 result, emitter_prim = omni.kit.commands.execute(
-                    "CreateRangeSensorUltrasonicEmitterCommand",
+                    "RangeSensorCreateUltrasonicEmitter",
                     path="/World/UltrasonicEmitter",
                     per_ray_intensity=0.4,
                     yaw_offset=0.0,
@@ -168,7 +168,7 @@ class Extension(omni.ext.IExt):
             emitter_paths = [emitter.GetPath() for emitter in emitters]
 
             result, group_1 = omni.kit.commands.execute(
-                "CreateRangeSensorUltrasonicFiringGroupCommand",
+                "RangeSensorCreateUltrasonicFiringGroup",
                 path="/World/UltrasonicFiringGroup_0",
                 emitter_modes=[(0, 1), (3, 0), (4, 1), (7, 0), (8, 1), (11, 0)],
                 receiver_modes=[
@@ -192,7 +192,7 @@ class Extension(omni.ext.IExt):
             )
 
             result, group_2 = omni.kit.commands.execute(
-                "CreateRangeSensorUltrasonicFiringGroupCommand",
+                "RangeSensorCreateUltrasonicFiringGroup",
                 path="/World/UltrasonicFiringGroup_1",
                 emitter_modes=[(1, 1), (2, 0), (5, 1), (6, 0), (9, 1), (10, 0)],
                 receiver_modes=[
@@ -217,7 +217,7 @@ class Extension(omni.ext.IExt):
             self.ultrasonicPath = "/World/UltrasonicArray"
 
             result, self.ultrasonic = omni.kit.commands.execute(
-                "CreateRangeSensorUltrasonicArrayCommand",
+                "RangeSensorCreateUltrasonicArray",
                 path=self.ultrasonicPath,
                 # Min and max range for the ULTRASONIC.  This defines the starting and stopping locations for the linetrace
                 min_range=0.4,
