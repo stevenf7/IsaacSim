@@ -48,11 +48,11 @@ class Extension(omni.ext.IExt):
     async def _load_robot(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+            status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
             import_config.merge_fixed_joints = False
             import_config.fix_base = True
             omni.kit.commands.execute(
-                "ParseAndImportURDFCommand",
+                "URDFParseAndImportFile",
                 urdf_path=self._extension_path + "/data/urdf/robots/ur10/urdf/ur10_base.urdf",
                 import_config=import_config,
             )

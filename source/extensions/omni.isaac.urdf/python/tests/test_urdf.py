@@ -32,9 +32,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_names.urdf")
         stage = omni.usd.get_context().get_stage()
 
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.merge_fixed_joints = True
-        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
         prim = stage.GetPrimAtPath("/test_names/cube/visuals")
         prim_range = prim.GetChildren()
         # There should be a total of 6 visual meshes after import
@@ -45,10 +45,10 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.urdf")
         stage = omni.usd.get_context().get_stage()
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
 
         import_config.import_inertia_tensor = True
-        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
         await omni.kit.app.get_app().next_update_async()
 
         prim = stage.GetPrimAtPath("/test_basic")
@@ -86,9 +86,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         stage = omni.usd.get_context().get_stage()
 
         # enable merging fixed joints
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.merge_fixed_joints = True
-        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
         await omni.kit.app.get_app().next_update_async()
 
         # check if object is there
@@ -128,9 +128,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         stage = omni.usd.get_context().get_stage()
 
         # enable merging fixed joints
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.merge_fixed_joints = True
-        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
 
         # the merged link shouldn't be there
         prim = stage.GetPrimAtPath("/test_merge_joints/link_2")
@@ -144,8 +144,8 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         stage = omni.usd.get_context().get_stage()
 
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
-        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
 
         mesh = stage.GetPrimAtPath("/test_mtl/cube/visuals/material_1")
         self.assertNotEqual(mesh.GetPath(), Sdf.Path.emptyPath)
@@ -156,9 +156,9 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_urdf_carter(self):
 
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/carter/urdf/carter.urdf")
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.merge_fixed_joints = False
-        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
         # TODO add checks here
 
     async def test_urdf_franka(self):
@@ -166,31 +166,31 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         urdf_path = os.path.abspath(
             self._extension_path + "/data/urdf/robots/franka_description/robots/panda_arm_hand.urdf"
         )
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
-        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
         # TODO add checks here'
 
     async def test_urdf_ur10(self):
 
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/ur10/urdf/ur10_base.urdf")
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
-        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
         # TODO add checks here'
 
     async def test_urdf_kaya(self):
 
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/kaya/urdf/kaya.urdf")
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.merge_fixed_joints = False
-        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
         # TODO add checks here
 
     async def test_missing(self):
 
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_missing.urdf")
 
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
-        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
 
     # This sample corresponds to the example in the docs, keep this and the version in the docs in sync
     async def test_doc_sample(self):
@@ -198,7 +198,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         from pxr import UsdLux, Sdf, Gf, UsdPhysics
 
         # setting up import configuration:
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.merge_fixed_joints = False
         import_config.convex_decomp = False
         import_config.import_inertia_tensor = True
@@ -210,7 +210,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         extension_path = ext_manager.get_extension_path(ext_id)
         # import URDF
         omni.kit.commands.execute(
-            "ParseAndImportURDFCommand",
+            "URDFParseAndImportFile",
             urdf_path=extension_path + "/data/urdf/robots/carter/urdf/carter.urdf",
             import_config=import_config,
         )
@@ -253,8 +253,8 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Make sure that a urdf with more than 63 links does not import
     async def test_64(self):
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_large.urdf")
-        status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
-        omni.kit.commands.execute("ParseAndImportURDFCommand", urdf_path=urdf_path, import_config=import_config)
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
         stage = omni.usd.get_context().get_stage()
         prim = stage.GetPrimAtPath("/test_large")
         self.assertFalse(prim)
