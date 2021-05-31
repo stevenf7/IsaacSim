@@ -1,8 +1,8 @@
 [package]
 title = "Isaac Sim Setup Extension"
 description = "This Extension does the final setup of the Isaac Sim Apps"
-
 authors = ["Isaac Sim Team"]
+toggleable = false
 
 [dependencies]
 "omni.usd" = {}
