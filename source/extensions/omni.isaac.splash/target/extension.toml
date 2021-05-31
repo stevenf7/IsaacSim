@@ -2,6 +2,7 @@
 title = "Isaac Sim Splash"
 description = "Show up a splash Screen while Isaac Sim is Loading"
 version = "1.0.0"
+toggleable = false
 
 [dependencies]
 "omni.kit.editor" = { tag="mini" }
