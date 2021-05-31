@@ -1,13 +1,24 @@
 omni.isaac.range_sensor: Range based sensor Simulation
 ######################################################
 
+
+Range Sensor Commands
+========================
+.. automodule:: omni.isaac.range_sensor.scripts.commands
+    :members:
+    :undoc-members:
+    :exclude-members: do, undo
+
+Python API Documentation
+========================
+
 .. automodule:: omni.isaac.range_sensor._range_sensor
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
     :no-show-inheritance:
     :imported-members:
-    :exclude-members: LidarVisualizer
+    :exclude-members: LidarVisualizer, RadarSensorInterface, acquire_radar_sensor_interface, release_radar_sensor_interface
 
 Generated USD Schema API
 ========================
@@ -20,4 +31,4 @@ The following USD Schema API was automatically generated, it is provided here as
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: 
+    :exclude-members: Radar

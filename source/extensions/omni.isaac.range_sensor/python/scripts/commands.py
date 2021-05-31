@@ -22,7 +22,7 @@ def setup_base_prim(prim, enabled, draw_points, draw_lines, min_range, max_range
 
 
 # this command is used to create each REB prim, it also handles undo so that each individual prim command doesn't have to
-class CreateRangeSensorPrimCommand(omni.kit.commands.Command):
+class RangeSensorCreatePrim(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "",
@@ -61,7 +61,7 @@ class CreateRangeSensorPrimCommand(omni.kit.commands.Command):
             return self._stage.RemovePrim(self._prim_path)
 
 
-class CreateRangeSensorLidarCommand(omni.kit.commands.Command):
+class RangeSensorCreateLidar(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/Lidar",
@@ -88,7 +88,7 @@ class CreateRangeSensorLidarCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRangeSensorPrimCommand",
+            "RangeSensorCreatePrim",
             path=self._path,
             parent=self._parent,
             scehma_type=RangeSensorSchema.Lidar,
@@ -115,7 +115,7 @@ class CreateRangeSensorLidarCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRangeSensorUltrasonicArrayCommand(omni.kit.commands.Command):
+class RangeSensorCreateUltrasonicArray(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/UltrasonicArray",
@@ -143,7 +143,7 @@ class CreateRangeSensorUltrasonicArrayCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRangeSensorPrimCommand",
+            "RangeSensorCreatePrim",
             path=self._path,
             parent=self._parent,
             scehma_type=RangeSensorSchema.UltrasonicArray,
@@ -174,7 +174,7 @@ class CreateRangeSensorUltrasonicArrayCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRangeSensorUltrasonicEmitterCommand(omni.kit.commands.Command):
+class RangeSensorCreateUltrasonicEmitter(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/UltrasonicEmitter",
@@ -215,7 +215,7 @@ class CreateRangeSensorUltrasonicEmitterCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRangeSensorUltrasonicFiringGroupCommand(omni.kit.commands.Command):
+class RangeSensorCreateUltrasonicFiringGroup(omni.kit.commands.Command):
     def __init__(
         self, path: str = "/UltrasonicFiringGroup", parent=None, emitter_modes: [] = [], receiver_modes: [] = []
     ):
@@ -243,7 +243,7 @@ class CreateRangeSensorUltrasonicFiringGroupCommand(omni.kit.commands.Command):
         pass
 
 
-class CreateRangeSensorGenericCommand(omni.kit.commands.Command):
+class RangeSensorCreateGeneric(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/GenericSensor",
@@ -263,7 +263,7 @@ class CreateRangeSensorGenericCommand(omni.kit.commands.Command):
 
     def do(self):
         success, self._prim = omni.kit.commands.execute(
-            "CreateRangeSensorPrimCommand",
+            "RangeSensorCreatePrim",
             path=self._path,
             parent=self._parent,
             scehma_type=RangeSensorSchema.Generic,

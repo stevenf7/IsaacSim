@@ -128,20 +128,20 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_command(self):
 
         result, emitter = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicEmitterCommand",
+            "RangeSensorCreateUltrasonicEmitter",
             path="/World/UltrasonicEmitter",
             per_ray_intensity=0.4,
             yaw_offset=0.0,
             adjacency_list=[0],
         )
         result, group_1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/World/UltrasonicFiringGroup",
             emitter_modes=[(0, 0)],
             receiver_modes=[(0, 0)],
         )
         result, group_2 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/World/UltrasonicFiringGroup",
             emitter_modes=[(0, 1)],
             receiver_modes=[(0, 1)],
@@ -153,7 +153,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         num_bins = 300
         max_range = 3.45
         result, ultrasonic = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path="/World/UltrasonicArray",
             min_range=0.4,
             max_range=max_range,
@@ -191,14 +191,14 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_active_envelope_interface_two_emitters(self):
 
         result, emitter0 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicEmitterCommand",
+            "RangeSensorCreateUltrasonicEmitter",
             path="/World/UltrasonicEmitter0",
             per_ray_intensity=0.4,
             yaw_offset=0.0,
             adjacency_list=[0, 1],
         )
         result, group_1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/World/UltrasonicFiringGroup",
             emitter_modes=[(0, 0), (1, 0), (1, 1)],
             receiver_modes=[(0, 0), (0, 1), (1, 0), (1, 1)],
@@ -209,7 +209,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         emitter0.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(Gf.Vec3d(0, 0, 90))
 
         result, emitter1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicEmitterCommand",
+            "RangeSensorCreateUltrasonicEmitter",
             path="/World/UltrasonicEmitter1",
             per_ray_intensity=0.4,
             yaw_offset=0.0,
@@ -218,7 +218,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         emitter1.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
 
         result, ultrasonic = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path="/World/UltrasonicArray",
             min_range=0.4,
             max_range=3.0,
@@ -273,20 +273,20 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_two_emitter(self):
 
         result, emitter0 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicEmitterCommand",
+            "RangeSensorCreateUltrasonicEmitter",
             path="/World/UltrasonicEmitter0",
             per_ray_intensity=0.4,
             yaw_offset=0.0,
             adjacency_list=[],
         )
         result, group_1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/World/UltrasonicFiringGroup",
             emitter_modes=[(0, 0)],
             receiver_modes=[(0, 0)],
         )
         result, group_2 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/World/UltrasonicFiringGroup",
             emitter_modes=[(1, 1)],
             receiver_modes=[(1, 1)],
@@ -296,7 +296,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         emitter0.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(Gf.Vec3d(0, 0, 90))
 
         result, emitter1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicEmitterCommand",
+            "RangeSensorCreateUltrasonicEmitter",
             path="/World/UltrasonicEmitter1",
             per_ray_intensity=0.4,
             yaw_offset=0.0,
@@ -305,7 +305,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         emitter1.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
 
         result, ultrasonic = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path="/World/UltrasonicArray",
             min_range=0.4,
             max_range=2.0,
@@ -351,7 +351,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         emitters = []
         for pose in emitter_poses:
             result, emitter_prim = omni.kit.commands.execute(
-                "CreateRangeSensorUltrasonicEmitterCommand",
+                "RangeSensorCreateUltrasonicEmitter",
                 path="/World/UltrasonicEmitter",
                 per_ray_intensity=0.4,
                 yaw_offset=0.0,
@@ -367,7 +367,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Add ultrasonic
         ultrasonicPath = "/World/UltrasonicArray"
         result, ultrasonic = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path=ultrasonicPath,
             min_range=0.4,
             max_range=2.0,
@@ -413,7 +413,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         emitters = []
         for pose in emitter_poses:
             result, emitter_prim = omni.kit.commands.execute(
-                "CreateRangeSensorUltrasonicEmitterCommand",
+                "RangeSensorCreateUltrasonicEmitter",
                 path="/World/UltrasonicEmitter",
                 per_ray_intensity=0.4,
                 yaw_offset=0.0,
@@ -429,7 +429,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Add ultrasonic
         ultrasonicPath = "/World/UltrasonicArray"
         result, ultrasonic = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path=ultrasonicPath,
             min_range=0.4,
             max_range=2.0,
@@ -473,7 +473,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-25, 0.0, 25)),
         ]
         emitter_prims = [None] * len(poses)
-        cmd_name = "CreateRangeSensorUltrasonicEmitterCommand"
+        cmd_name = "RangeSensorCreateUltrasonicEmitter"
         path = "/World/UltrasonicEmitter"
         res, emitter_prims[0] = omni.kit.commands.execute(
             cmd_name, path=path, per_ray_intensity=0.4, yaw_offset=0.0, adjacency_list=[0, 1]
@@ -503,7 +503,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # mode 0 is not receiving from itself on same freq so it gets no directs
         result, group_1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/World/UltrasonicFiringGroup",
             emitter_modes=[(0, 0)],  # , (1,1), (2,1), (3, 1)],
             receiver_modes=[(0, 0), (1, 0)],  # , (2, 0), (2,1), (3, 1)],
@@ -511,7 +511,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.ultrasonicPath = "/World/UltrasonicArray"
 
         result, self.ultrasonic = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path=self.ultrasonicPath,
             min_range=0.4,
             max_range=3.0,
@@ -544,7 +544,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # mode 0 is not receiving from itself on same freq so it gets no directs
         result, group_1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/World/UltrasonicFiringGroup",
             emitter_modes=[(0, 0), (0, 1)],
             receiver_modes=[(0, 0), (0, 1)],
@@ -552,7 +552,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.ultrasonicPath = "/World/UltrasonicArray"
 
         result, self.ultrasonic = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path=self.ultrasonicPath,
             min_range=0.4,
             max_range=3.0,
@@ -582,7 +582,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # mode 0 is not receiving from itself on same freq so it gets no directs
         result, group_1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/World/UltrasonicFiringGroup",
             emitter_modes=[(1, 0)],
             receiver_modes=[(0, 0), (1, 0), (2, 0)],
@@ -590,7 +590,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.ultrasonicPath = "/World/UltrasonicArray"
 
         result, self.ultrasonic = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path=self.ultrasonicPath,
             min_range=0.4,
             max_range=3.0,
@@ -616,7 +616,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_firing_modes(self):
         result, group_0 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/World/UltrasonicFiringGroup_0",
             emitter_modes=[(0, 1), (3, 0), (4, 1), (7, 0), (8, 1), (11, 0)],
             receiver_modes=[
@@ -640,7 +640,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
 
         result, group_1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/World/UltrasonicFiringGroup_1",
             emitter_modes=[(1, 1), (2, 0), (5, 1), (6, 0), (9, 1), (10, 0)],
             receiver_modes=[
@@ -682,7 +682,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             pose = emitter_poses[i]
             adjacent = adjacency[i]
             result, emitter_prim = omni.kit.commands.execute(
-                "CreateRangeSensorUltrasonicEmitterCommand",
+                "RangeSensorCreateUltrasonicEmitter",
                 path="/World/UltrasonicEmitter",
                 per_ray_intensity=0.4,
                 yaw_offset=0.0,
@@ -698,7 +698,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Add ultrasonic
         ultrasonicPath = "/World/UltrasonicArray"
         result, ultrasonic = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path=ultrasonicPath,
             min_range=0.4,
             max_range=2.0,
@@ -741,14 +741,14 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_active_envelope_interface_two_emitters_with_brdf(self):
 
         result, emitter0 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicEmitterCommand",
+            "RangeSensorCreateUltrasonicEmitter",
             path="/World/UltrasonicEmitter0",
             per_ray_intensity=0.4,
             yaw_offset=0.0,
             adjacency_list=[0, 1],
         )
         result, group_1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/World/UltrasonicFiringGroup",
             emitter_modes=[(0, 0), (1, 0), (1, 1)],
             receiver_modes=[(0, 0), (0, 1), (1, 0), (1, 1)],
@@ -759,7 +759,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         emitter0.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(Gf.Vec3d(0, 0, 90))
 
         result, emitter1 = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicEmitterCommand",
+            "RangeSensorCreateUltrasonicEmitter",
             path="/World/UltrasonicEmitter1",
             per_ray_intensity=0.4,
             yaw_offset=0.0,
@@ -768,7 +768,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         emitter1.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
 
         result, ultrasonic = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path="/World/UltrasonicArray",
             min_range=0.4,
             max_range=3.0,

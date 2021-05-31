@@ -106,7 +106,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
-            "CreateRangeSensorLidarCommand",
+            "RangeSensorCreateLidar",
             path="/World/Lidar",
             parent=None,
             min_range=0.4,
@@ -153,7 +153,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
-            "CreateRangeSensorLidarCommand",
+            "RangeSensorCreateLidar",
             path="/Lidar",
             parent="/World/Cube2",
             min_range=0.4,
@@ -195,7 +195,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
-            "CreateRangeSensorLidarCommand",
+            "RangeSensorCreateLidar",
             path="/World/Cube2/Lidar",
             min_range=0.4,
             max_range=100.0,
@@ -236,7 +236,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
-            "CreateRangeSensorLidarCommand",
+            "RangeSensorCreateLidar",
             path="/Lidar",
             parent="/carter/chassis_link",
             min_range=0.4,
@@ -270,7 +270,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._viewport = omni.kit.viewport.get_viewport_interface()
         # Add lidar
         result, lidar = omni.kit.commands.execute(
-            "CreateRangeSensorLidarCommand",
+            "RangeSensorCreateLidar",
             path="/World/Lidar",
             parent=None,
             min_range=0.4,
@@ -317,7 +317,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
-            "CreateRangeSensorLidarCommand",
+            "RangeSensorCreateLidar",
             path="/World/Lidar",
             parent=None,
             min_range=0.4,

@@ -50,7 +50,7 @@ class RangeSensorMenu:
 
     def _add_lidar(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRangeSensorLidarCommand",
+            "RangeSensorCreateLidar",
             path="/Lidar",
             parent=self._get_stage_and_path(),
             min_range=0.4,
@@ -69,7 +69,7 @@ class RangeSensorMenu:
 
     def _add_ultrasonic_array(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicArrayCommand",
+            "RangeSensorCreateUltrasonicArray",
             path="/UltrasonicArray",
             parent=self._get_stage_and_path(),
             min_range=0.4,
@@ -87,7 +87,7 @@ class RangeSensorMenu:
 
     def _add_ultrasonic_emitter(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicEmitterCommand",
+            "RangeSensorCreateUltrasonicEmitter",
             path="/UltrasonicEmitter",
             parent=self._get_stage_and_path(),
             per_ray_intensity=1.0,
@@ -97,7 +97,7 @@ class RangeSensorMenu:
 
     def _add_ultrasonic_firing_group(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRangeSensorUltrasonicFiringGroupCommand",
+            "RangeSensorCreateUltrasonicFiringGroup",
             path="/UltrasonicFiringGroup",
             parent=self._get_stage_and_path(),
             emitter_modes=[],
@@ -106,7 +106,7 @@ class RangeSensorMenu:
 
     def _add_generic(self, *args, **kwargs):
         result, prim = omni.kit.commands.execute(
-            "CreateRangeSensorGenericCommand",
+            "RangeSensorCreateGeneric",
             path="/GenericSensor",
             parent=self._get_stage_and_path(),
             min_range=0.4,
