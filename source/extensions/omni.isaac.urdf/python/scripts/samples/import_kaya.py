@@ -49,13 +49,13 @@ class Extension(omni.ext.IExt):
     async def _load_kaya(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+            status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
             import_config.merge_fixed_joints = True
             import_config.import_inertia_tensor = False
             # import_config.distance_scale = 100
             import_config.fix_base = False
             omni.kit.commands.execute(
-                "ParseAndImportURDFCommand",
+                "URDFParseAndImportFile",
                 urdf_path=self._extension_path + "/data/urdf/robots/kaya/urdf/kaya.urdf",
                 import_config=import_config,
             )

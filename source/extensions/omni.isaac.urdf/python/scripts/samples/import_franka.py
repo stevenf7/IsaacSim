@@ -47,11 +47,11 @@ class Extension(omni.ext.IExt):
     async def _load_franka(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+            status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
             import_config.merge_fixed_joints = False
             import_config.fix_base = True
             omni.kit.commands.execute(
-                "ParseAndImportURDFCommand",
+                "URDFParseAndImportFile",
                 urdf_path=self._extension_path + "/data/urdf/robots/franka_description/robots/panda_arm_hand.urdf",
                 import_config=import_config,
             )

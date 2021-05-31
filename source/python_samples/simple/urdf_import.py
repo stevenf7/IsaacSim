@@ -15,7 +15,7 @@ if __name__ == "__main__":
     from pxr import Sdf, Gf, UsdPhysics, UsdLux, PhysxSchema
 
     # setting up import configuration:
-    status, import_config = omni.kit.commands.execute("CreateURDFImportConfigCommand")
+    status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
     import_config.merge_fixed_joints = False
     import_config.convex_decomp = False
     import_config.import_inertia_tensor = True
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     extension_path = ext_manager.get_extension_path(ext_id)
     # import URDF
     omni.kit.commands.execute(
-        "ParseAndImportURDFCommand",
+        "URDFParseAndImportFile",
         urdf_path=extension_path + "/data/urdf/robots/carter/urdf/carter.urdf",
         import_config=import_config,
     )
