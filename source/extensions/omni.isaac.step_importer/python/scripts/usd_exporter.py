@@ -259,7 +259,7 @@ class PartExporter:
             os.makedirs(materials_path)
             if len(self.part.materials) != len(self.material_names):
                 self.material_names = ["Material_{:02d}".format(i) for i in range(len(self.part.materials))]
-            self.material_list = export_material_list(self.part.materials, self.material_names, self.materials_path)
+        self.material_list = export_material_list(self.part.materials, self.material_names, self.materials_path)
         if not redo:
             meshes_path = os.path.join(part_path, "meshes")
             if not os.path.exists(meshes_path):
