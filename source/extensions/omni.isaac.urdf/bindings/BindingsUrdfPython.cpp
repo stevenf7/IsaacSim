@@ -98,7 +98,7 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("fix_base", &ImportConfig::fixBase, "Create fix joint for base link")
         // .def_readwrite("flip_visuals", &ImportConfig::flipVisuals, "Flip visuals from Y up to Z up")
         .def_readwrite("self_collision", &ImportConfig::selfCollision, "Self collisions between links in the articulation")
-        .def_readwrite("density", &ImportConfig::density, "default density used for links")
+        .def_readwrite("density", &ImportConfig::density, "default density used for links, use 0 to autocompute")
         .def_readwrite("default_drive_type", &ImportConfig::defaultDriveType, "default drive type used for joints")
         .def_readwrite(
             "default_drive_strength", &ImportConfig::defaultDriveStrength, "default drive stiffness used for joints")

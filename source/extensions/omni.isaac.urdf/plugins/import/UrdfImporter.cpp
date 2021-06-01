@@ -220,7 +220,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         {
             massAPI.CreateMassAttr().Set(link.inertial.mass);
         }
-        else
+        else if (config.density > 0)
         {
             // scale from kg/m^2 to specified units
             massAPI.CreateDensityAttr().Set(config.density);
