@@ -16,6 +16,7 @@ import omni.kit.utils
 import omni.kit.commands
 from pxr import Usd, UsdGeom, Sdf, UsdShade
 import weakref
+import carb
 
 EXTENSION_NAME = "Mesh Merge Tool"
 
@@ -37,13 +38,14 @@ class Extension(omni.ext.IExt):
         self.models = {}
         with self._window.frame:
             with ui.HStack():
-                with ui.VStack(height=0):
+                with ui.VStack(height=0, spacing=2):
                     with ui.HStack():
                         omni.ui.Label("Clear Parent Transform", height=0)
                         self.parent_xform = omni.ui.CheckBox()
                         self.parent_xform.model.set_value(False)
+                    ui.Line(height=5)
                     ui.Label("Input")
-                    ui.Line(height=10)
+                    ui.Line(height=5)
                     with ui.HStack():
                         # ui.Label("Mesh: ")
                         self.models["input_mesh"] = ui.StringField()
@@ -57,9 +59,9 @@ class Extension(omni.ext.IExt):
                     with ui.HStack():
                         ui.Label("Materials")
                         self.models["materials"] = ui.IntField()
-                    ui.Spacer(height=10)
+                    ui.Line(height=5)
                     ui.Label("Output")
-                    ui.Line(height=10)
+                    ui.Line(height=5)
                     with ui.HStack():
                         ui.Label("Mesh: ")
                         self.models["output_mesh"] = ui.StringField()
@@ -134,6 +136,8 @@ class Extension(omni.ext.IExt):
             curr_prim_path = selectedPrims[-1]
         else:
             curr_prim_path = None
+            carb.log_warn("Cannot merge, no mesh selected")
+            return
         curr_prim = stage.GetPrimAtPath(curr_prim_path)
         prim_transform = omni.usd.utils.get_world_transform_matrix(curr_prim, Usd.TimeCode.Default())
         count = 0

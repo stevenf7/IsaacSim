@@ -31,11 +31,11 @@ struct ImportConfig
     bool importInertiaTensor = false;
     bool fixBase = true;
     bool selfCollision = false;
-    float density = 1000; // default density used for objects without mass/inertia
+    float density = 0.0f; // default density used for objects without mass/inertia, 0 to autocompute
     UrdfJointTargetType defaultDriveType = UrdfJointTargetType::POSITION;
-    float defaultDriveStrength = 100000;
-    float distanceScale = 100;
-    UrdfAxis upVector = { 0, 0, 1 };
+    float defaultDriveStrength = 100000.0f;
+    float distanceScale = 100.0f;
+    UrdfAxis upVector = { 0.0f, 0.0f, 1.0f };
     bool createPhysicsScene = true;
     bool makeDefaultPrim = true;
     // bool flipVisuals = false;

@@ -46,24 +46,21 @@ class Extension(omni.ext.IExt):
         self._filepicker = None
         with self._window.frame:
             with ui.HStack():
-                with ui.VStack():
+                with ui.VStack(spacing=2):
                     with ui.HStack(height=0):
                         ui.Label("Start Location", width=0, alignment=ui.Alignment.CENTER)
                         ui.Spacer(width=10)
                         self.start_location = create_xyz(callback=self.on_update_location)
-                    ui.Spacer(height=5)
                     with ui.HStack(height=0):
                         ui.Label("Lower Bound", width=0)
                         ui.Spacer(width=10)
                         self.lower_bound = create_xyz(-100, all_axis=["X", "Y"], callback=self.on_update_location)
-                    ui.Spacer(height=5)
                     with ui.HStack(height=0, padding=5):
                         ui.Label("Upper Bound", width=0)
                         ui.Spacer(width=10)
                         self.upper_bound = create_xyz(100, all_axis=["X", "Y"], callback=self.on_update_location)
-                    ui.Spacer(height=5)
 
-                    with ui.VStack(height=0):
+                    with ui.VStack(height=0, spacing=2):
                         with ui.HStack(height=0):
                             ui.Label("Degrees Per Ray", width=0, height=0)
                             ui.Spacer(width=10)
@@ -71,7 +68,7 @@ class Extension(omni.ext.IExt):
                                 name="degrees", min=0.01, max=359, step=0.01, height=0, h_spacing=5
                             )
                             self.deg_per_ray.model.set_value(5)
-                        ui.Spacer(height=5)
+
                         with ui.HStack(height=0):
                             ui.Label("Cell Size [cm]", width=0, height=0)
                             ui.Spacer(width=10)
@@ -79,7 +76,7 @@ class Extension(omni.ext.IExt):
                                 name="cell size", min=0.01, max=100, step=0.01, height=0, h_spacing=5
                             )
                             self.cell_size.model.set_value(5)
-                        ui.Spacer(height=5)
+
                         with ui.HStack(height=0):
                             ui.Label("Surface Offset Distance [cm]", width=0, height=0)
                             ui.Spacer(width=10)
@@ -87,7 +84,7 @@ class Extension(omni.ext.IExt):
                                 name="surface offset distance", min=0.01, max=1000, step=0.01, height=0, h_spacing=5
                             )
                             self.min_search_dist.model.set_value(2)
-                        ui.Spacer(height=5)
+
                         with ui.HStack(height=0):
                             ui.Label("Occupancy Threshold", width=0, height=0)
                             ui.Spacer(width=10)
@@ -95,7 +92,7 @@ class Extension(omni.ext.IExt):
                                 name="min search dist", min=0.01, max=2, step=0.01, height=0, h_spacing=5
                             )
                             self.occupancy_threshold.model.set_value(1)
-                        ui.Spacer(height=5)
+
                         with ui.HStack(height=0):
                             ui.Label("Max Rays", width=0, height=0)
                             ui.Spacer(width=10)
@@ -107,7 +104,7 @@ class Extension(omni.ext.IExt):
                         ui.Button("Generate Occupancy Map", clicked_fn=self._generate_map)
 
                 ui.Spacer(width=10)
-                with ui.VStack():
+                with ui.VStack(spacing=2):
                     with ui.HStack(height=0):
                         ui.Label("Occupied Color", width=0, height=0)
                         ui.Spacer(width=10)
@@ -296,16 +293,11 @@ class Extension(omni.ext.IExt):
         with self._visualize_window.frame:
             self._rgb_byte_provider = omni.ui.ByteImageProvider()
             self._rgb_byte_provider.set_bytes_data(image, [int(size[0] / scale), int(size[1] / scale)])
-            with ui.VStack():
+            with ui.VStack(spacing=5):
                 with ui.VStack(height=0):
                     self._selected_data_output = ui.ComboBox(
-                        0,
-                        "Cooordinates in Stage Space",
-                        "ROS Occupancy Map Parameters File (YAML)",
-                        height=0,
-                        width=300,
+                        0, "Coordinates in Stage Space", "ROS Occupancy Map Parameters File (YAML)", height=0, width=300
                     )
-
                     ui.Spacer(height=5)
                     data = ui.StringField(height=100, multiline=True).model
                     image_details_text = f"Top Left: {top_left}\t\t Top Right: {top_right}\n Bottom Left: {bottom_left}\t\t Bottom Right: {bottom_right}"
@@ -342,7 +334,7 @@ class Extension(omni.ext.IExt):
                 ui.Spacer(height=10)
                 with ui.VStack():
                     omni.ui.ImageWithProvider(self._rgb_byte_provider)
-                ui.Spacer(height=5)
+
                 ui.Button("Save Image", clicked_fn=save_file, height=0)
 
     def on_shutdown(self):

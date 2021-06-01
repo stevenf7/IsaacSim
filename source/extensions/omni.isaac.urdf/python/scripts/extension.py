@@ -113,13 +113,13 @@ class Extension(omni.ext.IExt):
                                 with ui.HStack():
                                     ui.Label(
                                         "Link Density:",
-                                        tooltip="[kg/m^3] If a link doesn't have mass, use this density as backup",
+                                        tooltip="[kg/m^3] If a link doesn't have mass, use this density as backup, A density of 0.0 results in the physics engine automatically computing density as well",
                                     )
                                     model = ui.FloatField().model
                                     model.add_value_changed_fn(
                                         lambda m, config=self._config: config.set_density(m.get_value_as_float())
                                     )
-                                    model.set_value(1000)
+                                    model.set_value(0)
 
                                 with ui.HStack():
                                     ui.Label("Joint Drive Type:")
