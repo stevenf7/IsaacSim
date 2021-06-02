@@ -5,26 +5,6 @@ import os
 import omni.kit.pipapi
 import omni.ui as ui
 
-#   "Keep Help text the width of this line or shorter -------------------------------",
-ADD_DB_TEXT = (
-    "    Please register an account at https://www.shapenet.org/ so you can make the "
-    "database of ShapeNetCore.V1 csv files necessary to run this extension.  Once you "
-    "have a validate shapenet.org login, use the menu to create the database.  You "
-    "should only have to do this once.\n\n"
-)
-
-HELP_TEXT = (
-    "    This omni.isaac.shapenet plugin allows you to add ShapeNetCore.V2 models from shapenet.org to your stage in Omniverse Kit.\n\n"
-    "    You can use the ShapeNet menu to add shapes.\n\n"
-    "    You can also use an external python session to send json formatted commands via http and load shapes with comm_kit.py.\n\n"
-    "    See comm_kit.test_comm() or run:\n"
-    "\t>  jupyter notebook ShapeNet Python Example.ipynb\n"
-    "for examples.\n\n"
-    "    If you already have ShapeNetCore V2 installed locally, this plugin can use the local files.  Use the env var SHAPENET_LOCAL_DIR to set that location (IMPORTANT NOTE: Make sure there are no periods, ., in the path name), otherwise, omni.isaac.shapenet will use the default ${data}/shapenet folder.  By using local folders, you can edit shapenet models before their conversion to usd.  If you want to keep the original file, just save the modified file as "
-    ' "models/modified/model.obj" in that shape\'s /models folder.\n\n'
-    "    If the shape is already on the omniverse server at g_omni_shape_loc (defaults to /Projects/shapenet), then that model will be used instead of the downloaded original or locally saved or modified shapenet obj file.\n\n"
-)
-
 WIDGET_WIDTH = 130
 
 # this function is used to make sure the user can log into shapenet.org.  It should be used before creating the pickle.
@@ -42,6 +22,7 @@ def try_login(username, password):
     time.sleep(1)
     page_source = b.get_page_source()
     login_success = page_source.find("Congratulations!") > -1
+    b.quit()
 
     return login_success
 
@@ -138,50 +119,11 @@ def save_and_testDB(snDb, out_file):
 
 
 class ShapenetLogin:
-    def __init__(self, shapenetMenu, icon_path):
+    def __init__(self, shapenetMenu):
         self._shapenetMenu = shapenetMenu
         self._models = {}
-        self.icon_path = icon_path
-        self.build_window()
-
-    def build_window(self):
-        """ build ShapeNet Login window"""
-        self._window = ui.Window(
-            title="ShapeNet Loader", width=400, height=150, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
-        )
-        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
-        with self._window.frame:
-            with ui.VStack():
-                with ui.HStack(height=20):
-                    ui.Label("Username or Email: ", alignment=ui.Alignment.CENTER, width=WIDGET_WIDTH)
-                    self._username = ui.StringField()
-                    img_url = str(self.icon_path.joinpath("help.png"))
-                    ui.Spacer(width=6)
-                    self._models["help_button"] = ui.Button(
-                        "Help", width=0, clicked_fn=lambda b=None: self._on_help_menu_click()
-                    )
-                    # ui.Image(img_url, width=20, tooltip="Help")
-                ui.Spacer(height=10)
-                with ui.HStack(height=20):
-                    ui.Label("Password:", alignment=ui.Alignment.CENTER, width=WIDGET_WIDTH)
-                    self._password = ui.StringField()
-                    self._password.password_mode = True
-                ui.Spacer(height=10)
-                with ui.HStack(height=20):
-                    ui.Button("Sign In to shapenet.org", clicked_fn=lambda b=None: self._on_login_fn(b))
-
-    def _on_help_menu_click(self):
-        help_message = ""
-        if not pickle_file_exists():
-            help_message = ADD_DB_TEXT
-        help_message = help_message + HELP_TEXT
-
-        flags = ui.WINDOW_FLAGS_NO_RESIZE | ui.WINDOW_FLAGS_MODAL
-        flags |= ui.WINDOW_FLAGS_NO_SCROLLBAR
-        self._help_window = ui.Window("Shapenet Help", width=500, height=0, flags=flags)
-        with self._help_window.frame:
-            with ui.VStack(name="root", style={"VStack::root": {"margin": 10}}, height=0, spacing=20):
-                ui.Label(help_message, alignment=ui.Alignment.LEFT, word_wrap=True)
+        self._login_window = None
+        self.create_login_window()
 
     def _on_login_fn(self, widget):
         csv_location = get_local_shape_loc() + "/v1_csv/"
@@ -192,5 +134,28 @@ class ShapenetLogin:
             print(f"Attempting to use local files if they already exist in {csv_location}.")
         snDb = create_db_from_files(csv_location)
         if save_and_testDB(snDb, get_local_shape_loc() + g_pickle_file_name):
-            self._shapenetMenu._hide_db_show_add()
-        self._window.visible = False
+            self._shapenetMenu._hide_login_show_add()
+        if pickle_file_exists():
+            self._login_window.visible = False
+
+    def create_login_window(self):
+        flags = ui.WINDOW_FLAGS_NO_RESIZE | ui.WINDOW_FLAGS_MODAL
+        flags |= ui.WINDOW_FLAGS_NO_SCROLLBAR
+        self._login_window = ui.Window("Create Shapenet Database Index File", width=500, height=0, flags=flags)
+        with self._login_window.frame:
+            with ui.VStack():
+                with ui.HStack(height=20):
+                    ui.Label("Username or Email: ", alignment=ui.Alignment.CENTER, width=WIDGET_WIDTH)
+                    self._username = ui.StringField()
+                    ui.Spacer(width=6)
+                ui.Spacer(height=10)
+                with ui.HStack(height=20):
+                    ui.Label("Password:", alignment=ui.Alignment.CENTER, width=WIDGET_WIDTH)
+                    self._password = ui.StringField()
+                    self._password.password_mode = True
+                ui.Spacer(height=10)
+                with ui.HStack(height=20):
+                    ui.Button("Sign In to shapenet.org", clicked_fn=lambda b=None: self._on_login_fn(b))
+                with ui.VStack(name="root", style={"VStack::root": {"margin": 10}}, height=0, spacing=20):
+                    password_message = "You password will not be stored by Isaac Sim, it is only used to log into the shapenet.org web page.  Password encription is up to the shapenet.org web page."
+                    ui.Label(password_message, alignment=ui.Alignment.LEFT, word_wrap=True)
