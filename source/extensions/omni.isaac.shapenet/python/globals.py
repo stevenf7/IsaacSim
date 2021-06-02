@@ -8,6 +8,8 @@ try:
 except:
     import pickle
 
+DEBUG_PRINT_ON = True
+
 g_local_shape_loc = None
 
 g_shapenet_db = None

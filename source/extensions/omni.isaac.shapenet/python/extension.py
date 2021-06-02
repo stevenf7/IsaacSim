@@ -23,7 +23,6 @@ from queue import Queue
 
 from pathlib import Path
 
-DEBUG_PRINT_ON = False
 EXTENSION_NAME = "ShapeNet Loader"
 
 # The listener thread will fill these so that main thread can consume them.
@@ -80,10 +79,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         if DEBUG_PRINT_ON:
             print("\nI STARTED I STARTED!\n")
-        manager = omni.kit.app.get_app().get_extension_manager()
-        extension_path = manager.get_extension_path(ext_id)
-        self.icon_path = Path(extension_path).joinpath("data/icons")
-        self._menu = ShapenetMenu(self.icon_path)
+        self._menu = ShapenetMenu()
 
         if DEBUG_PRINT_ON:
             print("\nafter ShapenetMenu\n")
@@ -110,23 +106,14 @@ class Extension(omni.ext.IExt):
             print("\nafter update_events\n")
 
     def on_shutdown(self):
-        if DEBUG_PRINT_ON:
-            print("Enter on_shutdown")
         self._http_server.shutdown()
-        if DEBUG_PRINT_ON:
-            print("After self._http_server.shutdown() in on_shutdown")
         self.thread.join()
-        if DEBUG_PRINT_ON:
-            print("After self.thread.join() in on_shutdown")
 
         self._menu.shutdown()
-        if DEBUG_PRINT_ON:
-            print("After self._menu.shutdown() in on_shutdown")
         self._menu = None
-        if DEBUG_PRINT_ON:
-            print("After self._menu = None in on_shutdown")
 
     def _on_update(self, dt):
+        global g_requests
         if not g_requests.empty():
             request = g_requests.get()
             if DEBUG_PRINT_ON:
