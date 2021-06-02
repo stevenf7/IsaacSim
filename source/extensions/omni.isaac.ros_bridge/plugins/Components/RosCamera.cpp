@@ -185,23 +185,40 @@ void RosCamera::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DEnabledAttr(), mEnableBoundingBox3D);
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DClassListAttr(), filterClassList3D);
 
-
-    mRosNode->createPublisher<sensor_msgs::CameraInfo>(
-        mPrim.GetPath().GetString(), mCameraInfoPubTopic, mQueueSize, &RosCamera::cameraInfoPubCallback, this);
-    mRosNode->createPublisher<sensor_msgs::Image>(
-        mPrim.GetPath().GetString(), mRgbPubTopic, mQueueSize, &RosCamera::rgbPubCallback, this);
-    mRosNode->createPublisher<sensor_msgs::Image>(
-        mPrim.GetPath().GetString(), mDepthPubTopic, mQueueSize, &RosCamera::depthPubCallback, this);
-    mRosNode->createPublisher<sensor_msgs::Image>(
-        mPrim.GetPath().GetString(), mInstancePubTopic, mQueueSize, &RosCamera::instancePubCallback, this);
-    mRosNode->createPublisher<sensor_msgs::Image>(
-        mPrim.GetPath().GetString(), mSemanticPubTopic, mQueueSize, &RosCamera::semanticPubCallback, this);
-    mRosNode->createPublisher<std_msgs::String>(
-        mPrim.GetPath().GetString(), mLabelPubTopic, mQueueSize, &RosCamera::labelPubCallback, this);
-    mRosNode->createPublisher<isaac_ros_messages::IsaacBoundingBoxArray>(
-        mPrim.GetPath().GetString(), mBoundingBox2DPubTopic, mQueueSize, &RosCamera::boundingbox2dPubCallback, this);
-    mRosNode->createPublisher<isaac_ros_messages::BoundingBox3DArray>(
-        mPrim.GetPath().GetString(), mBoundingBox3DPubTopic, mQueueSize, &RosCamera::boundingbox3dPubCallback, this);
+    if (mEnableRgb || mEnableDepth || mEnableSegmentation || mEnableBoundingBox2D || mEnableBoundingBox3D)
+    {
+        mRosNode->createPublisher<sensor_msgs::CameraInfo>(
+            mPrim.GetPath().GetString(), mCameraInfoPubTopic, mQueueSize, &RosCamera::cameraInfoPubCallback, this);
+    }
+    if (mEnableRgb)
+    {
+        mRosNode->createPublisher<sensor_msgs::Image>(
+            mPrim.GetPath().GetString(), mRgbPubTopic, mQueueSize, &RosCamera::rgbPubCallback, this);
+    }
+    if (mEnableDepth)
+    {
+        mRosNode->createPublisher<sensor_msgs::Image>(
+            mPrim.GetPath().GetString(), mDepthPubTopic, mQueueSize, &RosCamera::depthPubCallback, this);
+    }
+    if (mEnableSegmentation)
+    {
+        mRosNode->createPublisher<sensor_msgs::Image>(
+            mPrim.GetPath().GetString(), mInstancePubTopic, mQueueSize, &RosCamera::instancePubCallback, this);
+        mRosNode->createPublisher<sensor_msgs::Image>(
+            mPrim.GetPath().GetString(), mSemanticPubTopic, mQueueSize, &RosCamera::semanticPubCallback, this);
+        mRosNode->createPublisher<std_msgs::String>(
+            mPrim.GetPath().GetString(), mLabelPubTopic, mQueueSize, &RosCamera::labelPubCallback, this);
+    }
+    if (mEnableBoundingBox2D)
+    {
+        mRosNode->createPublisher<isaac_ros_messages::IsaacBoundingBoxArray>(
+            mPrim.GetPath().GetString(), mBoundingBox2DPubTopic, mQueueSize, &RosCamera::boundingbox2dPubCallback, this);
+    }
+    if (mEnableBoundingBox3D)
+    {
+        mRosNode->createPublisher<isaac_ros_messages::BoundingBox3DArray>(
+            mPrim.GetPath().GetString(), mBoundingBox3DPubTopic, mQueueSize, &RosCamera::boundingbox3dPubCallback, this);
+    }
 
 
     mBoundingBox2DClassList.clear();
