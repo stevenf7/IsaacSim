@@ -39,5 +39,5 @@ recursive = false
 exclude = ["*/omni/isaac/rclpy"]
 
 [settings]
-exts."omni.isaac.ros2_bridge".nodeName = "OmniIsaacRosBridge"
+exts."omni.isaac.ros2_bridge".nodeName = "OmniIsaacRos2Bridge"
 exts."omni.isaac.ros2_bridge".useSimTime = true

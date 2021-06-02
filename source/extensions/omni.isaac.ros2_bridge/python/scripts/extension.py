@@ -10,7 +10,7 @@ class Extension(omni.ext.IExt):
         self._ros2bridge = None
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         if ext_manager.is_extension_enabled("omni.isaac.ros_bridge"):
-            carb.log_error("ROS Bridge extension cannot be enabled if ROS Bridge is enabled")
+            carb.log_error("ROS 2 Bridge extension cannot be enabled if ROS Bridge is enabled")
             ext_manager.set_extension_enabled("omni.isaac.ros2_bridge", False)
             return
 

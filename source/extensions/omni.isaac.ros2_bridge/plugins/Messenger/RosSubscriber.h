@@ -35,10 +35,7 @@ public:
 
     ~RosSubscriber()
     {
-        // if (sub_)
-        // {
-        //     sub_->shutdown();
-        // }
+        CARB_LOG_INFO("Destroying Subscriber");
         sub_.reset();
         sub_ = nullptr;
     }

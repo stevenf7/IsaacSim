@@ -247,11 +247,11 @@ CARB_EXPORT void carbOnPluginStartup()
     //     return;
     // }
     g_settings->setDefaultString("/exts/omni.isaac.ros2_bridge/nodeName", "OmniIsaacRos2Bridge");
-    std::string nodeName = g_settings->get<const char*>("/exts/omni.isaac.ros2_bridge/nodeName");
-    if (nodeName.size() == 0)
-    {
-        nodeName = "OmniIsaacRos2Bridge";
-    }
+    // std::string nodeName = g_settings->get<const char*>("/exts/omni.isaac.ros2_bridge/nodeName");
+    // if (nodeName.size() == 0)
+    // {
+    //     nodeName = "OmniIsaacRos2Bridge";
+    // }
     if (!rclcpp::ok())
     {
         CARB_LOG_INFO("rclcpp::init()");
