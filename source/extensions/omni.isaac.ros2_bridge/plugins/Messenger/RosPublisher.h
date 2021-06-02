@@ -35,11 +35,9 @@ public:
     }
     ~RosPublisher()
     {
-        // if (pub_)
-        // {
-        //     pub_-shutdown();
-        // }
+        CARB_LOG_INFO("Destroying Publisher");
         pub_.reset();
+        pub_ = nullptr;
         pubCallback_ = nullptr;
     }
     RosPublisher(const RosPublisher&) = delete;

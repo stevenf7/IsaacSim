@@ -29,7 +29,7 @@ RosNode::RosNode(std::string name)
     // {
     //     fullName = ros::names::clean(ros::this_node::getName() + "/" + name);
     // }
-    CARB_LOG_INFO("Ros Node Was Created");
+    CARB_LOG_INFO("Ros2 Node Was Created");
     if (name.size() == 0)
     {
         carb::Framework* framework = carb::getFramework();
@@ -41,7 +41,8 @@ RosNode::RosNode(std::string name)
         }
     }
     rosnode_ = std::make_shared<rclcpp::Node>(name);
-    executor.add_node(rosnode_);
+    executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+    executor->add_node(rosnode_);
     // auto group = rosnode_->create_callback_group(rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
 
     // rosnode_->setCallbackQueue(&(callbackQueue_)); TODO
@@ -64,14 +65,20 @@ void RosNode::stop()
         msg.second = nullptr;
     }
     mMessages.clear();
-
+    if (executor)
+    {
+        executor->cancel();
+        executor->remove_node(rosnode_);
+    }
+    executor.reset();
     if (rosnode_)
     {
-        CARB_LOG_INFO("Ros Node Was Shutdown");
+        CARB_LOG_INFO("Ros2 Node Was Shutdown");
         // rosnode_->shutdown();
     }
     rosnode_.reset();
     rosnode_ = nullptr;
+    CARB_LOG_INFO("Ros2 Node Shutdown Complete");
 }
 void RosNode::tick()
 {
@@ -79,7 +86,7 @@ void RosNode::tick()
     if (rclcpp::ok())
     {
         // callbackQueue_.callAvailable();
-        executor.spin_once(std::chrono::nanoseconds(0));
+        executor->spin_once(std::chrono::nanoseconds(0));
 
         for (auto& msg : mMessages)
         {

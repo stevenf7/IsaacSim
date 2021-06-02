@@ -35,10 +35,7 @@ public:
 
     ~RosService()
     {
-        // if (srv_)
-        // {
-        //     srv_->shutdown();
-        // }
+        CARB_LOG_INFO("Destroying Service");
         srv_.reset();
         srv_ = nullptr;
     }

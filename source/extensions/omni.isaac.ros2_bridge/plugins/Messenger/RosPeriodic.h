@@ -36,6 +36,7 @@ public:
     }
     ~RosPeriodic()
     {
+        CARB_LOG_INFO("Destroying Periodic");
         tickCallback_ = nullptr;
     }
     RosPeriodic(const RosPeriodic&) = delete;

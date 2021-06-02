@@ -197,7 +197,7 @@ private:
     std::unordered_map<std::string, std::unique_ptr<RosMessenger>> mMessages;
     std::shared_ptr<rclcpp::Node> rosnode_ = nullptr;
     // ros::CallbackQueue callbackQueue_;
-    rclcpp::executors::SingleThreadedExecutor executor;
+    std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor;
 };
 }
 }
