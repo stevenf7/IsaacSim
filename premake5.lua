@@ -194,7 +194,7 @@ group "apps"
         write_version_file(config)
     end
 
-    define_local_experience("isaac-sim", "omni.isaac.sim.base")
+    define_local_experience("isaac-sim", "omni.isaac.sim")
     define_local_experience("isaac-sim.launcher", "omni.isaac.sim.launcher")
     define_local_experience("isaac-sim.headless.kitremote", "omni.isaac.sim.headless.kitremote", "--no-window ")
     define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window ")
