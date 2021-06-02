@@ -89,17 +89,28 @@ class Jetracer:
 
             self.accelerator = stage.GetPrimAtPath(vehicle_path).GetAttribute("physxVehicleController:accelerator")
             self.left_steer = stage.GetPrimAtPath(vehicle_path).GetAttribute("physxVehicleController:steerLeft")
+            self.right_steer = stage.GetPrimAtPath(vehicle_path).GetAttribute("physxVehicleController:steerRight")
+            self.target_gear = stage.GetPrimAtPath(vehicle_path).GetAttribute("physxVehicleController:targetGear")
             # TODO add brake physxVehicleController:brake
 
         self.dc.wake_up_rigid_body(self.ar)
         accel_cmd = self.wheel_speed_from_motor_value(motor_value[0])
         steer_left_cmd = self.wheel_speed_from_motor_value(motor_value[1])
 
-        # self.accelerator.Set(np.clip(accel_cmd, -10, 10))
-        # self.left_steer.Set(np.clip(steer_left_cmd, -10, 10))
+        acceleration = max(min(accel_cmd, 1), -1)
+        steering = max(min(steer_left_cmd, 1), -1)
 
-        self.accelerator.Set(max(min(accel_cmd, 1), -1))
-        self.left_steer.Set(max(min(steer_left_cmd, 1), -1))
+        gear = 1  # going forward
+        if acceleration < 0:
+            gear = -1  # reverse
+
+        self.accelerator.Set(abs(acceleration))
+        self.target_gear.Set(gear)
+
+        if steering > 0:
+            self.right_steer.Set(steering)
+        else:
+            self.left_steer.Set(abs(steering))
 
     # idealized motor model that converts a pwm value to a velocity
     def wheel_speed_from_motor_value(self, input):
