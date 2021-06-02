@@ -105,7 +105,7 @@ def main(args):
 
                 # save every 100 steps
                 if i % 100 == 0 and args.eval_model == "":
-                    torch.save(model, "cube_model_ " + str(i) + ".pth")
+                    torch.save(model, "cube_model_" + str(i) + ".pth")
 
 
 if __name__ == "__main__":

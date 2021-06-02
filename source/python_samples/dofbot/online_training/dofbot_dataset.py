@@ -13,8 +13,7 @@
 Use OmniKit to generate a simple scene. At each iteration, the scene is populated by
 creating a cube that rests on a plane. The cube pose, colours and textures are randomized. 
 The camera position is also randomized within a range expected for the Dofbot's POV 
-before capturing groundtruth consisting of an RGB rendered image, Tight 2D Bounding Boxes 
-and Instance Segmentation masks.
+before capturing groundtruth consisting of an RGB rendered image, and Tight 2D Bounding Boxes 
 """
 
 import os
@@ -26,11 +25,12 @@ import signal
 import omni
 import carb
 from omni.isaac.python_app import OmniKitHelper
+from pxr import UsdGeom, Gf, Vt
 
 # Setup default generation variables
 # Value are (min, max) ranges
-OBJ_TRANSLATION_X = (-30.0, 30.0)
-OBJ_TRANSLATION_Z = (-30.0, 30.0)
+OBJ_TRANSLATION_X = (-40.0, 40.0)
+OBJ_TRANSLATION_Z = (-40.0, 40.0)
 OBJ_ROTATION_Y = (0.0, 360.0)
 LIGHT_INTENSITY = (500.0, 50000.0)
 
@@ -39,8 +39,9 @@ AZIMUTH_ROTATION = (-30.0, 30.0)
 ELEVATION_ROTATION = (-70.0, -20.0)
 CAM_TRANSLATION_XYZ = (-50.0, 50.0)
 
-SCALE = 20
-CAMERA_DISTANCE = 500
+CUBE_SCALE = 20
+DISTRACTOR_SCALE = (15, 25)
+CAMERA_DISTANCE = 600
 BBOX_AREA_THRESH = 16
 
 # Default rendering parameters
@@ -55,29 +56,25 @@ RENDER_CONFIG = {
 
 
 class RandomObjects(torch.utils.data.IterableDataset):
-    """Dataset of random cubes - domain randomize position/colour/texture/lighting/camera angle
-    The RGB, BoundingBox and Instance Segmentation are captured by moving a camera aimed at the centre of the scene
+    """Dataset of cube + distractor objects - domain randomize position/colour/texture/lighting/camera angle
+    The RGB image and BoundingBox are captured by moving a camera aimed at the centre of the scene
     which is positioned at random but at a fixed distance from the centre. 
     """
 
     def __init__(
-        # self, root, categories, max_asset_size=None, num_assets_min=1, num_assets_max=3, split=0.7, train=True
-        self,
-        num_assets_min=1,
-        num_assets_max=3,
-        split=0.7,
-        train=True,
+        self, categories=["Cube", "Sphere", "Cone"], num_assets_min=1, num_assets_max=3, split=0.7, train=True
     ):
+        assert len(categories) > 1
         assert (split > 0) and (split <= 1.0)
-
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
+        self.stage = self.kit.get_stage()
+
         from omni.isaac.synthetic_utils import SyntheticDataHelper
         from omni.isaac.synthetic_utils import DomainRandomization
 
         self.sd_helper = SyntheticDataHelper()
         self.dr_helper = DomainRandomization()
         self.dr_helper.toggle_manual_mode()
-        self.stage = self.kit.get_stage()
 
         from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
@@ -94,11 +91,13 @@ class RandomObjects(torch.utils.data.IterableDataset):
             )
             return
 
+        self.categories = categories
+        self.range_num_assets = (num_assets_min, num_assets_max)
         self.asset_path = nucleus_server + "/Isaac"
+
         self._setup_world()
         self.cur_idx = 0
         self.exiting = False
-
         signal.signal(signal.SIGINT, self._handle_exit)
 
     def _handle_exit(self, *args, **kwargs):
@@ -106,7 +105,21 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.exiting = True
 
     def _setup_world(self):
-        from pxr import UsdGeom
+        from pxr import Sdf, UsdPhysics, PhysxSchema
+
+        # Create physics scene for collision testing
+        scene = UsdPhysics.Scene.Define(self.stage, Sdf.Path("/World/physicsScene"))
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        scene.CreateGravityMagnitudeAttr().Set(981.0)
+
+        # Set physics scene to use cpu physics
+        PhysxSchema.PhysxSceneAPI.Apply(self.stage.GetPrimAtPath("/World/physicsScene"))
+        physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(self.stage, "/World/physicsScene")
+        physxSceneAPI.CreateEnableCCDAttr(True)
+        physxSceneAPI.CreateEnableStabilizationAttr(True)
+        physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+        physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+        physxSceneAPI.CreateSolverTypeAttr("TGS")
 
         """Setup lights, walls, floor, ceiling and camera"""
         self.kit.create_prim(
@@ -163,21 +176,34 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         UsdShade.MaterialBindingAPI(prim).Bind(material)
 
-    def load_single_asset(self):
-        from pxr import UsdGeom, Semantics
+    def load_single_asset(self, prim_type, scale, i):
+        from omni.physx.scripts import utils
+        from pxr import Semantics
 
-        x = random.uniform(*OBJ_TRANSLATION_X)
-        z = random.uniform(*OBJ_TRANSLATION_Z)
-        rot_y = random.uniform(*OBJ_ROTATION_Y)
-
+        overlapping = True
         stage = self.kit.get_stage()
-        prim_type = "Cube"
-        prim = stage.DefinePrim("/World/cube", prim_type)
 
-        UsdGeom.XformCommonAPI(prim).SetScale((SCALE, SCALE, SCALE))
+        # Randomly generate transforms until a valid position is found
+        # (i.e. new object will not overlap with existing ones)
+        while overlapping:
+            x = random.uniform(*OBJ_TRANSLATION_X)
+            y = scale  # assumes bounding box of standard prim is 1 cubic unit
+            z = random.uniform(*OBJ_TRANSLATION_Z)
+            rot_y = random.uniform(*OBJ_ROTATION_Y)
+
+            # Validate this proposed transform
+            rot = carb.Float4(0.0, 0.0, 1.0, 0.0)
+            origin = carb.Float3(float(x), float(y), float(z))
+            extent = carb.Float3(float(scale), float(scale), float(scale))
+            overlapping = self.check_overlap(extent, origin, rot)
+
+        # No overlap, define the prim and apply the transform
+        prim = stage.DefinePrim(f"/World/Asset/obj{i}", prim_type)
         bound = UsdGeom.Mesh(prim).ComputeWorldBound(0.0, "default")
-        box_min_y = bound.GetBox().GetMin()[1]
-        UsdGeom.XformCommonAPI(prim).SetTranslate((x, -(box_min_y * SCALE), z))
+        box_min_y = bound.GetBox().GetMin()[1] * scale
+
+        UsdGeom.XformCommonAPI(prim).SetScale((scale, scale, scale))
+        UsdGeom.XformCommonAPI(prim).SetTranslate((x, -box_min_y, z))
         UsdGeom.XformCommonAPI(prim).SetRotate((0, rot_y, 0))
 
         # Add semantic label based on prim type
@@ -187,8 +213,29 @@ class RandomObjects(torch.utils.data.IterableDataset):
         sem.GetSemanticTypeAttr().Set("class")
         sem.GetSemanticDataAttr().Set(prim_type)
 
+        # Add physics to the prim
+        utils.setCollider(prim, approximationShape="convexHull")
         return prim
 
+    # OVERLAP --------------------------------------------
+    def report_hit(self, hit):
+        """ Existing object turns red if the proposed position would result in a collision
+        Note: use for troubleshooting, material randomization must be disabled for this to work
+        """
+        hitColor = Vt.Vec3fArray([Gf.Vec3f(180.0 / 255.0, 16.0 / 255.0, 0.0)])
+        usdGeom = UsdGeom.Mesh.Get(self.stage, hit.rigid_body)
+        usdGeom.GetDisplayColorAttr().Set(hitColor)
+        return True
+
+    def check_overlap(self, extent, origin, rot):
+        from omni.physx import get_physx_scene_query_interface
+
+        numHits = get_physx_scene_query_interface().overlap_box(extent, origin, rot, self.report_hit, False)
+        if numHits > 0:
+            return True
+        return False
+
+    # POPULATE AND RANDOMIZE -------------------------------
     def create_dr_comp(self):
         """Creates DR components with various attributes.
         The asset prims to randomize is an empty list for most components
@@ -225,44 +272,33 @@ class RandomObjects(torch.utils.data.IterableDataset):
         """Updates DR component with the asset prim paths that will be randomized"""
         comp_prim_paths_target = dr_comp.GetPrimPathsRel()
         comp_prim_paths_target.ClearTargets(True)
-        # Add targets for all objects in scene (the cube)
+        # Add targets for all objects in scene (cube + distractors)
         for asset in self.assets:
             comp_prim_paths_target.AddTarget(asset.GetPrimPath())
         # Add target for ground surface
         comp_prim_paths_target.AddTarget("/World/Ground")
 
-    def load_distractor(self, id):
-        from pxr import UsdGeom, Semantics
-
-        x = random.uniform(*OBJ_TRANSLATION_X)
-        z = random.uniform(*OBJ_TRANSLATION_Z)
-        rot_y = random.uniform(*OBJ_ROTATION_Y)
-
-        stage = self.kit.get_stage()
-        prim_type = random.choice(["Sphere", "Cone"])
-        prim = stage.DefinePrim(f"/World/obj{id}", prim_type)
-
-        bound = UsdGeom.Mesh(prim).ComputeWorldBound(0.0, "default")
-        box_min_y = bound.GetBox().GetMin()[1]
-        UsdGeom.XformCommonAPI(prim).SetTranslate((x, -(box_min_y * SCALE), z))
-        UsdGeom.XformCommonAPI(prim).SetRotate((0, rot_y, 0))
-        UsdGeom.XformCommonAPI(prim).SetScale((SCALE, SCALE, SCALE))
-
-        # Add semantic label based on prim type
-        sem = Semantics.SemanticsAPI.Apply(prim, "Semantics")
-        sem.CreateSemanticTypeAttr()
-        sem.CreateSemanticDataAttr()
-        sem.GetSemanticTypeAttr().Set("class")
-        sem.GetSemanticDataAttr().Set(prim_type)
-
-        return prim
-
     def populate_scene(self):
+        from omni.physx.scripts import utils
+
         """Clear the scene and populate it with assets."""
         self.stage.RemovePrim("/World/Asset")
         self.assets = []
-        self.assets.append(self.load_single_asset())
-        # self.assets.append(self.load_distractor(2))
+
+        # Start simulation so we can check overlaps before spawning
+        self.kit.play()
+
+        # Add at least one cube of desired size
+        self.assets.append(self.load_single_asset("Cube", CUBE_SCALE, 0))
+        self.kit.update()
+
+        # Add random number of distractor objects
+        num_distractors = random.randint(*self.range_num_assets) - 1
+        for i in range(num_distractors):
+            prim_type = random.choice(self.categories)
+            prim_scale = random.uniform(*DISTRACTOR_SCALE)
+            self.assets.append(self.load_single_asset(prim_type, prim_scale, i + 1))
+            self.kit.update()
 
     def randomize_asset_material(self):
         """Randomize asset material properties"""
@@ -278,9 +314,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
     def randomize_camera(self):
         """Randomize the camera position."""
-        # By simply rotating a camera "rig" instead repositioning the camera
-        # itself, we greatly simplify our job.
-
         # Clear previous transforms
         self.camera_rig.ClearXformOpOrder()
         # Change azimuth angle
@@ -302,10 +335,12 @@ class RandomObjects(torch.utils.data.IterableDataset):
         )
         self.kit.update()
 
+    # ITERATION----------------------------------------------
     def __iter__(self):
         return self
 
     def __next__(self):
+        print("next!------------------------------")
         # Generate a new scene
         self.populate_scene()
         self.randomize_camera()
@@ -314,7 +349,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.randomize_asset_material()
         self.randomize_lighting()
 
-        # step once and then wait for materials to load
+        # Step once and then wait for materials to load
         self.kit.update()
         print("waiting for materials to load...")
         while self.kit.is_loading():
@@ -368,12 +403,11 @@ if __name__ == "__main__":
     dataset = RandomObjects()
     from omni.isaac.synthetic_utils import visualization as vis
 
-    count = 0
-
     # Iterate through dataset and visualize the output
     plt.ion()
     _, axes = plt.subplots(1, 2, figsize=(10, 5))
     plt.tight_layout()
+    count = 0
 
     for image, target in dataset:
         for ax in axes:
@@ -385,11 +419,7 @@ if __name__ == "__main__":
 
         num_instances = len(target["boxes"])
         colours = vis.random_colours(num_instances, enable_random=False)
-        overlay = np.zeros_like(np_image)
-        for mask, colour in zip(target["masks"].cpu().numpy(), colours):
-            overlay[mask, :3] = colour
 
-        axes[1].imshow(overlay)
         categories = categories = ["Cube", "Sphere", "Cone"]
         mapping = {i + 1: cat for i, cat in enumerate(categories)}
         labels = [mapping[label.item()] for label in target["labels"]]
@@ -402,5 +432,7 @@ if __name__ == "__main__":
 
         if dataset.exiting:
             break
+
     # cleanup
+    dataset.kit.stop()
     dataset.kit.shutdown()
