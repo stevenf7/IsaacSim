@@ -36,7 +36,7 @@ class DataWriter:
         self.threads = []
 
         self._viewport = omni.kit.viewport.get_viewport_interface()
-        self.create_output_folders()
+        self.create_viewport_output_folders()
 
     def start_threads(self):
         """Start worker threads."""
@@ -69,6 +69,9 @@ class DataWriter:
             filename = groundtruth["METADATA"]["image_id"]
             viewport_name = groundtruth["METADATA"]["viewport_name"]
             for gt_type, data in groundtruth["DATA"].items():
+                self.create_sensor_output_folders(
+                    self.data_dir + "/" + str(viewport_name) + "/" + str(gt_type).lower() + "/"
+                )
                 if gt_type == "RGB":
                     self.save_image(viewport_name, gt_type, data, filename)
                 elif gt_type == "DEPTH":
@@ -160,8 +163,8 @@ class DataWriter:
             depth_img.save(f"{self.depth_folder}/{filename}.png")
 
     def save_bbox(self, viewport_name, data_type, data, filename, display_rgb=True, rgb_data=None, save_npy=True):
-        self.bbox_2d_tight_folder = self.data_dir + "/" + str(viewport_name) + "/bbox_2d_tight/"
-        self.bbox_2d_loose_folder = self.data_dir + "/" + str(viewport_name) + "/bbox_2d_loose/"
+        self.bbox_2d_tight_folder = self.data_dir + "/" + str(viewport_name) + "/bbox2dtight/"
+        self.bbox_2d_loose_folder = self.data_dir + "/" + str(viewport_name) + "/bbox2dloose/"
         # Save ground truth data locally as npy
         if data_type == "BBOX2DTIGHT" and save_npy:
             np.save(self.bbox_2d_tight_folder + filename + ".npy", data)
@@ -175,8 +178,8 @@ class DataWriter:
             if data_type == "BBOX2DLOOSE":
                 color_image_rgb.save(f"{self.bbox_2d_loose_folder}/{filename}.png")
 
-    def create_output_folders(self):
-        """Checks if the output folders are created. If not, it creates them."""
+    def create_viewport_output_folders(self):
+        """Checks if the output folder for each viewport is created. If not, it creates them."""
         viewports = self._viewport.get_instance_list()
         viewport_names = [self._viewport.get_viewport_window_name(vp) for vp in viewports]
         if not os.path.exists(self.data_dir):
@@ -185,27 +188,8 @@ class DataWriter:
             viewport_folder = self.data_dir + "/" + str(viewport_name)
             if not os.path.exists(viewport_folder):
                 os.mkdir(viewport_folder)
-            rgb_folder = viewport_folder + "/rgb/"
-            if not os.path.exists(rgb_folder):
-                os.mkdir(rgb_folder)
-            depth_folder = viewport_folder + "/depth/"
-            if not os.path.exists(depth_folder):
-                os.mkdir(depth_folder)
-            instance_folder = viewport_folder + "/instance/"
-            if not os.path.exists(instance_folder):
-                os.mkdir(instance_folder)
-            semantic_folder = viewport_folder + "/semantic/"
-            if not os.path.exists(semantic_folder):
-                os.mkdir(semantic_folder)
-            bbox_2d_tight_folder = viewport_folder + "/bbox_2d_tight/"
-            if not os.path.exists(bbox_2d_tight_folder):
-                os.mkdir(bbox_2d_tight_folder)
-            bbox_2d_loose_folder = viewport_folder + "/bbox_2d_loose/"
-            if not os.path.exists(bbox_2d_loose_folder):
-                os.mkdir(bbox_2d_loose_folder)
-            camera_folder = viewport_folder + "/camera/"
-            if not os.path.exists(camera_folder):
-                os.mkdir(camera_folder)
-            poses_folder = viewport_folder + "/poses/"
-            if not os.path.exists(poses_folder):
-                os.mkdir(poses_folder)
+
+    def create_sensor_output_folders(self, folder_path=None):
+        """Checks if the sensor output folder corresponding to each viewport is created. If not, it creates them."""
+        if folder_path is not None and not os.path.exists(folder_path):
+            os.mkdir(folder_path)
