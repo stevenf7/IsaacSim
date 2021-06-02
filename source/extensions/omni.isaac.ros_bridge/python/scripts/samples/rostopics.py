@@ -128,22 +128,15 @@ class Extension(omni.ext.IExt):
         robot_prim = self._stage.GetPrimAtPath("/panda")
         assert robot_prim.HasAPI(PhysxSchema.PhysxArticulationAPI)
 
-        # setup Rostopic to publish and receive joint state info
-        js_prim = ROSSchema.RosJointState.Define(self._stage, Sdf.Path("/ROS_JointState"))
+        omni.kit.commands.execute(
+            "ROSBridgeCreateJointState",
+            path="/ROS_JointState",
+            enabled=True,
+            state_topic="/joint_states",
+            command_topic="/joint_command",
+            articulation_prim_rel=["/panda"],
+        )
 
-        # adding prefix to the published /joint_states topic if needed
-        js_prim.CreateEnabledAttr(True)
-        # publisher topic
-        js_prim.CreateJointStatePubTopicAttr("/joint_states")
-        # subscriber topic
-        js_prim.CreateJointStateSubTopicAttr("/joint_command")
-
-        js_prim.CreateArticulationPrimRel()
-        js_prim.CreateQueueSizeAttr(0)
-
-        # The joint_state rostopic must be connected to the root of the robot's articulation in order to publish its states
-        ROS_prim = self._stage.GetPrimAtPath("/ROS_JointState")
-        ROS_prim.GetRelationship("articulationPrim").SetTargets(["/panda"])
         panda_joint1_drive = UsdPhysics.DriveAPI.Get(
             self._stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular"
         )
@@ -210,26 +203,28 @@ class Extension(omni.ext.IExt):
 
     # adding camera topic
     def _on_connect_camera(self):
-        self._stage = omni.usd.get_context().get_stage()
-        # add camera prim to path
-        camera_prim = ROSSchema.RosCamera.Define(self._stage, Sdf.Path("/ROS_Camera"))
-        # adding prefix to the publisher topic if needed
-        camera_prim.CreateRosNodePrefixAttr("")
-        camera_prim.CreateEnabledAttr(True)
-        # publisher topic for camera_info
-        camera_prim.CreateCameraInfoPubTopicAttr("/camera_info")
-        # publisher topic for rgb
-        camera_prim.CreateRgbPubTopicAttr("/rgb")
-        # publisher topic for depth
-        camera_prim.CreateDepthPubTopicAttr("/depth")
-        camera_prim.CreateFrameIdAttr("/sim_camera")
 
-        # enable RGB
-        camera_prim.CreateRgbEnabledAttr(True)
-        # enable depth
-        camera_prim.CreateDepthEnabledAttr(True)
-        camera_prim.CreateQueueSizeAttr(10)
-
+        omni.kit.commands.execute(
+            "ROSBridgeCreateCamera",
+            path="/ROS_Camera",
+            enabled=True,
+            resolution=Gf.Vec2i(1280, 720),
+            frame_id="sim_camera",
+            camera_info_topic="/camera_info",
+            rgb_enabled=True,
+            rgb_topic="/rgb",
+            depth_enabled=True,
+            depth_topic="/depth",
+            segmentation_enabled=False,
+            semantic_topic="/semantic",
+            instance_topic="/instance",
+            label_topic="/label",
+            bbox2d_enabled=False,
+            bbox2d_topic="/bbox_2d",
+            bbox3d_enabled=False,
+            bbox3d_topic="/bbox_3d",
+            queue_size=10,
+        )
         # make sure timeline is playing for sending and receiving ros messages
         if not self._timeline.is_playing():
             self._timeline.play()
@@ -240,29 +235,14 @@ class Extension(omni.ext.IExt):
 
     # adding the tf topic
     def _on_connect_tf(self):
-        self._stage = omni.usd.get_context().get_stage()
-        # setup rostpic for the tf tree
-        tf_prim = ROSSchema.RosPoseTree.Define(self._stage, Sdf.Path("/ROS_PoseTree"))
-        tf_prim.CreateEnabledAttr(True)
-        # create the publishing topic
-        tf_prim.CreatePoseTreePubTopicAttr("/tf")
-        tf_prim.CreateTargetPrimsRel()
-        tf_prim.CreateQueueSizeAttr(0)
-
-        # The tf rostopic must be connected to the root of the robot's articulation in order to publish its transforms
-        ROS_prim = self._stage.GetPrimAtPath("/ROS_PoseTree")
-        # if one doesn't exist already, create one.
-        if not ROS_prim:
-            # create the topic if one does not exist
-            tf_prim = ROSSchema.RosPoseTree.Define(self._stage, Sdf.Path("/ROS_PoseTree"))
-            tf_prim.CreateEnabledAttr(True)
-            # create the publishing topic
-            tf_prim.CreatePoseTreePubTopicAttr("/tf")
-            tf_prim.CreateTargetPrimsRel()
-            tf_prim.CreateQueueSizeAttr(0)
-            ROS_prim.GetRelationship("targetPrims").SetTargets(["/panda"])
-        else:
-            ROS_prim.GetRelationship("targetPrims").AddTarget(Sdf.Path("/panda"))
+        omni.kit.commands.execute(
+            "ROSBridgeCreatePoseTree",
+            path="/ROS_PoseTree",
+            enabled=True,
+            topic="/tf",
+            queue_size=0,
+            target_prims_rel=["/panda"],
+        )
 
         # timeline must be playing for messages to be published and received
         if not self._timeline.is_playing():
@@ -282,14 +262,13 @@ class Extension(omni.ext.IExt):
         # add the cube to tf tree
         ROS_prim = self._stage.GetPrimAtPath("/ROS_PoseTree")
         if not ROS_prim:
-            # create the topic if one does not exist
-            tf_prim = ROSSchema.RosPoseTree.Define(self._stage, Sdf.Path("/ROS_PoseTree"))
-            tf_prim.CreateEnabledAttr(True)
-            # create the publishing topic
-            tf_prim.CreatePoseTreePubTopicAttr("/tf")
-            tf_prim.CreateTargetPrimsRel()
-            tf_prim.CreateQueueSizeAttr(0)
-            ROS_prim = self._stage.GetPrimAtPath("/ROS_PoseTree")
-            ROS_prim.GetRelationship("targetPrims").SetTargets(["/cube"])
+            omni.kit.commands.execute(
+                "ROSBridgeCreatePoseTree",
+                path="/ROS_PoseTree",
+                enabled=True,
+                topic="/tf",
+                queue_size=0,
+                target_prims_rel=["/panda", CubePath],
+            )
         else:
             ROS_prim.GetRelationship("targetPrims").AddTarget(Sdf.Path("/cube"))
