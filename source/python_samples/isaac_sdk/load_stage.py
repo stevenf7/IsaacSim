@@ -47,6 +47,9 @@ class UsdLoadSample:
         return True
 
     def configure_bridge(self, json_file: str = "isaacsim.app.json"):
+        """
+        Configure the SDK bridge application that publishes data over tcp
+        """
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
         reb_extension_path = ext_manager.get_extension_path(ext_id)
@@ -56,12 +59,25 @@ class UsdLoadSample:
             "RobotEngineBridgeCreateApplication", asset_path=reb_extension_path, app_file=app_file
         )
 
+    def disable_existing_reb_cameras(self):
+        """
+        Disable existing REB_Camera prims for perf testing
+        """
+        import omni.isaac.RobotEngineBridgeSchema as REBSchema
+
+        stage = self.kit.get_stage()
+        for prim in stage.Traverse():
+            if prim.IsA(REBSchema.RobotEngineCamera):
+                reb_camera_prim = REBSchema.RobotEngineCamera(prim)
+                reb_camera_prim.GetEnabledAttr().Set(False)
+
     def create_reb_camera(self, cameraIndex, name, width, height):
+        """Create a new REB camera in the stage"""
         from pxr import Gf
 
-        result, self.occluded_provider = omni.kit.commands.execute(
+        result, reb_camera_prim = omni.kit.commands.execute(
             "RobotEngineBridgeCreateCamera",
-            path="/World/REB_Provider",
+            path="/World/REB_Camera",
             parent=None,
             rgb_output_component="output",
             rgb_output_channel="encoder_color_{}".format(cameraIndex),
@@ -83,20 +99,6 @@ class UsdLoadSample:
             camera_prim_rel=["{}".format(name)],
             resolution=Gf.Vec2i(int(width), int(height)),
         )
-        self.occluded_provider.GetEnabledAttr().Set(True)
-
-    def create_viewport(self, name, pose_x, pose_y, resolution=(1280, 720), size=(350, 350)):
-        viewport_handle_1 = self._viewport.create_instance()
-        viewport_window_1 = self._viewport.get_viewport_window(viewport_handle_1)
-        viewport_window_1.set_active_camera("{}".format(name))
-        viewport_window_1.set_texture_resolution(resolution)
-        viewport_window_1.set_window_pos(pose_x, pose_y)
-        viewport_window_1.set_window_size(size)
-
-    def create_multi_viewport(self, args):
-        # Need to set this before setting viewport window size
-        carb.settings.acquire_settings_interface().set_int("/app/renderer/resolution/width", -1)
-        carb.settings.acquire_settings_interface().set_int("/app/renderer/resolution/height", -1)
 
 
 if __name__ == "__main__":
@@ -107,10 +109,16 @@ if __name__ == "__main__":
     parser.add_argument("--usd_path", type=str, help="Path to usd file", required=True)
     parser.add_argument("--headless", default=False, action="store_true", help="Run stage headless")
     parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
-    parser.add_argument("--perf_timeout", type=int, default=60, help="Total perf time")
-    parser.add_argument("--add_rebcamera", nargs="*", type=str, default=[], help="Total number of REBCameras to add")
+    parser.add_argument("--benchmark", default=False, action="store_true", help="Run in benchmark mode")
     parser.add_argument(
-        "--add_viewport", dest="add_viewport", action="store_true", help="Whether to show viewport for all Camera"
+        "--benchmark_timeout", type=int, default=60, help="Total walltime in seconds to calculate average FPS for"
+    )
+    parser.add_argument(
+        "--add_rebcamera",
+        nargs="*",
+        type=str,
+        default=[],
+        help="Total number of REB Camera prims to add, existing ones will be disabled if this option is specified",
     )
 
     args, unknown = parser.parse_known_args()
@@ -121,20 +129,13 @@ if __name__ == "__main__":
             sample.kit.update(1.0 / 60.0)
         print("Loading Complete")
         # Add parameterized rebcamera along with viewport
-        if args.add_rebcamera is not None:
+        if args.add_rebcamera is not None and len(args.add_rebcamera) > 0:
+            # disable existing cameras if we are making new ones
+            sample.disable_existing_reb_cameras()
             reb_count = 0
-            if args.add_viewport:
-                # viewport settings
-                sample.create_multi_viewport(args)
-            pose_x = 720
-            pose_y = 0
             for name in args.add_rebcamera:
                 info = name.split(",")
                 sample.create_reb_camera(reb_count, info[0], info[1], info[2])
-                if args.add_viewport:
-                    sample.create_viewport(info[0], pose_x, pose_y)
-                    pose_x = pose_x - 20
-                    pose_y = pose_y + 50
                 reb_count = reb_count + 1
         sample.configure_bridge()
         sample.start()
@@ -142,22 +143,25 @@ if __name__ == "__main__":
             for i in range(10):
                 sample.kit.update()
             sample.stop()
-            exit()
-        else:
-            # Calculate average fps
+        elif args.benchmark is True:
+            # Warm up simulation
             while sample._viewport.get_viewport_window().get_fps() < 1:
                 sample.kit.update(1.0 / 60.0)
 
             fps_count = 0
             start_time = time.perf_counter()
-            end_time = start_time + args.perf_timeout
+            end_time = start_time + args.benchmark_timeout
             count = 0
-
+            # Calculate average fps
             while sample.kit.app.is_running() and end_time > time.perf_counter():
                 sample.kit.update(1.0 / 60.0)
                 fps = sample._viewport.get_viewport_window().get_fps()
                 fps_count = fps_count + fps
                 count = count + 1
-
-    print(f"\n\ ----------- Avg. FPS over {args.perf_timeout} sec : {fps_count/count}-----------")
-    sample.stop()
+            sample.stop()
+            print(f"\n----------- Avg. FPS over {args.benchmark_timeout} sec : {fps_count/count}-----------")
+        else:
+            while sample.kit.app.is_running():
+                # Run in realtime mode, we don't specify the step size
+                sample.kit.update()
+            sample.stop()
