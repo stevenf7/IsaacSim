@@ -28,29 +28,29 @@ class ShapenetSettings:
         """ Add Shape Settings """
         with ui.CollapsableFrame(title="Add Model Parameters"):
             with ui.VStack(spacing=2):
-                with ui.HStack(height=24):
+                with ui.HStack(height=20):
                     ui.Label("Omniverse Server", word_wrap=True, width=ui.Percent(35))
                     create_setting_widget("/isaac/shapenet/omniverseServer", SettingType.STRING)
-                with ui.HStack(height=24):
+                with ui.HStack(height=20):
                     ui.Label("synsetId and modelId", word_wrap=True, width=ui.Percent(35))
                     create_setting_widget("/isaac/shapenet/synsetId", SettingType.STRING)
                     ui.Spacer()
                     create_setting_widget("/isaac/shapenet/modelId", SettingType.STRING)
-                with ui.HStack(height=24):
+                with ui.HStack(height=20):
                     ui.Label("X Y Z Position", word_wrap=True, width=ui.Percent(35))
                     create_setting_widget("/isaac/shapenet/pos", SettingType.DOUBLE3)
-                with ui.HStack(height=24):
+                with ui.HStack(height=20):
                     ui.Label("X Y Z Axis Angle", word_wrap=True, width=ui.Percent(35))
                     create_setting_widget("/isaac/shapenet/rotaxis", SettingType.DOUBLE3)
                     ui.Spacer()
                     create_setting_widget("/isaac/shapenet/rotangle", SettingType.FLOAT)
-                with ui.HStack(height=24):
+                with ui.HStack(height=20):
                     ui.Label("Scale of add", word_wrap=True, width=ui.Percent(35))
                     create_setting_widget("/isaac/shapenet/scale", SettingType.FLOAT)
-                with ui.HStack(height=24):
+                with ui.HStack(height=20):
                     ui.Label("Automatically add physics", word_wrap=True, width=ui.Percent(35))
                     create_setting_widget("/isaac/shapenet/auto_add_physics", SettingType.BOOL)
-                with ui.HStack(height=24):
+                with ui.HStack(height=20):
                     ui.Label("Use convex decomponsition", word_wrap=True, width=ui.Percent(35))
                     create_setting_widget("/isaac/shapenet/use_convex_decomp", SettingType.BOOL)
 

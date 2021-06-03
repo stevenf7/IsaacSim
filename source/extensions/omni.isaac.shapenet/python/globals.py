@@ -8,7 +8,7 @@ try:
 except:
     import pickle
 
-DEBUG_PRINT_ON = True
+DEBUG_PRINT_ON = False
 
 g_local_shape_loc = None
 
