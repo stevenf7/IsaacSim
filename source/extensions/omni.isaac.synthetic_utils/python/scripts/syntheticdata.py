@@ -192,6 +192,7 @@ class SyntheticDataHelper:
                         flag = 1
             # Render frame
             self.app.update()
+            self.app.update()
             if flag == 0:
                 break
 
