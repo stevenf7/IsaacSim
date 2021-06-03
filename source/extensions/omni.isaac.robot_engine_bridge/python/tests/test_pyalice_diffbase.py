@@ -119,9 +119,8 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Creating a REB diffbase component from scratch
     async def test_diffbase_str(self):
-        (result, error) = await load_test_file(self._nucleus_path + "/Robots/STR/STR_V4_Physics_Caster_Sensors.usda")
+        (result, error) = await load_test_file(self._nucleus_path + "/Robots/Transporter/transporter_sensors.usd")
 
-        # (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/str/str_physics.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         result, prim = omni.kit.commands.execute(
@@ -132,7 +131,7 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
             input_channel="base_command",
             output_component="output",
             output_channel="base_state",
-            chassis_prim_rel=["/STR_V4"],
+            chassis_prim_rel=["/Transporter"],
             left_wheel_joint_name="left_wheel_joint",
             right_wheel_joint_name="right_wheel_joint",
             robot_front=(1, 0, 0),
@@ -145,7 +144,7 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        art = self._dc.get_articulation("/STR_V4")
+        art = self._dc.get_articulation("/Transporter")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         root_body_ptr = self._dc.get_articulation_root_body(art)
 

@@ -67,7 +67,7 @@ class TestREBPyaliceScissorLift(omni.kit.test.AsyncTestCaseFailOnLogError):
         return quantities, Composite.create_composite_message(quantities, values)
 
     async def test_scissorlift(self):
-        (result, error) = await load_test_file(self._nucleus_path + "/Samples/Isaac_SDK/Robots/STR_V4_REB.usd")
+        (result, error) = await load_test_file(self._nucleus_path + "/Samples/Isaac_SDK/Robots/Transporter_REB.usd")
         self.assertTrue(result)
 
         self._timeline.play()
@@ -96,7 +96,7 @@ class TestREBPyaliceScissorLift(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.generator.config.linear_speed = 1.0
         await simulate(3)
         # check that the lift is at the correct height
-        art = self._dc.get_articulation("/STR_V4")
+        art = self._dc.get_articulation("/Transporter")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         dof_ptr = self._dc.find_articulation_dof(art, "lift_joint")
         dof_pos = self._dc.get_dof_position(dof_ptr)

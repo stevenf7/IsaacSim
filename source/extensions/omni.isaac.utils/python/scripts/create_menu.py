@@ -37,9 +37,9 @@ class Extension(omni.ext.IExt):
                 ),
             ),
             MenuItemDescription(
-                name="AMR",
+                name="Transporter",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/STR/STR_V4_Physics_Caster_Sensors.usda", "/AMR"
+                    "/Isaac/Robots/Transporter/transporter_sensors.usd", "/Transporter"
                 ),
             ),
             MenuItemDescription(
