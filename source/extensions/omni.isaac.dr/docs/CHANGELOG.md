@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.1.6] - 2021-06-03
+========================
+
+Added
+-------
+- Avoid overlap with exclusion targets in DR transform component
+- Perf unit tests for color and texture comp
+
 [0.1.5] - 2021-03-28
 ========================
 

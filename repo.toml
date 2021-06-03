@@ -316,12 +316,15 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
+    "omni.isaac.dr",
     "omni.isaac.dynamic_control",
     "omni.isaac.motion_planning",
+    "omni.isaac.range_sensor",
     "omni.isaac.utils",
     "omni.isaac.manip",
     "omni.isaac.samples",
-    "omni.isaac.urdf"
+    "omni.isaac.urdf",
+    "omni.usd.schema.isaac"
 ]
 exts.exclude = []
 

@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2021-06-03
+========================
+
+Added
+-------
+- Add generic, lidar, radar, ultrasonic range sensors
+
 [0.1.1] - 2020-12-11
 ========================
 
