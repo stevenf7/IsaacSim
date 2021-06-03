@@ -5,6 +5,7 @@ repo_build.prebuild_link
 {
     { "config", ext.target_dir.."/config" },
 	{ "docs", ext.target_dir.."/docs"  },
+    { "data", ext.target_dir.."/data" },
 }
 repo_build.prebuild_copy 
 {
