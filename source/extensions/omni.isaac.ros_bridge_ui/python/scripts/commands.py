@@ -82,7 +82,7 @@ class ROSBridgeCreateCamera(omni.kit.commands.Command):
         queue_size: int = 10,
         frame_id: str = "sim_camera",
         camera_info_topic: str = "/camera_info",
-        rgb_enabled: bool = False,
+        rgb_enabled: bool = True,
         rgb_topic: str = "/rgb",
         depth_enabled: bool = False,
         depth_topic: str = "/depth",

@@ -226,32 +226,9 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("Failed to acquire Settings interface");
         return;
     }
-    omni::kit::StageUpdateNodeDesc desc = { 0 };
-    desc.displayName = "IsaacRos2Bridge";
-    desc.onAttach = onAttach;
-    desc.onDetach = onDetach;
-    desc.onUpdate = onUpdate;
-    desc.onResume = onResume;
-    desc.onPause = onPause;
-    desc.onStop = onStop;
-    desc.onPrimAdd = onPrimAdd;
-    desc.onPrimOrPropertyChange = onComponentChange;
-    desc.onPrimRemove = onPrimRemove;
-    desc.order = 100;
-    g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
 
 
-    // if (!ros::ok() || !ros::master::check())
-    // {
-    //     CARB_LOG_ERROR("ROS Master is not running, please start ROS master before enabling this extension");
-    //     return;
-    // }
     g_settings->setDefaultString("/exts/omni.isaac.ros2_bridge/nodeName", "OmniIsaacRos2Bridge");
-    // std::string nodeName = g_settings->get<const char*>("/exts/omni.isaac.ros2_bridge/nodeName");
-    // if (nodeName.size() == 0)
-    // {
-    //     nodeName = "OmniIsaacRos2Bridge";
-    // }
     if (!rclcpp::ok())
     {
         CARB_LOG_INFO("rclcpp::init()");
@@ -271,10 +248,20 @@ CARB_EXPORT void carbOnPluginStartup()
     g_settings->setDefaultBool("/exts/omni.isaac.ros2_bridge/useSimTime", true);
     bool useSimTime = g_settings->get<bool>("/exts/omni.isaac.ros2_bridge/useSimTime");
     setUseSimTime(useSimTime);
-    // if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Error))
-    // {
-    //     ros::console::notifyLoggerLevelsChanged();
-    // }
+
+    omni::kit::StageUpdateNodeDesc desc = { 0 };
+    desc.displayName = "IsaacRos2Bridge";
+    desc.onAttach = onAttach;
+    desc.onDetach = onDetach;
+    desc.onUpdate = onUpdate;
+    desc.onResume = onResume;
+    desc.onPause = onPause;
+    desc.onStop = onStop;
+    desc.onPrimAdd = onPrimAdd;
+    desc.onPrimOrPropertyChange = onComponentChange;
+    desc.onPrimRemove = onPrimRemove;
+    desc.order = 100;
+    g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
 }
 
 CARB_EXPORT void carbOnPluginShutdown()
