@@ -1,5 +1,5 @@
-omni.isaac.synthetic_utils: Tools for Generating Synthetic Data
-###############################################################
+Tools for Generating Synthetic Data [omni.isaac.synthetic_utils]
+################################################################
 
 .. autoclass:: omni.isaac.synthetic_utils.DomainRandomization
     :members:

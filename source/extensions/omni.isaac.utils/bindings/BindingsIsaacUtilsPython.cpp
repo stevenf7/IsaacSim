@@ -56,7 +56,8 @@ PYBIND11_MODULE(_isaac_utils, m)
         Example:
             To create a surface gripper you need to aquire the :obj:`omni.isaac.dynamic_control`, interface import this submodule, create a Surface_Gripper_Properties, and then create a Surface Gripper:
 
-            ::
+            .. highlight:: python
+            .. code-block:: python
 
                 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper
                 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties

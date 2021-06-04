@@ -1,5 +1,5 @@
-omni.isaac.utils: Isaac Utilities
-#################################
+Isaac Utilities [omni.isaac.utils]
+##################################
 
 This extension provides an interface to the utilities package to be used with :obj:`omni.isaac.dynamic_control`.
 

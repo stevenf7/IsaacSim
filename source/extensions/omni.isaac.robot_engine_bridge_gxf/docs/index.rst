@@ -1,4 +1,4 @@
-omni.isaac.robot_engine_bridge_gxf: GXF Bridge
+GXF Bridge [omni.isaac.robot_engine_bridge_gxf]
 ################################################
 
 .. automodule:: omni.isaac.robot_engine_bridge._robot_engine_bridge

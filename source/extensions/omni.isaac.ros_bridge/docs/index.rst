@@ -1,5 +1,5 @@
-omni.isaac.ros_bridge: ROS Bridge
-#################################
+ROS Bridge [omni.isaac.ros_bridge]
+##################################
 
 
 .. automodule:: omni.isaac.ros_bridge._ros_bridge

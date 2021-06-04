@@ -78,10 +78,11 @@ PYBIND11_MODULE(_dynamic_control, m)
         The following attributes correspond to states that can be get/set from Degrees of Freedom and Rigid Bodies  
         
         Attributes:
-            STATE_NONE:  No state selected
+            STATE_NONE: No state selected
             STATE_POS: Position states
             STATE_VEL: Velocity states
-            STATE_ALL:  All states
+            STATE_EFFORT: Force/Torque states
+            STATE_ALL: All states
         
         The following attributes correspond to joint axes when specifying a 6 Dof (D6) Joint
         
@@ -152,162 +153,8 @@ PYBIND11_MODULE(_dynamic_control, m)
         .value("OBJECT_D6JOINT", DcObjectType::eDcObjectD6Joint, "The object is a generic D6 joint")
         .export_values();
 
-    // opaque types
-    /*
-    py::class_<DcContext>(m, "Context");
-    py::class_<DcArticulation>(m, "Articulation");
-    py::class_<DcRigidBody>(m, "RigidBody");
-    py::class_<DcDof>(m, "Dof");
-    py::class_<DcAttractor>(m, "Attractor");
-    */
-
-#if 0
-    py::class_<carb::Float3>(m, "Vec3")
-        .def_readwrite("x", &carb::Float3::x)
-        .def_readwrite("y", &carb::Float3::y)
-        .def_readwrite("z", &carb::Float3::z)
-        .def(py::init<float, float, float>(), py::arg("x") = 0.0f, py::arg("y") = 0.0f, py::arg("z") = 0.0f)
-        .def_property_readonly_static("dtype",
-                                      [](const py::object&) {
-                                          return py::dtype::of<carb::Float3>(); // return the numpy structured dtype
-                                      })
-        .def_static("from_buffer",
-                    [](py::buffer buf) -> py::object {
-                        py::buffer_info info = buf.request();
-                        if (info.ptr != nullptr)
-                        {
-                            if (info.itemsize == 3 * sizeof(float) ||
-                                info.itemsize == sizeof(float) && info.ndim > 0 && info.shape[info.ndim - 1] >= 3)
-                            {
-                                float* data = (float*)info.ptr;
-                                return py::cast(carb::Float3{ data[0], data[1], data[2] });
-                            }
-                        }
-                        return py::none();
-                    })
-        .def("__str__",
-             [](const carb::Float3& self) {
-                 return "Vec3(" + std::to_string(self.x) + ", " + std::to_string(self.y) + ", " +
-                        std::to_string(self.z) + ")";
-             })
-        .def("__add__",
-             [](const carb::Float3& self, const carb::Float3& other) {
-                 return carb::Float3{ self.x + other.x, self.y + other.y, self.z + other.z };
-             })
-        .def("__sub__",
-             [](const carb::Float3& self, const carb::Float3& other) {
-                 return carb::Float3{ self.x - other.x, self.y - other.y, self.z - other.z };
-             })
-        .def("__mul__",
-             [](const carb::Float3& self, float s) {
-                 return carb::Float3{ self.x * s, self.y * s, self.z * s };
-             })
-        .def("__truediv__",
-             [](const carb::Float3& self, float s) {
-                 return carb::Float3{ self.x / s, self.y / s, self.z / s };
-             })
-        .def("__neg__",
-             [](const carb::Float3& self) {
-                 return carb::Float3{ -self.x, -self.y, -self.z };
-             })
-        /*
-        .def("length", [](const carb::Float3& self) { return Length((const Vec3&)self); })
-        .def("length_sq", [](const carb::Float3& self) { return LengthSq((const Vec3&)self); })
-        .def("normalize",
-             [](const carb::Float3& self) {
-                 Vec3 result = Normalize((const Vec3&)self);
-                 return carb::Float3{ result.x, result.y, result.z };
-             })
-        .def("dot", [](const carb::Float3& self,
-                       const carb::Float3& other) { return Dot((const Vec3&)self, (const Vec3&)other); })
-        .def("cross",
-             [](const carb::Float3& self, const carb::Float3& other) {
-                 Vec3 result = Cross((const Vec3&)self, (const Vec3&)other);
-                 return carb::Float3{ result.x, result.y, result.z };
-             })
-        */
-        .def(py::pickle([](const carb::Float3& v) { return py::make_tuple(v.x, v.y, v.z); },
-                        [](py::tuple t) {
-                            return carb::Float3{ t[0].cast<float>(), t[1].cast<float>(), t[2].cast<float>() };
-                        }));
-
-    py::class_<carb::Float4>(m, "Quat")
-        .def_readwrite("x", &carb::Float4::x)
-        .def_readwrite("y", &carb::Float4::y)
-        .def_readwrite("z", &carb::Float4::z)
-        .def_readwrite("w", &carb::Float4::w)
-        .def(py::init<float, float, float, float>(), py::arg("x") = 0.0f, py::arg("y") = 0.0f, py::arg("z") = 0.0f,
-             py::arg("w") = 1.0f)
-        .def_property_readonly_static("dtype",
-                                      [](const py::object&) {
-                                          return py::dtype::of<carb::Float4>(); // return the numpy structured dtype
-                                      })
-        .def_static("from_buffer",
-                    [](py::buffer buf) -> py::object {
-                        py::buffer_info info = buf.request();
-                        if (info.ptr != nullptr)
-                        {
-                            if (info.itemsize == 4 * sizeof(float) ||
-                                info.itemsize == sizeof(float) && info.ndim > 0 && info.shape[info.ndim - 1] >= 4)
-                            {
-                                float* data = (float*)info.ptr;
-                                return py::cast(carb::Float4{ data[0], data[1], data[2], data[3] });
-                            }
-                        }
-                        return py::none();
-                    })
-        .def("__str__",
-             [](const carb::Float4& self) {
-                 return "Quat(" + std::to_string(self.x) + ", " + std::to_string(self.y) + ", " +
-                        std::to_string(self.z) + ", " + std::to_string(self.w) + ")";
-             })
-        /*
-        .def("__mul__",
-             [](const carb::Float4& self, const carb::Float4& other) {
-                 Quat result = (const Quat&)self * (const Quat&)other;
-                 return carb::Float4{ result.x, result.y, result.z, result.w };
-             })
-        .def("rotate",
-             [](const carb::Float4& self, const carb::Float3& v) {
-                 Vec3 result = Rotate((const Quat&)self, (const Vec3&)v);
-                 return carb::Float3{ result.x, result.y, result.z };
-             })
-        .def("normalize",
-             [](const carb::Float4& self) {
-                 Quat result = Normalize((const Quat&)self);
-                 return carb::Float4{ result.x, result.y, result.z, result.w };
-             })
-        .def("inverse",
-             [](const carb::Float4& self) {
-                 Quat result = Inverse((const Quat&)self);
-                 return carb::Float4{ result.x, result.y, result.z, result.w };
-             })
-        .def_static("from_axis_angle",
-                    [](const carb::Float3& axis, float angle) {
-                        Quat result = QuatFromAxisAngle((const Vec3&)axis, angle);
-                        return carb::Float4{ result.x, result.y, result.z, result.w };
-                    })
-        .def_static("from_rpy",
-                    [](float roll, float pitch, float yaw) {
-                        Quat result = QuatFromRollPitchYaw(roll, pitch, yaw);
-                        return carb::Float4{ result.x, result.y, result.z, result.w };
-                    })
-        .def("to_rpy",
-             [](const carb::Float4& self) {
-                 float roll, pitch, yaw;
-                 RollPitchYawFromQuat((const Quat&)self, roll, pitch, yaw);
-                 return std::make_tuple(roll, pitch, yaw);
-             })
-        */
-        .def(py::pickle(
-            [](const carb::Float4& v) { return py::make_tuple(v.x, v.y, v.z, v.w); },
-            [](py::tuple t) {
-                return carb::Float4{ t[0].cast<float>(), t[1].cast<float>(), t[2].cast<float>(), t[3].cast<float>() };
-            }));
-#endif
-
     py::class_<DcTransform>(m, "Transform", "Represents a 3D transform in the system")
-        .def_readwrite("p", &DcTransform::p, "Position (:obj:`carb._carb.Float3`)")
+        .def_readwrite("p", &DcTransform::p, "Position as a tuple of (x,y,z) (:obj:`carb._carb.Float3`)")
         .def_readwrite(
             "r", &DcTransform::r,
             R"pbdoc(Rotation Quaternion, represented in the format :math:`x\hat{i} + y\hat{j} + z\hat{k} + w` (:obj:`carb._carb.Float4`))pbdoc")
@@ -339,94 +186,7 @@ PYBIND11_MODULE(_dynamic_control, m)
                         return py::none();
                     },
                     "assign a transform from an array of 7 values [p.x, p.y, p.z, r.x, r.y, r.z, r.w]")
-        /*
-        .def("__mul__",
-             [](const DcTransform& self, const DcTransform& other) {
-                 DcTransform result;
-                 (Transform&)result = (const Transform&)self * (const Transform&)other;
-                 return result;
-             })
-        .def("inverse",
-             [](const DcTransform& self) {
-                 DcTransform result;
-                 (Transform&)result = Inverse((const Transform&)self);
-                 return result;
-             },
-             R"pbdoc(
-                 Returns:
-                    :obj:`carbongym.gymapi.Transform`: the inverse of this transform.
-                )pbdoc")
-        .def("transform_point",
-             [](const DcTransform& self, const carb::Float3& v) {
-                 Vec3 result = TransformPoint((const Transform&)self, (const Vec3&)v);
-                 return carb::Float3{ result.x, result.y, result.z };
-             },
-             R"pbdoc(
-                Rotates point by transform quatertnion and adds transform offset
 
-                Args:
-                    param1 (:obj:`carbongym.gymapi.Vec3`): Point to transform.
-
-                Returns:
-                    :obj:`carbongym.gymapi.Vec3`: The transformed point.
-             )pbdoc")
-        .def("transform_points",
-             [](const DcTransform& self, py::array_t<carb::Float3, py::array::c_style> points) {
-                 py::buffer_info info = points.request();
-                 py::array_t<carb::Float3, py::array::c_style> result(info.shape);
-                 const carb::Float3* src = points.data();
-                 carb::Float3* dst = result.mutable_data();
-                 for (int i = 0; i < points.size(); i++)
-                 {
-                     (Vec3&)dst[i] = TransformPoint((const Transform&)self, (const Vec3&)src[i]);
-                 }
-                 return result;
-             },
-             R"pbdoc(
-                Rotates points by transform quatertnion and adds transform offset
-
-                Args:
-                    param1 (:obj:`numpy.ndarray` of :obj:`carbongym.gymapi.Vec3`): Points to transform.
-
-                Returns:
-                    numpy.ndarray[:obj:`carbongym.gymapi.Vec3`]: The transformed points.
-             )pbdoc")
-        .def("transform_vector",
-             [](const DcTransform& self, const carb::Float3& v) {
-                 Vec3 result = TransformVector((const Transform&)self, (const Vec3&)v);
-                 return carb::Float3{ result.x, result.y, result.z };
-             },
-             R"pbdoc(
-                Rotates vector by transform quatertnion
-
-                Args:
-                    param1 (:obj:`carbongym.gymapi.Vec3`): Vector to transform.
-
-                Returns:
-                    :obj:`carbongym.gymapi.Vec3`: The transformed vector.
-             )pbdoc")
-        .def("transform_vectors",
-             [](const DcTransform& self, py::array_t<carb::Float3, py::array::c_style> vecs) {
-                 py::buffer_info info = vecs.request();
-                 py::array_t<carb::Float3, py::array::c_style> result(info.shape);
-                 const carb::Float3* src = vecs.data();
-                 carb::Float3* dst = result.mutable_data();
-                 for (int i = 0; i < vecs.size(); i++)
-                 {
-                     (Vec3&)dst[i] = TransformVector((const Transform&)self, (const Vec3&)src[i]);
-                 }
-                 return result;
-             },
-             R"pbdoc(
-                Rotates vectors by transform quatertnion
-
-                Args:
-                    param1 (:obj:`numpy.ndarray` of :obj:`carbongym.gymapi.Vec3`): Vectors to transform.
-
-                Returns:
-                    numpy.ndarray[:obj:`carbongym.gymapi.Vec3`]: The transformed vectors.
-             )pbdoc")
-        */
         .def(py::pickle(
             [](const DcTransform& tx) { return py::make_tuple(tx.p.x, tx.p.y, tx.p.z, tx.r.x, tx.r.y, tx.r.z, tx.r.w); },
             [](py::tuple t) {
@@ -437,8 +197,9 @@ PYBIND11_MODULE(_dynamic_control, m)
             }));
 
     py::class_<DcVelocity>(m, "Velocity", "Linear and angular velocity")
-        .def_readwrite("linear", &DcVelocity::linear, "Linear velocity, (:obj:`carb._carb.Float3`)")
-        .def_readwrite("angular", &DcVelocity::angular, "Angular velocity, (:obj:`carb._carb.Float3`)")
+        .def_readwrite("linear", &DcVelocity::linear, "Linear 3D velocity as a tuple (x,y,z) , (:obj:`carb._carb.Float3`)")
+        .def_readwrite(
+            "angular", &DcVelocity::angular, "Angular 3D velocity as a tuple (x,y,z), (:obj:`carb._carb.Float3`)")
         .def(py::init([](const carb::Float3& linear, const carb::Float3& angular) {
                  DcVelocity vel;
                  vel.linear = linear;
@@ -538,12 +299,12 @@ PYBIND11_MODULE(_dynamic_control, m)
                 return props;
             }));
 
-    py::class_<DcDofProperties>(m, "DofProperties", "Properties of a degree-of-freedom")
+    py::class_<DcDofProperties>(m, "DofProperties", "Properties of a degree-of-freedom (DOF)")
         .def(py::init<>())
         .def_readwrite("type", &DcDofProperties::type,
                        R"pbdoc(
                            Type of joint (:obj:`omni.isaac.dynamic_control._dynamic_control.DofType`))pbdoc")
-        .def_readwrite("has_limits", &DcDofProperties::hasLimits, "Flags whether the DOF has limits (bool)")
+        .def_readwrite("has_limits", &DcDofProperties::hasLimits, "Flags whether the DOF has limits (:obj:`bool`)")
         .def_readwrite("lower", &DcDofProperties::lower, "lower limit of DOF. In radians or meters (:obj:`float`)")
         .def_readwrite("upper", &DcDofProperties::upper, "upper limit of DOF. In radians or meters (:obj:`float`)")
         .def_readwrite("drive_mode", &DcDofProperties::driveMode,
@@ -662,10 +423,6 @@ PYBIND11_MODULE(_dynamic_control, m)
             }));
 
     // numpy dtypes
-    //  carb types are imported from kit now
-    // PYBIND11_NUMPY_DTYPE(carb::Float2, x, y);
-    // PYBIND11_NUMPY_DTYPE(carb::Float3, x, y, z);
-    // PYBIND11_NUMPY_DTYPE(carb::Float4, x, y, z, w);
     PYBIND11_NUMPY_DTYPE(DcTransform, p, r);
     PYBIND11_NUMPY_DTYPE(DcVelocity, linear, angular);
     PYBIND11_NUMPY_DTYPE(DcRigidBodyState, pose, vel);

@@ -1,5 +1,5 @@
-omni.isaac.range_sensor: Range based sensor Simulation
-######################################################
+Range Based Sensor Simulation [omni.isaac.range_sensor]
+#######################################################
 
 
 Range Sensor Commands
@@ -7,7 +7,7 @@ Range Sensor Commands
 .. automodule:: omni.isaac.range_sensor.scripts.commands
     :members:
     :undoc-members:
-    :exclude-members: do, undo
+    :exclude-members: do, undo, get_path, setup_base_prim
 
 Python API Documentation
 ========================

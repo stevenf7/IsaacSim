@@ -1,5 +1,5 @@
-omni.isaac.dr: Domain Randomization
-###################################
+Domain Randomization [omni.isaac.dr]
+####################################
 
 .. automodule:: omni.isaac.dr._dr
     :platform: Windows-x86_64, Linux-x86_64

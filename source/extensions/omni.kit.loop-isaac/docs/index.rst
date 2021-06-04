@@ -1,5 +1,5 @@
-omni.kit.loop-isaac
-#################################
+Time Stepping Control [omni.kit.loop-isaac]
+###########################################
 
 Default Isaac RunLoop runner.
 

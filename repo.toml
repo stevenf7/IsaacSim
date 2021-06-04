@@ -151,9 +151,16 @@ python_path =  "${root}/_build/${platform}/${config}/python${shell_ext}"
 # Add all extensions to docs sys.path
 extra_sys_paths = []
 
-# sphinx_conf_py_extra = """
-#     import os
-# """
+sphinx_conf_py_extra = """
+    add_module_names = False
+    html_logo = "docs/media/main_ov_logo_square.png"
+    html_favicon = "docs/media/favicon.ico"
+    html_static_path = [
+        "docs/media/isaac-style.css",
+        "docs/media/NVIDIA-LogoBlack.svg",
+    ]
+    html_css_files = [ "isaac-style.css" ]
+"""
 
 sphinx_exclude_patterns = [
     "**/omni.isaac.app",

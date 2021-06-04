@@ -1,5 +1,5 @@
-omni.isaac.ros_bridge_ui: ROS Bridge UI
-#######################################
+ROS Bridge UI [omni.isaac.ros_bridge_ui]
+########################################
 
 
 .. automodule:: omni.isaac.ros_bridge_ui.scripts.commands

@@ -1,5 +1,5 @@
-omni.isaac.urdf: URDF Import Extension
-######################################
+URDF Import Extension [omni.isaac.urdf]
+#######################################
 
 
 
