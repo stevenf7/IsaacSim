@@ -313,6 +313,8 @@ class CreateTransformComponentCommand(omni.kit.commands.Command):
         target_point_instancer_paths=None,
         enable_sequential_behavior=False,
         combine_random_range=False,
+        excluded_target_paths=None,
+        excluded_target_offset=(0.0, 0.0, 0.0),
         duration=0.0,
         include_children=False,
         seed=12345,
@@ -334,6 +336,8 @@ class CreateTransformComponentCommand(omni.kit.commands.Command):
         self._target_point_instancer_paths = target_point_instancer_paths
         self._enable_sequential_behavior = enable_sequential_behavior
         self._combine_random_range = combine_random_range
+        self._excluded_target_paths = excluded_target_paths
+        self._excluded_target_offset = excluded_target_offset
         self._duration = duration
         self._include_children = include_children
         self._seed = seed
@@ -402,6 +406,13 @@ class CreateTransformComponentCommand(omni.kit.commands.Command):
         prim.CreateLookAtTargetPointsAttr().Set(self._lookat_target_points)
         prim.CreateEnableSequentialBehaviorAttr().Set(self._enable_sequential_behavior)
         prim.CreateCombineRandomRangeAttr().Set(self._combine_random_range)
+        excluded_target_rel_paths = prim.CreateExcludedTargetPathsRel()
+        if self._excluded_target_paths is not None:
+            for path in self._excluded_target_paths:
+                excluded_target_rel_paths.AddTarget(path)
+        prim.CreateExcludedTargetOffsetAttr().Set(
+            (self._excluded_target_offset[0], self._excluded_target_offset[1], self._excluded_target_offset[2])
+        )
         return prim
 
 

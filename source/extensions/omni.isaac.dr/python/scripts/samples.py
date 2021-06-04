@@ -50,6 +50,8 @@ class Extension(omni.ext.IExt):
                     "Material",
                     "Mesh",
                     "Visibility",
+                    "Transform",
+                    "Attribute",
                     height=0,
                     width=200,
                 )
@@ -110,6 +112,10 @@ class Extension(omni.ext.IExt):
             self.add_mesh_menu()
         elif current_scenario_index == 8:
             self.add_visibility_menu()
+        elif current_scenario_index == 9:
+            self.add_transform_menu()
+        elif current_scenario_index == 10:
+            self.add_attribute_menu()
 
     def add_color_menu(self):
         stage = omni.usd.get_context().get_stage()
@@ -287,6 +293,49 @@ class Extension(omni.ext.IExt):
             prim_paths=["/World/Cube", "/World/Cube_01", "/World/Cube_02", "/World/Cube_03", "/World/Cube_04"],
             num_visible_range=[1, 3],
             duration=0.3,
+            seed=12345,
+        )
+
+    def add_transform_menu(self):
+        stage = omni.usd.get_context().get_stage()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        cube_path = default_prim_path + "/Cube"
+        # Create DR transform component
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/transform_component", False)
+        result, prim = omni.kit.commands.execute(
+            "CreateTransformComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            translate_min_range=(0.0, 0.0, 0.0),
+            translate_max_range=(100.0, 100.0, 100.0),
+            rotate_min_range=(0.0, 0.0, 0.0),
+            rotate_max_range=(360.0, 360.0, 360.0),
+            scale_min_range=(1.0, 1.0, 1.0),
+            scale_max_range=(2.0, 2.0, 2.0),
+            target_position=None,
+            target_paths=None,
+            duration=1.0,
+            include_children=False,
+            seed=12345,
+        )
+
+    def add_attribute_menu(self):
+        stage = omni.usd.get_context().get_stage()
+        default_prim_path = str(stage.GetDefaultPrim().GetPath())
+        cube_path = default_prim_path + "/Cube"
+        # Create DR attribute component
+        path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/attribute_component", False)
+        attribute_dict = {
+            "attribute_3": {"name": "xformOp:rotateXYZ", "min": "0.0", "max": "360.0", "distribution": "uniform"},
+            "attribute_1": {"name": "xformOp:translate", "min": "1.0", "max": "50.0", "distribution": "uniform"},
+        }
+        result, prim = omni.kit.commands.execute(
+            "CreateAttributeComponentCommand",
+            path=path,
+            prim_paths=[cube_path],
+            custom_data=attribute_dict,
+            duration=1.0,
+            include_children=False,
             seed=12345,
         )
 
