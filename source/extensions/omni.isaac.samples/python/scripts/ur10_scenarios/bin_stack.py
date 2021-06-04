@@ -840,9 +840,7 @@ class BinStack(Scenario):
         create_objects(self._stage, a, b, c)
 
         if background:
-            create_background(
-                self._stage, self.background_usd, [5747.25, 1826.020, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071)
-            )
+            create_background(self._stage, self.background_usd, [1000, 200, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071))
 
         # Setup physics simulation
         setup_physics(self._stage)
