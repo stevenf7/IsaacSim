@@ -8,7 +8,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
-"""Cube Dataset with online randomized scene generation for Instance Segmentation training.
+"""Cube Dataset with online randomized scene generation for Bounding Box Detection training.
 
 Use OmniKit to generate a simple scene. At each iteration, the scene is populated by
 creating a cube that rests on a plane. The cube pose, colours and textures are randomized. 
@@ -16,6 +16,7 @@ The camera position is also randomized within a range expected for the Dofbot's 
 before capturing groundtruth consisting of an RGB rendered image, and Tight 2D Bounding Boxes 
 """
 
+from math import floor
 import os
 import torch
 import random
@@ -29,8 +30,8 @@ from pxr import UsdGeom, Gf, Vt
 
 # Setup default generation variables
 # Value are (min, max) ranges
-OBJ_TRANSLATION_X = (-40.0, 40.0)
-OBJ_TRANSLATION_Z = (-40.0, 40.0)
+OBJ_TRANSLATION_X = (-60.0, 60.0)
+OBJ_TRANSLATION_Z = (-60.0, 60.0)
 OBJ_ROTATION_Y = (0.0, 360.0)
 LIGHT_INTENSITY = (500.0, 50000.0)
 
@@ -39,10 +40,10 @@ AZIMUTH_ROTATION = (-30.0, 30.0)
 ELEVATION_ROTATION = (-70.0, -20.0)
 CAM_TRANSLATION_XYZ = (-50.0, 50.0)
 
-CUBE_SCALE = 20
-DISTRACTOR_SCALE = (15, 25)
-CAMERA_DISTANCE = 600
+OBJECT_SCALE = (15, 20)
+CAMERA_DISTANCE = 800
 BBOX_AREA_THRESH = 16
+BLANK_SCENES = (5, 8)  # between 5-8%
 
 # Default rendering parameters
 RENDER_CONFIG = {
@@ -62,7 +63,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
     """
 
     def __init__(
-        self, categories=["Cube", "Sphere", "Cone"], num_assets_min=1, num_assets_max=3, split=0.7, train=True
+        self, categories=["None", "Cube", "Sphere", "Cone"], num_assets_min=1, num_assets_max=3, split=0.7, train=True
     ):
         assert len(categories) > 1
         assert (split > 0) and (split <= 1.0)
@@ -97,6 +98,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         self._setup_world()
         self.cur_idx = 0
+        self.empty_idx = floor(100 / random.uniform(*BLANK_SCENES))
         self.exiting = False
         signal.signal(signal.SIGINT, self._handle_exit)
 
@@ -122,16 +124,23 @@ class RandomObjects(torch.utils.data.IterableDataset):
         physxSceneAPI.CreateSolverTypeAttr("TGS")
 
         """Setup lights, walls, floor, ceiling and camera"""
+
+        # Setup Room
         self.kit.create_prim(
             "/World/Room", "Sphere", attributes={"radius": 1e3, "primvars:displayColor": [(1.0, 1.0, 1.0)]}
         )
-        self.kit.create_prim(
-            "/World/Ground",
-            "Cylinder",
-            translation=(0.0, -0.5, 0.0),
-            rotation=(90.0, 0.0, 0.0),
-            attributes={"height": 1, "radius": 1e4, "primvars:displayColor": [(1.0, 1.0, 1.0)]},
-        )
+
+        # Setup ground plane
+        ground_scale = max(OBJECT_SCALE)
+        ground_prim = self.stage.DefinePrim("/World/Ground", "Cylinder")
+        UsdGeom.XformCommonAPI(ground_prim).SetScale((ground_scale, ground_scale, ground_scale))
+        UsdGeom.XformCommonAPI(ground_prim).SetTranslate((0.0, ground_scale * -0.5, 0.0))
+        UsdGeom.XformCommonAPI(ground_prim).SetRotate((90.0, 0.0, 0.0))
+        attributes = {"height": 1, "radius": 1e4, "primvars:displayColor": [(1.0, 1.0, 1.0)]}
+        for k, v in attributes.items():
+            ground_prim.GetAttribute(k).Set(v)
+
+        # Setup lights
         self.kit.create_prim(
             "/World/Light1",
             "SphereLight",
@@ -146,6 +155,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         )
         self.kit.create_prim("/World/Asset", "Xform")
 
+        # Setup camera
         self.camera_rig = UsdGeom.Xformable(self.kit.create_prim("/World/CameraRig", "Xform"))
         self.camera = self.kit.create_prim("/World/CameraRig/Camera", "Camera", translation=(0.0, 0.0, CAMERA_DISTANCE))
         # Change azimuth angle
@@ -160,32 +170,19 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.create_dr_comp()
         self.kit.update()
 
-    def _add_preview_surface(self, prim, diffuse, roughness, metallic):
-        from pxr import UsdShade, Sdf
-
-        """Add a preview surface material using the metallic workflow."""
-        path = f"{prim.GetPath()}/mat"
-        material = UsdShade.Material.Define(self.stage, path)
-        pbrShader = UsdShade.Shader.Define(self.stage, f"{path}/shader")
-        pbrShader.CreateIdAttr("UsdPreviewSurface")
-        pbrShader.CreateInput("diffuseColor", Sdf.ValueTypeNames.Float3).Set(diffuse)
-        pbrShader.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(roughness)
-        pbrShader.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(metallic)
-
-        material.CreateSurfaceOutput().ConnectToSource(pbrShader, "surface")
-
-        UsdShade.MaterialBindingAPI(prim).Bind(material)
-
     def load_single_asset(self, prim_type, scale, i):
         from omni.physx.scripts import utils
         from pxr import Semantics
 
         overlapping = True
+        attempts = 0
+        max_attempts = 5  # after 5 placement attempts, move on
         stage = self.kit.get_stage()
 
         # Randomly generate transforms until a valid position is found
         # (i.e. new object will not overlap with existing ones)
-        while overlapping:
+        # print("attempting to spawn object...", end=" ")
+        while overlapping and attempts < max_attempts:
             x = random.uniform(*OBJ_TRANSLATION_X)
             y = scale  # assumes bounding box of standard prim is 1 cubic unit
             z = random.uniform(*OBJ_TRANSLATION_Z)
@@ -196,7 +193,12 @@ class RandomObjects(torch.utils.data.IterableDataset):
             origin = carb.Float3(float(x), float(y), float(z))
             extent = carb.Float3(float(scale), float(scale), float(scale))
             overlapping = self.check_overlap(extent, origin, rot)
+            attempts += 1
 
+        if overlapping:
+            return None
+
+        # print("object spawned!")
         # No overlap, define the prim and apply the transform
         prim = stage.DefinePrim(f"/World/Asset/obj{i}", prim_type)
         bound = UsdGeom.Mesh(prim).ComputeWorldBound(0.0, "default")
@@ -231,9 +233,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         from omni.physx import get_physx_scene_query_interface
 
         numHits = get_physx_scene_query_interface().overlap_box(extent, origin, rot, self.report_hit, False)
-        if numHits > 0:
-            return True
-        return False
+        return numHits > 0
 
     # POPULATE AND RANDOMIZE -------------------------------
     def create_dr_comp(self):
@@ -275,8 +275,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         # Add targets for all objects in scene (cube + distractors)
         for asset in self.assets:
             comp_prim_paths_target.AddTarget(asset.GetPrimPath())
-        # Add target for ground surface
-        comp_prim_paths_target.AddTarget("/World/Ground")
+        # Can also add target for ground plane
+        # comp_prim_paths_target.AddTarget("/World/Ground")
 
     def populate_scene(self):
         from omni.physx.scripts import utils
@@ -288,29 +288,24 @@ class RandomObjects(torch.utils.data.IterableDataset):
         # Start simulation so we can check overlaps before spawning
         self.kit.play()
 
-        # Add at least one cube of desired size
-        self.assets.append(self.load_single_asset("Cube", CUBE_SCALE, 0))
-        self.kit.update()
-
-        # Add random number of distractor objects
-        num_distractors = random.randint(*self.range_num_assets) - 1
-        for i in range(num_distractors):
-            prim_type = random.choice(self.categories)
-            prim_scale = random.uniform(*DISTRACTOR_SCALE)
-            self.assets.append(self.load_single_asset(prim_type, prim_scale, i + 1))
-            self.kit.update()
-
-    def randomize_asset_material(self):
-        """Randomize asset material properties"""
-        for asset in self.assets:
-            colour = (random.random(), random.random(), random.random())
-
-            # Here we choose not to have materials unrealistically rough or reflective.
-            roughness = random.uniform(0.1, 0.9)
-
-            # Choose ratio of metallic vs non-metallic (choose more non-metallic)
-            metallic = random.choices([0.0, 1.0], weights=(0.2, 0.8))[0]
-            self._add_preview_surface(asset, colour, roughness, metallic)
+        # After every (n = self.empty_idx) scenes, generate a blank scene
+        if (self.cur_idx % self.empty_idx) != 0:
+            # Add random number of objects
+            num_objects = random.randint(*self.range_num_assets)
+            for i in range(num_objects):
+                prim_type = random.choice(self.categories)
+                prim_scale = random.uniform(*OBJECT_SCALE)
+                new_asset = self.load_single_asset(prim_type, prim_scale, i)
+                # Make sure valid object was returned before appending
+                if new_asset:
+                    self.assets.append(new_asset)
+                self.kit.update()
+        else:
+            print("Blank scene -------------------------------------------------------------")
+            self.stage.RemovePrim("/World/Asset")
+            self.assets = []
+            # Pick a new value for (n = self.empty_idx)
+            self.empty_idx = floor(100 / random.uniform(*BLANK_SCENES))
 
     def randomize_camera(self):
         """Randomize the camera position."""
@@ -346,7 +341,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.randomize_camera()
         self.update_dr_comp(self.texture_comp)
         self.dr_helper.randomize_once()
-        self.randomize_asset_material()
         self.randomize_lighting()
 
         # Step once and then wait for materials to load
@@ -374,23 +368,35 @@ class RandomObjects(torch.utils.data.IterableDataset):
         gt_bbox = gt["boundingBox2DTight"]
 
         # Create mapping from categories to index
-        self.categories = ["Cube", "Sphere", "Cone"]
+        self.categories = ["None", "Cube", "Sphere", "Cone"]
         mapping = {cat: i + 1 for i, cat in enumerate(self.categories)}
         bboxes = torch.tensor(gt_bbox[["x_min", "y_min", "x_max", "y_max"]].tolist())
         labels = torch.LongTensor([mapping[bb["semanticLabel"]] for bb in gt_bbox])
 
-        # Calculate bounding box area for each area
-        areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
-        # Identify invalid bounding boxes to filter final output
-        valid_areas = (areas > 0.0) * (areas < (image.shape[1] * image.shape[2]))
+        # If no objects present in view
+        if bboxes.nelement() == 0:
+            print("No object present in view")
+            target = {
+                "boxes": torch.zeros((0, 4), dtype=torch.float32),
+                "labels": torch.tensor([1], dtype=torch.int64),
+                "image_id": torch.LongTensor([self.cur_idx]),
+                "area": torch.tensor(0, dtype=torch.float32),
+                "iscrowd": torch.zeros((0,), dtype=torch.int64),
+            }
 
-        target = {
-            "boxes": bboxes[valid_areas],
-            "labels": labels[valid_areas],
-            "image_id": torch.LongTensor([self.cur_idx]),
-            "area": areas[valid_areas],
-            "iscrowd": torch.BoolTensor([False] * len(bboxes[valid_areas])),  # Assume no crowds
-        }
+        else:
+            # Calculate bounding box area for each area
+            areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
+            # Identify invalid bounding boxes to filter final output
+            valid_areas = (areas > 0.0) * (areas < (image.shape[1] * image.shape[2]))
+
+            target = {
+                "boxes": bboxes[valid_areas],
+                "labels": labels[valid_areas],
+                "image_id": torch.LongTensor([self.cur_idx]),
+                "area": areas[valid_areas],
+                "iscrowd": torch.BoolTensor([False] * len(bboxes[valid_areas])),  # Assume no crowds
+            }
         self.cur_idx += 1
         return image, target
 
@@ -420,15 +426,14 @@ if __name__ == "__main__":
         num_instances = len(target["boxes"])
         colours = vis.random_colours(num_instances, enable_random=False)
 
-        categories = categories = ["Cube", "Sphere", "Cone"]
+        categories = categories = ["None", "Cube", "Sphere", "Cone"]
         mapping = {i + 1: cat for i, cat in enumerate(categories)}
         labels = [mapping[label.item()] for label in target["labels"]]
         vis.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
 
         plt.draw()
         plt.pause(0.01)
-        plt.savefig(f"dataset{count}.png")
-        count = count + 1
+        plt.savefig("dataset.png")
 
         if dataset.exiting:
             break
