@@ -83,7 +83,7 @@ class Extension(omni.ext.IExt):
             with omni.ui.VStack():
                 with ui.HStack(height=5):
                     ui.Spacer(width=7)
-                    self._robot_option = ui.ComboBox(0, "AMR", "Carter", width=125)
+                    self._robot_option = ui.ComboBox(0, "Transporter", "Carter", width=125)
                 with ui.HStack(height=5):
                     ui.Spacer(width=5)
                     self._load_btn = ui.Button("Load Environment", width=125)
@@ -126,8 +126,8 @@ class Extension(omni.ext.IExt):
             current_robot_index = self._robot_option.model.get_item_value_model().as_int
             self._robot_prim_path = "/robot"
             if current_robot_index == 0:
-                asset_path = self._asset_path + "/Robots/STR"
-                robot_usd = asset_path + "/STR_V4_Physics_Caster.usd"
+                asset_path = self._asset_path + "/Robots/Transporter"
+                robot_usd = asset_path + "/transporter.usd"
                 self._robot_chassis = self._robot_prim_path + "/chassis"
                 self._robot_wheels = ["left_wheel_joint", "right_wheel_joint"]
                 self._robot_wheels_speed = [3, 3]

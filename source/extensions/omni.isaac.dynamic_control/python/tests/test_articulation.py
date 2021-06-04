@@ -429,7 +429,9 @@ class TestArticulation(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_position_str(self, gpu=False):
 
-        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/str/str_physics.usd")
+        (result, error) = await load_test_file(
+            self._extension_path + "/data/usd/robots/transporter/transporter_physics.usd"
+        )
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu)
