@@ -1,4 +1,4 @@
-omni.isaac.manip: Joystick Manipulation
+Gamepad Manipulation [omni.isaac.manip]
 #######################################
 
 .. automodule:: omni.isaac.manip._manip

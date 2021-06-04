@@ -1,5 +1,5 @@
-omni.isaac.python_app: Isaac Python Utilities
-#############################################
+Isaac Python Utilities [omni.isaac.python_app]
+##############################################
 
 This extension provides convenience functions when running in pure python mode
 

@@ -1,4 +1,4 @@
-omni.isaac.contact_sensor:  Contact Sensor Extension
+Contact Sensor Extension [omni.isaac.contact_sensor]
 ######################################################
 
 .. automodule:: omni.isaac.contact_sensor._contact_sensor
