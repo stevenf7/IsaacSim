@@ -99,6 +99,9 @@ def main(args):
                 labels = [mapping[label.item()] for label in pred["labels"]]
                 vis.plot_boxes(ax, pred["boxes"].tolist(), labels=labels, colours=colours, label_size=10)
 
+                if not labels:
+                    axes[1].set_title("None")
+
                 plt.draw()
                 plt.savefig("train.png")
                 plt.pause(0.01)
@@ -121,5 +124,5 @@ if __name__ == "__main__":
 
     # Temporary
     args.visualize = True
-    args.categories = ["Cube", "Sphere", "Cone"]
+    args.categories = ["None", "Cube", "Sphere", "Cone"]
     main(args)
