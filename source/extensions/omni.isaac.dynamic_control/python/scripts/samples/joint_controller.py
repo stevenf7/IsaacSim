@@ -1,16 +1,16 @@
+import os
+import asyncio
+import weakref
 import carb
 import omni
 import omni.ui as ui
 import omni.kit.test
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
-import os
 import omni.physx as _physx
 import numpy as np
-import weakref
 
 # joint animation states
 ANIM_SEEK_LOWER = 1
@@ -105,8 +105,9 @@ class Extension(omni.ext.IExt):
             )
             with self._window.frame:
                 with ui.VStack():
-                    ui.Button("Load Robot", height=0, clicked_fn=self._on_load_robot)
-                    ui.Button("Move Joints", height=0, clicked_fn=self._on_move_joints)
+                    with ui.HStack(height=0):
+                        ui.Button("Load Robot", height=0, clicked_fn=self._on_load_robot)
+                        ui.Button("Move Joints", height=0, clicked_fn=self._on_move_joints)
 
                     ui.Separator(height=3)
                     with ui.ScrollingFrame():

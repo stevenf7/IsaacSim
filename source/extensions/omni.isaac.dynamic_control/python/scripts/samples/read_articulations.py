@@ -1,15 +1,17 @@
+import os
+import asyncio
+import weakref
+import textwrap
 import carb
 import omni
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
-import os
+
 import omni.physx as _physx
 import omni.kit.menu
-import weakref
 
 EXTENSION_NAME = "Read Articulations"
 
@@ -88,28 +90,28 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                title=EXTENSION_NAME, width=1000, height=400, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME, width=500, height=450, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             with self._window.frame:
                 with ui.VStack(width=ui.Percent(100)):
                     ui.Label(
-                        "This sample demonstrates how to load a USD stage containing an articulated robot and then retreiving that articulation and using the dynamic_control python API to query it",
+                        textwrap.fill(
+                            "This sample demonstrates how to load a USD stage containing an articulated robot and then retreiving that articulation and using the dynamic_control python API to query it",
+                            80,
+                        ),
                         height=20,
                     )
-                    ui.Button(
-                        "Load Franka USD",
-                        height=20,
-                        width=ui.Pixel(40),
-                        tooltip="Press to load the Franka USD file and start simulation",
-                        clicked_fn=lambda: self._on_load_robot(),
-                    )
-                    ui.Button(
-                        "Get Articulation Info",
-                        height=20,
-                        width=ui.Pixel(40),
-                        tooltip="Pressing this button will print information below",
-                        clicked_fn=lambda: self._on_print_info(),
-                    )
+                    with ui.HStack(height=0):
+                        ui.Button(
+                            "Load Franka USD",
+                            tooltip="Press to load the Franka USD file and start simulation",
+                            clicked_fn=lambda: self._on_load_robot(),
+                        )
+                        ui.Button(
+                            "Get Articulation Info",
+                            tooltip="Pressing this button will print information below",
+                            clicked_fn=lambda: self._on_print_info(),
+                        )
 
                     ui.Separator(height=3)
                     with ui.ScrollingFrame():

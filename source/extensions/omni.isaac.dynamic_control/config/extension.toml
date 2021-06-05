@@ -34,10 +34,10 @@ name = "omni.isaac.dynamic_control"
 name = "omni.isaac.dynamic_control.tests"
 
 [[python.module]]
-name = "omni.isaac.dynamic_control.scripts.samples.articulation"
+name = "omni.isaac.dynamic_control.scripts.samples.read_articulations"
 
 [[python.module]]
-name = "omni.isaac.dynamic_control.scripts.samples.joint_monkey"
+name = "omni.isaac.dynamic_control.scripts.samples.joint_controller"
 
 [[native.plugin]]
 path = "bin/*.plugin"
