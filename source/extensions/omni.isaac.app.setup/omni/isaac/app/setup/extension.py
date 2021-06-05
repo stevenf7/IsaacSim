@@ -20,8 +20,14 @@ import webbrowser
 
 import omni.kit.app
 import omni.kit.ui
+import omni.appwindow
 import omni.kit.stage_templates as stage_templates
 from omni.kit.window.title import get_main_window_title
+from carb.input import KeyboardInput as Key
+
+REFERENCE_GUIDE_URL = "https://docs.omniverse.nvidia.com/isaacsim"
+FORUMS_URL = "https://forums.developer.nvidia.com/c/agx-autonomous-machines/isaac/simulation/69"
+KIT_MANUAL_URL = "https://docs.omniverse.nvidia.com/py/kit/index.html"
 
 
 class CreateSetupExtension(omni.ext.IExt):
@@ -39,7 +45,7 @@ class CreateSetupExtension(omni.ext.IExt):
         self._settings.set("/app/viewport/outline/enabled", True)
         self._settings.set("/app/viewport/boundingBoxes/enabled", True)
 
-        # Adjust the Window Title to show the Create Version
+        # Adjust the Window Title to show the Isaac Sim Version
         window_title = get_main_window_title()
         app_version = self._settings.get("/app/version")
         app_folder = self._settings.get_as_string("/app/folder")
@@ -270,10 +276,117 @@ class CreateSetupExtension(omni.ext.IExt):
             "Create Layout", ["path_prim", "material_prim", "xformable_prim", "shade_prim", "camera_prim"]
         )
 
+    def _add_menu(self, *argv, **kwargs):
+        new_menu = omni.kit.ui.get_editor_menu().add_item(*argv, **kwargs)
+        self.menus.append(new_menu)
+        return new_menu
+
+    def _set_ui_hidden(self, hide):
+        self._settings.set("/app/window/hideUi", hide)
+
+    def _is_ui_hidden(self):
+        return self._settings.get("/app/window/hideUi")
+
+    def _on_toggle_ui(self):
+        self._set_ui_hidden(not self._is_ui_hidden())
+
+    def _on_fullscreen(self):
+        display_mode_lock = self._settings.get(f"/app/window/displayModeLock")
+        if display_mode_lock:
+            # Always stay in fullscreen_mode, only hide or show UI.
+            self._set_ui_hidden(not self._is_ui_hidden())
+        else:
+            # Only toggle fullscreen on/off when not display_mode_lock
+            was_fullscreen = self._appwindow.is_fullscreen()
+            self._appwindow.set_fullscreen(not was_fullscreen)
+
+            # Always hide UI in fullscreen
+            self._set_ui_hidden(not was_fullscreen)
+
+    def _open_web_file(self, path):
+        filepath = os.path.abspath(path)
+        if os.path.exists(filepath):
+            webbrowser.open("file://" + filepath)
+        else:
+            carb.log_warn("Failed to open " + filepath)
+
+    def get_manual_url_path(self):
+        manual_path = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../docs/py/index.html"))
+        if os.path.isfile(manual_path):
+            return manual_path
+        return None
+
     def __menu_update(self):
-        # Remove some Menu Items
+        self._viewport = None
+        try:
+            self._viewport = omni.kit.viewport.get_viewport_interface()
+        except:
+            pass
+        self._appwindow = omni.appwindow.get_default_app_window()
+        self._settings = carb.settings.get_settings()
+        self._selection = omni.usd.get_context().get_selection()
+
+        self.WINDOW_UI_TOGGLE_VISIBILITY_MENU = "Window/UI Toggle Visibility"
+        self.WINDOW_FULLSCREEN_MODE_MENU = "Window/Fullscreen Mode"
+        self.HELP_REFERENCE_GUIDE_MENU = (
+            f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Isaac Sim Online Guide'
+        )
+        self.HELP_SCRIPTING_MANUAL = (
+            f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/book.svg")} Isaac Sim Scripting Manual'
+        )
+        self.HELP_FORUMS_URL = (
+            f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Isaac Sim Online Forums'
+        )
+        self.KIT_MANUAL = f"Help/Kit Scripting Manual"
+        self.menus = []
+
+        # seperator
+        priority = 50
+
         editor_menu = omni.kit.ui.get_editor_menu()
-        # editor_menu.remove_item("Window/New Viewport Window")
+
+        window_ui_toggle_visibility_menu = editor_menu.add_item(
+            self.WINDOW_UI_TOGGLE_VISIBILITY_MENU, None, priority=priority + 1
+        )
+        window_ui_toggle_visibility_action = omni.kit.menu.utils.add_action_to_menu(
+            self.WINDOW_UI_TOGGLE_VISIBILITY_MENU, lambda *_: self._on_toggle_ui(), "UiToggle", (0, Key.F7)
+        )
+        self.menus.append((window_ui_toggle_visibility_menu, window_ui_toggle_visibility_action))
+
+        window_fullscreen_mode_menu = editor_menu.add_item(
+            self.WINDOW_FULLSCREEN_MODE_MENU, None, priority=priority + 2
+        )
+        window_fullscreen_mode_menu_action = omni.kit.menu.utils.add_action_to_menu(
+            self.WINDOW_FULLSCREEN_MODE_MENU, lambda *_: self._on_fullscreen(), "FullscreenMode", (0, Key.F11)
+        )
+        self.menus.append((window_fullscreen_mode_menu, window_fullscreen_mode_menu_action))
+
+        ref_guide_menu = editor_menu.add_item(self.HELP_REFERENCE_GUIDE_MENU, None, priority=-23)
+        ref_guide_menu_action = omni.kit.menu.utils.add_action_to_menu(
+            self.HELP_REFERENCE_GUIDE_MENU, lambda *_: webbrowser.open(REFERENCE_GUIDE_URL), "OpenRefGuide", (0, Key.F1)
+        )
+        self.menus.append((ref_guide_menu, ref_guide_menu_action))
+
+        manual_url_path = self.get_manual_url_path()
+        self._add_menu(self.HELP_SCRIPTING_MANUAL, lambda *_: self._open_web_file(manual_url_path), priority=-22)
+        if manual_url_path is None:
+            editor_menu.set_enabled(self.HELP_SCRIPTING_MANUAL, False)
+
+        forums_link = editor_menu.add_item(self.HELP_FORUMS_URL, None, priority=-21)
+        forums_link_action = omni.kit.menu.utils.add_action_to_menu(
+            self.HELP_FORUMS_URL, lambda *_: webbrowser.open(FORUMS_URL), "OpenForums"
+        )
+        self.menus.append((forums_link, forums_link_action))
+
+        kit_manual = editor_menu.add_item(self.KIT_MANUAL, None, priority=-9)
+        kit_manual_action = omni.kit.menu.utils.add_action_to_menu(
+            self.KIT_MANUAL, lambda *_: webbrowser.open(KIT_MANUAL_URL), "OpenKitManual"
+        )
+        self.menus.append((kit_manual, kit_manual_action))
+
+        # Sort top level menus:
+        editor_menu.set_priority("Window", -6)
+        editor_menu.set_priority("Help", 99)
 
         editor_menu.set_priority("Rendering/Render Settings", -100)
         editor_menu.set_priority("Rendering/Movie Capture", 100)
@@ -288,23 +401,6 @@ class CreateSetupExtension(omni.ext.IExt):
             reset_menu_path, lambda *_: asyncio.ensure_future(self.__reset_layout())
         )
         editor_menu.set_priority(reset_menu_path, 10)
-
-        # set isaac sim python docs menu
-        manual_path = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../docs/py/index.html"))
-        self.manual_url_path = manual_path if os.path.isfile(manual_path) else None
-
-        def on_manual_click(*_):
-            filepath = os.path.abspath(self.manual_url_path)
-            if os.path.exists(filepath):
-                webbrowser.open("file://" + filepath)
-            else:
-                carb.log_warn("Failed to open " + filepath)
-
-        menu_item_title = "Help/Isaac Sim Scripting Manual"
-
-        self._isaac_python_doc_menu_item = editor_menu.add_item(menu_item_title, on_manual_click)
-        if self.manual_url_path is None:
-            omni.kit.ui.get_editor_menu().set_enabled(menu_item_title, False)
 
     def on_shutdown(self):
         self._ui_doc_menu_item = None

@@ -211,10 +211,6 @@ skipPublishVerification = false
 registryEnabled = true
 
 folders2 = ["${kit}/exts" ]
-enabledDeprecated = [
-        "omni.kit.builtin.init",
-        "omni.kit.builtin.menu",
-    ]
 
 [settings.exts."omni.kit.window.modifier.titlebar"]
 titleFormatString = "  Isaac Sim  {version:${app}/../SHORT_VERSION,font_color=0x909090,font_size=16} {separator} {file, board=true}"
@@ -289,7 +285,6 @@ nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
 "omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
 #"omni.isaac.splash" = {}
 "omni.isaac.window.about" = {}
-"omni.isaac.window.provide_feedback" = {}
 
 #linux only extensions
 [dependencies."filter:platform"."linux-x86_64"]
