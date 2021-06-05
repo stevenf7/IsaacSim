@@ -7,6 +7,8 @@ import omni.ext
 from pathlib import Path
 from omni import ui
 
+import os.path
+
 WINDOW_NAME = "About"
 DISCONNECTED = "** disconnected **"
 QUERYING = "** querying **"
@@ -39,10 +41,29 @@ class AboutExtension(omni.ext.IExt):
     def get_values(self):
         settings = carb.settings.get_settings()
         self.kit_version = omni.kit.app.get_app().get_build_version()
+        # Minimize Kit SDK version for release
+        if self.kit_version:
+            kit_version, _ = self.kit_version.split("+")
+            self.kit_version = kit_version
         self.nucleus_version = DISCONNECTED
         self.client_library_version = omni.client.get_version()
-        self.app_name = settings.get("/app/name")
+        # Minimize Client Library version for release
+        if self.client_library_version:
+            client_lib_version, _ = self.client_library_version.split("+")
+            client_lib_version, _ = client_lib_version.split("-")
+            self.client_library_version = client_lib_version
+        self.app_name = settings.get("/app/window/title")
         self.app_version = settings.get("/app/version")
+        # Expand the Isaac Sim Version
+        app_folder = settings.get_as_string("/app/folder")
+        if not app_folder:
+            app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
+        # if not app_version:
+        app_launch_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
+        app_version = open(f"{app_launch_folder}/VERSION").read()
+        if app_version:
+            app_version, _ = app_version.split("+")
+            self.app_version = app_version
 
     @staticmethod
     def _resize_window(window: ui.Window, scrolling_frame: ui.ScrollingFrame):
@@ -55,7 +76,7 @@ class AboutExtension(omni.ext.IExt):
         self.menu_show_about(plugins)
 
     def menu_show_about(self, plugins):
-        info = f"Omniverse Kit {self.kit_version}\nApp Name: {self.app_name}\nApp Version: {self.app_version}\nClient Library Version: {self.client_library_version}"
+        info = f"App Name: {self.app_name}\nApp Version: {self.app_version}\nKit SDK Version{self.kit_version}\nClient Library Version: {self.client_library_version}"
 
         def hide(w):
             w.visible = False
@@ -79,9 +100,9 @@ class AboutExtension(omni.ext.IExt):
         with window.frame:
             with ui.ZStack():
                 with ui.VStack(style={"margin": 5}, width=0, height=0):
-                    ui.Label(f"Omniverse Kit {self.kit_version}", style={"font_size": 18})
                     ui.Label(f"App Name: {self.app_name}", style={"font_size": 18})
                     ui.Label(f"App Version: {self.app_version}", style={"font_size": 18})
+                    ui.Label(f"Kit SDK Version: {self.kit_version}", style={"font_size": 18})
                     ui.Label(f"Client Library Version: {self.client_library_version}", style={"font_size": 18})
                     # ui.Label(f"Nucleus Server Version: {self.nucleus_version}", style={"font_size": 18})    # TODO JS
                     ui.Spacer(height=16)

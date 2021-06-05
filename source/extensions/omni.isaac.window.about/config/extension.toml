@@ -6,7 +6,7 @@ version = "1.0.0"
 authors = ["Isaac Sim Team"]
 
 # The title and description fields are primarily for displaying extension info in UI
-title = "Kit About Window"
+title = "Isaac Sim About Window"
 description="Show application/build information."
 
 # URL of the extension source repository.
