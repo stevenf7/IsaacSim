@@ -11,7 +11,7 @@ import omni.kit.commands
 from .common import create_application, get_selected_path, simulate
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-from pxr import Gf
+from pxr import Gf, UsdPhysics, PhysxSchema
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -21,6 +21,18 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
+
+        scene = UsdPhysics.Scene.Define(self._stage, "/physics/scene")
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        scene.CreateGravityMagnitudeAttr().Set(9.81)
+
+        PhysxSchema.PhysxSceneAPI.Apply(self._stage.GetPrimAtPath("/physics/scene"))
+        physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(self._stage, "/physics/scene")
+        physxSceneAPI.CreateEnableCCDAttr(True)
+        physxSceneAPI.CreateEnableStabilizationAttr(True)
+        physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+        physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+        physxSceneAPI.CreateSolverTypeAttr("TGS")
 
         result, nucleus_server = find_nucleus_server()
         if result is False:
