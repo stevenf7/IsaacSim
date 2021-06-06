@@ -1,10 +1,9 @@
 Occupancy Extension [omni.isaac.occupancy_map]
 ##############################################
 
-.. automodule:: omni.isaac.occupancy_map._occupancy_map
-    :platform: Linux-x86_64
+.. autoclass:: omni.isaac.occupancy_map._occupancy_map.Generator
     :members:
     :undoc-members:
     :show-inheritance:
-    :imported-members:
-    :exclude-members: 
+    :exclude-members:
+    :special-members: __init__

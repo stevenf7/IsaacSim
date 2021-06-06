@@ -24,7 +24,7 @@ project_with_location("omni.isaac.occupancy_map.generator")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
     --     "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/octomap/lib",
+        "%{root}/_build/target-deps/octomap/lib64",
     --     "%{root}/_build/target-deps/omni_physics/lib",
     }
     links{"octomap", "octomath", "usdPhysics"}
@@ -129,5 +129,5 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/occupancy_map" },
-    { "%{root}/_build/target-deps/octomap/lib/**", ext.target_dir.."/bin" },
+    { "%{root}/_build/target-deps/octomap/lib64/**", ext.target_dir.."/bin" },
 }
