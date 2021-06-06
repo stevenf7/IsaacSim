@@ -62,6 +62,31 @@ class RangeSensorCreatePrim(omni.kit.commands.Command):
 
 
 class RangeSensorCreateLidar(omni.kit.commands.Command):
+    """Commands class to create a lidar sensor.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "RangeSensorCreateLidar",
+                path="/Lidar",
+                parent=None,
+                min_range=0.4,
+                max_range=100.0,
+                draw_points=False,
+                draw_lines=False,
+                horizontal_fov=360.0,
+                vertical_fov=30.0,
+                horizontal_resolution=0.4,
+                vertical_resolution=4.0,
+                rotation_rate=20.0,
+                high_lod=False,
+                yaw_offset=0.0,
+                enable_semantics=False,
+            )
+    """
+
     def __init__(
         self,
         path: str = "/Lidar",
@@ -116,6 +141,30 @@ class RangeSensorCreateLidar(omni.kit.commands.Command):
 
 
 class RangeSensorCreateUltrasonicArray(omni.kit.commands.Command):
+    """Commands class to create an ultrasonic array.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "RangeSensorCreateUltrasonicArray",
+                path="/UltrasonicArray",
+                parent=None,
+                min_range=0.4,
+                max_range=3.0,
+                draw_points=False,
+                draw_lines=False,
+                horizontal_fov=15.0,
+                vertical_fov=10.0,
+                horizontal_resolution=0.5,
+                vertical_resolution=0.5,
+                num_bins=224,
+                emitter_prims=[],
+                firing_group_prims=[],
+            )
+    """
+
     def __init__(
         self,
         path: str = "/UltrasonicArray",
@@ -175,6 +224,22 @@ class RangeSensorCreateUltrasonicArray(omni.kit.commands.Command):
 
 
 class RangeSensorCreateUltrasonicEmitter(omni.kit.commands.Command):
+    """Commands class to create an ultrasonic emitter.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "RangeSensorCreateUltrasonicEmitter",
+                path="/UltrasonicEmitter",
+                parent=None,
+                per_ray_intensity=1.0,
+                yaw_offset=0.0,
+                adjacency_list=[],
+            )
+    """
+
     def __init__(
         self,
         path: str = "/UltrasonicEmitter",
@@ -216,6 +281,21 @@ class RangeSensorCreateUltrasonicEmitter(omni.kit.commands.Command):
 
 
 class RangeSensorCreateUltrasonicFiringGroup(omni.kit.commands.Command):
+    """Commands class to create an ultrasonic firing group.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "RangeSensorCreateUltrasonicFiringGroup",
+                path="/UltrasonicFiringGroup",
+                parent=None,
+                emitter_modes=[],
+                receiver_modes=[],
+            )
+    """
+
     def __init__(
         self, path: str = "/UltrasonicFiringGroup", parent=None, emitter_modes: [] = [], receiver_modes: [] = []
     ):
@@ -244,6 +324,24 @@ class RangeSensorCreateUltrasonicFiringGroup(omni.kit.commands.Command):
 
 
 class RangeSensorCreateGeneric(omni.kit.commands.Command):
+    """Commands class to create a generic range sensor.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, prim = omni.kit.commands.execute(
+                "RangeSensorCreateGeneric",
+                path="/GenericSensor",
+                parent=None,
+                min_range=0.4,
+                max_range=100.0,
+                draw_points=False,
+                draw_lines=False,
+                sampling_rate=60,
+            )
+    """
+
     def __init__(
         self,
         path: str = "/GenericSensor",
