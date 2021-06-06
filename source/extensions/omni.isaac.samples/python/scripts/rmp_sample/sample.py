@@ -199,7 +199,11 @@ class RMPSample:
         """
         if self._world is None:
             return
-        block_suppressor = self._world.get_object_from_name("block")
+        try:
+            block_suppressor = self._world.get_object_from_name("block")
+        except KeyError:
+            print("Please Press Add Obstacles Button")
+            return
         invisible_color = Gf.Vec3f(0.0, 0.0, 1.0)
         obstacle_color = Gf.Vec3f(1.0, 1.0, 0)
 

@@ -2,7 +2,7 @@ Isaac Sim: Extensions API
 ==================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Extensions
    :glob:
 
@@ -27,5 +27,4 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+* :ref:`py-modindex`
