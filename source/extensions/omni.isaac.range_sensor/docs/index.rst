@@ -6,11 +6,12 @@ This extension provides a set simulated range based sensors like lidar, ultrason
 Lidar Sensor
 ============
 
-This submodule provides an interface to a simulated lidar sensor.
+This submodule provides an interface to a simulated lidar sensor. A simplified command is provided to create a lidar sensor in the stage:
 
-**Example**
+.. automethod:: omni.isaac.range_sensor.scripts.commands.RangeSensorCreateLidar        
 
-To use this interface, you must first call the acquire interface function.
+Once a lidar sensor is in the stage you can use this interface to interact with the simulated lidar data. 
+You must first call the acquire interface function.
 It is also recommended to use the `is_lidar_sensor` function to check if a lidar sensor exists at the given USD path
 
 .. code-block:: python
@@ -32,6 +33,10 @@ Ultrasonic Sensor
 =================
 
 This submodule provides an interface to a simulated ultrasonic sensor.
+
+.. automethod:: omni.isaac.range_sensor.scripts.commands.RangeSensorCreateUltrasonicArray
+.. automethod:: omni.isaac.range_sensor.scripts.commands.RangeSensorCreateUltrasonicEmitter    
+.. automethod:: omni.isaac.range_sensor.scripts.commands.RangeSensorCreateUltrasonicFiringGroup  
 
 **Example**
 
@@ -58,6 +63,8 @@ Generic Sensor
 
 This submodule provides an interface to a simulated generic sensor.
 
+.. automethod:: omni.isaac.range_sensor.scripts.commands.RangeSensorCreateGeneric    
+
 **Example**
 
 To use this interface, you must first call the acquire interface function.
@@ -78,12 +85,6 @@ It is also recommended to use the `is_generic_sensor` function to check if a gen
     :undoc-members:
     :exclude-members: 
 
-Range Sensor Commands
-========================
-.. automodule:: omni.isaac.range_sensor.scripts.commands
-    :members:
-    :undoc-members:
-    :exclude-members: do, undo, get_path, setup_base_prim, RangeSensorCreatePrim
 
 Generated USD Schema API
 ========================
