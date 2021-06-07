@@ -174,7 +174,7 @@ class OnshapeContentWidget:
                         height=22,
                         clicked_fn=lambda: self._change_sort_order(),
                     )
-                    # self.btn_order_down.visible = False
+                    self.btn_order_down.visible = False
                     ui.Button(
                         # omni.kit.ui.get_custom_glyph_code("${glyphs}/filter.svg"),
                         name="filter",

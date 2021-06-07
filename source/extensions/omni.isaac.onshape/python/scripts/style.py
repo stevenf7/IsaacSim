@@ -110,7 +110,11 @@ UI_STYLES["NvidiaDark"] = {
         "margin": 0,
         "padding": 0,
     },
-    "Button.Image::options": {"image_url": os.path.join("${glyphs}", "options.svg"), "color": 0x88FFFFDD},
+    "Button.Image::options": {
+        "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "options.svg"),
+        "color": 0x88FFFFDD,
+    },
+    # "Button.Image::options": {"image_url": os.path.join("{}", "options.svg"), "color": 0x88FFFFDD},
     "Image::processing": {"image_url": os.path.join("${glyphs}", "spinner.svg"), "color": 0x88FFFFDD, "margin": 0},
     "Image::error": {"image_url": os.path.join("${glyphs}", "times_circle.svg"), "color": 0x88AAAAFF, "margin": 0},
     "Image::changed": {"image_url": os.path.join("${glyphs}", "info.svg"), "color": 0x88FFDDDD, "margin": 0},

@@ -53,3 +53,7 @@ CHANGELOG
 [0.3.6] - 2021-05-28
 
 - UI Reorg
+
+[0.3.7] - 2021-06-04
+
+- Minor bugs and Menu Reorg.

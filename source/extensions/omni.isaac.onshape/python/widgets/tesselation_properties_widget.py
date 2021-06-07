@@ -4,19 +4,19 @@ from enum import Enum
 from pathlib import Path
 
 import uuid
-
+from math import radians, degrees
 from omni.isaac.onshape.scripts.style import UI_STYLES
 
 
 # defaults = [1.0, 0.25, 0.02]
-defaults = [0.001, 0.25, 0.2]
+defaults = [0.001, 15, 0.2]
 mins = [0.0, 0.0, 0.0]
-maxs = [10.0, 3.14, 10]
+maxs = [10.0, 90, 10]
 
 
 class TesselationProperties:
     def __init__(self, chord_tolerance=defaults[0], angle_tolerance=defaults[1], max_chord=defaults[2]):
-        self.angle_tolerance = angle_tolerance
+        self.angle_tolerance = radians(angle_tolerance)
         self.chord_tolerance = chord_tolerance
         self.max_chord = max_chord
 
@@ -65,8 +65,8 @@ def chord_tolerance(model, props):
 
 
 def angle_tolerance(model, props):
-    if props.angle_tolerance != model.get_value_as_float():
-        props.angle_tolerance = model.get_value_as_float()
+    if props.angle_tolerance != radians(model.get_value_as_float()):
+        props.angle_tolerance = radians(model.get_value_as_float())
         return True
     return False
 
@@ -90,7 +90,7 @@ class TesselationPropertiesModel(ui.AbstractItemModel):
             self.props = TesselationProperties()
         self.models = [
             ui.SimpleFloatModel(self.props.chord_tolerance),
-            ui.SimpleFloatModel(self.props.angle_tolerance),
+            ui.SimpleFloatModel(degrees(self.props.angle_tolerance)),
             ui.SimpleFloatModel(self.props.max_chord),
         ]
         self.vcfn = [0 for i in self.models]
@@ -114,7 +114,7 @@ class TesselationPropertiesModel(ui.AbstractItemModel):
 
     def set_value(self, props):
         self.models[0].set_value(props.chord_tolerance)
-        self.models[1].set_value(props.angle_tolerance)
+        self.models[1].set_value(degrees(props.angle_tolerance))
         self.models[2].set_value(props.max_chord)
         self._item_changed(None)
 
@@ -129,7 +129,7 @@ class TesselationPropsDelegate(ui.AbstractItemDelegate):
         self._highlighting_enabled = True
         self._highlighting_text = None
         self.tooltip_fns = [chord_tolerance_tooltip, angle_tolerance_tooltip, max_chord_tooltip]
-        self.column_names = ["Chord Tolerance (m)", "Angle Tolerance (d)", "Max Cord (m)"]
+        self.column_names = ["Chord Tolerance (m)", "Angle Tolerance (d)", "Max Chord (m)"]
         self.num_columns = len(self.column_names)
         self.listView = None
 
