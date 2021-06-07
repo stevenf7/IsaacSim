@@ -19,6 +19,8 @@ import os
 import shutil
 import time
 from omni.client._omniclient import Result
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+
 
 EXTENSION_NAME = "OnShape Importer"
 
@@ -59,13 +61,16 @@ class OnshapeImporter(omni.ext.IExt):
         self.element_details = None
         self._element_details = None
         self._timeline = omni.timeline.get_timeline_interface()
-        self._menu = omni.kit.ui.get_editor_menu().add_item(
-            # "Window/Isaac/" +
-            EXTENSION_NAME,
-            self.menu_click,
-            toggle=False,
-            value=False,
-        )
+
+        self._menu = [
+            MenuItemDescription(
+                name="Import from Onshape",
+                glyph="none.svg",
+                appear_after="Import",
+                onclick_fn=lambda a=weakref.proxy(self): a.menu_click(None, True),
+            )
+        ]
+        add_menu_items(self._menu, "File", -10)
         self.usd_gen = None
 
         self._folder_picker = FilePickerDialog(
@@ -83,6 +88,7 @@ class OnshapeImporter(omni.ext.IExt):
         self.show_window(menu, value)
 
     def on_shutdown(self):
+        remove_menu_items(self._menu, "File")
         self._menu = None
         print("shutting down")
         if self._folder_picker:

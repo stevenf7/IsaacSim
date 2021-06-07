@@ -434,9 +434,15 @@ class DocumentListDelegate(ui.AbstractItemDelegate):
                                     down = ui.Button(
                                         name="arrow_down", style=self._style, width=ui.Percent(100), height=18
                                     )
-                                    up = ui.Button(name="arrow_up", style=self._style, width=ui.Percent(100), height=18)
-                                    up.visible = False
+                                    up = ui.Button(
+                                        name="arrow_up",
+                                        style=self._style,
+                                        visible=False,
+                                        width=ui.Percent(100),
+                                        height=18,
+                                    )
                                     down.set_clicked_fn(lambda a=down, b=up, c=item: toggle(a, b, c))
                                     up.set_clicked_fn(lambda a=down, b=up, c=item: toggle(a, b, c))
+                                    up.visible = False
                 if len(item.elements) > 1:
                     item.build_element_grid_view(lambda x, y, b, item=item: self.on_mouse_double_clicked(item))

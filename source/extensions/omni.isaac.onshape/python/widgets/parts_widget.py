@@ -147,19 +147,29 @@ class OnshapePart(ui.AbstractItem):
         self.part.set_item(key, value)
 
     def _get_physical_material_properties(self):
-        def _get_metadata():
+        def _get_metadata(retry=False):
             try:
-                if not self.has_item("workspaceId"):
-                    doc = OnshapeClient.get().documents_api.get_document(self.get_item("documentId"))
-                    self.set_item("workspaceId", doc["default_workspace"]["id"])
-                m = OnshapeClient.get().metadata_api.get_wmvep_metadata(
-                    self.get_item("documentId"),
-                    "w",
-                    self.get_item("workspaceId"),
-                    self.get_item("elementId"),
-                    self.get_encoded_part_id(),
-                    _preload_content=False,
-                )
+                if not retry:
+                    if not self.has_item("workspaceId"):
+                        doc = OnshapeClient.get().documents_api.get_document(self.get_item("documentId"))
+                        self.set_item("workspaceId", doc["default_workspace"]["id"])
+                    m = OnshapeClient.get().metadata_api.get_wmvep_metadata(
+                        self.get_item("documentId"),
+                        "w",
+                        self.get_item("workspaceId"),
+                        self.get_item("elementId"),
+                        self.get_encoded_part_id(),
+                        _preload_content=False,
+                    )
+                else:
+                    m = OnshapeClient.get().metadata_api.get_wmvep_metadata(
+                        self.get_item("documentId"),
+                        "m",
+                        self.get_item("documentMicroversion"),
+                        self.get_item("elementId"),
+                        self.get_encoded_part_id(),
+                        _preload_content=False,
+                    )
                 self._metadata = json.loads(m.data)
                 self._physical_material = [a for a in self._metadata["properties"] if a["name"] == "Material"][0]
                 self._name = [a for a in self._metadata["properties"] if a["name"] == "Name"][0]
@@ -167,16 +177,25 @@ class OnshapePart(ui.AbstractItem):
                     self.modelCols[1].set_value(self._name["value"])
                     self.modelCols[2] = PhysicsMaterialsModel(self.material_lib, self._physical_material["value"])
             except Exception as e:
-                carb.log_error("Error getting Part material properties ({}): {}".format(self.get_name(), str(e)))
-                carb.log_error(
-                    "Part Details:\n{}\n{}\n{}\n{}\n{}".format(
-                        self.get_item("documentId"),
-                        "w",
-                        self.get_item("workspaceId"),
-                        self.get_item("elementId"),
-                        self.get_encoded_part_id(),
+                if not retry:
+                    _get_metadata(retry=True)
+                    carb.log_warn(
+                        "Error getting Part material properties ({}), retrying with document microversion: {}".format(
+                            self.get_name(), str(e)
+                        )
                     )
-                )
+                else:
+
+                    carb.log_error("Error getting Part material properties ({}): {}".format(self.get_name(), str(e)))
+                    carb.log_error(
+                        "Part Details:\n{}\n{}\n{}\n{}\n{}".format(
+                            self.get_item("documentId"),
+                            "m",
+                            self.get_item("documentMicroversion"),
+                            self.get_item("elementId"),
+                            self.get_encoded_part_id(),
+                        )
+                    )
 
         self._task_physical_material = self.mass_thread_pool.submit(
             _get_metadata
@@ -725,7 +744,7 @@ class OnshapePartsWidget(ui.Widget):
             # self.context_replace_selected_parts.enabled = len(self._mesh_list.selection) > 1 or (
             #     len(self._mesh_list.selection) == 1 and self._mesh_list.selection[0] != item
             # )
-            self.context_find_similar.visible = column == 1
+            self.context_find_similar.visible = False  # column == 1
             self.context_material.visible = column == 2
             self.context_material.enabled = len(self._mesh_list.selection) > 1 or (
                 len(self._mesh_list.selection) == 1 and self._mesh_list.selection[0] != item
@@ -848,7 +867,7 @@ class OnshapePartsWidget(ui.Widget):
             # self.context_replace_selected_parts.enabled = len(self._mesh_list.selection) > 1 or (
             #     len(self._mesh_list.selection) == 1 and self._mesh_list.selection[0] != item
             # )
-            self.context_find_similar.visible = column == 1
+            self.context_find_similar.visible = False  # column == 1
             self.context_material.visible = column == 2
             self.context_material.enabled = len(self._mesh_list.selection) > 1 or (
                 len(self._mesh_list.selection) == 1 and self._mesh_list.selection[0] != item
