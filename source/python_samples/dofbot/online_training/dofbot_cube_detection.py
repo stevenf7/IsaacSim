@@ -19,6 +19,7 @@ from torch.utils.data import DataLoader
 import torchvision
 import matplotlib.pyplot as plt
 import numpy as np
+import signal
 
 from dofbot_dataset import RandomObjects
 import ssl
@@ -32,6 +33,12 @@ def main(args):
     # Setup data
     train_set = RandomObjects()
     train_loader = DataLoader(train_set, batch_size=2, collate_fn=lambda x: tuple(zip(*x)))
+
+    def handle_exit(self, *args, **kwargs):
+        print("exiting cube detection dataset generation...")
+        train_set.exiting = True
+
+    signal.signal(signal.SIGINT, handle_exit)
 
     from omni.isaac.synthetic_utils import visualization as vis
 
@@ -50,7 +57,9 @@ def main(args):
         fig, axes = plt.subplots(1, 2, figsize=(14, 7))
 
     for i, train_batch in enumerate(train_loader):
-        if i > args.max_iters:
+        if i > args.max_iters or train_set.exiting:
+            print("Exiting ...")
+            train_set.kit.shutdown()
             break
 
         if args.eval_model == "":
