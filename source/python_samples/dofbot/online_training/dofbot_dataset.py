@@ -26,7 +26,7 @@ import signal
 import omni
 import carb
 from omni.isaac.python_app import OmniKitHelper
-from pxr import UsdGeom, Gf, Vt
+
 
 # Setup default generation variables
 # Value are (min, max) ranges
@@ -107,7 +107,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.exiting = True
 
     def _setup_world(self):
-        from pxr import Sdf, UsdPhysics, PhysxSchema
+        from pxr import Sdf, UsdGeom, Gf, UsdPhysics, PhysxSchema
 
         # Create physics scene for collision testing
         scene = UsdPhysics.Scene.Define(self.stage, Sdf.Path("/World/physicsScene"))
@@ -172,7 +172,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
     def load_single_asset(self, prim_type, scale, i):
         from omni.physx.scripts import utils
-        from pxr import Semantics
+        from pxr import Semantics, UsdGeom
 
         overlapping = True
         attempts = 0
@@ -224,6 +224,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         """ Existing object turns red if the proposed position would result in a collision
         Note: use for troubleshooting, material randomization must be disabled for this to work
         """
+        from pxr import UsdGeom, Gf, Vt
+
         hitColor = Vt.Vec3fArray([Gf.Vec3f(180.0 / 255.0, 16.0 / 255.0, 0.0)])
         usdGeom = UsdGeom.Mesh.Get(self.stage, hit.rigid_body)
         usdGeom.GetDisplayColorAttr().Set(hitColor)
