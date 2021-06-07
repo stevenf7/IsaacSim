@@ -215,9 +215,6 @@ def main():
     bboxes3D_rgb = visualize.colorize_bboxes_3d(projected_corners, rgb_data)
     axes[6].imshow(bboxes3D_rgb)
 
-    # Display figure
-    # plt.tight_layout()
-    # plt.show()
     # Save figure
     print("saving figure to: ", os.getcwd() + "/visualize_groundtruth_physics.png")
     plt.savefig("visualize_groundtruth_physics.png")

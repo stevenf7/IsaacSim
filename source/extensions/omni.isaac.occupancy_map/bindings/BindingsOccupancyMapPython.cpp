@@ -51,9 +51,6 @@ PYBIND11_MODULE(_occupancy_map, m)
 
 
     py::class_<MapGenerator>(m, "Generator", R"pbdoc(
-    
-        Isaac Sim Occupany map Generator
-        --------------------------------
 
         This class is used to generate an occupancy map for a USD stage. 
         Assuming the stage has collision geometry information, the following code can be used to generate the occupancy map information
