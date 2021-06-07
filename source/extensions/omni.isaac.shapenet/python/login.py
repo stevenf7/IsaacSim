@@ -127,9 +127,22 @@ class ShapenetLogin:
 
     def _on_login_fn(self, widget):
         csv_location = get_local_shape_loc() + "/v1_csv/"
-        logged_in = save_v1_csvs(
-            self._username.model.get_value_as_string(), self._password.model.get_value_as_string(), csv_location
-        )
+        username = self._username.model.get_value_as_string()
+        password = self._password.model.get_value_as_string()
+        print(username)
+        logged_in = False
+        if len(username) > 0 and len(password) > 0:
+            logged_in = save_v1_csvs(username, password, csv_location)
+        else:
+            self._login_window.visible = False
+            flags = ui.WINDOW_FLAGS_NO_RESIZE | ui.WINDOW_FLAGS_MODAL
+            flags |= ui.WINDOW_FLAGS_NO_SCROLLBAR
+            self.invalid_window = ui.Window("Username or Password invalid.", width=500, height=0, flags=flags)
+            with self.invalid_window.frame:
+                with ui.VStack(name="root", style={"VStack::root": {"margin": 10}}, height=0, spacing=20):
+                    ui.Label("Pelase enter a valid user and password.", alignment=ui.Alignment.LEFT, word_wrap=True)
+            self.invalid_window.visible = True
+
         if not logged_in:
             print(f"Attempting to use local files if they already exist in {csv_location}.")
         snDb = create_db_from_files(csv_location)
