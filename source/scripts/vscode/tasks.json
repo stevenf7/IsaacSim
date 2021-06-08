@@ -35,22 +35,10 @@
             }
         },
         {
-            "label": "compile shaders",
-            "type": "shell",
-            "windows": {
-                "command": ".\\tools\\shaders\\compile.bat"
-            },
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated"
-            },
-            "problemMatcher": []
-        },
-        {
             "label": "setup_python_env",
             "type": "shell",
             "linux": {
-                "command": "source ${workspaceFolder}/_build/linux-x86_64/release/setup_python_env.sh && printenv >${workspaceFolder}/.vscode/.python_samples.env"
+                "command": "source ${workspaceFolder}/setup_python_env.sh && printenv >${workspaceFolder}/.vscode/.python_samples.env"
             }
         }
     ]
