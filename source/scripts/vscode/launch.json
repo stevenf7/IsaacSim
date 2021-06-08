@@ -11,8 +11,9 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "env": {
-                "EXP_PATH": "${workspaceFolder}/source/apps"
+                "EXP_PATH": "${workspaceFolder}/apps"
             },
+            "python": "${workspaceFolder}/kit/python/bin/python3",
             "envFile": "${workspaceFolder}/.vscode/.python_samples.env",
             "preLaunchTask": "setup_python_env"
         },
@@ -21,16 +22,16 @@
             "type": "python",
             "request": "attach",
             "port": 3000,
-            "host": "localhost",
+            "host": "localhost"
         },
         {
             "name": "(Linux) isaac-sim [release]",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/_build/linux-x86_64/release/kit/kit",
-            "args": ["${workspaceFolder}/_build/linux-x86_64/release/apps/omni.isaac.sim.kit",
-                "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/release/exts",
-                "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/release/apps"],
+            "program": "${workspaceFolder}/kit/kit",
+            "args": ["${workspaceFolder}/apps/omni.isaac.sim.kit",
+                "--ext-folder", "${workspaceFolder}/exts",
+                "--ext-folder", "${workspaceFolder}/apps"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -42,16 +43,16 @@
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
                 }
-            ],
+            ]
         },
         {
             "name": "(Linux) isaac-sim [debug]",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/_build/linux-x86_64/debug/kit/kit",
-            "args": ["${workspaceFolder}/_build/linux-x86_64/debug/apps/omni.isaac.sim.kit",
-                "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/debug/exts",
-                "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/debug/apps"],
+            "program": "${workspaceFolder}/kit/kit",
+            "args": ["${workspaceFolder}/apps/omni.isaac.sim.kit",
+                "--ext-folder", "${workspaceFolder}/exts",
+                "--ext-folder", "${workspaceFolder}/apps"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -63,7 +64,7 @@
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
                 }
-            ],
-        },
+            ]
+        }
     ]
 }
