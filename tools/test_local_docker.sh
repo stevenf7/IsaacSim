@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#This script packages isaac sim like normal, extracts it and then mounts it into a container for testing. 
+
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 
