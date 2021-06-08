@@ -27,6 +27,10 @@ import signal
 import omni
 from omni.isaac.python_app import OmniKitHelper
 
+# to work around torch's SSL issue
+import ssl
+
+ssl._create_default_https_context = ssl._create_unverified_context
 
 # Setup default generation variables
 # Value are (min, max) ranges

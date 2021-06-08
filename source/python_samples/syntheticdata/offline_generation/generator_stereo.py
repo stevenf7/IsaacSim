@@ -76,7 +76,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         stage = omni.usd.get_context().get_stage()
         # Create two camera
-        center_point = Gf.Vec3d(-1100, 5000, 200)
+        center_point = Gf.Vec3d(0, 0, 200)
         stereoPrimPath = "/World/Stereo"
         leftCameraPrimPath = stereoPrimPath + "/LeftCamera"
         rightCameraPrimPath = stereoPrimPath + "/RightCamera"
