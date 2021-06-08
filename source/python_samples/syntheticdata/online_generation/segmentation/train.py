@@ -21,6 +21,7 @@ from torch.utils.data import DataLoader
 import torchvision
 import matplotlib.pyplot as plt
 import numpy as np
+import signal
 
 from dataset import RandomObjects
 
@@ -33,6 +34,12 @@ def main(args):
         args.root, args.categories, num_assets_min=3, num_assets_max=5, max_asset_size=args.max_asset_size
     )
     train_loader = DataLoader(train_set, batch_size=2, collate_fn=lambda x: tuple(zip(*x)))
+
+    def handle_exit(self, *args, **kwargs):
+        print("exiting dataset generation...")
+        train_set.exiting = True
+
+    signal.signal(signal.SIGINT, handle_exit)
 
     from omni.isaac.synthetic_utils import visualization as vis
     from omni.isaac.synthetic_utils import shapenet
@@ -47,7 +54,9 @@ def main(args):
         fig, axes = plt.subplots(1, 2, figsize=(14, 7))
 
     for i, train_batch in enumerate(train_loader):
-        if i > args.max_iters:
+        if i > args.max_iters or train_set.exiting:
+            print("Exiting ...")
+            train_set.kit.shutdown()
             break
 
         model.train()
