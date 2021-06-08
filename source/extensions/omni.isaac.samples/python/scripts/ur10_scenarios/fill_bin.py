@@ -25,6 +25,7 @@ from copy import copy
 
 import omni.physx
 from collections import deque
+import asyncio
 
 
 def normalize(a):
@@ -499,6 +500,11 @@ class FillBin(Scenario):
                 self._paused = False
             if not self._paused:
                 self._time += 1.0 / 60.0
+                # if self.pick_and_place.is_closed and not self.ur10_solid.end_effector.gripper.is_closed():
+                #     self.pick_and_place.step(self._time, False, False)
+                #     self.stop_tasks(reset=False)
+                #     return
+
                 self.pick_and_place.step(self._time, self._start, self._reset)
                 if self._reset:
                     self._paused = (self._time - self._start_time) < self.timeout_max
@@ -516,10 +522,6 @@ class FillBin(Scenario):
                     set_rotate(target, Gf.Matrix3d(Gf.Quatd(state_1.r.w, state_1.r.x, state_1.r.y, state_1.r.z)))
                 self._start = False
                 self._reset = False
-                if self.add_objects_timeout > 0:
-                    self.add_objects_timeout -= 1
-                    if self.add_objects_timeout == 0:
-                        self.create_new_objects()
                 if (
                     self.pick_and_place.current_state == self.current_state
                     and self.current_state in [SM_states.PICKING, SM_states.ATTACH]
@@ -530,6 +532,10 @@ class FillBin(Scenario):
                     self._start_time = self._time
                     # print(self._time)
                     self.current_state = self.pick_and_place.current_state
+                if self.add_objects_timeout > 0:
+                    self.add_objects_timeout -= 1
+                    if self.add_objects_timeout == 0:
+                        self.create_new_objects()
 
             if self._paused:
                 translate_attr = xform_attr.Get().GetRow3(3)
@@ -671,38 +677,46 @@ class FillBin(Scenario):
 
         self.objects_handles = []
         for prim in self._stage.GetPrimAtPath(self.env_path + "/objects").GetChildren():
-            for o in prim.GetChildren():
-                if "Looks" not in o.GetPath().pathString:
-                    obj = self._dc.get_rigid_body(o.GetPath().pathString)
-                    self.objects_handles.append(obj)
-                    self._dc.set_rigid_body_disable_simulation(obj, True)
-                    break
+            for o in [o for o in prim.GetChildren() if "Looks" not in o.GetPath().pathString]:
+                obj = self._dc.get_rigid_body(o.GetPath().pathString)
+                self.objects_handles.append(obj)
+                self._dc.set_rigid_body_disable_simulation(obj, True)
 
     def perform_tasks(self, *args):
         self._start = True
         self._paused = False
         return False
 
-    def stop_tasks(self, *args):
+    def stop_tasks(self, reset=True):
+        asyncio.ensure_future(self.stop_tasks_async(reset))
+
+    async def stop_tasks_async(self, reset=True):
         if self.pick_and_place is not None:
             if self._timeline.is_playing():
+                self.add_objects_timeout = 0
                 self.ur10_solid.stop()
-                self._reset = True
+                self._reset = reset
                 self._pending_disable = True
                 if self._timeline.is_playing():
                     self.ur10_solid.end_effector.gripper.open()
                 for i in range(self.max_objs):
-                    tf = _dynamic_control.Transform()
+                    tf = self._dc.get_rigid_body_pose(self.objects_handles[i])
                     tf.p = [-500000 - 50 * i, 150, 0]
+                    tf.r = [0, 0, 0, 1]
                     self._dc.set_rigid_body_pose(self.objects_handles[i], tf)
-                    self._dc.set_rigid_body_linear_velocity(self.objects_handles[i], [0, 0, 0])
-                    self._dc.set_rigid_body_angular_velocity(self.objects_handles[i], [0, 0, 0])
+
+                await omni.kit.app.get_app().next_update_async()
+                for i in range(self.max_objs):
+                    self._dc.set_rigid_body_disable_simulation(self.objects_handles[i], True)
+                    # self._dc.set_rigid_body_linear_velocity(self.objects_handles[i], [0, 0, 0])
+                    # self._dc.set_rigid_body_angular_velocity(self.objects_handles[i], [0, 0, 0])
                 bin = self._dc.get_rigid_body(self.bin_path)
-                tf = _dynamic_control.Transform()
+                tf = self._dc.get_rigid_body_pose(bin)
                 tf.p = [0, 81, -43.0]
+                tf.r = [0, 0, 0, 1]
                 self._dc.set_rigid_body_pose(bin, tf)
-                self._dc.set_rigid_body_linear_velocity(bin, [0, 0, 0])
-                self._dc.set_rigid_body_angular_velocity(bin, [0, 0, 0])
+                # self._dc.set_rigid_body_linear_velocity(bin, [0, 0, 0])
+                # self._dc.set_rigid_body_angular_velocity(bin, [0, 0, 0])
                 self._pending_stop = False
             else:
                 self._pending_stop = True
