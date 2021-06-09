@@ -8,10 +8,10 @@ import rospy
 import numpy as np
 
 
-def send_pose_cone_client(new_pose):
-    rospy.wait_for_service("/teleport_pos_cone")
+def send_pose_cube_client(new_pose):
+    rospy.wait_for_service("/teleport_pos")
     try:
-        send_pose = rospy.ServiceProxy("/teleport_pos_cone", IsaacPose)
+        send_pose = rospy.ServiceProxy("/teleport_pos", IsaacPose)
         send_pose(new_pose)
 
     except rospy.ServiceException as e:
@@ -50,27 +50,20 @@ def compose_vec3(x, y, z):
 
 
 if __name__ == "__main__":
-    rospy.init_node("test_ros_teleport_cone", anonymous=True)
-    new_isaac_pose_cone = IsaacPoseRequest()
-    new_isaac_pose_cone.names = ["/Cone"]
+    rospy.init_node("test_ros_teleport", anonymous=True)
+    new_isaac_pose_cube = IsaacPoseRequest()
+    new_isaac_pose_cube.names = ["/Cube"]
 
-    cone_pos_vec = np.array([0.0, 0.0, 0.0])
+    cube_pos_vec = np.array([0.0, 0.0, 0.0])
     quat_vec = np.array([1, 0.0, 0.0, 0.0])
 
-    rate = rospy.Rate(2)  # hz
+    rate = rospy.Rate(1)  # hz
 
     while not rospy.is_shutdown():
-        # new pose
-        cone_pos_vec += 0.02
-        cone_pose = compose_pose(cone_pos_vec, [0, 0.707, 0.707, 0])
-        new_isaac_pose_cone.poses = [cone_pose]
-
-        # new twist
-        zero_twist = compose_twist(0, 0, 0, 0, 0, 0)
-        new_isaac_pose_cone.velocities = [zero_twist]
-        # new scale
-        unit_scale = compose_vec3(1, 1, 1)
-        new_isaac_pose_cone.scales = [unit_scale]
+        # new random pose
+        cube_pos_vec = np.random.rand(3) * 0.1
+        cube_pose = compose_pose(cube_pos_vec, quat_vec)
+        new_isaac_pose_cube.poses = [cube_pose]
         # publish
-        send_pose_cone_client(new_isaac_pose_cone)
+        send_pose_cube_client(new_isaac_pose_cube)
         rate.sleep()

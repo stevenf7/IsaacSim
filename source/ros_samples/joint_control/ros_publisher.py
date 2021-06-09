@@ -6,7 +6,9 @@ import argparse
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--mode", help="indicate control mode")
+parser.add_argument(
+    "--mode", required=True, help="position: for joint position control. velocity for joint velocity control"
+)
 args = parser.parse_args()
 
 

@@ -21,7 +21,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 import weakref
 import math
 
-EXTENSION_NAME = "Ros Topics"
+EXTENSION_NAME = "ROS Topics"
 
 
 def set_drive_parameters(drive, target_type, target_value, stiffness, damping, max_force=None):
@@ -61,7 +61,7 @@ class Extension(omni.ext.IExt):
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._dc_extension_path = ext_manager.get_extension_path(ext_id)
         # setting up the UI on the menu bar for this example
-        self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
+        self._window = omni.ui.Window(EXTENSION_NAME, width=400, height=200, visible=False)
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
@@ -72,8 +72,8 @@ class Extension(omni.ext.IExt):
         with self._window.frame:
             with ui.VStack():
                 ui.Button("Load Robot", tooltip="Loads robot into stage", clicked_fn=self._on_load_robot)
-                with ui.HStack(height=0):
-                    ui.Label("Control Mode")
+                with ui.HStack(height=0, spacing=5):
+                    ui.Label("Control Mode", width=0)
                     self._velocity_combo = ui.ComboBox(0, "Position Control", "Velocity Control").model
                     ui.Button(
                         "Connect Joint State Topics",
@@ -81,20 +81,9 @@ class Extension(omni.ext.IExt):
                         clicked_fn=self._on_connect_js,
                     )
                 ui.Button(
-                    "Connect Camera Topics",
-                    tooltip="Connect Camera Ros Topics and start publishing",
-                    clicked_fn=self._on_connect_camera,
-                )
-                ui.Button(
-                    "Connect TF Topics",
-                    tooltip="Connect TF Ros Topics and start publishing",
-                    clicked_fn=self._on_connect_tf,
-                )
-                ui.Button(
                     "Add Cube", tooltip="Add a Cube to the scene and append to TF tree", clicked_fn=self._on_add_cube
                 )
 
-        self._stage = omni.usd.get_context().get_stage()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
 
@@ -106,20 +95,98 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     # Fix camera location and angle
-    async def _setup_camera(self, task):
-        done, pending = await asyncio.wait({task})
-        if task in done:
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 59, 120, 164, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", -190, -346, -263, True)
+    async def _setup_stage(self):
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        self._stage = omni.usd.get_context().get_stage()
 
-            # timeline must be playing for articulation to work, so start it now
-            if not self._timeline.is_playing():
-                self._timeline.play()
+        omni.kit.commands.execute(
+            "CreateReferenceCommand",
+            usd_context=omni.usd.get_context(),
+            path_to="/panda",
+            asset_path=self._dc_extension_path + "/data/usd/robots/franka/franka.usd",
+            instanceable=False,
+        )
+        await omni.kit.app.get_app().next_update_async()
+
+        # Create a camera
+        omni.kit.commands.execute(
+            "CreatePrimWithDefaultXform",
+            prim_type="Camera",
+            prim_path="/sim_camera",
+            attributes={"focusDistance": 400, "focalLength": 24},
+        )
+
+        # Set Camera Pose
+        self._viewport.set_active_camera("/sim_camera")
+        await omni.kit.app.get_app().next_update_async()
+
+        omni.kit.commands.execute(
+            "TransformPrimCommand",
+            path="/sim_camera",
+            old_transform_matrix=Gf.Matrix4d(
+                0.0, 1.0, -0.0, 0.0, -0.0, 0.0, 1.0, 0.0, 1.0, -0.0, 0.0, 0.0, 0.0, 0.0, -0.0, 1.0
+            ),
+            new_transform_matrix=Gf.Matrix4d(
+                -0.642788,
+                0.766045,
+                0.0,
+                0.0,
+                -0.133022,
+                -0.111619,
+                0.984807,
+                0.0,
+                0.754407,
+                0.633022,
+                0.173648,
+                0.0,
+                175.0,
+                150.0,
+                70.0,
+                1.0,
+            ),
+        )
+
+        # adding camera topic
+        omni.kit.commands.execute(
+            "ROSBridgeCreateCamera",
+            path="/ROS_Camera",
+            enabled=True,
+            resolution=Gf.Vec2i(1280, 720),
+            frame_id="sim_camera",
+            camera_info_topic="/camera_info",
+            rgb_enabled=True,
+            rgb_topic="/rgb",
+            depth_enabled=True,
+            depth_topic="/depth",
+            segmentation_enabled=False,
+            semantic_topic="/semantic",
+            instance_topic="/instance",
+            label_topic="/label",
+            bbox2d_enabled=False,
+            bbox2d_topic="/bbox_2d",
+            bbox3d_enabled=False,
+            bbox3d_topic="/bbox_3d",
+            queue_size=10,
+            camera_prim_rel=["/sim_camera"],
+        )
+        # adding tf topic
+        omni.kit.commands.execute(
+            "ROSBridgeCreatePoseTree",
+            path="/ROS_PoseTree",
+            enabled=True,
+            topic="/tf",
+            queue_size=0,
+            target_prims_rel=["/panda", "/sim_camera"],
+        )
+
+        # timeline must be playing for articulation to work, so start it now
+        if not self._timeline.is_playing():
+            self._timeline.play()
 
     # load robot
     def _on_load_robot(self):
-        task = asyncio.ensure_future(load_test_file(self._dc_extension_path + "/data/usd/robots/franka/franka.usd"))
-        asyncio.ensure_future(self._setup_camera(task))
+        asyncio.ensure_future(self._setup_stage())
 
     def _on_connect_js(self):
 
@@ -127,15 +194,16 @@ class Extension(omni.ext.IExt):
         self._stage = omni.usd.get_context().get_stage()
         robot_prim = self._stage.GetPrimAtPath("/panda")
         assert robot_prim.HasAPI(PhysxSchema.PhysxArticulationAPI)
-
-        omni.kit.commands.execute(
-            "ROSBridgeCreateJointState",
-            path="/ROS_JointState",
-            enabled=True,
-            state_topic="/joint_states",
-            command_topic="/joint_command",
-            articulation_prim_rel=["/panda"],
-        )
+        ROS_prim = self._stage.GetPrimAtPath("/ROS_JointState")
+        if not ROS_prim:
+            omni.kit.commands.execute(
+                "ROSBridgeCreateJointState",
+                path="/ROS_JointState",
+                enabled=True,
+                state_topic="/joint_states",
+                command_topic="/joint_command",
+                articulation_prim_rel=["/panda"],
+            )
 
         panda_joint1_drive = UsdPhysics.DriveAPI.Get(
             self._stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular"
@@ -201,53 +269,6 @@ class Extension(omni.ext.IExt):
             set_drive_parameters(panda_finger1_drive, "position", 0, math.radians(6000), math.radians(1000), 1200)
             set_drive_parameters(panda_finger2_drive, "position", 0, math.radians(6000), math.radians(1000), 1200)
 
-    # adding camera topic
-    def _on_connect_camera(self):
-
-        omni.kit.commands.execute(
-            "ROSBridgeCreateCamera",
-            path="/ROS_Camera",
-            enabled=True,
-            resolution=Gf.Vec2i(1280, 720),
-            frame_id="sim_camera",
-            camera_info_topic="/camera_info",
-            rgb_enabled=True,
-            rgb_topic="/rgb",
-            depth_enabled=True,
-            depth_topic="/depth",
-            segmentation_enabled=False,
-            semantic_topic="/semantic",
-            instance_topic="/instance",
-            label_topic="/label",
-            bbox2d_enabled=False,
-            bbox2d_topic="/bbox_2d",
-            bbox3d_enabled=False,
-            bbox3d_topic="/bbox_3d",
-            queue_size=10,
-        )
-        # make sure timeline is playing for sending and receiving ros messages
-        if not self._timeline.is_playing():
-            self._timeline.play()
-
-        # use image_view to view the published image:
-        # rosrun image_view image_view image:=/rgb
-        # rosrun image_view image_view image:=/depth
-
-    # adding the tf topic
-    def _on_connect_tf(self):
-        omni.kit.commands.execute(
-            "ROSBridgeCreatePoseTree",
-            path="/ROS_PoseTree",
-            enabled=True,
-            topic="/tf",
-            queue_size=0,
-            target_prims_rel=["/panda"],
-        )
-
-        # timeline must be playing for messages to be published and received
-        if not self._timeline.is_playing():
-            self._timeline.play()
-
     def _on_add_cube(self):
         # first create a cube
         self._stage = omni.usd.get_context().get_stage()
@@ -268,7 +289,7 @@ class Extension(omni.ext.IExt):
                 enabled=True,
                 topic="/tf",
                 queue_size=0,
-                target_prims_rel=["/panda", CubePath],
+                target_prims_rel=["/panda", "/sim_camera", CubePath],
             )
         else:
             ROS_prim.GetRelationship("targetPrims").AddTarget(Sdf.Path("/cube"))
