@@ -13,6 +13,7 @@
 
 
 import asyncio
+import copy
 import os
 import torch
 import signal
@@ -65,6 +66,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self._setup_world(scenario_path)
         self.cur_idx = 0
         self.exiting = False
+        self._sensor_settings = {}
 
         signal.signal(signal.SIGINT, self._handle_exit)
 
@@ -113,6 +115,36 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self._num_worker_threads = 4
         self._output_folder = self.data_dir
 
+        sensor_settings_viewport = {
+            "rgb": {"enabled": self._enable_rgb},
+            "depth": {
+                "enabled": self._enable_depth,
+                "colorize": self._enable_depth_colorize,
+                "npy": self._enable_depth_npy,
+            },
+            "instance": {
+                "enabled": self._enable_instance,
+                "colorize": self._enable_instance_colorize,
+                "npy": self._enable_instance_npy,
+            },
+            "semantic": {
+                "enabled": self._enable_semantic,
+                "colorize": self._enable_semantic_colorize,
+                "npy": self._enable_semantic_npy,
+            },
+            "bbox_2d_tight": {
+                "enabled": self._enable_bbox_2d_tight,
+                "colorize": self._enable_bbox_2d_tight_colorize,
+                "npy": self._enable_bbox_2d_tight_npy,
+            },
+            "bbox_2d_loose": {
+                "enabled": self._enable_bbox_2d_loose,
+                "colorize": self._enable_bbox_2d_loose_colorize,
+                "npy": self._enable_bbox_2d_loose_npy,
+            },
+        }
+        self._sensor_settings["Viewport"] = copy.deepcopy(sensor_settings_viewport)
+
         # Write to disk
         if self.data_writer is None:
             print(f"Writing data to {self._output_folder}")
@@ -122,7 +154,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 )
             else:
                 self.data_writer = self.writer_helper(
-                    self._output_folder, self._num_worker_threads, self.max_queue_size
+                    self._output_folder, self._num_worker_threads, self.max_queue_size, self._sensor_settings
                 )
             self.data_writer.start_threads()
 

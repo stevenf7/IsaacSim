@@ -111,7 +111,6 @@ def main(args):
 
                 plt.draw()
                 plt.savefig("train.png")
-                plt.pause(0.01)
 
 
 if __name__ == "__main__":

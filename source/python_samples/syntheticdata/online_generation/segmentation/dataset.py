@@ -45,6 +45,7 @@ BBOX_AREA_THRESH = 16
 RENDER_CONFIG = {
     "renderer": "PathTracing",
     "samples_per_pixel_per_frame": 12,
+    "headless": False,
     "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
 }
 
@@ -286,7 +287,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         # Instance Segmentation
         instance_data, instance_mappings = gt["instanceSegmentation"][0], gt["instanceSegmentation"][1]
-        instance_list = [im[0] for im in instance_mappings]
+        instance_list = [im[0] for im in gt_bbox]
         masks = np.zeros((len(instance_list), *instance_data.shape), dtype=np.bool)
         for i, instances in enumerate(instance_list):
             masks[i] = np.isin(instance_data, instances)
@@ -361,7 +362,6 @@ if __name__ == "__main__":
         vis.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
 
         plt.draw()
-        plt.pause(0.01)
         plt.savefig("dataset.png")
         if dataset.exiting:
             break
