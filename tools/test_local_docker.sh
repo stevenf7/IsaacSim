@@ -1,13 +1,23 @@
 #!/bin/bash
 
 #This script packages isaac sim like normal, extracts it and then mounts it into a container for testing. 
+rebuild=0
+mountpip=0
+while getopts x flag
+do
+    case "${flag}" in
+        x) rebuild=1;;
+    esac
+done
 
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 
 docker pull gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:base
+if [ "$rebuild" -eq "1" ]; then
+sudo rm -rf $SCRIPT_DIR/../_build/packages
+fi
 
-# 
 
 files=( $SCRIPT_DIR/../_build/packages/isaac-sim-standalone*.7z )
 if [ ! -f "$files" ]; then

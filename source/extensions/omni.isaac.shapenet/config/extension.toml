@@ -13,6 +13,7 @@ authors = ["Mark Carlson <mcarlson@nvidia.com>"]
 keywords = ["kit", "shapenet", "data"]
 
 [dependencies]
+"omni.kit.uiapp" = {}
 "omni.kit.asset_converter" = {}
 "omni.kit.commands" = {}
 "omni.kit.menu.utils" = {}
