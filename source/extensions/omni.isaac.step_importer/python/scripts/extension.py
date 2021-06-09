@@ -593,9 +593,9 @@ class StepImporter(omni.ext.IExt):
     def _finish_import(self, output_dir):
         # setting asset importer parameters to upload
         if self.asset_importer is None:
-            from omni.kit.tool.asset_importer import importer
+            from omni.kit.tool.asset_importer import builtin_importer
 
-            self.asset_importer = importer.Importer()
+            self.asset_importer = builtin_importer.BuiltinImporter()
             self.asset_importer.on_startup()
 
         upload_absolute_paths, upload_relative_paths = self.exporter.get_abs_and_rel_paths()
@@ -604,7 +604,7 @@ class StepImporter(omni.ext.IExt):
             await self.asset_importer.create_import_task(
                 False, upload_absolute_paths, upload_relative_paths, output_dir, None
             )
-            omni.usd.get_context().open_stage(
+            omni.usd.get_context().open_stage_with_callback(
                 output_dir + "/" + self.exporter.part_name + "/" + os.path.basename(self.exporter.assemblies_path[1]),
                 weakref.proxy(self).close_window,
             )

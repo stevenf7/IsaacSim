@@ -36,7 +36,7 @@ class Contact_sensor_demo(omni.ext.IExt):
 
     def _on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.CLOSED):
-            self.on_shutdown()
+            self.on_closed()
 
     def build_ui(self):
         if self._window is None:
@@ -80,11 +80,15 @@ class Contact_sensor_demo(omni.ext.IExt):
         self._window.visible = True
 
     def on_shutdown(self):
+        self.on_closed()
+        remove_menu_items(self._menu_items, "Isaac Examples")
+
+    def on_closed(self):
         if self._window:
             self.sub = None
             self._timeline = None
             self._stage_event_subscription = None
-        remove_menu_items(self._menu_items, "Isaac Examples")
+
         self._window = None
 
     def _on_update(self, dt):
