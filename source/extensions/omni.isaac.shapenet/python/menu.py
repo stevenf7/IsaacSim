@@ -35,12 +35,10 @@ class ShapenetMenu:
         self._settings_ui = None
         self._login_ui = None
         self._models = {}
-        self._sub_menu = []
-        self._sub_menu.append(
-            MenuItemDescription(name="Add a model", onclick_fn=lambda a=weakref.proxy(self): a._create_window())
-        )
 
-        self._menu_items = [MenuItemDescription(name=EXTENSION_NAME, sub_menu=self._sub_menu)]
+        self._menu_items = [
+            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._create_window())
+        ]
         add_menu_items(self._menu_items, "Isaac Utils")
 
         self._create_window()
