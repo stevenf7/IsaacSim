@@ -52,6 +52,22 @@ class Extension(omni.ext.IExt):
                     )
                 ],
             ),
+            MenuItemDescription(
+                name="Communicating",
+                sub_menu=[
+                    MenuItemDescription(
+                        name="ROS",
+                        sub_menu=[
+                            MenuItemDescription(
+                                name="ROS April Tag",
+                                onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
+                                    "/Isaac/Samples/ROS/Scenario/april_tag.usd"
+                                ),
+                            )
+                        ],
+                    )
+                ],
+            ),
         ]
 
         add_menu_items(self._menu_items, "Isaac Examples")
