@@ -22,7 +22,7 @@ from PIL import Image, ImageDraw
 
 
 class DataWriter:
-    def __init__(self, data_dir, num_worker_threads, max_queue_size=500):
+    def __init__(self, data_dir, num_worker_threads, max_queue_size=500, sensor_settings=None):
         from omni.isaac.synthetic_utils import visualization as vis
 
         self.vis = vis
@@ -36,7 +36,7 @@ class DataWriter:
         self.threads = []
 
         self._viewport = omni.kit.viewport.get_viewport_interface()
-        self.create_viewport_output_folders()
+        self.create_output_folders(sensor_settings)
 
     def start_threads(self):
         """Start worker threads."""
@@ -69,9 +69,6 @@ class DataWriter:
             filename = groundtruth["METADATA"]["image_id"]
             viewport_name = groundtruth["METADATA"]["viewport_name"]
             for gt_type, data in groundtruth["DATA"].items():
-                self.create_sensor_output_folders(
-                    self.data_dir + "/" + str(viewport_name) + "/" + str(gt_type).lower() + "/"
-                )
                 if gt_type == "RGB":
                     self.save_image(viewport_name, gt_type, data, filename)
                 elif gt_type == "DEPTH":
@@ -158,13 +155,14 @@ class DataWriter:
             image_data[image_data == 0.0] = 1e-5
             image_data = np.clip(image_data, 0, 255)
             image_data -= np.min(image_data)
-            image_data /= np.max(image_data)
+            if np.max(image_data) > 0:
+                image_data /= np.max(image_data)
             depth_img = Image.fromarray((image_data * 255.0).astype(np.uint8))
             depth_img.save(f"{self.depth_folder}/{filename}.png")
 
     def save_bbox(self, viewport_name, data_type, data, filename, display_rgb=True, rgb_data=None, save_npy=True):
-        self.bbox_2d_tight_folder = self.data_dir + "/" + str(viewport_name) + "/bbox2dtight/"
-        self.bbox_2d_loose_folder = self.data_dir + "/" + str(viewport_name) + "/bbox2dloose/"
+        self.bbox_2d_tight_folder = self.data_dir + "/" + str(viewport_name) + "/bbox_2d_tight/"
+        self.bbox_2d_loose_folder = self.data_dir + "/" + str(viewport_name) + "/bbox_2d_loose/"
         # Save ground truth data locally as npy
         if data_type == "BBOX2DTIGHT" and save_npy:
             np.save(self.bbox_2d_tight_folder + filename + ".npy", data)
@@ -178,18 +176,33 @@ class DataWriter:
             if data_type == "BBOX2DLOOSE":
                 color_image_rgb.save(f"{self.bbox_2d_loose_folder}/{filename}.png")
 
-    def create_viewport_output_folders(self):
-        """Checks if the output folder for each viewport is created. If not, it creates them."""
-        viewports = self._viewport.get_instance_list()
-        viewport_names = [self._viewport.get_viewport_window_name(vp) for vp in viewports]
+    def create_output_folders(self, sensor_settings=None):
+        """Checks if the sensor output folder corresponding to each viewport is created. If not, it creates them."""
         if not os.path.exists(self.data_dir):
             os.mkdir(self.data_dir)
-        for viewport_name in viewport_names:
+        if sensor_settings is None:
+            sensor_settings = dict()
+            viewports = self._viewport.get_instance_list()
+            viewport_names = [self._viewport.get_viewport_window_name(vp) for vp in viewports]
+            sensor_settings_viewport = {
+                "rgb": {"enabled": True},
+                "depth": {"enabled": True, "colorize": True, "npy": True},
+                "instance": {"enabled": True, "colorize": True, "npy": True},
+                "semantic": {"enabled": True, "colorize": True, "npy": True},
+                "bbox_2d_tight": {"enabled": True, "colorize": True, "npy": True},
+                "bbox_2d_loose": {"enabled": True, "colorize": True, "npy": True},
+                "camera": {"enabled": True, "npy": True},
+                "poses": {"enabled": True, "npy": True},
+            }
+            for name in viewport_names:
+                sensor_settings[name] = copy.deepcopy(sensor_settings_viewport)
+
+        for viewport_name in sensor_settings:
             viewport_folder = self.data_dir + "/" + str(viewport_name)
             if not os.path.exists(viewport_folder):
                 os.mkdir(viewport_folder)
-
-    def create_sensor_output_folders(self, folder_path=None):
-        """Checks if the sensor output folder corresponding to each viewport is created. If not, it creates them."""
-        if folder_path is not None and not os.path.exists(folder_path):
-            os.mkdir(folder_path)
+            for sensor_name in sensor_settings[viewport_name]:
+                if sensor_settings[viewport_name][sensor_name]["enabled"]:
+                    sensor_folder = self.data_dir + "/" + str(viewport_name) + "/" + str(sensor_name)
+                    if not os.path.exists(sensor_folder):
+                        os.mkdir(sensor_folder)

@@ -175,7 +175,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # Write to disk
         if self.data_writer is None:
-            self.data_writer = self.writer_helper(self._output_folder, self._num_worker_threads, self.max_queue_size)
+            self.data_writer = self.writer_helper(
+                self._output_folder, self._num_worker_threads, self.max_queue_size, self._sensor_settings
+            )
             self.data_writer.start_threads()
 
         image = None

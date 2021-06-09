@@ -492,7 +492,10 @@ class Extension(omni.ext.IExt):
 
         if self.data_writer is None:
             self.data_writer = DataWriter(
-                data_dir, self._num_threads.model.get_value_as_int(), self._max_queue_size.model.get_value_as_int()
+                data_dir,
+                self._num_threads.model.get_value_as_int(),
+                self._max_queue_size.model.get_value_as_int(),
+                self._sensor_settings,
             )
             self.data_writer.start_threads()
 
