@@ -102,6 +102,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.exiting = False
         signal.signal(signal.SIGINT, self._handle_exit)
 
+        # turn this on to fix the PathTracing + Play (needed for overlap test) producing line artifacts
+        carb.settings.get_settings().set_bool("/rtx/resetPtAccumOnAnimTimeChange", True)
+
     def _handle_exit(self, *args, **kwargs):
         print("exiting dataset generation...")
         self.exiting = True
