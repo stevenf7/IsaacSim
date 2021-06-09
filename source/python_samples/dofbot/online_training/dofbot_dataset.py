@@ -434,7 +434,7 @@ if __name__ == "__main__":
         vis.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
 
         plt.draw()
-        plt.pause(0.01)
+
         plt.savefig("dataset.png")
 
         if dataset.exiting:
