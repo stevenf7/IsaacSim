@@ -539,7 +539,7 @@ class PartExporter:
         if self.is_temp_stage_open():
             omni.usd.get_context().get_stage().Save()
         path = "{}/{}.usd".format(path, self.part_name)
-        omni.usd.get_context().open_stage(
+        omni.usd.get_context().open_stage_with_callback(
             self.assemblies_path[1], lambda a, b, c=path, d=on_finish_fn: self._saved_flattened(c, d)
         )
 
@@ -548,7 +548,9 @@ class PartExporter:
         move_dict = {}
         move_dict["/Looks"] = "/Root/Looks"
         omni.kit.commands.execute("MovePrimsCommand", paths_to_move=move_dict)
-        omni.usd.get_context().export_as_stage(path, lambda a, b, c=path, d=on_finish_fn: self._open_flattened(c, d))
+        omni.usd.get_context().export_as_stage_with_callback(
+            path, lambda a, b, c=path, d=on_finish_fn: self._open_flattened(c, d)
+        )
 
     def _open_flattened(self, path, on_finish_fn):
 
@@ -569,7 +571,7 @@ class PartExporter:
         stage.Save()
         if self._on_exported_fn:
             self._on_exported_fn()
-        omni.usd.get_context().open_stage(path, on_finish_fn)
+        omni.usd.get_context().open_stage_with_callback(path, on_finish_fn)
 
 
 def set_pose(prim, pose):
