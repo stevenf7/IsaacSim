@@ -113,7 +113,6 @@ def main(args):
 
                 plt.draw()
                 plt.savefig("train.png")
-                plt.pause(0.01)
 
                 # save every 100 steps
                 if i % 100 == 0 and args.eval_model == "":
