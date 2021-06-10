@@ -75,12 +75,16 @@ def runEval(args):
         "height": 224,
         "renderer": "RayTracedLighting",
         "headless": args.headless,
-        "experience": f'{os.environ["EXP_PATH"]}/isaac-sim-python.json',
+        "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
     }
     # load a zip file to evaluate here
     agent = PPO.load(args.evaluation_dir + "/best_model.zip", device="cuda")
 
     omniverse_kit = OmniKitHelper(CUSTOM_CONFIG)
+
+    # need to construct OmniKitHelper before importing physics, etc
+    from jetbot_env import JetbotEnv
+    import omni.physx
 
     # we disable all anti aliasing in the render because we want to train on the raw camera image.
     omniverse_kit.set_setting("/rtx/post/aa/op", 0)
@@ -99,7 +103,7 @@ def runEval(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("loaded_checkpoint", help="path to checkpoint to be loaded", default="", nargs="?", type=str)
+    parser.add_argument("--loaded_checkpoint", help="path to checkpoint to be loaded", default="", nargs="?", type=str)
 
     parser.add_argument("-E", "--eval", help="evaluate checkpoint", action="store_true")
 
