@@ -14,8 +14,6 @@ from pxr import UsdPhysics, Sdf, Gf, UsdGeom, PhysxSchema
 import omni.usd
 import omni
 import omni.ui as ui
-import omni.isaac.RosBridgeSchema as ROSSchema
-from omni.isaac.utils.scripts.test_utils import load_test_file
 import asyncio
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import weakref
@@ -70,18 +68,21 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
         with self._window.frame:
-            with ui.VStack():
+            with ui.VStack(spacing=5):
                 ui.Button("Load Robot", tooltip="Loads robot into stage", clicked_fn=self._on_load_robot)
+                ui.Label("Robot must be reloaded if changing control mode", height=0)
                 with ui.HStack(height=0, spacing=5):
                     ui.Label("Control Mode", width=0)
-                    self._velocity_combo = ui.ComboBox(0, "Position Control", "Velocity Control").model
-                    ui.Button(
-                        "Connect Joint State Topics",
-                        tooltip="start a joint_state and joint_command topic to publish and receive joint states",
-                        clicked_fn=self._on_connect_js,
-                    )
+                    self._velocity_combo = ui.ComboBox(0, "Position", "Velocity").model
                 ui.Button(
-                    "Add Cube", tooltip="Add a Cube to the scene and append to TF tree", clicked_fn=self._on_add_cube
+                    "Connect Joint State Topics",
+                    tooltip="start a joint_state and joint_command topic to publish and receive joint states",
+                    clicked_fn=self._on_connect_js,
+                )
+                ui.Button(
+                    "Add Cube And Publish TF",
+                    tooltip="Add a Cube to the scene and publish TF tree",
+                    clicked_fn=self._on_add_cube,
                 )
 
         self._viewport = omni.kit.viewport.get_default_viewport_window()
@@ -99,6 +100,22 @@ class Extension(omni.ext.IExt):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
+
+        # Add physics scene
+        scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/PhysicsScene"))
+        # Set gravity vector
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        scene.CreateGravityMagnitudeAttr().Set(981.0)
+        # Set physics scene to use cpu physics
+        PhysxSchema.PhysxSceneAPI.Apply(self._stage.GetPrimAtPath("/PhysicsScene"))
+        physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(self._stage, "/PhysicsScene")
+        physxSceneAPI.CreateEnableCCDAttr(True)
+        physxSceneAPI.CreateEnableStabilizationAttr(True)
+        physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+        physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+        physxSceneAPI.CreateSolverTypeAttr("TGS")
+
+        await omni.kit.app.get_app().next_update_async()
 
         omni.kit.commands.execute(
             "CreateReferenceCommand",
@@ -170,16 +187,6 @@ class Extension(omni.ext.IExt):
             queue_size=10,
             camera_prim_rel=["/sim_camera"],
         )
-        # adding tf topic
-        omni.kit.commands.execute(
-            "ROSBridgeCreatePoseTree",
-            path="/ROS_PoseTree",
-            enabled=True,
-            topic="/tf",
-            queue_size=0,
-            target_prims_rel=["/panda", "/sim_camera"],
-        )
-
         # timeline must be playing for articulation to work, so start it now
         if not self._timeline.is_playing():
             self._timeline.play()
@@ -189,11 +196,12 @@ class Extension(omni.ext.IExt):
         asyncio.ensure_future(self._setup_stage())
 
     def _on_connect_js(self):
-
         # check robot is loaded and articulation exist
         self._stage = omni.usd.get_context().get_stage()
         robot_prim = self._stage.GetPrimAtPath("/panda")
-        assert robot_prim.HasAPI(PhysxSchema.PhysxArticulationAPI)
+        if not robot_prim:
+            carb.log_error("Robot not found, please load robot before clicking this button")
+            return
         ROS_prim = self._stage.GetPrimAtPath("/ROS_JointState")
         if not ROS_prim:
             omni.kit.commands.execute(
@@ -235,13 +243,13 @@ class Extension(omni.ext.IExt):
 
         if self._velocity_combo.get_item_value_model().as_int == 1:
             # set all joints to velocity control
-            set_drive_parameters(panda_joint1_drive, "velocity", 0.0, 0, math.radians(1e7), 1e8)
-            set_drive_parameters(panda_joint2_drive, "velocity", 0.0, 0, math.radians(1e7), 1e8)
-            set_drive_parameters(panda_joint3_drive, "velocity", 0.0, 0, math.radians(1e7), 1e8)
-            set_drive_parameters(panda_joint4_drive, "velocity", 0.0, 0, math.radians(1e7), 1e8)
-            set_drive_parameters(panda_joint5_drive, "velocity", 0.0, 0, math.radians(1e7), 1e8)
-            set_drive_parameters(panda_joint6_drive, "velocity", 0.0, 0, math.radians(1e7), 1e8)
-            set_drive_parameters(panda_joint7_drive, "velocity", 0.0, 0, math.radians(1e7), 1e8)
+            set_drive_parameters(panda_joint1_drive, "velocity", 0.0, 0, math.radians(1e7), 87000)
+            set_drive_parameters(panda_joint2_drive, "velocity", 0.0, 0, math.radians(1e7), 87000)
+            set_drive_parameters(panda_joint3_drive, "velocity", 0.0, 0, math.radians(1e7), 87000)
+            set_drive_parameters(panda_joint4_drive, "velocity", 0.0, 0, math.radians(1e7), 87000)
+            set_drive_parameters(panda_joint5_drive, "velocity", 0.0, 0, math.radians(1e7), 12000)
+            set_drive_parameters(panda_joint6_drive, "velocity", 0.0, 0, math.radians(1e7), 12000)
+            set_drive_parameters(panda_joint7_drive, "velocity", 0.0, 0, math.radians(1e7), 12000)
 
         else:
             # set all joints to position control
@@ -272,15 +280,22 @@ class Extension(omni.ext.IExt):
     def _on_add_cube(self):
         # first create a cube
         self._stage = omni.usd.get_context().get_stage()
-        CubePath = "/cube"
+
+        robot_prim = self._stage.GetPrimAtPath("/panda")
+        if not robot_prim:
+            carb.log_error("Robot not found, please load robot before clicking this button")
+            return
+        cube_path = "/cube"
         # offset to some position in space
         offset = Gf.Vec3f(50.0, 0.0, 50.0)
         size = 10  # cm
-        cubeGeom = UsdGeom.Cube.Define(self._stage, CubePath)
-        cubeGeom.CreateSizeAttr(size)
-        cubeGeom.AddTranslateOp().Set(offset)
+        cube_geom = self._stage.GetPrimAtPath(cube_path)
+        if not cube_geom:
+            cube_geom = UsdGeom.Cube.Define(self._stage, cube_path)
+            cube_geom.CreateSizeAttr(size)
+            cube_geom.AddTranslateOp().Set(offset)
 
-        # add the cube to tf tree
+        # adding tf topic and cube to the tf tree
         ROS_prim = self._stage.GetPrimAtPath("/ROS_PoseTree")
         if not ROS_prim:
             omni.kit.commands.execute(
@@ -289,7 +304,5 @@ class Extension(omni.ext.IExt):
                 enabled=True,
                 topic="/tf",
                 queue_size=0,
-                target_prims_rel=["/panda", "/sim_camera", CubePath],
+                target_prims_rel=["/panda", "/sim_camera", cube_path],
             )
-        else:
-            ROS_prim.GetRelationship("targetPrims").AddTarget(Sdf.Path("/cube"))
