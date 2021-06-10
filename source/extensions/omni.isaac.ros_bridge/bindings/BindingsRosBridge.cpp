@@ -36,8 +36,22 @@ PYBIND11_MODULE(_ros_bridge, m)
 
     {
         defineInterfaceClass<RosBridge>(m, "RosBridge", "acquire_ros_bridge_interface", "release_ros_bridge_interface")
-            .def("use_sim_time", wrapInterfaceFunction(&RosBridge::setUseSimTime))
-            .def("ros_master_check", wrapInterfaceFunction(&RosBridge::rosMasterCheck));
+            .def("use_sim_time", wrapInterfaceFunction(&RosBridge::setUseSimTime),
+                 R"pbdoc(
+                Specify whether ROS bridge nodes publish their timestamp in sim time
+
+                Args:
+                    arg0: (:obj:`bool`): `True` for sim time, `False` for system clock
+
+            )pbdoc")
+            .def("ros_master_check", wrapInterfaceFunction(&RosBridge::rosMasterCheck),
+                 R"pbdoc(
+
+                Returns:
+
+                    `True` if ros master was found, `False` otherwise.
+
+                )pbdoc");
     }
 }
 }

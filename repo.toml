@@ -171,8 +171,6 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.internal_tools",
     "**/omni.isaac.robot_engine_bridge",     #TODO
     "**/omni.isaac.robot_engine_bridge_gxf",     #TODO
-    "**/omni.isaac.ros2_bridge",     #TODO
-    "**/omni.isaac.ros_bridge",     #TODO
     "**/omni.isaac.samples",     #TODO?
     "**/omni.isaac.samples_internal",
     "**/omni.isaac.shapenet",     #TODO?

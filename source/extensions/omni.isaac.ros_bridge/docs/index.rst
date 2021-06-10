@@ -2,21 +2,17 @@ ROS Bridge [omni.isaac.ros_bridge]
 ##################################
 
 
-.. automodule:: omni.isaac.ros_bridge._ros_bridge
-    :platform: Windows-x86_64, Linux-x86_64
+Acquiring Extension Interface
+==============================
+
+.. automethod:: omni.isaac.ros_bridge._ros_bridge.acquire_ros_bridge_interface
+.. automethod:: omni.isaac.ros_bridge._ros_bridge.release_ros_bridge_interface
+
+
+ROS Bridge API
+====================
+
+.. autoclass:: omni.isaac.ros_bridge._ros_bridge.RosBridge
     :members:
     :undoc-members:
-    :show-inheritance:
-    :imported-members:
-    :exclude-members: 
-
-Generated USD Schema API
-========================
-
-.. automodule:: pxr.RosBridgeSchema
-    :platform: Windows-x86_64, Linux-x86_64
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :imported-members:
     :exclude-members: 

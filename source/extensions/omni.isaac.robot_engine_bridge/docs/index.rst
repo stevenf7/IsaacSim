@@ -2,18 +2,7 @@ Isaac SDK Bridge [omni.isaac.robot_engine_bridge]
 #################################################
 
 .. automodule:: omni.isaac.robot_engine_bridge._robot_engine_bridge
-    :platform: Windows-x86_64, Linux-x86_64
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :imported-members:
-    :exclude-members: 
-
-Generated USD Schema API
-========================
-
-.. automodule:: pxr.RobotEngineBridgeSchema
-    :platform: Windows-x86_64, Linux-x86_64
+    :platform: Linux-x86_64
     :members:
     :undoc-members:
     :show-inheritance:
