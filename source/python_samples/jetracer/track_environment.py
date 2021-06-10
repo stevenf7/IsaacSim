@@ -16,7 +16,7 @@ class Environment:
         result, nucleus_server = self.find_nucleus_server()
         if result is False:
             carb.log_error(
-                "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in experiences/isaac-sim-python.json"
+                "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in apps/omni.isaac.sim.python.kit"
             )
             return
 

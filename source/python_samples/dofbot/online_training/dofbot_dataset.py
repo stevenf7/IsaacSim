@@ -82,7 +82,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error(
-                "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in experiences/isaac-sim-python.json"
+                "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in apps/omni.isaac.sim.python.kit"
             )
             return
         result, nucleus_server = find_nucleus_server("/Library/Props/Road_Tiles/Parts/")
