@@ -36,7 +36,14 @@ PYBIND11_MODULE(_ros2_bridge, m)
 
     {
         defineInterfaceClass<Ros2Bridge>(m, "Ros2Bridge", "acquire_ros2_bridge_interface", "release_ros2_bridge_interface")
-            .def("use_sim_time", wrapInterfaceFunction(&Ros2Bridge::setUseSimTime));
+            .def("use_sim_time", wrapInterfaceFunction(&Ros2Bridge::setUseSimTime),
+                 R"pbdoc(
+                Specify whether ROS2 bridge nodes publish their timestamp in sim time
+
+                Args:
+                    arg0: (:obj:`bool`): `True` for sim time, `False` for system clock
+
+            )pbdoc");
     }
 }
 }

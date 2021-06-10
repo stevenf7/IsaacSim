@@ -15,6 +15,8 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.range_sensor/docs/index
    source/extensions/omni.isaac.robot_engine_bridge_ui/docs/index
    source/extensions/omni.isaac.ros_bridge_ui/docs/index
+   source/extensions/omni.isaac.ros_bridge/docs/index
+   source/extensions/omni.isaac.ros2_bridge/docs/index
    source/extensions/omni.isaac.synthetic_utils/docs/index
    source/extensions/omni.isaac.occupancy_map/docs/index
    source/extensions/omni.isaac.utils/docs/index
