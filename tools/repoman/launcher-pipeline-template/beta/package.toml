@@ -15,5 +15,5 @@ location = "$${base}"
 
 [images]
 name = "Isaac-Sim-Images"
-url = "https://d4i3qtqj3r0z5.cloudfront.net/isaac-sim-pipeline-images-rc%402021.1.0-dl.12%2Bdevelop.24.99cf1ffb.teamcity.windows-x86_64.zip"
+url = "https://d4i3qtqj3r0z5.cloudfront.net/isaac-sim-launcher-images-release%402021.1.0%2Bpackaging.0.f410375d.gitlab.linux-x86_64.zip"
 
