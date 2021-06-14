@@ -11,3 +11,6 @@ echo "run this at your own risk :)"
 
 # pip caches
 # rm -rf ~/.cache/pip/http
+
+# launcher packages
+# rm -rf ~/.local/share/ov/pkg/
