@@ -85,6 +85,8 @@ class Replay:
 
         if self.created and self._timeline.is_playing():
             if self._reset:
+                if self._ar == _dynamic_control.INVALID_HANDLE:
+                    self._ar = self._dc.get_articulation("/scene/robot")
                 home_joint_pos = [0.0, -1.30, 0.0, -2.83, 0.0, 2.03, 0.75, 0.0, 0.0]
                 self._dc.wake_up_articulation(self._ar)
                 self._dc.set_articulation_dof_position_targets(self._ar, home_joint_pos)
@@ -145,6 +147,5 @@ class Replay:
         self._reset = False
 
     def reset(self):
-        if self._ar == _dynamic_control.INVALID_HANDLE:
-            self._ar = self._dc.get_articulation("/scene/robot")
+        self._ar = _dynamic_control.INVALID_HANDLE
         self._reset = True
