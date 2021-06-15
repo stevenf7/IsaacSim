@@ -293,7 +293,7 @@ class PartExporter:
                 ).lower()  # Ensures use of lowercase path name because USD library always return lowercase name.
                 stage_path = os.path.join(self.path, stage_name + ".usd")
                 self.stage = createInMemoryStage(stage_path)
-        self.assemblies_path[1] = self.export_assembly("/Root", 1)
+        self.assemblies_path[1] = self.export_assembly("/Root", 1, force_update=redo)
         if self._make_assembly_usd:
             stage_path = self.assemblies_path[1]
 
@@ -310,10 +310,9 @@ class PartExporter:
         for i in duplicate_indexes:
             self.part.mesh_replacement_map[i] = base_idx
 
-    def export_assembly(self, path, index):
-        if self.get_assembly(index) is None:
+    def export_assembly(self, path, index, force_update=False):
+        if self.get_assembly(index) is None or force_update:
             assembly = self.part.assemblies[index]
-            # print(assembly.name)
             assembly_name = pxr.Tf.MakeValidIdentifier(assembly.name.lower())
             if assembly_name[0].isdigit():
                 assembly_name = ("a_" + assembly_name).lower()
@@ -615,6 +614,8 @@ def create_usd_mesh_at_path(
     # Create empty stage and create an XForm Root
     stage = createInMemoryStage(stage_path)
     mesh_name = "/Root/{}".format(mesh_name)
+    if stage.GetPrimAtPath("/Root"):
+        stage.RemovePrim("/Root")
     root = UsdGeom.Xform.Define(stage, "/Root").GetPrim()
     stage.SetDefaultPrim(root)
 
