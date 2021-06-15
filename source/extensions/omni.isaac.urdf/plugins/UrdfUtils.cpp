@@ -64,6 +64,7 @@ omni::isaac::urdf::UrdfRobot parseUrdf(const std::string& assetRoot,
         else
         {
             CARB_LOG_ERROR("Failed to parse URDF file '%s'", assetName.c_str());
+            return robot;
         }
 
         if (importConfig.mergeFixedJoints)

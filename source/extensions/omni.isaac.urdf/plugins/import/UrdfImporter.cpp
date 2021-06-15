@@ -668,6 +668,10 @@ void UrdfImporter::addMaterials(pxr::UsdStageWeakPtr stage, const UrdfRobot& rob
 
 std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& urdfRobot)
 {
+    if (urdfRobot.links.size() == 0)
+    {
+        return "";
+    }
     if (urdfRobot.links.size() >= 64)
     {
         CARB_LOG_WARN(
@@ -694,7 +698,7 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
     }
 
     pxr::SdfPath primPath =
-        pxr::SdfPath(GetNewSdfPathString(stage, "/" + pxr::TfMakeValidIdentifier(std::string(urdfRobot.name))));
+        pxr::SdfPath(GetNewSdfPathString(stage, "/" + makeValidUSDIdentifier(std::string(urdfRobot.name))));
 
     // // Remove the prim we are about to add in case it exists
     // if (stage->GetPrimAtPath(primPath))
