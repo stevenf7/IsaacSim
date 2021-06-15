@@ -138,7 +138,7 @@ class CreateSetupExtension(omni.ext.IExt):
                         ui.Label("Please see the documentation to fix this")
                         ui.Button(
                             "Open Documentation",
-                            clicked_fn=lambda: webbrowser.open(
+                            clicked_fn=lambda: self._open_browser(
                                 DOCS_URL + "/app_isaacsim/app_isaacsim/setup.html#isaac-sim-setup-nucleus-add-assets"
                             ),
                         )
@@ -342,10 +342,20 @@ class CreateSetupExtension(omni.ext.IExt):
             # Always hide UI in fullscreen
             self._set_ui_hidden(not was_fullscreen)
 
+    def _open_browser(self, path):
+        import subprocess
+        import platform
+
+        if platform.system().lower() == "windows":
+            webbrowser.open(path)
+        else:
+            # use native system level open, handles snap based browsers better
+            subprocess.Popen(["xdg-open", path])
+
     def _open_web_file(self, path):
         filepath = os.path.abspath(path)
         if os.path.exists(filepath):
-            webbrowser.open("file://" + filepath)
+            self._open_browser("file://" + filepath)
         else:
             carb.log_warn("Failed to open " + filepath)
 
@@ -402,7 +412,10 @@ class CreateSetupExtension(omni.ext.IExt):
 
         ref_guide_menu = editor_menu.add_item(self.HELP_REFERENCE_GUIDE_MENU, None, priority=-23)
         ref_guide_menu_action = omni.kit.menu.utils.add_action_to_menu(
-            self.HELP_REFERENCE_GUIDE_MENU, lambda *_: webbrowser.open(REFERENCE_GUIDE_URL), "OpenRefGuide", (0, Key.F1)
+            self.HELP_REFERENCE_GUIDE_MENU,
+            lambda *_: self._open_browser(REFERENCE_GUIDE_URL),
+            "OpenRefGuide",
+            (0, Key.F1),
         )
         self.menus.append((ref_guide_menu, ref_guide_menu_action))
 
@@ -413,13 +426,13 @@ class CreateSetupExtension(omni.ext.IExt):
 
         forums_link = editor_menu.add_item(self.HELP_FORUMS_URL, None, priority=-21)
         forums_link_action = omni.kit.menu.utils.add_action_to_menu(
-            self.HELP_FORUMS_URL, lambda *_: webbrowser.open(FORUMS_URL), "OpenForums"
+            self.HELP_FORUMS_URL, lambda *_: self._open_browser(FORUMS_URL), "OpenForums"
         )
         self.menus.append((forums_link, forums_link_action))
 
         kit_manual = editor_menu.add_item(self.KIT_MANUAL, None, priority=-9)
         kit_manual_action = omni.kit.menu.utils.add_action_to_menu(
-            self.KIT_MANUAL, lambda *_: webbrowser.open(KIT_MANUAL_URL), "OpenKitManual"
+            self.KIT_MANUAL, lambda *_: self._open_browser(KIT_MANUAL_URL), "OpenKitManual"
         )
         self.menus.append((kit_manual, kit_manual_action))
 
