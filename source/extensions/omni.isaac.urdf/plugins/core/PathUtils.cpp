@@ -9,6 +9,8 @@
 
 #include "PathUtils.h"
 
+#include <carb/logging/Log.h>
+
 #include <algorithm>
 #include <cctype>
 #include <cstring>
@@ -317,6 +319,10 @@ std::string makeValidUSDIdentifier(const std::string& name)
     if (validName[0] == '_')
     {
         validName = "a" + validName;
+    }
+    if (pxr::TfIsValidIdentifier(name) == false)
+    {
+        CARB_LOG_WARN("The path %s is not a valid usd path, modifying to %s", name.c_str(), validName.c_str());
     }
 
     return validName;
