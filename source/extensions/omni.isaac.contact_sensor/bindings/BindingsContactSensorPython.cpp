@@ -129,13 +129,14 @@ PYBIND11_MODULE(_contact_sensor, m)
 
     defineInterfaceClass<ContactSensorInterface>(
         m, "ContactSensorInterface", "acquire_contact_sensor_interface", "release_contact_sensor_interface")
-        .def("get_num_sensors_on_body", wrapInterfaceFunction(&ContactSensorInterface::getNumSensorsOnBody), R"pbdoc(
-            Gets the number of sensors that were attached to the given body.
-        Args:
-            arg0 (:obj:`str`): USD Path to body as string
+        .def("get_num_sensors_on_body", wrapInterfaceFunction(&ContactSensorInterface::getNumSensorsOnBody),
+             R"pbdoc(
+                Gets the number of sensors that were attached to the given body.
+                Args:
+                    arg0 (:obj:`str`): USD Path to body as string
 
-        Returns:
-            :obj:`int`: The number of sensors attached to body.)pbdoc")
+                Returns:
+                    :obj:`int`: The number of sensors attached to body.)pbdoc")
         .def("get_sensors_on_body",
              [](const ContactSensorInterface* li, const char* body_path) -> py::object {
                  if (!li)
@@ -146,7 +147,7 @@ PYBIND11_MODULE(_contact_sensor, m)
                                                   { num_data }, { sizeof(CsHandle) }));
              },
              R"pbdoc(
-                    Gets the list of sensor handles attached to a given body. 
+                Gets the list of sensor handles attached to a given body. 
                 Args:
                     arg0 (:obj:`str`): USD Path to body as string
                 Returns:
@@ -161,21 +162,21 @@ PYBIND11_MODULE(_contact_sensor, m)
                                                   1, { num_data }, { sizeof(CsRawPython) }));
              },
              R"pbdoc(
-            Args:
-                arg0 (:obj:`str`): USD Path to body as string
+                Args:
+                    arg0 (:obj:`str`): USD Path to body as string
 
-            Returns:
+                Returns:
                     :obj:`numpy.array`: The list of contact raw data that contains the specified body.)pbdoc")
         .def("decode_body_name", [](ContactSensorInterface* csi, uintptr_t body) { return std::string((char*)body); },
              R"pbdoc(
-                 Decodes the body name pointers from the contact raw data into a string
-            Args:
-                arg0 (:obj:`int`): body name handle
-            Returns:
+                Decodes the body name pointers from the contact raw data into a string
+                Args:
+                    arg0 (:obj:`int`): body name handle
+                Returns:
                     :obj:`str`: The body name.)pbdoc")
         .def("get_sensor_readings_size", wrapInterfaceFunction(&ContactSensorInterface::getSensorReadingsSize),
              R"pbdoc(
-                    Gets the number of readings ready on the buffer
+                Gets the number of readings ready on the buffer
                 Args:
                     arg0 (:obj:`int`): the sensor handle
                 Returns:
@@ -190,26 +191,28 @@ PYBIND11_MODULE(_contact_sensor, m)
                                                   1, { num_data }, { sizeof(CsReading) }));
              },
              R"pbdoc(   
-                 Gets the list of sensor readings for the given sensor. Clears the reading buffer once values are acquired.
-            Args:
-                arg0 (:obj:`int`): the sensor handle
-            Returns:
+                Gets the list of sensor readings for the given sensor. Clears the reading buffer once values are acquired.
+                Args:
+                    arg0 (:obj:`int`): the sensor handle
+                Returns:
                     :obj:`numpy.array`: The list of readings for the sensor ready on the buffer.)pbdoc")
         .def("get_sensor_sim_reading", wrapInterfaceFunction(&ContactSensorInterface::getSensorSimReading),
              R"pbdoc(   
-            Args:
-                arg0 (:obj:`int`): the sensor handle
-            Returns:
+                Args:
+                    arg0 (:obj:`int`): the sensor handle
+                Returns:
                     :obj:`numpy.array`: The reading for the current simulation time.)pbdoc")
         .def("add_sensor_on_body", wrapInterfaceFunction(&ContactSensorInterface::addSensorOnBody),
              R"pbdoc(
-            Args:
-                arg0 (:obj:`SensorProperties`): the sensor properties
-            Returns:
+                Args:
+                    arg0 (:obj:`SensorProperties`): the sensor properties
+                Returns:
                     :obj:`int`: The sensor handle)pbdoc")
-        .def("remove_sensor", wrapInterfaceFunction(&ContactSensorInterface::removeSensor), R"pbdoc(Args:
-                arg0 (:obj:`int`): the sensor handle
-            Returns:
+        .def("remove_sensor", wrapInterfaceFunction(&ContactSensorInterface::removeSensor),
+             R"pbdoc(
+                Args:
+                    arg0 (:obj:`int`): the sensor handle
+                Returns:
                     :obj:`boolean`: True if succesful, False otherwise.)pbdoc");
 }
 }
