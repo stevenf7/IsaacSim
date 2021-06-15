@@ -21,3 +21,5 @@ name = "omni.isaac.app.setup"
 [[python.module]]
 name = "omni.isaac.app.setup.tests"
 
+[settings]
+exts."omni.isaac.app.setup".serverCheck = true

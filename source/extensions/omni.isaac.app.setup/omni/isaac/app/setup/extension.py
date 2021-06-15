@@ -25,9 +25,10 @@ import omni.kit.stage_templates as stage_templates
 from omni.kit.window.title import get_main_window_title
 from carb.input import KeyboardInput as Key
 
-REFERENCE_GUIDE_URL = "https://docs.omniverse.nvidia.com/isaacsim"
+DOCS_URL = "https://docs.omniverse.nvidia.com"
+REFERENCE_GUIDE_URL = DOCS_URL + "/isaacsim"
 FORUMS_URL = "https://forums.developer.nvidia.com/c/agx-autonomous-machines/isaac/simulation/69"
-KIT_MANUAL_URL = "https://docs.omniverse.nvidia.com/py/kit/index.html"
+KIT_MANUAL_URL = DOCS_URL + "/py/kit/index.html"
 
 
 class CreateSetupExtension(omni.ext.IExt):
@@ -116,6 +117,44 @@ class CreateSetupExtension(omni.ext.IExt):
         # Let users know when app is ready for use and live-streaming
         app_title = self._settings.get("/app/window/title")
         print(f"{app_title} App is loaded.")
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Check nucleus server for assets
+        server_check = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/serverCheck")
+        if server_check is True:
+            from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+
+            print("Checking for Isaac Sim assets on nucleus server")
+            result, nucleus_server = find_nucleus_server()
+            if result is False:
+                self._server_window = ui.Window("Checking Isaac Sim Assets", width=350, height=175, visible=True)
+                with self._server_window.frame:
+                    with ui.VStack():
+                        ui.Label("Warning: Nucleus server not configured correctly", style={"color": 0xFF00FFFF})
+                        ui.Label(
+                            "/Isaac directory containing sample assets was not found.\nMost Isaac Sim samples will not work correctly"
+                        )
+                        ui.Label("Please see the documentation to fix this")
+                        ui.Button(
+                            "Open Documentation",
+                            clicked_fn=lambda: webbrowser.open(
+                                DOCS_URL + "/app_isaacsim/app_isaacsim/setup.html#isaac-sim-setup-nucleus-add-assets"
+                            ),
+                        )
+
+                        ui.Label("Also see terminal for more information")
+                        with ui.HStack(spacing=5, width=0, height=0):
+                            ui.Label("Perform check on startup")
+                            server_model = ui.CheckBox().model
+                            server_model.set_value(server_check)
+                            server_model.add_value_changed_fn(
+                                lambda m: carb.settings.get_settings().set_bool(
+                                    "/exts/omni.isaac.app.setup/serverCheck", m.get_value_as_bool()
+                                )
+                            )
+            else:
+                print("Check successful")
 
     def _launch_app(self, app_id, console=True, custom_args=None):
         """launch an other Kit app with the same settings"""
