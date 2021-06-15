@@ -71,8 +71,9 @@ class ShapeNetRequestHandler(BaseHTTPRequestHandler):
 
 
 def run_server(httpd):
-    print(f"FYI, omni.isaac.shapenet's receiver for external messages has started. on {g_bind_address}")
-    httpd.serve_forever()
+    if httpd is not None:
+        print(f"omni.isaac.shapenet's receiver for external messages has started. on {g_bind_address}")
+        httpd.serve_forever()
 
 
 class Extension(omni.ext.IExt):
@@ -86,7 +87,11 @@ class Extension(omni.ext.IExt):
         # Creat the TCPServer and run it in another thread, but keep handle to it so
         # we can call shutdown loater.
         server_address = (g_bind_address[0], int(g_bind_address[1]))
-        self._http_server = HTTPServer(server_address, ShapeNetRequestHandler)
+        try:
+            self._http_server = HTTPServer(server_address, ShapeNetRequestHandler)
+        except OSError as e:
+            self._http_server = None
+            print("HTTPServer failed to start:", e)
 
         if DEBUG_PRINT_ON:
             print("\nafter http_server\n")
@@ -106,7 +111,8 @@ class Extension(omni.ext.IExt):
             print("\nafter update_events\n")
 
     def on_shutdown(self):
-        self._http_server.shutdown()
+        if self._http_server is not None:
+            self._http_server.shutdown()
         self.thread.join()
 
         self._menu.shutdown()
