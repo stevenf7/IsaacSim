@@ -59,6 +59,9 @@ def find_nucleus_server(suffix="/Isaac"):
 
 
 def get_server_path(suffix="/Isaac"):
+    """
+    Tries to find a nucleus server for the given folder
+    """
     result, nucleus_server = find_nucleus_server(suffix)
     if result is False:
         carb.log_error("Could not find nucleus server with {} folder".format(suffix))

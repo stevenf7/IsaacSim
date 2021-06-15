@@ -266,6 +266,10 @@ enabled=true # Enable this for DLSS
 [settings.isaac]
 nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
 
+# At startup, check to make sure there is a nucleus server with isaac sim assets
+[settings.exts."omni.isaac.app.setup"]
+serverCheck = true
+
 # Isaac Sim Extensions
 ###############################
 [dependencies]
