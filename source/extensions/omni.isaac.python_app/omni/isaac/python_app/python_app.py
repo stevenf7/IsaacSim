@@ -18,22 +18,6 @@ import time
 import asyncio
 import argparse
 
-DEFAULT_CONFIG = {
-    "width": 1024,
-    "height": 800,
-    "renderer": "PathTracing",  # Can also be RayTracedLighting
-    "anti_aliasing": 3,  # 3 for dlss, 2 for fxaa, 1 for taa, 0 to disable aa
-    "samples_per_pixel_per_frame": 64,
-    "denoiser": True,
-    "subdiv_refinement_level": 0,
-    "headless": True,
-    "max_bounces": 4,
-    "max_specular_transmission_bounces": 6,
-    "max_volume_bounces": 4,
-    "sync_loads": False,
-    "experience": "isaac-sim.python.kit",
-}
-
 
 class OmniKitHelper:
     """Helper class for launching OmniKit from a Python environment.
@@ -42,31 +26,55 @@ class OmniKitHelper:
 
         Typical usage example:
 
-        .. highlight:: python
         .. code-block:: python
 
-            config = {'width': 800, 'height': 600, 'renderer': 'PathTracing'}
-            kit = OmniKitHelper(config)   # Start omniverse kit
+            from omni.isaac.python_app import OmniKitHelper
+            # Configuration to start application with
+            startup_config = {'width': 800, 'height': 600, 'renderer': 'PathTracing'}
+            kit = OmniKitHelper(config = startup_config)   # Start omniverse kit
+            ### Perform any omniverse imports here after the helper loads ###
             # <Code to generate or load a scene>
-            kit.update()    # Render a single frame"""
+            
+            kit.play()      # Start simulation
+            kit.update(1.0 / 60.0)    # Render a single frame with a specified timestep
+            kit.stop()      # Stop Simulation
+            kit.shutdown()  # Cleanup application
+    """
+
+    DEFAULT_CONFIG = {
+        "width": 1024,
+        "height": 800,
+        "renderer": "PathTracing",  # Can also be RayTracedLighting
+        "anti_aliasing": 3,  # 3 for dlss, 2 for fxaa, 1 for taa, 0 to disable aa
+        "samples_per_pixel_per_frame": 64,
+        "denoiser": True,
+        "subdiv_refinement_level": 0,
+        "headless": True,
+        "max_bounces": 4,
+        "max_specular_transmission_bounces": 6,
+        "max_volume_bounces": 4,
+        "sync_loads": False,
+        "experience": "isaac-sim.python.kit",
+    }
+    """
+    The config variable is a dictionary containing the following entries
+
+    Args:
+        width (int): Width of the viewport and generated images. Defaults to 1024
+        height (int): Height of the viewport and generated images. Defaults to 800
+        renderer (str): Rendering mode, can be  `RayTracedLighting` or `PathTracing`. Defaults to `PathTracing`
+        samples_per_pixel_per_frame (int): The number of samples to render per frame, used for `PathTracing` only. Defaults to 64
+        denoiser (bool):  Enable this to use AI denoising to improve image quality. Defaults to True
+        subdiv_refinement_level (int): Number of subdivisons to perform on supported geometry. Defaults to 0
+        headless (bool): Disable UI when running. Defaults to True
+        max_bounces (int): Maximum number of bounces, used for `PathTracing` only. Defaults to 4
+        max_specular_transmission_bounces(int): Maximum number of bounces for specular or transmission, used for `PathTracing` only. Defaults to 6
+        max_volume_bounces(int): Maximum number of bounces for volumetric, used for `PathTracing` only. Defaults to 4
+        sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
+        experience (str): The config file used to launch the application.
+    """
 
     def __init__(self, config=DEFAULT_CONFIG):
-        """The config variable is a dictionary containing the following entries
-
-        Args:
-            width (int): Width of the viewport and generated images. Defaults to 1024
-            height (int): Height of the viewport and generated images. Defaults to 800
-            renderer (str): Rendering mode, can be  `RayTracedLighting` or `PathTracing`. Defaults to `PathTracing`
-            samples_per_pixel_per_frame (int): The number of samples to render per frame, used for `PathTracing` only. Defaults to 64
-            denoiser (bool):  Enable this to use AI denoising to improve image quality. Defaults to True
-            subdiv_refinement_level (int): Number of subdivisons to perform on supported geometry. Defaults to 0
-            headless (bool): Disable UI when running. Defaults to True
-            max_bounces (int): Maximum number of bounces, used for `PathTracing` only. Defaults to 4
-            max_specular_transmission_bounces(int): Maximum number of bounces for specular or transmission, used for `PathTracing` only. Defaults to 6
-            max_volume_bounces(int): Maximum number of bounces for volumetric, used for `PathTracing` only. Defaults to 4
-            sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
-            experience (str): The config json used to launch the application.
-        """
         # only import custom loop runner if we create this object
         from omni.kit.loop import _loop
 
@@ -74,7 +82,7 @@ class OmniKitHelper:
         self._exiting = False
         self._is_dirty_instance_mappings = True
         self._previous_physics_dt = 1.0 / 60.0
-        self.config = DEFAULT_CONFIG
+        self.config = OmniKitHelper.DEFAULT_CONFIG
         if config is not None:
             self.config.update(config)
 
@@ -178,6 +186,9 @@ class OmniKitHelper:
         #     self.shutdown()
 
     def shutdown(self):
+        """
+        Unloads plugins and stops the omniverse application and the backend framework.
+        """
         self._exiting = True
         print("Shutting Down OmniKitHelper...")
         # We are exisitng but something is still loading, wait for it to load to avoid a deadlock
@@ -232,6 +243,7 @@ class OmniKitHelper:
 
         Args:
             physics_dt (float): Use this value for physics step
+            physics_substeps (int): The number of physics substeps to perform each editor timestep
         """
         if self.get_stage() is None:
             return
@@ -334,6 +346,9 @@ class OmniKitHelper:
         omni.kit.commands.execute(*args, **kwargs)
 
     def setup_renderer(self, mode="non-default"):
+        """
+        Sets the defaults for the renderer based on the config provided at initialization
+        """
         rtx_mode = "/rtx-defaults" if mode == "default" else "/rtx"
         """Reset render settings to those in config. This should be used in case a new stage is opened and the desired config needs to be re-applied"""
         self.set_setting(rtx_mode + "/rendermode", self.config["renderer"])

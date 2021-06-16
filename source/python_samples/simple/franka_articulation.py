@@ -9,9 +9,9 @@ CONFIG = {
 }
 
 if __name__ == "__main__":
-    # Example usage, with step size test
+    # This sample loads an articulation and prints its information
     kit = OmniKitHelper(config=CONFIG)
-    import omni.physx
+    import omni
     from omni.isaac.dynamic_control import _dynamic_control
     from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
@@ -25,25 +25,40 @@ if __name__ == "__main__":
     # start simulation
     kit.play()
 
-    # perform step experiments
+    # perform timestep
     kit.update(1.0 / 60.0)
 
     dc = _dynamic_control.acquire_dynamic_control_interface()
-
-    ar = dc.get_articulation("/panda")
-    if ar == _dynamic_control.INVALID_HANDLE:
+    # Get handle to articulation
+    art = dc.get_articulation("/panda")
+    if art == _dynamic_control.INVALID_HANDLE:
         print("*** '%s' is not an articulation" % "/panda")
     else:
-        root = dc.get_articulation_root_body(ar)
-        print(str("Got articulation handle %d \n" % ar) + str("--- Hierarchy\n"))
+        # Print information about articulation
+        root = dc.get_articulation_root_body(art)
+        print(str("Got articulation handle %d \n" % art) + str("--- Hierarchy\n"))
 
-        body_states = dc.get_articulation_body_states(ar, _dynamic_control.STATE_ALL)
+        body_states = dc.get_articulation_body_states(art, _dynamic_control.STATE_ALL)
         print(str("--- Body states:\n") + str(body_states) + "\n")
 
-        dof_states = dc.get_articulation_dof_states(ar, _dynamic_control.STATE_ALL)
+        dof_states = dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
         print(str("--- DOF states:\n") + str(dof_states) + "\n")
 
-        dof_props = dc.get_articulation_dof_properties(ar)
+        dof_props = dc.get_articulation_dof_properties(art)
         print(str("--- DOF properties:\n") + str(dof_props) + "\n")
+
+    # Simulate robot coming to a rest configuration
+    for i in range(100):
+        kit.update(1.0 / 60.0)
+
+    # Simulate robot for a fixed number of frames and specify a joint position target
+    for i in range(100):
+        dof_ptr = dc.find_articulation_dof(art, "panda_joint2")
+        # This should be called each frame of simulation if state on the articulation is being changed.
+        dc.wake_up_articulation(art)
+        # Set joint position target
+        dc.set_dof_position_target(dof_ptr, -1.5)
+        kit.update(1.0 / 60.0)
+
     kit.stop()
     kit.shutdown()

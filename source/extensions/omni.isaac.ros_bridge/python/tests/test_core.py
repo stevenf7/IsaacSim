@@ -88,3 +88,13 @@ class TestRosBridge(omni.kit.test.AsyncTestCaseFailOnLogError):
         result, prim2 = omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree_01")
         await omni.kit.app.get_app().next_update_async()
         omni.kit.commands.execute("DeletePrims", paths=[prim1.GetPath()])
+
+    async def test_ros_sim_time_command(self):
+
+        result = omni.kit.commands.execute("RosBridgeUseSimTime", use_sim_time=False)
+        result, status = omni.kit.commands.execute("RosBridgeRosMasterCheck")
+        self.assertTrue(status)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()

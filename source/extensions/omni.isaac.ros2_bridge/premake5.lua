@@ -128,7 +128,7 @@ project_ext_bindings {
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/ros2_bridge/scripts" },
-    -- { "python/tests", ext.target_dir.."/omni/isaac/ros2_bridge/tests" },
+    { "python/tests", ext.target_dir.."/omni/isaac/ros2_bridge/tests" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
 }
