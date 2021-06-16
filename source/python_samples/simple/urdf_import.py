@@ -1,5 +1,4 @@
 import os
-import carb
 from omni.isaac.python_app import OmniKitHelper
 
 CONFIG = {
@@ -9,12 +8,12 @@ CONFIG = {
 }
 
 if __name__ == "__main__":
-    # Example usage, with step size test
+    # URDF import, configuration and simualtion sample
     kit = OmniKitHelper(config=CONFIG)
     import omni.kit.commands
     from pxr import Sdf, Gf, UsdPhysics, UsdLux, PhysxSchema
 
-    # setting up import configuration:
+    # Setting up import configuration:
     status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
     import_config.merge_fixed_joints = False
     import_config.convex_decomp = False
@@ -25,18 +24,18 @@ if __name__ == "__main__":
     ext_manager = omni.kit.app.get_app().get_extension_manager()
     ext_id = ext_manager.get_enabled_extension_id("omni.isaac.urdf")
     extension_path = ext_manager.get_extension_path(ext_id)
-    # import URDF
+    # Import URDF
     omni.kit.commands.execute(
         "URDFParseAndImportFile",
         urdf_path=extension_path + "/data/urdf/robots/carter/urdf/carter.urdf",
         import_config=import_config,
     )
-    # get stage handle
+    # Get stage handle
     stage = omni.usd.get_context().get_stage()
 
-    # enable physics
+    # Enable physics
     scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
-    # set gravity
+    # Set gravity
     scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
     scene.CreateGravityMagnitudeAttr().Set(981.0)
     # Set solver settings
@@ -48,7 +47,7 @@ if __name__ == "__main__":
     physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
     physxSceneAPI.CreateSolverTypeAttr("TGS")
 
-    # add ground plane
+    # Add ground plane
     omni.kit.commands.execute(
         "AddGroundPlaneCommand",
         stage=stage,
@@ -59,11 +58,11 @@ if __name__ == "__main__":
         color=Gf.Vec3f(0.5),
     )
 
-    # add lighting
+    # Add lighting
     distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
     distantLight.CreateIntensityAttr(500)
 
-    # get handle to the Drive API for both wheels
+    # Get handle to the Drive API for both wheels
     left_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/left_wheel"), "angular")
     right_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/right_wheel"), "angular")
 
@@ -80,12 +79,13 @@ if __name__ == "__main__":
     left_wheel_drive.GetStiffnessAttr().Set(0)
     right_wheel_drive.GetStiffnessAttr().Set(0)
 
-    # start simulation
+    # Start simulation
     kit.play()
 
-    # perform step experiments
+    # perform simulation
     for frame in range(100):
         kit.update(1.0 / 60.0)
 
+    # Shutdown and exit
     kit.stop()
     kit.shutdown()

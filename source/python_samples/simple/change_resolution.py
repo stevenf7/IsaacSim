@@ -1,5 +1,4 @@
 import os
-import carb
 from omni.isaac.python_app import OmniKitHelper
 import random
 

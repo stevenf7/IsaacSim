@@ -10,5 +10,10 @@ CONFIG = {
 if __name__ == "__main__":
     # Simple example showing how to start and stop the helper
     kit = OmniKitHelper(config=CONFIG)
-    kit.update(1.0 / 60.0)
-    kit.shutdown()
+
+    ### Perform any omniverse imports here after the helper loads ###
+
+    kit.play()  # Start simulation
+    kit.update(1.0 / 60.0)  # Render a single frame
+    kit.stop()  # Stop Simulation
+    kit.shutdown()  # Cleanup application

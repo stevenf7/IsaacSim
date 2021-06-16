@@ -1,5 +1,5 @@
-import os, sys
-
+import os
+import sys
 import carb
 import omni.kit.app
 import asyncio
