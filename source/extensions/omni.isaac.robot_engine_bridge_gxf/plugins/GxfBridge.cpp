@@ -78,14 +78,14 @@ pxr::UsdStageWeakPtr g_stage = nullptr;
 std::unique_ptr<omni::isaac::robot_engine_bridge_gxf::GxfContext> g_gxf_context_handle;
 
 
-// bool CARB_ABI tickComponent(const std::string& primPath)
-// {
-//     if (g_stage)
-//     {
-//         return g_application_handle->tickComponent(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-//     }
-//     return false;
-// }
+bool CARB_ABI tickComponent(const std::string& primPath)
+{
+    if (g_stage)
+    {
+        return g_gxf_context_handle->tickComponent(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+    }
+    return false;
+}
 
 
 bool CARB_ABI createGxfApplication(const std::string& basePath,
@@ -287,6 +287,6 @@ void fillInterface(omni::isaac::robot_engine_bridge_gxf::GxfBridge& iface)
 
     iface.createApplication = createGxfApplication;
     iface.destroyApplication = destroyGxfApplication;
-    // iface.tickComponent = tickComponent;
+    iface.tickComponent = tickComponent;
     iface.executeCommand = executeCommand;
 }

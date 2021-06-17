@@ -126,16 +126,47 @@ class CreateSetupExtension(omni.ext.IExt):
             from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
             print("Checking for Isaac Sim assets on nucleus server")
+            self._check_window = ui.Window(
+                "Check Nucleus Server", height=100, width=500, flags=ui.WINDOW_FLAGS_NO_TITLE_BAR
+            )
+            with self._check_window.frame:
+                with ui.VStack(height=80):
+                    ui.Spacer()
+                    ui.Label(
+                        "Checking for Isaac Sim assets on nucleus server.",
+                        alignment=ui.Alignment.CENTER,
+                        style={"font_size": 18},
+                    )
+                    ui.Label(
+                        "Please login to the nucleus server if a browser window appears.",
+                        alignment=ui.Alignment.CENTER,
+                        style={"font_size": 18},
+                    )
+                    ui.Label(
+                        "This dialog will close as soon as a login occurs",
+                        alignment=ui.Alignment.CENTER,
+                        style={"font_size": 18},
+                    )
+                    ui.Spacer()
+            await omni.kit.app.get_app().next_update_async()
+
             result, nucleus_server = find_nucleus_server()
+
+            self._check_window.visible = False
+            self._check_window = None
             if result is False:
-                self._server_window = ui.Window("Checking Isaac Sim Assets", width=350, height=175, visible=True)
+                self._server_window = ui.Window("Checking Isaac Sim Assets", width=350, height=225, visible=True)
                 with self._server_window.frame:
                     with ui.VStack():
                         ui.Label("Warning: Nucleus server not configured correctly", style={"color": 0xFF00FFFF})
                         ui.Label(
                             "/Isaac directory containing sample assets was not found.\nMost Isaac Sim samples will not work correctly"
                         )
-                        ui.Label("Please see the documentation to fix this")
+                        ui.Line()
+                        ui.Label(
+                            "Add a new connection in the Content tab \nto a server with the Isaac Sim Sample Assets"
+                        )
+                        ui.Label("Or please see the documentation on how to fix this")
                         ui.Button(
                             "Open Documentation",
                             clicked_fn=lambda: self._open_browser(
@@ -143,7 +174,8 @@ class CreateSetupExtension(omni.ext.IExt):
                             ),
                         )
 
-                        ui.Label("Also see terminal for more information")
+                        ui.Label("See terminal for additional information")
+                        ui.Line()
                         with ui.HStack(spacing=5, width=0, height=0):
                             ui.Label("Perform check on startup")
                             server_model = ui.CheckBox().model

@@ -392,7 +392,32 @@ void GxfContext::onComponentAdd(const pxr::UsdPrim& prim)
         mComponents[prim.GetPath().GetString()] = std::move(component);
     }
 }
+bool GxfContext::tickComponent(const pxr::UsdPrim& prim)
+{
+    if (!mContext)
+    {
+        return false;
+    }
+    if (prim)
+    {
+        if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+        {
+            auto* component = mComponents[prim.GetPath().GetString()].get();
 
+
+            if (component->mDoStart == true)
+            {
+                component->onStart();
+                component->mDoStart = false;
+            }
+
+            component->publishAllMessages();
+            component->tick();
+            return true;
+        }
+    }
+    return false;
+}
 }
 }
 }

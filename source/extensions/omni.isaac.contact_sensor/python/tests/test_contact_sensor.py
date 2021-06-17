@@ -25,9 +25,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
 
         self._cs = _contact_sensor.acquire_contact_sensor_interface()
-        self._omni_pbr_data = os.path.abspath(
-            carb.tokens.get_tokens_interface().resolve("${kit}/../../library/mdl/Base/OmniPBR.mdl")
-        )
+
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.contact_sensor")
         self._extension_path = ext_manager.get_extension_path(ext_id)
@@ -48,6 +46,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.usd.get_context().open_stage_async(self._extension_path + "/data/ant.usd")
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
+        await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         pass
 
