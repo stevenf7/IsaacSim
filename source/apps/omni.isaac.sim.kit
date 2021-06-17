@@ -13,3 +13,9 @@ keywords = ["experience", "app", "usd"]
 [settings]
 app.name = "Isaac-Sim"
 app.version = "2021.1.1"
+
+[settings.exts."omni.kit.registry.nucleus"]
+registries = [
+    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+]
+postToSlack = false
