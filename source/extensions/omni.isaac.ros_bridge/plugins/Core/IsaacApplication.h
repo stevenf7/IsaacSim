@@ -83,15 +83,6 @@ public:
         mROSInitialize = state;
     }
     /**
-     * @brief Deletes all rosnodes.
-     * Call this if roscore was disconnected to force rosnodes to be re-created
-     *
-     */
-    void deleteRosNodes()
-    {
-        mRosNodes.clear();
-    }
-    /**
      * @brief Get the Ros State object
      *
      */
@@ -99,8 +90,21 @@ public:
     {
         return mROSInitialize;
     }
-
+    /**
+     * @brief Set the Use Sim Time object
+     *
+     * @param useSimTime
+     */
     void setUseSimTime(const bool useSimTime);
+
+    /**
+     * @brief Ticks a specific ROS component
+     *
+     * @param prim
+     * @return true
+     * @return false
+     */
+    bool tickComponent(const pxr::UsdPrim& prim);
 
 private:
     RosNode* getRosNode(const pxr::UsdPrim& prim);
@@ -116,8 +120,6 @@ private:
     bool mROSInitialize = true;
     std::chrono::_V2::system_clock::rep mSystemTimeNanoSeconds = 0;
     bool mUseSimTime = true;
-
-    std::unordered_map<std::string, std::unique_ptr<RosNode>> mRosNodes;
 };
 }
 }

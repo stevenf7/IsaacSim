@@ -13,7 +13,7 @@ import rospy
 import carb
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRospy(omni.kit.test.AsyncTestCase):
+class TestRosClock(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
@@ -52,21 +52,75 @@ class TestRospy(omni.kit.test.AsyncTestCase):
         gc.collect()
         pass
 
-    async def test_rospy(self):
-        from std_msgs.msg import String
+    async def test_sim_clock(self):
+        from rosgraph_msgs.msg import Clock
 
-        pub = rospy.Publisher("topic_name", String, queue_size=10)
+        result, prim = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock", sim_time=True)
+        self._time_sec = 0
 
-        def sub_callback(data):
-            self._message = data.data
+        def clock_callback(data):
+            self._time_sec = data.clock.to_sec()
 
-        sub = rospy.Subscriber("topic_name", String, sub_callback)
+        clock_sub = rospy.Subscriber("/clock", Clock, clock_callback)
 
+        self._timeline.play()
+
+        await simulate(2.1)
+        self._timeline.stop()
+        clock_sub.unregister()
+        self.assertGreater(self._time_sec, 2.0)
+
+        pass
+
+    async def test_sim_clock_manual(self):
+        from rosgraph_msgs.msg import Clock
+
+        result, prim = omni.kit.commands.execute(
+            "ROSBridgeCreateClock", path="/ROS_Clock", sim_time=True, queue_size=0, enabled=False
+        )
+        self._time_sec = 0
+
+        def clock_callback(data):
+            self._time_sec = data.clock.to_sec()
+
+        clock_sub = rospy.Subscriber("/clock", Clock, clock_callback)
         await asyncio.sleep(1.0)
-        message = "hello world"
-        pub.publish(message)
+        self._timeline.play()
+
+        await omni.kit.app.get_app().next_update_async()
+
+        self.assertEqual(self._time_sec, 0.0)
+        result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Clock")
+        # after first step we need to wait for ros node to initialize
         await asyncio.sleep(1.0)
-        self.assertEqual(self._message, message)
-        pub.unregister()
-        sub.unregister()
+
+        result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Clock")
+        # wait for message
+        await asyncio.sleep(1.0)
+        self.assertTrue(status)
+        self.assertGreater(self._time_sec, 0.0)
+
+        self._timeline.stop()
+        clock_sub.unregister()
+
+        pass
+
+    async def test_system_clock(self):
+        from rosgraph_msgs.msg import Clock
+        import time
+
+        result, prim = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock", sim_time=False)
+        self._time_sec = 0
+
+        def clock_callback(data):
+            self._time_sec = data.clock.to_sec()
+
+        clock_sub = rospy.Subscriber("/clock", Clock, clock_callback)
+
+        self._timeline.play()
+
+        await simulate(1.0)
+        self.assertAlmostEqual(self._time_sec, time.time(), delta=0.5)
+        self._timeline.stop()
+        clock_sub.unregister()
         pass
