@@ -44,6 +44,7 @@ public:
     void onStop();
     void onComponentAdd(const pxr::UsdPrim& prim);
     gxf_result_t destroy();
+    bool tickComponent(const pxr::UsdPrim& prim);
 
 private:
     gxf_context_t mContext = nullptr;

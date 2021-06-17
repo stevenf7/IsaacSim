@@ -105,7 +105,7 @@ class Replay:
                     self._replay_count += 1
                 else:
                     self._replay_data = False
-                    print("Finished")
+                    print("Replay Complete")
                     self._replay_count = 0
 
     def arrival_check(self, target_pos):
@@ -123,7 +123,7 @@ class Replay:
             filename = self._save_dir
             # check if file exist
             if not os.path.exists(filename):
-                print("filename doesn't exist")
+                carb.log_warn(f"filename {filename} doesn't exist")
                 self._replay_data = False
             else:
                 print("file used: ", filename)

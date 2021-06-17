@@ -14,16 +14,15 @@ EXTENSION_NAME = "Replay Sample"
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        self._window = ui.Window(EXTENSION_NAME, width=400, height=150, visible=False)
+        self._window = ui.Window(EXTENSION_NAME, width=400, height=175, visible=False)
         self._window.set_visibility_changed_fn(self._on_window)
+
+        menu_items = [
+            MenuItemDescription(name="RMP Replay Example", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+        ]
         self._menu_items = [
             MenuItemDescription(
-                name="Misc",
-                sub_menu=[
-                    MenuItemDescription(
-                        name="Joint Trajectory Replay", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
+                name="Controlling", sub_menu=[MenuItemDescription(name="Manipulation", sub_menu=menu_items)]
             )
         ]
 
@@ -34,24 +33,26 @@ class Extension(omni.ext.IExt):
         # Simple button style that grays out the button if disabled
         self._button_style = {":disabled": {"color": 0xFF000000}}
         with self._window.frame:
-            with omni.ui.VStack(style=self._button_style):
+            with omni.ui.VStack(style=self._button_style, height=0):
+                ui.Label("Loads a trajectory created by the RMP Example")
                 self._create_robot_btn = ui.Button("Load Robot", height=0, enabled=True)
                 self._create_robot_btn.set_clicked_fn(self._on_setup_environment)
                 self._create_robot_btn.set_tooltip("Load robot and environment")
-                self._reset_btn = ui.Button("Reset", height=0, enabled=False)
+                self._reset_btn = ui.Button("Press Play To Enable", height=0, enabled=False)
                 self._reset_btn.set_clicked_fn(self._replay.reset)
                 self._reset_btn.set_tooltip("Reset Robot to default position")
 
-                with ui.HStack(height=0):
-                    ui.Label("Input Directory:", width=100)
+                with ui.HStack(height=0, spacing=5):
+                    ui.Label("Input File:", width=0)
                     default_dir = os.path.join(os.getcwd(), "output.txt")
                     self._ui_dir_name = ui.StringField()
                     self._ui_dir_name.model.set_value(default_dir)
                     self._ui_dir_name.model.add_end_edit_fn(
                         self._replay.save_dir(self._ui_dir_name.model.get_value_as_string())
                     )
-                self._replay_data_btn = ui.Button("Play Saved Trajectory", enabled=False, height=0)
+                self._replay_data_btn = ui.Button("Press Play To Enable", enabled=False, height=0)
                 self._replay_data_btn.set_clicked_fn(self._replay.replay_data)
+                self._replay_data_btn.set_tooltip("Replay trajectory from file")
 
     def _on_window(self, status):
         if status:
@@ -74,7 +75,7 @@ class Extension(omni.ext.IExt):
         """This function is called when stage events occur.
         Enables UI elements when stage is opened.
         Prevents tasks from being started until all assets are loaded
-        
+
         Arguments:
             event (int): event type
         """
@@ -103,30 +104,34 @@ class Extension(omni.ext.IExt):
                 self._replay_data_btn.text = "Press Play To Enable"
         else:
             self._create_robot_btn.text = "Load Robot"
-            self._reset_btn.text = "Reset"
+            self._reset_btn.text = "Reset Robot Pose"
             self._replay_data_btn.text = "Press Play To Enable"
 
     def _on_timeline_event(self, e):
         if e.type == int(omni.timeline.TimelineEventType.PLAY):
             self._replay_data_btn.enabled = True
             self._reset_btn.enabled = True
+            self._reset_btn.text = "Reset Robot Pose"
+            self._replay_data_btn.text = "Play Trajectories"
 
         if e.type == int(omni.timeline.TimelineEventType.STOP) or e.type == int(omni.timeline.TimelineEventType.PAUSE):
             self._replay_data_btn.enabled = False
             self._reset_btn.enabled = False
+            self._reset_btn.text = "Press Play To Enable"
+            self._replay_data_btn.text = "Press Play To Enable"
 
     def _on_setup_environment(self):
         self._timeline.stop()
-        task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
-        asyncio.ensure_future(self._on_create_robot(task))
+        asyncio.ensure_future(self._on_create_robot())
 
-    async def _on_create_robot(self, task):
-        done, pending = await asyncio.wait({task})
-        if task not in done:
-            return
+    async def _on_create_robot(self):
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         self._replay.create_robot()
         self._viewport.set_camera_position("/OmniverseKit_Persp", 142, -127, 56, True)
         self._viewport.set_camera_target("/OmniverseKit_Persp", -180, 234, -27, True)
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
 
         self._reset_btn.enabled = True
         self._replay_data_btn.enabled = True
