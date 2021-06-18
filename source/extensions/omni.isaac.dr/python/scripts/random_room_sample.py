@@ -99,8 +99,8 @@ class Extension(omni.ext.IExt):
         result, prim = omni.kit.commands.execute(
             "CreateMovementComponentCommand",
             prim_paths=[table_prim_path],
-            min_range=(-50.0, -50.0, 18.04),
-            max_range=(50.0, 50.0, 18.04),
+            min_range=(-50.0, -50.0, -77),
+            max_range=(50.0, 50.0, -77),
             target_position=None,
             target_paths=None,
             duration=1.0,
