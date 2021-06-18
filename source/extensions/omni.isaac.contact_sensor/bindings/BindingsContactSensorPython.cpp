@@ -31,6 +31,7 @@ namespace contact_sensor
 struct CsRawPython
 {
     float time; //<! Simulation timestamp
+    float dt; //<! Simulation timestamp
     uintptr_t body0; //<! First body on contact
     uintptr_t body1; //<! Second body on contact
     carb::Float3 position; //<! Contact Position, in world coordinates
@@ -85,7 +86,8 @@ PYBIND11_MODULE(_contact_sensor, m)
 
     py::class_<CsRawPython>(m, "CsRawData", "Contact Raw Data")
         .def(py::init<>())
-        .def_readwrite("time", &CsRawPython::time, "time, (:obj:`float`)")
+        .def_readwrite("time", &CsRawPython::time, "simulation timestamp, (:obj:`float`)")
+        .def_readwrite("dt", &CsRawPython::dt, "timestep during this contact report, (:obj:`float`)")
         .def_readonly("body0", &CsRawPython::body0, "Body 0 name handle, (:obj:`int`)")
         .def_readonly("body1", &CsRawPython::body1, "Body 1 name handle, (:obj:`int`)")
         .def_readwrite("position", &CsRawPython::position, "position, global coordinates, (:obj:`carb.Float3`)")
@@ -119,7 +121,7 @@ PYBIND11_MODULE(_contact_sensor, m)
             "inContact", &CsReading::inContact, "boolean that flags if the sensor registers a contact. (:obj:`bool`)");
 
     PYBIND11_NUMPY_DTYPE(CsReading, time, value, inContact);
-    PYBIND11_NUMPY_DTYPE(CsRawPython, time, body0, body1, position, normal, impulse);
+    PYBIND11_NUMPY_DTYPE(CsRawPython, time, dt, body0, body1, position, normal, impulse);
 
     m.doc() = R"pbdoc(
     This Extension provides an interface to 'omni.isaac.contact_sensor' to be used in a stage. 

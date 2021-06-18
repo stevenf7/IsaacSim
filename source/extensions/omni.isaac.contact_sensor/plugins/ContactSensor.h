@@ -128,6 +128,7 @@ private:
     std::map<pxr::TfToken, std::vector<CsRawData>> mContactRawMap; // Contacts filtered by each object (used for
                                                                    // object raw data)
     float mCurrentTime{ 0.0f };
+    float mCurrentDt{ 0.0f };
     size_t mContactsToProcess{ 0 };
     size_t mContactsProcessed{ 0 };
     uint32_t mNextId{ 0 };

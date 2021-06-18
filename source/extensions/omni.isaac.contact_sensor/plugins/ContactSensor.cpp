@@ -160,7 +160,7 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
             if (mProps.radius < 0 || distance.GetLength() < mProps.radius)
             {
                 mReadingPair[mCurrent].inContact = mReadingPair[mCurrent].inContact || true;
-                // compute force from impulse (F = i*dt) and add to sensor output
+                // compute force from impulse (F = i/dt) and add to sensor output
                 mReadingPair[mCurrent].value = std::min(
                     mReadingPair[mCurrent].value +
                         (float)(pxr::GfVec3d(rawContact[i].impulse.x, rawContact[i].impulse.y, rawContact[i].impulse.z)
@@ -324,8 +324,14 @@ void ContactManager::unSubscribeEvents(omni::physx::IPhysx* physxInterface)
 void ContactManager::onPhysicsStep(float timeElapsed)
 {
     // mContactRawMap.clear(); //Clear filtered raw map
-    // CS_LOG_INFO("Update %f, %f", mCurrentTime, timeElapsed)
     mCurrentTime += timeElapsed;
+    mCurrentDt = timeElapsed;
+    // CS_LOG_INFO("Update %f, %f", mCurrentTime, timeElapsed)
+    for (auto& d : mContactRaw)
+    {
+        d.time = mCurrentTime;
+        d.dt = timeElapsed;
+    }
     for (auto& it : mSensorHandleMap)
     {
         it.second.update(mCurrentTime);
@@ -351,7 +357,6 @@ void ContactManager::resetSensors()
 void ContactManager::onContactReport(carb::events::IEvent* e)
 {
     carb::dictionary::IDictionary* dict = carb::dictionary::getCachedDictionaryInterface();
-
     switch (e->type)
     {
     case omni::physx::eContactFound:
@@ -369,6 +374,7 @@ void ContactManager::onContactReport(carb::events::IEvent* e)
         mContactsProcessed = 0;
         CsRawData contact;
         contact.time = mCurrentTime;
+        contact.dt = mCurrentDt;
         contact.body0 = (char*)body0.GetText();
         contact.body1 = (char*)body1.GetText();
         removeRawData(ContactPair(body0, body1));
