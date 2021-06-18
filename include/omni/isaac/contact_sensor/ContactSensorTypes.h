@@ -52,6 +52,7 @@ struct CsReading
 struct CsRawData
 {
     float time; //<! Simulation timestamp
+    float dt; //<! Simulation time step for the impulse.
     char* body0; //<! First body on contact
     char* body1; //<! Second body on contact
     carb::Float3 position; //<! Contact Position, in world coordinates
