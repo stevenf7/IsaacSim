@@ -33,11 +33,11 @@ if(BUILD_TESTING)
 endif()
 
 
-
-
 find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(fastrtps REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/IsaacBoundingBox.msg"
@@ -46,7 +46,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/BoundingBox3D.msg"
   "msg/BoundingBox3DArray.msg"
   "srv/IsaacPose.srv"
-  DEPENDENCIES builtin_interfaces
+  DEPENDENCIES builtin_interfaces std_msgs geometry_msgs
  )
 
  ament_package()
