@@ -43,11 +43,21 @@ class MateRelation(object):
         self.occurrences = [m["featureId"] for m in relation["mates"]]
 
 
+distance_unit = {"cm": 1.0, "mm": 0.1, "m": 100, "yd": 91.44, "ft": 30.48, "in": 2.54}
+
+
+def nop(a):
+    return a
+
+
+rotation_unit = {"deg": lambda a: nop(a), "rad": lambda a: degrees(a)}
+
+
 class Mate(object):
     def __init__(self, mate, details):
-        # print(mate)
+        print(mate)
         self.name = mate["featureData"]["name"]
-        # print(self.name)
+        print(self.name)
         self.type = mate["featureData"]["mateType"]
         # print(mate)
         self.occurrences = [m["matedOccurrence"] for m in mate["featureData"]["matedEntities"]]
@@ -74,12 +84,20 @@ class Mate(object):
             self.value = value[0] if value else 0
             self.limits = [
                 [
-                    float(d["message"]["expression"].split(" ")[0]) if not d["message"]["nullValue"] else None
+                    rotation_unit[d["message"]["expression"].split(" ")[1]](
+                        float(d["message"]["expression"].split(" ")[0])
+                    )
+                    if not d["message"]["nullValue"]
+                    else None
                     for d in details["message"]["parameters"]
                     if d["message"]["parameterId"] == "limitAxialZMin"
                 ][0],
                 [
-                    float(d["message"]["expression"].split(" ")[0]) if not d["message"]["nullValue"] else None
+                    rotation_unit[d["message"]["expression"].split(" ")[1]](
+                        float(d["message"]["expression"].split(" ")[0])
+                    )
+                    if not d["message"]["nullValue"]
+                    else None
                     for d in details["message"]["parameters"]
                     if d["message"]["parameterId"] == "limitAxialZMax"
                 ][0],
@@ -98,12 +116,18 @@ class Mate(object):
             self.value = value[0] if value else 0
             self.limits = [
                 [
-                    float(d["message"]["expression"].split(" ")[0]) * 100.0 if not d["message"]["nullValue"] else None
+                    float(d["message"]["expression"].split(" ")[0])
+                    * distance_unit[d["message"]["expression"].split(" ")[1]]
+                    if not d["message"]["nullValue"]
+                    else None
                     for d in details["message"]["parameters"]
                     if d["message"]["parameterId"] == "limitZMin"
                 ][0],
                 [
-                    float(d["message"]["expression"].split(" ")[0]) * 100.0 if not d["message"]["nullValue"] else None
+                    float(d["message"]["expression"].split(" ")[0])
+                    * distance_unit[d["message"]["expression"].split(" ")[1]]
+                    if not d["message"]["nullValue"]
+                    else None
                     for d in details["message"]["parameters"]
                     if d["message"]["parameterId"] == "limitZMax"
                 ][0],
