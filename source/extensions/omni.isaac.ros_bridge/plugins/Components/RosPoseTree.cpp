@@ -98,11 +98,6 @@ void RosPoseTree::onComponentChange()
 
 void RosPoseTree::pubCallback(ros::Publisher* pub)
 {
-    if (!mEnabled)
-    {
-        return;
-    }
-
     tf2_msgs::TFMessage tf_msg;
     geometry_msgs::TransformStamped msg;
     msg.header.seq = 0; // TODO: use frame number?

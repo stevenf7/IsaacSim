@@ -15,7 +15,7 @@ from .common import add_cube, simulate, wait_for_rosmaster
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from omni.isaac.utils.scripts.test_utils import load_test_file
 import rospy
-from pxr import Gf, PhysicsSchemaTools
+from pxr import Gf, PhysicsSchemaTools, Sdf
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestLidar(omni.kit.test.AsyncTestCase):
@@ -85,7 +85,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         def lida_callback(data: LaserScan):
             self._lidar_data = data
 
-        suction_sub = rospy.Subscriber("scan", LaserScan, lida_callback)
+        lidar_sub = rospy.Subscriber("scan", LaserScan, lida_callback)
 
         await add_cube(stage, "/cube", 75, (200, 0, 75))
 
@@ -98,4 +98,54 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         self.assertEqual(len(self._lidar_data.intensities), 900)
         self.assertEqual(self._lidar_data.intensities[450], 255.0)
         self._timeline.stop()
+        lidar_sub.unregister()
+        pass
+
+    async def test_lidar_manual(self):
+        from sensor_msgs.msg import LaserScan
+
+        (result, error) = await load_test_file(self._nucleus_path + "/Samples/ROS/Robots/Carter_ROS.usd")
+        self.assertTrue(result)
+
+        stage = omni.usd.get_context().get_stage()
+
+        PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
+
+        self.assertTrue(result)
+        self._lidar_data = None
+
+        def lida_callback(data: LaserScan):
+            self._lidar_data = data
+
+        lidar_sub = rospy.Subscriber("scan", LaserScan, lida_callback)
+
+        await add_cube(stage, "/cube", 75, (200, 0, 75))
+
+        # disable the lidar so we can tick it manually
+        omni.kit.commands.execute(
+            "ChangeProperty", prop_path=Sdf.Path("/Carter/ROS_Lidar.enabled"), value=False, prev=None
+        )
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate(1)
+        # Should be no data yet
+        self.assertIsNone(self._lidar_data)
+        # Enable lidar by ticking it once
+        result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/Carter/ROS_Lidar")
+        # Wait for ROS nodes to initialize
+        await asyncio.sleep(1.0)
+        # Publish a lidar message
+        result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/Carter/ROS_Lidar")
+        self.assertTrue(status)
+        # wait for message
+        await asyncio.sleep(1.0)
+        # Check message
+        self.assertIsNotNone(self._lidar_data)
+        self.assertGreater(self._lidar_data.angle_max, self._lidar_data.angle_min)
+        self.assertEqual(self._lidar_data.intensities[0], 0.0)
+        self.assertEqual(len(self._lidar_data.intensities), 900)
+        self.assertEqual(self._lidar_data.intensities[450], 255.0)
+        self._timeline.stop()
+        lidar_sub.unregister()
         pass

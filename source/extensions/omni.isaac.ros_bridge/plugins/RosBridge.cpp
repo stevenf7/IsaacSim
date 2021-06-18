@@ -104,7 +104,6 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
         }
         g_application_handle->setRosState(false);
         g_application_handle->deleteAllComponents();
-        g_application_handle->deleteRosNodes();
         return;
     }
 
@@ -187,6 +186,15 @@ void CARB_ABI setUseSimTime(const bool useSimTime)
         CARB_LOG_INFO("ROS will use %s time for publishers", useSimTime ? "simulation" : "system");
         g_application_handle->setUseSimTime(useSimTime);
     }
+}
+
+bool CARB_ABI tickComponent(const std::string& primPath)
+{
+    if (g_stage)
+    {
+        return g_application_handle->tickComponent(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+    }
+    return false;
 }
 
 bool CARB_ABI rosMasterCheck()
@@ -298,5 +306,6 @@ void fillInterface(omni::isaac::ros_bridge::RosBridge& iface)
 
     memset(&iface, 0, sizeof(iface));
     iface.setUseSimTime = setUseSimTime;
+    iface.tickComponent = tickComponent;
     iface.rosMasterCheck = rosMasterCheck;
 }

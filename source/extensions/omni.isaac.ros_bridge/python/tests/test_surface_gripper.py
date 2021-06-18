@@ -199,4 +199,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         await simulate(2)
         self.assertEqual(self._gripper_state, 0.0)
         self._timeline.stop()
+        pub.unregister()
+        suction_pub.unregister()
+        suction_sub.unregister()
         pass

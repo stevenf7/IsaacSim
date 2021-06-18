@@ -48,6 +48,7 @@ class ROSBridgeCreateClock(omni.kit.commands.Command):
         enabled: bool = True,
         queue_size: int = 10,
         clock_topic: str = "/clock",
+        sim_time=True,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -67,6 +68,7 @@ class ROSBridgeCreateClock(omni.kit.commands.Command):
         if success and self._prim:
             self._prim.CreateClockPubTopicAttr(self._clock_topic)
             self._prim.CreateQueueSizeAttr(self._queue_size)
+            self._prim.CreateSimTimeAttr(self._sim_time)
         return self._prim
 
     def undo(self):

@@ -13,28 +13,28 @@
 
 #include "RosCamera.h"
 
-#include <carb/Framework.h>
-#include <carb/Types.h>
+#include "isaac_ros_messages/BoundingBox3D.h"
+#include "isaac_ros_messages/BoundingBox3DArray.h"
+#include "isaac_ros_messages/IsaacBoundingBox.h"
+#include "isaac_ros_messages/IsaacBoundingBoxArray.h"
 #include "rosgraph_msgs/Clock.h"
-#include "std_msgs/Int64.h"
-#include "std_msgs/UInt8.h"
-#include "std_msgs/String.h"
-#include "std_srvs/Empty.h"
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/image_encodings.h"
-#include "isaac_ros_messages/IsaacBoundingBox.h"
-#include "isaac_ros_messages/IsaacBoundingBoxArray.h"
-#include "isaac_ros_messages/BoundingBox3D.h"
-#include "isaac_ros_messages/BoundingBox3DArray.h"
+#include "std_msgs/Int64.h"
+#include "std_msgs/String.h"
+#include "std_msgs/UInt8.h"
+#include "std_srvs/Empty.h"
+
+#include <carb/Framework.h>
+#include <carb/Types.h>
+#include <carb/cuda/CudaRuntime.h>
 
 #include <boost/algorithm/string.hpp>
 #include <omni/kit/ViewportWindowUtils.h>
 
-#include <time.h>
-#include <carb/cuda/CudaRuntime.h>
-
 #include <cuda.h>
+#include <time.h>
 namespace omni
 {
 namespace isaac
@@ -247,21 +247,15 @@ void RosCamera::updateViewportSettings()
     std::string primPath = mPrim.GetPath().GetString();
     if (mViewportWindow == nullptr)
     {
-        if (mEnabled)
-        {
-            std::string viewportWindowName = mViewportManager->getViewport();
-            mViewportWindow = mViewportInterface->getViewportWindow(
-                mViewportInterface->getViewportWindowInstance(viewportWindowName.c_str()));
-            mViewportManager->registerViewport(viewportWindowName, primPath);
-        }
+        std::string viewportWindowName = mViewportManager->getViewport();
+        mViewportWindow = mViewportInterface->getViewportWindow(
+            mViewportInterface->getViewportWindowInstance(viewportWindowName.c_str()));
+        mViewportManager->registerViewport(viewportWindowName, primPath);
     }
     else
     {
-        if (!mEnabled)
-        {
-            mViewportWindow = nullptr;
-            mViewportManager->unregisterViewport(primPath);
-        }
+        mViewportWindow = nullptr;
+        mViewportManager->unregisterViewport(primPath);
     }
     if (mViewportWindow == nullptr)
         return;
