@@ -43,11 +43,6 @@ app.version = "2021.1.1"
 [settings]
 exts."omni.kit.renderer.core".imgui.enableMips = true
 
-[settings.exts."omni.kit.registry.nucleus"]
-registries = [
-    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
-]
-
 
 [settings.app.settings]
 persistent = false
@@ -90,6 +85,12 @@ persistent.app.file.recentFiles = []
 
 # Extensions
 ###############################
+[settings.exts."omni.kit.registry.nucleus"]
+registries = [
+    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+]
+postToSlack = false
+
 [settings.app.extensions]
 skipPublishVerification = false
 
@@ -97,11 +98,6 @@ skipPublishVerification = false
 registryEnabled = true
 
 folders2 = ["${kit}/exts" ]
-enabledDeprecated = [
-        "omni.kit.builtin.init",
-        "omni.kit.builtin.menu",
-    ]
-
 # Isaac Sim Settings
 ###############################
 [settings.app.renderer]

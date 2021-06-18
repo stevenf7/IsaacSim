@@ -116,25 +116,6 @@ app.content.emptyStageOnStart = true
 # Setting the port for the embedded http server
 exts."omni.services.transport.server.http".port = 8211
 
-# # FOR PRODUCTION 
-# [settings.exts."omni.kit.registry.nucleus"]
-# registries = [
-#     { name = "kit/public", url = "http://localhost:{local_port}/kit/registry"}
-# ]
-
-# FOR DEVELOPMENT
-[settings.exts."omni.kit.registry.nucleus"]
-registries = [
-    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
-]
-
-# Notify slack about published extensions
-postToSlack = false
-
-#[settings]
-#app.extensions.registryPublishDefault = ""
-
-
 [settings.app.settings]
 persistent = true
 dev_build = false
