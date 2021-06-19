@@ -54,3 +54,6 @@ name = "omni.isaac.samples.scripts.replay_sample"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.ros_samples"
+
+[[python.module]]
+name = "omni.isaac.samples.scripts.ros_moveit_sample"
