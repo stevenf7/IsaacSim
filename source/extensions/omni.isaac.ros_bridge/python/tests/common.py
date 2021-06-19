@@ -1,6 +1,8 @@
 import omni
 import asyncio
 import carb
+from omni.isaac.utils.scripts.test_utils import load_test_file
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 
 def create_joint_state(name, position, velocity=[], effort=[]):
@@ -100,9 +102,10 @@ async def bridge_rosmaster_connect(_rosbridge):
             tries = tries + 1
 
 
-async def add_cube(stage, path, size, offset):
+async def add_cube(path, size, offset):
     from pxr import UsdPhysics, UsdGeom
 
+    stage = omni.usd.get_context().get_stage()
     cubeGeom = UsdGeom.Cube.Define(stage, path)
     cubePrim = stage.GetPrimAtPath(path)
 
@@ -114,3 +117,17 @@ async def add_cube(stage, path, size, offset):
     UsdPhysics.CollisionAPI.Apply(cubePrim)
 
     return cubeGeom
+
+
+async def add_carter_ros():
+    from pxr import Gf, PhysicsSchemaTools
+
+    result, nucleus_server = find_nucleus_server()
+    if result is False:
+        carb.log_error("Could not find nucleus server with /Isaac folder")
+        return
+    nucleus_path = nucleus_server + "/Isaac"
+    (result, error) = await load_test_file(nucleus_path + "/Samples/ROS/Robots/Carter_ROS.usd")
+    stage = omni.usd.get_context().get_stage()
+
+    PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))

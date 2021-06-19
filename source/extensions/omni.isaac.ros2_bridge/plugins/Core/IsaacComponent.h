@@ -41,8 +41,7 @@ public:
      * @brief Initialize various pointers and handles in the component
      * Must be called after creation, can be overridden to initialize subcomponents
      *
-     * @param isaacCApiPtr
-     * @param appHandle
+     * @param RosNode
      * @param prim
      * @param stage
      */
@@ -50,7 +49,7 @@ public:
     virtual void initialize(RosNode* rosNode, const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
         utils::ComponentBase<PrimType>::initialize(prim, stage);
-        mRosNode = rosNode;
+        mRosNode = std::make_unique<RosNode>(prim.GetPath().GetString());
     }
     /**
      * @brief Function that runs after start is pressed
@@ -66,10 +65,13 @@ public:
     {
     }
     /**
-     * @brief Called every frame
+     * @brief Called every frame, ticks the internal rosnode for each component
      *
      */
-    virtual void tick(){};
+    virtual void tick()
+    {
+        mRosNode->tick();
+    };
 
     /**
      * @brief Publish any Messages
@@ -117,7 +119,7 @@ public:
 
 protected:
     std::string mRosNodePrefix = "";
-    RosNode* mRosNode;
+    std::unique_ptr<RosNode> mRosNode;
     std::chrono::_V2::system_clock::rep mSystemTimeNanoSeconds = 0;
     bool mUseSimTime = true;
 };

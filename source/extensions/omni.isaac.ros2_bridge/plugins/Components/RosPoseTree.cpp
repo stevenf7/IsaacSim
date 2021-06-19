@@ -99,11 +99,6 @@ void RosPoseTree::onComponentChange()
 
 void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
 {
-    if (!mEnabled)
-    {
-        return;
-    }
-
     tf2_msgs::msg::TFMessage tf_msg;
     geometry_msgs::msg::TransformStamped msg;
     if (mUseSimTime)

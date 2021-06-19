@@ -104,7 +104,6 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
         }
         g_application_handle->setRosState(false);
         g_application_handle->deleteAllComponents();
-        g_application_handle->deleteRosNodes();
         return;
     }
 
@@ -188,6 +187,16 @@ void CARB_ABI setUseSimTime(const bool useSimTime)
         g_application_handle->setUseSimTime(useSimTime);
     }
 }
+
+bool CARB_ABI tickComponent(const std::string& primPath)
+{
+    if (g_stage)
+    {
+        return g_application_handle->tickComponent(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+    }
+    return false;
+}
+
 CARB_EXPORT void carbOnPluginStartup()
 {
     g_framework = carb::getFramework();
@@ -289,4 +298,5 @@ void fillInterface(omni::isaac::ros2_bridge::Ros2Bridge& iface)
 
     memset(&iface, 0, sizeof(iface));
     iface.setUseSimTime = setUseSimTime;
+    iface.tickComponent = tickComponent;
 }

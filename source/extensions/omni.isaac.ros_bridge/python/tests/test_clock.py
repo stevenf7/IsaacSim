@@ -76,7 +76,7 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         from rosgraph_msgs.msg import Clock
 
         result, prim = omni.kit.commands.execute(
-            "ROSBridgeCreateClock", path="/ROS_Clock", sim_time=True, queue_size=0, enabled=False
+            "ROSBridgeCreateClock", path="/ROS_Clock", sim_time=True, enabled=False
         )
         self._time_sec = 0
 

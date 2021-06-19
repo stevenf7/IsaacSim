@@ -53,17 +53,62 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
         omni.kit.commands.execute(
             "IsaacSimSpawnPrim", usd_path=physics_usd, prim_path="/block", translation=(100, -100, 0)
         )
+        # we need to wait several frames because each of the above spawn calls has an await in it as well
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        self.assertTupleEqual(
+            tuple(omni.usd.utils.get_world_transform_matrix(self._stage.GetPrimAtPath("/franka")).ExtractTranslation()),
+            (100, 100, 0),
+        )
+        self.assertTupleEqual(
+            tuple(omni.usd.utils.get_world_transform_matrix(self._stage.GetPrimAtPath("/klt")).ExtractTranslation()),
+            (-100, 100, 0),
+        )
+        self.assertTupleEqual(
+            tuple(omni.usd.utils.get_world_transform_matrix(self._stage.GetPrimAtPath("/block")).ExtractTranslation()),
+            (100, -100, 0),
+        )
 
     async def test_teleport_command(self):
         articulation_usd = self._nucleus_path + "/Robots/Franka/franka.usd"
         omni.kit.commands.execute(
-            "IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka", translation=(0, 0, 0)
+            "IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka", translation=None, rotation=None
         )
         await omni.kit.app.get_app().next_update_async()
         omni.kit.commands.execute("IsaacSimTeleportPrim", prim_path="/franka", translation=(-100, -100, 0))
+        await omni.kit.app.get_app().next_update_async()
+        self.assertTupleEqual(
+            tuple(omni.usd.utils.get_world_transform_matrix(self._stage.GetPrimAtPath("/franka")).ExtractTranslation()),
+            (-100, -100, 0),
+        )
+
+    async def test_scale(self):
+        from pxr import Gf
+
+        articulation_usd = self._nucleus_path + "/Robots/Franka/franka.usd"
+        omni.kit.commands.execute(
+            "IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka", translation=None, rotation=None
+        )
+        await omni.kit.app.get_app().next_update_async()
+        self.assertIsNotNone(self._stage.GetPrimAtPath("/franka"))
+        omni.kit.commands.execute("IsaacSimScalePrim", prim_path="/franka", scale=(1.5, 1.5, 1.5))
+        await omni.kit.app.get_app().next_update_async()
+        self.assertTupleEqual(
+            tuple(
+                Gf.Transform(omni.usd.utils.get_world_transform_matrix(self._stage.GetPrimAtPath("/franka"))).GetScale()
+            ),
+            (1.5, 1.5, 1.5),
+        )
 
     async def test_destroy_command(self):
         articulation_usd = self._nucleus_path + "/Robots/Franka/franka.usd"
         omni.kit.commands.execute("IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka")
         await omni.kit.app.get_app().next_update_async()
+        self.assertIsNotNone(self._stage.GetPrimAtPath("/franka"))
         omni.kit.commands.execute("IsaacSimDestroyPrim", prim_path="/franka")
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        self.assertIsNone(self._stage.GetPrimAtPath("/franka"))

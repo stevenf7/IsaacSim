@@ -29,11 +29,11 @@ icon = "data/icon.png"
 name = "omni.isaac.ros2_bridge"
 
 [[python.module]]
-name = "omni.isaac.ros2_bridge.tests"
-public = false
+name = "omni.isaac.rclpy"
 
 [[python.module]]
-name = "omni.isaac.rclpy"
+name = "omni.isaac.ros2_bridge.tests"
+public = false
 
 [[native.plugin]]
 path = "bin/*.plugin"

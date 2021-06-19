@@ -63,10 +63,7 @@ void RosClock::onComponentChange()
 
 void RosClock::pubCallback(rclcpp::PublisherBase* pub)
 {
-    if (!mEnabled)
-    {
-        return;
-    }
+
     rosgraph_msgs::msg::Clock time_msg;
     if (mSimTime)
     {

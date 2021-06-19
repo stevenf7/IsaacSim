@@ -2,16 +2,8 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-
-import omni.kit.usd
-import omni.kit.commands
-import os
-import carb
-import asyncio
 from omni.isaac.utils import _isaac_utils
-from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics
 import random
-import itertools
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestDebugDraw(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -43,8 +35,9 @@ class TestDebugDraw(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._draw.draw_points(point_list_1, [(1, 0, 0, 1)] * N, [10] * N)
         self._draw.draw_points(point_list_2, [(0, 1, 0, 1)] * N, [10] * N)
         self._draw.draw_points(point_list_3, colors, sizes)
-        print(self._draw.get_num_points())
-        # TODO: Check number of points, then clear and check again
+        self.assertEqual(self._draw.get_num_points(), 3 * N)
+        self._draw.clear_points()
+        self.assertEqual(self._draw.get_num_points(), 0)
         pass
 
     async def test_draw_lines(self):
@@ -58,8 +51,9 @@ class TestDebugDraw(omni.kit.test.AsyncTestCaseFailOnLogError):
         colors = [(random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1), 1) for _ in range(N)]
         sizes = [random.randint(1, 25) for _ in range(N)]
         self._draw.draw_lines(point_list_1, point_list_2, colors, sizes)
-        print(self._draw.get_num_lines())
-        # TODO: Check number of points, then clear and check again
+        self.assertEqual(self._draw.get_num_lines(), N)
+        self._draw.clear_lines()
+        self.assertEqual(self._draw.get_num_lines(), 0)
         pass
 
     async def test_draw_spline(self):
@@ -67,10 +61,12 @@ class TestDebugDraw(omni.kit.test.AsyncTestCaseFailOnLogError):
             (random.uniform(-300, -100), random.uniform(-100, 100), random.uniform(-100, 100)) for _ in range(10)
         ]
         self._draw.draw_lines_spline(point_list_1, (1, 1, 1, 1), 10, False)
-        point_list_1 = [
+        point_list_2 = [
             (random.uniform(-300, -100), random.uniform(-100, 100), random.uniform(-100, 100)) for _ in range(10)
         ]
-        self._draw.draw_lines_spline(point_list_1, (1, 1, 1, 1), 5, True)
+        self._draw.draw_lines_spline(point_list_2, (1, 1, 1, 1), 5, True)
 
-        # TODO: Check number of points, then clear and check again
+        self.assertGreater(self._draw.get_num_lines(), 0)
+        self._draw.clear_lines()
+        self.assertEqual(self._draw.get_num_lines(), 0)
         pass

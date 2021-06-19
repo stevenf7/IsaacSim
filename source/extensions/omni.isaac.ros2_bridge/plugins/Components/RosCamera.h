@@ -64,6 +64,8 @@ private:
     pxr::UsdPrim mCameraPrim;
     pxr::GfVec2i mResolution, mPrevResolution;
 
+    pxr::GfVec2f mStereoOffset = pxr::GfVec2f(0.0, 0.0);
+
     carb::sensors::Sensor* mRgbSensor = nullptr;
     void* mRgbSensorData = nullptr;
     bool mEnableRgb = false;
