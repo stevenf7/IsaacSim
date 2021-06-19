@@ -43,9 +43,7 @@ class Extension(omni.ext.IExt):
             return
         self._nucleus_path = nucleus_server
 
-        menu_items = [
-            MenuItemDescription(name=MENU_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
-        ]
+        menu_items = [MenuItemDescription(name=MENU_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
         self._menu_items = [
             MenuItemDescription(name="Communicating", sub_menu=[MenuItemDescription(name="ROS", sub_menu=menu_items)])
         ]
