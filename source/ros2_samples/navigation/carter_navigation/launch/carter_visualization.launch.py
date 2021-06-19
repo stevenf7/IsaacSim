@@ -1,4 +1,4 @@
-## Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
+## Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
 ## NVIDIA CORPORATION and its licensors retain all intellectual property
 ## and proprietary rights in and to this software, related documentation
 ## and any modifications thereto.  Any use, reproduction, disclosure or
@@ -19,7 +19,7 @@ def generate_launch_description():
 
     use_sim_time = LaunchConfiguration("use_sim_time", default="true")
 
-    rviz_config_dir = os.path.join(get_package_share_directory("carter_navigation"), "rviz2", "carter.rviz")
+    rviz_config_dir = os.path.join(get_package_share_directory("carter_navigation"), "rviz2", "carter_navigation.rviz")
 
     return LaunchDescription(
         [

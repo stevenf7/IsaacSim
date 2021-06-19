@@ -5,7 +5,7 @@
   <version>0.0.0</version>
   <description>ROS2 messages for isaac ros2 bridge</description>
     <maintainer email="isaac-sim@todo.todo">isaac sim</maintainer>
-  <license>Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
+  <license>Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
 
     NVIDIA CORPORATION and its licensors retain all intellectual property
     and proprietary rights in and to this software, related documentation

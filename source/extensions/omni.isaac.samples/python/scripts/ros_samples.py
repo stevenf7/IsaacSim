@@ -27,7 +27,7 @@ class Extension(omni.ext.IExt):
                         name="ROS",
                         sub_menu=[
                             MenuItemDescription(
-                                name="ROS Navigation",
+                                name="Navigation",
                                 onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
                                     "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
                                 ),
@@ -43,7 +43,7 @@ class Extension(omni.ext.IExt):
                         name="ROS",
                         sub_menu=[
                             MenuItemDescription(
-                                name="ROS Stereo",
+                                name="Stereo",
                                 onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
                                     "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
                                 ),
@@ -59,7 +59,7 @@ class Extension(omni.ext.IExt):
                         name="ROS",
                         sub_menu=[
                             MenuItemDescription(
-                                name="ROS April Tag",
+                                name="April Tag",
                                 onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
                                     "/Isaac/Samples/ROS/Scenario/april_tag.usd"
                                 ),
