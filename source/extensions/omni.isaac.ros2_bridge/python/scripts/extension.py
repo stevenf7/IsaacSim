@@ -14,13 +14,6 @@ class Extension(omni.ext.IExt):
             ext_manager.set_extension_enabled("omni.isaac.ros2_bridge", False)
             return
 
-        # print("Checking if ROS_MASTER_URI is set: ")
-        # if "ROS_MASTER_URI" in os.environ:
-        #     print("Found ROS_MASTER_URI=", os.environ["ROS_MASTER_URI"])
-        # else:
-        #     os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
-        #     print("ROS_MASTER_URI not set, using default, ROS_MASTER_URI=", os.environ["ROS_MASTER_URI"])
-
         # ROS2 uses LD_LIBRARY_PATH to load libraries at runtime so set it here before the plugin loads.
         self._extension_path = ext_manager.get_extension_path(ext_id)
         os.environ["LD_LIBRARY_PATH"] = self._extension_path + "/bin"

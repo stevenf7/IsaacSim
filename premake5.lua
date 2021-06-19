@@ -120,7 +120,7 @@ workspace "isaac-sim"
     filter { "system:linux" }
         platforms { "x86_64", "aarch64" }
         defaultplatform "x86_64"
-
+        disablewarnings {"error=unused-function"}
         buildoptions { "-fvisibility=hidden -D_FILE_OFFSET_BITS=64" }
 
         -- Add library origin directory to dlopen() search path
@@ -282,4 +282,4 @@ group "python_samples"
     python_sample_test("tests-python.isaac_sdk.pose_estimation", "isaac_sdk/pose_estimation.py", "--test")
     python_sample_test("tests-python.isaac_sdk.load_stage", "isaac_sdk/load_stage.py", "--usd_path /Samples/Isaac_SDK/Scenario/franka_basic.usd --test --headless")
     -- ROS samples
-    
+    python_sample_test("tests-python.ros.clock", "ros/clock.py")

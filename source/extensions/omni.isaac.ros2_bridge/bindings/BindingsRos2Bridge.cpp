@@ -43,6 +43,18 @@ PYBIND11_MODULE(_ros2_bridge, m)
                 Args:
                     arg0: (:obj:`bool`): `True` for sim time, `False` for system clock
 
+            )pbdoc")
+            .def("tick_component", wrapInterfaceFunction(&Ros2Bridge::tickComponent),
+                 R"pbdoc(
+                Tick all publishers/subscribers on a specific component
+
+                Args:
+                    arg0: (:obj:`str`): Path to component
+
+                Returns:
+
+                    `True` if component was found, `False` otherwise.
+
             )pbdoc");
     }
 }

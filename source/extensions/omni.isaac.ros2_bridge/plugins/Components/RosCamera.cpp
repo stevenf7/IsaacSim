@@ -184,6 +184,8 @@ void RosCamera::onComponentChange()
     std::string filterClassList3D;
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DEnabledAttr(), mEnableBoundingBox3D);
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DClassListAttr(), filterClassList3D);
+    isaac::utils::safeGetAttribute(typedPrim.GetStereoOffsetAttr(), mStereoOffset);
+
 
     if (mEnableRgb || mEnableDepth || mEnableSegmentation || mEnableBoundingBox2D || mEnableBoundingBox3D)
     {
@@ -246,21 +248,17 @@ void RosCamera::updateViewportSettings()
     std::string primPath = mPrim.GetPath().GetString();
     if (mViewportWindow == nullptr)
     {
-        if (mEnabled)
-        {
-            std::string viewportWindowName = mViewportManager->getViewport();
-            mViewportWindow = mViewportInterface->getViewportWindow(
-                mViewportInterface->getViewportWindowInstance(viewportWindowName.c_str()));
-            mViewportManager->registerViewport(viewportWindowName, primPath);
-        }
+
+        std::string viewportWindowName = mViewportManager->getViewport();
+        mViewportWindow = mViewportInterface->getViewportWindow(
+            mViewportInterface->getViewportWindowInstance(viewportWindowName.c_str()));
+        mViewportManager->registerViewport(viewportWindowName, primPath);
     }
     else
     {
-        if (!mEnabled)
-        {
-            mViewportWindow = nullptr;
-            mViewportManager->unregisterViewport(primPath);
-        }
+
+        mViewportWindow = nullptr;
+        mViewportManager->unregisterViewport(primPath);
     }
     if (mViewportWindow == nullptr)
         return;
@@ -366,6 +364,26 @@ void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
     {
         imgInfo = mSensorsInterface->getSensorInfo(mDepthSensor);
     }
+    else if (mEnableInstance && mSyntheticDataInterface->isSensorInitialized(mInstanceSensor))
+    {
+        imgInfo = mSensorsInterface->getSensorInfo(mInstanceSensor);
+    }
+    else if (mEnableSegmentation && mSyntheticDataInterface->isSensorInitialized(mSegmentationSensor))
+    {
+        imgInfo = mSensorsInterface->getSensorInfo(mSegmentationSensor);
+    }
+    else if (mEnableSemantic && mSyntheticDataInterface->isSensorInitialized(mSemanticSensor))
+    {
+        imgInfo = mSensorsInterface->getSensorInfo(mSemanticSensor);
+    }
+    else if (mEnableBoundingBox2D && mSyntheticDataInterface->isSensorInitialized(mBoundingBox2DSensor))
+    {
+        imgInfo = mSensorsInterface->getSensorInfo(mBoundingBox2DSensor);
+    }
+    else if (mEnableBoundingBox3D && mSyntheticDataInterface->isSensorInitialized(mBoundingBox3DSensor))
+    {
+        imgInfo = mSensorsInterface->getSensorInfo(mBoundingBox3DSensor);
+    }
     else
     {
         return;
@@ -402,11 +420,11 @@ void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
     cam_info_msg.p = { imgInfo.tex.height * focalLength / verticalAperture,
                        0,
                        imgInfo.tex.height * 0.5f,
-                       0,
+                       mStereoOffset[0],
                        0,
                        imgInfo.tex.width * focalLength / horizontalAperture,
                        imgInfo.tex.width * 0.5f,
-                       0,
+                       mStereoOffset[1],
                        0,
                        0,
                        1,

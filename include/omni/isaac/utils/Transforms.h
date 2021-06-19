@@ -39,7 +39,7 @@ using omni::isaac::dynamic_control::DcTransform;
  * @param pxBodyTranslation
  * @param pxBodyRotation
  */
-inline void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
+static void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
                          pxr::UsdPrim& prim,
                          pxr::GfVec3f pxBodyTranslation,
                          pxr::GfQuatf pxBodyRotation)
@@ -49,29 +49,34 @@ inline void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicC
     // auto newTranslation = pxBodyTranslation; // + parentToWorldMat.ExtractTranslation();
     DcTransform t = omni::isaac::utils::conversions::asDcTransform(pxBodyTranslation, pxBodyRotation);
 
-    DcObjectType primType = mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
-    if (primType == omni::isaac::dynamic_control::eDcObjectArticulation)
+    if (mDynamicControlPtr->isSimulating())
     {
+        DcObjectType primType = mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
+        if (primType == omni::isaac::dynamic_control::eDcObjectArticulation)
+        {
 
-        DcHandle artculationHandle = mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
-        mDynamicControlPtr->wakeUpArticulation(artculationHandle);
-        DcHandle rigidBodyHandle = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
-        mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
-        mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
-        mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
-        mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
-        mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
-        mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
+            DcHandle artculationHandle = mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
+            mDynamicControlPtr->wakeUpArticulation(artculationHandle);
+            DcHandle rigidBodyHandle = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
+            mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
+            mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
+            mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
+            mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
+            mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
+            mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
+            return;
+        }
+        else if (primType == omni::isaac::dynamic_control::eDcObjectRigidBody)
+        {
+            DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
+            mDynamicControlPtr->wakeUpRigidBody(rigidBodyHandle);
+            mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
+            mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
+            mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
+            return;
+        }
     }
-    else if (primType == omni::isaac::dynamic_control::eDcObjectRigidBody)
-    {
-        DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
-        mDynamicControlPtr->wakeUpRigidBody(rigidBodyHandle);
-        mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
-        mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
-        mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
-    }
-    else
+    // In case we are not simulating or the object was a regular prim, go down this path
     {
         pxr::GfTransform usdBodyPose;
         usdBodyPose.SetTranslation(pxBodyTranslation);
@@ -89,12 +94,18 @@ inline void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicC
  * @param prim
  * @param pxBodyScale
  */
-inline void setScale(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
+static void setScale(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
                      pxr::UsdPrim& prim,
-                     pxr::GfVec3d pxBodyScale)
+                     pxr::GfVec3f pxBodyScale)
 {
-    DcObjectType primType = mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
-    if (primType == omni::isaac::dynamic_control::eDcObjectNone)
+    bool doScale = true;
+
+    if (mDynamicControlPtr->isSimulating())
+    {
+        DcObjectType primType = mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
+        doScale = (primType == omni::isaac::dynamic_control::eDcObjectNone);
+    }
+    if (doScale)
     {
         auto currentTransformMat = omni::usd::UsdUtils::getLocalTransformMatrix(prim);
         pxr::GfMatrix4d scaleMat;

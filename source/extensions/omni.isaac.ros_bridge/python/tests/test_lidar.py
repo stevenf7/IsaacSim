@@ -11,14 +11,13 @@ import asyncio
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
-from .common import add_cube, simulate, wait_for_rosmaster
+from .common import add_cube, simulate, wait_for_rosmaster, add_carter_ros
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
-from omni.isaac.utils.scripts.test_utils import load_test_file
 import rospy
-from pxr import Gf, PhysicsSchemaTools, Sdf
+from pxr import Sdf
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestLidar(omni.kit.test.AsyncTestCase):
+class TestRosLidar(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
@@ -72,22 +71,15 @@ class TestLidar(omni.kit.test.AsyncTestCase):
     async def test_lidar(self):
         from sensor_msgs.msg import LaserScan
 
-        (result, error) = await load_test_file(self._nucleus_path + "/Samples/ROS/Robots/Carter_ROS.usd")
-        self.assertTrue(result)
+        await add_carter_ros()
+        await add_cube("/cube", 75, (200, 0, 75))
 
-        stage = omni.usd.get_context().get_stage()
-
-        PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
-
-        self.assertTrue(result)
         self._lidar_data = None
 
         def lida_callback(data: LaserScan):
             self._lidar_data = data
 
         lidar_sub = rospy.Subscriber("scan", LaserScan, lida_callback)
-
-        await add_cube(stage, "/cube", 75, (200, 0, 75))
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -104,22 +96,15 @@ class TestLidar(omni.kit.test.AsyncTestCase):
     async def test_lidar_manual(self):
         from sensor_msgs.msg import LaserScan
 
-        (result, error) = await load_test_file(self._nucleus_path + "/Samples/ROS/Robots/Carter_ROS.usd")
-        self.assertTrue(result)
+        await add_carter_ros()
+        await add_cube("/cube", 75, (200, 0, 75))
 
-        stage = omni.usd.get_context().get_stage()
-
-        PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
-
-        self.assertTrue(result)
         self._lidar_data = None
 
         def lida_callback(data: LaserScan):
             self._lidar_data = data
 
         lidar_sub = rospy.Subscriber("scan", LaserScan, lida_callback)
-
-        await add_cube(stage, "/cube", 75, (200, 0, 75))
 
         # disable the lidar so we can tick it manually
         omni.kit.commands.execute(

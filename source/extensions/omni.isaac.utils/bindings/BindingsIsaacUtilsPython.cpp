@@ -56,7 +56,6 @@ PYBIND11_MODULE(_isaac_utils, m)
         Example:
             To create a surface gripper you need to aquire the :obj:`omni.isaac.dynamic_control`, interface import this submodule, create a Surface_Gripper_Properties, and then create a Surface Gripper:
 
-            .. highlight:: python
             .. code-block:: python
 
                 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper
@@ -539,28 +538,74 @@ PYBIND11_MODULE(_isaac_utils, m)
                 )pbdoc");
     auto transforms = m.def_submodule("transforms");
 
-    transforms.def("set_transform", [](DynamicControl* dynamicControlPtr, const long int stageId,
-                                       const std::string primPath, const carb::Float3& translation,
-                                       const carb::Float4& rotation) {
-        pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    transforms.def("set_transform",
+                   [](DynamicControl* dynamicControlPtr, const long int stageId, const std::string primPath,
+                      const carb::Float3& translation, const carb::Float4& rotation) {
+                       pxr::UsdStageWeakPtr stage =
+                           pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
-        pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
+                       pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
 
-        if (prim)
-        {
+                       if (prim)
+                       {
 
-            omni::isaac::utils::transforms::setTransform(dynamicControlPtr, prim,
-                                                         omni::isaac::utils::conversions::asGfVec3f(translation),
-                                                         omni::isaac::utils::conversions::asGfQuatf(rotation));
-        }
-        else
-        {
-            CARB_LOG_ERROR("Set Transform Prim %s Not Valid", primPath.c_str());
-        }
+                           omni::isaac::utils::transforms::setTransform(
+                               dynamicControlPtr, prim, omni::isaac::utils::conversions::asGfVec3f(translation),
+                               omni::isaac::utils::conversions::asGfQuatf(rotation));
+                       }
+                       else
+                       {
+                           CARB_LOG_ERROR("Set Transform Prim %s Not Valid", primPath.c_str());
+                       }
+                   },
+                   R"pbdoc(
+                Set transform for an object in the stage, handles physics objects if simulation is running using dynamic control
 
-        // return new
-        // // MapGenerator(physXPtr, stage);
-    });
+                Args:
+
+                    arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control`): handle to dynamic control api
+
+                    arg1 (:obj:`int`): Stage ID
+
+                    arg2 (:obj:`carb::Float3`): translation
+                    arg2 (:obj:`carb::Float4`): rotation
+                    
+                )pbdoc");
+
+    transforms.def("set_scale",
+                   [](DynamicControl* dynamicControlPtr, const long int stageId, const std::string primPath,
+                      const carb::Float3& scale) {
+                       pxr::UsdStageWeakPtr stage =
+                           pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+
+                       pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
+
+                       if (prim)
+                       {
+
+                           omni::isaac::utils::transforms::setScale(
+                               dynamicControlPtr, prim, omni::isaac::utils::conversions::asGfVec3f(scale));
+                       }
+                       else
+                       {
+                           CARB_LOG_ERROR("Set Scale Prim %s Not Valid", primPath.c_str());
+                       }
+
+                       // return new
+                       // // MapGenerator(physXPtr, stage);
+                   },
+                   R"pbdoc(
+                Set scale for an object in the stage
+
+                Args:
+
+                    arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control`): handle to dynamic control api
+
+                    arg1 (:obj:`int`): Stage ID
+
+                    arg2 (:obj:`carb::Float3`): scale
+                    
+                )pbdoc");
 
     // {
     //     using namespace omni::isaac::utils::conversions;
@@ -579,16 +624,86 @@ PYBIND11_MODULE(_isaac_utils, m)
     // }
 
     auto debug_draw = m.def_submodule("debug_draw");
+    debug_draw.doc() =
+        R"pbdoc( 
+            
+        Debug Drawing
+        -------------
 
+        This submodule provides bindings to draw debug lines and points
+        
+        Point Example:
+            drawn points to the screen with random colors and sizes
+
+            .. code-block:: python
+
+                import random
+                from omni.isaac.utils import _isaac_utils
+                draw = _isaac_utils.debug_draw.acquire_debug_draw_interface()
+                N = 10000
+                point_list_1 = [
+                    (random.uniform(-1000, 1000), random.uniform(-1000, 1000), random.uniform(-1000, 1000)) for _ in range(N)
+                ]
+                point_list_2 = [
+                    (random.uniform(-1000, 1000), random.uniform(1000, 3000), random.uniform(-1000, 1000)) for _ in range(N)
+                ]
+                point_list_3 = [
+                    (random.uniform(-1000, 1000), random.uniform(-3000, -1000), random.uniform(-1000, 1000)) for _ in range(N)
+                ]
+                colors = [(random.uniform(0.5, 1), random.uniform(0.5, 1), random.uniform(0.5, 1), 1) for _ in range(N)]
+                sizes = [random.randint(1, 50) for _ in range(N)]
+                draw.draw_points(point_list_1, [(1, 0, 0, 1)] * N, [10] * N)
+                draw.draw_points(point_list_2, [(0, 1, 0, 1)] * N, [10] * N)
+                draw.draw_points(point_list_3, colors, sizes)
+
+        Line Example:
+            drawn lines to the screen with random colors and widths
+
+            .. code-block:: python
+
+                import random
+                from omni.isaac.utils import _isaac_utils
+                draw = _isaac_utils.debug_draw.acquire_debug_draw_interface()
+                N = 10000
+                point_list_1 = [
+                    (random.uniform(1000, 3000), random.uniform(-1000, 1000), random.uniform(-1000, 1000)) for _ in range(N)
+                ]
+                point_list_2 = [
+                    (random.uniform(1000, 3000), random.uniform(-1000, 1000), random.uniform(-1000, 1000)) for _ in range(N)
+                ]
+                colors = [(random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1), 1) for _ in range(N)]
+                sizes = [random.randint(1, 25) for _ in range(N)]
+                draw.draw_lines(point_list_1, point_list_2, colors, sizes)
+
+        Spline Example:
+            drawn splines to the screen with random colors and widths
+
+            .. code-block:: python
+
+                from omni.isaac.utils import _isaac_utils
+                draw = _isaac_utils.debug_draw.acquire_debug_draw_interface()
+                point_list_1 = [
+                    (random.uniform(-300, -100), random.uniform(-100, 100), random.uniform(-100, 100)) for _ in range(10)
+                ]
+                draw.draw_lines_spline(point_list_1, (1, 1, 1, 1), 10, False)
+                point_list_2 = [
+                    (random.uniform(-300, -100), random.uniform(-100, 100), random.uniform(-100, 100)) for _ in range(10)
+                ]
+                draw.draw_lines_spline(point_list_2, (1, 1, 1, 1), 5, True)
+
+        )pbdoc";
     defineInterfaceClass<DebugDraw>(
         debug_draw, "DebugDraw", "acquire_debug_draw_interface", "release_debug_draw_interface")
 
-        .def("draw_points", wrapInterfaceFunction(&DebugDraw::drawPoints))
-        .def("clear_points", wrapInterfaceFunction(&DebugDraw::clearPoints))
-        .def("get_num_points", wrapInterfaceFunction(&DebugDraw::getNumPoints))
-        .def("draw_lines", wrapInterfaceFunction(&DebugDraw::drawLines))
-        .def("draw_lines_spline", wrapInterfaceFunction(&DebugDraw::drawLinesSpline))
-        .def("clear_lines", wrapInterfaceFunction(&DebugDraw::clearLines))
-        .def("get_num_lines", wrapInterfaceFunction(&DebugDraw::getNumLines));
+        .def("draw_points", wrapInterfaceFunction(&DebugDraw::drawPoints), "Draw a set of points to the screen")
+        .def("clear_points", wrapInterfaceFunction(&DebugDraw::clearPoints), "Clear points")
+        .def("get_num_points", wrapInterfaceFunction(&DebugDraw::getNumPoints),
+             "Return the current number of points being drawn")
+        .def("draw_lines", wrapInterfaceFunction(&DebugDraw::drawLines), "Draw a set of lines to the screen")
+        .def("draw_lines_spline", wrapInterfaceFunction(&DebugDraw::drawLinesSpline),
+             "Draw spline between a list of points as line segments")
+        .def("clear_lines", wrapInterfaceFunction(&DebugDraw::clearLines), "Clear lines")
+        .def("get_num_lines", wrapInterfaceFunction(&DebugDraw::getNumLines),
+             "Return the current number of lines being drawn");
 }
 }

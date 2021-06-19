@@ -46,7 +46,6 @@ IsaacApplication::~IsaacApplication()
     mTasking->destroyCounter(mTaskCounter);
 
     deleteAllComponents();
-    deleteRosNodes();
 }
 
 void IsaacApplication::initialize(pxr::UsdStageWeakPtr stage)
@@ -66,8 +65,14 @@ void IsaacApplication::tick(double dt)
     {
         if (component.second->mDoStart == true)
         {
-            component.second->onStart();
-            component.second->mDoStart = false;
+            // if the component has not started yet, check to see if its enabled
+            // if not enabled, do not start
+            component.second->IsaacComponent::onComponentChange();
+            if (component.second->getEnabled())
+            {
+                component.second->onStart();
+                component.second->mDoStart = false;
+            }
         }
     }
 
@@ -76,11 +81,11 @@ void IsaacApplication::tick(double dt)
         component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mSystemTimeNanoSeconds);
     }
 
-    for (auto& node : mRosNodes)
+    for (auto& component : mComponents)
     {
-        if (node.second)
+        if (component.second->getEnabled())
         {
-            node.second->tick();
+            component.second->tick();
         }
     }
     mTimeSeconds += dt;
@@ -95,20 +100,7 @@ void IsaacApplication::onStop()
         component.second->mDoStart = true;
     }
 }
-RosNode* IsaacApplication::getRosNode(const pxr::UsdPrim& prim)
-{
-    const pxr::RosBridgeSchemaRosBridgeComponent& typedPrim = pxr::RosBridgeSchemaRosBridgeComponent(prim);
 
-    std::string nodeName = "";
-    isaac::utils::safeGetAttribute(typedPrim.GetRosNodePrefixAttr(), nodeName);
-
-    if (mRosNodes.find(nodeName) == mRosNodes.end())
-    {
-        CARB_LOG_INFO("Creating Ros Node with prefix: %s", nodeName.c_str());
-        mRosNodes[nodeName] = std::make_unique<RosNode>(nodeName);
-    }
-    return mRosNodes[nodeName].get();
-}
 void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
 {
 
@@ -116,42 +108,42 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     if (prim.IsA<pxr::RosBridgeSchemaRosClock>())
     {
         component = std::make_unique<RosClock>();
-        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosClock(prim), mStage);
+        component->initialize(nullptr, pxr::RosBridgeSchemaRosClock(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosCamera>())
     {
         component = std::make_unique<RosCamera>(mViewportManager.get());
-        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosCamera(prim), mStage);
+        component->initialize(nullptr, pxr::RosBridgeSchemaRosCamera(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosJointState>())
     {
         component = std::make_unique<RosJointState>(mDynamicControlPtr);
-        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosJointState(prim), mStage);
+        component->initialize(nullptr, pxr::RosBridgeSchemaRosJointState(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosLidar>())
     {
         component = std::make_unique<RosLidar>();
-        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosLidar(prim), mStage);
+        component->initialize(nullptr, pxr::RosBridgeSchemaRosLidar(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosPoseTree>())
     {
         component = std::make_unique<RosPoseTree>(mDynamicControlPtr);
-        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosPoseTree(prim), mStage);
+        component->initialize(nullptr, pxr::RosBridgeSchemaRosPoseTree(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosTeleport>())
     {
         component = std::make_unique<RosTeleport>(mDynamicControlPtr);
-        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosTeleport(prim), mStage);
+        component->initialize(nullptr, pxr::RosBridgeSchemaRosTeleport(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosSurfaceGripper>())
     {
         component = std::make_unique<RosSurfaceGripper>(mDynamicControlPtr);
-        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosSurfaceGripper(prim), mStage);
+        component->initialize(nullptr, pxr::RosBridgeSchemaRosSurfaceGripper(prim), mStage);
     }
     else if (prim.IsA<pxr::RosBridgeSchemaRosDifferentialBase>())
     {
         component = std::make_unique<RosDifferentialBase>(mDynamicControlPtr);
-        component->initialize(getRosNode(prim), pxr::RosBridgeSchemaRosDifferentialBase(prim), mStage);
+        component->initialize(nullptr, pxr::RosBridgeSchemaRosDifferentialBase(prim), mStage);
     }
     if (component)
     {
@@ -171,7 +163,27 @@ void IsaacApplication::setUseSimTime(const bool useSimTime)
     }
 }
 
+bool IsaacApplication::tickComponent(const pxr::UsdPrim& prim)
+{
+    if (prim)
+    {
+        if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+        {
+            auto* component = mComponents[prim.GetPath().GetString()].get();
 
+
+            if (component->mDoStart == true)
+            {
+                component->onStart();
+                component->mDoStart = false;
+            }
+
+            component->tick();
+            return true;
+        }
+    }
+    return false;
+}
 }
 }
 }
