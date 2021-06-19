@@ -14,7 +14,7 @@ from omni.isaac.python_app import OmniKitHelper
 CONFIG = {
     "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
     "renderer": "RayTracedLighting",
-    "headless": True,
+    "headless": False,
 }
 
 if __name__ == "__main__":
@@ -48,22 +48,30 @@ if __name__ == "__main__":
     # Disable all ROS components so we can demonstrate publishing manually
     # Otherwise, if a component is enabled, it will publish every timestep
     omni.kit.commands.execute(
-        "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Camera_Stereo_Right.enabled"), value=False
+        "ChangeProperty",
+        prop_path=Sdf.Path("/World/Carter_ROS/ROS_Camera_Stereo_Right.enabled"),
+        value=False,
+        prev=None,
     )
     omni.kit.commands.execute(
-        "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Camera_Stereo_Left.enabled"), value=False
-    )
-    omni.kit.commands.execute("ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Lidar.enabled"), value=False)
-    omni.kit.commands.execute(
-        "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_DifferentialBase.enabled"), value=False
+        "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Camera_Stereo_Left.enabled"), value=False, prev=None
     )
     omni.kit.commands.execute(
-        "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Carter_Lidar_Broadcaster.enabled"), value=False
+        "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Lidar.enabled"), value=False, prev=None
     )
     omni.kit.commands.execute(
-        "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Carter_Broadcaster.enabled"), value=False
+        "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_DifferentialBase.enabled"), value=False, prev=None
     )
-    omni.kit.commands.execute("ChangeProperty", prop_path=Sdf.Path("/World/ROS_Clock.enabled"), value=False)
+    omni.kit.commands.execute(
+        "ChangeProperty",
+        prop_path=Sdf.Path("/World/Carter_ROS/ROS_Carter_Lidar_Broadcaster.enabled"),
+        value=False,
+        prev=None,
+    )
+    omni.kit.commands.execute(
+        "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Carter_Broadcaster.enabled"), value=False, prev=None
+    )
+    omni.kit.commands.execute("ChangeProperty", prop_path=Sdf.Path("/World/ROS_Clock.enabled"), value=False, prev=None)
     kit.play()
     kit.update(1.0 / 60.0)
     # Tick all of the components once to make sure all of the ROS nodes are initialized
@@ -73,75 +81,39 @@ if __name__ == "__main__":
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_DifferentialBase")
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Lidar_Broadcaster")
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Broadcaster")
+    omni.kit.commands.execute("RosBridgeTickComponent", path="/World/ROS_Clock")
     # Simulate for one second to warm up sim and let everything settle
+    kit.play()
     for frame in range(60):
         kit.update(1.0 / 60.0)
 
-    # from rosgraph_msgs.msg import Clock
-    # import rospy
+    # Dock the second camera window
+    right_viewport = omni.ui.Workspace.get_window("Viewport")
+    left_viewport = omni.ui.Workspace.get_window("Viewport_2")
+    if right_viewport is not None and left_viewport is not None:
+        left_viewport.dock_in(right_viewport, omni.ui.DockPosition.LEFT)
 
-    # # create a clock using sim time
-    # result, prim = omni.kit.commands.execute(
-    #     "ROSBridgeCreateClock", path="/ROS_Clock_Sim", clock_topic="/sim_time", sim_time=True
-    # )
-    # # create a clock using system time
-    # result, prim = omni.kit.commands.execute(
-    #     "ROSBridgeCreateClock", path="/ROS_Clock_System", clock_topic="/system_time", sim_time=False
-    # )
-    # # create a clock which we will publish manually, set enabled to false to make it manually controlled
-    # result, prim = omni.kit.commands.execute(
-    #     "ROSBridgeCreateClock", path="/ROS_Clock_Manual", clock_topic="/manual_time", sim_time=True, enabled=False
-    # )
-    # kit.update()
-    # kit.update()
+    kit.stop()
+    for frame in range(60):
+        kit.update(1.0 / 60.0)
+    kit.play()
+    frame = 0
+    while kit.app.is_running():
+        # Run with a fixed step size
+        kit.update(1.0 / 60.0)
+        # Publish clock every frame
+        omni.kit.commands.execute("RosBridgeTickComponent", path="/World/ROS_Clock")
+        # publish TF and Lidar every 2 frames
+        if frame % 2 == 0:
+            omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Lidar")
+            omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_DifferentialBase")
+            omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Lidar_Broadcaster")
+            omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Broadcaster")
+        # Publish cameras every 60 frames or one second of simulation
+        if frame % 60 == 0:
+            omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Camera_Stereo_Right")
+            omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Camera_Stereo_Left")
 
-    # # Define ROS callbacks
-    # def sim_clock_callback(data):
-    #     print("sim time:", data.clock.to_sec())
-
-    # def system_clock_callback(data):
-    #     print("system time:", data.clock.to_sec())
-
-    # def manual_clock_callback(data):
-    #     print("manual stepped sim time:", data.clock.to_sec())
-
-    # # Create rospy ndoe
-    # rospy.init_node("isaac_sim_test_gripper", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
-    # # create subscribers
-    # sim_clock_sub = rospy.Subscriber("sim_time", Clock, sim_clock_callback)
-    # system_clock_sub = rospy.Subscriber("system_time", Clock, system_clock_callback)
-    # manual_clock_sub = rospy.Subscriber("manual_time", Clock, manual_clock_callback)
-    # time.sleep(1.0)
-    # # start simulation
-    # kit.play()
-
-    # # perform a fixed number of steps with fixed step size
-    # for frame in range(20):
-
-    #     # publish manual clock every 10 frames
-    #     if frame % 10 == 0:
-    #         result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Clock_Manual")
-
-    #     kit.update(1.0 / 60.0)  # runs with a non-realtime clock
-    #     # This sleep is to make this sample run a bit more deterministically for the subscriber callback
-    #     # In general this sleep is not needed
-    #     time.sleep(0.1)
-
-    # # perform a fixed number of steps with realtime clock
-    # for frame in range(20):
-
-    #     # publish manual clock every 10 frames
-    #     if frame % 10 == 0:
-    #         result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Clock_Manual")
-
-    #     kit.update()  # runs with a realtime clock
-    #     # This sleep is to make this sample run a bit more deterministically for the subscriber callback
-    #     # In general this sleep is not needed
-    #     time.sleep(0.1)
-
-    # # cleanup and shutdown
-    # sim_clock_sub.unregister()
-    # system_clock_sub.unregister()
-    # manual_clock_sub.unregister()
+        frame = frame + 1
     kit.stop()
     kit.shutdown()

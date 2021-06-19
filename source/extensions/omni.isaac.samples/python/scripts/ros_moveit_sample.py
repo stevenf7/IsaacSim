@@ -27,8 +27,7 @@ FRANKA_STAGE_PATH = "/Franka"
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        """Initialize extension and UI elements
-        """
+        """Initialize extension and UI elements"""
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
@@ -53,24 +52,17 @@ class Extension(omni.ext.IExt):
         self._on_environment_setup()
 
     def add_clock(self):
-        self._stage = omni.usd.get_context().get_stage()
         omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock")
         pass
 
     def add_joint_state(self, stage_path):
-        self._stage = omni.usd.get_context().get_stage()
-        franka_prim = self._stage.GetPrimAtPath(stage_path)
         omni.kit.commands.execute(
-            "ROSBridgeCreateJointState", path="/ROS_JointState", articulation_prim_rel=[franka_prim.GetPath()]
+            "ROSBridgeCreateJointState", path="/ROS_JointState", articulation_prim_rel=[stage_path]
         )
         pass
 
     def add_pose_tree(self, stage_path):
-        self._stage = omni.usd.get_context().get_stage()
-        franka_prim = self._stage.GetPrimAtPath(stage_path)
-        omni.kit.commands.execute(
-            "ROSBridgeCreatePoseTree", path="/ROS_PoseTree", target_prims_rel=[franka_prim.GetPath()]
-        )
+        omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree", target_prims_rel=[stage_path])
         pass
 
     def create_franka(self, stage_path):
@@ -78,10 +70,14 @@ class Extension(omni.ext.IExt):
         asset_path = self._nucleus_path + usd_path
         prim = self._stage.DefinePrim(stage_path, "Xform")
         prim.GetReferences().AddReference(asset_path)
-        rot_mat = Gf.Matrix3d(Gf.Quatd(0.707, 0, 0, 0.707))
-        xform = UsdGeom.Xformable(prim)
-        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-        xform_op.Set(Gf.Matrix4d().SetRotate(rot_mat).SetTranslateOnly(Gf.Vec3d(0, -63.72215, 0)))
+        rot_mat = Gf.Matrix3d(Gf.Rotation((0, 0, 1), 90))
+        omni.kit.commands.execute(
+            "TransformPrimCommand",
+            path=prim.GetPath(),
+            old_transform_matrix=None,
+            new_transform_matrix=Gf.Matrix4d().SetRotate(rot_mat).SetTranslateOnly(Gf.Vec3d(0, -64, 0)),
+        )
+
         pass
 
     def create_environment(self, usd_path, background_path):
@@ -91,32 +87,30 @@ class Extension(omni.ext.IExt):
         )
         pass
 
-    async def _create_moveit_sample(self, task):
-        done, pending = await asyncio.wait({task})
-        if task in done:
-            print("Loading Franka Enviornment")
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 120, 120, 80, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 50, True)
-            self._stage = self._usd_context.get_stage()
+    async def _create_moveit_sample(self):
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        self._viewport.set_camera_position("/OmniverseKit_Persp", 120, 120, 80, True)
+        self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 50, True)
+        self._stage = self._usd_context.get_stage()
 
-            self.create_franka(FRANKA_STAGE_PATH)
-            self.create_environment("/Isaac/Environments/Simple_Room/simple_room.usd", "/background")
-
-            setup_physics(self._stage)
-
-            self.add_clock()
-            self.add_joint_state(FRANKA_STAGE_PATH)
-            self.add_pose_tree(FRANKA_STAGE_PATH)
-            self._timeline.play()
+        self.create_franka(FRANKA_STAGE_PATH)
+        await omni.kit.app.get_app().next_update_async()
+        self.create_environment("/Isaac/Environments/Simple_Room/simple_room.usd", "/background")
+        await omni.kit.app.get_app().next_update_async()
+        setup_physics(self._stage)
+        await omni.kit.app.get_app().next_update_async()
+        self.add_clock()
+        self.add_joint_state(FRANKA_STAGE_PATH)
+        self.add_pose_tree(FRANKA_STAGE_PATH)
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
 
     def _on_environment_setup(self):
-        # wait for new stage before creating franka
-        task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
-        asyncio.ensure_future(self._create_moveit_sample(task))
+        asyncio.ensure_future(self._create_moveit_sample())
 
     def on_shutdown(self):
-        """Cleanup objects on extension shutdown
-        """
+        """Cleanup objects on extension shutdown"""
         self._timeline.stop()
         remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
