@@ -246,6 +246,11 @@ void RosCamera::onComponentChange()
 void RosCamera::updateViewportSettings()
 {
     std::string primPath = mPrim.GetPath().GetString();
+    if (mViewportWindow != nullptr)
+    {
+        mViewportWindow = nullptr;
+        mViewportManager->unregisterViewport(primPath);
+    }
     if (mViewportWindow == nullptr)
     {
         std::string viewportWindowName = mViewportManager->getViewport();
@@ -253,13 +258,6 @@ void RosCamera::updateViewportSettings()
             mViewportInterface->getViewportWindowInstance(viewportWindowName.c_str()));
         mViewportManager->registerViewport(viewportWindowName, primPath);
     }
-    else
-    {
-        mViewportWindow = nullptr;
-        mViewportManager->unregisterViewport(primPath);
-    }
-    if (mViewportWindow == nullptr)
-        return;
 
     mViewportWindow->setActiveCamera(mCameraPath.GetString().c_str());
     if (mResolution[0] != 0 && mResolution[1] != 0 && mResolution != mPrevResolution)
@@ -434,11 +432,11 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
 
 void RosCamera::rgbPubCallback(ros::Publisher* pub)
 {
-    if (!mEnableRgb || !mRgbSensor || mViewportWindow == nullptr)
+    if (!mEnableRgb || mViewportWindow == nullptr)
     {
         return;
     }
-    if (!mSyntheticDataInterface->isSensorInitialized(mRgbSensor))
+    if (!mRgbSensor || !mSyntheticDataInterface->isSensorInitialized(mRgbSensor))
     {
         mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb, mViewportWindow);
         return;
@@ -481,11 +479,11 @@ void RosCamera::rgbPubCallback(ros::Publisher* pub)
 void RosCamera::depthPubCallback(ros::Publisher* pub)
 {
 
-    if (!mEnableDepth || !mDepthSensor || mViewportWindow == nullptr)
+    if (!mEnableDepth || mViewportWindow == nullptr)
     {
         return;
     }
-    if (!mSyntheticDataInterface->isSensorInitialized(mDepthSensor))
+    if (!mDepthSensor || !mSyntheticDataInterface->isSensorInitialized(mDepthSensor))
     {
         mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
         return;
@@ -523,11 +521,11 @@ void RosCamera::depthPubCallback(ros::Publisher* pub)
 
 void RosCamera::instancePubCallback(ros::Publisher* pub)
 {
-    if (!mEnableSegmentation || !mSegmentationSensor || mViewportWindow == nullptr)
+    if (!mEnableSegmentation || mViewportWindow == nullptr)
     {
         return;
     }
-    if (!mSyntheticDataInterface->isSensorInitialized(mSegmentationSensor))
+    if (!mSegmentationSensor || !mSyntheticDataInterface->isSensorInitialized(mSegmentationSensor))
     {
         mSegmentationSensor =
             mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
@@ -568,11 +566,11 @@ void RosCamera::instancePubCallback(ros::Publisher* pub)
 
 void RosCamera::semanticPubCallback(ros::Publisher* pub)
 {
-    if (!mEnableSegmentation || !mSemanticSensor || mViewportWindow == nullptr)
+    if (!mEnableSegmentation || mViewportWindow == nullptr)
     {
         return;
     }
-    if (!mSyntheticDataInterface->isSensorInitialized(mSemanticSensor))
+    if (!mSemanticSensor || !mSyntheticDataInterface->isSensorInitialized(mSemanticSensor))
     {
         mSemanticSensor =
             mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
@@ -611,11 +609,11 @@ void RosCamera::semanticPubCallback(ros::Publisher* pub)
 
 void RosCamera::labelPubCallback(ros::Publisher* pub)
 {
-    if (!mEnableSegmentation || !mSemanticSensor || mViewportWindow == nullptr)
+    if (!mEnableSegmentation || mViewportWindow == nullptr)
     {
         return;
     }
-    if (!mSyntheticDataInterface->isSensorInitialized(mSemanticSensor))
+    if (!mSemanticSensor || !mSyntheticDataInterface->isSensorInitialized(mSemanticSensor))
     {
         mSemanticSensor =
             mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
@@ -646,11 +644,11 @@ void RosCamera::labelPubCallback(ros::Publisher* pub)
 void RosCamera::boundingbox2dPubCallback(ros::Publisher* pub)
 {
 
-    if (!mEnableBoundingBox2D || !mBoundingBox2DSensor || mViewportWindow == nullptr)
+    if (!mEnableBoundingBox2D || mViewportWindow == nullptr)
     {
         return;
     }
-    if (!mSyntheticDataInterface->isSensorInitialized(mBoundingBox2DSensor))
+    if (!mBoundingBox2DSensor || !mSyntheticDataInterface->isSensorInitialized(mBoundingBox2DSensor))
     {
         mBoundingBox2DSensor =
             mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
@@ -726,12 +724,12 @@ void RosCamera::boundingbox2dPubCallback(ros::Publisher* pub)
 
 void RosCamera::boundingbox3dPubCallback(ros::Publisher* pub)
 {
-    if (!mEnableBoundingBox3D || !mBoundingBox3DSensor || mViewportWindow == nullptr)
+    if (!mEnableBoundingBox3D || mViewportWindow == nullptr)
     {
         return;
     }
 
-    if (!mSyntheticDataInterface->isSensorInitialized(mBoundingBox3DSensor))
+    if (!mBoundingBox3DSensor || !mSyntheticDataInterface->isSensorInitialized(mBoundingBox3DSensor))
     {
         mBoundingBox3DSensor =
             mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);

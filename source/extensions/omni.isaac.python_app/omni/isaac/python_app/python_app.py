@@ -33,7 +33,7 @@ class OmniKitHelper:
             kit = OmniKitHelper(config = startup_config)   # Start omniverse kit
             ### Perform any omniverse imports here after the helper loads ###
             # <Code to generate or load a scene>
-            
+
             kit.play()      # Start simulation
             kit.update(1.0 / 60.0)    # Render a single frame with a specified timestep
             kit.stop()      # Stop Simulation
@@ -115,22 +115,22 @@ class OmniKitHelper:
         # Dock windows  if they exist
         main_dockspace = omni.ui.Workspace.get_window("DockSpace")
 
-        def dock_window(space, name, location):
+        def dock_window(space, name, location, ratio=0.5):
             window = omni.ui.Workspace.get_window(name)
             if window and space:
-                window.dock_in(space, location)
+                window.dock_in(space, location, ratio=ratio)
             return window
 
-        view = dock_window(main_dockspace, "Viewport", omni.ui.DockPosition.TOP)
+        view = dock_window(main_dockspace, "Viewport", omni.ui.DockPosition.TOP, 0.7)
         self.update()
-        console = dock_window(view, "Console", omni.ui.DockPosition.BOTTOM)
-        prop = dock_window(view, "Property", omni.ui.DockPosition.RIGHT)
+        console = dock_window(view, "Console", omni.ui.DockPosition.BOTTOM, 0.3)
+        prop = dock_window(view, "Property", omni.ui.DockPosition.RIGHT, 0.3)
         dock_window(view, "Main ToolBar", omni.ui.DockPosition.LEFT)
         self.update()
         # dock_window(console, "Synthetic Data Sensors", omni.ui.DockPosition.SAME)
         # dock_window(console, "Robot Engine Bridge", omni.ui.DockPosition.SAME)
         # dock_window(console, "Domain Randomizer", omni.ui.DockPosition.SAME)
-        dock_window(prop, "Render Settings", omni.ui.DockPosition.SAME)
+        dock_window(prop, "Render Settings", omni.ui.DockPosition.SAME, 0.3)
         self.update()
         print("OmniKitHelper Startup Complete")
 

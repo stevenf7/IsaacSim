@@ -25,6 +25,7 @@ if __name__ == "__main__":
     ext_manager = omni.kit.app.get_app().get_extension_manager()
     ext_manager.set_extension_enabled_immediate("omni.isaac.ros_bridge", True)
 
+    # Note that this is not the system level rospy, but one compiled for omniverse
     from rosgraph_msgs.msg import Clock
     import rospy
 

@@ -75,6 +75,7 @@ if __name__ == "__main__":
     kit.play()
     kit.update(1.0 / 60.0)
     # Tick all of the components once to make sure all of the ROS nodes are initialized
+    # For cameras this also handles viewport initialization etc.
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Camera_Stereo_Right")
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Camera_Stereo_Left")
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Lidar")
@@ -83,7 +84,6 @@ if __name__ == "__main__":
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Broadcaster")
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/ROS_Clock")
     # Simulate for one second to warm up sim and let everything settle
-    kit.play()
     for frame in range(60):
         kit.update(1.0 / 60.0)
 
@@ -93,9 +93,14 @@ if __name__ == "__main__":
     if right_viewport is not None and left_viewport is not None:
         left_viewport.dock_in(right_viewport, omni.ui.DockPosition.LEFT)
 
-    kit.stop()
-    for frame in range(60):
-        kit.update(1.0 / 60.0)
+    # Create a rostopic to publish message to spin robot in place
+    # Note that this is not the system level rospy, but one compiled for omniverse
+    from geometry_msgs.msg import Twist
+    import rospy
+
+    rospy.init_node("carter_stereo", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
+    pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)
+
     kit.play()
     frame = 0
     while kit.app.is_running():
@@ -109,11 +114,17 @@ if __name__ == "__main__":
             omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_DifferentialBase")
             omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Lidar_Broadcaster")
             omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Broadcaster")
+            # because we only tick the differential base component every two frames, we can also publish the ROS message at the same rate
+            message = Twist()
+            message.angular.z = 0.2  # spin in place
+            pub.publish(message)
         # Publish cameras every 60 frames or one second of simulation
         if frame % 60 == 0:
             omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Camera_Stereo_Right")
             omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Camera_Stereo_Left")
 
         frame = frame + 1
+    pub.unregister()
+    rospy.signal_shutdown("carter_stereo complete")
     kit.stop()
     kit.shutdown()
