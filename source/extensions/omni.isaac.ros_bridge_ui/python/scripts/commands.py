@@ -31,7 +31,7 @@ class RosBridgeCreatePrim(omni.kit.commands.Command):
     def __init__(self, path: str, parent: str, enabled: bool, scehma_type):
         self._path = path
         self._parent = parent
-        self._scehma_type = scehma_type
+        self._schema_type = scehma_type
         self._prim_path = None
         self._enabled = enabled
         pass
@@ -40,7 +40,7 @@ class RosBridgeCreatePrim(omni.kit.commands.Command):
         self._stage = omni.usd.get_context().get_stage()
         # make prim path unique
         self._prim_path = get_path(self._stage, self._path, self._parent)
-        self._prim = self._scehma_type.Define(self._stage, self._prim_path)
+        self._prim = self._schema_type.Define(self._stage, self._prim_path)
         setup_base_prim(self._prim, self._enabled)
         return self._prim
 

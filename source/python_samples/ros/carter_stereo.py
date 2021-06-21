@@ -101,7 +101,6 @@ if __name__ == "__main__":
     rospy.init_node("carter_stereo", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
     pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)
 
-    kit.play()
     frame = 0
     while kit.app.is_running():
         # Run with a fixed step size

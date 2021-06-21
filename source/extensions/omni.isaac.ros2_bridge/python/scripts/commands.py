@@ -31,4 +31,28 @@ class Ros2BridgeUseSimTime(omni.kit.commands.Command):
         pass
 
 
+class Ros2BridgeTickComponent(omni.kit.commands.Command):
+    """
+    Tick all publishers/subscribers on a specific component
+
+    Args:
+        arg0: (:obj:`str`): Path to component
+
+    Returns:
+
+        `True` if component was found, `False` otherwise.
+    """
+
+    def __init__(self, path: str):
+        self._path = path
+        self._ros_bridge = _ros2_bridge.acquire_ros_bridge_interface()
+        pass
+
+    def do(self):
+        return self._ros2_bridge.tick_component(self._path)
+
+    def undo(self):
+        pass
+
+
 omni.kit.commands.register_all_commands_in_module(__name__)
