@@ -16,7 +16,7 @@ import gc
 import asyncio
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-from pxr import Gf, UsdGeom
+from pxr import Gf
 
 from omni.isaac.utils.scripts.scene_utils import setup_physics, create_background
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
@@ -33,8 +33,6 @@ class Extension(omni.ext.IExt):
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = None
-        self._load_franka_btn = None
-        self._ros_setup_btn = None
 
         result, nucleus_server = find_nucleus_server()
         if result is False:
