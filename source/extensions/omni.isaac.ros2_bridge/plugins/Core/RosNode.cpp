@@ -29,7 +29,7 @@ RosNode::RosNode(std::string name)
     // {
     //     fullName = ros::names::clean(ros::this_node::getName() + "/" + name);
     // }
-    CARB_LOG_INFO("Ros2 Node Was Created");
+
     if (name.size() == 0)
     {
         carb::Framework* framework = carb::getFramework();
@@ -40,6 +40,11 @@ RosNode::RosNode(std::string name)
             name = "OmniIsaacRos2Bridge";
         }
     }
+    else
+    {
+        std::replace_if(name.begin(), name.end(), [](auto ch) { return !(::isalnum(ch) || ch == '_'); }, '_');
+    }
+    CARB_LOG_INFO("Ros2 Node Was Created with name %s", name.c_str());
     rosnode_ = std::make_shared<rclcpp::Node>(name);
     executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
     executor->add_node(rosnode_);

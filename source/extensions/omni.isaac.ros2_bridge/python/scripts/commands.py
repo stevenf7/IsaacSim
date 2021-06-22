@@ -45,7 +45,7 @@ class Ros2BridgeTickComponent(omni.kit.commands.Command):
 
     def __init__(self, path: str):
         self._path = path
-        self._ros_bridge = _ros2_bridge.acquire_ros_bridge_interface()
+        self._ros2_bridge = _ros2_bridge.acquire_ros2_bridge_interface()
         pass
 
     def do(self):
