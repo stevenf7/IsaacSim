@@ -54,6 +54,7 @@ class OmniKitHelper:
         "max_volume_bounces": 4,
         "sync_loads": False,
         "experience": "isaac-sim.python.kit",
+        "display_options": 0,
     }
     """
     The config variable is a dictionary containing the following entries
@@ -71,6 +72,7 @@ class OmniKitHelper:
         max_volume_bounces(int): Maximum number of bounces for volumetric, used for `PathTracing` only. Defaults to 4
         sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
         experience (str): The config file used to launch the application.
+        display_options (int): used to specify whats visible in the stage by default. Defaults to 0 so extra objects do not appear in synthetic data
     """
 
     def __init__(self, config=DEFAULT_CONFIG):
@@ -138,7 +140,7 @@ class OmniKitHelper:
         args = [
             os.path.abspath(__file__),
             f'{self.config["experience"]}',
-            "--/persistent/app/viewport/displayOptions=0",  # hide extra stuff in viewport
+            f'--/persistent/app/viewport/displayOptions={self.config["display_options"]}',  # hide extra stuff in viewport
             # TODO Make this a config setting?
             "--/persistent/physics/overrideGPUSettings=0",  # force CPU physx
             # Forces kit to not render until all USD files are loaded
