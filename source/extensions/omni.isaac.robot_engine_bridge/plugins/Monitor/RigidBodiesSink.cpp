@@ -164,7 +164,9 @@ void RigidBodiesSink::publishAllMessages()
         bodyIndex++;
     }
     std::vector<std::unique_ptr<IsaacBuffer>> buffers;
-    publish(mOutputComponent, mRigidBodyChannelName, rigidBodiesMessage, buffers);
+    // We publish in json mode to handle cases with many prims
+    bool publishBinary = mObjects.size() <= 10;
+    publish(mOutputComponent, mRigidBodyChannelName, rigidBodiesMessage, buffers, publishBinary);
 }
 
 void RigidBodiesSink::onStart()
