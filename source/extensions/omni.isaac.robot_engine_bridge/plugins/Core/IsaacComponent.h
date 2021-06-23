@@ -142,7 +142,8 @@ public:
     isaac_error_t publish(const std::string& component,
                           const std::string& channel,
                           T& data,
-                          const std::vector<std::unique_ptr<IsaacBuffer>>& buffers)
+                          const std::vector<std::unique_ptr<IsaacBuffer>>& buffers,
+                          bool publishBinary = true)
     {
         CARB_PROFILE_ZONE(0, "publishMessage");
 
@@ -150,18 +151,23 @@ public:
         mError = (mIsaacCApiPtr->isaac_create_message)(mAppHandle, &uuid);
 
 
-#if 1
+        if (publishBinary)
+        {
 
-        data.capnpSegmentsToFlatArray();
+            data.capnpSegmentsToFlatArray();
+            // data.printJson();
 
-        (mIsaacCApiPtr->isaac_set_message_proto_segments(
-            mAppHandle, &uuid, reinterpret_cast<const void**>(data.segment_ptrs.data()),
-            reinterpret_cast<int64_t*>(data.segment_sizes.data()), data.segment_ptrs.size()));
-#else
-        kj::String message_json = isaac_message::gJsonCodec.encode(data.getProto());
-        isaac_const_json_t json = { message_json.cStr(), message_json.size() };
-        (mIsaacCApiPtr->isaac_write_message_json)(mAppHandle, &uuid, &json);
-#endif
+            (mIsaacCApiPtr->isaac_set_message_proto_segments(
+                mAppHandle, &uuid, reinterpret_cast<const void**>(data.segment_ptrs.data()),
+                reinterpret_cast<int64_t*>(data.segment_sizes.data()), data.segment_ptrs.size()));
+        }
+        else
+        {
+            kj::String message_json = isaac_message::gJsonCodec.encode(data.getProto());
+            isaac_const_json_t json = { message_json.cStr(), message_json.size() };
+            (mIsaacCApiPtr->isaac_write_message_json)(mAppHandle, &uuid, &json);
+            // CARB_LOG_ERROR("%s", message_json.cStr());
+        }
 
         int64_t buffer_index = 0;
 

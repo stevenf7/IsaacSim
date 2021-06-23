@@ -230,6 +230,51 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
+    async def test_sink_batch(self):
+
+        UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+        rel_list = []
+        num_cubes = 100
+        for p in range(num_cubes):
+            cube_prim = self.add_cube(f"/cube_{p}", 100, (0, 0, 10))
+            rel_list.append(cube_prim.GetPath())
+
+        result, prim = omni.kit.commands.execute(
+            "RobotEngineBridgeCreateRigidBodySink",
+            path="/REB_RigidBodySink",
+            parent=None,
+            enabled=True,
+            output_component="output",
+            output_channel="bodies",
+            rigid_body_prims_rel=rel_list,
+        )
+
+        self.assertTrue(result)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        test_app = PyaliceApp()
+        test_app.app.load(
+            filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
+        )
+
+        test_app.start()
+        # Run test so tcp is connected
+        await simulate(1)
+        # Check that we got a message
+        msg = test_app.app.receive("simulation.interface", "output", "bodies")
+
+        self.assertTrue(msg)
+        # Check that the number of bodies in the message matches what we expect
+        self.assertEqual(len(msg.proto.bodies), num_cubes)
+
+        self._timeline.stop()
+        test_app.stop()
+        test_app = None
+
+        pass
+
     # This test is failing currently, need to investigate and file a bug
     # async def test_actor_spawner_dynamic(self):
     #     result, prim = omni.kit.commands.execute(
