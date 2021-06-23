@@ -154,9 +154,11 @@ class Extension(omni.ext.IExt):
                     world_mtx = prim_transform * world_mtx * prim_transform.GetInverse()
                 else:
                     world_mtx = world_mtx * prim_transform.GetInverse()
+                world_rot = world_mtx.ExtractRotation()
                 # print(world_mtx)
                 mesh["points"][:] = [world_mtx.TransformAffine(x) for x in mesh["points"]]
                 mesh["normals"] = usdMesh.GetNormalsAttr().Get()
+                mesh["normals"][:] = [world_rot.TransformDir(x).GetNormalized() for x in mesh["normals"]]
                 mesh["vertex_counts"] = usdMesh.GetFaceVertexCountsAttr().Get()
                 mesh["vertex_indices"] = usdMesh.GetFaceVertexIndicesAttr().Get()
                 # mesh["st"] = usdMesh.GetPrimvar("st").Get()
