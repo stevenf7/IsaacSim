@@ -101,7 +101,7 @@ class Extension(omni.ext.IExt):
                 )
 
                 ui.Label(
-                    "Spawn the vehiche (or load your own asset)\nPress the Toggle Controller button\nCreate the REB application\nPress play"
+                    "Spawn the vehicle (or load your own asset)\nPress the Toggle Controller button\nCreate the REB application\nPress play"
                 )
                 ui.Label("Once connected use WASD to control")
                 ui.Button("Spawn Vehicle", clicked_fn=self._on_environment_setup)
