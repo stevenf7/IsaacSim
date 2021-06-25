@@ -27,6 +27,7 @@ from .settings import (
     DEFAULT_APP_SETTING,
     SHOW_CONSOLE_SETTING,
     PERSISTENT_LAUNCHER_SETTING,
+    STARTUP_ARGS_SETTING,
 )
 
 CURRENT_PATH = Path(__file__).parent
@@ -90,6 +91,7 @@ class LauncherWindow:
             app_version=app_version,
             app_become_new_default=self._app_as_default.get_value_as_bool(),
             close_on_launch=not self._persistent_launcher.get_value_as_bool(),
+            extra_args=str.split(self._extra_args.get_value_as_string()),
         )
 
     def _get_selected_app_id(self):
@@ -356,9 +358,23 @@ class LauncherWindow:
     def _build_launch_controls(self):
         import omni.ui as ui
 
-        ui.Spacer(height=20)
         with ui.VStack(height=0, style={"VStack": {"margin": 10}}):
+            with ui.HStack(height=0):
 
+                def on_value_changed(model):
+                    self._settings.set_string(STARTUP_ARGS_SETTING, model.get_value_as_string())
+
+                ui.Spacer(width=10)
+                ui.Label("Extra Args:", width=0)
+                ui.Spacer(width=10)
+                self._extra_args = ui.StringField(
+                    tooltip=textwrap.fill("Extra command line arguments to use when launching the selected app", 80)
+                ).model
+
+                self._extra_args.set_value(self._settings.get_as_string(STARTUP_ARGS_SETTING))
+                self._extra_args.add_end_edit_fn(on_value_changed)
+
+            ui.Spacer(height=5)
             with ui.HStack(height=0):
                 ui.Spacer(width=10)
                 self._app_as_default = ui.CheckBox(height=10, width=30).model

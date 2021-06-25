@@ -16,3 +16,4 @@ EXPERIMENTAL_APPS_SETTING = "/ext/omni.isaac.launcher/experimental_apps"
 AUTO_LAUNCH_SETTING = "/persistent/ext/omni.isaac.launcher/auto_launch"
 
 DEFAULT_APP_SETTING = "/persistent/ext/omni.isaac.launcher/default_app"
+STARTUP_ARGS_SETTING = "/persistent/ext/omni.isaac.launcher/startup_args"

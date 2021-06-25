@@ -18,7 +18,7 @@ import carb.tokens
 import omni.kit.app
 
 
-def launch_app(app_id: str, app_version: str, app_become_new_default=False, close_on_launch=False):
+def launch_app(app_id: str, app_version: str, app_become_new_default=False, close_on_launch=False, extra_args=[]):
     """ show the omniverse ui documentation as an external Application """
     _settings = carb.settings.get_settings()
 
@@ -45,6 +45,7 @@ def launch_app(app_id: str, app_version: str, app_become_new_default=False, clos
 
     app_launch_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
     launch_args = [f"{app_launch_folder}/{app_execFile}.{script_extension}"]
+    launch_args.extend(extra_args)
 
     kwargs: Dict[str, Any] = {"close_fds": False}
     if platform.system().lower() == "windows":
@@ -54,7 +55,7 @@ def launch_app(app_id: str, app_version: str, app_become_new_default=False, clos
     else:
         if _settings.get(SHOW_CONSOLE_SETTING):
             kwargs["shell"] = True
-            launch_args = f"gnome-terminal -- {launch_args[0]}"
+            launch_args = f"gnome-terminal -- {str(' '.join(launch_args))}"
     subprocess.Popen(launch_args, **kwargs)
 
     if close_on_launch:
