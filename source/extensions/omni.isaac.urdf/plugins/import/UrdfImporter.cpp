@@ -451,7 +451,15 @@ void AddSingleJoint(const UrdfJoint& joint,
             driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
             driveAPI.CreateStiffnessAttr().Set(joint.dynamics.stiffness);
             // Prismatic joint velocity should be scaled to stage units, but not revolute
-            physxJoint.CreateMaxJointVelocityAttr().Set(static_cast<float>(joint.limit.velocity * distanceScale));
+            if (joint.limit.velocity > 0)
+            {
+                physxJoint.CreateMaxJointVelocityAttr().Set(static_cast<float>(joint.limit.velocity * distanceScale));
+            }
+            else
+            {
+                CARB_LOG_WARN("Joint %s has a velocity limit of %f which is <=0, Value will be ignored unless it is > 0",
+                              joint.name.c_str(), joint.limit.velocity);
+            }
         }
         // continuous and revolute are identical except for setting limits
         else if (joint.type == UrdfJointType::REVOLUTE || joint.type == UrdfJointType::CONTINUOUS)
@@ -476,7 +484,15 @@ void AddSingleJoint(const UrdfJoint& joint,
             driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
             driveAPI.CreateStiffnessAttr().Set(joint.dynamics.stiffness);
             // Convert revolute joint velocity limit to deg/s
-            physxJoint.CreateMaxJointVelocityAttr().Set(static_cast<float>(180.0f / M_PI * joint.limit.velocity));
+            if (joint.limit.velocity > 0)
+            {
+                physxJoint.CreateMaxJointVelocityAttr().Set(static_cast<float>(180.0f / M_PI * joint.limit.velocity));
+            }
+            else
+            {
+                CARB_LOG_WARN("Joint %s has a velocity limit of %f which is <=0, Value will be ignored unless it is > 0",
+                              joint.name.c_str(), joint.limit.velocity);
+            }
         }
     }
 }

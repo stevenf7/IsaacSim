@@ -106,12 +106,14 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
     async def test_command_active(self):
         self.assertTrue(create_application()[1])
         self._timeline.play()
-        await simulate(1)
+        await omni.kit.app.get_app().next_update_async()
         self.run_command_basic()
-        await simulate(1)
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeTickComponent", path="/REB_Lidar")[1])
         self.assertFalse(omni.kit.commands.execute("RobotEngineBridgeTickComponent", path="/REB_DOESNT_EXIST")[1])
-        await simulate(0.25)
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         self._timeline.stop()
 
