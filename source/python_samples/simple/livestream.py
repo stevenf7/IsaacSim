@@ -13,9 +13,10 @@ import omni
 # This sample enables a livestream server to connect to when running headless
 CONFIG = {
     "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
-    "width": 1920,
-    "height": 1080,
-    "sync_loads": True,
+    "width": 1280,
+    "height": 720,
+    "window_width": 1920,
+    "window_height": 1080,
     "headless": True,
     "renderer": "RayTracedLighting",
     "display_options": 3807,  # Set display options to show default grid
