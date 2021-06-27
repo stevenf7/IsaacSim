@@ -8,6 +8,7 @@
 
 import os
 import time
+import carb
 from omni.isaac.python_app import OmniKitHelper
 
 CONFIG = {
@@ -24,7 +25,16 @@ if __name__ == "__main__":
     # enable ROS bridge extension
     ext_manager = omni.kit.app.get_app().get_extension_manager()
     ext_manager.set_extension_enabled_immediate("omni.isaac.ros_bridge", True)
-
+    # check if rosmaster node is running
+    # this is to prevent this sample from waiting indefinetly if roscore is not running
+    # can be removed in regular usage
+    kit.update()
+    result, check = omni.kit.commands.execute("RosBridgeRosMasterCheck")
+    if not check:
+        carb.log_error("Please run roscore before executing this script")
+        kit.stop()
+        kit.shutdown()
+        exit()
     # Note that this is not the system level rospy, but one compiled for omniverse
     from rosgraph_msgs.msg import Clock
     import rospy

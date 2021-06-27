@@ -41,38 +41,44 @@ class OmniKitHelper:
     """
 
     DEFAULT_CONFIG = {
+        "experience": "isaac-sim.python.kit",
+        "headless": True,
+        "active_gpu": None,
+        "sync_loads": False,
         "width": 1024,
         "height": 800,
+        "window_width": 900,
+        "window_height": 1440,
+        "display_options": 0,
+        "subdiv_refinement_level": 0,
         "renderer": "PathTracing",  # Can also be RayTracedLighting
         "anti_aliasing": 3,  # 3 for dlss, 2 for fxaa, 1 for taa, 0 to disable aa
         "samples_per_pixel_per_frame": 64,
         "denoiser": True,
-        "subdiv_refinement_level": 0,
-        "headless": True,
         "max_bounces": 4,
         "max_specular_transmission_bounces": 6,
         "max_volume_bounces": 4,
-        "sync_loads": False,
-        "experience": "isaac-sim.python.kit",
-        "display_options": 0,
     }
     """
     The config variable is a dictionary containing the following entries
 
     Args:
+        experience (str): The config file used to launch the application. Must be specified
+        headless (bool): Disable UI when running. Defaults to True
+        active_gpu (int): Specify the GPU to use when running, set to None to use default value which is usually the first gpu, default is None
+        sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
         width (int): Width of the viewport and generated images. Defaults to 1024
         height (int): Height of the viewport and generated images. Defaults to 800
-        renderer (str): Rendering mode, can be  `RayTracedLighting` or `PathTracing`. Defaults to `PathTracing`
-        samples_per_pixel_per_frame (int): The number of samples to render per frame, used for `PathTracing` only. Defaults to 64
-        denoiser (bool):  Enable this to use AI denoising to improve image quality. Defaults to True
+        window_width (int): Width of the application window, idependent of viewport, defaults to 900,
+        window_height (int): Height of the application window, idependent of viewport, defaults to 1440,
+        display_options (int): used to specify whats visible in the stage by default. Defaults to 0 so extra objects do not appear in synthetic data. 3807 is another good default, used for the regular isaac-sim editor experience
         subdiv_refinement_level (int): Number of subdivisons to perform on supported geometry. Defaults to 0
-        headless (bool): Disable UI when running. Defaults to True
+        renderer (str): Rendering mode, can be  `RayTracedLighting` or `PathTracing`. Defaults to `PathTracing`
+        samples_per_pixel_per_frame (int): The number of samples to render per frame, increase for improved quality, used for `PathTracing` only. Defaults to 64
+        denoiser (bool):  Enable this to use AI denoising to improve image quality, used for `PathTracing` only. Defaults to True
         max_bounces (int): Maximum number of bounces, used for `PathTracing` only. Defaults to 4
         max_specular_transmission_bounces(int): Maximum number of bounces for specular or transmission, used for `PathTracing` only. Defaults to 6
-        max_volume_bounces(int): Maximum number of bounces for volumetric, used for `PathTracing` only. Defaults to 4
-        sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
-        experience (str): The config file used to launch the application.
-        display_options (int): used to specify whats visible in the stage by default. Defaults to 0 so extra objects do not appear in synthetic data
+        max_volume_bounces(int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
     """
 
     def __init__(self, config=DEFAULT_CONFIG):
@@ -153,10 +159,12 @@ class OmniKitHelper:
             "--/app/asyncRendering=False",
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',
+            f'--/app/window/width={self.config["window_width"]}',
+            f'--/app/window/height={self.config["window_height"]}',
             "--ext-folder",
             f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',  # adding to json doesn't work
         ]
-        if self.config.get("active_gpu"):
+        if self.config.get("active_gpu") is not None:
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
         # parse any extra command line args here
         parser = argparse.ArgumentParser()
