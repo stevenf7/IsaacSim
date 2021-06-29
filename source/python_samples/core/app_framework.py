@@ -40,8 +40,8 @@ class PythonApp:
         # Set some settings
         sys.argv.append("--/app/asyncRendering=False")
 
-        # Start the default Kit Experience App
-        self.app.startup("kit", app_root, sys.argv)
+        # Start the app
+        self.app.startup("Isaac-Sim", app_root, sys.argv)
 
     def shutdown(self):
         # Shutdown

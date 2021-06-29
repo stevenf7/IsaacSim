@@ -47,8 +47,8 @@ class OmniKitHelper:
         "sync_loads": False,
         "width": 1024,
         "height": 800,
-        "window_width": 900,
-        "window_height": 1440,
+        "window_width": 1440,
+        "window_height": 900,
         "display_options": 0,
         "subdiv_refinement_level": 0,
         "renderer": "PathTracing",  # Can also be RayTracedLighting
@@ -69,8 +69,8 @@ class OmniKitHelper:
         sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
         width (int): Width of the viewport and generated images. Defaults to 1024
         height (int): Height of the viewport and generated images. Defaults to 800
-        window_width (int): Width of the application window, idependent of viewport, defaults to 900,
-        window_height (int): Height of the application window, idependent of viewport, defaults to 1440,
+        window_width (int): Width of the application window, independent of viewport, defaults to 1440,
+        window_height (int): Height of the application window, independent of viewport, defaults to 900,
         display_options (int): used to specify whats visible in the stage by default. Defaults to 0 so extra objects do not appear in synthetic data. 3807 is another good default, used for the regular isaac-sim editor experience
         subdiv_refinement_level (int): Number of subdivisons to perform on supported geometry. Defaults to 0
         renderer (str): Rendering mode, can be  `RayTracedLighting` or `PathTracing`. Defaults to `PathTracing`

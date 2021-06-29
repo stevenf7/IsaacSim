@@ -124,6 +124,7 @@ def main():
     axes[6].imshow(bboxes3D_rgb)
 
     # Save figure
+    print("saving figure to: ", os.getcwd() + "/visualize_groundtruth.png")
     plt.savefig("visualize_groundtruth.png")
 
     # cleanup
