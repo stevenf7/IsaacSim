@@ -304,19 +304,23 @@ gxf_result_t GxfContext::stop()
         if ((result = GxfGraphInterrupt(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphInterrupt %s", GxfResultStr(result));
+            return result;
         }
         if ((result = GxfGraphWait(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphWait %s", GxfResultStr(result));
+            return result;
         }
         if ((result = GxfGraphDeactivate(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphDeactivate %s", GxfResultStr(result));
+            return result;
         }
     }
     else
     {
         CARB_LOG_WARN("Context already stopped");
+        return GXF_FAILURE;
     }
     return GXF_SUCCESS;
 }
