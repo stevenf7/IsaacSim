@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[0.1.5] - 2021-07-30
+========================
+
+Fixed
+-------
+- Zero joint velocity issue
+- Artifact when dragging URDF file due to transform matrix
+
+
 [0.1.4] - 2021-06-09
 ========================
 
