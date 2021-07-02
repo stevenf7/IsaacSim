@@ -1,68 +1,128 @@
 # Omniverse Isaac Sim
-This is where the Robotics experiece for Omniverse is developed
+This is where the Robotics experience for Omniverse is developed
 
 [Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Sim)
 
 [Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/releases)
 
-### Branches
-* Master: Stable, should be used by most users
-* Develop: Latest Codebase
-
-### Latest Documentation and Packages
-
 [Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/overview.html)
 
-[Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Master_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
 
-[Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
+# Getting Started
 
+[See here for general hardware and driver requirements](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/requirements.html)
 
-### Filing Bugs and Feature Requests
-Use the links below to create a new bug/feature request
-* [Create New Bug](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=1&priority=10&assignee=hmazhar&customfield_16630=17684&components=22384&customfield_10005=OM-24041)
-* [Create New Feature Request](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=2&assignee=hmazhar&customfield_16630=17684&components=22384&customfield_10005=OM-24047)
-* [Main Robotics JIRA Board](https://nvidia-omniverse.atlassian.net/secure/RapidBoard.jspa?rapidView=25049)
+There are multiple ways to use isaac sim based on your workflow:
 
-### List of internal servers:
-* ov-isaac : http://ov-isaac.nvidia.com/
+## Source (This repository)
+See **Using Source Repository** section below for how to compile source and set up `git lfs`
+#### Branches:
+* Master: Stable, should be used by most users
+* Develop: Latest Codebase, updated daily
 
-    For releases or demos (content that doesn't change much)
+## Binary Builds (Omniverse Launcher) **[Recommended]**
 
-* ov-isaac-dev : http://ov-isaac-dev.nvidia.com/
+* Download the internal [Integration](http://ov-launcher/exchange/app) Omniverse Launcher App
+* Use ``chmod +x`` to make it executable if needed
 
-    For development work
+Once launched you will see the builds under the ``Exchange`` tab 
 
-* ov-isaac-qa : http://ov-isaac-qa.nvidia.com/
+* Isaac-Sim: Latest build from Master branch
+* Isaac-Sim Daily: Latest daily build from Develop branch 
 
-    For QA testing or messing around
-    Content can be purged periodically
-    This server will be use for server version updates
+For information on launching once you have downloaded a build [see here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/setup.html#isaac-sim-on-omniverse-launcher). 
 
+> Note that our documentation shows the public Omniverse launcher where daily builds are not available, but the process of running Isaac-Sim is identical. 
+
+## Binary Builds (Packman Manual Download)
+* [Builds from Master](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=beta)
+* [Daily Builds from Develop](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=alpha)
+
+## Binary Builds (Teamcity Manual Download)
+
+* [Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Master_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
+* [Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
+
+## Native Python Sample Repository
+
+For certain python only usecases we have a [separate repository](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim_python)
+
+This repository will automatically pull a specific binary package from our packman repository and extract it for use in your branch/fork. 
+It is ideal if you want to write native python scripts and need place to work where the version of isaac-sim is deterministic. See the repo for more information on usage. 
+
+# Running headless and connecting via a remote client
+
+See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/setup.html#livestream-clients) for more information on how to use the remote clients. 
+
+# List of internal nucleus servers:
 [Status of internal servers](http://stl-isaac/)
+* ov-isaac-dev : http://ov-isaac-dev.nvidia.com/
+    * For development work (most internal users use this)
+* ov-isaac : http://ov-isaac.nvidia.com/
+    * For releases or demos (content that doesn't change much)
+* ov-isaac-qa : http://ov-isaac-qa.nvidia.com/
+    * For QA testing or messing around
+    * Content can be purged periodically
+    * This server will be use for server version updates
+
+# Using the Omniverse cache service
+
+## Cache Status
+To check the status of your nucleus cache go to [localhost:3080/cache](http://localhost:3080/cache). 
+
+You can also clear your local cache from here and see used disk space
+
+## Deleting previous installs
+
+* Uninstall previous installs
+    * Run ``sudo apt remove 'omniverse*'`` to remove all previously installed omniverse packages. 
+    * You might need to manually delete `omniverse-cache-enabler`
+        * use ``which omniverse-cache-enabler`` to determine the location. If it doesn't exist then you can go to the next step.
+        * remove using ``sudo rm -rf /path/returned/from/above/omniverse-cache-enabler``
+
+* Download and run the [launcher cleanup tool](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/prod_launcher/prod_utilities/cleanup-tool.html#cleanup-tool)
+    * Run ``./launcher-cleanup``
+    * This tool will delete any installed omniverse applications and will ask if you want to delete your local nucleus data. 
+    * Run with ``sudo`` if you have trouble installing cache from the launcher.
+
+## Install Cache
+
+* Download the internal [Integration](http://ov-launcher/exchange/app) Omniverse Launcher App
+* Use ``chmod +x`` to make it executable if needed
+* Once launched you will see Cache under the ``Exchange`` tab  and can install it from there. If there are failures you will see a red icon in the upper right. 
+
+## Starting Cache
+
+After a reboot you will need to:
+- Start omniverse launcher
+- go to [localhost:3080/cache](http://localhost:3080/cache). 
+- Stop and Start the cache service
+- Start isaac-sim and use like normal
+
+> If the cache icon in the upper right of isaac sim says ``CACHE: ON`` but becomes ``CACHE: OFF`` after startup, stop and start the cache service from the web ui. Isaac sim also need to be restarted
 
 
-### TeamCity Pipelines
-Master: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Master_BuildAndValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Master_BuildAndValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Master_BuildAndValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Master=%3Cdefault%3E)
+# Filing Bugs and Requests
+Use the links below to create a new bug/feature request in our [Isaac Sim JIRA Board](https://nvidia-omniverse.atlassian.net/secure/RapidBoard.jspa?rapidView=25049)
 
-Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Develop_BuildAndValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Develop_BuildAndValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Develop_BuildAndValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Develop=%3Cdefault%3E)
+* [Create New Bug](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=1&assignee=hmazhar&customfield_16630=17684&components=22384)
+* [Create New Task/Request](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=3&assignee=hmazhar&customfield_16630=17684&components=22384&priority=10)
 
-## Prerequisites
-#### Hardware
-- GPU supporting DirectX Raytracing or Vulkan Raytracing (This includes Pascal cards with 6 GB of RAM or more, Volta or Turing GPUs)
+
+# Using Source Repository
 
 #### Linux/Windows
-- Install Ubuntu 18.04 (linux-x86_64) / Windows 10 version 1809 (windows-x86_64 and DXR)
+- Install Ubuntu 18.04/20.04 (linux-x86_64) / Windows 10 version 1809 (windows-x86_64 and DXR)
 - Install NVIDIA driver 460.67 (Linux) / NVIDIA driver 461.92 (Windows)
     * [Linux] (http://eris-dl-b006.nvidia.com)
     * [NVIDIA OMNIVERSE - Driver Requirements](https://developer.nvidia.com/omniverse/driver)
-- Install VS Code (recommended) or VS2017 with [SDK 10.17763+](https://go.microsoft.com/fwlink/?LinkID=2023014)
-- (Optional) Install Vulkan SDK 1.2.148.1:
+- Install [VS Code](https://code.visualstudio.com/) (recommended) or VS2017 with [SDK 10.17763+](https://go.microsoft.com/fwlink/?LinkID=2023014)
+- (Optional) Install Vulkan SDK 1.2.162.1:
     * Required for debug builds and validation layers only.
-    * Vulkan 1.1 core remains our min requirement for development, and we use SDK 1.2.148.1 for development. 
+    * Vulkan 1.1 core remains our min requirement for development, and we use SDK 1.2.162.1 for development. 
     * Vulkan SDKs prior to this version has known bugs and are not compatible.
-    * [Windows] (https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.148.1/windows/VulkanSDK-1.2.148.1-Installer.exe)
-    * [Linux] (https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.148.1/linux/vulkansdk-linux-x86_64-1.2.148.1.tar.gz)
+    * [Windows](https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.162.1/windows/VulkanSDK-1.2.162.1-Installer.exe)
+    * [Linux](https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.162.1/linux/vulkansdk-linux-x86_64-1.2.162.1.tar.gz)
 - Install "git".
 - Install "git-lfs":
     * Required for fetching data folder used in unit tests only.
@@ -83,7 +143,7 @@ Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildTyp
   in is required to update your account's group membership to include "docker".
 
 
-## Building omniverse-kit
+## Building Isaac Sim
 
 - Execute `./build.sh` (Linux) / `build.bat` (Windows)
 - Use `--help` to get more information. You can run only parts of build process, e.g:
@@ -94,67 +154,43 @@ Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildTyp
 
 The build output will be found in the generated
 `_build` folder and the make/solution files will be found in the generated `_compiler` directory. Occasionally, when
-drastic project level changes are made, you may have to regenerate these files using `--rebuild` option with the build
+drastic project level changes are made, you may have to regenerate these files using `-x` option with the build
 script.
 
-The default setting is to target x86_64 CPU architecture when building on
-x86_64 hosts. If you want to target arm64 (aarch64) then run
-```bash
-./build.sh -p linux-aarch64.
-```
 
 > NOTE: To build the project minimal configuration is needed. Any version of Windows 10 or Linux with Docker will do. Then
 run the setup and build scripts as described here above. That's it. The specific version of Windows, NVIDIA driver,
-and Vulkan are all runtime dependencies, not compile/link time dependencies. This allows omniverse-kit to build on stock
+and Vulkan are all runtime dependencies, not compile/link time dependencies. This allows Isaac Sim to build on stock
 virtual machines that require zero configuration. This is a beautiful thing, help us keep it that way.
 
-## Linux Build Environment
+## Running Isaac Sim
 
-The linux-x86_64 build process uses a docker container to create a consistent
-build environment across all systems. `setup.sh` is intended to take care of
-installing Docker. We use docker-ce upstream from docker.com rather than the
-version which comes with your host linux system.  Should you wish to set up
-Docker manually, the process goes roughly as follows on Ubuntu systems:
-
-- sudo apt update
-- sudo apt install apt-transport-https ca-certificates curl software-properties-common
-- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-- sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-- sudo apt update
-- sudo apt install docker-ce
-- sudo usermod -aG docker ${USER} # Then log out and back in
-
-> NOTE: Docker on Windows System for Linux (WSL) is unsupported and likely will not work.
-
-## Running omniverse-kit
-
-- Go to debug or release folder under _build/xxx-x86_64 (x86_64 platforms only)
+- Go to debug or release folder under `_build/{platform}/{config}`
 - Execute `./isaac-sim.sh` (Linux) / `isaac-sim.bat` (Windows)
 
----
 
 ## Packaging
 
-- Use `./tools/package.sh` (Linux) / `tools/package.bat` (Windows):
-    * `tools/package.bat -c debug -m omniverse-kit` create a package in `_builtpackages`
+* `./tools/ci/build-and-packaging/launcher-package-linux-x86_64/step.sh` (Linux)
+* `tools/ci/build-and-packaging/launcher-package-windows-x86_64/step.bat` (Windows)
 
----
 
 ## Running Tests
 
-- Use `./tools/test_runner.sh` (Linux) / `tools/test_runner.bat` (Windows) to run different tests suites.
-- `--help` can give all the info on the arguments, for instance to run python tests on debug:
-    * `tools/test_runner.bat -c debug --suite pythontests`
+- all tests are in the `_build/{platform}/{config}` folder and start with `tests-*` in the filename. There is one test per extension or python sample.
 
-- Pass extra arguments to test with `-e`/`--extra-arg` command:
-    * `tools/test_runner.bat -c debug --suite unittests -e [graphics]`
+## Running TeamCity builds and tests locally
+ 
+Linux Builds ``./tools/ci/build-and-packaging/linux-x86_64/step.sh``
 
-- Use `--from-pacakge`/`-p` to run tests against the package from `_builtpackages` folder. That is useful for mimicking TC setup:
-    * `tools/test_runner.bat ---suite unittests -p` -- unzips package in folder nearby (once) and runs tests in it.
+Linux Tests  ``./tools/ci/testing/linux-x86_64-python-tests/step.sh``
 
----
+## TeamCity Pipelines
+Master: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Master_BuildAndValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Master_BuildAndValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Master_BuildAndValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Master=%3Cdefault%3E)
 
-## Troubleshooting
+Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Develop_BuildAndValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Develop_BuildAndValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Develop_BuildAndValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Develop=%3Cdefault%3E)
+
+# Troubleshooting
 
 ### Permission errors when on VPN on Windows
 You may see this error when using VPN on Windows:
@@ -188,69 +224,28 @@ git config http.sslVerify false
  * Make the daemon always start on boot with ``systemctl enable docker``
  * You can check if the daemon is running with ``systemctl list-units --state=active | grep docker``
 
----
+## Linux Build Environment
 
-## FAQ
+The linux-x86_64 build process uses a docker container to create a consistent
+build environment across all systems. `setup.sh` is intended to take care of
+installing Docker. We use docker-ce upstream from docker.com rather than the
+version which comes with your host linux system.  Should you wish to set up
+Docker manually, the process goes roughly as follows on Ubuntu systems:
 
-### Adding new default resolutions to Kit
-edit the following file:
-``source/apps/configs/omniverse-kit.json``
-And in this section:
+- sudo apt update
+- sudo apt install apt-transport-https ca-certificates curl software-properties-common
+- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+- sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+- sudo apt update
+- sudo apt install docker-ce
+- sudo usermod -aG docker ${USER} # Then log out and back in
 
-```json
-"renderer": {
-    "resolution": {
-        "list": [2048, 1080, 1920, 1080, 1280, 720, 1024, 1024, 512, 512],
-        "multiplierList": [2.0, 1.0, 0.666666666666, 0.5, 0.333333333333, 0.25]
-    }
-},
-```
-Modify ``list`` and add your resolutions pair.
-Ex: Adding a new resolution of 1024x768:
+> NOTE: Docker on Windows System for Linux (WSL) is unsupported and likely will not work.
 
-```json
-"renderer": {
-    "resolution": {
-        "list": [2048, 1080, 1920, 1080, 1280, 720, 1024, 1024, 512, 512, 1024, 768],
-        "multiplierList": [2.0, 1.0, 0.666666666666, 0.5, 0.333333333333, 0.25]
-    }
-},
-```
-Run ``./build.sh`` to update the application config so that it gets executed the next time you run ./isaac-sim.sh
 
----
-### Running headless and connecting via a remote client
+<!-- Linux Startup Tests  ``tools/ci/testing/test-linux-x86_64-release-startup-tests-ubuntu18/step.sh`` -->
 
-On the client machine, download the Client Application from the following page for your platform:
-https://developer.nvidia.com/isaac-sim/download
+<!-- Windows Builds ``tools\ci\build-and-packaging\windows-x86_64\step.bat``
 
-Run the client:
-``./omniverse-kit-remote.app -s server_ip``
+Windows Tests ``tools\ci\testing\test-windows-x86_64\step.bat`` -->
 
-On the server machine Launch kit via:
-``./_build/linux-x86_64/release/isaac-sim-headless.sh``
-
----
-### Running TeamCity builds and tests locally
- 
-Linux Builds ``./tools/ci/build-and-packaging/linux-x86_64/step.sh``
-
-Linux Tests  ``./tools/ci/testing/test-linux-x86_64-release/step.sh``
-
-Linux Startup Tests  ``tools/ci/testing/test-linux-x86_64-release-startup-tests-ubuntu18/step.sh``
-
-Windows Builds ``tools\ci\build-and-packaging\windows-x86_64\step.bat``
-
-Windows Tests ``tools\ci\testing\test-windows-x86_64\step.bat``
-
----
-### Debugging in vscode on linux
-
-press Ctrl-Shift-D and then select the configuration you would like to run from the dropdown. Then Press the green arrow to the left of the dropdown to start debugging. 
-
-## OVAT 
-OVAT is our infrastructure for running large scale tests (e.g integration tests). See [Ovat Docs](https://ovat.gitlab-master-pages.nvidia.com/documentation/)
-OVAT tests for Omniverse Create are in [tests](tests) folder.
-Normally it is run against TC builds, but you can run them against a local create build.- see the folders inside tests e.g [tests/startup_test](tests/startup_test). 
-Run the "run_test" script (.bat or .sh for windows/linux respectively). This will set up all of the infrastructure (gcn daemon, virtualenv etc) to run the test locally with your local create build. Before running the test, you must build it locally. You can run the test against release or debug (defaults to release), see --help on run-test.
-The code for creating all of the infrastructure common to all tests is in [tools\ovat](tools\ovat)
