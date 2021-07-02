@@ -20,6 +20,7 @@
 #include "std_msgs/msg/u_int8.hpp"
 #include "std_srvs/srv/empty.hpp"
 #include <time.h>
+#include <omni/isaac/utils/Math.h>
 
 namespace omni
 {
@@ -151,13 +152,14 @@ void RosJointState::pubCallback(rclcpp::PublisherBase* pub)
             mDynamicControlPtr->getDofProperties(dof, &props);
             if (props.type == DcDofType::eTranslation)
             {
-                msg.position.push_back(mDynamicControlPtr->getDofPosition(dof) * stageUnits);
+                msg.position.push_back(
+                    isaac::utils::math::roundNearest(mDynamicControlPtr->getDofPosition(dof) * stageUnits, 10000.0));
             }
             else
             {
-                msg.position.push_back(mDynamicControlPtr->getDofPosition(dof));
+                msg.position.push_back(isaac::utils::math::roundNearest(mDynamicControlPtr->getDofPosition(dof), 10000.0));
             }
-            msg.velocity.push_back(mDynamicControlPtr->getDofVelocity(dof));
+            msg.velocity.push_back(isaac::utils::math::roundNearest(mDynamicControlPtr->getDofVelocity(dof), 10000.0));
             msg.effort.push_back(0 /*mDynamicControlPtr->getDofForce(dof)*/); // TODO
         }
     }

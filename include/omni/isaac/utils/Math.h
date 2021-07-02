@@ -459,6 +459,24 @@ inline pxr::GfQuatf lookAt(const pxr::GfVec3f& camera, const pxr::GfVec3f& targe
         }
     }
 }
+
+/**
+ * @brief Rounds to nearest Nth decimal place
+ *
+ * @param input decimal number input
+ * @param place Nth place to round to, ex: 10000.0 for rounding to nearest ten-thousandths. Must be a positive value.
+ * @return double
+ */
+inline double roundNearest(double input, double place)
+{
+    if (place > 0.0)
+    {
+        return floor(input * place + 0.5) / place;
+    }
+
+    return input;
+}
+
 }
 }
 }
