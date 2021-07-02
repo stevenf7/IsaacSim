@@ -337,3 +337,7 @@ publish_verification = true
 
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
+
+# ETM (extension test matrix) settings
+enroll_in_etm = false
+# etm_emails = [] #["hmazhar@nvidia.com"]
