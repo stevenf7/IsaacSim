@@ -24,10 +24,6 @@
 #include <string>
 #include <vector>
 
-#ifndef DC_TRACK_EDITOR_SIMULATION_STATE
-#    define DC_TRACK_EDITOR_SIMULATION_STATE true
-#endif
-
 namespace std
 {
 // hash function for SdfPath
@@ -637,11 +633,10 @@ public:
     omni::physx::IPhysxSceneQuery* physxSceneQuery = nullptr;
     // ::physx::PxScene* pxScene = nullptr;
 
-    int64_t frameno = 0;
+    // int64_t frameno = 0;
 
-#if DC_TRACK_EDITOR_SIMULATION_STATE
     bool isSimulating = false;
-#endif
+
 
     bool wasPaused = false;
     // refresh physics pointers after a reset
