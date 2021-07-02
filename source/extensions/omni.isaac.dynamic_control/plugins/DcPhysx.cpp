@@ -15,16 +15,14 @@
 
 #include "DcPhysx.h"
 
-#include <omni/kit/IStageUpdate.h>
-
-#include <omni/isaac/dynamic_control/DynamicControl.h>
-
-#include <omni/physx/IPhysx.h>
-#include <omni/physx/IPhysxSceneQuery.h>
-
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/logging/Log.h>
+
+#include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/kit/IStageUpdate.h>
+#include <omni/physx/IPhysx.h>
+#include <omni/physx/IPhysxSceneQuery.h>
 
 #include <map>
 #include <string>
@@ -52,65 +50,15 @@ constexpr PxD6Axis::Enum g_dcToPxAxis[6]{
     PxD6Axis::eX, PxD6Axis::eY, PxD6Axis::eZ, PxD6Axis::eTWIST, PxD6Axis::eSWING1, PxD6Axis::eSWING2,
 };
 
-// Eek global state
 omni::kit::IStageUpdate* g_su = nullptr;
 omni::kit::StageUpdateNode* g_suNode = nullptr;
 
-// Only one "current" context is supported now.  This is due to limitations in the
-// IStageUpdate interface.  In the future, multiple contexts should be supported.
+// Only one "current" context is supported now.  This is due to limitations in the IStageUpdate interface.
 uint32_t g_dcCtxId = 0;
 DcContext* g_dcCtx = nullptr;
 
-// https://stackoverflow.com/questions/5588855/standard-alternative-to-gccs-va-args-trick
-// VA_FIRST expands to first argument
-#define VA_FIRST(...) VA_FIRST_HELPER(__VA_ARGS__, throwaway)
-#define VA_FIRST_HELPER(A1, ...) A1
 
-// VA_REST: if there's only one argument, expands to nothing.  If there's more
-// than one argyment, expands to a comma followed by everything but the first
-// argument.  Only supports up to 9 arguments but can be easily extended.
-#define VA_REST(...) VA_REST_HELPER(VA_NUM(__VA_ARGS__), __VA_ARGS__)
-#define VA_REST_HELPER(qty, ...) VA_REST_HELPER2(qty, __VA_ARGS__)
-#define VA_REST_HELPER2(qty, ...) VA_REST_HELPER_##qty(__VA_ARGS__)
-#define VA_REST_HELPER_ONE(A1)
-#define VA_REST_HELPER_TWOORMORE(A1, ...) , __VA_ARGS__
-#define VA_NUM(...)                                                                                                    \
-    VA_SELECT_10TH(__VA_ARGS__, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE,           \
-                   TWOORMORE, ONE, throwaway)
-#define VA_SELECT_10TH(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, ...) A10
-
-
-// assumes second arg is a format string literal
-#define DC_LOG(level, fmt, ...)                                                                                        \
-    {                                                                                                                  \
-        CARB_LOG(level, fmt, ##__VA_ARGS__);                                                                           \
-    }
-
-// these assume the first arg is a format string literal
-#define DC_LOG_VERBOSE(fmt, ...) DC_LOG(carb::logging::kLevelVerbose, fmt, ##__VA_ARGS__)
-#define DC_LOG_INFO(fmt, ...) DC_LOG(carb::logging::kLevelInfo, fmt, ##__VA_ARGS__)
-#define DC_LOG_WARN(fmt, ...) DC_LOG(carb::logging::kLevelWarn, fmt, ##__VA_ARGS__)
-#define DC_LOG_ERROR(fmt, ...) DC_LOG(carb::logging::kLevelError, fmt, ##__VA_ARGS__)
-#define DC_LOG_FATAL(fmt, ...) DC_LOG(carb::logging::kLevelFatal, fmt, ##__VA_ARGS__)
-
-#if DC_TRACK_EDITOR_SIMULATION_STATE
-inline bool checkSimulating(const char* funcname)
-{
-    if (g_dcCtx && g_dcCtx->isSimulating)
-    {
-        return true;
-    }
-    else
-    {
-        DC_LOG_WARN("%s: Function called while not simulating", funcname);
-        return false;
-    }
-}
-#    define DC_CHECK_SIMULATING() (checkSimulating(__func__))
-#else
-#    define DC_CHECK_SIMULATING() (true)
-#endif
-
+#define DC_CHECK_SIMULATING() (checkSimulating(__func__))
 #define DC_LOOKUP_RIGID_BODY(handle) (lookupRigidBody((handle), __func__))
 #define DC_LOOKUP_JOINT(handle) (lookupJoint((handle), __func__))
 #define DC_LOOKUP_DOF(handle) (lookupDof((handle), __func__))
@@ -125,6 +73,20 @@ inline const pxr::SdfPath& intToPath(const uint64_t& path)
     return reinterpret_cast<const pxr::SdfPath&>(path);
 }
 
+
+inline bool checkSimulating(const char* funcname)
+{
+    if (g_dcCtx && g_dcCtx->isSimulating)
+    {
+        return true;
+    }
+    else
+    {
+        CARB_LOG_WARN("%s: Function called while not simulating", funcname);
+        return false;
+    }
+}
+
 inline DcRigidBody* lookupRigidBody(DcHandle handle, const char* funcname)
 {
     DcContext* ctx = g_dcCtx;
@@ -133,13 +95,13 @@ inline DcRigidBody* lookupRigidBody(DcHandle handle, const char* funcname)
         DcRigidBody* body = ctx->getRigidBody(handle);
         if (!body)
         {
-            DC_LOG_ERROR("%s: Invalid or expired body handle", funcname);
+            CARB_LOG_ERROR("%s: Invalid or expired body handle", funcname);
         }
         return body;
     }
     else
     {
-        DC_LOG_ERROR("%s: No context", funcname);
+        CARB_LOG_ERROR("%s: No context", funcname);
         return nullptr;
     }
 }
@@ -152,13 +114,13 @@ inline DcJoint* lookupJoint(DcHandle handle, const char* funcname)
         DcJoint* joint = ctx->getJoint(handle);
         if (!joint)
         {
-            DC_LOG_ERROR("%s: Invalid or expired joint handle", funcname);
+            CARB_LOG_ERROR("%s: Invalid or expired joint handle", funcname);
         }
         return joint;
     }
     else
     {
-        DC_LOG_ERROR("%s: No context", funcname);
+        CARB_LOG_ERROR("%s: No context", funcname);
         return nullptr;
     }
 }
@@ -171,13 +133,13 @@ inline DcDof* lookupDof(DcHandle handle, const char* funcname)
         DcDof* dof = ctx->getDof(handle);
         if (!dof)
         {
-            DC_LOG_ERROR("%s: Invalid or expired dof handle", funcname);
+            CARB_LOG_ERROR("%s: Invalid or expired dof handle", funcname);
         }
         return dof;
     }
     else
     {
-        DC_LOG_ERROR("%s: No context", funcname);
+        CARB_LOG_ERROR("%s: No context", funcname);
         return nullptr;
     }
 }
@@ -190,13 +152,13 @@ inline DcArticulation* lookupArticulation(DcHandle handle, const char* funcname)
         DcArticulation* art = ctx->getArticulation(handle);
         if (!art)
         {
-            DC_LOG_ERROR("%s: Invalid or expired articulation handle", funcname);
+            CARB_LOG_ERROR("%s: Invalid or expired articulation handle", funcname);
         }
         return art;
     }
     else
     {
-        DC_LOG_ERROR("%s: No context", funcname);
+        CARB_LOG_ERROR("%s: No context", funcname);
         return nullptr;
     }
 }
@@ -209,13 +171,13 @@ inline DcAttractor* lookupAttractor(DcHandle handle, const char* funcname)
         DcAttractor* att = ctx->getAttractor(handle);
         if (!att)
         {
-            DC_LOG_ERROR("%s: Invalid or expired attractor handle", funcname);
+            CARB_LOG_ERROR("%s: Invalid or expired attractor handle", funcname);
         }
         return att;
     }
     else
     {
-        DC_LOG_ERROR("%s: No context", funcname);
+        CARB_LOG_ERROR("%s: No context", funcname);
         return nullptr;
     }
 }
@@ -228,13 +190,13 @@ inline DcD6Joint* lookupD6Joint(DcHandle handle, const char* funcname)
         DcD6Joint* joint = ctx->getD6Joint(handle);
         if (!joint)
         {
-            DC_LOG_ERROR("%s: Invalid or expired D6 Joint handle", funcname);
+            CARB_LOG_ERROR("%s: Invalid or expired D6 Joint handle", funcname);
         }
         return joint;
     }
     else
     {
-        DC_LOG_ERROR("%s: No context", funcname);
+        CARB_LOG_ERROR("%s: No context", funcname);
         return nullptr;
     }
 }
@@ -281,32 +243,32 @@ DcContext* createContext()
     carb::Framework* framework = carb::getFramework();
     if (!framework)
     {
-        DC_LOG_ERROR("Failed to get Carbonite framework");
+        CARB_LOG_ERROR("Failed to get Carbonite framework");
         return nullptr;
     }
 
     omni::physx::IPhysx* physx = framework->acquireInterface<omni::physx::IPhysx>();
     if (!physx)
     {
-        DC_LOG_ERROR("Failed to acquire PhysX interface");
+        CARB_LOG_ERROR("Failed to acquire PhysX interface");
         return nullptr;
     }
     else
     {
         auto desc = physx->getInterfaceDesc();
-        DC_LOG_INFO("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
+        CARB_LOG_INFO("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
     }
 
     omni::physx::IPhysxSceneQuery* physxSceneQuery = framework->acquireInterface<omni::physx::IPhysxSceneQuery>();
     if (!physxSceneQuery)
     {
-        DC_LOG_ERROR("Failed to acquire PhysX Scene Query interface");
+        CARB_LOG_ERROR("Failed to acquire PhysX Scene Query interface");
         return nullptr;
     }
     else
     {
         auto desc = physxSceneQuery->getInterfaceDesc();
-        DC_LOG_INFO("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
+        CARB_LOG_INFO("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
     }
 
     ++g_dcCtxId;
@@ -382,7 +344,7 @@ bool DcArticulation::refreshCache() const
 
     if (!pxArticulation->getScene())
     {
-        DC_LOG_WARN("Failed to refresh articulation cache, not attached to scene");
+        CARB_LOG_WARN("Failed to refresh articulation cache, not attached to scene");
         return false;
     }
 
@@ -428,13 +390,13 @@ DcHandle DcContext::registerRigidBody(const pxr::SdfPath& usdPath)
     PxActor* pxActor = (PxActor*)physx->getPhysXPtr(usdPath, omni::physx::PhysXType::ePTActor);
     if (pxActor)
     {
-        DC_LOG_INFO("Got %s at %p\n", pxActor->getConcreteTypeName(), (void*)pxActor);
+        CARB_LOG_INFO("Got %s at %p\n", pxActor->getConcreteTypeName(), (void*)pxActor);
         if (pxActor->getType() == PxActorType::eRIGID_DYNAMIC)
         {
             PxRigidDynamic* rd = (PxRigidDynamic*)pxActor;
             PxTransform pose = rd->getGlobalPose();
-            DC_LOG_INFO("  Pos: (%f, %f, %f)\n", pose.p.x, pose.p.y, pose.p.z);
-            DC_LOG_INFO("  Rot: (%f, %f, %f, %f)\n", pose.q.x, pose.q.y, pose.q.z, pose.q.w);
+            CARB_LOG_INFO("  Pos: (%f, %f, %f)\n", pose.p.x, pose.p.y, pose.p.z);
+            CARB_LOG_INFO("  Rot: (%f, %f, %f, %f)\n", pose.q.x, pose.q.y, pose.q.z, pose.q.w);
 
             std::unique_ptr<DcRigidBody> body(new DcRigidBody);
             body->ctx = this;
@@ -459,7 +421,7 @@ DcHandle DcContext::registerRigidBody(const pxr::SdfPath& usdPath)
         }
     }
 
-    DC_LOG_ERROR("Failed to register rigid body at '%s'", usdPath.GetString().c_str());
+    CARB_LOG_ERROR("Failed to register rigid body at '%s'", usdPath.GetString().c_str());
     return kDcInvalidHandle;
 }
 
@@ -486,7 +448,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     PxArticulationBase* abase = (PxArticulationBase*)physx->getPhysXPtr(usdPath, omni::physx::PhysXType::ePTArticulation);
     if (abase)
     {
-        DC_LOG_INFO("Got %s at %p\n", abase->getConcreteTypeName(), (void*)abase);
+        CARB_LOG_INFO("Got %s at %p\n", abase->getConcreteTypeName(), (void*)abase);
     }
     else
     {
@@ -494,7 +456,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         PxArticulationLink* link = (PxArticulationLink*)physx->getPhysXPtr(usdPath, omni::physx::PhysXType::ePTLink);
         if (link)
         {
-            DC_LOG_INFO("Got %s at %p\n", link->getConcreteTypeName(), (void*)link);
+            CARB_LOG_INFO("Got %s at %p\n", link->getConcreteTypeName(), (void*)link);
             abase = &link->getArticulation();
         }
         else
@@ -504,7 +466,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 (PxArticulationJointReducedCoordinate*)physx->getPhysXPtr(usdPath, omni::physx::PhysXType::ePTLinkJoint);
             if (joint)
             {
-                DC_LOG_INFO("Got %s at %p\n", joint->getConcreteTypeName(), (void*)joint);
+                CARB_LOG_INFO("Got %s at %p\n", joint->getConcreteTypeName(), (void*)joint);
                 abase = &joint->getChildArticulationLink().getArticulation();
             }
         }
@@ -512,7 +474,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
 
     if (!abase || abase->getConcreteType() != PxConcreteType::eARTICULATION_REDUCED_COORDINATE)
     {
-        DC_LOG_WARN("Failed to find articulation at '%s'", usdPath.GetString().c_str());
+        CARB_LOG_WARN("Failed to find articulation at '%s'", usdPath.GetString().c_str());
         return kDcInvalidHandle;
     }
 
@@ -547,11 +509,11 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         // register link
         //
 
-        DC_LOG_INFO("Link %u\n", i);
+        CARB_LOG_INFO("Link %u\n", i);
         PxArticulationLink* link = links[i];
 
         size_t linkId = (size_t)link->userData;
-        DC_LOG_INFO("  Link id: %llu\n", (unsigned long long)linkId);
+        CARB_LOG_INFO("  Link id: %llu\n", (unsigned long long)linkId);
 
         std::unique_ptr<DcRigidBody> body(new DcRigidBody);
         body->ctx = this;
@@ -559,7 +521,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         body->art = art.get();
 
         SdfPath linkPath = physx->getPhysXObjectUsdPath(linkId);
-        DC_LOG_INFO("  Link path: %s\n", linkPath.GetString().c_str());
+        CARB_LOG_INFO("  Link path: %s\n", linkPath.GetString().c_str());
         body->path = linkPath;
         body->name = linkPath.GetName();
 
@@ -579,10 +541,10 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         if (pxJoint)
         {
             size_t jointId = (size_t)pxJoint->userData;
-            DC_LOG_INFO("  Joint id: %llu\n", (unsigned long long)jointId);
+            CARB_LOG_INFO("  Joint id: %llu\n", (unsigned long long)jointId);
 
             SdfPath jointPath = physx->getPhysXObjectUsdPath(jointId);
-            DC_LOG_INFO("  Joint path: %s\n", jointPath.GetString().c_str());
+            CARB_LOG_INFO("  Joint path: %s\n", jointPath.GetString().c_str());
 
             std::unique_ptr<DcJoint> joint(new DcJoint);
             joint->ctx = this;
@@ -590,7 +552,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
             joint->art = art.get();
             joint->path = jointPath;
             joint->name = jointPath.GetName();
-            DC_LOG_INFO("  Joint name: %s\n", joint->name.c_str());
+            CARB_LOG_INFO("  Joint name: %s\n", joint->name.c_str());
 
             art->componentPaths.insert(joint->path);
 
@@ -653,11 +615,11 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 float damping;
                 float maxForce;
                 pxJoint->getDrive(dof->pxAxis, stiffness, damping, maxForce, driveType);
-                DC_LOG_INFO("  Drive axis: %d\n", int(dof->pxAxis));
-                DC_LOG_INFO("  Drive type: %d\n", int(driveType));
-                DC_LOG_INFO("  Drive stiffness: %f\n", stiffness);
-                DC_LOG_INFO("  Drive damping: %f\n", damping);
-                DC_LOG_INFO("  Drive maxForce: %f\n", maxForce);
+                CARB_LOG_INFO("  Drive axis: %d\n", int(dof->pxAxis));
+                CARB_LOG_INFO("  Drive type: %d\n", int(driveType));
+                CARB_LOG_INFO("  Drive stiffness: %f\n", stiffness);
+                CARB_LOG_INFO("  Drive damping: %f\n", damping);
+                CARB_LOG_INFO("  Drive maxForce: %f\n", maxForce);
 
                 // guess drive mode
                 switch (driveType)
@@ -755,8 +717,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         {
             art->dofs[i]->cacheIdx = 0;
         }
-        DC_LOG_INFO("dof index: i: %zu with link index: %d has a DOF cache index of: %d", i, art->dofs[i]->linkIndex,
-                    art->dofs[i]->cacheIdx);
+        CARB_LOG_INFO("dof index: i: %zu with link index: %d has a DOF cache index of: %d", i, art->dofs[i]->linkIndex,
+                      art->dofs[i]->cacheIdx);
     }
 
     // resolve hierarchy relationships
@@ -786,19 +748,19 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         art->pxArticulationCache = arc->createCache();
         if (!art->pxArticulationCache)
         {
-            DC_LOG_ERROR("Failed to create articulation cache");
+            CARB_LOG_ERROR("Failed to create articulation cache");
         }
     }
     else
     {
-        DC_LOG_WARN(
+        CARB_LOG_WARN(
             "Articulation is not in a physics scene, some functionality is missing, make sure that a physics scene is present and simulation is running");
     }
 
     // figure out which path this articulation is mapped to in omni.physx
     size_t artId = (size_t)arc->userData;
     SdfPath artPath = physx->getPhysXObjectUsdPath(artId);
-    DC_LOG_INFO("Articulation path is '%s'\n", artPath.GetString().c_str());
+    CARB_LOG_INFO("Articulation path is '%s'\n", artPath.GetString().c_str());
     art->path = artPath;
 
     DcArticulation* artPtr = art.get();
@@ -896,7 +858,7 @@ bool DcContext::refreshPhysicsPointers(DcRigidBody* body, bool verbose)
 
     if (verbose)
     {
-        DC_LOG_ERROR("Failed to refresh body %s (no suitable physics object)", body->path.GetString().c_str());
+        CARB_LOG_ERROR("Failed to refresh body %s (no suitable physics object)", body->path.GetString().c_str());
     }
 
     body->pxRigidBody = nullptr; // invalidate physics pointer
@@ -939,7 +901,7 @@ bool DcContext::refreshPhysicsPointers(DcJoint* joint, bool verbose)
 
     if (verbose)
     {
-        DC_LOG_ERROR("Failed to refresh joint %s (no suitable physics object)", joint->path.GetString().c_str());
+        CARB_LOG_ERROR("Failed to refresh joint %s (no suitable physics object)", joint->path.GetString().c_str());
     }
 
     // invalidate physics pointer
@@ -974,7 +936,7 @@ bool DcContext::refreshPhysicsPointers(DcArticulation* art, bool verbose)
     {
         if (verbose)
         {
-            DC_LOG_ERROR("Failed to refresh articulation %s", art->path.GetString().c_str());
+            CARB_LOG_ERROR("Failed to refresh articulation %s", art->path.GetString().c_str());
         }
         return false;
     }
@@ -1008,7 +970,7 @@ bool DcContext::refreshPhysicsPointers(DcAttractor* att, bool verbose)
     {
         if (verbose)
         {
-            DC_LOG_ERROR("Failed to refresh attractor joint %s", att->path.GetString().c_str());
+            CARB_LOG_ERROR("Failed to refresh attractor joint %s", att->path.GetString().c_str());
         }
         return false;
     }
@@ -1121,7 +1083,6 @@ void CARB_ABI DcHello()
 
 bool CARB_ABI DcIsSimulating()
 {
-#if DC_TRACK_EDITOR_SIMULATION_STATE
     if (g_dcCtx)
     {
         return g_dcCtx->isSimulating;
@@ -1130,9 +1091,6 @@ bool CARB_ABI DcIsSimulating()
     {
         return false;
     }
-#else
-    return false;
-#endif
 }
 
 DcHandle CARB_ABI DcGetRigidBody(const char* usdPath)
@@ -1142,13 +1100,13 @@ DcHandle CARB_ABI DcGetRigidBody(const char* usdPath)
     DcContext* ctx = g_dcCtx;
     if (!ctx)
     {
-        DC_LOG_ERROR("No context");
+        CARB_LOG_ERROR("No context");
         return kDcInvalidHandle;
     }
 
     if (!usdPath || !*usdPath)
     {
-        DC_LOG_ERROR("Invalid USD path");
+        CARB_LOG_ERROR("Invalid USD path");
         return kDcInvalidHandle;
     }
 
@@ -1162,13 +1120,13 @@ DcHandle CARB_ABI DcGetJoint(const char* usdPath)
     DcContext* ctx = g_dcCtx;
     if (!ctx)
     {
-        DC_LOG_ERROR("No context");
+        CARB_LOG_ERROR("No context");
         return kDcInvalidHandle;
     }
 
     if (!usdPath || !*usdPath)
     {
-        DC_LOG_ERROR("Invalid USD path");
+        CARB_LOG_ERROR("Invalid USD path");
         return kDcInvalidHandle;
     }
 
@@ -1182,13 +1140,13 @@ DcHandle CARB_ABI DcGetDof(const char* usdPath)
     DcContext* ctx = g_dcCtx;
     if (!ctx)
     {
-        DC_LOG_ERROR("No context");
+        CARB_LOG_ERROR("No context");
         return kDcInvalidHandle;
     }
 
     if (!usdPath || !*usdPath)
     {
-        DC_LOG_ERROR("Invalid USD path");
+        CARB_LOG_ERROR("Invalid USD path");
         return kDcInvalidHandle;
     }
 
@@ -1202,13 +1160,13 @@ DcHandle CARB_ABI DcGetArticulation(const char* usdPath)
     DcContext* ctx = g_dcCtx;
     if (!ctx)
     {
-        DC_LOG_ERROR("No context");
+        CARB_LOG_ERROR("No context");
         return kDcInvalidHandle;
     }
 
     if (!usdPath || !*usdPath)
     {
-        DC_LOG_ERROR("Invalid USD path");
+        CARB_LOG_ERROR("Invalid USD path");
         return kDcInvalidHandle;
     }
 
@@ -1222,13 +1180,13 @@ DcHandle CARB_ABI DcGetD6Joint(const char* usdPath)
     DcContext* ctx = g_dcCtx;
     if (!ctx)
     {
-        DC_LOG_ERROR("No context");
+        CARB_LOG_ERROR("No context");
         return kDcInvalidHandle;
     }
 
     if (!usdPath || !*usdPath)
     {
-        DC_LOG_ERROR("Invalid USD path");
+        CARB_LOG_ERROR("Invalid USD path");
         return kDcInvalidHandle;
     }
 
@@ -2223,13 +2181,13 @@ void CARB_ABI DcApplyBodyForce(DcHandle bodyHandle, const carb::Float3& force, c
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (!body || !body->pxRigidBody)
     {
-        DC_LOG_ERROR("Invalid body");
+        CARB_LOG_ERROR("Invalid body");
         return;
     }
 
     if (!body->pxRigidBody->getScene())
     {
-        DC_LOG_ERROR("Body not in simulation scene");
+        CARB_LOG_ERROR("Body not in simulation scene");
         return;
     }
 
@@ -2832,7 +2790,7 @@ DcHandle CARB_ABI DcCreateRigidBodyAttractor(const DcAttractorProperties* props)
 
     if (!pxBody->getScene())
     {
-        DC_LOG_ERROR("Failed to create attractor: body not in scene");
+        CARB_LOG_ERROR("Failed to create attractor: body not in scene");
         return kDcInvalidHandle;
     }
 
@@ -2851,7 +2809,7 @@ DcHandle CARB_ABI DcCreateRigidBodyAttractor(const DcAttractorProperties* props)
 #endif
     if (!joint)
     {
-        DC_LOG_ERROR("Failed to create attractor joint");
+        CARB_LOG_ERROR("Failed to create attractor joint");
         return kDcInvalidHandle;
     }
 
@@ -2861,7 +2819,7 @@ DcHandle CARB_ABI DcCreateRigidBodyAttractor(const DcAttractorProperties* props)
 
     if (!setAttractorProperties(attractor.get(), props))
     {
-        DC_LOG_ERROR("Failed to set attractor properties");
+        CARB_LOG_ERROR("Failed to set attractor properties");
         joint->release();
         return kDcInvalidHandle;
     }
@@ -2894,21 +2852,21 @@ bool setAttractorProperties(DcAttractor* attractor, const DcAttractorProperties*
     // Either both swing axes are set, or neither are
     if (((props->axes & kDcAxisSwing1) ^ (props->axes & kDcAxisSwing1)))
     {
-        DC_LOG_ERROR("Invalid attractor swing axes configuration");
+        CARB_LOG_ERROR("Invalid attractor swing axes configuration");
         return false;
     }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(props->rigidBody);
     if (!body || !body->pxRigidBody)
     {
-        DC_LOG_ERROR("Invalid rigid body for attractor");
+        CARB_LOG_ERROR("Invalid rigid body for attractor");
         return false;
     }
 
     PxD6Joint* joint = attractor->pxJoint;
     if (!joint)
     {
-        DC_LOG_ERROR("Attractor is missing physics joint");
+        CARB_LOG_ERROR("Attractor is missing physics joint");
         return false;
     }
 
@@ -3002,7 +2960,7 @@ bool CARB_ABI DcSetAttractorTarget(DcHandle attHandle, const DcTransform& target
     PxD6Joint* joint = attractor->pxJoint;
     if (!joint)
     {
-        DC_LOG_ERROR("Attractor is missing physics joint");
+        CARB_LOG_ERROR("Attractor is missing physics joint");
         return false;
     }
 
@@ -3085,13 +3043,13 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
         DcRigidBody* body0 = DC_LOOKUP_RIGID_BODY(props->body0);
         if (!body0 || !body0->pxRigidBody)
         {
-            DC_LOG_ERROR("Failed to create Joint: body 0 handle is invalid");
+            CARB_LOG_ERROR("Failed to create Joint: body 0 handle is invalid");
             return kDcInvalidHandle;
         }
         pxBody0 = body0->pxRigidBody;
         if (!pxBody0->getScene())
         {
-            DC_LOG_ERROR("Failed to create Joint: body 0 not in scene");
+            CARB_LOG_ERROR("Failed to create Joint: body 0 not in scene");
             return kDcInvalidHandle;
         }
         DcWakeUpRigidBody(props->body0);
@@ -3101,13 +3059,13 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
         DcRigidBody* body1 = DC_LOOKUP_RIGID_BODY(props->body1);
         if (!body1 || !body1->pxRigidBody)
         {
-            DC_LOG_ERROR("Failed to create Joint: body 1 handle is invalid");
+            CARB_LOG_ERROR("Failed to create Joint: body 1 handle is invalid");
             return kDcInvalidHandle;
         }
         pxBody1 = body1->pxRigidBody;
         if (!pxBody1->getScene())
         {
-            DC_LOG_ERROR("Failed to create Joint: body 1 not in scene");
+            CARB_LOG_ERROR("Failed to create Joint: body 1 not in scene");
             return kDcInvalidHandle;
         }
         DcWakeUpRigidBody(props->body1);
@@ -3131,7 +3089,7 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
     PxD6Joint* joint = (PxD6Joint*)ctx->physx->createD6JointAtPath(jointPath, originPath, targetPath);
     if (!joint)
     {
-        DC_LOG_ERROR("Failed to create D6 joint");
+        CARB_LOG_ERROR("Failed to create D6 joint");
         return kDcInvalidHandle;
     }
 
@@ -3141,7 +3099,7 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
 
     if (!setD6JointProperties(dcJoint.get(), props))
     {
-        DC_LOG_ERROR("Failed to set Joint properties");
+        CARB_LOG_ERROR("Failed to set Joint properties");
         joint->release();
         return kDcInvalidHandle;
     }
@@ -3246,7 +3204,7 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
     // Either both swing axes are set, or neither are
     if (((props->axes & kDcAxisSwing1) ^ (props->axes & kDcAxisSwing1)))
     {
-        DC_LOG_ERROR("Invalid D6 joint swing axes configuration");
+        CARB_LOG_ERROR("Invalid D6 joint swing axes configuration");
         return false;
     }
 
@@ -3268,8 +3226,8 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
             if (!body0 || !body0->pxRigidBody)
             {
 
-                DC_LOG_ERROR("Failed to refresh Joint: body 0 %s at %s handle is invalid", body0->name.c_str(),
-                             body0->path.GetString().c_str());
+                CARB_LOG_ERROR("Failed to refresh Joint: body 0 %s at %s handle is invalid", body0->name.c_str(),
+                               body0->path.GetString().c_str());
 
                 return kDcInvalidHandle;
             }
@@ -3277,8 +3235,8 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
             if (!pxBody0->getScene())
             {
 
-                DC_LOG_ERROR("Failed to refresh Joint: body 0 %s at %s not in scene", body0->name.c_str(),
-                             body0->path.GetString().c_str());
+                CARB_LOG_ERROR("Failed to refresh Joint: body 0 %s at %s not in scene", body0->name.c_str(),
+                               body0->path.GetString().c_str());
 
                 return kDcInvalidHandle;
             }
@@ -3290,8 +3248,8 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
             if (!body1 || !body1->pxRigidBody)
             {
 
-                DC_LOG_ERROR("Failed to refresh Joint: body 1 %s at %s handle is invalid", body1->name.c_str(),
-                             body1->path.GetString().c_str());
+                CARB_LOG_ERROR("Failed to refresh Joint: body 1 %s at %s handle is invalid", body1->name.c_str(),
+                               body1->path.GetString().c_str());
 
                 return kDcInvalidHandle;
             }
@@ -3299,8 +3257,8 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
             if (!pxBody1->getScene())
             {
 
-                DC_LOG_ERROR("Failed to refresh Joint: body 1 %s at %s not in scene", body1->name.c_str(),
-                             body1->path.GetString().c_str());
+                CARB_LOG_ERROR("Failed to refresh Joint: body 1 %s at %s not in scene", body1->name.c_str(),
+                               body1->path.GetString().c_str());
 
                 return kDcInvalidHandle;
             }
@@ -3333,13 +3291,13 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
         DcRigidBody* body0 = DC_LOOKUP_RIGID_BODY(props->body0);
         if (!body0 || !body0->pxRigidBody)
         {
-            DC_LOG_ERROR("Failed to create Joint: body 0 handle is invalid");
+            CARB_LOG_ERROR("Failed to create Joint: body 0 handle is invalid");
             return kDcInvalidHandle;
         }
         pxBody0 = body0->pxRigidBody;
         if (!pxBody0->getScene())
         {
-            DC_LOG_ERROR("Failed to create Joint: body 0 not in scene");
+            CARB_LOG_ERROR("Failed to create Joint: body 0 not in scene");
             return kDcInvalidHandle;
         }
         DcWakeUpRigidBody(props->body0);
@@ -3349,13 +3307,13 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
         DcRigidBody* body1 = DC_LOOKUP_RIGID_BODY(props->body1);
         if (!body1 || !body1->pxRigidBody)
         {
-            DC_LOG_ERROR("Failed to create Joint: body 1 handle is invalid");
+            CARB_LOG_ERROR("Failed to create Joint: body 1 handle is invalid");
             return kDcInvalidHandle;
         }
         pxBody1 = body1->pxRigidBody;
         if (!pxBody1->getScene())
         {
-            DC_LOG_ERROR("Failed to create Joint: body 1 not in scene");
+            CARB_LOG_ERROR("Failed to create Joint: body 1 not in scene");
             return kDcInvalidHandle;
         }
         DcWakeUpRigidBody(props->body1);
@@ -3613,9 +3571,7 @@ void SuResume(float currentTime, void* data)
         {
             g_dcCtx->refreshPhysicsPointers(true);
         }
-#if DC_TRACK_EDITOR_SIMULATION_STATE
         g_dcCtx->isSimulating = true;
-#endif
         g_dcCtx->wasPaused = false;
     }
 }
@@ -3630,9 +3586,7 @@ void SuStop(void* data)
         // g_dcCtx = nullptr;
         printf("Refreshing context\n");
         g_dcCtx->refreshPhysicsPointers(false);
-#if DC_TRACK_EDITOR_SIMULATION_STATE
         g_dcCtx->isSimulating = false;
-#endif
         g_dcCtx->wasPaused = false;
     }
 }
@@ -3652,9 +3606,7 @@ void SuUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
         //++g_dcCtx->frameno;
         // updateContext(g_dcCtx);
         // if this extension is acquired with play happening, make sure that simulating is set to true
-#if DC_TRACK_EDITOR_SIMULATION_STATE
         g_dcCtx->isSimulating = true;
-#endif
     }
 }
 
@@ -3691,14 +3643,14 @@ CARB_EXPORT void carbOnPluginStartup()
     carb::Framework* framework = carb::getFramework();
     if (!framework)
     {
-        DC_LOG_ERROR("Failed to get Carbonite framework");
+        CARB_LOG_ERROR("Failed to get Carbonite framework");
         return;
     }
 
     g_su = framework->acquireInterface<omni::kit::IStageUpdate>();
     if (!g_su)
     {
-        DC_LOG_ERROR("Failed to acquire stage update interface");
+        CARB_LOG_ERROR("Failed to acquire stage update interface");
         return;
     }
 
@@ -3720,7 +3672,7 @@ CARB_EXPORT void carbOnPluginStartup()
     g_suNode = g_su->createStageUpdateNode(suDesc);
     if (!g_suNode)
     {
-        DC_LOG_ERROR("Failed to create stage update node");
+        CARB_LOG_ERROR("Failed to create stage update node");
         return;
     }
 }
