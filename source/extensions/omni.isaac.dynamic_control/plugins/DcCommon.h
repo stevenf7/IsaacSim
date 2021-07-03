@@ -14,6 +14,19 @@
 #include <memory>
 #include <unordered_map>
 
+namespace std
+{
+// hash function for SdfPath
+template <>
+struct hash<pxr::SdfPath>
+{
+    size_t operator()(const pxr::SdfPath& path) const
+    {
+        return path.GetHash();
+    }
+};
+}
+
 namespace omni
 {
 namespace isaac
