@@ -559,11 +559,11 @@ bool DcContext::refreshPhysicsPointers(DcArticulation* art, bool verbose)
         return false;
     }
 
-    PxArticulationReducedCoordinate* arc = static_cast<PxArticulationReducedCoordinate*>(abase);
-    art->pxArticulation = arc;
-    if (arc->getScene())
+    art->pxArticulation = static_cast<PxArticulationReducedCoordinate*>(abase);
+    if (art->pxArticulation->getScene())
     {
-        art->pxArticulationCache = arc->createCache();
+        art->pxArticulation->releaseCache(*art->pxArticulationCache);
+        art->pxArticulationCache = art->pxArticulation->createCache();
     }
 
     if (verbose)

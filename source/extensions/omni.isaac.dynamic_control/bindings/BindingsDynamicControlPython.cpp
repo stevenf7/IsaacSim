@@ -522,19 +522,19 @@ PYBIND11_MODULE(_dynamic_control, m)
              },
              "Get array of an actor's rigid body states")
 
-        .def("set_articulation_body_states",
-             [](const DynamicControl* dc, DcHandle artHandle,
-                const py::array_t<DcRigidBodyState, py::array::c_style>& states, DcStateFlags flags) {
-                 if (dc)
-                 {
-                     if (states.size() >= ssize_t(dc->getArticulationBodyCount(artHandle)))
-                     {
-                         return dc->setArticulationBodyStates(artHandle, states.data(), flags);
-                     }
-                 }
-                 return false;
-             },
-             "Sets states for an actor's rigid bodies.")
+        // .def("set_articulation_body_states",
+        //      [](const DynamicControl* dc, DcHandle artHandle,
+        //         const py::array_t<DcRigidBodyState, py::array::c_style>& states, DcStateFlags flags) {
+        //          if (dc)
+        //          {
+        //              if (states.size() >= ssize_t(dc->getArticulationBodyCount(artHandle)))
+        //              {
+        //                  return dc->setArticulationBodyStates(artHandle, states.data(), flags);
+        //              }
+        //          }
+        //          return false;
+        //      },
+        //      "Sets states for an actor's rigid bodies.")
 
         .def("get_articulation_joint_count", wrapInterfaceFunction(&DynamicControl::getArticulationJointCount),
              "Get the number of joints in an articulation")

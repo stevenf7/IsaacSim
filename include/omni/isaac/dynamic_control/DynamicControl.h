@@ -99,13 +99,14 @@ struct DynamicControl
      */
     DcRigidBodyState*(CARB_ABI* getArticulationBodyStates)(DcHandle artHandle, DcStateFlags flags);
 
-    //! Sets states for an actor's rigid bodies.
-    /*!
-     *  \param actor the actor.
-     *  \param states the states to set.
-     *  \param flags flags for the state to obtain (kDcStatePos, kDcStateVel, or kDcStateAll)
-     */
-    bool(CARB_ABI* setArticulationBodyStates)(DcHandle artHandle, const DcRigidBodyState* states, DcStateFlags flags);
+    // //! Sets states for an actor's rigid bodies.
+    // /*!
+    //  *  \param actor the actor.
+    //  *  \param states the states to set.
+    //  *  \param flags flags for the state to obtain (kDcStatePos, kDcStateVel, or kDcStateAll)
+    //  */
+    // bool(CARB_ABI* setArticulationBodyStates)(DcHandle artHandle, const DcRigidBodyState* states, DcStateFlags
+    // flags);
 
     //===== Articulation joints =====//
 
