@@ -1,34 +1,42 @@
-name = "Isaac Sim"
+name = "Isaac Sim Daily"
 #displayed application name in smaller card and library view
-shortName = "Isaac Sim"
+shortName = "Isaac Sim Daily"
 version = "${version}"
 #boolean for if this version is the latest version
 latest = true
 #unique identifier for component, all lower case, persists between versions
-slug = "isaac_sim"
+slug = "isaac_sim-daily"
 
 #displayed before application name in launcher
-productArea = "Omniverse"
+productArea = ""
 #category of content
-category = "Apps"
+category = "Daily"
 #values for filtering content, not implemented yet
 tags = [
   "Autonomous Machines",
   "Robotics",
   "Manufacturing",
-  "Synthetic Data Generation",
-  "Simulation"
+  "Product Design", 
+  "Scene Composition", 
+  "Visualization", 
+  "Rendering"
 ]
 
 #enum of "app", "connector" and "experience" for now
 kind = "app"
 #string array, each line is a new line, keep lines under 256 char and keep lines under 4
 description = [
-  "NVIDIA Omniverse™ Isaac Sim is a scalable robotics simulation application and synthetic data generation tool, built on the NVIDIA Omniverse™ platform. It leverages Omniverse Kit powerful simulation technologies including advanced GPU-enabled physics simulation with PhysX 5, photorealism with real-time ray and path tracing, and MDL material definition support for physically-based rendering. Isaac Sim is a physically-accurate virtual environment to develop, test, and manage AI-based robots, and provides the essential features for building virtual robotics experiments, including importing robot models, and simulating sensors such as RGB-D, Lidar, contact, ultrasonic, and IMU. Isaac Sim supports navigation, manipulation, deep learning applications through Python, ROS and Isaac SDK. For AI applications, Isaac Sim provides extensive tools for synthetic data generation such as domain randomization, ground truth labeling, segmentation, and bounding boxes."
+ "DAILY BUILD !!, use the Stable Build for Production Work.",
+ "DAILY BUILD !!, see Developer README link below: https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/blob/develop/README.md",
+ "NVIDIA Isaac Sim is built on NVIDIA Omniverse simulation platform, it leverages Omniverse Kit and has been enhanced with robotics specific extensions. Isaac Sim provides the essential features for building virtual robotic worlds and experiments. Isaac Sim supports navigation and manipulation applications through Isaac SDK and ROS, with RGB-D, Lidar and IMU sensors, Domain Randomization, ground truth labeling, segmentation, and bounding boxes.",
+ "Note: The System Requirements section below may not be correct. The updated Isaac Sim requirements link is located in the Learn more section at the bottom."
 ]
 
 #array of links for more info on product
 
+[[links]]
+title = "Developer README"
+url = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/blob/develop/README.md"
 [[links]]
 title = "System Requirements"
 url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/requirements.html"

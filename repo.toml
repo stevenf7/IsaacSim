@@ -228,12 +228,12 @@ omniverse_flow_version_scheme = true
 ziponly = true
 
 # to generate launcher images package
-[repo_package.packages.isaac-sim-pipeline-images-alpha]
+[repo_package.packages.isaac-sim-pipeline-images-beta]
 omniverse_flow_version_scheme = true
 archive_format = "zip"
 strip_package_infos = true
 
-[repo_package.packages.isaac-sim-pipeline-images-beta]
+[repo_package.packages.isaac-sim-pipeline-images-rc]
 omniverse_flow_version_scheme = true
 archive_format = "zip"
 strip_package_infos = true
@@ -258,7 +258,7 @@ packages = ["isaac-sim*"]
 
 [publish_launcher]
 git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac_sim-release-pipeline.git"
-template_path = "${root}/tools/repoman/launcher-pipeline-template/alpha"
+template_path = "${root}/tools/repoman/launcher-pipeline-template/beta"
 branch_prefix = "integ"
 
 ########################################################################################################################
