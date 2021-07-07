@@ -35,8 +35,8 @@ For information on launching once you have downloaded a build [see here](https:/
 > Note that our documentation shows the public Omniverse launcher where daily builds are not available, but the process of running Isaac-Sim is identical. 
 
 ## Binary Builds (Packman Manual Download)
-* [Builds from Master](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=beta)
-* [Daily Builds from Develop](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=alpha)
+* [Builds from Master](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=rc)
+* [Daily Builds from Develop](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=beta)
 
 ## Binary Builds (Teamcity Manual Download)
 
