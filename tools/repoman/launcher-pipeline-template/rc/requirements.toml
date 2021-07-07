@@ -1,0 +1,21 @@
+# Optional note that will be shown below system requirements.
+# Supports markdown.
+note = "Note: Omniverse is built to run on any RTX-powered machine. For latest drivers, visit [NVIDIA Driver Downloads](https://www.nvidia.com/en-us/drivers/unix/)."
+​
+# System requirements specs.
+# Supports line breaks.
+[minimum]
+cpuNames = "Intel Core i7 (7th Generation)\nAMD Ryzen 5"
+cpuCores = "4"
+ram = "16GB"
+storage = "50GB SSD"
+vram = "8GB"
+gpu = "Any RTX GPU"
+​
+[recommended]
+cpuNames = "Intel Core i7 (9th Generation)\nAMD Ryzen 7"
+cpuCores = "8"
+ram = "32GB"
+storage = "500GB SSD"
+vram = "10GB"
+gpu = "GeForce RTX 3080\nQuadro RTX A5000"
