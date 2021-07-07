@@ -294,7 +294,7 @@ std::unique_ptr<DcContext> createContext()
         printf("Found %u articulation%s\n", numArts, numArts == 1 ? "" : "s");
         if (numArts > 0)
         {
-            std::vector<PxArticulationBase*> arts(numArts);
+            std::vector<PxArticulationReducedCoordinate*> arts(numArts);
             scene->getArticulations(arts.data(), numArts);
             for (PxU32 i = 0; i < numArts; i++)
             {
@@ -526,8 +526,8 @@ DcObjectType CARB_ABI DcPeekObjectType(const char* usdPath)
     omni::physx::IPhysx* physx = ctx->physx;
 
     // check if it's an articulation
-    PxArticulationBase* abase =
-        (PxArticulationBase*)physx->getPhysXPtr(SdfPath(usdPath), omni::physx::PhysXType::ePTArticulation);
+    PxArticulationReducedCoordinate* abase =
+        (PxArticulationReducedCoordinate*)physx->getPhysXPtr(SdfPath(usdPath), omni::physx::PhysXType::ePTArticulation);
     if (abase)
     {
         return eDcObjectArticulation;
@@ -646,7 +646,7 @@ int CARB_ABI DcGetArticulationCount(const auto & ctx)
             PxU32 totalCount = ctx->pxScene->getNbArticulations();
 
             // count reduced coordinate articulations, which are the only ones we support now
-            std::vector<PxArticulationBase*> arts(totalCount);
+            std::vector<PxArticulationReducedCoordinate*> arts(totalCount);
             ctx->pxScene->getArticulations(arts.data(), totalCount);
             int count = 0;
             for (PxU32 i = 0; i < totalCount; i++)
@@ -1430,11 +1430,6 @@ void CARB_ABI DcSetRigidBodyPose(DcHandle bodyHandle, const DcTransform& pose)
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
     {
-        if (body->art && body->art->rigidBodies[0]->handle != bodyHandle)
-        {
-            CARB_LOG_ERROR("Cannot set pose on non-root articulation link");
-            return;
-        }
         PxTransform tx = asPxTransform(pose);
 
         // apply offset
@@ -1443,6 +1438,25 @@ void CARB_ABI DcSetRigidBodyPose(DcHandle bodyHandle, const DcTransform& pose)
         tx.p.y += origin.y;
         tx.p.z += origin.z;
 
+        if (body->art)
+        {
+            if (body->art->rigidBodies[0]->handle != bodyHandle)
+            {
+                CARB_LOG_ERROR("Cannot set pose on non-root articulation link");
+                return;
+            }
+            else
+            {
+                // its a root link
+                body->art->pxArticulation->copyInternalStateToCache(
+                    *body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
+
+                body->art->pxArticulationCache->rootLinkData->transform = tx;
+                body->art->pxArticulation->applyCache(*body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
+
+                return;
+            }
+        }
         body->pxRigidBody->setGlobalPose(tx);
     }
 }
@@ -1479,12 +1493,34 @@ void CARB_ABI DcSetRigidBodyLinearVelocity(DcHandle bodyHandle, const carb::Floa
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
     {
-        if (body->art && body->art->rigidBodies[0]->handle != bodyHandle)
+        // This is a link but not the root link
+        if (body->art)
         {
-            CARB_LOG_ERROR("Cannot set linear velocity on non-root articulation link");
-            return;
+            if (body->art->rigidBodies[0]->handle != bodyHandle)
+            {
+                CARB_LOG_ERROR("Cannot set linear velocity on non-root articulation link");
+                return;
+            }
+            else
+            {
+                // its a root link
+                body->art->pxArticulation->copyInternalStateToCache(
+                    *body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
+
+                body->art->pxArticulationCache->rootLinkData->worldLinVel = asPxVec3(linvel);
+                body->art->pxArticulation->applyCache(*body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
+                return;
+            }
         }
-        body->pxRigidBody->setLinearVelocity(asPxVec3(linvel));
+        PxRigidDynamic* dynamicBody = static_cast<PxRigidDynamic*>(body->pxRigidBody);
+        if (dynamicBody)
+        {
+            dynamicBody->setLinearVelocity(asPxVec3(linvel));
+        }
+        else
+        {
+            CARB_LOG_ERROR("Not a dynamic rigid body or a root articulation link");
+        }
     }
 }
 
@@ -1495,12 +1531,34 @@ void CARB_ABI DcSetRigidBodyAngularVelocity(DcHandle bodyHandle, const carb::Flo
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
     {
-        if (body->art && body->art->rigidBodies[0]->handle != bodyHandle)
+        if (body->art)
         {
-            CARB_LOG_ERROR("Cannot set angular velocity on non-root articulation link");
-            return;
+            if (body->art->rigidBodies[0]->handle != bodyHandle)
+            {
+                CARB_LOG_ERROR("Cannot set angular velocity on non-root articulation link");
+                return;
+            }
+            else
+            {
+                // its a root link
+                body->art->pxArticulation->copyInternalStateToCache(
+                    *body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
+
+                body->art->pxArticulationCache->rootLinkData->worldAngVel = asPxVec3(angvel);
+                body->art->pxArticulation->applyCache(*body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
+                return;
+            }
         }
-        body->pxRigidBody->setAngularVelocity(asPxVec3(angvel));
+        PxRigidDynamic* dynamicBody = static_cast<PxRigidDynamic*>(body->pxRigidBody);
+
+        if (dynamicBody)
+        {
+            dynamicBody->setAngularVelocity(asPxVec3(angvel));
+        }
+        else
+        {
+            CARB_LOG_ERROR("Not a dynamic rigid body or a root articulation link");
+        }
     }
 }
 

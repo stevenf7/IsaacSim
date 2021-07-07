@@ -181,7 +181,8 @@ private:
                             semanticDataAttr.Get(&semanticData);
                             if (semanticType == "class")
                             {
-                                mSemanticID[i] = mSyntheticDataPtr->getSemanticIdFromData(semanticData.c_str());
+                                mSemanticID[i] =
+                                    mSyntheticDataPtr->getSemanticIdFromData(semanticType.c_str(), semanticData.c_str());
                                 // CARB_LOG_WARN("%s : %d", semanticData.c_str(), mSemanticID[i]);
                             }
                         }

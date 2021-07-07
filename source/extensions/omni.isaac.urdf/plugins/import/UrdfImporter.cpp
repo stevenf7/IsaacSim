@@ -44,7 +44,6 @@
 #include <usdPhysics/sphericalJoint.h>
 #include <physxSchemaTools/UsdTools.h>
 
-#include <physxSchema/physxMeshCollisionAPI.h>
 #include <physxSchema/physxSceneAPI.h>
 #include <physxSchema/physxArticulationAPI.h>
 #include <physxSchema/physxJointAPI.h>

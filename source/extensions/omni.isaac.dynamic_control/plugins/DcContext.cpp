@@ -548,8 +548,8 @@ bool DcContext::refreshPhysicsPointers(DcArticulation* art, bool verbose)
     art->pxArticulation = nullptr;
     art->cacheAge = -1;
 
-    PxArticulationBase* abase =
-        (PxArticulationBase*)physx->getPhysXPtr(art->path, omni::physx::PhysXType::ePTArticulation);
+    PxArticulationReducedCoordinate* abase =
+        (PxArticulationReducedCoordinate*)physx->getPhysXPtr(art->path, omni::physx::PhysXType::ePTArticulation);
     if (!abase || abase->getConcreteType() != PxConcreteType::eARTICULATION_REDUCED_COORDINATE)
     {
         if (verbose)
@@ -562,7 +562,8 @@ bool DcContext::refreshPhysicsPointers(DcArticulation* art, bool verbose)
     art->pxArticulation = static_cast<PxArticulationReducedCoordinate*>(abase);
     if (art->pxArticulation->getScene())
     {
-        art->pxArticulation->releaseCache(*art->pxArticulationCache);
+        // art->pxArticulation->releaseCache(*art->pxArticulationCache);
+        art->pxArticulationCache->release();
         art->pxArticulationCache = art->pxArticulation->createCache();
     }
 
@@ -757,7 +758,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     }
 
     // check if it's an articulation
-    PxArticulationBase* abase = (PxArticulationBase*)physx->getPhysXPtr(usdPath, omni::physx::PhysXType::ePTArticulation);
+    PxArticulationReducedCoordinate* abase =
+        (PxArticulationReducedCoordinate*)physx->getPhysXPtr(usdPath, omni::physx::PhysXType::ePTArticulation);
     if (abase)
     {
         CARB_LOG_INFO("Got %s at %p\n", abase->getConcreteTypeName(), (void*)abase);

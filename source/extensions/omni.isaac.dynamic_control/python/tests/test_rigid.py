@@ -44,6 +44,7 @@ class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # After running each test
     async def tearDown(self):
+        self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -66,6 +67,68 @@ class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
         UsdPhysics.CollisionAPI.Apply(cubePrim)
 
         return cubePrim
+
+    async def test_pose(self, gpu=False):
+
+        await omni.usd.get_context().new_stage_async()
+        self._stage = omni.usd.get_context().get_stage()
+
+        scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+        scene.CreateGravityMagnitudeAttr().Set(0.0)
+        prim = await self.add_cube("/cube", 100, (0, 0, 100))
+        await omni.kit.app.get_app().next_update_async()
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        handle = self._dc.get_rigid_body("/cube")
+        new_pose = _dynamic_control.Transform((100, 0, 0), (0, 0, 0, 1))
+        self._dc.set_rigid_body_pose(handle, new_pose)
+        await self.simulate(1.0)
+        pos = self._dc.get_rigid_body_pose(handle).p
+        self.assertAlmostEqual(pos.x, 100, delta=0.1)
+
+    async def test_linear_velocity(self, gpu=False):
+
+        await omni.usd.get_context().new_stage_async()
+        self._stage = omni.usd.get_context().get_stage()
+
+        scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+        scene.CreateGravityMagnitudeAttr().Set(0.0)
+        prim = await self.add_cube("/cube", 100, (0, 0, 100))
+        await omni.kit.app.get_app().next_update_async()
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        handle = self._dc.get_rigid_body("/cube")
+        new_pose = _dynamic_control.Transform((100, 0, 0), (0, 0, 0, 1))
+        self._dc.set_rigid_body_linear_velocity(handle, (100, 0, 0))
+        await self.simulate(1.0)
+        vel = self._dc.get_rigid_body_linear_velocity(handle)
+        self.assertAlmostEqual(vel.x, 100, delta=0.1)
+
+    async def test_angular_velocity(self, gpu=False):
+
+        await omni.usd.get_context().new_stage_async()
+        self._stage = omni.usd.get_context().get_stage()
+
+        scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+        scene.CreateGravityMagnitudeAttr().Set(0.0)
+        prim = await self.add_cube("/cube", 100, (0, 0, 100))
+
+        await omni.kit.app.get_app().next_update_async()
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        handle = self._dc.get_rigid_body("/cube")
+        new_pose = _dynamic_control.Transform((100, 0, 0), (0, 0, 0, 1))
+        self._dc.set_rigid_body_angular_velocity(handle, (5, 0, 0))
+        await self.simulate(1.0)
+        vel = self._dc.get_rigid_body_angular_velocity(handle)
+        # cube slows down due to angular damping
+        self.assertAlmostEqual(vel.x, 4.75, delta=0.1)
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_gravity(self, gpu=False):

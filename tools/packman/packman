@@ -22,7 +22,7 @@ else
 	PM_CURL_SILENT="-s -S"
 	PM_WGET_QUIET="--quiet"
 fi
-PM_PACKMAN_VERSION=6.33.2
+PM_PACKMAN_VERSION=6.35
 
 # This is necessary for newer macOS
 if [ `uname` == 'Darwin' ]; then
@@ -125,6 +125,10 @@ export PM_MODULE="$PM_MODULE_DIR/packman.py"
 
 # Ensure the packman package exists:
 if [ ! -f "$PM_MODULE" ]; then
+	# Remove a previously corrupt packman-common if it's there
+	if [ -d "$PM_MODULE_DIR" ]; then
+		rm -rf "$PM_MODULE_DIR"
+	fi
 	PM_MODULE_PACKAGE="packman-common@$PM_PACKMAN_VERSION.zip"
 	TARGET="/tmp/$PM_MODULE_PACKAGE"
 	# We always fetch packman from S3:

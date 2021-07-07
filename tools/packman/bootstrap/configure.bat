@@ -12,7 +12,7 @@
 :: See the License for the specific language governing permissions and
 :: limitations under the License.
 
-set PM_PACKMAN_VERSION=6.33.2
+set PM_PACKMAN_VERSION=6.35
 
 :: Specify where packman command is rooted
 set PM_INSTALL_PATH=%~dp0..
@@ -115,6 +115,9 @@ if defined PM_MODULE_DIR_EXT (
 set PM_MODULE=%PM_MODULE_DIR%\packman.py
 
 if exist "%PM_MODULE%" goto ENSURE_7ZA
+
+:: Clean out broken PM_MODULE_DIR if it exists
+if exist "%PM_MODULE_DIR%" ( rd /s /q "%PM_MODULE_DIR%" > nul )
 
 set PM_MODULE_PACKAGE=packman-common@%PM_PACKMAN_VERSION%.zip
 for /f "delims=" %%a in ('powershell -ExecutionPolicy ByPass -NoLogo -NoProfile -File "%~dp0\generate_temp_file_name.ps1"') do set TEMP_FILE_NAME=%%a

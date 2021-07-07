@@ -46,22 +46,17 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
         pass
 
     def do(self) -> bool:
-        async def spawn_task():
-            self._prim = self._stage.DefinePrim(self._prim_path, "Xform")
-            await omni.kit.app.get_app().next_update_async()
-            self._prim.GetReferences().AddReference(self._usd_path)
-            await omni.kit.app.get_app().next_update_async()
-            if self._translation is not None and self._rotation is not None:
-                transforms.set_transform(
-                    self._dc,
-                    self._context.get_stage_id(),
-                    str(self._prim.GetPath()),
-                    tuple(self._translation),
-                    tuple(self._rotation),
-                )
-                await omni.kit.app.get_app().next_update_async()
+        self._prim = self._stage.DefinePrim(self._prim_path, "Xform")
+        self._prim.GetReferences().AddReference(self._usd_path)
+        if self._translation is not None and self._rotation is not None:
+            transforms.set_transform(
+                self._dc,
+                self._context.get_stage_id(),
+                str(self._prim.GetPath()),
+                tuple(self._translation),
+                tuple(self._rotation),
+            )
 
-        asyncio.ensure_future(spawn_task())
         return True
         pass
 
