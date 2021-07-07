@@ -80,7 +80,7 @@ You can also clear your local cache from here and see used disk space
         * use ``which omniverse-cache-enabler`` to determine the location. If it doesn't exist then you can go to the next step.
         * remove using ``sudo rm -rf /path/returned/from/above/omniverse-cache-enabler``
 
-* Download and run the [launcher cleanup tool](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/prod_launcher/prod_utilities/cleanup-tool.html#cleanup-tool)
+* Download and run the [launcher cleanup tool](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/prod_launcher/prod_utilities/cleanup-tool.html)
     * Run ``./launcher-cleanup``
     * This tool will delete any installed omniverse applications and will ask if you want to delete your local nucleus data. 
     * Run with ``sudo`` if you have trouble installing cache from the launcher.
@@ -168,6 +168,25 @@ virtual machines that require zero configuration. This is a beautiful thing, hel
 - Go to debug or release folder under `_build/{platform}/{config}`
 - Execute `./isaac-sim.sh` (Linux) / `isaac-sim.bat` (Windows)
 
+## Debugging With VScode
+
+To run isaac sim with a debugger attached:
+- Go to the `Run and Debug` panel (or press `Ctrl+Shift+D`)
+- From the dropdown select `(Linux) isaac-sim [release]` or `(Linux) isaac-sim [debug]` depending on the build configuration you wish to run. 
+- Press the green play button to start debugging
+- Breakpoints can be set directly in cpp files
+
+To attach a debugger to a running application:
+
+- See [Here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/setup.html#attaching-the-debugger-to-a-running-app)
+
+To debug a native python (normally run from `python.sh`) application:
+
+- Open the python script you wish to debug.
+- Go to the `Run and Debug` panel (or press `Ctrl+Shift+D`)
+- Select `Python: Current File`
+- Press the green play button to start debugging
+- Breakpoints can be set directly in the python file you are debugging
 
 ## Packaging
 
