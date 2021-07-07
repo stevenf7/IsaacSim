@@ -182,7 +182,7 @@ class Extension(omni.ext.IExt):
         return False
         pass
 
-    def apply_collision_to_prim(self, prim, approximationShape="None"):
+    def apply_collision_to_prim(self, prim, approximationShape="none"):
         # TODO: add checks for rigid body parent type, we cannot use regular collision mesh in that case
         if prim.IsInstanceable():
             UsdPhysics.CollisionAPI.Apply(prim)

@@ -18,7 +18,6 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.menu.file" = {}
 "omni.kit.menu.edit" = {}
 "omni.kit.menu.create" = {}
-"omni.kit.menu.select" = {}
 "omni.kit.context_menu" = {}
 "omni.kit.selection" = {}
 
@@ -39,6 +38,9 @@ keywords = ["experience", "app", "usd"]
 "omni.hydra.rtx" = {}
 "omni.kit.renderer.capture" = {}
 
+# RTX Tests
+# "omni.rtx.tests" = {}
+
 # # Iray support
 "omni.hydra.iray" = { order = -1000 }
 "omni.iray.settings.core" = {}
@@ -53,8 +55,9 @@ keywords = ["experience", "app", "usd"]
 "omni.rtx.settings.core" = {}
 
 # Dev & Utils Windows
-"omni.kit.window.profiler" = {}
+"omni.kit.profiler.window" = {}
 # "omni.kit.window.about" = {} # Isaac Sim: disable this and replace with our own
+# "omni.kit.window.privacy" = {}
 "omni.kit.window.stats" = { order = 1000 }
 "omni.kit.window.script_editor" = {}
 "omni.kit.window.console" = {}
@@ -70,6 +73,8 @@ keywords = ["experience", "app", "usd"]
 
 # Misc
 "omni.kit.primitive.mesh" = {}
+# "omni.kit.telemetry" = {}
+
 
 # # PhysX
 "omni.physx.bundle" = {}
@@ -85,7 +90,7 @@ keywords = ["experience", "app", "usd"]
 # "omni.kit.window.provide_feedback" = {} # Isaac Sim: disable this and replace with our own
 "omni.kit.window.imageviewer" = {}
 # "omni.kit.tagging" = { order = -10 } # should be a dependency of below #Isaac Sim Disabling
-"omni.kit.filebrowser_column.tags" = {}
+# "omni.kit.filebrowser_column.tags" = {} #Isaac Sim Disabling, it enables tagging extension
 # "omni.kit.window.stats" = { order = 1000 } # Isaac Sim: already included above
 "omni.kit.window.usd_paths" = {}
 "omni.kit.window.commands" = {}
@@ -284,4 +289,4 @@ serverCheck = true
 # Non Isaac Sim Extensions
 ######################
 [dependencies]
-"semantics.schema.editor" = {version = "0.1.3", exact = true}
+"semantics.schema.editor" = {version = "0.2.0", exact = true}

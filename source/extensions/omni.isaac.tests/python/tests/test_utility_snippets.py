@@ -151,7 +151,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
             elif prim.IsA(UsdGeom.Mesh):
                 # "None" will use the base triangle mesh if available
                 # Can also use "convexDecomposition", "convexHull", "boundingSphere", "boundingCube"
-                utils.setCollider(prim, approximationShape="None")
+                utils.setCollider(prim, approximationShape="none")
             pass
         pass
 

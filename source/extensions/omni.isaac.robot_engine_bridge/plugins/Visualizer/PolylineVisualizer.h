@@ -90,7 +90,7 @@ private:
     carb::dictionary::IDictionary* mIDict = nullptr;
     omni::timeline::ITimeline* mTimeline = nullptr;
 
-    omni::renderer::LineBuffer mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
+    omni::renderer::SimplexBuffer mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
     omni::renderer::RenderInstanceBuffer mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
 
     /// The name of the channel on which state informations is published

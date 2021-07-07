@@ -119,7 +119,4 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertIsNotNone(self._stage.GetPrimAtPath("/franka"))
         omni.kit.commands.execute("IsaacSimDestroyPrim", prim_path="/franka")
         await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        self.assertIsNone(self._stage.GetPrimAtPath("/franka"))
+        self.assertFalse(self._stage.GetPrimAtPath("/franka"))

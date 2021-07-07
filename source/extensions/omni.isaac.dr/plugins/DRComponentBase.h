@@ -64,7 +64,7 @@ public:
     std::string mDRLayerName, mCompName;
     int mSeed, mCurrentSeed;
     std::default_random_engine mRandomGenerator;
-    omni::renderer::LineBuffer mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
+    omni::renderer::SimplexBuffer mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
     omni::renderer::RenderInstanceBuffer mShapeDebugRenderInstanceBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
     carb::dictionary::IDictionary* mDictionary = nullptr;
     carb::dictionary::ISerializer* mSerializer = nullptr;
