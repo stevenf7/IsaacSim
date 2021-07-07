@@ -840,58 +840,58 @@ DcRigidBodyState* CARB_ABI DcGetArticulationBodyStates(DcHandle artHandle, DcSta
     return art->rigidBodyStateCache.data();
 }
 
-bool CARB_ABI DcSetArticulationBodyStates(DcHandle artHandle, const DcRigidBodyState* states, DcStateFlags flags)
-{
-    (void)DC_CHECK_SIMULATING();
+// bool CARB_ABI DcSetArticulationBodyStates(DcHandle artHandle, const DcRigidBodyState* states, DcStateFlags flags)
+// {
+//     (void)DC_CHECK_SIMULATING();
 
-    DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
-    if (!art || !flags)
-    {
-        return false;
-    }
+//     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
+//     if (!art || !flags)
+//     {
+//         return false;
+//     }
 
-    for (int i = 0; i < art->numRigidBodies(); i++)
-    {
-        PxRigidBody* body = art->rigidBodies[i]->pxRigidBody;
-        const DcRigidBodyState& state = states[i];
-        if (body)
-        {
-            if (flags & kDcStatePos)
-            {
-                PxTransform pose;
-                pose.p = asPxVec3(state.pose.p);
-                pose.q = asPxQuat(state.pose.r);
+//     for (int i = 0; i < art->numRigidBodies(); i++)
+//     {
+//         PxRigidBody* body = art->rigidBodies[i]->pxRigidBody;
+//         const DcRigidBodyState& state = states[i];
+//         if (body)
+//         {
+//             if (flags & kDcStatePos)
+//             {
+//                 PxTransform pose;
+//                 pose.p = asPxVec3(state.pose.p);
+//                 pose.q = asPxQuat(state.pose.r);
 
-                // apply offset
-                carb::Float3& origin = art->rigidBodies[i]->origin;
-                pose.p.x += origin.x;
-                pose.p.y += origin.y;
-                pose.p.z += origin.z;
+//                 // apply offset
+//                 carb::Float3& origin = art->rigidBodies[i]->origin;
+//                 pose.p.x += origin.x;
+//                 pose.p.y += origin.y;
+//                 pose.p.z += origin.z;
 
-                body->setGlobalPose(pose);
-            }
+//                 body->setGlobalPose(pose);
+//             }
 
-            if (flags & kDcStateVel)
-            {
-                body->setLinearVelocity(asPxVec3(state.vel.linear));
-                body->setAngularVelocity(asPxVec3(state.vel.angular));
-            }
-            else
-            {
-                // zero velocities?
-            }
-        }
-        else
-        {
-            // hmmm
-            return false;
-        }
+//             if (flags & kDcStateVel)
+//             {
+//                 body->setLinearVelocity(asPxVec3(state.vel.linear));
+//                 body->setAngularVelocity(asPxVec3(state.vel.angular));
+//             }
+//             else
+//             {
+//                 // zero velocities?
+//             }
+//         }
+//         else
+//         {
+//             // hmmm
+//             return false;
+//         }
 
-        // should we zero link velocities and accelerations in articulation cache?
-    }
+//         // should we zero link velocities and accelerations in articulation cache?
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
 // articulation joints
 
@@ -1430,6 +1430,11 @@ void CARB_ABI DcSetRigidBodyPose(DcHandle bodyHandle, const DcTransform& pose)
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
     {
+        if (body->art && body->art->rigidBodies[0]->handle != bodyHandle)
+        {
+            CARB_LOG_ERROR("Cannot set pose on non-root articulation link");
+            return;
+        }
         PxTransform tx = asPxTransform(pose);
 
         // apply offset
@@ -1474,6 +1479,11 @@ void CARB_ABI DcSetRigidBodyLinearVelocity(DcHandle bodyHandle, const carb::Floa
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
     {
+        if (body->art && body->art->rigidBodies[0]->handle != bodyHandle)
+        {
+            CARB_LOG_ERROR("Cannot set linear velocity on non-root articulation link");
+            return;
+        }
         body->pxRigidBody->setLinearVelocity(asPxVec3(linvel));
     }
 }
@@ -1485,6 +1495,11 @@ void CARB_ABI DcSetRigidBodyAngularVelocity(DcHandle bodyHandle, const carb::Flo
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
     {
+        if (body->art && body->art->rigidBodies[0]->handle != bodyHandle)
+        {
+            CARB_LOG_ERROR("Cannot set angular velocity on non-root articulation link");
+            return;
+        }
         body->pxRigidBody->setAngularVelocity(asPxVec3(angvel));
     }
 }
@@ -1917,9 +1932,16 @@ bool CARB_ABI DcSetDofProperties(DcHandle dofHandle, const DcDofProperties* prop
         return false;
     }
 
-    if (dof->art->pxArticulation->getScene())
+    // if (dof->art->pxArticulation->getScene())
+    // {
+    //     dof->art->pxArticulation->wakeUp();
+    // }
+
+    // Remove articulation from scene
+    ::physx::PxScene* scene = dof->art->pxArticulation->getScene();
+    if (scene)
     {
-        dof->art->pxArticulation->wakeUp();
+        scene->removeArticulation(*dof->art->pxArticulation);
     }
 
     // set limits
@@ -1961,12 +1983,19 @@ bool CARB_ABI DcSetDofProperties(DcHandle dofHandle, const DcDofProperties* prop
     // set drive properties
     pxJoint->setDrive(dof->pxAxis, stiffness, damping, props->maxEffort, driveType);
 
-    if (dof->art->pxArticulation->getScene())
+
+    // Add articulation back to scene
+    if (scene)
     {
-        // Cache becomes invalid, clear it
-        dof->art->pxArticulation->releaseCache(*dof->art->pxArticulationCache);
-        dof->art->pxArticulationCache = dof->art->pxArticulation->createCache();
+        scene->addArticulation(*dof->art->pxArticulation);
     }
+
+    // if (dof->art->pxArticulation->getScene())
+    // {
+    //     // Cache becomes invalid, clear it
+    //     dof->art->pxArticulation->releaseCache(*dof->art->pxArticulationCache);
+    //     dof->art->pxArticulationCache = dof->art->pxArticulation->createCache();
+    // }
     return true;
 }
 
@@ -3026,7 +3055,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.findArticulationBodyIndex = DcFindArticulationBodyIndex;
     iface.getArticulationRootBody = DcGetArticulationRootBody;
     iface.getArticulationBodyStates = DcGetArticulationBodyStates;
-    iface.setArticulationBodyStates = DcSetArticulationBodyStates;
+    // iface.setArticulationBodyStates = DcSetArticulationBodyStates;
 
     iface.getArticulationJointCount = DcGetArticulationJointCount;
     iface.getArticulationJoint = DcGetArticulationJoint;
