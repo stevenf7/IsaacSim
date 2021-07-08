@@ -14,11 +14,10 @@
 #include "DRComponentMaterial.h"
 
 #include <boost/algorithm/string.hpp>
-
 #include <omni/kit/KitUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/AssetUtils.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {
@@ -135,9 +134,9 @@ void DRComponentMaterial::update()
             carb::extras::Path urlPath(url.c_str());
             if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/DR"))
             {
-                omni::usd::UsdUtils::createPrim(mStage, "/DR", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
-                    return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
-                });
+                omni::usd::UsdUtils::createPrim(mStage, "/DR",
+                                                [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
+                                                { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); });
             }
             std::string materialPrimPath = "/DR/" + urlPath.getStem();
             if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, materialPrimPath))

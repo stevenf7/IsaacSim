@@ -10,22 +10,23 @@
 // clang-format off
 #include <UsdPCH.h>
 // clang-format on
-#include <string>
-
 #include "ContactMonitor.h"
+
 #include "../Utils/IsaacConversions.h"
+
 #include <omni/isaac/utils/Conversions.h>
+
+#include <string>
 // #include <boost/algorithm/string.hpp>
 #include <carb/Framework.h>
-#include <carb/logging/Log.h>
 #include <carb/InterfaceUtils.h>
 #include <carb/events/EventsUtils.h>
 #include <carb/filesystem/IFileSystem.h>
-#include <physxSchema/physxContactReportAPI.h>
+#include <carb/logging/Log.h>
 
-
-#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
+#include <physxSchema/physxContactReportAPI.h>
 
 namespace omni
 {

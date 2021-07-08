@@ -14,40 +14,37 @@
 #include <pxr/usd/usd/inherits.h>
 // clang-format on
 
-#include <omni/isaac/robot_engine_bridge/RobotEngineBridge.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#include <carb/sensors/Sensors.h>
-#include <omni/kit/syntheticdata/SyntheticData.h>
-#include <omni/kit/IViewport.h>
-
-#include <omni/kit/IStageUpdate.h>
-#include <omni/kit/IApp.h>
+#include "Core/IsaacApplication.h"
+#include "Core/IsaacCApi.h"
+#include "Core/IsaacMessage.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
-#include <carb/logging/Log.h>
-#include <carb/settings/ISettings.h>
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/fastcache/FastCache.h>
+#include <carb/logging/Log.h>
+#include <carb/sensors/Sensors.h>
+#include <carb/settings/ISettings.h>
+
+#include <messages/uuid.capnp.h>
+#include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/isaac/robot_engine_bridge/RobotEngineBridge.h>
+#include <omni/kit/IApp.h>
+#include <omni/kit/IStageUpdate.h>
+#include <omni/kit/IViewport.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxUsdLoad.h>
 #include <omni/renderer/IDebugDraw.h>
-
-#include <unordered_map>
-#include <string>
-#include <vector>
-#include <memory>
-
 #include <packages/engine_c_api/isaac_c_api.h>
-
-#include <messages/uuid.capnp.h>
 #include <uuid/uuid.h>
-#include "Core/IsaacMessage.h"
-#include "Core/IsaacCApi.h"
-#include "Core/IsaacApplication.h"
 
 #include <dlfcn.h>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.robot_engine_bridge.plugin", "Isaac Robot Engine bridge",
                                                   "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };

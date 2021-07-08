@@ -17,12 +17,12 @@
 #include "Query.h"
 
 #include <carb/PluginUtils.h>
-#include <carb/logging/Log.h>
 #include <carb/filesystem/IFileSystem.h>
+#include <carb/logging/Log.h>
 
 #include <omni/kit/IEditor.h>
-#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
 
 using namespace carb;
@@ -83,7 +83,8 @@ bool Manager::init(pxr::UsdStageWeakPtr stage)
     // Subscribe to stage update events for tick
     CARB_ASSERT(m_updateSubId == 0);
     m_updateSubId = editor->subscribeToUpdateEvents(
-        [](float elapsedTime, void* userData) {
+        [](float elapsedTime, void* userData)
+        {
             CARB_UNUSED(elapsedTime);
             Manager& decals = *reinterpret_cast<Manager*>(userData);
 

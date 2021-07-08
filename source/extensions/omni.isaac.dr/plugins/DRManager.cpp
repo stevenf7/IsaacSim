@@ -12,28 +12,30 @@
 // clang-format on
 
 #include "DRManager.h"
+
 #include "plugins/bridge/BridgeApplication.h"
 
-#include <boost/algorithm/string.hpp>
 #include <carb/settings/ISettings.h>
 #include <carb/tokens/ITokens.h>
 #include <carb/tokens/TokensUtils.h>
-#include <omni/usd/Layers.h>
-#include <omni/usd/UtilsIncludes.h>
-#include <omni/usd/LayerUtils.h>
-#include <omni/usd/UsdContext.h>
+
+#include <boost/algorithm/string.hpp>
+#include <drSchema/attributeComponent.h>
 #include <drSchema/baseComponent.h>
 #include <drSchema/colorComponent.h>
 #include <drSchema/lightComponent.h>
+#include <drSchema/materialComponent.h>
+#include <drSchema/meshComponent.h>
 #include <drSchema/movementComponent.h>
 #include <drSchema/rotationComponent.h>
 #include <drSchema/scaleComponent.h>
-#include <drSchema/transformComponent.h>
 #include <drSchema/textureComponent.h>
-#include <drSchema/materialComponent.h>
-#include <drSchema/meshComponent.h>
+#include <drSchema/transformComponent.h>
 #include <drSchema/visibilityComponent.h>
-#include <drSchema/attributeComponent.h>
+#include <omni/usd/LayerUtils.h>
+#include <omni/usd/Layers.h>
+#include <omni/usd/UsdContext.h>
+#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {

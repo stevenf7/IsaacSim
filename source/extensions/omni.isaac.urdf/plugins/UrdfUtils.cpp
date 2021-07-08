@@ -13,21 +13,21 @@
 #include "UsdPCH.h"
 // clang-format on
 
-#include "import/UrdfImporter.h"
 #include "import/ImportHelpers.h"
+#include "import/UrdfImporter.h"
 
 #include <carb/PluginUtils.h>
 #include <carb/logging/Log.h>
-#include <omni/kit/IStageUpdate.h>
+
 #include <omni/ext/IExt.h>
 #include <omni/isaac/urdf/Urdf.h>
 #include <omni/kit/IApp.h>
-#include <omni/usd/UsdContextIncludes.h>
+#include <omni/kit/IStageUpdate.h>
 #include <omni/usd/UsdContext.h>
-
-#include <memory>
-#include <fstream>
 #include <pybind11/pybind11/pybind11.h>
+
+#include <fstream>
+#include <memory>
 
 #define EXTENSION_NAME "omni.isaac.urdf"
 

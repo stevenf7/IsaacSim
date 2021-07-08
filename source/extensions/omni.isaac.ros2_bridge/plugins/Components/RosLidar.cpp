@@ -13,15 +13,17 @@
 
 #include "RosLidar.h"
 
-#include <carb/Framework.h>
-#include <carb/Types.h>
+#include "geometry_msgs/msg/point32.hpp"
 #include "rosgraph_msgs/msg/clock.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
+#include "sensor_msgs/msg/point_cloud.hpp"
 #include "std_msgs/msg/int64.hpp"
 #include "std_msgs/msg/u_int8.hpp"
 #include "std_srvs/srv/empty.hpp"
-#include "geometry_msgs/msg/point32.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
-#include "sensor_msgs/msg/point_cloud.hpp"
+
+#include <carb/Framework.h>
+#include <carb/Types.h>
+
 #include <time.h>
 
 namespace omni

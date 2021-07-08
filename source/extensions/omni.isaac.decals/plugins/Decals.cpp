@@ -20,16 +20,16 @@
 #endif
 
 
+#include "Manager.h"
+
 #include <carb/PluginUtils.h>
+#include <carb/dictionary/IDictionary.h>
 #include <carb/input/IInput.h>
+
+#include <omni/isaac/decals/Decals.h>
 #include <omni/kit/IEditor.h>
 #include <omni/kit/IStageUpdate.h>
-#include <omni/usd/UsdContextIncludes.h>
 #include <omni/usd/UsdContext.h>
-#include <carb/dictionary/IDictionary.h>
-#include <omni/isaac/decals/Decals.h>
-
-#include "Manager.h"
 
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.decals.Decals.plugin", "OV Kit Decal Manager", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };

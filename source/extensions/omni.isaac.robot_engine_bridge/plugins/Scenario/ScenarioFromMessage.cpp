@@ -10,29 +10,27 @@
 // clang-format off
 #include <UsdPCH.h>
 // clang-format on
-#include <vector>
-#include <memory>
-#include <string>
+#include "ScenarioFromMessage.h"
+
+#include "../Actuator/Teleport.h"
+#include "../Core/IsaacComponent.h"
+#include "../Monitor/RigidBodiesSink.h"
+#include "../Utils/IsaacConversions.h"
+
+#include <carb/InterfaceUtils.h>
+#include <carb/filesystem/IFileSystem.h>
+#include <carb/profiler/Profile.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/Transforms.h>
-#include <carb/profiler/Profile.h>
-#include <carb/InterfaceUtils.h>
-#include <carb/filesystem/IFileSystem.h>
-
-#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
-
-#include "../Core/IsaacComponent.h"
-#include "../Monitor/RigidBodiesSink.h"
-#include "../Actuator/Teleport.h"
-#include "../Utils/IsaacConversions.h"
-
-
-#include <robotEngineBridgeSchema/robotEngineTeleport.h>
+#include <omni/usd/UtilsIncludes.h>
 #include <robotEngineBridgeSchema/robotEngineRigidBodySink.h>
+#include <robotEngineBridgeSchema/robotEngineTeleport.h>
 
-#include "ScenarioFromMessage.h"
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace omni
 {

@@ -13,15 +13,15 @@
 
 #include "DRComponentMesh.h"
 
-#include <boost/algorithm/string.hpp>
 #include <carb/Framework.h>
-#include <carb/Types.h>
 #include <carb/InterfaceUtils.h>
+#include <carb/Types.h>
 #include <carb/filesystem/IFileSystem.h>
-#include <drSchema/scaleComponent.h>
 
-#include <omni/usd/UtilsIncludes.h>
+#include <boost/algorithm/string.hpp>
+#include <drSchema/scaleComponent.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {
@@ -58,17 +58,16 @@ void DRComponentMesh::onStart()
         // Check for /DR prim and if base OmniPBR material is loaded
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/DR"))
         {
-            omni::usd::UsdUtils::createPrim(mStage, "/DR", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
-                return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
-            });
+            omni::usd::UsdUtils::createPrim(mStage, "/DR",
+                                            [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
+                                            { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); });
         }
         std::string meshCompPath = "/DR/" + mCompName;
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, meshCompPath))
         {
-            omni::usd::UsdUtils::createPrim(
-                mStage, meshCompPath.c_str(), [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
-                    return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
-                });
+            omni::usd::UsdUtils::createPrim(mStage, meshCompPath.c_str(),
+                                            [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
+                                            { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); });
         }
     }
     onComponentChange();

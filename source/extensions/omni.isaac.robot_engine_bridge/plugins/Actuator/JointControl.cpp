@@ -11,14 +11,15 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include <vector>
-#include <string>
+#include "JointControl.h"
 
 #include "../Core/IsaacComponent.h"
+
 #include <carb/logging/Log.h>
 #include <carb/profiler/Profile.h>
 
-#include "JointControl.h"
+#include <string>
+#include <vector>
 
 namespace omni
 {

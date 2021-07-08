@@ -11,23 +11,22 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include <carb/Framework.h>
-#include <carb/dictionary/DictionaryUtils.h>
-#include <carb/Types.h>
-#include <vector>
-#include <string>
+#include "PolylineVisualizer.h"
 
 #include "../Core/IsaacComponent.h"
-#include "PolylineVisualizer.h"
-#include <carb/logging/Log.h>
-#include <carb/profiler/Profile.h>
-#include <omni/isaac/utils/Conversions.h>
-#include <omni/isaac/utils/Curves.h>
 #include "../Thirdparty/csscolorparser.hpp"
 
+#include <carb/dictionary/DictionaryUtils.h>
+#include <carb/logging/Log.h>
+#include <carb/profiler/Profile.h>
+
 #include <omni/isaac/utils/Conversions.h>
-#include <omni/usd/UtilsIncludes.h>
+#include <omni/isaac/utils/Curves.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
+
+#include <string>
+#include <vector>
 
 namespace omni
 {

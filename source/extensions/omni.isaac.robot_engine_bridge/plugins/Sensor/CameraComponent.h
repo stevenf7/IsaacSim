@@ -13,20 +13,21 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include <omni/usd/UtilsIncludes.h>
-#include <omni/usd/UsdUtils.h>
-#include <carb/sensors/Sensors.h>
-#include <omni/kit/syntheticdata/SyntheticData.h>
-#include <omni/kit/IViewport.h>
-#include <carb/profiler/Profile.h>
+#include "../Core/IsaacComponent.h"
 #include "plugins/core/ViewportManager.h"
-#include <robotEngineBridgeSchema/robotEngineCamera.h>
 
 #include <carb/Types.h>
-#include <vector>
-#include <string>
+#include <carb/profiler/Profile.h>
+#include <carb/sensors/Sensors.h>
 
-#include "../Core/IsaacComponent.h"
+#include <omni/kit/IViewport.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
+#include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
+#include <robotEngineBridgeSchema/robotEngineCamera.h>
+
+#include <string>
+#include <vector>
 
 namespace omni
 {

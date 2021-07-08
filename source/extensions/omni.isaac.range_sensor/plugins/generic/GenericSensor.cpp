@@ -16,16 +16,15 @@
 
 #include "GenericSensor.h"
 
-#include <omni/physx/IPhysx.h>
-#include <omni/physx/IPhysxSceneQuery.h>
-
 #include <carb/InterfaceUtils.h>
 
-#include <omni/usd/UtilsIncludes.h>
+#include <omni/physx/IPhysx.h>
+#include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
-#include <iostream>
 #include <chrono>
+#include <iostream>
 #include <string.h>
 
 using namespace ::physx;

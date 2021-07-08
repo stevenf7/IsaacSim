@@ -13,20 +13,19 @@
 #include "UsdPCH.h"
 // clang-format on
 
-#include <omni/isaac/occupancy_map/OccupancyMap.h>
-#include <omni/isaac/occupancy_map/MapGenerator.h>
-#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
-#include <omni/physx/IPhysx.h>
 
+#include <omni/isaac/occupancy_map/MapGenerator.h>
+#include <omni/isaac/occupancy_map/OccupancyMap.h>
+#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
 #include <omni/kit/IStageUpdate.h>
+#include <omni/physx/IPhysx.h>
 #include <omni/renderer/IDebugDraw.h>
-
-#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
 #include <map>
 #include <string>

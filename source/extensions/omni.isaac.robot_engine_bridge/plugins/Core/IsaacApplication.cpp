@@ -15,22 +15,22 @@
 
 #include "../Actuator/DifferentialBaseSimulator.h"
 #include "../Actuator/HolonomicBaseSimulator.h"
-#include "../Actuator/VehicleSimulator.h"
 #include "../Actuator/JointControl.h"
 #include "../Actuator/ScissorLiftSimulator.h"
 #include "../Actuator/SurfaceGripper.h"
 #include "../Actuator/TwoFingerGripper.h"
-#include "../Scenario/ScenarioFromMessage.h"
-#include "../Monitor/RigidBodiesSink.h"
-#include "../Scenario/SceneLoader.h"
-#include "../Sensor/LidarComponent.h"
-#include "../Sensor/UltrasonicComponent.h"
-#include "../Sensor/CameraComponent.h"
-#include "../Sensor/OccupancyGridMapComponent.h"
+#include "../Actuator/VehicleSimulator.h"
 #include "../Monitor/ContactMonitor.h"
+#include "../Monitor/RigidBodiesSink.h"
+#include "../Scenario/ScenarioFromMessage.h"
+#include "../Scenario/SceneLoader.h"
+#include "../Sensor/CameraComponent.h"
+#include "../Sensor/LidarComponent.h"
+#include "../Sensor/OccupancyGridMapComponent.h"
+#include "../Sensor/UltrasonicComponent.h"
 #include "../Visualizer/PolylineVisualizer.h"
-#include "plugins/core/ScopedTimer.h"
 #include "core/logger.hpp"
+#include "plugins/core/ScopedTimer.h"
 
 namespace omni
 {
@@ -212,7 +212,8 @@ struct TaskData
  * @brief Function called by each task thread
  *
  */
-auto TaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
+auto TaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg)
+{
     TaskData* taskData = reinterpret_cast<TaskData*>(taskArg);
     if (taskData->component->getEnabled())
     {

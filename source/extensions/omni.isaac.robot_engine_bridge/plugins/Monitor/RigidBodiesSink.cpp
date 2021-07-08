@@ -10,18 +10,20 @@
 // clang-format off
 #include <UsdPCH.h>
 // clang-format on
-#include <string>
-
 #include "RigidBodiesSink.h"
+
 #include "../Utils/IsaacConversions.h"
-#include <omni/isaac/utils/Conversions.h>
-#include <boost/algorithm/string.hpp>
-#include <carb/logging/Log.h>
+
 #include <carb/InterfaceUtils.h>
 #include <carb/filesystem/IFileSystem.h>
+#include <carb/logging/Log.h>
 
-#include <omni/usd/UtilsIncludes.h>
+#include <boost/algorithm/string.hpp>
+#include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
+
+#include <string>
 
 namespace omni
 {

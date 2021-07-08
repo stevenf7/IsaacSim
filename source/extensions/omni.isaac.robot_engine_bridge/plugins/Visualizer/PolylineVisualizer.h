@@ -11,7 +11,10 @@
 
 #include "../Core/IsaacComponent.h"
 
+#include <carb/Framework.h>
 #include <carb/Types.h>
+#include <carb/dictionary/IDictionary.h>
+#include <carb/dictionary/ISerializer.h>
 #include <carb/fastcache/FastCache.h>
 
 #include <omni/renderer/IDebugDraw.h>

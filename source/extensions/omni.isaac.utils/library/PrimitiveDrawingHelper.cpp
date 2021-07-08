@@ -10,8 +10,9 @@
 // clang-format off
 #include "UsdPCH.h"
 // clang-format on
-#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
 #include <carb/scenerenderer/SceneRenderer.h>
+
+#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
 
 
 using namespace carb::scenerenderer;

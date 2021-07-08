@@ -11,13 +11,13 @@
 #include "UsdPCH.h"
 // clang-format on
 
-#include <omni/isaac/occupancy_map/MapGenerator.h>
-#include <omni/physx/IPhysx.h>
+#include "plugins/core/ScopedTimer.h"
 
 #include <extensions/PxSceneQueryExt.h>
-#include <usdPhysics/scene.h>
-
 #include <octomap/octomap.h>
+#include <omni/isaac/occupancy_map/MapGenerator.h>
+#include <omni/physx/IPhysx.h>
+#include <usdPhysics/scene.h>
 
 #include <PxActor.h>
 #include <PxArticulationJointReducedCoordinate.h>
@@ -27,7 +27,6 @@
 #include <PxRigidDynamic.h>
 #include <PxScene.h>
 #include <stack>
-#include "plugins/core/ScopedTimer.h"
 
 namespace omni
 {

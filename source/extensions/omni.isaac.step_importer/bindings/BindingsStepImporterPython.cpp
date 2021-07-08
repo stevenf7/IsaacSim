@@ -86,7 +86,8 @@ PYBIND11_MODULE(_step_importer, m)
         .def_readwrite("b", &step_reader::color::b)
         .def_readwrite("a", &step_reader::color::a)
         .def(py::pickle([](const step_reader::color& c) { return py::make_tuple(c.r, c.g, c.b, c.a); },
-                        [](py::tuple t) {
+                        [](py::tuple t)
+                        {
                             step_reader::color c;
                             c.r = t[0].cast<float>();
                             c.g = t[1].cast<float>();
@@ -98,7 +99,8 @@ PYBIND11_MODULE(_step_importer, m)
     py::class_<step_reader::Visual_Material>(m, "Visual_Material", "Holds the visual properties of a PBR material")
         .def(py::init<>())
         .def_property_readonly_static("dtype",
-                                      [](const py::object&) {
+                                      [](const py::object&)
+                                      {
                                           return py::dtype::of<step_reader::Visual_Material>(); // return the numpy
                                                                                                 // structured dtype
                                       })
@@ -107,12 +109,14 @@ PYBIND11_MODULE(_step_importer, m)
         .def_readwrite("rgba_color", &step_reader::Visual_Material::rgba_color, "surface base color")
         .def_readwrite("emissive", &step_reader::Visual_Material::emmissive, "emissive RGB color and intensity")
         .def(py::pickle(
-            [](const step_reader::Visual_Material& mat) {
+            [](const step_reader::Visual_Material& mat)
+            {
                 return py::make_tuple(mat.roughness, mat.metallic, mat.rgba_color.r, mat.rgba_color.g, mat.rgba_color.b,
                                       mat.rgba_color.a, mat.emmissive.r, mat.emmissive.b, mat.emmissive.b,
                                       mat.emmissive.a);
             },
-            [](py::tuple t) {
+            [](py::tuple t)
+            {
                 step_reader::Visual_Material mat;
                 mat.roughness = t[0].cast<float>();
                 mat.metallic = t[1].cast<float>();
@@ -132,33 +136,34 @@ PYBIND11_MODULE(_step_importer, m)
     py::class_<step_reader::Transform>(m, "Transform", "Position and orientation of an element")
         .def(py::init<>())
         .def_property_readonly_static("dtype",
-                                      [](const py::object&) {
+                                      [](const py::object&)
+                                      {
                                           return py::dtype::of<step_reader::Transform>(); // return the numpy structured
                                                                                           // dtype
                                       })
         .def_readwrite("p", &step_reader::Transform::p, "position")
         .def_readwrite("r", &step_reader::Transform::r, "orientation")
-        .def(py::pickle(
-            [](const step_reader::Transform& t) {
-                return py::make_tuple(t.p.x, t.p.y, t.p.z, t.r.x, t.r.y, t.r.z, t.r.w);
-            },
-            [](py::tuple t) {
-                step_reader::Transform out;
-                out.p.x = t[0].cast<float>();
-                out.p.y = t[1].cast<float>();
-                out.p.z = t[2].cast<float>();
-                out.r.x = t[3].cast<float>();
-                out.r.y = t[4].cast<float>();
-                out.r.z = t[5].cast<float>();
-                out.r.w = t[6].cast<float>();
+        .def(py::pickle([](const step_reader::Transform& t)
+                        { return py::make_tuple(t.p.x, t.p.y, t.p.z, t.r.x, t.r.y, t.r.z, t.r.w); },
+                        [](py::tuple t)
+                        {
+                            step_reader::Transform out;
+                            out.p.x = t[0].cast<float>();
+                            out.p.y = t[1].cast<float>();
+                            out.p.z = t[2].cast<float>();
+                            out.r.x = t[3].cast<float>();
+                            out.r.y = t[4].cast<float>();
+                            out.r.z = t[5].cast<float>();
+                            out.r.w = t[6].cast<float>();
 
-                return out;
-            }));
+                            return out;
+                        }));
 
     py::class_<MeshProperties>(m, "MeshProperties", "Contains properties of the meshes")
         .def(py::init<>())
         .def_property("name",
-                      [](MeshProperties& self) {
+                      [](MeshProperties& self)
+                      {
                           py::str py_str(PyUnicode_Decode(self.name.c_str(), self.name.size(), "utf-8", "ignore"));
                           return py_str;
                       },
@@ -182,7 +187,8 @@ PYBIND11_MODULE(_step_importer, m)
         .def("get_face_materials",
              [](Mesh& self) { return py::array_t<size_t>({ self.face_materials.size() }, self.face_materials.data()); })
         .def("get_vertex_normals",
-             [](Mesh& self) {
+             [](Mesh& self)
+             {
                  return py::array_t<float>(
                      { self.vertices.size(), (size_t)3 }, reinterpret_cast<float*>(self.vertex_normals.data()));
              })
@@ -191,16 +197,19 @@ PYBIND11_MODULE(_step_importer, m)
                  return py::array_t<float>(
                      { self.vertex_UVs.size(), (size_t)2 }, reinterpret_cast<float*>(self.vertex_UVs.data()));
              })
-        .def("get_triangles_normals", [](Mesh& self) {
-            return py::array_t<float>(
-                { self.triangles.size(), (size_t)3 }, reinterpret_cast<float*>(self.face_normals.data()));
-        });
+        .def("get_triangles_normals",
+             [](Mesh& self)
+             {
+                 return py::array_t<float>(
+                     { self.triangles.size(), (size_t)3 }, reinterpret_cast<float*>(self.face_normals.data()));
+             });
 
     py::class_<step_reader::Component>(
         m, "Component", "Describes a component of an Assembly, it may be either a Mesh or a sub-assembly")
         .def(py::init<>())
         .def_property_readonly_static("dtype",
-                                      [](const py::object&) {
+                                      [](const py::object&)
+                                      {
                                           return py::dtype::of<step_reader::Component>(); // return the numpy structured
                                                                                           // dtype
                                       })
@@ -211,7 +220,8 @@ PYBIND11_MODULE(_step_importer, m)
                 return py::make_tuple(
                     t.id, t.pose.p.x, t.pose.p.y, t.pose.p.z, t.pose.r.x, t.pose.r.y, t.pose.r.z, t.pose.r.w);
             },
-            [](py::tuple t) {
+            [](py::tuple t)
+            {
                 step_reader::Component out;
                 out.id = t[0].cast<int>();
                 out.pose.p.x = t[1].cast<float>();
@@ -228,7 +238,8 @@ PYBIND11_MODULE(_step_importer, m)
     py::class_<Assembly>(m, "Assembly", "A group of Meshes and sub-assemblies that form an object")
         .def(py::init<>())
         .def_property("name",
-                      [](Assembly& self) {
+                      [](Assembly& self)
+                      {
                           py::str py_str(PyUnicode_Decode(self.name.c_str(), self.name.size(), "utf-8", "ignore"));
                           return py_str;
                       },
@@ -267,11 +278,13 @@ PYBIND11_MODULE(_step_importer, m)
         .def_readwrite("volumetric_center_meshes", &step_reader::Tesselation_Properties::volumetric_center_meshes,
                        "Recenter the extracted meshes to its volumetric center")
         .def(py::pickle(
-            [](const step_reader::Tesselation_Properties& t) {
+            [](const step_reader::Tesselation_Properties& t)
+            {
                 return py::make_tuple(t.max_linear_offset, t.max_angular_offset, t.min_surface, t.use_relative_offset,
                                       t.use_internal_vertices, t.volumetric_center_meshes);
             },
-            [](py::tuple t) {
+            [](py::tuple t)
+            {
                 step_reader::Tesselation_Properties out;
                 out.max_linear_offset = t[0].cast<float>();
                 out.max_angular_offset = t[1].cast<float>();

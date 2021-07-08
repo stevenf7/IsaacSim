@@ -7,12 +7,6 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-// // clang-format off
-// #include "UsdPCH.h"
-// #include <omni/usd/UsdContextIncludes.h>
-// #include <omni/usd/UsdContext.h>
-// // clang-format on
-
 #include <carb/BindingsPythonUtils.h>
 
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
@@ -166,7 +160,8 @@ PYBIND11_MODULE(_range_sensor, m)
                      :obj:`int`: The number of vertical scans the sensor completed in the last simulation step, 0 if error occurred. Generally only useful for lidars with a non-zero rotation speed)pbdoc")
 
         .def("get_depth_data",
-             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object {
+             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
+             {
                  if (!li)
                      return py::none();
                  uint16_t* data = li->getDepthData(sensorPath);
@@ -183,7 +178,8 @@ PYBIND11_MODULE(_range_sensor, m)
                     :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and scaled by min and max distance)pbdoc")
 
         .def("get_linear_depth_data",
-             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object {
+             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
+             {
                  if (!li)
                      return py::none();
                  float* data = li->getLinearDepthData(sensorPath);
@@ -201,7 +197,8 @@ PYBIND11_MODULE(_range_sensor, m)
 
 
         .def("get_intensity_data",
-             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object {
+             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
+             {
                  if (!li)
                      return py::none();
                  uint8_t* data = li->getIntensityData(sensorPath);
@@ -218,7 +215,8 @@ PYBIND11_MODULE(_range_sensor, m)
                     :obj:`numpy.ndarray`: The observed specular intensity of each beam, 255 if hit, 0 if not)pbdoc")
 
         .def("get_zenith_data",
-             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object {
+             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
+             {
                  if (!li)
                      return py::none();
                  float* data = li->getZenithData(sensorPath);
@@ -234,7 +232,8 @@ PYBIND11_MODULE(_range_sensor, m)
                     :obj:`numpy.ndarray`: The zenith angle in radians for each row)pbdoc")
 
         .def("get_azimuth_data",
-             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object {
+             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
+             {
                  if (!li)
                      return py::none();
                  float* data = li->getAzimuthData(sensorPath);
@@ -250,7 +249,8 @@ PYBIND11_MODULE(_range_sensor, m)
                     :obj:`numpy.ndarray`: The azimuth angle in radians for each column)pbdoc")
 
         .def("get_point_cloud_data",
-             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object {
+             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
+             {
                  if (!li)
                      return py::none();
                  carb::Float3* data = li->getPointCloud(sensorPath);
@@ -267,7 +267,8 @@ PYBIND11_MODULE(_range_sensor, m)
                 Returns:
                     :obj:`numpy.ndarray`: The hit position in xyz relative to the sensor origin, not accounting for individual ray offsets)pbdoc")
         .def("get_semantic_data",
-             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object {
+             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
+             {
                  if (!li)
                      return py::none();
                  uint16_t* data = li->getSemanticData(sensorPath);
@@ -323,7 +324,8 @@ PYBIND11_MODULE(_range_sensor, m)
                      :obj:`int`: The number of emitters on the sensor array, 0 if error occurred)pbdoc")
 
         .def("get_envelope",
-             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object
+             {
                  if (!ul)
                  {
                      return py::none();
@@ -345,7 +347,8 @@ PYBIND11_MODULE(_range_sensor, m)
                     :obj:`numpy.ndarray`: The binned timestamps of returns from sensor emission)pbdoc")
 
         .def("get_depth_data",
-             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object
+             {
                  if (!ul)
                      return py::none();
                  uint16_t* data = ul->getDepthData(sensorPath, emitterIndex);
@@ -361,7 +364,8 @@ PYBIND11_MODULE(_range_sensor, m)
                 Returns:
                     :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and scaled by min and max distance)pbdoc")
         .def("get_linear_depth_data",
-             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object
+             {
                  if (!ul)
                      return py::none();
                  float* data = ul->getLinearDepthData(sensorPath, emitterIndex);
@@ -378,7 +382,8 @@ PYBIND11_MODULE(_range_sensor, m)
                     :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in meters)pbdoc")
 
         .def("get_envelope_array",
-             [](const UltrasonicSensorInterface* ul, const char* sensorPath) -> py::object {
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath) -> py::object
+             {
                  if (!ul)
                  {
                      return py::none();
@@ -402,7 +407,8 @@ PYBIND11_MODULE(_range_sensor, m)
                     :obj:`numpy.ndarray`: The array of envelopes from the ultrasonic sensor)pbdoc")
         .def("get_active_envelope_array", wrapInterfaceFunction(&UltrasonicSensorInterface::getActiveEnvelopeArray))
         .def("get_intensity_data",
-             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object {
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath, int emitterIndex) -> py::object
+             {
                  if (!ul)
                      return py::none();
                  uint8_t* data = ul->getIntensityData(sensorPath, emitterIndex);
@@ -430,7 +436,8 @@ PYBIND11_MODULE(_range_sensor, m)
                 Returns:
                     :obj:`list`: receiver info for the current group fired)pbdoc")
         .def("get_zenith_data",
-             [](const UltrasonicSensorInterface* ul, const char* sensorPath) -> py::object {
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath) -> py::object
+             {
                  if (!ul)
                      return py::none();
                  float* data = ul->getZenithData(sensorPath);
@@ -446,7 +453,8 @@ PYBIND11_MODULE(_range_sensor, m)
                     :obj:`numpy.ndarray`: The zenith angle in radians for each row)pbdoc")
 
         .def("get_azimuth_data",
-             [](const UltrasonicSensorInterface* ul, const char* sensorPath) -> py::object {
+             [](const UltrasonicSensorInterface* ul, const char* sensorPath) -> py::object
+             {
                  if (!ul)
                      return py::none();
                  float* data = ul->getAzimuthData(sensorPath);
@@ -485,7 +493,8 @@ PYBIND11_MODULE(_range_sensor, m)
         .def("send_next_batch", wrapInterfaceFunction(&GenericSensorInterface::sendNextBatch), "ready for next batch")
 
         .def("set_next_batch_rays",
-             [](const GenericSensorInterface* gs, const char* sensorPath, py::array_t<float> x) {
+             [](const GenericSensorInterface* gs, const char* sensorPath, py::array_t<float> x)
+             {
                  if (!gs)
                      return;
                  const auto& r = x.unchecked<2>();
@@ -498,7 +507,8 @@ PYBIND11_MODULE(_range_sensor, m)
 
 
         .def("set_next_batch_offsets",
-             [](const GenericSensorInterface* gs, const char* sensorPath, py::array_t<float> x) {
+             [](const GenericSensorInterface* gs, const char* sensorPath, py::array_t<float> x)
+             {
                  if (!gs)
                      return;
                  const auto& r = x.unchecked<>();
@@ -517,7 +527,8 @@ PYBIND11_MODULE(_range_sensor, m)
                 Returns:
                      :obj:`int`: The number of sample points the sensor completed in the last simulation step, 0 if error occurred.)pbdoc")
         .def("get_depth_data",
-             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
+             {
                  if (!gs)
                      return py::none();
                  uint16_t* data = gs->getDepthData(sensorPath);
@@ -533,7 +544,8 @@ PYBIND11_MODULE(_range_sensor, m)
                 :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in uint16 and scaled by min and max distance)pbdoc")
 
         .def("get_linear_depth_data",
-             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
+             {
                  if (!gs)
                      return py::none();
                  float* data = gs->getLinearDepthData(sensorPath);
@@ -549,7 +561,8 @@ PYBIND11_MODULE(_range_sensor, m)
                 :obj:`numpy.ndarray`: The distance from the sensor to the hit for each beam in meters)pbdoc")
 
         .def("get_intensity_data",
-             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
+             {
                  if (!gs)
                      return py::none();
                  uint8_t* data = gs->getIntensityData(sensorPath);
@@ -565,7 +578,8 @@ PYBIND11_MODULE(_range_sensor, m)
                 :obj:`numpy.ndarray`: The observed specular intensity of each beam, 255 if hit, 0 if not)pbdoc")
 
         .def("get_zenith_data",
-             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
+             {
                  if (!gs)
                      return py::none();
                  float* data = gs->getZenithData(sensorPath);
@@ -581,7 +595,8 @@ PYBIND11_MODULE(_range_sensor, m)
                     :obj:`numpy.ndarray`: The zenith angle in radians for each row)pbdoc")
 
         .def("get_azimuth_data",
-             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
+             {
                  if (!gs)
                      return py::none();
                  float* data = gs->getAzimuthData(sensorPath);
@@ -596,7 +611,8 @@ PYBIND11_MODULE(_range_sensor, m)
                 Returns:
                     :obj:`numpy.ndarray`: The azimuth angle in radians for each column)pbdoc")
         .def("get_hit_pos_data",
-             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object {
+             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
+             {
                  if (!gs)
                      return py::none();
                  carb::Float3* data = gs->getHitPosData(sensorPath);

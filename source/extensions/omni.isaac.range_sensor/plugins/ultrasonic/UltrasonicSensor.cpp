@@ -15,17 +15,16 @@
 // clang-format on
 
 #include "UltrasonicSensor.h"
-#include "USSEnvelope.h"
 
 #include "../RangeSensorUtils.h"
-
+#include "FiringGroupUtils.h"
+#include "USSEnvelope.h"
 
 #include <carb/InterfaceUtils.h>
-#include "FiringGroupUtils.h"
 
-#include <string>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 using namespace ::physx;
 using namespace pxr;
@@ -195,7 +194,8 @@ struct USSTaskData
     UltrasonicEmitter* emitter;
 };
 
-auto USSTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
+auto USSTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg)
+{
     USSTaskData* taskData = reinterpret_cast<USSTaskData*>(taskArg);
     taskData->emitter->doScan(taskData->maxDepth, taskData->minDepth, taskData->pxScene);
 };

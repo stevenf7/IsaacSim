@@ -22,8 +22,8 @@
 #include <carb/profiler/Profile.h>
 
 #include <omni/isaac/utils/Conversions.h>
-#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
 #include <regex>
 #include <string>

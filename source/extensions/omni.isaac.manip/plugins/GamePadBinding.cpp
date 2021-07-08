@@ -14,11 +14,11 @@
 #include "GamePadBinding.h"
 
 #include <carb/Framework.h>
-#include <omni/kit/IAppWindow.h>
 #include <carb/input/IInput.h>
 #include <carb/settings/ISettings.h>
 
 #include <omni/isaac/manip/Input.h>
+#include <omni/kit/IAppWindow.h>
 
 #include <stdio.h>
 
@@ -55,7 +55,8 @@ void GamePadBinding::bind(GamepadEventFn eventFn, void* userData)
 
     carb::input::IInput* input = carb::getFramework()->acquireInterface<carb::input::IInput>();
     m_gamepadConnectionEventId = input->subscribeToGamepadConnectionEvents(
-        [](const carb::input::GamepadConnectionEvent& evt, void* userData) {
+        [](const carb::input::GamepadConnectionEvent& evt, void* userData)
+        {
             GamePadBinding* binding = reinterpret_cast<GamePadBinding*>(userData);
             binding->onGamepadConnectionEvent(evt);
         },
@@ -120,7 +121,8 @@ void GamePadBinding::subscribOnGamepadAction(carb::input::Gamepad* gamepad,
     input->clearActionMappings(actionMappingSet, action);
     carb::input::SubscriptionId subId =
         input->subscribeToActionEvents(actionMappingSet, action,
-                                       [](const carb::input::ActionEvent& evt, void* userData) {
+                                       [](const carb::input::ActionEvent& evt, void* userData)
+                                       {
                                            GamePadBinding* binding = reinterpret_cast<GamePadBinding*>(userData);
                                            const float value = binding->m_value[axis].set(sign > 0, evt.value);
                                            if (binding->m_gamepadEventFn != nullptr)

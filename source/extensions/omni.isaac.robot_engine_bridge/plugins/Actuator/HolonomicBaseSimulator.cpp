@@ -11,20 +11,21 @@
 #include <UsdPCH.h>
 // clang-format on
 
+#include "HolonomicBaseSimulator.h"
+
+#include "../Core/IsaacComponent.h"
+
+#include <carb/InterfaceUtils.h>
+#include <carb/filesystem/IFileSystem.h>
+#include <carb/profiler/Profile.h>
+
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/utils/Conversions.h>
+#include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
 #include <string>
 #include <vector>
-#include <carb/InterfaceUtils.h>
-#include <carb/profiler/Profile.h>
-#include <carb/filesystem/IFileSystem.h>
-
-#include <omni/usd/UtilsIncludes.h>
-#include <omni/usd/UsdUtils.h>
-
-#include "../Core/IsaacComponent.h"
-#include <omni/isaac/utils/Conversions.h>
-#include "HolonomicBaseSimulator.h"
 
 namespace omni
 {

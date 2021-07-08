@@ -63,7 +63,8 @@ struct RangeSensorTaskData
  * @brief Function called by each lidar task thread
  *
  */
-auto rangeSensorTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg) {
+auto rangeSensorTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg)
+{
     RangeSensorTaskData* taskData = reinterpret_cast<RangeSensorTaskData*>(taskArg);
     taskData->sensor->updateTimestamp(taskData->timeSeconds, taskData->dt, taskData->timeNanoSeconds);
     taskData->sensor->tick();

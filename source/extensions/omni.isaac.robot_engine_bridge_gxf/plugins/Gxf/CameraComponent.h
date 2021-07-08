@@ -15,6 +15,7 @@
 
 #include "../Core/GxfComponent.h"
 #include "../Core/IsaacMessage.h" // TODO: remove once we get CUDA tensor in GXF
+#include "plugins/core/ViewportManager.h"
 
 #include <carb/Types.h>
 #include <carb/profiler/Profile.h>
@@ -22,9 +23,8 @@
 
 #include <omni/kit/IViewport.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
-#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
-#include "plugins/core/ViewportManager.h"
+#include <omni/usd/UtilsIncludes.h>
 #include <robotEngineBridgeSchema/robotEngineCamera.h>
 
 #include <string>

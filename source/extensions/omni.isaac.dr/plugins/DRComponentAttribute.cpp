@@ -13,14 +13,14 @@
 
 #include "DRComponentAttribute.h"
 
-#include <boost/algorithm/string.hpp>
 #include <carb/Framework.h>
-#include <carb/Types.h>
 #include <carb/InterfaceUtils.h>
-#include <drSchema/attributeComponent.h>
+#include <carb/Types.h>
 
-#include <omni/usd/UtilsIncludes.h>
+#include <boost/algorithm/string.hpp>
+#include <drSchema/attributeComponent.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {
