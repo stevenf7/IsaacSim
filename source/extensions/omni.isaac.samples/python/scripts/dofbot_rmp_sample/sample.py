@@ -28,7 +28,6 @@ import numpy as np
 import os
 import asyncio
 import random
-import matplotlib.pyplot as plt
 
 # Setup default generation variables
 # Value are (min, max) ranges
