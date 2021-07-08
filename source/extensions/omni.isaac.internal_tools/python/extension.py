@@ -99,10 +99,11 @@ class InternalTools(omni.ext.IExt):
 
         async def setup():
             carb.settings.get_settings().set_int("/persistent/physics/backwardCompatibilityCheckMode", 0)
+            carb.settings.get_settings().set("/exts/omni.kit.thumbnails.usd/thumbnail_on_save", False)
             carb.settings.get_settings().set("/omni.kit.plugin/syncUsdLoads", True)
             carb.settings.get_settings().set("/rtx/hydra/materialSyncLoads", True)
             carb.settings.get_settings().set("/rtx/materialDb/syncLoads", True)
-            carb.settings.get_settings().set_int("/rtx/debugMaterialType", 0)
+            # carb.settings.get_settings().set_int("/rtx/debugMaterialType", 0) # this causes issues when saving, as its a file setting
             await omni.kit.app.get_app().next_update_async()
 
         async def check_schema():
@@ -122,15 +123,19 @@ class InternalTools(omni.ext.IExt):
                     print("BAD", item)
                     # HAMMAD: Comment out below to store changes, disabled to prevent accidents
                     # get_physx_interface().run_backwards_compatibility()
+                    # await omni.kit.app.get_app().next_update_async()
                     # await omni.usd.get_context().save_stage_async()
+                    # await omni.kit.app.get_app().next_update_async()
                     bad_files.append(item)
                 else:
-                    print("GOOD", item)
+                    # print("GOOD", item)
+                    pass
                 # closing causes things to crash randomly
                 # await omni.kit.app.get_app().next_update_async()
                 # await omni.usd.get_context().close_stage_async()
                 # await omni.kit.app.get_app().next_update_async()
             print(bad_files)
+            print("Deprecated physx schema check complete")
 
         asyncio.ensure_future(check_schema())
 
