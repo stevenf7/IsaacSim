@@ -37,6 +37,10 @@
         <package name="assimp" version="5.0.0.44.21d76b0b-windows-x86_64-release" platforms="windows-x86_64"/>
         <package name="assimp" version="5.0.0.44.21d76b0b-linux-x86_64-release" platforms="linux-x86_64"/>
     </dependency>
+    <dependency name="doctest" linkPath="../_build/target-deps/doctest">
+        <package name="doctest" version="2.4.0-b29bc767" />
+    </dependency>
+
 </project>
 
 

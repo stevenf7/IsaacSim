@@ -16,7 +16,7 @@
 //#include "FiringGroupUtils.h"
 //#include <pxr/base/gf/vec2i.h>
 //#include <pxr/usd/usd/inherits.h>
-#include "doctest/doctest.h"
+#include <doctest/doctest/doctest.h>
 
 #include <string>
 
