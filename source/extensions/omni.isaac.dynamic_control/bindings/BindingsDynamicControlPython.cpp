@@ -41,7 +41,8 @@ py::class_<InterfaceType> defineInterfaceClass(py::module& m,
 {
     m.def(
         acquireFuncName,
-        [](const char* pluginName, const char* libraryPath) {
+        [](const char* pluginName, const char* libraryPath)
+        {
             return libraryPath ? carb::acquireInterfaceFromLibraryForBindings<InterfaceType>(libraryPath) :
                                  carb::acquireInterfaceForBindings<InterfaceType>(pluginName);
         },
@@ -158,18 +159,21 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def_readwrite(
             "r", &DcTransform::r,
             R"pbdoc(Rotation Quaternion, represented in the format :math:`x\hat{i} + y\hat{j} + z\hat{k} + w` (:obj:`carb._carb.Float4`))pbdoc")
-        .def(py::init([](const carb::Float3& p, const carb::Float4& r) {
-                 DcTransform transform;
-                 transform.p = p;
-                 transform.r = r;
-                 return transform;
-             }),
+        .def(py::init(
+                 [](const carb::Float3& p, const carb::Float4& r)
+                 {
+                     DcTransform transform;
+                     transform.p = p;
+                     transform.r = r;
+                     return transform;
+                 }),
              py::arg("p") = nullptr, py::arg("r") = nullptr, "Initialize from a position and a rotation quaternion")
         .def(py::init<>(), "Initialize from another Transform object")
         .def_property_readonly_static("dtype", [](const py::object&) { return py::dtype::of<DcTransform>(); },
                                       "return the numpy structured dtype")
         .def_static("from_buffer",
-                    [](py::buffer buf) -> py::object {
+                    [](py::buffer buf) -> py::object
+                    {
                         py::buffer_info info = buf.request();
                         if (info.ptr != nullptr)
                         {
@@ -187,39 +191,43 @@ PYBIND11_MODULE(_dynamic_control, m)
                     },
                     "assign a transform from an array of 7 values [p.x, p.y, p.z, r.x, r.y, r.z, r.w]")
 
-        .def(py::pickle(
-            [](const DcTransform& tx) { return py::make_tuple(tx.p.x, tx.p.y, tx.p.z, tx.r.x, tx.r.y, tx.r.z, tx.r.w); },
-            [](py::tuple t) {
-                DcTransform tx;
-                tx.p = { t[0].cast<float>(), t[1].cast<float>(), t[2].cast<float>() };
-                tx.r = { t[3].cast<float>(), t[4].cast<float>(), t[5].cast<float>(), t[6].cast<float>() };
-                return tx;
-            }));
+        .def(py::pickle([](const DcTransform& tx)
+                        { return py::make_tuple(tx.p.x, tx.p.y, tx.p.z, tx.r.x, tx.r.y, tx.r.z, tx.r.w); },
+                        [](py::tuple t)
+                        {
+                            DcTransform tx;
+                            tx.p = { t[0].cast<float>(), t[1].cast<float>(), t[2].cast<float>() };
+                            tx.r = { t[3].cast<float>(), t[4].cast<float>(), t[5].cast<float>(), t[6].cast<float>() };
+                            return tx;
+                        }));
 
     py::class_<DcVelocity>(m, "Velocity", "Linear and angular velocity")
         .def_readwrite("linear", &DcVelocity::linear, "Linear 3D velocity as a tuple (x,y,z) , (:obj:`carb._carb.Float3`)")
         .def_readwrite(
             "angular", &DcVelocity::angular, "Angular 3D velocity as a tuple (x,y,z), (:obj:`carb._carb.Float3`)")
-        .def(py::init([](const carb::Float3& linear, const carb::Float3& angular) {
-                 DcVelocity vel;
-                 vel.linear = linear;
-                 vel.angular = angular;
-                 return vel;
-             }),
+        .def(py::init(
+                 [](const carb::Float3& linear, const carb::Float3& angular)
+                 {
+                     DcVelocity vel;
+                     vel.linear = linear;
+                     vel.angular = angular;
+                     return vel;
+                 }),
              py::arg("linear") = nullptr, py::arg("angular") = nullptr,
              "initialize from a linear velocity and angular velocity")
         .def(py::init<>(), "initialize from another Velocity Object")
         .def_property_readonly_static("dtype",
-                                      [](const py::object&) {
+                                      [](const py::object&)
+                                      {
                                           // return the numpy structured dtype
                                           return py::dtype::of<DcVelocity>();
                                       },
                                       "return the numpy structured dtype")
         .def(py::pickle(
-            [](const DcVelocity& v) {
-                return py::make_tuple(v.linear.x, v.linear.y, v.linear.z, v.angular.x, v.angular.y, v.angular.z);
-            },
-            [](py::tuple t) {
+            [](const DcVelocity& v)
+            { return py::make_tuple(v.linear.x, v.linear.y, v.linear.z, v.angular.x, v.angular.y, v.angular.z); },
+            [](py::tuple t)
+            {
                 DcVelocity v;
                 v.linear = { t[0].cast<float>(), t[1].cast<float>(), t[2].cast<float>() };
                 v.angular = { t[3].cast<float>(), t[4].cast<float>(), t[5].cast<float>() };
@@ -233,23 +241,27 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def_readwrite(
             "vel", &DcRigidBodyState::vel,
             "Linear and angular velocities of rigid body (:obj:`omni.isaac.dynamic_control._dynamic_control.Velocity`)")
-        .def(py::init([](const DcTransform& pose, const DcVelocity& vel) {
-                 DcRigidBodyState state;
-                 state.pose = pose;
-                 state.vel = vel;
-                 return state;
-             }),
+        .def(py::init(
+                 [](const DcTransform& pose, const DcVelocity& vel)
+                 {
+                     DcRigidBodyState state;
+                     state.pose = pose;
+                     state.vel = vel;
+                     return state;
+                 }),
              py::arg("pose") = nullptr, py::arg("vel") = nullptr, "Initialize rigid body state from pose and velocity")
         .def(py::init<>(), "initialize from another RigidBodyState")
         .def_property_readonly_static("dtype", [](const py::object&) { return py::dtype::of<DcRigidBodyState>(); },
                                       "return the numpy structured dtype")
         .def(py::pickle(
-            [](const DcRigidBodyState& s) {
+            [](const DcRigidBodyState& s)
+            {
                 return py::make_tuple(s.pose.p.x, s.pose.p.y, s.pose.p.z, s.pose.r.x, s.pose.r.y, s.pose.r.z,
                                       s.pose.r.w, s.vel.linear.x, s.vel.linear.y, s.vel.linear.z, s.vel.angular.x,
                                       s.vel.angular.y, s.vel.angular.z);
             },
-            [](py::tuple t) {
+            [](py::tuple t)
+            {
                 DcRigidBodyState s;
                 s.pose.p = { t[0].cast<float>(), t[1].cast<float>(), t[2].cast<float>() };
                 s.pose.r = { t[3].cast<float>(), t[4].cast<float>(), t[5].cast<float>(), t[6].cast<float>() };
@@ -267,13 +279,15 @@ PYBIND11_MODULE(_dynamic_control, m)
             "DOF velocity, in radians/s if it's a revolute DOF, or stage_units/s (m/s, cm/s, etc), if it's a prismatic DOF (:obj:`float`)")
         .def_readwrite("effort", &DcDofState::effort,
                        "DOF effort, torque if it's a revolute DOF, or force if it's a prismatic DOF (:obj:`float`)")
-        .def(py::init([](const float& pos, const float& vel, const float& effort) {
-                 DcDofState state;
-                 state.pos = pos;
-                 state.vel = vel;
-                 state.effort = effort;
-                 return state;
-             }),
+        .def(py::init(
+                 [](const float& pos, const float& vel, const float& effort)
+                 {
+                     DcDofState state;
+                     state.pos = pos;
+                     state.vel = vel;
+                     state.effort = effort;
+                     return state;
+                 }),
              py::arg("pos") = nullptr, py::arg("vel") = nullptr, py::arg("effort") = nullptr)
         .def(py::init<>())
         .def_property_readonly_static(
@@ -288,16 +302,15 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def_readwrite("mass", &DcRigidBodyProperties::mass, "Mass of rigid body (:obj:`float`)")
         .def_readwrite("moment", &DcRigidBodyProperties::moment, "Diagonal moment of inertia (:obj:`carb._carb.Float3`)")
 
-        .def(py::pickle(
-            [](const DcRigidBodyProperties& props) {
-                return py::make_tuple(props.mass, props.moment.x, props.moment.y, props.moment.z);
-            },
-            [](py::tuple t) {
-                DcRigidBodyProperties props;
-                props.mass = t[0].cast<float>();
-                props.moment = { t[1].cast<float>(), t[2].cast<float>(), t[3].cast<float>() };
-                return props;
-            }));
+        .def(py::pickle([](const DcRigidBodyProperties& props)
+                        { return py::make_tuple(props.mass, props.moment.x, props.moment.y, props.moment.z); },
+                        [](py::tuple t)
+                        {
+                            DcRigidBodyProperties props;
+                            props.mass = t[0].cast<float>();
+                            props.moment = { t[1].cast<float>(), t[2].cast<float>(), t[3].cast<float>() };
+                            return props;
+                        }));
 
     py::class_<DcDofProperties>(m, "DofProperties", "Properties of a degree-of-freedom (DOF)")
         .def(py::init<>())
@@ -316,11 +329,13 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def_readwrite("stiffness", &DcDofProperties::stiffness, "Stiffness of DOF (:obj:`float`)")
         .def_readwrite("damping", &DcDofProperties::damping, "Damping of DOF (:obj:`float`)")
         .def(py::pickle(
-            [](const DcDofProperties& props) {
+            [](const DcDofProperties& props)
+            {
                 return py::make_tuple(props.type, props.hasLimits, props.lower, props.upper, props.driveMode,
                                       props.maxVelocity, props.maxEffort, props.stiffness, props.damping);
             },
-            [](py::tuple t) {
+            [](py::tuple t)
+            {
                 DcDofProperties props;
                 props.type = t[0].cast<DcDofType>();
                 props.hasLimits = t[1].cast<bool>();
@@ -355,14 +370,16 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def_readwrite(
             "force_limit", &DcAttractorProperties::forceLimit, "Maximum force to be applied by drive. (:obj:`float`)")
         .def(py::pickle(
-            [](const DcAttractorProperties& props) {
+            [](const DcAttractorProperties& props)
+            {
                 return py::make_tuple(props.rigidBody, props.axes, props.target.p.x, props.target.p.y, props.target.p.z,
                                       props.target.r.x, props.target.r.y, props.target.r.z, props.target.r.w,
                                       props.offset.p.x, props.offset.p.y, props.offset.p.z, props.offset.r.x,
                                       props.offset.r.y, props.offset.r.z, props.offset.r.w, props.stiffness,
                                       props.damping, props.forceLimit);
             },
-            [](py::tuple t) {
+            [](py::tuple t)
+            {
                 DcAttractorProperties props;
                 props.rigidBody = t[0].cast<DcHandle>();
                 props.axes = t[1].cast<DcAxisFlags>();
@@ -396,14 +413,16 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def_readwrite("force_limit", &DcD6JointProperties::forceLimit, "Joint Breaking Force. (:obj:`float`)")
         .def_readwrite("torque_limit", &DcD6JointProperties::torqueLimit, "Joint Breaking torque. (:obj:`float`)")
         .def(py::pickle(
-            [](const DcD6JointProperties& props) {
+            [](const DcD6JointProperties& props)
+            {
                 return py::make_tuple(props.name, props.body0, props.body1, props.axes, props.pose0.p.x, props.pose0.p.y,
                                       props.pose0.p.z, props.pose0.r.x, props.pose0.r.y, props.pose0.r.z,
                                       props.pose0.r.w, props.pose1.p.x, props.pose1.p.y, props.pose1.p.z,
                                       props.pose1.r.x, props.pose1.r.y, props.pose1.r.z, props.pose1.r.w,
                                       props.stiffness, props.damping, props.forceLimit, props.torqueLimit);
             },
-            [](py::tuple t) {
+            [](py::tuple t)
+            {
                 DcD6JointProperties props;
                 std::string str = t[0].cast<std::string>().c_str();
                 std::vector<char> cstr(str.c_str(), str.c_str() + str.size() + 1);
@@ -507,7 +526,8 @@ PYBIND11_MODULE(_dynamic_control, m)
              "Get the root rigid body of an actor")
 
         .def("get_articulation_body_states",
-             [](const DynamicControl* dc, DcHandle artHandle, DcStateFlags flags) -> py::object {
+             [](const DynamicControl* dc, DcHandle artHandle, DcStateFlags flags) -> py::object
+             {
                  if (dc)
                  {
                      int numBodies = dc->getArticulationBodyCount(artHandle);
@@ -553,7 +573,8 @@ PYBIND11_MODULE(_dynamic_control, m)
              "get index in articulation DOF array, -1 on error")
 
         .def("get_articulation_dof_properties",
-             [](const DynamicControl* dc, DcHandle artHandle) -> py::object {
+             [](const DynamicControl* dc, DcHandle artHandle) -> py::object
+             {
                  if (dc)
                  {
                      int numDofs = dc->getArticulationDofCount(artHandle);
@@ -571,8 +592,8 @@ PYBIND11_MODULE(_dynamic_control, m)
              "Get array of an actor's degree-of-freedom properties")
 
         .def("set_articulation_dof_properties",
-             [](const DynamicControl* dc, DcHandle artHandle,
-                const py::array_t<DcDofProperties, py::array::c_style>& props) {
+             [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<DcDofProperties, py::array::c_style>& props)
+             {
                  if (dc)
                  {
                      if (props.size() >= ssize_t(dc->getArticulationDofCount(artHandle)))
@@ -585,7 +606,8 @@ PYBIND11_MODULE(_dynamic_control, m)
              "Sets properties for an actor's degrees-of-freedom.")
 
         .def("get_articulation_dof_states",
-             [](const DynamicControl* dc, DcHandle artHandle, DcStateFlags flags) -> py::object {
+             [](const DynamicControl* dc, DcHandle artHandle, DcStateFlags flags) -> py::object
+             {
                  if (dc)
                  {
                      int numDofs = dc->getArticulationDofCount(artHandle);
@@ -605,7 +627,8 @@ PYBIND11_MODULE(_dynamic_control, m)
 
         .def("get_articulation_dof_state_derivatives",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<DcDofState, py::array::c_style>& states,
-                const py::array_t<float, py::array::c_style>& efforts) -> py::object {
+                const py::array_t<float, py::array::c_style>& efforts) -> py::object
+             {
                  if (dc)
                  {
                      const ssize_t numDofs{ static_cast<ssize_t>(dc->getArticulationDofCount(artHandle)) };
@@ -627,7 +650,8 @@ PYBIND11_MODULE(_dynamic_control, m)
 
         .def("set_articulation_dof_states",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<DcDofState, py::array::c_style>& states,
-                DcStateFlags flags) {
+                DcStateFlags flags)
+             {
                  if (dc)
                  {
                      if (states.size() >= ssize_t(dc->getArticulationDofCount(artHandle)))
@@ -640,7 +664,8 @@ PYBIND11_MODULE(_dynamic_control, m)
              "Sets states for an actor's degrees-of-freedom.")
 
         .def("set_articulation_dof_position_targets",
-             [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& targets) {
+             [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& targets)
+             {
                  if (dc)
                  {
                      if (targets.size() >= ssize_t(dc->getArticulationDofCount(artHandle)))
@@ -653,7 +678,8 @@ PYBIND11_MODULE(_dynamic_control, m)
              "Sets an actor's degree-of-freedom position targets.")
 
         .def("set_articulation_dof_velocity_targets",
-             [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& targets) {
+             [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& targets)
+             {
                  if (dc)
                  {
                      if (targets.size() >= ssize_t(dc->getArticulationDofCount(artHandle)))
@@ -666,7 +692,8 @@ PYBIND11_MODULE(_dynamic_control, m)
              "Sets an actor's degree-of-freedom velocity targets.")
 
         .def("apply_articulation_dof_efforts",
-             [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& efforts) {
+             [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& efforts)
+             {
                  if (dc)
                  {
                      if (efforts.size() >= ssize_t(dc->getArticulationDofCount(artHandle)))
@@ -712,7 +739,8 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("apply_body_force", wrapInterfaceFunction(&DynamicControl::applyBodyForce),
              "Apply a force to a rigid bopdy at a position")
         .def("get_relative_body_poses",
-             [](const DynamicControl* dc, DcHandle parentHandle, const std::vector<DcHandle>& bodyHandles) {
+             [](const DynamicControl* dc, DcHandle parentHandle, const std::vector<DcHandle>& bodyHandles)
+             {
                  const size_t numBodies = bodyHandles.size();
                  std::vector<DcTransform> outputTransforms(numBodies);
                  dc->getRelativeBodyPoses(parentHandle, numBodies, bodyHandles.data(), outputTransforms.data());
@@ -722,7 +750,8 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("get_rigid_body_properties", wrapInterfaceFunction(&DynamicControl::getRigidBodyProperties),
              "Get Properties for a rigid body")
         .def("get_rigid_body_properties",
-             [](const DynamicControl* dc, DcHandle attHandle) -> py::object {
+             [](const DynamicControl* dc, DcHandle attHandle) -> py::object
+             {
                  if (dc)
                  {
                      DcRigidBodyProperties props;
@@ -800,7 +829,8 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("set_attractor_target", wrapInterfaceFunction(&DynamicControl::setAttractorTarget),
              "Set target pose for attractor")
         .def("get_attractor_properties",
-             [](const DynamicControl* dc, DcHandle attHandle) -> py::object {
+             [](const DynamicControl* dc, DcHandle attHandle) -> py::object
+             {
                  if (dc)
                  {
                      DcAttractorProperties props;

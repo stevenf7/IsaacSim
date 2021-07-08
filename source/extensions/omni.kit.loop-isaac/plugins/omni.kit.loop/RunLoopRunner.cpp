@@ -94,12 +94,13 @@ public:
     void run()
     {
         if (!mainThread && loop)
-            m_thread.reset(new std::thread{ [this] {
-                while (!quit)
-                {
-                    this->update();
-                }
-            } });
+            m_thread.reset(new std::thread{ [this]
+                                            {
+                                                while (!quit)
+                                                {
+                                                    this->update();
+                                                }
+                                            } });
     }
 
     void update()

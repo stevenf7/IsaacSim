@@ -14,29 +14,28 @@
 #include "UsdPCH.h"
 // clang-format on
 
+#include "../parse/UrdfParser.h"
+#include "KinematicChain.h"
+#include "MeshImporter.h"
+
+#include <carb/logging/Log.h>
+
+#include <omni/isaac/urdf/Urdf.h>
+#include <omni/isaac/urdf/UrdfTypes.h>
+#include <omni/isaac/urdf/core/maths.h>
+#include <physxSchema/physxSceneAPI.h>
+#include <physxSchemaTools/UsdTools.h>
 #include <usdPhysics/articulationRootAPI.h>
 #include <usdPhysics/collisionAPI.h>
 #include <usdPhysics/driveAPI.h>
+#include <usdPhysics/fixedJoint.h>
 #include <usdPhysics/joint.h>
 #include <usdPhysics/limitAPI.h>
 #include <usdPhysics/massAPI.h>
-#include <usdPhysics/scene.h>
-#include <usdPhysics/fixedJoint.h>
 #include <usdPhysics/prismaticJoint.h>
 #include <usdPhysics/revoluteJoint.h>
+#include <usdPhysics/scene.h>
 #include <usdPhysics/sphericalJoint.h>
-#include <physxSchemaTools/UsdTools.h>
-
-#include <physxSchema/physxSceneAPI.h>
-
-
-#include "../parse/UrdfParser.h"
-#include "KinematicChain.h"
-#include <omni/isaac/urdf/UrdfTypes.h>
-#include <omni/isaac/urdf/core/maths.h>
-#include "MeshImporter.h"
-#include <omni/isaac/urdf/Urdf.h>
-#include <carb/logging/Log.h>
 
 namespace omni
 {

@@ -11,16 +11,18 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include <vector>
-#include <string>
+#include "TwoFingerGripper.h"
 
 #include "../Core/IsaacComponent.h"
+
 #include <carb/logging/Log.h>
 #include <carb/profiler/Profile.h>
+
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/Conversions.h>
 
-#include "TwoFingerGripper.h"
+#include <string>
+#include <vector>
 
 namespace omni
 {

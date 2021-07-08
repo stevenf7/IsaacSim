@@ -13,11 +13,11 @@
 
 #include <carb/BindingsPythonUtils.h>
 
-#include <omni/isaac/utils/SurfaceGripper.h>
-#include <omni/isaac/utils/Math.h>
 #include <omni/isaac/utils/Conversions.h>
-#include <omni/isaac/utils/Transforms.h>
 #include <omni/isaac/utils/DebugDraw.h>
+#include <omni/isaac/utils/Math.h>
+#include <omni/isaac/utils/SurfaceGripper.h>
+#include <omni/isaac/utils/Transforms.h>
 
 CARB_BINDINGS("omni.isaac.utils.python")
 
@@ -123,13 +123,15 @@ PYBIND11_MODULE(_isaac_utils, m)
                        R"pbdoc(Flag to disable gravity on selected object to compensate for its mass(:obj:`bool`))pbdoc")
 
         .def(py::pickle(
-            [](const omni::isaac::utils::SurfaceGripperProperties& props) {
+            [](const omni::isaac::utils::SurfaceGripperProperties& props)
+            {
                 return py::make_tuple(props.d6JointPath, props.parentPath, props.offset.p.x, props.offset.p.y,
                                       props.offset.p.z, props.offset.r.x, props.offset.r.y, props.offset.r.z,
                                       props.offset.r.w, props.gripThreshold, props.forceLimit, props.torqueLimit,
                                       props.bendAngle, props.stiffness, props.damping, props.disableGravity);
             },
-            [](py::tuple t) {
+            [](py::tuple t)
+            {
                 omni::isaac::utils::SurfaceGripperProperties props;
                 std::string str = t[0].cast<std::string>();
                 std::vector<char> cstr(str.c_str(), str.c_str() + str.size() + 1);
@@ -540,7 +542,8 @@ PYBIND11_MODULE(_isaac_utils, m)
 
     transforms.def("set_transform",
                    [](DynamicControl* dynamicControlPtr, const long int stageId, const std::string primPath,
-                      const carb::Float3& translation, const carb::Float4& rotation) {
+                      const carb::Float3& translation, const carb::Float4& rotation)
+                   {
                        pxr::UsdStageWeakPtr stage =
                            pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
@@ -574,7 +577,8 @@ PYBIND11_MODULE(_isaac_utils, m)
 
     transforms.def("set_scale",
                    [](DynamicControl* dynamicControlPtr, const long int stageId, const std::string primPath,
-                      const carb::Float3& scale) {
+                      const carb::Float3& scale)
+                   {
                        pxr::UsdStageWeakPtr stage =
                            pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 

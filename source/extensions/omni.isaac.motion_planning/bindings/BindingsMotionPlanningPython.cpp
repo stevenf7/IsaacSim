@@ -42,7 +42,8 @@ py::class_<InterfaceType> defineInterfaceClass(py::module& m,
                                                const char* releaseFuncName = nullptr)
 {
     m.def(acquireFuncName,
-          [](const char* pluginName, const char* libraryPath) {
+          [](const char* pluginName, const char* libraryPath)
+          {
               return libraryPath ? carb::acquireInterfaceFromLibraryForBindings<InterfaceType>(libraryPath) :
                                    carb::acquireInterfaceForBindings<InterfaceType>(pluginName);
           },
@@ -83,18 +84,21 @@ PYBIND11_MODULE(_motion_planning, m)
         .def(py::init<>())
         .def_readwrite("commands", &PartialPoseCommand::commands)
         .def("set",
-             [](PartialPoseCommand& self, const Command& command, int index) {
+             [](PartialPoseCommand& self, const Command& command, int index)
+             {
                  if (index < FrameElement::NUM_FRAME_ELEMENTS)
                  {
                      self.commands[index] = command;
                  }
              })
-        .def("reset", [](PartialPoseCommand& self, const Command& command, int index) {
-            if (index < FrameElement::NUM_FRAME_ELEMENTS)
-            {
-                self.commands[index].reset();
-            }
-        });
+        .def("reset",
+             [](PartialPoseCommand& self, const Command& command, int index)
+             {
+                 if (index < FrameElement::NUM_FRAME_ELEMENTS)
+                 {
+                     self.commands[index].reset();
+                 }
+             });
 
     py::enum_<FrameElement>(m, "FrameElement", py::arithmetic(), "Types of joint")
         .value("ORIG", FrameElement::ORIG)

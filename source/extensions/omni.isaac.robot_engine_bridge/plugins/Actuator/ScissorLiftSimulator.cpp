@@ -11,13 +11,14 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include <vector>
-#include <string>
+#include "ScissorLiftSimulator.h"
 
 #include "../Core/IsaacComponent.h"
+
 #include <carb/logging/Log.h>
 
-#include "ScissorLiftSimulator.h"
+#include <string>
+#include <vector>
 
 namespace omni
 {

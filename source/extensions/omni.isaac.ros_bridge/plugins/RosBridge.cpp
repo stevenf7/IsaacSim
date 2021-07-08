@@ -14,29 +14,28 @@
 #include <pxr/usd/usd/inherits.h>
 // clang-format on
 
-#include <omni/isaac/ros_bridge/RosBridge.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#include <carb/sensors/Sensors.h>
-#include <omni/kit/syntheticdata/SyntheticData.h>
-#include <omni/kit/IViewport.h>
-
-#include <omni/kit/IStageUpdate.h>
+#include "Core/IsaacApplication.h"
+#include "ros/ros.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
-#include <carb/logging/Log.h>
-#include <carb/settings/ISettings.h>
 #include <carb/dictionary/DictionaryUtils.h>
+#include <carb/logging/Log.h>
+#include <carb/sensors/Sensors.h>
+#include <carb/settings/ISettings.h>
+
+#include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/isaac/ros_bridge/RosBridge.h>
+#include <omni/kit/IStageUpdate.h>
+#include <omni/kit/IViewport.h>
+#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 
-#include <unordered_map>
-#include <string>
-#include <vector>
 #include <memory>
-
-#include "Core/IsaacApplication.h"
-#include "ros/ros.h"
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.ros_bridge.plugin", "Isaac ROS bridge", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };

@@ -61,6 +61,7 @@ project "tests-unit-omni.isaac.range_sensor"
             "%{root}/_build/target-deps/physx/include",
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
             "%{root}/_build/target-deps/rtx_plugins/include",
+            "%{root}/_build/target-deps/doctest",
         }
 
     libdirs { "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",

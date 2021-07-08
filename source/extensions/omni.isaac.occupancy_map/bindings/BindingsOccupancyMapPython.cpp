@@ -79,11 +79,13 @@ PYBIND11_MODULE(_occupancy_map, m)
                 dims = generator.get_dimensions()
     
         )pbdoc")
-        .def(py::init([](omni::physx::IPhysx* physXPtr, const long int stageId) {
-                 pxr::UsdStageWeakPtr stage =
-                     pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
-                 return new MapGenerator(physXPtr, stage);
-             }),
+        .def(py::init(
+                 [](omni::physx::IPhysx* physXPtr, const long int stageId)
+                 {
+                     pxr::UsdStageWeakPtr stage =
+                         pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+                     return new MapGenerator(physXPtr, stage);
+                 }),
              R"pbdoc(
 
                  Args:

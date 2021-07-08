@@ -56,7 +56,8 @@ py::class_<InterfaceType> defineInterfaceClass(py::module& m,
 {
     m.def(
         acquireFuncName,
-        [](const char* pluginName, const char* libraryPath) {
+        [](const char* pluginName, const char* libraryPath)
+        {
             return libraryPath ? carb::acquireInterfaceFromLibraryForBindings<InterfaceType>(libraryPath) :
                                  carb::acquireInterfaceForBindings<InterfaceType>(pluginName);
         },
@@ -140,7 +141,8 @@ PYBIND11_MODULE(_contact_sensor, m)
                 Returns:
                     :obj:`int`: The number of sensors attached to body.)pbdoc")
         .def("get_sensors_on_body",
-             [](const ContactSensorInterface* li, const char* body_path) -> py::object {
+             [](const ContactSensorInterface* li, const char* body_path) -> py::object
+             {
                  if (!li)
                      return py::none();
                  size_t num_data = 0;
@@ -155,7 +157,8 @@ PYBIND11_MODULE(_contact_sensor, m)
                 Returns:
                     :obj:`numpy.array`: The list of sensor handles on a body.)pbdoc")
         .def("get_body_contact_raw_data",
-             [](ContactSensorInterface* li, const char* body_path) -> py::object {
+             [](ContactSensorInterface* li, const char* body_path) -> py::object
+             {
                  if (!li)
                      return py::none();
                  size_t num_data = 0;
@@ -184,7 +187,8 @@ PYBIND11_MODULE(_contact_sensor, m)
                 Returns:
                     :obj:`int`: Number of readings ready on the buffer.)pbdoc")
         .def("get_sensor_readings",
-             [](const ContactSensorInterface* li, CsHandle sensorId) -> py::object {
+             [](const ContactSensorInterface* li, CsHandle sensorId) -> py::object
+             {
                  if (!li)
                      return py::none();
                  size_t num_data = 0;

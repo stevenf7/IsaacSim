@@ -13,14 +13,14 @@
 
 #include "DRComponentColor.h"
 
-#include <boost/algorithm/string.hpp>
 #include <carb/tokens/ITokens.h>
 #include <carb/tokens/TokensUtils.h>
 
+#include <boost/algorithm/string.hpp>
 #include <omni/kit/KitUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/AssetUtils.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {
@@ -71,17 +71,16 @@ void DRComponentColor::onStart()
         // Check for /DR prim and if base OmniPBR material is loaded
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/DR"))
         {
-            omni::usd::UsdUtils::createPrim(mStage, "/DR", [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
-                return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
-            });
+            omni::usd::UsdUtils::createPrim(mStage, "/DR",
+                                            [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
+                                            { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); });
         }
         std::string colorCompMaterialPath = "/DR/" + mCompName;
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, colorCompMaterialPath))
         {
-            omni::usd::UsdUtils::createPrim(
-                mStage, colorCompMaterialPath.c_str(), [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path) {
-                    return pxr::UsdGeomScope::Define(mStage, path).GetPrim();
-                });
+            omni::usd::UsdUtils::createPrim(mStage, colorCompMaterialPath.c_str(),
+                                            [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
+                                            { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); });
         }
         std::string colorMaterialPrimName =
             mStage->GetDefaultPrim().GetPath().GetString() + colorCompMaterialPath + "/OmniPBR";

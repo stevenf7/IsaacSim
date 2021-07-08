@@ -26,8 +26,8 @@
 
 #include <messages/uuid.capnp.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/robot_engine_bridge_gxf/GxfBridge.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/isaac/robot_engine_bridge_gxf/GxfBridge.h>
 #include <omni/kit/IApp.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/IViewport.h>

@@ -18,25 +18,21 @@
 #include <omni/kit/IStageUpdate.h>
 
 // #include <omni/isaac/contact_sensor/ContactSensor.h>
+#include <carb/Framework.h>
+#include <carb/PluginUtils.h>
+#include <carb/events/EventsUtils.h>
+#include <carb/logging/Log.h>
+
+#include <omni/kit/IStageUpdate.h>
+#include <omni/physx/IPhysx.h>
+#include <omni/physx/IPhysxSceneQuery.h>
+#include <omni/usd/UsdContext.h>
+#include <physicsSchemaTools/UsdTools.h>
+#include <physxSchema/physxContactReportAPI.h>
+
 #include <PxActor.h>
 #include <PxArticulationLink.h>
 #include <PxRigidDynamic.h>
-#include <physxSchema/physxContactReportAPI.h>
-
-#include <physicsSchemaTools/UsdTools.h>
-
-#include <omni/physx/IPhysx.h>
-#include <omni/physx/IPhysxSceneQuery.h>
-#include <omni/usd/UsdContextIncludes.h>
-#include <omni/usd/UsdContext.h>
-
-#include <carb/Framework.h>
-#include <carb/PluginUtils.h>
-#include <carb/logging/Log.h>
-#include <carb/events/EventsUtils.h>
-
-#include <omni/kit/IStageUpdate.h>
-
 #include <map>
 #include <string>
 #include <vector>
@@ -539,9 +535,9 @@ CsRawData* ContactManager::getCsRawData(const pxr::TfToken token, size_t& size)
         // CS_LOG_INFO("Get Contact Raw map not initialized");
         mContactRawMap[token].resize(mContactRaw.size());
         auto it = std::copy_if(
-            mContactRaw.begin(), mContactRaw.end(), mContactRawMap[token].begin(), [token](const CsRawData& i) {
-                return pxr::SdfPath(i.body0).GetToken() == token || pxr::SdfPath(i.body1).GetToken() == token;
-            });
+            mContactRaw.begin(), mContactRaw.end(), mContactRawMap[token].begin(),
+            [token](const CsRawData& i)
+            { return pxr::SdfPath(i.body0).GetToken() == token || pxr::SdfPath(i.body1).GetToken() == token; });
         mContactRawMap[token].resize(std::distance(mContactRawMap[token].begin(), it));
         // CS_LOG_INFO("Copied data from raw to map");
     }

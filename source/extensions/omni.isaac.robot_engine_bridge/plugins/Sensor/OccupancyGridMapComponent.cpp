@@ -11,20 +11,22 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include <carb/Framework.h>
-#include <carb/Types.h>
-#include <vector>
-#include <string>
+#include "OccupancyGridMapComponent.h"
 
 #include "../Core/IsaacComponent.h"
-#include "OccupancyGridMapComponent.h"
+
+#include <carb/Framework.h>
+#include <carb/Types.h>
 #include <carb/logging/Log.h>
 #include <carb/profiler/Profile.h>
-#include <omni/physx/IPhysx.h>
 
 #include <omni/isaac/utils/Conversions.h>
-#include <omni/usd/UtilsIncludes.h>
+#include <omni/physx/IPhysx.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
+
+#include <string>
+#include <vector>
 
 namespace omni
 {

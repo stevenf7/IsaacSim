@@ -11,17 +11,20 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#include <carb/Framework.h>
-#include <carb/Types.h>
-#include <vector>
-#include <string>
-#include <rangeSensorSchema/ultrasonicArray.h>
+#include "UltrasonicComponent.h"
 
 #include "../Core/IsaacComponent.h"
-#include "UltrasonicComponent.h"
+
+#include <carb/Framework.h>
+#include <carb/Types.h>
 #include <carb/logging/Log.h>
 #include <carb/profiler/Profile.h>
+
+#include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <rangeSensorSchema/ultrasonicArray.h>
+
+#include <string>
+#include <vector>
 
 namespace omni
 {

@@ -13,36 +13,31 @@
 #include "UsdPCH.h"
 #include <pxr/usd/usd/inherits.h>
 #include <omni/usd/UtilsIncludes.h>
-#include <omni/usd/UsdContextIncludes.h>
 // clang-format on
 
-#include <omni/kit/IStageUpdate.h>
-#include <omni/isaac/range_sensor/RangeSensorInterface.h>
-
 #include "core/RangeSensorManager.h"
-#include "lidar/LidarSensor.h"
-#include "ultrasonic/UltrasonicSensor.h"
-#include "radar/RadarSensor.h"
 #include "generic/GenericSensor.h"
-
-
-#include <carb/imgui/ImGui.h>
-
-#include <omni/physx/IPhysx.h>
+#include "lidar/LidarSensor.h"
+#include "radar/RadarSensor.h"
+#include "ultrasonic/UltrasonicSensor.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
+#include <carb/fastcache/FastCache.h>
+#include <carb/imgui/ImGui.h>
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
-#include <carb/fastcache/FastCache.h>
 #include <carb/tasking/ITasking.h>
 
+#include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/kit/IStageUpdate.h>
 #include <omni/kit/IViewport.h>
 #include <omni/kit/KitUtils.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UsdContext.h>
+#include <omni/physx/IPhysx.h>
 #include <omni/renderer/IDebugDraw.h>
+#include <omni/usd/UsdContext.h>
+#include <omni/usd/UsdUtils.h>
 
 #include <map>
 #include <vector>

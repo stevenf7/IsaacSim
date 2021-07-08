@@ -14,8 +14,8 @@
 #include "Query.h"
 
 #include <omni/kit/IEditor.h>
-#include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
 
 #if CARB_PLATFORM_WINDOWS

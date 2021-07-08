@@ -28,27 +28,25 @@
 // clang-format on
 
 
+#include "ImportHelpers.h"
+
+#include <physxSchema/physxArticulationAPI.h>
+#include <physxSchema/physxJointAPI.h>
+#include <physxSchema/physxSceneAPI.h>
+#include <physxSchemaTools/UsdTools.h>
 #include <usdPhysics/articulationRootAPI.h>
 #include <usdPhysics/collisionAPI.h>
 #include <usdPhysics/driveAPI.h>
+#include <usdPhysics/fixedJoint.h>
 #include <usdPhysics/joint.h>
 #include <usdPhysics/limitAPI.h>
 #include <usdPhysics/massAPI.h>
-
 #include <usdPhysics/meshCollisionAPI.h>
-#include <usdPhysics/scene.h>
-#include <usdPhysics/fixedJoint.h>
 #include <usdPhysics/prismaticJoint.h>
-#include <usdPhysics/rigidBodyAPI.h>
 #include <usdPhysics/revoluteJoint.h>
+#include <usdPhysics/rigidBodyAPI.h>
+#include <usdPhysics/scene.h>
 #include <usdPhysics/sphericalJoint.h>
-#include <physxSchemaTools/UsdTools.h>
-
-#include <physxSchema/physxSceneAPI.h>
-#include <physxSchema/physxArticulationAPI.h>
-#include <physxSchema/physxJointAPI.h>
-
-#include "ImportHelpers.h"
 
 namespace omni
 {
@@ -101,7 +99,8 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
         {
             CARB_LOG_INFO("Found Mesh At: %s", meshPath.c_str());
             auto assimpScene = aiImportFile(meshPath.c_str(), aiProcess_GenSmoothNormals | aiProcess_GlobalScale);
-            static auto sceneDeleter = [](const aiScene* scene) {
+            static auto sceneDeleter = [](const aiScene* scene)
+            {
                 if (scene)
                 {
                     aiReleaseImport(scene);

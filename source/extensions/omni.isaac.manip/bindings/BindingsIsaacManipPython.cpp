@@ -64,11 +64,13 @@ PYBIND11_MODULE(_manip, m)
 
     defineInterfaceClass<Input>(m, "ManipInput", "acquire_manip_interface", "release_manip_interface")
         .def("bind_gamepad",
-             [](Input* iface, std::function<void(int axis, float value)> eventFn) {
+             [](Input* iface, std::function<void(int axis, float value)> eventFn)
+             {
                  s_gamepad_binding_fn = std::move(eventFn);
 
                  iface->bind_gamepad(
-                     [](int axis, float value, void* userData) {
+                     [](int axis, float value, void* userData)
+                     {
                          auto fn = reinterpret_cast<std::function<void(int axis, float value)>*>(userData);
                          if (fn && *fn)
                          {
@@ -87,7 +89,8 @@ PYBIND11_MODULE(_manip, m)
                 )pbdoc")
 
         .def("unbind_gamepad",
-             [](Input* iface) {
+             [](Input* iface)
+             {
                  s_gamepad_binding_fn = nullptr;
                  iface->unbind_gamepad();
              },

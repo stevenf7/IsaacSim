@@ -13,9 +13,10 @@
 
 #include "DRComponentLight.h"
 
-#include <boost/algorithm/string.hpp>
 #include <carb/Framework.h>
 #include <carb/Types.h>
+
+#include <boost/algorithm/string.hpp>
 #include <drSchema/lightComponent.h>
 
 namespace omni

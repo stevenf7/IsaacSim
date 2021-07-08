@@ -12,15 +12,14 @@
 // clang-format on
 
 #define CARB_EXPORTS
-#include <omni/isaac/dr/DomainRandomizer.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
-
 #include "DRManager.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/tokens/ITokens.h>
 
+#include <omni/isaac/dr/DomainRandomizer.h>
+#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/renderer/IDebugDraw.h>
 

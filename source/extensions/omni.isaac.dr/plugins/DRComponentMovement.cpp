@@ -12,17 +12,18 @@
 // clang-format on
 
 #include "DRComponentMovement.h"
+
 #include "DRUtils.h"
 
-#include <boost/algorithm/string.hpp>
 #include <carb/Framework.h>
-#include <carb/Types.h>
 #include <carb/InterfaceUtils.h>
+#include <carb/Types.h>
 #include <carb/filesystem/IFileSystem.h>
-#include <drSchema/movementComponent.h>
 
-#include <omni/usd/UtilsIncludes.h>
+#include <boost/algorithm/string.hpp>
+#include <drSchema/movementComponent.h>
 #include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {

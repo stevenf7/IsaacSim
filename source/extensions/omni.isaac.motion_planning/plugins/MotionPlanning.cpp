@@ -13,11 +13,7 @@
 #include "MotionPlanningPCH.h"
 // clang-format on
 
-#include <omni/isaac/motion_planning/MotionPlanning.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/utils/Math.h>
-
-#include <omni/kit/IStageUpdate.h>
+#include "MotionPolicy.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -25,17 +21,17 @@
 #include <carb/settings/ISettings.h>
 #include <carb/tasking/ITasking.h>
 
-#include <omni/usd/UtilsIncludes.h>
-#include <omni/usd/UsdUtils.h>
-
-#include "MotionPolicy.h"
-
-#include <lula/util/logging.h>
 #include <glog/logging.h>
-
-#include <physicsSchemaTools/UsdTools.h>
+#include <lula/util/logging.h>
+#include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/motion_planning/MotionPlanning.h>
+#include <omni/isaac/utils/Math.h>
+#include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
+#include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
+#include <physicsSchemaTools/UsdTools.h>
 
 #include <map>
 #include <string>
@@ -309,7 +305,8 @@ struct TaskData
     double dt;
     size_t handle;
 };
-auto loadTaskFn = [](carb::tasking::ITasking* tasking, void* taskArg) {
+auto loadTaskFn = [](carb::tasking::ITasking* tasking, void* taskArg)
+{
     TaskData* taskArgs = reinterpret_cast<TaskData*>(taskArg);
     gMotionPolicies[taskArgs->handle]->step(taskArgs->time, taskArgs->dt);
 };

@@ -10,25 +10,24 @@
 // clang-format off
 #include <UsdPCH.h>
 // clang-format on
-#include <vector>
-#include <memory>
-#include <string>
-
-#include <carb/dictionary/DictionaryUtils.h>
-#include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/utils/Transforms.h>
-#include <omni/usd/UsdContextIncludes.h>
-#include <omni/usd/UsdContext.h>
-#include <carb/profiler/Profile.h>
-#include <carb/InterfaceUtils.h>
-
-#include <omni/usd/UtilsIncludes.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/kit/ViewportWindowUtils.h>
+#include "SceneLoader.h"
 
 #include "../Core/IsaacComponent.h"
 
-#include "SceneLoader.h"
+#include <carb/InterfaceUtils.h>
+#include <carb/dictionary/DictionaryUtils.h>
+#include <carb/profiler/Profile.h>
+
+#include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/utils/Transforms.h>
+#include <omni/kit/ViewportWindowUtils.h>
+#include <omni/usd/UsdContext.h>
+#include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
+
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace omni
 {
@@ -183,16 +182,18 @@ void SceneLoader::loadSceneAndScenario(std::string sceneName, int scenarioIndex,
 
     if (endsWith(sceneName, ".usd") || endsWith(sceneName, ".usda"))
     {
-        omni::usd::UsdContext::getContext()->openStage(sceneName.c_str(), [this](bool success, const char* err) {
-            if (!success)
-            {
-                CARB_LOG_ERROR("Open USD error: %s", err);
-            }
-            else
-            {
-                CARB_LOG_INFO("Open USD complete");
-            }
-        });
+        omni::usd::UsdContext::getContext()->openStage(sceneName.c_str(),
+                                                       [this](bool success, const char* err)
+                                                       {
+                                                           if (!success)
+                                                           {
+                                                               CARB_LOG_ERROR("Open USD error: %s", err);
+                                                           }
+                                                           else
+                                                           {
+                                                               CARB_LOG_INFO("Open USD complete");
+                                                           }
+                                                       });
         sendResponse(1, request);
     }
     else

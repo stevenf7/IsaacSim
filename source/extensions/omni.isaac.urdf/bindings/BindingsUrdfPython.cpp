@@ -37,7 +37,8 @@ void declare_map(py::module& m, const std::string typestr)
     py::class_<std::map<std::string, T>>(m, typestr.c_str())
         .def(py::init<>())
         .def("__getitem__",
-             [](const std::map<std::string, T>& map, std::string key) {
+             [](const std::map<std::string, T>& map, std::string key)
+             {
                  try
                  {
                      return map.at(key);
@@ -117,10 +118,8 @@ PYBIND11_MODULE(_urdf, m)
         // .def("set_flip_visuals", [](ImportConfig& config, const bool value) { config.flipVisuals = value; })
         .def("set_self_collision", [](ImportConfig& config, const bool value) { config.selfCollision = value; })
         .def("set_density", [](ImportConfig& config, const float value) { config.density = value; })
-        .def("set_default_drive_type",
-             [](ImportConfig& config, const int value) {
-                 config.defaultDriveType = static_cast<UrdfJointTargetType>(value);
-             })
+        .def("set_default_drive_type", [](ImportConfig& config, const int value)
+             { config.defaultDriveType = static_cast<UrdfJointTargetType>(value); })
         .def("set_default_drive_strength",
              [](ImportConfig& config, const float value) { config.defaultDriveStrength = value; })
         .def("set_distance_scale", [](ImportConfig& config, const float value) { config.distanceScale = value; })

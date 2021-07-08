@@ -10,9 +10,9 @@
 // clang-format off
 #include "MotionPlanningPCH.h"
 // clang-format on
-#include <carb/InterfaceUtils.h>
-
 #include "MotionPolicy.h"
+
+#include <carb/InterfaceUtils.h>
 
 #include <math.h>
 #include <memory>

@@ -14,12 +14,14 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include <carb/logging/Log.h>
-#include <functional>
-
-#include "rclcpp/rclcpp.hpp"
-#include <omni/isaac/ros2_bridge/Ros2Bridge.h>
 #include "RosCallback.h"
+#include "rclcpp/rclcpp.hpp"
+
+#include <carb/logging/Log.h>
+
+#include <omni/isaac/ros2_bridge/Ros2Bridge.h>
+
+#include <functional>
 
 namespace omni
 {
