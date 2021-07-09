@@ -316,14 +316,18 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
+    "omni.isaac.contact_sensor",
     "omni.isaac.dr",
     "omni.isaac.dynamic_control",
-    "omni.isaac.motion_planning",
-    "omni.isaac.range_sensor",
-    "omni.isaac.utils",
     "omni.isaac.manip",
+    "omni.isaac.motion_planning",
+    "omni.isaac.occupancy_map",
+    "omni.isaac.onshape",
+    "omni.isaac.range_sensor",
     "omni.isaac.samples",
+    "omni.isaac.synthetic_utils",
     "omni.isaac.urdf",
+    "omni.isaac.utils",
     "omni.usd.schema.isaac"
 ]
 exts.exclude = []
@@ -341,4 +345,4 @@ archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
 
 # ETM (extension test matrix) settings
 enroll_in_etm = false
-# etm_emails = [] #["hmazhar@nvidia.com"]
+etm_emails = []

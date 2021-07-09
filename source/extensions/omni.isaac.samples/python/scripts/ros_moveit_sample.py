@@ -34,12 +34,6 @@ class Extension(omni.ext.IExt):
         self._stage = self._usd_context.get_stage()
         self._window = None
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
-        self._nucleus_path = nucleus_server
-
         menu_items = [MenuItemDescription(name=MENU_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
         self._menu_items = [
             MenuItemDescription(name="Communicating", sub_menu=[MenuItemDescription(name="ROS", sub_menu=menu_items)])
@@ -105,6 +99,13 @@ class Extension(omni.ext.IExt):
         self._timeline.play()
 
     def _on_environment_setup(self):
+
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
+        self._nucleus_path = nucleus_server
+
         asyncio.ensure_future(self._create_moveit_sample())
 
     def on_shutdown(self):
