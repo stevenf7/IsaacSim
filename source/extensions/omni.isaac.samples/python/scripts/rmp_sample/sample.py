@@ -57,6 +57,7 @@ class RMPSample:
         self._save_dir = None
         self._ar = _dynamic_control.INVALID_HANDLE
         self._termination_criteria = FrameTerminationCriteria(orig_thresh=0.001)
+        self.reset_action_state_dict()
 
     def create_robot(self):
         """ load robot from USD

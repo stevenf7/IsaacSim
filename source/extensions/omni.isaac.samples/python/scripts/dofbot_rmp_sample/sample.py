@@ -22,7 +22,6 @@ from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
 
 from pxr import UsdGeom, Gf, UsdPhysics
-from omni.isaac.synthetic_utils import visualization as vis
 
 import numpy as np
 import os
