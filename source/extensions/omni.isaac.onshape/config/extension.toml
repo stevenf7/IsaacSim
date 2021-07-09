@@ -12,6 +12,7 @@ changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"
+writeTarget.kit = true
 
 [dependencies]
 "omni.kit.uiapp" = {}

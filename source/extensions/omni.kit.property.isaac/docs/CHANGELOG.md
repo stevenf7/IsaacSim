@@ -3,9 +3,9 @@ CHANGELOG
 **********
 
 
-[0.1.0] - 2020-12-15
+[0.1.0] - 2020-07-08
 ========================
 
 Added
 -------
-- Initial version, supports strings
+- Initial version, supports arrays and json
