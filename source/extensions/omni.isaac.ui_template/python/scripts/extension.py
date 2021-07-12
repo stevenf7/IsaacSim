@@ -14,8 +14,6 @@ import omni.kit.settings
 import gc
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-# from omni.kit.window.property.templates import SimplePropertyWidget, LABEL_WIDTH, LABEL_HEIGHT
-
 from omni.isaac.utils.scripts.ui_utils import *
 
 
