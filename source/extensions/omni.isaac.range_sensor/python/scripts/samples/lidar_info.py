@@ -16,6 +16,10 @@ from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import asyncio
 import weakref
 
+from omni.isaac.utils.scripts.ui_utils import *
+
+USE_NEW_UI = True
+
 EXTENSION_NAME = "LIDAR Info"
 
 
@@ -36,9 +40,14 @@ class Extension(omni.ext.IExt):
         # This just defines the window we will use to access the lidar_info GUI.  Note that clicking on the menu item
         # does not create an instance of lidar_info; that is done by the extension when it is loaded by kit.  All this
         # menu does is show or hide our GUI we will use for interacting with lidar_info
-        self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
-        )
+        if USE_NEW_UI:
+            self._window = omni.ui.Window(
+                EXTENSION_NAME, width=400, height=600, visible=True, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
+            )
+        else:
+            self._window = omni.ui.Window(
+                EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
+            )
 
         self._menu_items = [
             MenuItemDescription(
@@ -55,43 +64,103 @@ class Extension(omni.ext.IExt):
         # Scripting API > omni.kit package > omni.ui module.
         # Each button below has a tooltip and a function that is called when the button is clicked
         with self._window.frame:
-            with ui.VStack():
-                ui.Label(
-                    "This sample demonstrates how to create a LIDAR, set properties and get data from it. Press play once LIDAR is created to simulate",
-                    height=0,
-                    word_wrap=True,
-                )
-                ui.Button(
-                    "Clean Stage And Spawn a LIDAR Sensor",
-                    clicked_fn=self._on_spawn_lidar_button,
-                    tooltip="Spawn an LIDAR Sensor in the Stage and set its properties",
-                    height=0,
-                )
-                ui.Button(
-                    "Spawn an Obstacle for the LIDAR Sensor",
-                    clicked_fn=self._on_spawn_obstacles_button,
-                    tooltip="Spawn an obstacle and move camera so its in view",
-                    height=0,
-                )
-                ui.Button(
-                    "Get data from the LIDAR Sensor (press play first)",
-                    clicked_fn=self._get_info_function,
-                    tooltip="Press play to enable simulation and then press this button to get the current LIDAR information",
-                    height=0,
-                )
-                ui.Label(
-                    'Note: The buttons above only work with the LIDAR spawned by the "Spawn an LIDAR Sensor" button and not existing ones in the stage',
-                    height=0,
-                    word_wrap=True,
-                )
-                # The separator is an example of a widget that does not contain any interactive functionality.
-                # a tiny gap in the UI in order separate one part from another.
-                ui.Spacer(height=5)
-                ui.Separator(height=1, width=0)
-                ui.Spacer(height=5)
-                ui.Label("Output Information:", height=0)
-                with ui.ScrollingFrame():
-                    self._info_label = ui.Label("No Data To Display", word_wrap=True)
+            if USE_NEW_UI:
+                with ui.VStack(spacing=5, height=0):
+                    title = "Read a LIDAR Stream"
+                    doc_link = (
+                        "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/adding_sensors.html#lidar-sensor"
+                    )
+                    build_header(title, doc_link)
+
+                    overview = "This example shows how to create a LIDAR, set its properties, and read data streaming from it. "
+                    overview += "First press the 'Load LIDAR' button and then press PLAY to simulate."
+                    overview += "\n\nPress the 'Open in IDE' button to view the source code."
+                    overview += "\nNote: The buttons above only work with a LIDAR made by the 'Load LIDAR' button; not existing ones in the stage."
+                    author = "Isaac Sim Team"
+                    date = "07/01/2021"
+                    build_info_frame(overview, author, date)
+
+                    log_filename = EXTENSION_NAME.lower()
+                    log_filename = log_filename.replace(" ", "_") + ".log"
+                    build_settings_frame(log_filename)
+
+                    frame = ui.CollapsableFrame(
+                        title="Command Panel",
+                        height=0,
+                        collapsed=False,
+                        style=get_style(),
+                        style_type_name_override="CollapsableFrame",
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    )
+                    with frame:
+                        with ui.VStack(style=get_style(), spacing=5, height=0):
+                            dict = {
+                                "label": "Load LIDAR",
+                                "type": "button",
+                                "text": "Load",
+                                "tooltip": "Loads a LIDAR Sensor and sets its properties",
+                                "on_clicked_fn": self._on_spawn_lidar_button,
+                            }
+                            btn_builder(**dict)
+
+                            dict = {
+                                "label": "Load LIDAR Scene",
+                                "type": "button",
+                                "text": "Load",
+                                "tooltip": "Loads a obstacles for the LIDAR to sense",
+                                "on_clicked_fn": self._on_spawn_obstacles_button,
+                            }
+                            btn_builder(**dict)
+
+                            dict = {
+                                "label": "Show Data Stream",
+                                "type": "checkbox_scrolling_frame",
+                                "default_val": [False, "No Data To Display"],
+                                "tooltip": "Show incoming data from an active LIDAR",
+                                "on_clicked_fn": self._get_info_function,
+                            }
+                            self._info_label = combo_cb_scrolling_frame_builder(**dict)[1]
+
+            else:
+
+                with ui.VStack():
+                    ui.Label(
+                        "This sample demonstrates how to create a LIDAR, set properties and get data from it. Press play once LIDAR is created to simulate",
+                        height=0,
+                        word_wrap=True,
+                    )
+                    ui.Button(
+                        "Clean Stage And Spawn a LIDAR Sensor",
+                        clicked_fn=self._on_spawn_lidar_button,
+                        tooltip="Spawn an LIDAR Sensor in the Stage and set its properties",
+                        height=0,
+                    )
+                    ui.Button(
+                        "Spawn an Obstacle for the LIDAR Sensor",
+                        clicked_fn=self._on_spawn_obstacles_button,
+                        tooltip="Spawn an obstacle and move camera so its in view",
+                        height=0,
+                    )
+                    ui.Button(
+                        "Get data from the LIDAR Sensor (press play first)",
+                        clicked_fn=self._get_info_function,
+                        tooltip="Press play to enable simulation and then press this button to get the current LIDAR information",
+                        height=0,
+                    )
+                    ui.Label(
+                        'Note: The buttons above only work with the LIDAR spawned by the "Spawn an LIDAR Sensor" button and not existing ones in the stage',
+                        height=0,
+                        word_wrap=True,
+                    )
+                    # The separator is an example of a widget that does not contain any interactive functionality.
+                    # a tiny gap in the UI in order separate one part from another.
+                    ui.Spacer(height=5)
+                    ui.Separator(height=1, width=0)
+                    ui.Spacer(height=5)
+                    ui.Label("Output Information:", height=0)
+                    with ui.ScrollingFrame():
+                        self._info_label = ui.Label("No Data To Display", word_wrap=True)
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
@@ -190,7 +259,7 @@ class Extension(omni.ext.IExt):
         # to do this, we give our cube the collision API, and set it's material and collision group.
         collisionAPI = UsdPhysics.CollisionAPI.Apply(cubePrim)
 
-    def _get_info_function(self):
+    def _get_info_function(self, val=False):
         maxDepth = self.lidar.GetMaxRangeAttr().Get()
 
         # The LIDAR itself exists as a C++ object.  In order to retrieve data from this object we need to call
