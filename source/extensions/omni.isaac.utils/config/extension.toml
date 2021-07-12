@@ -22,6 +22,8 @@ writeTarget.kit = true
 "omni.isaac.dynamic_control" = {}
 # "omni.graph.core" = {}
 "omni.debugdraw" = {}
+"omni.kit.window.extensions" = {}
+"omni.kit.window.property" = {}
 
 [[python.module]]
 name = "omni.isaac.utils"
