@@ -62,7 +62,7 @@ class RobotController:
             if self._reached_goal[0] == False:
                 # Check if robot point towards goal before moving forward
                 delta_orientation = angle_to_goal - self.current_robot_orientation[2]
-                speed_multiplier = abs(delta_orientation) / (2 * math.pi)
+                speed_multiplier = abs(delta_orientation) / math.pi
                 if delta_orientation > self._goal_offset_threshold[1] and self._go_forward == False:
                     # Rotate in-place anti-clockwise
                     self.control_command(
@@ -96,7 +96,7 @@ class RobotController:
             # Translation goal reached but not rotational goal
             if self._reached_goal[0] == True and self._reached_goal[1] == False:
                 angle_to_goal_orientation = math.radians(self._goal[2]) - self.current_robot_orientation[2]
-                speed_multiplier = abs(angle_to_goal_orientation) / (2 * math.pi)
+                speed_multiplier = abs(angle_to_goal_orientation) / math.pi
                 if angle_to_goal_orientation > self._goal_offset_threshold[1]:
                     # Rotate in-place anti-clockwise
                     self.control_command(

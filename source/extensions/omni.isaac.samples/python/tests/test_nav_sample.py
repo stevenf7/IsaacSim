@@ -99,7 +99,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
             self._robot_chassis,
             self._robot_wheels,
             self._robot_wheels_speed,
-            [3, 0.05],
+            [6, 0.05],
         )
         self._rc.control_setup()
         self.imu = self._dc.get_rigid_body(self._robot_chassis)
@@ -149,7 +149,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._rc.set_goal(100, 100, 90)
         self._rc.enable_navigation(True)
 
-        for frame in range(int(60 * 60)):
+        for frame in range(int(90 * 60)):
             await omni.kit.app.get_app().next_update_async()
             if self._rc.reached_goal():
                 break
@@ -157,8 +157,8 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         roll, pitch, yaw = math_utils.quaternionToEulerAngles(
             Gf.Quaternion(imu_pose.r.w, Gf.Vec3d(imu_pose.r.x, imu_pose.r.y, imu_pose.r.z))
         )
-        self.assertAlmostEqual(imu_pose.p.x, self._rc.get_goal()[0], delta=2.0)
-        self.assertAlmostEqual(imu_pose.p.y, self._rc.get_goal()[1], delta=2.0)
+        self.assertAlmostEqual(imu_pose.p.x, self._rc.get_goal()[0], delta=5.0)
+        self.assertAlmostEqual(imu_pose.p.y, self._rc.get_goal()[1], delta=5.0)
         self.assertAlmostEqual(yaw, math.radians(self._rc.get_goal()[2]), delta=0.1)
         pass
 
@@ -185,5 +185,16 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._rc.control_command(1, 1)
         await simulate(1)
         imu_pose_new = self._dc.get_rigid_body_pose(self.imu)
-        self.assertAlmostEqual(imu_pose_new.p.x, imu_pose.p.x, delta=1.0)
+        # Stop and play once more
+        self._rc.control_command(0, 0)
+        await simulate(1)
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        # Move forward again
+        self._rc.control_command(1, 1)
+        await simulate(1)
+        imu_pose_new_again = self._dc.get_rigid_body_pose(self.imu)
+        self.assertAlmostEqual(imu_pose_new_again.p.x, imu_pose_new.p.x, delta=1.0)
         pass
