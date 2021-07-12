@@ -15,6 +15,9 @@ import weakref
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
+from omni.isaac.utils.scripts.ui_utils import *
+
+USE_NEW_UI = True
 
 from .common import set_drive_parameters
 from pxr import UsdLux, Sdf, Gf, UsdPhysics
@@ -24,7 +27,12 @@ EXTENSION_NAME = "Import UR10"
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        self._window = omni.ui.Window(EXTENSION_NAME, width=200, height=125, visible=False)
+        if USE_NEW_UI:
+            self._window = omni.ui.Window(
+                EXTENSION_NAME, width=400, height=300, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            )
+        else:
+            self._window = omni.ui.Window(EXTENSION_NAME, width=200, height=125, visible=True)
         self._menu_items = [
             MenuItemDescription(
                 name="Importing",
@@ -35,10 +43,65 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
         with self._window.frame:
-            with ui.VStack(height=0):
-                ui.Button("Load Robot", clicked_fn=self._on_load_robot)
-                ui.Button("Configure Joint Drives", clicked_fn=self._on_config_robot)
-                ui.Button("Drive to pose", clicked_fn=self._on_config_drives)
+
+            if USE_NEW_UI:
+                with ui.VStack(spacing=5, height=0):
+                    title = "Import a UR10 via URDF"
+                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_ur10.html"
+                    build_header(title, doc_link)
+
+                    overview = "This Example shows you import a UR10 robot arm via URDF.\nPress the 'Open in IDE' button to view the source code."
+                    author = "Isaac Sim Team"
+                    date = "07/01/2021"
+                    build_info_frame(overview, author, date)
+
+                    log_filename = EXTENSION_NAME.lower()
+                    log_filename = log_filename.replace(" ", "_") + ".log"
+                    build_settings_frame(log_filename)
+
+                    frame = ui.CollapsableFrame(
+                        title="Command Panel",
+                        height=0,
+                        collapsed=False,
+                        style=get_style(),
+                        style_type_name_override="CollapsableFrame",
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    )
+                    with frame:
+                        with ui.VStack(style=get_style(), spacing=5):
+                            dict = {
+                                "label": "Load Robot",
+                                "type": "button",
+                                "text": "Load",
+                                "tooltip": "Load a UR10 Robot into the Scene",
+                                "on_clicked_fn": self._on_load_robot,
+                            }
+                            btn_builder(**dict)
+
+                            dict = {
+                                "label": "Configure Drives",
+                                "type": "button",
+                                "text": "Configure",
+                                "tooltip": "Configure Joint Drives",
+                                "on_clicked_fn": self._on_config_robot,
+                            }
+                            btn_builder(**dict)
+
+                            dict = {
+                                "label": "Move to Pose",
+                                "type": "button",
+                                "text": "move",
+                                "tooltip": "Drive the Robot to a specific pose",
+                                "on_clicked_fn": self._on_config_drives,
+                            }
+                            btn_builder(**dict)
+
+            else:
+                with ui.VStack(height=0):
+                    ui.Button("Load Robot", clicked_fn=self._on_load_robot)
+                    ui.Button("Configure Joint Drives", clicked_fn=self._on_config_robot)
+                    ui.Button("Drive to pose", clicked_fn=self._on_config_drives)
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._extension_path = ext_manager.get_extension_path(ext_id)
