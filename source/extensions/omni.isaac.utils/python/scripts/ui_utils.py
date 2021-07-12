@@ -1,15 +1,13 @@
-from string import hexdigits
 import carb.settings
 import omni.ui as ui
 import omni.ext
 import omni.appwindow
 import asyncio
-from omni.kit.window.extensions.common import *
-from omni.kit.window.property.templates import SimplePropertyWidget, LABEL_WIDTH, LABEL_HEIGHT
+
+from omni.kit.window.property.templates import LABEL_WIDTH, LABEL_HEIGHT
+from omni.kit.window.extensions import SimpleCheckBox
 
 from .style import *
-
-from omni.kit.window.extensions import SimpleCheckBox, styles
 
 
 def btn_builder(label="", type="button", text="button", tooltip="", on_clicked_fn=None):
