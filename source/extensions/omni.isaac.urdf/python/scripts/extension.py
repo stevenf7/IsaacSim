@@ -122,7 +122,7 @@ class Extension(omni.ext.IExt):
                                 with ui.HStack():
                                     ui.Label(
                                         "Link Density:",
-                                        tooltip="[kg/m^3] If a link doesn't have mass, use this density as backup, A density of 0.0 results in the physics engine automatically computing density as well",
+                                        tooltip="[kg/stage_units^3] If a link doesn't have mass, use this density as backup, A density of 0.0 results in the physics engine automatically computing a default density",
                                     )
                                     model = ui.FloatField().model
                                     model.add_value_changed_fn(

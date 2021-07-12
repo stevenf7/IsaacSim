@@ -328,6 +328,7 @@ exts.include = [
     "omni.isaac.synthetic_utils",
     "omni.isaac.urdf",
     "omni.isaac.utils",
+    "omni.kit.loop-isaac",
     "omni.usd.schema.isaac"
 ]
 exts.exclude = []

@@ -4,11 +4,14 @@ version = "0.1.0"
 category = "Internal"
 authors = ["Isaac Sim team"]
 title = "Isaac Loop Runner"
-repository=""
+description = "Custom Loop Runner for Isaac Sim"
+repository = ""
 keywords = ["isaac", "loop"]
-
-# More info on writing changelog: https://keepachangelog.com/en/1.0.0/
-changelog="docs/CHANGELOG.rst"
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
 
 [[python.module]]
 name = "omni.kit.loop"
