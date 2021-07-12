@@ -42,7 +42,7 @@ class Extension(omni.ext.IExt):
         # menu does is show or hide our GUI we will use for interacting with lidar_info
         if USE_NEW_UI:
             self._window = omni.ui.Window(
-                EXTENSION_NAME, width=400, height=600, visible=True, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
+                EXTENSION_NAME, width=400, height=600, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
             )
         else:
             self._window = omni.ui.Window(

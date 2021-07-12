@@ -29,10 +29,10 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         if USE_NEW_UI:
             self._window = omni.ui.Window(
-                EXTENSION_NAME, width=400, height=300, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                EXTENSION_NAME, width=400, height=300, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
         else:
-            self._window = omni.ui.Window(EXTENSION_NAME, width=200, height=125, visible=True)
+            self._window = omni.ui.Window(EXTENSION_NAME, width=200, height=125, visible=False)
         self._menu_items = [
             MenuItemDescription(
                 name="Importing",
