@@ -79,6 +79,7 @@ void RosLidar::onComponentChange()
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mPointCloudPubTopic);
 
     isaac::utils::safeGetAttribute(typedPrim.GetLaserScanPubTopicAttr(), mLaserScanPubTopic);
+    isaac::utils::safeGetAttribute(typedPrim.GetLaserScanEnabledAttr(), mEnableLaserScan);
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
     isaac::utils::safeGetAttribute(typedPrim.GetPointCloudPubTopicAttr(), mPointCloudPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetPointCloudEnabledAttr(), mEnablePointCloud);
@@ -127,6 +128,12 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
         CARB_LOG_ERROR("Invalid Lidar Reference, Prim is not registered with Lidar extension");
         return;
     }
+
+    if (!mEnableLaserScan)
+    {
+        return;
+    }
+
     bool highLod = false;
     isaac::utils::safeGetAttribute(mLidarPrim.GetHighLodAttr(), highLod);
     if (highLod)

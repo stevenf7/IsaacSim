@@ -14,9 +14,10 @@
 #include "RosLidar.h"
 
 #include "geometry_msgs/Point32.h"
+#include "pcl_ros/point_cloud.h"
 #include "rosgraph_msgs/Clock.h"
 #include "sensor_msgs/LaserScan.h"
-#include "sensor_msgs/PointCloud.h"
+#include "sensor_msgs/PointCloud2.h"
 #include "std_msgs/Int64.h"
 #include "std_msgs/UInt8.h"
 #include "std_srvs/Empty.h"
@@ -79,6 +80,7 @@ void RosLidar::onComponentChange()
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mPointCloudPubTopic);
 
     isaac::utils::safeGetAttribute(typedPrim.GetLaserScanPubTopicAttr(), mLaserScanPubTopic);
+    isaac::utils::safeGetAttribute(typedPrim.GetLaserScanEnabledAttr(), mEnableLaserScan);
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
     isaac::utils::safeGetAttribute(typedPrim.GetPointCloudPubTopicAttr(), mPointCloudPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetPointCloudEnabledAttr(), mEnablePointCloud);
@@ -86,7 +88,7 @@ void RosLidar::onComponentChange()
 
     mRosNode->createPublisher<sensor_msgs::LaserScan>(
         mPrim.GetPath().GetString(), mLaserScanPubTopic, mQueueSize, &RosLidar::pubCallback, this);
-    mRosNode->createPublisher<sensor_msgs::PointCloud>(
+    mRosNode->createPublisher<sensor_msgs::PointCloud2>(
         mPrim.GetPath().GetString(), mPointCloudPubTopic, mQueueSize, &RosLidar::pointCloudPubCallback, this);
 
 
@@ -127,11 +129,19 @@ void RosLidar::pubCallback(ros::Publisher* pub)
         CARB_LOG_ERROR("Invalid Lidar Reference, Prim is not registered with Lidar extension");
         return;
     }
+
+    if (!mEnableLaserScan)
+    {
+        return;
+    }
+
     bool highLod = false;
     isaac::utils::safeGetAttribute(mLidarPrim.GetHighLodAttr(), highLod);
+
     if (highLod)
     {
-        CARB_LOG_ERROR("High LOD not supported, only 2D Lidar Supported. Please disable High LOD setting");
+        CARB_LOG_WARN(
+            "High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan. Please disable Lidar High LOD setting or uncheck LaserScanEnabled");
         return;
     }
     sensor_msgs::LaserScan laser_msg;
@@ -150,7 +160,7 @@ void RosLidar::pubCallback(ros::Publisher* pub)
     int numRows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str()); // should be 1
     if (numRows > 1)
     {
-        CARB_LOG_ERROR("High LOD not supported, only 2D Lidar Supported");
+        CARB_LOG_WARN("High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan");
     }
     size_t numBeams = numColsTicked * numRows;
 
@@ -194,30 +204,42 @@ void RosLidar::pointCloudPubCallback(ros::Publisher* pub)
     {
         return;
     }
-    sensor_msgs::PointCloud point_cloud_msg;
-    point_cloud_msg.header.seq = 0;
-    point_cloud_msg.header.frame_id = mFrameId;
+
+    typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
+    std_msgs::Header header_msg;
+    PointCloud::Ptr point_cloud_msg(new PointCloud);
+    header_msg.frame_id = mFrameId;
+
     if (mUseSimTime)
     {
-        point_cloud_msg.header.stamp.fromSec(mTimeSeconds);
+        header_msg.stamp.fromSec(mTimeSeconds);
     }
     else
     {
-        point_cloud_msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+        header_msg.stamp.fromNSec(mSystemTimeNanoSeconds);
     }
-
 
     carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(mLidarPath.GetString().c_str());
     int rows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str());
     int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
+
+    pcl_conversions::toPCL(header_msg, point_cloud_msg->header);
+
+    point_cloud_msg->height = rows;
+    point_cloud_msg->width = numColsTicked;
+
+    std::vector<int> points;
+
     for (int i = 0; i < rows * numColsTicked; i++)
     {
-        geometry_msgs::Point32 points;
+        pcl::PointXYZ points;
         points.x = lidarData[i].x * mUnitScale;
         points.y = lidarData[i].y * mUnitScale;
         points.z = lidarData[i].z * mUnitScale;
-        point_cloud_msg.points.push_back(points);
+
+        point_cloud_msg->points.push_back(points);
     }
+
     pub->publish(point_cloud_msg);
 }
 

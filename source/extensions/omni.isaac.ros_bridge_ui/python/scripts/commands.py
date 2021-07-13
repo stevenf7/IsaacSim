@@ -207,6 +207,7 @@ class ROSBridgeCreateLidar(omni.kit.commands.Command):
         enabled: bool = True,
         queue_size: int = 10,
         frame_id: str = "sim_lidar",
+        laser_scan_enabled: bool = True,
         laser_scan_topic: str = "/laser_scan",
         point_cloud_enabled: bool = False,
         point_cloud_topic: str = "/point_cloud",
@@ -229,6 +230,7 @@ class ROSBridgeCreateLidar(omni.kit.commands.Command):
         )
         if success and self._prim:
             self._prim.CreateLaserScanPubTopicAttr(self._laser_scan_topic)
+            self._prim.CreateLaserScanEnabledAttr(self._laser_scan_enabled)
             rel_paths = self._prim.CreateLidarPrimRel()
             if self._lidar_prim_rel is not None:
                 if len(self._lidar_prim_rel) == 1:

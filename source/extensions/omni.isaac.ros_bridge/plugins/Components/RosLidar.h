@@ -43,6 +43,7 @@ public:
     void pointCloudPubCallback(ros::Publisher* pub);
 
 private:
+    bool mEnableLaserScan = true;
     std::string mLaserScanPubTopic = "/laser_scan";
     int mQueueSize = 0;
     pxr::SdfPath mLidarPath = pxr::SdfPath("/");
@@ -50,8 +51,7 @@ private:
     carb::Framework* mFramework = nullptr;
     omni::isaac::range_sensor::LidarSensorInterface* mLidarSensorInterface = nullptr;
     pxr::RangeSensorSchemaLidar mLidarPrim;
-    std::string mFrameId = "/sim_lidar";
-
+    std::string mFrameId = "sim_lidar";
     bool mEnablePointCloud = false;
     std::string mPointCloudPubTopic = "/point_cloud";
 
