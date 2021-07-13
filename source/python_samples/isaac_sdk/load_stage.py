@@ -28,6 +28,13 @@ class UsdLoadSample:
     def __init__(self, args):
         CONFIG["headless"] = args.headless
         self.kit = OmniKitHelper(config=CONFIG)
+
+        import omni
+
+        # enable SDK bridge extension
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_manager.set_extension_enabled_immediate("omni.isaac.robot_engine_bridge", True)
+
         self.usd_path = ""
         self._viewport = omni.kit.viewport.get_viewport_interface()
 
