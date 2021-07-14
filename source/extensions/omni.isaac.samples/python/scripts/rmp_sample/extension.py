@@ -117,7 +117,7 @@ class Extension(omni.ext.IExt):
     def _on_simulation_step(self, step):
         if self._sample.created:
             self._create_robot_btn.text = "Reload Robot"
-            if self._timeline.is_playing():
+            if self._dc.is_simulating():
                 self._sample.step(step)
                 if self._sample.obstacle_on:
                     self._toggle_obstacle_btn.enabled = True

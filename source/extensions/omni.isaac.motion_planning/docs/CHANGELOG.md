@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.1.5] - 2021-07-14
+========================
+
+Added
+-------
+- now works when running without editor/timeline and only physx events. 
+
+
 [0.1.4] - 2021-05-24
 ========================
 

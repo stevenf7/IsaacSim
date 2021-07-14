@@ -17,6 +17,7 @@
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
+#include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
@@ -53,7 +54,10 @@ constexpr PxD6Axis::Enum g_dcToPxAxis[6]{
 
 omni::kit::IStageUpdate* g_su = nullptr;
 omni::kit::StageUpdateNode* g_suNode = nullptr;
-
+omni::physx::SubscriptionId gStepSubscription;
+carb::events::ISubscriptionPtr gEventSubscription;
+static omni::physx::IPhysx* gPhysXInterface = nullptr;
+omni::physx::IPhysxSceneQuery* gPhysxSceneQuery = nullptr;
 // Only one "current" context is supported now.  This is due to limitations in the IStageUpdate interface.
 uint32_t g_dcCtxId = 0;
 std::unique_ptr<DcContext> g_dcCtx = nullptr;
@@ -240,42 +244,13 @@ inline PxTransform asPxTransform(const DcTransform& pose)
 
 std::unique_ptr<DcContext> createContext()
 {
-    carb::Framework* framework = carb::getFramework();
-    if (!framework)
-    {
-        CARB_LOG_ERROR("Failed to get Carbonite framework");
-        return nullptr;
-    }
 
-    omni::physx::IPhysx* physx = framework->acquireInterface<omni::physx::IPhysx>();
-    if (!physx)
-    {
-        CARB_LOG_ERROR("Failed to acquire PhysX interface");
-        return nullptr;
-    }
-    else
-    {
-        auto desc = physx->getInterfaceDesc();
-        CARB_LOG_INFO("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
-    }
-
-    omni::physx::IPhysxSceneQuery* physxSceneQuery = framework->acquireInterface<omni::physx::IPhysxSceneQuery>();
-    if (!physxSceneQuery)
-    {
-        CARB_LOG_ERROR("Failed to acquire PhysX Scene Query interface");
-        return nullptr;
-    }
-    else
-    {
-        auto desc = physxSceneQuery->getInterfaceDesc();
-        CARB_LOG_INFO("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
-    }
 
     ++g_dcCtxId;
 
     std::unique_ptr<DcContext> ctx = std::make_unique<DcContext>(g_dcCtxId);
-    ctx->physx = physx;
-    ctx->physxSceneQuery = physxSceneQuery;
+    ctx->physx = gPhysXInterface;
+    ctx->physxSceneQuery = gPhysxSceneQuery;
 
     /*
     // get scene pointer
@@ -2952,7 +2927,7 @@ void SuDetach(void* data)
     }
 }
 
-void SuPause(void* data)
+void SuPause()
 {
     printf("++ DC: Stage Pause\n");
     if (g_dcCtx)
@@ -2961,7 +2936,7 @@ void SuPause(void* data)
     }
 }
 
-void SuResume(float currentTime, void* data)
+void SuResume()
 {
     // printf("++ DC: Stage Resume\n");
 
@@ -2978,7 +2953,7 @@ void SuResume(float currentTime, void* data)
     }
 }
 
-void SuStop(void* data)
+void SuStop()
 {
     // printf("++ DC: Stage Stop\n");
 
@@ -2993,14 +2968,14 @@ void SuStop(void* data)
     }
 }
 
-void SuUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
+void SuUpdate(float timeElapsed, void* userData)
 {
     // printf("++ DC: Stage Update\n");
     // Skip if not simulating
-    if (!settings->isPlaying)
-    {
-        return;
-    }
+    // if (!settings->isPlaying)
+    // {
+    //     return;
+    // }
     // FIXME: should we do this automatically?
     // FIXME: should this be done per physics step instead of stage update?
     if (g_dcCtx)
@@ -3047,15 +3022,59 @@ CARB_EXPORT void carbOnPluginStartup()
         return;
     }
 
+    gPhysXInterface = framework->acquireInterface<omni::physx::IPhysx>();
+    if (!gPhysXInterface)
+    {
+        CARB_LOG_ERROR("Failed to acquire PhysX interface");
+        return;
+    }
+    else
+    {
+        auto desc = gPhysXInterface->getInterfaceDesc();
+        CARB_LOG_INFO("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
+    }
+
+    gPhysxSceneQuery = framework->acquireInterface<omni::physx::IPhysxSceneQuery>();
+    if (!gPhysxSceneQuery)
+    {
+        CARB_LOG_ERROR("Failed to acquire PhysX Scene Query interface");
+        return;
+    }
+    else
+    {
+        auto desc = gPhysxSceneQuery->getInterfaceDesc();
+        CARB_LOG_INFO("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
+    }
+    gStepSubscription = gPhysXInterface->subscribePhysicsStepEvents(SuUpdate, nullptr);
+
+    gEventSubscription =
+        carb::events::createSubscriptionToPop(gPhysXInterface->getSimulationEventStream().get(),
+                                              [](carb::events::IEvent* e)
+                                              {
+                                                  if (e->type == omni::physx::SimulationEvent::eStopped)
+                                                  {
+                                                      SuStop();
+                                                  }
+                                                  else if (e->type == omni::physx::SimulationEvent::ePaused)
+                                                  {
+                                                      SuPause();
+                                                  }
+                                                  else if (e->type == omni::physx::SimulationEvent::eResumed)
+                                                  {
+                                                      SuResume();
+                                                  }
+                                              },
+                                              0, "Dynamic Control Status Event");
+
     omni::kit::StageUpdateNodeDesc suDesc = { 0 };
     suDesc.displayName = "Dynamic Control";
     suDesc.order = 20; // should run after omni.physx!!
     suDesc.onAttach = SuAttach;
     suDesc.onDetach = SuDetach;
-    suDesc.onUpdate = SuUpdate;
-    suDesc.onResume = SuResume;
-    suDesc.onPause = SuPause;
-    suDesc.onStop = SuStop;
+    // suDesc.onUpdate = SuUpdate;
+    // suDesc.onResume = SuResume;
+    // suDesc.onPause = SuPause;
+    // suDesc.onStop = SuStop;
 
     suDesc.onPrimRemove = onPrimRemove;
 
@@ -3070,7 +3089,8 @@ CARB_EXPORT void carbOnPluginStartup()
 CARB_EXPORT void carbOnPluginShutdown()
 {
     using namespace omni::isaac::dynamic_control;
-
+    gPhysXInterface->unsubscribePhysicsStepEvents(gStepSubscription);
+    gEventSubscription = nullptr;
     if (g_suNode)
     {
         g_su->destroyStageUpdateNode(g_suNode);

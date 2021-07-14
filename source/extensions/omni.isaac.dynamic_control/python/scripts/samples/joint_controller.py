@@ -221,7 +221,7 @@ class Extension(omni.ext.IExt):
         self.current_dof = 0
 
     def _on_physics_step(self, step):
-        if self._timeline.is_playing():
+        if self._dc.is_simulating():
             if self.ar == _dynamic_control.INVALID_HANDLE:
                 self._on_first_step()
             dof = self.current_dof
