@@ -89,7 +89,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--load-materials", action="store_true", help="If specified, materials will be loaded from meshes"
     )
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
     if args.folders is None:
         raise ValueError(f"No folders specified via --folders argument")

@@ -325,7 +325,7 @@ if __name__ == "__main__":
         default=None,
         help="Root directory containing USDs. If not specified, use {SHAPENET_LOCAL_DIR}_nomat as root.",
     )
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
     # If root is not specified use the environment variable SHAPENET_LOCAL_DIR with the _nomat suffix as root
     if args.root is None:

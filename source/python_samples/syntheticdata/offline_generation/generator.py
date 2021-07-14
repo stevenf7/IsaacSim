@@ -266,7 +266,7 @@ if __name__ == "__main__":
         default=[],
         help="Which classes to write labels for, works when writer_mode is kitti.  Defaults to all classes",
     )
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
     dataset = RandomScenario(
         args.scenario, args.writer_mode, args.data_dir, args.max_queue_size, args.train_size, args.classes

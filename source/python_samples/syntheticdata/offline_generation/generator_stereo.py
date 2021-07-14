@@ -283,7 +283,7 @@ if __name__ == "__main__":
     parser.add_argument("--scenario", type=str, help="Scenario to load from omniverse server")
     parser.add_argument("--num_frames", type=int, default=30, help="Number of frames to record")
     parser.add_argument("--max_queue_size", type=int, default=500, help="Max size of queue to store and process data")
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
     dataset = RandomScenario(args.scenario, args.max_queue_size)
 
