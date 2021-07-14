@@ -56,7 +56,7 @@ def create_dofbot_camera(stage, prim_env_path):
     carb.settings.acquire_settings_interface().set_int("/app/renderer/resolution/height", -1)
 
     # Create new viewport, set active camera as dofbot POV
-    viewport_handle_dofbot = omni.kit.viewport.get_viewport_interface().create_instance()
+    viewport_handle_dofbot = omni.kit.viewport.get_viewport_interface().get_instance()
     viewport_window_dofbot = omni.kit.viewport.get_viewport_interface().get_viewport_window(viewport_handle_dofbot)
     viewport_window_dofbot.set_active_camera(prim_env_path + "/link4/Camera")
     viewport_window_dofbot.set_window_pos(0, 0)
