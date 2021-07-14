@@ -110,7 +110,7 @@ class RMPSample:
         Arguments:
             step (float): elapsed time between steps
         """
-        if self.created and self._timeline.is_playing():
+        if self.created and self._dc.is_simulating():
             if self.first_step:
                 self.register_assets()
                 self.first_step = False
@@ -290,7 +290,7 @@ class RMPSample:
             print("\trotation: ({},{},{},{})".format(block_pose.r.x, block_pose.r.y, block_pose.r.z, block_pose.r.w))
 
         # get end effector pose
-        if not self._timeline.is_playing():
+        if not self._dc.is_simulating():
             print("editor must be playing to get robot state")
             return
         if self._robot is not None:
@@ -382,6 +382,6 @@ class RMPSample:
             dof_velocity_target[dofIdx] = self._dc.get_dof_velocity_target(dof_handle)
 
         dof_states = self._dc.get_articulation_dof_states(self._ar, _dynamic_control.STATE_POS)
-
-        self.state_dict_save["joint command"].append(dof_position_target.tolist())
-        self.state_dict_save["joint state"].append(dof_states["pos"].tolist())
+        if dof_states is not None:
+            self.state_dict_save["joint command"].append(dof_position_target.tolist())
+            self.state_dict_save["joint state"].append(dof_states["pos"].tolist())

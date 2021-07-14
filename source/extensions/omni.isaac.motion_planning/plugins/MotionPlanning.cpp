@@ -17,6 +17,7 @@
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
+#include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 #include <carb/tasking/ITasking.h>
@@ -61,6 +62,7 @@ static float gTime = 0;
 
 static omni::physx::IPhysx* gPhysXInterface = nullptr;
 omni::physx::SubscriptionId gStepSubscription;
+carb::events::ISubscriptionPtr gEventSubscription;
 
 std::unordered_map<size_t, std::shared_ptr<MotionPolicy>> gMotionPolicies;
 }
@@ -396,14 +398,27 @@ CARB_EXPORT void carbOnPluginStartup()
 
 
     gStepSubscription = gPhysXInterface->subscribePhysicsStepEvents(onPhysicsStep, nullptr);
-    // gEventSubscription = gPhysXInterface->subscribePhysicsSimulationEvents(onPhysicsUpdate, nullptr);
+    // gEventSubscription = gPhysXInterface->getSimulationEventStream()->createSubscriptionToPop((onPhysicsUpdate,
+    // nullptr);
+
+
+    gEventSubscription = carb::events::createSubscriptionToPop(gPhysXInterface->getSimulationEventStream().get(),
+                                                               [](carb::events::IEvent* e)
+                                                               {
+                                                                   if (e->type == omni::physx::SimulationEvent::eStopped)
+                                                                   {
+                                                                       onStop(nullptr);
+                                                                   }
+                                                               },
+                                                               0, "Motion Planning Status Event");
+
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "MotionPlanning";
     desc.onAttach = onAttach;
     desc.onDetach = onDetach;
     // desc.onUpdate = onUpdate;
-    desc.onStop = onStop;
+    // desc.onStop = onStop;
     // Create the stage update node and make sure it runs first
     // size_t index = gStageUpdate->getStageUpdateNodeCount();
     gStageUpdateNode = gStageUpdate->createStageUpdateNode(desc);
@@ -422,6 +437,7 @@ CARB_EXPORT void carbOnPluginShutdown()
     // gPhysXInterface->unsubscribePhysicsSimulationEvents(gEventSubscription)
     gStageUpdate->destroyStageUpdateNode(gStageUpdateNode);
     gTasking->destroyCounter(gTaskCounter);
+    gEventSubscription = nullptr;
 }
 
 void fillInterface(omni::isaac::motion_planning::MotionPlanning& iface)
