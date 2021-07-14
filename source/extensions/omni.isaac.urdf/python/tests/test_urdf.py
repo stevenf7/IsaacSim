@@ -167,7 +167,10 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/carter/urdf/carter.urdf")
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.merge_fixed_joints = False
-        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
+        status, path = omni.kit.commands.execute(
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config
+        )
+        self.assertTrue(path, "/carter")
         # TODO add checks here
 
     async def test_urdf_franka(self):

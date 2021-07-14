@@ -127,7 +127,7 @@ if __name__ == "__main__":
     parser.add_argument("--max-iters", type=float, default=1000, help="Number of training iterations.")
     parser.add_argument("--visualize", action="store_true", help="Visualize predicted bounding boxes during training.")
     parser.add_argument("--eval_model", help="model file to evaluate", default="", type=str)
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
     # Temporary
     args.visualize = True

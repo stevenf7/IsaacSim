@@ -37,7 +37,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--load-materials", action="store_true", help="If specified, materials will be loaded from shapenet meshes"
     )
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
     # Ensure Omniverse Kit is launched via OmniKitHelper before shapenet_convert() is called
     shapenet.shapenet_convert(args.categories, args.max_models, args.load_materials)

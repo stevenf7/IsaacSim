@@ -134,7 +134,7 @@ if __name__ == "__main__":
     parser.add_argument("-lr", "--learning_rate", type=float, default=1e-4, help="Learning rate")
     parser.add_argument("--max-iters", type=float, default=1000, help="Number of training iterations.")
     parser.add_argument("--visualize", action="store_true", help="Visualize predicted masks during training.")
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
     # If root is not specified use the environment variable SHAPENET_LOCAL_DIR with the _nomat suffix as root
     if args.root is None:

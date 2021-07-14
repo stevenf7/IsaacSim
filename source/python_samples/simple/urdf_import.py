@@ -19,6 +19,7 @@ if __name__ == "__main__":
     # URDF import, configuration and simualtion sample
     kit = OmniKitHelper(config=CONFIG)
     import omni.kit.commands
+    from omni.isaac.dynamic_control import _dynamic_control
     from pxr import Sdf, Gf, UsdPhysics, UsdLux, PhysxSchema
 
     # Setting up import configuration:
@@ -32,8 +33,8 @@ if __name__ == "__main__":
     ext_manager = omni.kit.app.get_app().get_extension_manager()
     ext_id = ext_manager.get_enabled_extension_id("omni.isaac.urdf")
     extension_path = ext_manager.get_extension_path(ext_id)
-    # Import URDF
-    omni.kit.commands.execute(
+    # Import URDF, stage_path contains the path the path to the usd prim in the stage.
+    status, stage_path = omni.kit.commands.execute(
         "URDFParseAndImportFile",
         urdf_path=extension_path + "/data/urdf/robots/carter/urdf/carter.urdf",
         import_config=import_config,
@@ -87,8 +88,19 @@ if __name__ == "__main__":
     left_wheel_drive.GetStiffnessAttr().Set(0)
     right_wheel_drive.GetStiffnessAttr().Set(0)
 
+    # dynamic control can also be used to interact with the imported urdf.
+    dc = _dynamic_control.acquire_dynamic_control_interface()
+
     # Start simulation
     kit.play()
+    # perform one simulation step so physics is loaded and dynamic control works.
+    kit.update(1.0 / 60.0)
+    art = dc.get_articulation(stage_path)
+
+    if art == _dynamic_control.INVALID_HANDLE:
+        print(f"{stage_path} is not an articulation")
+    else:
+        print(f"Got articulation {stage_path} with handle {art}")
 
     # perform simulation
     for frame in range(100):

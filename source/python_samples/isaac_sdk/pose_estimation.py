@@ -34,13 +34,16 @@ RANDOMIZE_SCENE_EVERY_N_STEPS = 10
 class DualCameraSample:
     def __init__(self):
         self.kit = OmniKitHelper(config=CONFIG)
-        import omni.physx
+        import omni
+
+        # enable SDK bridge extension
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_manager.set_extension_enabled_immediate("omni.isaac.robot_engine_bridge", True)
+
         from pxr import UsdGeom, Usd, Gf
         from omni.isaac.synthetic_utils import DomainRandomization
         from omni.isaac.synthetic_utils import SyntheticDataHelper
-        from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 
-        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
         self._viewport = omni.kit.viewport.get_viewport_interface()
 
         self.dr_helper = DomainRandomization()

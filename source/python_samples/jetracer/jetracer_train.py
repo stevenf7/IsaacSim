@@ -164,7 +164,7 @@ if __name__ == "__main__":
         "--experimentFile", help="specify configuration via JSON.  Overrides commandline", default="", type=str
     )
 
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
     if args.experimentFile != "":
         args_dict = vars(args)
