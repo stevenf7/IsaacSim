@@ -16,6 +16,7 @@ import asyncio
 import weakref
 import os
 import omni.physx as _physx
+from omni.isaac.dynamic_control import _dynamic_control
 from .sample import RMPSample
 
 EXTENSION_NAME = "RMP Sample"
@@ -37,6 +38,7 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items, "Isaac Examples")
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
+        self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._sample = RMPSample()
         # Simple button style that grays out the button if disabled
         self._button_style = {":disabled": {"color": 0xFF000000}}
