@@ -200,7 +200,16 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
         }
         else if (type == eDcObjectNone)
         {
-            physx::PxTransform body1_pose = asPxTransform(omni::usd::UsdUtils::getWorldTransformMatrix(prim));
+            pxr::GfMatrix4d matrix = omni::usd::UsdUtils::getWorldTransformMatrix(prim);
+
+            if (prim.IsA<pxr::UsdGeomCamera>())
+            {
+                // Rotate 180 degrees about x-axis
+                const pxr::GfMatrix4d omniTCamera = pxr::GfMatrix4d(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
+                matrix = omniTCamera * matrix;
+            }
+
+            physx::PxTransform body1_pose = asPxTransform(matrix);
             physx::PxTransform trans(parent_pose.transformInv(body1_pose));
             msg.header.frame_id = parent_frame;
             msg.child_frame_id = prim.GetName().GetString();
