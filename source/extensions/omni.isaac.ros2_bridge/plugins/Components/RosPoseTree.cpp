@@ -200,7 +200,7 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
         }
         else if (type == eDcObjectNone)
         {
-             pxr::GfMatrix4d matrix = omni::usd::UsdUtils::getWorldTransformMatrix(prim);
+            pxr::GfMatrix4d matrix = omni::usd::UsdUtils::getWorldTransformMatrix(prim);
 
             if (prim.IsA<pxr::UsdGeomCamera>())
             {
