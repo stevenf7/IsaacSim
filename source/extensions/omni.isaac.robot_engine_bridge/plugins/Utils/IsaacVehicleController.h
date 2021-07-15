@@ -200,7 +200,8 @@ public:
     }
     float getForwardSpeed()
     {
-        return mCache.vehiclePtr->computeForwardSpeed();
+        // TODO: change this to get the actual forward direction
+        return mCache.vehiclePtr->computeForwardSpeed(::physx::PxVec3(1.0, 0.0, 0.0));
     }
     float getCurvature()
     {
