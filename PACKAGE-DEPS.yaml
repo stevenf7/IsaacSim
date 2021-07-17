@@ -97,27 +97,7 @@ usd-audio-schema:
     scm: git
   swipat: null
   version: null
-usd-audio-schema_1:
-  licenseFile: usd_audio_schema-LICENSE.md
-  packageName: usd-audio-schema
-  source:
-    branch: null
-    change: null
-    path: https://gitlab/omniverse/usd_audio_schema
-    scm: git
-  swipat: null
-  version: null
 usd-ext-physics:
-  licenseFile: usd_ext_physics-LICENSE.md
-  packageName: usd-ext-physics
-  source:
-    branch: null
-    change: null
-    path: https://gitlab/omniverse/usd-ext-physics.git
-    scm: git
-  swipat: null
-  version: null
-usd-ext-physics_1:
   licenseFile: usd_ext_physics-LICENSE.md
   packageName: usd-ext-physics
   source:
