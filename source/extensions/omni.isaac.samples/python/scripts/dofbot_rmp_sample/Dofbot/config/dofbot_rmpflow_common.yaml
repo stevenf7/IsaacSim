@@ -128,14 +128,9 @@ collision_suppression_heartbeat_timeout: .3
 
 body_cylinders:
 
-
-
 # Each arm is approx. 1m from (arm) base to gripper center.
 # .1661 between links (approx .15)
 body_collision_controllers:
-
-
-arm_collision_controllers:
 
 
 primitive_decomposition:

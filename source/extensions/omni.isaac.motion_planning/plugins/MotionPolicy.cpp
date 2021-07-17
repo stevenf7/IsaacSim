@@ -14,6 +14,8 @@
 
 #include <carb/InterfaceUtils.h>
 
+#include <lula/robot_description.h>
+
 #include <math.h>
 #include <memory>
 
@@ -43,9 +45,13 @@ void MotionPolicy::initialize(const std::string& robotUrdfPath,
                               const std::string& rmpFlowCommonPath,
                               const std::string& controlFrame)
 {
+    mRegisteredObstacles.clear();
+    mRmpflowWorld = lula::CreateWorld();
+    mRmpflowWorldView = mRmpflowWorld->addWorldView();
     mRmpflowPolicy = std::make_shared<rmp::RmpflowRobotPolicy>();
-    mRegisteredSuppressionTokens = std::make_shared<MotionPolicySuppressionToken>();
-    mRmpflowPolicy->AddGlobalSuppressionToken(controlFrame, mRegisteredSuppressionTokens);
+    auto robotDescription = lula::LoadRobot(robotDescriptorPath, robotUrdfPath);
+    mKinematics = robotDescription->kinematics();
+    mEndEffectorFrame = mKinematics->frame(controlFrame);
 
     CARB_LOG_INFO("Creating rmp from \n %s\n %s\n %s", robotUrdfPath.c_str(), robotDescriptorPath.c_str(),
                   rmpFlowCommonPath.c_str());
@@ -75,18 +81,14 @@ void MotionPolicy::initialize(const std::string& robotUrdfPath,
         CARB_LOG_ERROR("Error %s cound not be found/parsed", robotUrdfPath.c_str());
     }
     mRmpflowPolicy->Build(
-        rmpConfigYAML, std::make_shared<kinematics::Robot>(robotURDF, robotYAML), controlFrame, true, false);
+        rmpConfigYAML, std::make_shared<kinematics::Robot>(robotURDF, robotYAML), mRmpflowWorldView, controlFrame);
 
     q = mRmpflowPolicy->GetDefaultConfig();
     qd = Eigen::VectorXd::Zero(mRmpflowPolicy->cspace_dim());
     mState = math::State(q, qd);
-    mOrigMap = mRmpflowPolicy->GetControlFrameElementMap(rmp::FrameElement::ORIG);
-    mAxisXMap = mRmpflowPolicy->GetControlFrameElementMap(rmp::FrameElement::AXIS_X);
-    mAxisYMap = mRmpflowPolicy->GetControlFrameElementMap(rmp::FrameElement::AXIS_Y);
-    mAxisZMap = mRmpflowPolicy->GetControlFrameElementMap(rmp::FrameElement::AXIS_Z);
-    mEndEffectorState.resize(4);
-    mEndEffectorTarget.resize(4);
     mEndEffectorError.resize(4);
+
+    mRmpflowPolicyInitialized = true;
 }
 
 void MotionPolicy::setFrequency(const float frequency)
@@ -107,7 +109,7 @@ void MotionPolicy::reset()
 
 void MotionPolicy::step(const float t, const float sourceDt)
 {
-    mRegisteredSuppressionTokens->Update();
+    mRmpflowPolicy->updateWorldView();
 
     float dt = sourceDt;
 
@@ -121,15 +123,12 @@ void MotionPolicy::step(const float t, const float sourceDt)
     for (int rmpSubstep = 0; rmpSubstep < numRmpSubsteps; rmpSubstep++)
     {
         // printf("t: %f, dt: %f, t+: %f \n", t, dt, t + dt / numRmpSubsteps * rmpSubstep);
-        auto qdd = mRmpflowPolicy->Eval(t + dt / numRmpSubsteps * rmpSubstep, mState);
+        auto qdd = mRmpflowPolicy->Eval(mState);
         mState = mState.Step(dt / numRmpSubsteps, qdd);
     }
 
-
-    mOrigFk = mOrigMap->Eval(mState.pos());
-    mAxisXFk = mAxisXMap->Eval(mState.pos());
-    mAxisYFk = mAxisYMap->Eval(mState.pos());
-    mAxisZFk = mAxisZMap->Eval(mState.pos());
+    mEndEffectorPose = mKinematics->pose(mState.pos(), mEndEffectorFrame);
+    const Eigen::Matrix3d endEffectorRotationMatrix = mEndEffectorPose.rotation.matrix();
 
     mTargetOrig = mRmpflowPolicy->GetControlFrameTargetContainer(rmp::FrameElement::ORIG)->data()->target;
     if (mRmpflowPolicy->GetControlFrameTargetContainer(rmp::FrameElement::AXIS_X)->data().has_value())
@@ -138,7 +137,7 @@ void MotionPolicy::step(const float t, const float sourceDt)
     }
     else
     {
-        mTargetAxisX = mAxisXFk;
+        mTargetAxisX = endEffectorRotationMatrix.col(0);
     }
     if (mRmpflowPolicy->GetControlFrameTargetContainer(rmp::FrameElement::AXIS_Y)->data().has_value())
     {
@@ -146,7 +145,7 @@ void MotionPolicy::step(const float t, const float sourceDt)
     }
     else
     {
-        mTargetAxisY = mAxisYFk;
+        mTargetAxisY = endEffectorRotationMatrix.col(1);
     }
     if (mRmpflowPolicy->GetControlFrameTargetContainer(rmp::FrameElement::AXIS_Z)->data().has_value())
     {
@@ -154,14 +153,13 @@ void MotionPolicy::step(const float t, const float sourceDt)
     }
     else
     {
-        mTargetAxisZ = mAxisZFk;
+        mTargetAxisZ = endEffectorRotationMatrix.col(2);
     }
 
-
-    mEndEffectorError[0] = (mTargetOrig - mOrigFk).norm();
-    mEndEffectorError[1] = (mTargetAxisX - mAxisXFk).norm();
-    mEndEffectorError[2] = (mTargetAxisY - mAxisYFk).norm();
-    mEndEffectorError[3] = (mTargetAxisZ - mAxisZFk).norm();
+    mEndEffectorError[0] = (mTargetOrig - mEndEffectorPose.translation).norm();
+    mEndEffectorError[1] = (mTargetAxisX - endEffectorRotationMatrix.col(0)).norm();
+    mEndEffectorError[2] = (mTargetAxisY - endEffectorRotationMatrix.col(1)).norm();
+    mEndEffectorError[3] = (mTargetAxisZ - endEffectorRotationMatrix.col(2)).norm();
 
     if (mRobotHandle)
     {
@@ -252,130 +250,207 @@ std::vector<double> MotionPolicy::getError()
 
 std::vector<carb::Float3> MotionPolicy::getRmpState()
 {
-    mEndEffectorState[0] = asCarbFloat3(mOrigFk);
-    mEndEffectorState[1] = asCarbFloat3(mAxisXFk);
-    mEndEffectorState[2] = asCarbFloat3(mAxisYFk);
-    mEndEffectorState[3] = asCarbFloat3(mAxisZFk);
+    std::vector<carb::Float3> endEffectorState(4);
 
-    return mEndEffectorState;
+    endEffectorState[0] = asCarbFloat3(mEndEffectorPose.translation);
+    const Eigen::Matrix3d endEffectorRotationMatrix = mEndEffectorPose.rotation.matrix();
+    endEffectorState[1] = asCarbFloat3(endEffectorRotationMatrix.col(0));
+    endEffectorState[2] = asCarbFloat3(endEffectorRotationMatrix.col(1));
+    endEffectorState[3] = asCarbFloat3(endEffectorRotationMatrix.col(2));
+
+    return endEffectorState;
 }
 
 std::vector<carb::Float3> MotionPolicy::getRmpTarget()
 {
-    mEndEffectorTarget[0] = asCarbFloat3(mTargetOrig);
-    mEndEffectorTarget[1] = asCarbFloat3(mTargetAxisX);
-    mEndEffectorTarget[2] = asCarbFloat3(mTargetAxisY);
-    mEndEffectorTarget[3] = asCarbFloat3(mTargetAxisZ);
+    std::vector<carb::Float3> endEffectorTarget(4);
 
-    return mEndEffectorTarget;
+    endEffectorTarget[0] = asCarbFloat3(mTargetOrig);
+    endEffectorTarget[1] = asCarbFloat3(mTargetAxisX);
+    endEffectorTarget[2] = asCarbFloat3(mTargetAxisY);
+    endEffectorTarget[3] = asCarbFloat3(mTargetAxisZ);
+
+    return endEffectorTarget;
 }
 
 void MotionPolicy::addObstacle(const std::string& obstaclePath, const int inputType, const carb::Float3 inputScale)
 {
+    if (mRmpflowPolicyInitialized)
+    {
+        auto obstacle = mRegisteredObstacles.find(obstaclePath);
+        if (obstacle == mRegisteredObstacles.end())
+        {
+            pxr::UsdPrim obstaclePrim = mStage->GetPrimAtPath(pxr::SdfPath(obstaclePath));
+            if (!obstaclePrim)
+            {
+                return;
+            }
 
-    pxr::UsdPrim obstaclePrim = mStage->GetPrimAtPath(pxr::SdfPath(obstaclePath));
-    if (!obstaclePrim)
-    {
-        CARB_LOG_ERROR("MotionPolicy::AddObstacle NOT VALID PRIM %s", obstaclePath.c_str());
-        return;
-    }
-    Eigen::Vector3d scale(inputScale.x, inputScale.y, inputScale.z);
-    double buffer = 0.01;
-    Eigen::Affine3d pose;
-    lula::math::DistanceFunction3dFactory::Type type;
-    if (inputType == 1)
-    {
-        type = lula::math::DistanceFunction3dFactory::CYLINDER;
-    }
-    else if (inputType == 2)
-    {
-        type = lula::math::DistanceFunction3dFactory::SPHERE;
-    }
-    else if (inputType == 3)
-    {
-        type = lula::math::DistanceFunction3dFactory::CUBE;
+            double buffer = 0.01;
+
+            std::unique_ptr<Obstacle> obstacle;
+            if (inputType == 1)
+            {
+                obstacle = lula::CreateObstacle(lula::Obstacle::Type::CYLINDER);
+                if (inputScale.x != inputScale.y)
+                {
+                    CARB_LOG_ERROR("MotionPolicy::AddObstacle Cylinder x [%f] and y [%f] inputScale should match",
+                                   inputScale.x, inputScale.y);
+                }
+                obstacle->setAttribute(lula::Obstacle::Attribute::RADIUS, inputScale.x + buffer);
+                obstacle->setAttribute(lula::Obstacle::Attribute::HEIGHT, inputScale.z + (2.0 * buffer));
+            }
+            else if (inputType == 2)
+            {
+                obstacle = lula::CreateObstacle(lula::Obstacle::Type::SPHERE);
+                if (inputScale.x != inputScale.y || inputScale.x != inputScale.z)
+                {
+                    CARB_LOG_ERROR("MotionPolicy::AddObstacle Sphere x [%f], y [%f] and z [%f] inputScale should match",
+                                   inputScale.x, inputScale.y, inputScale.z);
+                }
+                obstacle->setAttribute(lula::Obstacle::Attribute::RADIUS, inputScale.x + buffer);
+            }
+            else if (inputType == 3)
+            {
+                obstacle = lula::CreateObstacle(lula::Obstacle::Type::CUBE);
+                obstacle->setAttribute(lula::Obstacle::Attribute::SIDE_LENGTHS,
+                                       Eigen::Vector3d(inputScale.x + (2.0 * buffer), inputScale.y + (2.0 * buffer),
+                                                       inputScale.z + (2.0 * buffer)));
+            }
+            else
+            {
+                CARB_LOG_ERROR("MotionPolicy::AddObstacle NOT VALID TYPE %s", obstaclePath.c_str());
+                return;
+            }
+
+            pxr::UsdGeomXformable xform(obstaclePrim);
+
+            const pxr::GfTransform tr(xform.ComputeLocalToWorldTransform(pxr::UsdTimeCode()));
+            const pxr::GfVec3d t = tr.GetTranslation();
+            const pxr::GfQuatd q = tr.GetRotation().GetQuat();
+            const lula::Pose3 pose =
+                lula::Pose3(lula::Rotation3(q.GetReal(), q.GetImaginary()[0], q.GetImaginary()[1], q.GetImaginary()[2]),
+                            Eigen::Vector3d(t[0], t[1], t[2]) * mUnitScale);
+
+            lula::World::ObstacleHandle handle = mRmpflowWorld->addObstacle(obstacle, &pose);
+            mRmpflowWorldView.update();
+            mRegisteredObstacles[obstaclePath] =
+                std::pair<pxr::UsdPrim, lula::World::ObstacleHandle>(obstaclePrim, handle);
+        }
+        else
+        {
+            CARB_LOG_ERROR("MotionPolicy::addObstacle OBSTACLE ALREADY ADDED %s", obstaclePath.c_str());
+        }
     }
     else
     {
-        CARB_LOG_ERROR("MotionPolicy::AddObstacle NOT VALID TYPE %s", obstaclePath.c_str());
-        return;
+        CARB_LOG_ERROR("MotionPolicy::addObstacle POLICY NOT INITIALIZED %s", obstaclePath.c_str());
     }
-
-    pxr::UsdGeomXformable xform(obstaclePrim);
-
-    const pxr::GfTransform tr(xform.ComputeLocalToWorldTransform(pxr::UsdTimeCode()));
-    const pxr::GfVec3d t = tr.GetTranslation();
-    const pxr::GfQuatd q = tr.GetRotation().GetQuat();
-    pose = Eigen::Translation3d(Eigen::Vector3d(t[0], t[1], t[2]) * mUnitScale) *
-           Eigen::Quaterniond(q.GetReal(), q.GetImaginary()[0], q.GetImaginary()[1], q.GetImaginary()[2]);
-
-
-    std::shared_ptr<lula::math::DistanceFunction3d> distanceFunction =
-        mDistanceFunction3DFactory->Make(type, scale, buffer);
-
-    std::shared_ptr<lula::math::PosableDistanceFunction3d> obstacle =
-        std::make_shared<lula::math::PosableDistanceFunction3d>(distanceFunction, pose);
-    mRmpflowPolicy->RegisterObstacle(obstaclePath, obstacle);
-    mRegisteredObstacleDistanceFunctions[obstaclePath] =
-        std::pair<pxr::UsdPrim, std::shared_ptr<lula::math::PosableDistanceFunction3d>>(obstaclePrim, obstacle);
-    mRegisteredSuppressionTokens->Add(obstaclePath, 1);
 }
 
 void MotionPolicy::updateObstacle(const std::string& obstaclePath)
 {
-    if (mRegisteredObstacleDistanceFunctions.find(obstaclePath) == mRegisteredObstacleDistanceFunctions.end())
+    auto obstacle = mRegisteredObstacles.find(obstaclePath);
+    if (obstacle != mRegisteredObstacles.end())
     {
-        return;
-    }
-    pxr::UsdPrim obstaclePrim = mRegisteredObstacleDistanceFunctions[obstaclePath].first;
-    if (!obstaclePrim)
-    {
-        return;
-    }
-    omni::isaac::dynamic_control::DcObjectType primType = mDynamicControl->peekObjectType(obstaclePath.c_str());
-    Eigen::Affine3d pose;
-    if (primType == omni::isaac::dynamic_control::eDcObjectRigidBody)
-    {
-        omni::isaac::dynamic_control::DcTransform trans =
-            mDynamicControl->getRigidBodyPose(mDynamicControl->getRigidBody(obstaclePath.c_str()));
-        pose = Eigen::Translation3d(Eigen::Vector3d(trans.p.x, trans.p.y, trans.p.z) * mUnitScale) *
-               Eigen::Quaterniond(trans.r.w, trans.r.x, trans.r.y, trans.r.z);
+        pxr::UsdPrim obstaclePrim = obstacle->second.first;
+        if (!obstaclePrim)
+        {
+            return;
+        }
+        omni::isaac::dynamic_control::DcObjectType primType = mDynamicControl->peekObjectType(obstaclePath.c_str());
+
+        lula::Pose3 pose;
+        if (primType == omni::isaac::dynamic_control::eDcObjectRigidBody)
+        {
+            omni::isaac::dynamic_control::DcTransform trans =
+                mDynamicControl->getRigidBodyPose(mDynamicControl->getRigidBody(obstaclePath.c_str()));
+            pose = lula::Pose3(lula::Rotation3(trans.r.w, trans.r.x, trans.r.y, trans.r.z),
+                               Eigen::Vector3d(trans.p.x, trans.p.y, trans.p.z) * mUnitScale);
+        }
+        else
+        {
+            pxr::UsdGeomXformable xform(obstaclePrim);
+            const pxr::GfTransform tr(xform.ComputeLocalToWorldTransform(pxr::UsdTimeCode()));
+            const pxr::GfVec3d t = tr.GetTranslation();
+            const pxr::GfQuatd q = tr.GetRotation().GetQuat();
+            pose =
+                lula::Pose3(lula::Rotation3(q.GetReal(), q.GetImaginary()[0], q.GetImaginary()[1], q.GetImaginary()[2]),
+                            Eigen::Vector3d(t[0], t[1], t[2]) * mUnitScale);
+        }
+        auto& handle = obstacle->second.second;
+        mRmpflowWorld->setPose(handle, pose);
+        mRmpflowWorldView.update();
     }
     else
     {
-        pxr::UsdGeomXformable xform(obstaclePrim);
-        const pxr::GfTransform tr(xform.ComputeLocalToWorldTransform(pxr::UsdTimeCode()));
-        const pxr::GfVec3d t = tr.GetTranslation();
-        const pxr::GfQuatd q = tr.GetRotation().GetQuat();
-        pose = Eigen::Translation3d(Eigen::Vector3d(t[0], t[1], t[2]) * mUnitScale) *
-               Eigen::Quaterniond(q.GetReal(), q.GetImaginary()[0], q.GetImaginary()[1], q.GetImaginary()[2]);
+        CARB_LOG_ERROR("MotionPolicy::updateObstacle OBSTACLE NOT FOUND %s", obstaclePath.c_str());
     }
-    mRegisteredObstacleDistanceFunctions[obstaclePath].second->UpdatePose(pose);
 }
 
 void MotionPolicy::updateObstacle(const std::string& obstaclePath, const omni::isaac::dynamic_control::DcTransform& trans)
 {
-    if (mRegisteredObstacleDistanceFunctions.find(obstaclePath) == mRegisteredObstacleDistanceFunctions.end())
+    auto obstacle = mRegisteredObstacles.find(obstaclePath);
+    if (obstacle != mRegisteredObstacles.end())
     {
-        return;
+        lula::Pose3 pose = lula::Pose3(lula::Rotation3(trans.r.w, trans.r.x, trans.r.y, trans.r.z),
+                                       Eigen::Vector3d(trans.p.x, trans.p.y, trans.p.z));
+        auto& handle = obstacle->second.second;
+        mRmpflowWorld->setPose(handle, pose);
+        mRmpflowWorldView.update();
     }
-    Eigen::Affine3d pose = Eigen::Translation3d(Eigen::Vector3d(trans.p.x, trans.p.y, trans.p.z)) *
-                           Eigen::Quaterniond(trans.r.w, trans.r.x, trans.r.y, trans.r.z);
-    mRegisteredObstacleDistanceFunctions[obstaclePath].second->UpdatePose(pose);
+    else
+    {
+        CARB_LOG_ERROR("MotionPolicy::updateObstacle OBSTACLE NOT FOUND %s", obstaclePath.c_str());
+    }
 }
 void MotionPolicy::removeObstacle(const std::string& obstaclePath)
 {
-    mRmpflowPolicy->RemoveObstacle(obstaclePath);
-    mRegisteredObstacleDistanceFunctions.erase(obstaclePath);
-    mRegisteredSuppressionTokens->Remove(obstaclePath);
+    auto obstacle = mRegisteredObstacles.find(obstaclePath);
+    if (obstacle != mRegisteredObstacles.end())
+    {
+        auto& handle = obstacle->second.second;
+        mRmpflowWorld->removeObstacle(handle);
+        mRmpflowWorldView.update();
+        mRegisteredObstacles.erase(obstacle);
+    }
+    else
+    {
+        CARB_LOG_ERROR("MotionPolicy::removeObstacle OBSTACLE NOT FOUND %s", obstaclePath.c_str());
+    }
 }
 void MotionPolicy::enableObstacle(const std::string& obstaclePath)
 {
-    mRegisteredSuppressionTokens->Enable(obstaclePath);
+    auto obstacle = mRegisteredObstacles.find(obstaclePath);
+    if (obstacle != mRegisteredObstacles.end())
+    {
+        auto& handle = obstacle->second.second;
+        mRmpflowWorld->enableObstacle(handle);
+        mRmpflowWorldView.update();
+    }
+    else
+    {
+        CARB_LOG_ERROR("MotionPolicy::enableObstacle OBSTACLE NOT FOUND %s", obstaclePath.c_str());
+    }
 }
 void MotionPolicy::disableObstacle(const std::string& obstaclePath)
 {
-    mRegisteredSuppressionTokens->Disable(obstaclePath);
+    auto obstacle = mRegisteredObstacles.find(obstaclePath);
+    if (obstacle != mRegisteredObstacles.end())
+    {
+        auto& handle = obstacle->second.second;
+        mRmpflowWorld->disableObstacle(handle);
+        mRmpflowWorldView.update();
+    }
+    else
+    {
+        CARB_LOG_ERROR("MotionPolicy::disableObstacle OBSTACLE NOT FOUND %s", obstaclePath.c_str());
+    }
+}
+bool MotionPolicy::hasObstacle(const std::string& obstaclePath) const
+{
+    auto obstacle = mRegisteredObstacles.find(obstaclePath);
+    return (obstacle != mRegisteredObstacles.end());
 }
 
 void MotionPolicy::setDefaultConfig(const std::vector<double>& config)
