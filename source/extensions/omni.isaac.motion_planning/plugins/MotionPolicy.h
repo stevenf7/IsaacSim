@@ -10,19 +10,14 @@
 #pragma once
 
 
-#include "MotionPolicySuppressionToken.h"
-
 #include <carb/Framework.h>
 #include <carb/filesystem/IFileSystem.h>
 #include <carb/settings/ISettings.h>
 
-#include <Eigen/Geometry>
-#include <lula/kinematics/robot.h>
-#include <lula/kinematics/urdf_util.h>
+#include <lula/kinematics.h>
 #include <lula/math/differential_geometry/state.h>
-#include <lula/math/geometry/distance_function3d_factory.h>
 #include <lula/rmpflow/rmpflow_robot_policy.h>
-#include <lula/rmpflow/rmpflow_robot_policy_factory.h>
+#include <lula/world.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/motion_planning/MotionPlanning.h>
 
@@ -136,14 +131,22 @@ public:
     void removeObstacle(const std::string& obstacle_path);
     /**
      * Enable obstacle
-     * @param command
+     * @param obstacle_path
      */
     void enableObstacle(const std::string& obstacle_path);
     /**
      * Disable obstacle
-     * @param command
+     * @param obstacle_path
      */
     void disableObstacle(const std::string& obstacle_path);
+    /**
+     * Indicate if obstacle exists in policy
+     * @param obstacle_path
+     *
+     * @return true if obstacle_path represents a valid obstacle in policy
+     * @return false if obstacle_path is not found
+     */
+    bool hasObstacle(const std::string& obstacle_path) const;
 
     /**
      * @brief Set the step frequency.
@@ -179,28 +182,22 @@ private:
     omni::isaac::dynamic_control::DcHandle mRobotRootHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
 
 
+    std::shared_ptr<lula::World> mRmpflowWorld;
+    lula::WorldView mRmpflowWorldView;
     std::shared_ptr<lula::rmp::RmpflowRobotPolicy> mRmpflowPolicy;
-
-    // Task maps that are evaluated with current RMP state to get end effector state
-    std::shared_ptr<const lula::rmp::TaskMap> mOrigMap;
-    std::shared_ptr<const lula::rmp::TaskMap> mAxisXMap;
-    std::shared_ptr<const lula::rmp::TaskMap> mAxisYMap;
-    std::shared_ptr<const lula::rmp::TaskMap> mAxisZMap;
+    bool mRmpflowPolicyInitialized{ false };
+    std::shared_ptr<lula::Kinematics> mKinematics;
+    lula::Kinematics::FrameHandle mEndEffectorFrame;
 
     // Obstacles
-    std::unordered_map<std::string, std::pair<pxr::UsdPrim, std::shared_ptr<lula::math::PosableDistanceFunction3d>>>
-        mRegisteredObstacleDistanceFunctions;
-    std::shared_ptr<lula::math::DistanceFunction3dFactory> mDistanceFunction3DFactory;
-    std::shared_ptr<MotionPolicySuppressionToken> mRegisteredSuppressionTokens;
+    std::unordered_map<std::string, std::pair<pxr::UsdPrim, lula::World::ObstacleHandle>> mRegisteredObstacles;
 
     // RMP State
     lula::math::State mState;
     Eigen::VectorXd q, qd;
-    Eigen::Vector3d mOrigFk, mAxisXFk, mAxisYFk, mAxisZFk;
+    lula::Pose3 mEndEffectorPose;
     Eigen::Vector3d mTargetOrig, mTargetAxisX, mTargetAxisY, mTargetAxisZ;
     std::vector<double> mEndEffectorError;
-    std::vector<carb::Float3> mEndEffectorState;
-    std::vector<carb::Float3> mEndEffectorTarget;
 
     bool mOverrideDt;
     float mFixedDt;

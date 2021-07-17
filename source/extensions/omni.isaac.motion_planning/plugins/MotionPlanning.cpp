@@ -22,8 +22,7 @@
 #include <carb/settings/ISettings.h>
 #include <carb/tasking/ITasking.h>
 
-#include <glog/logging.h>
-#include <lula/util/logging.h>
+#include <lula/lula.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/motion_planning/MotionPlanning.h>
 #include <omni/isaac/utils/Math.h>
@@ -270,7 +269,10 @@ std::vector<omni::isaac::dynamic_control::DcTransform> CARB_ABI MpUpdateGetRelat
 
                 result[i] = omni::isaac::utils::math::transformInv(parentTransform, T);
             }
-            gMotionPolicies[rmp_handle]->updateObstacle(primPath, result[i]);
+            if (gMotionPolicies[rmp_handle]->hasObstacle(primPath))
+            {
+                gMotionPolicies[rmp_handle]->updateObstacle(primPath, result[i]);
+            }
         }
     }
     else
@@ -425,8 +427,7 @@ CARB_EXPORT void carbOnPluginStartup()
     // gStageUpdate->setStageUpdateNodeOrder(index, -100);
     if (!gInitLogging)
     {
-        google::InitGoogleLogging("Lula");
-        lula::util::SetStderrLoggingLevel(lula::util::LoggingLevel::ERROR);
+        lula::SetLogLevel(lula::ERROR);
         gInitLogging = true;
     }
 }

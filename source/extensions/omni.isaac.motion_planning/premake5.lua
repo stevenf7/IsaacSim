@@ -27,7 +27,7 @@ project_ext_plugin(ext, "omni.isaac.motion_planning.plugin")
         "%{root}/_build/target-deps/lula/lib"
     }
 
-    links {"gf", "sdf", "usdGeom", "usdUtils", "lula_opt", "lula_kinematics", "lula_math" , "lula_rmpflow", "lula_util", "yaml-cpp", "urdfdom_model", "glog"}
+    links {"gf", "sdf", "usdGeom", "usdUtils", "lula_opt", "lula_interface", "lula_kinematics", "lula_math" , "lula_rmpflow", "lula_util", "lula_world", "yaml-cpp", "urdfdom_model"}
 
     filter { "system:linux" }
         includedirs {
