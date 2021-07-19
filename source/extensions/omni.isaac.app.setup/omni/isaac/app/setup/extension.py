@@ -44,7 +44,7 @@ class CreateSetupExtension(omni.ext.IExt):
         # adjust couple of viewport settings
         self._settings.set("/app/viewport/grid/enabled", True)
         self._settings.set("/app/viewport/outline/enabled", True)
-        self._settings.set("/app/viewport/boundingBoxes/enabled", True)
+        self._settings.set("/app/viewport/boundingBoxes/enabled", False)
 
         # Adjust the Window Title to show the Isaac Sim Version
         window_title = get_main_window_title()
@@ -93,6 +93,9 @@ class CreateSetupExtension(omni.ext.IExt):
         self._settings.set_default("/persistent/exts/omni.kit.property.tagging/showAdvancedTagView", False)
         self._settings.set_default("/persistent/exts/omni.kit.property.tagging/showHiddenTags", False)
         self._settings.set_default("/persistent/exts/omni.kit.property.tagging/modifyHiddenTags", False)
+
+        # force this on startup for better performance on larger scenes when selecting objects.
+        self._settings.set("persistent/app/viewport/pickingMode", "models")
 
     async def __new_stage(self):
 
