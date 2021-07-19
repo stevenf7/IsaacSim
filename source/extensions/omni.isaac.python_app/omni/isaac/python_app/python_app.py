@@ -147,16 +147,10 @@ class OmniKitHelper:
             os.path.abspath(__file__),
             f'{self.config["experience"]}',
             f'--/persistent/app/viewport/displayOptions={self.config["display_options"]}',  # hide extra stuff in viewport
-            # TODO Make this a config setting?
-            "--/persistent/physics/overrideGPUSettings=0",  # force CPU physx
             # Forces kit to not render until all USD files are loaded
             f'--/rtx/materialDb/syncLoads={self.config["sync_loads"]}',
             f'--/rtx/hydra/materialSyncLoads={self.config["sync_loads"]}'
             f'--/omni.kit.plugin/syncUsdLoads={self.config["sync_loads"]}',
-            # TODO: Is this still needed
-            "--/app/content/emptyStageOnStart=False",  # This is required due to a infinite loop but results in errors on launch
-            "--/app/hydraEngine/waitIdle=True",
-            "--/app/asyncRendering=False",
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',
             f'--/app/window/width={self.config["window_width"]}',
