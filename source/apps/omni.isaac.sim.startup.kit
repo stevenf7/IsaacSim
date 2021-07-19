@@ -1,0 +1,19 @@
+[package]
+title = "Isaac Sim Startup Test"
+description = "Isaac Sim Startup Test Application"
+version = "2021.2.0"
+execFile = "isaac-sim.startup"
+
+# That makes it browsable in UI with "experience" filter
+keywords = ["experience", "app", "usd"]
+
+[dependencies]
+"omni.isaac.sim.base" = {}
+
+[settings]
+app.name = "Isaac-Sim"
+app.version = "2021.2.0"
+
+[settings.exts."omni.kit.registry.nucleus"]
+registries = []
+postToSlack = false

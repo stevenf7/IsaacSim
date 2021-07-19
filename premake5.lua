@@ -200,6 +200,9 @@ group "apps"
     define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window ")
     define_local_experience("isaac-sim.headless.websocket", "omni.isaac.sim.headless.websocket", "--no-window ")
 
+    -- startup test experience
+    define_local_experience("isaac-sim.startup", "omni.isaac.sim.startup", "--/app/quitAfter=10")
+
     -- -- Test runner experience:
     -- args = {
     --     "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
