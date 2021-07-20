@@ -271,6 +271,52 @@ test_root = "$root/_build/$platform/$config"
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
 
+[repo_test.suites.startuptest]
+kind = "glob_and_exec"
+path = "${test_root}"
+
+# publish_artifacts = ["${test_root}/_build/**/*.log", "${test_root}/**/*.dmp"]
+
+# fnmatch module is used, matching is case insensitive. Refer to: https://docs.python.org/3/library/fnmatch.html
+# notice: to escape [ and ] symbols wrap them in [].
+# stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+# stdout_fail_patterns.exclude = [
+# 	"*Leaking graphics objects*",  # Exclude grahics leaks until fixed
+# 	"*leaking memory. Missing call to destroyResourceBindingSignature*",
+# 	"*extension object is still alive*", # Ignore any leaks for startup tests to not block pipeline
+# 	"*Failed to obtain username for current process, using cache directory without username as suffix*",  # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
+# ]
+
+
+#----------------------------------------------------------------------------------------------------------------------- 
+# Test Suite: 	Startup Tests
+# Description: 	Just run and exit big app configuration for both smoke testing and compiling shaders.
+#-----------------------------------------------------------------------------------------------------------------------
+
+[[repo_test.suites.startuptest.group]]
+# Run Kit App Full. 
+include = ["isaac-sim.startup${shell_ext}"]
+
+args = [
+	# "--no-assert-dialog",
+	# "--portable",
+	# "--exec",
+	# "open_stage.py ${test_root}/data/scenes/BuiltInMaterials.usda",
+	# "--/rtx/materialDb/syncLoads=true",
+	# "--/omni.kit.plugin/syncUsdLoads=true",
+	# "--/rtx/hydra/materialSyncLoads=true",
+	# "--/renderer/multiGpu/autoEnable=false",
+	# "--/renderer/activeGpu=0",
+	# "--/app/hydraEngine/skipStatusBarIdle=true",
+	# "--/rtx/flow/enabled=true",
+	"--/app/quitAfter=10",  # Quit after 10 updates
+	# "--/app/asyncRendering=false",
+	# "--/renderer/debug/validation/enabled=false",
+	# "--/renderer/enabled='rtx,iray'",
+	# "--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
+]
+timeout = 1200
+
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
 path = "${test_root}"
