@@ -17,7 +17,7 @@ import carb
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
-from .common import create_application, get_selected_path, simulate
+from .common import create_application, get_selected_path, create_physics_scene
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 from pxr import Gf, UsdPhysics, PhysxSchema
@@ -31,17 +31,7 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
 
-        scene = UsdPhysics.Scene.Define(self._stage, "/physics/scene")
-        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        scene.CreateGravityMagnitudeAttr().Set(9.81)
-
-        PhysxSchema.PhysxSceneAPI.Apply(self._stage.GetPrimAtPath("/physics/scene"))
-        physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(self._stage, "/physics/scene")
-        physxSceneAPI.CreateEnableCCDAttr(True)
-        physxSceneAPI.CreateEnableStabilizationAttr(True)
-        physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
-        physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
-        physxSceneAPI.CreateSolverTypeAttr("TGS")
+        create_physics_scene(self._stage)
 
         result, nucleus_server = find_nucleus_server()
         if result is False:

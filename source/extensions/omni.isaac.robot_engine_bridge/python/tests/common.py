@@ -157,3 +157,36 @@ def get_selected_path():
 async def simulate(seconds, steps_per_sec=60):
     for frame in range(int(steps_per_sec * seconds)):
         await omni.kit.app.get_app().next_update_async()
+
+
+def add_cube(stage, path, size, offset, physics=False):
+    from pxr import UsdPhysics, UsdGeom
+
+    cubeGeom = UsdGeom.Cube.Define(stage, path)
+    cubePrim = stage.GetPrimAtPath(path)
+
+    cubeGeom.CreateSizeAttr(size)
+    cubeGeom.AddTranslateOp().Set(offset)
+    if physics:
+        rigid_api = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+        rigid_api.CreateRigidBodyEnabledAttr(True)
+
+    UsdPhysics.CollisionAPI.Apply(cubePrim)
+
+    return cubePrim
+
+
+def create_physics_scene(stage, gravity=981):
+    from pxr import UsdPhysics, PhysxSchema, Gf
+
+    scene = UsdPhysics.Scene.Define(stage, "/physics/scene")
+    scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+    scene.CreateGravityMagnitudeAttr().Set(gravity)
+
+    PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physics/scene"))
+    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/physics/scene")
+    physxSceneAPI.CreateEnableCCDAttr(True)
+    physxSceneAPI.CreateEnableStabilizationAttr(True)
+    physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+    physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+    physxSceneAPI.CreateSolverTypeAttr("TGS")

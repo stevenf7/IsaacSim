@@ -21,7 +21,7 @@ import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
-from .common import PyaliceApp, create_application, simulate
+from .common import PyaliceApp, create_application, simulate, add_cube, create_physics_scene
 from pxr import Gf, UsdGeom, UsdPhysics, Sdf
 
 
@@ -62,22 +62,11 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCaseFailOnLogError):
         gc.collect()
         pass
 
-    def add_cube(self, path, size, offset):
-
-        cubeGeom = UsdGeom.Cube.Define(self._stage, path)
-        cubePrim = self._stage.GetPrimAtPath(path)
-
-        cubeGeom.CreateSizeAttr(size)
-        cubeGeom.AddTranslateOp().Set(offset)
-        UsdPhysics.CollisionAPI.Apply(cubePrim)
-
-        return cubeGeom
-
     def create_scene(self):
-        UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
-        self.add_cube("/cube_1", 100, (100, 0, 0))
-        self.add_cube("/cube_2", 100, (100, 200, 0))
-        self.add_cube("/cube_3", 100, (-150, -150, 0))
+        create_physics_scene(self._stage)
+        add_cube(self._stage, "/cube_1", 100, (100, 0, 0))
+        add_cube(self._stage, "/cube_2", 100, (100, 200, 0))
+        add_cube(self._stage, "/cube_3", 100, (-150, -150, 0))
 
     def add_ultrasonic(self, ultrasonicPath):
 

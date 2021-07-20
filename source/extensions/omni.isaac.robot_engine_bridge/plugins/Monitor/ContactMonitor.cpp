@@ -26,6 +26,7 @@
 
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>
+#include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxContactReportAPI.h>
 
 namespace omni
@@ -47,124 +48,115 @@ namespace robot_engine_bridge
 ContactMonitor::ContactMonitor(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
+    mContactSensorInterface =
+        carb::getFramework()->acquireInterface<omni::isaac::contact_sensor::ContactSensorInterface>();
+    if (!mContactSensorInterface)
+    {
+        CARB_LOG_ERROR("Failed to acquire omni::isaac::contact_sensor::ContactSensorInterface interface");
+        return;
+    }
 }
 
 ContactMonitor::~ContactMonitor()
 {
-    mContactCallback = nullptr;
+    carb::getFramework()->releaseInterface(mContactSensorInterface);
 }
 
-void ContactMonitor::processContact(carb::events::IEvent* e)
+void ContactMonitor::processContact(const omni::isaac::contact_sensor::CsRawData& data)
 {
-    carb::dictionary::IDictionary* dict = carb::dictionary::getCachedDictionaryInterface();
 
-    if (e->type == omni::physx::SimulationEvent::eContactFound)
+
+    pxr::SdfPath thisPath(data.body0);
+    pxr::SdfPath otherPath(data.body1);
+    // This report is for some other prim, skip
+    if (thisPath != mTargetPrim.GetPath() && otherPath != mTargetPrim.GetPath())
     {
-        // printf("Contact Found %s %s\n", dict->get<const char*>(e->payload, "actor0"),
-        //        dict->get<const char*>(e->payload, "actor1"));
+        // printf("%s != %s\n", dict->get<const char*>(e->payload, "actor0"),
+        // mTargetPrim.GetPath().GetString().c_str());
+        return;
+    }
 
-        pxr::SdfPath thisPath(dict->get<const char*>(e->payload, "actor0"));
-        pxr::SdfPath otherPath(dict->get<const char*>(e->payload, "actor1"));
 
-        // This report is for some other prim, skip
-        if (thisPath != mTargetPrim.GetPath() && otherPath != mTargetPrim.GetPath())
+    // check if otherPath is in Ignored list
+    for (pxr::SdfPath ignoredPath : mIgnoredTargets)
+    {
+        // this path matches an ignored once, skip contact event
+        if (otherPath == ignoredPath || thisPath == ignoredPath)
         {
-            // printf("%s != %s\n", dict->get<const char*>(e->payload, "actor0"),
-            // mTargetPrim.GetPath().GetString().c_str());
+            // printf("otherPath == ignoredPath\n");
             return;
         }
-
-
-        // check if otherPath is in Ignored list
-        for (pxr::SdfPath ignoredPath : mIgnoredTargets)
-        {
-            // this path matches an ignored once, skip contact event
-            if (otherPath == ignoredPath || thisPath == ignoredPath)
-            {
-                // printf("otherPath == ignoredPath\n");
-                return;
-            }
-        }
-        ContactData contact;
-
-
-        contact.thisName = thisPath.GetString();
-        contact.otherName = otherPath.GetString();
-        pxr::GfVec3d thisVel(0, 0, 0);
-
-        DcObjectType prim_type = mDynamicControlPtr->peekObjectType(thisPath.GetString().c_str());
-        if (prim_type == omni::isaac::dynamic_control::eDcObjectArticulation)
-        {
-            DcHandle artculationHandle = mDynamicControlPtr->getArticulation(thisPath.GetString().c_str());
-            DcHandle artRootBody = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
-            DcTransform artPose = mDynamicControlPtr->getRigidBodyPose(artRootBody);
-            thisVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(artRootBody)) * mUnitScale;
-            contact.thisPose = artPose;
-        }
-        else if (prim_type == omni::isaac::dynamic_control::eDcObjectRigidBody)
-        {
-            DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(thisPath.GetString().c_str());
-            DcTransform rigidBodyPose = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
-
-            contact.thisPose = rigidBodyPose;
-
-            thisVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(rigidBodyHandle)) * mUnitScale;
-        }
-        else if (prim_type == omni::isaac::dynamic_control::eDcObjectNone)
-        {
-            // Calculate pose
-            const pxr::GfTransform usdBodyPose(omni::usd::UsdUtils::getWorldTransformMatrix(mTargetPrim));
-            pxr::GfVec3d usdBodyTranslation = usdBodyPose.GetTranslation();
-            pxr::GfQuatd usdBodyRotation = usdBodyPose.GetRotation().GetQuat();
-
-            contact.thisPose = asDcTransform(usdBodyTranslation, usdBodyRotation);
-        }
-
-        pxr::GfVec3d otherVel(0, 0, 0);
-
-        prim_type = mDynamicControlPtr->peekObjectType(otherPath.GetString().c_str());
-        if (prim_type == omni::isaac::dynamic_control::eDcObjectArticulation)
-        {
-            DcHandle artculationHandle = mDynamicControlPtr->getArticulation(otherPath.GetString().c_str());
-            DcHandle artRootBody = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
-            DcTransform artPose = mDynamicControlPtr->getRigidBodyPose(artRootBody);
-            otherVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(artRootBody)) * mUnitScale;
-
-            contact.otherPose = artPose;
-        }
-        else if (prim_type == omni::isaac::dynamic_control::eDcObjectRigidBody)
-        {
-            DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(otherPath.GetString().c_str());
-            DcTransform rigidBodyPose = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
-            contact.otherPose = rigidBodyPose;
-            otherVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(rigidBodyHandle)) * mUnitScale;
-        }
-        else if (prim_type == omni::isaac::dynamic_control::eDcObjectNone)
-        {
-            // Calculate pose
-            const pxr::GfTransform usdBodyPose(
-                omni::usd::UsdUtils::getWorldTransformMatrix(mStage->GetPrimAtPath(otherPath)));
-            pxr::GfVec3d usdBodyTranslation = usdBodyPose.GetTranslation();
-            pxr::GfQuatd usdBodyRotation = usdBodyPose.GetRotation().GetQuat();
-            contact.otherPose = asDcTransform(usdBodyTranslation, usdBodyRotation);
-        }
-        contact.velocity = utils::conversions::asCarbFloat3((thisVel - otherVel) * mUnitScale);
-
-
-        // if we have contact data, also publish it
-        if (e->type == omni::physx::SimulationEvent::eContactData)
-        {
-
-            contact.normal.x = dict->get<float>(e->payload, "normalX");
-            contact.normal.y = dict->get<float>(e->payload, "normalY");
-            contact.normal.z = dict->get<float>(e->payload, "normalZ");
-
-            contact.position.x = dict->get<float>(e->payload, "positionX") * mUnitScale;
-            contact.position.y = dict->get<float>(e->payload, "positionY") * mUnitScale;
-            contact.position.z = dict->get<float>(e->payload, "positionZ") * mUnitScale;
-        }
-        mContactData.push_back(contact);
     }
+    ContactData contact;
+
+
+    contact.thisName = thisPath.GetString();
+    contact.otherName = otherPath.GetString();
+    pxr::GfVec3d thisVel(0, 0, 0);
+
+    DcObjectType prim_type = mDynamicControlPtr->peekObjectType(thisPath.GetString().c_str());
+    if (prim_type == omni::isaac::dynamic_control::eDcObjectArticulation)
+    {
+        DcHandle artculationHandle = mDynamicControlPtr->getArticulation(thisPath.GetString().c_str());
+        DcHandle artRootBody = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
+        DcTransform artPose = mDynamicControlPtr->getRigidBodyPose(artRootBody);
+        thisVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(artRootBody)) * mUnitScale;
+        contact.thisPose = artPose;
+    }
+    else if (prim_type == omni::isaac::dynamic_control::eDcObjectRigidBody)
+    {
+        DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(thisPath.GetString().c_str());
+        DcTransform rigidBodyPose = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
+
+        contact.thisPose = rigidBodyPose;
+
+        thisVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(rigidBodyHandle)) * mUnitScale;
+    }
+    else if (prim_type == omni::isaac::dynamic_control::eDcObjectNone)
+    {
+        // Calculate pose
+        const pxr::GfTransform usdBodyPose(omni::usd::UsdUtils::getWorldTransformMatrix(mTargetPrim));
+        pxr::GfVec3d usdBodyTranslation = usdBodyPose.GetTranslation();
+        pxr::GfQuatd usdBodyRotation = usdBodyPose.GetRotation().GetQuat();
+
+        contact.thisPose = asDcTransform(usdBodyTranslation, usdBodyRotation);
+    }
+
+    pxr::GfVec3d otherVel(0, 0, 0);
+
+    prim_type = mDynamicControlPtr->peekObjectType(otherPath.GetString().c_str());
+    if (prim_type == omni::isaac::dynamic_control::eDcObjectArticulation)
+    {
+        DcHandle artculationHandle = mDynamicControlPtr->getArticulation(otherPath.GetString().c_str());
+        DcHandle artRootBody = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
+        DcTransform artPose = mDynamicControlPtr->getRigidBodyPose(artRootBody);
+        otherVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(artRootBody)) * mUnitScale;
+
+        contact.otherPose = artPose;
+    }
+    else if (prim_type == omni::isaac::dynamic_control::eDcObjectRigidBody)
+    {
+        DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(otherPath.GetString().c_str());
+        DcTransform rigidBodyPose = mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle);
+        contact.otherPose = rigidBodyPose;
+        otherVel = asGfVec3d(mDynamicControlPtr->getRigidBodyLinearVelocity(rigidBodyHandle)) * mUnitScale;
+    }
+    else if (prim_type == omni::isaac::dynamic_control::eDcObjectNone)
+    {
+        // Calculate pose
+        const pxr::GfTransform usdBodyPose(omni::usd::UsdUtils::getWorldTransformMatrix(mStage->GetPrimAtPath(otherPath)));
+        pxr::GfVec3d usdBodyTranslation = usdBodyPose.GetTranslation();
+        pxr::GfQuatd usdBodyRotation = usdBodyPose.GetRotation().GetQuat();
+        contact.otherPose = asDcTransform(usdBodyTranslation, usdBodyRotation);
+    }
+    contact.velocity = utils::conversions::asCarbFloat3((thisVel - otherVel) * mUnitScale);
+    contact.normal = data.normal;
+    contact.position.x = data.position.x * mUnitScale;
+    contact.position.y = data.position.y * mUnitScale;
+    contact.position.z = data.position.z * mUnitScale;
+
+    // if we have contact data, also publish it
+    mContactData.push_back(contact);
 }
 
 
@@ -174,6 +166,14 @@ void ContactMonitor::tick()
 
 void ContactMonitor::publishAllMessages()
 {
+    size_t numContacts = 0;
+    auto data = mContactSensorInterface->getBodyCsRawData(mTargetPrim.GetPrimPath().GetString().c_str(), numContacts);
+    // TODO: publish directly instead of having two loops
+    for (size_t i = 0; i < numContacts; i++)
+    {
+        processContact(data[i]);
+    }
+
     for (auto& contact : mContactData)
     {
         IsaacMessage<isaac_message::Collision> collisionMessage;
@@ -270,28 +270,7 @@ void ContactMonitor::onComponentChange()
 
     contactReportAPI.GetThresholdAttr().Set(mForceThreshold);
 
-    // const pxr::UsdRelationship rel = contactReportAPI.GetReportPairsRel();
-    // if (rel)
-    // {
-    //     typedPrim.GetIgnoredPrimsRel().GetTargets(&mIgnoredTargets);
-    //     if (mIgnoredTargets.size() > 0)
-    //     {
-    //         rel.SetTargets(mIgnoredTargets);
-    //     }
-    // }
-
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
-
-    if (this->mEnabled)
-    {
-        mContactCallback = carb::events::createSubscriptionToPop(
-            carb::getCachedInterface<omni::physx::IPhysx>()->getSimulationEventStream().get(),
-            [this](carb::events::IEvent* e) { processContact(e); }, 0, "Robot Engine ContactMonitor");
-    }
-    else
-    {
-        mContactCallback = nullptr;
-    }
 }
 
 }

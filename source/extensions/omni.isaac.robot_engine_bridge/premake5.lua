@@ -57,7 +57,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
     links {
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
         "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaac_c_api_capnp", "capnp-json", "capnp", "omni.usd", 
-        "rangeSensorSchema", "robotEngineBridgeSchema", "physxSchema", "omni.isaac.occupancy_map.generator"
+        "rangeSensorSchema", "robotEngineBridgeSchema", "physxSchema", "physicsSchemaTools", "omni.isaac.occupancy_map.generator"
     }
     links{
         "isaac_c_api"

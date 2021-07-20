@@ -18,6 +18,7 @@ icon = "data/icon.png"
 # "omni.graph.core" = {} # needed for fastcache
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.range_sensor" = {}
+"omni.isaac.contact_sensor" = {}
 "omni.isaac.utils" = {}
 "omni.syntheticdata" = {}
 "omni.usd.schema.isaac" = {}

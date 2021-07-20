@@ -23,7 +23,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from omni.isaac.pyalice import Message
 from pxr import UsdPhysics, Sdf, UsdGeom
-from .common import PyaliceApp, create_application, simulate
+from .common import PyaliceApp, create_application, simulate, add_cube, create_physics_scene
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -36,7 +36,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-
+        create_physics_scene(self._stage)
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
         self._reb_extension_path = ext_manager.get_extension_path(ext_id)
@@ -78,7 +78,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
             rigid_body_sink_output_channel="bodies",
         )
         self.assertTrue(result)
-        UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
+
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
@@ -164,21 +164,8 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
-    def add_cube(self, path, size, offset):
-
-        cubeGeom = UsdGeom.Cube.Define(self._stage, path)
-        cubePrim = self._stage.GetPrimAtPath(path)
-
-        cubeGeom.CreateSizeAttr(size)
-        cubeGeom.AddTranslateOp().Set(offset)
-        UsdPhysics.CollisionAPI.Apply(cubePrim)
-
-        return cubePrim
-
     async def test_sink_manual(self):
-
-        UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
-        cube_prim = self.add_cube("/cube", 100, (0, 0, 10))
+        cube_prim = add_cube(self._stage, "/cube", 100, (0, 0, 10))
         result, prim = omni.kit.commands.execute(
             "RobotEngineBridgeCreateRigidBodySink",
             path="/REB_RigidBodySink",
@@ -231,12 +218,10 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_sink_batch(self):
-
-        UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
         rel_list = []
         num_cubes = 100
         for p in range(num_cubes):
-            cube_prim = self.add_cube(f"/cube_{p}", 100, (0, 0, 10))
+            cube_prim = add_cube(self._stage, f"/cube_{p}", 100, (0, 0, 10))
             rel_list.append(cube_prim.GetPath())
 
         result, prim = omni.kit.commands.execute(
@@ -289,7 +274,6 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
     #         rigid_body_sink_output_channel="bodies",
     #     )
     #     self.assertTrue(result)
-    #     UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
     #     self._timeline.play()
     #     await omni.kit.app.get_app().next_update_async()
 

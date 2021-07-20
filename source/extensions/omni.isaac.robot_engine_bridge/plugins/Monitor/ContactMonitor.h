@@ -11,6 +11,7 @@
 
 #include "../Core/IsaacComponent.h"
 
+#include <omni/isaac/contact_sensor/ContactSensor.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/physx/IPhysx.h>
 #include <robotEngineBridgeSchema/robotEngineContactMonitor.h>
@@ -73,14 +74,14 @@ public:
     virtual void onComponentChange();
 
 private:
-    void processContact(carb::events::IEvent* e);
+    omni::isaac::contact_sensor::ContactSensorInterface* mContactSensorInterface = nullptr;
+    void processContact(const omni::isaac::contact_sensor::CsRawData& data);
     omni::physx::IPhysx* mPhysxPtr = nullptr;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     /// The name of the channel on which contact data is output
     std::string mOutputComponent = "output";
     std::string mOutputChannel = "bodies";
     float mForceThreshold = 100000;
-    carb::events::ISubscriptionPtr mContactCallback;
     pxr::UsdPrim mTargetPrim;
     pxr::SdfPathVector mIgnoredTargets;
     // Scale of stage
