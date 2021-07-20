@@ -201,7 +201,7 @@ group "apps"
     define_local_experience("isaac-sim.headless.websocket", "omni.isaac.sim.headless.websocket", "--no-window ")
 
     -- startup test experience
-    define_local_experience("isaac-sim.startup", "omni.isaac.sim.startup", "--/app/quitAfter=10")
+    define_local_experience("isaac-sim.startup", "omni.isaac.sim.startup", "--/app/quitAfter=500")
 
     -- -- Test runner experience:
     -- args = {

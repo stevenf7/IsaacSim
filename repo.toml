@@ -309,11 +309,11 @@ args = [
 	# "--/renderer/activeGpu=0",
 	# "--/app/hydraEngine/skipStatusBarIdle=true",
 	# "--/rtx/flow/enabled=true",
-	"--/app/quitAfter=10",  # Quit after 10 updates
+	"--/app/quitAfter=500",  # Quit after 10 updates
 	# "--/app/asyncRendering=false",
 	# "--/renderer/debug/validation/enabled=false",
 	# "--/renderer/enabled='rtx,iray'",
-	# "--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
+	"--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
 ]
 timeout = 1200
 
