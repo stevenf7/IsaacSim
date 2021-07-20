@@ -25,6 +25,57 @@ name = "omni.isaac.motion_planning"
 [[python.module]]
 name = "omni.isaac.motion_planning.tests"
 
+[[python.module]]
+name = "lula"
+
+[[native.library]]
+path = "bin/libconsole_bridge.so"
+
+[[native.library]]
+path = "bin/libtinyxml.so"
+
+[[native.library]]
+path = "bin/liburdfdom_model.so"
+
+[[native.library]]
+path = "bin/libyaml-cpp.so"
+
+[[native.library]]
+path = "bin/liblula_util.so"
+
+[[native.library]]
+path = "bin/liblula_math.so"
+
+[[native.library]]
+path = "bin/liblula_world.so"
+
+[[native.library]]
+path = "bin/liblula_fabrics.so"
+
+[[native.library]]
+path = "bin/liblula_interface.so"
+
+[[native.library]]
+path = "bin/liblula_opt.so"
+
+[[native.library]]
+path = "bin/liblula_kinematics.so"
+
+[[native.library]]
+path = "bin/liblula_motion_opt.so"
+
+[[native.library]]
+path = "bin/liblula_motion_planning.so"
+
+[[native.library]]
+path = "bin/liblula_rmpflow.so"
+
+[[native.library]]
+path = "bin/liblula_visualization.so"
+
+[[native.library]]
+path = "bin/liblula_scenario.so"
+
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
