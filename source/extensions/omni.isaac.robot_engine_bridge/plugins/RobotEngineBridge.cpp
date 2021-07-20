@@ -27,6 +27,7 @@
 #include <carb/settings/ISettings.h>
 
 #include <messages/uuid.capnp.h>
+#include <omni/isaac/contact_sensor/ContactSensor.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/robot_engine_bridge/RobotEngineBridge.h>
@@ -64,7 +65,8 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::physx::usdparser::IPhysxUsdLoad,
                       omni::isaac::dynamic_control::DynamicControl,
                       omni::isaac::range_sensor::LidarSensorInterface,
-                      omni::isaac::range_sensor::UltrasonicSensorInterface)
+                      omni::isaac::range_sensor::UltrasonicSensorInterface,
+                      omni::isaac::contact_sensor::ContactSensorInterface)
 
 // private stuff
 namespace

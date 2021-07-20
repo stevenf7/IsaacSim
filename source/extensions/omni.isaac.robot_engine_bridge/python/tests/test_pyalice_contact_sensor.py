@@ -14,26 +14,31 @@ import omni.kit.test
 
 import omni.kit.usd
 import carb.tokens
+import numpy as np
 import gc
 import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 
+from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
-from .common import PyaliceApp, create_application, simulate, add_cube, create_physics_scene
-from pxr import Gf, UsdGeom, UsdPhysics, Sdf
+from omni.isaac.pyalice import Composite
+from .common import PyaliceApp, create_application, create_physics_scene, simulate, add_cube
+
+from pxr import Gf, UsdPhysics, PhysxSchema, PhysicsSchemaTools
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestREBPyaliceContact(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
-        context = omni.usd.get_context()
-        self._stage = context.get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
+        self._stage = self._usd_context.get_stage()
+
+        create_physics_scene(self._stage)
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
@@ -50,6 +55,14 @@ class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._nucleus_path = nucleus_server + "/Isaac"
 
         self.assertTrue(create_application()[1])
+
+        # self._physics_rate = 60
+        # carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        # carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
+        # carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+
+        await omni.kit.app.get_app().next_update_async()
+
         pass
 
     # After running each test
@@ -61,78 +74,52 @@ class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCaseFailOnLogError):
         gc.collect()
         pass
 
-    def create_scene(self):
-        create_physics_scene(self._stage)
-        add_cube(self._stage, "/cube_1", 100, (100, 0, 0))
-        add_cube(self._stage, "/cube_2", 100, (100, 200, 0))
-        add_cube(self._stage, "/cube_3", 100, (-150, -150, 0))
+    def create_joint_command_message(self, joints, values):
+        quantities = [[x, "position", 1] for x in joints]
+        values = np.array(values, dtype=np.dtype("float64"))
+        return quantities, Composite.create_composite_message(quantities, values)
 
-    async def test_component(self):
+    async def test_contact_sensor(self):
+        PhysicsSchemaTools.addGroundPlane(
+            self._stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
+        )
+        await omni.kit.app.get_app().next_update_async()
+        cube_prim = add_cube(self._stage, "/cube", 100, (0, 0, 200), physics=True)
+        await omni.kit.app.get_app().next_update_async()
         result, prim = omni.kit.commands.execute(
-            "RobotEngineBridgeCreateOccupancyGridMap",
-            path="/REB_OccupancyGridMap",
+            "RobotEngineBridgeCreateContactMonitor",
+            path="/REB_ContactMonitor",
             parent=None,
             output_component="output",
-            output_channel="occupancy_map",
-            parent_prim_rel=None,
-            offset=Gf.Vec3f(0, 0, 0),
-            cell_size=0.1,
-            degrees_per_ray=5,
-            surface_offset=0.02,
-            occupancy_threshold=1.0,
-            max_rays=1000000,
-            map_size=Gf.Vec2i(256, 256),
-            debug_draw=False,
-            occupied_value=1.0,
-            unoccupied_value=0.0,
-            unknown_value=0.5,
+            output_channel="collision",
+            target_prim_rel=[cube_prim.GetPrimPath()],
+            ignored_prims_rel=None,
+            force_threshold=0,
         )
-        self.create_scene()
+        # because the contact report api schema is added after start, we need to reload physics to have this work.
         self._timeline.play()
-        await simulate(0.1)
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
 
-    async def test_occupancy_grid_map(self):
-
-        result, prim = omni.kit.commands.execute(
-            "RobotEngineBridgeCreateOccupancyGridMap",
-            path="/REB_OccupancyGridMap",
-            parent=None,
-            output_component="output",
-            output_channel="occupancy_map",
-            parent_prim_rel=None,
-            offset=Gf.Vec3f(0, 0, 0),
-            cell_size=0.05,
-            degrees_per_ray=5,
-            surface_offset=0.02,
-            occupancy_threshold=1.0,
-            max_rays=1000000,
-            map_size=Gf.Vec2i(80, 80),
-            debug_draw=False,
-            occupied_value=1.0,
-            unoccupied_value=0.0,
-            unknown_value=0.5,
-        )
-        self.create_scene()
         test_app = PyaliceApp()
-
         test_app.app.load(
             filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
         )
+        # sim_in = test_app.app.nodes["simulation.interface"]["input"]
+        # sim_out = test_app.app.nodes["simulation.interface"]["output"]
 
         test_app.start()
+        # Run test so tcp is connected
+        await simulate(3)
+        collision_msg = test_app.app.receive("simulation.interface", "output", "collision")
+        self.assertIsNotNone(collision_msg)
+        self.assertEqual(collision_msg.proto.thisName, "/cube")
 
-        self._timeline.play()
-        await simulate(0.1)
-        msg = test_app.app.receive("simulation.interface", "output", "occupancy_map")
-        buffer = msg.tensor
-        # print("TENSOR", omap)
-        self.assertEqual(buffer[0, 79], 0.5)
-        self.assertEqual(buffer[5, 75], 0.5)
-        self.assertEqual(buffer[10, 59], 1.0)
-        self.assertEqual(buffer[50, 20], 1.0)
-        self.assertEqual(buffer[75, 29], 1.0)
-        self.assertEqual(buffer[40, 40], 0.0)
-        self.assertEqual(buffer[75, 20], 0.5)
         self._timeline.stop()
         test_app.stop()
         test_app = None
+
+        pass
