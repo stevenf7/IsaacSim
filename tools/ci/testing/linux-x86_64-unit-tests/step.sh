@@ -37,4 +37,4 @@ export OMNI_USER=svc-test
 export OMNI_PASS=svc-test
 
 cd "$SCRIPT_DIR/../../../../tools"
-./test.sh --suite pythontests --config $CONFIG $USE_PACKAGE $PARAMS
+./test.sh --suite unittests --config $CONFIG $USE_PACKAGE $PARAMS

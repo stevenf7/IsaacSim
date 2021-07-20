@@ -295,11 +295,12 @@ path = "${test_root}"
 
 [[repo_test.suites.startuptest.group]]
 # Run Kit App Full. 
-include = ["isaac-sim.startup${shell_ext}"]
+include = ["tests-startup*${shell_ext}"]
 
 args = [
+  "--portable-root ${test_root}/portable_root",
 	# "--no-assert-dialog",
-	# "--portable",
+	"--portable",
 	# "--exec",
 	# "open_stage.py ${test_root}/data/scenes/BuiltInMaterials.usda",
 	# "--/rtx/materialDb/syncLoads=true",
@@ -309,11 +310,11 @@ args = [
 	# "--/renderer/activeGpu=0",
 	# "--/app/hydraEngine/skipStatusBarIdle=true",
 	# "--/rtx/flow/enabled=true",
-	"--/app/quitAfter=10",  # Quit after 10 updates
+	"--/app/quitAfter=500",  # Quit after 10 updates
 	# "--/app/asyncRendering=false",
 	# "--/renderer/debug/validation/enabled=false",
 	# "--/renderer/enabled='rtx,iray'",
-	# "--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
+	"--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
 ]
 timeout = 1200
 
@@ -321,12 +322,21 @@ timeout = 1200
 kind = "glob_and_exec"
 path = "${test_root}"
   [[repo_test.suites.pythontests.group]]
-  include = ["tests-*${shell_ext}"]
+  include = ["tests-python*${shell_ext}"]
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root"]
   tc_report_enabled = false
   timeout = 480
 
+[repo_test.suites.nativepythontests]
+kind = "glob_and_exec"
+path = "${test_root}"
+  [[repo_test.suites.nativepythontests.group]]
+  include = ["tests-nativepython*${shell_ext}"]
+  exclude =[]
+  args = ["--portable-root ${test_root}/portable_root"]
+  tc_report_enabled = false
+  timeout = 480
 
 # Catch2 Unit Tests
 [repo_test.suites.unittests]

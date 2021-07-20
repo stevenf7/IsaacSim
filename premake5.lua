@@ -201,7 +201,7 @@ group "apps"
     define_local_experience("isaac-sim.headless.websocket", "omni.isaac.sim.headless.websocket", "--no-window ")
 
     -- startup test experience
-    define_local_experience("isaac-sim.startup", "omni.isaac.sim.startup", "--/app/quitAfter=10")
+    define_local_experience("tests-startup", "omni.isaac.sim.startup", "--/app/quitAfter=500")
 
     -- -- Test runner experience:
     -- args = {
@@ -274,17 +274,17 @@ repo_build.prebuild_copy {
 
 group "python_samples"
     -- Core samples
-    python_sample_test("tests-python.core.app_framework", "core/app_framework.py")
-    python_sample_test("tests-python.core.helper", "core/helper.py")
+    python_sample_test("tests-nativepython-core.app_framework", "core/app_framework.py")
+    python_sample_test("tests-nativepython-core.helper", "core/helper.py")
     -- Simple samples
-    python_sample_test("tests-python.simple.time_stepping", "simple/time_stepping.py")
-    python_sample_test("tests-python.simple.urdf_import", "simple/urdf_import.py")
-    python_sample_test("tests-python.simple.franka_articulation", "simple/franka_articulation.py")
-    python_sample_test("tests-python.simple.change_resolution", "simple/change_resolution.py")
-    python_sample_test("tests-python.simple.load_stage", "simple/load_stage.py", "--usd_path /Environments/Simple_Room/simple_room.usd --test --headless")
-    python_sample_test("tests-python.simple.franka_rmp", "simple/franka_rmp.py", "--headless")
+    python_sample_test("tests-nativepython-simple.time_stepping", "simple/time_stepping.py")
+    python_sample_test("tests-nativepython-simple.urdf_import", "simple/urdf_import.py")
+    python_sample_test("tests-nativepython-simple.franka_articulation", "simple/franka_articulation.py")
+    python_sample_test("tests-nativepython-simple.change_resolution", "simple/change_resolution.py")
+    python_sample_test("tests-nativepython-simple.load_stage", "simple/load_stage.py", "--usd_path /Environments/Simple_Room/simple_room.usd --test --headless")
+    python_sample_test("tests-nativepython-simple.franka_rmp", "simple/franka_rmp.py", "--headless")
     -- SDK samples 
-    python_sample_test("tests-python.isaac_sdk.pose_estimation", "isaac_sdk/pose_estimation.py", "--test")
-    python_sample_test("tests-python.isaac_sdk.load_stage", "isaac_sdk/load_stage.py", "--usd_path /Samples/Isaac_SDK/Scenario/franka_basic.usd --test --headless")
+    python_sample_test("tests-nativepython-isaac_sdk.pose_estimation", "isaac_sdk/pose_estimation.py", "--test")
+    python_sample_test("tests-nativepython-isaac_sdk.load_stage", "isaac_sdk/load_stage.py", "--usd_path /Samples/Isaac_SDK/Scenario/franka_basic.usd --test --headless")
     -- ROS samples
-    python_sample_test("tests-python.ros.clock", "ros/clock.py")
+    python_sample_test("tests-nativepython-ros.clock", "ros/clock.py")
