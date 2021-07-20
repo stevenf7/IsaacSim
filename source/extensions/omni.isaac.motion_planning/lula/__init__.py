@@ -7,5 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_motion_planning import *
-from .test_lula import *
+from .lula_python import *
