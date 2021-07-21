@@ -10,6 +10,7 @@
 #pragma once
 
 #include "plugins/core/Component.h"
+#include "plugins/core/UsdUtilities.h"
 
 #include <carb/fastcache/FastCache.h>
 #include <carb/renderer/Renderer.h>
@@ -156,26 +157,11 @@ public:
      */
     virtual void onComponentChange()
     {
-
-        if (this->mPrim.GetMinRangeAttr().HasValue())
-        {
-            this->mPrim.GetMinRangeAttr().Get(&mMinRange);
-        }
-
-        if (this->mPrim.GetMaxRangeAttr().HasValue())
-        {
-            this->mPrim.GetMaxRangeAttr().Get(&mMaxRange);
-        }
-
-        if (this->mPrim.GetDrawPointsAttr().HasValue())
-        {
-            this->mPrim.GetDrawPointsAttr().Get(&mDrawPoints);
-        }
-
-        if (this->mPrim.GetDrawLinesAttr().HasValue())
-        {
-            this->mPrim.GetDrawLinesAttr().Get(&mDrawLines);
-        }
+        isaac::utils::safeGetAttribute(this->mPrim.GetEnabledAttr(), this->mEnabled);
+        isaac::utils::safeGetAttribute(this->mPrim.GetMinRangeAttr(), mMinRange);
+        isaac::utils::safeGetAttribute(this->mPrim.GetMaxRangeAttr(), mMaxRange);
+        isaac::utils::safeGetAttribute(this->mPrim.GetDrawPointsAttr(), mDrawPoints);
+        isaac::utils::safeGetAttribute(this->mPrim.GetDrawLinesAttr(), mDrawLines);
 
 
         mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
