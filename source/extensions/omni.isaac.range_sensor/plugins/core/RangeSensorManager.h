@@ -66,8 +66,11 @@ struct RangeSensorTaskData
 auto rangeSensorTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg)
 {
     RangeSensorTaskData* taskData = reinterpret_cast<RangeSensorTaskData*>(taskArg);
-    taskData->sensor->updateTimestamp(taskData->timeSeconds, taskData->dt, taskData->timeNanoSeconds);
-    taskData->sensor->tick();
+    if (taskData->sensor->getEnabled())
+    {
+        taskData->sensor->updateTimestamp(taskData->timeSeconds, taskData->dt, taskData->timeNanoSeconds);
+        taskData->sensor->tick();
+    }
 };
 
 class RangeSensorManager : public utils::BridgeApplicationBase<RangeSensorComponent>
@@ -120,10 +123,18 @@ public:
         {
             if (component.second->mDoStart == true)
             {
-                component.second->onStart();
-                component.second->mDoStart = false;
+                // if the component has not started yet, check to see if its enabled
+                // if not enabled, do not start
+                if (component.second->getEnabled())
+                {
+                    component.second->onStart();
+                    component.second->mDoStart = false;
+                }
             }
-            component.second->preTick();
+            if (component.second->getEnabled())
+            {
+                component.second->preTick();
+            }
         }
 
 #if 1
@@ -149,14 +160,21 @@ public:
 #else
         for (auto& component : mComponents)
         {
-            component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
-            component.second->tick();
+            if (component.second->getEnabled())
+            {
+                component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
+                component.second->tick();
+            }
         }
 #endif
 
+
         for (auto& component : mComponents)
         {
-            component.second.get()->draw();
+            if (component.second->getEnabled())
+            {
+                component.second.get()->draw();
+            }
         }
 
         this->mTimeSeconds += dt;
