@@ -12,6 +12,7 @@ display_name = "Isaac Tests"
 "omni.kit.material.library" = {}
 "omni.kit.window.viewport" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
+"omni.syntheticdata" = {}
 
 [[python.module]]
 name = "omni.isaac.tests"
