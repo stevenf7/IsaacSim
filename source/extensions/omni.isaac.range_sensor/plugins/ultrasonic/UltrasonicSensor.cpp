@@ -97,6 +97,7 @@ void UltrasonicSensor::onComponentChange()
 
     isaac::utils::safeGetAttribute(typedPrim.GetNumBinsAttr(), mNumBins);
     isaac::utils::safeGetAttribute(typedPrim.GetUseBRDFAttr(), mUseBRDF);
+    isaac::utils::safeGetAttribute(typedPrim.GetUseUSSMaterialsForBRDFAttr(), mUseUSSMaterialsForBRDF);
 
     // we have to have atleast one beam so the FOV can never be smaller than resolution
     mHorizontalResolution = pxr::GfClamp(mHorizontalResolution, 0.005f, 1024);
@@ -170,6 +171,7 @@ void UltrasonicSensor::onComponentChange()
 
     mReceiverArray.mMetersPerUnit = mMetersPerUnit;
     mReceiverArray.mUseBRDF = mUseBRDF;
+    mReceiverArray.mUseUSSMaterialsForBRDF = mUseUSSMaterialsForBRDF;
     mReceiverArray.mNumBins = mNumBins;
     mReceiverArray.mMaxDist = mMaxDepth * mMetersPerUnit;
     mReceiverArray.mHorizontalFov = 0.5f * mHorizontalFov * static_cast<float>(M_PI / 180.0);
@@ -181,6 +183,7 @@ void UltrasonicSensor::onComponentChange()
 
     mWorldPoints.resize(mEmitters.size());
     mNormals.resize(mEmitters.size());
+    mWorldMaterials.resize(mEmitters.size());
 
     mAdjacency = omni::isaac::range_sensor::extractAdjacencyVectors(mEmitters);
 }
@@ -259,11 +262,7 @@ void UltrasonicSensor::tick()
                 // mEmitters[emitterMode[0]]->doScan(mMaxDepth, mMinDepth, mPxScene);
                 mWorldPoints[emitterMode[0]].clear();
                 mNormals[emitterMode[0]].clear();
-
-                if (mDrawLines)
-                {
-                    mLineDrawing->addVertices(mEmitters[emitterMode[0]]->mLines);
-                }
+                mWorldMaterials[emitterMode[0]].clear();
 
                 if (mDrawPoints)
                 {
@@ -276,6 +275,7 @@ void UltrasonicSensor::tick()
                     {
                         mWorldPoints[emitterMode[0]].push_back(mEmitters[emitterMode[0]]->mHitPosWorld[j]);
                         mNormals[emitterMode[0]].push_back(mEmitters[emitterMode[0]]->mNormals[j]);
+                        mWorldMaterials[emitterMode[0]].push_back(mEmitters[emitterMode[0]]->mHitMaterials[j]);
                     }
                 }
             }
@@ -283,13 +283,19 @@ void UltrasonicSensor::tick()
         // TODO Use the goup.mReceiverModes array to do envelope calculation
 
         {
-            mEnvelopeList[mFreqIdLow] = mReceiverArray.getCombinedEnvelopeList(mAdjacency, group.mIsFiring[mFreqIdLow],
-                                                                               group.mIsReceiving[mFreqIdLow], origins,
-                                                                               origins, mWorldPoints, mNormals);
+            mEnvelopeList[mFreqIdLow] = mReceiverArray.getCombinedEnvelopeList(
+                mAdjacency, group.mIsFiring[mFreqIdLow], group.mIsReceiving[mFreqIdLow], origins, origins, mWorldPoints,
+                mNormals, mWorldMaterials);
 
             mEnvelopeList[mFreqIdHigh] = mReceiverArray.getCombinedEnvelopeList(
                 mAdjacency, group.mIsFiring[mFreqIdHigh], group.mIsReceiving[mFreqIdHigh], origins, origins,
-                mWorldPoints, mNormals);
+                mWorldPoints, mNormals, mWorldMaterials);
+
+            if (mDrawLines)
+            {
+                mLineDrawing->addVertices(mReceiverArray.mReceiverLines);
+                mReceiverArray.mReceiverLines.clear();
+            }
         }
         {
 

@@ -240,6 +240,9 @@ TEST_CASE("main")
         std::vector<std::vector<::physx::PxVec3>> normals{ { { 1.f, 1.f, 1.f }, { 1.f, 1.f, 1.f } },
                                                            { { 1.f, 1.f, 1.f } },
                                                            { { 1.f, 1.f, 1.f } } };
+        std::vector<std::vector<::physx::PxVec4>> worldMaterials{ { { 1.f, 1.f, 1.f, 1.f }, { 1.f, 1.f, 1.f, 1.f } },
+                                                                  { { 1.f, 1.f, 1.f, 1.f } },
+                                                                  { { 1.f, 1.f, 1.f, 1.f } } };
         std::vector<::physx::PxTransform> receiverCenters{ { 1.f, 1.f, 0.f }, { 2.f, 1.f, 0.f }, { 3.f, 1.f, 0.f } };
 
 
@@ -266,8 +269,9 @@ TEST_CASE("main")
         receiverArr.mNumBins = numBins;
         receiverArr.mMaxDist = maxDist;
         receiverArr.mUseBRDF = false;
+        receiverArr.mUseUSSMaterialsForBRDF = false;
         auto envelopeList = receiverArr.getCombinedEnvelopeList(
-            adjacency, isFiring, isReceiving, emitterCenters, receiverCenters, worldPoints, normals);
+            adjacency, isFiring, isReceiving, emitterCenters, receiverCenters, worldPoints, normals, worldMaterials);
         int receiverIndex = 1;
         CHECK(envelopeList[receiverIndex].getEnvelope()[8] == 1);
         CHECK(envelopeList[receiverIndex].getEnvelope()[4] == 1);
@@ -293,11 +297,12 @@ TEST_CASE("main")
         ::physx::PxVec3 emitterOrigin = { 5.f, 5.f, 0.f };
         BRDF brdf(emitterOrigin);
         ::physx::PxVec3 normal = { 0.f, 1.f, 0.f };
+        ::physx::PxVec4 material = { 0.f, 1.f, 0.f, 0.f };
         ::physx::PxVec3 surfaceCollisionPoint{ 0.f, 0.f, 0.f };
         ::physx::PxVec3 receiverOrigin = { -5.f, 5.f, 0.f };
         float incidentIntensity = 1.f;
         float returnedIntensity =
-            brdf.getReturnedIntensity(receiverOrigin, normal, surfaceCollisionPoint, incidentIntensity);
+            brdf.getReturnedIntensity(receiverOrigin, normal, surfaceCollisionPoint, material, incidentIntensity);
         CHECK(doctest::Approx(returnedIntensity) == 1.f);
     }
 
@@ -307,12 +312,13 @@ TEST_CASE("main")
         ::physx::PxVec3 emitterOrigin = { 5.f, 5.f, 0.f };
         BRDF brdf(emitterOrigin);
         ::physx::PxVec3 normal = { 0.f, 1.f, 0.f };
+        ::physx::PxVec4 material = { 0.f, 1.f, 0.f, 0.f };
         ::physx::PxVec3 surfaceCollisionPoint{ 0.f, 0.f, 0.f };
         // note that the receiver is "above" the emitter in a 2d world
         ::physx::PxVec3 receiverOrigin = { 5.f, 10.f, 0.f };
         float incidentIntensity = 1.f;
         float returnedIntensity =
-            brdf.getReturnedIntensity(receiverOrigin, normal, surfaceCollisionPoint, incidentIntensity);
+            brdf.getReturnedIntensity(receiverOrigin, normal, surfaceCollisionPoint, material, incidentIntensity);
         CHECK(doctest::Approx(returnedIntensity) == 0.3162277f);
     }
 }

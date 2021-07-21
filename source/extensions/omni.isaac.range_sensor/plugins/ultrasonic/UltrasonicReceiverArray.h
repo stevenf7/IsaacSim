@@ -11,6 +11,8 @@
 
 #include "USSEnvelope.h"
 
+#include <carb/scenerenderer/SceneRendererTypes.h>
+
 #include <foundation/PxTransform.h>
 #include <foundation/PxVec3.h>
 
@@ -25,7 +27,8 @@ public:
         const std::vector<bool>& isReceiving,
         const std::vector<::physx::PxTransform>& emitterOrigins,
         const std::vector<::physx::PxTransform>& receiverOrigins,
-        const std::vector<std::vector<::physx::PxVec3>>& worldPoints);
+        const std::vector<std::vector<::physx::PxVec3>>& worldPoints,
+        const std::vector<std::vector<::physx::PxVec3>>& normals = std::vector<std::vector<::physx::PxVec3>>());
 
     std::vector<std::vector<USSEnvelope>> getEnvelopeMatrix(const std::vector<std::vector<uint8_t>>& adjacency,
                                                             const std::vector<bool>& isFiring,
@@ -33,7 +36,8 @@ public:
                                                             const std::vector<::physx::PxTransform>& emitterOrigins,
                                                             const std::vector<::physx::PxTransform>& receiverOrigins,
                                                             const std::vector<std::vector<::physx::PxVec3>>& worldPoints,
-                                                            const std::vector<std::vector<::physx::PxVec3>>& normals);
+                                                            const std::vector<std::vector<::physx::PxVec3>>& normals,
+                                                            const std::vector<std::vector<::physx::PxVec4>>& worldMaterials);
 
     std::vector<USSEnvelope> getCombinedActiveEnvelopeList(const std::vector<std::vector<uint8_t>>& adjacency,
                                                            const std::vector<bool>& isFiring,
@@ -48,7 +52,8 @@ public:
                                                      const std::vector<::physx::PxTransform>& emitterOrigins,
                                                      const std::vector<::physx::PxTransform>& receiverOrigins,
                                                      const std::vector<std::vector<::physx::PxVec3>>& worldPoints,
-                                                     const std::vector<std::vector<::physx::PxVec3>>& normals);
+                                                     const std::vector<std::vector<::physx::PxVec3>>& normals,
+                                                     const std::vector<std::vector<::physx::PxVec4>>& worldMaterials);
 
     bool shouldProduceEnvelope(const std::vector<std::vector<uint8_t>>& adjacency,
                                const std::vector<bool>& isFiring,
@@ -57,15 +62,19 @@ public:
                                const size_t j);
     float mMetersPerUnit = 1.0;
     bool mUseBRDF = false;
+    bool mUseUSSMaterialsForBRDF = false;
     int mNumBins = 224;
     float mMaxDist = 0.0f;
     float mHorizontalFov = 60.0f;
     float mVerticalFov = 30.0f;
 
+    std::vector<carb::scenerenderer::PrimitiveVertex> mReceiverLines;
+
 private:
     std::vector<float> getTotalPathLength(const ::physx::PxTransform& receiverOrigin,
                                           const ::physx::PxTransform& emitterOrigin,
-                                          const std::vector<::physx::PxVec3>& worldPoints);
+                                          const std::vector<::physx::PxVec3>& worldPoints,
+                                          const std::vector<::physx::PxVec3>& normals);
 
     bool inFieldOfView(const ::physx::PxVec3& r);
 

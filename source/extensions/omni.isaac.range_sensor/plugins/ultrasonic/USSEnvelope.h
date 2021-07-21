@@ -45,38 +45,31 @@ public:
         std::vector<float> echo;
         for (size_t i = 0; i < totalRayLength.size(); i++)
         {
-            // only include echoes of equal to maxDist
-            if (totalRayLength[i] < m_maxDistRoundTrip)
-            {
-                // convert from distance to echo
-                echo.push_back(totalRayLength[i] / C);
-            }
+            // convert from distance to echo
+            echo.push_back(totalRayLength[i] / C);
         }
+
+        // LOCMOD can this use memset
         for (size_t i = 0; i < m_binnedEcho.size(); i++)
         {
             m_binnedEcho[i].clear();
         }
 
-        std::vector<float> sortedEcho(echo);
-        sort(sortedEcho.begin(), sortedEcho.end());
-        float rightBinBoundary = m_binWidth;
-        size_t currentBin = 1;
-        for (size_t i = 0; i < sortedEcho.size(); i++)
+        for (size_t i = 0; i < echo.size(); i++)
         {
-            while ((sortedEcho[i] > rightBinBoundary) && currentBin < m_numBins)
+            float rightBinBoundary = m_binWidth;
+            size_t currentBin = 1;
+            while ((echo[i] > rightBinBoundary) && currentBin < m_numBins)
             {
                 rightBinBoundary += m_binWidth;
                 currentBin++;
             }
 
             // use m_maxTimestamp not final rightBinBoundary as a guard because of accumulation of error on sum
-            if ((sortedEcho[i] > m_maxTimestamp) || (sortedEcho[i] < 0))
-            {
-                printf(
-                    "Reflected point is outside of ray boundaries: rightBinBoundary = %f, sortedEcho[i] = %f, i= %zu, currentBin = %zu, m_numBins = %zu, m_maxDist = %f, \n",
-                    rightBinBoundary, sortedEcho[i], i, currentBin, m_numBins, m_maxDist);
-            }
-            else
+            bool pass_condition =
+                !((echo[i] > m_maxTimestamp) || (echo[i] < 0) || (totalRayLength[i] > m_maxDistRoundTrip));
+
+            if (rayIntensity[i] > 0 && pass_condition)
             {
                 m_binnedEcho[currentBin - 1].push_back(rayIntensity[i]);
             }

@@ -75,6 +75,12 @@ class Extension(omni.ext.IExt):
                         height=0,
                     )
                     ui.Button(
+                        "Use selected prim to specify UltrasonicArray path",
+                        clicked_fn=self._set_ultrasonicarray_path,
+                        tooltip="Select the UltrasonicArray in the Stage window, then press this button to use that as set path",
+                        height=0,
+                    )
+                    ui.Button(
                         "Get data from the Ultrasonic Sensor (press play first)",
                         clicked_fn=self._get_info_function,
                         tooltip="Press play to enable simulation and then press this button to get the current ultrasonic information",
@@ -318,7 +324,8 @@ class Extension(omni.ext.IExt):
                     ui.Spacer(height=1)
 
     def _get_info_function(self):
-        maxDepth = self.ultrasonic.GetMaxRangeAttr().Get()
+        self.ultrasonic = omni.usd.get_context().get_stage().GetPrimAtPath(self.ultrasonicPath)
+        maxDepth = self.ultrasonic.GetAttribute("maxRange").Get()
 
         # The ULTRASONIC itself exists as a C++ object.  In order to retrieve data from this object we need to call
         # C++ code, but this is handled for us through the use of python bindings.  Here we get the depth value of
@@ -346,3 +353,15 @@ class Extension(omni.ext.IExt):
             tableString += rowString.format("{0:.5f}".format(azimuth[row]), " | ", *entry)
 
         self._info_label.text = tableString
+
+    def _set_ultrasonicarray_path(self):
+        def get_selected_path():
+            selectedPrims = omni.usd.get_context().get_selection().get_selected_prim_paths()
+
+            if len(selectedPrims) > 0:
+                curr_prim = selectedPrims[-1]
+            else:
+                curr_prim = None
+            return curr_prim
+
+        self.ultrasonicPath = get_selected_path()

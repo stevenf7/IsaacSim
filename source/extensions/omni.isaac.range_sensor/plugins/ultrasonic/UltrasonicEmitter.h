@@ -26,10 +26,14 @@
 #include <omni/timeline/ITimeline.h>
 #include <pxr/usd/usd/inherits.h>
 #include <rangeSensorSchema/ultrasonicEmitter.h>
+#include <rangeSensorSchema/ultrasonicMaterialAPI.h>
+#include <usdPhysics/materialAPI.h>
 
 #include <vector>
 
 using namespace ::physx;
+using namespace pxr;
+using namespace carb;
 
 namespace omni
 {
@@ -53,6 +57,44 @@ public:
     ::physx::PxTransform getPose()
     {
         return ::physx::PxTransform(mOrigin, mTheta0);
+    }
+
+    inline const pxr::SdfPath& intToPath(const uint64_t& path)
+    {
+        static_assert(sizeof(pxr::SdfPath) == sizeof(uint64_t), "Change to make the same size as pxr::SdfPath");
+
+        return reinterpret_cast<const pxr::SdfPath&>(path);
+    }
+
+
+    pxr::SdfPath getMaterialBinding(const pxr::UsdStageWeakPtr stage, const pxr::UsdPrim& usdPrim)
+    {
+        SdfPath materialPath;
+
+        UsdShadeMaterialBindingAPI materialBindingAPI = UsdShadeMaterialBindingAPI(usdPrim);
+        if (materialBindingAPI)
+        {
+            const static TfToken physicsPurpose("physics");
+            UsdShadeMaterialBindingAPI::DirectBinding binding = materialBindingAPI.GetDirectBinding(physicsPurpose);
+            return binding.GetMaterialPath();
+        }
+        else
+        {
+            // handle material through a direct binding rel search
+            UsdRelationship materialRel;
+            SdfPathVector materials;
+            static TfToken materialPhysicsBinding("material:binding:physics");
+            materialRel = usdPrim.GetRelationship(materialPhysicsBinding);
+            if (materialRel)
+                materialRel.GetTargets(&materials);
+
+            if (materials.size() != 0)
+            {
+                return materials[0].GetPrimPath();
+            }
+        }
+
+        return SdfPath();
     }
 
     void updatePose()
@@ -158,16 +200,25 @@ public:
 
                 if (hit)
                 {
+                    const omni::physx::usdparser::ObjectId bodyIndex =
+                        (omni::physx::usdparser::ObjectId)raycastHit.actor->userData;
+                    mHitPrims[i] = mPhysx->getPhysXObjectUsdPath(bodyIndex);
+
+                    auto hitPrim = mStage->GetPrimAtPath(mHitPrims[i]);
+                    auto physicsMaterialPath = getMaterialBinding(mStage, hitPrim);
+
+                    if (!physicsMaterialPath.IsEmpty() &&
+                        mStage->GetPrimAtPath(physicsMaterialPath).HasAPI<RangeSensorSchemaUltrasonicMaterialAPI>())
+                    {
+                        auto ussHitMaterial = RangeSensorSchemaUltrasonicMaterialAPI::Get(mStage, physicsMaterialPath);
+                        ussHitMaterial.GetPerceptualRoughnessAttr().Get(&mHitMaterials[i].x);
+                        ussHitMaterial.GetReflectanceAttr().Get(&mHitMaterials[i].y);
+                        ussHitMaterial.GetMetallicAttr().Get(&mHitMaterials[i].z);
+                        ussHitMaterial.GetBase_colorAttr().Get(&mHitMaterials[i].w);
+                    }
+
                     mHitPosWorld[i] = raycastHit.position;
                     mNormals[i] = raycastHit.normal;
-                    // if (i != static_cast<int>(mHitPosWorld.size()))
-                    // {
-                    //     printf("i %d %zu\n", i, mHitPosWorld.size());
-                    // }
-
-                    // mHitPosWorld.push_back(raycastHit.position);
-                    // mNormals.push_back(raycastHit.normal);
-
 
                     // the distance of the ray should be from center of lidar
                     mDepth[i] = static_cast<uint16_t>((raycastHit.distance + minDepth) * invMaxDepth * 65535.0f);
@@ -223,6 +274,8 @@ public:
 
                     mHitPosWorld[i] = ::physx::PxVec3(0, 0, 0);
                     mNormals[i] = ::physx::PxVec3(0, 0, 0);
+                    mHitPrims[i] = pxr::SdfPath();
+                    mHitMaterials[i] = PxVec4(0, 0, 0, 0);
                     if (drawPoints)
                     {
                         carb::scenerenderer::PrimitiveVertex data;
@@ -305,6 +358,8 @@ public:
         mHitPos.resize(mRows * mCols);
         mHitPosWorld.resize(mRows * mCols);
         mNormals.resize(mRows * mCols);
+        mHitPrims.resize(mRows * mCols);
+        mHitMaterials.resize(mRows * mCols);
         mLinearDepth.assign(mRows * mCols, 0);
         mIntensity.assign(mRows * mCols, 0);
         mDepth.assign(mRows * mCols, 0);
@@ -410,6 +465,8 @@ public:
     std::vector<carb::Float3> mHitPos;
     std::vector<::physx::PxVec3> mHitPosWorld;
     std::vector<::physx::PxVec3> mNormals;
+    std::vector<::physx::PxVec4> mHitMaterials;
+    std::vector<pxr::SdfPath> mHitPrims;
     pxr::VtArray<int> mAdjacencyList;
     int mRows = 0;
     int mCols = 0;

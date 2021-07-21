@@ -824,8 +824,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
                         0.0,
                         0.0,
                         0.0,
-                        452.21047974,
-                        30.72865677,
+                        452.37457275,
+                        30.56451797,
                     ]
                 ),
             )
@@ -841,8 +841,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
                 active_env[2][50:67],
                 np.array(
                     [
-                        487.57147217,
-                        97.42268372,
+                        488.72018433,
+                        96.2740097,
                         0.0,
                         0.0,
                         0.0,
@@ -867,8 +867,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
                 active_env[3][50:67],
                 np.array(
                     [
-                        487.57147217,
-                        97.42268372,
+                        488.72018433,
+                        96.2740097,
                         0.0,
                         0.0,
                         0.0,
