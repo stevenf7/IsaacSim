@@ -21,11 +21,11 @@ icon = "data/icon.png"
 "omni.physx" = {}
 "omni.usdphysics" = {}
 "omni.debugdraw" = {}
+"omni.kit.importer.cad" = {}
 
 # Isaac Sim Utilities
 "omni.isaac.robot_engine_bridge" = {}
 "omni.isaac.samples" = {}
-"omni.isaac.step_importer" = {}
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.urdf" = {}
 "omni.isaac.utils" = {}
