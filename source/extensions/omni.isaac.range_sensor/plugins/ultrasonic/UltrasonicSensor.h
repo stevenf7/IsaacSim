@@ -196,6 +196,7 @@ private:
 
     int mNumBins = 224;
     bool mUseBRDF = false;
+    bool mUseUSSMaterialsForBRDF = false;
     float mHorizontalFov = 60.0f;
     float mVerticalFov = 30.0f;
     float mHorizontalResolution = 0.4f;
@@ -221,6 +222,8 @@ private:
 
     std::vector<std::vector<::physx::PxVec3>> mWorldPoints;
     std::vector<std::vector<::physx::PxVec3>> mNormals;
+    std::vector<std::vector<::physx::PxVec4>> mWorldMaterials;
+
     std::vector<std::vector<uint8_t>> mAdjacency;
 
     void dumpData(double dt);

@@ -7,9 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import carb
 import omni.ext
+from functools import partial
+
+from omni.isaac import RangeSensorSchema
 from .. import _range_sensor
 from .menu import RangeSensorMenu
+from pxr import UsdShade
 
 
 class Extension(omni.ext.IExt):
@@ -21,7 +26,20 @@ class Extension(omni.ext.IExt):
 
         self._menu = RangeSensorMenu()
 
+        self._hooks = []
+        manager = omni.kit.app.get_app().get_extension_manager()
+
+        self._hooks.append(
+            manager.subscribe_to_extension_enable(
+                on_enable_fn=lambda _: self._register_property_menu(),
+                on_disable_fn=lambda _: self._unregister_property_menu(),
+                ext_name="omni.kit.property.usd",
+                hook_name="omni.kit.stage_templates omni.kit.property.usd listener",
+            )
+        )
+
     def on_shutdown(self):
+        self._hooks = None
         self._menu.shutdown()
         self._menu = None
 
@@ -29,3 +47,46 @@ class Extension(omni.ext.IExt):
         _range_sensor.release_ultrasonic_sensor_interface(self._ultrasonic)
         _range_sensor.release_radar_sensor_interface(self._radar)
         _range_sensor.release_generic_sensor_interface(self._generic)
+
+    def _register_property_menu(self):
+        # +add menu item(s)
+        from omni.kit.property.usd import PrimPathWidget
+
+        context_menu = omni.kit.context_menu.get_instance()
+        if context_menu is None:
+            self._menu_button1 = None
+            carb.log_error("context_menu is disabled!")
+            return None
+
+        self._menu_button1 = PrimPathWidget.add_button_menu_entry(
+            "USS Material", show_fn=partial(self._is_material), onclick_fn=partial(self._apply_uss_material)
+        )
+
+    def _unregister_property_menu(self):
+        from omni.kit.property.usd import PrimPathWidget
+
+        PrimPathWidget.remove_button_menu_entry(self._menu_button1)
+
+    def _is_material(self, objects):
+        if not "prim_list" in objects:
+            return False
+        prim_list = objects["prim_list"]
+        stage = objects["stage"]
+        if prim_list and stage:
+            for prim_path in prim_list:
+                prim = stage.GetPrimAtPath(prim_path)
+                if prim.IsA(UsdShade.Material):
+                    return True
+
+        return False
+
+    def _apply_uss_material(self, payload):
+        stage = payload.get_stage()
+        if stage:
+            selected_prims = omni.usd.get_context().get_selection().get_selected_prim_paths()
+            for prim_path in selected_prims:
+                prim = stage.GetPrimAtPath(prim_path)
+                uss_material = RangeSensorSchema.UltrasonicMaterialAPI.Apply(prim)
+        else:
+            carb.log_error("_apply_uss_material stage not found")
+        return

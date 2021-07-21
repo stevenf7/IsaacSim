@@ -169,6 +169,8 @@ class RangeSensorCreateUltrasonicArray(omni.kit.commands.Command):
                 horizontal_resolution=0.5,
                 vertical_resolution=0.5,
                 num_bins=224,
+                use_brdf: bool = False,
+                use_uss_materials: bool = False,
                 emitter_prims=[],
                 firing_group_prims=[],
             )
@@ -189,6 +191,7 @@ class RangeSensorCreateUltrasonicArray(omni.kit.commands.Command):
         vertical_resolution: float = 4.0,
         num_bins: int = 224,
         use_brdf: bool = False,
+        use_uss_materials: bool = False,
         emitter_prims: [] = [],
         firing_group_prims: [] = [],
     ):
@@ -217,6 +220,7 @@ class RangeSensorCreateUltrasonicArray(omni.kit.commands.Command):
             self._prim.CreateVerticalResolutionAttr().Set(self._vertical_resolution)
             self._prim.CreateNumBinsAttr().Set(self._num_bins)
             self._prim.CreateUseBRDFAttr().Set(self._use_brdf)
+            self._prim.CreateUseUSSMaterialsForBRDFAttr().Set(self._use_uss_materials)
 
             rel_paths = self._prim.CreateEmitterPrimsRel()
             for p in self._emitter_prims:
