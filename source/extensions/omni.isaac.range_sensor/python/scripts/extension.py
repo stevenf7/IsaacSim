@@ -25,21 +25,19 @@ class Extension(omni.ext.IExt):
         self._generic = _range_sensor.acquire_generic_sensor_interface()
 
         self._menu = RangeSensorMenu()
-
-        self._hooks = []
+        self._registered = False
         manager = omni.kit.app.get_app().get_extension_manager()
-
-        self._hooks.append(
-            manager.subscribe_to_extension_enable(
-                on_enable_fn=lambda _: self._register_property_menu(),
-                on_disable_fn=lambda _: self._unregister_property_menu(),
-                ext_name="omni.kit.property.usd",
-                hook_name="omni.kit.stage_templates omni.kit.property.usd listener",
-            )
+        self._hook = manager.subscribe_to_extension_enable(
+            on_enable_fn=lambda _: self._register_property_menu(),
+            on_disable_fn=lambda _: self._unregister_property_menu(),
+            ext_name="omni.kit.property.usd",
+            hook_name="omni.isaac.range_sensor omni.kit.property.usd listener",
         )
 
     def on_shutdown(self):
-        self._hooks = None
+        self._hook = None
+        if self._registered:
+            self._unregister_property_menu()
         self._menu.shutdown()
         self._menu = None
 
@@ -49,6 +47,7 @@ class Extension(omni.ext.IExt):
         _range_sensor.release_generic_sensor_interface(self._generic)
 
     def _register_property_menu(self):
+        self._registered = True
         # +add menu item(s)
         from omni.kit.property.usd import PrimPathWidget
 
@@ -63,9 +62,13 @@ class Extension(omni.ext.IExt):
         )
 
     def _unregister_property_menu(self):
+        # prevent unregistering multiple times
+        if self._registered is False:
+            return
         from omni.kit.property.usd import PrimPathWidget
 
         PrimPathWidget.remove_button_menu_entry(self._menu_button1)
+        self._registered = False
 
     def _is_material(self, objects):
         if not "prim_list" in objects:
@@ -86,7 +89,7 @@ class Extension(omni.ext.IExt):
             selected_prims = omni.usd.get_context().get_selection().get_selected_prim_paths()
             for prim_path in selected_prims:
                 prim = stage.GetPrimAtPath(prim_path)
-                uss_material = RangeSensorSchema.UltrasonicMaterialAPI.Apply(prim)
+                RangeSensorSchema.UltrasonicMaterialAPI.Apply(prim)
         else:
             carb.log_error("_apply_uss_material stage not found")
         return

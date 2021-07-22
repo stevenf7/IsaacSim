@@ -19,7 +19,6 @@ writeTarget.kit = true
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.kit.menu.utils" = {}
-"omni.kit.property.usd" = {}
 # "omni.graph.core" = {} # needed for fastcache
 "omni.physx" = {}
 "omni.usdphysics" = {}
