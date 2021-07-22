@@ -96,6 +96,9 @@ class CreateSetupExtension(omni.ext.IExt):
 
         # force this on startup for better performance on larger scenes when selecting objects.
         self._settings.set("persistent/app/viewport/pickingMode", "models")
+        # camera settings
+        self._settings.set("persistent/app/viewport/camShowSpeedOnStart", False)
+        self._settings.set("persistent/app/omniverse/gamepadCameraControl", False)
 
     async def __new_stage(self):
 

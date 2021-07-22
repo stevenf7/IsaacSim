@@ -27,7 +27,6 @@
 #include <carb/settings/ISettings.h>
 
 #include <omni/isaac/utils/PrimitiveDrawingHelper.h>
-#include <omni/kit/IViewport.h>
 #include <omni/kit/KitUtils.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
@@ -101,7 +100,6 @@ public:
      */
     ~RangeSensorManager()
     {
-        mViewportUiEventSub = nullptr;
         mTasking->yieldUntilCounter(mTaskCounter);
         mTasking->destroyCounter(mTaskCounter);
         mComponents.clear();
@@ -305,7 +303,6 @@ private:
     carb::fastcache::FastCache* mFastCachePtr = nullptr;
     omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
 
-    carb::events::ISubscriptionPtr mViewportUiEventSub;
     carb::tasking::ITasking* mTasking = nullptr;
     carb::tasking::Counter* mTaskCounter = nullptr;
 };

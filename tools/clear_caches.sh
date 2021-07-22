@@ -14,3 +14,6 @@ echo "run this at your own risk :)"
 
 # launcher packages
 # rm -rf ~/.local/share/ov/pkg/
+
+# extension cache
+# rm -rf ~/.cache/ov/exts/

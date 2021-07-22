@@ -24,14 +24,12 @@
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/fastcache/FastCache.h>
-#include <carb/imgui/ImGui.h>
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 #include <carb/tasking/ITasking.h>
 
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/kit/IStageUpdate.h>
-#include <omni/kit/IViewport.h>
 #include <omni/kit/KitUtils.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
@@ -53,7 +51,6 @@ CARB_PLUGIN_IMPL(kPluginImpl,
 
 
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
-                      carb::imgui::ImGui,
                       omni::kit::IStageUpdate,
                       carb::fastcache::FastCache,
                       omni::renderer::IDebugDraw,
@@ -68,7 +65,6 @@ namespace
 omni::renderer::IDebugDraw* g_debugDraw = nullptr;
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
-carb::imgui::ImGui* g_imGuiInterface = nullptr;
 carb::fastcache::FastCache* g_FastCache = nullptr;
 omni::physx::IPhysx* g_physx = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
@@ -1123,13 +1119,6 @@ CARB_EXPORT void carbOnPluginStartup()
     if (!g_debugDraw)
     {
         CARB_LOG_ERROR("*** Failed to acquire debugdraw interface\n");
-        return;
-    }
-
-    g_imGuiInterface = framework->acquireInterface<carb::imgui::ImGui>();
-    if (!g_imGuiInterface)
-    {
-        CARB_LOG_ERROR("*** Failed to acquire ImGui interface\n");
         return;
     }
 
