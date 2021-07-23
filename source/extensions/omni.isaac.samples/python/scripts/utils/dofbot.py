@@ -235,12 +235,11 @@ class Dofbot:
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_planning")
         self._mp_extension_path = ext_manager.get_extension_path(ext_id)
 
-        self._rmp_data = os.path.dirname(os.path.realpath(__file__))
-        print(self._rmp_data)
+        self._rmp_data = self._mp_extension_path + "/resources/lula/lula_dofbot"
         self.rmp_handle = self.mp.registerRmp(
-            self._rmp_data + "/../dofbot_rmp_sample/Dofbot/urdf/arm.urdf",
-            self._rmp_data + "/../dofbot_rmp_sample/Dofbot/config/robot_descriptor.yaml",
-            self._rmp_data + "/../dofbot_rmp_sample/Dofbot/config/dofbot_rmpflow_common.yaml",
+            self._rmp_data + "/urdf/arm.urdf",
+            self._rmp_data + "/config/robot_descriptor.yaml",
+            self._rmp_data + "/config/dofbot_rmpflow_common.yaml",
             prim.GetPath().pathString,
             "link5",
             True,
