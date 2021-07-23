@@ -67,7 +67,7 @@ public:
 
             // use m_maxTimestamp not final rightBinBoundary as a guard because of accumulation of error on sum
             bool pass_condition =
-                !((echo[i] > m_maxTimestamp) || (echo[i] < 0) || (totalRayLength[i] > m_maxDistRoundTrip));
+                !((echo[i] > m_maxTimestamp) || (echo[i] < 0) || (totalRayLength[i] >= m_maxDistRoundTrip));
 
             if (rayIntensity[i] > 0 && pass_condition)
             {
