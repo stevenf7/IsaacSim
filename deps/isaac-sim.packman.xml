@@ -14,7 +14,7 @@
         <package name="nv_ros2" version="foxy_20210602_7885b5a-linux64_release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
-        <package name="lula" version="v0.4.0_7161272.linux-x86_64.release" platforms="linux-x86_64"/>
+        <package name="lula" version="v0.4.0_cf83e41.linux-x86_64.release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
         <package name="isaac_engine" version="linux_x64_e36b915_20210515_release-2021.1_60c595d5d" platforms="linux-x86_64"/>
