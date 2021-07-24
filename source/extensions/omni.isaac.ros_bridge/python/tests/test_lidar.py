@@ -84,21 +84,83 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         await add_cube("/cube", 75, (200, 0, 75))
 
         self._lidar_data = None
+        self._lidar_data_prev = None
 
         def lida_callback(data: LaserScan):
             self._lidar_data = data
 
         lidar_sub = rospy.Subscriber("scan", LaserScan, lida_callback)
 
+        def standard_checks():
+            self.assertIsNotNone(self._lidar_data)
+            self.assertGreater(self._lidar_data.angle_max, self._lidar_data.angle_min)
+            self.assertEqual(self._lidar_data.intensities[0], 0.0)
+            self.assertEqual(len(self._lidar_data.intensities), 900)
+            self.assertEqual(self._lidar_data.intensities[450], 255.0)
+
+        omni.kit.commands.execute(
+            "ChangeProperty", prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"), value=0.0, prev=None
+        )
+
+        # 0.0 Hz Lidar rotation
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await simulate(1)
-        self.assertIsNotNone(self._lidar_data)
-        self.assertGreater(self._lidar_data.angle_max, self._lidar_data.angle_min)
-        self.assertEqual(self._lidar_data.intensities[0], 0.0)
-        self.assertEqual(len(self._lidar_data.intensities), 900)
-        self.assertEqual(self._lidar_data.intensities[450], 255.0)
+
+        standard_checks()
+        self.assertEqual(self._lidar_data.time_increment, 0)
+
         self._timeline.stop()
+
+        self._lidar_data_prev = self._lidar_data
+        self._lidar_data = None
+
+        omni.kit.commands.execute(
+            "ChangeProperty",
+            prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"),
+            value=121.0,
+            prev=None,
+        )
+
+        # 121.0 Hz Lidar rotation
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate(1)
+
+        standard_checks()
+
+        self.assertGreater(self._lidar_data.header.seq, self._lidar_data_prev.header.seq)
+        self.assertEqual(len(self._lidar_data.intensities), len(self._lidar_data_prev.intensities))
+        self.assertEqual(self._lidar_data.intensities, self._lidar_data_prev.intensities)
+        self.assertGreater(self._lidar_data.time_increment, 0.0)
+
+        self._timeline.stop()
+
+        self._lidar_data_prev = self._lidar_data
+        self._lidar_data = None
+
+        omni.kit.commands.execute(
+            "ChangeProperty",
+            prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"),
+            value=201.0,
+            prev=None,
+        )
+
+        # 201.0 Hz Lidar rotation
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate(1)
+
+        standard_checks()
+
+        self.assertGreater(self._lidar_data.header.seq, self._lidar_data_prev.header.seq)
+        self.assertEqual(len(self._lidar_data.intensities), len(self._lidar_data_prev.intensities))
+        self.assertEqual(self._lidar_data.intensities, self._lidar_data_prev.intensities)
+
+        self.assertGreater(self._lidar_data_prev.time_increment, self._lidar_data.time_increment)
+
+        self._timeline.stop()
+
         lidar_sub.unregister()
         pass
 
@@ -109,6 +171,7 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         await add_cube("/cube", 75, (200, 0, 75))
 
         self._lidar_data = None
+        self._lidar_data_prev = None
 
         def lida_callback(data: LaserScan):
             self._lidar_data = data
@@ -119,7 +182,14 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         omni.kit.commands.execute(
             "ChangeProperty", prop_path=Sdf.Path("/Carter/ROS_Lidar.enabled"), value=False, prev=None
         )
+
+        omni.kit.commands.execute(
+            "ChangeProperty", prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"), value=0.0, prev=None
+        )
+
         await omni.kit.app.get_app().next_update_async()
+
+        # 0.0 Hz Lidar rotation
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await simulate(1)
@@ -140,6 +210,42 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._lidar_data.intensities[0], 0.0)
         self.assertEqual(len(self._lidar_data.intensities), 900)
         self.assertEqual(self._lidar_data.intensities[450], 255.0)
+        self.assertEqual(self._lidar_data.time_increment, 0.0)
+
         self._timeline.stop()
+
+        self._lidar_data = None
+
+        omni.kit.commands.execute(
+            "ChangeProperty",
+            prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"),
+            value=123.0,
+            prev=None,
+        )
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # 123.0 Hz Lidar rotation
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate(1)
+        # Should be no data yet
+        self.assertIsNone(self._lidar_data)
+        # Enable lidar by ticking it once
+        result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/Carter/ROS_Lidar")
+        # Wait for ROS nodes to initialize
+        await asyncio.sleep(1.0)
+        # Publish a lidar message
+        result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/Carter/ROS_Lidar")
+        self.assertTrue(status)
+        # wait for message
+        await asyncio.sleep(1.0)
+        # Check message
+        self.assertIsNotNone(self._lidar_data)
+        self.assertGreater(self._lidar_data.angle_max, self._lidar_data.angle_min)
+        self.assertGreater(self._lidar_data.time_increment, 0.0)
+
+        self._timeline.stop()
+
         lidar_sub.unregister()
         pass
