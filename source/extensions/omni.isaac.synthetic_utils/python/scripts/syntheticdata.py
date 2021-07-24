@@ -104,12 +104,11 @@ class SyntheticDataHelper:
         """
         stage = omni.usd.get_context().get_stage()
         prim = stage.GetPrimAtPath(viewport.get_active_camera())
-        prim_tf = UsdGeom.Camera(prim).GetLocalTransformation()
+        prim_tf = omni.usd.get_world_transform_matrix(prim)
         focal_length = prim.GetAttribute("focalLength").Get()
         horiz_aperture = prim.GetAttribute("horizontalAperture").Get()
         fov = 2 * math.atan(horiz_aperture / (2 * focal_length))
-        x_min, y_min, x_max, y_max = viewport.get_viewport_rect()
-        width, height = x_max - x_min, y_max - y_min
+        width, height = viewport.get_texture_resolution()
         aspect_ratio = width / height
         near, far = prim.GetAttribute("clippingRange").Get()
         view_proj_mat = self.generic_helper_lib.get_view_proj_mat(prim, aspect_ratio, near, far)
@@ -131,10 +130,10 @@ class SyntheticDataHelper:
         mappings = self.generic_helper_lib.get_instance_mappings()
         pose = []
         for m in mappings:
-            prim_path = m[0]
+            prim_path = m[1]
             prim = stage.GetPrimAtPath(prim_path)
-            prim_tf = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(0.0)
-            pose.append((str(prim_path), m[1], str(m[2]), np.array(prim_tf)))
+            prim_tf = omni.usd.get_world_transform_matrix(prim)
+            pose.append((str(prim_path), m[2], str(m[3]), np.array(prim_tf)))
         return pose
 
     async def initialize_async(self, viewport, sensor_types, timeout=10):
@@ -209,49 +208,10 @@ class SyntheticDataHelper:
                 current_sensor = self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor])
                 current_sensor_state = self.sd_interface.is_sensor_initialized(current_sensor)
                 sensor_state[sensor] = current_sensor_state
+            elif sensor == "pose":
+                gt[sensor] = self.sensor_helpers[sensor]()
             else:
                 gt[sensor] = self.sensor_helpers[sensor](viewport)
         gt["state"] = sensor_state
 
         return gt
-
-
-if __name__ == "__main__":
-    # Example usage
-    import random
-    from omni.isaac.python_app import OmniKitHelper
-
-    kit = OmniKitHelper()
-
-    def add_semantic_label(prim, label):
-        sem = Semantics.SemanticsAPI.Apply(prim, "Semantics")
-        sem.CreateSemanticTypeAttr()
-        sem.CreateSemanticDataAttr()
-        sem.GetSemanticTypeAttr().Set("class")
-        sem.GetSemanticDataAttr().Set(label)
-
-    stage = kit.get_stage()
-    for i in range(10):
-        prim_type = random.choice(["Cube", "Sphere"])
-        prim = stage.DefinePrim(f"/World/cube{i}", prim_type)
-        translation = np.random.rand(3) * 300
-        UsdGeom.XformCommonAPI(prim).SetTranslate(translation.tolist())
-        UsdGeom.XformCommonAPI(prim).SetScale((50.0, 50.0, 50.0))
-        add_semantic_label(prim, prim_type)
-
-    sd_helper = SyntheticDataHelper()
-    gt = sd_helper.get_groundtruth(
-        [
-            "rgb",
-            "depth",
-            "boundingBox2DTight",
-            "boundingBox2DLoose",
-            "instanceSegmentation",
-            "semanticSegmentation",
-            "boundingBox3D",
-            "camera",
-        ],
-        omni.kit.viewport.get_default_viewport_window(),
-    )
-
-    print(gt.keys())

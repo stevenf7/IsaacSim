@@ -12,6 +12,7 @@
 
 import atexit
 import colorsys
+import copy
 import queue
 import omni
 import os
