@@ -69,6 +69,8 @@ def main():
             "instanceSegmentation",
             "semanticSegmentation",
             "boundingBox3D",
+            "camera",
+            "pose",
         ],
         viewport,
     )
@@ -126,6 +128,15 @@ def main():
     # Save figure
     print("saving figure to: ", os.getcwd() + "/visualize_groundtruth.png")
     plt.savefig("visualize_groundtruth.png")
+
+    # Display camera parameters
+    print("Camera Parameters")
+    print("==================")
+    print(gt["camera"])
+    # Display poses of semantically labelled assets
+    print("Object Pose")
+    print("============")
+    print(gt["pose"])
 
     # cleanup
     kit.shutdown()
