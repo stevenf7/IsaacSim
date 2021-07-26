@@ -14,9 +14,10 @@
 #include "RosLidar.h"
 
 #include "geometry_msgs/msg/point32.hpp"
+#include "pcl_conversions/pcl_conversions.h"
 #include "rosgraph_msgs/msg/clock.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include "sensor_msgs/msg/point_cloud.hpp"
+#include "sensor_msgs/msg/point_cloud2.hpp"
 #include "std_msgs/msg/int64.hpp"
 #include "std_msgs/msg/u_int8.hpp"
 #include "std_srvs/srv/empty.hpp"
@@ -87,7 +88,7 @@ void RosLidar::onComponentChange()
 
     mRosNode->createPublisher<sensor_msgs::msg::LaserScan>(
         mPrim.GetPath().GetString(), mLaserScanPubTopic, mQueueSize, &RosLidar::pubCallback, this);
-    mRosNode->createPublisher<sensor_msgs::msg::PointCloud>(
+    mRosNode->createPublisher<sensor_msgs::msg::PointCloud2>(
         mPrim.GetPath().GetString(), mPointCloudPubTopic, mQueueSize, &RosLidar::pointCloudPubCallback, this);
 
 
@@ -138,7 +139,8 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
     isaac::utils::safeGetAttribute(mLidarPrim.GetHighLodAttr(), highLod);
     if (highLod)
     {
-        CARB_LOG_ERROR("High LOD not supported, only 2D Lidar Supported. Please disable High LOD setting");
+        CARB_LOG_ERROR(
+            "High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan. Please disable Lidar High LOD setting or uncheck LaserScanEnabled");
         return;
     }
     sensor_msgs::msg::LaserScan laser_msg;
@@ -156,7 +158,7 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
     int numRows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str()); // should be 1
     if (numRows > 1)
     {
-        CARB_LOG_ERROR("High LOD not supported, only 2D Lidar Supported");
+        CARB_LOG_ERROR("High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan");
     }
     size_t numBeams = numColsTicked * numRows;
 
@@ -201,30 +203,48 @@ void RosLidar::pointCloudPubCallback(rclcpp::PublisherBase* pub)
     {
         return;
     }
-    sensor_msgs::msg::PointCloud point_cloud_msg;
-    point_cloud_msg.header.frame_id = mFrameId;
+    typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
+    std_msgs::msg::Header header_msg;
+    PointCloud point_cloud;
+    header_msg.frame_id = mFrameId;
+
+
+    point_cloud.header.frame_id = mFrameId;
+
+
     if (mUseSimTime)
     {
-        point_cloud_msg.header.stamp = rclcpp::Time(mTimeNanoSeconds);
+        header_msg.stamp = rclcpp::Time(mTimeNanoSeconds);
     }
     else
     {
-        point_cloud_msg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
+        header_msg.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
     }
 
 
     carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(mLidarPath.GetString().c_str());
     int rows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str());
     int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
+    pcl_conversions::toPCL(header_msg, point_cloud.header);
+
+    point_cloud.height = rows;
+    point_cloud.width = numColsTicked;
+
+    std::vector<int> points;
+
     for (int i = 0; i < rows * numColsTicked; i++)
     {
-        geometry_msgs::msg::Point32 points;
+        pcl::PointXYZ points;
         points.x = lidarData[i].x * mUnitScale;
         points.y = lidarData[i].y * mUnitScale;
         points.z = lidarData[i].z * mUnitScale;
-        point_cloud_msg.points.push_back(points);
+
+        point_cloud.points.push_back(points);
     }
-    static_cast<rclcpp::Publisher<sensor_msgs::msg::PointCloud, std::allocator<void>>*>(pub)->publish(point_cloud_msg);
+
+    sensor_msgs::msg::PointCloud2 point_cloud_msg;
+    pcl::toROSMsg(point_cloud, point_cloud_msg);
+    static_cast<rclcpp::Publisher<sensor_msgs::msg::PointCloud2, std::allocator<void>>*>(pub)->publish(point_cloud_msg);
 }
 
 
