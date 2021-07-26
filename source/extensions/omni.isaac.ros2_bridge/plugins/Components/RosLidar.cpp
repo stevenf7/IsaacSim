@@ -63,6 +63,7 @@ void RosLidar::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeC
 }
 void RosLidar::onStart()
 {
+    resetLaserScan = true;
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
     onComponentChange();
 }
@@ -137,6 +138,7 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
 
     bool highLod = false;
     isaac::utils::safeGetAttribute(mLidarPrim.GetHighLodAttr(), highLod);
+
     if (highLod)
     {
         CARB_LOG_ERROR(
@@ -169,32 +171,109 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
 
     float maxRange = 100;
     float minRange = 0.4;
-    float rotationRate = 20;
+    float rotationRate = 0.0;
     float horizontalResolution = 0.4;
+    float horizontalFov = 360;
 
     isaac::utils::safeGetAttribute(mLidarPrim.GetMaxRangeAttr(), maxRange);
     isaac::utils::safeGetAttribute(mLidarPrim.GetMinRangeAttr(), minRange);
     isaac::utils::safeGetAttribute(mLidarPrim.GetRotationRateAttr(), rotationRate);
     isaac::utils::safeGetAttribute(mLidarPrim.GetHorizontalResolutionAttr(), horizontalResolution);
+    isaac::utils::safeGetAttribute(mLidarPrim.GetHorizontalFovAttr(), horizontalFov);
 
+    size_t numBeamsTotal = horizontalFov / horizontalResolution;
 
-    laser_msg.angle_min = std::min(theta[0], theta[numColsTicked - 1]);
-    laser_msg.angle_max = std::max(theta[0], theta[numColsTicked - 1]);
-    laser_msg.angle_increment = horizontalResolution * M_PI / 180.0;
-    laser_msg.time_increment = mTimeDelta;
-    laser_msg.scan_time = rotationRate ? 1.0 / rotationRate : 0;
-    laser_msg.range_min = minRange;
-    laser_msg.range_max = maxRange;
-    laser_msg.ranges.resize(numBeams);
-    laser_msg.intensities.resize(numBeams);
-    std::memcpy(laser_msg.ranges.data(), ranges, numBeams * sizeof(float));
-    // Need to convert from uint8 to float
-    for (size_t i = 0; i < numBeams; i++)
+    if (horizontalResolution == 0.0)
     {
-        laser_msg.intensities[i] = static_cast<float>(intensities[i]);
+        CARB_LOG_ERROR("Lidar Prim %s: Horizontal Resolution must be greater than 0.0", mLidarPath.GetString().c_str());
+        return;
+    }
+    if (horizontalFov == 0.0)
+    {
+        CARB_LOG_ERROR("Lidar Prim %s: Horizontal FOV must be greater than 0.0", mLidarPath.GetString().c_str());
+        return;
     }
 
-    static_cast<rclcpp::Publisher<sensor_msgs::msg::LaserScan, std::allocator<void>>*>(pub)->publish(laser_msg);
+    if (resetLaserScan)
+    {
+        intensities_data.clear();
+        ranges_data.clear();
+        numBeamsRemaining = numBeamsTotal;
+        angle_min = std::min(theta[0], theta[numColsTicked - 1]);
+        prev_rotationRate = rotationRate;
+        prev_horizontalResolution = horizontalResolution;
+        prev_horizontalFov = horizontalFov;
+        resetLaserScan = false;
+    }
+
+    if (prev_rotationRate != rotationRate || prev_horizontalResolution != horizontalResolution ||
+        prev_horizontalFov != horizontalFov)
+    {
+        intensities_data.clear();
+        ranges_data.clear();
+        numBeamsRemaining = numBeamsTotal;
+        prev_rotationRate = rotationRate;
+        prev_horizontalResolution = horizontalResolution;
+
+        if (prev_horizontalFov != horizontalFov)
+        {
+            angle_min = std::min(theta[0], theta[numColsTicked - 1]);
+            prev_horizontalFov = horizontalFov;
+        }
+    }
+
+    if (numBeamsRemaining > numBeams)
+    {
+        for (size_t i = 0; i < numBeams; i++)
+        {
+            intensities_data.push_back(static_cast<float>(intensities[i]));
+            ranges_data.push_back(ranges[i]);
+        }
+        numBeamsRemaining -= numBeams;
+    }
+
+    else if (numBeamsRemaining <= numBeams)
+    {
+
+        // Save data up to maximum FOV
+        size_t i;
+        for (i = 0; i < numBeamsRemaining; i++)
+        {
+            intensities_data.push_back(static_cast<float>(intensities[i]));
+            ranges_data.push_back(ranges[i]);
+        }
+
+        // Setup ROS Lidar Message
+        laser_msg.angle_min = angle_min;
+        laser_msg.angle_max = angle_min + (horizontalFov * M_PI / 180.0);
+
+
+        laser_msg.scan_time = rotationRate ? 1.0 / rotationRate : 0;
+        laser_msg.range_min = minRange;
+        laser_msg.range_max = maxRange;
+
+        laser_msg.ranges = ranges_data;
+        laser_msg.intensities = intensities_data;
+
+        laser_msg.angle_increment = horizontalResolution * M_PI / 180.0;
+        laser_msg.time_increment = (horizontalFov / 360.0 * laser_msg.scan_time) / laser_msg.ranges.size();
+
+        static_cast<rclcpp::Publisher<sensor_msgs::msg::LaserScan, std::allocator<void>>*>(pub)->publish(laser_msg);
+
+        // Reset fields for new ROS Lidar message
+        ranges_data.clear();
+        intensities_data.clear();
+
+        // Save remaining data
+        size_t numBeamsOffset = numBeams - numBeamsRemaining;
+        for (size_t j = 0; j < numBeamsOffset; j++)
+        {
+            intensities_data.push_back(static_cast<float>(intensities[i]));
+            ranges_data.push_back(ranges[i]);
+            i++;
+        }
+        numBeamsRemaining = numBeamsTotal - numBeamsOffset;
+    }
 }
 
 void RosLidar::pointCloudPubCallback(rclcpp::PublisherBase* pub)
@@ -207,10 +286,6 @@ void RosLidar::pointCloudPubCallback(rclcpp::PublisherBase* pub)
     std_msgs::msg::Header header_msg;
     PointCloud point_cloud;
     header_msg.frame_id = mFrameId;
-
-
-    point_cloud.header.frame_id = mFrameId;
-
 
     if (mUseSimTime)
     {
