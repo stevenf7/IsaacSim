@@ -103,3 +103,4 @@ outputs.yml
 .vscode/settings.json
 
 .nvidia-omniverse
+PACKAGE-DEPS.yaml
