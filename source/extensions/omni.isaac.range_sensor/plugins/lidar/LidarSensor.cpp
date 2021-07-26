@@ -64,45 +64,14 @@ void LidarSensor::onComponentChange()
 
     const pxr::RangeSensorSchemaLidar& typedPrim = (pxr::RangeSensorSchemaLidar)mPrim;
 
-
-    if (typedPrim.GetHorizontalFovAttr().HasValue())
-    {
-        typedPrim.GetHorizontalFovAttr().Get(&mHorizontalFov);
-    }
-
-    if (typedPrim.GetVerticalFovAttr().HasValue())
-    {
-        typedPrim.GetVerticalFovAttr().Get(&mVerticalFov);
-    }
-
-    if (typedPrim.GetHorizontalResolutionAttr().HasValue())
-    {
-        typedPrim.GetHorizontalResolutionAttr().Get(&mHorizontalResolution);
-    }
-
-    if (typedPrim.GetVerticalResolutionAttr().HasValue())
-    {
-        typedPrim.GetVerticalResolutionAttr().Get(&mVerticalResolution);
-    }
-
-    if (typedPrim.GetRotationRateAttr().HasValue())
-    {
-        typedPrim.GetRotationRateAttr().Get(&mRotationRate);
-    }
-
-    if (typedPrim.GetHighLodAttr().HasValue())
-    {
-        typedPrim.GetHighLodAttr().Get(&mHighLod);
-    }
-    if (typedPrim.GetYawOffsetAttr().HasValue())
-    {
-        typedPrim.GetYawOffsetAttr().Get(&mYawOffset);
-    }
-    if (typedPrim.GetEnableSemanticsAttr().HasValue())
-    {
-        typedPrim.GetEnableSemanticsAttr().Get(&mEnableSemantics);
-    }
-
+    isaac::utils::safeGetAttribute(typedPrim.GetHorizontalFovAttr(), mHorizontalFov);
+    isaac::utils::safeGetAttribute(typedPrim.GetVerticalFovAttr(), mVerticalFov);
+    isaac::utils::safeGetAttribute(typedPrim.GetHorizontalResolutionAttr(), mHorizontalResolution);
+    isaac::utils::safeGetAttribute(typedPrim.GetVerticalResolutionAttr(), mVerticalResolution);
+    isaac::utils::safeGetAttribute(typedPrim.GetRotationRateAttr(), mRotationRate);
+    isaac::utils::safeGetAttribute(typedPrim.GetHighLodAttr(), mHighLod);
+    isaac::utils::safeGetAttribute(typedPrim.GetYawOffsetAttr(), mYawOffset);
+    isaac::utils::safeGetAttribute(typedPrim.GetEnableSemanticsAttr(), mEnableSemantics);
 
     // we have to have atleast one beam so the FOV can never be smaller than resolution
     mHorizontalResolution = pxr::GfClamp(mHorizontalResolution, 0.005f, 1024);

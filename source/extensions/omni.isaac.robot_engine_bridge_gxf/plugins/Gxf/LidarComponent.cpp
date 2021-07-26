@@ -119,10 +119,7 @@ void LidarComponent::publishAllMessages()
     float* ranges = mLidarSensorInterface->getLinearDepthData(mLidarPath.GetString().c_str());
 
     float maxRange = 100;
-    if (lidarPrim.GetMaxRangeAttr().HasValue())
-    {
-        lidarPrim.GetMaxRangeAttr().Get(&maxRange);
-    }
+    isaac::utils::safeGetAttribute(lidarPrim.GetMaxRangeAttr(), maxRange);
 
     for (int i = 0, ray_idx = 0; i < numHorizontalAngles; i++)
     {

@@ -158,22 +158,11 @@ void UltrasonicComponent::publishAllMessages()
 
 
     float maxRange = 1.0f;
-    if (ultrasonicPrim.GetMaxRangeAttr().HasValue())
-    {
-        ultrasonicPrim.GetMaxRangeAttr().Get(&maxRange);
-    }
-
     float minRange = 0.0f;
-    if (ultrasonicPrim.GetMinRangeAttr().HasValue())
-    {
-        ultrasonicPrim.GetMinRangeAttr().Get(&minRange);
-    }
     float horizFov = 1.0f;
-    if (ultrasonicPrim.GetHorizontalFovAttr().HasValue())
-    {
-        ultrasonicPrim.GetHorizontalFovAttr().Get(&horizFov);
-    }
-
+    isaac::utils::safeGetAttribute(ultrasonicPrim.GetMaxRangeAttr(), maxRange);
+    isaac::utils::safeGetAttribute(ultrasonicPrim.GetMinRangeAttr(), minRange);
+    isaac::utils::safeGetAttribute(ultrasonicPrim.GetHorizontalFovAttr(), horizFov);
 
     auto emitter_info = mUltrasonicSensorInterface->getEmitterFiringInfo(mUltrasonicPath.GetString().c_str());
     auto receiver_info = mUltrasonicSensorInterface->getReceiverFiringInfo(mUltrasonicPath.GetString().c_str());
