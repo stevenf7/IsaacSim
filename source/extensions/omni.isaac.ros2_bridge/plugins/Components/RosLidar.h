@@ -52,9 +52,18 @@ private:
     omni::isaac::range_sensor::LidarSensorInterface* mLidarSensorInterface = nullptr;
     pxr::RangeSensorSchemaLidar mLidarPrim;
     std::string mFrameId = "sim_lidar";
-
     bool mEnablePointCloud = false;
     std::string mPointCloudPubTopic = "/point_cloud";
+
+    std::vector<float> intensities_data;
+    std::vector<float> ranges_data;
+    size_t numBeamsRemaining;
+    float angle_min;
+    bool resetLaserScan = true;
+
+    float prev_rotationRate;
+    float prev_horizontalResolution;
+    float prev_horizontalFov;
 
     double mUnitScale;
 };
