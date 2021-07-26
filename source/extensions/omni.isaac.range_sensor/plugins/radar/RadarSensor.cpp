@@ -60,15 +60,8 @@ void RadarSensor::onComponentChange()
 
     const pxr::RangeSensorSchemaRadar& typedPrim = (pxr::RangeSensorSchemaRadar)mPrim;
 
-
-    if (typedPrim.GetRotationRateAttr().HasValue())
-    {
-        typedPrim.GetRotationRateAttr().Get(&mRotationRate);
-    }
-    if (typedPrim.GetYawOffsetAttr().HasValue())
-    {
-        typedPrim.GetYawOffsetAttr().Get(&mYawOffset);
-    }
+    isaac::utils::safeGetAttribute(typedPrim.GetRotationRateAttr(), mRotationRate);
+    isaac::utils::safeGetAttribute(typedPrim.GetYawOffsetAttr(), mYawOffset);
 }
 
 

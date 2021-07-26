@@ -117,10 +117,7 @@ void LidarComponent::publishAllMessages()
     uint16_t* ranges = mLidarSensorInterface->getDepthData(mLidarPath.GetString().c_str());
 
     float maxRange = 100;
-    if (lidarPrim.GetMaxRangeAttr().HasValue())
-    {
-        lidarPrim.GetMaxRangeAttr().Get(&maxRange);
-    }
+    isaac::utils::safeGetAttribute(lidarPrim.GetMaxRangeAttr(), maxRange);
 
     scanMessageProto.setTheta(kj::ArrayPtr<const float>(theta, theta + numColsTicked));
     scanMessageProto.setPhi(kj::ArrayPtr<const float>(phi, phi + numRows));

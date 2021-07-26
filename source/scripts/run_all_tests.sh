@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 
 shopt -s globstar
 args=""
@@ -15,7 +16,9 @@ if [[ -z "${DISPLAY}" ]]; then
     args="$args --no-window"
 fi
 
+pushd $SCRIPT_DIR
 for f in tests-*.sh; do
-    echo "executing $f"
+    echo "Executing Test: $f"
     bash "$f" $args $@
 done
+popd

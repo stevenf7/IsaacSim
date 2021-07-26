@@ -61,11 +61,7 @@ void GenericSensor::onComponentChange()
 
     const pxr::RangeSensorSchemaGeneric& typedPrim = (pxr::RangeSensorSchemaGeneric)mPrim;
 
-
-    if (typedPrim.GetSamplingRateAttr().HasValue())
-    {
-        typedPrim.GetSamplingRateAttr().Get(&mSamplingRate);
-    }
+    isaac::utils::safeGetAttribute(typedPrim.GetSamplingRateAttr(), mSamplingRate);
 
     mMinRange = pxr::GfClamp(mMinRange, 0, 1e9f);
     mMaxRange = pxr::GfClamp(mMaxRange, mMinRange, 1e9f);
