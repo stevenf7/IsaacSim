@@ -45,9 +45,10 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Run all commands
     async def test_ros2_tick_command(self):
 
-        result, prim = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock")
+        result, prim = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock", enabled=False)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
         result, prim = omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_Clock")
 
-        self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()

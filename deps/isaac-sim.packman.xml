@@ -11,7 +11,7 @@
         <package name="nv_ros" version="noetic_20210723_0b33cab-linux64_release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="nv_ros2" linkPath="../_build/target-deps/nv_ros2">
-        <package name="nv_ros2" version="foxy_20210723_d652383-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros2" version="foxy_20210727_51d913f-linux64_release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
         <package name="lula" version="v0.4.0_cf83e41.linux-x86_64.release" platforms="linux-x86_64"/>
