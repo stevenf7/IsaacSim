@@ -225,6 +225,7 @@ group "exts"
     include ("source/extensions/omni.isaac.urdf")
     include ("source/extensions/omni.isaac.onshape")
     include ("source/extensions/omni.isaac.samples")
+    include ("source/extensions/omni.isaac.ui")
     include ("source/extensions/omni.isaac.ui_template")
     -- include ("source/extensions/omni.isaac.samples_internal")
     include ("source/extensions/omni.isaac.synthetic_utils")

@@ -17,6 +17,8 @@ import numpy as np
 import asyncio
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
+from omni.isaac.ui.scripts.ui_utils import *
+
 from omni.isaac.dynamic_control import _dynamic_control
 
 from pxr import Gf
@@ -24,13 +26,16 @@ from pxr import Gf
 from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics, create_background
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-EXTENSION_NAME = "Jetbot Sample"
+EXTENSION_NAME = "Jetbot Keyboard"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
-        """Initialize extension and UI elements
-        """
+    def on_startup(self, ext_id: str):
+        """Initialize extension and UI elements"""
+
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._extension_path = ext_manager.get_extension_path(ext_id)
+
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
@@ -70,27 +75,67 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                title=EXTENSION_NAME, width=300, height=200, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME, width=0, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
-            # self._window.set_update_fn(self._on_update_ui)
-
             with self._window.frame:
-                with ui.VStack():
-                    self._load_jetbot_btn = ui.Button(
-                        "Load Jetbot",
-                        clicked_fn=self._on_environment_setup,
+                with ui.VStack(spacing=5, height=0):
+
+                    title = "NVIDIA Jetbot Navigation Example"
+                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_jetbot.html"
+                    ext_path = (
+                        os.path.dirname(self._extension_path)
+                        if os.path.isfile(self._extension_path)
+                        else self._extension_path
+                    )
+                    build_header(ext_path, __file__, title, doc_link)
+
+                    overview = "This Example shows how to simulate an NVIDIA Jetbot robot in Isaac Sim."
+                    overview += "\n\tKeybord Input:"
+                    overview += "\n\t\tw: Forward"
+                    overview += "\n\t\ts: Reverse"
+                    overview += "\n\t\ta: Spin Left"
+                    overview += "\n\t\td: Spin Right"
+                    overview += "\n\nPress the 'Open in IDE' button to view the source code."
+                    author = "Isaac Sim Team"
+                    date = "07/01/2021"
+                    build_info_frame(overview, author, date)
+
+                    log_filename = EXTENSION_NAME.lower()
+                    log_filename = log_filename.replace(" ", "_") + ".log"
+                    build_settings_frame(log_filename)
+
+                    frame = ui.CollapsableFrame(
+                        title="Command Panel",
                         height=0,
-                        tooltip="Reset the stage and load the jetbot environment",
+                        collapsed=False,
+                        style=get_style(),
+                        style_type_name_override="CollapsableFrame",
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                     )
-                    self._reset_btn = ui.Button(
-                        "Reset Robot", height=0, clicked_fn=self._on_reset, tooltip="Reset Robot to origin"
-                    )
+                    with frame:
+                        with ui.VStack(style=get_style(), spacing=5):
+                            dict = {
+                                "label": "Load Robot",
+                                "type": "button",
+                                "text": "Load",
+                                "tooltip": "Load a NVIDIA Jetbot robot into the Scene",
+                                "on_clicked_fn": self._on_environment_setup,
+                            }
+                            self._load_jetbot_btn = btn_builder(**dict)
 
-                    self._load_jetbot_btn.enabled = True
-                    self._reset_btn.enabled = False
+                            dict = {
+                                "label": "Reset Robot",
+                                "type": "button",
+                                "text": "Reset",
+                                "tooltip": "Reset the Robot to the origin",
+                                "on_clicked_fn": self._on_reset,
+                            }
+                            self._reset_btn = btn_builder(**dict)
 
-                    ui.Separator(height=3)
-                    ui.Label("keyboard map:\nw: forward\ns: reverse\na: left spin\nd: right spin")
+                            self._load_jetbot_btn.enabled = True
+                            self._reset_btn.enabled = False
+
         self._window.visible = True
 
     def _sub_keyboard_event(self, event, *args, **kwargs):
@@ -193,7 +238,7 @@ class Extension(omni.ext.IExt):
         """Update jetbot physics once per step
         """
         if not self._timeline.is_playing():
-            self._reset_btn.text = "Press Play to Enable Controller"
+            # self._reset_btn.text = "Press Play to Enable Controller"
             self._reset_btn.enabled = False
             return
         if not self._dc.is_simulating():
@@ -210,7 +255,7 @@ class Extension(omni.ext.IExt):
             self._dc.set_dof_velocity_target(
                 self._wheel_left, np.clip(self._vel_target[1], -self._max_velocity, self._max_velocity)
             )
-            self._reset_btn.text = "Reset Robot"
+            # self._reset_btn.text = "Reset Robot"
             self._load_jetbot_btn.enabled = False
             self._reset_btn.enabled = True
         else:

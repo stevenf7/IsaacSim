@@ -23,12 +23,14 @@ import collections
 
 EXTENSION_NAME = "Generic Info"
 
+from omni.isaac.ui.scripts.ui_utils import *
+
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
-        """
-        This sample is written to demonstrate the Generic python API for Isaac Sim.
-        """
+    def on_startup(self, ext_id: str):
+        """Initialize extension and UI elements"""
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._extension_path = ext_manager.get_extension_path(ext_id)
 
         # The extension acquires the Generic Sensor interface at startup.  It will be released during extension shutdown.  We
         # create a Generic prim using our schema, and then we interact with / query that prim using the python API found
@@ -48,12 +50,6 @@ class Extension(omni.ext.IExt):
         #         self._on_stage_event, name="physics inspector stage event"
         #     )
 
-        # This just defines the window we will use to access the generic_info GUI.  Note that clicking on the menu item
-        # does not create an instance of generic_info; that is done by the extension when it is loaded by kit.  All this
-        # menu does is show or hide our GUI we will use for interacting with generic_info
-        self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
-        )
         self._menu_items = [
             MenuItemDescription(
                 name="Sensing",
@@ -73,60 +69,109 @@ class Extension(omni.ext.IExt):
         self.plot_duration = 2  # in seconds
         self._record_start = time.perf_counter()
 
-        # Kit GUIs are defined by a tree of layouts, and leaf layouts contain GUI elements (like buttons or
-        # text entry fields).  You can learn more about Layouts and GUIs in the python manual at
-        # Scripting API > omni.kit package > omni.ui module.
-        # Each button below has a tooltip and a function that is called when the button is clicked
+        self._build_ui()
+
+    def _build_ui(self):
+        self._window = omni.ui.Window(
+            EXTENSION_NAME, width=600, height=0, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
+        )
         with self._window.frame:
-            with ui.VStack():
-                ui.Label(
-                    "This sample demonstrates how to create a generic range sensor, set properties and get data from it. Press play once sensor is created to simulate",
-                    height=0,
-                    word_wrap=True,
+            with ui.VStack(spacing=5, height=0):
+                title = "Read a Generic Range Sensor Data Stream"
+                doc_link = (
+                    "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_range_sensor.html"
                 )
-                ui.Button(
-                    "Clean Stage And Spawn a Generic Sensor",
-                    clicked_fn=self._on_spawn_generic_button,
-                    tooltip="Spawn an Generic Sensor in the Stage and set its properties",
-                    height=0,
+                ext_path = (
+                    os.path.dirname(self._extension_path)
+                    if os.path.isfile(self._extension_path)
+                    else self._extension_path
                 )
-                ui.Button(
-                    "Spawn an Obstacle for the Generic Sensor",
-                    clicked_fn=self._on_spawn_obstacles_button,
-                    tooltip="Spawn an obstacle and move camera so its in view",
+                build_header(ext_path, __file__, title, doc_link)
+
+                overview = "This sample demonstrates the Generic range sensor python API for Isaac Sim. It shows how to create an Generic Range Sensor, set its properties, and read data streaming from it. "
+                overview += "First press the 'Load Sensor' button and then press PLAY to simulate."
+                overview += "\n\nPress the 'Open in IDE' button to view the source code."
+                overview += "\nNote: The buttons above only work with an Ultrasonic sensor made by the 'Load Sensor' button; not existing ones in the stage."
+                author = "Isaac Sim Team"
+                date = "07/01/2021"
+                build_info_frame(overview, author, date)
+
+                log_filename = EXTENSION_NAME.lower()
+                log_filename = log_filename.replace(" ", "_") + ".log"
+                build_settings_frame(log_filename)
+
+                frame = ui.CollapsableFrame(
+                    title="Command Panel",
                     height=0,
+                    collapsed=False,
+                    style=get_style(),
+                    style_type_name_override="CollapsableFrame",
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                 )
-                ui.Button(
-                    "Set Sensor Pattern",
-                    clicked_fn=self._set_sensor_pattern,
-                    tooltip="Press play to enable simulation and then press this button to get the current sensor information",
+                with frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
+                        dict = {
+                            "label": "Load Sensor",
+                            "type": "button",
+                            "text": "Load",
+                            "tooltip": "Loads a Range Sensor and sets its properties",
+                            "on_clicked_fn": self._on_spawn_generic_button,
+                        }
+                        btn_builder(**dict)
+
+                        dict = {
+                            "label": "Load Scene",
+                            "type": "button",
+                            "text": "Load",
+                            "tooltip": "Loads a obstacles for the Range Sensor to sense",
+                            "on_clicked_fn": self._on_spawn_obstacles_button,
+                        }
+                        btn_builder(**dict)
+
+                        dict = {
+                            "label": "Set Sensor Pattern",
+                            "type": "button",
+                            "text": "Set",
+                            "tooltip": "Sets a Custom Sensor pattern",
+                            "on_clicked_fn": self._set_sensor_pattern,
+                        }
+                        btn_builder(**dict)
+
+                        dict = {
+                            "label": "Show Data Stream",
+                            "type": "checkbox_scrolling_frame",
+                            "default_val": [False, "No Data To Display"],
+                            "tooltip": "Show incoming data from an active Sensor",
+                            "on_clicked_fn": self._get_info_function,
+                        }
+                        self._info_label = combo_cb_scrolling_frame_builder(**dict)[1]
+
+                self._output_frame = ui.CollapsableFrame(
+                    title="Save Out Images",
                     height=0,
+                    collapsed=False,
+                    style=get_style(),
+                    style_type_name_override="CollapsableFrame",
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                 )
-                ui.Button(
-                    "Get data from the Sensor (press play first)",
-                    clicked_fn=self._get_info_function,
-                    tooltip="Press play to enable simulation and then press this button to get the current LIDAR information",
-                    height=0,
-                )
-                ui.Label(
-                    'Note: The buttons above only work with the sensor spawned by the "Spawn an Generic Sensor" button and not existing ones in the stage',
-                    height=0,
-                    word_wrap=True,
-                )
-                ui.Button(
-                    "Plot Sensor Pattern",
-                    clicked_fn=self._on_plot_sensor_pattern,
-                    tooltip="Plot the sensor's hit pattern on the wall",
-                    height=0,
-                )
-                # The separator is an example of a widget that does not contain any interactive functionality.
-                # a tiny gap in the UI in order separate one part from another.
-                ui.Spacer(height=5)
-                ui.Separator(height=1, width=0)
-                ui.Spacer(height=5)
-                ui.Label("Output Information:", height=0)
-                with ui.ScrollingFrame():
-                    self._info_label = ui.Label("No Data To Display", word_wrap=True)
+                with self._output_frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
+                        dict = {
+                            "label": "Output Directory",
+                            "type": "stringfield",
+                            "default_val": "/home/",
+                            "tooltip": "Save Out Sensor Data",
+                            # "on_clicked_fn": self._on_dummy_callable_0,
+                            "use_folder_picker": True,
+                        }
+                        str_builder(**dict)
+                        state_btn_builder("", "button", "START", "STOP", "", self._save_out)
+
+    def _save_out(self, val):
+
+        pass
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes

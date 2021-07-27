@@ -25,26 +25,30 @@ import weakref
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties, Surface_Gripper
 
+from omni.isaac.ui.scripts.ui_utils import *
+
 
 EXTENSION_NAME = "Surface Gripper"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
-        """
-        Creates the User inferface and loads the interfaces for required libraries.
-        """
+    def on_startup(self, ext_id: str):
+        """Initialize extension and UI elements"""
+
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._extension_path = ext_manager.get_extension_path(ext_id)
 
         # Loads interfaces
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._dc = dc.acquire_dynamic_control_interface()
         self._usd_context = omni.usd.get_context()
+        self._window = None
+        self._models = {}
         # Creates UI window with default size of 600x300
-        self._window = omni.ui.Window(
-            title=EXTENSION_NAME, width=300, height=200, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
-        )
-        self._window.set_visibility_changed_fn(self._on_window)
+        # self._window = omni.ui.Window(
+        #     title=EXTENSION_NAME, width=300, height=200, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        # )
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
@@ -53,51 +57,118 @@ class Extension(omni.ext.IExt):
                 name="Controlling", sub_menu=[MenuItemDescription(name="Manipulation", sub_menu=menu_items)]
             )
         ]
-        # self._menu_items = [
-        #     MenuItemDescription(
-        #         name="Samples",
-        #         sub_menu=[
-        #             MenuItemDescription(
-        #                 name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
-        #             )
-        #         ],
-        #     )
-        # ]
         add_menu_items(self._menu_items, "Isaac Examples")
-        self._models = {}
-        with self._window.frame:
-            with ui.VStack(height=0):
-                self._models["create_button"] = ui.Button(
-                    "Create Scenario",
-                    clicked_fn=self._on_create_scenario_button_clicked,
-                    tooltip="Creates a new scenario with the cone on top of the Cube",
-                )
-                self._models["toggle_button"] = ui.Button(
-                    "Close Gripper",
-                    clicked_fn=self._on_toggle_gripper_button_clicked,
-                    tooltip="Toggles the surface gripper",
-                )
-                with ui.HStack(height=0):
-                    ui.Label("Gripper Force Up")
-                    self._models["force_slider"] = ui.FloatSlider(min=0.0, max=5.0e4).model
-                    self._models["force_button"] = ui.Button(
-                        "Apply Force",
-                        clicked_fn=self._on_force_button_clicked,
-                        tooltip="Applies a force on the Z axis on the cone Center of Mass with the slider value",
-                    )
-                with ui.HStack(height=0):
-                    ui.Label("Gripper Speed Up")
-                    self._models["speed_slider"] = ui.FloatSlider(min=0.0, max=1.0e3).model
-                    self._models["speed_button"] = ui.Button(
-                        "Set Speed",
-                        clicked_fn=self._on_speed_button_clicked,
-                        tooltip="Sets the Cone velocity towards the Z axis with the slider value",
-                    )
+
+        self._build_ui()
 
         self.surface_gripper = None
         self.cone = None
         self.box = None
         self._stage_id = -1
+
+    def _build_ui(self):
+        if not self._window:
+            self._window = ui.Window(
+                title=EXTENSION_NAME, width=0, height=0, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            )
+            self._window.set_visibility_changed_fn(self._on_window)
+            with self._window.frame:
+                with ui.VStack(spacing=5, height=0):
+                    title = "Surface Gripper Example"
+                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_utils_surface_gripper.html"
+                    ext_path = (
+                        os.path.dirname(self._extension_path)
+                        if os.path.isfile(self._extension_path)
+                        else self._extension_path
+                    )
+                    build_header(ext_path, __file__, title, doc_link)
+
+                    overview = "This Example shows how to simulate a suction-cup gripper in Isaac Sim. "
+                    overview += "It simulates suction by creating a Joint between two bodies when the parent and child bodies are close at the gripper's point of contact."
+                    overview += "\n\nPress the 'Open in IDE' button to view the source code."
+                    author = "Isaac Sim Team"
+                    date = "07/01/2021"
+                    build_info_frame(overview, author, date)
+
+                    log_filename = EXTENSION_NAME.lower()
+                    log_filename = log_filename.replace(" ", "_") + ".log"
+                    build_settings_frame(log_filename)
+
+                    frame = ui.CollapsableFrame(
+                        title="Command Panel",
+                        height=0,
+                        collapsed=False,
+                        style=get_style(),
+                        style_type_name_override="CollapsableFrame",
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    )
+                    with frame:
+                        with ui.VStack(style=get_style(), spacing=5):
+
+                            args = {
+                                "label": "Load Scene",
+                                "type": "button",
+                                "text": "Load",
+                                "tooltip": "Load a gripper into the Scene",
+                                "on_clicked_fn": self._on_create_scenario_button_clicked,
+                            }
+                            self._models["create_button"] = btn_builder(**args)
+
+                            args = {
+                                "label": "Gripper State",
+                                "type": "button",
+                                "a_text": "Open",
+                                "b_text": "Close",
+                                "tooltip": "Open and Close the Gripper",
+                                "on_clicked_fn": self._on_toggle_gripper_button_clicked,
+                            }
+                            self._models["toggle_button"] = state_btn_builder(**args)
+
+                            add_separator()
+
+                            args = {
+                                "label": "Gripper Force (UP)",
+                                "default_val": 0,
+                                "min": 0,
+                                "max": 5.0e4,
+                                "step": 1,
+                                "tooltip": ["Force in ()", "Force in ()"],
+                            }
+                            self._models["force_slider"], slider = combo_floatfield_slider_builder(**args)
+
+                            args = {
+                                "label": "Set Force",
+                                "type": "button",
+                                "text": "APPLY",
+                                "tooltip": "Apply the Gripper Force to the Z-Axis of the Cone",
+                                "on_clicked_fn": self._on_force_button_clicked,
+                            }
+                            self._models["force_button"] = btn_builder(**args)
+
+                            args = {
+                                "label": "Gripper Speed (UP)",
+                                "default_val": 0,
+                                "min": 0,
+                                "max": 1.0e3,
+                                "step": 1,
+                                "tooltip": ["Speed in ()", "Speed in ()"],
+                            }
+
+                            add_separator()
+
+                            self._models["speed_slider"], slider = combo_floatfield_slider_builder(**args)
+
+                            args = {
+                                "label": "Set Speed",
+                                "type": "button",
+                                "text": "APPLY",
+                                "tooltip": "Apply Cone Velocity in the Z-Axis",
+                                "on_clicked_fn": self._on_speed_button_clicked,
+                            }
+                            self._models["speed_button"] = btn_builder(**args)
+
+                            ui.Spacer()
 
     def on_shutdown(self):
         remove_menu_items(self._menu_items, "Isaac Examples")
@@ -126,7 +197,7 @@ class Extension(omni.ext.IExt):
         # If the scene has been reloaded, reset UI to create Scenario
         if self._usd_context.get_stage_id() != self._stage_id:
             self._models["create_button"].enabled = True
-            self._models["create_button"].text = "Create Scenario"
+            # self._models["create_button"].text = "Create Scenario"
             self._models["create_button"].set_tooltip("Creates a new scenario with the cone on top of the Cube")
             self._models["create_button"].set_clicked_fn(self._on_create_scenario_button_clicked)
             self.cone = None
@@ -135,11 +206,12 @@ class Extension(omni.ext.IExt):
 
     def _toggle_gripper_button_ui(self):
         # Checks if the surface gripper has been created
-        if self.surface_gripper is not None:
-            if self.surface_gripper.is_closed():
-                self._models["toggle_button"].text = "Open Gripper"
-            else:
-                self._models["toggle_button"].text = "Close Gripper"
+        # if self.surface_gripper is not None:
+        #     if self.surface_gripper.is_closed():
+        #         self._models["toggle_button"].text = "Open Gripper"
+        #     else:
+        #         self._models["toggle_button"].text = "Close Gripper"
+        pass
 
     def _on_simulation_step(self, step):
         # Checks if the simulation is playing, and if the stage has been loaded
@@ -174,7 +246,7 @@ class Extension(omni.ext.IExt):
         done, pending = await asyncio.wait({task})
         if task in done:
             # Repurpose button to reset Scene
-            self._models["create_button"].text = "Reset Scene"
+            # self._models["create_button"].text = "Reset Scene"
             self._models["create_button"].set_tooltip("Resets scenario with the cone on top of the Cube")
 
             # Get Handle for stage and stage ID to check if stage was reloaded
@@ -255,7 +327,7 @@ class Extension(omni.ext.IExt):
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._create_scenario(task))
 
-    def _on_toggle_gripper_button_clicked(self):
+    def _on_toggle_gripper_button_clicked(self, val=False):
         if self._timeline.is_playing():
             if self.surface_gripper.is_closed():
                 self.surface_gripper.open()

@@ -13,6 +13,8 @@ import omni.ext
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
+from omni.isaac.ui.scripts.ui_utils import *
+
 import asyncio
 import gc
 import weakref
@@ -44,13 +46,19 @@ def create_xyz(init={"X": 100, "Y": 100, "Z": 0}):
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
+        """Initialize extension and UI elements"""
+
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._extension_path = ext_manager.get_extension_path(ext_id)
+
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._window = ui.Window(EXTENSION_NAME, width=500, height=175, visible=False)
-        self._window.set_visibility_changed_fn(self._on_window)
+        self._window = None
+        # self._window = ui.Window(EXTENSION_NAME, width=500, height=175, visible=False)
+        # self._window.set_visibility_changed_fn(self._on_window)
 
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
@@ -62,7 +70,7 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-        self._create_ui()
+        self._build_ui()
 
         self._setup_done = False
         self._rc = None
@@ -78,37 +86,114 @@ class Extension(omni.ext.IExt):
         else:
             self._sub_stage_event = None
 
-    def _create_ui(self):
-        with self._window.frame:
-            with omni.ui.VStack():
-                with ui.HStack(height=5):
-                    ui.Spacer(width=7)
-                    self._robot_option = ui.ComboBox(0, "Transporter", "Carter", width=125)
-                with ui.HStack(height=5):
-                    ui.Spacer(width=5)
-                    self._load_btn = ui.Button("Load Environment", width=125)
-                    self._load_btn.set_clicked_fn(self._on_environment_setup)
-                with ui.HStack(height=5):
-                    ui.Spacer(width=9)
-                    self._motion_label = ui.Label("Primitive Tasks", width=100)
-                    self._motion_label.set_tooltip(
-                        "Perform simple tasks like moving robot forward or rotating in-place"
+    def _build_ui(self):
+        if not self._window:
+            self._window = ui.Window(
+                title=EXTENSION_NAME, width=0, height=0, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            )
+            self._window.set_visibility_changed_fn(self._on_window)
+            with self._window.frame:
+                with ui.VStack(spacing=5, height=0):
+                    title = "Mobile Robot Navigation Example"
+                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_navigation.html"
+                    ext_path = (
+                        os.path.dirname(self._extension_path)
+                        if os.path.isfile(self._extension_path)
+                        else self._extension_path
                     )
-                    self._move_btn = ui.Button("Move Robot", width=100, enabled=False)
-                    self._move_btn.set_clicked_fn(self._on_move_fn)
-                    self._rotate_btn = ui.Button("Rotate Robot", width=100, enabled=False)
-                    self._rotate_btn.set_clicked_fn(self._on_rotate_fn)
-                with ui.HStack(height=5):
-                    ui.Spacer(width=9)
-                    self._goal_label = ui.Label("Set Robot Goal", width=100)
-                    self._goal_label.set_tooltip("Set robot target specified as (X, Y, theta)")
-                    self.goal_coord = create_xyz(init={"X": -200, "Y": -400, "Z": 0})
-                with ui.HStack(height=5):
-                    ui.Spacer(width=5)
-                    self._navigate_btn = ui.Button("Navigate Robot", width=100, enabled=False)
-                    self._navigate_btn.set_clicked_fn(self._on_navigate_fn)
-                    self._stop_btn = ui.Button("Stop Robot", width=100, enabled=False)
-                    self._stop_btn.set_clicked_fn(self._on_navigate_stop_fn)
+                    build_header(ext_path, __file__, title, doc_link)
+
+                    overview = "This Example shows how to simulate non-obstacle based navigation in Isaac Sim."
+                    overview += "\n\nPick a mobile robot to load into the Scene, and then press PLAY to simulate."
+                    overview += "\n\nPress the 'Open in IDE' button to view the source code."
+                    author = "Isaac Sim Team"
+                    date = "07/01/2021"
+                    build_info_frame(overview, author, date)
+
+                    log_filename = EXTENSION_NAME.lower()
+                    log_filename = log_filename.replace(" ", "_") + ".log"
+                    build_settings_frame(log_filename)
+
+                    frame = ui.CollapsableFrame(
+                        title="Command Panel",
+                        height=0,
+                        collapsed=False,
+                        style=get_style(),
+                        style_type_name_override="CollapsableFrame",
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    )
+                    with frame:
+                        with ui.VStack(style=get_style(), spacing=5):
+
+                            args = {
+                                "label": "Robot Type",
+                                "default_val": 0,
+                                "tooltip": "Select which type of Robot to load",
+                                "items": ["Transporter", "Carter"],
+                            }
+                            self._robot_option = dropdown_builder(**args)
+
+                            args = {
+                                "label": "Load Robot",
+                                "type": "button",
+                                "text": "Load",
+                                "tooltip": "Load a mobile robot into the Scene",
+                                "on_clicked_fn": self._on_environment_setup,
+                            }
+                            self._load_btn = btn_builder(**args)
+
+                            args = {
+                                "label": "Move Robot",
+                                "type": "button",
+                                "text": "Move",
+                                "tooltip": "Move the robot Forward",
+                                "on_clicked_fn": self._on_move_fn,
+                            }
+                            self._move_btn = btn_builder(**args)
+
+                            args = {
+                                "label": "Spin Robot",
+                                "type": "button",
+                                "text": "Rotate",
+                                "tooltip": "Rotate the robot",
+                                "on_clicked_fn": self._on_rotate_fn,
+                            }
+                            self._rotate_btn = btn_builder(**args)
+
+                            add_separator()
+
+                            args = {
+                                "label": "Target Pose",
+                                "axis_count": 3,
+                                "min": -1000,
+                                "max": 1000,
+                                "step": 1,
+                                "tooltip": "Pose is specified as (X, Y, theta)",
+                            }
+                            self.goal_coord = xyz_builder(**args)
+
+                            args = {
+                                "label": "Move to Target",
+                                "type": "button",
+                                "text": "Move",
+                                "tooltip": "Move robot to target pose",
+                                "on_clicked_fn": self._on_navigate_fn,
+                            }
+                            self._navigate_btn = btn_builder(**args)
+
+                            args = {
+                                "label": "Stop",
+                                "type": "button",
+                                "text": "Stop",
+                                "tooltip": "Pause the robot when navigating",
+                                "on_clicked_fn": self._on_navigate_stop_fn,
+                            }
+                            self._stop_btn = btn_builder(**args)
+
+                            self._stop_btn.enabled = False
+
+                            ui.Spacer()
 
     async def _create_robot(self, task):
         done, pending = await asyncio.wait({task})
@@ -214,9 +299,9 @@ class Extension(omni.ext.IExt):
         self._rc.control_command(3, -3)
 
     def _on_navigate_fn(self):
-        goal_x = self.goal_coord["X"].model.get_value_as_float()
-        goal_y = self.goal_coord["Y"].model.get_value_as_float()
-        goal_z = self.goal_coord["Z"].model.get_value_as_float()
+        goal_x = self.goal_coord[0].get_value_as_float()
+        goal_y = self.goal_coord[1].get_value_as_float()
+        goal_z = self.goal_coord[2].get_value_as_float()
         print("Navigating to goal ({}, {}, {})".format(goal_x, goal_y, goal_z))
         self._rc.set_goal(goal_x, goal_y, goal_z)
         self._rc.enable_navigation(True)

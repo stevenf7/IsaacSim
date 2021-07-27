@@ -27,6 +27,7 @@ writeTarget.kit = true
 # "omni.graph.core" = {}
 "omni.usd" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
+"omni.isaac.ui" = {}
 
 [[python.module]]
 name = "omni.isaac.dynamic_control"

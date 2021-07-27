@@ -14,7 +14,7 @@ Added
 
 Added
 -------
-- Add UI Utils to lidar
+- New UI
 
 [0.1.2] - 2021-06-03
 ========================
