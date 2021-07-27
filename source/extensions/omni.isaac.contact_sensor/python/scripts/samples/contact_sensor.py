@@ -18,6 +18,7 @@ from omni.physx.bindings._physx import SimulationEvent
 from random import seed
 from random import random
 
+from omni.isaac.ui.scripts.ui_utils import *
 
 import weakref
 from pxr import Usd, UsdGeom
@@ -26,6 +27,9 @@ import omni.physx as _physx
 import omni
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+
+
+EXTENSION_NAME = "Contact Sensor Example"
 
 
 class Contact_sensor_demo(omni.ext.IExt):
@@ -67,22 +71,63 @@ class Contact_sensor_demo(omni.ext.IExt):
             self.lower_joints = ["{}/lower_arm_joint".format(i) for i in self.leg_paths]
             self._sensor_handles = [0 for i in range(4)]
             self.sliders = None
-            self._window = ui.Window(
-                title="Contact Sensor Sample", width=300, height=200, dockPreference=ui.DockPreference.LEFT_BOTTOM
-            )
+            # self._window = ui.Window(
+            #     title="Contact Sensor Sample", width=300, height=200, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            # )
             self.sliders = []
             self.colors = [0xFFBBBBFF, 0xFFBBFFBB, 0xBBFFBBBB, 0xBBBBFFFF]
             style = {"background_color": 0xFF888888, "color": 0xFF333333, "secondary_color": self.colors[0]}
+
+            self.plots = []
+            self.plot_vals = []
+            self._window = ui.Window(
+                title=EXTENSION_NAME, width=0, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            )
             with self._window.frame:
-                with ui.VStack():
-                    ui.Label("Sensor Readings (Newtons)")
-                    for i in range(4):
-                        with ui.HStack():
-                            ui.Label("Arm {}".format(i + 1), width=0)
-                            ui.Spacer(height=0, width=10)
-                            style["secondary_color"] = self.colors[i]
-                            self.sliders.append(ui.FloatDrag(min=0.0, max=15.0, step=0.001, style=style))
-                            self.sliders[-1].enabled = False
+                with ui.VStack(spacing=5, height=0):
+
+                    title = "Contact Sensor Example"
+                    doc_link = (
+                        "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_contact_sensor.html"
+                    )
+                    ext_path = (
+                        os.path.dirname(self._extension_path)
+                        if os.path.isfile(self._extension_path)
+                        else self._extension_path
+                    )
+                    build_header(ext_path, __file__, title, doc_link)
+
+                    overview = "This Example shows how to Surface load sensors applied to a body. "
+                    overview += "It works by summing all forces applied on a given trigger shperical region intersected with the given body surface."
+                    overview += "\nPress PLAY to start the simulation."
+                    overview += "\n\nPress the 'Open in IDE' button to view the source code."
+                    author = "Isaac Sim Team"
+                    date = "07/01/2021"
+                    build_info_frame(overview, author, date)
+
+                    log_filename = EXTENSION_NAME.lower()
+                    log_filename = log_filename.replace(" ", "_") + ".log"
+                    build_settings_frame(log_filename)
+
+                    frame = ui.CollapsableFrame(
+                        title="Sensor Readings",
+                        height=0,
+                        collapsed=False,
+                        style=get_style(),
+                        style_type_name_override="CollapsableFrame",
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    )
+                    with frame:
+                        with ui.VStack(style=get_style(), spacing=5):
+                            for i in range(4):
+                                with ui.HStack():
+                                    ui.Label("Arm {}".format(i + 1), width=LABEL_WIDTH, tooltip="Force in Newtons")
+                                    # ui.Spacer(height=0, width=10)
+                                    style["secondary_color"] = self.colors[i]
+                                    self.sliders.append(ui.FloatDrag(min=0.0, max=15.0, step=0.001, style=style))
+                                    self.sliders[-1].enabled = False
+                                    ui.Spacer(width=20)
 
             asyncio.ensure_future(self.create_scenario())
 

@@ -19,6 +19,8 @@ import omni.ui as ui
 import omni.physx as _physx
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
+from omni.isaac.ui.scripts.ui_utils import *
+
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.manip import _manip, GamePadAxis
 
@@ -32,9 +34,12 @@ EXTENSION_NAME = "Kaya Joystick"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
-        """Initialize extension and UI elements
-        """
+    def on_startup(self, ext_id: str):
+        """Initialize extension and UI elements"""
+
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._extension_path = ext_manager.get_extension_path(ext_id)
+
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
@@ -66,21 +71,75 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                title=EXTENSION_NAME, width=200, height=150, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME, width=0, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             with self._window.frame:
-                with ui.VStack():
-                    self._load_kaya_btn = ui.Button(
-                        "Load Kaya",
-                        tooltip="Reset the stage and load the kaya environment",
-                        clicked_fn=self._on_environment_setup,
+                with ui.VStack(spacing=5, height=0):
+
+                    title = "NVIDIA Kaya Joystick Example"
+                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_manip.html"
+                    ext_path = (
+                        os.path.dirname(self._extension_path)
+                        if os.path.isfile(self._extension_path)
+                        else self._extension_path
                     )
-                    self._gamepad_setup_btn = ui.Button(
-                        "Press Load Kaya First",
-                        tooltip="Connect the gamepad to the robot and begin simulation",
-                        clicked_fn=self._on_gamepad_setup,
+                    build_header(ext_path, __file__, title, doc_link)
+
+                    overview = "This Example shows how to drive a NVIDIA Kaya robot using a Gamepad in Isaac Sim."
+                    overview += "\n\nConnect a gamepad to the robot, and the press PLAY to begin simulating."
+                    overview += "\n\nPress the 'Open in IDE' button to view the source code."
+                    author = "Isaac Sim Team"
+                    date = "07/01/2021"
+                    build_info_frame(overview, author, date)
+
+                    log_filename = EXTENSION_NAME.lower()
+                    log_filename = log_filename.replace(" ", "_") + ".log"
+                    build_settings_frame(log_filename)
+
+                    frame = ui.CollapsableFrame(
+                        title="Command Panel",
+                        height=0,
+                        collapsed=False,
+                        style=get_style(),
+                        style_type_name_override="CollapsableFrame",
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                     )
-                    self._gamepad_setup_btn.enabled = False
+                    with frame:
+                        with ui.VStack(style=get_style(), spacing=5):
+                            dict = {
+                                "label": "Load Robot",
+                                "type": "button",
+                                "text": "Load",
+                                "tooltip": "Load a NVIDIA Kaya robot into the Scene",
+                                "on_clicked_fn": self._on_environment_setup,
+                            }
+                            self._load_kaya_btn = btn_builder(**dict)
+
+                            dict = {
+                                "label": "Connect Gamepad",
+                                "type": "button",
+                                "text": "Connect",
+                                "tooltip": "Connects a Gampad to the Scene",
+                                "on_clicked_fn": self._on_gamepad_setup,
+                            }
+                            self._gamepad_setup_btn = btn_builder(**dict)
+
+                            self._load_kaya_btn.enabled = True
+                            self._gamepad_setup_btn.enabled = False
+            # with self._window.frame:
+            #     with ui.VStack():
+            #         self._load_kaya_btn = ui.Button(
+            #             "Load Kaya",
+            #             tooltip="Reset the stage and load the kaya environment",
+            #             clicked_fn=self._on_environment_setup,
+            #         )
+            #         self._gamepad_setup_btn = ui.Button(
+            #             "Press Load Kaya First",
+            #             tooltip="Connect the gamepad to the robot and begin simulation",
+            #             clicked_fn=self._on_gamepad_setup,
+            #         )
+            #         self._gamepad_setup_btn.enabled = False
         self._window.visible = True
 
     def _on_gamepad_setup(self):
@@ -119,7 +178,7 @@ class Extension(omni.ext.IExt):
                 offset=Gf.Vec3d(0, 0, -9),
             )
             self._gamepad_setup_btn.enabled = True
-            self._gamepad_setup_btn.text = "Connect GamePad"
+            # self._gamepad_setup_btn.text = "Connect GamePad"
 
             # start stepping after kaya is created
             self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_step)

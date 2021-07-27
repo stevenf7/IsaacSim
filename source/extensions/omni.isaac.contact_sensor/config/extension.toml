@@ -24,6 +24,7 @@ writeTarget.kit = true
 "omni.kit.numpy.common" = {}
 "omni.kit.window.viewport" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
+"omni.isaac.ui" = {}
 
 [[python.module]]
 name = "omni.isaac.contact_sensor"

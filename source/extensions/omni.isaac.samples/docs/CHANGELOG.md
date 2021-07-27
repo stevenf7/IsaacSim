@@ -1,6 +1,12 @@
 **********
 CHANGELOG
 **********
+[0.1.10] - 2021-07-26
+========================
+
+Updated
+-------
+- New UI for Kaya Joystick and Jetbot Keyboard exampls
 
 [0.1.9] - 2021-07-23
 ========================

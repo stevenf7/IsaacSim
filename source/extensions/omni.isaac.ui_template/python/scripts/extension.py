@@ -5,16 +5,18 @@
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
-
+import math
 import omni.ext
 import omni.appwindow
+from omni.kit.window.property.templates.simple_property_widget import build_frame_header
 import omni.ui as ui
 import weakref
 import omni.kit.settings
 import gc
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-from omni.isaac.utils.scripts.ui_utils import *
+from omni.isaac.ui.scripts.ui_utils import *
+from omni.isaac.ui.scripts.style import BUTTON_WIDTH, LABEL_WIDTH
 
 
 EXTENSION_NAME = "Example UI"
@@ -27,17 +29,31 @@ class Extension(omni.ext.IExt):
         """Initialize extension and UI elements"""
         manager = omni.kit.app.get_app().get_extension_manager()
         self._extension_path = manager.get_extension_path(ext_id)
+        self._settings = carb.settings.get_settings()
 
         # Keep a Reference to the Usd Context, Stage, & Viewport
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._app_event_sub = None
 
         # Intialize the UI Window
         self._window = None
 
         # Keep a Reference to interactive GUI elements
         self._models = {}
+
+        # Extension-specific Parameters
+        self._plot_data = [0.0 for i in range(360)]
+        self._plot_data_xyz = []
+        for j in range(3):
+            data = []
+            for i in range(360):
+                data.append(math.cos(math.radians(i + j * 100)))
+            self._plot_data_xyz.append(data)
+
+        self._tick = 0
+        self._folder_picker = None
 
         # Add EXTENSION_NAME to a Drop Down Menu
         # The UI for EXTENSION_NAME is created once selected from the Menu.
@@ -48,6 +64,7 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(name="Misc", sub_menu=[MenuItemDescription(name="Templates", sub_menu=menu_items)])
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
+
         self._build_ui()
 
     def on_shutdown(self):
@@ -55,6 +72,12 @@ class Extension(omni.ext.IExt):
         self._app_event_subscription = None
         remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
+        self._app_event_sub = None
+        self._search_bar.destroy()
+        if self._folder_picker:
+            self._folder_picker.hide()
+            self._folder_picker.destroy()
+            self._folder_picker = None
         self._models = {}
         gc.collect()
 
@@ -66,7 +89,7 @@ class Extension(omni.ext.IExt):
         """Builds the UI for EXTENSION_NAME"""
         if not self._window:
             self._window = ui.Window(
-                title=EXTENSION_NAME, width=400, height=600, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME, width=600, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
 
             with self._window.frame:
@@ -74,10 +97,17 @@ class Extension(omni.ext.IExt):
 
                     title = "Isaac Sim Example UI"
                     doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
-                    build_header(title, doc_link)
+                    ext_path = (
+                        os.path.dirname(self._extension_path)
+                        if os.path.isfile(self._extension_path)
+                        else self._extension_path
+                    )
+                    build_header(ext_path, __file__, title, doc_link)
 
-                    overview = "The Example UI teaches you how to structure your own GUI-based extension in Isaac Sim."
-                    overview += "\n\nUse this as a template when creating a UI for a new project or extension."
+                    overview = (
+                        "The Example UI shows how to use Isaac Sim's robotics-centric UI tools for your own extensions."
+                    )
+                    overview += "\n\nUse this as a reference or template when creating a UI for a new project."
                     overview += "\n\nPress the 'Open in IDE' button to view the source code."
                     author = "Isaac Sim Team"
                     date = "07/01/2021"
@@ -87,33 +117,15 @@ class Extension(omni.ext.IExt):
                     log_filename = log_filename.replace(" ", "_") + ".log"
                     build_settings_frame(log_filename)
 
-                    self.build_custom_ui()
-
                     self.build_example_gui_grid()
+                    self.build_plot_frame()
                     self.build_search_frame()
-                    self.build_file_browser_frame()
+                    self.build_folder_picker_frame()
 
-    def build_search_frame(self):
-        self._search_frame = ui.CollapsableFrame(
-            title="Example: Search",
-            height=0,
-            collapsed=False,
-            style=get_style(),
-            style_type_name_override="CollapsableFrame",
-            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-        )
+                    self.build_comms_frame()
 
-    def build_file_browser_frame(self):
-        self._file_browser = ui.CollapsableFrame(
-            title="Example: File Browser",
-            height=0,
-            collapsed=False,
-            style=get_style(),
-            style_type_name_override="CollapsableFrame",
-            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-        )
+                    # Shows how to Group UI elements
+                    self.build_custom_ui()
 
     def build_example_gui_grid(self):
 
@@ -288,9 +300,7 @@ class Extension(omni.ext.IExt):
                             self._models["cb_" + value["label"]] = elems[i]
                     # Float Field + Slider
                     elif value["type"] == "combo_floatfield_slider":
-                        elems = combo_floatfield_slider_builder(**value)
-                        self._models["ff_" + value["label"]] = elems[0]
-                        self._models["str_field_" + value["label"]] = elems[1]
+                        flt_field, slider = combo_floatfield_slider_builder(**value)
                     # Dropdown ComboBox
                     elif value["type"] == "dropdown":
                         self._models["dropdown_" + value["label"]] = dropdown_builder(**value).model
@@ -301,18 +311,17 @@ class Extension(omni.ext.IExt):
                             self._models["dropdown_" + value["label"]] = elems[i].model
                     # Checkbox + Stringfield
                     elif value["type"] == "checkbox_stringfield":
-                        elems = combo_cb_str_builder(**value)
-                        self._models["cb_" + value["label"]] = elems[0]
-                        self._models["stringfield_" + value["label"]] = elems[1]
+                        cb, str_field = combo_cb_str_builder(**value)
                     # Checkbox + Dropdown ComboBox
                     elif value["type"] == "checkbox_dropdown":
-                        elems = combo_cb_dropdown_builder(**value)
-                        self._models["cb_" + value["label"]] = elems[0]
-                        self._models["str_field_" + value["label"]] = elems[1]
+                        cb, combo_box = combo_cb_dropdown_builder(**value)
                     elif value["type"] == "checkbox_scrolling_frame":
-                        elems = combo_cb_scrolling_frame_builder(**value)
-                        self._models["cb_" + value["label"]] = elems[0]
-                        self._models["info_label_" + value["label"]] = elems[1]
+                        cb, text = combo_cb_scrolling_frame_builder(**value)
+
+                kwargs = {"label": "Translate", "axis_count": 3, "min": -1000, "max": 1000, "step": 1}
+                self._models["multi_float_translate"] = xyz_builder(**kwargs)
+                kwargs = {"label": "Rotate", "axis_count": 4, "tooltip": "Orientation in Quaternions"}
+                self._models["multi_float_rotate"] = xyz_builder(**kwargs)
 
                 # Test building with default values
                 ui.Spacer(height=LABEL_HEIGHT)
@@ -328,7 +337,198 @@ class Extension(omni.ext.IExt):
                 combo_cb_str_builder()
                 btn_builder()
                 combo_cb_scrolling_frame_builder()
+                xyz_builder()
                 ui.Spacer()
+
+    def toggle_app_step(self, val=None):
+        print("You've cliked time_series_plot_data:", val)
+        if val:
+            if not self._app_event_sub:
+                self._app_event_sub = (
+                    omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step)
+                )
+            else:
+                self._app_event_sub = None
+        else:
+            self._app_event_sub = None
+
+    def _on_app_step(self, e: carb.events.IEvent):
+        self._tick += 1
+        val = math.sin(math.radians(self._tick))
+        self._models["timeseries_plot_val"].set_value(val)
+        self._plot_data.append(val)
+        if len(self._plot_data) > 360:
+            self._plot_data.pop(0)
+        self._models["timeseries_plot"].set_data(*self._plot_data)
+
+    def toggle_app_step_1(self, val=None):
+        print("You've cliked time_series_plot_data:", val)
+        if val:
+            if not self._app_event_sub:
+                self._app_event_sub = (
+                    omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step_1)
+                )
+            else:
+                self._app_event_sub = None
+        else:
+            self._app_event_sub = None
+
+    def _on_app_step_1(self, e: carb.events.IEvent):
+        self._tick += 5
+        val = math.sin(math.radians(self._tick))
+        self._models["timeseries_plot_hist_val"].set_value(val)
+        self._plot_data.append(val)
+        if len(self._plot_data) > 360:
+            self._plot_data.pop(0)
+        self._models["timeseries_plot_hist"].set_data(*self._plot_data)
+
+    def toggle_app_step_2(self, val=None):
+        print("You've cliked time_series_plot_data:", val)
+        if val:
+            if not self._app_event_sub:
+                self._app_event_sub = (
+                    omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step_2)
+                )
+            else:
+                self._app_event_sub = None
+        else:
+            self._app_event_sub = None
+
+    def _on_app_step_2(self, e: carb.events.IEvent):
+        self._tick += 1
+        for i in range(3):
+            val = math.sin(math.radians(self._tick + i * 100))
+            self._plot_data_xyz[i].append(val)
+            if len(self._plot_data_xyz[i]) > 360:
+                self._plot_data_xyz[i].pop(0)
+            self._models["timeseries_plot_xyz"][i].set_data(*self._plot_data_xyz[i])
+            self._models["timeseries_plot_xyz_vals"][i].set_value(val)
+
+    def build_plot_frame(self):
+        self._plot_frame = ui.CollapsableFrame(
+            title="Example: Plotting",
+            height=0,
+            collapsed=False,
+            style=get_style(),
+            style_type_name_override="CollapsableFrame",
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+        with self._plot_frame:
+            with ui.VStack(spacing=5, height=0):
+
+                data = []
+                for i in range(360):
+                    data.append(math.cos(math.radians(i)))
+                kwargs = {"label": "Static Plot", "color": 0xFF1A58FF, "data": data}  # ORANGE
+                plot_builder(**kwargs)
+
+                plots = []
+                for j in range(3):
+                    data = []
+                    for i in range(360):
+                        data.append(math.cos(math.radians(i + j * 100)))
+                    plots.append(data)
+                xyz_plot_builder("Static XYZ Plot", plots)
+
+                kwargs = {"label": "Time Series Plot", "on_clicked_fn": self.toggle_app_step, "data": self._plot_data}
+                self._models["timeseries_plot"], self._models["timeseries_plot_val"] = combo_cb_plot_builder(**kwargs)
+
+                kwargs = {
+                    "label": "Time Series Bar Plot",
+                    "on_clicked_fn": self.toggle_app_step_1,
+                    "type": ui.Type.HISTOGRAM,
+                    "value_stride": 15,
+                    "min": -5,
+                    "data": self._plot_data,
+                }
+                self._models["timeseries_plot_hist"], self._models["timeseries_plot_hist_val"] = combo_cb_plot_builder(
+                    **kwargs
+                )
+
+                kwargs = {
+                    "label": "Time Series XYZ Plot",
+                    "on_clicked_fn": self.toggle_app_step_2,
+                    "data": self._plot_data_xyz,
+                }
+                self._models["timeseries_plot_xyz"], self._models[
+                    "timeseries_plot_xyz_vals"
+                ] = combo_cb_xyz_plot_builder(**kwargs)
+
+    def build_search_frame(self):
+        self._search_frame = ui.CollapsableFrame(
+            title="Example: Search",
+            height=0,
+            collapsed=False,
+            style=get_style(),
+            style_type_name_override="CollapsableFrame",
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+
+        with self._search_frame:
+
+            list = ["the", "quick", "brown", "fox", "Hello", "World"]
+            self._list_item_model = ListItemModel(*list)
+            self._list_item_delegate = ListItemDelegate(self._on_dummy_callable_4)
+            kwargs = {
+                "label": "Simple Search",
+                "type": "search",
+                "model": self._list_item_model,
+                "delegate": self._list_item_delegate,
+                "tooltip": "Search & Double Click to Select",
+            }
+            self._search_bar, self._search_treeview = build_simple_search(**kwargs)
+
+    def build_folder_picker_frame(self):
+        self._folder_picker_frame = ui.CollapsableFrame(
+            title="Example: Folder Picker",
+            height=0,
+            collapsed=False,
+            style=get_style(),
+            style_type_name_override="CollapsableFrame",
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+
+        with self._folder_picker_frame:
+            with ui.VStack(spacing=5):
+                kwargs = {
+                    "label": "Output Directory",
+                    "type": "stringfield",
+                    "default_val": "/home/",
+                    "tooltip": "Click the Folder Icon to Set Filepath",
+                    "on_clicked_fn": self._on_dummy_callable_0,
+                    "use_folder_picker": True,
+                }
+                str_builder(**kwargs)
+
+    def handle_connect(self, val=False):
+        if val:
+            # do connect
+            print("connecting")
+        else:
+            # do disconnect
+            print("disconnecting")
+
+    def build_comms_frame(self):
+        self._comms_frame = ui.CollapsableFrame(
+            title="Example: Communications",
+            height=0,
+            collapsed=False,
+            style=get_style(),
+            style_type_name_override="CollapsableFrame",
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+        with self._comms_frame:
+
+            with ui.VStack(spacing=5):
+                self._models["hostname"] = str_builder("Hostname", "stringfield", "127.0.0.1", "Host Address")
+                self._models["port"] = str_builder("Port", "stringfield", "12345", "Port")
+                self._models["connect_btn"] = state_btn_builder(
+                    "", "button", "CONNECT", "DISCONNECT", "", self.handle_connect
+                )
 
     def build_custom_ui(self):
         """
@@ -393,3 +593,8 @@ class Extension(omni.ext.IExt):
         """Dummy Callable for testing the GUI"""
         if PRINT_DEBUG:
             print("You've cliked DUMMY CALLABLE 3. Item Selected: ", val)
+
+    def _on_dummy_callable_4(self, model, button, val=None):
+        """Dummy Callable for testing the GUI"""
+        if PRINT_DEBUG:
+            print("You've cliked DUMMY CALLABLE 4. Item Selected: ", val.text)

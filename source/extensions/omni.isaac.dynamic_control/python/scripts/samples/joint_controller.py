@@ -16,6 +16,8 @@ import omni.ui as ui
 import omni.kit.test
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
+from omni.isaac.ui.scripts.ui_utils import *
+
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
 import omni.physx as _physx
@@ -84,6 +86,10 @@ def _print_body_rec(dc, body, indent_level=0):
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
+        """Initialize extension and UI elements"""
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._extension_path = ext_manager.get_extension_path(ext_id)
+
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._window = None
         self._physxIFace = _physx.acquire_physx_interface()
@@ -110,19 +116,61 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                title=EXTENSION_NAME, width=300, height=300, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME, width=0, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             with self._window.frame:
-                with ui.VStack():
-                    with ui.HStack(height=0):
-                        ui.Button("Load Robot", height=0, clicked_fn=self._on_load_robot)
-                        ui.Button("Move Joints", height=0, clicked_fn=self._on_move_joints)
+                with ui.VStack(spacing=5, height=0):
+                    title = "Robot Joint Controller Example"
+                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/controlling_robot.html"
+                    ext_path = (
+                        os.path.dirname(self._extension_path)
+                        if os.path.isfile(self._extension_path)
+                        else self._extension_path
+                    )
+                    build_header(ext_path, __file__, title, doc_link)
 
-                    ui.Separator(height=3)
-                    with ui.ScrollingFrame():
-                        with ui.VStack():
-                            self.dof_states_label = ui.Label("")
-                            self.dof_props_label = ui.Label("")
+                    overview = "This example shows how move a robot arm by driving its joints."
+                    overview += "First press the 'Load Robot' button and then press `Move Joints` to simulate."
+                    overview += "\n\nPress the 'Open in IDE' button to view the source code."
+                    author = "Isaac Sim Team"
+                    date = "07/01/2021"
+                    build_info_frame(overview, author, date)
+
+                    log_filename = EXTENSION_NAME.lower()
+                    log_filename = log_filename.replace(" ", "_") + ".log"
+                    build_settings_frame(log_filename)
+
+                    frame = ui.CollapsableFrame(
+                        title="Command Panel",
+                        height=0,
+                        collapsed=False,
+                        style=get_style(),
+                        style_type_name_override="CollapsableFrame",
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    )
+                    with frame:
+                        with ui.VStack(style=get_style(), spacing=5, height=0):
+                            kwargs = {
+                                "label": "Load Robot",
+                                "type": "button",
+                                "text": "Load",
+                                "tooltip": "Loads a Robot Arm and sets its properties",
+                                "on_clicked_fn": self._on_load_robot,
+                            }
+                            btn_builder(**kwargs)
+
+                            kwargs = {
+                                "label": "Move Joints",
+                                "type": "button",
+                                "text": "Move",
+                                "tooltip": "Moves the Robot's Joints",
+                                "on_clicked_fn": self._on_move_joints,
+                            }
+                            btn_builder(**kwargs)
+
+                            self.dof_states_label = scrolling_frame_builder()
+                            self.dof_props_label = scrolling_frame_builder()
 
     def on_shutdown(self):
         self._sub_stage_event = None

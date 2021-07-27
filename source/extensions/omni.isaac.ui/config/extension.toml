@@ -1,0 +1,30 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.0.1"
+category = "Simulation"
+title = "Isaac Sim UI Utilities"
+description = "Core UI Elements for Isaac Sim"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.ui"
+keywords = ["isaac", "ui",]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"omni.kit.menu.utils" = {}
+"omni.kit.window.viewport" = {}
+"omni.kit.window.extensions" = {}
+"omni.kit.window.property" = {}
+"omni.kit.window.filepicker" = {}
+
+[[python.module]]
+name = "omni.isaac.ui.scripts.ui_utils"
+
+[[python.module]]
+name = "omni.isaac.ui.tests"

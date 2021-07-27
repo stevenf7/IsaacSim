@@ -17,6 +17,10 @@ LABEL_WIDTH = 120
 BUTTON_WIDTH = 120
 HORIZONTAL_SPACING = 4
 VERTICAL_SPACING = 5
+COLOR_X = 0xFF5555AA
+COLOR_Y = 0xFF76A371
+COLOR_Z = 0xFFA07D4F
+COLOR_W = 0xFFAA5555
 
 
 def get_style():
@@ -262,6 +266,26 @@ def get_style():
             "CollapsableFrame:hovered": {"secondary_color": COLLAPSABLEFRAME_HOVERED_SECONDARY_COLOR},
             "CollapsableFrame:pressed": {"secondary_color": COLLAPSABLEFRAME_PRESSED_SECONDARY_COLOR},
             "ScrollingFrame": {"margin": 0, "padding": 3, "border_radius": LIGHT_BORDER_RADIUS},
+            "TreeView": {
+                "background_color": 0xFFE0E0E0,
+                "background_selected_color": 0x109D905C,
+                "secondary_color": 0xFFACACAC,
+            },
+            "TreeView.ScrollingFrame": {"background_color": 0xFFE0E0E0},
+            "TreeView.Header": {"color": 0xFFCCCCCC},
+            "TreeView.Header::background": {
+                "background_color": 0xFF535354,
+                "border_color": 0xFF707070,
+                "border_width": 0.5,
+            },
+            "TreeView.Header::columnname": {"margin": 3},
+            "TreeView.Image::object_icon_grey": {"color": 0x80FFFFFF},
+            "TreeView.Item": {"color": 0xFF535354, "font_size": 16},
+            "TreeView.Item::object_name": {"margin": 3},
+            "TreeView.Item::object_name_grey": {"color": 0xFFACACAC},
+            "TreeView.Item::object_name_missing": {"color": 0xFF6F72FF},
+            "TreeView.Item:selected": {"color": 0xFF2A2825},
+            "TreeView:selected": {"background_color": 0x409D905C},
             "Label::vector_label": {"font_size": 14, "color": LABEL_VECTORLABEL_COLOR},
             "Rectangle::vector_label": {"border_radius": BORDER_RADIUS * 2, "corner_flag": ui.CornerFlag.LEFT},
             "Rectangle::mixed_overlay": {
@@ -290,27 +314,56 @@ def get_style():
             "IconButton.Image:hovered": {"color": 0xFF929292},
             "IconButton.Image:pressed": {"color": 0xFFA4A4A4},
             "IconButton.Image:checked": {"color": 0xFFFFFFFF},
+            "IconButton.Tooltip": {"color": 0xFF9E9E9E},
             "IconButton.Image::OpenFolder": {
                 "image_url": f"{icons_path}/open-folder.svg",
                 "background_color": 0x0,
                 "color": 0xFFA8A8A8,
+                "tooltip": TOOLTIP_STYLE,
             },
             "IconButton.Image::OpenConfig": {
                 "image_url": f"{icons_path}/open-config.svg",
                 "background_color": 0x0,
                 "color": 0xFFA8A8A8,
+                "tooltip": TOOLTIP_STYLE,
             },
             "IconButton.Image::OpenLink": {
-                "image_url": f"{icons_path}/link.svg",  # "resources/glyphs/link.svg",
+                "image_url": "resources/glyphs/link.svg",
                 "background_color": 0x0,
                 "color": 0xFFA8A8A8,
+                "tooltip": TOOLTIP_STYLE,
+            },
+            "IconButton.Image::OpenDocs": {
+                "image_url": "resources/glyphs/docs.svg",
+                "background_color": 0x0,
+                "color": 0xFFA8A8A8,
+                "tooltip": TOOLTIP_STYLE,
             },
             "IconButton.Image::CopyToClipboard": {
                 "image_url": "resources/glyphs/copy.svg",
                 "background_color": 0x0,
                 "color": 0xFFA8A8A8,
             },
-            "IconButton.Image::Export": {"image_url": f"{icons_path}/export.svg"},
+            "IconButton.Image::Export": {
+                "image_url": f"{icons_path}/export.svg",
+                "background_color": 0x0,
+                "color": 0xFFA8A8A8,
+            },
+            "IconButton.Image::Sync": {
+                "image_url": "resources/glyphs/sync.svg",
+                "background_color": 0x0,
+                "color": 0xFFA8A8A8,
+            },
+            "IconButton.Image::Upload": {
+                "image_url": "resources/glyphs/upload.svg",
+                "background_color": 0x0,
+                "color": 0xFFA8A8A8,
+            },
+            "IconButton.Image::FolderPicker": {
+                "image_url": "resources/glyphs/folder.svg",
+                "background_color": 0x0,
+                "color": 0xFFA8A8A8,
+            },
             "ItemButton": {"padding": 2, "background_color": 0xFF444444, "border_radius": 4},
             "ItemButton.Image::add": {"image_url": f"{icons_path}/plus.svg", "color": 0xFF06C66B},
             "ItemButton.Image::remove": {"image_url": f"{icons_path}/trash.svg", "color": 0xFF1010C6},
@@ -493,12 +546,31 @@ def get_style():
             "CollapsableFrame:hovered": {"secondary_color": COLLAPSABLEFRAME_HOVERED_BACKGROUND_COLOR},
             "CollapsableFrame:pressed": {"secondary_color": COLLAPSABLEFRAME_PRESSED_BACKGROUND_COLOR},
             "ScrollingFrame": {"margin": 0, "padding": 3, "border_radius": BORDER_RADIUS},
+            "TreeView": {
+                "background_color": 0xFF23211F,
+                "background_selected_color": 0x664F4D43,
+                "secondary_color": 0xFF403B3B,
+            },
+            "TreeView.ScrollingFrame": {"background_color": 0xFF23211F},
+            "TreeView.Header": {"background_color": 0xFF343432, "color": 0xFFCCCCCC, "font_size": 12},
+            "TreeView.Image::object_icon_grey": {"color": 0x80FFFFFF},
+            "TreeView.Image:disabled": {"color": 0x60FFFFFF},
+            "TreeView.Item": {"color": 0xFF8A8777},
+            "TreeView.Item:disabled": {"color": 0x608A8777},
+            "TreeView.Item::object_name_grey": {"color": 0xFF4D4B42},
+            "TreeView.Item::object_name_missing": {"color": 0xFF6F72FF},
+            "TreeView.Item:selected": {"color": 0xFF23211F},
+            "TreeView:selected": {"background_color": 0xFF8A8777},
             "ColorWidget": {
                 "border_radius": BORDER_RADIUS,
                 "border_color": COLORWIDGET_BORDER_COLOR,
                 "border_width": 0.5,
             },
             "Label::vector_label": {"font_size": 16, "color": LABEL_VECTORLABEL_COLOR},
+            "PlotLabel::X": {"color": 0xFF1515EA, "background_color": 0x0},
+            "PlotLabel::Y": {"color": 0xFF5FC054, "background_color": 0x0},
+            "PlotLabel::Z": {"color": 0xFFC5822A, "background_color": 0x0},
+            "PlotLabel::W": {"color": 0xFFAA5555, "background_color": 0x0},
             "Rectangle::vector_label": {"border_radius": BORDER_RADIUS * 2, "corner_flag": ui.CornerFlag.LEFT},
             "Rectangle::mixed_overlay": {
                 "border_radius": BORDER_RADIUS,
@@ -522,9 +594,10 @@ def get_style():
             "IconButton:checked": {"background_color": 0x0},
             "IconButton:pressed": {"background_color": 0x0},
             "IconButton.Image": {"color": 0xFFA8A8A8},
-            "IconButton.Image:hovered": {"color": 0xFF929292},
+            "IconButton.Image:hovered": {"color": 0xFFC2C2C2},
             "IconButton.Image:pressed": {"color": 0xFFA4A4A4},
             "IconButton.Image:checked": {"color": 0xFFFFFFFF},
+            "IconButton.Tooltip": {"color": 0xFF9E9E9E},
             "IconButton.Image::OpenFolder": {
                 "image_url": f"{icons_path}/open-folder.svg",
                 "background_color": 0x0,
@@ -532,13 +605,19 @@ def get_style():
                 "tooltip": TOOLTIP_STYLE,
             },
             "IconButton.Image::OpenConfig": {
+                "tooltip": TOOLTIP_STYLE,
                 "image_url": f"{icons_path}/open-config.svg",
+                "background_color": 0x0,
+                "color": 0xFFA8A8A8,
+            },
+            "IconButton.Image::OpenLink": {
+                "image_url": "resources/glyphs/link.svg",
                 "background_color": 0x0,
                 "color": 0xFFA8A8A8,
                 "tooltip": TOOLTIP_STYLE,
             },
-            "IconButton.Image::OpenLink": {
-                "image_url": "resources/glyphs/link.svg",
+            "IconButton.Image::OpenDocs": {
+                "image_url": "resources/glyphs/docs.svg",
                 "background_color": 0x0,
                 "color": 0xFFA8A8A8,
                 "tooltip": TOOLTIP_STYLE,
@@ -552,6 +631,21 @@ def get_style():
                 "image_url": f"{icons_path}/export.svg",
                 "background_color": 0x0,
                 "color": 0xFFA8A8A8,
+            },
+            "IconButton.Image::Sync": {
+                "image_url": "resources/glyphs/sync.svg",
+                "background_color": 0x0,
+                "color": 0xFFA8A8A8,
+            },
+            "IconButton.Image::Upload": {
+                "image_url": "resources/glyphs/upload.svg",
+                "background_color": 0x0,
+                "color": 0xFFA8A8A8,
+            },
+            "IconButton.Image::FolderPicker": {
+                "image_url": "resources/glyphs/folder.svg",
+                "background_color": 0x0,
+                "color": 0xFF929292,
             },
             "ItemButton": {"padding": 2, "background_color": 0xFF444444, "border_radius": 4},
             "ItemButton.Image::add": {"image_url": f"{icons_path}/plus.svg", "color": 0xFF06C66B},

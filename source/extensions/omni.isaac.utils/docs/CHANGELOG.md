@@ -6,7 +6,7 @@ CHANGELOG
 
 Added
 -------
-- add UI Utils
+- New UI for Surface Gripper
 
 [0.1.4] - 2021-05-24
 ========================
