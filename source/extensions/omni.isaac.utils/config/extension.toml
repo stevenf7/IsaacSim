@@ -56,3 +56,6 @@ public = false
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
+
+[settings]
+isaac.nucleus.default = "omniverse://localhost"

@@ -2489,8 +2489,7 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
 
 void CARB_ABI DcDestroyD6Joint(DcHandle jointHandle)
 {
-    (void)DC_CHECK_SIMULATING();
-
+    // (void)DC_CHECK_SIMULATING();
     auto& ctx = g_dcCtx;
     if (!ctx)
     {

@@ -77,5 +77,6 @@ class ToolBarUtilities(omni.ui.ToolBar):
         # automatically. Usually, it's OK because the Python garbage collector will eventually destroy everythigng. But
         # we need the images to be destroyed right now because Kit know nothing about Python garbage collector and it
         # will fire warning that texture is not destroyed.
-        self._models = []
+        self._models = {}
+        self._toolbar.destroy()
         self._toolbar = None

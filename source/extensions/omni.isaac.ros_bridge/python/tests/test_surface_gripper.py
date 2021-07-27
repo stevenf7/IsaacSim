@@ -63,7 +63,6 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         except rospy.exceptions.ROSException as e:
             print("Node has already been initialized, do nothing")
 
-        print("STARTUP")
         pass
 
     # After running each test
@@ -112,7 +111,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         def suction_callback(data):
             self._gripper_state = data.position[0]
 
-        suction_sub = rospy.Subscriber("gripper_state", JointState, suction_callback)
+        suction_sub = rospy.Subscriber("gripper_state", JointState, suction_callback, queue_size=1)
         joints = [
             "shoulder_pan_joint",
             "shoulder_lift_joint",
@@ -157,55 +156,59 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         def send_joint_message(angles):
             pub.publish(create_joint_state(joints, angles))
 
+        print("Lifting first bin")
         send_joint_message(states["bin_1"]["lift"])
         send_open_message()
-        await simulate(4)
+        await simulate(2)
         send_joint_message(states["bin_1"]["grab"])
-        await simulate(2)
+        await simulate(1)
         send_close_message()
-        await simulate(2)
+        await simulate(1)
         send_joint_message(states["bin_1"]["lift"])
         await simulate(2)
         self.assertGreater(self._dc.get_rigid_body_pose(handle_1).p.z, 10)
-
+        print("Lifting second bin")
         send_open_message()
-        await simulate(2)
+        await simulate(1)
         send_joint_message(states["bin_2"]["lift"])
         await simulate(2)
         send_joint_message(states["bin_2"]["grab"])
-        await simulate(2)
+        await simulate(1)
         send_close_message()
-        await simulate(2)
+        await simulate(1)
         send_joint_message(states["bin_2"]["lift"])
         await simulate(2)
         self.assertGreater(self._dc.get_rigid_body_pose(handle_2).p.z, 10)
-
+        print("Lifting third bin")
         send_open_message()
-        await simulate(2)
+        await simulate(1)
         send_joint_message(states["bin_3"]["lift"])
         await simulate(2)
         send_joint_message(states["bin_3"]["grab"])
-        await simulate(2)
+        await simulate(1)
         send_close_message()
-        await simulate(2)
+        await simulate(1)
         send_joint_message(states["bin_3"]["lift"])
         await simulate(2)
         self.assertGreater(self._dc.get_rigid_body_pose(handle_3).p.z, 10)
 
         # Check to make sure that stopping simulation clears gripper state
+        print("checking that stopping simulation resets gripper state")
         send_open_message()
-        await simulate(2)
+        await simulate(1)
         send_joint_message(states["bin_3"]["lift"])
         await simulate(2)
         send_joint_message(states["bin_3"]["grab"])
-        await simulate(2)
+        await simulate(1)
         send_close_message()
-        await simulate(2)
+        await simulate(1)
         self.assertEqual(self._gripper_state, 1.0)
+        print("stopping sim")
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
+        print("start sim to check if gripper is reset")
         self._timeline.play()
-        await simulate(2)
+        await simulate(4)
         self.assertEqual(self._gripper_state, 0.0)
         self._timeline.stop()
         pub.unregister()
