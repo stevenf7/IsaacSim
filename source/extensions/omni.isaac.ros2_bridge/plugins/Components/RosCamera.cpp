@@ -405,22 +405,28 @@ void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
     cam_info_msg.width = imgInfo.tex.width;
     cam_info_msg.distortion_model = "plumb_bob";
 
-    cam_info_msg.k = { imgInfo.tex.height * focalLength / verticalAperture,
+    // ROS image: conventions
+    // origin of frame should be optical center of camera
+    // +x should point to the right in the image
+    // +y should point down in the image
+    // +z should point into the plane of the image
+
+    cam_info_msg.k = { imgInfo.tex.width * focalLength / horizontalAperture,
                        0,
-                       imgInfo.tex.height * 0.5f,
-                       0,
-                       imgInfo.tex.width * focalLength / horizontalAperture,
                        imgInfo.tex.width * 0.5f,
+                       0,
+                       imgInfo.tex.height * focalLength / verticalAperture,
+                       imgInfo.tex.height * 0.5f,
                        0,
                        0,
                        1 };
-    cam_info_msg.p = { imgInfo.tex.height * focalLength / verticalAperture,
+    cam_info_msg.p = { imgInfo.tex.width * focalLength / horizontalAperture,
                        0,
-                       imgInfo.tex.height * 0.5f,
+                       imgInfo.tex.width * 0.5f,
                        mStereoOffset[0],
                        0,
-                       imgInfo.tex.width * focalLength / horizontalAperture,
-                       imgInfo.tex.width * 0.5f,
+                       imgInfo.tex.height * focalLength / verticalAperture,
+                       imgInfo.tex.height * 0.5f,
                        mStereoOffset[1],
                        0,
                        0,
