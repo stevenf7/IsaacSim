@@ -51,3 +51,8 @@ exclude = ["*/noetic"]
 [settings]
 exts."omni.isaac.ros_bridge".nodeName = "OmniIsaacRosBridge"
 exts."omni.isaac.ros_bridge".useSimTime = true
+
+[[test]]
+stdoutFailPatterns.exclude = [
+    "*WARNING: cannot load logging configuration file*", # exclude warning as failure
+]

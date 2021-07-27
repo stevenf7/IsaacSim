@@ -12,9 +12,7 @@ import omni.kit.commands
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-import os
 import gc
-import carb
 import asyncio
 import weakref
 
@@ -65,7 +63,8 @@ class Extension(omni.ext.IExt):
 
         self.icon_path = Path(extension_path).joinpath("data")
         self._visible = True
-
+        self._toolbar = None
+        self._task = None
         self.build_ui()
         self.enable_ui()
 
@@ -84,7 +83,7 @@ class Extension(omni.ext.IExt):
             self.hide_utilities()
             await omni.kit.app.get_app().next_update_async()
 
-        asyncio.ensure_future(dock_windows())
+        self._task = asyncio.ensure_future(dock_windows())
 
     def dock_toolbar(self):
         """Docks the Utilities Toolbar along the right side of the window on start up."""
@@ -180,7 +179,8 @@ class Extension(omni.ext.IExt):
             print("\tDeselect: ", name)
 
         # Deselect the Toolbar Button
-        self._toolbar._models[name].set_value(False)
+        if self._toolbar is not None:
+            self._toolbar._models[name].set_value(False)
 
         # Hide any GUI panels that are showing
         for ext in UTILITIES[name]:
@@ -263,6 +263,7 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         for g in UTILITIES:
             self.hide_utility(g)
-        self._toolbar.clean()
-        self._toolbar = None
+        if self._toolbar is not None:
+            self._toolbar.clean()
+            self._toolbar = None
         gc.collect()

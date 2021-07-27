@@ -98,23 +98,15 @@ function define_ext_test_experience(ext_name, args)
     local test_args = {
         "--empty", -- Start empty kit
         "--enable omni.kit.test", -- We always need omni.kit.test extension as testing framework
-        "--enable "..ext_name, -- Enable actual extension to test
-        "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
-        "--/exts/omni.kit.test/includeTests/0='"..python_module..".*'", -- Only include tests from the python module
+        "--/exts/omni.kit.test/testExtEnableProfiler=0",
+        "--/exts/omni.kit.test/testExtArgs/0=\"--no-window\"",
+        "--/exts/omni.kit.test/testExtApp=\""..script_dir_token.."/apps/omni.isaac.sim.test_ext.kit\"",
+        -- "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
+        "--/exts/omni.kit.test/testExts/0='"..python_module.."'", -- Only include tests from the python module
         "--ext-folder \""..script_dir_token.."/exts\" ",
         "--ext-folder \""..script_dir_token.."/apps\" ",
-        "--/isaac/nucleus/default=\"omniverse://ov-isaac-dev.nvidia.com\"", -- Default server used for isaac samples
-        "--/omni.kit.plugin/syncUsdLoads=true", -- Force USD to fully load before rendering
-        "--/rtx/hydra/materialSyncLoads=true",
-        "--/rtx/materialDb/syncLoads=true",
-        "--/persistent/app/viewport/displayOptions=0", -- Disable all ui elements in viewport
-        "--/app/settings/persistent=false",
-        "--/app/hydraEngine/waitIdle=true",
-        "--/app/asyncRendering=false", -- improve determinism
-        "--/app/renderer/skipWhileMinimized=false",
-        "--/app/renderer/sleepMsOnFocus=0",
-        "--/app/renderer/sleepMsOutOfFocus=0",
-        "--no-assert-dialog",
+        "--/app/enableStdoutOutput=0",  -- this app just runs the test command, hide its output
+        "--no-window",
     }
     -- Allow passing additional args
     local extra_test_args = get_value_or_default(args, "extra_test_args", {})

@@ -100,6 +100,8 @@ class Extension(omni.ext.IExt):
             self._selected_prim = None
             self._selected_handle = dc.INVALID_HANDLE
             return
+        if self._usd_context.get_stage() is None:
+            return
         if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
             selection = self._selection.get_selected_prim_paths()
             if len(selection) == 0:

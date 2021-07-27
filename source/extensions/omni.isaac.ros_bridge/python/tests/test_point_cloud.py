@@ -62,7 +62,6 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         except rospy.exceptions.ROSException as e:
             print("Node has already been initialized, do nothing")
 
-        print("STARTUP")
         pass
 
     # After running each test

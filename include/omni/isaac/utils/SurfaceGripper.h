@@ -241,9 +241,11 @@ public:
         }
         if (mIsClosed)
         {
-            mDc->wakeUpRigidBody(mJointProperties.body1);
-            mDc->setRigidBodyDisableGravity(mJointProperties.body1, false);
-
+            if (mDc->isSimulating())
+            {
+                mDc->wakeUpRigidBody(mJointProperties.body1);
+                mDc->setRigidBodyDisableGravity(mJointProperties.body1, false);
+            }
             mDc->destroyD6Joint(mJointHandle);
             mJointHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
 

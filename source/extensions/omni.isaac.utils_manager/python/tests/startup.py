@@ -12,14 +12,11 @@
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.manip import _manip
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestManip(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestUtilManager(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
-        self._manip = _manip.acquire_manip_interface()
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -29,6 +26,7 @@ class TestManip(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
-    async def test_manip(self):
-        await omni.kit.app.get_app().next_update_async()
+    async def test_manager(self):
+        for frame in range(60):
+            await omni.kit.app.get_app().next_update_async()
         pass
