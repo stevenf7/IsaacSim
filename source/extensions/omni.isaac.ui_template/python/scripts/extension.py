@@ -8,7 +8,6 @@
 import math
 import omni.ext
 import omni.appwindow
-from omni.kit.window.property.templates.simple_property_widget import build_frame_header
 import omni.ui as ui
 import weakref
 import omni.kit.settings

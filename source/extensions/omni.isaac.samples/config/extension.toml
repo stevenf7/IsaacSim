@@ -65,4 +65,4 @@ name = "omni.isaac.samples.scripts.ros_samples"
 name = "omni.isaac.samples.scripts.ros_moveit_sample"
 
 [[test]]
-timeout = 480
+timeout = 960

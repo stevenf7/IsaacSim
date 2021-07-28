@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .ui_utils import *
+import omni
 
 EXTENSION_NAME = "Isaac Sim UI Utilities"
 
