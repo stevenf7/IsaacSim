@@ -236,7 +236,7 @@ group "exts"
     include ("source/extensions/omni.isaac.splash")
     include ("source/extensions/omni.isaac.python_app")
     include ("source/extensions/omni.isaac.physics_inspector")
-
+    include ("source/extensions/omni.isaac.debug_draw")
     include ("source/extensions/omni.kit.property.isaac")
     include ("source/extensions/omni.kit.loop-isaac")
 

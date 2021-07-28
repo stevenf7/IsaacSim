@@ -27,14 +27,6 @@ The surface gripper extension provides an interface to the utilities package to 
     :imported-members:
     :exclude-members: 
 
-.. automodule:: omni.isaac.utils._isaac_utils.debug_draw
-    :platform: Windows-x86_64, Linux-x86_64
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :imported-members:
-    :exclude-members: 
-
 Commands
 ========
 .. automodule:: omni.isaac.utils.scripts.commands

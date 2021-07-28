@@ -18,9 +18,9 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
+#include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/isaac/occupancy_map/MapGenerator.h>
 #include <omni/isaac/occupancy_map/OccupancyMap.h>
-#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/renderer/IDebugDraw.h>
@@ -49,7 +49,7 @@ carb::Float3 inputOrigin = { 0, 0, 0 };
 carb::Float2 inputMinPoint = { -100, -100 };
 carb::Float2 inputMaxPoint = { 100, 100 };
 std::unique_ptr<omni::isaac::occupancy_map::MapGenerator> gGenerator = nullptr;
-std::unique_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> gLineDrawing;
+std::unique_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> gLineDrawing;
 
 }
 
@@ -190,8 +190,9 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
 
     gStage = stage;
 
-    gLineDrawing = std::make_unique<omni::isaac::utils::drawing::PrimitiveDrawingHelper>(
-        omni::usd::UsdContext::getContext(), g_debugDraw, omni::isaac::utils::drawing::PrimitiveDrawingHelper::eLines);
+    gLineDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
+        omni::usd::UsdContext::getContext(), g_debugDraw,
+        omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::eLines);
 }
 
 static void onDetach(void* data)

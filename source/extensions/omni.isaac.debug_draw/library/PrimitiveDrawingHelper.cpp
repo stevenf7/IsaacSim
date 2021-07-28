@@ -12,7 +12,7 @@
 // clang-format on
 #include <carb/scenerenderer/SceneRenderer.h>
 
-#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
+#include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
 
 
 using namespace carb::scenerenderer;
@@ -21,7 +21,7 @@ namespace omni
 {
 namespace isaac
 {
-namespace utils
+namespace debug_draw
 {
 namespace drawing
 {

@@ -26,7 +26,7 @@
 #include <carb/renderer/Renderer.h>
 #include <carb/settings/ISettings.h>
 
-#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
+#include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/kit/KitUtils.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>

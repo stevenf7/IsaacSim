@@ -7,10 +7,6 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-// // clang-format off
-// #include "UsdPCH.h"
-// // clang-format on
-
 #define CARB_EXPORTS
 
 #include <carb/Framework.h>
@@ -19,9 +15,9 @@
 #include <carb/renderer/Renderer.h>
 #include <carb/scenerenderer/SceneRenderer.h>
 
-#include <omni/isaac/utils/Curves.h>
-#include <omni/isaac/utils/DebugDraw.h>
-#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
+#include <omni/isaac/debug_draw/Curves.h>
+#include <omni/isaac/debug_draw/DebugDraw.h>
+#include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContextIncludes.h>
@@ -31,9 +27,9 @@
 ///
 
 
-const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.utils.plugin", "Isaac Sim utils plugin", "NVIDIA",
-                                                  carb::PluginHotReload::eDisabled, "dev" };
-CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::utils::DebugDraw)
+const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.debug_draw.plugin", "Isaac Sim debug drawing plugin",
+                                                  "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
+CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::debug_draw::DebugDraw)
 CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate, omni::renderer::IDebugDraw)
 
 using namespace carb::scenerenderer;
@@ -69,8 +65,8 @@ pxr::GfVec3f getOrientation(pxr::GfVec3f& normal, pxr::GfVec3f& tangent)
 }
 
 
-std::unique_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> gPointDrawing;
-std::unique_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> gLineDrawing;
+std::unique_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> gPointDrawing;
+std::unique_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> gLineDrawing;
 
 
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
@@ -131,7 +127,7 @@ void CARB_ABI drawLinesSpline(const std::vector<carb::Float3>& points,
     pxr::VtArray<pxr::GfVec4f> tessellatedPoints;
     pxr::VtArray<pxr::GfVec4f> tessellatedTangents;
 
-    omni::isaac::utils::curves::BSpline curve(omni::isaac::utils::curves::eBasisCurveWrap::Pinned, 1);
+    omni::isaac::debug_draw::curves::BSpline curve(omni::isaac::debug_draw::curves::eBasisCurveWrap::Pinned, 1);
 
     pxr::VtArray<pxr::GfVec3f> ctrlPoints;
     for (size_t i = 0; i < points.size(); i++)
@@ -261,10 +257,10 @@ size_t CARB_ABI getNumLines()
 static void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
     gUsdContext = omni::usd::UsdContext::getContext();
-    gPointDrawing = std::make_unique<omni::isaac::utils::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, gDebugDraw, omni::isaac::utils::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
-    gLineDrawing = std::make_unique<omni::isaac::utils::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, gDebugDraw, omni::isaac::utils::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
+    gPointDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
+        gUsdContext, gDebugDraw, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
+    gLineDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
+        gUsdContext, gDebugDraw, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
 }
 
 void onDetach(void* data)
@@ -294,10 +290,10 @@ CARB_EXPORT void carbOnPluginStartup()
     gStageUpdateNode = gStageUpdate->createStageUpdateNode(desc);
     gStageUpdate->setStageUpdateNodeOrder(index, 75);
 
-    gPointDrawing = std::make_unique<omni::isaac::utils::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, gDebugDraw, omni::isaac::utils::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
-    gLineDrawing = std::make_unique<omni::isaac::utils::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, gDebugDraw, omni::isaac::utils::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
+    gPointDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
+        gUsdContext, gDebugDraw, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
+    gLineDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
+        gUsdContext, gDebugDraw, omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
 }
 
 CARB_EXPORT void carbOnPluginShutdown()
@@ -307,10 +303,16 @@ CARB_EXPORT void carbOnPluginShutdown()
     gLineDrawing.reset();
 }
 
-void fillInterface(omni::isaac::utils::DebugDraw& iface)
+void fillInterface(omni::isaac::debug_draw::DebugDraw& iface)
 {
-    using namespace omni::isaac::utils;
+    using namespace omni::isaac::debug_draw;
     memset(&iface, 0, sizeof(iface));
 
-    iface = { drawPoints, clearPoints, getNumPoints, drawLines, drawLinesSpline, clearLines, getNumLines };
+    iface.clearLines = clearLines;
+    iface.clearPoints = clearPoints;
+    iface.drawLines = drawLines;
+    iface.drawLinesSpline = drawLinesSpline;
+    iface.drawPoints = drawPoints;
+    iface.getNumLines = getNumLines;
+    iface.getNumPoints = getNumPoints;
 }

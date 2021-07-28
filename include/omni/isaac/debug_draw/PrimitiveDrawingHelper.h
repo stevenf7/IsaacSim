@@ -20,7 +20,7 @@ namespace omni
 {
 namespace isaac
 {
-namespace utils
+namespace debug_draw
 {
 namespace drawing
 {
