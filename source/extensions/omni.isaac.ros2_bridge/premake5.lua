@@ -109,6 +109,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "std_srvs__rosidl_typesupport_introspection_cpp",
         "rmw_dds_common__rosidl_typesupport_introspection_cpp",
         "unique_identifier_msgs__rosidl_typesupport_introspection_cpp",
+        "boost_system"
     }
 
     filter { "configurations:debug" }
