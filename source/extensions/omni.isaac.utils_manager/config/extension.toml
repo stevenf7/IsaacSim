@@ -29,3 +29,8 @@ icon = "data/icon.png"
 
 [[python.module]]
 name = "omni.isaac.utils_manager"
+
+[[test]]
+stdoutFailPatterns.exclude = [
+    "*extension object is still alive, something holds a reference on it*", # exclude warning as failure
+]
