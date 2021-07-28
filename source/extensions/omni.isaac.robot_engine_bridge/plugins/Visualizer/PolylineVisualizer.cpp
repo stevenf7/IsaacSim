@@ -20,8 +20,8 @@
 #include <carb/logging/Log.h>
 #include <carb/profiler/Profile.h>
 
+#include <omni/isaac/debug_draw/Curves.h>
 #include <omni/isaac/utils/Conversions.h>
-#include <omni/isaac/utils/Curves.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>
 
@@ -223,7 +223,7 @@ void PolylineVisualizer::tick()
                             }
                         }
 
-                        utils::curves::BSpline curve(utils::curves::eBasisCurveWrap::Pinned, 1);
+                        debug_draw::curves::BSpline curve(debug_draw::curves::eBasisCurveWrap::Pinned, 1);
 
                         mLineData.clear();
                         tessellatedPoints.clear();

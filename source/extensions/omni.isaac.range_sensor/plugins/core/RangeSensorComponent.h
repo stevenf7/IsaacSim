@@ -15,8 +15,8 @@
 #include <carb/fastcache/FastCache.h>
 #include <carb/renderer/Renderer.h>
 
+#include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#include <omni/isaac/utils/PrimitiveDrawingHelper.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/renderer/IDebugDraw.h>
@@ -58,13 +58,13 @@ public:
         mFastCachePtr = fastCachePtr;
         mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
 
-        mLineDrawing = std::make_shared<omni::isaac::utils::drawing::PrimitiveDrawingHelper>(
+        mLineDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
             omni::usd::UsdContext::getContext(), debugDrawPtr,
-            omni::isaac::utils::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
+            omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
 
-        mPointDrawing = std::make_shared<omni::isaac::utils::drawing::PrimitiveDrawingHelper>(
+        mPointDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
             omni::usd::UsdContext::getContext(), debugDrawPtr,
-            omni::isaac::utils::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
+            omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
     }
     /**
      * @brief Destroy the Range Sensor Component Base object
@@ -242,8 +242,8 @@ protected:
     omni::physx::IPhysx* mPhysx = nullptr;
     ::physx::PxScene* mPxScene = nullptr;
     omni::timeline::ITimeline* mTimeline = nullptr;
-    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> mLineDrawing;
-    std::shared_ptr<omni::isaac::utils::drawing::PrimitiveDrawingHelper> mPointDrawing;
+    std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mLineDrawing;
+    std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mPointDrawing;
 
     pxr::UsdTimeCode mParentPrimTimeCode;
     bool mIsParentPrimTimeSampled = false;

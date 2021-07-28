@@ -3,7 +3,7 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
-    dependson {"omni.isaac.utils.primitive_drawing"}
+    dependson {"omni.isaac.debug_draw.primitive_drawing"}
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/range_sensor/**")
 
@@ -32,7 +32,7 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
 
     links {
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "rangeSensorSchema", "omni.usd", "usdPhysics",  "omni.isaac.utils.primitive_drawing"
+        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "rangeSensorSchema", "omni.usd", "usdPhysics",  "omni.isaac.debug_draw.primitive_drawing"
     }
 
     filter { "system:linux" }

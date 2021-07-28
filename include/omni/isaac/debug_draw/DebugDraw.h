@@ -16,10 +16,9 @@
 
 namespace omni
 {
-
 namespace isaac
 {
-namespace utils
+namespace debug_draw
 {
 
 
@@ -27,7 +26,7 @@ struct DebugDraw
 {
 
 
-    CARB_PLUGIN_INTERFACE("omni::isaac::utils::DebugDraw", 0, 1);
+    CARB_PLUGIN_INTERFACE("omni::isaac::debug_draw::DebugDraw", 0, 1);
 
     void(CARB_ABI* drawPoints)(const std::vector<carb::Float3>& points,
                                const std::vector<carb::ColorRgba>& color,

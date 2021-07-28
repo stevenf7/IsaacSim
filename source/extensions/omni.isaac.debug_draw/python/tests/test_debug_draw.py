@@ -11,7 +11,7 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-from omni.isaac.utils import _isaac_utils
+from omni.isaac.debug_draw import _debug_draw
 import random
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -19,7 +19,7 @@ class TestDebugDraw(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Before running each test
     async def setUp(self):
-        self._draw = _isaac_utils.debug_draw.acquire_debug_draw_interface()
+        self._draw = _debug_draw.acquire_debug_draw_interface()
         pass
 
     # After running each test
