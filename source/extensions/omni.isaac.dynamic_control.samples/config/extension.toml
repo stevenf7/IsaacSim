@@ -1,0 +1,30 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Dynamic Control Samples"
+description = "Samples For Dynamic Control Extension"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.dynamic_control.samples"
+keywords = ["isaac", "physics"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.ui" = {}
+"omni.kit.menu.utils" = {}
+"omni.kit.window.viewport" = {}
+
+[[python.module]]
+name = "omni.isaac.dynamic_control_samples.read_articulations"
+
+[[python.module]]
+name = "omni.isaac.dynamic_control_samples.joint_controller"
+

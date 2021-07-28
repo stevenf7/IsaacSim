@@ -7,7 +7,7 @@ CHANGELOG
 
 Added
 -------
-- New UI
+- Split samples from extension
 
 [0.1.4] - 2021-07-14
 ========================

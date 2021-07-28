@@ -82,6 +82,8 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
+        dc_ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
+        self._asset_path = ext_manager.get_extension_path(dc_ext_id)
         self._extension_path = ext_manager.get_extension_path(ext_id)
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
@@ -158,7 +160,7 @@ class Extension(omni.ext.IExt):
             self._timeline.play()
 
     def _on_load_robot(self):
-        task = asyncio.ensure_future(load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd"))
+        task = asyncio.ensure_future(load_test_file(self._asset_path + "/data/usd/robots/franka/franka.usd"))
         asyncio.ensure_future(self._setup_camera(task))
 
     def _on_print_info(self):
