@@ -26,6 +26,7 @@ icon = "data/icon.png"
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.urdf" = {}
 "omni.isaac.utils" = {}
+"omni.isaac.physics_inspector" = {}
 
 [[python.module]]
 name = "omni.isaac.utils_manager"
