@@ -87,9 +87,6 @@ def _print_body_rec(dc, body, indent_level=0):
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
         """Initialize extension and UI elements"""
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self._extension_path = ext_manager.get_extension_path(ext_id)
-
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._window = None
         self._physxIFace = _physx.acquire_physx_interface()
@@ -99,6 +96,8 @@ class Extension(omni.ext.IExt):
         self.ar = _dynamic_control.INVALID_HANDLE
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
+        dc_ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
+        self._asset_path = ext_manager.get_extension_path(dc_ext_id)
         self._extension_path = ext_manager.get_extension_path(ext_id)
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
@@ -186,7 +185,7 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
 
     def _on_load_robot(self):
-        task = asyncio.ensure_future(load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd"))
+        task = asyncio.ensure_future(load_test_file(self._asset_path + "/data/usd/robots/franka/franka.usd"))
         asyncio.ensure_future(self._setup_camera(task))
 
     def _on_move_joints(self):
