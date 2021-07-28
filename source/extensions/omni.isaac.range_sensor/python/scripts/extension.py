@@ -14,7 +14,7 @@ from functools import partial
 from omni.isaac import RangeSensorSchema
 from .. import _range_sensor
 from .menu import RangeSensorMenu
-from pxr import UsdShade
+from pxr import UsdShade, Sdf
 
 
 class Extension(omni.ext.IExt):
@@ -75,11 +75,12 @@ class Extension(omni.ext.IExt):
             return False
         prim_list = objects["prim_list"]
         stage = objects["stage"]
-        if prim_list and stage:
+        if prim_list and stage is not None:
             for prim_path in prim_list:
-                prim = stage.GetPrimAtPath(prim_path)
-                if prim.IsA(UsdShade.Material):
-                    return True
+                if isinstance(prim_path, Sdf.Path):
+                    prim = stage.GetPrimAtPath(prim_path)
+                    if prim.IsA(UsdShade.Material):
+                        return True
 
         return False
 
