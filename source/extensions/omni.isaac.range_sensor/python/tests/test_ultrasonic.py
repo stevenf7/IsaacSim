@@ -12,7 +12,7 @@ import omni.kit.commands
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.range_sensor import _range_sensor
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools
+from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools, UsdShade
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import asyncio
 import numpy as np
@@ -869,6 +869,154 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
                     [
                         488.72018433,
                         96.2740097,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                    ]
+                ),
+            )
+        )
+
+    # Test USS Materials with BRDF
+    async def test_uss_brdf_materials(self):
+
+        result, emitter0 = omni.kit.commands.execute(
+            "RangeSensorCreateUltrasonicEmitter",
+            path="/World/UltrasonicEmitter0",
+            per_ray_intensity=0.4,
+            yaw_offset=0.0,
+            adjacency_list=[0, 1],
+        )
+        result, group_1 = omni.kit.commands.execute(
+            "RangeSensorCreateUltrasonicFiringGroup",
+            path="/World/UltrasonicFiringGroup",
+            emitter_modes=[(0, 0), (1, 0), (1, 1)],
+            receiver_modes=[(0, 0), (0, 1), (1, 0), (1, 1)],
+        )
+
+        emitter0.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
+        # Rotate 90 degrees about z
+        emitter0.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(Gf.Vec3d(0, 0, 90))
+
+        result, emitter1 = omni.kit.commands.execute(
+            "RangeSensorCreateUltrasonicEmitter",
+            path="/World/UltrasonicEmitter1",
+            per_ray_intensity=0.4,
+            yaw_offset=0.0,
+            adjacency_list=[0, 1],
+        )
+        emitter1.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
+
+        result, ultrasonic = omni.kit.commands.execute(
+            "RangeSensorCreateUltrasonicArray",
+            path="/World/UltrasonicArray",
+            min_range=0.4,
+            max_range=3.0,
+            draw_points=True,
+            draw_lines=True,
+            horizontal_fov=20.0,
+            vertical_fov=10.0,
+            horizontal_resolution=0.4,
+            vertical_resolution=0.8,
+            num_bins=224,
+            use_brdf=True,
+            use_uss_materials=True,
+            emitter_prims=[emitter0.GetPath(), emitter1.GetPath()],
+            firing_group_prims=[group_1.GetPath()],
+        )
+        self.assertTrue(result)
+
+        cube0 = await self.add_cube("/World/Cube0", 25.0, Gf.Vec3f(0.0, 100.0, 0.0), physics=False)
+        cube1 = await self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
+
+        uss_material_path = "/cube_uss_material"
+        stage = omni.usd.get_context().get_stage()
+        UsdShade.Material.Define(stage, uss_material_path)
+        uss_material_prim = stage.GetPrimAtPath(uss_material_path)
+        UsdPhysics.MaterialAPI.Apply(uss_material_prim)
+        uss_schema = RangeSensorSchema.UltrasonicMaterialAPI.Apply(uss_material_prim)
+
+        uss_schema.CreatePerceptualRoughnessAttr().Set(1.0)
+        uss_schema.CreateReflectanceAttr().Set(1.0)
+        uss_schema.CreateMetallicAttr().Set(1.0)
+
+        def add_physics_material_to_prim(stage, prim, materialPath):
+            bindingAPI = UsdShade.MaterialBindingAPI.Apply(prim)
+            materialPrim = UsdShade.Material(stage.GetPrimAtPath(materialPath))
+            bindingAPI.Bind(materialPrim, UsdShade.Tokens.weakerThanDescendants, "physics")
+
+        add_physics_material_to_prim(stage, cube0, uss_material_path)
+        add_physics_material_to_prim(stage, cube1, uss_material_path)
+
+        self._timeline.play()
+        await simulate(2.0)
+        # TODO test to make sure that the sensor is firing at correct times
+        # TODO test to make sure that distances are correct
+        active_env = self._ultrasonic.get_active_envelope_array("/World/UltrasonicArray")
+        active_env = np.array(active_env)
+        print(active_env[0][50:67])
+        self.assertEqual(len(active_env), 4)
+        self.assertTrue(
+            np.allclose(
+                active_env[0][50:67],
+                np.array(
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 73.51676941, 5.1510067]
+                ),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                active_env[1][50:67],
+                np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            )
+        )
+        print(active_env[2][50:67])
+        self.assertTrue(
+            np.allclose(
+                active_env[2][50:67],
+                np.array(
+                    [
+                        79.63156128,
+                        16.46644402,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                    ]
+                ),
+            )
+        )
+        print(active_env[3][50:67])
+        self.assertTrue(
+            np.allclose(
+                active_env[3][50:67],
+                np.array(
+                    [
+                        79.63156128,
+                        16.46644402,
                         0.0,
                         0.0,
                         0.0,
