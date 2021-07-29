@@ -52,12 +52,6 @@ class DataWriter:
         # Block until all tasks are done
         self.q.join()
 
-        # Stop workers
-        for _ in range(self.num_worker_threads):
-            self.q.put(None)
-        for t in self.threads:
-            t.join()
-
         print(f"Done.")
 
     def worker(self):

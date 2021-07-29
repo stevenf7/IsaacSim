@@ -3,6 +3,7 @@ project_ext (ext)
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/synthetic_utils/scripts" },
+    { "python/tests", ext.target_dir.."/omni/isaac/synthetic_utils/tests" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
 }

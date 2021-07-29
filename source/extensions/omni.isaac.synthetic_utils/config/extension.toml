@@ -25,5 +25,11 @@ writeTarget.kit = true
 name = "omni.isaac.synthetic_utils"
 
 [[python.module]]
+name = "omni.isaac.synthetic_utils.tests"
+
+[[python.module]]
 name = "omni.isaac.synthetic_utils.scripts.syntheticdata_recorder"
 public = false
+
+[[test]]
+dependencies = ["omni.physx", "omni.isaac.utils"]
