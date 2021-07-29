@@ -20,7 +20,7 @@ icon = "data/icon.png"
 "omni.isaac.ui" = {}
 
 [[python.module]]
-name = "omni.isaac.ui_template.scripts.extension"
+name = "omni.isaac.ui_template"
 
 [[python.module]]
 name = "omni.isaac.ui_template.tests"

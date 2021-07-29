@@ -18,7 +18,7 @@ from omni.physx.bindings._physx import SimulationEvent
 from random import seed
 from random import random
 
-from omni.isaac.ui.scripts.ui_utils import *
+from omni.isaac.ui.ui_utils import *
 
 import weakref
 from pxr import Usd, UsdGeom

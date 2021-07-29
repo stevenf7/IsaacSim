@@ -828,7 +828,10 @@ def build_header(
     title="My Custom Extension",
     doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html",
 ):
+    """Title Header with Quick Access Utility Buttons."""
+
     def on_open_IDE_clicked():
+        """Opens the current directory and file in VSCode"""
         if sys.platform == "win32":
             print("windows not supported")
         else:
@@ -840,6 +843,7 @@ def build_header(
                 )
 
     def on_open_folder_clicked():
+        """Opens the current directory in a File Browser"""
         if sys.platform == "win32":
             # subprocess.Popen(['start', os.path.abspath(app_folder)], shell= True)
             print("windows not supported")
@@ -850,11 +854,13 @@ def build_header(
                 print("could not open file browser")
 
     def on_docs_link_clicked():
+        """Opens an extension's documentation in a Web Browser"""
         import webbrowser
 
         webbrowser.open(doc_link, new=2)
 
     def build_icon_bar():
+        """Adds the Utility Buttons to the Title Header"""
         with ui.Frame(style=get_style(), width=0):
             with ui.VStack():
                 with ui.HStack():
@@ -903,6 +909,7 @@ def build_header(
 
 
 def build_info_frame(overview="", author="", date=""):
+    """Info Frame with Overview, Instructions, and Metadata for an Extension"""
     frame = ui.CollapsableFrame(
         title="Information",
         height=0,
@@ -932,6 +939,7 @@ def build_info_frame(overview="", author="", date=""):
 
 
 def build_settings_frame(log_filename="extension.log", log_to_file=False, save_settings=False):
+    """Settings Frame for Common Utilities Functions"""
     frame = ui.CollapsableFrame(
         title="Settings",
         height=0,

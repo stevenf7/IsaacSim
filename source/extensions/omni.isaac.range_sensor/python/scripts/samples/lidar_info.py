@@ -16,7 +16,7 @@ from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import asyncio
 import weakref
 
-from omni.isaac.ui.scripts.ui_utils import *
+from omni.isaac.ui.ui_utils import *
 
 EXTENSION_NAME = "LIDAR Info"
 

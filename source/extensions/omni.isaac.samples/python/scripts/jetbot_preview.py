@@ -17,7 +17,7 @@ import numpy as np
 import asyncio
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-from omni.isaac.ui.scripts.ui_utils import *
+from omni.isaac.ui.ui_utils import *
 
 from omni.isaac.dynamic_control import _dynamic_control
 

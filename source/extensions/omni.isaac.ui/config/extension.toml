@@ -24,7 +24,7 @@ icon = "data/icon.png"
 "omni.kit.window.filepicker" = {}
 
 [[python.module]]
-name = "omni.isaac.ui.scripts.ui_utils"
+name = "omni.isaac.ui"
 
 [[python.module]]
 name = "omni.isaac.ui.tests"

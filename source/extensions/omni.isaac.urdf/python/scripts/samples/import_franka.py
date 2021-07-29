@@ -18,7 +18,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 from .common import set_drive_parameters
 from pxr import UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 
-from omni.isaac.ui.scripts.ui_utils import *
+from omni.isaac.ui.ui_utils import *
 
 
 EXTENSION_NAME = "Import Franka"
