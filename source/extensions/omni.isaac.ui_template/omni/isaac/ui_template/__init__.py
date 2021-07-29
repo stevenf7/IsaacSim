@@ -7,14 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni
-
-EXTENSION_NAME = "Isaac Sim UI Utilities"
-
-
-class Extension(omni.ext.IExt):
-    def on_startup(self):
-        pass
-
-    def on_shutdown(self):
-        pass
+from .extension import *

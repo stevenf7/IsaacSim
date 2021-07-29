@@ -13,7 +13,7 @@ import omni.ext
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-from omni.isaac.ui.scripts.ui_utils import *
+from omni.isaac.ui.ui_utils import *
 
 import asyncio
 import gc

@@ -18,7 +18,7 @@ import weakref
 
 EXTENSION_NAME = "Ultrasonic Info"
 
-from omni.isaac.ui.scripts.ui_utils import *
+from omni.isaac.ui.ui_utils import *
 
 
 class Extension(omni.ext.IExt):
