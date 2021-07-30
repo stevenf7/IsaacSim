@@ -58,6 +58,11 @@ public:
     void tickManual();
     void onStop();
 
+    std::string getDRLayerName()
+    {
+        return mDRLayerName;
+    }
+
 private:
     carb::tokens::ITokens* mTokens;
     omni::renderer::IDebugDraw* mDebugDrawPtr;

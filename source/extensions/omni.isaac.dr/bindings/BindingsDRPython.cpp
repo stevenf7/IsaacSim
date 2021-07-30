@@ -92,6 +92,10 @@ PYBIND11_MODULE(_dr, m)
              )pbdoc")
         .def("toggle_manual_mode", wrapInterfaceFunction(&DomainRandomizer::toggleManualMode), R"pbdoc(
                  Toggles mode between manual and non-manual. In manual mode, user can control when scene randomization occur whereas in non-manual mode scene randomization is controlled via the duration parameter in various DR components.
+             )pbdoc")
+        .def("get_dr_layer_name", wrapInterfaceFunction(&DomainRandomizer::getDRLayerName), R"pbdoc(
+                 Returns:
+                    string: The name of anonymous DR layer.
              )pbdoc");
 }
 }

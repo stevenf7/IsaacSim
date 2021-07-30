@@ -29,6 +29,7 @@ struct DomainRandomizer
 
     void(CARB_ABI* randomizeOnce)();
     void(CARB_ABI* toggleManualMode)();
+    std::string(CARB_ABI* getDRLayerName)();
 };
 }
 }
