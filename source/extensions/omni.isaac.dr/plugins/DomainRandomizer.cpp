@@ -217,8 +217,14 @@ void toggleManualMode()
     manualMode = !manualMode;
 }
 
+std::string getDRLayerName()
+{
+    return Manager->getDRLayerName();
+}
+
 void fillInterface(omni::isaac::dr::DomainRandomizer& iface)
 {
     iface.randomizeOnce = randomizeOnce;
     iface.toggleManualMode = toggleManualMode;
+    iface.getDRLayerName = getDRLayerName;
 }

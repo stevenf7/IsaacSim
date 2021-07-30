@@ -28,6 +28,10 @@ class DomainRandomization:
         """Toggles mode between manual and non-manual. In manual mode, user can control when scene randomization occur whereas in non-manual mode scene randomization is controlled via the duration parameter in various DR components."""
         self.dr.toggle_manual_mode()
 
+    def get_dr_layer_name(self):
+        """Returns the name of anonymous DR layer."""
+        return self.dr.get_dr_layer_name()
+
     def create_color_comp(
         self,
         prim_paths=[],
