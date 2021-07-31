@@ -1,9 +1,0 @@
-display_name = "Isaac Isaac Tests"
-
-[dependencies]
-"omni.kit.uiapp" = {}
-"omni.physx" = {}
-"omni.kit.window.toolbar" = {} # needed for simulation to happen
-
-[[python.module]]
-name = "omni.isaac.tests"

@@ -21,6 +21,7 @@ writeTarget.kit = true
 "omni.usdphysics" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.ui" = {}
+"omni.client" = {}
 
 [[python.module]]
 name = "omni.isaac.utils"

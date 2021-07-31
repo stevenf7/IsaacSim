@@ -19,10 +19,10 @@ writeTarget.kit = true
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
-"omni.kit.window.toolbar" = {} # Needed for simulation to occur
+"omni.timeline" = {} # Needed for simulation to occur
 # "omni.graph.core" = {}
 "omni.kit.numpy.common" = {}
-"omni.kit.window.viewport" = {}
+"omni.kit.window.viewport" = {} #needed by sample
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.isaac.ui" = {}
 
