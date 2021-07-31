@@ -29,7 +29,7 @@ using namespace omni::isaac::dynamic_control;
 RosSurfaceGripper::RosSurfaceGripper(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
-    mGripperJoint = std::make_unique<omni::isaac::utils::SurfaceGripper>(dynamicControlPtr);
+    mGripperJoint = std::make_unique<omni::isaac::surface_gripper::SurfaceGripper>(dynamicControlPtr);
 }
 
 RosSurfaceGripper::~RosSurfaceGripper()

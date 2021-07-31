@@ -30,7 +30,6 @@ name = "omni.isaac.robot_engine_bridge"
 
 [[python.module]]
 name = "omni.isaac.pyalice"
-public = false
 
 [[python.module]]
 name = "omni.isaac.robot_engine_bridge.tests"

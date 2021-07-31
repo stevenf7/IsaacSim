@@ -11,7 +11,6 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni.kit.usd
 import gc
 import carb
 import asyncio
@@ -62,7 +61,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
         omni.kit.commands.execute(
             "IsaacSimSpawnPrim", usd_path=physics_usd, prim_path="/block", translation=(100, -100, 0)
         )
-        # we need to wait several frames because each of the above spawn calls has an await in it as well
+        # we need to wait several frames for spawns to load
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()

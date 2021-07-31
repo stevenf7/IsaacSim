@@ -5,12 +5,12 @@ display_name = "Isaac Tests"
 "omni.physx" = {}
 "omni.physx.commands" = {}
 "omni.kit.window.tests" = {}
-"omni.kit.window.toolbar" = {} # needed for simulation to happen
+"omni.timeline" = {} # needed for simulation to happen
 "omni.kit.primitive.mesh" = {} # needed for mesh creation commands
 # "omni.graph.core" = {}
 "omni.isaac.utils" = {}
 "omni.kit.material.library" = {}
-"omni.kit.window.viewport" = {}
+"omni.kit.window.viewport" = {} # snippet tests need this
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.syntheticdata" = {}
 

@@ -28,7 +28,6 @@ name = "omni.isaac.robot_engine_bridge_gxf"
 
 [[python.module]]
 name = "omni.isaac.pygxf"
-public = false
 
 [[python.module]]
 name = "omni.isaac.robot_engine_bridge_gxf.tests"

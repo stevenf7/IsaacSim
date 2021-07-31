@@ -7,4 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_sim_commands import *
+# there is no extension, so we just import bindings
+from . import _surface_gripper

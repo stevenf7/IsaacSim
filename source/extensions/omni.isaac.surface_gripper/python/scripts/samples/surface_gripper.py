@@ -23,7 +23,7 @@ import omni.physx as _physx
 import weakref
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties, Surface_Gripper
+from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properties, Surface_Gripper
 
 from omni.isaac.ui.ui_utils import *
 
