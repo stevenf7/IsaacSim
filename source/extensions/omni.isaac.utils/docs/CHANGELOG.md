@@ -1,6 +1,17 @@
 **********
 CHANGELOG
 **********
+
+[0.1.6] - 2021-07-30
+========================
+
+Removed
+-------
+- Physics Inspector is its own extension
+- Physics Utilities is its own extension
+- Merge Mesh is its own extension
+- Debug Draw is its own extension
+
 [0.1.5] - 2021-07-12
 ========================
 
