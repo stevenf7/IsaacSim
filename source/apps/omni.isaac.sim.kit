@@ -9,10 +9,16 @@ keywords = ["experience", "app", "usd"]
 
 [dependencies]
 "omni.isaac.sim.base" = {}
+# "omni.kit.splash" = { order = -5000}
 
 [settings]
 app.name = "Isaac-Sim"
 app.version = "2021.2.0"
+
+# Splash Setup
+################################
+# exts."omni.kit.window.splash".imagePath = "${app}/../exts/omni.isaac.splash/data/isaac_splash_screen_daily@1x.png"
+# exts.'omni.kit.splash'.splash_app = "${app}/omni.isaac.sim.splash.kit"
 
 [settings.exts."omni.kit.registry.nucleus"]
 registries = [

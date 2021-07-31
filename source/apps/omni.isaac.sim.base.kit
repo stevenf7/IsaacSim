@@ -98,7 +98,7 @@ keywords = ["experience", "app", "usd"]
 # "omni.kit.thumbnails.images" = {}
 
 # # Misc
-"omni.ansel" = {}
+# "omni.ansel" = {}
 "omni.kit.window.cursor" = {}
 "omni.kit.search.service" = {}
 
@@ -157,6 +157,7 @@ featuredExts = []
 # only want to use a single GPU on your MGPU system
 # False for Isaac Sim
 renderer.multiGpu.enabled = false
+renderer.multiGpu.autoEnable = false
 
 # Improve determinism with physics and camera movement
 app.asyncRendering = false
@@ -167,11 +168,6 @@ app.versionFile = "${app}/../VERSION"
 app.name = "Isaac-Sim"
 app.version = "2021.2.0"
 persistent.app.window.uiStyle = "NvidiaDark"
-
-# Splash Setup
-################################
-exts."omni.kit.window.splash".imagePath = "${app}/../exts/omni.isaac.splash/data/isaac_splash_screen_daily@1x.png"
-exts.'omni.kit.splash'.splash_app = "${app}/omni.isaac.app.splash.kit"
 
 # hide NonToggleable Exts
 exts."omni.kit.window.extensions".hideNonToggleableExts = true
@@ -276,7 +272,6 @@ serverCheck = true
 "omni.isaac.merge_mesh" = {}
 "omni.isaac.physics_utilities" = {}
 "omni.isaac.app.setup" = { order = 1000 } # we are running that at the end
-#"omni.isaac.splash" = {}
 "omni.isaac.window.about" = {}
 
 #sample extensions
