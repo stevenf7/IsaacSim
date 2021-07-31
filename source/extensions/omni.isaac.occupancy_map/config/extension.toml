@@ -19,9 +19,9 @@ writeTarget.kit = true
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.physx" = {} 
-"omni.debugdraw" = {}
+"omni.isaac.debug_draw" = {}
 "omni.isaac.utils" = {}
-# "omni.kit.window.filepicker" = {}
+"omni.kit.window.viewport" = {}
 "omni.kit.pip_archive" = {} # pulls in pillow
 
 [[python.module]]

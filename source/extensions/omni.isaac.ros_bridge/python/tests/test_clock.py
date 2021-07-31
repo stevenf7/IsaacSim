@@ -18,14 +18,15 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 from .common import wait_for_rosmaster, simulate
-import rospy
+
 import carb
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosClock(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
+        from omni.isaac.ros_bridge.scripts.roscore import Roscore
+        import rospy
 
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -41,7 +42,6 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self._roscore = Roscore()
-        self._roscore.startup(kit_folder + "/python/bin", self._ros_extension_path + "/noetic", "_CATKIN_SETUP_DIR")
         await wait_for_rosmaster()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
         try:
@@ -55,13 +55,13 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         self._stage = None
         self._timeline = None
         # rospy.signal_shutdown("test_complete")
-        self._roscore.shutdown()
         self._roscore = None
 
         gc.collect()
         pass
 
     async def test_sim_clock(self):
+        import rospy
         from rosgraph_msgs.msg import Clock
 
         result, prim = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock", sim_time=True)
@@ -82,6 +82,7 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_sim_clock_manual(self):
+        import rospy
         from rosgraph_msgs.msg import Clock
 
         result, prim = omni.kit.commands.execute(
@@ -115,6 +116,7 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_system_clock(self):
+        import rospy
         from rosgraph_msgs.msg import Clock
         import time
 

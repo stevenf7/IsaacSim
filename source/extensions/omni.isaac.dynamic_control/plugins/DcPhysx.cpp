@@ -2592,7 +2592,7 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
         {
             return false;
         }
-        printf("Refreshing joint %s\n", dcJoint->path.GetString().c_str());
+        CARB_LOG_INFO("Refreshing joint %s\n", dcJoint->path.GetString().c_str());
         // Joint was created through DC so it doesn't exist after sim is stopped, re-create
         PxRigidBody* pxBody0 = nullptr;
         PxRigidBody* pxBody1 = nullptr;
@@ -2658,7 +2658,7 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
 
         dcJoint->pxJoint = (PxD6Joint*)ctx->physx->createD6JointAtPath(jointPath, originPath, targetPath);
         joint = dcJoint->pxJoint;
-        printf("Refreshed joint %s\n", dcJoint->path.GetString().c_str());
+        CARB_LOG_INFO("Refreshed joint %s\n", dcJoint->path.GetString().c_str());
     }
     PxRigidBody* pxBody0 = nullptr;
     PxRigidBody* pxBody1 = nullptr;
@@ -2917,7 +2917,7 @@ void SuAttach(long stageId, double metersPerUnit, void* data)
 
 void SuDetach(void* data)
 {
-    // printf("++ DynamicControl: Stage Detach\n");
+    // CARB_LOG_INFO("++ DynamicControl: Stage Detach\n");
 
     if (g_dcCtx)
     {
@@ -2928,7 +2928,7 @@ void SuDetach(void* data)
 
 void SuPause()
 {
-    printf("++ DC: Stage Pause\n");
+    // CARB_LOG_INFO("++ DC: Stage Pause\n");
     if (g_dcCtx)
     {
         g_dcCtx->wasPaused = true;
@@ -2937,7 +2937,7 @@ void SuPause()
 
 void SuResume()
 {
-    // printf("++ DC: Stage Resume\n");
+    // CARB_LOG_INFO("++ DC: Stage Resume\n");
 
     if (g_dcCtx)
     {
@@ -2954,13 +2954,13 @@ void SuResume()
 
 void SuStop()
 {
-    // printf("++ DC: Stage Stop\n");
+    // CARB_LOG_INFO("++ DC: Stage Stop\n");
 
     if (g_dcCtx)
     {
         // destroyContext(g_dcCtx);
         // g_dcCtx = nullptr;
-        printf("Refreshing context\n");
+        CARB_LOG_INFO("Refreshing context");
         g_dcCtx->refreshPhysicsPointers(false);
         g_dcCtx->isSimulating = false;
         g_dcCtx->wasPaused = false;

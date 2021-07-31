@@ -27,6 +27,8 @@ icon = "data/icon.png"
 "omni.isaac.urdf" = {}
 "omni.isaac.utils" = {}
 "omni.isaac.physics_inspector" = {}
+"omni.isaac.merge_mesh" = {}
+"omni.isaac.physics_utilities" = {}
 
 [[python.module]]
 name = "omni.isaac.utils_manager"

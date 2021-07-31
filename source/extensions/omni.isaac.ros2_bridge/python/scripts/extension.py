@@ -9,7 +9,6 @@
 
 import os
 import omni.ext
-
 from .. import _ros2_bridge
 import carb
 
@@ -22,6 +21,7 @@ class Extension(omni.ext.IExt):
             carb.log_error("ROS 2 Bridge extension cannot be enabled if ROS Bridge is enabled")
             ext_manager.set_extension_enabled("omni.isaac.ros2_bridge", False)
             return
+        ext_manager.set_extension_enabled("omni.isaac.ros_bridge_ui", True)
 
         # ROS2 uses LD_LIBRARY_PATH to load libraries at runtime so set it here before the plugin loads.
         self._extension_path = ext_manager.get_extension_path(ext_id)
@@ -35,4 +35,3 @@ class Extension(omni.ext.IExt):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         if ext_manager.is_extension_enabled("omni.isaac.ros_bridge") is False:
             ext_manager.set_extension_enabled("omni.isaac.ros_bridge_ui", False)
-            return

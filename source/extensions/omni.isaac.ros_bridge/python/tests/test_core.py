@@ -25,7 +25,7 @@ import carb
 class TestRosBridge(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
-        from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
+        from omni.isaac.ros_bridge.scripts.roscore import Roscore
 
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
@@ -36,7 +36,6 @@ class TestRosBridge(omni.kit.test.AsyncTestCaseFailOnLogError):
         _rosbridge = _ros_bridge.acquire_ros_bridge_interface()
         kit_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
         self._roscore = Roscore()
-        self._roscore.startup(kit_folder + "/python/bin", self._ros_extension_path + "/noetic", "_CATKIN_SETUP_DIR")
         await wait_for_rosmaster()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
         await omni.kit.app.get_app().next_update_async()
@@ -47,7 +46,6 @@ class TestRosBridge(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         self._stage = None
         self._timeline = None
-        self._roscore.shutdown()
         self._roscore = None
         await omni.kit.app.get_app().next_update_async()
         gc.collect()
@@ -107,3 +105,9 @@ class TestRosBridge(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
+
+    async def test_second_roscore(self):
+        from omni.isaac.ros_bridge.scripts.roscore import Roscore
+
+        another_roscore = Roscore()
+        another_roscore.shutdown()

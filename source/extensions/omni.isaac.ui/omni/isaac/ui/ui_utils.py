@@ -971,11 +971,16 @@ def build_settings_frame(log_filename="extension.log", log_to_file=False, save_s
         done, pending = await asyncio.wait({task})
         if task in done:
             carb.log_info("Setting Up Project")
-            viewport = omni.kit.viewport.get_default_viewport_window()
+            ext_manager = omni.kit.app.get_app().get_extension_manager()
+            viewport_ext_enabled = ext_manager.is_extension_enabled("omni.kit.window.viewport")
+            if viewport_ext_enabled:
+                viewport = omni.kit.viewport.get_default_viewport_window()
 
-            # Setup the Viewport at a CAMERA_PRESET (NEAR, MID, FAR)
-            viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
-            viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+                # Setup the Viewport at a CAMERA_PRESET (NEAR, MID, FAR)
+                viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
+                viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            else:
+                carb.log_warn("skipping viewport camera reset because omni.kit.window.viewport isn't enabled")
 
     with frame:
         with ui.VStack(style=get_style(), spacing=5):

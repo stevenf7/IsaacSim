@@ -151,16 +151,8 @@ class IsaacSimDestroyPrim(omni.kit.commands.Command):
         pass
 
     def do(self) -> bool:
-        stage = omni.usd.get_context().get_stage()
-        for layer in stage.GetLayerStack():
-            edit = Sdf.BatchNamespaceEdit()
-            prim_spec = layer.GetPrimAtPath(self._prim_path)
-            if prim_spec is None:
-                return False
-            parent_spec = prim_spec.realNameParent
-            if parent_spec is not None:
-                edit.Add(self._prim_path, Sdf.Path.emptyPath)
-            layer.Apply(edit)
+        delete_cmd = omni.usd.commands.DeletePrimsCommand([self._prim_path])
+        delete_cmd.do()
         pass
 
     def undo(self):

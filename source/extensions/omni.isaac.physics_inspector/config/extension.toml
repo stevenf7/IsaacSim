@@ -26,3 +26,6 @@ name = "omni.isaac.physics_inspector"
 
 [[python.module]]
 name = "omni.isaac.physics_inspector.tests"
+
+[[test]]
+args = ["--/exts/omni.kit.renderer.core/compatibilityMode=true"]

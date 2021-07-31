@@ -1,0 +1,14 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+title = "Isaac Sim Proximity Sensor Example"
+description = "Proximity Sensor"
+
+[dependencies]
+"omni.physx" = {}
+
+[[python.module]]
+name = "omni.isaac.proximity_sensor"

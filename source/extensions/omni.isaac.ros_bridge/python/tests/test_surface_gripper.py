@@ -23,14 +23,14 @@ from omni.isaac.dynamic_control import _dynamic_control
 from .common import create_joint_state, set_rotate, set_translate, simulate, wait_for_rosmaster
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 from omni.isaac.utils.scripts.test_utils import load_test_file
-import rospy
 from pxr import Gf, PhysicsSchemaTools
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
+        from omni.isaac.ros_bridge.scripts.roscore import Roscore
+        import rospy
 
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -54,7 +54,6 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self._roscore = Roscore()
-        self._roscore.startup(kit_folder + "/python/bin", self._ros_extension_path + "/noetic", "_CATKIN_SETUP_DIR")
         await wait_for_rosmaster()
         await omni.kit.app.get_app().next_update_async()
 
@@ -71,13 +70,14 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         # rospy.signal_shutdown("test_complete")
-        self._roscore.shutdown()
         self._roscore = None
         self._timeline = None
         gc.collect()
         pass
 
     async def test_gripper(self):
+        import rospy
+
         from sensor_msgs.msg import JointState
 
         (result, error) = await load_test_file(self._nucleus_path + "/Samples/ROS/Robots/UR10_Long_Suction_ROS.usd")

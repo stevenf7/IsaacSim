@@ -11,6 +11,7 @@ from .global_constants import *
 import carb.tokens
 import os
 import bz2
+import omni
 
 try:
     import cPickle as pickle
@@ -43,7 +44,7 @@ def get_database():
             del g_shapenet_db["02858304"]
         else:
             g_shapenet_db = None
-            print("Please use the menu to build that shapenet ID database.")
+            omni.kit.app.get_app().print_and_log("Please use the menu to build that shapenet ID database.")
     return g_shapenet_db
 
 
@@ -52,12 +53,14 @@ def get_local_shape_loc():
     if g_local_shape_loc == None:
 
         env_path = os.getenv("SHAPENET_LOCAL_DIR")
-        if env_path == None:
+        if env_path is None:
             resolved_data_path = carb.tokens.get_tokens_interface().resolve("${data}")
             g_local_shape_loc = resolved_data_path + "/shapenet"
-            print(f"env var SHAPENET_LOCAL_DIR not set, using default data dir {g_local_shape_loc}")
+            omni.kit.app.get_app().print_and_log(
+                f"env var SHAPENET_LOCAL_DIR not set, using default data dir {g_local_shape_loc}"
+            )
         else:
             g_local_shape_loc = env_path
-            print(f"Using local env var SHAPENET_LOCAL_DIR {env_path}")
+            omni.kit.app.get_app().print_and_log(f"Using local env var SHAPENET_LOCAL_DIR {env_path}")
 
     return g_local_shape_loc

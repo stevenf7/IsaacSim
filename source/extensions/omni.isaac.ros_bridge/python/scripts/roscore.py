@@ -8,9 +8,11 @@
 #
 
 import subprocess
-import sys
 import signal
 import psutil
+import carb
+import omni
+import sys
 
 
 def kill_child_processes(parent_pid, sig=signal.SIGTERM):
@@ -20,7 +22,7 @@ def kill_child_processes(parent_pid, sig=signal.SIGTERM):
         return
     children = parent.children(recursive=True)
     for process in children:
-        print("killing child: ", process)
+        omni.kit.app.get_app().print_and_log(f"Stopping Roscore: killing child: {process}")
         process.send_signal(sig)
 
 
@@ -33,41 +35,54 @@ class Roscore(object):
     __initialized = False
 
     def __init__(self):
-        if Roscore.__initialized:
-            raise Exception("You can't create more than 1 instance of Roscore.")
-        Roscore.__initialized = True
         self.roscore_process = None
         self.roscore_pid = None
+        if Roscore.__initialized:
+            carb.log_warn("Roscore object was already created, skipping")
+            return
+        Roscore.__initialized = True
 
-    def check_running(self):
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros_bridge")
+        self._ros_extension_path = ext_manager.get_extension_path(ext_id)
+        kit_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
+        self._startup(kit_folder + "/python/bin", self._ros_extension_path + "/noetic", "_CATKIN_SETUP_DIR")
+
+    def __del__(self):
+        self.shutdown()
+
+    def _check_running(self):
         import rosgraph
 
         try:
             rosgraph.Master("/rostopic").getPid()
         except:
-            print("ROS master is not running")
+            carb.log_warn("ROS master is not running")
             return False
         else:
-            print("ROS master is already running")
+            carb.log_warn("ROS master is already running")
             return True
 
-    def startup(self, python_path, ros_path, prefix):
+    def _startup(self, python_path, ros_path, prefix):
+        omni.kit.app.get_app().print_and_log("Starting Roscore...")
         ros_env = {}
-        if self.check_running() == True:
-            print("Not starting internal roscore")
+        if self._check_running() == True:
+            carb.log_info("Roscore already running, not starting internal roscore")
             return
         # Get ros env parameters from bash setup script
         try:
             self.bash_process = subprocess.check_output(
                 f"export {prefix}={ros_path}; source {ros_path}/setup.sh; env -0", shell=True, executable="/bin/bash"
             )
-            for line in self.bash_process.decode("ascii").split("\0"):
+            for line in self.bash_process.decode(sys.stdout.encoding).split("\0"):
                 result = line.split("=")
                 if len(result) == 2:
-                    ros_env[result[0]] = result[1]
+                    if result[0] in ["CMAKE_PREFIX_PATH", "LD_LIBRARY_PATH", "PATH", "PKG_CONFIG_PATH", "PYTHONPATH"]:
+                        ros_env[result[0]] = result[1]
 
         except OSError as e:
-            sys.stderr.write("roscore could not be run")
+            carb.log_error("roscore could not be run")
+            self._shutdown()
             raise e
 
         try:
@@ -79,13 +94,18 @@ class Roscore(object):
             self.roscore_process = subprocess.Popen(["rosmaster --core"], shell=True, cwd=f"{ros_path}", env=ros_env)
             self.roscore_pid = self.roscore_process.pid  # pid of the roscore process (which has child processes)
         except OSError as e:
-            sys.stderr.write("roscore could not be run")
+            carb.log_error("roscore could not be run")
+            self._shutdown()
             raise e
 
     def shutdown(self):
         if self.roscore_pid is not None and self.roscore_process is not None:
-            print("try to kill child pids of roscore pid: " + str(self.roscore_pid))
+            carb.log_warn("Try to kill child pids of roscore pid: " + str(self.roscore_pid))
             kill_child_processes(self.roscore_pid)
             self.roscore_process.terminate()
             self.roscore_process.wait()  # important to prevent from zombie process
+            self.roscore_process = None
+            self.roscore_pid = None
+        else:
+            carb.log_warn("Roscore was not started by this object, couldn't stop")
         Roscore.__initialized = False

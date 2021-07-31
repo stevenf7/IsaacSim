@@ -20,17 +20,14 @@ import omni.kit
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
-import os
 import threading
 from time import sleep, time
 
 from .comm import process_request_in_thread
-from .globals import *
+from .globals import DEBUG_PRINT_ON, g_bind_address
 from .menu import ShapenetMenu
 
 from queue import Queue
-
-from pathlib import Path
 
 EXTENSION_NAME = "ShapeNet Loader"
 
@@ -81,7 +78,9 @@ class ShapeNetRequestHandler(BaseHTTPRequestHandler):
 
 def run_server(httpd):
     if httpd is not None:
-        print(f"omni.isaac.shapenet's receiver for external messages has started. on {g_bind_address}")
+        omni.kit.app.get_app().print_and_log(
+            f"omni.isaac.shapenet's receiver for external messages has started. on {g_bind_address}"
+        )
         httpd.serve_forever()
 
 

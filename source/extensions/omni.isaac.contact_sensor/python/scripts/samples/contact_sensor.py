@@ -7,25 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import os
 import carb
 import omni
 import asyncio
+import weakref
+import omni.physx as _physx
+import omni.ui as ui
 from omni.isaac.contact_sensor import _contact_sensor
-from omni.physx.scripts.physicsUtils import *
-from pxr import Usd, UsdLux, UsdGeom, UsdShade, Sdf, Gf, Tf, Vt, UsdPhysics, PhysxSchema
-from omni.physx import get_physx_interface
-from omni.physx.bindings._physx import SimulationEvent
-from random import seed
-from random import random
+from pxr import UsdGeom
 
 from omni.isaac.ui.ui_utils import *
-
-import weakref
-from pxr import Usd, UsdGeom
-import os
-import omni.physx as _physx
-import omni
-import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 
