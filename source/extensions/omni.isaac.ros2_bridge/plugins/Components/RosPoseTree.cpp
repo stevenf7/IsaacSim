@@ -13,7 +13,7 @@
 
 #include "RosPoseTree.h"
 
-#include "../Core/RosUtils.h"
+#include "geometry_msgs/msg/transform.hpp"
 #include "rosgraph_msgs/msg/clock.hpp"
 #include "std_msgs/msg/int64.hpp"
 #include "std_msgs/msg/u_int8.hpp"
@@ -22,9 +22,11 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
+#include <omni/isaac/ros/Conversions.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <time.h>
 namespace omni
@@ -113,7 +115,7 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
     }
 
     // Get the parent body pose
-    physx::PxTransform parent_pose = physx::PxTransform();
+    physx::PxTransform parent_pose = physx::PxTransform(physx::PxIdentity);
     std::string parent_frame = "world";
 
     if (mParentPrim)
@@ -151,11 +153,13 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
             physx::PxTransform trans(parent_pose.transformInv(body1_pose));
             if (mParentPrim)
             {
-                msg.transform = asRosTransform(trans, mStageUnits);
+                msg.transform =
+                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
             }
             else
             {
-                msg.transform = asRosTransform(body1_pose, mStageUnits);
+                msg.transform =
+                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(body1_pose, mStageUnits);
             }
 
             tf_msg.transforms.push_back(msg);
@@ -175,7 +179,8 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
 
                     msg.header.frame_id = mDynamicControlPtr->getRigidBodyName(parent_body);
                     msg.child_frame_id = mDynamicControlPtr->getRigidBodyName(child_body);
-                    msg.transform = asRosTransform(pos0_1, mStageUnits);
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(pos0_1, mStageUnits);
                     tf_msg.transforms.push_back(msg);
                 }
             }
@@ -189,11 +194,13 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
             msg.child_frame_id = prim.GetName().GetString();
             if (mParentPrim)
             {
-                msg.transform = asRosTransform(trans, mStageUnits);
+                msg.transform =
+                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
             }
             else
             {
-                msg.transform = asRosTransform(body1_pose, mStageUnits);
+                msg.transform =
+                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(body1_pose, mStageUnits);
             }
 
             tf_msg.transforms.push_back(msg);
@@ -215,11 +222,13 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
             msg.child_frame_id = prim.GetName().GetString();
             if (mParentPrim)
             {
-                msg.transform = asRosTransform(trans, mStageUnits);
+                msg.transform =
+                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
             }
             else
             {
-                msg.transform = asRosTransform(body1_pose, mStageUnits);
+                msg.transform =
+                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(body1_pose, mStageUnits);
             }
 
             tf_msg.transforms.push_back(msg);

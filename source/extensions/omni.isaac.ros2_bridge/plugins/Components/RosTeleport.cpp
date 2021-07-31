@@ -13,7 +13,7 @@
 
 #include "RosTeleport.h"
 
-#include "../Core/RosUtils.h"
+#include "geometry_msgs/msg/transform.hpp"
 #include "rosgraph_msgs/msg/clock.hpp"
 #include "std_msgs/msg/int64.hpp"
 #include "std_msgs/msg/u_int8.hpp"
@@ -22,6 +22,7 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
+#include <omni/isaac/ros/Conversions.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>
@@ -119,10 +120,10 @@ bool RosTeleport::srvCallback(const isaac_ros2_messages::srv::IsaacPose::Request
     const unsigned int num_actors = req->names.size();
     for (size_t req_idx = 0; req_idx < num_actors; req_idx++)
     {
-        int bodyIndex = 0;
+        // int bodyIndex = 0;
         for (auto& object : mObjects)
         {
-            bodyIndex = object.second.first;
+            // bodyIndex = object.second.first;
             pxr::UsdPrim prim = object.second.second;
             // Set actor name
             std::string actorName = object.first;
@@ -133,7 +134,7 @@ bool RosTeleport::srvCallback(const isaac_ros2_messages::srv::IsaacPose::Request
                 DcTransform body_pose;
                 if (req->poses.size() == num_actors)
                 {
-                    body_pose = asDcTransform(req->poses[req_idx], mUnitScale);
+                    body_pose = omni::isaac::conversions::rosPoseAsDcTransform(req->poses[req_idx], mUnitScale);
 
                     if (type == omni::isaac::dynamic_control::eDcObjectArticulation)
                     {
@@ -142,8 +143,8 @@ bool RosTeleport::srvCallback(const isaac_ros2_messages::srv::IsaacPose::Request
                         DcHandle artculationHandle =
                             mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
                         mDynamicControlPtr->wakeUpArticulation(artculationHandle);
-                        DcHandle rigid_body = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
-                        mDynamicControlPtr->setRigidBodyPose(rigid_body, body_pose);
+                        DcHandle rigidBodyHandle = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
+                        mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, body_pose);
                     }
                     else if (type == omni::isaac::dynamic_control::eDcObjectRigidBody)
                     {
@@ -163,13 +164,35 @@ bool RosTeleport::srvCallback(const isaac_ros2_messages::srv::IsaacPose::Request
 
                 if (req->velocities.size() == num_actors)
                 {
-                    // carb::Float3 linear_velocity = { req->velocities[req_idx].linear.x,
-                    // req->velocities[req_idx].linear.y,
-                    //                                  req->velocities[req_idx].linear.z };
-                    // carb::Float3 angular_velocity = { req->velocities[req_idx].angular.x,
-                    //                                   req->velocities[req_idx].angular.y,
-                    //                                   req->velocities[req_idx].angular.z };
-                    CARB_LOG_WARN("Velocity service message not supported currently");
+                    carb::Float3 linear_velocity =
+                        omni::isaac::conversions::asCarbFloat3(req->velocities[req_idx].linear);
+                    carb::Float3 angular_velocity =
+                        omni::isaac::conversions::asCarbFloat3(req->velocities[req_idx].angular);
+
+                    if (type == omni::isaac::dynamic_control::eDcObjectArticulation)
+                    {
+
+                        CARB_LOG_INFO("Velocity service message for Articulation Root");
+                        DcHandle artculationHandle =
+                            mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
+                        mDynamicControlPtr->wakeUpArticulation(artculationHandle);
+                        DcHandle rigidBodyHandle = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
+                        mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, linear_velocity);
+                        mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, angular_velocity);
+                    }
+                    else if (type == omni::isaac::dynamic_control::eDcObjectRigidBody)
+                    {
+                        DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
+                        CARB_LOG_INFO("Velocity service message for Rigid");
+                        mDynamicControlPtr->wakeUpRigidBody(rigidBodyHandle);
+                        mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, linear_velocity);
+                        mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, angular_velocity);
+                    }
+                    else if (type == omni::isaac::dynamic_control::eDcObjectNone)
+                    {
+                        CARB_LOG_WARN("Velocity service cannot be applied to non physics object with path: %s",
+                                      prim.GetPath().GetString().c_str());
+                    }
                 }
 
                 if (req->scales.size() == num_actors)

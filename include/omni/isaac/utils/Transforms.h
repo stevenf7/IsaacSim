@@ -39,7 +39,7 @@ using omni::isaac::dynamic_control::DcTransform;
  * @param pxBodyTranslation
  * @param pxBodyRotation
  */
-static void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
+inline void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
                          pxr::UsdPrim& prim,
                          pxr::GfVec3f pxBodyTranslation,
                          pxr::GfQuatf pxBodyRotation)
@@ -94,7 +94,7 @@ static void setTransform(omni::isaac::dynamic_control::DynamicControl* mDynamicC
  * @param prim
  * @param pxBodyScale
  */
-static void setScale(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
+inline void setScale(omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr,
                      pxr::UsdPrim& prim,
                      pxr::GfVec3f pxBodyScale)
 {
