@@ -7,7 +7,7 @@ version = "2021.2.0"
 keywords = ["experience", "extensions"]
 
 [dependencies]
-"omni.kit.editor" = {}
+"omni.kit.uiapp" = {}
 "omni.services.core" = {}
 "omni.services.transport.server.tcp_socket" = {}
 "omni.isaac.splash" = {}
@@ -37,3 +37,10 @@ app.window.scaleToMonitor = false
 
 # faster load time as not need for RTX
 exts."omni.kit.renderer".compatibilityMode = true
+
+# Duration for which each image is shown on the splash screen slideshow (in seconds):
+exts."omni.isaac.splash".slide_hold_time = 9.0
+
+# Register extension folder from this repo in kit
+[settings.app.exts]
+folders.'++' = ["${app}/../exts" ]
