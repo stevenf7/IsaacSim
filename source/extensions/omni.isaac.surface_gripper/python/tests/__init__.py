@@ -7,4 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_sim_commands import *
+from .test_surface_gripper import *

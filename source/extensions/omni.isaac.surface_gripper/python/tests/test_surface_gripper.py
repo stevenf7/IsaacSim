@@ -14,7 +14,7 @@ import omni.kit.test
 
 import omni.kit.usd
 import omni.kit.commands
-from omni.isaac.dynamic_control import _dynamic_control as dc
+from omni.isaac.dynamic_control import _dynamic_control
 import carb.tokens
 import os
 import carb
@@ -25,7 +25,7 @@ from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics
 
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper_Properties, Surface_Gripper
+from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properties, Surface_Gripper
 
 
 async def simulate(seconds, steps_per_sec=60):
@@ -61,7 +61,6 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         await omni.kit.app.get_app().next_update_async()
         UsdPhysics.CollisionAPI(cubePrim)
-        print(cubePrim.GetPath().pathString)
 
     # Helper for setting up the physics stage
     async def setup_physics(self, box1_props):
@@ -87,7 +86,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Before running each test
     async def setUp(self):
-        self._dc = dc.acquire_dynamic_control_interface()
+        self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self.box0 = "/box0"
         self.box1 = "/box1"
         self.box0_props = [self.box0, 0.0, [1, 1, 2.0], [-50, 0, 100], [0, 0, 0, 1], [80, 80, 255]]
@@ -97,7 +96,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.sgp = Surface_Gripper_Properties()
         self.sgp.d6JointPath = self.d6FixedJoint
         self.sgp.parentPath = self.box0
-        self.sgp.offset = dc.Transform()
+        self.sgp.offset = _dynamic_control.Transform()
         self.sgp.offset.p.x = 50.1
         self.sgp.offset.p.z = 100
         self.sgp.gripThreshold = 2
@@ -117,7 +116,6 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # After running each test
     async def tearDown(self):
-        print("tearing down")
         # Because lifetime for this joint object is managed by the DC plugin and not usd the order
         # that dc and the gripper are cleaned up matters. First remove the surface gripper and
         # then call stop and then cleanup dc
@@ -145,8 +143,8 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._dc.is_simulating())
 
-        print(self._dc.get_rigid_body(self.box0))
-        print(self._dc.get_rigid_body(self.box1))
+        self.assertNotEqual(self._dc.get_rigid_body(self.box0), _dynamic_control.INVALID_HANDLE)
+        self.assertNotEqual(self._dc.get_rigid_body(self.box1), _dynamic_control.INVALID_HANDLE)
         self.assertTrue(self.surface_gripper.initialize(self.sgp))
         pass
 
@@ -167,7 +165,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.surface_gripper.initialize(self.sgp)
         box0 = self._dc.get_rigid_body(self.box0)
         box1 = self._dc.get_rigid_body(self.box1)
-        t = dc.Transform()
+        t = _dynamic_control.Transform()
         t.p = self.box1_props[3]
         t.r = self.box1_props[4]
         self._dc.set_rigid_body_pose(box1, t)
@@ -208,7 +206,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         box0 = self._dc.get_rigid_body(self.box0)
         box1 = self._dc.get_rigid_body(self.box1)
-        t = dc.Transform()
+        t = _dynamic_control.Transform()
         t.p = self.box1_props[3]
         t.r = self.box1_props[4]
         self._dc.set_rigid_body_pose(box1, t)
@@ -268,7 +266,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.surface_gripper.initialize(self.sgp)
         box0 = self._dc.get_rigid_body(self.box0)
         box1 = self._dc.get_rigid_body(self.box1)
-        t = dc.Transform()
+        t = _dynamic_control.Transform()
         t.p = box1_props[3]
         t.r = box1_props[4]
         self._dc.set_rigid_body_pose(box1, t)
@@ -319,7 +317,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.surface_gripper.initialize(self.sgp)
         box0 = self._dc.get_rigid_body(self.box0)
         box1 = self._dc.get_rigid_body(self.box1)
-        t = dc.Transform()
+        t = _dynamic_control.Transform()
         t.p = box1_props[3]
         t.r = box1_props[4]
         self._dc.set_rigid_body_pose(box1, t)
@@ -380,7 +378,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.surface_gripper.initialize(self.sgp)
         box0 = self._dc.get_rigid_body(self.box0)
         box1 = self._dc.get_rigid_body(self.box1)
-        t = dc.Transform()
+        t = _dynamic_control.Transform()
         t.p = [6, 0, 200.5]
         t.r = box1_props[4]
         self._dc.set_rigid_body_pose(box1, t)
@@ -401,7 +399,6 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertFalse(self.surface_gripper.is_closed())
 
         lin_vel = self._dc.get_rigid_body_linear_velocity(box1)
-        print(lin_vel)
         self.assertGreater(np.linalg.norm([lin_vel.x, lin_vel.y, lin_vel.z]), 0)
         pass
 
@@ -422,7 +419,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.sgp.damping = 1.0e1
         self.surface_gripper.initialize(self.sgp)
         box1 = self._dc.get_rigid_body(self.box1)
-        t = dc.Transform()
+        t = _dynamic_control.Transform()
         t.p = [6, 0, 204]
         t.r = box1_props[4]
         self._dc.set_rigid_body_pose(box1, t)
@@ -473,7 +470,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.sgp.bendAngle = 0
         self.surface_gripper.initialize(self.sgp)
         box1 = self._dc.get_rigid_body(self.box1)
-        t = dc.Transform()
+        t = _dynamic_control.Transform()
         t.p = [6, 0, 204]
         t.r = box1_props[4]
         self._dc.set_rigid_body_pose(box1, t)

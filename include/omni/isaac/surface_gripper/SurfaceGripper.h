@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "Math.h"
+#include "omni/isaac/utils/Math.h"
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/dynamic_control/DynamicControlTypes.h>
@@ -18,7 +18,7 @@ namespace omni
 {
 namespace isaac
 {
-namespace utils
+namespace surface_gripper
 {
 
 

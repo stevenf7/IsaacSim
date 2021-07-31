@@ -14,7 +14,7 @@
 #include "../Core/RosNode.h"
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/isaac/utils/SurfaceGripper.h>
+#include <omni/isaac/surface_gripper/SurfaceGripper.h>
 #include <rosBridgeSchema/rosSurfaceGripper.h>
 
 namespace omni
@@ -47,8 +47,8 @@ private:
     int mQueueSize = 0;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     std::string mGripperEntityName = "gripper";
-    std::unique_ptr<omni::isaac::utils::SurfaceGripper> mGripperJoint;
-    omni::isaac::utils::SurfaceGripperProperties mProps;
+    std::unique_ptr<omni::isaac::surface_gripper::SurfaceGripper> mGripperJoint;
+    omni::isaac::surface_gripper::SurfaceGripperProperties mProps;
 };
 }
 }

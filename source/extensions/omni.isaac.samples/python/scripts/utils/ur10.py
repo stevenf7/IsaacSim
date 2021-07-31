@@ -15,7 +15,7 @@ from omni.isaac.motion_planning import _motion_planning
 
 from . import math_utils
 
-from omni.isaac.utils._isaac_utils.surface_grippers import Surface_Gripper, Surface_Gripper_Properties
+from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
 
 default_config = (-1.57, -1.57, -1.57, -1.57, 1.57, 0)
 
