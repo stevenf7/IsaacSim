@@ -9,12 +9,9 @@
 
 #pragma once
 
-#include "geometry_msgs/Transform.h"
-
 #include <carb/Framework.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <tf2_ros/transform_listener.h>
 
 #include <PxActor.h>
 
@@ -22,27 +19,32 @@ namespace omni
 {
 namespace isaac
 {
-namespace ros_bridge
+namespace conversions
 {
-inline omni::isaac::dynamic_control::DcTransform asDcTransform(const geometry_msgs::Pose& p, const float scale = 1)
+template <typename T>
+inline dynamic_control::DcTransform rosPoseAsDcTransform(const T& p, const float scale = 1)
 {
-    omni::isaac::dynamic_control::DcTransform t;
-    t.p = { p.position.x * scale, p.position.y * scale, p.position.z * scale };
-    t.r = { p.orientation.x, p.orientation.y, p.orientation.z, p.orientation.w };
+    dynamic_control::DcTransform t;
+    t.p = { static_cast<float>(p.position.x * scale), static_cast<float>(p.position.y * scale),
+            static_cast<float>(p.position.z * scale) };
+    t.r = { static_cast<float>(p.orientation.x), static_cast<float>(p.orientation.y),
+            static_cast<float>(p.orientation.z), static_cast<float>(p.orientation.w) };
     return t;
 }
-
-inline omni::isaac::dynamic_control::DcTransform asDcTransform(const geometry_msgs::Transform& p, const float scale = 1)
+template <typename T>
+inline dynamic_control::DcTransform rosTransformAsDcTransform(const T& p, const float scale = 1)
 {
-    omni::isaac::dynamic_control::DcTransform t;
-    t.p = { p.translation.x * scale, p.translation.y * scale, p.translation.z * scale };
-    t.r = { p.rotation.x, p.rotation.y, p.rotation.z, p.rotation.w };
+    dynamic_control::DcTransform t;
+    t.p = { static_cast<float>(p.translation.x * scale), static_cast<float>(p.translation.y * scale),
+            static_cast<float>(p.translation.z * scale) };
+    t.r = { static_cast<float>(p.rotation.x), static_cast<float>(p.rotation.y), static_cast<float>(p.rotation.z),
+            static_cast<float>(p.rotation.w) };
     return t;
 }
-
-inline geometry_msgs::Pose asRosPose(const omni::isaac::dynamic_control::DcTransform& trans, const float scale = 1)
+template <typename T>
+inline T asRosPose(const dynamic_control::DcTransform& trans, const float scale = 1)
 {
-    geometry_msgs::Pose p;
+    T p;
 
     p.position.x = trans.p.x * scale;
     p.position.y = trans.p.y * scale;
@@ -53,10 +55,10 @@ inline geometry_msgs::Pose asRosPose(const omni::isaac::dynamic_control::DcTrans
     p.orientation.w = trans.r.w;
     return p;
 }
-
-inline geometry_msgs::Pose asRosPose(const pxr::GfTransform& trans, const float scale = 1)
+template <typename T>
+inline T asRosPose(const pxr::GfTransform& trans, const float scale = 1)
 {
-    geometry_msgs::Pose p;
+    T p;
     const pxr::GfVec3d pos = trans.GetTranslation() * scale;
     const pxr::GfQuatd rot = trans.GetRotation().GetQuat();
 
@@ -69,11 +71,10 @@ inline geometry_msgs::Pose asRosPose(const pxr::GfTransform& trans, const float 
     p.orientation.w = rot.GetReal();
     return p;
 }
-
-inline geometry_msgs::Transform asRosTransform(const omni::isaac::dynamic_control::DcTransform& trans,
-                                               const float scale = 1)
+template <typename T>
+inline T asRosTransform(const dynamic_control::DcTransform& trans, const float scale = 1)
 {
-    geometry_msgs::Transform p;
+    T p;
 
     p.translation.x = trans.p.x * scale;
     p.translation.y = trans.p.y * scale;
@@ -84,10 +85,10 @@ inline geometry_msgs::Transform asRosTransform(const omni::isaac::dynamic_contro
     p.rotation.w = trans.r.w;
     return p;
 }
-
-inline geometry_msgs::Transform asRosTransform(const physx::PxTransform& trans, const float scale = 1)
+template <typename T>
+inline T asRosTransform(const physx::PxTransform& trans, const float scale = 1)
 {
-    geometry_msgs::Transform p;
+    T p;
 
     p.translation.x = trans.p.x * scale;
     p.translation.y = trans.p.y * scale;
@@ -98,10 +99,10 @@ inline geometry_msgs::Transform asRosTransform(const physx::PxTransform& trans, 
     p.rotation.w = trans.q.w;
     return p;
 }
-
-inline geometry_msgs::Transform asRosTransform(const pxr::GfTransform& trans, const float scale = 1)
+template <typename T>
+inline T asRosTransform(const pxr::GfTransform& trans, const float scale = 1)
 {
-    geometry_msgs::Transform p;
+    T p;
     const pxr::GfVec3d pos = trans.GetTranslation() * scale;
     const pxr::GfQuatd rot = trans.GetRotation().GetQuat();
 
@@ -114,6 +115,14 @@ inline geometry_msgs::Transform asRosTransform(const pxr::GfTransform& trans, co
     p.rotation.w = rot.GetReal();
     return p;
 }
+template <typename T>
+inline carb::Float3 asCarbFloat3(const T& p)
+{
+    carb::Float3 t = { static_cast<float>(p.x), static_cast<float>(p.y), static_cast<float>(p.z) };
+    return t;
+}
+
+
 }
 }
 }

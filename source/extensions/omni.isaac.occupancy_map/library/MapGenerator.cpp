@@ -78,7 +78,7 @@ MapGenerator::MapGenerator(omni::physx::IPhysx* physXPtr, pxr::UsdStageWeakPtr s
     for (int i = 0; i < 4; i++)
     {
         mShapes[i] = mPhysxScenePtr->getPhysics().createShape(::physx::PxPlaneGeometry(), *mDefaultMaterial, false);
-        mActors[i] = mPhysxScenePtr->getPhysics().createRigidStatic(::physx::PxTransform());
+        mActors[i] = mPhysxScenePtr->getPhysics().createRigidStatic(::physx::PxTransform(::physx::PxIdentity));
         mActors[i]->attachShape(*mShapes[i]);
     }
 
