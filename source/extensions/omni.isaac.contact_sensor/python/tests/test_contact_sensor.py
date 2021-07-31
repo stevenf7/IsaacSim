@@ -14,10 +14,9 @@ import omni.kit.test
 
 import omni.kit.commands
 import carb.tokens
-import os
 import asyncio
 import numpy as np
-from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux, UsdPhysics, PhysxSchema
+
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.contact_sensor import _contact_sensor

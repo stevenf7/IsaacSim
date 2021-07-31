@@ -11,7 +11,6 @@ import time
 from .globals import *
 from .shape import get_links, download_file
 import os
-import omni.kit.pipapi
 import omni.ui as ui
 
 WIDGET_WIDTH = 130

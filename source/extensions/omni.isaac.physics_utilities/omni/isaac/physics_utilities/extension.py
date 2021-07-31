@@ -129,7 +129,6 @@ class Extension(omni.ext.IExt):
         pass
 
     def traverse_prims(self, selection, include_xform=False, ignore_rigid=True, visible_only=True):
-        count = 0
         prims = []
         for s in selection:
             curr_prim = self._stage.GetPrimAtPath(s)

@@ -122,7 +122,7 @@ class CreateSetupExtension(omni.ext.IExt):
 
         # Let users know when app is ready for use and live-streaming
         app_title = self._settings.get("/app/window/title")
-        print(f"{app_title} App is loaded.")
+        omni.kit.app.get_app().print_and_log(f"{app_title} App is loaded.")
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -131,7 +131,7 @@ class CreateSetupExtension(omni.ext.IExt):
         if server_check is True:
             from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
-            print("Checking for Isaac Sim assets on nucleus server")
+            omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets on nucleus server")
             self._check_window = ui.Window(
                 "Check Nucleus Server", height=100, width=500, flags=ui.WINDOW_FLAGS_NO_TITLE_BAR
             )
@@ -192,11 +192,10 @@ class CreateSetupExtension(omni.ext.IExt):
                                 )
                             )
             else:
-                print("Check successful")
+                omni.kit.app.get_app().print_and_log("Check successful")
 
     def _launch_app(self, app_id, console=True, custom_args=None):
         """launch an other Kit app with the same settings"""
-        import sys
         import subprocess
         import platform
 

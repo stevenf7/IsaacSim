@@ -13,7 +13,7 @@ import weakref
 import omni.kit.settings
 import gc
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-
+import carb
 from omni.isaac.ui.ui_utils import *
 from omni.isaac.ui.style import BUTTON_WIDTH, LABEL_WIDTH
 
@@ -33,7 +33,6 @@ class Extension(omni.ext.IExt):
         # Keep a Reference to the Usd Context, Stage, & Viewport
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._app_event_sub = None
 
         # Intialize the UI Window

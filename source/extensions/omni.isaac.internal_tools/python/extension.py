@@ -42,6 +42,7 @@ class InternalTools(omni.ext.IExt):
                 ui.Button("Check for deprecated physics schema", clicked_fn=self.check_physics_schema)
                 ui.Button("List All MDLs", clicked_fn=self.print_mdls)
                 ui.Button("Check If Instances Exist", clicked_fn=self.check_instancing)
+                # ui.Button("Check Untyped", clicked_fn=self.remove_untyped)
 
     def on_shutdown(self):
         remove_menu_items(self._menu_items, "Isaac Utils")
@@ -155,3 +156,24 @@ class InternalTools(omni.ext.IExt):
                 if prim.IsInstanceable():
                     print(item, prim)
         print("Instance check complete")
+
+    # def remove_untyped(self):
+    #     import pxr
+
+    #     base_path = self.path_txt.model.get_value_as_string()
+    #     for item in list_sub_files(base_path, filter_usd):
+    #         stage = pxr.Usd.Stage.Open(item)
+    #         changed = False
+    #         print("opened:", item)
+    #         to_delete = []
+    #         for prim in stage.Traverse():
+    #             if len(prim.GetTypeName()) == 0:
+    #                 if prim.GetName() == "collision":
+    #                     to_delete.append(prim.GetPath())
+    #         for prim_path in to_delete:
+    #             print("deleting: ", prim_path)
+    #             stage.RemovePrim(prim_path)
+    #             changed = True
+    #         if changed:
+    #             print("saving:", item)
+    #             stage.Save()

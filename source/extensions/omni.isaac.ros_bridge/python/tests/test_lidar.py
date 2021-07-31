@@ -22,14 +22,14 @@ from omni.isaac.dynamic_control import _dynamic_control
 
 from .common import add_cube, simulate, wait_for_rosmaster, add_carter_ros
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
-import rospy
 from pxr import Sdf
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosLidar(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        from omni.isaac.ros_bridge_ui.scripts.roscore import Roscore
+        from omni.isaac.ros_bridge.scripts.roscore import Roscore
+        import rospy
 
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -53,7 +53,6 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self._roscore = Roscore()
-        self._roscore.startup(kit_folder + "/python/bin", self._ros_extension_path + "/noetic", "_CATKIN_SETUP_DIR")
         await wait_for_rosmaster()
         await omni.kit.app.get_app().next_update_async()
 
@@ -70,13 +69,14 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         # rospy.signal_shutdown("test_complete")
-        self._roscore.shutdown()
         self._roscore = None
         self._timeline = None
         gc.collect()
         pass
 
     async def test_lidar(self):
+        import rospy
+
         from sensor_msgs.msg import LaserScan
 
         await add_carter_ros()
@@ -164,6 +164,8 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_lidar_manual(self):
+        import rospy
+
         from sensor_msgs.msg import LaserScan
 
         await add_carter_ros()

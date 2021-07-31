@@ -17,7 +17,6 @@ keywords = ["kit", "shapenet", "data"]
 "omni.kit.asset_converter" = {}
 "omni.kit.commands" = {}
 "omni.kit.menu.utils" = {}
-"omni.kit.pipapi" = {}
 "omni.kit.widget.settings" = {}
 "omni.physx" = {}
 
@@ -26,3 +25,6 @@ name = "omni.isaac.shapenet"
 
 [python.pipapi]
 requirements = ["webbot==0.34", "requests==2.25.1"]
+
+[[test]]
+args = ["--/exts/omni.kit.renderer.core/compatibilityMode=true"]

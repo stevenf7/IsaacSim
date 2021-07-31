@@ -38,3 +38,6 @@ name = "omni.isaac.dr.scripts.random_room_sample"
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
+
+[[test]]
+dependencies = ["omni.kit.window.viewport"]
