@@ -373,3 +373,19 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
         focal_y = width * focal_length / horiz_aperture
         center_x = height * 0.5
         center_y = width * 0.5
+
+    async def test_get_mesh_size(self):
+        import omni
+        from pxr import Usd, UsdGeom, Gf
+
+        stage = omni.usd.get_context().get_stage()
+        result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cone")
+        # Get the prim
+        prim = stage.GetPrimAtPath(path)
+        # Get the size
+        bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
+        bbox_cache.Clear()
+        prim_bbox = bbox_cache.ComputeWorldBound(prim)
+        prim_range = prim_bbox.ComputeAlignedRange()
+        prim_size = prim_range.GetSize()
+        pass
