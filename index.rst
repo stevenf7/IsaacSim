@@ -12,6 +12,7 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.dynamic_control/docs/index
    source/extensions/omni.isaac.manip/docs/index
    source/extensions/omni.isaac.motion_planning/docs/index
+   source/extensions/omni.isaac.motion_generation/docs/index
    source/extensions/omni.isaac.python_app/docs/index
    source/extensions/omni.isaac.range_sensor/docs/index
    source/extensions/omni.isaac.robot_engine_bridge_ui/docs/index

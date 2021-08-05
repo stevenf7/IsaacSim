@@ -251,6 +251,7 @@ group "exts"
     -- Linux Only
     if os.target() == "linux" then
         include ("source/extensions/omni.isaac.motion_planning")
+	include ("source/extensions/omni.isaac.motion_generation")
         include ("source/extensions/omni.isaac.occupancy_map")
         include ("source/extensions/omni.isaac.robot_engine_bridge_ui")
         include ("source/extensions/omni.isaac.robot_engine_bridge")

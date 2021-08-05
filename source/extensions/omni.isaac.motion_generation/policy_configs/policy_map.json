@@ -1,0 +1,8 @@
+{
+	"Franka":{
+		"RMPflow" : "./franka/rmpflow"
+	},
+	"UR10":{
+		"RMPflow" : "./ur10/rmpflow"
+	}
+}
