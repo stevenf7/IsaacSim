@@ -16,7 +16,7 @@ from omni.isaac.onshape.widgets.documents_widget import *
 import threading
 import asyncio
 
-EXTENSION_NAME = "OnShape Importer"
+EXTENSION_NAME = "Onshape Importer"
 
 
 class SortByItem(ui.AbstractItem):

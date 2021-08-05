@@ -63,10 +63,13 @@ rotation_unit = {"deg": lambda a: nop(a), "rad": lambda a: degrees(a)}
 
 
 class Mate(object):
+    def is_locked(self):
+        return self.limits[0] == self.limits[1] and self.limits[0] is not None
+
     def __init__(self, mate, details):
-        print(mate)
+        # print(mate)
         self.name = mate["featureData"]["name"]
-        print(self.name)
+        # print(self.name)
         self.type = mate["featureData"]["mateType"]
         # print(mate)
         self.occurrences = [m["matedOccurrence"] for m in mate["featureData"]["matedEntities"]]
