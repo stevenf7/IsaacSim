@@ -24,7 +24,7 @@ import math
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.physx.scripts.physicsUtils import add_ground_plane
 from omni.isaac.samples.scripts.utils.simple_robot_controller import RobotController
-from omni.isaac.samples.scripts.utils import math_utils
+from omni.isaac.utils.scripts import math_utils
 from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
@@ -133,7 +133,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         await simulate(2)
         imu_pose = self._dc.get_rigid_body_pose(self.imu)
-        roll, pitch, yaw = math_utils.quaternionToEulerAngles(
+        roll, pitch, yaw = math_utils.quat_to_euler_angles(
             Gf.Quaternion(imu_pose.r.w, Gf.Vec3d(imu_pose.r.x, imu_pose.r.y, imu_pose.r.z))
         )
         self.assertNotEqual(yaw, 0.0)
@@ -154,7 +154,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
             if self._rc.reached_goal():
                 break
         imu_pose = self._dc.get_rigid_body_pose(self.imu)
-        roll, pitch, yaw = math_utils.quaternionToEulerAngles(
+        roll, pitch, yaw = math_utils.quat_to_euler_angles(
             Gf.Quaternion(imu_pose.r.w, Gf.Vec3d(imu_pose.r.x, imu_pose.r.y, imu_pose.r.z))
         )
         self.assertAlmostEqual(imu_pose.p.x, self._rc.get_goal()[0], delta=5.0)

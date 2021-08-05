@@ -8,8 +8,7 @@
 
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
-from pxr import Usd, UsdGeom, Sdf, Gf, Tf
-from . import math_utils
+from omni.isaac.utils.scripts import math_utils
 
 
 class Object:

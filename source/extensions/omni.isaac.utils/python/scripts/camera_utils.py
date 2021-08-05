@@ -1,15 +1,80 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
-#
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto.  Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
-#
-
+import numpy as np
 import omni
-from omni.isaac.utils.scripts.math_utils import lookAt
+from omni.isaac.utils.scripts import lookat_to_quat
 from pxr import Gf, UsdGeom, Usd
+
+
+def get_intrinsics_matrix(viewport):
+    """
+    Returns the intrisics matrix associated with the specified viewport
+
+    The following image convention is assumed:
+
+    +x should point to the right in the image
+    +y should point down in the image
+    """
+    import omni
+
+    stage = omni.usd.get_context().get_stage()
+    prim = stage.GetPrimAtPath(viewport.get_active_camera())
+    focal_length = prim.GetAttribute("focalLength").Get()
+    horiz_aperture = prim.GetAttribute("horizontalAperture").Get()
+    width, height = viewport.get_texture_resolution()
+    vert_aperture = height / width * horiz_aperture
+    fx = width * focal_length / horiz_aperture
+    fy = height * focal_length / vert_aperture
+    cx = width * 0.5
+    cy = height * 0.5
+    return np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
+
+
+def backproject_depth(np_depth_image, viewport, max_clip_depth):
+    """
+    Backproject depth image to image space
+    """
+    intrinsics_matrix = get_intrinsics_matrix(viewport)
+    fx = intrinsics_matrix[0][0]
+    fy = intrinsics_matrix[1][1]
+    cx = intrinsics_matrix[0][2]
+    cy = intrinsics_matrix[1][2]
+    height = np_depth_image.shape[0]
+    width = np_depth_image.shape[1]
+    input_x = np.arange(width)
+    input_y = np.arange(height)
+    input_x, input_y = np.meshgrid(input_x, input_y)
+    input_x = input_x.flatten()
+    input_y = input_y.flatten()
+    input_z = np_depth_image.flatten()
+    input_z[input_z > max_clip_depth] = 0
+    output_x = (input_x * input_z - cx * input_z) / fx
+    output_y = (input_y * input_z - cy * input_z) / fy
+    raw_pc = np.stack([output_x, output_y, input_z], -1).reshape([height * width, 3])
+    return raw_pc
+
+
+def project_depth_to_worldspace(depth_image: np.array, viewport, max_clip_depth):
+    """
+    Project depth image to world space
+    """
+    from pxr import UsdGeom, Usd, Gf
+    import omni
+    import carb
+
+    stage = omni.usd.get_context().get_stage()
+    prim = stage.GetPrimAtPath(viewport.get_active_camera())
+    prim_tf = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode())
+    units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
+
+    depth_data = depth_image * units_per_meter
+    depth_data = -np.clip(depth_data, 0, max_clip_depth)
+
+    pc = backproject_depth(depth_data, viewport, max_clip_depth)
+    points = []
+    for pts in pc:
+        p = prim_tf.Transform(Gf.Vec3d(-pts[0], pts[1], pts[2]))
+        points.append(carb.Float3(p[0], p[1], p[2]))
+
+    return points
 
 
 class SpringDamperFollower:
@@ -65,7 +130,7 @@ class DynamicCamera:
         pos = self.position_follower.current
         target = self.target_follower.current
 
-        orient = lookAt(target, pos, Gf.Vec3d(0, 0, 1))
+        orient = lookat_to_quat(target, pos, Gf.Vec3d(0, 0, 1))
         mat = Gf.Matrix4d().SetRotateOnly(orient).SetTranslateOnly(pos)
         # mat_1 = Gf.Matrix4d().SetLookAt(self.position_follower.current, self.target_follower.current, Gf.Vec3d(0, 0, 1))
         # trans = mat_1.ExtractTranslation()

@@ -14,7 +14,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 import omni.ui as ui
 import omni.ext
 from omni.isaac.dynamic_control import _dynamic_control as dc
-import carb.tokens
+import os
 import carb
 import asyncio
 import numpy as np
