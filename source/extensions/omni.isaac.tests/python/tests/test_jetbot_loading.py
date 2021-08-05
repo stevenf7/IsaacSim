@@ -13,8 +13,6 @@
 import omni.kit.test
 
 import carb.tokens
-import os
-import asyncio
 import carb
 import numpy as np
 from pxr import Usd

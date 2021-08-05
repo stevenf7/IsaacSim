@@ -25,7 +25,6 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 import omni.syntheticdata as syn
 from ..scripts import SyntheticDataHelper, DataWriter
 from omni.syntheticdata.tests.utils import add_semantics
-from omni.physx.scripts.physicsUtils import add_ground_plane
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -71,6 +70,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def load_robot_scene(self):
         from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
         from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+        from omni.physx.scripts.physicsUtils import add_ground_plane
 
         self._stage = self._usd_context.get_stage()
         result, nucleus_server = find_nucleus_server()

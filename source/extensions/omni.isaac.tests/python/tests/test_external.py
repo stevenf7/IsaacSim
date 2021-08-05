@@ -11,13 +11,7 @@ import omni.kit.test
 import gc
 import os
 import omni
-
-################################################################################
-### !!!IMPORTANT!!!
-### All of the tests below are for utility snippets from the isaac sim docs.
-### If you fix an issue here make sure to update the code in the docs as well
-### The idea is that we can catch any api changes and update the docs appropriately
-################################################################################
+import carb
 
 
 class TestExternalDependencies(omni.kit.test.AsyncTestCaseFailOnLogError):
