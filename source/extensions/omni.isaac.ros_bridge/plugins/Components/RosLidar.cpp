@@ -148,14 +148,8 @@ void RosLidar::pubCallback(ros::Publisher* pub)
     sensor_msgs::LaserScan laser_msg;
     laser_msg.header.seq = 0;
     laser_msg.header.frame_id = mFrameId;
-    if (mUseSimTime)
-    {
-        laser_msg.header.stamp.fromSec(mTimeSeconds);
-    }
-    else
-    {
-        laser_msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(laser_msg.header.stamp);
+
 
     int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
     int numRows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str()); // should be 1
@@ -166,7 +160,7 @@ void RosLidar::pubCallback(ros::Publisher* pub)
     size_t numBeams = numColsTicked * numRows;
 
     float* theta = mLidarSensorInterface->getAzimuthData(mLidarPath.GetString().c_str());
-    float* phi = mLidarSensorInterface->getZenithData(mLidarPath.GetString().c_str()); // should have one entry
+    // float* phi = mLidarSensorInterface->getZenithData(mLidarPath.GetString().c_str()); // should have one entry
     float* ranges = mLidarSensorInterface->getLinearDepthData(mLidarPath.GetString().c_str());
     uint8_t* intensities = mLidarSensorInterface->getIntensityData(mLidarPath.GetString().c_str());
 
@@ -288,15 +282,7 @@ void RosLidar::pointCloudPubCallback(ros::Publisher* pub)
     std_msgs::Header header_msg;
     PointCloud::Ptr point_cloud_msg(new PointCloud);
     header_msg.frame_id = mFrameId;
-
-    if (mUseSimTime)
-    {
-        header_msg.stamp.fromSec(mTimeSeconds);
-    }
-    else
-    {
-        header_msg.stamp.fromNSec(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(header_msg.stamp);
 
     carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(mLidarPath.GetString().c_str());
     int rows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str());

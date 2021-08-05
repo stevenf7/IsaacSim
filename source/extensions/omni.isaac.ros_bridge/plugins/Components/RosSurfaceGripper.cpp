@@ -126,14 +126,9 @@ void RosSurfaceGripper::pubCallback(ros::Publisher* pub)
 {
     sensor_msgs::JointState msg;
     msg.header.seq = 0;
-    if (mUseSimTime)
-    {
-        msg.header.stamp.fromSec(mTimeSeconds);
-    }
-    else
-    {
-        msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(msg.header.stamp);
+
+
     msg.name.push_back(mGripperEntityName);
     bool gripperStatus = mGripperJoint->isClosed();
     if (gripperStatus)
