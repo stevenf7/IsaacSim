@@ -286,6 +286,7 @@ class OnshapePart(ui.AbstractItem):
                     _preload_content=False,
                 )
                 self.mass_properties = json.loads(r.data)
+                # print(self.mass_properties)
                 if self.mass_properties["bodies"]:
                     self.mass_properties = self.mass_properties["bodies"][self.get_encoded_part_id()]
                 # else:
@@ -338,7 +339,7 @@ class OnshapePart(ui.AbstractItem):
                     dtype,
                     wmvid,
                     self.get_item("elementId"),
-                    self.get_item("partId"),
+                    self.get_encoded_part_id(),
                     configuration=self.get_item("configuration"),
                     angle_tolerance=tess_props.angle_tolerance,
                     chord_tolerance=tess_props.chord_tolerance,
@@ -433,13 +434,13 @@ class OnshapePart(ui.AbstractItem):
 class OnshapePartListModel(ui.AbstractItemModel):
     def __init__(self, parts_list, **kwargs):
         super().__init__()
-        self.mass_executor = ThreadPoolExecutor(max_workers=30)
-        self.mesh_executor = ThreadPoolExecutor(max_workers=40)
+        self.mass_executor = ThreadPoolExecutor(max_workers=80)
+        self.mesh_executor = ThreadPoolExecutor(max_workers=10)
         self.sort_column = 0
         self.reverse_order = False
         # print(len(parts_list))
         c = [
-            OnshapePart(parts_list[part], part, self, self.mass_executor, self.mesh_executor, **kwargs)
+            OnshapePart(parts_list[part], part, self, self.mesh_executor, self.mass_executor, **kwargs)
             for part in parts_list
         ]
         self._children = sorted(c, key=OnshapePart.get_name)
@@ -462,7 +463,7 @@ class OnshapePartListModel(ui.AbstractItemModel):
         return [item.get_value() for item in self._children]
 
     def add_part(self, part, key, **kwargs):
-        self._children.append(OnshapePart(part, key, self, self.mass_executor, self.mesh_executor, **kwargs))
+        self._children.append(OnshapePart(part, key, self, self.mesh_executor, self.mass_executor, **kwargs))
         self._item_changed(None)
 
     def get_item_children(self, item=None):

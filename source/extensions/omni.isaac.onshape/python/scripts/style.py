@@ -128,8 +128,14 @@ UI_STYLES["NvidiaDark"] = {
     "Image::error": {"image_url": os.path.join("${glyphs}", "times_circle.svg"), "color": 0x88AAAAFF, "margin": 0},
     "Image::changed": {"image_url": os.path.join("${glyphs}", "info.svg"), "color": 0x88FFDDDD, "margin": 0},
     "Image::arrow_up": {"image_url": os.path.join("{}", "icons/arrow_up.svg"), "color": 0x88FFFFDD, "margin": 0},
+    "Image::arrow_right": {"image_url": os.path.join("{}", "icons/arrow_right.svg"), "color": 0x88FFFFDD, "margin": 0},
     "Image::arrow_down": {"image_url": os.path.join("{}", "icons/arrow_down.svg"), "color": 0x88FFFFDD, "margin": 0},
     "Button.Image::arrow_up": {"image_url": os.path.join("{}", "icons/arrow_up.svg"), "color": 0x88FFFFDD, "margin": 0},
+    "Button.Image::arrow_right": {
+        "image_url": os.path.join("{}", "icons/arrow_right.svg"),
+        "color": 0x88FFFFDD,
+        "margin": 0,
+    },
     "Button.Image::arrow_down": {
         "image_url": os.path.join("{}", "icons/arrow_down.svg"),
         "color": 0x88FFFFDD,
@@ -139,6 +145,7 @@ UI_STYLES["NvidiaDark"] = {
     "Image::part_studio": {"image_url": os.path.join("{}", "icons/part_studio.svg"), "color": 0x88FFFFDD, "margin": 0},
     "Image::part": {"image_url": os.path.join("{}", "icons/part_studio.svg"), "color": 0x88FFFFDD, "margin": 0},
     "Button::arrow_up": {"margin": 0, "background_color": 0x0},
+    "Button::arrow_right": {"margin": 0, "background_color": 0x0},
     # "Button.Text::arrow_up": {"margin": 0, "background_color": 0x0},
     "Button::arrow_down": {"margin": 0, "background_color": 0x0},
     "Button::filter": {"background_color": 0x0, "margin": 0},
@@ -201,119 +208,3 @@ UI_STYLES["NvidiaDark"] = {
     },
     "Card.Label:checked": {"color": 0xFF1E1E1E},
 }
-
-
-# # try:
-# #     import omni.kit.editor
-
-# #     _style = omni.kit.editor.get_editor_interface().get_ui_style()
-# # except:
-# #     _style = None
-# # finally:
-# #     if not _style:
-# #         _style = "NvidiaDark"
-# _style = "NvidiaDark"
-
-# if _style == "NvidiaLight":
-#     style = {
-#         "Button.Image::filter": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "filter.svg"),
-#             "color": 0xFF535354,
-#         },
-#         "Button.Image::options": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "options.svg"),
-#             "color": 0xFF535354,
-#         },
-#         "Button.Image::arrow_up": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "arrow_up.svg"),
-#             "color": 0xFF535354,
-#         },
-#         "Button.Image::arrow_down": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "arrow_down.svg"),
-#             "color": 0xFF535354,
-#         },
-#         "Button::filter": {"background_color": 0x0, "margin": 0},
-#         "Button::options": {"background_color": 0x0, "margin": 0},
-#         "Button::arrow_up": {"background_color": 0x0, "margin": 0},
-#         "Button::arrow_down": {"background_color": 0x0, "margin": 0},
-#         "Field": {"background_color": 0xFF535354, "color": 0xFFCCCCCC},
-#         "Label::search": {"color": 0xFFACACAC},
-#         "Menu.CheckBox": {"background_color": 0x0, "margin": 0},
-#         "Menu.CheckBox::drag": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "drag.svg"),
-#             "color": 0xFF505050,
-#             "alignment": ui.Alignment.CENTER,
-#         },
-#         "Menu.CheckBox.Image": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "check_off.svg"),
-#             "color": 0xFF8A8777,
-#         },
-#         "Menu.CheckBox.Image:checked": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "check_on.svg")
-#         },
-#         "ScrollingFrame": {"secondary_color": 0xFF444444},
-#         "TreeView": {
-#             "background_color": 0xFFE0E0E0,
-#             "background_selected_color": 0x109D905C,
-#             "secondary_color": 0xFFACACAC,
-#         },
-#         "TreeView.ScrollingFrame": {"background_color": 0xFFE0E0E0},
-#         "TreeView.Header": {"color": 0xFFCCCCCC},
-#         "TreeView.Header::background": {
-#             "background_color": 0xFF535354,
-#             "border_color": 0xFF707070,
-#             "border_width": 0.5,
-#         },
-#         "TreeView.Header::columnname": {"margin": 3},
-#         "TreeView.Image::object_icon_grey": {"color": 0x80FFFFFF},
-#         "TreeView.Item": {"color": 0xFF535354, "font_size": 16},
-#         "TreeView.Item::object_name": {"margin": 3},
-#         "TreeView.Item::object_name_grey": {"color": 0xFFACACAC},
-#         "TreeView.Item::object_name_missing": {"color": 0xFF6F72FF},
-#         "TreeView.Item:selected": {"color": 0xFF2A2825},
-#         "TreeView:selected": {"background_color": 0x409D905C},
-#     }
-# else:
-#     style = {
-#         "Button.Image::filter": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "filter.svg"),
-#             "color": 0xFF8A8777,
-#         },
-#         "Button.Image::options": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "options.svg"),
-#             "color": 0xFF8A8777,
-#         },
-#         "Button.Image::arrow_up": {"margin": 0, "color": 0xFF8A8777},
-#         "Button.Image::arrow_down": {"margin": 0, "color": 0xFF8A8777},
-#         "Button::filter": {"background_color": 0x0, "margin": 0},
-#         "Button::options": {"background_color": 0x0, "margin": 0},
-#         "Label::search": {"color": 0xFF808080, "margin_width": 4},
-#         "Menu.CheckBox": {"background_color": 0x0, "margin": 0},
-#         "Menu.CheckBox::drag": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "drag.svg"),
-#             "color": 0xFF505050,
-#             "alignment": ui.Alignment.CENTER,
-#         },
-#         "Menu.CheckBox.Image": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "ckeck_off.svg"),
-#             "color": 0xFF8A8777,
-#         },
-#         "Menu.CheckBox.Image:checked": {
-#             "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "ckeck_on.svg")
-#         },
-#         "TreeView": {
-#             "background_color": 0xFF23211F,
-#             "background_selected_color": 0x664F4D43,
-#             "secondary_color": 0xFF403B3B,
-#         },
-#         "TreeView.ScrollingFrame": {"background_color": 0xFF23211F},
-#         "TreeView.Header": {"background_color": 0xFF343432, "color": 0xFFCCCCCC, "font_size": 13.0},
-#         "TreeView.Image::object_icon_grey": {"color": 0x80FFFFFF},
-#         "TreeView.Image:disabled": {"color": 0x60FFFFFF},
-#         "TreeView.Item": {"color": 0xFF8A8777},
-#         "TreeView.Item:disabled": {"color": 0x608A8777},
-#         "TreeView.Item::object_name_grey": {"color": 0xFF4D4B42},
-#         "TreeView.Item::object_name_missing": {"color": 0xFF6F72FF},
-#         "TreeView.Item:selected": {"color": 0xFF23211F},
-#         "TreeView:selected": {"background_color": 0xFF8A8777},
-#     }

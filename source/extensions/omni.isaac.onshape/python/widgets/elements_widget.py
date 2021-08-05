@@ -107,7 +107,7 @@ class ElementItem(ui.Widget):
                 mouse_pressed_fn=partial(on_mouse_pressed, self),
                 mouse_double_clicked_fn=partial(on_mouse_double_clicked, self),
                 style={
-                    "margin_width": ui.Pixel(8),
+                    "margin_width": 8,
                     "background_color": 0x00FFFFFF,
                     "border_radius": 10,
                     ":checked": {"background_color": 0x44FFFFFF},
@@ -120,7 +120,7 @@ class ElementItem(ui.Widget):
                         height=100,
                         width=100,
                         style={
-                            "margin": ui.Pixel(15),
+                            "margin": 15,
                             "background_color": 0x44FFFFFF,
                             "border_color": 0xFF222222,
                             "border_width": 0.5,

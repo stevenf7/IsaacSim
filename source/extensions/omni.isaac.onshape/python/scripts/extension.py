@@ -31,7 +31,7 @@ from omni.client._omniclient import Result
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 
-EXTENSION_NAME = "OnShape Importer"
+EXTENSION_NAME = "Onshape Importer"
 
 
 def on_filter_folder(item) -> bool:
@@ -43,7 +43,7 @@ def on_filter_folder(item) -> bool:
 
 class OnshapeImporter(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        carb.log_info("Loading OnShape Importer")
+        carb.log_info("Loading Onshape Importer")
         theme = "NvidiaDark"
         self.ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
         self._window = None
@@ -54,6 +54,9 @@ class OnshapeImporter(omni.ext.IExt):
             self.ext_path
         )
         self._style["Button.Image::arrow_down"]["image_url"] = self._style["Button.Image::arrow_down"][
+            "image_url"
+        ].format(self.ext_path)
+        self._style["Button.Image::arrow_right"]["image_url"] = self._style["Button.Image::arrow_right"][
             "image_url"
         ].format(self.ext_path)
         self._style["Button.Image::arrow_up"]["image_url"] = self._style["Button.Image::arrow_up"]["image_url"].format(
@@ -164,13 +167,13 @@ class OnshapeImporter(omni.ext.IExt):
                     #     ui.Button("Refresh Assembly", clicked_fn=lambda: self.reload_assembly())
                     #     ui.Button("Re-Open Assembly Stage", clicked_fn=lambda: self.usd_gen.open_stage(), height=22)
                     with ui.HStack(height=ui.Pixel(0)):
-                        with ui.VStack(width=ui.Pixel(0)):
-                            ui.Spacer(height=ui.Pixel(5))
-                            self._flatten_cb = ui.CheckBox(width=0)
-                            ui.Spacer(height=ui.Pixel(5))
-                        ui.Spacer(width=ui.Pixel(5))
-                        ui.Label("Save Flattened", width=0, height=ui.Pixel(25))
-                        ui.Spacer(width=ui.Pixel(8))
+                        # with ui.VStack(width=ui.Pixel(0)):
+                        #     ui.Spacer(height=ui.Pixel(5))
+                        #     self._flatten_cb = ui.CheckBox(width=0)
+                        #     ui.Spacer(height=ui.Pixel(5))
+                        # ui.Spacer(width=ui.Pixel(5))
+                        # ui.Label("Save Flattened", width=0, height=ui.Pixel(25))
+                        # ui.Spacer(width=ui.Pixel(8))
                         self._finish_import_btn = ui.Button(
                             "Finish Import", clicked_fn=lambda: self._select_folder(self), height=ui.Pixel(25)
                         )
@@ -183,16 +186,16 @@ class OnshapeImporter(omni.ext.IExt):
 
     def _on_open_folder_selected(self, menu, path):
         self._folder_picker.hide()
-        if self._flatten_cb.model.get_value_as_bool():
-            self.usd_gen.save_flattened(path, self.close_window)
-            if self._element_details:
-                self._element_details = None
-                if self.usd_gen:
-                    self.usd_gen.on_shutdown()
-                    del self.usd_gen
-                    self.usd_gen = None
-        else:
-            self._finish_import(path)
+        # if self._flatten_cb.model.get_value_as_bool():
+        #     self.usd_gen.save_flattened(path, self.close_window)
+        #     if self._element_details:
+        #         self._element_details = None
+        #         if self.usd_gen:
+        #             self.usd_gen.on_shutdown()
+        #             del self.usd_gen
+        #             self.usd_gen = None
+        # else:
+        self._finish_import(path)
 
     def close_window(self, a=None, b=None):
         self.usd_gen = None

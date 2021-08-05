@@ -53,7 +53,7 @@ def TraversePrim(prim, filterfn=None):
     match the filter function criteria
     """
     childrenStack = [prim]
-    out = prim.GetChildren()
+    out = [prim] + prim.GetChildren()
     while len(childrenStack) > 0:
         prim = childrenStack.pop(0)
         if not filterfn or (filterfn and filterfn(prim)):
@@ -192,12 +192,22 @@ def create_material(stage, _mtl_path, props):
         return False
 
 
+def get_prim_and_material_binding(parent_prim, solid_name):
+    return [
+        (p.GetPath().pathString[len(solid_name) :], p.GetRelationship("material:binding").GetTargets())
+        for p in TraversePrim(parent_prim)
+        if UsdGeom.Mesh(p) or UsdGeom.Subset(p)
+    ]
+
+
 def get_material_path(prim):
     result = prim.GetRelationship("material:binding").GetTargets()
     return str(result[0]) if len(result) > 0 else ""
 
 
-def get_all_prims_with_material(stage, material_name):
+def get_all_prims_with_material(stage, material_name, prim=None):
+    if prim:
+        return [x for x in TraversePrim(prim) if material_name == os.path.basename(get_material_path(x))]
     return [x for x in stage.Traverse() if material_name == os.path.basename(get_material_path(x))]
 
 
@@ -206,10 +216,11 @@ DEFAULT_TEMP_FOLDER_SETTING = "/ext/omni.isaac.onshape_importer/default_temp"
 
 class PartItem:
     def __init__(self, base_path, part):
-        name = make_valid_filename(part.get_name())
+        name = make_valid_filename("{}_{}".format(part.get_name(), part.get_encoded_part_id()))
         self.path = os.path.join(base_path, "{}.usd".format(name))
         # print(self.path)
         self.part = part
+        self.name = make_valid_filename(part.get_name())
         if os.path.exists(self.path):
             i = 1
             while os.path.exists(self.path):
@@ -250,12 +261,12 @@ class UsdGenerator:
 
         self._stages_dir = os.path.join(self.tempdir, "parts")
         os.makedirs(self._stages_dir)
-        self.parts_building_pool = ThreadPoolExecutor(max_workers=40)
+        self.parts_building_pool = ThreadPoolExecutor(max_workers=10)
         # Assemblies need parts stage to be fully built
 
         self.assembly_stage = None
         self.stage_path = None
-        self.assembly_building_pool = ThreadPoolExecutor(max_workers=40)
+        self.assembly_building_pool = ThreadPoolExecutor(max_workers=10)
 
         # Dictionary of materials key: color string from the source, value: usd path in the material stage
         self._materials_dict = {}
@@ -334,19 +345,21 @@ class UsdGenerator:
         if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
             self._on_kit_selection_changed()
         if event.type == int(omni.usd.StageEventType.OPENED):
-            try:
-                self.set_materials_to_color_layer()
-            except Exception as e:
-                carb.log_error("Onshape USD Generator:" + str(e))
+            pass
+            # try:
+            #     self.set_materials_to_color_layer()
+            # except Exception as e:
+            #     carb.log_error("Onshape USD Generator:" + str(e))
 
     def _on_kit_selection_changed(self):
         """The selection in kit is changed"""
         selection = []
-        for sel in self._selection.get_selected_prim_paths():
-            if sel.startswith("/Looks"):
-                self.set_material_authoring_layer()
-                return
-        self.set_root_authoring_layer()
+        if self._selection:
+            for sel in self._selection.get_selected_prim_paths():
+                if sel.startswith("/Root/Looks"):
+                    self.set_material_authoring_layer()
+                    return
+            self.set_root_authoring_layer()
 
     def set_material_authoring_layer(self):
         if self.is_temp_stage_open():
@@ -459,7 +472,7 @@ class UsdGenerator:
 
         if material_key not in self._materials_dict:
             mat = VisualMaterial(convertColor(material_key))
-            name = "/Looks/" + pxr.Tf.MakeValidIdentifier("{}".format(mat.name))
+            name = "/Root/Looks/" + pxr.Tf.MakeValidIdentifier("{}".format(mat.name))
             # print ("getting material", self._materials_path, name)
             # with self.materials_update_lock:
             usd_mat = create_material(self.material_stage, name, mat)
@@ -470,7 +483,7 @@ class UsdGenerator:
 
     def update_material(self, material_key, new_mat: VisualMaterial):
         name = self.get_material(material_key)
-        new_name = "/Looks/" + pxr.Tf.MakeValidIdentifier("{}".format(new_mat.name))
+        new_name = "/Root/Looks/" + pxr.Tf.MakeValidIdentifier("{}".format(new_mat.name))
         # with self.materials_update_lock:
         if new_name != name:
             move_dict = {name: new_name}
@@ -495,8 +508,10 @@ class UsdGenerator:
         if not self._material_stage:
             # print (self._materials_path)
             self._material_stage = createInMemoryStage(self._materials_path)
-            looks_prim = self._material_stage.DefinePrim(Sdf.Path("/Looks"), "Scope")
-            self._material_stage.SetDefaultPrim(looks_prim)
+            root = UsdGeom.Xform.Define(self._material_stage, "/Root").GetPrim()
+            self._material_stage.SetDefaultPrim(root)
+            looks_prim = self._material_stage.DefinePrim(Sdf.Path("/Root/Looks"), "Scope")
+            # self._material_stage.SetDefaultPrim(looks_prim)
         return self._material_stage
 
     def set_part_mesh(self, part, sync=False):
@@ -531,10 +546,14 @@ class UsdGenerator:
         path = self._parts_stage_dict[part.get_key()].path
         self._parts_stage_dict[part.get_key()].imported = False
 
-        mesh_name = pxr.Tf.MakeValidIdentifier(make_valid_filename(part.get_name().strip()))
+        name = self._parts_stage_dict[part.get_key()].name = pxr.Tf.MakeValidIdentifier(
+            make_valid_filename(part.get_name().strip())
+        )
         # print(part.get_name(), "creating part")
-        mesh_name = "/Root/{}".format(mesh_name)
+        mesh_name = "/Root/{}".format(name)
         root = UsdGeom.Xform.Define(stage, "/Root").GetPrim()
+
+        xform = UsdGeom.Xform.Define(stage, "/Root/{}".format(name)).GetPrim()
         stage.SetDefaultPrim(root)
         rootLayer = stage.GetRootLayer()
         rootLayer.SetPermissionToEdit(True)
@@ -550,7 +569,7 @@ class UsdGenerator:
             mass_props = part.get_mass_properties(wait=True)
 
             com = [0.0, 0.0, 0.0]
-            # print(mass_props, type(mass_props))
+            # print(mass_props)
 
             if mass_props:
                 if "centroid" in mass_props:
@@ -615,21 +634,24 @@ class UsdGenerator:
                     return
                 # carb.log_error(part.get_name()+ " - Materials Lock")
                 try:
-                    for i, material in enumerate(
-                        part.get_mesh().colors
-                    ):  # Ensure the Materials usd is created before setting reference
-                        mat = self.get_material(material)
-                    # materials = stage.GetPrimAtPath("/Root/Looks")
 
-                    materials = stage.OverridePrim("/Root/Looks")
-                    materials.GetReferences().AddReference(
-                        os.path.relpath(self._materials_path, self._stages_dir).replace("\\", "/")
-                    )
+                    # materials = stage.OverridePrim("/Root/Looks")
+                    # materials.GetReferences().AddReference(
+                    #     os.path.relpath(self._materials_path, self._stages_dir).replace("\\", "/")
+                    # )
                     root_layer = stage.GetRootLayer()
+
                     if path not in root_layer.subLayerPaths:
-                        mat_layer = os.path.relpath(self._materials_path, self._stages_dir).replace("\\", "/")
+                        mat_layer = os.path.relpath(
+                            self.material_stage.GetRootLayer().identifier, self._stages_dir
+                        ).replace("\\", "/")
                         if mat_layer not in root_layer.subLayerPaths:
                             root_layer.subLayerPaths.append(mat_layer)
+
+                    # for i, material in enumerate(
+                    #     part.get_mesh().colors
+                    # ):  # Ensure the Materials usd is created before setting reference
+                    #     mat = self.get_material(material)
 
                     for i, material in enumerate(part.get_mesh().colors):
                         mat = self.get_material(material)
@@ -641,11 +663,13 @@ class UsdGenerator:
                             geomSubset.CreateElementTypeAttr("face")
                             geomSubset.CreateFamilyNameAttr("materialBind")
                             geomSubset.CreateIndicesAttr(IntArray(face_indices))
-                            bind_material(stage, geomSubset, "/Root{}".format(mat["usd"]))
+                            # geomSubset.GetPrim().SetInstanceable(True)
+                            bind_material(stage, geomSubset, "{}".format(mat["usd"]))
                         else:
-                            bind_material(stage, usdMesh, "/Root{}".format(mat["usd"]))
+                            bind_material(stage, usdMesh, "{}".format(mat["usd"]))
+                            # usdMesh.GetPrim().SetInstanceable(True)
 
-                        materials.SetInstanceable(True)
+                        # materials.SetInstanceable(True)
                 except Exception as e:
                     carb.log_error("Mesh USD Generation error: " + str(e))
 
@@ -717,27 +741,24 @@ class UsdGenerator:
                         timeout = 10
                         if len(prim.GetChildren()) == 0:
                             if self._parts_stage_dict[part_id].imported:
-                                # carb.log_info(
-                                #     "waiting" + name + "(This usually means there is an uncaptured exception)"
-                                # )
-                                # time.sleep(1.0)
-                                # timeout -= 1
-                                # if self.shutdown or timeout == 0:
-                                #     if timeout == 0:
-                                #         carb.log_error(name + "Exceeded wait time. aborting")
-                                #     return
+                                solid_name = "/Root/{}".format(self._parts_stage_dict[part_id].name)
                                 prim.GetReferences().AddReference(
                                     os.path.relpath(self._parts_stage_dict[part_id].path, self.tempdir).replace(
                                         "\\", "/"
-                                    )
+                                    ),
+                                    # solid_name,
                                 )
-                            # if make_collision:
-                            #     for c in [c for c in prim.GetChildren() if UsdGeom.Mesh(c)]:
-                            #         UsdPhysics.CollisionAPI.Apply(c)
-                            #         collisionAPI = UsdPhysics.MeshCollisionAPI.Apply(c)
-                            #         collisionAPI.CreateApproximationAttr().Set("convexHull")
+                                prim.SetInstanceable(True)
+
+                                # mat_tuple = get_prim_and_material_binding(
+                                #     self._parts_stage_dict[part_id].stage.GetPrimAtPath(solid_name), solid_name
+                                # )
+                                # for sub_prim, mats in mat_tuple:
+                                #     if mats:
+                                #         p = self.assembly_stage.GetPrimAtPath(path + sub_prim)
+                                #         bind_material(self.assembly_stage, p, mats[0])
+
                             self._parts_stage_dict[part_id].part.add_usd_path(path)
-                            # print(self._parts_stage_dict[part_id].part.parts_usds)
                     else:
                         carb.log_error(
                             "Part Not Found, Please re-import the assembly to load it: {} ({})".format(name, path)
@@ -825,8 +846,15 @@ class UsdGenerator:
                 for f in self.assembly.features_map[assembly.uid]
                 if self.assembly.assembly_features[f]["featureType"] == "mate"
                 and self.assembly.assembly_features[f]["suppressed"] == False
-                and self.assembly.assembly_features[f]["featureData"]["mateType"] in ["REVOLUTE", "SLIDER"]
+                and (
+                    self.assembly.assembly_features[f]["featureData"]["mateType"] in ["REVOLUTE", "SLIDER"]
+                    and not Mate(self.assembly.assembly_features[f], self.assembly.features_details[f]).is_locked()
+                )
             ]
+            for f in features:
+                mate = Mate(self.assembly.assembly_features[f], self.assembly.features_details[f])
+                if mate.limits[0] == mate.limits[1] and mate.limits[0] is not None:
+                    features.remove(f)
         for a in assembly.get_children():
             features += self.get_sub_joints(a)
         return features
@@ -891,7 +919,10 @@ class UsdGenerator:
                     for f in self.assembly.features_map[assembly.uid]
                     if self.assembly.assembly_features[f]["featureType"] == "mate"
                     and self.assembly.assembly_features[f]["suppressed"] == False
-                    and self.assembly.assembly_features[f]["featureData"]["mateType"] == "FASTENED"
+                    and (
+                        self.assembly.assembly_features[f]["featureData"]["mateType"] == "FASTENED"
+                        or Mate(self.assembly.assembly_features[f], self.assembly.features_details[f]).is_locked()
+                    )
                 ]:
 
                     # print("  ",f_id)
@@ -925,50 +956,66 @@ class UsdGenerator:
                             # print(f.name, base_id, a_id, b_id)
                             base_path = self.assemblies_path[a_id + b_id]
                         # print("  ", feature["featureData"]["name"], base_path)
-
-                        if self.instance_group_map[a_id + "".join(p)]:
-
-                            prim_path = self.groupMates[self.instance_group_map[a_id + "".join(p)]]["prim"]
-                            if (
-                                self.instance_group_map[a_id + "".join(base)]
-                                != self.instance_group_map[a_id + "".join(p)]
-                            ):
-                                prim_path = get_next_available(
-                                    self.assemblies_path.values(), base_path + "/{}".format(os.path.basename(prim_path))
-                                )
-                                self.groupMates[self.instance_group_map[a_id + "".join(p)]]["prim"] = prim_path
-                            else:
-                                prim_path = base_path
-                            # for a in assembly.get_children():
-                            #     if self.instance_group_map[a_id + a.get_item("id")] == self.instance_group_map[a_id+''.join(p)]:
-                            #         self.get_assembly_paths(a,prim_path,a_id)
-
+                        rb_path = [i for i in self.rigid_bodies if Sdf.Path(base_path).HasPrefix(i)]
+                        if rb_path:
+                            a = [i for i in self.rigid_bodies if Sdf.Path(i).HasPrefix(base_path) and i != base_path]
+                            for _p in a:
+                                self.rigid_bodies.remove(p)
+                            rb_path = "".join(rb_path)
                         else:
+                            self.rigid_bodies.add(base_path)
+                            rb_path = base_path
+                        prim_path = self.assemblies_path[a_id + "".join(p)]
+                        # If the sub-component is not already part of the rigid body
+                        if rb_path not in prim_path:
+                            if self.instance_group_map[a_id + "".join(p)]:
 
-                            p_id = max(0, len(p) - 2)  # start one before last
+                                prim_path = self.groupMates[self.instance_group_map[a_id + "".join(p)]]["prim"]
+                                if (
+                                    self.instance_group_map[a_id + "".join(base)]
+                                    != self.instance_group_map[a_id + "".join(p)]
+                                ):
+                                    base_path = os.path.dirname(base_path)
+                                    prim_path = get_next_available(
+                                        self.assemblies_path.values(),
+                                        base_path + "/{}".format(os.path.basename(prim_path)),
+                                    )
+                                    self.groupMates[self.instance_group_map[a_id + "".join(p)]]["prim"] = prim_path
+                                else:
+                                    prim_path = base_path
+                                # for a in assembly.get_children():
+                                #     if self.instance_group_map[a_id + a.get_item("id")] == self.instance_group_map[a_id+''.join(p)]:
+                                #         self.get_assembly_paths(a,prim_path,a_id)
 
-                            # print("    Find child parent assembly")
-                            inst = self.assembly._instances_flat[p[p_id]]
-                            while not self.get_sub_joints(
-                                inst
-                            ):  # inst.uid not in self.assembly.features_map or not self.assembly.features_map[inst.uid]:
-                                # print("    ", self.assemblies_path[a_id+''.join(p[:p_id])])
-                                p_id -= 1
-                                if p_id < 0:
-                                    break
+                            else:
+
+                                p_id = max(0, len(p) - 2)  # start one before last
+
+                                # print("    Find child parent assembly")
                                 inst = self.assembly._instances_flat[p[p_id]]
-                            # print(p_id)
-                            p_id = min(len(p) - 1, p_id + 1)
-                            _p_id = "".join(p[: p_id + 1])
-                            # print("   ", p_id, a_id, _p_id)
-                            prim_path = get_next_available(
-                                self.assemblies_path.values(),
-                                base_path + "/{}".format(os.path.basename(self.assemblies_path[a_id + _p_id])),
-                            )
-                            self.assemblies_path[a_id + _p_id] = prim_path
-                            for a in self.assembly._instances_flat[p[p_id]].get_children():
-                                self.get_assembly_paths(a, prim_path, a_id + _p_id)
+                                while not self.get_sub_joints(
+                                    inst
+                                ):  # inst.uid not in self.assembly.features_map or not self.assembly.features_map[inst.uid]:
+                                    # print("    ", self.assemblies_path[a_id+''.join(p[:p_id])])
+                                    p_id -= 1
+                                    if p_id < 0:
+                                        break
+                                    inst = self.assembly._instances_flat[p[p_id]]
+                                # print(p_id)
+                                p_id = min(len(p) - 1, p_id + 1)
+                                _p_id = "".join(p[: p_id + 1])
+                                # print("   ", self.assemblies_path[a_id + "".join(_p_id)])
+                                prim_path = get_next_available(
+                                    self.assemblies_path.values(),
+                                    base_path + "/{}".format(os.path.basename(self.assemblies_path[a_id + _p_id])),
+                                )
+                                self.assemblies_path[a_id + _p_id] = prim_path
+                                for a in self.assembly._instances_flat[p[p_id]].get_children():
+                                    self.get_assembly_paths(a, prim_path, a_id + _p_id)
                         if not [i for i in self.rigid_bodies if Sdf.Path(base_path).HasPrefix(i)]:
+                            a = [i for i in self.rigid_bodies if Sdf.Path(i).HasPrefix(base_path) and i != base_path]
+                            for p in a:
+                                self.rigid_bodies.remove(p)
                             self.rigid_bodies.add(
                                 base_path
                             )  # Add this body to a set to later add the RBAPI, and set the collisions for the underlying meshes
@@ -1003,15 +1050,13 @@ class UsdGenerator:
             _id += 2
             _id = min(_id, len(occurence) + 1)
             o_id = "".join(occurence[:_id])
-            # print(occurence)
-            # print("assembly group:",o_id, len(occurence), _id)
             path = self.assemblies_path[a_id + o_id]
-            # print(path)
         if not [i for i in self.rigid_bodies if Sdf.Path(path).HasPrefix(i)]:
+            a = [i for i in self.rigid_bodies if Sdf.Path(i).HasPrefix(path) and i != path]
+            for p in a:
+                self.rigid_bodies.remove(p)
             self.rigid_bodies.add(path)
-        else:
-            path = [i for i in self.rigid_bodies if Sdf.Path(path).HasPrefix(i)][0]  # There should be only one
-            # print(path)
+        path = sorted([i for i in self.rigid_bodies if Sdf.Path(path).HasPrefix(i)])[0]  # There should be only one
         return path
 
     def process_joints(self, assembly, parent_id, in_group=None):
@@ -1044,7 +1089,9 @@ class UsdGenerator:
                 # print(" ",self.assembly._instances_flat[base[-1]].get_item("name"))
                 # print(" ",self.assembly._instances_flat[p[-1]].get_item("name"))
                 # print(" ",prim_path)
-
+                mate = Mate(self.assembly.assembly_features[f_id], self.assembly.features_details[f_id])
+                if mate.limits[0] == mate.limits[1] and mate.limits[0] is not None:
+                    continue
                 body_0 = UsdGeom.Xform.Define(self.assembly_stage, base_path).GetPrim()
                 body_1 = UsdGeom.Xform.Define(self.assembly_stage, prim_path).GetPrim()
                 # body_1 = UsdGeom.Xformable(self.assembly_stage.GetPrimAtPath(prim_path)).GetPrim()
@@ -1052,15 +1099,13 @@ class UsdGenerator:
                 UsdPhysics.RigidBodyAPI.Apply(body_0)
                 UsdPhysics.RigidBodyAPI.Apply(body_1)
 
-                for p in [a for a in TraversePrim(body_0) + TraversePrim(body_1) if UsdGeom.Mesh(a)]:
+                for p in [a for a in TraversePrim(body_0) + TraversePrim(body_1) if a.IsInstanceable()]:
                     UsdPhysics.CollisionAPI.Apply(p)
                     collisionAPI = UsdPhysics.MeshCollisionAPI.Apply(p)
                     collisionAPI.CreateApproximationAttr().Set("convexHull")
 
                 body_0_global = omni.usd.utils.get_world_transform_matrix(body_0)
                 body_1_global = omni.usd.utils.get_world_transform_matrix(body_1)
-
-                mate = Mate(self.assembly.assembly_features[f_id], self.assembly.features_details[f_id])
 
                 joint_parent_assembly = mate.positions[0]
                 a0 = self.assembly_stage.GetPrimAtPath(self.assemblies_path[a_id + "".join(base)])
@@ -1119,15 +1164,15 @@ class UsdGenerator:
                 while self.parts_to_process:
                     part = self.parts_to_process.pop()
                     self.set_part_mesh(part, sync=True)
-                    for path in part.parts_usds:
-                        part_prim = self.assembly_stage.GetPrimAtPath(path)
-                        stack = part_prim.GetPrimStack()
-                        if not [True for i in stack if i.HasInfo(Sdf.PrimSpec.ReferencesKey)]:
-                            part_prim.GetReferences().AddReference(self._parts_stage_dict[part.get_key()].path)
-                try:
-                    self.set_materials_to_color_layer()
-                except Exception as e:
-                    carb.log_error("Onshape USD Generator:" + str(e))
+                    # for path in part.parts_usds:
+                    #     part_prim = self.assembly_stage.GetPrimAtPath(path)
+                    #     stack = part_prim.GetPrimStack()
+                    #     if not [True for i in stack if i.HasInfo(Sdf.PrimSpec.ReferencesKey)]:
+                    #         part_prim.GetReferences().AddReference(self._parts_stage_dict[part.get_key()].path)
+                # try:
+                #     self.set_materials_to_color_layer()
+                # except Exception as e:
+                #     carb.log_error("Onshape USD Generator:" + str(e))
 
         # print("Build assembly", threading.currentThread().getName())
         if self.delayed_make_assembly:
@@ -1154,9 +1199,17 @@ class UsdGenerator:
             # print(self.assembly._root._item)
             for p in self.assembly_stage.GetPrimAtPath("/").GetChildren():
                 self.assembly_stage.RemovePrim(p.GetPath())
-            path = "/{}".format(pxr.Tf.MakeValidIdentifier(make_valid_filename(self.assembly.get_name())))
+            path = "/Root/{}".format(pxr.Tf.MakeValidIdentifier(make_valid_filename(self.assembly.get_name())))
             self.root = path
+            _root = UsdGeom.Xform.Define(self.assembly_stage, "/Root").GetPrim()
+            self.assembly_stage.SetDefaultPrim(_root)
             root = UsdGeom.Xform.Define(self.assembly_stage, path).GetPrim()
+            root_layer = self.assembly_stage.GetRootLayer()
+            if path not in root_layer.subLayerPaths:
+                mat_layer = os.path.relpath(self._materials_path, self.tempdir).replace("\\", "/")
+                if mat_layer not in root_layer.subLayerPaths:
+                    with self.materials_update_lock:
+                        root_layer.subLayerPaths.append(mat_layer)
             if self.rig_physics:
                 UsdPhysics.ArticulationRootAPI.Apply(self.assembly_stage.GetPrimAtPath(path))
                 root_api = PhysxSchema.PhysxArticulationAPI.Apply(self.assembly_stage.GetPrimAtPath(path))
@@ -1185,14 +1238,6 @@ class UsdGenerator:
             if self.rig_physics:
                 self.process_joints(self.assembly._root, "")
                 bodies = sorted(self.rigid_bodies)
-            # for b in bodies:
-            #     print(b)
-            root_layer = self.assembly_stage.GetRootLayer()
-            if path not in root_layer.subLayerPaths:
-                mat_layer = os.path.relpath(self._materials_path, self.tempdir).replace("\\", "/")
-                if mat_layer not in root_layer.subLayerPaths:
-                    with self.materials_update_lock:
-                        root_layer.subLayerPaths.append(mat_layer)
 
             distantLight = UsdLux.DistantLight.Define(self.assembly_stage, Sdf.Path("/DistantLight"))
             distantLight.CreateIntensityAttr(300)
@@ -1211,78 +1256,6 @@ class UsdGenerator:
             # asyncio.run(do_task())
 
         # self.parts_building_pool.submit(do_task)
-
-    def set_materials_to_color_layer(self):
-        # print("set_materials")
-        if self.is_temp_stage_open():
-            context = omni.usd.get_context()
-            stage = context.get_stage()
-            session_layer = stage.GetSessionLayer()
-            # session_layer.subLayerPaths.append(os.path.relpath(self._materials_path, self.stage_path).replace("\\", "/"))
-            # Makes the session layer the authoring layer to make a non-permanent change on material binding
-            materials_list = [m["name"] for m in self._materials_dict.values()]
-            # print(materials_list)
-            with Usd.EditContext(stage, session_layer):
-                # layers.set_authoring_layer_by_identifier(session_layer_id)
-                with Sdf.ChangeBlock():
-                    for mat in materials_list:
-                        if stage.GetPrimAtPath(mat):
-                            mat_name = os.path.basename(mat)
-                            prims = get_all_prims_with_material(stage, mat_name)
-                            bind_material(stage, prims, mat)
-            # return to root layer
-
-    def save_flattened(self, path, on_finish_fn=None):
-        self.material_stage.Save()
-        self.assembly_stage.Save()
-
-        path = "{}/{}.usd".format(path, make_valid_filename(self.assembly.get_name()))
-        omni.usd.get_context().export_as_stage_with_callback(
-            path,
-            lambda a, b, path=path, finish_fn=on_finish_fn: omni.usd.get_context().open_stage_with_callback(
-                path, lambda a, b, path=path, finish_fn=finish_fn: self._open_flattened(a, b, path, finish_fn)
-            ),
-        )
-        # omni.usd.get_context().open_stage(
-        #     self.stage_path, lambda a, b, c=path, d=on_finish_fn: self._saved_flattened(c, d)
-        # )
-
-    def _saved_flattened(self, path, on_finish_fn):
-        if self.is_temp_stage_open():
-            # self.set_materials_to_color_layer()
-            # move_dict = {}
-            # move_dict["/Looks"] = "{}/Looks".format(self.root)
-            # omni.kit.commands.execute("MovePrimsCommand", paths_to_move=move_dict)
-            omni.usd.get_context().export_as_stage_with_callback(
-                path, lambda a, b, c=path, d=on_finish_fn: self._open_flattened(c, d)
-            )
-
-    def _open_flattened(self, a, b, path, on_finish_fn):
-        # print("saved flattened")
-        move_dict = {}
-        move_dict["/Looks"] = "{}/Looks".format(self.root)
-        omni.kit.commands.execute("MovePrimsCommand", paths_to_move=move_dict)
-        stage = omni.usd.get_context().get_stage()
-        stage.RemovePrim("/Flattened_Master_1")
-        stage.Save()
-        # stage = pxr.Usd.Stage.Open(path)
-        # materials = [i.GetPath().pathString for i in stage.GetPrimAtPath("{}/Looks".format(self.root)).GetChildren()]
-        # for material in materials:
-        #     mat_name = os.path.basename(material)
-        #     prims = get_all_prims_with_material(stage, mat_name)
-        #     bind_material(stage, prims, material)
-
-        prims = [
-            i.GetChild("Looks").GetPath()
-            for i in stage.Traverse()
-            if i.GetChild("Looks") and i.GetPath().pathString != "{}".format(self.root)
-        ]
-        for prim in prims:
-            stage.RemovePrim(prim)
-        stage.Save()
-        if on_finish_fn:
-            on_finish_fn()
-        # omni.usd.get_context().open_stage_with_callback(path, on_finish_fn)
 
     def open_stage(self):
         if self.stage_path:

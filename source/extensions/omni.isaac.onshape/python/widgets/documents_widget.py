@@ -340,7 +340,88 @@ class DocumentListDelegate(ui.AbstractItemDelegate):
 
     def build_widget(self, model, item, column_id, level, expanded):
         if item:
+            type = item.get_document_type()
+            if len(item.elements) < 1:
+                return
             with ui.VStack():
+
+                ui.Spacer(height=6)
+                with ui.ZStack(height=ui.Pixel(20)):
+                    with ui.HStack(width=ui.Percent(100)):
+                        # else:
+                        ui.Rectangle(
+                            height=20,
+                            style_type_name_override="Button",
+                            style={
+                                "Button": {
+                                    "background_color": 0xFF444444,
+                                    "border_radius": 3,
+                                    "margin_width": 3,
+                                    "margin_height": 0,
+                                },
+                                "Button:hovered": {"background_color": 0xFF666666},
+                                "Button:pressed": {"background_color": 0xFF888888},
+                            },
+                        )
+                    with ui.HStack():
+                        if len(item.elements) > 1:
+                            ui.Spacer(width=26)
+                        else:
+                            ui.Spacer(width=9)
+                            # with ui.HStack(width=ui.Pixel(50)):
+                            #         def toggle(button, button2, item):
+                            #             value = item.toggle_elements_visible()
+                            #             button2.visible = value
+                            #             button.visible = not value
+                            #         # stl = {"Button": {"background_color" : 0x0, "margin":0, "border_radius":10},
+                            #         #         "Button:hovered":{"background_color": 0x0}}
+
+                            #         down = ui.Button(
+                            #             name="arrow_down", width=ui.Pixel(50), height=ui.Percent(100)
+                            #         )
+                            #         up = ui.Button(
+                            #             name="arrow_up",
+                            #             visible=False,
+                            #             width=ui.Pixel(50),
+                            #             height=ui.Percent(100)
+                            #         )
+                            #         down.set_clicked_fn(lambda a=down, b=up, c=item: toggle(a, b, c))
+                            #         up.set_clicked_fn(lambda a=down, b=up, c=item: toggle(a, b, c))
+                            #         up.visible = False
+                            # ui.Spacer(width=3)
+                        ui.Label(
+                            item.get_name(),
+                            style={
+                                "aligmnent": ui.Alignment.LEFT_CENTER,
+                                "margin": ui.Pixel(3),
+                                "color": 0xFFDDDDDD if len(item.elements) > 1 else 0xFF777777,
+                            },
+                            height=20,
+                        )
+                    if len(item.elements) > 1:
+                        with ui.HStack(style={"alignment": ui.Alignment.LEFT_CENTER}):
+
+                            def toggle(button, button2, item):
+                                value = item.toggle_elements_visible()
+                                button2.visible = value
+                                button.visible = not value
+
+                            stl = {
+                                "Button": {"background_color": 0x0, "margin": 0},
+                                "Button.Image": {"margin": 2.5, "alignment": ui.Alignment.LEFT_CENTER},
+                                "Button:hovered": {"background_color": 0x0},
+                                "Button:pressed": {"background_color": 0x0},
+                            }
+                            ui.Spacer(width=3)
+                            down = ui.Button(name="arrow_right", style=stl, width=ui.Fraction(1), height=ui.Pixel(20))
+                            up = ui.Button(
+                                name="arrow_down", visible=False, style=stl, width=ui.Fraction(1), height=ui.Pixel(20)
+                            )
+                            down.set_clicked_fn(lambda a=down, b=up, c=item: toggle(a, b, c))
+                            up.set_clicked_fn(lambda a=down, b=up, c=item: toggle(a, b, c))
+                            up.visible = False
+                        ui.Spacer(width=6)
+                ui.Spacer(height=3)
                 with ui.HStack(
                     height=0,
                     width=ui.Percent(100),
@@ -350,12 +431,12 @@ class DocumentListDelegate(ui.AbstractItemDelegate):
                     mouse_pressed_fn=(lambda x, y, b, _, i=item: item.clicked()),
                     auto_resize=True,
                 ):
-                    with ui.ZStack(width=100):
+                    with ui.ZStack(width=80):
                         ui.Rectangle(
-                            height=100,
-                            width=100,
+                            height=85,
+                            width=85,
                             style={
-                                "margin": ui.Pixel(5),
+                                "margin": 5,
                                 "background_color": 0xFF444444,
                                 "border_color": 0xFF222222,
                                 "border_width": 0.5,
@@ -363,95 +444,66 @@ class DocumentListDelegate(ui.AbstractItemDelegate):
                             },
                         )
                         ui.ImageWithProvider(
-                            item.get_thumb(), height=100, width=100, style={"border_radius": 10, "margin": 10}
+                            item.get_thumb(), height=85, width=85, style={"border_radius": 10, "margin": 10}
                         )
-                    with ui.VStack(style={"aligmnent": ui.Alignment.LEFT_TOP}):
-                        ui.Spacer(height=6)
-                        with ui.ZStack(height=ui.Pixel(0)):
-                            ui.Rectangle(
-                                height=20,
-                                width=ui.Percent(100),
-                                style={"background_color": 0xFF444444, "border_radius": 3},
-                            )
-                            with ui.HStack():
+
+                        # ui.Spacer()
+                        # ui.Spacer(height=3)
+                    # ui.Spacer(width=1)
+                    with ui.ZStack():
+                        ui.Rectangle(
+                            style={
+                                "background_color": 0xFF333333,
+                                # "border_color": 0xFF000000,
+                                # "border_width": 0.5,
+                                "border_radius": 5,
+                                "margin": 5,
+                            }
+                        )
+                        with ui.VStack(style={"margin_height": 13, "margin_width": 8}):
+                            # ui.Spacer(height=13)
+                            with ui.HStack(
+                                height=0, style={"margin_height": 0, "margin_width": 0}
+                            ):  # style_type_name_override="TreeView"):
+                                ui.Spacer(width=8)
+                                ui.Label("Date created (modified):", width=ui.Percent(0), style={"color": 0xFF999999})
                                 ui.Spacer(width=3)
                                 ui.Label(
-                                    item.get_name(),
-                                    style={"aligmnent": ui.Alignment.LEFT_TOP, "margin": ui.Pixel(3)},
-                                    height=ui.Pixel(0),
+                                    item.get_document()["default_workspace"]["created_at"].strftime("%Y-%m-%d %H:%M"),
+                                    style={"color": 0xFF777777},
+                                    width=ui.Percent(0),
                                 )
-                        ui.Spacer(height=3)
-                        with ui.HStack(height=0, style=self._style, style_type_name_override="TreeView"):
-                            ui.Spacer(width=8)
-                            ui.Label(
-                                "Date created (modified):",
-                                width=ui.Percent(0),
-                                style_type_name_override="TreeView",
-                                style=self._style,
-                            )
-                            ui.Spacer(width=3)
-                            ui.Label(
-                                item.get_document()["default_workspace"]["created_at"].strftime("%Y-%m-%d %H:%M"),
-                                style={"color": 0xFF444444},
-                                width=ui.Percent(0),
-                            )
-                            ui.Spacer(width=3)
-                            ui.Label(
-                                "({})".format(
-                                    item.get_document()["default_workspace"]["modified_at"].strftime("%Y-%m-%d %H:%M")
-                                ),
-                                style={"color": 0xFF444444},
-                                width=ui.Percent(0),
-                            )
-                        with ui.HStack(height=0, style={"margin": 0}):
-                            ui.Spacer(width=8)
-                            ui.Label("Author:", width=ui.Percent(0), style_type_name_override="TreeView")
-                            ui.Spacer(width=3)
-                            ui.Label(
-                                item.get_document()["default_workspace"]["creator"]["name"], style={"color": 0xFF444444}
-                            )
-                        with ui.HStack(height=0, style={"margin": 0}):
-                            ui.Spacer(width=8)
-                            ui.Label("Owner:", width=ui.Percent(0), style_type_name_override="TreeView")
-                            ui.Spacer(width=3)
-                            ui.Label(item.get_document()["owner"]["name"], style={"color": 0xFF444444})
+                                ui.Spacer(width=3)
+                                ui.Label(
+                                    "({})".format(
+                                        item.get_document()["default_workspace"]["modified_at"].strftime(
+                                            "%Y-%m-%d %H:%M"
+                                        )
+                                    ),
+                                    style={"color": 0xFF777777},
+                                    width=ui.Percent(0),
+                                )
+                            with ui.HStack(height=0, style={"margin_height": 0, "margin_width": 0}):
+                                ui.Spacer(width=8)
+                                ui.Label("Author:", width=ui.Percent(0), style={"color": 0xFF999999})
+                                ui.Spacer(width=3)
+                                ui.Label(
+                                    item.get_document()["default_workspace"]["creator"]["name"],
+                                    style={"color": 0xFF777777},
+                                )
+                            with ui.HStack(height=0, style={"margin_height": 0, "margin_width": 0}):
+                                ui.Spacer(width=8)
+                                ui.Label("Owner:", width=ui.Percent(0), style={"color": 0xFF999999})
+                                ui.Spacer(width=3)
+                                ui.Label(item.get_document()["owner"]["name"], style={"color": 0xFF777777})
 
-                        with ui.HStack(height=0, style={"margin": 0}):
-                            ui.Spacer(width=8)
-                            ui.Label("Type:", width=ui.Percent(0), style_type_name_override="TreeView")
-                            ui.Spacer(width=3)
-                            ui.Label(item.get_document_type(), style={"color": 0xFF444444}, width=0)
-                        if len(item.elements) > 1:
-                            with ui.ZStack(height=18):
-                                with ui.VStack():
-                                    ui.Spacer(height=3)
-                                    ui.Rectangle(
-                                        style={
-                                            "margin_width": ui.Pixel(8),
-                                            "background_color": 0x22FFFFFF,
-                                            "border_radius": 3,
-                                        }
-                                    )
-                                    ui.Spacer(height=3)
-                                with ui.HStack(height=18):
+                            with ui.HStack(height=0, style={"margin_height": 0, "margin_width": 0}):
+                                with ui.ZStack():
+                                    with ui.HStack():
+                                        ui.Spacer(width=8)
+                                        ui.Label("Type:", width=ui.Percent(0), style={"color": 0xFF999999})
+                                        ui.Spacer(width=3)
+                                        ui.Label(item.get_document_type(), style={"color": 0xFF777777}, width=0)
 
-                                    def toggle(button, button2, item):
-                                        value = item.toggle_elements_visible()
-                                        button.visible = not value
-                                        button2.visible = value
-
-                                    down = ui.Button(
-                                        name="arrow_down", style=self._style, width=ui.Percent(100), height=18
-                                    )
-                                    up = ui.Button(
-                                        name="arrow_up",
-                                        style=self._style,
-                                        visible=False,
-                                        width=ui.Percent(100),
-                                        height=18,
-                                    )
-                                    down.set_clicked_fn(lambda a=down, b=up, c=item: toggle(a, b, c))
-                                    up.set_clicked_fn(lambda a=down, b=up, c=item: toggle(a, b, c))
-                                    up.visible = False
                 if len(item.elements) > 1:
                     item.build_element_grid_view(lambda x, y, b, item=item: self.on_mouse_double_clicked(item))
