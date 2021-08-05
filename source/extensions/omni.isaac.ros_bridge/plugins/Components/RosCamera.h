@@ -44,6 +44,7 @@ public:
     void cameraInfoPubCallback(ros::Publisher* pub);
     void rgbPubCallback(ros::Publisher* pub);
     void depthPubCallback(ros::Publisher* pub);
+    void depthToPointCloudCallback(ros::Publisher* pub);
     void semanticPubCallback(ros::Publisher* pub);
     void instancePubCallback(ros::Publisher* pub);
     void labelPubCallback(ros::Publisher* pub);
@@ -74,6 +75,10 @@ private:
     void* mDepthSensorData = nullptr;
     bool mEnableDepth = false;
 
+    carb::sensors::Sensor* mDepthForPCLSensor = nullptr;
+    void* mDepthForPCLSensorData = nullptr;
+    bool mEnablePointCloud = false;
+
     carb::sensors::Sensor* mInstanceSensor = nullptr;
     void* mInstanceSensorData = nullptr;
     bool mEnableInstance = false;
@@ -102,7 +107,8 @@ private:
     std::string mCameraInfoPubTopic = "/camera_info";
     std::string mRgbPubTopic = "/rgb";
     std::string mDepthPubTopic = "/depth";
-    std::string mFrameId = "/sim_camera";
+    std::string mPointCloudPubTopic = "/point_cloud";
+    std::string mFrameId = "sim_camera";
     std::string mInstancePubTopic = "/instance";
     std::string mSemanticPubTopic = "/semantic";
     std::string mLabelPubTopic = "/label";

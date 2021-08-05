@@ -17,6 +17,7 @@
 #include "isaac_ros_messages/BoundingBox3DArray.h"
 #include "isaac_ros_messages/IsaacBoundingBox.h"
 #include "isaac_ros_messages/IsaacBoundingBoxArray.h"
+#include "pcl_conversions/pcl_conversions.h"
 #include "rosgraph_msgs/Clock.h"
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/Image.h"
@@ -41,7 +42,10 @@ namespace isaac
 {
 namespace ros_bridge
 {
+
 extern "C" void rgbaToRgb(uint8_t* dest, const uint8_t* src, int width, int height, int srcStride);
+extern "C" void depthToPCL(
+    pcl::PointXYZ* dest, const float* src, int width, int height, float fx, float fy, float cx, float cy);
 
 RosCamera::RosCamera(utils::ViewportManager* viewportManager)
 {
@@ -81,6 +85,7 @@ RosCamera::~RosCamera()
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mCameraInfoPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mRgbPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mDepthPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mPointCloudPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mInstancePubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mSemanticPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mLabelPubTopic);
@@ -119,6 +124,12 @@ void RosCamera::onStop()
         mDepthSensor = nullptr;
         mDepthSensorData = nullptr;
     }
+    if (mDepthForPCLSensor)
+    {
+        mSyntheticDataInterface->destroySensor(mDepthForPCLSensor);
+        mDepthForPCLSensor = nullptr;
+        mDepthForPCLSensorData = nullptr;
+    }
     if (mSegmentationSensor)
     {
         mSyntheticDataInterface->destroySensor(mSegmentationSensor);
@@ -156,6 +167,7 @@ void RosCamera::onComponentChange()
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mCameraInfoPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mRgbPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mDepthPubTopic);
+    mRosNode->destroyMessage(mPrim.GetPath().GetString() + mPointCloudPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mInstancePubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mSemanticPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mLabelPubTopic);
@@ -165,6 +177,7 @@ void RosCamera::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetCameraInfoPubTopicAttr(), mCameraInfoPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetRgbPubTopicAttr(), mRgbPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetDepthPubTopicAttr(), mDepthPubTopic);
+    isaac::utils::safeGetAttribute(typedPrim.GetPointCloudPubTopicAttr(), mPointCloudPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetInstancePubTopicAttr(), mInstancePubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetSemanticPubTopicAttr(), mSemanticPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetLabelPubTopicAttr(), mLabelPubTopic);
@@ -177,6 +190,7 @@ void RosCamera::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetResolutionAttr(), mResolution);
     isaac::utils::safeGetAttribute(typedPrim.GetRgbEnabledAttr(), mEnableRgb);
     isaac::utils::safeGetAttribute(typedPrim.GetDepthEnabledAttr(), mEnableDepth);
+    isaac::utils::safeGetAttribute(typedPrim.GetPointCloudEnabledAttr(), mEnablePointCloud);
     isaac::utils::safeGetAttribute(typedPrim.GetSegmentationEnabledAttr(), mEnableSegmentation);
     std::string filterClassList2D;
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox2DEnabledAttr(), mEnableBoundingBox2D);
@@ -186,7 +200,8 @@ void RosCamera::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DClassListAttr(), filterClassList3D);
     isaac::utils::safeGetAttribute(typedPrim.GetStereoOffsetAttr(), mStereoOffset);
 
-    if (mEnableRgb || mEnableDepth || mEnableSegmentation || mEnableBoundingBox2D || mEnableBoundingBox3D)
+    if (mEnableRgb || mEnableDepth || mEnablePointCloud || mEnableSegmentation || mEnableBoundingBox2D ||
+        mEnableBoundingBox3D)
     {
         mRosNode->createPublisher<sensor_msgs::CameraInfo>(
             mPrim.GetPath().GetString(), mCameraInfoPubTopic, mQueueSize, &RosCamera::cameraInfoPubCallback, this);
@@ -200,6 +215,12 @@ void RosCamera::onComponentChange()
     {
         mRosNode->createPublisher<sensor_msgs::Image>(
             mPrim.GetPath().GetString(), mDepthPubTopic, mQueueSize, &RosCamera::depthPubCallback, this);
+    }
+
+    if (mEnablePointCloud)
+    {
+        mRosNode->createPublisher<sensor_msgs::PointCloud2>(
+            mPrim.GetPath().GetString(), mPointCloudPubTopic, mQueueSize, &RosCamera::depthToPointCloudCallback, this);
     }
     if (mEnableSegmentation)
     {
@@ -292,6 +313,17 @@ void RosCamera::updateViewportSettings()
         mDepthSensorData = nullptr;
     }
 
+    if (mEnablePointCloud)
+    {
+        mDepthForPCLSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+    }
+    else
+    {
+        mDepthForPCLSensor = nullptr;
+        mDepthForPCLSensorData = nullptr;
+    }
+
     if (mEnableSegmentation)
     {
         mSemanticSensor =
@@ -330,6 +362,24 @@ void RosCamera::updateViewportSettings()
     }
 }
 
+void getCameraIntrinsics(
+    pxr::UsdGeomCamera cameraPrim, carb::sensors::SensorInfo imgInfo, float& fx, float& fy, float& cx, float& cy)
+{
+
+    float focalLength;
+    cameraPrim.GetFocalLengthAttr().Get(&focalLength);
+
+    float horizontalAperture, verticalAperture;
+    cameraPrim.GetHorizontalApertureAttr().Get(&horizontalAperture);
+    verticalAperture =
+        static_cast<float>(imgInfo.tex.height) / static_cast<float>(imgInfo.tex.width) * horizontalAperture;
+
+    fx = imgInfo.tex.width * focalLength / horizontalAperture;
+    fy = imgInfo.tex.height * focalLength / verticalAperture;
+    cx = imgInfo.tex.width * 0.5f;
+    cy = imgInfo.tex.height * 0.5;
+}
+
 void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
 {
     if (mViewportWindow == nullptr)
@@ -343,14 +393,10 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
 
     pxr::UsdGeomCamera cameraPrim(prim);
 
-    float focalLength;
     pxr::GfVec2f clipRange;
-    float horizontalAperture, verticalAperture;
 
-    cameraPrim.GetFocalLengthAttr().Get(&focalLength);
     cameraPrim.GetClippingRangeAttr().Get(&clipRange);
-    cameraPrim.GetHorizontalApertureAttr().Get(&horizontalAperture);
-    cameraPrim.GetVerticalApertureAttr().Get(&verticalAperture);
+
     carb::sensors::SensorInfo imgInfo;
     if (mEnableRgb && mSyntheticDataInterface->isSensorInitialized(mRgbSensor))
     {
@@ -359,6 +405,10 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
     else if (mEnableDepth && mSyntheticDataInterface->isSensorInitialized(mDepthSensor))
     {
         imgInfo = mSensorsInterface->getSensorInfo(mDepthSensor);
+    }
+    else if (mEnablePointCloud && mSyntheticDataInterface->isSensorInitialized(mDepthForPCLSensor))
+    {
+        imgInfo = mSensorsInterface->getSensorInfo(mDepthForPCLSensor);
     }
     else if (mEnableInstance && mSyntheticDataInterface->isSensorInitialized(mInstanceSensor))
     {
@@ -386,8 +436,9 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
     }
     // We have to ignore the vertical aperture number because our pixels are square
     // Compute it directly from the image size and horizontal aperture
-    verticalAperture =
-        static_cast<float>(imgInfo.tex.height) / static_cast<float>(imgInfo.tex.width) * horizontalAperture;
+
+    // verticalAperture =
+    //    static_cast<float>(imgInfo.tex.height) / static_cast<float>(imgInfo.tex.width) * horizontalAperture;
 
     sensor_msgs::CameraInfo cam_info_msg;
     cam_info_msg.header.seq = 0;
@@ -404,34 +455,24 @@ void RosCamera::cameraInfoPubCallback(ros::Publisher* pub)
     cam_info_msg.height = imgInfo.tex.height;
     cam_info_msg.width = imgInfo.tex.width;
     cam_info_msg.distortion_model = "plumb_bob";
+
+
     // ROS image: conventions
     // origin of frame should be optical center of camera
     // +x should point to the right in the image
     // +y should point down in the image
     // +z should point into the plane of the image
 
-    cam_info_msg.K = { imgInfo.tex.width * focalLength / horizontalAperture,
-                       0,
-                       imgInfo.tex.width * 0.5f,
-                       0,
-                       imgInfo.tex.height * focalLength / verticalAperture,
-                       imgInfo.tex.height * 0.5f,
-                       0,
-                       0,
-                       1 };
-    cam_info_msg.P = { imgInfo.tex.width * focalLength / horizontalAperture,
-                       0,
-                       imgInfo.tex.width * 0.5f,
-                       mStereoOffset[0],
-                       0,
-                       imgInfo.tex.height * focalLength / verticalAperture,
-                       imgInfo.tex.height * 0.5f,
-                       mStereoOffset[1],
-                       0,
-                       0,
-                       1,
-                       0 };
+    float fx, fy, cy, cx;
+
+    getCameraIntrinsics(cameraPrim, imgInfo, fx, fy, cx, cy);
+
+    cam_info_msg.K = { fx, 0, cx, 0, fy, cy, 0, 0, 1 };
+
+    cam_info_msg.P = { fx, 0, cx, mStereoOffset[0], 0, fy, cy, mStereoOffset[1], 0, 0, 1, 0 };
+
     cam_info_msg.D = { 0, 0, 0, 0, 0 };
+
     pub->publish(cam_info_msg);
 }
 
@@ -481,6 +522,7 @@ void RosCamera::rgbPubCallback(ros::Publisher* pub)
     CUDA_CHECK(cudaFree(rgbDevice));
     pub->publish(color_msg);
 }
+
 void RosCamera::depthPubCallback(ros::Publisher* pub)
 {
 
@@ -522,6 +564,80 @@ void RosCamera::depthPubCallback(ros::Publisher* pub)
     mDepthSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthSensor);
     CUDA_CHECK(cudaMemcpy(depth, mDepthSensorData, depthInfo.tex.rowSize * depthInfo.tex.height, cudaMemcpyDeviceToHost));
     pub->publish(depth_msg);
+}
+
+
+void RosCamera::depthToPointCloudCallback(ros::Publisher* pub)
+{
+
+    if (!mEnablePointCloud || mViewportWindow == nullptr)
+    {
+        return;
+    }
+    if (!mDepthForPCLSensor || !mSyntheticDataInterface->isSensorInitialized(mDepthForPCLSensor))
+    {
+        mDepthForPCLSensor =
+            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+        return;
+    }
+
+    const char* cameraPath = mViewportWindow->getActiveCamera();
+
+    if (!cameraPath)
+        return;
+
+    pxr::SdfPath path(cameraPath);
+    pxr::UsdPrim prim = mStage->GetPrimAtPath(path);
+    pxr::UsdGeomCamera cameraPrim(prim);
+
+    const carb::sensors::SensorInfo& depthInfo = mSensorsInterface->getSensorInfo(mDepthForPCLSensor);
+
+    float fx, fy, cy, cx;
+
+    getCameraIntrinsics(cameraPrim, depthInfo, fx, fy, cx, cy);
+
+    mDepthForPCLSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthForPCLSensor);
+
+    int w = depthInfo.tex.width;
+    int h = depthInfo.tex.height;
+
+    const size_t bufferSize = depthInfo.tex.width * depthInfo.tex.height * sizeof(pcl::PointXYZ);
+
+    pcl::PointXYZ* pclDevice = nullptr;
+
+    typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
+    PointCloud cloud;
+
+    cloud.points.resize(w * h);
+
+    CUDA_CHECK(cudaMalloc(&pclDevice, bufferSize));
+
+    depthToPCL(pclDevice, (float*)mDepthForPCLSensorData, depthInfo.tex.width, depthInfo.tex.height, fx, fy, cx, cy);
+
+    CUDA_CHECK(cudaMemcpy(&cloud.points[0], pclDevice, bufferSize, cudaMemcpyDeviceToHost));
+
+    CUDA_CHECK(cudaFree(pclDevice));
+
+    cloud.width = w;
+    cloud.height = h;
+    cloud.is_dense = false;
+
+    sensor_msgs::PointCloud2 point_cloud_msg;
+
+    pcl::toROSMsg(cloud, point_cloud_msg);
+
+    point_cloud_msg.header.frame_id = mFrameId;
+
+    if (mUseSimTime)
+    {
+        point_cloud_msg.header.stamp.fromSec(mTimeSeconds);
+    }
+    else
+    {
+        point_cloud_msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
+    }
+
+    pub->publish(point_cloud_msg);
 }
 
 void RosCamera::instancePubCallback(ros::Publisher* pub)
