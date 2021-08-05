@@ -145,6 +145,7 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
         }
 
         pose = parentPose.GetMatrix().Transform(pose);
+        pxr::GfVec3d totalImpulse(0.0, 0.0, 0.0);
         for (size_t i = 0; i < size; ++i)
         {
             pxr::GfVec3d contactPoint(rawContact[i].position.x, rawContact[i].position.y, rawContact[i].position.z);
@@ -157,17 +158,14 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
             {
                 mReadingPair[mCurrent].inContact = mReadingPair[mCurrent].inContact || true;
                 // compute force from impulse (F = i/dt) and add to sensor output
-                mReadingPair[mCurrent].value = std::min(
-                    mReadingPair[mCurrent].value +
-                        (float)(pxr::GfVec3d(rawContact[i].impulse.x, rawContact[i].impulse.y, rawContact[i].impulse.z)
-                                    .GetLength() /
-                                (mReadingPair[mCurrent].time - mReadingPair[!mCurrent].time)),
-                    mProps.maxThreshold);
+                totalImpulse += pxr::GfVec3d(rawContact[i].impulse.x, rawContact[i].impulse.y, rawContact[i].impulse.z);
                 // CS_LOG_INFO(
                 // "contact sensor value: %d, %f, %lf", mCurrent, mReadingPair[mCurrent].value,
                 // pxr::GfVec3d(rawContact[i].impulse.x, rawContact[i].impulse.y, rawContact[i].impulse.z).GetLength());
             }
         }
+        mReadingPair[mCurrent].value =
+            std::min((float)(totalImpulse.GetLength() / rawContact[0].dt), mProps.maxThreshold);
     }
     // CS_LOG_INFO("Done Processing Raw");
     mProcessedRaw = true;

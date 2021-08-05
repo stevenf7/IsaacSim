@@ -36,7 +36,7 @@ class Contact_sensor_demo(omni.ext.IExt):
             )
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
-        self.meters_per_unit = 0.01
+        self.meters_per_unit = 1.00
         self._window = None
 
     def _on_stage_event(self, event):
@@ -52,10 +52,10 @@ class Contact_sensor_demo(omni.ext.IExt):
 
             self.leg_paths = ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)]
             self.sensor_ofsets = [
-                carb.Float3(40, 0, 0),
-                carb.Float3(40, 0, 0),
-                carb.Float3(40, 0, 0),
-                carb.Float3(40, 0, 0),
+                carb.Float3(0.40, 0, 0),
+                carb.Float3(0.40, 0, 0),
+                carb.Float3(0.40, 0, 0),
+                carb.Float3(0.40, 0, 0),
             ]
 
             self.shoulder_joints = ["/Ant/Arm_{:02d}/Upper_Arm/shoulder_joint".format(i + 1) for i in range(4)]
@@ -148,6 +148,10 @@ class Contact_sensor_demo(omni.ext.IExt):
                     )  # readings are in kg⋅m⋅s−2, converting to Newtons
                 else:
                     self.sliders[i].model.set_value(0)
+            contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
+            print(len(contacts_raw))
+            c = contacts_raw[0]
+            print(c)
 
     async def create_scenario(self):
 
@@ -158,7 +162,7 @@ class Contact_sensor_demo(omni.ext.IExt):
         self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
 
         props = _contact_sensor.SensorProperties()
-        props.radius = 12  # Cover the entire leg tip
+        props.radius = 0.12  # Cover the entire leg tip
         props.minThreshold = 0
         props.maxThreshold = 1000000000000
         props.sensorPeriod = 1 / 100.0
