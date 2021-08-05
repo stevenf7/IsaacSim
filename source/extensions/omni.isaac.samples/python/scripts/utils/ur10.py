@@ -13,9 +13,9 @@ import numpy as np
 from pxr import Usd, UsdGeom, Gf, UsdPhysics, PhysxSchema
 from omni.isaac.motion_planning import _motion_planning
 
-from . import math_utils
+from omni.isaac.utils.scripts import math_utils
 
-from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
+from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper
 
 default_config = (-1.57, -1.57, -1.57, -1.57, 1.57, 0)
 
@@ -160,7 +160,7 @@ class EndEffector:
 
     def look_at(self, gripper_pos, target):
         # Y up works for look at but sometimes flips, go_local might be a safer bet with a  locked y_axis
-        orientation = math_utils.lookAt(gripper_pos, target, self.UpRot.TransformDir(Gf.Vec3f(0, 1, 0)))
+        orientation = math_utils.lookat_to_quat(gripper_pos, target, self.UpRot.TransformDir(Gf.Vec3f(0, 1, 0)))
         mat = Gf.Matrix3d(orientation).GetTranspose()
 
         self.go_local(

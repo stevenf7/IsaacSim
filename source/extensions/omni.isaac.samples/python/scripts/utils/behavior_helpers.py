@@ -9,7 +9,7 @@
 import copy
 import time
 import numpy as np
-from . import math_utils
+from omni.isaac.utils.scripts import math_utils
 
 
 def get_block_id(color, id_tag="00"):
