@@ -1,0 +1,484 @@
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+import omni.kit.test
+import carb
+import asyncio
+from pxr import Usd, UsdGeom, Gf, UsdPhysics, Sdf
+
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+from omni.isaac.motion_generation import MotionGenerator
+from omni.isaac.dynamic_control import _dynamic_control
+
+import os
+import json
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+async def load_test_file(path_to_file: str):
+    if not Usd.Stage.IsSupportedFile(path_to_file):
+        raise ValueError("Only USD files can be loaded with this method")
+
+    usd_context = omni.usd.get_context()
+    usd_context.disable_save_to_recent_files()
+    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
+    usd_context.enable_save_to_recent_files()
+    return (result, error)
+
+
+# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will
+# make it auto-discoverable by omni.kit.test
+class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
+    # Before running each test
+    async def setUp(self):
+        self._physics_rate = 60  # fps
+
+        self._timeline = omni.timeline.get_timeline_interface()
+
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
+        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
+        self._mg_extension_path = ext_manager.get_extension_path(ext_id)
+
+        self._polciy_config_dir = os.path.join(self._mg_extension_path, "policy_configs")
+        self.assertTrue(os.path.exists(os.path.join(self._polciy_config_dir, "policy_map.json")))
+        with open(os.path.join(self._polciy_config_dir, "policy_map.json")) as policy_map:
+            self._policy_map = json.load(policy_map)
+
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+
+        await omni.kit.app.get_app().next_update_async()
+
+        pass
+
+    # After running each test
+    async def tearDown(self):
+        self._timeline.stop()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await omni.kit.app.get_app().next_update_async()
+        self._mg = None
+        self._dc = None
+        await omni.kit.app.get_app().next_update_async()
+        pass
+
+    async def test_rmpflow_on_franka(self):
+        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+
+        self._dc = _dynamic_control.acquire_dynamic_control_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._stage = omni.usd.get_context().get_stage()
+
+        self._mg = MotionGenerator(self._dc, self._stage)
+
+        self.assertTrue("Franka" in self._policy_map)
+        self.assertTrue("RMPflow" in self._policy_map["Franka"])
+
+        config_path = os.path.join(self._polciy_config_dir, self._policy_map["Franka"]["RMPflow"])
+        self.assertTrue(os.path.exists(os.path.join(config_path, "config.json")))
+
+        config = await self.process_policy_config(config_path)
+
+        robot_prim = self._stage.GetPrimAtPath("/panda")
+        self.assertNotEqual(str(robot_prim.GetPath()), "")
+        robot_geom = UsdGeom.Xform(robot_prim)
+        robot_geom.AddTranslateOp().Set(Gf.Vec3d(0.0, 0.0, 0.0))
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        self._mg.initialize(config, robot_prim, self._physics_rate)
+        self.assertTrue(self._mg.is_initialized())
+
+        ground_truths = {
+            "no_target": np.array(
+                [
+                    0.1415514645835098,
+                    -7.917012243510814,
+                    0.003799213921763127,
+                    -28.260449441338885,
+                    0.0005702215340584568,
+                    11.956095369522838,
+                    1.2016276110437412,
+                    19.981830596923828,
+                    23.667095184326172,
+                ]
+            ),
+            "target_no_obstacle": np.array(
+                [
+                    -0.2592373908905973,
+                    0.2601527758598492,
+                    0.057752672812570766,
+                    -0.5862672836236312,
+                    0.07270127818537256,
+                    0.203191317690827,
+                    0.103198594644828,
+                    26.801578521728516,
+                    2.4999217987060547,
+                ]
+            ),
+            "target_with_obstacle": np.array(
+                [
+                    -0.2669026983867295,
+                    0.22270478104200916,
+                    0.070717805641475,
+                    -0.6079020328349203,
+                    0.08454520953067614,
+                    0.22712011185219702,
+                    0.10005983256310759,
+                    26.801578521728516,
+                    2.4999217987060547,
+                ]
+            ),
+            "target_pos": Gf.Vec3d(40.0, 0.0, 40.0),
+            "obs_pos": Gf.Vec3d(30.0, 0.0, 40.0),
+        }
+        await self.verify_policy_outputs(ground_truths)
+
+        target_pos = Gf.Vec3d(50.0, 0.0, 50.0)
+        obstacle_pos = Gf.Vec3d(50.0, 0.0, 65.0)
+        timeout = 10
+        await self.verify_robot_convergence(
+            target_pos, timeout, target_orient=Gf.Quatf(0.0, 0.0, 0.0, 1.0), obs_pos=obstacle_pos
+        )
+
+        robot_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(10.0, 70.0, 0.0))
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
+
+        rot_quat = R.from_rotvec([0, 0, -np.pi / 4]).as_quat()
+        robot_geom.AddOrientOp().Set(Gf.Quatf(rot_quat[-1], *rot_quat[:-1]))
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
+
+        rot = Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0.0, 0.0, 1.0), np.pi / 2))
+        trans = Gf.Vec3d(10.0, -50.0, 0.0)
+        transform = Gf.Matrix4d()
+        transform.SetTranslate(trans)
+        transform.SetRotateOnly(rot)
+
+        robot_geom.AddTransformOp().Set(transform)
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
+
+        pass
+
+    async def test_rmpflow_on_ur10(self):
+        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+
+        self._dc = _dynamic_control.acquire_dynamic_control_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._stage = omni.usd.get_context().get_stage()
+
+        self._mg = MotionGenerator(self._dc, self._stage)
+
+        self.assertTrue("UR10" in self._policy_map)
+        self.assertTrue("RMPflow" in self._policy_map["UR10"])
+
+        config_path = os.path.join(self._polciy_config_dir, self._policy_map["UR10"]["RMPflow"])
+        self.assertTrue(os.path.exists(os.path.join(config_path, "config.json")))
+
+        config = await self.process_policy_config(config_path)
+
+        robot_prim = self._stage.GetPrimAtPath("/ur10")
+        self.assertNotEqual(str(robot_prim.GetPath()), "")
+        robot_geom = UsdGeom.Xform(robot_prim)
+        robot_geom.AddTranslateOp().Set(Gf.Vec3d(0.0, 0.0, 0.0))
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        self._mg.initialize(config, robot_prim, self._physics_rate)
+        self.assertTrue(self._mg.is_initialized())
+
+        ground_truths = {
+            "no_target": np.array(
+                [
+                    4.638814867545096,
+                    4.42956498800886,
+                    4.731875157322158,
+                    4.701723894771712,
+                    4.619898861152239,
+                    4.663612815904171,
+                ]
+            ),
+            "target_no_obstacle": np.array(
+                [
+                    -0.22281966627907415,
+                    -0.36038274547532617,
+                    -0.17912603108705147,
+                    -0.06766958846676945,
+                    0.08054933050722413,
+                    -0.011935877183094704,
+                ]
+            ),
+            "target_with_obstacle": np.array(
+                [
+                    -0.23377294018004288,
+                    -0.06902096799980545,
+                    -0.39368987375156717,
+                    0.30345397056294854,
+                    -0.2653443104076206,
+                    -0.011816471822977773,
+                ]
+            ),
+            "target_pos": Gf.Vec3d(100.0, 0.0, 50.0),
+            "obs_pos": Gf.Vec3d(100.0, 0.0, 30.0),
+        }
+        await self.verify_policy_outputs(ground_truths)
+
+        target_pos = Gf.Vec3d(50.0, 0.0, 50.0)
+        obs_pos = Gf.Vec3d(50.0, 10.0, 70.0)
+        timeout = 5
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+
+        robot_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(10.0, 70.0, 0.0))
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+
+        rot_quat = R.from_rotvec([0, 0, -np.pi / 4]).as_quat()
+        robot_geom.AddOrientOp().Set(Gf.Quatf(rot_quat[-1], *rot_quat[:-1]))
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+
+        robot_prim.GetAttribute("xformOp:orient").Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+        robot_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
+        rot = Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0.0, 0.0, 1.0), np.pi / 2))
+        trans = Gf.Vec3d(10.0, -50.0, 0.0)
+        transform = Gf.Matrix4d()
+        transform.SetTranslate(trans)
+        transform.SetRotateOnly(rot)
+
+        robot_geom.AddTransformOp().Set(transform)
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+
+        pass
+
+    async def process_policy_config(self, mp_path):
+        """
+            `mp_path` is expected to be an absolute path to a directory containing a file
+            named "config.json" which provides configuration for the "MotionPolicy" being
+            tested.
+
+            Inside "config.json" relative paths included in "relative_asset_paths" will
+            be prepended with "mp_path" to convert to an absolute path.
+
+            For example, if "config.json" constains:
+
+            {
+                "policy_type" : "RMP_Flow",
+                "end_effector_frame_name": "tool",
+                "relative_asset_paths": {
+                    "robot_description_path" : "ur10_robot_description.yaml",
+            }
+
+            and "mp_path" is set to "path/to/config/", then "config.json" will be converted to:
+
+            {
+                "policy_type" : "RMPflow",
+                "end_effector_frame_name": "tool",
+                "robot_description_path" : "/path/to/config/ur10_robot_description.yaml",
+                "relative_asset_paths": {
+                    "robot_description_path" : "ur10_robot_description.yaml",
+                }
+            }
+        """
+
+        self.assertTrue(os.path.exists(os.path.join(mp_path, "config.json")))
+
+        with open(os.path.join(mp_path, "config.json")) as mp_config_file:
+            config = json.load(mp_config_file)
+
+        rel_assets = config.get("relative_asset_paths", {})
+        for k, v in rel_assets.items():
+            config[k] = os.path.join(mp_path, v)
+
+        return config
+
+    async def reached_end_effector_target(
+        self, mg, target_prim, trans_thresh=0.03, axis_x_thresh=0.1, axis_y_thresh=0.1, axis_z_thresh=0.1
+    ):
+        target_trans, target_rot = mg.get_prim_pose(target_prim, default_trans=None, default_rot=None)
+
+        if target_rot is None and target_trans is None:
+            return True
+
+        ee_trans, ee_rot = mg.get_end_effector_pose()
+
+        if target_rot is None:
+            if np.linalg.norm(ee_trans - target_trans) < trans_thresh:
+                return True
+            else:
+                return False
+        else:
+            if target_trans is not None and np.linalg.norm(ee_trans - target_trans) > trans_thresh:
+                return False
+            elif np.linalg.norm(ee_rot[0] - target_rot[0]) > axis_x_thresh:
+                return False
+            elif np.linalg.norm(ee_rot[1] - target_rot[1]) > axis_z_thresh:
+                return False
+            elif np.linalg.norm(ee_rot[2] - target_rot[2]) > axis_z_thresh:
+                return False
+            else:
+                return True
+
+    async def add_block(self, path, size, offset, scale=Gf.Vec3d(1.0, 1.0, 1.0)):
+        if not self._stage.GetPrimAtPath(path):
+            cubeGeom = UsdGeom.Cube.Define(self._stage, path)
+            cubePrim = self._stage.GetPrimAtPath(path)
+            cubeGeom.CreateSizeAttr(size)
+            cubeGeom.AddTranslateOp().Set(offset)
+            cubeGeom.AddScaleOp().Set(scale)
+        else:
+            cubePrim = self._stage.GetPrimAtPath(path)
+            cubeGeom = UsdGeom.Xformable(cubePrim)
+            cubeGeom.ClearXformOpOrder()
+            cubeGeom.AddTranslateOp().Set(offset)
+            cubeGeom.AddScaleOp().Set(scale)
+        # Need this to avoid flatcache errors
+        await omni.kit.app.get_app().next_update_async()
+
+        return cubePrim
+
+    async def assertAlmostEqual(self, a, b):
+        # overriding method because it doesn't support iterables
+
+        self.assertFalse(np.any(abs((np.array(a) - np.array(b))) > 10e-4))
+        pass
+
+    async def simulate_until_target_reached(self, timeout, target_prim):
+        for frame in range(int(self._physics_rate * timeout)):
+            self._mg.move()
+            await omni.kit.app.get_app().next_update_async()
+            if await self.reached_end_effector_target(self._mg, target_prim):
+                return True, frame / self._physics_rate
+        return False, timeout
+
+    async def verify_policy_outputs(self, ground_truths, dbg=False):
+        """
+        The ground truths are obtained by running this method in dbg mode
+        when certain that motion_generation is working as intended.
+
+        In dbg mode, the returned velocity target values will be printed
+        and no assertions will be checked.
+        """
+
+        # outputs of mg in different scenarios
+        no_target_truth = ground_truths["no_target"]
+        target_no_obs_truth = ground_truths["target_no_obstacle"]
+        target_obs_truth = ground_truths["target_with_obstacle"]
+
+        # where to put the target and obstacle
+        target_pos = ground_truths["target_pos"]
+        obs_pos = ground_truths["obs_pos"]
+
+        self._mg.set_end_effector_target(None)
+        self._mg._motion_policy.update()
+        velocity_targets = self._mg.get_velocity_target_from_acceleration_policy()
+        if dbg:
+            print("\nNo target:")
+            for target in velocity_targets:
+                print(target, end=",")
+            print()
+        else:
+            await self.assertAlmostEqual(no_target_truth, velocity_targets)
+
+        target_prim = await self.add_block("/scene/target", 5, target_pos)
+        await omni.kit.app.get_app().next_update_async()
+        obs_prim = await self.add_block("/scene/obstacle", 10, obs_pos)
+        await omni.kit.app.get_app().next_update_async()
+
+        # Just the target
+        self._mg.set_end_effector_target(target_prim)
+        self._mg._motion_policy.update()
+        velocity_targets = self._mg.get_velocity_target_from_acceleration_policy()
+        if dbg:
+            print("\nWith target:")
+            for target in velocity_targets:
+                print(target, end=",")
+            print()
+        else:
+            await self.assertAlmostEqual(target_no_obs_truth, velocity_targets)
+
+        # Add the obstacle
+        self._mg.create_cube(obs_prim)
+        self._mg._motion_policy.update()
+        velocity_targets = self._mg.get_velocity_target_from_acceleration_policy()
+        if dbg:
+            print("\nWith target and obstacle:")
+            for target in velocity_targets:
+                print(target, end=",")
+            print()
+        else:
+            await self.assertAlmostEqual(target_obs_truth, velocity_targets)
+
+        # Disable the obstacle: check that it matches no obstacle at all
+        self._mg.disable_obstacle(obs_prim)
+        self._mg._motion_policy.update()
+        velocity_targets = self._mg.get_velocity_target_from_acceleration_policy()
+        if dbg:
+            print("\nWith target and disabled obstacle:")
+            for target in velocity_targets:
+                print(target, end=",")
+            print()
+        else:
+            await self.assertAlmostEqual(target_no_obs_truth, velocity_targets)
+
+        # Enable the obstacle: check consistency
+        self._mg.enable_obstacle(obs_prim)
+        self._mg._motion_policy.update()
+        velocity_targets = self._mg.get_velocity_target_from_acceleration_policy()
+        if dbg:
+            print("\nWith target and enabled obstacle:")
+            for target in velocity_targets:
+                print(target, end=",")
+            print()
+        else:
+            await self.assertAlmostEqual(target_obs_truth, velocity_targets)
+
+        # Delete the obstacle: check consistency
+        self._mg.remove_obstacle(obs_prim)
+        self._mg._motion_policy.update()
+        velocity_targets = self._mg.get_velocity_target_from_acceleration_policy()
+        if dbg:
+            print("\nWith target and deleted obstacle:")
+            for target in velocity_targets:
+                print(target, end=",")
+            print()
+        else:
+            await self.assertAlmostEqual(target_no_obs_truth, velocity_targets)
+
+        return
+
+    async def verify_robot_convergence(self, target_pos, timeout, target_orient=None, obs_pos=None):
+        # Assert that the robot can reach the target within a given timeout
+
+        target_prim = await self.add_block("/scene/target", 5, target_pos)
+        target_geom = UsdGeom.Xformable(target_prim)
+        if target_orient:
+            target_geom.AddOrientOp().Set(target_orient)
+        await omni.kit.app.get_app().next_update_async()
+        obs_prim = None
+        if obs_pos is not None:
+            obs_prim = await self.add_block("/scene/obstacle", 10, obs_pos, scale=Gf.Vec3d(2.0, 3.0, 1.0))
+            await omni.kit.app.get_app().next_update_async()
+            self._mg.create_block(obs_prim)
+
+        self._mg.set_end_effector_target(target_prim)
+        success, time_to_target = await self.simulate_until_target_reached(timeout, target_prim)
+        if not success:
+            self.assertTrue(False)
+
+        if obs_prim is not None:
+            self._mg.remove_obstacle(obs_prim)
+
+        return

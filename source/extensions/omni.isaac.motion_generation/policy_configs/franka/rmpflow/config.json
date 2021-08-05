@@ -1,0 +1,10 @@
+{
+    "policy_type" : "RMPflow",
+    "end_effector_frame_name": "right_gripper",
+    "evaluations_per_frame" : 10,
+    "relative_asset_paths": {
+        "robot_description_path" : "robot_descriptor.yaml",
+        "urdf_path": "../lula_franka_gen.urdf",
+        "rmpflow_config_path" : "franka_rmpflow_common.yaml"
+    }
+}

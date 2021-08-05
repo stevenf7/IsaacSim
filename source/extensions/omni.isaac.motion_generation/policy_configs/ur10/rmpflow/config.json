@@ -1,0 +1,11 @@
+{
+    "policy_type" : "RMPflow",
+    "end_effector_frame_name": "ee_link",
+    "policy_fps" : 600,
+    "evaluations_per_frame" : 10,
+    "relative_asset_paths": {
+        "robot_description_path" : "robot_descriptor.yaml",
+        "urdf_path": "../ur10_robot_robotiq.urdf",
+        "rmpflow_config_path" : "ur10_rmpflow_common.yaml"
+    }
+}
