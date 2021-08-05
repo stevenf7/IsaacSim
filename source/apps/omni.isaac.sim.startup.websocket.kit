@@ -2,17 +2,29 @@
 title = "Isaac Sim Startup Test"
 description = "Isaac Sim Startup Test Application"
 version = "2021.2.0"
-execFile = "isaac-sim.startup"
+execFile = "isaac-sim.startup.websocket"
 
 # That makes it browsable in UI with "experience" filter
 keywords = ["experience", "app", "usd"]
 
-[dependencies]
-"omni.isaac.sim.base" = {}
-
 [settings]
 app.name = "Isaac-Sim"
 app.version = "2021.2.0"
+
+[dependencies]
+"omni.isaac.sim.headless.base" = {}
+"omni.services.streamclient.websocket" = {}
+
+[settings.app.livestream]
+proto = "ws"
+
+[settings.app.window]
+title = "Isaac Sim Headless Websocket"
+hideUi = false
+
+width = 1700
+height = 900
+drawMouse = true
 
 [settings.exts."omni.kit.registry.nucleus"]
 registries = []

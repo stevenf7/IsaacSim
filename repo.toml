@@ -270,7 +270,7 @@ test_root = "$root/_build/$platform/$config"
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
 
-[repo_test.suites.startuptest]
+[repo_test.suites.startuptests]
 kind = "glob_and_exec"
 path = "${test_root}"
 
@@ -278,13 +278,13 @@ path = "${test_root}"
 
 # fnmatch module is used, matching is case insensitive. Refer to: https://docs.python.org/3/library/fnmatch.html
 # notice: to escape [ and ] symbols wrap them in [].
-# stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
-# stdout_fail_patterns.exclude = [
-# 	"*Leaking graphics objects*",  # Exclude grahics leaks until fixed
-# 	"*leaking memory. Missing call to destroyResourceBindingSignature*",
-# 	"*extension object is still alive*", # Ignore any leaks for startup tests to not block pipeline
-# 	"*Failed to obtain username for current process, using cache directory without username as suffix*",  # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
-# ]
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+stdout_fail_patterns.exclude = [
+	"*Leaking graphics objects*",  # Exclude grahics leaks until fixed
+	"*leaking memory. Missing call to destroyResourceBindingSignature*",
+	"*extension object is still alive*", # Ignore any leaks for startup tests to not block pipeline
+	"*Failed to obtain username for current process, using cache directory without username as suffix*",  # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
+]
 
 
 #----------------------------------------------------------------------------------------------------------------------- 
@@ -292,7 +292,7 @@ path = "${test_root}"
 # Description: 	Just run and exit big app configuration for both smoke testing and compiling shaders.
 #-----------------------------------------------------------------------------------------------------------------------
 
-[[repo_test.suites.startuptest.group]]
+[[repo_test.suites.startuptests.group]]
 # Run Kit App Full. 
 include = ["tests-startup*${shell_ext}"]
 
