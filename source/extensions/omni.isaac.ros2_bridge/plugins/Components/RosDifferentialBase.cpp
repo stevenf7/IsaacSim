@@ -150,14 +150,8 @@ void RosDifferentialBase::onComponentChange()
 void RosDifferentialBase::pubCallback(rclcpp::PublisherBase* pub)
 {
     nav_msgs::msg::Odometry odomMsg;
-    if (mUseSimTime)
-    {
-        odomMsg.header.stamp = rclcpp::Time(mTimeNanoSeconds);
-    }
-    else
-    {
-        odomMsg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(odomMsg.header.stamp);
+
     odomMsg.header.frame_id = mOdomFrameId;
     odomMsg.child_frame_id = mBaseFrameId;
 
@@ -196,15 +190,8 @@ void RosDifferentialBase::tfPubCallback(rclcpp::PublisherBase* pub)
 {
     tf2_msgs::msg::TFMessage tfMsg;
     geometry_msgs::msg::TransformStamped msg;
+    setRosTimeStamp(msg.header.stamp);
 
-    if (mUseSimTime)
-    {
-        msg.header.stamp = rclcpp::Time(mTimeNanoSeconds);
-    }
-    else
-    {
-        msg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
-    }
 
     msg.header.frame_id = mOdomFrameId;
     msg.child_frame_id = mBaseFrameId;

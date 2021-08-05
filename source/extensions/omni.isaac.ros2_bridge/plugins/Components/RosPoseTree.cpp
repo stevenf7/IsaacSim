@@ -105,14 +105,8 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
 {
     tf2_msgs::msg::TFMessage tf_msg;
     geometry_msgs::msg::TransformStamped msg;
-    if (mUseSimTime)
-    {
-        msg.header.stamp = rclcpp::Time(mTimeNanoSeconds);
-    }
-    else
-    {
-        msg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(msg.header.stamp);
+
 
     // Get the parent body pose
     physx::PxTransform parent_pose = physx::PxTransform(physx::PxIdentity);

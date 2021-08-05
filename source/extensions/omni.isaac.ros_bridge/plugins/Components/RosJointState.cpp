@@ -131,14 +131,7 @@ void RosJointState::pubCallback(ros::Publisher* pub)
     double stageUnits = 1.0 / mUnitScale;
     sensor_msgs::JointState msg;
     msg.header.seq = 0;
-    if (mUseSimTime)
-    {
-        msg.header.stamp.fromSec(mTimeSeconds);
-    }
-    else
-    {
-        msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(msg.header.stamp);
 
 
     mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);

@@ -147,14 +147,8 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
     }
     sensor_msgs::msg::LaserScan laser_msg;
     laser_msg.header.frame_id = mFrameId;
-    if (mUseSimTime)
-    {
-        laser_msg.header.stamp = rclcpp::Time(mTimeNanoSeconds);
-    }
-    else
-    {
-        laser_msg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(laser_msg.header.stamp);
+
 
     int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
     int numRows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str()); // should be 1
@@ -286,15 +280,7 @@ void RosLidar::pointCloudPubCallback(rclcpp::PublisherBase* pub)
     std_msgs::msg::Header header_msg;
     PointCloud point_cloud;
     header_msg.frame_id = mFrameId;
-
-    if (mUseSimTime)
-    {
-        header_msg.stamp = rclcpp::Time(mTimeNanoSeconds);
-    }
-    else
-    {
-        header_msg.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(header_msg.stamp);
 
 
     carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(mLidarPath.GetString().c_str());

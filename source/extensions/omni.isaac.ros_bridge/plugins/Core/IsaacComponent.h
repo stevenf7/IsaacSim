@@ -120,6 +120,23 @@ public:
     }
 
 protected:
+    /**
+     * @brief Set the Ros Time Stamp object
+     *
+     * @param stamp
+     */
+    void setRosTimeStamp(ros::Time& stamp)
+    {
+        // This is a global flag set for all ROS components
+        if (mUseSimTime)
+        {
+            stamp.fromSec(this->mTimeSeconds);
+        }
+        else
+        {
+            stamp.fromNSec(mSystemTimeNanoSeconds);
+        }
+    }
     std::string mRosNodePrefix = "";
     std::unique_ptr<RosNode> mRosNode;
     std::chrono::_V2::system_clock::rep mSystemTimeNanoSeconds = 0;

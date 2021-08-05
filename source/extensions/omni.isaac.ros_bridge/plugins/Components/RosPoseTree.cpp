@@ -103,14 +103,8 @@ void RosPoseTree::pubCallback(ros::Publisher* pub)
     tf2_msgs::TFMessage tf_msg;
     geometry_msgs::TransformStamped msg;
     msg.header.seq = 0; // TODO: use frame number?
-    if (mUseSimTime)
-    {
-        msg.header.stamp.fromSec(mTimeSeconds);
-    }
-    else
-    {
-        msg.header.stamp.fromNSec(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(msg.header.stamp);
+
 
     // Get the parent body pose
     physx::PxTransform parent_pose = physx::PxTransform(physx::PxIdentity);

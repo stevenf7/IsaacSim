@@ -392,14 +392,7 @@ void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
 
     sensor_msgs::msg::CameraInfo cam_info_msg;
     cam_info_msg.header.frame_id = mFrameId;
-    if (mUseSimTime)
-    {
-        cam_info_msg.header.stamp = rclcpp::Time(mTimeNanoSeconds);
-    }
-    else
-    {
-        cam_info_msg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(cam_info_msg.header.stamp);
 
     cam_info_msg.height = imgInfo.tex.height;
     cam_info_msg.width = imgInfo.tex.width;
@@ -456,14 +449,8 @@ void RosCamera::rgbPubCallback(rclcpp::PublisherBase* pub)
 
     sensor_msgs::msg::Image color_msg;
     color_msg.header.frame_id = mFrameId;
-    if (mUseSimTime)
-    {
-        color_msg.header.stamp = rclcpp::Time(mTimeNanoSeconds);
-    }
-    else
-    {
-        color_msg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(color_msg.header.stamp);
+
     color_msg.width = rgbInfo.tex.width;
     color_msg.height = rgbInfo.tex.height;
     color_msg.step = color_step;
@@ -503,14 +490,8 @@ void RosCamera::depthPubCallback(rclcpp::PublisherBase* pub)
 
     sensor_msgs::msg::Image depth_msg;
     depth_msg.header.frame_id = mFrameId;
-    if (mUseSimTime)
-    {
-        depth_msg.header.stamp = rclcpp::Time(mTimeNanoSeconds);
-    }
-    else
-    {
-        depth_msg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(depth_msg.header.stamp);
+
     depth_msg.width = depthInfo.tex.width;
     depth_msg.height = depthInfo.tex.height;
     depth_msg.step = depth_step;
@@ -547,14 +528,8 @@ void RosCamera::instancePubCallback(rclcpp::PublisherBase* pub)
 
     sensor_msgs::msg::Image instance_msg;
     instance_msg.header.frame_id = mFrameId;
-    if (mUseSimTime)
-    {
-        instance_msg.header.stamp = rclcpp::Time(mTimeNanoSeconds);
-    }
-    else
-    {
-        instance_msg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(instance_msg.header.stamp);
+
     instance_msg.width = instanceInfo.tex.width;
     instance_msg.height = instanceInfo.tex.height;
     instance_msg.step = instance_step;
@@ -589,14 +564,8 @@ void RosCamera::semanticPubCallback(rclcpp::PublisherBase* pub)
 
     sensor_msgs::msg::Image semantic_msg;
     semantic_msg.header.frame_id = mFrameId;
-    if (mUseSimTime)
-    {
-        semantic_msg.header.stamp = rclcpp::Time(mTimeNanoSeconds);
-    }
-    else
-    {
-        semantic_msg.header.stamp = rclcpp::Time(mSystemTimeNanoSeconds);
-    }
+    setRosTimeStamp(semantic_msg.header.stamp);
+
     semantic_msg.width = semanticInfo.tex.width;
     semantic_msg.height = semanticInfo.tex.height;
     semantic_msg.step = semantic_step;
