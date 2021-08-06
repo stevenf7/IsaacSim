@@ -333,7 +333,6 @@ void MotionPolicy::addObstacle(const std::string& obstaclePath, const int inputT
                             Eigen::Vector3d(t[0], t[1], t[2]) * mUnitScale);
 
             lula::World::ObstacleHandle handle = mRmpflowWorld->addObstacle(obstacle, &pose);
-            mRmpflowWorldView.update();
             mRegisteredObstacles[obstaclePath] =
                 std::pair<pxr::UsdPrim, lula::World::ObstacleHandle>(obstaclePrim, handle);
         }
@@ -380,7 +379,6 @@ void MotionPolicy::updateObstacle(const std::string& obstaclePath)
         }
         auto& handle = obstacle->second.second;
         mRmpflowWorld->setPose(handle, pose);
-        mRmpflowWorldView.update();
     }
     else
     {
@@ -397,7 +395,6 @@ void MotionPolicy::updateObstacle(const std::string& obstaclePath, const omni::i
                                        Eigen::Vector3d(trans.p.x, trans.p.y, trans.p.z));
         auto& handle = obstacle->second.second;
         mRmpflowWorld->setPose(handle, pose);
-        mRmpflowWorldView.update();
     }
     else
     {
@@ -411,7 +408,6 @@ void MotionPolicy::removeObstacle(const std::string& obstaclePath)
     {
         auto& handle = obstacle->second.second;
         mRmpflowWorld->removeObstacle(handle);
-        mRmpflowWorldView.update();
         mRegisteredObstacles.erase(obstacle);
     }
     else
@@ -426,7 +422,6 @@ void MotionPolicy::enableObstacle(const std::string& obstaclePath)
     {
         auto& handle = obstacle->second.second;
         mRmpflowWorld->enableObstacle(handle);
-        mRmpflowWorldView.update();
     }
     else
     {
@@ -440,7 +435,6 @@ void MotionPolicy::disableObstacle(const std::string& obstaclePath)
     {
         auto& handle = obstacle->second.second;
         mRmpflowWorld->disableObstacle(handle);
-        mRmpflowWorldView.update();
     }
     else
     {
