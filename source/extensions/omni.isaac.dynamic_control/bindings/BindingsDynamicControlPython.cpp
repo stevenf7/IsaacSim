@@ -137,10 +137,8 @@ PYBIND11_MODULE(_dynamic_control, m)
         .export_values();
 
     py::enum_<DcDriveMode>(m, "DriveMode", py::arithmetic(), "DOF drive mode")
-        .value("DRIVE_NONE", DcDriveMode::eNone, "No drive")
-        .value("DRIVE_POS", DcDriveMode::ePositionTarget, "Position target drive")
-        .value("DRIVE_VEL", DcDriveMode::eVelocityTarget, "Velocity target drive")
-        //.value("DRIVE_EFFORT", DcDriveMode::eEffort, "Effort drive")
+        .value("DRIVE_FORCE", DcDriveMode::eForce, "Use Force Based Drive Controller")
+        .value("DRIVE_ACCELERATION", DcDriveMode::eAcceleration, "Use Acceleration Based Drive Controller")
         .export_values();
 
     py::enum_<DcObjectType>(m, "ObjectType", py::arithmetic(), "Types of Objects")
@@ -199,7 +197,18 @@ PYBIND11_MODULE(_dynamic_control, m)
                             tx.p = { t[0].cast<float>(), t[1].cast<float>(), t[2].cast<float>() };
                             tx.r = { t[3].cast<float>(), t[4].cast<float>(), t[5].cast<float>(), t[6].cast<float>() };
                             return tx;
-                        }));
+                        }))
+        .def("__repr__",
+             [](const DcTransform& tx) {
+                 return fmt::format(
+                     "({}, {}, {}), ({}, {}, {}, {})", tx.p.x, tx.p.y, tx.p.z, tx.r.x, tx.r.y, tx.r.z, tx.r.w);
+             })
+        .def("__eq__",
+             [](const DcTransform& a, const DcTransform& b)
+             {
+                 return a.p.x == b.p.x && a.p.y == b.p.y && a.p.z == b.p.z && a.r.x == b.r.x && a.r.y == b.r.y &&
+                        a.r.z == b.r.z && a.r.w == b.r.w;
+             });
 
     py::class_<DcVelocity>(m, "Velocity", "Linear and angular velocity")
         .def_readwrite("linear", &DcVelocity::linear, "Linear 3D velocity as a tuple (x,y,z) , (:obj:`carb._carb.Float3`)")
@@ -232,7 +241,14 @@ PYBIND11_MODULE(_dynamic_control, m)
                 v.linear = { t[0].cast<float>(), t[1].cast<float>(), t[2].cast<float>() };
                 v.angular = { t[3].cast<float>(), t[4].cast<float>(), t[5].cast<float>() };
                 return v;
-            }));
+            }))
+        .def("__repr__",
+             [](const DcVelocity& v)
+             {
+                 return fmt::format("({}, {}, {}), ({}, {}, {})", v.linear.x, v.linear.y, v.linear.z, v.angular.x,
+                                    v.angular.y, v.angular.z);
+             });
+
 
     py::class_<DcRigidBodyState>(m, "RigidBodyState", "Containing states to get/set for a rigid body in the simulation")
         .def_readwrite(
@@ -268,7 +284,14 @@ PYBIND11_MODULE(_dynamic_control, m)
                 s.vel.linear = { t[7].cast<float>(), t[8].cast<float>(), t[9].cast<float>() };
                 s.vel.angular = { t[10].cast<float>(), t[11].cast<float>(), t[12].cast<float>() };
                 return s;
-            }));
+            }))
+        .def("__repr__",
+             [](const DcRigidBodyState& s)
+             {
+                 return fmt::format("({}, {}, {}), ({}, {}, {}, {}), ({}, {}, {}), ({}, {}, {})", s.pose.p.x, s.pose.p.y,
+                                    s.pose.p.z, s.pose.r.x, s.pose.r.y, s.pose.r.z, s.pose.r.w, s.vel.linear.x,
+                                    s.vel.linear.y, s.vel.linear.z, s.vel.angular.x, s.vel.angular.y, s.vel.angular.z);
+             });
 
     py::class_<DcDofState>(m, "DofState", "States of a Degree of Freedom in the Asset architecture")
         .def_readwrite(
@@ -295,31 +318,93 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def(py::pickle([](const DcDofState& s) { return py::make_tuple(s.pos, s.vel, s.effort); },
                         [](py::tuple t) {
                             return DcDofState{ t[0].cast<float>(), t[1].cast<float>(), t[2].cast<float>() };
-                        }));
+                        }))
+        .def("__repr__",
+             [](const DcDofState& state) { return fmt::format("({}, {}, {})", state.pos, state.vel, state.effort); });
+
+    py::class_<DcArticulationProperties>(m, "ArticulationProperties", "Articulation Properties")
+        .def(py::init<>())
+        .def_readwrite("solver_position_iteration_count", &DcArticulationProperties::solverPositionIterationCount,
+                       "Position solver iterations (:obj:`int`)")
+        .def_readwrite("solver_velocity_iteration_count", &DcArticulationProperties::solverVelocityIterationCount,
+                       "Velocity solver iterations (:obj:`int`)")
+        .def_readwrite("enable_self_collisions", &DcArticulationProperties::enableSelfCollisions,
+                       "Allow links in articulation to collide with each other (:obj:`bool`)")
+
+        .def(py::pickle(
+            [](const DcArticulationProperties& props)
+            {
+                return py::make_tuple(
+                    props.solverPositionIterationCount, props.solverVelocityIterationCount, props.enableSelfCollisions);
+            },
+            [](py::tuple t)
+            {
+                DcArticulationProperties props;
+                props.solverPositionIterationCount = t[0].cast<uint32_t>();
+                props.solverVelocityIterationCount = t[1].cast<uint32_t>();
+                props.enableSelfCollisions = t[2].cast<bool>();
+                return props;
+            }));
+    // .def("__repr__",
+    //      [](const DcArticulationProperties& p)
+    //      {
+    //          return fmt::format("({}, {}, {})", p.solverPositionIterationCount, p.solverVelocityIterationCount,
+    //                             p.enableSelfCollisions);
+    //      });
 
     py::class_<DcRigidBodyProperties>(m, "RigidBodyProperties", "Rigid Body Properties")
         .def(py::init<>())
         .def_readwrite("mass", &DcRigidBodyProperties::mass, "Mass of rigid body (:obj:`float`)")
         .def_readwrite("moment", &DcRigidBodyProperties::moment, "Diagonal moment of inertia (:obj:`carb._carb.Float3`)")
+        .def_readwrite(
+            "max_depeneration_velocity", &DcRigidBodyProperties::maxDepenetrationVelocity,
+            "This value controls how much velocity the solver can introduce to correct for penetrations in contacts. (:obj:`float`)")
+        .def_readwrite("max_contact_impulse", &DcRigidBodyProperties::maxContactImpulse,
+                       "Sets a limit on the impulse that may be applied at a contact. (:obj:`float`)")
+        .def_readwrite("solver_position_iteration_count", &DcRigidBodyProperties::solverPositionIterationCount,
+                       "Position solver iterations (:obj:`int`)")
+        .def_readwrite("solver_velocity_iteration_count", &DcRigidBodyProperties::solverVelocityIterationCount,
+                       "Velocity solver iterations (:obj:`int`)")
 
-        .def(py::pickle([](const DcRigidBodyProperties& props)
-                        { return py::make_tuple(props.mass, props.moment.x, props.moment.y, props.moment.z); },
-                        [](py::tuple t)
-                        {
-                            DcRigidBodyProperties props;
-                            props.mass = t[0].cast<float>();
-                            props.moment = { t[1].cast<float>(), t[2].cast<float>(), t[3].cast<float>() };
-                            return props;
-                        }));
+        .def(py::pickle(
+            [](const DcRigidBodyProperties& props)
+            {
+                return py::make_tuple(props.mass, props.moment.x, props.moment.y, props.moment.z,
+                                      props.maxDepenetrationVelocity, props.maxContactImpulse,
+                                      props.solverPositionIterationCount, props.solverVelocityIterationCount);
+            },
+            [](py::tuple t)
+            {
+                DcRigidBodyProperties props;
+                props.mass = t[0].cast<float>();
+                props.moment = { t[1].cast<float>(), t[2].cast<float>(), t[3].cast<float>() };
+                props.maxDepenetrationVelocity = t[4].cast<float>();
+                props.maxContactImpulse = t[5].cast<float>();
+                props.solverPositionIterationCount = t[6].cast<uint32_t>();
+                props.solverVelocityIterationCount = t[7].cast<uint32_t>();
+
+                return props;
+            }));
+    // .def("__repr__",
+    //      [](const DcRigidBodyProperties& p)
+    //      {
+    //          return fmt::format("({}, ({}, {}, {}), {}, {}, {}, {})", p.mass, p.moment.x, p.moment.y, p.moment.z,
+    //                             p.maxDepenetrationVelocity, p.maxContactImpulse, p.solverPositionIterationCount,
+    //                             p.solverVelocityIterationCount);
+    //      });
+
 
     py::class_<DcDofProperties>(m, "DofProperties", "Properties of a degree-of-freedom (DOF)")
         .def(py::init<>())
         .def_readwrite("type", &DcDofProperties::type,
                        R"pbdoc(
-                           Type of joint (:obj:`omni.isaac.dynamic_control._dynamic_control.DofType`))pbdoc")
-        .def_readwrite("has_limits", &DcDofProperties::hasLimits, "Flags whether the DOF has limits (:obj:`bool`)")
-        .def_readwrite("lower", &DcDofProperties::lower, "lower limit of DOF. In radians or meters (:obj:`float`)")
-        .def_readwrite("upper", &DcDofProperties::upper, "upper limit of DOF. In radians or meters (:obj:`float`)")
+                           Type of joint (read only) (:obj:`omni.isaac.dynamic_control._dynamic_control.DofType`))pbdoc")
+        .def_readwrite(
+            "has_limits", &DcDofProperties::hasLimits, "Flags whether the DOF has limits (read only) (:obj:`bool`)")
+        .def_readwrite(
+            "lower", &DcDofProperties::lower, "lower limit of DOF. In radians or meters (read only) (:obj:`float`)")
+        .def_readwrite(
+            "upper", &DcDofProperties::upper, "upper limit of DOF. In radians or meters (read only) (:obj:`float`)")
         .def_readwrite("drive_mode", &DcDofProperties::driveMode,
                        "Drive mode for the DOF (:obj:`omni.isaac.dynamic_control._dynamic_control.DriveMode`)")
         .def_readwrite("max_velocity", &DcDofProperties::maxVelocity,
@@ -447,13 +532,17 @@ PYBIND11_MODULE(_dynamic_control, m)
     PYBIND11_NUMPY_DTYPE(DcRigidBodyState, pose, vel);
     PYBIND11_NUMPY_DTYPE(DcDofState, pos, vel, effort);
     PYBIND11_NUMPY_DTYPE(
+        DcArticulationProperties, solverPositionIterationCount, solverVelocityIterationCount, enableSelfCollisions);
+    PYBIND11_NUMPY_DTYPE(DcRigidBodyProperties, mass, moment, maxDepenetrationVelocity, maxContactImpulse,
+                         solverPositionIterationCount, solverVelocityIterationCount);
+
+    PYBIND11_NUMPY_DTYPE(
         DcDofProperties, type, hasLimits, lower, upper, driveMode, maxVelocity, maxEffort, stiffness, damping);
-    PYBIND11_NUMPY_DTYPE(DcRigidBodyProperties, mass, moment);
+
 
     defineInterfaceClass<DynamicControl>(m, "DynamicControl", "acquire_dynamic_control_interface",
                                          "release_dynamic_control_interface",
                                          "The following functions are provided on the dynamic control interface")
-        .def("hello", wrapInterfaceFunction(&DynamicControl::hello), "test function to makes sure interface is working")
 
         //.def("create_context", wrapInterfaceFunction(&DynamicControl::createContext),
         // py::return_value_policy::reference) .def("destroy_context",
@@ -528,7 +617,7 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("get_articulation_body_states",
              [](const DynamicControl* dc, DcHandle artHandle, DcStateFlags flags) -> py::object
              {
-                 if (dc)
+                 if (dc && dc->isSimulating())
                  {
                      int numBodies = dc->getArticulationBodyCount(artHandle);
                      DcRigidBodyState* states = dc->getArticulationBodyStates(artHandle, flags);
@@ -545,7 +634,7 @@ PYBIND11_MODULE(_dynamic_control, m)
         // .def("set_articulation_body_states",
         //      [](const DynamicControl* dc, DcHandle artHandle,
         //         const py::array_t<DcRigidBodyState, py::array::c_style>& states, DcStateFlags flags) {
-        //          if (dc)
+        //          if (dc && dc->isSimulating())
         //          {
         //              if (states.size() >= ssize_t(dc->getArticulationBodyCount(artHandle)))
         //              {
@@ -555,6 +644,24 @@ PYBIND11_MODULE(_dynamic_control, m)
         //          return false;
         //      },
         //      "Sets states for an actor's rigid bodies.")
+        .def("get_articulation_properties", wrapInterfaceFunction(&DynamicControl::getArticulationProperties),
+             "Get Properties for an articulation")
+        .def("get_articulation_properties",
+             [](const DynamicControl* dc, DcHandle attHandle) -> py::object
+             {
+                 if (dc && dc->isSimulating())
+                 {
+                     DcArticulationProperties props;
+                     if (dc->getArticulationProperties(attHandle, &props))
+                     {
+                         return py::cast(props);
+                     }
+                 }
+                 return py::none();
+             },
+             "Get Properties for an articulation")
+        .def("set_articulation_properties", wrapInterfaceFunction(&DynamicControl::setArticulationProperties),
+             "Sets properties for articulation")
 
         .def("get_articulation_joint_count", wrapInterfaceFunction(&DynamicControl::getArticulationJointCount),
              "Get the number of joints in an articulation")
@@ -575,7 +682,7 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("get_articulation_dof_properties",
              [](const DynamicControl* dc, DcHandle artHandle) -> py::object
              {
-                 if (dc)
+                 if (dc && dc->isSimulating())
                  {
                      int numDofs = dc->getArticulationDofCount(artHandle);
                      if (numDofs > 0)
@@ -594,7 +701,7 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("set_articulation_dof_properties",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<DcDofProperties, py::array::c_style>& props)
              {
-                 if (dc)
+                 if (dc && dc->isSimulating())
                  {
                      if (props.size() >= ssize_t(dc->getArticulationDofCount(artHandle)))
                      {
@@ -608,7 +715,7 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("get_articulation_dof_states",
              [](const DynamicControl* dc, DcHandle artHandle, DcStateFlags flags) -> py::object
              {
-                 if (dc)
+                 if (dc && dc->isSimulating())
                  {
                      int numDofs = dc->getArticulationDofCount(artHandle);
                      if (numDofs > 0)
@@ -625,34 +732,35 @@ PYBIND11_MODULE(_dynamic_control, m)
              },
              "Get array of an actor's degree-of-freedom states")
 
-        .def("get_articulation_dof_state_derivatives",
-             [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<DcDofState, py::array::c_style>& states,
-                const py::array_t<float, py::array::c_style>& efforts) -> py::object
-             {
-                 if (dc)
-                 {
-                     const ssize_t numDofs{ static_cast<ssize_t>(dc->getArticulationDofCount(artHandle)) };
-                     // check input dims
-                     if (states.size() >= numDofs && efforts.size() >= numDofs)
-                     {
-                         DcDofState* stateDeriv =
-                             dc->getArticulationDofStateDerivatives(artHandle, states.data(), efforts.data());
-                         if (stateDeriv != nullptr)
-                         {
-                             auto capsule = py::capsule(stateDeriv, [](void*) {}); // avoid copy
-                             return py::array_t<DcDofState, py::array::c_style>(numDofs, stateDeriv, capsule);
-                         }
-                     }
-                 }
-                 return py::none();
-             },
-             "Get array of an actor's degree-of-freedom state derivatives (dstate / dt)")
+        // .def("get_articulation_dof_state_derivatives",
+        //      [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<DcDofState, py::array::c_style>&
+        //      states,
+        //         const py::array_t<float, py::array::c_style>& efforts) -> py::object
+        //      {
+        //          if (dc && dc->isSimulating())
+        //          {
+        //              const ssize_t numDofs{ static_cast<ssize_t>(dc->getArticulationDofCount(artHandle)) };
+        //              // check input dims
+        //              if (states.size() >= numDofs && efforts.size() >= numDofs)
+        //              {
+        //                  DcDofState* stateDeriv =
+        //                      dc->getArticulationDofStateDerivatives(artHandle, states.data(), efforts.data());
+        //                  if (stateDeriv != nullptr)
+        //                  {
+        //                      auto capsule = py::capsule(stateDeriv, [](void*) {}); // avoid copy
+        //                      return py::array_t<DcDofState, py::array::c_style>(numDofs, stateDeriv, capsule);
+        //                  }
+        //              }
+        //          }
+        //          return py::none();
+        //      },
+        //      "Get array of an actor's degree-of-freedom state derivatives (dstate / dt)")
 
         .def("set_articulation_dof_states",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<DcDofState, py::array::c_style>& states,
                 DcStateFlags flags)
              {
-                 if (dc)
+                 if (dc && dc->isSimulating())
                  {
                      if (states.size() >= ssize_t(dc->getArticulationDofCount(artHandle)))
                      {
@@ -666,7 +774,7 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("set_articulation_dof_position_targets",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& targets)
              {
-                 if (dc)
+                 if (dc && dc->isSimulating())
                  {
                      if (targets.size() >= ssize_t(dc->getArticulationDofCount(artHandle)))
                      {
@@ -676,11 +784,28 @@ PYBIND11_MODULE(_dynamic_control, m)
                  return false;
              },
              "Sets an actor's degree-of-freedom position targets.")
-
+        .def("get_articulation_dof_position_targets",
+             [](const DynamicControl* dc, DcHandle artHandle) -> py::object
+             {
+                 if (dc && dc->isSimulating())
+                 {
+                     int numDofs = dc->getArticulationDofCount(artHandle);
+                     if (numDofs > 0)
+                     {
+                         auto arr = py::array_t<float, py::array::c_style>(numDofs);
+                         if (dc->getArticulationDofPositionTargets(artHandle, arr.mutable_data()))
+                         {
+                             return arr;
+                         }
+                     }
+                 }
+                 return py::none();
+             },
+             "Get array of position targets for articulation")
         .def("set_articulation_dof_velocity_targets",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& targets)
              {
-                 if (dc)
+                 if (dc && dc->isSimulating())
                  {
                      if (targets.size() >= ssize_t(dc->getArticulationDofCount(artHandle)))
                      {
@@ -690,11 +815,28 @@ PYBIND11_MODULE(_dynamic_control, m)
                  return false;
              },
              "Sets an actor's degree-of-freedom velocity targets.")
-
+        .def("get_articulation_dof_velocity_targets",
+             [](const DynamicControl* dc, DcHandle artHandle) -> py::object
+             {
+                 if (dc && dc->isSimulating())
+                 {
+                     int numDofs = dc->getArticulationDofCount(artHandle);
+                     if (numDofs > 0)
+                     {
+                         auto arr = py::array_t<float, py::array::c_style>(numDofs);
+                         if (dc->getArticulationDofVelocityTargets(artHandle, arr.mutable_data()))
+                         {
+                             return arr;
+                         }
+                     }
+                 }
+                 return py::none();
+             },
+             "Get array of velocity targets for articulation")
         .def("apply_articulation_dof_efforts",
              [](const DynamicControl* dc, DcHandle artHandle, const py::array_t<float, py::array::c_style>& efforts)
              {
-                 if (dc)
+                 if (dc && dc->isSimulating())
                  {
                      if (efforts.size() >= ssize_t(dc->getArticulationDofCount(artHandle)))
                      {
@@ -704,6 +846,25 @@ PYBIND11_MODULE(_dynamic_control, m)
                  return false;
              },
              "Applies efforts to an actor's degrees-of-freedom.")
+
+        .def("get_articulation_dof_masses",
+             [](const DynamicControl* dc, DcHandle artHandle) -> py::object
+             {
+                 if (dc && dc->isSimulating())
+                 {
+                     int numDofs = dc->getArticulationDofCount(artHandle);
+                     if (numDofs > 0)
+                     {
+                         auto arr = py::array_t<float, py::array::c_style>(numDofs);
+                         if (dc->getArticulationDofMasses(artHandle, arr.mutable_data()))
+                         {
+                             return arr;
+                         }
+                     }
+                 }
+                 return py::none();
+             },
+             "Get array of an actor's degree-of-freedom effective masses")
 
         // rigid bodies
 
@@ -737,13 +898,20 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("set_rigid_body_angular_velocity", wrapInterfaceFunction(&DynamicControl::setRigidBodyAngularVelocity),
              "Set the angular velocity of this rigid body")
         .def("apply_body_force", wrapInterfaceFunction(&DynamicControl::applyBodyForce),
-             "Apply a force to a rigid bopdy at a position")
+             "Apply a force to a rigid body at a position, force and position are in global coordinates")
         .def("get_relative_body_poses",
              [](const DynamicControl* dc, DcHandle parentHandle, const std::vector<DcHandle>& bodyHandles)
              {
-                 const size_t numBodies = bodyHandles.size();
-                 std::vector<DcTransform> outputTransforms(numBodies);
-                 dc->getRelativeBodyPoses(parentHandle, numBodies, bodyHandles.data(), outputTransforms.data());
+                 std::vector<DcTransform> outputTransforms;
+                 if (dc && dc->isSimulating())
+                 {
+                     const size_t numBodies = bodyHandles.size();
+                     if (numBodies > 0)
+                     {
+                         outputTransforms.resize(numBodies);
+                         dc->getRelativeBodyPoses(parentHandle, numBodies, bodyHandles.data(), outputTransforms.data());
+                     }
+                 }
                  return outputTransforms;
              },
              "given a list of body handles, return poses relative to the parent")
@@ -752,7 +920,7 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("get_rigid_body_properties",
              [](const DynamicControl* dc, DcHandle attHandle) -> py::object
              {
-                 if (dc)
+                 if (dc && dc->isSimulating())
                  {
                      DcRigidBodyProperties props;
                      if (dc->getRigidBodyProperties(attHandle, &props))
@@ -763,6 +931,8 @@ PYBIND11_MODULE(_dynamic_control, m)
                  return py::none();
              },
              "Get Properties for a rigid body")
+        .def("set_rigid_body_properties", wrapInterfaceFunction(&DynamicControl::setRigidBodyProperties),
+             "Set Properties for a rigid body")
         // joints
 
         .def("get_joint_name", wrapInterfaceFunction(&DynamicControl::getJointName), py::return_value_policy::reference,
@@ -805,6 +975,20 @@ PYBIND11_MODULE(_dynamic_control, m)
              "Set linear angular velocity of degree of freedom")
         .def("get_dof_properties", wrapInterfaceFunction(&DynamicControl::getDofProperties),
              "Get degree of freedom properties")
+        .def("get_dof_properties",
+             [](const DynamicControl* dc, DcHandle dofHandle) -> py::object
+             {
+                 if (dc && dc->isSimulating())
+                 {
+                     DcDofProperties props;
+                     if (dc->getDofProperties(dofHandle, &props))
+                     {
+                         return py::cast(props);
+                     }
+                 }
+                 return py::none();
+             },
+             "Get degree of freedom properties")
         .def("set_dof_properties", wrapInterfaceFunction(&DynamicControl::setDofProperties),
              "Set degree of freedom properties")
         .def("set_dof_position_target", wrapInterfaceFunction(&DynamicControl::setDofPositionTarget),
@@ -831,7 +1015,7 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("get_attractor_properties",
              [](const DynamicControl* dc, DcHandle attHandle) -> py::object
              {
-                 if (dc)
+                 if (dc && dc->isSimulating())
                  {
                      DcAttractorProperties props;
                      if (dc->getAttractorProperties(attHandle, &props))

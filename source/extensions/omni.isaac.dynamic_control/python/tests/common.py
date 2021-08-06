@@ -7,9 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from pxr import Usd, PhysxSchema
-import omni
-
 
 async def load_test_file(path_to_file: str):
     """
@@ -21,6 +18,9 @@ async def load_test_file(path_to_file: str):
     :param test_file_name: Name of the test file to load - if not an absolute path then looks in the data/usd/tests/ComputeGraph directory
     :raises: ValueError if the test file is not a valid USD file
     """
+    from pxr import Usd
+    import omni
+
     if not Usd.Stage.IsSupportedFile(path_to_file):
         raise ValueError("Only USD files can be loaded with this method")
 
@@ -29,36 +29,3 @@ async def load_test_file(path_to_file: str):
     (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
     usd_context.enable_save_to_recent_files()
     return (result, error)
-
-
-def set_scene_physics_type(gpu=False, scene_path="/physicsScene"):
-    stage = omni.usd.get_context().get_stage()
-    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, scene_path)
-
-    if physxSceneAPI.GetEnableCCDAttr().HasValue():
-        physxSceneAPI.GetEnableCCDAttr().Set(True)
-    else:
-        physxSceneAPI.CreateEnableCCDAttr(True)
-
-    if physxSceneAPI.GetEnableStabilizationAttr().HasValue():
-        physxSceneAPI.GetEnableStabilizationAttr().Set(True)
-    else:
-        physxSceneAPI.CreateEnableStabilizationAttr(True)
-
-    if physxSceneAPI.GetSolverTypeAttr().HasValue():
-        physxSceneAPI.GetSolverTypeAttr().Set("TGS")
-    else:
-        physxSceneAPI.CreateSolverTypeAttr("TGS")
-
-    if not physxSceneAPI.GetEnableGPUDynamicsAttr().HasValue():
-        physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
-
-    if not physxSceneAPI.GetBroadphaseTypeAttr().HasValue():
-        physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
-
-    if gpu:
-        physxSceneAPI.GetEnableGPUDynamicsAttr().Set(True)
-        physxSceneAPI.GetBroadphaseTypeAttr().Set("GPU")
-    else:
-        physxSceneAPI.GetEnableGPUDynamicsAttr().Set(False)
-        physxSceneAPI.GetBroadphaseTypeAttr().Set("MBP")

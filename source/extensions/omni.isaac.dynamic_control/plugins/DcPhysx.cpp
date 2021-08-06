@@ -20,6 +20,7 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 
+#include <extensions/PxRigidBodyExt.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
@@ -289,7 +290,6 @@ std::unique_ptr<DcContext> createContext()
     return std::move(ctx);
 }
 
-// void CARB_ABI DcDestroyContext(auto & ctx)
 void destroyContext(std::unique_ptr<DcContext>& ctx)
 {
     if (ctx)
@@ -300,7 +300,7 @@ void destroyContext(std::unique_ptr<DcContext>& ctx)
 
 } // end of anonymous namespace
 
-bool DcArticulation::refreshCache() const
+bool DcArticulation::refreshCache(const ::physx::PxArticulationCacheFlags& flags) const
 {
     if (!pxArticulation)
     {
@@ -326,26 +326,32 @@ bool DcArticulation::refreshCache() const
     // if (cacheAge < ctx->frameno)
     //{
 
-    pxArticulation->copyInternalStateToCache(*pxArticulationCache, PxArticulationCacheFlag::eALL);
+    pxArticulation->copyInternalStateToCache(*pxArticulationCache, flags);
 
-    // Call this before any inverse dynamics methods
-    pxArticulation->commonInit();
-    // Put joint force in cache
-    pxArticulation->computeJointForce(*pxArticulationCache);
+
     //    cacheAge = ctx->frameno;
     //}
-    if (pxArticulation->getArticulationFlags() & PxArticulationFlag::eCOMPUTE_JOINT_FORCES)
-    {
-        pxArticulation->copyInternalStateToCache(*pxArticulationCache, PxArticulationCacheFlag::eJOINT_SOLVER_FORCES);
-    }
+    // if (computeForces)
+    // {
+    //     // Call this before any inverse dynamics methods
+    //     pxArticulation->commonInit();
+    //     // Calculate both joint forces and forces due to gravity here
+    //     pxArticulation->computeJointForce(*pxArticulationCache);
+    //     pxArticulation->computeGeneralizedGravityForce(*pxArticulationCache);
+    //     // pxArticulation->copyInternalStateToCache(*pxArticulationCache,
+    //     PxArticulationCacheFlag::eJOINT_SOLVER_FORCES);
+    // }
 
     return true;
 }
 
 
-void CARB_ABI DcWakeUpRigidBody(DcHandle bodyHandle)
+bool CARB_ABI DcWakeUpRigidBody(DcHandle bodyHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
@@ -363,13 +369,9 @@ void CARB_ABI DcWakeUpRigidBody(DcHandle bodyHandle)
             body->art->pxArticulation->wakeUp();
         }
     }
+    return true;
 }
 
-
-void CARB_ABI DcHello()
-{
-    printf("Hello from Dynamic Control\n");
-}
 
 bool CARB_ABI DcIsSimulating()
 {
@@ -385,7 +387,10 @@ bool CARB_ABI DcIsSimulating()
 
 DcHandle CARB_ABI DcGetRigidBody(const char* usdPath)
 {
-    (void)DC_CHECK_SIMULATING();
+    // if (!DC_CHECK_SIMULATING())
+    // {
+    //     return kDcInvalidHandle;
+    // }
 
     auto& ctx = g_dcCtx;
     if (!ctx)
@@ -405,7 +410,10 @@ DcHandle CARB_ABI DcGetRigidBody(const char* usdPath)
 
 DcHandle CARB_ABI DcGetJoint(const char* usdPath)
 {
-    (void)DC_CHECK_SIMULATING();
+    // if (!DC_CHECK_SIMULATING())
+    // {
+    //     return kDcInvalidHandle;
+    // }
 
     auto& ctx = g_dcCtx;
     if (!ctx)
@@ -425,7 +433,10 @@ DcHandle CARB_ABI DcGetJoint(const char* usdPath)
 
 DcHandle CARB_ABI DcGetDof(const char* usdPath)
 {
-    (void)DC_CHECK_SIMULATING();
+    // if (!DC_CHECK_SIMULATING())
+    // {
+    //     return kDcInvalidHandle;
+    // }
 
     auto& ctx = g_dcCtx;
     if (!ctx)
@@ -445,7 +456,10 @@ DcHandle CARB_ABI DcGetDof(const char* usdPath)
 
 DcHandle CARB_ABI DcGetArticulation(const char* usdPath)
 {
-    (void)DC_CHECK_SIMULATING();
+    // if (!DC_CHECK_SIMULATING())
+    // {
+    //     return kDcInvalidHandle;
+    // }
 
     auto& ctx = g_dcCtx;
     if (!ctx)
@@ -465,7 +479,10 @@ DcHandle CARB_ABI DcGetArticulation(const char* usdPath)
 
 DcHandle CARB_ABI DcGetD6Joint(const char* usdPath)
 {
-    (void)DC_CHECK_SIMULATING();
+    // if (!DC_CHECK_SIMULATING())
+    // {
+    //     return kDcInvalidHandle;
+    // }
 
     auto& ctx = g_dcCtx;
     if (!ctx)
@@ -485,8 +502,10 @@ DcHandle CARB_ABI DcGetD6Joint(const char* usdPath)
 
 DcObjectType CARB_ABI DcPeekObjectType(const char* usdPath)
 {
-    (void)DC_CHECK_SIMULATING();
-
+    // if (!DC_CHECK_SIMULATING())
+    // {
+    //     return eDcObjectNone;
+    // }
     auto& ctx = g_dcCtx;
     if (!ctx)
     {
@@ -553,7 +572,10 @@ DcObjectType CARB_ABI DcPeekObjectType(const char* usdPath)
 
 DcHandle CARB_ABI DcGetObject(const char* usdPath)
 {
-    (void)DC_CHECK_SIMULATING();
+    // if (!DC_CHECK_SIMULATING())
+    // {
+    //     return kDcInvalidHandle;
+    // }
 
     DcObjectType type = DcPeekObjectType(usdPath);
     switch (type)
@@ -575,7 +597,10 @@ DcHandle CARB_ABI DcGetObject(const char* usdPath)
 
 DcObjectType CARB_ABI DcGetObjectType(DcHandle handle)
 {
-    (void)DC_CHECK_SIMULATING();
+    // if (!DC_CHECK_SIMULATING())
+    // {
+    //     return eDcObjectNone;
+    // }
 
     uint32_t type = getHandleTypeId(handle);
     if (type < kDcObjectTypeCount)
@@ -587,7 +612,10 @@ DcObjectType CARB_ABI DcGetObjectType(DcHandle handle)
 
 const char* CARB_ABI DcGetObjectTypeName(DcHandle handle)
 {
-    (void)DC_CHECK_SIMULATING();
+    // if (!DC_CHECK_SIMULATING())
+    // {
+    //     return "None";
+    // }
 
     DcObjectType type = DcGetObjectType(handle);
     switch (type)
@@ -659,20 +687,27 @@ int CARB_ABI DcGetArticulations(auto & ctx, DcArticulation** userBuffer, int buf
 #endif
 
 
-void CARB_ABI DcWakeUpArticulation(DcHandle artHandle)
+bool CARB_ABI DcWakeUpArticulation(DcHandle artHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art && art->pxArticulation)
     {
         art->pxArticulation->wakeUp();
     }
+    return true;
 }
 
 const char* CARB_ABI DcGetArticulationName(DcHandle artHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return nullptr;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art)
@@ -684,7 +719,10 @@ const char* CARB_ABI DcGetArticulationName(DcHandle artHandle)
 
 const char* CARB_ABI DcGetArticulationPath(DcHandle artHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return nullptr;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art)
@@ -696,7 +734,10 @@ const char* CARB_ABI DcGetArticulationPath(DcHandle artHandle)
 
 int CARB_ABI DcGetArticulationBodyCount(DcHandle artHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return 0;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art)
@@ -708,7 +749,10 @@ int CARB_ABI DcGetArticulationBodyCount(DcHandle artHandle)
 
 DcHandle CARB_ABI DcGetArticulationBody(DcHandle artHandle, int bodyIdx)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art)
@@ -723,7 +767,10 @@ DcHandle CARB_ABI DcGetArticulationBody(DcHandle artHandle, int bodyIdx)
 
 DcHandle CARB_ABI DcFindArticulationBody(DcHandle artHandle, const char* bodyName)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art && bodyName)
@@ -739,7 +786,10 @@ DcHandle CARB_ABI DcFindArticulationBody(DcHandle artHandle, const char* bodyNam
 
 int CARB_ABI DcFindArticulationBodyIndex(DcHandle artHandle, const char* bodyName)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return -1;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art && bodyName)
@@ -758,7 +808,10 @@ int CARB_ABI DcFindArticulationBodyIndex(DcHandle artHandle, const char* bodyNam
 
 DcHandle CARB_ABI DcGetArticulationRootBody(DcHandle artHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art)
@@ -771,9 +824,12 @@ DcHandle CARB_ABI DcGetArticulationRootBody(DcHandle artHandle)
     return kDcInvalidHandle;
 }
 
-DcRigidBodyState* CARB_ABI DcGetArticulationBodyStates(DcHandle artHandle, DcStateFlags flags)
+DcRigidBodyState* CARB_ABI DcGetArticulationBodyStates(DcHandle artHandle, const DcStateFlags& flags)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return nullptr;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (!art)
@@ -868,11 +924,55 @@ DcRigidBodyState* CARB_ABI DcGetArticulationBodyStates(DcHandle artHandle, DcSta
 //     return true;
 // }
 
+bool CARB_ABI DcGetArticulationProperties(DcHandle artHandle, DcArticulationProperties* props)
+{
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
+    DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
+    if (!art)
+    {
+        return false;
+    }
+    art->pxArticulation->getSolverIterationCounts(
+        props->solverPositionIterationCount, props->solverVelocityIterationCount);
+    // props->sleepThreshold = art->pxArticulation->getSleepThreshold();
+    // props->stabilizationThreshold = art->pxArticulation->getStabilizationThreshold();
+    props->enableSelfCollisions =
+        !(art->pxArticulation->getArticulationFlags() & PxArticulationFlag::eDISABLE_SELF_COLLISION);
+    return true;
+}
+
+bool CARB_ABI DcSetArticulationProperties(DcHandle artHandle, const DcArticulationProperties& props)
+{
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
+    DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
+    if (!art)
+    {
+        return false;
+    }
+
+    art->pxArticulation->setSolverIterationCounts(props.solverPositionIterationCount, props.solverVelocityIterationCount);
+    // art->pxArticulation->setSleepThreshold(props.sleepThreshold);
+    // art->pxArticulation->setStabilizationThreshold(props.stabilizationThreshold);
+    art->pxArticulation->setArticulationFlag(PxArticulationFlag::eDISABLE_SELF_COLLISION, !props.enableSelfCollisions);
+    return true;
+}
+
 // articulation joints
 
 int CARB_ABI DcGetArticulationJointCount(DcHandle artHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return 0;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art)
@@ -884,7 +984,10 @@ int CARB_ABI DcGetArticulationJointCount(DcHandle artHandle)
 
 DcHandle CARB_ABI DcGetArticulationJoint(DcHandle artHandle, int jointIdx)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art)
@@ -899,7 +1002,10 @@ DcHandle CARB_ABI DcGetArticulationJoint(DcHandle artHandle, int jointIdx)
 
 DcHandle CARB_ABI DcFindArticulationJoint(DcHandle artHandle, const char* jointName)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art && jointName)
@@ -924,7 +1030,10 @@ float CARB_ABI DcGetDofVelocityTarget(DcHandle dofHandle);
 
 int CARB_ABI DcGetArticulationDofCount(DcHandle artHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return 0;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art)
@@ -936,7 +1045,10 @@ int CARB_ABI DcGetArticulationDofCount(DcHandle artHandle)
 
 DcHandle CARB_ABI DcGetArticulationDof(DcHandle artHandle, int dofIdx)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art)
@@ -951,7 +1063,10 @@ DcHandle CARB_ABI DcGetArticulationDof(DcHandle artHandle, int dofIdx)
 
 DcHandle CARB_ABI DcFindArticulationDof(DcHandle artHandle, const char* dofName)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art && dofName)
@@ -967,7 +1082,10 @@ DcHandle CARB_ABI DcFindArticulationDof(DcHandle artHandle, const char* dofName)
 
 int CARB_ABI DcFindArticulationDofIndex(DcHandle artHandle, const char* dofName)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return -1;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (art && dofName)
@@ -986,7 +1104,10 @@ int CARB_ABI DcFindArticulationDofIndex(DcHandle artHandle, const char* dofName)
 
 bool CARB_ABI DcGetArticulationDofProperties(DcHandle artHandle, DcDofProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (!art || !props)
@@ -1009,7 +1130,10 @@ bool CARB_ABI DcGetArticulationDofProperties(DcHandle artHandle, DcDofProperties
 
 bool CARB_ABI DcSetArticulationDofProperties(DcHandle artHandle, const DcDofProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (!art || !props)
@@ -1030,9 +1154,12 @@ bool CARB_ABI DcSetArticulationDofProperties(DcHandle artHandle, const DcDofProp
     return true;
 }
 
-DcDofState* CARB_ABI DcGetArticulationDofStates(DcHandle artHandle, DcStateFlags flags)
+DcDofState* CARB_ABI DcGetArticulationDofStates(DcHandle artHandle, const DcStateFlags& flags)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return nullptr;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (!art)
@@ -1040,23 +1167,24 @@ DcDofState* CARB_ABI DcGetArticulationDofStates(DcHandle artHandle, DcStateFlags
         return nullptr;
     }
 
-    if (!art->refreshCache())
+    if (!art->refreshCache(PxArticulationCacheFlag::eALL))
     {
         return nullptr;
     }
-    // if effors are requested, make sure the joint force flag is set of the articulation
-    if (flags & kDcStateEffort)
-    {
-        if (!(art->pxArticulation->getArticulationFlags() & PxArticulationFlag::eCOMPUTE_JOINT_FORCES))
-        {
-            art->pxArticulation->setArticulationFlag(PxArticulationFlag::eCOMPUTE_JOINT_FORCES, true);
-            // Zero cache if this was the first frame we set this flag.
-            ZeroArray(art->pxArticulationCache->jointSolverForces, art->pxArticulation->getDofs());
-        }
-    }
+    // // if effors are requested, make sure the joint force flag is set of the articulation
+    // if (flags & kDcStateEffort)
+    // {
+    //     if (!(art->pxArticulation->getArticulationFlags() & PxArticulationFlag::eCOMPUTE_JOINT_FORCES))
+    //     {
+    //         art->pxArticulation->setArticulationFlag(PxArticulationFlag::eCOMPUTE_JOINT_FORCES, true);
+    //         // Zero cache if this was the first frame we set this flag.
+    //         ZeroArray(art->pxArticulationCache->jointSolverForces, art->pxArticulation->getDofs());
+    //     }
+    // }
     int numDofs = art->numDofs();
     for (int i = 0; i < numDofs; i++)
     {
+        art->dofStateCache[i] = DcDofState({ 0, 0, 0 });
         if (flags & kDcStatePos)
         {
             art->dofStateCache[i].pos = art->pxArticulationCache->jointPosition[art->dofs[i]->cacheIdx];
@@ -1065,70 +1193,77 @@ DcDofState* CARB_ABI DcGetArticulationDofStates(DcHandle artHandle, DcStateFlags
         {
             art->dofStateCache[i].vel = art->pxArticulationCache->jointVelocity[art->dofs[i]->cacheIdx];
         }
-        if (flags & kDcStateEffort)
+    }
+    if (flags & kDcStateEffort)
+    {
+        // art->pxArticulation->copyInternalStateToCache(
+        //     *art->pxArticulationCache, PxArticulationCacheFlag::eJOINT_SOLVER_FORCES);
+        // printf("--eJOINT_SOLVER_FORCES--\n");
+        // for (int i = 0; i < numDofs; i++)
+        // {
+        //     printf("dof %d, force:  %f\n", i, art->pxArticulationCache->jointSolverForces[art->dofs[i]->cacheIdx]);
+        // }
+        // // Call this before any inverse dynamics methods
+        art->pxArticulation->commonInit();
+        // printf("--computeJointForce--\n");
+        // // Calculate both joint forces and forces due to gravity here
+        // art->pxArticulation->computeJointForce(*art->pxArticulationCache);
+        // for (int i = 0; i < numDofs; i++)
+        // {
+        //     // art->dofStateCache[i].effort = art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx];
+        //     printf("dof %d, force:  %f\n", i, art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx]);
+        // }
+        // printf("--computeGeneralizedGravityForce--\n");
+        art->pxArticulation->computeGeneralizedGravityForce(*art->pxArticulationCache);
+        for (int i = 0; i < numDofs; i++)
         {
-            art->dofStateCache[i].effort = art->pxArticulationCache->jointSolverForces[art->dofs[i]->cacheIdx];
+            art->dofStateCache[i].effort += art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx];
+            // printf("dof %d, force:  %f\n", i, art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx]);
         }
+        // printf("--computeCoriolisAndCentrifugalForce--\n");
+        // art->pxArticulation->computeCoriolisAndCentrifugalForce(*art->pxArticulationCache);
+        // for (int i = 0; i < numDofs; i++)
+        // {
+        //     // art->dofStateCache[i].effort += art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx];
+        //     printf("dof %d, force:  %f\n", i, art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx]);
+        // }
+        // printf("--computeGeneralizedExternalForce--\n");
+        // art->pxArticulation->computeGeneralizedExternalForce(*art->pxArticulationCache);
+        // for (int i = 0; i < numDofs; i++)
+        // {
+        //     // art->dofStateCache[i].effort += art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx];
+        //     printf("dof %d, force:  %f\n", i, art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx]);
+        // }
+        // art->pxArticulation->copyInternalStateToCache(
+        //     *art->pxArticulationCache, PxArticulationCacheFlag::eSENSOR_FORCES);
+        // printf("--eSENSOR_FORCES--\n");
+        // for (int i = 0; i < int(art->pxArticulation->getNbSensors()); i++)
+        // {
+        //     PxArticulationSensor * s;
+        //     s->getLink()-
+        //     art->dofs[i]->pxArticulationJoint->getParentArticulationLink().getLinkIndex()
+        //     printf("dof %d, force:  %f %f\n", i, art->pxArticulationCache->sensorForces[i].force.magnitude(),
+        //     art->pxArticulationCache->sensorForces[i].torque.magnitude());
+        // }
+        // art->pxArticulation->copyInternalStateToCache(
+        //     *art->pxArticulationCache, PxArticulationCacheFlag::eJOINT_SOLVER_FORCES);
+        // printf("BB jsf\n");
+        // for (int i = 0; i < numDofs; i++)
+        // {
+        //     // art->dofStateCache[i].effort += art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx];
+        //     printf("%d,  %f\n", i, art->pxArticulationCache->jointSolverForces[art->dofs[i]->cacheIdx]);
+        // }
     }
 
     return art->dofStateCache.data();
 }
 
-DcDofState* CARB_ABI DcGetArticulationDofStateDerivatives(DcHandle artHandle, const DcDofState* states, const float* efforts)
+bool CARB_ABI DcSetArticulationDofStates(DcHandle artHandle, const DcDofState* states, const DcStateFlags& flags)
 {
-
-    (void)DC_CHECK_SIMULATING();
-
-    DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
-    if (!art)
+    if (!DC_CHECK_SIMULATING())
     {
-        return nullptr;
+        return false;
     }
-
-    // make sure the articulation cache was created
-    if (!art->pxArticulationCache)
-    {
-        art->pxArticulationCache = art->pxArticulation->createCache();
-        if (!art->pxArticulationCache)
-        {
-            return nullptr;
-        }
-    }
-
-    // TODO (preist@): Make input states optional and return derivative for current articulation state
-
-    // write provided states and inputs to cache
-    const int numDofs = art->numDofs();
-    for (int i = 0; i < numDofs; i++)
-    {
-        const int LLInd = art->dofs[i]->cacheIdx;
-        art->pxArticulationCache->jointPosition[LLInd] = states[i].pos;
-        art->pxArticulationCache->jointVelocity[LLInd] = states[i].vel;
-        art->pxArticulationCache->jointForce[LLInd] = efforts[i];
-    }
-
-    // calculate accelerations in cache
-    art->pxArticulation->applyCache(*(art->pxArticulationCache), PxArticulationCacheFlag::eFORCE |
-                                                                     PxArticulationCacheFlag::ePOSITION |
-                                                                     PxArticulationCacheFlag::eVELOCITY);
-    art->pxArticulation->commonInit();
-    art->pxArticulation->computeJointAcceleration(*(art->pxArticulationCache));
-
-    // extract derivatives and put them in state cache for access:
-    for (int i = 0; i < numDofs; i++)
-    {
-        const int LLInd = art->dofs[i]->cacheIdx;
-        art->dofStateCache[i].pos = art->pxArticulationCache->jointVelocity[LLInd];
-        art->dofStateCache[i].vel = art->pxArticulationCache->jointAcceleration[LLInd];
-        art->dofStateCache[i].effort = 0; // art->pxArticulationCache->jointSolverForces[LLInd];
-    }
-
-    return art->dofStateCache.data();
-}
-
-bool CARB_ABI DcSetArticulationDofStates(DcHandle artHandle, const DcDofState* states, DcStateFlags flags)
-{
-    (void)DC_CHECK_SIMULATING();
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (!art || !flags)
@@ -1143,17 +1278,6 @@ bool CARB_ABI DcSetArticulationDofStates(DcHandle artHandle, const DcDofState* s
 
     int numDofs = art->numDofs();
     PxArticulationCacheFlags pxFlags = PxArticulationCacheFlags(0);
-
-    /*
-    printf("Setting:");
-    for (int i = 0; i < numDofs; i++)
-    {
-        printf(" %f", states[i].pos);
-    }
-    printf("\n");
-    */
-
-    // art->pxArticulation->zeroCache(*art->pxArticulationCache);
 
     if (flags & kDcStatePos)
     {
@@ -1174,37 +1298,85 @@ bool CARB_ABI DcSetArticulationDofStates(DcHandle artHandle, const DcDofState* s
             art->pxArticulationCache->jointVelocity[art->dofs[i]->cacheIdx] = states[i].vel;
         }
     }
-    else
+    if (flags & kDcStateEffort)
     {
-        // ZeroArray(art->pxArticulationCache->jointVelocity, art->pxArticulation->getDofs());
+        pxFlags |= PxArticulationCacheFlag::eFORCE;
+        for (int i = 0; i < numDofs; i++)
+        {
+            art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx] = states[i].effort;
+        }
     }
 
-    ZeroArray(art->pxArticulationCache->jointForce, art->pxArticulation->getDofs());
+    ZeroArray(art->pxArticulationCache->jointSolverForces, art->pxArticulation->getDofs());
     ZeroArray(art->pxArticulationCache->jointAcceleration, art->pxArticulation->getDofs());
 
     ZeroArray(art->pxArticulationCache->linkVelocity, art->pxArticulation->getNbLinks());
     ZeroArray(art->pxArticulationCache->linkAcceleration, art->pxArticulation->getNbLinks());
 
-    // art->pxArticulation->applyCache(*art->pxArticulationCache, pxFlags);
-    art->pxArticulation->applyCache(*art->pxArticulationCache, PxArticulationCacheFlag::eALL); // hmmm
-
-    /*
-    auto result = DcGetArticulationDofStates(art, kDcStatePos);
-    printf("Result:");
-    for (int i = 0; i < numDofs; i++)
-    {
-        printf(" %f", result[i].pos);
-    }
-    printf("\n");
-    printf("\n");
-    */
+    art->pxArticulation->applyCache(*art->pxArticulationCache, pxFlags);
 
     return true;
 }
 
+// DcDofState* CARB_ABI DcGetArticulationDofStateDerivatives(DcHandle artHandle, const DcDofState* states, const float*
+// efforts)
+// {
+
+//     (void)DC_CHECK_SIMULATING();
+
+//     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
+//     if (!art)
+//     {
+//         return nullptr;
+//     }
+
+//     // make sure the articulation cache was created
+//     if (!art->pxArticulationCache)
+//     {
+//         art->pxArticulationCache = art->pxArticulation->createCache();
+//         if (!art->pxArticulationCache)
+//         {
+//             return nullptr;
+//         }
+//     }
+
+//     // TODO (preist@): Make input states optional and return derivative for current articulation state
+
+//     // write provided states and inputs to cache
+//     const int numDofs = art->numDofs();
+//     for (int i = 0; i < numDofs; i++)
+//     {
+//         const int LLInd = art->dofs[i]->cacheIdx;
+//         art->pxArticulationCache->jointPosition[LLInd] = states[i].pos;
+//         art->pxArticulationCache->jointVelocity[LLInd] = states[i].vel;
+//         art->pxArticulationCache->jointForce[LLInd] = efforts[i];
+//     }
+
+//     // calculate accelerations in cache
+//     art->pxArticulation->applyCache(*(art->pxArticulationCache), PxArticulationCacheFlag::eFORCE |
+//                                                                      PxArticulationCacheFlag::ePOSITION |
+//                                                                      PxArticulationCacheFlag::eVELOCITY);
+//     art->pxArticulation->commonInit();
+//     art->pxArticulation->computeJointAcceleration(*(art->pxArticulationCache));
+
+//     // extract derivatives and put them in state cache for access:
+//     for (int i = 0; i < numDofs; i++)
+//     {
+//         const int LLInd = art->dofs[i]->cacheIdx;
+//         art->dofStateCache[i].pos = art->pxArticulationCache->jointVelocity[LLInd];
+//         art->dofStateCache[i].vel = art->pxArticulationCache->jointAcceleration[LLInd];
+//         art->dofStateCache[i].effort = 0; // art->pxArticulationCache->jointSolverForces[LLInd];
+//     }
+
+//     return art->dofStateCache.data();
+// }
+
 bool CARB_ABI DcSetArticulationDofPositionTargets(DcHandle artHandle, const float* targets)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (!art || !targets)
@@ -1221,9 +1393,35 @@ bool CARB_ABI DcSetArticulationDofPositionTargets(DcHandle artHandle, const floa
     return true;
 }
 
+bool CARB_ABI DcGetArticulationDofPositionTargets(DcHandle artHandle, float* targets)
+{
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
+    DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
+    if (!art || !targets)
+    {
+        return false;
+    }
+
+    int numDofs = art->numDofs();
+    for (int i = 0; i < numDofs; i++)
+    {
+        targets[i] = DcGetDofPositionTarget(art->dofs[i]->handle);
+    }
+
+    return true;
+}
+
+
 bool CARB_ABI DcSetArticulationDofVelocityTargets(DcHandle artHandle, const float* targets)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (!art || !targets)
@@ -1240,9 +1438,34 @@ bool CARB_ABI DcSetArticulationDofVelocityTargets(DcHandle artHandle, const floa
     return true;
 }
 
+bool CARB_ABI DcGetArticulationDofVelocityTargets(DcHandle artHandle, float* targets)
+{
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
+    DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
+    if (!art || !targets)
+    {
+        return false;
+    }
+
+    int numDofs = art->numDofs();
+    for (int i = 0; i < numDofs; i++)
+    {
+        targets[i] = DcGetDofVelocityTarget(art->dofs[i]->handle);
+    }
+
+    return true;
+}
+
 bool CARB_ABI DcApplyArticulationDofEfforts(DcHandle artHandle, const float* efforts)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
     if (!art || !efforts)
@@ -1256,17 +1479,14 @@ bool CARB_ABI DcApplyArticulationDofEfforts(DcHandle artHandle, const float* eff
     }
 
     // clear forces
-    memset(art->pxArticulationCache->jointForce, 0,
-           art->pxArticulation->getDofs() * sizeof(*art->pxArticulationCache->jointForce));
+    // ZeroArray(art->pxArticulationCache->jointForce, art->pxArticulation->getDofs());
 
     int numDofs = art->numDofs();
     for (int i = 0; i < numDofs; i++)
     {
         auto dof = art->dofs[i];
-        // if (dof->driveMode == DcDriveMode::eEffort)
-        {
-            art->pxArticulationCache->jointForce[dof->cacheIdx] = efforts[i];
-        }
+
+        art->pxArticulationCache->jointForce[dof->cacheIdx] = efforts[i];
     }
 
     // apply forces
@@ -1276,11 +1496,43 @@ bool CARB_ABI DcApplyArticulationDofEfforts(DcHandle artHandle, const float* eff
 }
 
 
+bool CARB_ABI DcGetArticulationDofMasses(DcHandle artHandle, float* masses)
+{
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
+    DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
+    if (!art || !masses)
+    {
+        return false;
+    }
+
+    if (!art->refreshCache())
+    {
+        return false;
+    }
+
+    art->pxArticulation->commonInit();
+    art->pxArticulation->computeGeneralizedMassMatrix(*art->pxArticulationCache);
+    int numDofs = art->numDofs();
+    for (int i = 0; i < numDofs; i++)
+    {
+        auto dof = art->dofs[i];
+        masses[i] = art->pxArticulationCache->massMatrix[dof->cacheIdx];
+    }
+    return true;
+}
+
 // rigid bodies
 
 const char* CARB_ABI DcGetRigidBodyName(DcHandle bodyHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return nullptr;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body)
@@ -1292,7 +1544,10 @@ const char* CARB_ABI DcGetRigidBodyName(DcHandle bodyHandle)
 
 const char* CARB_ABI DcGetRigidBodyPath(DcHandle bodyHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return nullptr;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body)
@@ -1304,7 +1559,10 @@ const char* CARB_ABI DcGetRigidBodyPath(DcHandle bodyHandle)
 
 DcHandle CARB_ABI DcGetRigidBodyParentJoint(DcHandle bodyHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body)
@@ -1316,7 +1574,10 @@ DcHandle CARB_ABI DcGetRigidBodyParentJoint(DcHandle bodyHandle)
 
 int CARB_ABI DcGetRigidBodyChildJointCount(DcHandle bodyHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return 0;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body)
@@ -1328,7 +1589,10 @@ int CARB_ABI DcGetRigidBodyChildJointCount(DcHandle bodyHandle)
 
 DcHandle CARB_ABI DcGetRigidBodyChildJoint(DcHandle bodyHandle, int jointIdx)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && jointIdx >= 0 && jointIdx < int(body->childJoints.size()))
@@ -1340,7 +1604,10 @@ DcHandle CARB_ABI DcGetRigidBodyChildJoint(DcHandle bodyHandle, int jointIdx)
 
 DcTransform CARB_ABI DcGetRigidBodyPose(DcHandle bodyHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kTransformIdentity;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
@@ -1360,7 +1627,10 @@ DcTransform CARB_ABI DcGetRigidBodyPose(DcHandle bodyHandle)
 
 carb::Float3 CARB_ABI DcGetRigidBodyLinearVelocity(DcHandle bodyHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kFloat3Zero;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
@@ -1372,7 +1642,10 @@ carb::Float3 CARB_ABI DcGetRigidBodyLinearVelocity(DcHandle bodyHandle)
 
 carb::Float3 CARB_ABI DcGetRigidBodyLocalLinearVelocity(DcHandle bodyHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kFloat3Zero;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
@@ -1388,7 +1661,10 @@ carb::Float3 CARB_ABI DcGetRigidBodyLocalLinearVelocity(DcHandle bodyHandle)
 
 carb::Float3 CARB_ABI DcGetRigidBodyAngularVelocity(DcHandle bodyHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kFloat3Zero;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
@@ -1398,9 +1674,12 @@ carb::Float3 CARB_ABI DcGetRigidBodyAngularVelocity(DcHandle bodyHandle)
     return kFloat3Zero;
 }
 
-void CARB_ABI DcSetRigidBodyPose(DcHandle bodyHandle, const DcTransform& pose)
+bool CARB_ABI DcSetRigidBodyPose(DcHandle bodyHandle, const DcTransform& pose)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
@@ -1418,52 +1697,65 @@ void CARB_ABI DcSetRigidBodyPose(DcHandle bodyHandle, const DcTransform& pose)
             if (body->art->rigidBodies[0]->handle != bodyHandle)
             {
                 CARB_LOG_ERROR("Cannot set pose on non-root articulation link");
-                return;
+                return false;
             }
             else
             {
                 // its a root link
-                body->art->pxArticulation->copyInternalStateToCache(
-                    *body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
+                if (body->art->refreshCache())
+                {
+                    body->art->pxArticulationCache->rootLinkData->transform = tx;
+                    body->art->pxArticulation->applyCache(
+                        *body->art->pxArticulationCache, PxArticulationCacheFlag::eROOT_TRANSFORM);
+                }
 
-                body->art->pxArticulationCache->rootLinkData->transform = tx;
-                body->art->pxArticulation->applyCache(*body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
-
-                return;
+                return true;
             }
         }
         body->pxRigidBody->setGlobalPose(tx);
     }
+    return true;
 }
 
-void CARB_ABI DcSetRigidBodyDisableGravity(DcHandle bodyHandle, const bool disableGravity)
+bool CARB_ABI DcSetRigidBodyDisableGravity(DcHandle bodyHandle, const bool disableGravity)
 {
 
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
     {
         body->pxRigidBody->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, disableGravity);
     }
+    return true;
 }
 
-void CARB_ABI DcSetRigidBodyDisableSimulation(DcHandle bodyHandle, const bool disableSimualation)
+bool CARB_ABI DcSetRigidBodyDisableSimulation(DcHandle bodyHandle, const bool disableSimualation)
 {
 
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
     {
         body->pxRigidBody->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, disableSimualation);
     }
+    return true;
 }
 
 
-void CARB_ABI DcSetRigidBodyLinearVelocity(DcHandle bodyHandle, const carb::Float3& linvel)
+bool CARB_ABI DcSetRigidBodyLinearVelocity(DcHandle bodyHandle, const carb::Float3& linvel)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
@@ -1474,34 +1766,41 @@ void CARB_ABI DcSetRigidBodyLinearVelocity(DcHandle bodyHandle, const carb::Floa
             if (body->art->rigidBodies[0]->handle != bodyHandle)
             {
                 CARB_LOG_ERROR("Cannot set linear velocity on non-root articulation link");
-                return;
+                return false;
             }
             else
             {
                 // its a root link
-                body->art->pxArticulation->copyInternalStateToCache(
-                    *body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
-
-                body->art->pxArticulationCache->rootLinkData->worldLinVel = asPxVec3(linvel);
-                body->art->pxArticulation->applyCache(*body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
-                return;
+                if (body->art->refreshCache())
+                {
+                    body->art->pxArticulationCache->rootLinkData->worldLinVel = asPxVec3(linvel);
+                    body->art->pxArticulation->applyCache(
+                        *body->art->pxArticulationCache, PxArticulationCacheFlag::eROOT_VELOCITIES);
+                }
+                return true;
             }
         }
-        PxRigidDynamic* dynamicBody = static_cast<PxRigidDynamic*>(body->pxRigidBody);
+        PxRigidDynamic* dynamicBody = body->pxRigidBody->is<PxRigidDynamic>();
         if (dynamicBody)
         {
             dynamicBody->setLinearVelocity(asPxVec3(linvel));
+            return true;
         }
         else
         {
             CARB_LOG_ERROR("Not a dynamic rigid body or a root articulation link");
+            return false;
         }
     }
+    return false;
 }
 
-void CARB_ABI DcSetRigidBodyAngularVelocity(DcHandle bodyHandle, const carb::Float3& angvel)
+bool CARB_ABI DcSetRigidBodyAngularVelocity(DcHandle bodyHandle, const carb::Float3& angvel)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body && body->pxRigidBody)
@@ -1511,21 +1810,21 @@ void CARB_ABI DcSetRigidBodyAngularVelocity(DcHandle bodyHandle, const carb::Flo
             if (body->art->rigidBodies[0]->handle != bodyHandle)
             {
                 CARB_LOG_ERROR("Cannot set angular velocity on non-root articulation link");
-                return;
+                return false;
             }
             else
             {
                 // its a root link
-                body->art->pxArticulation->copyInternalStateToCache(
-                    *body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
-
-                body->art->pxArticulationCache->rootLinkData->worldAngVel = asPxVec3(angvel);
-                body->art->pxArticulation->applyCache(*body->art->pxArticulationCache, PxArticulationCacheFlag::eALL);
-                return;
+                if (body->art->refreshCache())
+                {
+                    body->art->pxArticulationCache->rootLinkData->worldAngVel = asPxVec3(angvel);
+                    body->art->pxArticulation->applyCache(
+                        *body->art->pxArticulationCache, PxArticulationCacheFlag::eROOT_VELOCITIES);
+                }
+                return true;
             }
         }
-        PxRigidDynamic* dynamicBody = static_cast<PxRigidDynamic*>(body->pxRigidBody);
-
+        PxRigidDynamic* dynamicBody = body->pxRigidBody->is<PxRigidDynamic>();
         if (dynamicBody)
         {
             dynamicBody->setAngularVelocity(asPxVec3(angvel));
@@ -1535,35 +1834,46 @@ void CARB_ABI DcSetRigidBodyAngularVelocity(DcHandle bodyHandle, const carb::Flo
             CARB_LOG_ERROR("Not a dynamic rigid body or a root articulation link");
         }
     }
+    return false;
 }
 
-void CARB_ABI DcApplyBodyForce(DcHandle bodyHandle, const carb::Float3& force, const carb::Float3& pos)
+bool CARB_ABI DcApplyBodyForce(DcHandle bodyHandle, const carb::Float3& force, const carb::Float3& pos)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (!body || !body->pxRigidBody)
     {
         CARB_LOG_ERROR("Invalid body");
-        return;
+        return false;
     }
 
     if (!body->pxRigidBody->getScene())
     {
         CARB_LOG_ERROR("Body not in simulation scene");
-        return;
+        return false;
     }
 
-    // FIXME
-    body->pxRigidBody->addForce((const PxVec3&)force);
+    PxRigidBodyFlags bodyFlags = body->pxRigidBody->getRigidBodyFlags();
+    if (!(bodyFlags & PxRigidBodyFlag::eKINEMATIC))
+    {
+        PxRigidBodyExt::addForceAtPos(*body->pxRigidBody, asPxVec3(force), asPxVec3(pos));
+    }
+    return true;
 }
 
-void CARB_ABI DcGetRelativeBodyPoses(DcHandle parentHandle,
+bool CARB_ABI DcGetRelativeBodyPoses(DcHandle parentHandle,
                                      const size_t numBodies,
                                      const DcHandle* bodyHandles,
                                      DcTransform* bodyTransforms)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
     DcRigidBody* parent = DC_LOOKUP_RIGID_BODY(parentHandle);
     if (parent && parent->pxRigidBody)
     {
@@ -1586,11 +1896,15 @@ void CARB_ABI DcGetRelativeBodyPoses(DcHandle parentHandle,
             }
         }
     }
+    return true;
 }
 
 bool CARB_ABI DcGetRigidBodyProperties(DcHandle bodyHandle, DcRigidBodyProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body)
@@ -1599,6 +1913,50 @@ bool CARB_ABI DcGetRigidBodyProperties(DcHandle bodyHandle, DcRigidBodyPropertie
 
         props->mass = pxBody->getMass();
         props->moment = asFloat3(pxBody->getMassSpaceInertiaTensor());
+        props->maxContactImpulse = pxBody->getMaxContactImpulse();
+        props->maxDepenetrationVelocity = pxBody->getMaxDepenetrationVelocity();
+        PxRigidDynamic* dynamicBody = body->pxRigidBody->is<PxRigidDynamic>();
+        if (dynamicBody)
+        {
+            dynamicBody->getSolverIterationCounts(
+                props->solverPositionIterationCount, props->solverVelocityIterationCount);
+            // props->retainAccelerations = dynamicBody->getRigidBodyFlags() & PxRigidBodyFlag::eRETAIN_ACCELERATIONS;
+            // props->enableGyroscopicForces = dynamicBody->getRigidBodyFlags() &
+            // PxRigidBodyFlag::eENABLE_GYROSCOPIC_FORCES; props->enableSpeculativeCCD =
+            // dynamicBody->getRigidBodyFlags() & PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD;
+            // props->stabilizationThreshold = dynamicBody->getStabilizationThreshold();
+        }
+        return true;
+    }
+    return false;
+}
+
+bool CARB_ABI DcSetRigidBodyProperties(DcHandle bodyHandle, const DcRigidBodyProperties& props)
+{
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
+    DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
+    if (body)
+    {
+
+        PxRigidBody* pxBody = body->pxRigidBody;
+
+        pxBody->setMass(props.mass);
+        pxBody->setMassSpaceInertiaTensor(asPxVec3(props.moment));
+        pxBody->setMaxContactImpulse(props.maxContactImpulse);
+        pxBody->setMaxDepenetrationVelocity(props.maxDepenetrationVelocity);
+        PxRigidDynamic* dynamicBody = body->pxRigidBody->is<PxRigidDynamic>();
+        if (dynamicBody)
+        {
+            dynamicBody->setSolverIterationCounts(props.solverPositionIterationCount, props.solverVelocityIterationCount);
+            // dynamicBody->setRigidBodyFlag(PxRigidBodyFlag::eRETAIN_ACCELERATIONS, props.retainAccelerations);
+            // dynamicBody->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_GYROSCOPIC_FORCES, props.enableGyroscopicForces);
+            // dynamicBody->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, props.enableSpeculativeCCD);
+            // dynamicBody->setStabilizationThreshold(props.stabilizationThreshold);
+        }
         return true;
     }
     return false;
@@ -1610,7 +1968,10 @@ bool CARB_ABI DcGetRigidBodyProperties(DcHandle bodyHandle, DcRigidBodyPropertie
 
 const char* CARB_ABI DcGetJointName(DcHandle jointHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return nullptr;
+    }
 
     DcJoint* joint = DC_LOOKUP_JOINT(jointHandle);
     if (joint)
@@ -1622,7 +1983,10 @@ const char* CARB_ABI DcGetJointName(DcHandle jointHandle)
 
 const char* CARB_ABI DcGetJointPath(DcHandle jointHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return nullptr;
+    }
 
     DcJoint* joint = DC_LOOKUP_JOINT(jointHandle);
     if (joint)
@@ -1634,7 +1998,10 @@ const char* CARB_ABI DcGetJointPath(DcHandle jointHandle)
 
 DcJointType CARB_ABI DcGetJointType(DcHandle jointHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return DcJointType::eNone;
+    }
 
     DcJoint* joint = DC_LOOKUP_JOINT(jointHandle);
     if (joint)
@@ -1646,7 +2013,11 @@ DcJointType CARB_ABI DcGetJointType(DcHandle jointHandle)
 
 int CARB_ABI DcGetJointDofCount(DcHandle jointHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return 0;
+    }
+
 
     DcJoint* joint = DC_LOOKUP_JOINT(jointHandle);
     if (joint)
@@ -1658,7 +2029,11 @@ int CARB_ABI DcGetJointDofCount(DcHandle jointHandle)
 
 DcHandle CARB_ABI DcGetJointDof(DcHandle jointHandle, int dofIdx)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
+
 
     DcJoint* joint = DC_LOOKUP_JOINT(jointHandle);
     if (joint && dofIdx >= 0 && dofIdx < int(joint->dofs.size()))
@@ -1670,8 +2045,10 @@ DcHandle CARB_ABI DcGetJointDof(DcHandle jointHandle, int dofIdx)
 
 DcHandle CARB_ABI DcGetJointParentBody(DcHandle jointHandle)
 {
-    (void)DC_CHECK_SIMULATING();
-
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
     DcJoint* joint = DC_LOOKUP_JOINT(jointHandle);
     if (joint)
     {
@@ -1682,7 +2059,10 @@ DcHandle CARB_ABI DcGetJointParentBody(DcHandle jointHandle)
 
 DcHandle CARB_ABI DcGetJointChildBody(DcHandle jointHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcJoint* joint = DC_LOOKUP_JOINT(jointHandle);
     if (joint)
@@ -1699,7 +2079,10 @@ DcHandle CARB_ABI DcGetJointChildBody(DcHandle jointHandle)
 
 const char* CARB_ABI DcGetDofName(DcHandle dofHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return nullptr;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof)
@@ -1711,7 +2094,10 @@ const char* CARB_ABI DcGetDofName(DcHandle dofHandle)
 
 const char* CARB_ABI DcGetDofPath(DcHandle dofHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return nullptr;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof)
@@ -1723,7 +2109,10 @@ const char* CARB_ABI DcGetDofPath(DcHandle dofHandle)
 
 DcDofType CARB_ABI DcGetDofType(DcHandle dofHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return DcDofType::eNone;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof)
@@ -1735,7 +2124,10 @@ DcDofType CARB_ABI DcGetDofType(DcHandle dofHandle)
 
 DcHandle CARB_ABI DcGetDofJoint(DcHandle dofHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof)
@@ -1747,7 +2139,10 @@ DcHandle CARB_ABI DcGetDofJoint(DcHandle dofHandle)
 
 DcHandle CARB_ABI DcGetDofParentBody(DcHandle dofHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof)
@@ -1763,7 +2158,10 @@ DcHandle CARB_ABI DcGetDofParentBody(DcHandle dofHandle)
 
 DcHandle CARB_ABI DcGetDofChildBody(DcHandle dofHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof)
@@ -1777,28 +2175,49 @@ DcHandle CARB_ABI DcGetDofChildBody(DcHandle dofHandle)
     return kDcInvalidHandle;
 }
 
-DcDofState CARB_ABI DcGetDofState(DcHandle dofHandle)
+DcDofState CARB_ABI DcGetDofState(DcHandle dofHandle, const DcStateFlags& flags)
 {
-    (void)DC_CHECK_SIMULATING();
-
     DcDofState state{};
+
+    if (!DC_CHECK_SIMULATING())
+    {
+        return state;
+    }
+
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof && dof->art)
     {
-        if (dof->art->refreshCache())
+        if (dof->art->refreshCache(PxArticulationCacheFlag::eALL))
         {
-            state.pos = dof->art->pxArticulationCache->jointPosition[dof->cacheIdx];
-            state.vel = dof->art->pxArticulationCache->jointVelocity[dof->cacheIdx];
+            if (flags & kDcStatePos)
+            {
+                state.pos = dof->art->pxArticulationCache->jointPosition[dof->cacheIdx];
+            }
+            if (flags & kDcStateVel)
+            {
+                state.vel = dof->art->pxArticulationCache->jointVelocity[dof->cacheIdx];
+            }
+            if (flags & kDcStateEffort)
+            {
+                // Not efficient, faster to use batched version for entire articulation
+                dof->art->pxArticulation->commonInit();
+                // dof->art->pxArticulation->computeJointForce(*dof->art->pxArticulationCache);
+                // state.effort = dof->art->pxArticulationCache->jointForce[dof->cacheIdx];
+                dof->art->pxArticulation->computeGeneralizedGravityForce(*dof->art->pxArticulationCache);
+                state.effort = dof->art->pxArticulationCache->jointForce[dof->cacheIdx];
+            }
         }
     }
-
     return state;
 }
 
-bool CARB_ABI DcSetDofState(DcHandle dofHandle, const DcDofState* state)
+bool CARB_ABI DcSetDofState(DcHandle dofHandle, const DcDofState* state, const DcStateFlags& flags)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof && dof->art && state)
@@ -1806,10 +2225,24 @@ bool CARB_ABI DcSetDofState(DcHandle dofHandle, const DcDofState* state)
         DcArticulation* art = dof->art;
         if (art->refreshCache())
         {
-            art->pxArticulationCache->jointPosition[dof->cacheIdx] = state->pos;
-            art->pxArticulationCache->jointVelocity[dof->cacheIdx] = state->vel;
-#if 0
-            art->pxArticulation->applyCache(*art->pxArticulationCache, PxArticulationCacheFlag::ePOSITION | PxArticulationCacheFlag::eVELOCITY);
+            PxArticulationCacheFlags pxFlags = PxArticulationCacheFlags(0);
+            if (flags & kDcStatePos)
+            {
+                pxFlags |= PxArticulationCacheFlag::ePOSITION;
+                art->pxArticulationCache->jointPosition[dof->cacheIdx] = state->pos;
+            }
+            if (flags & kDcStateVel)
+            {
+                pxFlags |= PxArticulationCacheFlag::eVELOCITY;
+                art->pxArticulationCache->jointVelocity[dof->cacheIdx] = state->vel;
+            }
+            if (flags & kDcStateEffort)
+            {
+                pxFlags |= PxArticulationCacheFlag::eFORCE;
+                art->pxArticulationCache->jointForce[dof->cacheIdx] = state->effort;
+            }
+#if 1
+            art->pxArticulation->applyCache(*art->pxArticulationCache, pxFlags);
 #else
             ZeroArray(art->pxArticulationCache->jointForce, art->pxArticulation->getDofs());
             ZeroArray(art->pxArticulationCache->jointAcceleration, art->pxArticulation->getDofs());
@@ -1826,7 +2259,10 @@ bool CARB_ABI DcSetDofState(DcHandle dofHandle, const DcDofState* state)
 
 float CARB_ABI DcGetDofPosition(DcHandle dofHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return 0.0f;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof && dof->art)
@@ -1841,7 +2277,10 @@ float CARB_ABI DcGetDofPosition(DcHandle dofHandle)
 
 bool CARB_ABI DcSetDofPosition(DcHandle dofHandle, float pos)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof && dof->art)
@@ -1850,7 +2289,7 @@ bool CARB_ABI DcSetDofPosition(DcHandle dofHandle, float pos)
         if (art->refreshCache())
         {
             art->pxArticulationCache->jointPosition[dof->cacheIdx] = pos;
-#if 0
+#if 1
             art->pxArticulation->applyCache(*art->pxArticulationCache, PxArticulationCacheFlag::ePOSITION);
 #else
             ZeroArray(art->pxArticulationCache->jointForce, art->pxArticulation->getDofs());
@@ -1868,7 +2307,10 @@ bool CARB_ABI DcSetDofPosition(DcHandle dofHandle, float pos)
 
 float CARB_ABI DcGetDofVelocity(DcHandle dofHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return 0.0f;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof && dof->art)
@@ -1883,7 +2325,10 @@ float CARB_ABI DcGetDofVelocity(DcHandle dofHandle)
 
 bool CARB_ABI DcSetDofVelocity(DcHandle dofHandle, float vel)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (dof && dof->art)
@@ -1892,7 +2337,7 @@ bool CARB_ABI DcSetDofVelocity(DcHandle dofHandle, float vel)
         if (art->refreshCache())
         {
             art->pxArticulationCache->jointVelocity[dof->cacheIdx] = vel;
-#if 0
+#if 1
             art->pxArticulation->applyCache(*art->pxArticulationCache, PxArticulationCacheFlag::eVELOCITY);
 #else
             ZeroArray(art->pxArticulationCache->jointForce, art->pxArticulation->getDofs());
@@ -1910,7 +2355,10 @@ bool CARB_ABI DcSetDofVelocity(DcHandle dofHandle, float vel)
 
 bool CARB_ABI DcGetDofProperties(DcHandle dofHandle, DcDofProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (!dof || !props)
@@ -1934,24 +2382,42 @@ bool CARB_ABI DcGetDofProperties(DcHandle dofHandle, DcDofProperties* props)
         props->hasLimits = true;
         pxJoint->getLimit(dof->pxAxis, props->lower, props->upper);
     }
+    else
+    {
+        props->hasLimits = false;
+    }
 
-    // get stiffness, damping, and maxEffort
-    PxArticulationDriveType::Enum driveType;
-    pxJoint->getDrive(dof->pxAxis, props->stiffness, props->damping, props->maxEffort, driveType);
+    PxArticulationDrive drive = pxJoint->getDriveParams(dof->pxAxis);
+    props->stiffness = drive.stiffness;
+    props->damping = drive.damping;
+    props->maxEffort = drive.maxForce;
 
     // get the max joint velocity.
     props->maxVelocity = pxJoint->getMaxJointVelocity();
 
-    // cached drive mode
-    // HMMM... should we take the actual driveType into account?
-    props->driveMode = dof->driveMode;
+    // get the current drive mode
+    switch (drive.driveType)
+    {
+    case PxArticulationDriveType::eFORCE:
+        props->driveMode = DcDriveMode::eForce;
+        break;
+    case PxArticulationDriveType::eACCELERATION:
+        props->driveMode = DcDriveMode::eAcceleration;
+        break;
+    default:
+        props->driveMode = DcDriveMode::eAcceleration;
+        break;
+    }
 
     return true;
 }
 
 bool CARB_ABI DcSetDofProperties(DcHandle dofHandle, const DcDofProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (!dof || !props)
@@ -1969,72 +2435,63 @@ bool CARB_ABI DcSetDofProperties(DcHandle dofHandle, const DcDofProperties* prop
     // {
     //     dof->art->pxArticulation->wakeUp();
     // }
+    // if the motion type does not match the current setting
+    // PxArticulationMotion::Enum motion = pxJoint->getMotion(dof->pxAxis);
+    // if (((props->hasLimits == true) && (motion == PxArticulationMotion::eFREE)) ||
+    //     ((props->hasLimits == false) && (motion == PxArticulationMotion::eLIMITED)))
+    // {
+    //     ::physx::PxScene* scene = dof->art->pxArticulation->getScene();
+    //     if (scene)
+    //     { // Remove articulation from scene
 
-    // Remove articulation from scene
-    ::physx::PxScene* scene = dof->art->pxArticulation->getScene();
-    if (scene)
-    {
-        scene->removeArticulation(*dof->art->pxArticulation);
-    }
+    //         scene->removeArticulation(*dof->art->pxArticulation);
+    //         pxJoint->setMotion(
+    //             dof->pxAxis, props->hasLimits ? PxArticulationMotion::eLIMITED : PxArticulationMotion::eFREE);
+    //         // Add articulation back to scene
+    //         scene->addArticulation(*dof->art->pxArticulation);
+    //         // if (dof->art->pxArticulationCache)
+    //         // {
+    //         //     dof->art->pxArticulationCache->release();
+    //         // }
+    //         // dof->art->pxArticulationCache = dof->art->pxArticulation->createCache();
+    //     }
+    //     CARB_LOG_WARN(
+    //         "Changing the drive limit type during simulation may cause issues, it is recommended enable/disable
+    //         limits via the USD api before starting simulation");
+    // }
+    // set the limits on the joint
 
-    // set limits
-    if (props->hasLimits)
-    {
-        pxJoint->setMotion(dof->pxAxis, PxArticulationMotion::eLIMITED);
-        pxJoint->setLimit(dof->pxAxis, props->lower, props->upper);
-    }
-    else
-    {
-        pxJoint->setMotion(dof->pxAxis, PxArticulationMotion::eFREE);
-    }
-
-    float stiffness = props->stiffness;
-    float damping = props->damping;
+    // pxJoint->setLimit(dof->pxAxis, props->lower, props->upper);
 
     // save drive mode
     dof->driveMode = props->driveMode;
 
-    PxArticulationDriveType::Enum driveType;
+    PxArticulationDrive drive;
+    drive.stiffness = props->stiffness;
+    drive.damping = props->damping;
+    drive.maxForce = props->maxEffort;
+
     switch (props->driveMode)
     {
-    case DcDriveMode::ePositionTarget:
-        // driveType = PxArticulationDriveType::eTARGET;
-        driveType = PxArticulationDriveType::eFORCE;
+    case DcDriveMode::eForce:
+        drive.driveType = PxArticulationDriveType::eFORCE;
         break;
-    case DcDriveMode::eVelocityTarget:
-        // driveType = PxArticulationDriveType::eVELOCITY;
-        driveType = PxArticulationDriveType::eFORCE;
-        stiffness = 0.0f;
-        break;
-        // case DcDriveMode::eEffort:
-    case DcDriveMode::eNone:
-    default:
-        driveType = PxArticulationDriveType::eNONE;
+    case DcDriveMode::eAcceleration:
+        drive.driveType = PxArticulationDriveType::eACCELERATION;
         break;
     }
-
     // set drive properties
-    pxJoint->setDrive(dof->pxAxis, stiffness, damping, props->maxEffort, driveType);
+    pxJoint->setDriveParams(dof->pxAxis, drive);
 
-
-    // Add articulation back to scene
-    if (scene)
-    {
-        scene->addArticulation(*dof->art->pxArticulation);
-    }
-
-    // if (dof->art->pxArticulation->getScene())
-    // {
-    //     // Cache becomes invalid, clear it
-    //     dof->art->pxArticulation->releaseCache(*dof->art->pxArticulationCache);
-    //     dof->art->pxArticulationCache = dof->art->pxArticulation->createCache();
-    // }
     return true;
 }
 
 bool CARB_ABI DcSetDofPositionTarget(DcHandle dofHandle, float target)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (!dof || !dof->pxArticulationJoint)
@@ -2042,35 +2499,36 @@ bool CARB_ABI DcSetDofPositionTarget(DcHandle dofHandle, float target)
         return false;
     }
 
-    if (dof->driveMode == DcDriveMode::ePositionTarget)
-    {
-        dof->pxArticulationJoint->setDriveTarget(dof->pxAxis, target);
-    }
+
+    dof->pxArticulationJoint->setDriveTarget(dof->pxAxis, target);
+
 
     return true;
 }
 
 bool CARB_ABI DcSetDofVelocityTarget(DcHandle dofHandle, float target)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (!dof || !dof->pxArticulationJoint)
     {
         return false;
     }
-
-    if (dof->driveMode == DcDriveMode::eVelocityTarget)
-    {
-        dof->pxArticulationJoint->setDriveVelocity(dof->pxAxis, target);
-    }
+    dof->pxArticulationJoint->setDriveVelocity(dof->pxAxis, target);
 
     return true;
 }
 
 float CARB_ABI DcGetDofPositionTarget(DcHandle dofHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return 0.0f;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (!dof || !dof->pxArticulationJoint)
@@ -2078,17 +2536,19 @@ float CARB_ABI DcGetDofPositionTarget(DcHandle dofHandle)
         return false;
     }
 
-    if (dof->driveMode == DcDriveMode::ePositionTarget)
-    {
-        return dof->pxArticulationJoint->getDriveTarget(dof->pxAxis);
-    }
+
+    return dof->pxArticulationJoint->getDriveTarget(dof->pxAxis);
+
 
     return 0;
 }
 
 float CARB_ABI DcGetDofVelocityTarget(DcHandle dofHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return 0.0f;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (!dof || !dof->pxArticulationJoint)
@@ -2096,17 +2556,17 @@ float CARB_ABI DcGetDofVelocityTarget(DcHandle dofHandle)
         return false;
     }
 
-    if (dof->driveMode == DcDriveMode::eVelocityTarget)
-    {
-        return dof->pxArticulationJoint->getDriveVelocity(dof->pxAxis);
-    }
+    return dof->pxArticulationJoint->getDriveVelocity(dof->pxAxis);
 
     return 0;
 }
 
 bool CARB_ABI DcApplyDofEffort(DcHandle dofHandle, float effort)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (!dof || !dof->art)
@@ -2125,8 +2585,7 @@ bool CARB_ABI DcApplyDofEffort(DcHandle dofHandle, float effort)
     // Prefer DcApplyArticulationDofEfforts for multiple DOF efforts.
 
     // clear forces
-    memset(art->pxArticulationCache->jointForce, 0,
-           art->pxArticulation->getDofs() * sizeof(*art->pxArticulationCache->jointForce));
+    // ZeroArray(art->pxArticulationCache->jointForce, art->pxArticulation->getDofs());
 
     art->pxArticulationCache->jointForce[dof->cacheIdx] = effort;
 
@@ -2144,7 +2603,10 @@ bool setAttractorProperties(DcAttractor* attractor, const DcAttractorProperties*
 
 DcHandle CARB_ABI DcCreateRigidBodyAttractor(const DcAttractorProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     auto& ctx = g_dcCtx;
     if (!ctx)
@@ -2210,14 +2672,20 @@ DcHandle CARB_ABI DcCreateRigidBodyAttractor(const DcAttractorProperties* props)
 
 bool CARB_ABI DcSetAttractorProperties(DcHandle attHandle, const DcAttractorProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     return setAttractorProperties(DC_LOOKUP_ATTRACTOR(attHandle), props);
 }
 
 bool setAttractorProperties(DcAttractor* attractor, const DcAttractorProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     if (!attractor || !props)
     {
@@ -2326,7 +2794,10 @@ bool setAttractorProperties(DcAttractor* attractor, const DcAttractorProperties*
 
 bool CARB_ABI DcSetAttractorTarget(DcHandle attHandle, const DcTransform& target)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcAttractor* attractor = DC_LOOKUP_ATTRACTOR(attHandle);
     if (!attractor)
@@ -2355,7 +2826,10 @@ bool CARB_ABI DcSetAttractorTarget(DcHandle attHandle, const DcTransform& target
 
 bool CARB_ABI DcGetAttractorProperties(DcHandle attHandle, DcAttractorProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     DcAttractor* attractor = DC_LOOKUP_ATTRACTOR(attHandle);
     if (!attractor || !props)
@@ -2368,25 +2842,29 @@ bool CARB_ABI DcGetAttractorProperties(DcHandle attHandle, DcAttractorProperties
     return true;
 }
 
-void CARB_ABI DcDestroyRigidBodyAttractor(DcHandle attHandle)
+bool CARB_ABI DcDestroyRigidBodyAttractor(DcHandle attHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
 
     auto& ctx = g_dcCtx;
     if (!ctx)
     {
-        return;
+        return false;
     }
 
     DcAttractor* attractor = DC_LOOKUP_ATTRACTOR(attHandle);
     if (!attractor || !attractor->pxJoint)
     {
-        return;
+        return false;
     }
 
     ctx->physx->releaseD6Joint(attractor->pxJoint);
 
     ctx->removeAttractor(attHandle);
+    return true;
 }
 
 
@@ -2400,7 +2878,10 @@ bool getD6JointConstraintIsBroken(DcD6Joint* dcJoint);
 
 DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return kDcInvalidHandle;
+    }
 
     auto& ctx = g_dcCtx;
     if (!ctx)
@@ -2487,29 +2968,38 @@ DcHandle CARB_ABI DcCreateD6Joint(const DcD6JointProperties* props)
     return j_handle;
 }
 
-void CARB_ABI DcDestroyD6Joint(DcHandle jointHandle)
+bool CARB_ABI DcDestroyD6Joint(DcHandle jointHandle)
 {
-    // (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
     auto& ctx = g_dcCtx;
     if (!ctx)
     {
-        return;
+        return false;
     }
 
     DcD6Joint* joint = DC_LOOKUP_D6JOINT(jointHandle);
     if (!joint || !joint->pxJoint)
     {
-        return;
+        return false;
     }
 
     ctx->physx->releaseD6Joint(joint->pxJoint);
 
     ctx->removeD6Joint(jointHandle);
+    return true;
 }
 
 bool CARB_ABI DcGetD6JointProperties(DcHandle jointHandle, DcD6JointProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
 
     DcD6Joint* joint = DC_LOOKUP_D6JOINT(jointHandle);
     if (!joint || !props)
@@ -2524,20 +3014,34 @@ bool CARB_ABI DcGetD6JointProperties(DcHandle jointHandle, DcD6JointProperties* 
 
 bool CARB_ABI DcGetD6JointConstraintIsBroken(DcHandle jointHandle)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
 
     return getD6JointConstraintIsBroken(DC_LOOKUP_D6JOINT(jointHandle));
 }
 
 bool CARB_ABI DcSetD6JointProperties(DcHandle jointHandle, const DcD6JointProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
 
     return setD6JointProperties(DC_LOOKUP_D6JOINT(jointHandle), props);
 }
 
 bool CARB_ABI DcSetOriginOffset(DcHandle handle, const carb::Float3& origin)
 {
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
+
     auto& ctx = g_dcCtx;
     if (!ctx)
     {
@@ -2568,7 +3072,11 @@ bool CARB_ABI DcSetOriginOffset(DcHandle handle, const carb::Float3& origin)
 
 bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
 
     if (!dcJoint || !props)
     {
@@ -2852,7 +3360,11 @@ bool setD6JointProperties(DcD6Joint* dcJoint, const DcD6JointProperties* props)
 
 bool getD6JointConstraintIsBroken(DcD6Joint* dcJoint)
 {
-    (void)DC_CHECK_SIMULATING();
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
 
     if (!dcJoint)
     {
@@ -2877,9 +3389,13 @@ bool getD6JointConstraintIsBroken(DcD6Joint* dcJoint)
 DcRayCastResult CARB_ABI DcRayCast(const carb::Float3& origin, const carb::Float3& direction, float max_distance)
 {
 
-    (void)DC_CHECK_SIMULATING();
-    DcRayCastResult out;
+    DcRayCastResult out{};
     out.hit = false;
+
+    if (!DC_CHECK_SIMULATING())
+    {
+        return out;
+    }
 
     auto& ctx = g_dcCtx;
     if (!ctx)
@@ -2960,8 +3476,8 @@ void SuStop()
     {
         // destroyContext(g_dcCtx);
         // g_dcCtx = nullptr;
-        CARB_LOG_INFO("Refreshing context");
-        g_dcCtx->refreshPhysicsPointers(false);
+        // CARB_LOG_INFO("Refreshing context");
+        // g_dcCtx->refreshPhysicsPointers(false);
         g_dcCtx->isSimulating = false;
         g_dcCtx->wasPaused = false;
     }
@@ -2969,18 +3485,8 @@ void SuStop()
 
 void SuUpdate(float timeElapsed, void* userData)
 {
-    // printf("++ DC: Stage Update\n");
-    // Skip if not simulating
-    // if (!settings->isPlaying)
-    // {
-    //     return;
-    // }
-    // FIXME: should we do this automatically?
-    // FIXME: should this be done per physics step instead of stage update?
     if (g_dcCtx)
     {
-        //++g_dcCtx->frameno;
-        // updateContext(g_dcCtx);
         // if this extension is acquired with play happening, make sure that simulating is set to true
         g_dcCtx->isSimulating = true;
     }
@@ -3103,8 +3609,6 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
 
     memset(&iface, 0, sizeof(iface));
 
-    iface.hello = DcHello;
-
     // iface.createContext = DcCreateContext;
     // iface.destroyContext = DcDestroyContext;
     // iface.updateContext = DcUpdateContext;
@@ -3133,6 +3637,9 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.getArticulationRootBody = DcGetArticulationRootBody;
     iface.getArticulationBodyStates = DcGetArticulationBodyStates;
     // iface.setArticulationBodyStates = DcSetArticulationBodyStates;
+    iface.getArticulationProperties = DcGetArticulationProperties;
+    iface.setArticulationProperties = DcSetArticulationProperties;
+
 
     iface.getArticulationJointCount = DcGetArticulationJointCount;
     iface.getArticulationJoint = DcGetArticulationJoint;
@@ -3146,10 +3653,13 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.setArticulationDofProperties = DcSetArticulationDofProperties;
     iface.getArticulationDofStates = DcGetArticulationDofStates;
     iface.setArticulationDofStates = DcSetArticulationDofStates;
-    iface.getArticulationDofStateDerivatives = DcGetArticulationDofStateDerivatives;
+    // iface.getArticulationDofStateDerivatives = DcGetArticulationDofStateDerivatives;
     iface.setArticulationDofPositionTargets = DcSetArticulationDofPositionTargets;
+    iface.getArticulationDofPositionTargets = DcGetArticulationDofPositionTargets;
     iface.setArticulationDofVelocityTargets = DcSetArticulationDofVelocityTargets;
+    iface.getArticulationDofVelocityTargets = DcGetArticulationDofVelocityTargets;
     iface.applyArticulationDofEfforts = DcApplyArticulationDofEfforts;
+    iface.getArticulationDofMasses = DcGetArticulationDofMasses;
 
     iface.getRigidBodyName = DcGetRigidBodyName;
     iface.getRigidBodyPath = DcGetRigidBodyPath;
@@ -3168,6 +3678,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.applyBodyForce = DcApplyBodyForce;
     iface.getRelativeBodyPoses = DcGetRelativeBodyPoses;
     iface.getRigidBodyProperties = DcGetRigidBodyProperties;
+    iface.setRigidBodyProperties = DcSetRigidBodyProperties;
 
     iface.getJointName = DcGetJointName;
     iface.getJointPath = DcGetJointPath;

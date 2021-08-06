@@ -123,7 +123,7 @@ class RobotController:
         self.wheel_right = self._dc.find_articulation_dof(self.ar, self._wheel_joint_names[1])
 
         self.vel_props = _dynamic_control.DofProperties()
-        self.vel_props.drive_mode = _dynamic_control.DRIVE_VEL
+        self.vel_props.drive_mode = _dynamic_control.DRIVE_ACCELERATION
         self.vel_props.damping = 1e7
         self.vel_props.stiffness = 0
         self._dc.set_dof_properties(self.wheel_left, self.vel_props)

@@ -103,6 +103,11 @@ Types
 Properties
 ==========
 
+.. autoclass:: omni.isaac.dynamic_control._dynamic_control.ArticulationProperties
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. autoclass:: omni.isaac.dynamic_control._dynamic_control.RigidBodyProperties
     :members:
     :undoc-members:

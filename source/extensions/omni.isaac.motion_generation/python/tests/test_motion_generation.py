@@ -99,47 +99,50 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
+        self._art = self._dc.get_articulation("/panda")
+        self.assertNotEqual(self._art, _dynamic_control.INVALID_HANDLE)
+
         self._mg.initialize(config, robot_prim, self._physics_rate)
         self.assertTrue(self._mg.is_initialized())
 
         ground_truths = {
             "no_target": np.array(
                 [
-                    0.1415514645835098,
-                    -7.917012243510814,
-                    0.003799213921763127,
-                    -28.260449441338885,
-                    0.0005702215340584568,
-                    11.956095369522838,
-                    1.2016276110437412,
-                    19.981830596923828,
-                    23.667095184326172,
+                    -0.00430752981895331,
+                    -0.26727750341947537,
+                    0.0008925738953648821,
+                    0.03391302608767643,
+                    0.00018004217857774634,
+                    -0.42209955365745083,
+                    0.004131720391633547,
+                    0.0,
+                    0.0,
                 ]
             ),
             "target_no_obstacle": np.array(
                 [
-                    -0.2592373908905973,
-                    0.2601527758598492,
-                    0.057752672812570766,
-                    -0.5862672836236312,
-                    0.07270127818537256,
-                    0.203191317690827,
-                    0.103198594644828,
-                    26.801578521728516,
-                    2.4999217987060547,
+                    -0.01369895117365492,
+                    -0.45094218430151306,
+                    -0.00809666220652486,
+                    -0.13677513307254918,
+                    0.002352942930441275,
+                    -0.510548022016821,
+                    0.004776766595109004,
+                    0.0,
+                    0.0,
                 ]
             ),
             "target_with_obstacle": np.array(
                 [
-                    -0.2669026983867295,
-                    0.22270478104200916,
-                    0.070717805641475,
-                    -0.6079020328349203,
-                    0.08454520953067614,
-                    0.22712011185219702,
-                    0.10005983256310759,
-                    26.801578521728516,
-                    2.4999217987060547,
+                    0.05568620226157044,
+                    -0.10873858405852888,
+                    0.10435665705897278,
+                    0.3097002497119422,
+                    0.18799232525791543,
+                    -0.41981174174802216,
+                    -0.008583941233254446,
+                    0.0,
+                    0.0,
                 ]
             ),
             "target_pos": Gf.Vec3d(40.0, 0.0, 40.0),
@@ -199,42 +202,45 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
+        self._art = self._dc.get_articulation("/ur10")
+        self.assertNotEqual(self._art, _dynamic_control.INVALID_HANDLE)
+
         self._mg.initialize(config, robot_prim, self._physics_rate)
         self.assertTrue(self._mg.is_initialized())
 
         ground_truths = {
             "no_target": np.array(
                 [
-                    4.638814867545096,
-                    4.42956498800886,
-                    4.731875157322158,
-                    4.701723894771712,
-                    4.619898861152239,
-                    4.663612815904171,
+                    -0.19556043048831476,
+                    -0.06313919296913081,
+                    -0.14353135682935758,
+                    -0.2795648103994666,
+                    0.09508286703693264,
+                    -0.0926018020110439,
                 ]
             ),
             "target_no_obstacle": np.array(
                 [
-                    -0.22281966627907415,
-                    -0.36038274547532617,
-                    -0.17912603108705147,
-                    -0.06766958846676945,
-                    0.08054933050722413,
-                    -0.011935877183094704,
+                    -0.46543394178240394,
+                    -0.5588122749530228,
+                    0.31885582645317634,
+                    0.23672941316295085,
+                    0.01720650002158009,
+                    -0.01189622598738084,
                 ]
             ),
             "target_with_obstacle": np.array(
                 [
-                    -0.23377294018004288,
-                    -0.06902096799980545,
-                    -0.39368987375156717,
-                    0.30345397056294854,
-                    -0.2653443104076206,
-                    -0.011816471822977773,
+                    -0.42737582970360455,
+                    -0.5762179564087445,
+                    0.3328029831206573,
+                    0.24653321128409336,
+                    0.018997207005370262,
+                    -0.012540022632522959,
                 ]
             ),
-            "target_pos": Gf.Vec3d(100.0, 0.0, 50.0),
-            "obs_pos": Gf.Vec3d(100.0, 0.0, 30.0),
+            "target_pos": Gf.Vec3d(50.0, 0.0, 0.0),
+            "obs_pos": Gf.Vec3d(50.0, 0.0, -20.0),
         }
         await self.verify_policy_outputs(ground_truths)
 
@@ -363,6 +369,19 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
                 return True, frame / self._physics_rate
         return False, timeout
 
+    async def teleport_robot_to_dc_pos_targets(self):
+        """
+        To make motion_generation outputs more deterministic, this method may be used to
+        teleport the robot to the position and velocity targets of dynamic_control
+
+        This prevents changes in dynamic_control from affecting motion_generation tests
+        """
+        dof_states = self._dc.get_articulation_dof_states(self._art, _dynamic_control.STATE_POS)
+        pos_targets = self._dc.get_articulation_dof_position_targets(self._art)
+        dof_states["pos"] = pos_targets
+        self._dc.set_articulation_dof_states(self._art, dof_states, _dynamic_control.STATE_ALL)
+        await omni.kit.app.get_app().next_update_async()
+
     async def verify_policy_outputs(self, ground_truths, dbg=False):
         """
         The ground truths are obtained by running this method in dbg mode
@@ -371,6 +390,10 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         In dbg mode, the returned velocity target values will be printed
         and no assertions will be checked.
         """
+        body_count = self._dc.get_articulation_body_count(self._art)
+        for bodyIdx in range(body_count):
+            body = self._dc.get_articulation_body(self._art, bodyIdx)
+            self._dc.set_rigid_body_disable_gravity(body, True)
 
         # outputs of mg in different scenarios
         no_target_truth = ground_truths["no_target"]
@@ -380,6 +403,8 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         # where to put the target and obstacle
         target_pos = ground_truths["target_pos"]
         obs_pos = ground_truths["obs_pos"]
+
+        await self.teleport_robot_to_dc_pos_targets()
 
         self._mg.set_end_effector_target(None)
         self._mg._motion_policy.update()
@@ -396,6 +421,8 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         obs_prim = await self.add_block("/scene/obstacle", 10, obs_pos)
         await omni.kit.app.get_app().next_update_async()
+
+        await self.teleport_robot_to_dc_pos_targets()
 
         # Just the target
         self._mg.set_end_effector_target(target_prim)
