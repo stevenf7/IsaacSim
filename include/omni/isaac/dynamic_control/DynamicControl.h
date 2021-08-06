@@ -22,8 +22,6 @@ struct DynamicControl
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::dynamic_control::DynamicControl", 0, 1);
 
-    // just a test
-    void(CARB_ABI* hello)();
 
     // DcContext*(CARB_ABI* createContext)(const char* scenePath);
     // void(CARB_ABI* destroyContext)(DcContext* ctx);
@@ -51,8 +49,8 @@ struct DynamicControl
     // int(CARB_ABI* getArticulationCount)(const DcContext* ctx);
     // int(CARB_ABI* getArticulations)(DcContext* ctx, DcArticulation** userBuffer, int bufferSize);
 
-    void(CARB_ABI* wakeUpRigidBody)(DcHandle bodyHandle);
-    void(CARB_ABI* wakeUpArticulation)(DcHandle artHandle);
+    bool(CARB_ABI* wakeUpRigidBody)(DcHandle bodyHandle);
+    bool(CARB_ABI* wakeUpArticulation)(DcHandle artHandle);
 
     //===== Articulations =====//
 
@@ -97,7 +95,7 @@ struct DynamicControl
      *  \param actor the actor.
      *  \param flags flags for the state to obtain (kDcStatePos, kDcStateVel, or kDcStateAll)
      */
-    DcRigidBodyState*(CARB_ABI* getArticulationBodyStates)(DcHandle artHandle, DcStateFlags flags);
+    DcRigidBodyState*(CARB_ABI* getArticulationBodyStates)(DcHandle artHandle, const DcStateFlags& flags);
 
     // //! Sets states for an actor's rigid bodies.
     // /*!
@@ -107,6 +105,19 @@ struct DynamicControl
     //  */
     // bool(CARB_ABI* setArticulationBodyStates)(DcHandle artHandle, const DcRigidBodyState* states, DcStateFlags
     // flags);
+
+    //! Get properties for articulation
+    /*!
+     *  \param artHandle the handle to the articulation.
+     *  \param properties articulation properties.
+     */
+    bool(CARB_ABI* getArticulationProperties)(DcHandle artHandle, DcArticulationProperties* properties);
+    //! Set properties for articulation
+    /*!
+     *  \param artHandle the handle to the articulation.
+     *  \param properties articulation properties.
+     */
+    bool(CARB_ABI* setArticulationProperties)(DcHandle artHandle, const DcArticulationProperties& properties);
 
     //===== Articulation joints =====//
 
@@ -161,7 +172,7 @@ struct DynamicControl
      *  \param actor the actor.
      *  \param flags flags for the state to obtain (kDcStatePos, kDcStateVel, or kDcStateAll)
      */
-    DcDofState*(CARB_ABI* getArticulationDofStates)(DcHandle artHandle, DcStateFlags flags);
+    DcDofState*(CARB_ABI* getArticulationDofStates)(DcHandle artHandle, const DcStateFlags& flags);
 
     //! Get array of an actor's degree-of-freedom state derivatives (dstate / dt)
     /*!
@@ -181,7 +192,7 @@ struct DynamicControl
      *  \param states the states to set.
      *  \param flags flags for the state to obtain (kDcStatePos, kDcStateVel, or kDcStateAll)
      */
-    bool(CARB_ABI* setArticulationDofStates)(DcHandle artHandle, const DcDofState* states, DcStateFlags flags);
+    bool(CARB_ABI* setArticulationDofStates)(DcHandle artHandle, const DcDofState* states, const DcStateFlags& flags);
 
     //! Sets an actor's degree-of-freedom position targets.
     /*!
@@ -190,6 +201,14 @@ struct DynamicControl
      */
     bool(CARB_ABI* setArticulationDofPositionTargets)(DcHandle artHandle, const float* targets);
 
+    //! Gets an actor's degree-of-freedom position targets.
+    /*!
+     *  \param actor the actor.
+     *  \param states the targets to get.
+     */
+    bool(CARB_ABI* getArticulationDofPositionTargets)(DcHandle artHandle, float* targets);
+
+
     //! Sets an actor's degree-of-freedom velocity targets.
     /*!
      *  \param actor the actor.
@@ -197,12 +216,29 @@ struct DynamicControl
      */
     bool(CARB_ABI* setArticulationDofVelocityTargets)(DcHandle artHandle, const float* targets);
 
+    //! Gets an actor's degree-of-freedom velocity targets.
+    /*!
+     *  \param actor the actor.
+     *  \param states the targets to get.
+     */
+    bool(CARB_ABI* getArticulationDofVelocityTargets)(DcHandle artHandle, float* targets);
+
+
     //! Applies efforts to an actor's degrees-of-freedom.
     /*!
      *  \param actor the actor.
      *  \param states the efforts to apply.
      */
     bool(CARB_ABI* applyArticulationDofEfforts)(DcHandle artHandle, const float* efforts);
+
+
+    //! Get effective masses for articulation dofs
+    /*!
+     *  \param artHandle the handle to the articulation.
+     *  \param masses articulation properties.
+     */
+    bool(CARB_ABI* getArticulationDofMasses)(DcHandle artHandle, float* masses);
+
 
     // rigid bodies
 
@@ -223,30 +259,36 @@ struct DynamicControl
      *  \param bodyHandle.
      *  \param disableGravity.
      */
-    void(CARB_ABI* setRigidBodyDisableGravity)(DcHandle bodyHandle, const bool disableGravity);
+    bool(CARB_ABI* setRigidBodyDisableGravity)(DcHandle bodyHandle, const bool disableGravity);
 
     /**
      * @brief enables or disables Simulation of a given rigid body
      *  \param bodyHandle.
      *  \param disableSimulation.
      */
-    void(CARB_ABI* setRigidBodyDisableSimulation)(DcHandle bodyHandle, const bool disableSimulation);
+    bool(CARB_ABI* setRigidBodyDisableSimulation)(DcHandle bodyHandle, const bool disableSimulation);
 
-    void(CARB_ABI* setRigidBodyPose)(DcHandle bodyHandle, const DcTransform& pose);
-    void(CARB_ABI* setRigidBodyLinearVelocity)(DcHandle bodyHandle, const carb::Float3& linvel);
-    void(CARB_ABI* setRigidBodyAngularVelocity)(DcHandle bodyHandle, const carb::Float3& angvel);
+    bool(CARB_ABI* setRigidBodyPose)(DcHandle bodyHandle, const DcTransform& pose);
+    bool(CARB_ABI* setRigidBodyLinearVelocity)(DcHandle bodyHandle, const carb::Float3& linvel);
+    bool(CARB_ABI* setRigidBodyAngularVelocity)(DcHandle bodyHandle, const carb::Float3& angvel);
 
-    void(CARB_ABI* applyBodyForce)(DcHandle bodyHandle, const carb::Float3& force, const carb::Float3& pos); // pos in
+    bool(CARB_ABI* applyBodyForce)(DcHandle bodyHandle, const carb::Float3& force, const carb::Float3& pos); // pos in
                                                                                                              // world
                                                                                                              // space??
 
-    void(CARB_ABI* getRelativeBodyPoses)(DcHandle parentHandle,
+    bool(CARB_ABI* getRelativeBodyPoses)(DcHandle parentHandle,
                                          size_t numBodies,
                                          const DcHandle* bodyHandles,
                                          DcTransform* bodyTransforms);
 
     bool(CARB_ABI* getRigidBodyProperties)(DcHandle bodyHandle, DcRigidBodyProperties* props);
 
+    //! Set properties for rigid body
+    /*!
+     *  \param bodyHandle the handle to the rigid body.
+     *  \param properties properties for rigid body.
+     */
+    bool(CARB_ABI* setRigidBodyProperties)(DcHandle bodyHandle, const DcRigidBodyProperties& properties);
     // joints
 
     const char*(CARB_ABI* getJointName)(DcHandle jointHandle);
@@ -272,8 +314,8 @@ struct DynamicControl
     DcHandle(CARB_ABI* getDofParentBody)(DcHandle dofHandle);
     DcHandle(CARB_ABI* getDofChildBody)(DcHandle dofHandle);
 
-    DcDofState(CARB_ABI* getDofState)(DcHandle dofHandle);
-    bool(CARB_ABI* setDofState)(DcHandle dofHandle, const DcDofState* state);
+    DcDofState(CARB_ABI* getDofState)(DcHandle dofHandle, const DcStateFlags& flags);
+    bool(CARB_ABI* setDofState)(DcHandle dofHandle, const DcDofState* state, const DcStateFlags& flags);
 
     float(CARB_ABI* getDofPosition)(DcHandle dofHandle);
     bool(CARB_ABI* setDofPosition)(DcHandle dofHandle, float pos);
@@ -304,7 +346,7 @@ struct DynamicControl
 
     DcHandle(CARB_ABI* createRigidBodyAttractor)(const DcAttractorProperties* props);
 
-    void(CARB_ABI* destroyRigidBodyAttractor)(DcHandle attHandle);
+    bool(CARB_ABI* destroyRigidBodyAttractor)(DcHandle attHandle);
 
     //! Get properties of the selected attractor.
     /*!
@@ -342,7 +384,7 @@ struct DynamicControl
 
     DcHandle(CARB_ABI* createD6Joint)(const DcD6JointProperties* props);
 
-    void(CARB_ABI* destroyD6Joint)(DcHandle jointHandle);
+    bool(CARB_ABI* destroyD6Joint)(DcHandle jointHandle);
 
     //! Get properties of the selected joint.
     /*!

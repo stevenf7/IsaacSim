@@ -272,7 +272,7 @@ class Extension(omni.ext.IExt):
         self._wheel_left = self._dc.find_articulation_dof(self._ar, "right_wheel_joint")
 
         vel_props = _dynamic_control.DofProperties()
-        vel_props.drive_mode = _dynamic_control.DRIVE_VEL
+        vel_props.drive_mode = _dynamic_control.DRIVE_ACCELERATION
         vel_props.damping = 1e7
         vel_props.stiffness = 0
         self._dc.set_dof_properties(self._wheel_right, vel_props)

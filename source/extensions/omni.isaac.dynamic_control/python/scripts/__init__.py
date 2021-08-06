@@ -7,4 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .scripts import *
+from .extension import *
+from . import utils as utils
+from . import conversions as conversions

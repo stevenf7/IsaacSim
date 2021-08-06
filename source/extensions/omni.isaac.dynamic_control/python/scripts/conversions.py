@@ -1,0 +1,15 @@
+from pxr import Gf
+from omni.isaac.dynamic_control import _dynamic_control
+
+
+def _vec3d_quatd_to_dctransform(translation: Gf.Vec3d, quat: Gf.Quatd) -> _dynamic_control.Transform:
+    pose_t = (translation[0], translation[1], translation[2])
+    pose_r = (quat.GetImaginary()[0], quat.GetImaginary()[1], quat.GetImaginary()[2], quat.GetReal())
+    return _dynamic_control.Transform(pose_t, pose_r)
+
+
+def create_transform(translation, rotation) -> _dynamic_control.Transform:
+    if isinstance(rotation, Gf.Rotation):
+        return _vec3d_quatd_to_dctransform(translation, rotation.GetQuat())
+    if isinstance(rotation, Gf.Quatd):
+        return _vec3d_quatd_to_dctransform(translation, rotation)

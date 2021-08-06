@@ -7,23 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-# NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
-#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
+
 import omni.kit.test
-
-import carb.tokens
-
-# carb data types are used as return values, need this
-import carb
-import asyncio
-from pxr import Gf, PhysxSchema, UsdPhysics, Sdf, UsdGeom
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+from pxr import Gf, UsdPhysics, Sdf
 from omni.isaac.dynamic_control import _dynamic_control
-from .common import load_test_file, set_scene_physics_type
+from omni.isaac.dynamic_control import utils as dc_utils
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+
 class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
@@ -33,11 +23,13 @@ class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._extension_path = ext_manager.get_extension_path(ext_id)
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        self._stage = omni.usd.get_context().get_stage()
 
-        self._physics_rate = 60
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+        dc_utils.set_physics_frequency(60)
+        self._physics_scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/physicsScene"))
+        dc_utils.set_scene_physics_type(gpu=False, scene_path="/physicsScene")
 
         await omni.kit.app.get_app().next_update_async()
         pass
@@ -48,98 +40,52 @@ class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def simulate(self, seconds, art=None, steps_per_sec=60):
-        for frame in range(int(steps_per_sec * seconds)):
-            if art is not None:
-                self._dc.wake_up_articulation(art)
-            await omni.kit.app.get_app().next_update_async()
-
-    async def add_cube(self, path, size, offset, physics=True):
-
-        cubeGeom = UsdGeom.Cube.Define(self._stage, path)
-        cubePrim = self._stage.GetPrimAtPath(path)
-        cubeGeom.CreateSizeAttr(size)
-        cubeGeom.AddTranslateOp().Set(offset)
-        await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
-        if physics:
-            rigid_api = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
-            rigid_api.CreateRigidBodyEnabledAttr(True)
-        UsdPhysics.CollisionAPI.Apply(cubePrim)
-
-        return cubePrim
-
     async def test_pose(self, gpu=False):
-
-        await omni.usd.get_context().new_stage_async()
-        self._stage = omni.usd.get_context().get_stage()
-
-        scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
-        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
-        scene.CreateGravityMagnitudeAttr().Set(0.0)
-        prim = await self.add_cube("/cube", 100, (0, 0, 100))
-        await omni.kit.app.get_app().next_update_async()
+        self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+        self._physics_scene.CreateGravityMagnitudeAttr().Set(0.0)
+        await dc_utils.add_cube(self._stage, "/cube", 100, (0, 0, 100))
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         handle = self._dc.get_rigid_body("/cube")
         new_pose = _dynamic_control.Transform((100, 0, 0), (0, 0, 0, 1))
         self._dc.set_rigid_body_pose(handle, new_pose)
-        await self.simulate(1.0)
+        await dc_utils.simulate(1.0)
         pos = self._dc.get_rigid_body_pose(handle).p
         self.assertAlmostEqual(pos.x, 100, delta=0.1)
 
     async def test_linear_velocity(self, gpu=False):
-
-        await omni.usd.get_context().new_stage_async()
-        self._stage = omni.usd.get_context().get_stage()
-
-        scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
-        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
-        scene.CreateGravityMagnitudeAttr().Set(0.0)
-        prim = await self.add_cube("/cube", 100, (0, 0, 100))
-        await omni.kit.app.get_app().next_update_async()
+        self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+        self._physics_scene.CreateGravityMagnitudeAttr().Set(0.0)
+        await dc_utils.add_cube(self._stage, "/cube", 100, (0, 0, 100))
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         handle = self._dc.get_rigid_body("/cube")
-        new_pose = _dynamic_control.Transform((100, 0, 0), (0, 0, 0, 1))
         self._dc.set_rigid_body_linear_velocity(handle, (100, 0, 0))
-        await self.simulate(1.0)
+        await dc_utils.simulate(1.0)
         vel = self._dc.get_rigid_body_linear_velocity(handle)
         self.assertAlmostEqual(vel.x, 100, delta=0.1)
 
     async def test_angular_velocity(self, gpu=False):
-
-        await omni.usd.get_context().new_stage_async()
-        self._stage = omni.usd.get_context().get_stage()
-
-        scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
-        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
-        scene.CreateGravityMagnitudeAttr().Set(0.0)
-        prim = await self.add_cube("/cube", 100, (0, 0, 100))
-
-        await omni.kit.app.get_app().next_update_async()
+        self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+        self._physics_scene.CreateGravityMagnitudeAttr().Set(0.0)
+        await dc_utils.add_cube(self._stage, "/cube", 100, (0, 0, 100))
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         handle = self._dc.get_rigid_body("/cube")
-        new_pose = _dynamic_control.Transform((100, 0, 0), (0, 0, 0, 1))
         self._dc.set_rigid_body_angular_velocity(handle, (5, 0, 0))
-        await self.simulate(1.0)
+        await dc_utils.simulate(1.0)
         vel = self._dc.get_rigid_body_angular_velocity(handle)
         # cube slows down due to angular damping
         self.assertAlmostEqual(vel.x, 4.75, delta=0.1)
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_gravity(self, gpu=False):
-        await omni.usd.get_context().new_stage_async()
-        self._stage = omni.usd.get_context().get_stage()
-
-        scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
-        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        scene.CreateGravityMagnitudeAttr().Set(981.0)
-        prim = await self.add_cube("/cube", 100, (0, 0, 100))
-        await omni.kit.app.get_app().next_update_async()
+        self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        self._physics_scene.CreateGravityMagnitudeAttr().Set(981.0)
+        await dc_utils.add_cube(self._stage, "/cube", 100, (0, 0, 100))
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -150,15 +96,60 @@ class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.set_rigid_body_disable_gravity(handle, True)
         self._dc.wake_up_rigid_body(handle)
         self._dc.set_rigid_body_linear_velocity(handle, (0, 0, 0))
-        await self.simulate(1.0)
+        await dc_utils.simulate(1.0)
         pos = self._dc.get_rigid_body_pose(handle).p
 
         self.assertAlmostEqual(pos.z, 99.7, delta=0.1)
 
         self._dc.set_rigid_body_disable_gravity(handle, False)
         self._dc.wake_up_rigid_body(handle)
-        await self.simulate(1.0)
+        await dc_utils.simulate(1.0)
         pos = self._dc.get_rigid_body_pose(handle).p
         self.assertLess(pos.z, 0)
 
         pass
+
+    async def test_rigid_body_properties(self, gpu=False):
+        self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        self._physics_scene.CreateGravityMagnitudeAttr().Set(981.0)
+        await dc_utils.add_cube(self._stage, "/cube", 100, (0, 0, 100))
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        handle = self._dc.get_rigid_body("/cube")
+        props = self._dc.get_rigid_body_properties(handle)
+        self._dc.set_rigid_body_properties(handle, props)
+        await dc_utils.simulate(1.0)
+        # TODO: Test each property
+
+    def call_all_rigid_body_apis(self, handle):
+        self._dc.get_rigid_body_name(handle)
+        self._dc.get_rigid_body_path(handle)
+        self._dc.get_rigid_body_parent_joint(handle)
+        self._dc.get_rigid_body_child_joint_count(handle)
+        self._dc.get_rigid_body_child_joint(handle, 0)
+        self._dc.get_rigid_body_child_joint(handle, 100)
+        self._dc.get_rigid_body_pose(handle)
+        self._dc.set_rigid_body_pose(handle, _dynamic_control.Transform())
+        self._dc.set_rigid_body_disable_gravity(handle, True)
+        self._dc.set_rigid_body_disable_simulation(handle, False)
+        self._dc.get_rigid_body_linear_velocity(handle)
+        self._dc.get_rigid_body_local_linear_velocity(handle)
+        self._dc.set_rigid_body_linear_velocity(handle, (0, 0, 0))
+        self._dc.get_rigid_body_angular_velocity(handle)
+        self._dc.set_rigid_body_angular_velocity(handle, (0, 0, 0))
+        self._dc.apply_body_force(handle, (0, 0, 0), (0, 0, 0))
+        self._dc.get_relative_body_poses(handle, [handle])
+        self._dc.get_rigid_body_properties(handle)
+        self._dc.set_rigid_body_properties(handle, _dynamic_control.RigidBodyProperties())
+
+    async def test_start_stop(self, gpu=False):
+        self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        self._physics_scene.CreateGravityMagnitudeAttr().Set(981.0)
+        await dc_utils.add_cube(self._stage, "/cube", 100, (0, 0, 100))
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        handle = self._dc.get_rigid_body("/cube")
+        self.call_all_rigid_body_apis(handle)
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        self.call_all_rigid_body_apis(handle)

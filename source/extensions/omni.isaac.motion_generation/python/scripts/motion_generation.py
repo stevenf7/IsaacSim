@@ -171,7 +171,7 @@ class MotionGenerator:
         # Set robot to use velocity control rather than position control
 
         props = _dynamic_control.DofProperties()
-        props.drive_mode = _dynamic_control.DRIVE_VEL
+        props.drive_mode = _dynamic_control.DRIVE_FORCE
         props.damping = damping
         props.stiffness = 0
         for ind in self._active_joint_inds:

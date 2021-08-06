@@ -90,10 +90,9 @@ constexpr DcStateFlags kDcStateAll = (kDcStatePos | kDcStateVel | kDcStateEffort
  */
 enum class DcDriveMode : int32_t
 {
-    eNone, //!< DoF will not respond to any drive commands
-    ePositionTarget, //!< DoF will respond to position target commands
-    eVelocityTarget, //!< DoF will respond to veocity target commands
-    // eEffort, //!< DoF will respond to effort commands
+    eForce, //!< The output of the implicit spring drive controller is a force/torque.
+    eAcceleration, //!< The output of the implicit spring drive controller is a joint acceleration (use this to get
+                   //!< (spatial)-inertia-invariant behavior of the drive).
 };
 
 /**
@@ -148,10 +147,28 @@ enum class DcDofType : int32_t
     eTranslation, //!< The degrees of freedom correspond to a translation between bodies.
 };
 
+struct DcArticulationProperties
+{
+
+    // float stabilizationThreshold = 10.0;
+    // float sleepThreshold = 50.0;
+    uint32_t solverPositionIterationCount = 32;
+    uint32_t solverVelocityIterationCount = 1;
+    bool enableSelfCollisions = false;
+};
+
 struct DcRigidBodyProperties
 {
     float mass;
     carb::Float3 moment;
+    float maxDepenetrationVelocity = std::numeric_limits<float>::max();
+    float maxContactImpulse = std::numeric_limits<float>::max();
+    uint32_t solverPositionIterationCount = 16;
+    uint32_t solverVelocityIterationCount = 1;
+    // float stabilizationThreshold = 10.0;
+    // bool enableSpeculativeCCD = false;
+    // bool enableGyroscopicForces = true;
+    // bool retainAccelerations = false;
 };
 /**
  * Properties of a degree-of-freedom
@@ -160,11 +177,11 @@ struct DcDofProperties
 {
     DcDofType type = DcDofType::eNone; //!< Type of dof (read-only property)
 
-    bool hasLimits = false; //!< Flags whether the DOF has limits.
-    float lower = 0.0f; //!< lower limit of DOF. In radians or meters
-    float upper = 0.0f; //!< upper limit of DOF. In radians or meters
+    bool hasLimits = false; //!< Flags whether the DOF has limits. (read-only property)
+    float lower = 0.0f; //!< lower limit of DOF. In radians or meters (read-only property)
+    float upper = 0.0f; //!< upper limit of DOF. In radians or meters (read-only property)
 
-    DcDriveMode driveMode = DcDriveMode::eNone; //!< Drive mode for the DOF. See DcDriveMode.
+    DcDriveMode driveMode = DcDriveMode::eAcceleration; //!< Drive mode for the DOF. See DcDriveMode.
     float maxVelocity = std::numeric_limits<float>::max(); //!< Maximum velocity of DOF. In Radians/s, or m/s
     float maxEffort = std::numeric_limits<float>::max(); //!< Maximum effort of DOF. in N or Nm.
     float stiffness = 0.0f; //!< Stiffness of DOF.

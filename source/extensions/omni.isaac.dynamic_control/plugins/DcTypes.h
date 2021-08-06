@@ -97,7 +97,7 @@ struct DcDof
     ::physx::PxArticulationJointReducedCoordinate* pxArticulationJoint = nullptr;
     ::physx::PxArticulationAxis::Enum pxAxis = ::physx::PxArticulationAxis::eTWIST;
 
-    DcDriveMode driveMode = DcDriveMode::eNone;
+    DcDriveMode driveMode = DcDriveMode::eAcceleration;
 
     // helper values used to compute the cacheIdx
     int linkIndex = 0;
@@ -129,7 +129,7 @@ struct DcArticulation
         return int(dofs.size());
     }
 
-    bool refreshCache() const;
+    bool refreshCache(const ::physx::PxArticulationCacheFlags& flags = ::physx::PxArticulationCacheFlag::eALL) const;
 
     DcHandle handle = kDcInvalidHandle;
 

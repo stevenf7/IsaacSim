@@ -802,7 +802,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     }
 
     PxArticulationReducedCoordinate* arc = static_cast<PxArticulationReducedCoordinate*>(abase);
-
+    // arc->setArticulationFlag(PxArticulationFlag::eCOMPUTE_JOINT_FORCES, true);
     /*
     PxU32 posIters, velIters;
     arc->getSolverIterationCounts(posIters, velIters);
@@ -933,46 +933,25 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                     dof->pxAxis = PxArticulationAxis::eX;
                 }
 
-                PxArticulationDriveType::Enum driveType;
-                float stiffness;
-                float damping;
-                float maxForce;
-                pxJoint->getDrive(dof->pxAxis, stiffness, damping, maxForce, driveType);
-                CARB_LOG_INFO("  Drive axis: %d\n", int(dof->pxAxis));
-                CARB_LOG_INFO("  Drive type: %d\n", int(driveType));
-                CARB_LOG_INFO("  Drive stiffness: %f\n", stiffness);
-                CARB_LOG_INFO("  Drive damping: %f\n", damping);
-                CARB_LOG_INFO("  Drive maxForce: %f\n", maxForce);
+                PxArticulationDrive drive = pxJoint->getDriveParams(dof->pxAxis);
 
-                // guess drive mode
-                switch (driveType)
+                CARB_LOG_INFO("  Drive axis: %d\n", int(dof->pxAxis));
+                CARB_LOG_INFO("  Drive type: %d\n", int(drive.driveType));
+                CARB_LOG_INFO("  Drive stiffness: %f\n", drive.stiffness);
+                CARB_LOG_INFO("  Drive damping: %f\n", drive.damping);
+                CARB_LOG_INFO("  Drive maxForce: %f\n", drive.maxForce);
+
+                // get the current drive mode
+                switch (drive.driveType)
                 {
-                case PxArticulationDriveType::eTARGET:
-                    dof->driveMode = DcDriveMode::ePositionTarget;
-                    break;
-                case PxArticulationDriveType::eVELOCITY:
-                    dof->driveMode = DcDriveMode::eVelocityTarget;
-                    break;
                 case PxArticulationDriveType::eFORCE:
-                case PxArticulationDriveType::eACCELERATION:
-                    if (stiffness > 0.0f)
-                    {
-                        // if stiffness is set, assume position target mode
-                        dof->driveMode = DcDriveMode::ePositionTarget;
-                    }
-                    else if (damping > 0.0f)
-                    {
-                        // if stiffness is not set, but damping is set, assume velocity target mode
-                        dof->driveMode = DcDriveMode::eVelocityTarget;
-                    }
-                    else
-                    {
-                        // no stiffness or damping is set, could be eNone or eEffort (?)
-                        dof->driveMode = DcDriveMode::eNone;
-                    }
+                    dof->driveMode = DcDriveMode::eForce;
                     break;
-                case PxArticulationDriveType::eNONE:
-                    dof->driveMode = DcDriveMode::eNone;
+                case PxArticulationDriveType::eACCELERATION:
+                    dof->driveMode = DcDriveMode::eAcceleration;
+                    break;
+                default:
+                    dof->driveMode = DcDriveMode::eAcceleration;
                     break;
                 }
 

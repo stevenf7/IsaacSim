@@ -40,7 +40,7 @@ class Kaya:
         self.wheel_left_idx = self._dc.find_articulation_dof_index(self.ar, "axle_2_joint")
 
         self.vel_props = _dynamic_control.DofProperties()
-        self.vel_props.drive_mode = _dynamic_control.DRIVE_VEL
+        self.vel_props.drive_mode = _dynamic_control.DRIVE_ACCELERATION
         self.vel_props.damping = 1e7
         self.vel_props.stiffness = 0
         self._dc.set_dof_properties(self.wheel_right, self.vel_props)

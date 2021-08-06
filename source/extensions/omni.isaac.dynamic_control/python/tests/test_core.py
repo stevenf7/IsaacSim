@@ -7,14 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-# NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
-#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-
 import omni.usd
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -33,7 +27,6 @@ class TestCore(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_is_simulating(self):
         await omni.kit.app.get_app().next_update_async()
         self.assertFalse(self._dc.is_simulating())
@@ -46,3 +39,11 @@ class TestCore(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertFalse(self._dc.is_simulating())
         await omni.kit.app.get_app().next_update_async()
         pass
+
+    async def test_print(self):
+        t = _dynamic_control.Transform((1, 2, 3), (1, 2, 3, 4))
+        v = _dynamic_control.Velocity((1, 2, 3), (4, 5, 6))
+        self.assertEqual("(1, 2, 3), (1, 2, 3, 4)", str(t))
+        self.assertEqual("(1, 2, 3), (4, 5, 6)", str(v))
+        self.assertEqual("(1, 2, 3), (1, 2, 3, 4), (1, 2, 3), (4, 5, 6)", str(_dynamic_control.RigidBodyState(t, v)))
+        self.assertEqual("(1, 2, 3)", str(_dynamic_control.DofState(1, 2, 3)))
