@@ -24,4 +24,9 @@ if ! [[ -z "${CONDA_PREFIX}" ]]; then
   echo "If conda is desired please source python_samples/setenv.sh in your python 3.7 conda env and run python normally"
 fi
 
-$python_exe $@ || error_exit
+if ! [[ $EUID -ne 0 ]]; then
+    echo "running as root"
+    args="$args --allow-root"
+fi
+
+$python_exe $@ $args || error_exit
