@@ -51,9 +51,6 @@ path = "bin/liblula_math.so"
 path = "bin/liblula_world.so"
 
 [[native.library]]
-path = "bin/liblula_fabrics.so"
-
-[[native.library]]
 path = "bin/liblula_interface.so"
 
 [[native.library]]
@@ -61,6 +58,9 @@ path = "bin/liblula_opt.so"
 
 [[native.library]]
 path = "bin/liblula_kinematics.so"
+
+[[native.library]]
+path = "bin/liblula_fabrics.so"
 
 [[native.library]]
 path = "bin/liblula_motion_opt.so"
