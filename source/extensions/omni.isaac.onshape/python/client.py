@@ -13,7 +13,7 @@ try:
     from onshape_client import Client
 except ImportError:
     print("onshape not found. attempting to install...")
-    omni.kit.pipapi.install("onshape_client==1.6.3")
+    omni.kit.pipapi.install("onshape_client", version="1.6.3")
     from onshape_client import Client
 
 from pathlib import Path
