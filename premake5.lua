@@ -243,10 +243,10 @@ group "exts"
     include ("source/extensions/omni.isaac.ui")
     include ("source/extensions/omni.isaac.ui_template")
     include ("source/extensions/omni.isaac.window.about")
-
     include ("source/extensions/omni.kit.property.isaac")
     include ("source/extensions/omni.kit.loop-isaac")
     include ("source/extensions/omni.usd.schema.isaac")
+    include ("source/extensions/omni.isaac.kit")
 
     -- include ("source/extensions/omni.isaac.samples_internal")
     -- include ("source/extensions/omni.isaac.exploded_view")
