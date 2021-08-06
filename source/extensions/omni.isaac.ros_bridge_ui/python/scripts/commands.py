@@ -97,6 +97,8 @@ class ROSBridgeCreateCamera(omni.kit.commands.Command):
         rgb_topic: str = "/rgb",
         depth_enabled: bool = False,
         depth_topic: str = "/depth",
+        point_cloud_enabled: bool = False,
+        point_cloud_topic: str = "/point_cloud",
         segmentation_enabled: bool = False,
         semantic_topic: str = "/semantic",
         instance_topic: str = "/instance",
@@ -135,6 +137,7 @@ class ROSBridgeCreateCamera(omni.kit.commands.Command):
             self._prim.CreateCameraInfoPubTopicAttr(self._camera_info_topic)
             self._prim.CreateRgbPubTopicAttr(self._rgb_topic)
             self._prim.CreateDepthPubTopicAttr(self._depth_topic)
+            self._prim.CreatePointCloudPubTopicAttr(self._point_cloud_topic)
             self._prim.CreateFrameIdAttr(self._frame_id)
             self._prim.CreateSemanticPubTopicAttr(self._semantic_topic)
             self._prim.CreateInstancePubTopicAttr(self._instance_topic)
@@ -147,6 +150,7 @@ class ROSBridgeCreateCamera(omni.kit.commands.Command):
 
             self._prim.CreateRgbEnabledAttr(self._rgb_enabled)
             self._prim.CreateDepthEnabledAttr(self._depth_enabled)
+            self._prim.CreatePointCloudEnabledAttr(self._point_cloud_enabled)
             self._prim.CreateSegmentationEnabledAttr(self._segmentation_enabled)
             self._prim.CreateBoundingBox2DEnabledAttr(self._bbox2d_enabled)
             self._prim.CreateBoundingBox3DEnabledAttr(self._bbox3d_enabled)
