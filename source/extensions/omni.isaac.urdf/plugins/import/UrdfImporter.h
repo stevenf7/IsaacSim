@@ -23,8 +23,8 @@
 #include <omni/isaac/urdf/Urdf.h>
 #include <omni/isaac/urdf/UrdfTypes.h>
 #include <omni/isaac/urdf/core/maths.h>
+#include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxSceneAPI.h>
-#include <physxSchemaTools/UsdTools.h>
 #include <usdPhysics/articulationRootAPI.h>
 #include <usdPhysics/collisionAPI.h>
 #include <usdPhysics/driveAPI.h>

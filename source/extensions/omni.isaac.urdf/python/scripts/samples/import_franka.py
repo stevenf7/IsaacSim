@@ -203,12 +203,22 @@ class Extension(omni.ext.IExt):
         finger_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint2"), "linear")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
-        set_drive_parameters(joint_1, "position", math.degrees(0.012), math.radians(60000), math.radians(3000))
-        set_drive_parameters(joint_2, "position", math.degrees(-0.57), math.radians(60000), math.radians(3000))
-        set_drive_parameters(joint_3, "position", math.degrees(0), math.radians(60000), math.radians(3000))
-        set_drive_parameters(joint_4, "position", math.degrees(-2.81), math.radians(60000), math.radians(3000))
-        set_drive_parameters(joint_5, "position", math.degrees(0), math.radians(25000), math.radians(3000))
-        set_drive_parameters(joint_6, "position", math.degrees(3.037), math.radians(15000), math.radians(3000))
-        set_drive_parameters(joint_7, "position", math.degrees(0.741), math.radians(5000), math.radians(3000))
-        set_drive_parameters(finger_1, "position", 4, 6000, 1000)
-        set_drive_parameters(finger_2, "position", 4, 6000, 1000)
+        set_drive_parameters(
+            joint_1, "position", math.degrees(0.012), math.radians(60000), math.radians(3000), 8700 * 70
+        )
+        set_drive_parameters(
+            joint_2, "position", math.degrees(-0.57), math.radians(60000), math.radians(3000), 8700 * 70
+        )
+        set_drive_parameters(joint_3, "position", math.degrees(0), math.radians(60000), math.radians(3000), 8700 * 70)
+        set_drive_parameters(
+            joint_4, "position", math.degrees(-2.81), math.radians(60000), math.radians(3000), 8700 * 70
+        )
+        set_drive_parameters(joint_5, "position", math.degrees(0), math.radians(25000), math.radians(3000), 8700 * 70)
+        set_drive_parameters(
+            joint_6, "position", math.degrees(3.037), math.radians(15000), math.radians(3000), 1200 * 60
+        )
+        set_drive_parameters(
+            joint_7, "position", math.degrees(0.741), math.radians(5000), math.radians(3000), 1200 * 60
+        )
+        set_drive_parameters(finger_1, "position", 4, 6000, 1000, 1200 * 60)
+        set_drive_parameters(finger_2, "position", 4, 6000, 1000, 1200 * 60)
