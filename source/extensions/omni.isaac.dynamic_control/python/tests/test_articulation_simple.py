@@ -11,7 +11,7 @@ import omni.kit.test
 import math
 import carb  # carb data types are used as return values, need this
 import numpy as np
-from pxr import Gf, UsdPhysics
+from pxr import Gf, UsdPhysics, Sdf
 import omni.physx as _physx
 
 from omni.isaac.dynamic_control import _dynamic_control
@@ -215,6 +215,31 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
         self.assertTrue(dof_states is not None)
 
+    async def test_delete_joint(self, gpu=False):
+        dc_utils.set_scene_physics_type(gpu)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        art = self._dc.get_articulation("/Articulation")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+        root_body = self._dc.get_articulation_root_body(art)
+        new_pose = self._dc.get_rigid_body_pose(root_body)
+        self.assertAlmostEqual(new_pose.p.z, 0)
+
+        # test to make sure articulation falls when joint is deleted.
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        # TODO, replace this with joint disable command instead of delete
+        delete_cmd = omni.usd.commands.DeletePrimsCommand(["/Articulation/CenterPivot/FixedJoint"])
+        delete_cmd.do()
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await dc_utils.simulate(0.1, self._dc, art)
+        new_pose = self._dc.get_rigid_body_pose(root_body)
+        self.assertAlmostEqual(new_pose.p.z, -7.6222, delta=0.02)
+        pass
+
     async def test_disable_joint(self, gpu=False):
         dc_utils.set_scene_physics_type(gpu)
 
@@ -226,12 +251,17 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         new_pose = self._dc.get_rigid_body_pose(root_body)
         self.assertAlmostEqual(new_pose.p.z, 0)
 
-        # test to make sure articulation falls when joint is disabled/deleted.
+        # test to make sure articulation falls when joint is disabled.
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
-        # TODO, replace this with joint disable command instead of delete
-        delete_cmd = omni.usd.commands.DeletePrimsCommand(["/Articulation/CenterPivot/FixedJoint"])
-        delete_cmd.do()
+
+        omni.kit.commands.execute(
+            "ChangeProperty",
+            prop_path=Sdf.Path("/Articulation/CenterPivot/FixedJoint.physics:jointEnabled"),
+            value=False,
+            prev=None,
+        )
+
         # Start Simulation and wait
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()

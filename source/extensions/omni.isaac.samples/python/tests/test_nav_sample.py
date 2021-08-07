@@ -149,7 +149,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._rc.set_goal(100, 100, 90)
         self._rc.enable_navigation(True)
 
-        for frame in range(int(90 * 60)):
+        for frame in range(int(15 * 60)):
             await omni.kit.app.get_app().next_update_async()
             if self._rc.reached_goal():
                 break
@@ -157,8 +157,8 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         roll, pitch, yaw = math_utils.quat_to_euler_angles(
             Gf.Quaternion(imu_pose.r.w, Gf.Vec3d(imu_pose.r.x, imu_pose.r.y, imu_pose.r.z))
         )
-        self.assertAlmostEqual(imu_pose.p.x, self._rc.get_goal()[0], delta=5.0)
-        self.assertAlmostEqual(imu_pose.p.y, self._rc.get_goal()[1], delta=5.0)
+        self.assertAlmostEqual(imu_pose.p.x, self._rc.get_goal()[0], delta=6.0)
+        self.assertAlmostEqual(imu_pose.p.y, self._rc.get_goal()[1], delta=6.0)
         self.assertAlmostEqual(yaw, math.radians(self._rc.get_goal()[2]), delta=0.1)
         pass
 

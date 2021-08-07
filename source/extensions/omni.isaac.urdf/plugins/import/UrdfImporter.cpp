@@ -30,10 +30,10 @@
 
 #include "ImportHelpers.h"
 
+#include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxArticulationAPI.h>
 #include <physxSchema/physxJointAPI.h>
 #include <physxSchema/physxSceneAPI.h>
-#include <physxSchemaTools/UsdTools.h>
 #include <usdPhysics/articulationRootAPI.h>
 #include <usdPhysics/collisionAPI.h>
 #include <usdPhysics/driveAPI.h>

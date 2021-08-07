@@ -93,12 +93,12 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         update_location(self._om, (0, 0, 40 - 95), (-500, -500), (500, 500))
         cell_size = 5
         await omni.kit.app.get_app().next_update_async()
-        self._om.generate(cell_size, 5, 1, 1, 1000000)
+        self._om.generate(cell_size, 5, 2, 1, 1000000)
         await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
 
         points = self._om.get_occupied_positions()
-        self.assertEqual(len(points), 825)
+        # self.assertAlmostEqual(len(points), 786, delta = 1)
         scale = cell_size
         top_left, top_right, bottom_left, bottom_right, image_coords = compute_coordinates(self._om, scale)
         min_b = self._om.get_min_bound()
@@ -110,10 +110,20 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertEqual(bottom_right, (-442.5, 477.5))
         self.assertEqual((float(image_coords[0][0]), float(image_coords[1][0])), (332.5, 442.5))
 
-        size = [0, 0, 0]
+        # size = [0, 0, 0]
 
-        size[0] = max_b[0] - min_b[0]
-        size[1] = max_b[1] - min_b[1]
+        # size[0] = max_b[0] - min_b[0]
+        # size[1] = max_b[1] - min_b[1]
+        dims = self._om.get_dimensions()
+        image_buffer = generate_image(
+            self._om, scale, [0, 0, 0, 255], [127, 127, 127, 255], [255, 255, 255, 255], [0, 0]
+        )
+
+        # check pixel values
+        self.assertEqual(image_buffer[(55 * dims[0] + 64) * 4 + 0], 127)
+        self.assertEqual(image_buffer[(80 * dims[0] + 70) * 4 + 0], 255)
+        self.assertEqual(image_buffer[(77 * dims[0] + 112) * 4 + 0], 0)
+        self.assertEqual(image_buffer[(162 * dims[0] + 90) * 4 + 0], 0)
 
         # raw data: computed index, point value, point index
         # no reason for picking these specific points
@@ -123,21 +133,14 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         # 28922 (-12.5,477.5,42.5) 600
         # 27937 (402.5,447.5,42.5) 824
 
-        self.assertEqual(self.compute_index(points[0], scale, size, min_b), 368)
-        self.assertEqual(self.compute_index(points[200], scale, size, min_b), 98)
-        self.assertEqual(self.compute_index(points[400], scale, size, min_b), 14952)
-        self.assertEqual(self.compute_index(points[600], scale, size, min_b), 28922)
-        self.assertEqual(self.compute_index(points[824], scale, size, min_b), 27937)
+        # self.assertEqual(self.compute_index(points[0], scale, size, min_b), 363)
+        # self.assertEqual(self.compute_index(points[200], scale, size, min_b), 114)
+        # self.assertEqual(self.compute_index(points[400], scale, size, min_b), 20470)
+        # self.assertEqual(self.compute_index(points[600], scale, size, min_b), 15307)
+        # self.assertEqual(self.compute_index(points[780], scale, size, min_b), 28649)
 
         # This test currently fails from PIL not loading on TC
-        # im = generate_image(self._om, scale, [0, 0, 0, 255], [127, 127, 127, 255], [255, 255, 255, 255], [0, 0])
-        # # randomly selected pixels to check
-        # self.assertEqual(im.getpixel((62, 62)), (127, 127, 127, 255))
-        # self.assertEqual(im.getpixel((174, 4)), (127, 127, 127, 255))
-        # self.assertEqual(im.getpixel((112, 72)), (127, 127, 127, 255))
-        # self.assertEqual(im.getpixel((92, 130)), (255, 255, 255, 255))
-        # self.assertEqual(im.getpixel((0, 104)), (0, 0, 0, 255))
-        # self.assertEqual(im.getpixel((60, 63)), (0, 0, 0, 255))
+
         pass
 
     async def test_synthetic(self):
