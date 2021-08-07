@@ -167,6 +167,61 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         lidar_sub.unregister()
         pass
 
+    async def test_depth_to_point_cloud(self):
+        import rospy
+
+        from sensor_msgs.msg import PointCloud2
+
+        await add_carter_ros()
+        await add_cube("/cube", 80, (160, 10, 50))
+
+        # Setting the Point Cloud publisher topic in ROS Camera
+        omni.kit.commands.execute(
+            "ChangeProperty",
+            prop_path=Sdf.Path("/Carter/ROS_Camera_Stereo_Left.pointCloudPubTopic"),
+            value="/point_cloud_left",
+            prev=None,
+        )
+
+        # Enable Point Cloud publisher in ROS Camera
+        omni.kit.commands.execute(
+            "ChangeProperty",
+            prop_path=Sdf.Path("/Carter/ROS_Camera_Stereo_Left.pointCloudEnabled"),
+            value=True,
+            prev=None,
+        )
+
+        self._point_cloud_data = None
+
+        def point_cloud_callback(data: PointCloud2):
+            self._point_cloud_data = data
+
+        camera_sub = rospy.Subscriber("/point_cloud_left", PointCloud2, point_cloud_callback)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate(1)
+
+        self.assertIsNotNone(self._point_cloud_data)
+        self.assertGreater(self._point_cloud_data.height, 1)
+        self.assertGreater(self._point_cloud_data.width, 1)
+        self.assertEqual(
+            self._point_cloud_data.row_step / self._point_cloud_data.point_step, self._point_cloud_data.width
+        )
+        self.assertEqual(
+            len(self._point_cloud_data.data) / self._point_cloud_data.row_step, self._point_cloud_data.height
+        )
+
+        self.assertEqual(self._point_cloud_data.data[516327], 190)
+        self.assertEqual(self._point_cloud_data.data[712187], 63)
+        self.assertEqual(self._point_cloud_data.fields[0].datatype, 7)
+        self.assertEqual(self._point_cloud_data.fields[1].datatype, 7)
+        self.assertEqual(self._point_cloud_data.fields[2].datatype, 7)
+
+        self._timeline.stop()
+        camera_sub.unregister()
+        pass
+
     async def test_3D_point_cloud_manual(self):
         import rospy
 
@@ -292,4 +347,80 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
 
         self._timeline.stop()
         lidar_sub.unregister()
+        pass
+
+    async def test_depth_to_point_cloud_manual(self):
+        import rospy
+
+        from sensor_msgs.msg import PointCloud2
+
+        await add_carter_ros()
+        await add_cube("/cube", 80, (160, 10, 50))
+
+        # Setting the Point Cloud publisher topic in ROS Camera
+        omni.kit.commands.execute(
+            "ChangeProperty",
+            prop_path=Sdf.Path("/Carter/ROS_Camera_Stereo_Left.pointCloudPubTopic"),
+            value="/point_cloud_left",
+            prev=None,
+        )
+
+        # Enable Point Cloud publisher in ROS Camera
+        omni.kit.commands.execute(
+            "ChangeProperty",
+            prop_path=Sdf.Path("/Carter/ROS_Camera_Stereo_Left.pointCloudEnabled"),
+            value=True,
+            prev=None,
+        )
+
+        self._point_cloud_data = None
+
+        def point_cloud_callback(data: PointCloud2):
+            self._point_cloud_data = data
+
+        camera_sub = rospy.Subscriber("point_cloud_left", PointCloud2, point_cloud_callback)
+
+        # disable the ROS Camera so we can tick it manually
+        omni.kit.commands.execute(
+            "ChangeProperty", prop_path=Sdf.Path("/Carter/ROS_Camera_Stereo_Left.enabled"), value=False, prev=None
+        )
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate(1)
+        # Should be no data yet
+        self.assertIsNone(self._point_cloud_data)
+
+        # Enable ROS Camera by ticking it once
+        result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/Carter/ROS_Camera_Stereo_Left")
+
+        # Wait for ROS nodes to initialize
+        await asyncio.sleep(1.0)
+
+        # Publish a point cloud message
+        result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/Carter/ROS_Camera_Stereo_Left")
+        self.assertTrue(status)
+
+        # wait for message
+        await asyncio.sleep(1.0)
+
+        # Check message
+        self.assertIsNotNone(self._point_cloud_data)
+        self.assertGreater(self._point_cloud_data.height, 1)
+        self.assertGreater(self._point_cloud_data.width, 1)
+        self.assertEqual(
+            self._point_cloud_data.row_step / self._point_cloud_data.point_step, self._point_cloud_data.width
+        )
+        self.assertEqual(
+            len(self._point_cloud_data.data) / self._point_cloud_data.row_step, self._point_cloud_data.height
+        )
+
+        self.assertEqual(self._point_cloud_data.data[516327], 190)
+        self.assertEqual(self._point_cloud_data.data[712187], 63)
+        self.assertEqual(self._point_cloud_data.fields[0].datatype, 7)
+        self.assertEqual(self._point_cloud_data.fields[1].datatype, 7)
+        self.assertEqual(self._point_cloud_data.fields[2].datatype, 7)
+
+        self._timeline.stop()
+        camera_sub.unregister()
         pass
