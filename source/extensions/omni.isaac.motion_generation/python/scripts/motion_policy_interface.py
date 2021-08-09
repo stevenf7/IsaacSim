@@ -121,6 +121,10 @@ class MotionPolicy:
                 pos (np array): 3D translation of prim
                 rot (np array): Rotation Matrix for prim
         """
+        xform = UsdGeom.Xformable(prim)
+        if xform.GetXformOpOrderAttr().Get() is None:
+            return default_trans, default_rot
+
         attr_name_base = "xformOp:"
 
         rotation_attrs = [
@@ -141,7 +145,6 @@ class MotionPolicy:
         translation_attrs = ["transform", "translate"]
         translation_attrs = [attr_name_base + t for t in translation_attrs]
 
-        xform = UsdGeom.Xformable(prim)
         has_rot_attr = False
         has_trans_attr = False
         for op in xform.GetXformOpOrderAttr().Get():
