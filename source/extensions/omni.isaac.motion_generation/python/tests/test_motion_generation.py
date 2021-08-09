@@ -94,7 +94,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         robot_prim = self._stage.GetPrimAtPath("/panda")
         self.assertNotEqual(str(robot_prim.GetPath()), "")
         robot_geom = UsdGeom.Xform(robot_prim)
-        robot_geom.AddTranslateOp().Set(Gf.Vec3d(0.0, 0.0, 0.0))
+
         # Start Simulation and wait
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -157,7 +157,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             target_pos, timeout, target_orient=Gf.Quatf(0.0, 0.0, 0.0, 1.0), obs_pos=obstacle_pos
         )
 
-        robot_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(10.0, 70.0, 0.0))
+        robot_geom.AddTranslateOp().Set(Gf.Vec3d(10.0, 70.0, 0.0))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = R.from_rotvec([0, 0, -np.pi / 4]).as_quat()
@@ -197,7 +197,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         robot_prim = self._stage.GetPrimAtPath("/ur10")
         self.assertNotEqual(str(robot_prim.GetPath()), "")
         robot_geom = UsdGeom.Xform(robot_prim)
-        robot_geom.AddTranslateOp().Set(Gf.Vec3d(0.0, 0.0, 0.0))
+
         # Start Simulation and wait
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -249,7 +249,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         timeout = 5
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
-        robot_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(10.0, 70.0, 0.0))
+        robot_geom.AddTranslateOp().Set(Gf.Vec3d(10.0, 70.0, 0.0))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
         rot_quat = R.from_rotvec([0, 0, -np.pi / 4]).as_quat()

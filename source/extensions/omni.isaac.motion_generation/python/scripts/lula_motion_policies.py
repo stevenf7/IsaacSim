@@ -30,7 +30,9 @@ class LulaMotionPolicy(MotionPolicy):
         self._robot_description = lula.load_robot(robot_description_path, urdf_path)
         self._kinematics = self._robot_description.kinematics()
         self._robot_prim = robot_prim
-        self._robot_pos, self._robot_rot = self.get_prim_pose(robot_prim)
+        self._robot_pos, self._robot_rot = self.get_prim_pose(
+            robot_prim, default_trans=np.zeros(3), default_rot=np.eye(3)
+        )
 
     def update_world(self, updated_obstacles=None, robot_base_moved=False):
         if updated_obstacles is None or robot_base_moved:
@@ -69,7 +71,7 @@ class LulaMotionPolicy(MotionPolicy):
 
     def update_robot_base_pose(self):
         # all object poses are relative to the position of the robot base
-        pos, rot = self.get_prim_pose(self._robot_prim)
+        pos, rot = self.get_prim_pose(self._robot_prim, default_trans=np.zeros(3), default_rot=np.eye(3))
         if np.any(self._robot_pos - pos) or np.any(self._robot_rot - rot):
             base_moved = True
         else:
