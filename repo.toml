@@ -387,6 +387,7 @@ exts.include = [
     "omni.isaac.range_sensor",
     "omni.isaac.samples",
     "omni.isaac.surface_gripper",
+    "omni.isaac.synthetic_recorder",
     "omni.isaac.synthetic_utils",
     "omni.isaac.ui",
     "omni.isaac.urdf",
