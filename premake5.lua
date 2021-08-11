@@ -237,6 +237,7 @@ group "exts"
     include ("source/extensions/omni.isaac.shapenet")
     include ("source/extensions/omni.isaac.splash")
     include ("source/extensions/omni.isaac.surface_gripper")
+    include ("source/extensions/omni.isaac.synthetic_recorder")
     include ("source/extensions/omni.isaac.synthetic_utils")
     include ("source/extensions/omni.isaac.tests")
     include ("source/extensions/omni.isaac.utils")
