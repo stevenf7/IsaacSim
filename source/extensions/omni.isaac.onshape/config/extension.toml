@@ -1,7 +1,7 @@
 display_name = "Isaac onshape"
 
 [package]
-version = "0.3.9"
+version = "0.3.10"
 category = "Importer"
 title = "Isaac Onshape Importer"
 description = "Import Onshape Documents into Omniverse"

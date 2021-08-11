@@ -72,6 +72,7 @@ class Mate(object):
         # print(self.name)
         self.type = mate["featureData"]["mateType"]
         # print(mate)
+        self.limits = [None, None]
         self.occurrences = [m["matedOccurrence"] for m in mate["featureData"]["matedEntities"]]
         self.positions = [
             Gf.Matrix4d(
