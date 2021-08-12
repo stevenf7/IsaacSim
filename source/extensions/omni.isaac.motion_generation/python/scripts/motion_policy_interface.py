@@ -49,6 +49,7 @@ class MotionPolicy:
         Params:
                 joint_position (m x 1): positions of each joint
                 joint_velocity (m x 1): velocity of each joint
+
         Return:
                 joint_acceleration (m x 1): a function of robot state, world state, and target
         """

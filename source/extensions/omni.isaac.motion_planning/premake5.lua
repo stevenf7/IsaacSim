@@ -24,7 +24,7 @@ project_ext_plugin(ext, "omni.isaac.motion_planning.plugin")
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/lula/lib"
+        "%{root}/_build/target-deps/lula/lib64"
     }
 
     links {"gf", "sdf", "usdGeom", "usdUtils", "lula_fabrics", "lula_interface", "lula_kinematics", "lula_math" , "lula_opt", "lula_rmpflow", "lula_util", "lula_world", "yaml-cpp", "urdfdom_model"}
@@ -67,7 +67,8 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/motion_planning" },
-    { "%{root}/_build/target-deps/lula/lib/**", ext.target_dir.."/bin" },
+    { "%{root}/_build/target-deps/lula/lib64/**", ext.target_dir.."/bin" },
     { "lula", ext.target_dir.."/lula" },
     { "%{root}/_build/target-deps/lula/python/**", ext.target_dir.."/lula" },
+    -- { "%{root}/_build/target-deps/lula/pip-packages/*.whl", ext.target_dir.."/pip-packages/" },
 }
