@@ -41,6 +41,7 @@ BBOX_AREA_THRESH = 16
 RENDER_CONFIG = {
     "renderer": "PathTracing",
     "samples_per_pixel_per_frame": 12,
+    "headless": False,
     "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
 }
 
@@ -73,7 +74,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
         from omni.isaac.synthetic_utils import SyntheticDataHelper, DomainRandomization
-        from omni.isaac.synthetic_utils import shapenet
+        from omni.isaac.shapenet import utils
 
         self.sd_helper = SyntheticDataHelper()
         self.dr_helper = DomainRandomization()
@@ -90,7 +91,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         # If ShapeNet categories are specified with their names, convert to synset ID
         # Remove this if using with a different dataset than ShapeNet
-        category_ids = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in categories]
+        category_ids = [utils.LABEL_TO_SYNSET.get(c, c) for c in categories]
         self.categories = category_ids
         self.range_num_assets = (num_assets_min, max(num_assets_min, num_assets_max))
         self.references = self._find_usd_assets(root, category_ids, max_asset_size, split, train)
@@ -102,6 +103,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         signal.signal(signal.SIGINT, self._handle_exit)
 
     def _handle_exit(self, *args, **kwargs):
+        self.dr_helper.toggle_manual_mode()
         print("exiting dataset generation...")
         self.exiting = True
 
@@ -372,9 +374,9 @@ if __name__ == "__main__":
 
     dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size)
     from omni.isaac.synthetic_utils import visualization as vis
-    from omni.isaac.synthetic_utils import shapenet
+    from omni.isaac.shapenet import utils
 
-    categories = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
+    categories = [utils.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
 
     # Iterate through dataset and visualize the output
     plt.ion()
@@ -396,7 +398,7 @@ if __name__ == "__main__":
 
         axes[1].imshow(overlay)
         mapping = {i + 1: cat for i, cat in enumerate(categories)}
-        labels = [shapenet.SYNSET_TO_LABEL[mapping[label.item()]] for label in target["labels"]]
+        labels = [utils.SYNSET_TO_LABEL[mapping[label.item()]] for label in target["labels"]]
         vis.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
 
         plt.draw()

@@ -41,7 +41,7 @@ def main(args):
     signal.signal(signal.SIGINT, handle_exit)
 
     from omni.isaac.synthetic_utils import visualization as vis
-    from omni.isaac.synthetic_utils import shapenet
+    from omni.isaac.shapenet import utils
 
     # Setup Model
     model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=False, num_classes=1 + len(args.categories))
@@ -103,9 +103,9 @@ def main(args):
                 axes[1].imshow(overlay, alpha=0.5)
                 # If ShapeNet categories are specified with their names, convert to synset ID
                 # Remove this if using with a different dataset than ShapeNet
-                args.categories = [shapenet.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
+                args.categories = [utils.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
                 mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
-                labels = [shapenet.SYNSET_TO_LABEL[mapping[label.item()]] for label in pred["labels"]]
+                labels = [utils.SYNSET_TO_LABEL[mapping[label.item()]] for label in pred["labels"]]
                 vis.plot_boxes(axes[1], pred["boxes"], labels=labels, colours=colours)
 
                 plt.draw()
