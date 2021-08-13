@@ -21,7 +21,7 @@ if __name__ == "__main__":
     kit = OmniKitHelper(config=RENDER_CONFIG)
 
     import argparse
-    from omni.isaac.synthetic_utils import shapenet
+    from omni.isaac.shapenet import utils
 
     parser = argparse.ArgumentParser("Convert ShapeNet assets to USD")
     parser.add_argument(
@@ -40,6 +40,6 @@ if __name__ == "__main__":
     args, unknown_args = parser.parse_known_args()
 
     # Ensure Omniverse Kit is launched via OmniKitHelper before shapenet_convert() is called
-    shapenet.shapenet_convert(args.categories, args.max_models, args.load_materials)
+    utils.shapenet_convert(args.categories, args.max_models, args.load_materials)
     # cleanup
     kit.shutdown()
