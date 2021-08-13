@@ -138,26 +138,34 @@ void RosJointState::pubCallback(ros::Publisher* pub)
 
     int num_dofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
 
-    for (int j = 0; j < num_dofs; j++)
+    DcDofState* states =
+        mDynamicControlPtr->getArticulationDofStates(mArticulationHandle, omni::isaac::dynamic_control::kDcStateAll);
+    std::vector<dynamic_control::DcDofProperties> dofProps(num_dofs);
+    mDynamicControlPtr->getArticulationDofProperties(mArticulationHandle, dofProps.data());
+
+    if (states != nullptr)
     {
 
-        DcHandle dof = mDynamicControlPtr->getArticulationDof(mArticulationHandle, j);
-        if (dof)
+        for (int j = 0; j < num_dofs; j++)
         {
-            msg.name.push_back(mDynamicControlPtr->getDofName(dof));
-            DcDofProperties props;
-            mDynamicControlPtr->getDofProperties(dof, &props);
-            if (props.type == DcDofType::eTranslation)
+            DcHandle dof = mDynamicControlPtr->getArticulationDof(mArticulationHandle, j);
+            if (dof)
             {
-                msg.position.push_back(
-                    isaac::utils::math::roundNearest(mDynamicControlPtr->getDofPosition(dof) * stageUnits, 10000.0));
+                msg.name.push_back(mDynamicControlPtr->getDofName(dof));
+            }
+            if (dofProps[j].type == DcDofType::eTranslation)
+            {
+                msg.position.push_back(isaac::utils::math::roundNearest(states[j].pos * stageUnits, 10000.0)); // m
+                msg.velocity.push_back(isaac::utils::math::roundNearest(states[j].vel * stageUnits, 1000.0)); // m/s
+                msg.effort.push_back(isaac::utils::math::roundNearest(states[j].effort * stageUnits, 10000.0)); // N
             }
             else
             {
-                msg.position.push_back(isaac::utils::math::roundNearest(mDynamicControlPtr->getDofPosition(dof), 10000.0));
+                msg.position.push_back(isaac::utils::math::roundNearest(states[j].pos, 10000.0)); // rad
+                msg.velocity.push_back(isaac::utils::math::roundNearest(states[j].vel, 1000.0)); // rad/s
+                msg.effort.push_back(
+                    isaac::utils::math::roundNearest(states[j].effort * stageUnits * stageUnits, 10000.0)); // N*m
             }
-            msg.velocity.push_back(isaac::utils::math::roundNearest(mDynamicControlPtr->getDofVelocity(dof), 10000.0));
-            msg.effort.push_back(0 /*mDynamicControlPtr->getDofForce(dof)*/); // TODO
         }
     }
 
