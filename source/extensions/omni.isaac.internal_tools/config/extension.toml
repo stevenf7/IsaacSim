@@ -3,6 +3,7 @@ display_name = "Internal Tools"
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.isaac.utils" = {}
+"omni.physx.vehicle" = {}
 
 [[python.module]]
 name = "omni.isaac.internal_tools"
