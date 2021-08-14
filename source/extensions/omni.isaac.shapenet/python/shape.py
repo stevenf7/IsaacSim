@@ -14,7 +14,6 @@ import omni.usd
 import asyncio
 import os
 from pxr import UsdGeom, Gf, Tf
-from omni.physx.scripts import utils
 
 import requests
 import urllib.request
@@ -210,6 +209,8 @@ def addShapePrim(
 
         # add physics
         if auto_add_physics:
+            from omni.physx.scripts import utils
+
             print("Adding PHYSICS to ShapeNet model")
             shape_approximation = "convexHull"
             if use_convex_decomp:

@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from . import domainrandomization as domainrandomization
 from . import syntheticdata as syntheticdata
 from . import writer as writer
 from . import visualization as visualization
@@ -15,4 +14,3 @@ from . import visualization as visualization
 from .syntheticdata import SyntheticDataHelper
 from .writer import DataWriter
 from .kitti_writer import KittiWriter
-from .domainrandomization import DomainRandomization

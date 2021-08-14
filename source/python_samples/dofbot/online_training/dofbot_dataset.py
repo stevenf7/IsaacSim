@@ -70,11 +70,11 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.stage = self.kit.get_stage()
 
         from omni.isaac.synthetic_utils import SyntheticDataHelper
-        from omni.isaac.synthetic_utils import DomainRandomization
+        import omni.isaac.dr as dr
 
         self.sd_helper = SyntheticDataHelper()
-        self.dr_helper = DomainRandomization()
-        self.dr_helper.toggle_manual_mode()
+        self.dr = dr
+        self.dr.commands.ToggleManualModeCommand().do()
 
         from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
@@ -263,14 +263,15 @@ class RandomObjects(torch.utils.data.IterableDataset):
             self.asset_path + "/Samples/DR/Materials/textured_wall.mdl",
         ]
         light_list = ["World/Light1", "World/Light2"]
-        self.texture_comp = self.dr_helper.create_texture_comp([], True, texture_list)
-        self.color_comp = self.dr_helper.create_color_comp([])
-        self.material_comp = self.dr_helper.create_material_comp([], material_list)
-        self.movement_comp = self.dr_helper.create_movement_comp([])
-        self.rotation_comp = self.dr_helper.create_rotation_comp([])
-        self.scale_comp = self.dr_helper.create_scale_comp([], max_range=(50, 50, 50))
-        self.light_comp = self.dr_helper.create_light_comp(light_list)
-        self.visibility_comp = self.dr_helper.create_visibility_comp([])
+        self.texture_comp = self.dr.commands.CreateTextureComponentCommand(
+            prim_paths=[], enable_project_uvw=True, texture_list=texture_list
+        ).do()
+        self.color_comp = self.dr.commands.CreateColorComponentCommand(prim_paths=[]).do()
+        self.movement_comp = self.dr.commands.CreateMovementComponentCommand(prim_paths=[]).do()
+        self.rotation_comp = self.dr.commands.CreateRotationComponentCommand(prim_paths=[]).do()
+        self.scale_comp = self.dr.commands.CreateScaleComponentCommand(prim_paths=[], max_range=(50, 50, 50)).do()
+        self.light_comp = self.dr.commands.CreateLightComponentCommand(light_paths=light_list).do()
+        self.visibility_comp = self.dr.commands.CreateVisibilityComponentCommand(prim_paths=[]).do()
 
     def update_dr_comp(self, dr_comp):
         """Updates DR component with the asset prim paths that will be randomized"""
@@ -344,7 +345,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.populate_scene()
         self.randomize_camera()
         self.update_dr_comp(self.texture_comp)
-        self.dr_helper.randomize_once()
+        self.dr.commands.RandomizeOnceCommand().do()
         self.randomize_lighting()
 
         # Step once and then wait for materials to load

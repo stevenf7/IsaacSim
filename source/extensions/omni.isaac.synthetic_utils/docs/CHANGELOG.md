@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2021-08-13
+========================
+
+Removed
+-------
+- Removed domain randomization helper file. Use commands directly.
+- Moved shapenet utility file to omni.isaac.shapenet.
+
 [0.1.1] - 2021-08-02
 ========================
 

@@ -11,7 +11,7 @@ import omni
 import random
 from pxr import UsdGeom, Gf, Sdf, UsdPhysics
 
-from omni.isaac.synthetic_utils import DomainRandomization
+import omni.isaac.dr as dr
 from gtc2020_track_utils import *
 
 
@@ -68,9 +68,9 @@ class Environment:
         cubeGeom.AddTranslateOp().Set(offset)
 
         prims = []
-        self.dr = DomainRandomization()
-        self.dr.toggle_manual_mode()
-        self.dr.create_mesh_comp(prim_paths=prims, mesh_list=names, mesh_range=[1, 1])
+        self.dr = dr
+        self.dr.commands.ToggleManualModeCommand().do()
+        self.self.dr.commands.CreateMeshComponentCommand(prim_paths=prims, mesh_list=names, mesh_range=[1, 1]).do()
         self.omni_kit.update(1 / 60.0)
         print("waiting for materials to load...")
 
@@ -89,20 +89,20 @@ class Environment:
             )
             lights.append(prim_path)
 
-        self.dr.create_movement_comp(
+        self.dr.commands.CreateMovementComponentCommand(
             prim_paths=loaded_paths, min_range=(0, 0, 15), max_range=(TRACK_DIMS[0], TRACK_DIMS[1], 15)
-        )
-        self.dr.create_rotation_comp(prim_paths=loaded_paths)
-        self.dr.create_visibility_comp(prim_paths=loaded_paths, num_visible_range=(15, 15))
+        ).do()
+        self.dr.commands.CreateRotationComponentCommand(prim_paths=loaded_paths).do()
+        self.dr.commands.CreateVisibilityComponentCommand(prim_paths=loaded_paths, num_visible_range=(15, 15)).do()
 
-        self.dr.create_light_comp(light_paths=lights)
-        self.dr.create_movement_comp(
+        self.dr.commands.CreateLightComponentCommand(light_paths=lights).do()
+        self.dr.commands.CreateMovementComponentCommand(
             prim_paths=lights, min_range=(0, 0, 30), max_range=(TRACK_DIMS[0], TRACK_DIMS[1], 30)
-        )
+        ).do()
 
-        self.dr.create_texture_comp(
+        self.dr.commands.CreateTextureComponentCommand(
             prim_paths=["/World/Floor"], enable_project_uvw=True, texture_list=self.texture_list
-        )
+        ).do()
 
     def generate_lights(self):
         # TODO: center this onto the track
@@ -136,7 +136,7 @@ class Environment:
         # self.pxrImageable.MakeInvisible()
         # LOCMOD revisit
         # self.generate_road(shape)
-        self.dr.randomize_once()
+        self.dr.commands.RandomizeOnceCommand().do()
 
     def generate_road(self, shape):
         stage = self.omni_kit.get_stage()

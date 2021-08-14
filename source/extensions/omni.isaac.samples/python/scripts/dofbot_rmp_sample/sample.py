@@ -422,10 +422,10 @@ class RMPSample:
     def create_dr_comp(self):
         # Put imports here to ensure kit has been initialized first
         from omni.isaac.synthetic_utils import SyntheticDataHelper
-        from omni.isaac.synthetic_utils import DomainRandomization
+        import omni.isaac.dr as dr
 
         self.sd_helper = SyntheticDataHelper()
-        self.dr_helper = DomainRandomization()
+        self.dr = dr
 
         """Creates DR components with various attributes.
         The list of asset prims to randomize gets updated for each component in update_dr_comp()
@@ -439,7 +439,9 @@ class RMPSample:
             self.asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
             self.asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
         ]
-        self.texture_comp = self.dr_helper.create_texture_comp([], True, texture_list, duration=1.0)
+        self.texture_comp = self.dr.commands.CreateTextureComponentCommand(
+            prim_paths=[], enable_project_uvw=True, texture_list=texture_list, duration=1.0
+        ).do()
         loading = True
         while loading:
             _, _, loading = omni.usd.get_context().get_stage_loading_status()
