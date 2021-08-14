@@ -11,6 +11,7 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.dr/docs/index
    source/extensions/omni.isaac.debug_draw/docs/index
    source/extensions/omni.isaac.dynamic_control/docs/index
+   source/extensions/omni.isaac.kit/docs/index
    source/extensions/omni.isaac.manip/docs/index
    source/extensions/omni.isaac.motion_planning/docs/index
    source/extensions/omni.isaac.motion_generation/docs/index
