@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from .. import _dr
 from pxr import Gf, Usd, UsdGeom, Sdf, Vt
 import omni.isaac.DrSchema as DrSchema
 import omni.kit.commands
@@ -795,6 +796,57 @@ class CreateAttributeComponentCommand(omni.kit.commands.Command):
         prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
         prim.CreateSeedAttr().Set(int(self._seed))
         return prim
+
+
+class RandomizeOnceCommand(omni.kit.commands.Command):
+    """Commands class to randomize the scene once. This is mainly executed while in manual mode.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            omni.kit.commands.execute("RandomizeOnceCommand")
+    """
+
+    def __init__(self):
+        self._dr = _dr.acquire_dr_interface()
+
+    def do(self):
+        self._dr.randomize_once()
+
+
+class ToggleManualModeCommand(omni.kit.commands.Command):
+    """Commands class to toggle mode between manual and non-manual.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            omni.kit.commands.execute("ToggleManualModeCommand")
+    """
+
+    def __init__(self):
+        self._dr = _dr.acquire_dr_interface()
+
+    def do(self):
+        self._dr.toggle_manual_mode()
+
+
+class GetDRLayerNameCommand(omni.kit.commands.Command):
+    """Commands class to get the name of anonymous DR layer.
+
+        Typical usage example:
+
+        .. code-block:: python
+
+            result, name = omni.kit.commands.execute("GetDRLayerNameCommand")
+    """
+
+    def __init__(self):
+        self._dr = _dr.acquire_dr_interface()
+
+    def do(self):
+        return self._dr.get_dr_layer_name()
 
 
 omni.kit.commands.register_all_commands_in_module(__name__)

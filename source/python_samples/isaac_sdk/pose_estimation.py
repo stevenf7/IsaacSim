@@ -41,12 +41,12 @@ class DualCameraSample:
         ext_manager.set_extension_enabled_immediate("omni.isaac.robot_engine_bridge", True)
 
         from pxr import UsdGeom, Usd, Gf
-        from omni.isaac.synthetic_utils import DomainRandomization
+        import omni.isaac.dr as dr
         from omni.isaac.synthetic_utils import SyntheticDataHelper
 
         self._viewport = omni.kit.viewport.get_viewport_interface()
 
-        self.dr_helper = DomainRandomization()
+        self.dr = dr
         self.sd_helper = SyntheticDataHelper()
         self.frame = 0
         self.Gf = Gf
@@ -203,18 +203,22 @@ class DualCameraSample:
             self._asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
         ]
         base_path = str(self._room.GetPath())
-        self.texture_comp = self.dr_helper.create_texture_comp([base_path], False, texture_list)
-        # self.color_comp = self.dr_helper.create_color_comp([base_path+"/floor"])
+        self.texture_comp = self.dr.commands.CreateTextureComponentCommand(
+            prim_paths=[base_path], enable_project_uvw=False, texture_list=texture_list
+        ).do()
+        # self.color_comp = self.dr.commands.CreateColorComponentCommand(prim_paths=[base_path+"/floor"]).do()
         # disable automatic DR, we run it ourselves in the step function
 
         # add a movement and rotation component
         # the movement component is offset by 100cm in z so that the object remains above the table
-        self.movement_comp = self.dr_helper.create_movement_comp(
-            [str(self._target_prim.GetPath())], min_range=(-10, -10, -10 + 100), max_range=(10, 10, 10 + 100)
-        )
-        self.rotation_comp = self.dr_helper.create_rotation_comp([str(self._target_prim.GetPath())])
+        self.movement_comp = self.dr.commands.CreateMovementComponentCommand(
+            prim_paths=[str(self._target_prim.GetPath())], min_range=(-10, -10, -10 + 100), max_range=(10, 10, 10 + 100)
+        ).do()
+        self.rotation_comp = self.dr.commands.CreateRotationComponentCommand(
+            prim_paths=[str(self._target_prim.GetPath())]
+        ).do()
 
-        self.dr_helper.toggle_manual_mode()
+        self.dr.commands.ToggleManualModeCommand().do()
 
     def randomize_camera(self):
         # randomize camera position
@@ -236,7 +240,7 @@ class DualCameraSample:
         )
 
     def randomize_scene(self):
-        self.dr_helper.randomize_once()
+        self.dr.commands.RandomizeOnceCommand().do()
 
     def toggle_environment(self, state):
         imageable = self.UsdGeom.Imageable(self._environment)

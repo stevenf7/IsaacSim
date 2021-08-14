@@ -36,12 +36,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
     def __init__(self, scenario_path, max_queue_size):
 
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
-        from omni.isaac.synthetic_utils import SyntheticDataHelper, DataWriter, DomainRandomization
+        from omni.isaac.synthetic_utils import SyntheticDataHelper, DataWriter
+        import omni.isaac.dr as dr
 
         self.sd_helper = SyntheticDataHelper()
-        self.dr_helper = DomainRandomization()
+        self.dr = dr
         self.writer_helper = DataWriter
-        self.dr_helper.toggle_manual_mode()
+        self.dr.commands.ToggleManualModeCommand().do()
         self.stage = self.kit.get_stage()
         self.result = True
 
@@ -140,7 +141,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
     def __next__(self):
         # step once and then wait for materials to load
-        self.dr_helper.randomize_once()
+        self.dr.commands.RandomizeOnceCommand().do()
         self.kit.update()
         while self.kit.is_loading():
             self.kit.update()

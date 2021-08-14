@@ -15,8 +15,7 @@ from jetbot_city.road_map import *
 from jetbot_city.road_map_path_helper import *
 from jetbot_city.road_map_generator import *
 
-from omni.isaac.synthetic_utils import DomainRandomization
-
+import omni.isaac.dr as dr
 import math
 
 
@@ -97,9 +96,9 @@ class Environment:
         self.omni_kit.create_prim("/World/Room", "Sphere", attributes={"radius": 1e3})
 
         prims = []
-        self.dr = DomainRandomization()
-        self.dr.toggle_manual_mode()
-        self.dr.create_mesh_comp(prim_paths=prims, mesh_list=names, mesh_range=[1, 1])
+        self.dr = dr
+        self.dr.commands.ToggleManualModeCommand().do()
+        self.dr.commands.CreateMeshComponentCommand(prim_paths=prims, mesh_list=names, mesh_range=[1, 1]).do()
         self.omni_kit.update(1 / 60.0)
         print("waiting for materials to load...")
 
@@ -121,18 +120,22 @@ class Environment:
         frames = 1
 
         # enable randomization for environment
-        self.dr.create_movement_comp(prim_paths=loaded_paths, min_range=(0, 0, 15), max_range=(150, 150, 15))
-        self.dr.create_rotation_comp(prim_paths=loaded_paths)
-        self.dr.create_visibility_comp(prim_paths=loaded_paths, num_visible_range=(15, 15))
+        self.dr.commands.CreateMovementComponentCommand(
+            prim_paths=loaded_paths, min_range=(0, 0, 15), max_range=(150, 150, 15)
+        ).do()
+        self.dr.commands.CreateRotationComponentCommand(prim_paths=loaded_paths).do()
+        self.dr.commands.CreateVisibilityComponentCommand(prim_paths=loaded_paths, num_visible_range=(15, 15)).do()
 
-        self.dr.create_light_comp(light_paths=lights)
-        self.dr.create_movement_comp(prim_paths=lights, min_range=(0, 0, 30), max_range=(150, 150, 30))
+        self.dr.commands.CreateLightComponentCommand(light_paths=lights).do()
+        self.dr.commands.CreateMovementComponentCommand(
+            prim_paths=lights, min_range=(0, 0, 30), max_range=(150, 150, 30)
+        ).do()
 
-        self.dr.create_texture_comp(
+        self.dr.commands.CreateTextureComponentCommand(
             prim_paths=["/World/Floor"], enable_project_uvw=True, texture_list=self.texture_list
-        )
+        ).do()
 
-        self.dr.create_color_comp(prim_paths=["/World/Room"])
+        self.dr.commands.CreateColorComponentCommand(prim_paths=["/World/Room"]).do()
 
     def generate_lights(self):
         prim_path = omni.usd.get_stage_next_free_path(self.omni_kit.get_stage(), "/World/Env/Light", False)
@@ -163,7 +166,7 @@ class Environment:
 
         self.prims = []
         self.generate_road(shape)
-        self.dr.randomize_once()
+        self.dr.commands.RandomizeOnceCommand().do()
 
     def generate_road(self, shape):
         self.tiles, self.state, self.road_map = self.map_generator.generate(shape)

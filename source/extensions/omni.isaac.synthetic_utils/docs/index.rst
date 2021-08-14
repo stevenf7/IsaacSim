@@ -1,11 +1,6 @@
 Tools for Generating Synthetic Data [omni.isaac.synthetic_utils]
 ################################################################
 
-.. autoclass:: omni.isaac.synthetic_utils.DomainRandomization
-    :members:
-    :undoc-members:
-    :no-show-inheritance:
-
 .. autoclass:: omni.isaac.synthetic_utils.SyntheticDataHelper
     :members:
     :undoc-members:
@@ -22,24 +17,6 @@ Tools for Generating Synthetic Data [omni.isaac.synthetic_utils]
     :undoc-members:
     :exclude-members: save_label, save_image
     :no-show-inheritance:
-
-.. .. automodule:: omni.isaac.synthetic_utils.scripts.camera
-..     :members:
-..     :undoc-members:
-..     :private-members:
-..     :no-show-inheritance:
-
-.. automodule:: omni.isaac.synthetic_utils.scripts.shapenet
-    :members:
-    :undoc-members:
-    :exclude-members: get_local_shape_loc, convert
-    :no-show-inheritance:
-
-.. .. automodule:: omni.isaac.synthetic_utils.scripts.utils
-..     :members:
-..     :undoc-members:
-..     :private-members:
-..     :no-show-inheritance:
 
 .. automodule:: omni.isaac.synthetic_utils.scripts.visualization
     :members:
