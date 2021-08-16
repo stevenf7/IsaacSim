@@ -27,7 +27,7 @@ import weakref
 from carb.settings import get_settings
 from PIL import Image, ImageDraw
 from omni.isaac.synthetic_utils import visualization as vis
-from omni.isaac.synthetic_utils import SyntheticDataHelper, DataWriter
+from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter
 from omni.syntheticdata import visualize
 
 EXTENSION_NAME = "Synthetic Data Recorder"
@@ -491,7 +491,7 @@ class Extension(omni.ext.IExt):
         data_dir = str(self._ui_dir_name.model.get_value_as_string())
 
         if self.data_writer is None:
-            self.data_writer = DataWriter(
+            self.data_writer = NumpyWriter(
                 data_dir,
                 self._num_threads.model.get_value_as_int(),
                 self._max_queue_size.model.get_value_as_int(),

@@ -23,7 +23,8 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.syntheticdata as syn
-from ..scripts import SyntheticDataHelper, DataWriter
+from ..scripts import SyntheticDataHelper
+from ..scripts.writers import NumpyWriter
 from omni.syntheticdata.tests.utils import add_semantics
 
 
@@ -46,7 +47,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._sd_helper = SyntheticDataHelper()
-        self._writer_helper = DataWriter
+        self._writer_helper = NumpyWriter
         pass
 
     # After running each test
