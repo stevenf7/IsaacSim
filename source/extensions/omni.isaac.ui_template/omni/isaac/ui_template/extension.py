@@ -100,7 +100,6 @@ class Extension(omni.ext.IExt):
                         if os.path.isfile(self._extension_path)
                         else self._extension_path
                     )
-                    build_header(ext_path, __file__, title, doc_link)
 
                     overview = (
                         "The Example UI shows how to use Isaac Sim's robotics-centric UI tools for your own extensions."
@@ -109,11 +108,11 @@ class Extension(omni.ext.IExt):
                     overview += "\n\nPress the 'Open in IDE' button to view the source code."
                     author = "Isaac Sim Team"
                     date = "07/01/2021"
-                    build_info_frame(overview, author, date)
 
                     log_filename = EXTENSION_NAME.lower()
                     log_filename = log_filename.replace(" ", "_") + ".log"
-                    build_settings_frame(log_filename)
+
+                    setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
 
                     self.build_example_gui_grid()
                     self.build_plot_frame()
@@ -121,6 +120,8 @@ class Extension(omni.ext.IExt):
                     self.build_folder_picker_frame()
 
                     self.build_comms_frame()
+
+                    self.build_progress_bar_frame()
 
                     # Shows how to Group UI elements
                     self.build_custom_ui()
@@ -321,6 +322,9 @@ class Extension(omni.ext.IExt):
                 kwargs = {"label": "Rotate", "axis_count": 4, "tooltip": "Orientation in Quaternions"}
                 self._models["multi_float_rotate"] = xyz_builder(**kwargs)
 
+                kwargs = {"label": "Color Picker", "default_val": [0.353, 0.637, 0.269, 1]}
+                self._models["color_picker"] = color_picker_builder(**kwargs)
+
                 # Test building with default values
                 ui.Spacer(height=LABEL_HEIGHT)
                 ui.Label("Testing Default UI Elements")
@@ -336,6 +340,7 @@ class Extension(omni.ext.IExt):
                 btn_builder()
                 combo_cb_scrolling_frame_builder()
                 xyz_builder()
+                color_picker_builder()
                 ui.Spacer()
 
     def toggle_app_step(self, val=None):
@@ -527,6 +532,28 @@ class Extension(omni.ext.IExt):
                 self._models["connect_btn"] = state_btn_builder(
                     "", "button", "CONNECT", "DISCONNECT", "", self.handle_connect
                 )
+
+    def build_progress_bar_frame(self):
+        self._progress_bar_frame = ui.CollapsableFrame(
+            title="Example: Progress Bar",
+            height=0,
+            collapsed=False,
+            style=get_style(),
+            style_type_name_override="CollapsableFrame",
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+        with self._progress_bar_frame:
+
+            def trigger_progress_bar():
+                model.set_value(model.get_value_as_float() + 0.03)
+                if model.get_value_as_float() > 1:
+                    model.set_value(0)
+
+            with ui.VStack(spacing=5):
+                model = progress_bar_builder("Progress Bar")
+                kwargs = {"label": "", "text": "GO", "on_clicked_fn": trigger_progress_bar}
+                btn_builder(**kwargs)
 
     def build_custom_ui(self):
         """

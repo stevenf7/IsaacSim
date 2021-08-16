@@ -367,7 +367,7 @@ def xyz_builder(label="", args=None, axis_count=3, min=-1, max=1, step=0.001, to
     RECT_WIDTH = 13
     SPACING = 4
     with ui.HStack():
-        ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
+        ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         with ui.ZStack():
             with ui.HStack():
                 ui.Spacer(width=RECT_WIDTH)
@@ -396,6 +396,26 @@ def xyz_builder(label="", args=None, axis_count=3, min=-1, max=1, step=0.001, to
                 ui.Spacer()
         add_line_rect_flourish(False)
         return [val_model_x, val_model_y, val_model_z]
+
+
+def color_picker_builder(label="", type="color_picker", default_val=[1.0, 1.0, 1.0, 1.0], tooltip="Color Picker"):
+    """Creates a Color Picker Widget"""
+    with ui.HStack():
+        ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
+        model = ui.ColorWidget(*default_val, width=BUTTON_WIDTH).model
+        ui.Spacer(width=5)
+        add_line_rect_flourish()
+    return model
+
+
+def progress_bar_builder(label="", type="progress_bar", default_val=0, tooltip="Progress"):
+    "Creates a Progress Bar Widget"
+    with ui.HStack():
+        ui.Label("Progress Bar", width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER)
+        model = ui.ProgressBar().model
+        model.set_value(default_val)
+        add_line_rect_flourish(False)
+    return model
 
 
 def plot_builder(label="", data=None, min=-1, max=1, type=ui.Type.LINE, value_stride=1, color=None, tooltip=""):
@@ -822,6 +842,22 @@ def format_tt(tt):
     return formated
 
 
+def setup_ui_headers(
+    ext_path,
+    file_path,
+    title="My Custom Extension",
+    doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html",
+    overview="",
+    author="",
+    date="",
+    log_filename="extension.log",
+):
+    """Creates the Standard UI Elements at the top of each Isaac Extension."""
+    build_header(ext_path, file_path, title, doc_link)
+    build_info_frame(overview, author, date)
+    build_settings_frame(log_filename)
+
+
 def build_header(
     ext_path,
     file_path,
@@ -833,12 +869,12 @@ def build_header(
     def on_open_IDE_clicked():
         """Opens the current directory and file in VSCode"""
         if sys.platform == "win32":
-            print("windows not supported")
+            carb.log_warn("windows not supported")
         else:
             try:
                 os.system("code " + ext_path + " " + file_path)
             except OSError:
-                print(
+                carb.log_warn(
                     "Could not open in VSCode. See Troubleshooting help here: https://code.visualstudio.com/docs/editor/command-line#_common-questions"
                 )
 
@@ -846,12 +882,12 @@ def build_header(
         """Opens the current directory in a File Browser"""
         if sys.platform == "win32":
             # subprocess.Popen(['start', os.path.abspath(app_folder)], shell= True)
-            print("windows not supported")
+            carb.log_warn("windows not supported")
         else:
             try:
                 subprocess.Popen(["xdg-open", os.path.abspath(file_path.rpartition("/")[0])])
             except OSError:
-                print("could not open file browser")
+                carb.log_warn("could not open file browser")
 
     def on_docs_link_clicked():
         """Opens an extension's documentation in a Web Browser"""
@@ -951,15 +987,15 @@ def build_settings_frame(log_filename="extension.log", log_to_file=False, save_s
 
     def on_log_to_file_enabled(val):
         # TO DO
-        print(f"Logging to {model.get_value_as_string()}:", val)
+        carb.log_info(f"Logging to {model.get_value_as_string()}:", val)
 
     def on_save_out_settings(val):
         # TO DO
-        print("Save Out Settings?", val)
+        carb.log_info("Save Out Settings?", val)
 
     def on_reload_environment():
         # TO DO
-        print("Reloading the Envirionment")
+        carb.log_info("Reloading the Envirionment")
 
         """Resets the Stage and Reloads the Project """
         # Wait to create a new scenario until the Stage is done loading
@@ -1121,7 +1157,7 @@ class ListItemDelegate(ui.AbstractItemDelegate):
         """Called when the user double-clicked the item in TreeView"""
         if button != 0:
             return
-        print("List Item Double-Clicked: ", label.text)
+        carb.log_info("List Item Double-Clicked: ", label.text)
 
 
 def build_simple_search(label="", type="search", model=None, delegate=None, tooltip=""):

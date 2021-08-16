@@ -60,7 +60,6 @@ class Extension(omni.ext.IExt):
                     if os.path.isfile(self._extension_path)
                     else self._extension_path
                 )
-                build_header(ext_path, __file__, title, doc_link)
 
                 overview = "This sample demonstrates the ULTRASONIC python API for Isaac Sim. It shows how to create an Ultrasonic Sensor, set its properties, and read data streaming from it. "
                 overview += "First press the 'Load Sensor' button and then press PLAY to simulate."
@@ -68,11 +67,11 @@ class Extension(omni.ext.IExt):
                 overview += "\nNote: The buttons above only work with an Ultrasonic sensor made by the 'Load Sensor' button; not existing ones in the stage."
                 author = "Isaac Sim Team"
                 date = "07/01/2021"
-                build_info_frame(overview, author, date)
 
                 log_filename = EXTENSION_NAME.lower()
                 log_filename = log_filename.replace(" ", "_") + ".log"
-                build_settings_frame(log_filename)
+
+                setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
 
                 frame = ui.CollapsableFrame(
                     title="Command Panel",
