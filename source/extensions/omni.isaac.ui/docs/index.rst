@@ -5,9 +5,7 @@ The Isaac Sim UI Utilities extension provides a helper functions for creating ro
 
 Shared UI Elements
 ==================
-.. automethod:: omni.isaac.ui.ui_utils.build_header
-.. automethod:: omni.isaac.ui.ui_utils.build_info_frame
-.. automethod:: omni.isaac.ui.ui_utils.build_settings_frame
+.. automethod:: omni.isaac.ui.ui_utils.setup_ui_headers
 
 Builder Functions
 ==================
@@ -26,6 +24,8 @@ Builder Functions
 .. automethod:: omni.isaac.ui.ui_utils.scrolling_frame_builder
 .. automethod:: omni.isaac.ui.ui_utils.combo_cb_scrolling_frame_builder
 .. automethod:: omni.isaac.ui.ui_utils.xyz_builder
+.. automethod:: omni.isaac.ui.ui_utils.color_picker_builder
+.. automethod:: omni.isaac.ui.ui_utils.progress_bar_builder
 
 Plotting Functions
 ==================

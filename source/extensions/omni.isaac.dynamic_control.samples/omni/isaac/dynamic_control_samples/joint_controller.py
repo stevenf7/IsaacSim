@@ -126,18 +126,17 @@ class Extension(omni.ext.IExt):
                         if os.path.isfile(self._extension_path)
                         else self._extension_path
                     )
-                    build_header(ext_path, __file__, title, doc_link)
 
                     overview = "This example shows how move a robot arm by driving its joints."
                     overview += "First press the 'Load Robot' button and then press `Move Joints` to simulate."
                     overview += "\n\nPress the 'Open in IDE' button to view the source code."
                     author = "Isaac Sim Team"
                     date = "07/01/2021"
-                    build_info_frame(overview, author, date)
 
                     log_filename = EXTENSION_NAME.lower()
                     log_filename = log_filename.replace(" ", "_") + ".log"
-                    build_settings_frame(log_filename)
+
+                    setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
 
                     frame = ui.CollapsableFrame(
                         title="Command Panel",

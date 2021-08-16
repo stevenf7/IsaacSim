@@ -78,7 +78,6 @@ class IMU_sensor_demo(omni.ext.IExt):
                         if os.path.isfile(self._extension_path)
                         else self._extension_path
                     )
-                    build_header(ext_path, __file__, title, doc_link)
 
                     overview = "This Example shows the output of the IMU sensor. "
                     overview += "The IMU sensor reads motion of the body of the robot and output simulated accelerometer and gyroscope readings"
@@ -86,11 +85,11 @@ class IMU_sensor_demo(omni.ext.IExt):
                     overview += "\n\nPress the 'Open in IDE' button to view the source code."
                     author = "Isaac Sim Team"
                     date = "08/08/2021"
-                    build_info_frame(overview, author, date)
 
                     log_filename = EXTENSION_NAME.lower()
                     log_filename = log_filename.replace(" ", "_") + ".log"
-                    build_settings_frame(log_filename)
+
+                    setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
 
                     frame = ui.CollapsableFrame(
                         title="Sensor Readings",
