@@ -36,12 +36,12 @@ class RandomScenario(torch.utils.data.IterableDataset):
     def __init__(self, scenario_path, max_queue_size):
 
         self.kit = OmniKitHelper(config=RENDER_CONFIG)
-        from omni.isaac.synthetic_utils import SyntheticDataHelper, DataWriter
+        from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter
         import omni.isaac.dr as dr
 
         self.sd_helper = SyntheticDataHelper()
         self.dr = dr
-        self.writer_helper = DataWriter
+        self.writer_helper = NumpyWriter
         self.dr.commands.ToggleManualModeCommand().do()
         self.stage = self.kit.get_stage()
         self.result = True

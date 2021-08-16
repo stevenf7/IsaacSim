@@ -7,52 +7,25 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
-"""Helper class for writing groundtruth data offline.
+"""Helper class for writing groundtruth data offline in numpy format.
 """
 
-import atexit
-import colorsys
 import copy
-import queue
 import omni
 import os
-import threading
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image
+from .base import BaseWriter
 
 
-class DataWriter:
+class NumpyWriter(BaseWriter):
     def __init__(self, data_dir, num_worker_threads, max_queue_size=500, sensor_settings=None):
+        BaseWriter.__init__(self, data_dir, num_worker_threads, max_queue_size)
         from omni.isaac.synthetic_utils import visualization as vis
 
         self.vis = vis
-        atexit.register(self.stop_threads)
-        self.data_dir = data_dir
-
-        # Threading for multiple scenes
-        self.num_worker_threads = num_worker_threads
-        # Initialize queue with a specified size
-        self.q = queue.Queue(max_queue_size)
-        self.threads = []
-
         self._viewport = omni.kit.viewport.get_viewport_interface()
         self.create_output_folders(sensor_settings)
-
-    def start_threads(self):
-        """Start worker threads."""
-        for _ in range(self.num_worker_threads):
-            t = threading.Thread(target=self.worker, daemon=True)
-            t.start()
-            self.threads.append(t)
-
-    def stop_threads(self):
-        """Waits for all tasks to be completed before stopping worker threads."""
-        print(f"Finish writing data...")
-
-        # Block until all tasks are done
-        self.q.join()
-
-        print(f"Done.")
 
     def worker(self):
         """Processes task from queue. Each tasks contains groundtruth data and metadata which is used to transform the output and write it to disk."""

@@ -7,51 +7,22 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import atexit
-import colorsys
-import queue
-import os
-import threading
-import numpy as np
-from PIL import Image, ImageDraw
-import json
+
+"""Helper class for writing groundtruth data offline in kitti format.
+"""
+
 import csv
+import os
+from PIL import Image
+from .base import BaseWriter
 
 
-class KittiWriter:
+class KittiWriter(BaseWriter):
     def __init__(self, data_dir="kitti_data", num_worker_threads=4, max_queue_size=500, train_size=10, classes=[]):
-        atexit.register(self.stop_threads)
-        # Threading for multiple scenes
-        self.num_worker_threads = num_worker_threads
-        # Initialize queue with a specified size
-        self.q = queue.Queue(max_queue_size)
-        self.threads = []
-        self.data_dir = data_dir
+        BaseWriter.__init__(self, data_dir, num_worker_threads, max_queue_size)
         self.create_output_folders()
         self.train_size = train_size
         self.classes = classes
-
-    def start_threads(self):
-        """Start worker threads."""
-        for _ in range(self.num_worker_threads):
-            t = threading.Thread(target=self.worker, daemon=True)
-            t.start()
-            self.threads.append(t)
-
-    def stop_threads(self):
-        """Waits for all tasks to be completed before stopping worker threads."""
-        print(f"Finish writing data...")
-
-        # Block until all tasks are done
-        self.q.join()
-
-        # Stop workers
-        for _ in range(self.num_worker_threads):
-            self.q.put(None)
-        for t in self.threads:
-            t.join()
-
-        print(f"Done.")
 
     def worker(self):
         """Processes task from queue. Each tasks contains groundtruth data and metadata which is used to transform the output and write it to disk."""

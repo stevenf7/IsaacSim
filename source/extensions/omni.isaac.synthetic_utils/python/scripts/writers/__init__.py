@@ -7,8 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from . import syntheticdata as syntheticdata
-from . import visualization as visualization
-from .writers import *
-
-from .syntheticdata import SyntheticDataHelper
+from .base import BaseWriter
+from .numpy import NumpyWriter
+from .kitti import KittiWriter
