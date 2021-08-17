@@ -89,6 +89,7 @@ void RosPoseTree::onComponentChange()
     typedPrim.GetTargetPrimsRel().GetTargets(&mTargets);
     if (mTargets.size() == 0)
     {
+        CARB_LOG_WARN("Please specify atleast one target prim for the ROS pose tree component");
         return;
     }
 
