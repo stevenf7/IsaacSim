@@ -45,6 +45,7 @@ private:
     std::unordered_map<std::string, std::pair<size_t, pxr::UsdPrim>> mObjects;
     int mQueueSize = 0;
     std::string mPoseTreePubTopic = "/tf";
+    std::string mFrameIdPrefix = "";
     pxr::SdfPath mParentPath;
     pxr::UsdPrim mParentPrim;
     pxr::SdfPathVector mTargets;

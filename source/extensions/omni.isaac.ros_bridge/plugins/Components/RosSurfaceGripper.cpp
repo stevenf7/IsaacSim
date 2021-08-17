@@ -15,6 +15,7 @@
 
 #include <carb/Framework.h>
 
+#include <omni/isaac/ros/Utils.h>
 #include <omni/isaac/utils/Conversions.h>
 
 namespace omni
@@ -67,6 +68,9 @@ void RosSurfaceGripper::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetSurfaceGripperPubTopicAttr(), mSurfaceGripperPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetSurfaceGripperSubTopicAttr(), mSurfaceGripperSubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
+
+    ros_utils::addPrefix(mRosNodePrefix, mSurfaceGripperPubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mSurfaceGripperSubTopic, true);
 
     mRosNode->createPublisher<sensor_msgs::JointState>(
         mPrim.GetPath().GetString(), mSurfaceGripperPubTopic, mQueueSize, &RosSurfaceGripper::pubCallback, this);
