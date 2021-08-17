@@ -25,6 +25,8 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
+#include <omni/isaac/ros/Utils.h>
+
 #include <time.h>
 
 namespace omni
@@ -70,6 +72,7 @@ void RosLidar::onStart()
 void RosLidar::onStop()
 {
 }
+
 void RosLidar::onComponentChange()
 {
 
@@ -86,6 +89,10 @@ void RosLidar::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetPointCloudPubTopicAttr(), mPointCloudPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetPointCloudEnabledAttr(), mEnablePointCloud);
     isaac::utils::safeGetAttribute(typedPrim.GetFrameIdAttr(), mFrameId);
+
+    ros_utils::addPrefix(mRosNodePrefix, mLaserScanPubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mPointCloudPubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mFrameId, false);
 
     mRosNode->createPublisher<sensor_msgs::LaserScan>(
         mPrim.GetPath().GetString(), mLaserScanPubTopic, mQueueSize, &RosLidar::pubCallback, this);

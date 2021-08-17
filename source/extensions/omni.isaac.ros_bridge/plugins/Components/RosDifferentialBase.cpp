@@ -18,6 +18,7 @@
 
 #include <carb/Framework.h>
 
+#include <omni/isaac/ros/Utils.h>
 #include <omni/isaac/utils/Conversions.h>
 
 namespace omni
@@ -75,6 +76,11 @@ void RosDifferentialBase::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
     isaac::utils::safeGetAttribute(typedPrim.GetOdomFrameIdAttr(), mOdomFrameId);
     isaac::utils::safeGetAttribute(typedPrim.GetBaseFrameIdAttr(), mBaseFrameId);
+
+    ros_utils::addPrefix(mRosNodePrefix, mOdomFrameId, false);
+    ros_utils::addPrefix(mRosNodePrefix, mBaseFrameId, false);
+    ros_utils::addPrefix(mRosNodePrefix, mStatePubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mCommandSubTopic, true);
 
     mRosNode->createPublisher<nav_msgs::Odometry>(
         mPrim.GetPath().GetString(), mStatePubTopic, mQueueSize, &RosDifferentialBase::pubCallback, this);

@@ -22,6 +22,7 @@
 #include <carb/Types.h>
 
 #include <omni/isaac/ros/Conversions.h>
+#include <omni/isaac/ros/Utils.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>
@@ -91,6 +92,11 @@ void RosPoseTree::onComponentChange()
         return;
     }
 
+    mFrameIdPrefix = "";
+    if (!mRosNodePrefix.empty())
+    {
+        ros_utils::addPrefix(mRosNodePrefix, mFrameIdPrefix, false);
+    }
 
     mRosNode->createPublisher<tf2_msgs::TFMessage>(
         mPrim.GetPath().GetString(), mPoseTreePubTopic, mQueueSize, &RosPoseTree::pubCallback, this);
@@ -140,8 +146,8 @@ void RosPoseTree::pubCallback(ros::Publisher* pub)
             DcHandle artculationHandle = mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
             DcHandle rootBody = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
             physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rootBody));
-            msg.header.frame_id = parent_frame;
-            msg.child_frame_id = mDynamicControlPtr->getRigidBodyName(rootBody);
+            msg.header.frame_id = (parent_frame == "world") ? parent_frame : mFrameIdPrefix + parent_frame;
+            msg.child_frame_id = mFrameIdPrefix + mDynamicControlPtr->getRigidBodyName(rootBody);
 
             physx::PxTransform trans(parent_pose.transformInv(body1_pose));
             if (mParentPrim)
@@ -168,9 +174,9 @@ void RosPoseTree::pubCallback(ros::Publisher* pub)
                     physx::PxTransform body0_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(parent_body));
                     physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(child_body));
                     physx::PxTransform pos0_1(body0_pose.transformInv(body1_pose));
-
-                    msg.header.frame_id = mDynamicControlPtr->getRigidBodyName(parent_body);
-                    msg.child_frame_id = mDynamicControlPtr->getRigidBodyName(child_body);
+                    parent_frame = mDynamicControlPtr->getRigidBodyName(parent_body);
+                    msg.header.frame_id = (parent_frame == "world") ? parent_frame : mFrameIdPrefix + parent_frame;
+                    msg.child_frame_id = mFrameIdPrefix + mDynamicControlPtr->getRigidBodyName(child_body);
                     msg.transform =
                         omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(pos0_1, mStageUnits);
 
@@ -183,8 +189,8 @@ void RosPoseTree::pubCallback(ros::Publisher* pub)
             DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
             physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle));
             physx::PxTransform trans(parent_pose.transformInv(body1_pose));
-            msg.header.frame_id = parent_frame;
-            msg.child_frame_id = prim.GetName().GetString();
+            msg.header.frame_id = (parent_frame == "world") ? parent_frame : mFrameIdPrefix + parent_frame;
+            msg.child_frame_id = mFrameIdPrefix + prim.GetName().GetString();
             if (mParentPrim)
             {
                 msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(trans, mStageUnits);
@@ -210,8 +216,8 @@ void RosPoseTree::pubCallback(ros::Publisher* pub)
 
             physx::PxTransform body1_pose = asPxTransform(matrix);
             physx::PxTransform trans(parent_pose.transformInv(body1_pose));
-            msg.header.frame_id = parent_frame;
-            msg.child_frame_id = prim.GetName().GetString();
+            msg.header.frame_id = (parent_frame == "world") ? parent_frame : mFrameIdPrefix + parent_frame;
+            msg.child_frame_id = mFrameIdPrefix + prim.GetName().GetString();
             if (mParentPrim)
             {
                 msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(trans, mStageUnits);

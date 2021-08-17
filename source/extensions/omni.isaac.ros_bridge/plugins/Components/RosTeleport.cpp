@@ -22,6 +22,7 @@
 #include <carb/Types.h>
 
 #include <omni/isaac/ros/Conversions.h>
+#include <omni/isaac/ros/Utils.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>
@@ -70,6 +71,7 @@ void RosTeleport::onComponentChange()
 
     isaac::utils::safeGetAttribute(typedPrim.GetPoseSrvTopicAttr(), mPoseSrvTopic);
 
+    ros_utils::addPrefix(mRosNodePrefix, mPoseSrvTopic, true);
 
     mRosNode->createService<isaac_ros_messages::IsaacPose>(
         mPrim.GetPath().GetString(), mPoseSrvTopic, &RosTeleport::srvCallback, this);

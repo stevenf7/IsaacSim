@@ -21,6 +21,7 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
+#include <omni/isaac/ros/Utils.h>
 #include <omni/isaac/utils/Math.h>
 
 #include <time.h>
@@ -74,6 +75,9 @@ void RosJointState::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetJointStatePubTopicAttr(), mJointStatePubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetJointStateSubTopicAttr(), mJointStateSubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
+
+    ros_utils::addPrefix(mRosNodePrefix, mJointStatePubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mJointStateSubTopic, true);
 
     mRosNode->createPublisher<sensor_msgs::JointState>(
         mPrim.GetPath().GetString(), mJointStatePubTopic, mQueueSize, &RosJointState::pubCallback, this);
