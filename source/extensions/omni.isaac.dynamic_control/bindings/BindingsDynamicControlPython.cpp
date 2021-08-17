@@ -591,6 +591,10 @@ PYBIND11_MODULE(_dynamic_control, m)
              R"pbdoc(Enable physics for a rigid body)pbdoc")
         .def("wake_up_articulation", wrapInterfaceFunction(&DynamicControl::wakeUpArticulation),
              R"pbdoc(Enable physics for a articulation)pbdoc")
+        .def("sleep_rigid_body", wrapInterfaceFunction(&DynamicControl::sleepRigidBody),
+             R"pbdoc(Put rigid body to sleep)pbdoc")
+        .def("sleep_articulation", wrapInterfaceFunction(&DynamicControl::sleepArticulation),
+             R"pbdoc(Put articulation to sleep)pbdoc")
 
         .def("get_articulation_name", wrapInterfaceFunction(&DynamicControl::getArticulationName),
              py::return_value_policy::reference, R"pbdoc(

@@ -52,6 +52,9 @@ struct DynamicControl
     bool(CARB_ABI* wakeUpRigidBody)(DcHandle bodyHandle);
     bool(CARB_ABI* wakeUpArticulation)(DcHandle artHandle);
 
+    bool(CARB_ABI* sleepRigidBody)(DcHandle bodyHandle);
+    bool(CARB_ABI* sleepArticulation)(DcHandle artHandle);
+
     //===== Articulations =====//
 
     const char*(CARB_ABI* getArticulationName)(DcHandle artHandle);

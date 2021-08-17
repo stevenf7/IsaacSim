@@ -373,6 +373,32 @@ bool CARB_ABI DcWakeUpRigidBody(DcHandle bodyHandle)
 }
 
 
+bool CARB_ABI DcSleepRigidBody(DcHandle bodyHandle)
+{
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
+    DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
+    if (body && body->pxRigidBody)
+    {
+        PxRigidBody* rigid = body->pxRigidBody;
+        PxActorType::Enum type = rigid->getType();
+        if (type == PxActorType::eRIGID_DYNAMIC)
+        {
+            // wake the body
+            static_cast<PxRigidDynamic*>(rigid)->putToSleep();
+        }
+        else if (type == PxActorType::eARTICULATION_LINK && body->art && body->art->pxArticulation)
+        {
+            // wake the articulation
+            body->art->pxArticulation->putToSleep();
+        }
+    }
+    return true;
+}
+
 bool CARB_ABI DcIsSimulating()
 {
     if (g_dcCtx)
@@ -698,6 +724,21 @@ bool CARB_ABI DcWakeUpArticulation(DcHandle artHandle)
     if (art && art->pxArticulation)
     {
         art->pxArticulation->wakeUp();
+    }
+    return true;
+}
+
+bool CARB_ABI DcSleepArticulation(DcHandle artHandle)
+{
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
+    DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
+    if (art && art->pxArticulation)
+    {
+        art->pxArticulation->putToSleep();
     }
     return true;
 }
@@ -3626,6 +3667,8 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
 
     iface.wakeUpRigidBody = DcWakeUpRigidBody;
     iface.wakeUpArticulation = DcWakeUpArticulation;
+    iface.sleepRigidBody = DcSleepRigidBody;
+    iface.sleepArticulation = DcSleepArticulation;
 
     iface.getArticulationName = DcGetArticulationName;
     iface.getArticulationPath = DcGetArticulationPath;
