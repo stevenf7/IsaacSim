@@ -1,8 +1,8 @@
 {
 	"Franka":{
-		"RMPflow" : "./franka/rmpflow"
+		"RMPflow" : "./franka/rmpflow/config.json"
 	},
 	"UR10":{
-		"RMPflow" : "./ur10/rmpflow"
+		"RMPflow" : "./ur10/rmpflow/config.json"
 	}
 }
