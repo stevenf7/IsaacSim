@@ -8,3 +8,4 @@
 #
 
 from .test_sim_commands import *
+from .test_distance_metrics import *
