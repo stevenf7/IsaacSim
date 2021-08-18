@@ -51,7 +51,7 @@ class SyntheticDataHelper:
         self.sensor_helpers = {
             "rgb": sensors.get_rgb,
             "depth": sensors.get_depth,
-            "depthLinear": self.get_depth_linear,
+            "depthLinear": sensors.get_depth_linear,
             "instanceSegmentation": sensors.get_instance_segmentation,
             "semanticSegmentation": sensors.get_semantic_segmentation,
             "boundingBox2DTight": sensors.get_bounding_box_2d_tight,
@@ -73,20 +73,6 @@ class SyntheticDataHelper:
         }
 
         self.sensor_state = {s: False for s in list(self.sensor_helpers.keys())}
-
-    def get_depth_linear(self, viewport):
-        """ Get Depth Linear sensor output.
-
-        Args:
-            viewport (omni.kit.viewport._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
-        
-        Return:
-            (numpy.ndarray): A float32 array of shape (height, width, 1).
-        """
-        sensor = self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sd.SensorType.DepthLinear)
-        data = self.sd_interface.get_sensor_host_float_texture_array(sensor)
-        h, w = data.shape[:2]
-        return np.frombuffer(data, np.float32).reshape(h, w, -1)
 
     def get_camera_params(self, viewport):
         """Get active camera intrinsic and extrinsic parameters.
@@ -136,7 +122,7 @@ class SyntheticDataHelper:
             pose.append((str(prim_path), m[2], str(m[3]), np.array(prim_tf)))
         return pose
 
-    async def initialize_async(self, viewport, sensor_types, timeout=10):
+    def initialize(self, viewport, sensor_names, timeout=100):
         """ Initialize sensors in the list provided.
 
 
@@ -149,15 +135,18 @@ class SyntheticDataHelper:
         is_initialized = False
         while not is_initialized and time.time() < (start + timeout):
             sensors = []
-            for sensor_type in sensor_types:
-                sensors.append(self.sensor_helper_lib.create_or_retrieve_sensor(viewport, sensor_type))
-            await omni.kit.app.get_app_interface().next_update_async()
+            for sensor_name in sensor_names:
+                if sensor_name != "camera" and sensor_name != "pose":
+                    sensors.append(
+                        self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor_name])
+                    )
+            self.app.update()
             is_initialized = not any([not self.sd_interface.is_sensor_initialized(s) for s in sensors])
         if not is_initialized:
             unititialized = [s for s in sensors if not self.sd_interface.is_sensor_initialized(s)]
             raise TimeoutError(f"Unable to initialized sensors: [{unititialized}] within {timeout} seconds.")
 
-        await omni.kit.app.get_app_interface().next_update_async()  # Extra frame required to prevent access violation error
+        self.app.update()  # Extra frame required to prevent access violation error
 
     def get_groundtruth(self, gt_sensors, viewport, verify_sensor_init=True):
         """Get groundtruth from specified gt_sensors.
@@ -176,23 +165,8 @@ class SyntheticDataHelper:
             gt_sensors = (gt_sensors,)
 
         # Create and initialize sensors
-        while verify_sensor_init:
-            flag = 0
-            # Render frame
-            self.app.update()
-            for sensor_name in gt_sensors:
-                if sensor_name != "camera" and sensor_name != "pose":
-                    current_sensor = self.sensor_helper_lib.create_or_retrieve_sensor(
-                        viewport, self.sensor_types[sensor_name]
-                    )
-                    # print(self.sensor_types[sensor_name], " : ", self.sd_interface.is_sensor_initialized(current_sensor))
-                    if not self.sd_interface.is_sensor_initialized(current_sensor):
-                        flag = 1
-            # Render frame
-            self.app.update()
-            self.app.update()
-            if flag == 0:
-                break
+        if verify_sensor_init:
+            self.initialize(viewport, gt_sensors)
 
         gt = {}
         sensor_state = {}

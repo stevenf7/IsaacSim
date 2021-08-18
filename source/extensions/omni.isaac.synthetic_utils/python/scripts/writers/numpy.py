@@ -117,7 +117,8 @@ class NumpyWriter(BaseWriter):
         elif img_type == "DEPTH":
             # Convert linear depth to inverse depth for better visualization
             image_data = image_data * 100
-            image_data = np.reciprocal(image_data)
+            if np.max(image_data) > 0:
+                image_data = np.reciprocal(image_data)
             # Save ground truth data locally as png
             image_data[image_data == 0.0] = 1e-5
             image_data = np.clip(image_data, 0, 255)
