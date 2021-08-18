@@ -28,7 +28,7 @@ from carb.settings import get_settings
 from PIL import Image, ImageDraw
 from omni.isaac.synthetic_utils import visualization as vis
 from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter
-from omni.syntheticdata import visualize
+from omni.syntheticdata import sensors, visualize
 
 EXTENSION_NAME = "Synthetic Data Recorder"
 
@@ -108,7 +108,7 @@ class Extension(omni.ext.IExt):
                                     self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["colorize"].enabled = value
                                 else:
                                     asyncio.ensure_future(
-                                        self.sd_helper.initialize_async(viewport, [self.sd_helper.sd.SensorType.Rgb])
+                                        sensors.initialize_async(viewport, [self.sd_helper.sd.SensorType.Rgb])
                                     )
                                     if self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"]:
                                         self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
@@ -125,9 +125,7 @@ class Extension(omni.ext.IExt):
                                 self._sensor_settings_ui[viewport_name]["depth"]["npy"].enabled = value
                                 if value:
                                     asyncio.ensure_future(
-                                        self.sd_helper.initialize_async(
-                                            viewport, [self.sd_helper.sd.SensorType.DepthLinear]
-                                        )
+                                        sensors.initialize_async(viewport, [self.sd_helper.sd.SensorType.DepthLinear])
                                     )
 
                             def toggle_depth_colorize(self, viewport_name, value):
@@ -142,7 +140,7 @@ class Extension(omni.ext.IExt):
                                 self._sensor_settings_ui[viewport_name]["instance"]["npy"].enabled = value
                                 if value:
                                     asyncio.ensure_future(
-                                        self.sd_helper.initialize_async(
+                                        sensors.initialize_async(
                                             viewport, [self.sd_helper.sd.SensorType.InstanceSegmentation]
                                         )
                                     )
@@ -159,7 +157,7 @@ class Extension(omni.ext.IExt):
                                 self._sensor_settings_ui[viewport_name]["semantic"]["npy"].enabled = value
                                 if value:
                                     asyncio.ensure_future(
-                                        self.sd_helper.initialize_async(
+                                        sensors.initialize_async(
                                             viewport, [self.sd_helper.sd.SensorType.SemanticSegmentation]
                                         )
                                     )
@@ -179,7 +177,7 @@ class Extension(omni.ext.IExt):
                                         "colorize"
                                     ].enabled = self._sensor_settings[viewport_name]["rgb"]["enabled"]
                                     asyncio.ensure_future(
-                                        self.sd_helper.initialize_async(
+                                        sensors.initialize_async(
                                             viewport, [self.sd_helper.sd.SensorType.BoundingBox2DTight]
                                         )
                                     )
@@ -199,7 +197,7 @@ class Extension(omni.ext.IExt):
                                         "colorize"
                                     ].enabled = self._sensor_settings[viewport_name]["rgb"]["enabled"]
                                     asyncio.ensure_future(
-                                        self.sd_helper.initialize_async(
+                                        sensors.initialize_async(
                                             viewport, [self.sd_helper.sd.SensorType.BoundingBox2DLoose]
                                         )
                                     )
