@@ -161,12 +161,12 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Validate 3D BBox groundtruth
         gt_bbox3d = gt["boundingBox3D"]
         self.assertEqual(len(gt_bbox3d), 1)
-        self.assertAlmostEqual(gt_bbox3d[0][6], -43.018105, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][7], -31.312328, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][8], -25.15294, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][9], 24.201225, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][10], 31.31645, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][11], 41.191044, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][6], -43.06333, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][7], -31.312422, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][8], -25.154814, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][9], 24.15847, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][10], 31.31649, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][11], 41.19104, delta=0.01)
         # Validate camera groundtruth - position, fov, focal length, aperature
         gt_camera = gt["camera"]
         gt_camera_trans = gt_camera["pose"][3, :3]
