@@ -5,7 +5,7 @@
     "evaluations_per_frame" : 10,
     "relative_asset_paths": {
         "robot_description_path" : "robot_descriptor.yaml",
-        "urdf_path": "../ur10_robot_robotiq.urdf",
+        "urdf_path": "../ur10_robot_no_mat.urdf",
         "rmpflow_config_path" : "ur10_rmpflow_common.yaml"
     }
 }

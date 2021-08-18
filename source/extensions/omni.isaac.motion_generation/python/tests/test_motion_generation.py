@@ -18,7 +18,6 @@ from omni.isaac.dynamic_control import _dynamic_control
 import os
 import json
 import numpy as np
-from scipy.spatial.transform import Rotation as R
 
 
 async def load_test_file(path_to_file: str):
@@ -86,10 +85,8 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue("Franka" in self._policy_map)
         self.assertTrue("RMPflow" in self._policy_map["Franka"])
 
-        config_path = os.path.join(self._polciy_config_dir, self._policy_map["Franka"]["RMPflow"])
-        self.assertTrue(os.path.exists(os.path.join(config_path, "config.json")))
-
-        config = await self.process_policy_config(config_path)
+        config_file = os.path.join(self._polciy_config_dir, self._policy_map["Franka"]["RMPflow"])
+        config = await self.process_policy_config(config_file)
 
         robot_prim = self._stage.GetPrimAtPath("/panda")
         self.assertNotEqual(str(robot_prim.GetPath()), "")
@@ -160,8 +157,8 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         robot_geom.AddTranslateOp().Set(Gf.Vec3d(10.0, 70.0, 0.0))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
-        rot_quat = R.from_rotvec([0, 0, -np.pi / 4]).as_quat()
-        robot_geom.AddOrientOp().Set(Gf.Quatf(rot_quat[-1], *rot_quat[:-1]))
+        rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -np.pi / 4).GetQuat())
+        robot_geom.AddOrientOp().Set(rot_quat)
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot = Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0.0, 0.0, 1.0), np.pi / 2))
@@ -189,10 +186,8 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue("UR10" in self._policy_map)
         self.assertTrue("RMPflow" in self._policy_map["UR10"])
 
-        config_path = os.path.join(self._polciy_config_dir, self._policy_map["UR10"]["RMPflow"])
-        self.assertTrue(os.path.exists(os.path.join(config_path, "config.json")))
-
-        config = await self.process_policy_config(config_path)
+        config_file = os.path.join(self._polciy_config_dir, self._policy_map["UR10"]["RMPflow"])
+        config = await self.process_policy_config(config_file)
 
         robot_prim = self._stage.GetPrimAtPath("/ur10")
         self.assertNotEqual(str(robot_prim.GetPath()), "")
@@ -221,39 +216,39 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             ),
             "target_no_obstacle": np.array(
                 [
-                    -0.46543394178240394,
-                    -0.5588122749530228,
-                    0.31885582645317634,
-                    0.23672941316295085,
-                    0.01720650002158009,
-                    -0.01189622598738084,
+                    -0.4433465143351539,
+                    -0.6064906997758617,
+                    0.26105512039136,
+                    0.2421371180401331,
+                    0.005921446715897875,
+                    -0.005721427980404127,
                 ]
             ),
             "target_with_obstacle": np.array(
                 [
-                    -0.42737582970360455,
-                    -0.5762179564087445,
-                    0.3328029831206573,
-                    0.24653321128409336,
-                    0.018997207005370262,
-                    -0.012540022632522959,
+                    -0.42278625529099445,
+                    -0.6163405623967693,
+                    0.2668917690556075,
+                    0.24774372478471263,
+                    0.006360610369395176,
+                    -0.00588774024761614,
                 ]
             ),
             "target_pos": Gf.Vec3d(50.0, 0.0, 0.0),
             "obs_pos": Gf.Vec3d(50.0, 0.0, -20.0),
         }
-        await self.verify_policy_outputs(ground_truths)
+        await self.verify_policy_outputs(ground_truths, dbg=False)
 
         target_pos = Gf.Vec3d(50.0, 0.0, 50.0)
-        obs_pos = Gf.Vec3d(50.0, 10.0, 70.0)
+        obs_pos = Gf.Vec3d(60.0, 10.0, 60.0)
         timeout = 5
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
         robot_geom.AddTranslateOp().Set(Gf.Vec3d(10.0, 70.0, 0.0))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
-        rot_quat = R.from_rotvec([0, 0, -np.pi / 4]).as_quat()
-        robot_geom.AddOrientOp().Set(Gf.Quatf(rot_quat[-1], *rot_quat[:-1]))
+        rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -np.pi / 4).GetQuat())
+        robot_geom.AddOrientOp().Set(rot_quat)
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
         robot_prim.GetAttribute("xformOp:orient").Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
@@ -269,16 +264,16 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
-    async def process_policy_config(self, mp_path):
+    async def process_policy_config(self, mp_config_file):
         """
-            `mp_path` is expected to be an absolute path to a directory containing a file
-            named "config.json" which provides configuration for the "MotionPolicy" being
-            tested.
+            `mp_config_file` is expected to be an absolute path to a json file
+            which provides configuration for the "MotionPolicy" being tested.
+            A dictionary called "config" is created from reading this file
 
-            Inside "config.json" relative paths included in "relative_asset_paths" will
-            be prepended with "mp_path" to convert to an absolute path.
+            Inside "config", relative paths included in "relative_asset_paths" will
+            be prepended with the directory containing mp_config_file to convert to an absolute path.
 
-            For example, if "config.json" constains:
+            For example, if "config" constains:
 
             {
                 "policy_type" : "RMP_Flow",
@@ -287,7 +282,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
                     "robot_description_path" : "ur10_robot_description.yaml",
             }
 
-            and "mp_path" is set to "path/to/config/", then "config.json" will be converted to:
+            and mp_config_file is in the "path/to/config/" directory, then "config" will be converted to:
 
             {
                 "policy_type" : "RMPflow",
@@ -299,14 +294,15 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             }
         """
 
-        self.assertTrue(os.path.exists(os.path.join(mp_path, "config.json")))
+        self.assertTrue(os.path.exists(mp_config_file))
+        mp_config_dir = os.path.dirname(mp_config_file)  # path to directory containing mp_config_file
 
-        with open(os.path.join(mp_path, "config.json")) as mp_config_file:
-            config = json.load(mp_config_file)
+        with open(mp_config_file) as config_file:
+            config = json.load(config_file)
 
         rel_assets = config.get("relative_asset_paths", {})
         for k, v in rel_assets.items():
-            config[k] = os.path.join(mp_path, v)
+            config[k] = os.path.join(mp_config_dir, v)
 
         return config
 

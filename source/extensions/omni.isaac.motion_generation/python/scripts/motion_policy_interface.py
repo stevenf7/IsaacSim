@@ -10,7 +10,6 @@ from pxr import UsdGeom
 from enum import Enum
 import numpy as np
 import copy
-from scipy.spatial.transform import Rotation as R
 
 
 class PolicyType(Enum):
