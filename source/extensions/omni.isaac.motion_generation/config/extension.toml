@@ -25,5 +25,3 @@ name = "omni.isaac.motion_generation"
 
 [[python.module]]
 name = "omni.isaac.motion_generation.tests"
-
-

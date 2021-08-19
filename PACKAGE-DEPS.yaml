@@ -1,0 +1,121 @@
+NVTX:
+  licenseFile: nvtx-LICENSE.txt
+  packageName: NVTX
+  packageType: packman
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 3-20180925
+Omniverse Client Library:
+  licenseFile: omniverse client library-LICENSE.txt
+  packageName: Omniverse Client Library
+  packageType: packman
+  source:
+    branch: main
+    change: 17a2b280396d9edc0bea4e7e87933350b2de8b94
+    path: https://gitlab/omniverse/client-library
+    scm: git
+  swipat: null
+  version: 1.13.11-main.2092+tc.17a2b280
+carbonite:
+  licenseFile: carbonite-LICENSE.txt
+  packageName: carbonite
+  packageType: packman
+  source:
+    branch: release_106
+    change: 6e569a788a718763c9aa349361d81d9f150323eb
+    path: https://gitlab/omniverse/carbonite.git
+    scm: git
+  swipat: null
+  version: 106.19.3393-6e569a78-106-linux-x86_64
+cuda:
+  licenseFile: cuda-LICENSE.txt
+  packageName: cuda
+  packageType: packman
+  source:
+    branch: null
+    change: null
+    path: https://developer.nvidia.com/cuda-10.1-download-archive-base
+    scm: null
+  swipat: n/a
+  version: null
+fmt:
+  licenseFile: fmt-LICENSE.md
+  packageName: fmt
+  packageType: packman
+  source:
+    branch: master
+    change: 9980f06d6461dca30b4fcd33c226f5ecdd79dbe2
+    path: https://gitlab/carbon/carbonite-externals/fmt
+    scm: git
+  swipat: http://nvbugs/2600226
+  version: 5.2.1-7-9980f06d
+nv_usd:
+  licenseFile: nv_usd-LICENSE.md
+  packageName: nv_usd
+  packageType: packman
+  source:
+    branch: null
+    change: null
+    path: https://gitlab/omniverse/usd-build
+    scm: git
+  swipat: http://nvbugs/2515781
+  version: null
+physxsdk:
+  licenseFile: physxsdk-LICENSE.md
+  packageName: physxsdk
+  packageType: packman
+  source:
+    branch: null
+    change: null
+    path: p4://sw/physx/physxsdk/5.0/trunk/
+    scm: perforce
+  swipat: null
+  version: null
+pybind11:
+  licenseFile: pybind11-LICENSE.md
+  packageName: pybind11
+  packageType: packman
+  source:
+    branch: nvidia-master
+    change: 9a056c90938113a396e796d0a5af78941d0d6d97
+    path: https://gitlab/carbon/carbonite-externals/pybind11
+    scm: git
+  swipat: http://nvbugs/2520728
+  version: 2.3.dev1-19-9a056c90
+python:
+  licenseFile: python-LICENSE.txt
+  packageName: python
+  packageType: packman
+  source:
+    branch: null
+    change: null
+    path: https://gitlab/omniverse/externals/python-build.git
+    scm: git
+  swipat: http://nvbugs/3156615
+  version: null
+usd-audio-schema:
+  licenseFile: usd_audio_schema-LICENSE.md
+  packageName: usd-audio-schema
+  packageType: packman
+  source:
+    branch: null
+    change: null
+    path: https://gitlab/omniverse/usd_audio_schema
+    scm: git
+  swipat: null
+  version: null
+usd-ext-physics:
+  licenseFile: usd_ext_physics-LICENSE.md
+  packageName: usd-ext-physics
+  packageType: packman
+  source:
+    branch: null
+    change: null
+    path: https://gitlab/omniverse/usd-ext-physics.git
+    scm: git
+  swipat: null
+  version: null
