@@ -282,5 +282,7 @@ if __name__ == "__main__":
                 break
             if dataset.exiting:
                 break
+        # wait until done
+        dataset.data_writer.stop_threads()
         # cleanup
         dataset.kit.shutdown()
