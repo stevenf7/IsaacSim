@@ -278,19 +278,56 @@ class RmpFlow(LulaMotionPolicy):
         if "urdf_path" not in policy_config:
             carb.log_error("urdf_path is missing in RMPflow config")
             return
-        if "end_effector_frame_name" not in policy_config:
-            carb.log_error("end_effector_frame_name is missing in RMPflow config")
-            return
         if "rmpflow_config_path" not in policy_config:
             carb.log_error("rmpflow_config_path is missing in RMPflow config")
             return
+        if "end_effector_frame_name" not in policy_config:
+            carb.log_error("end_effector_frame_name is missing in RMPflow config")
+            return
+
+        """
+        evaluations_per_frame (int) sets the number of times that RMPflow is evaluated to produce a target
+        for the controller once per frame.  The RMPflow acceleration policy is converted to a velocity
+        policy through integration with sub_frame timesteps
+        """
+        if "evaluations_per_frame" not in policy_config:
+            carb.log_error("evaluations_per_frame is missing in RMPflow config")
+            return
+
+        self.evaluations_per_frame = policy_config["evaluations_per_frame"]
+
+        if self.evaluations_per_frame // 1 != self.evaluations_per_frame or self.evaluations_per_frame < 1:
+            carb.log_error("evaluations_per_frame must be a positive integer in the RMPflow config file")
+            return
+
+        """
+        ignore_robot_state_updates (bool) toggles whether RMPflow updates the robot position during
+            rollouts based on the feedback from _dynamic_control.  
+        If False: At every frame, the RMPflow internal robot state will be set to the current robot
+            state returned by _dynamic_control.  In this case, RMPflow will return velocity targets
+            because setting position targets very close to the current position causes slow movement
+            in _dynamic_control.
+        If True: The internal robot state will only be updated when set_target() is called.  While following
+            a given target, RMPflow will maintain its own robot state using forward integration.  In this case
+            RMPflow will return position targets to ensure that the error between its internal robot state and 
+            the real robot state remains low (as _dynamic_control will follow the targets with PD control).
+        """
+        if "ignore_robot_state_updates" not in policy_config:
+            carb.log_error("ignore_robot_state is missing in RMPflow config")
+            return
+
+        self.ignore_robot_state_updates = policy_config["ignore_robot_state_updates"]
+        if self.ignore_robot_state_updates:
+            policy_type = PolicyType.POSITION
+        else:
+            policy_type = PolicyType.VELOCITY
 
         robot_description_path = policy_config["robot_description_path"]
         urdf_path = policy_config["urdf_path"]
 
         self.end_effector_frame_name = policy_config["end_effector_frame_name"]
 
-        super().__init__(_stage, PolicyType.ACCELERATION, robot_description_path, urdf_path, robot_prim)
+        super().__init__(_stage, policy_type, robot_description_path, urdf_path, robot_prim)
 
         rmpflow_config_path = policy_config["rmpflow_config_path"]
 
@@ -301,6 +338,9 @@ class RmpFlow(LulaMotionPolicy):
 
         # Create RMPflow policy.
         self._policy = lula.create_rmpflow(rmpflow_config)
+
+        self._robot_joint_positions = None
+        self._robot_joint_velocities = None
 
         self.set_initialized()
 
@@ -340,7 +380,48 @@ class RmpFlow(LulaMotionPolicy):
         self.update_target()
         self.update_world(updated_obstacles, robot_pose_changed)
 
-    def evaluate_acceleration(self, joint_positions, joint_velocities):
+    def get_joint_velocity_targets(self, joint_positions, joint_velocities, frame_duration):
+        self._update_robot_joint_states(joint_positions, joint_velocities, frame_duration)
+        return self._robot_joint_velocities
+
+    def get_joint_position_targets(self, joint_positions, joint_velocities, frame_duration):
+        self._update_robot_joint_states(joint_positions, joint_velocities, frame_duration)
+        return self._robot_joint_positions
+
+    def _update_robot_joint_states(self, joint_positions, joint_velocities, frame_duration):
+        """
+        Args:
+            joint_positions: queried from _dynamic_control
+            joint_velocities: queried from _dynamic_control
+            frame_duration: duration of one simulation frame (sec)
+
+        The internal robot joint states are either updated based on the previous internal states
+        or the state passed in by _dynamic_control.
+        """
+        if (
+            self._robot_joint_positions is None
+            or self._robot_joint_velocities is None
+            or not self.ignore_robot_state_updates
+        ):
+            self._robot_joint_positions, self._robot_joint_velocities = self._euler_integration(
+                joint_positions, joint_velocities, frame_duration
+            )
+        else:
+            self._robot_joint_positions, self._robot_joint_velocities = self._euler_integration(
+                self._robot_joint_positions, self._robot_joint_velocities, frame_duration
+            )
+
+    def _euler_integration(self, joint_positions, joint_velocities, frame_duration):
+        policy_timestep = frame_duration / self.evaluations_per_frame
+
+        for i in range(self.evaluations_per_frame):
+            joint_accel = self._evaluate_acceleration(joint_positions, joint_velocities)
+            joint_positions += policy_timestep * joint_velocities
+            joint_velocities += policy_timestep * joint_accel
+
+        return joint_positions, joint_velocities
+
+    def _evaluate_acceleration(self, joint_positions, joint_velocities):
         joint_accel = np.zeros_like(joint_positions)
         self._policy.eval_accel(joint_positions, joint_velocities, joint_accel)
         return joint_accel
