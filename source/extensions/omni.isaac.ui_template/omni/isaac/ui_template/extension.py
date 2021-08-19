@@ -302,7 +302,7 @@ class Extension(omni.ext.IExt):
                         flt_field, slider = combo_floatfield_slider_builder(**value)
                     # Dropdown ComboBox
                     elif value["type"] == "dropdown":
-                        self._models["dropdown_" + value["label"]] = dropdown_builder(**value).model
+                        self._models["dropdown_" + value["label"]] = dropdown_builder(**value)
                     # Mulitple Dropdown ComboBoxes
                     elif value["type"] == "multi_dropdown":
                         elems = multi_dropdown_builder(**value)
@@ -330,6 +330,8 @@ class Extension(omni.ext.IExt):
                 ui.Label("Testing Default UI Elements")
                 btn_builder()
                 cb_builder()
+                str_builder()
+                float_builder()
                 multi_btn_builder()
                 multi_cb_builder()
                 dropdown_builder()
