@@ -207,7 +207,7 @@ class Extension(omni.ext.IExt):
                 return
             self._asset_path = nucleus_server + "/Isaac"
 
-            current_robot_index = self._robot_option.model.get_item_value_model().as_int
+            current_robot_index = self._robot_option.get_item_value_model().as_int
             self._robot_prim_path = "/robot"
             if current_robot_index == 0:
                 asset_path = self._asset_path + "/Robots/Transporter"

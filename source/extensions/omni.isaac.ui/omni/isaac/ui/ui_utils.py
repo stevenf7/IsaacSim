@@ -153,6 +153,18 @@ def str_builder(label="", type="stringfield", default_val=" ", tooltip="", on_cl
         return str_field
 
 
+def float_builder(label="", type="floatfield", default_val=0, tooltip=""):
+    """Creates a Stylized Floatfield Widget"""
+    with ui.HStack():
+        ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
+        float_field = ui.FloatField(
+            name="FloatField", width=ui.Fraction(1), height=0, alignment=ui.Alignment.LEFT_CENTER
+        ).model
+        float_field.set_value(default_val)
+        add_line_rect_flourish(False)
+        return float_field
+
+
 def combo_cb_str_builder(
     label="",
     type="checkbox_stringfield",
@@ -189,13 +201,13 @@ def dropdown_builder(
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         combo_box = ui.ComboBox(
             default_val, *items, name="ComboBox", width=ui.Fraction(1), alignment=ui.Alignment.LEFT_CENTER
-        )
+        ).model
         add_line_rect_flourish(False)
 
         def on_clicked_wrapper(model, val):
             on_clicked_fn(items[model.get_item_value_model().as_int])
 
-        combo_box.model.add_item_changed_fn(on_clicked_wrapper)
+        combo_box.add_item_changed_fn(on_clicked_wrapper)
 
     return combo_box
 
@@ -360,31 +372,38 @@ def combo_cb_scrolling_frame_builder(
     return cb, text
 
 
-def xyz_builder(label="", args=None, axis_count=3, min=-1, max=1, step=0.001, tooltip=""):
+def xyz_builder(
+    label="",
+    tooltip="",
+    axis_count=3,
+    default_val=[0.0, 0.0, 0.0],
+    min=-1,
+    max=1,
+    step=0.001,
+    on_value_changed_fn=[None, None, None],
+):
 
     # These styles & colors are taken from omni.kit.property.transform_builder.py _create_multi_float_drag_matrix_with_labels
+    # TODO: make this handle W properly, and check if axis >0 and  <=4
     field_labels = [("X", COLOR_X), ("Y", COLOR_Y), ("Z", COLOR_Z), ("W", COLOR_W)]
+    field_tooltips = ["X Value", "Y Value", "Z Value"]
     RECT_WIDTH = 13
     SPACING = 4
+    val_models = [None] * 3
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         with ui.ZStack():
             with ui.HStack():
                 ui.Spacer(width=RECT_WIDTH)
-                # value_widget = ui.MultiFloatDragField(
-                #     *args, name="multivalue", min=min, max=max, step=step, h_spacing=RECT_WIDTH + SPACING, v_spacing=2
-                # ).model
-                val_model_x = ui.FloatDrag(
-                    name="Field", height=LABEL_HEIGHT, alignment=ui.Alignment.LEFT_CENTER, tooltip="X Value"
-                ).model
-                ui.Spacer(width=19)
-                val_model_y = ui.FloatDrag(
-                    name="Field", height=LABEL_HEIGHT, alignment=ui.Alignment.LEFT_CENTER, tooltip="Y Value"
-                ).model
-                ui.Spacer(width=19)
-                val_model_z = ui.FloatDrag(
-                    name="Field", height=LABEL_HEIGHT, alignment=ui.Alignment.LEFT_CENTER, tooltip="Z Value"
-                ).model
+                for i in range(3):
+                    val_models[i] = ui.FloatDrag(
+                        name="Field", height=LABEL_HEIGHT, alignment=ui.Alignment.LEFT_CENTER, tooltip=field_tooltips[i]
+                    ).model
+                    val_models[i].set_value(default_val[i])
+                    if on_value_changed_fn[i] is not None:
+                        val_models[i].add_value_changed_fn(on_value_changed_fn[i])
+                    if i != 2:
+                        ui.Spacer(width=19)
             with ui.HStack():
                 for i in range(3):
                     if i != 0:
@@ -395,7 +414,7 @@ def xyz_builder(label="", args=None, axis_count=3, min=-1, max=1, step=0.001, to
                         ui.Label(field_label[0], name="vector_label", alignment=ui.Alignment.CENTER)
                 ui.Spacer()
         add_line_rect_flourish(False)
-        return [val_model_x, val_model_y, val_model_z]
+        return val_models
 
 
 def color_picker_builder(label="", type="color_picker", default_val=[1.0, 1.0, 1.0, 1.0], tooltip="Color Picker"):
@@ -1162,8 +1181,8 @@ class ListItemDelegate(ui.AbstractItemDelegate):
 
 def build_simple_search(label="", type="search", model=None, delegate=None, tooltip=""):
     """A Simple Search Bar + TreeView Widget.\n
-       Pass a list of items through the model, and a custom on_click_fn through the delegate.\n
-       Returns the SearchWidget so user can destroy it on_shutdown."""
+    Pass a list of items through the model, and a custom on_click_fn through the delegate.\n
+    Returns the SearchWidget so user can destroy it on_shutdown."""
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
 
