@@ -13,7 +13,6 @@ import copy
 
 
 class PolicyType(Enum):
-    ACCELERATION = 0
     VELOCITY = 1
     POSITION = 2
 
@@ -43,16 +42,35 @@ class MotionPolicy:
         """
         pass
 
-    def evaluate_acceleration(self, joint_position, joint_velocity):
+    def get_joint_velocity_targets(self, joint_positions, joint_velocities, frame_duration):
         """
         Params:
-                joint_position (m x 1): positions of each joint
-                joint_velocity (m x 1): velocity of each joint
+                joint_positions (m x 1): positions of each joint
+                joint_velocities (m x 1): velocity of each joint
+                frame_duration: duration of a single frame of simulation (seconds)
 
         Return:
-                joint_acceleration (m x 1): a function of robot state, world state, and target
+                joint_velocity_targets (m x 1): a function of robot state, world state, and target position
+                    This function will be used by MotionGenerator to set a velocity target at every frame
+                This function only needs to be implemented if the MotionPolicy has the PolicyType VELOCITY_POLICY
         """
-        return np.zeros_like(joint_position)
+
+        return np.zeros_like(joint_positions)
+
+    def get_joint_position_targets(self, joint_positions, joint_velocities, frame_duration):
+        """
+        Params:
+                joint_positions (m x 1): positions of each joint
+                joint_velocities (m x 1): velocity of each joint
+                frame_duration: duration of a single frame of simulation (seconds)
+
+        Return:
+                joint_position_targets (m x 1): a function of robot state, world state, and target position
+                    This function will be queried by MotionGenerator to set a position target at every frame
+                This function only needs to be implemented if the MotionPolicy has the PolicyType POSITION_POLICY
+        """
+
+        return np.zeros_like(joint_positions)
 
     def get_active_joints(self):
         """
@@ -73,6 +91,7 @@ class MotionPolicy:
         Return:
                 None
         """
+        pass
 
     def set_end_effector_target(self, target_prim):
         """

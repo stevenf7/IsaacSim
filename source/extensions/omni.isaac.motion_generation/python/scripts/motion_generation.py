@@ -34,11 +34,6 @@ class MotionGenerator:
 
                     policy_config must specify "policy_type" to select a specific motion policy such as "RMPflow"
 
-                    policy_config must specify "evaluations_per_frame" to specify the number of times that
-                        the motion policy is called between every frame of the simulation.  Ex. RMPflow will have smoother
-                        motions if it has a high number of evaluations per frame.  Euler integration is used to allow policies
-                        to be evaluated at smaller timesteps than the simulator.
-
                     All other specifications are policy dependent.
 
             param robot_prim: USD prim for robot
@@ -50,13 +45,7 @@ class MotionGenerator:
             carb.log_error("Required arg evaluations_per_frame was not specified in policy_config.")
             return  # still uninitialized
 
-        policy_evals_per_frame = policy_config["evaluations_per_frame"]
-        if policy_evals_per_frame // 1 != policy_evals_per_frame or policy_evals_per_frame < 1:
-            carb.log_error("evaluations_per_frame must be a positive integer in the motion policy config file")
-            return  # still uninitialized
-
         self.sim_timestep = 1 / sim_fps
-        self.policy_evals_per_frame = int(policy_evals_per_frame)
 
         # initialize motion policy
         if "policy_type" not in policy_config:
@@ -82,11 +71,10 @@ class MotionGenerator:
 
         self._default_dc_config = self._dc.get_articulation_dof_properties(self._ar)
 
-        if (
-            self._motion_policy.policy_type == PolicyType.ACCELERATION
-            or self._motion_policy.policy_type == PolicyType.VELOCITY
-        ):
+        if self._motion_policy.policy_type == PolicyType.VELOCITY:
             self._configure_velocity_control(damping=velocity_control_damping)
+        else:
+            self._configure_position_control()
 
         self.initialized = self._motion_policy.initialized
 
@@ -96,8 +84,6 @@ class MotionGenerator:
     def move(self, updated_obstacles=None):
         self._motion_policy.update(updated_obstacles=updated_obstacles)  # update motion_policy internal world state
 
-        if self._motion_policy.policy_type == PolicyType.ACCELERATION:
-            self._follow_acceleration_policy()
         if self._motion_policy.policy_type == PolicyType.VELOCITY:
             self._follow_velocity_policy()
         if self._motion_policy.policy_type == PolicyType.POSITION:
@@ -153,46 +139,65 @@ class MotionGenerator:
     def remove_obstacle(self, obstacle_prim):
         return self._motion_policy.remove_obstacle(obstacle_prim)
 
-    def get_velocity_target_from_acceleration_policy(self):
+    def get_joint_velocity_targets(self):
         joint_positions, joint_velocities, joint_accel = self.get_joint_states()
-        dji = self._active_joint_inds
+        aji = self._active_joint_inds
 
-        # do steps of Euler integration to match the desired number of policy evals per frame
-        policy_timestep = self.sim_timestep / self.policy_evals_per_frame
+        velocity_targets = self._dc.get_articulation_dof_velocity_targets(self._ar)
+        velocity_targets[aji] = self._motion_policy.get_joint_velocity_targets(
+            joint_positions[aji], joint_velocities[aji], self.sim_timestep
+        )
+        return velocity_targets
 
-        for i in range(self.policy_evals_per_frame):
-            joint_accel[dji] = self._motion_policy.evaluate_acceleration(joint_positions[dji], joint_velocities[dji])
-            joint_positions[dji] += policy_timestep * joint_velocities[dji]
-            joint_velocities[dji] += policy_timestep * joint_accel[dji]
+    def get_joint_position_targets(self):
+        joint_positions, joint_velocities, joint_accel = self.get_joint_states()
+        aji = self._active_joint_inds
 
-        return joint_velocities
+        position_targets = self._dc.get_articulation_dof_position_targets(self._ar)
+        position_targets[aji] = self._motion_policy.get_joint_position_targets(
+            joint_positions[aji], joint_velocities[aji], self.sim_timestep
+        )
+        return position_targets
+
+    def get_motion_policy(self):
+        """
+        It can be convenient to interact directly with the low level motion policy for testing and development,
+        but in general the policy should be designed to function using only the motion_policy_interface.
+        """
+        return self._motion_policy
+
+    def _zero_robot_velocity(self):
+        # Instantaneously set the robot's velocity to zero (used on initialization).
+        dof_states = self._dc.get_articulation_dof_states(self._ar, _dynamic_control.STATE_VEL)
+        dof_states["vel"] = np.zeros_like(dof_states["vel"])
+        self._dc.set_articulation_dof_states(self._ar, dof_states, _dynamic_control.STATE_VEL)
+
+    def _configure_position_control(self):
+        self._zero_robot_velocity()
 
     def _configure_velocity_control(self, damping):
-        # Set robot to use velocity control rather than position control
+        self._zero_robot_velocity()
 
         props = _dynamic_control.DofProperties()
         props.drive_mode = _dynamic_control.DRIVE_FORCE
         props.damping = damping
         props.stiffness = 0
+
         for ind in self._active_joint_inds:
             self._dc.set_dof_properties(self._dc.find_articulation_dof(self._ar, self._active_joints[ind]), props)
 
-    def _set_joint_velocity_target(self, joint_velocities):
+    def _set_joint_velocity_targets(self, joint_velocities):
         self._dc.wake_up_articulation(self._ar)
-
         self._dc.set_articulation_dof_velocity_targets(self._ar, joint_velocities.astype(np.float32))
 
-    def _follow_acceleration_policy(self):
-        joint_velocities = self.get_velocity_target_from_acceleration_policy()
-
-        self._set_joint_velocity_target(joint_velocities)
+    def _set_joint_position_targets(self, joint_positions):
+        self._dc.wake_up_articulation(self._ar)
+        self._dc.set_articulation_dof_position_targets(self._ar, joint_positions.astype(np.float32))
 
     def _follow_velocity_policy(self):
-        # Not implemented because no velocity motion policy has been implemented yet
-        pass
+        joint_velocities = self.get_joint_velocity_targets()
+        self._set_joint_velocity_targets(joint_velocities)
 
     def _follow_position_policy(self):
-        # Not implemented because no position motion policy has been implemented yet
-
-        # self._dc.set_articulation_dof_position_targets(self._ar, joint_positions.astype(np.float32))
-        pass
+        joint_positions = self.get_joint_position_targets()
+        self._set_joint_position_targets(joint_positions)
