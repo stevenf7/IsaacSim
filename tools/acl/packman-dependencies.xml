@@ -20,14 +20,14 @@
   <dependency name="ovcp">
     <package
        name="omniverse_connection_py"
-       version="11.11+merge-requests-1849.gitlab.17255.496dfc4b"
+       version="11.13+merge-requests-1849.gitlab.18167.fbdc7776"
     />
   </dependency>
 
   <dependency name="ovsvcpy">
     <package
        name="omniverse_service_py"
-       version="11.11+merge-requests-1849.gitlab.17227.d819d9f3"
+       version="11.13+merge-requests-1849.gitlab.18167.fbdc7776"
     />
   </dependency>
 
