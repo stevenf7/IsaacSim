@@ -6,18 +6,19 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-
-import omni.ext
-import omni.ui as ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from .. import _occupancy_map
-import omni
-from pxr import UsdGeom, Gf
 import gc
 import os
-from .utils import update_location, compute_coordinates, generate_image
 import weakref
 import asyncio
+import carb
+import omni
+import omni.ext
+import omni.ui as ui
+from pxr import UsdGeom, Gf, Usd
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from .. import _occupancy_map
+from .utils import update_location, compute_coordinates, generate_image
+
 from omni.isaac.ui.ui_utils import (
     xyz_builder,
     float_builder,
@@ -26,27 +27,6 @@ from omni.isaac.ui.ui_utils import (
     multi_btn_builder,
     btn_builder,
 )
-import carb
-
-
-def create_xyz(init=0, all_axis=["X", "Y", "Z"], callback=None):
-
-    colors = {"X": 0xFF5555AA, "Y": 0xFF76A371, "Z": 0xFFA07D4F}
-    float_drags = {}
-    for axis in all_axis:
-        with ui.HStack():
-            with ui.ZStack(width=15):
-                ui.Rectangle(
-                    width=15,
-                    height=20,
-                    style={"background_color": colors[axis], "border_radius": 3, "corner_flag": ui.CornerFlag.LEFT},
-                )
-                ui.Label(axis, name="transform_label", alignment=ui.Alignment.CENTER)
-            float_drags[axis] = ui.FloatDrag(name="transform", min=-1000000, max=1000000, step=0.01)
-            float_drags[axis].model.set_value(init)
-            if callback:
-                float_drags[axis].model.add_value_changed_fn(lambda m: callback())
-    return float_drags
 
 
 class Extension(omni.ext.IExt):
@@ -68,12 +48,19 @@ class Extension(omni.ext.IExt):
                 with ui.VStack(spacing=5, height=0):
                     change_fn = [self.on_update_location, self.on_update_location, self.on_update_location]
                     self._models["origin"] = xyz_builder(label="Origin", on_value_changed_fn=change_fn)
-                    self._models["lower_bound"] = xyz_builder(
-                        label="Lower Bound", on_value_changed_fn=change_fn, default_val=[-100, -100, 0]
-                    )
                     self._models["upper_bound"] = xyz_builder(
                         label="Upper Bound", on_value_changed_fn=change_fn, default_val=[100, 100, 0]
                     )
+                    self._models["lower_bound"] = xyz_builder(
+                        label="Lower Bound", on_value_changed_fn=change_fn, default_val=[-100, -100, 0]
+                    )
+                    self._models["center"] = btn_builder(
+                        label="Selected Prims",
+                        text="Center & Bound Selection",
+                        tooltip="Centers the origin on the selected prims an updates the x,y bounds to contain the selection",
+                        on_clicked_fn=self._on_center_selection,
+                    )
+
                     self._models["cell_size"] = float_builder(
                         label="Cell Size",
                         default_val=5,
@@ -82,12 +69,9 @@ class Extension(omni.ext.IExt):
                     self._models["cell_size"].add_value_changed_fn(self.on_update_cell_size)
                     self._models["compute"] = multi_btn_builder(
                         "Occupancy Map",
-                        text=["Calculate", "Generate Image"],
+                        text=["Calculate", "Visualize Image"],
                         on_clicked_fn=[self._generate_map, self._generate_image],
                     )
-                    # self._models["generate"] = btn_builder(label = "Occupancy Map", text = "Generate")
-
-                    # with ui.HStack(height=0):
 
                     # self.draw_voxel_btn = ui.Button("Draw Voxels", clicked_fn=self._draw_instances)
                     # self.draw_voxel_btn.visible = False
@@ -95,7 +79,43 @@ class Extension(omni.ext.IExt):
     def _menu_callback(self):
         self._window.visible = not self._window.visible
 
+    def _on_center_selection(self):
+        selected_prims = omni.usd.get_context().get_selection().get_selected_prim_paths()
+        stage = omni.usd.get_context().get_stage()
+        bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
+
+        total_bounds = Gf.BBox3d()
+
+        if len(selected_prims) > 0:
+            for prim_path in selected_prims:
+                prim = stage.GetPrimAtPath(prim_path)
+                bounds = bbox_cache.ComputeWorldBound(prim)
+                total_bounds = Gf.BBox3d.Combine(total_bounds, bounds)
+            range = total_bounds.GetBox()
+            mid_point = range.GetMidpoint()
+            min_point = range.GetMin()
+            max_point = range.GetMax()
+            self._models["origin"][0].set_value(mid_point[0])
+            self._models["origin"][1].set_value(mid_point[1])
+            # self._models["origin"][2].set_value(0)
+
+            self._models["lower_bound"][0].set_value(min_point[0] - mid_point[0])
+            self._models["lower_bound"][1].set_value(min_point[1] - mid_point[1])
+            # self._models["lower_bound"][2].set_value(0)
+
+            self._models["upper_bound"][0].set_value(max_point[0] - mid_point[0])
+            self._models["upper_bound"][1].set_value(max_point[1] - mid_point[1])
+            # self._models["upper_bound"][2].set_value(0)
+
     def on_update_location(self, value):
+        if (
+            self._models["lower_bound"][0].get_value_as_float() >= self._models["upper_bound"][0].get_value_as_float()
+            or self._models["lower_bound"][1].get_value_as_float()
+            >= self._models["upper_bound"][1].get_value_as_float()
+            or self._models["lower_bound"][2].get_value_as_float() > self._models["upper_bound"][2].get_value_as_float()
+        ):
+            carb.log_warn("lower bound is >= upper bound")
+            return
         update_location(
             self._om,
             [
@@ -143,6 +163,15 @@ class Extension(omni.ext.IExt):
         proto_indices_attr.Set([0] * len(pos_list))
 
     def _generate_map(self):
+        if (
+            self._models["lower_bound"][0].get_value_as_float() >= self._models["upper_bound"][0].get_value_as_float()
+            or self._models["lower_bound"][1].get_value_as_float()
+            >= self._models["upper_bound"][1].get_value_as_float()
+            or self._models["lower_bound"][2].get_value_as_float() > self._models["upper_bound"][2].get_value_as_float()
+        ):
+            carb.log_warn("lower bound is >= upper bound, cannot calculate map")
+            return
+
         self.on_update_location(0)
         self.on_update_cell_size(0)
 
@@ -241,7 +270,7 @@ class Extension(omni.ext.IExt):
             f"\norigin: [{float(bottom_left[0]/scale_to_meters)}, {float(bottom_left[1]/scale_to_meters)}, 0.0000]"
         )
         ros_yaml_file_text += "\nnegate: 0"
-        ros_yaml_file_text += f"\noccupied_thresh: {1.0}"
+        ros_yaml_file_text += f"\noccupied_thresh: {0.65}"
         ros_yaml_file_text += "\nfree_thresh: 0.196"
 
         current_data_output_index = self._models["config_type"].get_item_value_model().as_int
@@ -293,10 +322,12 @@ class Extension(omni.ext.IExt):
         # check to make sure image has data first
         dims = self._om.get_dimensions()
         if dims.x == 0 or dims.y == 0:
-            carb.log_warn("occupancy map is empty")
+            carb.log_warn(
+                "Occupancy map is empty, press CALCULATE first and make sure there is collision geometry in the mapping bounds"
+            )
             return
         self._rgb_byte_provider = omni.ui.ByteImageProvider()
-        self._visualize_window = omni.ui.Window("Visualization", width=300, height=300)
+        self._visualize_window = omni.ui.Window("Visualization", width=500, height=600)
         with self._visualize_window.frame:
             with ui.VStack(spacing=5):
                 with ui.VStack(height=0, spacing=5):
@@ -317,11 +348,13 @@ class Extension(omni.ext.IExt):
                         tooltip="Type of config output generated",
                     )
                     self._models["generate"] = btn_builder(
-                        label="Occupancy map", text="Generate", on_clicked_fn=self._fill_image
+                        label="Occupancy map", text="Re-Generate Image", on_clicked_fn=self._fill_image
                     )
                     self._models["config_data"] = ui.StringField(height=100, multiline=True).model
                 self._image_frame = ui.Frame()
                 self._image_frame.set_build_fn(self.rebuild_frame)
+        # generate image imadeately when this window appears
+        self._fill_image()
 
     def on_shutdown(self):
         if self._filepicker:

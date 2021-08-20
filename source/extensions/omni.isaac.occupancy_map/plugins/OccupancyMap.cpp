@@ -122,6 +122,7 @@ omni::renderer::IDebugDraw* g_debugDraw = nullptr;
 void CARB_ABI Update()
 {
     gLineDrawing->clear();
+    gCellDrawing->clear(); // clear this so that we don't leave any cells floating.
     float w = 2.0f;
 
     carb::ColorRgba color = { 1, 1, 1, 1 };
@@ -313,6 +314,7 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
 
 static void onDetach(void* data)
 {
+
     gLineDrawing.reset();
     gCellDrawing.reset();
 }

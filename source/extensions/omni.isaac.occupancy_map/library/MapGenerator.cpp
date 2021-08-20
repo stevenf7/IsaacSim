@@ -117,7 +117,8 @@ void MapGenerator::generate()
 
     mTree->clear();
     // use half extents for the cube that is used for overlap tests
-    float geomHeight = ::physx::PxMax(::physx::PxAbs(mInputMaxPoint.z - mInputMinPoint.z) / 2.0f, mCellSize / 2.0f);
+    // Height of cube must be at least cell size / 2.0
+    float geomHeight = ::physx::PxAbs(mInputMaxPoint.z - mInputMinPoint.z) / 2.0f + mCellSize / 2.0f;
     ::physx::PxBoxGeometry cellGeom(::physx::PxVec3(mCellSize / 2.0f, mCellSize / 2.0f, geomHeight));
 
     octomap::KeySet occupied_cells, unoccupied_cells;
@@ -130,8 +131,9 @@ void MapGenerator::generate()
             octomap::OcTreeKey key;
             key = mTree->coordToKey(octomap::point3d(ix + mInputOrigin.x, iy + mInputOrigin.y, mInputOrigin.z));
 
-            ::physx::PxTransform pose(::physx::PxVec3(ix + mInputOrigin.x, iy + mInputOrigin.y,
-                                                      mInputOrigin.z + (mInputMaxPoint.z - mInputMinPoint.z) / 2.0f));
+            // because the min and max points are relative to origin, they must be offset
+            float height = mInputOrigin.z + mInputMinPoint.z + (mInputMaxPoint.z - mInputMinPoint.z) / 2.0f;
+            ::physx::PxTransform pose(::physx::PxVec3(ix + mInputOrigin.x, iy + mInputOrigin.y, height));
             if (::physx::PxSceneQueryExt::overlapAny(*mPhysxScenePtr, cellGeom, pose, hit))
             {
                 occupied_cells.insert(key);
