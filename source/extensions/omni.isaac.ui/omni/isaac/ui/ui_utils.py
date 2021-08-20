@@ -376,40 +376,51 @@ def xyz_builder(
     label="",
     tooltip="",
     axis_count=3,
-    default_val=[0.0, 0.0, 0.0],
-    min=-1,
-    max=1,
+    default_val=[0.0, 0.0, 0.0, 0.0],
+    min=float("-inf"),
+    max=float("inf"),
     step=0.001,
-    on_value_changed_fn=[None, None, None],
+    on_value_changed_fn=[None, None, None, None],
 ):
 
     # These styles & colors are taken from omni.kit.property.transform_builder.py _create_multi_float_drag_matrix_with_labels
-    # TODO: make this handle W properly, and check if axis >0 and  <=4
+    if axis_count <= 0 or axis_count > 4:
+        import builtins
+
+        carb.log_warn("Invalid axis_count: must be in range 1 to 4. Clamping to default range.")
+        axis_count = builtins.max(builtins.min(axis_count, 4), 1)
+
     field_labels = [("X", COLOR_X), ("Y", COLOR_Y), ("Z", COLOR_Z), ("W", COLOR_W)]
-    field_tooltips = ["X Value", "Y Value", "Z Value"]
+    field_tooltips = ["X Value", "Y Value", "Z Value", "W Value"]
     RECT_WIDTH = 13
     SPACING = 4
-    val_models = [None] * 3
+    val_models = [None] * axis_count
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         with ui.ZStack():
             with ui.HStack():
                 ui.Spacer(width=RECT_WIDTH)
-                for i in range(3):
+                for i in range(axis_count):
                     val_models[i] = ui.FloatDrag(
-                        name="Field", height=LABEL_HEIGHT, alignment=ui.Alignment.LEFT_CENTER, tooltip=field_tooltips[i]
+                        name="Field",
+                        height=LABEL_HEIGHT,
+                        min=min,
+                        max=max,
+                        step=step,
+                        alignment=ui.Alignment.LEFT_CENTER,
+                        tooltip=field_tooltips[i],
                     ).model
                     val_models[i].set_value(default_val[i])
                     if on_value_changed_fn[i] is not None:
                         val_models[i].add_value_changed_fn(on_value_changed_fn[i])
-                    if i != 2:
+                    if i != axis_count - 1:
                         ui.Spacer(width=19)
             with ui.HStack():
-                for i in range(3):
+                for i in range(axis_count):
                     if i != 0:
                         ui.Spacer()  # width=BUTTON_WIDTH - 1)
                     field_label = field_labels[i]
-                    with ui.ZStack(width=RECT_WIDTH + 1):
+                    with ui.ZStack(width=RECT_WIDTH + 2 * i):
                         ui.Rectangle(name="vector_label", style={"background_color": field_label[1]})
                         ui.Label(field_label[0], name="vector_label", alignment=ui.Alignment.CENTER)
                 ui.Spacer()
