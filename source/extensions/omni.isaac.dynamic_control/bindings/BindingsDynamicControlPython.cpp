@@ -300,8 +300,9 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def_readwrite(
             "vel", &DcDofState::vel,
             "DOF velocity, in radians/s if it's a revolute DOF, or stage_units/s (m/s, cm/s, etc), if it's a prismatic DOF (:obj:`float`)")
-        .def_readwrite("effort", &DcDofState::effort,
-                       "DOF effort, torque if it's a revolute DOF, or force if it's a prismatic DOF (:obj:`float`)")
+        .def_readwrite(
+            "effort", &DcDofState::effort,
+            "DOF effort due to gravity, torque if it's a revolute DOF, or force if it's a prismatic DOF (:obj:`float`)")
         .def(py::init(
                  [](const float& pos, const float& vel, const float& effort)
                  {
@@ -623,7 +624,7 @@ PYBIND11_MODULE(_dynamic_control, m)
              {
                  if (dc && dc->isSimulating())
                  {
-                     int numBodies = dc->getArticulationBodyCount(artHandle);
+                     size_t numBodies = dc->getArticulationBodyCount(artHandle);
                      DcRigidBodyState* states = dc->getArticulationBodyStates(artHandle, flags);
                      if (numBodies > 0 && states != nullptr)
                      {
@@ -688,7 +689,7 @@ PYBIND11_MODULE(_dynamic_control, m)
              {
                  if (dc && dc->isSimulating())
                  {
-                     int numDofs = dc->getArticulationDofCount(artHandle);
+                     size_t numDofs = dc->getArticulationDofCount(artHandle);
                      if (numDofs > 0)
                      {
                          auto arr = py::array_t<DcDofProperties, py::array::c_style>(numDofs);
@@ -721,7 +722,7 @@ PYBIND11_MODULE(_dynamic_control, m)
              {
                  if (dc && dc->isSimulating())
                  {
-                     int numDofs = dc->getArticulationDofCount(artHandle);
+                     size_t numDofs = dc->getArticulationDofCount(artHandle);
                      if (numDofs > 0)
                      {
                          DcDofState* states = dc->getArticulationDofStates(artHandle, flags);
@@ -793,7 +794,7 @@ PYBIND11_MODULE(_dynamic_control, m)
              {
                  if (dc && dc->isSimulating())
                  {
-                     int numDofs = dc->getArticulationDofCount(artHandle);
+                     size_t numDofs = dc->getArticulationDofCount(artHandle);
                      if (numDofs > 0)
                      {
                          auto arr = py::array_t<float, py::array::c_style>(numDofs);
@@ -824,7 +825,7 @@ PYBIND11_MODULE(_dynamic_control, m)
              {
                  if (dc && dc->isSimulating())
                  {
-                     int numDofs = dc->getArticulationDofCount(artHandle);
+                     size_t numDofs = dc->getArticulationDofCount(artHandle);
                      if (numDofs > 0)
                      {
                          auto arr = py::array_t<float, py::array::c_style>(numDofs);
@@ -856,7 +857,7 @@ PYBIND11_MODULE(_dynamic_control, m)
              {
                  if (dc && dc->isSimulating())
                  {
-                     int numDofs = dc->getArticulationDofCount(artHandle);
+                     size_t numDofs = dc->getArticulationDofCount(artHandle);
                      if (numDofs > 0)
                      {
                          auto arr = py::array_t<float, py::array::c_style>(numDofs);

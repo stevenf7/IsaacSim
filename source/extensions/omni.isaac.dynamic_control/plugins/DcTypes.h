@@ -114,19 +114,19 @@ struct DcDof
 
 struct DcArticulation
 {
-    int numRigidBodies() const
+    size_t numRigidBodies() const
     {
-        return int(rigidBodies.size());
+        return rigidBodies.size();
     }
 
-    int numJoints() const
+    size_t numJoints() const
     {
-        return int(joints.size());
+        return joints.size();
     }
 
-    int numDofs() const
+    size_t numDofs() const
     {
-        return int(dofs.size());
+        return dofs.size();
     }
 
     bool refreshCache(const ::physx::PxArticulationCacheFlags& flags = ::physx::PxArticulationCacheFlag::eALL) const;

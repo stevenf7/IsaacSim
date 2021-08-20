@@ -773,7 +773,7 @@ const char* CARB_ABI DcGetArticulationPath(DcHandle artHandle)
     return nullptr;
 }
 
-int CARB_ABI DcGetArticulationBodyCount(DcHandle artHandle)
+size_t CARB_ABI DcGetArticulationBodyCount(DcHandle artHandle)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -788,7 +788,7 @@ int CARB_ABI DcGetArticulationBodyCount(DcHandle artHandle)
     return 0;
 }
 
-DcHandle CARB_ABI DcGetArticulationBody(DcHandle artHandle, int bodyIdx)
+DcHandle CARB_ABI DcGetArticulationBody(DcHandle artHandle, size_t bodyIdx)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -878,7 +878,7 @@ DcRigidBodyState* CARB_ABI DcGetArticulationBodyStates(DcHandle artHandle, const
         return nullptr;
     }
 
-    for (int i = 0; i < art->numRigidBodies(); i++)
+    for (size_t i = 0; i < art->numRigidBodies(); i++)
     {
         PxRigidBody* body = art->rigidBodies[i]->pxRigidBody;
         DcRigidBodyState& state = art->rigidBodyStateCache[i];
@@ -1008,7 +1008,7 @@ bool CARB_ABI DcSetArticulationProperties(DcHandle artHandle, const DcArticulati
 
 // articulation joints
 
-int CARB_ABI DcGetArticulationJointCount(DcHandle artHandle)
+size_t CARB_ABI DcGetArticulationJointCount(DcHandle artHandle)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -1023,7 +1023,7 @@ int CARB_ABI DcGetArticulationJointCount(DcHandle artHandle)
     return 0;
 }
 
-DcHandle CARB_ABI DcGetArticulationJoint(DcHandle artHandle, int jointIdx)
+DcHandle CARB_ABI DcGetArticulationJoint(DcHandle artHandle, size_t jointIdx)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -1069,7 +1069,7 @@ bool CARB_ABI DcSetDofVelocityTarget(DcHandle dofHandle, float target);
 float CARB_ABI DcGetDofPositionTarget(DcHandle dofHandle);
 float CARB_ABI DcGetDofVelocityTarget(DcHandle dofHandle);
 
-int CARB_ABI DcGetArticulationDofCount(DcHandle artHandle)
+size_t CARB_ABI DcGetArticulationDofCount(DcHandle artHandle)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -1084,7 +1084,7 @@ int CARB_ABI DcGetArticulationDofCount(DcHandle artHandle)
     return 0;
 }
 
-DcHandle CARB_ABI DcGetArticulationDof(DcHandle artHandle, int dofIdx)
+DcHandle CARB_ABI DcGetArticulationDof(DcHandle artHandle, size_t dofIdx)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -1156,8 +1156,8 @@ bool CARB_ABI DcGetArticulationDofProperties(DcHandle artHandle, DcDofProperties
         return false;
     }
 
-    int numDofs = art->numDofs();
-    for (int i = 0; i < numDofs; i++)
+    size_t numDofs = art->numDofs();
+    for (size_t i = 0; i < numDofs; i++)
     {
         auto dof = art->dofs[i];
         if (!DcGetDofProperties(dof->handle, &props[i]))
@@ -1182,8 +1182,8 @@ bool CARB_ABI DcSetArticulationDofProperties(DcHandle artHandle, const DcDofProp
         return false;
     }
 
-    int numDofs = art->numDofs();
-    for (int i = 0; i < numDofs; i++)
+    size_t numDofs = art->numDofs();
+    for (size_t i = 0; i < numDofs; i++)
     {
         auto dof = art->dofs[i];
         if (!DcSetDofProperties(dof->handle, &props[i]))
@@ -1222,8 +1222,8 @@ DcDofState* CARB_ABI DcGetArticulationDofStates(DcHandle artHandle, const DcStat
     //         ZeroArray(art->pxArticulationCache->jointSolverForces, art->pxArticulation->getDofs());
     //     }
     // }
-    int numDofs = art->numDofs();
-    for (int i = 0; i < numDofs; i++)
+    size_t numDofs = art->numDofs();
+    for (size_t i = 0; i < numDofs; i++)
     {
         art->dofStateCache[i] = DcDofState({ 0, 0, 0 });
         if (flags & kDcStatePos)
@@ -1256,7 +1256,7 @@ DcDofState* CARB_ABI DcGetArticulationDofStates(DcHandle artHandle, const DcStat
         // }
         // printf("--computeGeneralizedGravityForce--\n");
         art->pxArticulation->computeGeneralizedGravityForce(*art->pxArticulationCache);
-        for (int i = 0; i < numDofs; i++)
+        for (size_t i = 0; i < numDofs; i++)
         {
             art->dofStateCache[i].effort += art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx];
             // printf("dof %d, force:  %f\n", i, art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx]);
@@ -1317,13 +1317,13 @@ bool CARB_ABI DcSetArticulationDofStates(DcHandle artHandle, const DcDofState* s
         return false;
     }
 
-    int numDofs = art->numDofs();
+    size_t numDofs = art->numDofs();
     PxArticulationCacheFlags pxFlags = PxArticulationCacheFlags(0);
 
     if (flags & kDcStatePos)
     {
         pxFlags |= PxArticulationCacheFlag::ePOSITION;
-        for (int i = 0; i < numDofs; i++)
+        for (size_t i = 0; i < numDofs; i++)
         {
             int dofIndex = art->dofs[i]->cacheIdx;
             // printf(" ~ Setting %d %d %f\n", i, dofIndex, states[i].pos);
@@ -1334,7 +1334,7 @@ bool CARB_ABI DcSetArticulationDofStates(DcHandle artHandle, const DcDofState* s
     if (flags & kDcStateVel)
     {
         pxFlags |= PxArticulationCacheFlag::eVELOCITY;
-        for (int i = 0; i < numDofs; i++)
+        for (size_t i = 0; i < numDofs; i++)
         {
             art->pxArticulationCache->jointVelocity[art->dofs[i]->cacheIdx] = states[i].vel;
         }
@@ -1342,7 +1342,7 @@ bool CARB_ABI DcSetArticulationDofStates(DcHandle artHandle, const DcDofState* s
     if (flags & kDcStateEffort)
     {
         pxFlags |= PxArticulationCacheFlag::eFORCE;
-        for (int i = 0; i < numDofs; i++)
+        for (size_t i = 0; i < numDofs; i++)
         {
             art->pxArticulationCache->jointForce[art->dofs[i]->cacheIdx] = states[i].effort;
         }
@@ -1425,8 +1425,8 @@ bool CARB_ABI DcSetArticulationDofPositionTargets(DcHandle artHandle, const floa
         return false;
     }
 
-    int numDofs = art->numDofs();
-    for (int i = 0; i < numDofs; i++)
+    size_t numDofs = art->numDofs();
+    for (size_t i = 0; i < numDofs; i++)
     {
         DcSetDofPositionTarget(art->dofs[i]->handle, targets[i]);
     }
@@ -1447,8 +1447,8 @@ bool CARB_ABI DcGetArticulationDofPositionTargets(DcHandle artHandle, float* tar
         return false;
     }
 
-    int numDofs = art->numDofs();
-    for (int i = 0; i < numDofs; i++)
+    size_t numDofs = art->numDofs();
+    for (size_t i = 0; i < numDofs; i++)
     {
         targets[i] = DcGetDofPositionTarget(art->dofs[i]->handle);
     }
@@ -1470,8 +1470,8 @@ bool CARB_ABI DcSetArticulationDofVelocityTargets(DcHandle artHandle, const floa
         return false;
     }
 
-    int numDofs = art->numDofs();
-    for (int i = 0; i < numDofs; i++)
+    size_t numDofs = art->numDofs();
+    for (size_t i = 0; i < numDofs; i++)
     {
         DcSetDofVelocityTarget(art->dofs[i]->handle, targets[i]);
     }
@@ -1492,8 +1492,8 @@ bool CARB_ABI DcGetArticulationDofVelocityTargets(DcHandle artHandle, float* tar
         return false;
     }
 
-    int numDofs = art->numDofs();
-    for (int i = 0; i < numDofs; i++)
+    size_t numDofs = art->numDofs();
+    for (size_t i = 0; i < numDofs; i++)
     {
         targets[i] = DcGetDofVelocityTarget(art->dofs[i]->handle);
     }
@@ -1522,8 +1522,8 @@ bool CARB_ABI DcApplyArticulationDofEfforts(DcHandle artHandle, const float* eff
     // clear forces
     // ZeroArray(art->pxArticulationCache->jointForce, art->pxArticulation->getDofs());
 
-    int numDofs = art->numDofs();
-    for (int i = 0; i < numDofs; i++)
+    size_t numDofs = art->numDofs();
+    for (size_t i = 0; i < numDofs; i++)
     {
         auto dof = art->dofs[i];
 
@@ -1557,8 +1557,8 @@ bool CARB_ABI DcGetArticulationDofMasses(DcHandle artHandle, float* masses)
 
     art->pxArticulation->commonInit();
     art->pxArticulation->computeGeneralizedMassMatrix(*art->pxArticulationCache);
-    int numDofs = art->numDofs();
-    for (int i = 0; i < numDofs; i++)
+    size_t numDofs = art->numDofs();
+    for (size_t i = 0; i < numDofs; i++)
     {
         auto dof = art->dofs[i];
         masses[i] = art->pxArticulationCache->massMatrix[dof->cacheIdx];
@@ -1613,7 +1613,7 @@ DcHandle CARB_ABI DcGetRigidBodyParentJoint(DcHandle bodyHandle)
     return kDcInvalidHandle;
 }
 
-int CARB_ABI DcGetRigidBodyChildJointCount(DcHandle bodyHandle)
+size_t CARB_ABI DcGetRigidBodyChildJointCount(DcHandle bodyHandle)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -1623,12 +1623,12 @@ int CARB_ABI DcGetRigidBodyChildJointCount(DcHandle bodyHandle)
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
     if (body)
     {
-        return int(body->childJoints.size());
+        return body->childJoints.size();
     }
     return 0;
 }
 
-DcHandle CARB_ABI DcGetRigidBodyChildJoint(DcHandle bodyHandle, int jointIdx)
+DcHandle CARB_ABI DcGetRigidBodyChildJoint(DcHandle bodyHandle, size_t jointIdx)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -1636,7 +1636,7 @@ DcHandle CARB_ABI DcGetRigidBodyChildJoint(DcHandle bodyHandle, int jointIdx)
     }
 
     DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
-    if (body && jointIdx >= 0 && jointIdx < int(body->childJoints.size()))
+    if (body && jointIdx >= 0 && jointIdx < body->childJoints.size())
     {
         return body->childJoints[jointIdx];
     }
@@ -2052,7 +2052,7 @@ DcJointType CARB_ABI DcGetJointType(DcHandle jointHandle)
     return DcJointType::eNone;
 }
 
-int CARB_ABI DcGetJointDofCount(DcHandle jointHandle)
+size_t CARB_ABI DcGetJointDofCount(DcHandle jointHandle)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -2063,12 +2063,12 @@ int CARB_ABI DcGetJointDofCount(DcHandle jointHandle)
     DcJoint* joint = DC_LOOKUP_JOINT(jointHandle);
     if (joint)
     {
-        return int(joint->dofs.size());
+        return joint->dofs.size();
     }
     return 0;
 }
 
-DcHandle CARB_ABI DcGetJointDof(DcHandle jointHandle, int dofIdx)
+DcHandle CARB_ABI DcGetJointDof(DcHandle jointHandle, size_t dofIdx)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -2077,7 +2077,7 @@ DcHandle CARB_ABI DcGetJointDof(DcHandle jointHandle, int dofIdx)
 
 
     DcJoint* joint = DC_LOOKUP_JOINT(jointHandle);
-    if (joint && dofIdx >= 0 && dofIdx < int(joint->dofs.size()))
+    if (joint && dofIdx >= 0 && dofIdx < joint->dofs.size())
     {
         return joint->dofs[dofIdx];
     }
@@ -3092,7 +3092,7 @@ bool CARB_ABI DcSetOriginOffset(DcHandle handle, const carb::Float3& origin)
     DcArticulation* art = ctx->getArticulation(handle);
     if (art)
     {
-        for (int i = 0; i < art->numRigidBodies(); i++)
+        for (size_t i = 0; i < art->numRigidBodies(); i++)
         {
             art->rigidBodies[i]->origin = origin;
         }

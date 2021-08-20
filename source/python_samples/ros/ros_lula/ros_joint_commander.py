@@ -102,13 +102,15 @@ class ROSJointCommander:
         self.robot = robot
         self.dof_states = robot.joint_states
 
-    def process_policy_config(self, mp_path):
-        with open(os.path.join(mp_path, "config.json")) as mp_config_file:
-            config = json.load(mp_config_file)
+    def process_policy_config(self, mp_config_file):
+        mp_config_dir = os.path.dirname(mp_config_file)  # path to directory containing mp_config_file
+
+        with open(mp_config_file) as config_file:
+            config = json.load(config_file)
 
         rel_assets = config.get("relative_asset_paths", {})
         for k, v in rel_assets.items():
-            config[k] = os.path.join(mp_path, v)
+            config[k] = os.path.join(mp_config_dir, v)
 
         return config
 
@@ -140,24 +142,22 @@ class ROSJointCommander:
             # Step the RMPs forward based on timing from the interpolator rosnode
             adaptive_cycle = self.synced_time.next_adaptive_cycle_time()
             self.command_time = adaptive_cycle.time
-            integration_dt = self.mg.sim_timestep / self.mg.policy_evals_per_frame
+            integration_dt = self.mg.sim_timestep
             if adaptive_cycle.is_period_available:
-                integration_dt = adaptive_cycle.period.to_sec() / self.mg.policy_evals_per_frame
+                integration_dt = adaptive_cycle.period.to_sec()
 
             self.mg._motion_policy.update()
 
             self.joint_positions, self.joint_velocities, self.joint_accel = self.mg.get_joint_states()
+            aji = self.mg._active_joint_inds
 
-            dji = self.mg._active_joint_inds
+            joint_positions = self.robot.get_position_targets()
 
-            for i in range(self.mg.policy_evals_per_frame):
-                self.joint_accel[dji] = self.mg._motion_policy.evaluate_acceleration(
-                    self.joint_positions[dji], self.joint_velocities[dji]
-                )
-                self.joint_positions[dji] += integration_dt * self.joint_velocities[dji]
-                self.joint_velocities[dji] += integration_dt * self.joint_accel[dji]
+            joint_positions[aji] = self.mg._motion_policy.get_joint_position_targets(
+                self.joint_positions[aji], self.joint_velocities[aji], integration_dt
+            )
 
-            self.robot.set_velocity_targets(self.joint_velocities)
+            self.robot.set_position_targets(joint_positions)
             self.joint_command_pub.publish(self.get_joint_pos_vel_acc_command())
         self.frame = self.frame + 1
 

@@ -65,7 +65,7 @@ struct DynamicControl
      *  \param[in] actor the actor.
      *  \return number of rigid bodies in actor
      */
-    int(CARB_ABI* getArticulationBodyCount)(DcHandle artHandle);
+    size_t(CARB_ABI* getArticulationBodyCount)(DcHandle artHandle);
 
     //! Gets actor rigid body given its index
     /*!
@@ -73,7 +73,7 @@ struct DynamicControl
      *  \param[in] bodyIdx index of the rigid body.
      *  \return handle for rigid body
      */
-    DcHandle(CARB_ABI* getArticulationBody)(DcHandle artHandle, int bodyIdx);
+    DcHandle(CARB_ABI* getArticulationBody)(DcHandle artHandle, size_t bodyIdx);
 
     //! Finds actor rigid body given its name
     /*!
@@ -124,8 +124,8 @@ struct DynamicControl
 
     //===== Articulation joints =====//
 
-    int(CARB_ABI* getArticulationJointCount)(DcHandle artHandle);
-    DcHandle(CARB_ABI* getArticulationJoint)(DcHandle artHandle, int jointIdx);
+    size_t(CARB_ABI* getArticulationJointCount)(DcHandle artHandle);
+    DcHandle(CARB_ABI* getArticulationJoint)(DcHandle artHandle, size_t jointIdx);
     DcHandle(CARB_ABI* findArticulationJoint)(DcHandle artHandle, const char* jointName);
 
     //===== Articulation DOFs (degrees of freedom) =====//
@@ -135,7 +135,7 @@ struct DynamicControl
      *  \param[in] actor the actor.
      *  \return number of degrees-of-freedom in actor
      */
-    int(CARB_ABI* getArticulationDofCount)(DcHandle artHandle);
+    size_t(CARB_ABI* getArticulationDofCount)(DcHandle artHandle);
 
     //! Gets actor degree-of-freedom given its index
     /*!
@@ -143,7 +143,7 @@ struct DynamicControl
      *  \param[in] dofIdx index of the degree-of-freedom.
      *  \return handle for degree-of-freedom
      */
-    DcHandle(CARB_ABI* getArticulationDof)(DcHandle artHandle, int dofIdx);
+    DcHandle(CARB_ABI* getArticulationDof)(DcHandle artHandle, size_t dofIdx);
 
     //! Finds actor degree-of-freedom given its name
     /*!
@@ -238,7 +238,7 @@ struct DynamicControl
     //! Get effective masses for articulation dofs
     /*!
      *  \param artHandle the handle to the articulation.
-     *  \param masses articulation properties.
+     *  \param masses articulation masses.
      */
     bool(CARB_ABI* getArticulationDofMasses)(DcHandle artHandle, float* masses);
 
@@ -249,8 +249,8 @@ struct DynamicControl
     const char*(CARB_ABI* getRigidBodyPath)(DcHandle bodyHandle);
 
     DcHandle(CARB_ABI* getRigidBodyParentJoint)(DcHandle bodyHandle);
-    int(CARB_ABI* getRigidBodyChildJointCount)(DcHandle bodyHandle);
-    DcHandle(CARB_ABI* getRigidBodyChildJoint)(DcHandle bodyHandle, int jointIdx);
+    size_t(CARB_ABI* getRigidBodyChildJointCount)(DcHandle bodyHandle);
+    DcHandle(CARB_ABI* getRigidBodyChildJoint)(DcHandle bodyHandle, size_t jointIdx);
 
     DcTransform(CARB_ABI* getRigidBodyPose)(DcHandle bodyHandle);
     carb::Float3(CARB_ABI* getRigidBodyLinearVelocity)(DcHandle bodyHandle);
@@ -299,8 +299,8 @@ struct DynamicControl
 
     DcJointType(CARB_ABI* getJointType)(DcHandle jointHandle);
 
-    int(CARB_ABI* getJointDofCount)(DcHandle jointHandle);
-    DcHandle(CARB_ABI* getJointDof)(DcHandle jointHandle, int dofIdx);
+    size_t(CARB_ABI* getJointDofCount)(DcHandle jointHandle);
+    DcHandle(CARB_ABI* getJointDof)(DcHandle jointHandle, size_t dofIdx);
 
     DcHandle(CARB_ABI* getJointParentBody)(DcHandle jointHandle);
     DcHandle(CARB_ABI* getJointChildBody)(DcHandle jointHandle);
