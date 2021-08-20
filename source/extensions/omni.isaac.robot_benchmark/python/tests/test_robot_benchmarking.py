@@ -67,6 +67,7 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+        carb.settings.get_settings().set_bool("/app/file/ignoreUnsavedOnExit", True)
 
         await omni.kit.app.get_app().next_update_async()
 

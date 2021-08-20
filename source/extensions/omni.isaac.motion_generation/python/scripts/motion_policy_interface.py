@@ -48,11 +48,13 @@ class MotionPolicy:
                 joint_positions (m x 1): positions of each joint
                 joint_velocities (m x 1): velocity of each joint
                 frame_duration: duration of a single frame of simulation (seconds)
-
+                
         Return:
                 joint_velocity_targets (m x 1): a function of robot state, world state, and target position
-                    This function will be used by MotionGenerator to set a velocity target at every frame
+                
+                This function will be used by MotionGenerator to set a velocity target at every frame
                 This function only needs to be implemented if the MotionPolicy has the PolicyType VELOCITY_POLICY
+
         """
 
         return np.zeros_like(joint_positions)
@@ -66,8 +68,10 @@ class MotionPolicy:
 
         Return:
                 joint_position_targets (m x 1): a function of robot state, world state, and target position
-                    This function will be queried by MotionGenerator to set a position target at every frame
+                
+                This function will be queried by MotionGenerator to set a position target at every frame
                 This function only needs to be implemented if the MotionPolicy has the PolicyType POSITION_POLICY
+
         """
 
         return np.zeros_like(joint_positions)

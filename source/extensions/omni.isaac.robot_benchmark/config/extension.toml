@@ -24,6 +24,7 @@ icon = "data/icon.png"
 "omni.isaac.utils" = {}
 "omni.isaac.manip" = {}
 "omni.isaac.benchmark_environments" = {}
+"omni.kit.window.viewport" = {}
 
 [[python.module]]
 name = "omni.isaac.robot_benchmark"
