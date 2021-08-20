@@ -78,8 +78,14 @@ class Panda:
     def set_position_targets(self, joint_positions):
         self._dc.set_articulation_dof_position_targets(self.articulation_handle, joint_positions.astype(np.float32))
 
+    def get_position_targets(self):
+        return self._dc.get_articulation_dof_position_targets(self.articulation_handle)
+
     def set_velocity_targets(self, joint_velocities):
         self._dc.set_articulation_dof_velocity_targets(self.articulation_handle, joint_velocities.astype(np.float32))
+
+    def get_velocity_targets(self):
+        return self._dc.get_articulation_dof_velocity_targets(self.articulation_handle)
 
     # switch between pos and vel modes
     def set_control_mode(self, position=False):

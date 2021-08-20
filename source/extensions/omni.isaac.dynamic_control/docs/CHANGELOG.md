@@ -2,6 +2,19 @@
 CHANGELOG
 **********
 
+
+[0.1.7] - 2021-08-016
+========================
+
+Added
+-----
+- Sleep functions for rigid bodies and articulations
+
+Changed
+-------
+- return types use size_t instead of int where appropriate
+
+
 [0.1.6] - 2021-08-04
 ========================
 
