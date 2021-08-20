@@ -74,8 +74,8 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physx = omni.physx.acquire_physx_interface()
         await omni.kit.app.get_app().next_update_async()
         generator = _occupancy_map.Generator(self._physx, context.get_stage_id())
-        generator.update_settings(5, 1, 2, 5, 1000000, 4, 5, 6)
-        generator.set_transform((0, 0, 0), (-200, -200), (200, 200))
+        generator.update_settings(5, 4, 5, 6)
+        generator.set_transform((0, 0, 0), (-200, -200, 0), (200, 200, 0))
         generator.generate()
         buffer = generator.get_buffer()
         self.assertEqual(len(buffer), 0)
@@ -90,10 +90,11 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
-        update_location(self._om, (0, 0, 40 - 95), (-500, -500), (500, 500))
+        update_location(self._om, (0, 0, 40 - 95), (-500, -500, 0), (500, 500, 0))
         cell_size = 5
+        self._om.set_cell_size(cell_size)
         await omni.kit.app.get_app().next_update_async()
-        self._om.generate(cell_size, 5, 2, 1, 1000000)
+        self._om.generate()
         await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
 
@@ -104,26 +105,24 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         min_b = self._om.get_min_bound()
         max_b = self._om.get_max_bound()
 
-        self.assertEqual(top_left, (442.5, -332.5))
-        self.assertEqual(top_right, (-442.5, -332.5))
-        self.assertEqual(bottom_left, (442.5, 477.5))
-        self.assertEqual(bottom_right, (-442.5, 477.5))
-        self.assertEqual((float(image_coords[0][0]), float(image_coords[1][0])), (332.5, 442.5))
+        self.assertEqual(top_left, (497.5, -497.5))
+        self.assertEqual(top_right, (-497.5, -497.5))
+        self.assertEqual(bottom_left, (497.5, 497.5))
+        self.assertEqual(bottom_right, (-497.5, 497.5))
+        self.assertEqual((float(image_coords[0][0]), float(image_coords[1][0])), (497.5, 497.5))
 
         # size = [0, 0, 0]
 
         # size[0] = max_b[0] - min_b[0]
         # size[1] = max_b[1] - min_b[1]
         dims = self._om.get_dimensions()
-        image_buffer = generate_image(
-            self._om, scale, [0, 0, 0, 255], [127, 127, 127, 255], [255, 255, 255, 255], [0, 0]
-        )
+        image_buffer = generate_image(self._om, [0, 0, 0, 255], [127, 127, 127, 255], [255, 255, 255, 255])
 
         # check pixel values
-        self.assertEqual(image_buffer[(55 * dims[0] + 64) * 4 + 0], 127)
-        self.assertEqual(image_buffer[(80 * dims[0] + 70) * 4 + 0], 255)
-        self.assertEqual(image_buffer[(77 * dims[0] + 112) * 4 + 0], 0)
-        self.assertEqual(image_buffer[(162 * dims[0] + 90) * 4 + 0], 0)
+        self.assertEqual(image_buffer[(85 * dims[0] + 75) * 4 + 0], 0)
+        self.assertEqual(image_buffer[(64 * dims[0] + 47) * 4 + 0], 255)
+        self.assertEqual(image_buffer[(30 * dims[0] + 14) * 4 + 0], 127)
+        self.assertEqual(image_buffer[(197 * dims[0] + 107) * 4 + 0], 0)
 
         # raw data: computed index, point value, point index
         # no reason for picking these specific points
@@ -164,8 +163,8 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         generator = _occupancy_map.Generator(self._physx, context.get_stage_id())
-        generator.update_settings(5, 1, 2, 5, 1000000, 4, 5, 6)
-        generator.set_transform((0, 0, 0), (-200, -200), (200, 200))
+        generator.update_settings(5, 4, 5, 6)
+        generator.set_transform((0, 0, 0), (-200, -200, 0), (200, 200, 0))
         for frame in range(1):
             await omni.kit.app.get_app().next_update_async()
             generator.generate()
@@ -186,10 +185,10 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertEqual(len(buffer), dims[0] * dims[1])
         buffer = np.reshape(buffer, (dims[0], dims[1]))
 
-        self.assertEqual(buffer[0, 79], 6)
-        self.assertEqual(buffer[5, 75], 6)
+        self.assertEqual(buffer[0, 79], 4)
+        self.assertEqual(buffer[5, 75], 4)
         self.assertEqual(buffer[10, 59], 4)
         self.assertEqual(buffer[50, 20], 4)
         self.assertEqual(buffer[75, 29], 4)
         self.assertEqual(buffer[40, 40], 5)
-        self.assertEqual(buffer[75, 20], 6)
+        self.assertEqual(buffer[75, 20], 4)

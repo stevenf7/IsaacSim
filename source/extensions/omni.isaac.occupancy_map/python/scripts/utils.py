@@ -11,8 +11,8 @@
 def update_location(om, start_location, lower_bound, upper_bound):
     om.set_transform(
         (start_location[0], start_location[1], start_location[2]),
-        (lower_bound[0], lower_bound[1]),
-        (upper_bound[0], upper_bound[1]),
+        (lower_bound[0], lower_bound[1], lower_bound[2]),
+        (upper_bound[0], upper_bound[1], upper_bound[2]),
     )
     om.update()
 
@@ -34,7 +34,7 @@ def compute_coordinates(om, cell_size):
     return top_left, top_right, bottom_left, bottom_right, image_coords
 
 
-def generate_image(om, scale, occupied_col, unknown_col, freespace_col, start_location):
+def generate_image(om, occupied_col, unknown_col, freespace_col):
     buffer = om.get_buffer()
     dims = om.get_dimensions()
     image = unknown_col * dims[0] * dims[1]

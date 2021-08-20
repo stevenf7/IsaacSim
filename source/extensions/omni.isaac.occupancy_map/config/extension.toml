@@ -23,6 +23,7 @@ writeTarget.kit = true
 "omni.isaac.utils" = {}
 "omni.kit.window.viewport" = {}
 "omni.kit.pip_archive" = {} # pulls in pillow
+"omni.isaac.ui" = {}
 
 [[python.module]]
 name = "omni.isaac.occupancy_map"

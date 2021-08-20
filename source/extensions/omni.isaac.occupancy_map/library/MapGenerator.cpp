@@ -65,21 +65,12 @@ MapGenerator::MapGenerator(omni::physx::IPhysx* physXPtr, pxr::UsdStageWeakPtr s
 {
     mPhysx = physXPtr;
     mStage = stagePtr;
-    mTree = new octomap::OcTree(mResolution);
+    mTree = new octomap::OcTree(mCellSize);
     mPhysxScenePtr = findScene(mPhysx, mStage);
     if (!mPhysxScenePtr)
     {
         printf("No Physics Scene Present\n");
         return;
-    }
-
-    mDefaultMaterial = mPhysxScenePtr->getPhysics().createMaterial(0.5f, 0.5f, 0.6f);
-
-    for (int i = 0; i < 4; i++)
-    {
-        mShapes[i] = mPhysxScenePtr->getPhysics().createShape(::physx::PxPlaneGeometry(), *mDefaultMaterial, false);
-        mActors[i] = mPhysxScenePtr->getPhysics().createRigidStatic(::physx::PxTransform(::physx::PxIdentity));
-        mActors[i]->attachShape(*mShapes[i]);
     }
 
     mTree->setOccupancyThres(0.5);
@@ -91,36 +82,18 @@ MapGenerator::~MapGenerator()
     delete mTree;
 }
 
-void MapGenerator::updateSettings(const float resolution,
-                                  const float occupancyThreshold,
-                                  const float minSearchDistance,
-                                  const float degreesBetweenRays,
-                                  const size_t maxRays,
+void MapGenerator::updateSettings(const float cellSize,
                                   const float occupiedValue,
                                   const float unoccupiedValue,
                                   const float unknownValue)
 {
-    mResolution = resolution;
-    mMinSearchDistance = minSearchDistance;
-    mDegreesBetweenRays = degreesBetweenRays;
-    mOccupancyThreshold = occupancyThreshold;
-    mMaxRays = maxRays;
+    mCellSize = cellSize;
     mOccupiedValue = occupiedValue;
     mUnoccupiedValue = unoccupiedValue;
     mUnknownValue = unknownValue;
-
-    // printf("%f %f %f %f %lu %f %f %f\n", mResolution, mMinSearchDistance, mDegreesBetweenRays, mOccupancyThreshold,
-    //        mMaxRays, mOccupiedValue, mUnoccupiedValue, mUnknownValue);
-    mTree->setResolution(mResolution);
-
-    mUnitDirs.clear();
-    for (float degree = 0; degree < 360; degree += mDegreesBetweenRays)
-    {
-        ::physx::PxQuat rot = ::physx::PxQuat(degree * M_PI / 180.0f, ::physx::PxVec3(0.0f, 0.0f, 1.0f));
-        mUnitDirs.push_back(rot.rotate(::physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized());
-    }
+    mTree->setResolution(mCellSize);
 }
-void MapGenerator::setTransform(carb::Float3 inputOrigin, carb::Float2 inputMinPoint, carb::Float2 inputMaxPoint)
+void MapGenerator::setTransform(carb::Float3 inputOrigin, carb::Float3 inputMinPoint, carb::Float3 inputMaxPoint)
 {
     mInputOrigin = inputOrigin;
     mInputMinPoint = inputMinPoint;
@@ -143,79 +116,41 @@ void MapGenerator::generate()
     }
 
     mTree->clear();
+    // use half extents for the cube that is used for overlap tests
+    float geomHeight = ::physx::PxMax(::physx::PxAbs(mInputMaxPoint.z - mInputMinPoint.z) / 2.0f, mCellSize / 2.0f);
+    ::physx::PxBoxGeometry cellGeom(::physx::PxVec3(mCellSize / 2.0f, mCellSize / 2.0f, geomHeight));
 
-    mActors[0]->setGlobalPose(::physx::PxTransform(::physx::PxVec3(mInputOrigin.x + mInputMinPoint.x, 0, 0),
-                                                   ::physx::PxQuat(0 * M_PI / 180.0f, ::physx::PxVec3(0.0f, 0.0f, 1.0f))));
+    octomap::KeySet occupied_cells, unoccupied_cells;
+    ::physx::PxOverlapHit hit;
 
-    mActors[1]->setGlobalPose(
-        ::physx::PxTransform(::physx::PxVec3(0, mInputOrigin.y + mInputMinPoint.y, 0),
-                             ::physx::PxQuat(90 * M_PI / 180.0f, ::physx::PxVec3(0.0f, 0.0f, 1.0f))));
-    mActors[2]->setGlobalPose(
-        ::physx::PxTransform(::physx::PxVec3(0, mInputOrigin.y + mInputMaxPoint.y - mResolution, 0),
-                             ::physx::PxQuat(-90 * M_PI / 180.0f, ::physx::PxVec3(0.0f, 0.0f, 1.0f))));
-    mActors[3]->setGlobalPose(
-        ::physx::PxTransform(::physx::PxVec3(mInputOrigin.x + mInputMaxPoint.x - mResolution, 0, 0),
-                             ::physx::PxQuat(180 * M_PI / 180.0f, ::physx::PxVec3(0.0f, 0.0f, 1.0f))));
-
-    for (int i = 0; i < 4; i++)
+    for (float ix = mInputMinPoint.x + mCellSize / 2.0; ix <= mInputMaxPoint.x - mCellSize / 2.0; ix += mCellSize)
     {
-        mPhysxScenePtr->addActor(*mActors[i]);
-    }
-
-    std::vector<::physx::PxVec3> startList;
-    startList.push_back(::physx::PxVec3(mInputOrigin.x, mInputOrigin.y, mInputOrigin.z));
-    size_t count = 0;
-
-    while (startList.size() > 0 && count < mMaxRays)
-    {
-        // if (count % 10000 == 0)
-        // {
-        //     printf("Processing occupancy map: points left %zu, points processed: %zu\n", startList.size(), count);
-        // }
-        ::physx::PxVec3 origin = startList.back();
-        startList.pop_back();
-        count++;
-        for (auto& unitDir : mUnitDirs)
+        for (float iy = mInputMinPoint.y + mCellSize / 2.0; iy <= mInputMaxPoint.y - mCellSize / 2.0; iy += mCellSize)
         {
-            ::physx::PxRaycastHit raycastHit;
+            octomap::OcTreeKey key;
+            key = mTree->coordToKey(octomap::point3d(ix + mInputOrigin.x, iy + mInputOrigin.y, mInputOrigin.z));
 
-            if (::physx::PxSceneQueryExt::raycastSingle(
-                    *mPhysxScenePtr, origin, unitDir, mMaxDepth, gHitFlags, raycastHit))
+            ::physx::PxTransform pose(::physx::PxVec3(ix + mInputOrigin.x, iy + mInputOrigin.y,
+                                                      mInputOrigin.z + (mInputMaxPoint.z - mInputMinPoint.z) / 2.0f));
+            if (::physx::PxSceneQueryExt::overlapAny(*mPhysxScenePtr, cellGeom, pose, hit))
             {
-                raycastHit.position.x = std::min(raycastHit.position.x, mInputOrigin.x + mInputMaxPoint.x);
-                raycastHit.position.y = std::min(raycastHit.position.y, mInputOrigin.y + mInputMaxPoint.y);
-
-                raycastHit.position.x = std::max(raycastHit.position.x, mInputOrigin.x + mInputMinPoint.x);
-                raycastHit.position.y = std::max(raycastHit.position.y, mInputOrigin.y + mInputMinPoint.y);
-                // printf("num nodes %lu\n", mTree->calcNumNodes());
-
-                auto node =
-                    mTree->search(octomap::point3d(raycastHit.position.x, raycastHit.position.y, raycastHit.position.z));
-                if (node && node->getValue() > mOccupancyThreshold)
-                {
-                    // printf("found: %f\n", node->getValue());
-                    continue;
-                }
-
-
-                mTree->insertRay(octomap::point3d(origin.x, origin.y, origin.z),
-                                 octomap::point3d(raycastHit.position.x, raycastHit.position.y, raycastHit.position.z),
-                                 mMaxDepth, true);
-
-                // printf("d: %f\n", raycastHit.distance);
-                // Normals are not guaranteed to be at the same height so we flatten
-                startList.push_back(::physx::PxVec3(raycastHit.normal.x * mMinSearchDistance + raycastHit.position.x,
-                                                    raycastHit.normal.y * mMinSearchDistance + raycastHit.position.y,
-                                                    mInputOrigin.z));
+                occupied_cells.insert(key);
+            }
+            else
+            {
+                unoccupied_cells.insert(key);
             }
         }
     }
-    mTree->prune();
-    // mTree->updateInnerOccupancy();
-    for (int i = 0; i < 4; i++)
+    for (octomap::KeySet::iterator it = unoccupied_cells.begin(); it != occupied_cells.end(); ++it)
     {
-        mPhysxScenePtr->removeActor(*mActors[i]);
+        mTree->updateNode(*it, false, true);
     }
+    for (octomap::KeySet::iterator it = occupied_cells.begin(); it != occupied_cells.end(); ++it)
+    {
+        mTree->updateNode(*it, true, true);
+    }
+    mTree->updateInnerOccupancy();
 }
 
 std::vector<carb::Float2> MapGenerator::getOccupiedPositions()
@@ -286,7 +221,7 @@ carb::Int2 MapGenerator::getDimensions()
         carb::Float2 size = { max.x - min.x, max.y - min.y };
         // scale by the grid resolution to get the number of pixels
         // num_cells = meters / (meters/cell)
-        num_cells = { static_cast<int>(size.x / mResolution), static_cast<int>(size.y / mResolution) };
+        num_cells = { static_cast<int>(size.x / mCellSize), static_cast<int>(size.y / mCellSize) };
     }
     return num_cells;
 }
@@ -363,19 +298,18 @@ std::vector<float> MapGenerator::getBuffer()
             if (mTree->isNodeOccupied(&(*it)))
             {
                 size_t index =
-                    static_cast<size_t>(it.getCoordinate().y() / mResolution - min.y / mResolution) * num_cells.x +
-                    static_cast<size_t>((-it.getCoordinate().x() + min.x + max.x) / mResolution - min.x / mResolution);
+                    static_cast<size_t>(it.getCoordinate().y() / mCellSize - min.y / mCellSize) * num_cells.x +
+                    static_cast<size_t>((-it.getCoordinate().x() + min.x + max.x) / mCellSize - min.x / mCellSize);
 
                 buffer[index] = mOccupiedValue;
             }
         }
 
 
-        carb::Int2 start_pix = { static_cast<int>(mInputOrigin.x / mResolution - min.x / mResolution),
-                                 static_cast<int>(mInputOrigin.y / mResolution - min.y / mResolution) };
+        carb::Int2 start_pix = { static_cast<int>(-mInputOrigin.x / mCellSize + max.x / mCellSize),
+                                 static_cast<int>(mInputOrigin.y / mCellSize - min.y / mCellSize) };
 
         floodfill(buffer.data(), num_cells, start_pix.x, start_pix.y, mUnoccupiedValue);
-
 
         return buffer;
     }
