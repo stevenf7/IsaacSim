@@ -27,14 +27,14 @@ def btn_builder(label="", type="button", text="button", tooltip="", on_clicked_f
             alignment=ui.Alignment.LEFT_CENTER,
         )
         ui.Spacer(width=5)
-        # add_line_rect_flourish(False)
-        ui.Spacer(width=ui.Fraction(1))
-        ui.Spacer(width=10)
-        with ui.Frame(width=0):
-            with ui.VStack():
-                with ui.Placer(offset_x=0, offset_y=7):
-                    ui.Rectangle(height=5, width=5, alignment=ui.Alignment.CENTER)
-        ui.Spacer(width=5)
+        add_line_rect_flourish(True)
+        # ui.Spacer(width=ui.Fraction(1))
+        # ui.Spacer(width=10)
+        # with ui.Frame(width=0):
+        #     with ui.VStack():
+        #         with ui.Placer(offset_x=0, offset_y=7):
+        #             ui.Rectangle(height=5, width=5, alignment=ui.Alignment.CENTER)
+        # ui.Spacer(width=5)
     return btn
 
 
