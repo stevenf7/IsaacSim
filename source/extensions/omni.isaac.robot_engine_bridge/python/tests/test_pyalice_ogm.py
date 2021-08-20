@@ -126,13 +126,13 @@ class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCaseFailOnLogError):
         msg = test_app.app.receive("simulation.interface", "output", "occupancy_map")
         buffer = msg.tensor
         # print("TENSOR", omap)
-        self.assertEqual(buffer[0, 79], 0.5)
-        self.assertEqual(buffer[5, 75], 0.5)
+        self.assertEqual(buffer[0, 79], 1.0)
+        self.assertEqual(buffer[5, 75], 1.0)
         self.assertEqual(buffer[10, 59], 1.0)
         self.assertEqual(buffer[50, 20], 1.0)
         self.assertEqual(buffer[75, 29], 1.0)
         self.assertEqual(buffer[40, 40], 0.0)
-        self.assertEqual(buffer[75, 20], 0.5)
+        self.assertEqual(buffer[75, 20], 1.0)
         self._timeline.stop()
         test_app.stop()
         test_app = None

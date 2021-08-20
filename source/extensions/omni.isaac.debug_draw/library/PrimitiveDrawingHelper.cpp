@@ -27,10 +27,12 @@ namespace drawing
 {
 PrimitiveDrawingHelper::PrimitiveDrawingHelper(omni::usd::UsdContext* usdContext,
                                                omni::renderer::IDebugDraw* debugDrawPtr,
-                                               RenderingMode renderingMode)
+                                               RenderingMode renderingMode,
+                                               bool worldSpace)
     : mUsdContext(usdContext),
       mDebugDrawPtr(debugDrawPtr),
       mRenderingMode(renderingMode),
+      mWorldSpace(worldSpace),
       mPrimitiveList(nullptr),
       mDirty(false)
 {
@@ -120,8 +122,8 @@ void PrimitiveDrawingHelper::draw()
         carb::scenerenderer::PrimitiveListSettings settings = {};
         settings.width = 1.0f;
         settings.antialiasingWidth = -1;
-        settings.fadeOutStartDistance = 1e5f;
-        settings.fadeOutEndDistance = 1e9f;
+        settings.fadeOutStartDistance = 1e10f;
+        settings.fadeOutEndDistance = 1e10f;
 
         carb::scenerenderer::PrimitiveListInstance inst = {};
         inst.transform.m[0] = 1.f;
@@ -158,10 +160,14 @@ void PrimitiveDrawingHelper::createList()
     {
         SceneId id = mUsdContext->getRendererScene();
         PrimitiveKind kind = mRenderingMode == RenderingMode::ePoints ? PrimitiveKind::ePoint : PrimitiveKind::eLine;
-
+        carb::scenerenderer::PrimitiveListFlags flags =
+            carb::scenerenderer::kPrimitiveListFlagDepthTest | carb::scenerenderer::kPrimitiveListFlagDepthTestWrite;
+        if (mWorldSpace)
+        {
+            flags |= carb::scenerenderer::kPrimitiveListFlagWorldSpaceWidth;
+        }
         mPrimitiveList = mUsdContext->getSceneRenderer()->createPrimitiveList(
-            mUsdContext->getSceneRendererContext(), id, kind,
-            carb::scenerenderer::kPrimitiveListFlagDepthTest | carb::scenerenderer::kPrimitiveListFlagDepthTestWrite);
+            mUsdContext->getSceneRendererContext(), id, kind, flags);
     }
 }
 void PrimitiveDrawingHelper::releaseList()

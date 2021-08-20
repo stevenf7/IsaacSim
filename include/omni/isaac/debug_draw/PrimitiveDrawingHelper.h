@@ -36,7 +36,8 @@ public:
     };
     PrimitiveDrawingHelper(omni::usd::UsdContext* usdContext,
                            omni::renderer::IDebugDraw* debugDrawPtr,
-                           RenderingMode renderingMode);
+                           RenderingMode renderingMode,
+                           bool worldSapce = false);
     ~PrimitiveDrawingHelper();
 
     // Add a single vertex
@@ -70,6 +71,7 @@ private:
 
     omni::renderer::IDebugDraw* mDebugDrawPtr;
     RenderingMode mRenderingMode;
+    bool mWorldSpace;
     carb::scenerenderer::PrimitiveList* mPrimitiveList;
     bool mDirty;
     std::vector<carb::scenerenderer::PrimitiveVertex> mVertices;

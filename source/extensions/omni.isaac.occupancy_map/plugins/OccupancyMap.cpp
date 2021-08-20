@@ -46,37 +46,76 @@ omni::kit::IStageUpdate* gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 omni::physx::IPhysx* gPhysx = nullptr;
 carb::Float3 inputOrigin = { 0, 0, 0 };
-carb::Float2 inputMinPoint = { -100, -100 };
-carb::Float2 inputMaxPoint = { 100, 100 };
+carb::Float3 inputMinPoint = { -100.0f, -100.0f, 0.0f };
+carb::Float3 inputMaxPoint = { 100.0f, 100.0f, 0.0f };
+float inputCellSize = 5;
 std::unique_ptr<omni::isaac::occupancy_map::MapGenerator> gGenerator = nullptr;
 std::unique_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> gLineDrawing;
-
+std::unique_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> gCellDrawing;
+double gMetersPerUnit = 0.01;
 }
 
 
-void CARB_ABI
-GenerateMap(float gridResolution, float rayResolution, float minSearchDistance, float occupancyThreshold, size_t maxRays)
+void CARB_ABI GenerateMap()
 {
 
     gGenerator = std::make_unique<omni::isaac::occupancy_map::MapGenerator>(gPhysx, gStage);
 
     gGenerator->setTransform(inputOrigin, inputMinPoint, inputMaxPoint);
-    gGenerator->updateSettings(
-        gridResolution, occupancyThreshold, minSearchDistance, rayResolution, maxRays, 1.0f, 0.0f, 0.5f);
+    gGenerator->updateSettings(inputCellSize, 1.0f, 0.0f, 0.5f);
     gGenerator->generate();
+
+    gCellDrawing->clear();
+
+    std::vector<carb::Float2> occ_pos = gGenerator->getOccupiedPositions();
+    // std::vector<carb::Float2> unocc_pos = gGenerator->getFreePositions();
+    // pos = gGenerator->getOccupiedPositions();
+    carb::ColorRgba occupied = { 1, 1, 1, 1 };
+    // carb::ColorRgba unoccupied = { 1, 1, 1, 1 };
+    float step = inputCellSize / 10.0f;
+    for (size_t i = 0; i < occ_pos.size(); i++)
+    {
+        for (float ix = -inputCellSize / 2.0f + step; ix <= inputCellSize / 2.0f - step; ix += step)
+        {
+            carb::Float3 p0({ occ_pos[i].x + ix, occ_pos[i].y - inputCellSize / 2.0f, inputOrigin.z });
+            carb::Float3 p1({ occ_pos[i].x + ix, occ_pos[i].y + inputCellSize / 2.0f, inputOrigin.z });
+
+            gCellDrawing->addVertex(p0, occupied, 2.0f);
+            gCellDrawing->addVertex(p1, occupied, 2.0f);
+        }
+
+        for (float iy = -inputCellSize / 2.0f + step; iy <= inputCellSize / 2.0f - step; iy += step)
+        {
+            carb::Float3 p0({ occ_pos[i].x - inputCellSize / 2.0f, occ_pos[i].y + iy, inputOrigin.z });
+            carb::Float3 p1({ occ_pos[i].x + inputCellSize / 2.0f, occ_pos[i].y + iy, inputOrigin.z });
+
+            gCellDrawing->addVertex(p0, occupied, step);
+            gCellDrawing->addVertex(p1, occupied, step);
+        }
+
+        // gCellDrawing->addVertex(carb::Float3({ occ_pos[i].x, occ_pos[i].y, inputOrigin.z }), occupied,
+        // inputCellSize); gCellDrawing->addVertex(carb::Float3({ occ_pos[i].x, occ_pos[i].y, inputOrigin.z }),
+        // occupied, inputCellSize);
+    }
+    // for (size_t i = 0; i < unocc_pos.size(); i++)
+    // {
+    //     gCellDrawing->addVertex(
+    //         carb::Float3({ unocc_pos[i].x, unocc_pos[i].y, inputOrigin.z }), unoccupied, inputCellSize);
+    // }
+    gCellDrawing->draw();
 }
 
-void CARB_ABI SetTransform(carb::Float3 origin, carb::Float2 minimum, carb::Float2 maximum)
+void CARB_ABI SetTransform(carb::Float3 origin, carb::Float3 minimum, carb::Float3 maximum)
 {
-
     inputOrigin = origin;
     inputMinPoint = minimum;
     inputMaxPoint = maximum;
-
-    // printf("[%f %f %f], [%f %f], [%f %f]\n", origin.x, origin.y, origin.z, minimum.x, minimum.y, maximum.x,
-    // maximum.y);
 }
 
+void CARB_ABI SetCellSize(float cellSize)
+{
+    inputCellSize = cellSize;
+}
 
 omni::renderer::IDebugDraw* g_debugDraw = nullptr;
 
@@ -86,32 +125,105 @@ void CARB_ABI Update()
     float w = 2.0f;
 
     carb::ColorRgba color = { 1, 1, 1, 1 };
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }), color, w);
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }), color, w);
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }), color, w);
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }), color, w);
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z }), color, w);
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }), color, w);
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }), color, w);
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z }), color, w);
 
 
-    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x + 100, inputOrigin.y, inputOrigin.z }), { 1, 0, 0, 1 }, w);
-    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x - 100, inputOrigin.y, inputOrigin.z }), { 1, 0, 0, 1 }, w);
+    std::vector<carb::Float3> corners(8);
+    corners[0] = carb::Float3(
+        { inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z + inputMinPoint.z });
+    corners[1] = carb::Float3(
+        { inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z + inputMinPoint.z });
+    corners[2] = carb::Float3(
+        { inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z + inputMinPoint.z });
+    corners[3] = carb::Float3(
+        { inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z + inputMinPoint.z });
+    corners[4] = carb::Float3(
+        { inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z + inputMaxPoint.z });
+    corners[5] = carb::Float3(
+        { inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z + inputMaxPoint.z });
+    corners[6] = carb::Float3(
+        { inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z + inputMaxPoint.z });
+    corners[7] = carb::Float3(
+        { inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z + inputMaxPoint.z });
+    // bottom
+    gLineDrawing->addVertex(corners[0], color, w);
+    gLineDrawing->addVertex(corners[1], color, w);
 
-    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x, inputOrigin.y + 100, inputOrigin.z }), { 0, 1, 0, 1 }, w);
-    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x, inputOrigin.y - 100, inputOrigin.z }), { 0, 1, 0, 1 }, w);
+    gLineDrawing->addVertex(corners[1], color, w);
+    gLineDrawing->addVertex(corners[2], color, w);
 
-    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x, inputOrigin.y, inputOrigin.z + 100 }), { 0, 0, 1, 1 }, w);
-    gLineDrawing->addVertex(carb::Float3({ inputOrigin.x, inputOrigin.y, inputOrigin.z - 100 }), { 0, 0, 1, 1 }, w);
+    gLineDrawing->addVertex(corners[2], color, w);
+    gLineDrawing->addVertex(corners[3], color, w);
+
+    gLineDrawing->addVertex(corners[3], color, w);
+    gLineDrawing->addVertex(corners[0], color, w);
+
+    // top
+    gLineDrawing->addVertex(corners[4], color, w);
+    gLineDrawing->addVertex(corners[5], color, w);
+
+    gLineDrawing->addVertex(corners[5], color, w);
+    gLineDrawing->addVertex(corners[6], color, w);
+
+    gLineDrawing->addVertex(corners[6], color, w);
+    gLineDrawing->addVertex(corners[7], color, w);
+
+    gLineDrawing->addVertex(corners[7], color, w);
+    gLineDrawing->addVertex(corners[4], color, w);
+
+    // connect bottom to top
+    gLineDrawing->addVertex(corners[0], color, w);
+    gLineDrawing->addVertex(corners[4], color, w);
+
+    gLineDrawing->addVertex(corners[1], color, w);
+    gLineDrawing->addVertex(corners[5], color, w);
+
+    gLineDrawing->addVertex(corners[2], color, w);
+    gLineDrawing->addVertex(corners[6], color, w);
+
+    gLineDrawing->addVertex(corners[3], color, w);
+    gLineDrawing->addVertex(corners[7], color, w);
+
+
+    for (float ix = inputMinPoint.x; ix <= inputMaxPoint.x; ix += inputCellSize)
+    {
+        carb::Float3 p0({ inputOrigin.x + ix, inputOrigin.y + inputMinPoint.y, inputOrigin.z });
+        carb::Float3 p1({ inputOrigin.x + ix, inputOrigin.y + inputMaxPoint.y, inputOrigin.z });
+
+        gLineDrawing->addVertex(p0, { 0.5, 0.5, 0.5, 0.5 }, w);
+        gLineDrawing->addVertex(p1, { 0.5, 0.5, 0.5, 0.5 }, w);
+    }
+    for (float iy = inputMinPoint.y; iy <= inputMaxPoint.y; iy += inputCellSize)
+    {
+        carb::Float3 p0({ inputOrigin.x + inputMinPoint.x, inputOrigin.y + iy, inputOrigin.z });
+        carb::Float3 p1({ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + iy, inputOrigin.z });
+
+        gLineDrawing->addVertex(p0, { 0.5, 0.5, 0.5, 0.5 }, w);
+        gLineDrawing->addVertex(p1, { 0.5, 0.5, 0.5, 0.5 }, w);
+    }
+    carb::Float3 scaleMin = inputMinPoint;
+    carb::Float3 scaleMax = inputMaxPoint;
+    scaleMin.x = (scaleMax.x - scaleMin.x) < 0.1 / gMetersPerUnit ? scaleMin.x - 0.1 / gMetersPerUnit : scaleMin.x;
+    scaleMin.y = (scaleMax.y - scaleMin.y) < 0.1 / gMetersPerUnit ? scaleMin.y - 0.1 / gMetersPerUnit : scaleMin.y;
+    scaleMin.z = (scaleMax.z - scaleMin.z) < 0.1 / gMetersPerUnit ? scaleMin.z - 0.1 / gMetersPerUnit : scaleMin.z;
+
+    scaleMax.x = (scaleMax.x - scaleMin.x) < 0.1 / gMetersPerUnit ? scaleMax.x + 0.1 / gMetersPerUnit : scaleMax.x;
+    scaleMax.y = (scaleMax.y - scaleMin.y) < 0.1 / gMetersPerUnit ? scaleMax.y + 0.1 / gMetersPerUnit : scaleMax.y;
+    scaleMax.z = (scaleMax.z - scaleMin.z) < 0.1 / gMetersPerUnit ? scaleMax.z + 0.1 / gMetersPerUnit : scaleMax.z;
+
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x + scaleMin.x, inputOrigin.y, inputOrigin.z }), { 1, 0, 0, 1 }, w * 2);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x + scaleMax.x, inputOrigin.y, inputOrigin.z }), { 1, 0, 0, 1 }, w * 2);
+
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x, inputOrigin.y + scaleMin.y, inputOrigin.z }), { 0, 1, 0, 1 }, w * 2);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x, inputOrigin.y + scaleMax.y, inputOrigin.z }), { 0, 1, 0, 1 }, w * 2);
+
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x, inputOrigin.y, inputOrigin.z + scaleMin.z }), { 0, 0, 1, 1 }, w * 2);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x, inputOrigin.y, inputOrigin.z + scaleMax.z }), { 0, 0, 1, 1 }, w * 2);
     gLineDrawing->draw();
 }
 std::vector<carb::Float2> GetOccupiedPositions()
@@ -189,15 +301,20 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
     }
 
     gStage = stage;
-
+    gMetersPerUnit = metersPerUnit;
     gLineDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
         omni::usd::UsdContext::getContext(), g_debugDraw,
         omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::eLines);
+
+    gCellDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
+        omni::usd::UsdContext::getContext(), g_debugDraw,
+        omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::eLines, true);
 }
 
 static void onDetach(void* data)
 {
     gLineDrawing.reset();
+    gCellDrawing.reset();
 }
 
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
@@ -241,6 +358,7 @@ CARB_EXPORT void carbOnPluginShutdown()
 {
     gStageUpdate->destroyStageUpdateNode(gStageUpdateNode);
     gLineDrawing.reset();
+    gCellDrawing.reset();
 }
 
 void fillInterface(omni::isaac::occupancy_map::OccupancyMap& iface)
@@ -252,6 +370,7 @@ void fillInterface(omni::isaac::occupancy_map::OccupancyMap& iface)
     iface.generateMap = GenerateMap;
     iface.update = Update;
     iface.setTransform = SetTransform;
+    iface.setCellSize = SetCellSize;
     iface.getOccupiedPositions = GetOccupiedPositions;
     iface.getFreePositions = GetFreePositions;
     iface.getMinBound = GetMinBound;

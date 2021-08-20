@@ -47,15 +47,11 @@ class MapGenerator
 public:
     MapGenerator(omni::physx::IPhysx* physXPtr, pxr::UsdStageWeakPtr stagePtr);
     ~MapGenerator();
-    void updateSettings(const float resolution = 5,
-                        const float occupancyThreshold = 1.0,
-                        const float minSearchDistance = 2.0f,
-                        const float degreesBetweenRays = 5.0f,
-                        const size_t maxRays = 1e8,
+    void updateSettings(const float cellSize = 5,
                         const float occupiedValue = 1.0f,
                         const float unoccupiedValue = 0.0f,
                         const float unknownValue = 0.5f);
-    void setTransform(carb::Float3 inputOrigin, carb::Float2 inputMinPoint, carb::Float2 inputMaxPoint);
+    void setTransform(carb::Float3 inputOrigin, carb::Float3 inputMinPoint, carb::Float3 inputMaxPoint);
     void generate();
     std::vector<carb::Float2> getOccupiedPositions();
     std::vector<carb::Float2> getFreePositions();
@@ -69,27 +65,18 @@ public:
 
 
 private:
-    float mResolution = 5;
-    float mMinSearchDistance = 2;
-    float mDegreesBetweenRays = 5;
-    float mOccupancyThreshold = 1.0;
-    float mMaxDepth = 1e8;
-    size_t mMaxRays = 1e6;
+    float mCellSize = 5.0;
     omni::physx::IPhysx* mPhysx = nullptr;
     pxr::UsdStageWeakPtr mStage = nullptr;
     pxr::UsdPrim mParentPrim;
     octomap::OcTree* mTree;
-    ::physx::PxShape* mShapes[4];
-    ::physx::PxRigidStatic* mActors[4];
-    ::physx::PxMaterial* mDefaultMaterial = nullptr;
     ::physx::PxScene* mPhysxScenePtr = nullptr;
     carb::Float3 mInputOrigin;
-    carb::Float2 mInputMinPoint;
-    carb::Float2 mInputMaxPoint;
+    carb::Float3 mInputMinPoint;
+    carb::Float3 mInputMaxPoint;
     float mOccupiedValue = 1.0;
     float mUnoccupiedValue = 0.0;
     float mUnknownValue = 0.5;
-    std::vector<::physx::PxVec3> mUnitDirs;
 };
 
 }

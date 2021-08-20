@@ -67,9 +67,9 @@ PYBIND11_MODULE(_occupancy_map, m)
                 stage_id = omni.usd.get_context().get_stage_id()
                 
                 generator = _occupancy_map.Generator(physx, stage_id)
-                generator.update_settings(5, 1, 2, 5, 1000000, 4, 5, 6)
+                generator.update_settings(5, 4, 5, 6)
                 # Set location to map from and the min and max bounds to map to 
-                generator.set_transform((0, 0, 0), (-200, -200), (200, 200))
+                generator.set_transform((0, 0, 0), (-200, -200, 0), (200, 200, 0))
                 generator.generate()
                 # Get locations of the occupied cells in the stage
                 points = generator.get_occupied_positions()
@@ -98,13 +98,9 @@ PYBIND11_MODULE(_occupancy_map, m)
 
                 Args:
                     arg0 (:obj:`float`): Size of the cell in stage units, resolution of the grid
-                    arg1 (:obj:`float`): The larger the value, the more rays need to hit a particular area for it to be considered occupied
-                    arg2 (:obj:`float`): Once a ray hits an occupied space, this distance is used to offset from the hit location along the contact normal and generate another 360 degree sweep of rays. This value should be smaller than the cell size and ideally smaller than the smallest distance you want to map
-                    arg3 (:obj:`float`): Mapping is done by shooting rays 360 degrees from each sample point, The smaller the value the more accurate the map but the longer it will take to generate
-                    arg4 (:obj:`int`): The maximum number of rays to use for map generation.
-                    arg5 (:obj:`float`): Value used to denote an occupied cell
-                    arg6 (:obj:`float`): Value used to denote an unoccupied cell
-                    arg7 (:obj:`float`): Value used to denote unknown areas that could not be reached from the starting location
+                    arg1 (:obj:`float`): Value used to denote an occupied cell
+                    arg2 (:obj:`float`): Value used to denote an unoccupied cell
+                    arg3 (:obj:`float`): Value used to denote unknown areas that could not be reached from the starting location
 
             )pbdoc")
         .def("set_transform", &MapGenerator::setTransform, R"pbdoc(
@@ -112,8 +108,8 @@ PYBIND11_MODULE(_occupancy_map, m)
 
                 Args:
                     arg0 (:obj:`carb.Float3`): Origin in stage to start mapping from, must be in unoccupied space
-                    arg1 (:obj:`carb.Float2`): Minimum bound to map up to
-                    arg2 (:obj:`carb.Float2`): Maximum bound to map up to
+                    arg1 (:obj:`carb.Float3`): Minimum bound to map up to
+                    arg2 (:obj:`carb.Float3`): Maximum bound to map up to
         )pbdoc")
         .def("generate", &MapGenerator::generate, R"pbdoc(
                 Main function that generates a map based on the settings and transform set
@@ -161,6 +157,7 @@ PYBIND11_MODULE(_occupancy_map, m)
         .def("generate", wrapInterfaceFunction(&OccupancyMap::generateMap))
         .def("update", wrapInterfaceFunction(&OccupancyMap::update))
         .def("set_transform", wrapInterfaceFunction(&OccupancyMap::setTransform))
+        .def("set_cell_size", wrapInterfaceFunction(&OccupancyMap::setCellSize))
         .def("get_occupied_positions", wrapInterfaceFunction(&OccupancyMap::getOccupiedPositions))
         .def("get_free_positions", wrapInterfaceFunction(&OccupancyMap::getFreePositions))
         .def("get_min_bound", wrapInterfaceFunction(&OccupancyMap::getMinBound))

@@ -207,7 +207,8 @@ def dropdown_builder(
         def on_clicked_wrapper(model, val):
             on_clicked_fn(items[model.get_item_value_model().as_int])
 
-        combo_box.add_item_changed_fn(on_clicked_wrapper)
+        if on_clicked_fn is not None:
+            combo_box.add_item_changed_fn(on_clicked_wrapper)
 
     return combo_box
 

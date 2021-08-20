@@ -102,11 +102,11 @@ void OccupancyGridMapComponent::publishAllMessages()
     }
     carb::Float3 trans = utils::conversions::asCarbFloat3(parentUSDTransform.ExtractTranslation());
 
-    carb::Float2 inputMinPoint = { trans.x + mOffset[0] - (mCellSize * static_cast<float>(mMapSize[0])) * 0.5f,
-                                   trans.y + mOffset[1] - (mCellSize * static_cast<float>(mMapSize[1])) * 0.5f };
+    carb::Float3 inputMinPoint = { trans.x + mOffset[0] - (mCellSize * static_cast<float>(mMapSize[0])) * 0.5f,
+                                   trans.y + mOffset[1] - (mCellSize * static_cast<float>(mMapSize[1])) * 0.5f, 0.0f };
 
-    carb::Float2 inputMaxPoint = { trans.x + mOffset[0] + (mCellSize * static_cast<float>(mMapSize[0])) * 0.5f,
-                                   trans.y + mOffset[1] + (mCellSize * static_cast<float>(mMapSize[1])) * 0.5f };
+    carb::Float3 inputMaxPoint = { trans.x + mOffset[0] + (mCellSize * static_cast<float>(mMapSize[0])) * 0.5f,
+                                   trans.y + mOffset[1] + (mCellSize * static_cast<float>(mMapSize[1])) * 0.5f, 0.0f };
     inputMinPoint = { inputMinPoint.x / mStageUnits, inputMinPoint.y / mStageUnits };
     inputMaxPoint = { inputMaxPoint.x / mStageUnits, inputMaxPoint.y / mStageUnits };
 
@@ -184,8 +184,7 @@ void OccupancyGridMapComponent::onComponentChange()
     // mStageUnits, mDegreesPerRay,
     //        mOccupancyThreshold, mMaxRays, mOccupiedValue, mUnoccupiedValue, mUnknownValue);
 
-    mGenerator->updateSettings(mCellSize / mStageUnits, mOccupancyThreshold, mSurfaceOffset / mStageUnits,
-                               mDegreesPerRay, mMaxRays, mOccupiedValue, mUnoccupiedValue, mUnknownValue);
+    mGenerator->updateSettings(mCellSize / mStageUnits, mOccupiedValue, mUnoccupiedValue, mUnknownValue);
 }
 }
 }
