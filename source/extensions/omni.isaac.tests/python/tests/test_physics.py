@@ -24,7 +24,6 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
-        self._scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
 
     # simple fastcache smoke test
     async def test_fast_cache(self):
@@ -105,6 +104,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         # physics_sub = omni.physx.acquire_physx_interface().subscribe_physics_step_events(physics_update)
 
         # add scene
+        self._scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
         self._scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
         self._scene.CreateGravityMagnitudeAttr().Set(981.0)
 
@@ -174,3 +174,65 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     await omni.kit.app.get_app().next_update_async()
     #     self.assertNotEqual(self.check_dt, 0.0)
     #     sub = None
+
+    async def test_stage_up_axis(self):
+        timeline = omni.timeline.get_timeline_interface()
+        # Make a new stage Z up
+        carb.settings.get_settings().set("persistent/app/stage/upAxis", "Z")
+        await omni.usd.get_context().new_stage_async()
+        stage = omni.usd.get_context().get_stage()
+        # Add a cube for testing gravity
+        cubePath = "/World/Cube"
+        cubeGeom = UsdGeom.Cube.Define(stage, cubePath)
+        cubeGeom.CreateSizeAttr(100)
+        cubePrim = stage.GetPrimAtPath(cubePath)
+        UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+        await omni.kit.app.get_app().next_update_async()
+
+        timeline.play()
+        for frame in range(60):
+            await omni.kit.app.get_app().next_update_async()
+        # check to make sure that the cube fell -Z
+        position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
+        self.assertAlmostEqual(position[2], -498.67, delta=0.01)
+        timeline.stop()
+        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
+        await omni.kit.app.get_app().next_update_async()
+
+        timeline.play()
+        for frame in range(60):
+            await omni.kit.app.get_app().next_update_async()
+        # check to make sure that the cube fell -Y
+        position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
+        self.assertAlmostEqual(position[1], -498.67, delta=0.01)
+
+    async def test_stage_units(self):
+        timeline = omni.timeline.get_timeline_interface()
+        # Make a new stage Z up
+        carb.settings.get_settings().set("persistent/app/stage/upAxis", "Z")
+        await omni.usd.get_context().new_stage_async()
+        stage = omni.usd.get_context().get_stage()
+        # Add a cube for testing gravity
+        cubePath = "/World/Cube"
+        cubeGeom = UsdGeom.Cube.Define(stage, cubePath)
+        cubeGeom.CreateSizeAttr(100)
+        cubePrim = stage.GetPrimAtPath(cubePath)
+        UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+        await omni.kit.app.get_app().next_update_async()
+
+        timeline.play()
+        for frame in range(60):
+            await omni.kit.app.get_app().next_update_async()
+        # check to make sure that the cube fell -Z
+        position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
+        self.assertAlmostEqual(position[2], -498.67, delta=0.01)
+        timeline.stop()
+        # switch to meters
+        UsdGeom.SetStageMetersPerUnit(stage, 1.0)
+        await omni.kit.app.get_app().next_update_async()
+
+        timeline.play()
+        for frame in range(60):
+            await omni.kit.app.get_app().next_update_async()
+        position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
+        self.assertAlmostEqual(position[2], -4.9867, delta=0.01)
