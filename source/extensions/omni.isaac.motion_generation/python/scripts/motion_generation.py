@@ -112,8 +112,8 @@ class MotionGenerator:
     def set_cspace_target(self, target):
         self._motion_policy.set_cspace_target(target)
 
-    def set_end_effector_target(self, target_prim):
-        self._motion_policy.set_end_effector_target(target_prim)
+    def set_end_effector_target(self, target_prim, position_only=False):
+        self._motion_policy.set_end_effector_target(target_prim, position_only)
 
     def create_cube(self, block_prim, side_length=None, static=False):
         return self._motion_policy.create_cube(block_prim, side_length, static)

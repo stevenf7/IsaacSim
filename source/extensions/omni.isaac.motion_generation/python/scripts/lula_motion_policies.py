@@ -347,17 +347,21 @@ class RmpFlow(LulaMotionPolicy):
     def set_cspace_target(self, target):
         self._policy.set_cspace_target(target.astype(np.float64))
 
-    def set_end_effector_target(self, target_prim):
+    def set_end_effector_target(self, target_prim, position_only=False):
         self._target_prim = target_prim
+        self._target_prim_is_position_only = position_only
         if self._target_prim is None:
             self._policy.set_end_effector_target()
             return
+
         trans, rot = self.get_prim_pose_rel_robot_base(self._target_prim, default_trans=None, default_rot=None)
 
-        if rot is not None:
-            rot = lula.Rotation3(rot)
-
-        self._policy.set_end_effector_target(position=trans, orientation=rot)
+        if self._target_prim_is_position_only:
+            self._policy.set_end_effector_target(position=trans)
+        else:
+            if rot is not None:
+                rot = lula.Rotation3(rot)
+            self._policy.set_end_effector_target(position=trans, orientation=rot)
 
     def update_target(self):
         if self._target_prim is None:
@@ -366,10 +370,12 @@ class RmpFlow(LulaMotionPolicy):
 
         trans, rot = self.get_prim_pose_rel_robot_base(self._target_prim, default_trans=None, default_rot=None)
 
-        if rot is not None:
-            rot = lula.Rotation3(rot)
-
-        self._policy.update_end_effector_target(position=trans, orientation=rot)
+        if self._target_prim_is_position_only:
+            self._policy.update_end_effector_target(position=trans)
+        else:
+            if rot is not None:
+                rot = lula.Rotation3(rot)
+            self._policy.update_end_effector_target(position=trans, orientation=rot)
 
     def update_world(self, updated_obstacles=None, robot_pose_changed=False):
         super().update_world(updated_obstacles, robot_pose_changed)

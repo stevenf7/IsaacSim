@@ -5,10 +5,15 @@ import os
 import omni
 import franka
 import math
+import copy
+import numpy as np
 
 import rospy
 from std_msgs.msg import Bool, Header
+from sensor_msgs.msg import JointState
 from lula_ros.msg import JointPosVelAccCommand, LulaCommandAck
+
+from pxr import Gf
 
 
 class CycleTime:
@@ -80,27 +85,48 @@ class ROSJointCommander:
         self.controller_time_offset = rospy.Time.now()
         self.prev_t = rospy.Time.now()
         self.is_suppressed = False
-        self.interpolated_state = None
+        self.joint_state = None
+        self.states_from_suppress = None
+
         self.suppression_sub = rospy.Subscriber(
             "/rmpflow/commands/joint_command/suppress", Bool, self.suppression_callback
         )
-        self.interpolated_sub = rospy.Subscriber(
-            "/rmpflow/commands/joint_command/interpolated", JointPosVelAccCommand, self.interpolated_command_callback
-        )
+        self.joint_state_sub = rospy.Subscriber("/robot/joint_state", JointState, self.joint_state_callback)
         self.joint_command_pub = rospy.Publisher(
             "/rmpflow/commands/joint_command", JointPosVelAccCommand, queue_size=10
         )
 
     def __del__(self):
         self.suppression_sub.unregister()
-        self.interpolated_sub.unregister()
         self.joint_command_pub.unregister()
 
-    def register(self, robot: franka.Panda, target_prim):
+    def register(self, robot: franka.Panda, target_prim, obs_prim):
         self.mg.initialize(self.config, robot.prim, 60)
-        self.mg.set_end_effector_target(target_prim)
+
+        self.mg.set_end_effector_target(target_prim, position_only=True)
+        self.target_prim = target_prim
+
+        self.mg.create_cube(obs_prim.GetPrim())
+        self.obs_prim = obs_prim
+
+        self.policy = self.mg._motion_policy._policy
         self.robot = robot
         self.dof_states = robot.joint_states
+        self.q, self.qd, _ = self.mg.get_active_joint_states()
+        self.qdd = None
+        print("q:", self.q)
+        print("qd:", self.qd)
+        print("qdd:", self.qdd)
+
+        self.target_translation_handle = self.target_prim.AddTranslateOp()
+        self.target_prim.AddRotateXYZOp().Set(Gf.Vec3d(180.0, 0.0, 180.0))
+        self.set_target_to_end_effector_location()
+
+    def set_target_to_end_effector_location(self):
+        translation, rotation = self.mg.get_end_effector_pose()
+        translation *= 100.0  # Turn it from meters to centimeters.
+        trans = Gf.Vec3d(translation[0], translation[1], translation[2])
+        self.target_translation_handle.Set(trans)
 
     def process_policy_config(self, mp_config_file):
         mp_config_dir = os.path.dirname(mp_config_file)  # path to directory containing mp_config_file
@@ -117,28 +143,41 @@ class ROSJointCommander:
     def suppression_callback(self, data):
         self.is_suppressed = data.data
 
-    def interpolated_command_callback(self, data):
-        self.interpolated_state = data
+    def joint_state_callback(self, msg):
+        # Reorganize the message into a map from name -> (q, qd). The message
+        # may have more than the required joints or entirely the wrong joints.,
+        joint_values = {}
+        for i, (name, (q, qd)) in enumerate(zip(msg.name, zip(msg.position, msg.velocity))):
+            joint_values[name] = (q, qd)
 
-    def get_latest_interpolated_dof_states(self):
-        if self.interpolated_state is not None:
-            for j in range(self.robot.num_joints):
-                index = self.robot.joint_indices[j]
-                self.dof_states["pos"][index] = self.interpolated_state.q[j]
-                self.dof_states["vel"][index] = self.interpolated_state.qd[j]
-            return self.dof_states
-        else:
-            return None
+        joint_names = self.robot.joint_names
+        joint_state = copy.deepcopy(self.dof_states)
+        for i, name in enumerate(joint_names):
+            index = self.robot.joint_indices[i]
+            if name not in joint_values.keys():
+                # Skip this message if we can't find a required name
+                return
+
+            joint_state["pos"][index] = joint_values[name][0]
+            joint_state["vel"][index] = joint_values[name][1]
+
+        self.joint_state = joint_state
 
     def update(self):
         if self.is_suppressed:
-            # interpolator is telling us to ignore RMPs and instead set the internal state to the "physical" robot
-            states = self.get_latest_interpolated_dof_states()  # return None until we get the first message
-            if states is not None:
-                self.robot.joint_states = states
-            self.joint_positions, self.joint_velocities, self.joint_accel = self.mg.get_joint_states()
+            # Interpolator is telling us to ignore RMPs and instead set the internal state to the
+            # "physical" robot.
+            self.states_from_suppress = self.joint_state
             carb.log_warn("rmp's suppressed by interpolator")
         else:
+            # Perform this reset to the true robot state only one time once the suppression has
+            # stopped.
+            if self.states_from_suppress is not None:
+                self.robot.joint_states = self.states_from_suppress
+                self.q, self.qd, _ = self.mg.get_active_joint_states()
+                self.set_target_to_end_effector_location()
+                self.states_from_suppress = None
+
             # Step the RMPs forward based on timing from the interpolator rosnode
             adaptive_cycle = self.synced_time.next_adaptive_cycle_time()
             self.command_time = adaptive_cycle.time
@@ -148,20 +187,31 @@ class ROSJointCommander:
 
             self.mg._motion_policy.update()
 
-            self.joint_positions, self.joint_velocities, self.joint_accel = self.mg.get_joint_states()
+            # Perform some integration steps.
             aji = self.mg._active_joint_inds
+            num_steps = self.mg._motion_policy.evaluations_per_frame
+            step_dt = integration_dt / num_steps
+            for i in range(num_steps):
+                self.qdd = np.zeros_like(self.q)
+                self.policy.eval_accel(self.q, self.qd, self.qdd)
 
+                self.q += step_dt * self.qd
+                self.qd += step_dt * self.qdd
+
+            # Set the robot to the desired.
             joint_positions = self.robot.get_position_targets()
+            if joint_positions is None:
+                carb.log_warn("Latest robot joint positions is None")
+                return
 
-            joint_positions[aji] = self.mg._motion_policy.get_joint_position_targets(
-                self.joint_positions[aji], self.joint_velocities[aji], integration_dt
-            )
-
+            joint_positions[aji] = self.q
             self.robot.set_position_targets(joint_positions)
-            self.joint_command_pub.publish(self.get_joint_pos_vel_acc_command())
+
+            msg = self._get_joint_pos_vel_acc_command()
+            self.joint_command_pub.publish(msg)
         self.frame = self.frame + 1
 
-    def get_joint_pos_vel_acc_command(self):
+    def _get_joint_pos_vel_acc_command(self):
         message = JointPosVelAccCommand()
         if self.next_id == 0:
             message.period = rospy.Duration(0)
@@ -181,9 +231,9 @@ class ROSJointCommander:
                 self.controller_time_offset = rospy.Time.now() - self.command_time
             message.header.stamp = self.command_time + self.controller_time_offset
 
-        message.q = self.joint_positions
-        message.qd = self.joint_velocities
-        message.qdd = self.joint_accel
+        message.q = self.q
+        message.qd = self.qd
+        message.qdd = self.qdd
         message.names = self.robot.joint_names
         message.t = self.command_time
 
