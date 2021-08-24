@@ -264,6 +264,12 @@ void UltrasonicSensor::tick()
                 mNormals[emitterMode[0]].clear();
                 mWorldMaterials[emitterMode[0]].clear();
 
+                // for non BRDF line drawing
+                if (mDrawLines && (!mUseBRDF || !mUseUSSMaterialsForBRDF))
+                {
+                    mLineDrawing->addVertices(mEmitters[emitterMode[0]]->mLines);
+                }
+
                 if (mDrawPoints)
                 {
                     mPointDrawing->addVertices(mEmitters[emitterMode[0]]->mPoints);
@@ -291,7 +297,8 @@ void UltrasonicSensor::tick()
                 mAdjacency, group.mIsFiring[mFreqIdHigh], group.mIsReceiving[mFreqIdHigh], origins, origins,
                 mWorldPoints, mNormals, mWorldMaterials);
 
-            if (mDrawLines)
+            // for BRDF line drawing since there are filters on which BRDF lines to draw
+            if (mDrawLines && mUseBRDF)
             {
                 mLineDrawing->addVertices(mReceiverArray.mReceiverLines);
                 mReceiverArray.mReceiverLines.clear();
