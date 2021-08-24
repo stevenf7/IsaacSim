@@ -17,6 +17,7 @@ import omni.kit.commands
 from pxr import Usd, UsdGeom, UsdPhysics
 import weakref
 from omni.physx.scripts import utils
+from omni.isaac.ui.ui_utils import cb_builder, btn_builder, multi_btn_builder, progress_bar_builder, dropdown_builder
 import asyncio
 
 EXTENSION_NAME = "Physics Utilities"
@@ -38,30 +39,39 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items, "Isaac Utils")
 
         with self._window.frame:
-            with ui.VStack(spacing=5):
-                with ui.CollapsableFrame("Collision", height=0):
-                    with ui.HStack():
-                        with ui.VStack(spacing=5):
-                            ui.Label(
-                                "NOTE: this supports applying/clearing collision for static geometry only", height=0
-                            )
-                            with ui.HStack(height=0, spacing=10):
-                                ui.Label("Apply to children", width=0)
-                                self._children_checkbox = ui.CheckBox().model
-                                self._children_checkbox.set_value(True)
-                            with ui.HStack(height=0, spacing=10):
-                                ui.Label("Visibile Only", width=0)
-                                self._visible_checkbox = ui.CheckBox().model
-                                self._visible_checkbox.set_value(True)
-                        with ui.VStack(height=0):
-                            ui.Button("Apply Static Collision To Selected", clicked_fn=self.apply_collision_on_selected)
-                            ui.Button("Clear Static Collision On Selected", clicked_fn=self.clear_collision_on_selected)
-                ui.Label(
-                    "NOTE: This cannot delete usd prims on referenced assets, but will still unapply USD APIs", height=0
+            with ui.VStack(spacing=5, height=0):
+                ui.Label("Collision APIs:")
+                self._children_checkbox = cb_builder(
+                    label="Apply To Children",
+                    default_val=True,
+                    tooltip="Apply collision API to child prims if possible",
                 )
-                ui.Button("Remove All Physics APIs", clicked_fn=self.remove_physics_apis_on_selected, height=0)
-                ui.Spacer()
-                self._progress_bar = ui.ProgressBar(height=0).model
+                self._visible_checkbox = cb_builder(
+                    label="Visible Only", default_val=True, tooltip="Only apply collision API to prims that are visible"
+                )
+                self._collision_type = dropdown_builder(
+                    label="Collision Type", items=["Triangle Mesh", "Convex Hull", "Convex Decomposition"]
+                )
+                btn_builder(
+                    label="For Current Selection",
+                    text="Apply Static",
+                    tooltip="The following buttons work on the currently selected prims",
+                    on_clicked_fn=self.apply_collision_on_selected,
+                )
+                ui.Line()
+                ui.Label("Remove APIs on Current Selection:")
+                multi_btn_builder(
+                    label="For Current Selection",
+                    text=["Remove Collision API", "Remove All Physics APIs"],
+                    tooltip=[
+                        "The following buttons work on the currently selected prims",
+                        "Remove Collision API on selected",
+                        "NOTE: This cannot delete usd prims on referenced assets, but will still unapply USD APIs",
+                    ],
+                    on_clicked_fn=[self.clear_collision_on_selected, self.remove_physics_apis_on_selected],
+                )
+                ui.Line()
+                self._progress_bar = progress_bar_builder("Current Progress")
                 self._progress_bar.set_value(0)
 
         pass
@@ -80,8 +90,12 @@ class Extension(omni.ext.IExt):
             )
             count = len(all_prims)
             index = 0
+
+            approximation_type = ["none", "convexHull", "convexDecomposition"]
+
             for prim in all_prims:
-                self.apply_collision_to_prim(prim)
+                selection = self._collision_type.get_item_value_model().as_int
+                self.apply_collision_to_prim(prim, approximation_type[selection])
                 index = index + 1
                 self._progress_bar.set_value(index / count)
                 await omni.kit.app.get_app().next_update_async()

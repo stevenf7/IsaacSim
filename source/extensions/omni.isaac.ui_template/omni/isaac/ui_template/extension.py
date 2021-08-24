@@ -15,7 +15,7 @@ import gc
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import carb
 from omni.isaac.ui.ui_utils import *
-from omni.isaac.ui.style import BUTTON_WIDTH, LABEL_WIDTH
+from omni.isaac.ui.style import BUTTON_WIDTH, LABEL_WIDTH, VERTICAL_SPACING
 
 
 EXTENSION_NAME = "Example UI"
