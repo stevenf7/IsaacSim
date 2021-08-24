@@ -11,7 +11,7 @@ from omni.kit.window.property.templates import LABEL_WIDTH, LABEL_HEIGHT
 from omni.kit.window.extensions import SimpleCheckBox
 from omni.kit.window.filepicker import FilePickerDialog
 
-from .style import *
+from .style import get_style, BUTTON_WIDTH, COLOR_X, COLOR_Y, COLOR_Z, COLOR_W
 
 
 def btn_builder(label="", type="button", text="button", tooltip="", on_clicked_fn=None):
@@ -78,10 +78,14 @@ def cb_builder(label="", type="checkbox", default_val=False, tooltip="", on_clic
 
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
-        cb = SimpleCheckBox(default_val, on_clicked_fn)
+        model = ui.SimpleBoolModel()
+        callable = on_clicked_fn
+        if callable is None:
+            callable = lambda x: None
+        SimpleCheckBox(default_val, callable, model=model)
 
         add_line_rect_flourish()
-        return cb
+        return model
 
 
 def multi_btn_builder(
@@ -394,7 +398,7 @@ def xyz_builder(
     field_labels = [("X", COLOR_X), ("Y", COLOR_Y), ("Z", COLOR_Z), ("W", COLOR_W)]
     field_tooltips = ["X Value", "Y Value", "Z Value", "W Value"]
     RECT_WIDTH = 13
-    SPACING = 4
+    # SPACING = 4
     val_models = [None] * axis_count
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
@@ -586,7 +590,7 @@ def combo_cb_plot_builder(
             with ui.Frame(width=0):
                 with ui.Placer(offset_x=-10, offset_y=0):
                     with ui.VStack():
-                        cb = SimpleCheckBox(default_val, on_clicked_fn)
+                        SimpleCheckBox(default_val, on_clicked_fn)
                         ui.Spacer(height=ui.Fraction(1))
                         ui.Spacer()
             # Plot
@@ -606,6 +610,7 @@ def combo_cb_plot_builder(
                     height=plot_height,
                     style={"color": color, "background_color": 0x0},
                 )
+
             # Min/Max Helpers
             def update_min(model):
                 plot.scale_min = model.as_float
@@ -663,7 +668,7 @@ def combo_cb_xyz_plot_builder(
             with ui.Frame(width=0):
                 with ui.Placer(offset_x=-10, offset_y=0):
                     with ui.VStack():
-                        cb = SimpleCheckBox(default_val, on_clicked_fn)
+                        SimpleCheckBox(default_val, on_clicked_fn)
                         ui.Spacer(height=ui.Fraction(1))
                         ui.Spacer()
             # Plots
@@ -735,7 +740,7 @@ def combo_cb_xyz_plot_builder(
 
         field_labels = [("X", COLOR_X), ("Y", COLOR_Y), ("Z", COLOR_Z), ("W", COLOR_W)]
         RECT_WIDTH = 13
-        SPACING = 4
+        # SPACING = 4
         with ui.HStack():
             ui.Spacer(width=LABEL_WIDTH + 29)
 
