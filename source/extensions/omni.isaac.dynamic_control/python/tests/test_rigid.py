@@ -12,6 +12,8 @@ import omni.kit.test
 from pxr import Gf, UsdPhysics, Sdf
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
+from omni.isaac.dynamic_control import conversions as dc_conversions
+import numpy as np
 
 
 class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -153,3 +155,33 @@ class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         self.call_all_rigid_body_apis(handle)
+
+    # compare values from dc to usd to see if they match
+    async def test_update_usd(self, gpu=False):
+        self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        self._physics_scene.CreateGravityMagnitudeAttr().Set(981.0)
+        prim = await dc_utils.add_cube(self._stage, "/cube", 100, (0, 0, 100))
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        handle = self._dc.get_rigid_body("/cube")
+
+        rigid_prim = UsdPhysics.RigidBodyAPI(prim)
+        await dc_utils.simulate(1.0)
+        dc_pose = self._dc.get_rigid_body_pose(handle)
+        usd_pose = dc_conversions.create_transform_from_mat(omni.usd.utils.get_world_transform_matrix(prim))
+
+        self.assertTrue(
+            np.allclose([dc_pose.p.x, dc_pose.p.y, dc_pose.p.z], [usd_pose.p.x, usd_pose.p.y, usd_pose.p.z], atol=1e-2)
+        )
+
+        dc_velocity = self._dc.get_rigid_body_linear_velocity(handle)
+        usd_velocity = rigid_prim.GetVelocityAttr().Get()
+
+        self.assertTrue(np.allclose([dc_velocity.x, dc_velocity.y, dc_velocity.z], usd_velocity, atol=1e-2))
+
+        rigid_prim.GetVelocityAttr().Set((0, 0, 0))
+        await omni.kit.app.get_app().next_update_async()
+        dc_velocity = self._dc.get_rigid_body_linear_velocity(handle)
+        usd_velocity = rigid_prim.GetVelocityAttr().Get()
+        self.assertTrue(np.allclose([dc_velocity.x, dc_velocity.y, dc_velocity.z], usd_velocity, atol=1e-2))
