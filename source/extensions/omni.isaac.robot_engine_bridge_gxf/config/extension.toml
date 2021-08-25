@@ -22,6 +22,7 @@ icon = "data/icon.png"
 "omni.syntheticdata" = {}
 "omni.usd.schema.isaac" = {}
 "omni.isaac.robot_engine_bridge_ui" = {}
+"omni.isaac.pip_archive" = {} # construct
 
 [[python.module]]
 name = "omni.isaac.robot_engine_bridge_gxf"
