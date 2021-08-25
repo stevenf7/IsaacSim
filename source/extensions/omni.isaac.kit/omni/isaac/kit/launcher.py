@@ -1,44 +1,15 @@
 import os
+import sys
 import time
 import asyncio
 import argparse
-from typing import Any, ClassVar
 
 # omniverse
-from omni.isaac.kit.utils import set_carb_setting
 import carb
 import omni.kit.app
 import omni.kit
 import omni.isaac.kit.globals as globals
-
-DEFAULT_LAUNCHER_CONFIG = {
-    # Width of the viewport and generated images. (default: 1024)
-    "width": 1280,
-    # Height of the viewport and generated images. (default: 720)
-    "height": 720,
-    # Rendering mode: `RayTracedLighting` or `PathTracing`. (default: `RayTracedLighting`)
-    "renderer": "RayTracedLighting",
-    # Whether to run the render on the active GPU or not. (default: False)
-    "active_gpu": False,
-    # Disable UI when running. (default: False)
-    "headless": True,
-    # Enable this to use AI de-noising to improve image quality. (default: True)
-    "denoiser": True,
-    # Enable this to perform anti-aliasing in rendered viewport. (default: 0)
-    "anti_aliasing": 0,
-    # Number of sub-divisions to perform on supported geometry. (default: 0)
-    "subdiv_refinement_level": 0,
-    # The number of samples to render per frame used for `PathTracing` only. (default: 64)
-    "samples_per_pixel_per_frame": 64,
-    # Maximum number of bounces used for `PathTracing` only. (default: 4)
-    "max_bounces": 4,
-    # Maximum number of bounces for specular or transmission used for `PathTracing` only. (default: 6)
-    "max_specular_transmission_bounces": 6,
-    # Maximum number of bounces for volumetric, used for `PathTracing` only. (default: 4)
-    "max_volume_bounces": 4,
-    # When enabled, it will pause rendering until all assets are loaded. (default: False)
-    "sync_loads": False,
-}
+from omni.isaac.kit.utils import set_carb_setting
 
 
 class SimulationApp:
@@ -50,36 +21,82 @@ class SimulationApp:
 
     Usage:
 
-        >>> # At top of your application
-        >>> from omniverse_robotics.core.launcher import OmniKitLauncher
-        >>>
-        >>> config = {
-        ...     width: "1280",
-        ...     height: "720",
-        ...     headless: False,
-        ... }
-        >>> _ = OmniKitLauncher(config)
-        >>>
-        >>> # Rest of the code follows
-        >>> ...
-    """
+    .. code-block:: python
 
-    def __init__(self, config: dict = None):
-        """Initializes the Omniverse application from input configuration.
+        # At top of your application
+        from omni.isaac.kit import SimulationApp
+        config = {
+             width: "1280",
+             height: "720",
+             headless: False,
+        }
+        simulation_app = SimulationApp(config)
 
-        Note:
+        # Rest of the code follows
+        ...
+        simulation_app.close()
+
+    Note:
             The settings in :obj:`DEFAULT_LAUNCHER_CONFIG` are overwritten by those in :obj:`config`.
 
-        Arguments:
-            config {dict} -- A dictionary containing the configuration for the app. (default: {None})
-        """
-        # Override settings from input config
+    Arguments:
+        config (dict): A dictionary containing the configuration for the app. (default: None)
+        experience (str): Path to the application config loaded by the launcher (default: "", will load app/omni.isaac.sim.python.kit if left blank)
+    """
+
+    DEFAULT_LAUNCHER_CONFIG = {
+        "headless": True,
+        "active_gpu": None,
+        "sync_loads": False,
+        "width": 1280,
+        "height": 720,
+        "window_width": 1440,
+        "window_height": 900,
+        "display_options": 0,
+        "subdiv_refinement_level": 0,
+        "renderer": "PathTracing",  # Can also be RayTracedLighting
+        "anti_aliasing": 3,
+        "samples_per_pixel_per_frame": 64,
+        "denoiser": True,
+        "max_bounces": 4,
+        "max_specular_transmission_bounces": 6,
+        "max_volume_bounces": 4,
+    }
+    """
+    The config variable is a dictionary containing the following entries
+
+    Args:
+        experience (str): The config file used to launch the application. Must be specified
+        headless (bool): Disable UI when running. Defaults to True
+        active_gpu (int): Specify the GPU to use when running, set to None to use default value which is usually the first gpu, default is None
+        sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
+        width (int): Width of the viewport and generated images. Defaults to 1024
+        height (int): Height of the viewport and generated images. Defaults to 800
+        window_width (int): Width of the application window, independent of viewport, defaults to 1440,
+        window_height (int): Height of the application window, independent of viewport, defaults to 900,
+        display_options (int): used to specify whats visible in the stage by default. Defaults to 0 so extra objects do not appear in synthetic data. 3807 is another good default, used for the regular isaac-sim editor experience
+        subdiv_refinement_level (int): Number of subdivisons to perform on supported geometry. Defaults to 0
+        renderer (str): Rendering mode, can be  `RayTracedLighting` or `PathTracing`. Defaults to `PathTracing`
+        antialiasing (int): Antialiasing mode, 0: Disabled, 1: TAA, 2: FXAA, 3: DLSS, 4:RTXAA
+        samples_per_pixel_per_frame (int): The number of samples to render per frame, increase for improved quality, used for `PathTracing` only. Defaults to 64
+        denoiser (bool):  Enable this to use AI denoising to improve image quality, used for `PathTracing` only. Defaults to True
+        max_bounces (int): Maximum number of bounces, used for `PathTracing` only. Defaults to 4
+        max_specular_transmission_bounces(int): Maximum number of bounces for specular or transmission, used for `PathTracing` only. Defaults to 6
+        max_volume_bounces(int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
+    """
+
+    def __init__(self, config: dict = None, experience: str = ""):
+        # Initialize variables
         globals.LAUNCHED_FROM_TERMINAL = False
-        self.config = DEFAULT_LAUNCHER_CONFIG
-        self.config.update({"experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit'})
+
+        # Override settings from input config
+        self.config = self.DEFAULT_LAUNCHER_CONFIG
+        if experience == "":
+            experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit'
+        self.config.update({"experience": experience})
         if config is not None:
             self.config.update(config)
-        # Initialize variables
+
         self._exiting = False
         # Load omniverse application plugins
         self._framework = carb.get_framework()
@@ -90,29 +107,39 @@ class SimulationApp:
         # Get Omniverse application
         self._app = omni.kit.app.get_app()
         self._start_app()
+        # once app starts, we can set settings
         self._extension_manager = omni.kit.app.get_app().get_extension_manager()
-
+        self._carb_settings = carb.settings.get_settings()
         # Set rtx-default renderder settings
         self._setup_renderer(mode="default")
         # Set rtx settings renderer settings
         self._setup_renderer(mode="non-default")
-        carb_settings = carb.settings.get_settings()
-        set_carb_setting(carb_settings, "/persistent/simulation/defaultMetersPerUnit", 1.0)
+
+        set_carb_setting(self._carb_settings, "/persistent/simulation/defaultMetersPerUnit", 1.0)
         new_stage_task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
-        # This sleep prevents a deadlock in certain cases.
+
+        print("Simulation App Starting")
         while not new_stage_task.done():
+            # This sleep prevents a deadlock in certain cases.
             time.sleep(0.001)
             self._app.update()
+
         # Update the app
         self._app.update()
 
         # Dock floating UIs
         self._prepare_ui()
         # Notify toolkit is running
-        # print_notify("Running Omniverse Toolkit application...")
+        print("Simulation App Startup Complete")
 
     def __del__(self):
         """Destructor for the class."""
+        if self._exiting is False and sys.meta_path is None:
+            print(
+                "\033[91m"
+                + "ERROR: Python exiting while SimulationApp was still running, Please call close() on the SimulationApp object to exit cleanly"
+                + "\033[0m"
+            )
         pass
 
     """
@@ -124,46 +151,38 @@ class SimulationApp:
         # input arguments to the application
         args = [
             os.path.abspath(__file__),
-            # User defined settings for launching Omniverse
             f'{self.config["experience"]}',
-            # Hide extra stuff in viewport
-            "--/persistent/app/viewport/displayOptions=0",
-            # TODO: Make this a config setting?
-            # Force CPU PhysX
-            "--/persistent/physics/overrideGPUSettings=0",
-            # Forces kit to not render until all USD files are loaded.
-            f'--/rtx-defaults/materialDb/syncLoads={self.config["sync_loads"]}',
-            f'--/rtx/hydra/materialSyncLoads={self.config["sync_loads"]}',
+            f'--/persistent/app/viewport/displayOptions={self.config["display_options"]}',  # hide extra stuff in viewport
+            # Forces kit to not render until all USD files are loaded
+            f'--/rtx/materialDb/syncLoads={self.config["sync_loads"]}',
+            f'--/rtx/hydra/materialSyncLoads={self.config["sync_loads"]}'
             f'--/omni.kit.plugin/syncUsdLoads={self.config["sync_loads"]}',
-            # TODO: Is this still needed?
-            # This is required due to a infinite loop but results in errors on launch
-            "--/app/content/emptyStageOnStart=False",
-            "--/app/hydraEngine/waitIdle=True",
-            # Setup renderer
-            "--/app/asyncRendering=False",
             f'--/app/renderer/resolution/width={self.config["width"]}',
             f'--/app/renderer/resolution/height={self.config["height"]}',
-            # Specify directories to load extensions from (adding to json doesn't work)
+            f'--/app/window/width={self.config["window_width"]}',
+            f'--/app/window/height={self.config["window_height"]}',
             "--ext-folder",
-            f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',
+            f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',  # adding to json doesn't work
         ]
-        # Whether to run the app without UI
-        if self.config.get("headless"):
-            args.append("--no-window")
-        # Whether to use current GPU
-        if self.config.get("active_gpu"):
+        if self.config.get("active_gpu") is not None:
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
-        # Parse any extra command line args here
+        # parse any extra command line args here
         parser = argparse.ArgumentParser()
         parser.add_argument("--portable-root")
-        parsed_args, _ = parser.parse_known_args()
+        parser.add_argument("--allow-root", default=False, action="store_true")
+        parser.add_argument("--no-window", default=False, action="store_true")
+        parsed_args, unknown_args = parser.parse_known_args()
         if parsed_args.portable_root is not None:
             args.append("--portable-root")
             args.append(f"{parsed_args.portable_root}")
         else:
             args.append("--portable")
-        # Finally, launch the application
-        self._app.startup("kit", os.environ["CARB_APP_PATH"], args)
+
+        if parsed_args.allow_root:
+            args.append("--allow-root")
+        if parsed_args.no_window or self.config.get("headless"):
+            args.append("--no-window")
+        self.app.startup("kit", os.environ["CARB_APP_PATH"], args)
 
     def _setup_renderer(self, mode: str = "non-default"):
         """Reset render settings to those in config.
@@ -180,39 +199,45 @@ class SimulationApp:
             rtx_mode = "/rtx-defaults"
         else:
             rtx_mode = "/rtx"
-        carb_settings = carb.settings.get_settings()
+
         # Set renderer mode.
-        set_carb_setting(carb_settings, rtx_mode + "/rendermode", self.config["renderer"])
+        set_carb_setting(self._carb_settings, rtx_mode + "/rendermode", self.config["renderer"])
         # Raytrace mode settings
-        set_carb_setting(carb_settings, rtx_mode + "/post/aa/op", self.config["anti_aliasing"])
+        set_carb_setting(self._carb_settings, rtx_mode + "/post/aa/op", self.config["anti_aliasing"])
         # Pathtrace mode settings
-        set_carb_setting(carb_settings, rtx_mode + "/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
-        set_carb_setting(carb_settings, rtx_mode + "/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"])
-        set_carb_setting(carb_settings, rtx_mode + "/pathtracing/clampSpp", self.config["samples_per_pixel_per_frame"])
-        set_carb_setting(carb_settings, rtx_mode + "/pathtracing/maxBounces", self.config["max_bounces"])
+        set_carb_setting(self._carb_settings, rtx_mode + "/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
         set_carb_setting(
-            carb_settings,
+            self._carb_settings, rtx_mode + "/pathtracing/totalSpp", self.config["samples_per_pixel_per_frame"]
+        )
+        set_carb_setting(
+            self._carb_settings, rtx_mode + "/pathtracing/clampSpp", self.config["samples_per_pixel_per_frame"]
+        )
+        set_carb_setting(self._carb_settings, rtx_mode + "/pathtracing/maxBounces", self.config["max_bounces"])
+        set_carb_setting(
+            self._carb_settings,
             rtx_mode + "/pathtracing/maxSpecularAndTransmissionBounces",
             self.config["max_specular_transmission_bounces"],
         )
-        set_carb_setting(carb_settings, rtx_mode + "/pathtracing/maxVolumeBounces", self.config["max_volume_bounces"])
-        set_carb_setting(carb_settings, rtx_mode + "/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
         set_carb_setting(
-            carb_settings, rtx_mode + "/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"]
+            self._carb_settings, rtx_mode + "/pathtracing/maxVolumeBounces", self.config["max_volume_bounces"]
+        )
+        set_carb_setting(self._carb_settings, rtx_mode + "/pathtracing/optixDenoiser/enabled", self.config["denoiser"])
+        set_carb_setting(
+            self._carb_settings, rtx_mode + "/hydra/subdivision/refinementLevel", self.config["subdiv_refinement_level"]
         )
 
         # Experimental, forces kit to not render until all USD files are loaded
-        set_carb_setting(carb_settings, rtx_mode + "/materialDb/syncLoads", self.config["sync_loads"])
-        set_carb_setting(carb_settings, rtx_mode + "/hydra/materialSyncLoads", self.config["sync_loads"])
-        set_carb_setting(carb_settings, "/omni.kit.plugin/syncUsdLoads", self.config["sync_loads"])
+        set_carb_setting(self._carb_settings, rtx_mode + "/materialDb/syncLoads", self.config["sync_loads"])
+        set_carb_setting(self._carb_settings, rtx_mode + "/hydra/materialSyncLoads", self.config["sync_loads"])
+        set_carb_setting(self._carb_settings, "/omni.kit.plugin/syncUsdLoads", self.config["sync_loads"])
 
     def _prepare_ui(self):
         """Dock the windows in the UI if they exist."""
         # Method for docking a particular window to a location
-        def dock_window(space, name, location):
+        def dock_window(space, name, location, ratio=0.5):
             window = omni.ui.Workspace.get_window(name)
             if window and space:
-                window.dock_in(space, location)
+                window.dock_in(space, location, ratio=ratio)
             return window
 
         # Acquire the main docking station
@@ -220,34 +245,88 @@ class SimulationApp:
         # Acquire the docking space for viewport
         view = dock_window(main_dockspace, "Viewport", omni.ui.DockPosition.TOP)
         self._app.update()
-        dock_window(view, "Console", omni.ui.DockPosition.BOTTOM)
+        dock_window(view, "Console", omni.ui.DockPosition.BOTTOM, 0.3)
         dock_window(view, "Main ToolBar", omni.ui.DockPosition.LEFT)
         self._app.update()
         # Acquire the docking window where `Stage` tab is present and add tabs
-        render = dock_window(main_dockspace, "Render Settings", omni.ui.DockPosition.RIGHT)
+        render = dock_window(main_dockspace, "Render Settings", omni.ui.DockPosition.RIGHT, 0.3)
         dock_window(render, "Stage", omni.ui.DockPosition.SAME)
         dock_window(render, "Layer", omni.ui.DockPosition.SAME)
         self._app.update()
         dock_window(render, "Property", omni.ui.DockPosition.BOTTOM)
         self._app.update()
 
+    """
+    Public methods
+    """
+
     def close(self):
         """Close the running Omniverse Toolkit."""
         # check if exited already
         if not self._exiting:
             self._exiting = True
-            # We are exiting but something is still loading, wait for it to load to avoid a deadlock
-            # if self.is_loading():
-            #     print_info("Waiting for USD resource operations to complete (this may take a few seconds)...")
-            # while self.is_loading():
-            #     self._app.update()
-            # Shut down simulator.
+            print("Shutting Down Simulation App...")
+            # We are exisitng but something is still loading, wait for it to load to avoid a deadlock
+            if self.is_loading:
+                print("   Waiting for USD resource operations to complete (this may take a few seconds)")
+            while self.is_loading:
+                self._app.update()
             self._app.shutdown()
             self._framework.unload_all_plugins()
-            # print_notify("Shutting down completed...")
+            print("Simulation App Shutdown Completed...")
 
-    def get_extension_id(self, extension_name):
+    def get_extension_id(self, extension_name: str) -> str:
+        """Get extension id for a loaded extension
+            Args:
+                extension_name (str): name of the extension
+
+            Returns:
+                str: Full extension id
+        """
         return self._extension_manager.get_enabled_extension_id(extension_name)
 
-    def get_extension_path(self, ext_id):
+    def get_extension_path(self, ext_id: str) -> str:
+        """Get extension path for a loaded extension
+            Args:
+                extension_name (str): name of the extension
+
+            Returns:
+                str: Path to loaded extension root directory
+        """
         return self._extension_manager.get_extension_path(ext_id)
+
+    def enable_extension(self, extension_name: str) -> bool:
+        """Load an extension
+            Args:
+                extension_name (str): name of the extension
+
+            Returns:
+                bool: True if extension could be loaded, False otherwise
+        """
+        return self._extension_manager.set_extension_enabled_immediate(extension_name, True)
+
+    @property
+    def app(self) -> omni.kit.app.IApp:
+        """
+            omni.kit.app.IApp: omniverse kit application object
+        """
+        return self._app
+
+    @property
+    def is_loading(self) -> bool:
+        """
+            bool: Convenience function to see if any files are being loaded. True if loading, False otherwise
+        """
+        context = omni.usd.get_context()
+        if context is None:
+            return False
+        else:
+            _, _, loading = context.get_stage_loading_status()
+            return loading > 0
+
+    @property
+    def is_exiting(self) -> bool:
+        """
+            bool: True if close() was called previously, False otherwise
+        """
+        return self._exiting
