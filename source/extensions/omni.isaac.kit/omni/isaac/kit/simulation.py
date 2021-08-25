@@ -18,12 +18,11 @@ import omni.kit.loop._loop as omni_loop
 
 
 class SimulationContext:
-    def __init__(self, physics_scene=None):
+    def __init__(self):
         # Only import custom loop runner if we create this object
-        if physics_scene is None:
-            self._physics_scene = PhysicsScene()
-        else:
-            self._physics_scene = physics_scene
+        # TODO: customization for the physics
+        self.set_stage_units(1.0)
+        self._physics_scene = PhysicsScene()
         # Whether the kit has exited
         self._exiting = False
         # Acquire the running application interface
@@ -90,22 +89,25 @@ class SimulationContext:
         self.play()
         self._physics_scene._physx_interface.start_simulation()
         self._physics_scene._physx_interface.force_load_physics_from_usd()
-        self.step()
+        self.step(render=True)
         self.stop()
         return
 
     def play(self):
         self._timeline.play()
+        self.step(render=True)
         return
 
     def pause(self):
         """Pauses the editor physics simulation"""
         self._timeline.pause()
+        self.step(render=True)
         return
 
     def stop(self):
         """Stops the editor physics simulation"""
         self._timeline.stop()
+        self.step(render=True)
         self._number_of_steps = 0
         return
 
@@ -119,6 +121,8 @@ class SimulationContext:
                 self._app.update()
             # Update the app
             self._app.update()
+        self.set_stage_units(1.0)
+        self._physics_scene = PhysicsScene()
         self._physics_scene._stage = omni.usd.get_context().get_stage()
         return
 
@@ -126,8 +130,8 @@ class SimulationContext:
         prim = self.stage.DefinePrim(prim_path, "Xform")
         # add reference to the USD in the current stage
         prim.GetReferences().AddReference(usd_path)
-        if not globals.LAUNCHED_FROM_TERMINAL:
-            self._app.update()
+        # if not globals.LAUNCHED_FROM_TERMINAL:
+        #     self._app.update()
         return prim
 
     def set_physics_dt(self, dt: float = 1.0 / 60.0, substeps: int = 1):
@@ -152,6 +156,10 @@ class SimulationContext:
         self._physics_call_back_functions.append(
             self._physics_scene._physx_interface.subscribe_physics_step_events(call_back_func_wrapper)
         )
+        return
+
+    def set_stage_units(self, stage_units_in_meters):
+        UsdGeom.SetStageMetersPerUnit(self.stage, stage_units_in_meters)
         return
 
 
