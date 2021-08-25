@@ -43,22 +43,32 @@ class Extension(omni.ext.IExt):
         self._layers = omni.usd.get_context().get_layers()
         self._filepicker = None
         self._models = {}
+
+        self.prev_origin = [0, 0]
+        self.lower_bound = [-100, -100]
+        self.upper_bound = [100, 100]
+
         with self._window.frame:
             with ui.HStack(spacing=10):
                 with ui.VStack(spacing=5, height=0):
                     change_fn = [self.on_update_location, self.on_update_location, self.on_update_location]
                     self._models["origin"] = xyz_builder(label="Origin", on_value_changed_fn=change_fn)
+
                     self._models["upper_bound"] = xyz_builder(
-                        label="Upper Bound", on_value_changed_fn=change_fn, default_val=[100, 100, 0]
+                        label="Upper Bound",
+                        on_value_changed_fn=change_fn,
+                        default_val=[self.upper_bound[0], self.upper_bound[1], 0],
                     )
                     self._models["lower_bound"] = xyz_builder(
-                        label="Lower Bound", on_value_changed_fn=change_fn, default_val=[-100, -100, 0]
+                        label="Lower Bound",
+                        on_value_changed_fn=change_fn,
+                        default_val=[self.lower_bound[0], self.lower_bound[1], 0],
                     )
-                    self._models["center"] = btn_builder(
-                        label="Selected Prims",
-                        text="Center & Bound Selection",
-                        tooltip="Centers the origin on the selected prims an updates the x,y bounds to contain the selection",
-                        on_clicked_fn=self._on_center_selection,
+
+                    self._models["center_bound"] = multi_btn_builder(
+                        "Positioning",
+                        text=["Center to Selection", "Bound Selection"],
+                        on_clicked_fn=[self._on_center_selection, self._on_bound_selection],
                     )
 
                     self._models["cell_size"] = float_builder(
@@ -80,6 +90,29 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     def _on_center_selection(self):
+        origin = self.calculate_bounds(True, True)
+
+        self._models["origin"][0].set_value(origin[0])
+        self._models["origin"][1].set_value(origin[1])
+
+        self.lower_bound, self.upper_bound = self.calculate_bounds(False, True)
+        self.set_bound_value_ui()
+
+    def calculate_bounds(self, origin_calc, stationary_bounds):
+        origin_coord = [self._models["origin"][0].get_value_as_float(), self._models["origin"][1].get_value_as_float()]
+
+        if not origin_calc and stationary_bounds:
+            lower_bound = [
+                self.lower_bound[0] + self.prev_origin[0] - origin_coord[0],
+                self.lower_bound[1] + self.prev_origin[1] - origin_coord[1],
+            ]
+
+            upper_bound = [
+                self.upper_bound[0] + self.prev_origin[0] - origin_coord[0],
+                self.upper_bound[1] + self.prev_origin[1] - origin_coord[1],
+            ]
+            return lower_bound, upper_bound
+
         selected_prims = omni.usd.get_context().get_selection().get_selected_prim_paths()
         stage = omni.usd.get_context().get_stage()
         bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
@@ -93,19 +126,36 @@ class Extension(omni.ext.IExt):
                 total_bounds = Gf.BBox3d.Combine(total_bounds, bounds)
             range = total_bounds.GetBox()
             mid_point = range.GetMidpoint()
+
+            if origin_calc:
+                self.prev_origin = origin_coord
+                origin_value = mid_point
+                return origin_value
+
             min_point = range.GetMin()
             max_point = range.GetMax()
-            self._models["origin"][0].set_value(mid_point[0])
-            self._models["origin"][1].set_value(mid_point[1])
-            # self._models["origin"][2].set_value(0)
 
-            self._models["lower_bound"][0].set_value(min_point[0] - mid_point[0])
-            self._models["lower_bound"][1].set_value(min_point[1] - mid_point[1])
-            # self._models["lower_bound"][2].set_value(0)
+            lower_bound = [None] * 2
+            upper_bound = [None] * 2
 
-            self._models["upper_bound"][0].set_value(max_point[0] - mid_point[0])
-            self._models["upper_bound"][1].set_value(max_point[1] - mid_point[1])
-            # self._models["upper_bound"][2].set_value(0)
+            lower_bound[0] = min_point[0] - origin_coord[0]
+            lower_bound[1] = min_point[1] - origin_coord[1]
+
+            upper_bound[0] = max_point[0] - origin_coord[0]
+            upper_bound[1] = max_point[1] - origin_coord[1]
+
+            return lower_bound, upper_bound
+
+    def set_bound_value_ui(self):
+        self._models["lower_bound"][0].set_value(self.lower_bound[0])
+        self._models["lower_bound"][1].set_value(self.lower_bound[1])
+
+        self._models["upper_bound"][0].set_value(self.upper_bound[0])
+        self._models["upper_bound"][1].set_value(self.upper_bound[1])
+
+    def _on_bound_selection(self):
+        self.lower_bound, self.upper_bound = self.calculate_bounds(False, False)
+        self.set_bound_value_ui()
 
     def on_update_location(self, value):
         if (
@@ -123,16 +173,8 @@ class Extension(omni.ext.IExt):
                 self._models["origin"][1].get_value_as_float(),
                 self._models["origin"][2].get_value_as_float(),
             ],
-            [
-                self._models["lower_bound"][0].get_value_as_float(),
-                self._models["lower_bound"][1].get_value_as_float(),
-                self._models["lower_bound"][2].get_value_as_float(),
-            ],
-            [
-                self._models["upper_bound"][0].get_value_as_float(),
-                self._models["upper_bound"][1].get_value_as_float(),
-                self._models["upper_bound"][2].get_value_as_float(),
-            ],
+            [self.lower_bound[0], self.lower_bound[1], self._models["lower_bound"][2].get_value_as_float()],
+            [self.upper_bound[0], self.upper_bound[1], self._models["upper_bound"][2].get_value_as_float()],
         )
 
     def on_update_cell_size(self, value):

@@ -34,8 +34,10 @@ if __name__ == "__main__":
     if result is False:
         carb.log_error("Could not find nucleus server with /Isaac folder, exiting")
         exit()
+
     usd_path = nucleus_server + "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
     omni.usd.get_context().open_stage(usd_path, None)
+
     # Wait two frames so that stage starts loading
     kit.app.update()
     kit.app.update()
@@ -64,7 +66,7 @@ if __name__ == "__main__":
     )
     omni.kit.commands.execute(
         "ChangeProperty",
-        prop_path=Sdf.Path("/World/Carter_ROS/ROS_Carter_Lidar_Broadcaster.enabled"),
+        prop_path=Sdf.Path("/World/Carter_ROS/ROS_Carter_Sensors_Broadcaster.enabled"),
         value=False,
         prev=None,
     )
@@ -80,7 +82,7 @@ if __name__ == "__main__":
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Camera_Stereo_Left")
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Lidar")
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_DifferentialBase")
-    omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Lidar_Broadcaster")
+    omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Sensors_Broadcaster")
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Broadcaster")
     omni.kit.commands.execute("RosBridgeTickComponent", path="/World/ROS_Clock")
     # Simulate for one second to warm up sim and let everything settle
@@ -89,7 +91,7 @@ if __name__ == "__main__":
 
     # Dock the second camera window
     right_viewport = omni.ui.Workspace.get_window("Viewport")
-    left_viewport = omni.ui.Workspace.get_window("Viewport_2")
+    left_viewport = omni.ui.Workspace.get_window("Viewport 2")
     if right_viewport is not None and left_viewport is not None:
         left_viewport.dock_in(right_viewport, omni.ui.DockPosition.LEFT)
 
@@ -111,7 +113,7 @@ if __name__ == "__main__":
         if frame % 2 == 0:
             omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Lidar")
             omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_DifferentialBase")
-            omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Lidar_Broadcaster")
+            omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Sensors_Broadcaster")
             omni.kit.commands.execute("RosBridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Broadcaster")
             # because we only tick the differential base component every two frames, we can also publish the ROS message at the same rate
             message = Twist()

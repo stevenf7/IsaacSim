@@ -68,6 +68,33 @@ class Extension(omni.ext.IExt):
                     )
                 ],
             ),
+            MenuItemDescription(
+                name="Communicating",
+                sub_menu=[
+                    MenuItemDescription(
+                        name="ROS",
+                        sub_menu=[
+                            MenuItemDescription(
+                                name="Multiple Robot Navigation",
+                                sub_menu=[
+                                    MenuItemDescription(
+                                        name="Hospital Scene",
+                                        onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
+                                            "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
+                                        ),
+                                    ),
+                                    MenuItemDescription(
+                                        name="Office Scene",
+                                        onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
+                                            "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
+                                        ),
+                                    ),
+                                ],
+                            )
+                        ],
+                    )
+                ],
+            ),
         ]
 
         add_menu_items(self._menu_items, "Isaac Examples")
