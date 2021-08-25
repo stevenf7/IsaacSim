@@ -85,10 +85,14 @@ def filter_mdl(item) -> bool:
 
 def check_for_abs_paths(base_path):
     abs_items = {}
-    for item in list_sub_files(base_path, filter_usd):
+    files = list_sub_files(base_path, filter_usd)
+    i = 0
+    for item in files:
+        print(f"check {i}/{len(files)}")
         abs_refs = [i for i in list_references(item) if isabs(i)]
         if len(abs_refs):
             abs_items[item] = abs_refs
+        i = i + 1
     return abs_items
 
 
