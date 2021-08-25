@@ -21,6 +21,7 @@ fi
 
 files=( $SCRIPT_DIR/../_build/packages/isaac-sim-standalone*.7z )
 if [ ! -f "$files" ]; then
+    $SCRIPT_DIR/../build.sh -r
     $SCRIPT_DIR/../repo.sh package --config release -m isaac-sim-standalone
 fi
 
