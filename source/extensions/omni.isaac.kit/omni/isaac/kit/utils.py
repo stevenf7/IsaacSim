@@ -1,6 +1,3 @@
-import omni.kit
-
-
 def set_carb_setting(carb_settings, setting, value):
     """Convenience function to set settings.
 

@@ -184,7 +184,7 @@ function create_python_sample_runner(name, sample_path, config, extra_args)
 #!/bin/bash
 echo "##teamcity[testStarted name='%s']" 
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-SAMPLE_DIR=$SCRIPT_DIR/python_samples
+SAMPLE_DIR=$SCRIPT_DIR
 "$SCRIPT_DIR/python.sh" $SAMPLE_DIR/%s %s $@
 echo "##teamcity[testFinished name='%s']" 
         ]], sample_path, sample_path, extra_args, sample_path, sample_path))

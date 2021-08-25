@@ -1,6 +1,5 @@
 # python
 import time
-from typing import Any, ClassVar
 import asyncio
 
 # omniverse
@@ -12,7 +11,6 @@ from omni.isaac.kit.utils import set_carb_setting
 from pxr import UsdPhysics, PhysxSchema, UsdGeom, Gf
 from omni.isaac.kit.constants import AXES_INDICES
 import omni.isaac.kit.globals as globals
-import carb
 import os
 import omni.kit.loop._loop as omni_loop
 
@@ -23,8 +21,6 @@ class SimulationContext:
         # TODO: customization for the physics
         self.set_stage_units(1.0)
         self._physics_scene = PhysicsScene()
-        # Whether the kit has exited
-        self._exiting = False
         # Acquire the running application interface
         self._app = omni.kit.app.get_app_interface()
         # Acquire interfaces to extensions from Omniverse Toolkit
@@ -61,27 +57,6 @@ class SimulationContext:
     def is_stopped(self) -> bool:
         """Returns: True if the simulator is stopped."""
         return self._timeline.is_stopped()
-
-    def is_loading(self) -> bool:
-        """Convenience function to see if any files are being loaded
-
-        Returns:
-            bool -- True if loading, False otherwise
-        """
-        context = omni.usd.get_context()
-        if context is None:
-            return False
-        else:
-            _, _, loading = context.get_stage_loading_status()
-            return loading > 0
-
-    def is_exiting(self) -> bool:
-        """Get current exit status for this object
-
-        Returns:
-            bool -- True if exit() was called previously, False otherwise
-        """
-        return self._exiting
 
     # TODO: check why you need a simulate before and after
 
