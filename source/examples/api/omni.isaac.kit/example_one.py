@@ -15,7 +15,7 @@ simulation_context.open_usd(asset_path, "/Franka")
 simulation_context.start_simulation()
 simulation_context.play()
 
-for i in range(100):
+for i in range(10000):
     simulation_context.step(render=True)
 
 simulation_context.stop()

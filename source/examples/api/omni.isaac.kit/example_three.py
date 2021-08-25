@@ -28,7 +28,7 @@ def step_callback_1():
 
 
 def step_callback_2():
-    dof_state = dc.get_dof_state(dof_ptr)
+    dof_state = dc.get_dof_state(dof_ptr, _dynamic_control.STATE_POS)
     print("Current joint 2 position @ step " + str(simulation_context.time_step_index) + " : " + str(dof_state.pos))
     return
 

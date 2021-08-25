@@ -90,12 +90,14 @@ class SimulationApp:
         # Get Omniverse application
         self._app = omni.kit.app.get_app()
         self._start_app()
+        self._extension_manager = omni.kit.app.get_app().get_extension_manager()
 
         # Set rtx-default renderder settings
         self._setup_renderer(mode="default")
         # Set rtx settings renderer settings
         self._setup_renderer(mode="non-default")
-
+        carb_settings = carb.settings.get_settings()
+        set_carb_setting(carb_settings, "/persistent/simulation/defaultMetersPerUnit", 1.0)
         new_stage_task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         # This sleep prevents a deadlock in certain cases.
         while not new_stage_task.done():
@@ -243,3 +245,9 @@ class SimulationApp:
             self._app.shutdown()
             self._framework.unload_all_plugins()
             # print_notify("Shutting down completed...")
+
+    def get_extension_id(self, extension_name):
+        return self._extension_manager.get_enabled_extension_id(extension_name)
+
+    def get_extension_path(self, ext_id):
+        return self._extension_manager.get_extension_path(ext_id)
