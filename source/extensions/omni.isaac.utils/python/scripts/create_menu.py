@@ -97,6 +97,18 @@ class Extension(omni.ext.IExt):
                     "/Isaac/Environments/Simple_Warehouse/warehouse_multiple_shelves.usd", "/Warehouse"
                 ),
             ),
+            MenuItemDescription(
+                name="Hospital",
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Environments/Hospital/hospital.usd", "/Hospital"
+                ),
+            ),
+            MenuItemDescription(
+                name="Office",
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Environments/Office/office.usd", "/Office"
+                ),
+            ),
         ]
         apriltag_menu = [
             MenuItemDescription(

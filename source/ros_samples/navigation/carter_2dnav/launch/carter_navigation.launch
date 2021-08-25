@@ -10,7 +10,11 @@
 
     <!--- Run AMCL -->   
     <include file="$(find amcl)/examples/amcl_diff.launch" />
-        
+
+    <param name="/amcl/initial_pose_x"  value="-6.0"/>
+    <param name="/amcl/initial_pose_y"  value="-1.0"/>
+    <param name="/amcl/initial_pose_a"  value="3.14"/>
+    
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
         <rosparam file="$(find carter_2dnav)/params/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
         <rosparam file="$(find carter_2dnav)/params/costmap_common_params.yaml" command="load" ns="local_costmap" />
