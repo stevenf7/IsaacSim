@@ -48,6 +48,9 @@ class Extension(omni.ext.IExt):
         self.lower_bound = [-100, -100]
         self.upper_bound = [100, 100]
 
+        self.wait_bound_update = False
+        self.bound_update_case = 0
+
         with self._window.frame:
             with ui.HStack(spacing=10):
                 with ui.VStack(spacing=5, height=0):
@@ -147,11 +150,24 @@ class Extension(omni.ext.IExt):
             return lower_bound, upper_bound
 
     def set_bound_value_ui(self):
+        self.wait_bound_update = True
+        self.bound_update_case = 0
         self._models["lower_bound"][0].set_value(self.lower_bound[0])
+
+        # Updating Case every time bound value is updating
+        self.bound_update_case += 1
+
         self._models["lower_bound"][1].set_value(self.lower_bound[1])
 
+        self.bound_update_case += 1
+
         self._models["upper_bound"][0].set_value(self.upper_bound[0])
+
+        self.bound_update_case += 1
+
         self._models["upper_bound"][1].set_value(self.upper_bound[1])
+
+        self.wait_bound_update = False
 
     def _on_bound_selection(self):
         self.lower_bound, self.upper_bound = self.calculate_bounds(False, False)
@@ -166,6 +182,21 @@ class Extension(omni.ext.IExt):
         ):
             carb.log_warn("lower bound is >= upper bound")
             return
+        if self.wait_bound_update:
+            if self.bound_update_case == 0:
+                self.lower_bound[0] = self._models["lower_bound"][0].get_value_as_float()
+            elif self.bound_update_case == 1:
+                self.lower_bound[1] = self._models["lower_bound"][1].get_value_as_float()
+            elif self.bound_update_case == 2:
+                self.upper_bound[0] = self._models["upper_bound"][0].get_value_as_float()
+            elif self.bound_update_case == 3:
+                self.upper_bound[1] = self._models["upper_bound"][1].get_value_as_float()
+        else:
+            self.lower_bound[0] = self._models["lower_bound"][0].get_value_as_float()
+            self.lower_bound[1] = self._models["lower_bound"][1].get_value_as_float()
+            self.upper_bound[0] = self._models["upper_bound"][0].get_value_as_float()
+            self.upper_bound[1] = self._models["upper_bound"][1].get_value_as_float()
+
         update_location(
             self._om,
             [
