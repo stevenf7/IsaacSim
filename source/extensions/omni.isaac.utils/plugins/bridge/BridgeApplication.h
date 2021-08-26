@@ -160,6 +160,15 @@ public:
     }
 
     /**
+     * @brief Call any components that are only updated when physics steps occur
+     *
+     * @param dt
+     */
+    virtual void onPhysicsStep(float dt)
+    {
+    }
+
+    /**
      * @brief Delete component
      *
      * @param prim

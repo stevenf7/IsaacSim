@@ -47,6 +47,20 @@ public:
      */
     virtual void onStart() = 0;
 
+    /** @brief Function that runs after stop is pressed
+     *
+     */
+    virtual void onStop()
+    {
+    }
+    /**
+     * @brief Function that is called each physics step
+     *
+     */
+    virtual void onPhysicsStep(float dt)
+    {
+    }
+
     /**
      * @brief Called every frame
      *
@@ -59,6 +73,19 @@ public:
      */
     virtual void onComponentChange() = 0;
 
+    /**
+     * @brief Update timestamps for component
+     *
+     * @param timeSeconds
+     * @param dt
+     * @param timeNano
+     */
+    virtual void updateTimestamp(double timeSeconds, double dt, int64_t timeNano)
+    {
+        this->mTimeSeconds = timeSeconds;
+        this->mTimeDelta = dt;
+        this->mTimeNanoSeconds = timeNano;
+    }
     /**
      * @brief Get the USD Prim object
      *

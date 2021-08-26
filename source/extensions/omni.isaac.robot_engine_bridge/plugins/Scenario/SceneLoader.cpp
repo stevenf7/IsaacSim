@@ -50,16 +50,6 @@ SceneLoader::SceneLoader(omni::isaac::dynamic_control::DynamicControl* dynamicCo
     }
 }
 
-void SceneLoader::setAppHandle(isaac_handle_t appHandle)
-{
-    IsaacComponent::setAppHandle(appHandle);
-}
-
-void SceneLoader::updateTimestamp(double timeSeconds, double dt, int64_t timeNano, int64_t timeDifferenceNano)
-{
-    IsaacComponent::updateTimestamp(timeSeconds, dt, timeNano, timeDifferenceNano);
-}
-
 void SceneLoader::tick()
 {
     CARB_PROFILE_ZONE(0, "REB SceneLoader Tick");

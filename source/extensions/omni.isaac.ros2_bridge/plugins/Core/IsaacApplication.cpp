@@ -154,6 +154,16 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     }
 }
 
+
+void IsaacApplication::onPhysicsStep(float dt)
+{
+    for (auto& component : mComponents)
+    {
+        component.second->onPhysicsStep(dt);
+    }
+}
+
+
 void IsaacApplication::setUseSimTime(const bool useSimTime)
 {
     mUseSimTime = useSimTime;

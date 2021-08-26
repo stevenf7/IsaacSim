@@ -65,7 +65,7 @@ carb::dictionary::IDictionary* g_iDict = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
 omni::physx::IPhysx* g_physx = nullptr;
 carb::settings::ISettings* g_settings = nullptr;
-
+omni::physx::SubscriptionId g_stepSubscription;
 std::unique_ptr<omni::isaac::ros_bridge::IsaacApplication> g_application_handle;
 
 
@@ -175,6 +175,13 @@ void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
         g_application_handle->onComponentRemove(primPath);
     }
 }
+void onPhysicsStep(float dt, void* userData)
+{
+    if (g_application_handle)
+    {
+        g_application_handle->onPhysicsStep(dt);
+    }
+}
 }
 
 
@@ -278,6 +285,8 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onPrimRemove = onPrimRemove;
     desc.order = 100;
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
+
+    g_stepSubscription = g_physx->subscribePhysicsStepEvents(onPhysicsStep, nullptr);
 }
 
 CARB_EXPORT void carbOnPluginShutdown()
@@ -297,6 +306,7 @@ CARB_EXPORT void carbOnPluginShutdown()
     }
 
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
+    g_physx->unsubscribePhysicsStepEvents(g_stepSubscription);
 }
 
 void fillInterface(omni::isaac::ros_bridge::RosBridge& iface)

@@ -35,7 +35,7 @@ namespace ros_bridge
 
 using namespace omni::isaac::dynamic_control;
 
-RosJointState::RosJointState(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
+RosJointState::RosJointState(dynamic_control::DynamicControl* dynamicControlPtr)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
 }
@@ -57,9 +57,19 @@ void RosJointState::initialize(RosNode* rosNode,
 void RosJointState::onStart()
 {
     onComponentChange();
+
+    int num_dofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
+    mDofProps.resize(num_dofs);
+    mDynamicControlPtr->getArticulationDofProperties(mArticulationHandle, mDofProps.data());
+
+    mUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(mStage);
 }
 void RosJointState::onStop()
 {
+    mStates = nullptr;
+    mDofProps.clear();
+    mPrevJointPosition.clear();
+    mCalculatedJointVelocity.clear();
 }
 void RosJointState::onComponentChange()
 {
@@ -94,7 +104,7 @@ void RosJointState::onComponentChange()
     mArticulationPath = targets[0];
 
     if (mDynamicControlPtr->peekObjectType(mArticulationPath.GetString().c_str()) ==
-        omni::isaac::dynamic_control::eDcObjectArticulation)
+        dynamic_control::eDcObjectArticulation)
     {
         mArticulationHandle = mDynamicControlPtr->getArticulation(mArticulationPath.GetString().c_str());
     }
@@ -108,15 +118,34 @@ void RosJointState::onComponentChange()
         CARB_LOG_ERROR("Articulation %s not found", mArticulationPath.GetString().c_str());
         return;
     }
-    mUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(mStage);
 }
+void RosJointState::onPhysicsStep(float dt)
+{
+    mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
 
+    int num_dofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
+
+    mPrevJointPosition.resize(num_dofs);
+    mCalculatedJointVelocity.resize(num_dofs);
+
+    mStates = mDynamicControlPtr->getArticulationDofStates(mArticulationHandle, dynamic_control::kDcStateAll);
+
+    if (mStates != nullptr)
+    {
+        for (int j = 0; j < num_dofs; j++)
+        {
+            mCalculatedJointVelocity[j] = (mStates[j].pos - mPrevJointPosition[j]) / dt;
+
+            mPrevJointPosition[j] = mStates[j].pos;
+        }
+    }
+}
 void RosJointState::pubCallback(ros::Publisher* pub)
 {
     if (!mArticulationHandle)
     {
         if (mDynamicControlPtr->peekObjectType(mArticulationPath.GetString().c_str()) ==
-            omni::isaac::dynamic_control::eDcObjectArticulation)
+            dynamic_control::eDcObjectArticulation)
         {
             mArticulationHandle = mDynamicControlPtr->getArticulation(mArticulationPath.GetString().c_str());
         }
@@ -136,20 +165,10 @@ void RosJointState::pubCallback(ros::Publisher* pub)
     sensor_msgs::JointState msg;
     msg.header.seq = 0;
     setRosTimeStamp(msg.header.stamp);
-
-
-    mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
-
     int num_dofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
 
-    DcDofState* states =
-        mDynamicControlPtr->getArticulationDofStates(mArticulationHandle, omni::isaac::dynamic_control::kDcStateAll);
-    std::vector<dynamic_control::DcDofProperties> dofProps(num_dofs);
-    mDynamicControlPtr->getArticulationDofProperties(mArticulationHandle, dofProps.data());
-
-    if (states != nullptr)
+    if (mStates != nullptr)
     {
-
         for (int j = 0; j < num_dofs; j++)
         {
             DcHandle dof = mDynamicControlPtr->getArticulationDof(mArticulationHandle, j);
@@ -157,31 +176,30 @@ void RosJointState::pubCallback(ros::Publisher* pub)
             {
                 msg.name.push_back(mDynamicControlPtr->getDofName(dof));
             }
-            if (dofProps[j].type == DcDofType::eTranslation)
+            if (mDofProps[j].type == DcDofType::eTranslation)
             {
-                msg.position.push_back(isaac::utils::math::roundNearest(states[j].pos * stageUnits, 10000.0)); // m
-                msg.velocity.push_back(isaac::utils::math::roundNearest(states[j].vel * stageUnits, 1000.0)); // m/s
-                msg.effort.push_back(isaac::utils::math::roundNearest(states[j].effort * stageUnits, 10000.0)); // N
+                msg.position.push_back(isaac::utils::math::roundNearest(mStates[j].pos * stageUnits, 10000.0)); // m
+                msg.velocity.push_back(
+                    isaac::utils::math::roundNearest(mCalculatedJointVelocity[j] * stageUnits, 10000.0)); // m/s
+                msg.effort.push_back(isaac::utils::math::roundNearest(mStates[j].effort * stageUnits, 10000.0)); // N
             }
             else
             {
-                msg.position.push_back(isaac::utils::math::roundNearest(states[j].pos, 10000.0)); // rad
-                msg.velocity.push_back(isaac::utils::math::roundNearest(states[j].vel, 1000.0)); // rad/s
+                msg.position.push_back(isaac::utils::math::roundNearest(mStates[j].pos, 10000.0)); // rad
+                msg.velocity.push_back(isaac::utils::math::roundNearest(mCalculatedJointVelocity[j], 10000.0)); // rad/s
                 msg.effort.push_back(
-                    isaac::utils::math::roundNearest(states[j].effort * stageUnits * stageUnits, 10000.0)); // N*m
+                    isaac::utils::math::roundNearest(mStates[j].effort * stageUnits * stageUnits, 10000.0)); // N*m
             }
         }
+        pub->publish(msg);
     }
-
-
-    pub->publish(msg);
 }
 void RosJointState::subCallback(const sensor_msgs::JointState::ConstPtr& msg)
 {
     if (!mArticulationHandle)
     {
         if (mDynamicControlPtr->peekObjectType(mArticulationPath.GetString().c_str()) ==
-            omni::isaac::dynamic_control::eDcObjectArticulation)
+            dynamic_control::eDcObjectArticulation)
         {
             mArticulationHandle = mDynamicControlPtr->getArticulation(mArticulationPath.GetString().c_str());
         }
