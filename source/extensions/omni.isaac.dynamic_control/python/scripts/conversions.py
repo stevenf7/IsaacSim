@@ -13,3 +13,14 @@ def create_transform(translation, rotation) -> _dynamic_control.Transform:
         return _vec3d_quatd_to_dctransform(translation, rotation.GetQuat())
     if isinstance(rotation, Gf.Quatd):
         return _vec3d_quatd_to_dctransform(translation, rotation)
+
+
+def create_transform_from_mat(mat: Gf.Matrix4d) -> _dynamic_control.Transform:
+    trans = mat.ExtractTranslation()
+    q = mat.ExtractRotation().GetQuaternion()
+    (q_x, q_y, q_z) = q.GetImaginary()
+    quat = [q_x, q_y, q_z, q.GetReal()]
+    tr = _dynamic_control.Transform()
+    tr.p = trans
+    tr.r = quat
+    return tr

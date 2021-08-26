@@ -66,17 +66,17 @@ async def add_cube(stage, path, size, offset, physics=True, mass=0.0):
     import omni
     from pxr import UsdGeom, UsdPhysics
 
-    cubeGeom = UsdGeom.Cube.Define(stage, path)
-    cubePrim = stage.GetPrimAtPath(path)
-    cubeGeom.CreateSizeAttr(size)
-    cubeGeom.AddTranslateOp().Set(offset)
+    cube_geom = UsdGeom.Cube.Define(stage, path)
+    cube_prim = stage.GetPrimAtPath(path)
+    cube_geom.CreateSizeAttr(size)
+    cube_geom.AddTranslateOp().Set(offset)
     await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
     if physics:
-        rigid_api = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+        rigid_api = UsdPhysics.RigidBodyAPI.Apply(cube_prim)
         rigid_api.CreateRigidBodyEnabledAttr(True)
         if mass > 0:
-            massAPI = UsdPhysics.MassAPI.Apply(cubePrim)
-            massAPI.CreateMassAttr(mass)
-    UsdPhysics.CollisionAPI.Apply(cubePrim)
+            mass_api = UsdPhysics.Mass_api.Apply(cube_prim)
+            mass_api.CreateMassAttr(mass)
+    UsdPhysics.CollisionAPI.Apply(cube_prim)
     await omni.kit.app.get_app().next_update_async()
-    return cubePrim
+    return cube_prim
