@@ -76,6 +76,13 @@ public:
     };
 
     /**
+     * @brief Function that is called each physics step
+     *
+     */
+    virtual void onPhysicsStep(float dt)
+    {
+    }
+    /**
      * @brief Publish any Messages
      *
      */
@@ -103,9 +110,7 @@ public:
                                  int64_t timeNano,
                                  std::chrono::_V2::system_clock::rep systemTimeNano)
     {
-        this->mTimeNanoSeconds = timeNano;
-        this->mTimeSeconds = timeSeconds;
-        this->mTimeDelta = dt;
+        utils::ComponentBase<PrimType>::updateTimestamp(timeSeconds, dt, timeNano);
         mSystemTimeNanoSeconds = systemTimeNano;
     }
 

@@ -47,22 +47,6 @@ public:
     /**
      * @brief
      *
-     * @param appHandle
-     */
-    virtual void setAppHandle(isaac_handle_t appHandle);
-
-    /**
-     * @brief Update timestamps for component
-     *
-     * @param timeSeconds
-     * @param dt
-     * @param timeNano
-     * @param timeDifferenceNano
-     */
-    virtual void updateTimestamp(double timeSeconds, double dt, int64_t timeNano, int64_t timeDifferenceNano);
-    /**
-     * @brief
-     *
      */
     virtual void tick();
     /**

@@ -107,10 +107,8 @@ public:
      */
     virtual void updateTimestamp(double timeSeconds, double dt, int64_t timeNano, int64_t timeDifferenceNano)
     {
-        this->mTimeNanoSeconds = timeNano;
+        utils::ComponentBase<PrimType>::updateTimestamp(timeSeconds, dt, timeNano);
         mTimeDifferenceNanoSeconds = timeDifferenceNano;
-        this->mTimeSeconds = timeSeconds;
-        this->mTimeDelta = dt;
     }
 
 

@@ -72,6 +72,12 @@ public:
      * @param prim
      */
     void onComponentAdd(const pxr::UsdPrim& prim);
+    /**
+     * @brief Call any components that are only updated when physics steps occur
+     *
+     * @param dt
+     */
+    void onPhysicsStep(float dt);
 
     /**
      * @brief Set the Ros State object

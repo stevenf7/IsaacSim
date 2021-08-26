@@ -37,6 +37,8 @@ public:
     virtual void onStart();
     virtual void onStop();
     virtual void onComponentChange();
+    virtual void onPhysicsStep(float dt);
+
     void pubCallback(ros::Publisher* pub);
     void subCallback(const sensor_msgs::JointState::ConstPtr& msg);
 
@@ -48,6 +50,11 @@ private:
     omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
     double mUnitScale = 1;
     pxr::SdfPath mArticulationPath;
+
+    std::vector<float> mPrevJointPosition;
+    std::vector<float> mCalculatedJointVelocity;
+    omni::isaac::dynamic_control::DcDofState* mStates = nullptr;
+    std::vector<dynamic_control::DcDofProperties> mDofProps;
 };
 }
 }

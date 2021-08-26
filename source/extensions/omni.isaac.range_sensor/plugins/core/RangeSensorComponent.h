@@ -186,9 +186,7 @@ public:
      */
     void updateTimestamp(double timeSeconds, double dt, int64_t timeNano)
     {
-        this->mTimeNanoSeconds = timeNano;
-        this->mTimeSeconds = timeSeconds;
-        this->mTimeDelta = dt;
+        utils::ComponentBase<PrimType>::updateTimestamp(timeSeconds, dt, timeNano);
 
         mParentPrimTimeCode = pxr::UsdTimeCode::Default();
         if (mIsParentPrimTimeSampled)
