@@ -152,6 +152,18 @@ public:
      */
     bool tickComponent(const pxr::UsdPrim& prim);
 
+    /**
+     * @brief
+     *
+     * @param node
+     * @param component
+     * @param channel
+     * @param typeID
+     * @param jsonString
+     */
+    bool publishJsonMessage(
+        std::string node, std::string component, std::string channel, uint64_t typeID, std::string jsonString);
+
     IsaacCApi* mIsaacCApiPtr = nullptr;
 
 private:

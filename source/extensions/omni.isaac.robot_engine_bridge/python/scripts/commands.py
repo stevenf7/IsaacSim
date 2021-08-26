@@ -9,10 +9,8 @@
 
 import omni.kit.commands
 import omni.kit.utils
-import omni.isaac.RobotEngineBridgeSchema as REBSchema
-import carb
+import json
 from omni.isaac.robot_engine_bridge import _robot_engine_bridge
-from pxr import Gf
 
 
 def get_path(stage, path: str, parent=None) -> str:
@@ -103,6 +101,27 @@ class RobotEngineBridgeTickComponent(omni.kit.commands.Command):
 
     def undo(self):
         # undo must be defined even if empty
+        pass
+
+
+class RobotEngineBridgePublishProto(omni.kit.commands.Command):
+    import capnp
+
+    def __init__(self, node: str, component: str, channel: str, proto: capnp.lib.capnp._DynamicStructBuilder):
+        self._node = node
+        self._component = component
+        self._channel = channel
+        self._type_id = proto.schema.node.id
+        self._json_str = json.dumps(proto.to_dict())
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        pass
+
+    def do(self) -> bool:
+        return self._re_bridge.publish_json_message(
+            self._node, self._component, self._channel, self._type_id, self._json_str
+        )
+
+    def undo(self):
         pass
 
 

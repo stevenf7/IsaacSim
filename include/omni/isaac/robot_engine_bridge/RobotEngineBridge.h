@@ -38,6 +38,8 @@ struct RobotEngineBridge
                                           const std::string& outputComponent,
                                           const std::string& replyChannelName);
     bool(CARB_ABI* executeCommand)(const std::string& command);
+    bool(CARB_ABI* publishJsonMessage)(
+        std::string node, std::string component, std::string channel, uint64_t typeID, std::string jsonString);
 };
 
 }

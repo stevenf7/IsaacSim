@@ -243,6 +243,14 @@ void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
         g_application_handle->onComponentRemove(primPath);
     }
 }
+bool publishJsonMessage(std::string node, std::string component, std::string channel, uint64_t typeID, std::string jsonString)
+{
+    if (g_application_handle)
+    {
+        return g_application_handle->publishJsonMessage(node, component, channel, typeID, jsonString);
+    }
+    return false;
+}
 }
 
 
@@ -312,4 +320,5 @@ void fillInterface(omni::isaac::robot_engine_bridge::RobotEngineBridge& iface)
     iface.getLastError = getLastError;
     iface.initializeStageLoader = initializeStageLoader;
     iface.executeCommand = executeCommand;
+    iface.publishJsonMessage = publishJsonMessage;
 }
