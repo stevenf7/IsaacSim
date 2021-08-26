@@ -64,8 +64,6 @@ class SimulationContext:
         self.play()
         self._physics_scene._physx_interface.start_simulation()
         self._physics_scene._physx_interface.force_load_physics_from_usd()
-        self.step(render=True)
-        self.stop()
         return
 
     def play(self):

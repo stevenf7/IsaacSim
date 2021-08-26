@@ -54,7 +54,7 @@ class SimulationApp:
         "window_height": 900,
         "display_options": 0,
         "subdiv_refinement_level": 0,
-        "renderer": "PathTracing",  # Can also be RayTracedLighting
+        "renderer": "RayTracedLighting",  # Can also be PathTracing
         "anti_aliasing": 3,
         "samples_per_pixel_per_frame": 64,
         "denoiser": True,
