@@ -42,6 +42,7 @@ PYBIND11_MODULE(_robot_engine_bridge, m)
         .def("tick_component", wrapInterfaceFunction(&RobotEngineBridge::tickComponent))
         .def("get_last_error", wrapInterfaceFunction(&RobotEngineBridge::getLastError))
         .def("initialize_stage_loader", wrapInterfaceFunction(&RobotEngineBridge::initializeStageLoader))
-        .def("execute_command", wrapInterfaceFunction(&RobotEngineBridge::executeCommand));
+        .def("execute_command", wrapInterfaceFunction(&RobotEngineBridge::executeCommand))
+        .def("publish_json_message", wrapInterfaceFunction(&RobotEngineBridge::publishJsonMessage));
 }
 }

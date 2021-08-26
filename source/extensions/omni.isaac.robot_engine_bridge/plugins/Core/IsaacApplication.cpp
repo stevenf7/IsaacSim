@@ -453,6 +453,67 @@ bool IsaacApplication::tickComponent(const pxr::UsdPrim& prim)
     }
     return false;
 }
+
+
+bool checkErrorCode(const isaac_error_t& code)
+{
+    return code == isaac_error_t::isaac_error_success;
+}
+
+bool IsaacApplication::publishJsonMessage(
+    std::string node, std::string component, std::string channel, uint64_t typeID, std::string jsonString)
+{
+
+    if (!mAppHandle)
+    {
+        CARB_LOG_WARN("Cannot publish message unless application application was created");
+        return false;
+    }
+
+    isaac_uuid_t uuid;
+    isaac_error_t mError = (mIsaacCApiPtr->isaac_create_message)(mAppHandle, &uuid);
+    if (!checkErrorCode(mError))
+    {
+        return false;
+    }
+    isaac_const_json_t json = { jsonString.c_str(), jsonString.size() };
+    mError = (mIsaacCApiPtr->isaac_write_message_json)(mAppHandle, &uuid, &json);
+    if (!checkErrorCode(mError))
+    {
+        return false;
+    }
+    int64_t timeDifferenceNano = 0;
+
+    mError = (mIsaacCApiPtr->isaac_get_external_time_difference)(mAppHandle, mTimeSeconds, &timeDifferenceNano);
+    if (!checkErrorCode(mError))
+    {
+        return false;
+    }
+    mError = (mIsaacCApiPtr->isaac_set_message_acqtime)(mAppHandle, &uuid, mTimeNanoSeconds + timeDifferenceNano);
+    if (!checkErrorCode(mError))
+    {
+        return false;
+    }
+    mError = (mIsaacCApiPtr->isaac_set_message_proto_id)(mAppHandle, &uuid, typeID);
+    if (!checkErrorCode(mError))
+    {
+        return false;
+    }
+    mError = (mIsaacCApiPtr->isaac_set_message_auto_convert)(
+        mAppHandle, &uuid, isaac_message_convert_t::isaac_message_type_proto);
+    if (!checkErrorCode(mError))
+    {
+        return false;
+    }
+    mError = (mIsaacCApiPtr->isaac_publish_message)(mAppHandle, node.c_str(), component.c_str(), channel.c_str(), &uuid);
+    if (!checkErrorCode(mError))
+    {
+        (mIsaacCApiPtr->isaac_destroy_message)(mAppHandle, &uuid);
+        return false;
+    }
+
+    return true;
+}
 }
 }
 }
