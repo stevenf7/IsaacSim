@@ -21,6 +21,7 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
+#include <omni/isaac/ros/Utils.h>
 #include <omni/isaac/utils/Math.h>
 
 #include <time.h>
@@ -85,6 +86,9 @@ void RosJointState::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetJointStateSubTopicAttr(), mJointStateSubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
 
+    ros_utils::addPrefix(mRosNodePrefix, mJointStatePubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mJointStateSubTopic, true);
+
     mRosNode->createPublisher<sensor_msgs::msg::JointState>(
         mPrim.GetPath().GetString(), mJointStatePubTopic, mQueueSize, &RosJointState::pubCallback, this);
     mRosNode->createSubscriber<sensor_msgs::msg::JointState>(
@@ -115,7 +119,6 @@ void RosJointState::onComponentChange()
         return;
     }
 }
-
 void RosJointState::onPhysicsStep(float dt)
 {
     mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
@@ -162,14 +165,10 @@ void RosJointState::pubCallback(rclcpp::PublisherBase* pub)
     double stageUnits = 1.0 / mUnitScale;
     sensor_msgs::msg::JointState msg;
     setRosTimeStamp(msg.header.stamp);
-
-
     int num_dofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
-
 
     if (mStates != nullptr)
     {
-
         for (int j = 0; j < num_dofs; j++)
         {
             DcHandle dof = mDynamicControlPtr->getArticulationDof(mArticulationHandle, j);

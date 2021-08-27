@@ -25,6 +25,8 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
+#include <omni/isaac/ros/Utils.h>
+
 #include <time.h>
 
 namespace omni
@@ -70,6 +72,7 @@ void RosLidar::onStart()
 void RosLidar::onStop()
 {
 }
+
 void RosLidar::onComponentChange()
 {
 
@@ -86,6 +89,9 @@ void RosLidar::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetPointCloudPubTopicAttr(), mPointCloudPubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetPointCloudEnabledAttr(), mEnablePointCloud);
     isaac::utils::safeGetAttribute(typedPrim.GetFrameIdAttr(), mFrameId);
+
+    ros_utils::addPrefix(mRosNodePrefix, mLaserScanPubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mPointCloudPubTopic, true);
 
     mRosNode->createPublisher<sensor_msgs::msg::LaserScan>(
         mPrim.GetPath().GetString(), mLaserScanPubTopic, mQueueSize, &RosLidar::pubCallback, this);
@@ -159,7 +165,7 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
     size_t numBeams = numColsTicked * numRows;
 
     float* theta = mLidarSensorInterface->getAzimuthData(mLidarPath.GetString().c_str());
-    float* phi = mLidarSensorInterface->getZenithData(mLidarPath.GetString().c_str()); // should have one entry
+    //float* phi = mLidarSensorInterface->getZenithData(mLidarPath.GetString().c_str()); // should have one entry
     float* ranges = mLidarSensorInterface->getLinearDepthData(mLidarPath.GetString().c_str());
     uint8_t* intensities = mLidarSensorInterface->getIntensityData(mLidarPath.GetString().c_str());
 

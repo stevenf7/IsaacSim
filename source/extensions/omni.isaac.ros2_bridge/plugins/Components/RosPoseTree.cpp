@@ -23,6 +23,7 @@
 #include <carb/Types.h>
 
 #include <omni/isaac/ros/Conversions.h>
+#include <omni/isaac/ros/Utils.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>
@@ -93,6 +94,7 @@ void RosPoseTree::onComponentChange()
         return;
     }
 
+    ros_utils::addPrefix(mRosNodePrefix, mPoseTreePubTopic, true);
 
     mRosNode->createPublisher<tf2_msgs::msg::TFMessage>(
         mPrim.GetPath().GetString(), mPoseTreePubTopic, mQueueSize, &RosPoseTree::pubCallback, this);

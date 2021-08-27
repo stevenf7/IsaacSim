@@ -49,9 +49,10 @@ amcl_rclcpp_node:
 bt_navigator:
   ros__parameters:
     use_sim_time: True
+    enable_groot_monitoring: False
     global_frame: map
     robot_base_frame: base_link
-    odom_topic: /odom
+    odom_topic: odom
     default_bt_xml_filename: "navigate_w_replanning_and_recovery.xml"
     plugin_lib_names:
     - nav2_compute_path_to_pose_action_bt_node
@@ -78,6 +79,7 @@ bt_navigator:
 bt_navigator_rclcpp_node:
   ros__parameters:
     use_sim_time: True
+    enable_groot_monitoring: False
 
 controller_server:
   ros__parameters:
@@ -157,8 +159,9 @@ local_costmap:
         enabled: True
         observation_sources: scan
         scan:
-          topic: /scan
+          topic: /carter1/scan
           max_obstacle_height: 2.0
+          raytrace_max_range: 25
           clearing: True
           marking: True
           data_type: "LaserScan"
@@ -170,11 +173,13 @@ local_costmap:
         z_resolution: 0.05
         z_voxels: 16
         max_obstacle_height: 2.0
+        raytrace_max_range: 25
         mark_threshold: 0
         observation_sources: pointcloud
         pointcloud:
           topic: /point_cloud
           max_obstacle_height: 2.0
+          raytrace_max_range: 25
           clearing: True
           marking: True
           data_type: "PointCloud2"
@@ -204,7 +209,7 @@ global_costmap:
         enabled: True
         observation_sources: scan
         scan:
-          topic: /scan
+          topic: /carter1/scan
           max_obstacle_height: 2.0
           clearing: True
           marking: True
@@ -241,7 +246,7 @@ global_costmap:
 map_server:
   ros__parameters:
     use_sim_time: True
-    yaml_filename: "carter_warehouse_navigation.yaml"
+    yaml_filename: "carter_hospital_navigation.yaml"
 
 map_saver:
   ros__parameters:
