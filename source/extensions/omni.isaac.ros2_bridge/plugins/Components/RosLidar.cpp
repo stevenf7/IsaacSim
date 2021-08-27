@@ -165,7 +165,7 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
     size_t numBeams = numColsTicked * numRows;
 
     float* theta = mLidarSensorInterface->getAzimuthData(mLidarPath.GetString().c_str());
-    //float* phi = mLidarSensorInterface->getZenithData(mLidarPath.GetString().c_str()); // should have one entry
+    // float* phi = mLidarSensorInterface->getZenithData(mLidarPath.GetString().c_str()); // should have one entry
     float* ranges = mLidarSensorInterface->getLinearDepthData(mLidarPath.GetString().c_str());
     uint8_t* intensities = mLidarSensorInterface->getIntensityData(mLidarPath.GetString().c_str());
 
