@@ -79,11 +79,15 @@ public:
 
 private:
     /// Publish camera intrinsics with pinhole parameters
-    void setIntrinsics(const nvidia::gxf::Handle<::isaac::geometry::PinholeD>& intrinsics,
-                       const carb::sensors::SensorInfo& info,
-                       float focalLength,
-                       float horizontalAperture,
-                       float verticalAperture);
+    void setIntrinsics(
+        const nvidia::gxf::Handle<::isaac::geometry::PinholeD>& intrinsics,
+        const nvidia::gxf::Handle<::isaac::geometry::CameraDistortionInfo>& distIntrinsics,
+        const carb::sensors::SensorInfo& info,
+        float focalLength,
+        float horizontalAperture,
+        float verticalAperture,
+        const std::array<double, ::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients>& distortionCoefficients,
+        const pxr::TfToken projectionType);
     void updateViewportSettings();
     carb::Framework* mFramework = nullptr;
     omni::kit::IViewport* mViewportInterface = nullptr;

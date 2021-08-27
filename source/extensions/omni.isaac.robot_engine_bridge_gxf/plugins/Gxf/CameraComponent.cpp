@@ -129,11 +129,23 @@ void CameraComponent::tick()
     float focalLength;
     pxr::GfVec2f clipRange;
     float horizontalAperture, verticalAperture;
+    float fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD, fthetaPolyE;
+    pxr::TfToken projectionType = pxr::TfToken("pinhole");
 
     cameraPrim.GetFocalLengthAttr().Get(&focalLength);
     cameraPrim.GetClippingRangeAttr().Get(&clipRange);
     cameraPrim.GetHorizontalApertureAttr().Get(&horizontalAperture);
     cameraPrim.GetVerticalApertureAttr().Get(&verticalAperture);
+
+    prim.GetAttribute(pxr::TfToken("cameraProjectionType")).Get(&projectionType);
+    prim.GetAttribute(pxr::TfToken("fthetaPolyA")).Get(&fthetaPolyA);
+    prim.GetAttribute(pxr::TfToken("fthetaPolyB")).Get(&fthetaPolyB);
+    prim.GetAttribute(pxr::TfToken("fthetaPolyC")).Get(&fthetaPolyC);
+    prim.GetAttribute(pxr::TfToken("fthetaPolyD")).Get(&fthetaPolyD);
+    prim.GetAttribute(pxr::TfToken("fthetaPolyE")).Get(&fthetaPolyE);
+    const std::array<double, ::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients> distortionCoefficients{
+        fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD, fthetaPolyE
+    };
 
     if (mRgbSensor)
     {
@@ -171,7 +183,8 @@ void CameraComponent::tick()
                    bufferSize, cudaMemcpyDeviceToHost);
 
         // Set camera intrinsics value
-        setIntrinsics(message.intrinsics_info, rgbInfo, focalLength, horizontalAperture, verticalAperture);
+        setIntrinsics(message.intrinsics_info, message.distortion_info, rgbInfo, focalLength, horizontalAperture,
+                      verticalAperture, distortionCoefficients, projectionType);
         // Set pose frame uid
         message.pose_frame_uid->uid = poseUid;
 
@@ -214,7 +227,8 @@ void CameraComponent::tick()
                    bufferSize, cudaMemcpyDeviceToHost);
 
         // Set camera intrinsics value
-        setIntrinsics(message.intrinsics_info, depthInfo, focalLength, horizontalAperture, verticalAperture);
+        setIntrinsics(message.intrinsics_info, message.distortion_info, depthInfo, focalLength, horizontalAperture,
+                      verticalAperture, distortionCoefficients, projectionType);
         // Set pose frame uid
         message.pose_frame_uid->uid = poseUid;
 
@@ -271,7 +285,8 @@ void CameraComponent::tick()
                        mSegmentationBuffers[0]->data(), bufferSize, cudaMemcpyDeviceToHost);
 
             // Set camera intrinsics value
-            setIntrinsics(message.intrinsics_info, semanticInfo, focalLength, horizontalAperture, verticalAperture);
+            setIntrinsics(message.intrinsics_info, message.distortion_info, semanticInfo, focalLength,
+                          horizontalAperture, verticalAperture, distortionCoefficients, projectionType);
             // Set pose frame uid
             message.pose_frame_uid->uid = poseUid;
 
@@ -302,7 +317,8 @@ void CameraComponent::tick()
                        bufferSize, cudaMemcpyDeviceToHost);
 
             // Set camera intrinsics value
-            setIntrinsics(message.intrinsics_info, semanticInfo, focalLength, horizontalAperture, verticalAperture);
+            setIntrinsics(message.intrinsics_info, message.distortion_info, semanticInfo, focalLength,
+                          horizontalAperture, verticalAperture, distortionCoefficients, projectionType);
             // Set pose frame uid
             message.pose_frame_uid->uid = poseUid;
 
@@ -766,11 +782,15 @@ void CameraComponent::updateViewportSettings()
     }
 }
 
-void CameraComponent::setIntrinsics(const nvidia::gxf::Handle<::isaac::geometry::PinholeD>& intrinsics,
-                                    const carb::sensors::SensorInfo& info,
-                                    float focalLength,
-                                    float horizontalAperture,
-                                    float verticalAperture)
+void CameraComponent::setIntrinsics(
+    const nvidia::gxf::Handle<::isaac::geometry::PinholeD>& intrinsics,
+    const nvidia::gxf::Handle<::isaac::geometry::CameraDistortionInfo>& distIntrinsics,
+    const carb::sensors::SensorInfo& info,
+    float focalLength,
+    float horizontalAperture,
+    float verticalAperture,
+    const std::array<double, ::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients>& distortionCoefficients,
+    const pxr::TfToken projectionType)
 {
     intrinsics->dimensions[0] = info.tex.height; // rows
     intrinsics->dimensions[1] = info.tex.width; // columns
@@ -781,6 +801,14 @@ void CameraComponent::setIntrinsics(const nvidia::gxf::Handle<::isaac::geometry:
     intrinsics->focal[1] = info.tex.width * focalLength / horizontalAperture;
     intrinsics->center[0] = info.tex.height * 0.5;
     intrinsics->center[1] = info.tex.width * 0.5;
+
+    distIntrinsics->distortion_coefficients = distortionCoefficients;
+    distIntrinsics->model = (projectionType.GetString().find("fisheye") != std::string::npos ?
+                                 ::isaac::geometry::DistortionModel::kFisheye :
+                                 ::isaac::geometry::DistortionModel::kPerspective);
+    // CARB_LOG_WARN("%s : %f : %f : %f : %f : %f", projectionType.GetString().c_str(), distortionCoefficients[0],
+    //               distortionCoefficients[1], distortionCoefficients[2], distortionCoefficients[3],
+    //               distortionCoefficients[4]);
 }
 
 }
