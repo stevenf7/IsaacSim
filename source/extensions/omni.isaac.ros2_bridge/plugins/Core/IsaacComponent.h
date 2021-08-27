@@ -142,7 +142,6 @@ protected:
         }
     }
 
-
     std::string mRosNodePrefix = "";
     std::unique_ptr<RosNode> mRosNode;
     std::chrono::_V2::system_clock::rep mSystemTimeNanoSeconds = 0;

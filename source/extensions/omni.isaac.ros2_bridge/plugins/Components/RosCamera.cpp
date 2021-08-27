@@ -33,6 +33,7 @@
 #include <carb/cuda/CudaRuntime.h>
 
 #include <boost/algorithm/string.hpp>
+#include <omni/isaac/ros/Utils.h>
 #include <omni/kit/ViewportWindowUtils.h>
 
 #include <cuda.h>
@@ -200,6 +201,16 @@ void RosCamera::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DEnabledAttr(), mEnableBoundingBox3D);
     isaac::utils::safeGetAttribute(typedPrim.GetBoundingBox3DClassListAttr(), filterClassList3D);
     isaac::utils::safeGetAttribute(typedPrim.GetStereoOffsetAttr(), mStereoOffset);
+
+    ros_utils::addPrefix(mRosNodePrefix, mCameraInfoPubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mRgbPubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mDepthPubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mPointCloudPubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mInstancePubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mSemanticPubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mLabelPubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mBoundingBox2DPubTopic, true);
+    ros_utils::addPrefix(mRosNodePrefix, mBoundingBox3DPubTopic, true);
 
     if (mEnableRgb || mEnableDepth || mEnablePointCloud || mEnableSegmentation || mEnableBoundingBox2D ||
         mEnableBoundingBox3D)
