@@ -1,5 +1,5 @@
 <project toolsVersion="5.0">
   <dependency name="kit_sdk_${config}" linkPath="../_build/${platform}/${config}/kit" tags="${config}">
-    <package name="kit-sdk" version="102.1.1+release.46420.0c06ba21.teamcity.${platform}.${config}"/>
+    <package name="kit-sdk" version="102.1.1+release.46445.1e37580b.teamcity.${platform}.${config}"/>
   </dependency>
 </project>

@@ -89,7 +89,7 @@ msbuild.vs_version = "vs2017"
 stage_files.error_if_missing = true
 
 licensing.enabled = true
-licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/target-deps.packman.xml"]
+licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/target-deps.packman.xml", "${root}/deps/isaac-sim.packman.xml"]
 licensing.fail_on_missing = true
 
 post_build.commands = [
