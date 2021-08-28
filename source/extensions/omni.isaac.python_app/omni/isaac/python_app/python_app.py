@@ -58,6 +58,7 @@ class OmniKitHelper:
         "max_bounces": 4,
         "max_specular_transmission_bounces": 6,
         "max_volume_bounces": 4,
+        "temp_jupyter_stage": None,
     }
     """
     The config variable is a dictionary containing the following entries
@@ -79,6 +80,7 @@ class OmniKitHelper:
         max_bounces (int): Maximum number of bounces, used for `PathTracing` only. Defaults to 4
         max_specular_transmission_bounces(int): Maximum number of bounces for specular or transmission, used for `PathTracing` only. Defaults to 6
         max_volume_bounces(int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
+        temp_jupyter_stage(str): This is the name of the stage that you want to do your interactive work in.  It will be destroyed upon creation. Default is None,
     """
 
     def __init__(self, config=DEFAULT_CONFIG):
@@ -112,13 +114,21 @@ class OmniKitHelper:
         self.setup_renderer(mode="non-default")  # set rtx settings
 
         self.timeline = omni.timeline.get_timeline_interface()
+        self.temp_jupyter_stage = self.config.get("temp_jupyter_stage")
+        if self.temp_jupyter_stage == None:
+            # Wait for new stage to open
+            new_stage_task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
+            print("OmniKitHelper Starting up ...")
+            while not new_stage_task.done():
+                time.sleep(0.001)  # This sleep prevents a deadlock in certain cases
+                self.update()
 
-        # Wait for new stage to open
-        new_stage_task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
-        print("OmniKitHelper Starting up ...")
-        while not new_stage_task.done():
-            time.sleep(0.001)  # This sleep prevents a deadlock in certain cases
-            self.update()
+        else:
+            print("OmniKitHelper is creating a temp stage synchronously at ", self.temp_jupyter_stage, " ...")
+            omni.usd.get_context().new_stage()
+            omni.usd.get_context().save_as_stage(self.temp_jupyter_stage)
+            omni.usd.get_context().set_layer_live(self.temp_jupyter_stage, True)
+            print("Done.")
         self.update()
         # Dock windows  if they exist
         main_dockspace = omni.ui.Workspace.get_window("DockSpace")
@@ -221,6 +231,19 @@ class OmniKitHelper:
     def get_stage(self):
         """Returns the current USD stage."""
         return omni.usd.get_context().get_stage()
+
+    def reset_stage(self):
+        self.update()
+        paths = []
+        for prim in self.get_stage().Traverse():
+            paths.append(prim.GetPrimPath())
+        omni.kit.commands.execute("DeletePrims", paths=paths)
+        print(paths)
+        self.update()
+
+    def get_context(self):
+        """Returns the current USD context."""
+        return omni.usd.get_context()
 
     def set_setting(self, setting, value):
         """Convenience function to set settings.
@@ -385,7 +408,7 @@ class OmniKitHelper:
             path (str): The path of the new prim.
             prim_type (str): Prim type name
             translation (tuple(float, float, float), optional): prim translation (applied last)
-            rotation (tuple(float, float, float), optional): prim rotation in radians with rotation
+            rotation (tuple(float, float, float), optional): prim rotation in degrees with rotation
                 order ZYX.
             scale (tuple(float, float, float), optional): scaling factor in x, y, z.
             ref (str, optional): Path to the USD that this prim will reference.
