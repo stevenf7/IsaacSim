@@ -46,6 +46,10 @@ class SimulationContext:
         return self._number_of_steps
 
     @property
+    def time(self):
+        return self._timeline.get_current_time()
+
+    @property
     def stage(self):
         """Returns: The current USD stage."""
         return omni.usd.get_context().get_stage()
