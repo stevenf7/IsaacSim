@@ -45,10 +45,10 @@ download_only = true
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "opencv-python==4.5.1.48", # SWIPAT filed under:  
-    "scipy==1.5.4", # SWIPAT filed under:
-    "numpy-quaternion==2020.9.5.14.42.2",
-    "numba==0.51.2",
+    "opencv-python==4.5.1.48",              # SWIPAT filed under:  
+    "scipy==1.5.4",                         # SWIPAT filed under:
+    "numpy-quaternion==2020.9.5.14.42.2",   # SWIPAT filed under:
+    "numba==0.51.2",                        # SWIPAT filed under:
 
 
 ]
@@ -70,7 +70,10 @@ packages = [
     "webbot==0.34",                   # SWIPAT filed under: 
     "requests==2.25.1",               # SWIPAT filed under:
     "llvmlite==0.37.0",               # SWIPAT filed under:
-    "toml==0.10.2"                    # SWIPAT filed under:
+    "toml==0.10.2",                   # SWIPAT filed under:
+    "nest_asyncio==1.5.1",            # SWIPAT filed under:
+    "ipykernel==6.2.0",               # SWIPAT filed under:
+    "matplotlib==3.4.3"               # SWIPAT filed under:
 ]
 target = "../_build/target-deps/pip_prebundle"
 platforms = ["*-x86_64"]
