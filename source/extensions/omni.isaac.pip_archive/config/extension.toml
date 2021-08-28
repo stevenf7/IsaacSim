@@ -17,11 +17,12 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.pipapi" = {} # We need it so that we can use [python.pipapi].
+"omni.kit.pip_archive" = {} # import the base kit python archive
 
-# We bundle not only "toml" package, but many other. No need to mention all of them, just importing one will add whole
+# We bundle not only "scipy" package, but many other. No need to mention all of them, just importing one will add whole
 # folder (pip_prebundle) to sys.path.
 [[python.module]]
-name = "toml"
+name = "scipy"
 path = "pip_prebundle"
 
 # That is empty module, added here only to make tests discoverable in test run

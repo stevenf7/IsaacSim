@@ -1,3 +1,14 @@
+IsaacLula:
+  licenseFile: lula-LICENSE.md
+  packageName: IsaacLula
+  packageType: packman
+  source:
+    branch: null
+    change: null
+    path: https://gitlab/isaac/isaac_lula_packaging
+    scm: git
+  swipat: null
+  version: null
 NVTX:
   licenseFile: nvtx-LICENSE.txt
   packageName: NVTX
@@ -15,11 +26,11 @@ Omniverse Client Library:
   packageType: packman
   source:
     branch: main
-    change: 17a2b280396d9edc0bea4e7e87933350b2de8b94
+    change: 1809f5068f7cd6f64c2ecd8c410a0480c5bd5551
     path: https://gitlab/omniverse/client-library
     scm: git
   swipat: null
-  version: 1.13.11-main.2092+tc.17a2b280
+  version: 1.13.15-main.2121+tc.1809f506
 carbonite:
   licenseFile: carbonite-LICENSE.txt
   packageName: carbonite
@@ -42,6 +53,17 @@ cuda:
     scm: null
   swipat: n/a
   version: null
+doctest:
+  licenseFile: doctest-LICENSE.txt
+  packageName: doctest
+  packageType: packman
+  source:
+    branch: master
+    change: b29bc767ad8d9184c1e2595e3b69b454aab1670e
+    path: https://gitlab/carbon/carbonite-externals/doctest.git
+    scm: git
+  swipat: http://nvbugs/2802670
+  version: 2.4.0-b29bc767
 fmt:
   licenseFile: fmt-LICENSE.md
   packageName: fmt
@@ -116,6 +138,17 @@ usd-ext-physics:
     branch: null
     change: null
     path: https://gitlab/omniverse/usd-ext-physics.git
+    scm: git
+  swipat: null
+  version: null
+usd_ext_isaac:
+  licenseFile: usd_ext_isaac-LICENSE.md
+  packageName: usd_ext_isaac
+  packageType: packman
+  source:
+    branch: null
+    change: null
+    path: https://gitlab/isaac/usd_ext_isaac
     scm: git
   swipat: null
   version: null

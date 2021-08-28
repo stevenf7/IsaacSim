@@ -91,22 +91,18 @@ class SyntheticDataHelper:
         stage = omni.usd.get_context().get_stage()
         prim = stage.GetPrimAtPath(viewport.get_active_camera())
         prim_tf = omni.usd.get_world_transform_matrix(prim)
-        focal_length = prim.GetAttribute("focalLength").Get()
-        horiz_aperture = prim.GetAttribute("horizontalAperture").Get()
-        fov = 2 * math.atan(horiz_aperture / (2 * focal_length))
-        width, height = viewport.get_texture_resolution()
-        aspect_ratio = width / height
-        near, far = prim.GetAttribute("clippingRange").Get()
-        view_proj_mat = self.generic_helper_lib.get_view_proj_mat(prim, aspect_ratio, near, far)
+        view_params = self.generic_helper_lib.get_view_params(viewport)
+        fov = 2 * math.atan(view_params["horizontal_aperture"] / (2 * view_params["focal_length"]))
+        view_proj_mat = self.generic_helper_lib.get_view_proj_mat(view_params)
 
         return {
             "pose": np.array(prim_tf),
             "fov": fov,
-            "focal_length": focal_length,
-            "horizontal_aperture": horiz_aperture,
+            "focal_length": view_params["focal_length"],
+            "horizontal_aperture": view_params["horizontal_aperture"],
             "view_projection_matrix": view_proj_mat,
-            "resolution": {"width": width, "height": height},
-            "clipping_range": (near, far),
+            "resolution": {"width": view_params["width"], "height": view_params["height"]},
+            "clipping_range": view_params["clipping_range"],
         }
 
     def get_pose(self):
@@ -123,7 +119,7 @@ class SyntheticDataHelper:
         return pose
 
     def initialize(self, viewport, sensor_names, timeout=100):
-        """ Initialize sensors in the list provided.
+        """Initialize sensors in the list provided.
 
 
         Args:

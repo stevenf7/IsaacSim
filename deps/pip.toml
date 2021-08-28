@@ -45,12 +45,20 @@ download_only = true
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "opencv-python==4.5.1.48",              # SWIPAT filed under:  
     "scipy==1.5.4",                         # SWIPAT filed under:
     "numpy-quaternion==2020.9.5.14.42.2",   # SWIPAT filed under:
     "numba==0.51.2",                        # SWIPAT filed under:
-
-
+    "ipykernel==6.2.0",                     # SWIPAT filed under:
+    "matplotlib==3.4.3",                    # SWIPAT filed under:
+    "webbot==0.34",                         # SWIPAT filed under:
+    "selenium==3.141.0",                    # SWIPAT filed under:
+    "urllib3==1.25.8",                      # SWIPAT filed under:
+    "requests==2.26.0",                     # SWIPAT filed under:
+    "certifi==2021.5.30",                   # SWIPAT filed under:
+    "charset-normalizer==2.0.4",            # SWIPAT filed under:
+    "construct==2.10.61",                   # SWIPAT filed under:
+    "llvmlite==0.37.0",                     # SWIPAT filed under:
+    "nest_asyncio==1.5.1",                  # SWIPAT filed under:
 ]
 target = "../_build/target-deps/pip_prebundle"
 platforms = ["*-x86_64"]
@@ -63,23 +71,16 @@ gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
 # NOTE - For any new packages added to this list, please make sure that the license is compatible with Omniverse (i.e. avoid GPL/LGPL) and
 # that a SWIPAT bug report is filed for legal to validate if there is no existing ticket.
 # The SWIPAT template is here: http://nvbugs/2732212
-[[dependency]]
-python = "../_build/target-deps/python"
-packages = [
-    "construct==2.10.61",             # SWIPAT filed under: 
-    "webbot==0.34",                   # SWIPAT filed under: 
-    "requests==2.25.1",               # SWIPAT filed under:
-    "llvmlite==0.37.0",               # SWIPAT filed under:
-    "toml==0.10.2",                   # SWIPAT filed under:
-    "nest_asyncio==1.5.1",            # SWIPAT filed under:
-    "ipykernel==6.2.0",               # SWIPAT filed under:
-    "matplotlib==3.4.3"               # SWIPAT filed under:
-]
-target = "../_build/target-deps/pip_prebundle"
-platforms = ["*-x86_64"]
-download_only = false
-append_to_install_folder = true
-gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
+# [[dependency]]
+# python = "../_build/target-deps/python"
+# packages = [
+#    "scipy==1.5.4",                         # SWIPAT filed under:
+# ]
+# target = "../_build/target-deps/pip_prebundle"
+# platforms = ["*-x86_64"]
+# download_only = false
+# append_to_install_folder = true
+# gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
 
 
 # NOTE - For any new packages added to this list, please make sure that the license is compatible with Omniverse (i.e. avoid GPL/LGPL) and

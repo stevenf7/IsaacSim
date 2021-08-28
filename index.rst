@@ -8,6 +8,7 @@ Isaac Sim: Extensions API
 
    source/extensions/omni.isaac.contact_sensor/docs/index
    source/extensions/omni.isaac.imu_sensor/docs/index
+   source/extensions/omni.isaac.core/docs/index
    source/extensions/omni.isaac.dr/docs/index
    source/extensions/omni.isaac.debug_draw/docs/index
    source/extensions/omni.isaac.dynamic_control/docs/index
