@@ -1,7 +1,16 @@
-display_name = "Isaac Python App"
+[core]
+reloadable = true
+order = 0
+
+[package]
+title = "Isaac Sim Kit Helpers"
+description = "This Extension that provides a way to launch a python app"
+authors = ["Isaac Sim Team"]
+toggleable = false
 
 [dependencies]
 "omni.kit.loop-isaac" = {}
+"omni.physx" = {} # loads usd libs we import
 
 [[python.module]]
 name = "omni.isaac.kit"

@@ -19,7 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "omni.isaac.kit" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.pip_archive" = {} 
+"omni.isaac.pip_archive" = {} # scipy
 
 [[python.module]]
 name = "omni.isaac.core"

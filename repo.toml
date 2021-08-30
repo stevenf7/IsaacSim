@@ -161,7 +161,7 @@ sphinx_conf_py_extra = """
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
     html_css_files = [ "isaac-style.css" ]
-    autodoc_mock_imports = ["scipy"]
+    autodoc_mock_imports = ["scipy", "pxr.PhysxSchema"]
 """
 
 sphinx_exclude_patterns = [

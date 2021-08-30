@@ -1,3 +1,12 @@
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
 # python
 import time
 import asyncio
@@ -6,12 +15,10 @@ import asyncio
 import carb
 import omni.kit
 import omni.kit.app
-import omni.kit
+from pxr import UsdGeom, Gf, Usd, Sdf, UsdPhysics, PhysxSchema
 from omni.isaac.kit.utils import set_carb_setting
-from pxr import UsdPhysics, PhysxSchema, UsdGeom, Gf
 from omni.isaac.kit.constants import AXES_INDICES
 import omni.isaac.kit.globals as globals
-import os
 import omni.kit.loop._loop as omni_loop
 
 
@@ -34,15 +41,17 @@ class SimulationContext:
 
     def __del__(self):
         """Destructor for object."""
+        self._physics_call_back_functions = []
+        self._rendering_call_back_functions = []
         pass
 
     @property
-    def app(self):
+    def app(self) -> omni.kit.app.IApp:
         """Returns: The Omniverse Toolkit application."""
         return self._app
 
     @property
-    def time_step_index(self):
+    def time_step_index(self) -> int:
         return self._number_of_steps
 
     @property
@@ -50,14 +59,16 @@ class SimulationContext:
         return self._timeline.get_current_time()
 
     @property
-    def stage(self):
+    def stage(self) -> Usd.Stage:
         """Returns: The current USD stage."""
         return omni.usd.get_context().get_stage()
 
+    @property
     def is_playing(self) -> bool:
         """Returns: True if the simulator is playing."""
         return self._timeline.is_playing()
 
+    @property
     def is_stopped(self) -> bool:
         """Returns: True if the simulator is stopped."""
         return self._timeline.is_stopped()
@@ -88,7 +99,7 @@ class SimulationContext:
         self._number_of_steps = 0
         return
 
-    def create_new_stage(self):
+    def create_new_stage(self) -> Usd.Stage:
         # Create a blank new stage
         new_stage_task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         # This sleep prevents a deadlock in certain cases.
@@ -100,10 +111,9 @@ class SimulationContext:
             self._app.update()
         self.set_stage_units(1.0)
         self._physics_scene = PhysicsScene()
-        self._physics_scene._stage = omni.usd.get_context().get_stage()
-        return
+        return self.stage
 
-    def open_usd(self, usd_path, prim_path):
+    def add_usd_reference(self, usd_path, prim_path) -> Usd.Prim:
         prim = self.stage.DefinePrim(prim_path, "Xform")
         # add reference to the USD in the current stage
         prim.GetReferences().AddReference(usd_path)
@@ -140,14 +150,11 @@ class SimulationContext:
         return
 
 
-# EOF
-
-
 class PhysicsScene:
     def __init__(self, path: str = "/World/physicsScene"):
         self._stage = omni.usd.get_context().get_stage()
         self._path = path
-        if not os.path.abspath(self._path):
+        if not Sdf.Path(self._path).IsAbsolutePath():
             raise ValueError(f"Input prim path is not absolute: {self._path}")
         # check if path pre-exists
         prim = self._stage.GetPrimAtPath(path)
