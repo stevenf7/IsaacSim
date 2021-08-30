@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -10,7 +10,6 @@ from typing import Tuple, Optional, Union
 from pxr import Usd, UsdGeom, Gf
 from omni.isaac.core.utils.types import PrimState
 import numpy as np
-import scipy.spatial.transform as tf
 
 
 class Prim(object):
@@ -175,8 +174,7 @@ class Prim(object):
                 rotation_attr = self._prim.GetAttribute("xformOp:orient")
                 rotation_attr.Set(rotq)
                 return
-        rotm = tf.Rotation.from_quat([*quat[1:], quat[0]]).as_matrix()
-        rotm = Gf.Matrix3d(*rotm.ravel())
+        rotm = Gf.Matrix3d(Gf.Quatd(*quat))
         if "xformOp:transform" in properties:
             transform_attr = self._prim.GetAttribute("xformOp:transform")
             matrix = self._prim.GetAttribute("xformOp:transform").Get()

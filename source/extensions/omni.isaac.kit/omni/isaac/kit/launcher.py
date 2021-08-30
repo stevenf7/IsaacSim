@@ -1,3 +1,14 @@
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
+from __future__ import annotations  # This allows us to hint types that do not yet exist like omni.usd etc
+
 import os
 import sys
 import time
@@ -6,10 +17,9 @@ import argparse
 
 # omniverse
 import carb
-import omni.kit.app
 import omni.kit
+import omni.kit.app
 import omni.isaac.kit.globals as globals
-from omni.isaac.kit.utils import set_carb_setting
 
 
 class SimulationApp:
@@ -85,7 +95,7 @@ class SimulationApp:
         max_volume_bounces(int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
     """
 
-    def __init__(self, config: dict = None, experience: str = ""):
+    def __init__(self, config: dict = None, experience: str = "") -> None:
         # Initialize variables
         globals.LAUNCHED_FROM_TERMINAL = False
 
@@ -108,6 +118,8 @@ class SimulationApp:
         self._app = omni.kit.app.get_app()
         self._start_app()
         # once app starts, we can set settings
+        from omni.isaac.kit.utils import set_carb_setting
+
         self._extension_manager = omni.kit.app.get_app().get_extension_manager()
         self._carb_settings = carb.settings.get_settings()
         # Set rtx-default renderder settings
@@ -146,7 +158,7 @@ class SimulationApp:
     Private methods
     """
 
-    def _start_app(self):
+    def _start_app(self) -> None:
         """Launch the Omniverse application."""
         # input arguments to the application
         args = [
@@ -184,7 +196,7 @@ class SimulationApp:
             args.append("--no-window")
         self.app.startup("kit", os.environ["CARB_APP_PATH"], args)
 
-    def _setup_renderer(self, mode: str = "non-default"):
+    def _setup_renderer(self, mode: str = "non-default") -> None:
         """Reset render settings to those in config.
 
         Note:
@@ -194,6 +206,8 @@ class SimulationApp:
         Keyword Arguments:
             mode {str} -- Whether to setup RTX default or non-default settings. (default: {"non-default"})
         """
+        from omni.isaac.kit.utils import set_carb_setting
+
         # Define mode to configure settings into.
         if mode == "default":
             rtx_mode = "/rtx-defaults"
@@ -231,7 +245,7 @@ class SimulationApp:
         set_carb_setting(self._carb_settings, rtx_mode + "/hydra/materialSyncLoads", self.config["sync_loads"])
         set_carb_setting(self._carb_settings, "/omni.kit.plugin/syncUsdLoads", self.config["sync_loads"])
 
-    def _prepare_ui(self):
+    def _prepare_ui(self) -> None:
         """Dock the windows in the UI if they exist."""
         # Method for docking a particular window to a location
         def dock_window(space, name, location, ratio=0.5):
@@ -260,7 +274,7 @@ class SimulationApp:
     Public methods
     """
 
-    def close(self):
+    def close(self) -> None:
         """Close the running Omniverse Toolkit."""
         # check if exited already
         if not self._exiting:
@@ -311,6 +325,13 @@ class SimulationApp:
             omni.kit.app.IApp: omniverse kit application object
         """
         return self._app
+
+    @property
+    def context(self) -> omni.usd.UsdContext:
+        """
+            omni.usd.UsdContext: the current USD context
+        """
+        return omni.usd.get_context()
 
     @property
     def is_loading(self) -> bool:
