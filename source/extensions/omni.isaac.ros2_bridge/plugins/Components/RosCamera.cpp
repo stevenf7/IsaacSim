@@ -374,8 +374,18 @@ void RosCamera::updateViewportSettings()
     }
 }
 
-void getCameraIntrinsics(
-    pxr::UsdGeomCamera cameraPrim, carb::sensors::SensorInfo imgInfo, float& fx, float& fy, float& cx, float& cy)
+void getCameraIntrinsics(pxr::UsdGeomCamera cameraPrim,
+                         carb::sensors::SensorInfo imgInfo,
+                         float& fx,
+                         float& fy,
+                         float& cx,
+                         float& cy,
+                         float& fthetaPolyA,
+                         float& fthetaPolyB,
+                         float& fthetaPolyC,
+                         float& fthetaPolyD,
+                         float& fthetaPolyE,
+                         pxr::TfToken& projectionType)
 {
 
     float focalLength;
@@ -390,6 +400,14 @@ void getCameraIntrinsics(
     fy = imgInfo.tex.height * focalLength / verticalAperture;
     cx = imgInfo.tex.width * 0.5f;
     cy = imgInfo.tex.height * 0.5;
+
+    pxr::UsdPrim prim = cameraPrim.GetPrim();
+    prim.GetAttribute(pxr::TfToken("cameraProjectionType")).Get(&projectionType);
+    prim.GetAttribute(pxr::TfToken("fthetaPolyA")).Get(&fthetaPolyA);
+    prim.GetAttribute(pxr::TfToken("fthetaPolyB")).Get(&fthetaPolyB);
+    prim.GetAttribute(pxr::TfToken("fthetaPolyC")).Get(&fthetaPolyC);
+    prim.GetAttribute(pxr::TfToken("fthetaPolyD")).Get(&fthetaPolyD);
+    prim.GetAttribute(pxr::TfToken("fthetaPolyE")).Get(&fthetaPolyE);
 }
 
 void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
@@ -468,15 +486,20 @@ void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
     // +y should point down in the image
     // +z should point into the plane of the image
 
-    float fx, fy, cy, cx;
+    float fx, fy, cy, cx, fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD, fthetaPolyE;
+    pxr::TfToken projectionType = pxr::TfToken("pinhole");
+    ;
 
-    getCameraIntrinsics(cameraPrim, imgInfo, fx, fy, cx, cy);
+    getCameraIntrinsics(cameraPrim, imgInfo, fx, fy, cx, cy, fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD,
+                        fthetaPolyE, projectionType);
 
     cam_info_msg.k = { fx, 0, cx, 0, fy, cy, 0, 0, 1 };
 
     cam_info_msg.p = { fx, 0, cx, mStereoOffset[0], 0, fy, cy, mStereoOffset[1], 0, 0, 1, 0 };
 
-    cam_info_msg.d = { 0, 0, 0, 0, 0 };
+    cam_info_msg.d = { fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD, fthetaPolyE };
+    cam_info_msg.distortion_model = projectionType.GetString();
+
 
     static_cast<rclcpp::Publisher<sensor_msgs::msg::CameraInfo, std::allocator<void>>*>(pub)->publish(cam_info_msg);
 }
@@ -582,9 +605,11 @@ void RosCamera::depthToPointCloudCallback(rclcpp::PublisherBase* pub)
 
     const carb::sensors::SensorInfo& depthInfo = mSensorsInterface->getSensorInfo(mDepthForPCLSensor);
 
-    float fx, fy, cy, cx;
+    float fx, fy, cy, cx, fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD, fthetaPolyE;
+    pxr::TfToken projectionType = pxr::TfToken("pinhole");
 
-    getCameraIntrinsics(cameraPrim, depthInfo, fx, fy, cx, cy);
+    getCameraIntrinsics(cameraPrim, depthInfo, fx, fy, cx, cy, fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD,
+                        fthetaPolyE, projectionType);
 
     mDepthForPCLSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthForPCLSensor);
 
