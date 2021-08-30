@@ -204,7 +204,8 @@ class Prim(object):
         """Gets the pose of the prim in stage. The method does this through the USD API.
 
         Args:
-            as_matrix (bool, optional): [description]. Defaults to False.
+            as_matrix (bool, optional): set to True to return the pose as a transformation matrix from World frame to 
+                                        local frame. Defaults to False.
 
         Returns:
             Union(np.ndarray, Tuple(np.ndarray, np.ndarray)): Either the pose as matrix if specified in the 
