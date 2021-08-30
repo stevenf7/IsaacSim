@@ -12,7 +12,7 @@ from omni.isaac.core.utils.types import PrimState
 import numpy as np
 
 
-class Prim(object):
+class XFormPrim(object):
     def __init__(
         self,
         prim: Usd.Prim,

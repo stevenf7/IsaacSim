@@ -9,17 +9,17 @@
 
 from typing import Optional
 import numpy as np
-from omni.isaac.core.prims.prim import Prim
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import CollisionPrimState
-from pxr import UsdPhysics, Usd
-from omni.isaac.core.utils.prims import add_physics_material
+from pxr import UsdPhysics, Usd, UsdGeom
+from omni.isaac.core.utils.collisions import add_physics_material
 
 
-class CollisionPrim(Prim):
+class CollisionPrim(XFormPrim):
     def __init__(
         self,
         stage: Usd.Stage,
-        prim: Usd.Prim,
+        prim: UsdGeom.Gprim,
         name: Optional(str) = None,
         position: Optional(np.ndarray) = None,
         orientation: Optional(np.ndarray) = None,
