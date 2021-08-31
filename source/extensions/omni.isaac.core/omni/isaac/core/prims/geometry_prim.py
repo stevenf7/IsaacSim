@@ -9,12 +9,12 @@
 
 from typing import Optional
 import numpy as np
-from omni.isaac.core.prims.prim import Prim
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import GeometryPrimState
 from pxr import Gf, UsdGeom, Usd
 
 
-class GeometryPrim(Prim):
+class GeometryPrim(XFormPrim):
     def __init__(
         self,
         prim: Usd.Prim,
