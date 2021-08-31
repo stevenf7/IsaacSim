@@ -6,6 +6,8 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from typing import Optional
+import numpy as np
 
 
 class DOFInfo(object):
@@ -73,12 +75,32 @@ class JointsState(object):
 
 
 class ArticulationAction(object):
-    def __init__(self, joint_positions=None, joint_velocities=None, joint_torques=None):
+    def __init__(
+        self,
+        joint_positions: Optional(np.ndarray) = None,
+        joint_velocities: Optional(np.ndarray) = None,
+        joint_torques: Optional(np.ndarray) = None,
+    ):
+        """[summary]
+
+        Args:
+            joint_positions (Optional, optional): [description]. Defaults to None.
+            joint_velocities (Optional, optional): [description]. Defaults to None.
+            joint_torques (Optional, optional): [description]. Defaults to None.
+        """
         self.joint_positions = joint_positions
         self.joint_velocities = joint_velocities
         self.joint_torques = joint_torques
 
-    def get_dof_action(self, index):
+    def get_dof_action(self, index: int):
+        """[summary]
+
+        Args:
+            index (int): [description]
+
+        Returns:
+            [type]: [description]
+        """
         if self.joint_torques is not None and self.joint_torques[index] is not None:
             return {"torque": self.joint_torques[index]}
         else:
