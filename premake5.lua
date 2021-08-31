@@ -184,6 +184,17 @@ function define_local_experience(app_name, kit_file, extra_args)
     end
 end
 
+-- same as above but writes to tests folder
+function define_startup_experience(app_name, kit_file, extra_args)
+    local script_dir_token = (os.target() == "windows") and "%~dp0" or "$SCRIPT_DIR"
+    local extra_args = extra_args or ""
+    local kit_file = kit_file or app_name
+    define_test_experience(app_name, { config_path = "../apps/"..kit_file..".kit",
+                     extra_args = "--ext-folder \""..script_dir_token.."/../exts\" "
+                        .."--ext-folder \""..script_dir_token.."/../apps\" "
+                        ..extra_args
+    })
+end
 
 group "apps"
     for _, config in ipairs(ALL_CONFIGS) do
@@ -201,17 +212,10 @@ group "apps"
     define_local_experience("isaac-sim.headless.websocket", "omni.isaac.sim.headless.websocket", "--no-window ")
 
     -- startup tests
-    define_local_experience("tests-startup.main", "omni.isaac.sim.startup.main", "--/app/quitAfter=500")
-    define_local_experience("tests-startup.websocket", "omni.isaac.sim.startup.websocket", "--no-window --/app/quitAfter=500")
-    define_local_experience("tests-startup.kitremote", "omni.isaac.sim.startup.kitremote", "--no-window --/app/quitAfter=500")
-    define_local_experience("tests-startup.webrtc", "omni.isaac.sim.startup.webrtc", "--no-window --/app/quitAfter=500")
-
-    -- -- Test runner experience:
-    -- args = {
-    --     "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
-    --     "--/exts/omni.kit.test/includeTests/0='omni.create.app.*'", -- Only include tests from the python module
-    -- }
-    -- define_local_experience("tests-create-mini", "omni.create.mini", table.concat(args, " "))
+    define_startup_experience("tests-startup.main", "omni.isaac.sim.startup.main", "--/app/quitAfter=500")
+    define_startup_experience("tests-startup.websocket", "omni.isaac.sim.startup.websocket", "--no-window --/app/quitAfter=500")
+    define_startup_experience("tests-startup.kitremote", "omni.isaac.sim.startup.kitremote", "--no-window --/app/quitAfter=500")
+    define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.startup.webrtc", "--no-window --/app/quitAfter=500")
 
 -- Isaac Extensions
 group "exts"

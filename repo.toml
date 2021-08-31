@@ -94,7 +94,7 @@ licensing.fail_on_missing = true
 
 post_build.commands = [
     ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}"],
-    ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error", "0"] 
+    ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error", "0"]
 ]
 
 
@@ -275,8 +275,7 @@ archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
 
 [repo_test.suites.startuptests]
 kind = "glob_and_exec"
-path = "${test_root}"
-
+path = "${test_root}/tests"
 # publish_artifacts = ["${test_root}/_build/**/*.log", "${test_root}/**/*.dmp"]
 
 # fnmatch module is used, matching is case insensitive. Refer to: https://docs.python.org/3/library/fnmatch.html
@@ -322,7 +321,7 @@ timeout = 1200
 
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
-path = "${test_root}"
+path = "${test_root}/tests"
   [[repo_test.suites.pythontests.group]]
   include = ["tests-python*${shell_ext}"]
   exclude =[]
@@ -332,7 +331,7 @@ path = "${test_root}"
 
 [repo_test.suites.nativepythontests]
 kind = "glob_and_exec"
-path = "${test_root}"
+path = "${test_root}/tests"
   [[repo_test.suites.nativepythontests.group]]
   include = ["tests-nativepython*${shell_ext}"]
   exclude =[]
@@ -345,7 +344,7 @@ path = "${test_root}"
 kind = "catch2"
 default = true
 executables = [
-	"${test_root}/tests-unit-omni.isaac.range_sensor${exe_ext}",
+	"${test_root}/tests/tests-unit-omni.isaac.range_sensor${exe_ext}",
 ]
 
 ########################################################################################################################

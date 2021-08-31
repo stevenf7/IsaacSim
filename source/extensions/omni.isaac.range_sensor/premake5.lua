@@ -55,7 +55,7 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
 project "tests-unit-omni.isaac.range_sensor"
     kind "ConsoleApp"
     dependson { "prebuild" }
-    
+    targetdir ("%{root}/_build/%{platform}/%{config}/tests")
     includedirs {
             "%{root}/source/extensions/omni.isaac.range_sensor",
             "%{root}/_build/target-deps/physx/include",
