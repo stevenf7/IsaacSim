@@ -16,7 +16,7 @@ if [[ -z "${DISPLAY}" ]]; then
     args="$args --no-window"
 fi
 
-pushd $SCRIPT_DIR
+pushd $SCRIPT_DIR/tests/
 for f in tests-*.sh; do
     echo "Executing Test: $f"
     bash "$f" $args $@

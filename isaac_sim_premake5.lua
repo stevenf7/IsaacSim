@@ -101,11 +101,11 @@ function define_ext_test_experience(ext_name, args)
         "--/exts/omni.kit.test/testExtEnableProfiler=0",
         "--/exts/omni.kit.test/testExtArgs/0=\"--no-window\"",
         "--/exts/omni.kit.test/testExtArgs/1=\"--allow-root\"",
-        "--/exts/omni.kit.test/testExtApp=\""..script_dir_token.."/apps/omni.isaac.sim.test_ext.kit\"",
+        "--/exts/omni.kit.test/testExtApp=\""..script_dir_token.."/../apps/omni.isaac.sim.test_ext.kit\"",
         -- "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
         "--/exts/omni.kit.test/testExts/0='"..python_module.."'", -- Only include tests from the python module
-        "--ext-folder \""..script_dir_token.."/exts\" ",
-        "--ext-folder \""..script_dir_token.."/apps\" ",
+        "--ext-folder \""..script_dir_token.."/../exts\" ",
+        "--ext-folder \""..script_dir_token.."/../apps\" ",
         "--/app/enableStdoutOutput=0",  -- this app just runs the test command, hide its output
         "--no-window",
         "--allow-root",
@@ -114,12 +114,7 @@ function define_ext_test_experience(ext_name, args)
     local extra_test_args = get_value_or_default(args, "extra_test_args", {})
     test_args = concat_arrays(test_args, extra_test_args)
 
-    local suite = get_value_or_default(args, "suite", "python")
-
-    -- TODO(anov): Do we want to automatically add that flag for compat tests? Make it a global setting?
-    if suite == "compat" then
-        table.insert(test_args, "--/exts/omni.kit.renderer.core/compatibilityMode=true")
-    end
+    local suite = get_value_or_default(args, "suite", EXT_TEST_TEST_SUITE_DEFAULT)
 
     local exp_args = {
         config_path = "",
@@ -128,45 +123,55 @@ function define_ext_test_experience(ext_name, args)
     }
     exp_args = merge_tables(exp_args, args)
 
-    define_experience("tests-"..suite.."-"..ext_name, exp_args)
+    local test_name = suite and string.format("tests-%s-%s", suite, ext_name) or ("tests-"..ext_name)
+    define_test_experience(test_name, exp_args)
 end
 
--- -- Isaac Sim needs this redefined here because we have a custom PXR_PLUGINPATH_NAME export to handle runtime USD
--- -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
--- function create_experience_runner(name, config_path, config, kit_sdk_config, extra_args)
---     if os.target() == "windows" then
---         local bat_file_dir = root.."/_build/windows-x86_64/"..config
---         local bat_file_path = bat_file_dir.."/"..name..".bat"
---         local kit_bin_relative = path.getrelative(bat_file_dir, KIT_SDK_RESOLVED[config].."/_build/windows-x86_64/"..kit_sdk_config)
---         kit_bin_relative = path.normalize(kit_bin_relative):gsub("/", "\\")
---         local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
---         local f = io.open(bat_file_path, 'w')
---         f:write(string.format([[
--- @echo off
--- setlocal
--- call "%%~dp0%s\kit.exe" %s %s %%*
---         ]], kit_bin_relative, config_path, extra_args))
---         f:close()
---     else
---         local sh_file_dir = root.."/_build/linux-x86_64/"..config
---         local sh_file_path = sh_file_dir.."/"..name..".sh"
---         local kit_bin_relative = path.getrelative(sh_file_dir, KIT_SDK_RESOLVED[config].."/_build/linux-x86_64/"..kit_sdk_config)
---         local usd_ext_isaac_schema_relative = path.normalize(path.getrelative(sh_file_dir, root.."/_build/target-deps/usd_ext_isaac/"))
---         local usd_ext_isaac_schema_path="/"..config.."/share/usd/plugins/*/resources/"
---         kit_bin_relative = path.normalize(kit_bin_relative)
---         local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
---         local f = io.open(sh_file_path, 'w')
---         f:write(string.format([[
--- #!/bin/bash
--- set -e
--- SCRIPT_DIR=$(dirname ${BASH_SOURCE})
--- export PXR_PLUGINPATH_NAME="$(readlink -e $SCRIPT_DIR/%s)%s":$PXR_PLUGINPATH_NAME
--- "$SCRIPT_DIR/%s/kit" %s %s $@
---         ]], usd_ext_isaac_schema_relative, usd_ext_isaac_schema_path,  kit_bin_relative, config_path, extra_args))
---         f:close()
---         os.chmod(sh_file_path, 755)
---     end
--- end
+
+-- Define Kit experience. Different ways to run kit with particular config
+function define_test_experience(name, args)
+    local args = args or {}
+    local experience = args.experience or name..".json"
+    local config_path = get_value_or_default(args, "config_path", "experiences/"..experience)
+    local extra_args = args.extra_args or ""
+    -- Write bat and sh files as another way to run them:
+    for _, config in ipairs(ALL_CONFIGS) do
+        local kit_sdk_config = get_value_or_default(args, "kit_sdk_config", kit_sdk_config)
+        if kit_sdk_config == "%{config}" then 
+            kit_sdk_config = config
+        end
+        create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args)
+    end
+end
+
+-- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
+function create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args)
+    local os_target = os.target()
+    if os_target == "windows" then
+        local bat_file_dir = root.."/_build/windows-x86_64/"..config.."/tests"
+        local bat_file_path = bat_file_dir.."/"..name..".bat"
+        local kit_bin_abs = string_fmt_vars_recursive(kit_sdk_bin_dir, {
+            root=root, config=config, kit_sdk=kit_sdk, kit_sdk_config=kit_sdk_config, platform="windows-x86_64" 
+        })
+        local kit_bin_relative = path.normalize(path.getrelative(bat_file_dir, kit_bin_abs)):gsub("/", "\\")
+        local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
+        local f = io.open(bat_file_path, 'w')
+        f:write(string.format(KIT_RUNNER_SHELL_TEMPLATE[os_target], kit_bin_relative, config_path, extra_args))
+        f:close()
+    else
+        local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
+        local sh_file_path = sh_file_dir.."/"..name..".sh"
+        local kit_bin_abs = string_fmt_vars_recursive(kit_sdk_bin_dir, {
+            root=root, config=config, kit_sdk=kit_sdk, kit_sdk_config=kit_sdk_config, platform="linux-x86_64" 
+        })
+        local kit_bin_relative = path.normalize(path.getrelative(sh_file_dir, kit_bin_abs))
+        local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
+        local f = io.open(sh_file_path, 'w')
+        f:write(string.format(KIT_RUNNER_SHELL_TEMPLATE[os_target], kit_bin_relative, config_path, extra_args))
+        f:close()
+        os.chmod(sh_file_path, 755)
+    end
+end
 
 function python_sample_test(name, sample_path, args)
     local extra_args = args or ""
@@ -176,7 +181,7 @@ function python_sample_test(name, sample_path, args)
 end
 function create_python_sample_runner(name, sample_path, config, extra_args)
     if os.target() == "linux" then
-        local sh_file_dir = root.."/_build/linux-x86_64/"..config
+        local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
         local sh_file_path = sh_file_dir.."/"..name..".sh"
         local f = io.open(sh_file_path, 'w')
         print(sh_file_path)
@@ -184,8 +189,8 @@ function create_python_sample_runner(name, sample_path, config, extra_args)
 #!/bin/bash
 echo "##teamcity[testStarted name='%s']" 
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-SAMPLE_DIR=$SCRIPT_DIR
-"$SCRIPT_DIR/python.sh" $SAMPLE_DIR/%s %s $@
+SAMPLE_DIR=$SCRIPT_DIR/../
+"$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s $@
 echo "##teamcity[testFinished name='%s']" 
         ]], sample_path, sample_path, extra_args, sample_path, sample_path))
         f:close()
