@@ -31,17 +31,179 @@ Omniverse Client Library:
     scm: git
   swipat: null
   version: 1.13.15-main.2121+tc.1809f506
+SDLGameControllerDB:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: SDLGameControllerDB-LICENSE.md
+  packageName: SDLGameControllerDB
+  packageType: null
+  source:
+    branch: nv-main
+    change: 5c29b0f986bac9725f886cee117d37540f32fb07
+    path: https://gitlab/omniverse/externals/sdl_gamecontrollerdb
+    scm: git
+  swipat: http://nvbugs/2670876
+  version: 1.0.a0fbff68
+Tracy:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: Tracy-LICENSE.txt
+  packageName: Tracy
+  packageType: null
+  source:
+    branch: nvidia
+    change: bdf2b3ec73dfc5855799f1f58b4491fa164e2763
+    path: https://gitlab/carbon/carbonite-externals/tracy.git
+    scm: git
+  swipat: http://nvbugs/3038037
+  version: 0.7.8.70-bdf2b3ec-nvidia
+breakpad:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: breakpad-LICENSE.md
+  packageName: breakpad
+  packageType: null
+  source:
+    branch: master
+    change: ed62985568312ccbdd84d45225636789d5b431bd
+    path: https://gitlab/carbon/carbonite-externals/breakpad.git
+    scm: git
+  swipat: http://nvbugs/2600212
+  version: 112-ed629855-linux-x86_64
+brotli:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: brotli-LICENSE.txt
+  packageName: brotli
+  packageType: null
+  source:
+    branch: null
+    change: null
+    path: https://gitlab/carbon/carbonite-externals/brotli.git
+    scm: git
+  swipat: http://nvbugs/2819484
+  version: null
+bzip2:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/python/3.7.11+pipeline2657753.680a0c46-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: bzip2-LICENSE.txt
+  packageName: bzip2
+  packageType: null
+  source:
+    branch: main
+    change: 0f1f8ab112bc447711a75836c2c0d63426c53309
+    path: https://gitlab/omniverse/externals/bzip2-build.git
+    scm: git
+  swipat: http://nvbugs/3157491
+  version: 1.0.8+20210719.0f1f8ab1+pipeline2610806+main-linux-x86_64
+bzip2_1:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/python/3.8.11+pipeline2657754.5eaeb5ae-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: bzip2-LICENSE.txt
+  packageName: bzip2
+  packageType: null
+  source:
+    branch: main
+    change: 0f1f8ab112bc447711a75836c2c0d63426c53309
+    path: https://gitlab/omniverse/externals/bzip2-build.git
+    scm: git
+  swipat: http://nvbugs/3157491
+  version: 1.0.8+20210719.0f1f8ab1+pipeline2610806+main-linux-x86_64
+carb_gfx_plugins:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  internalLicense: true
+  licenseFile: carb_gfx_plugins-LICENSE.txt
+  packageName: carb_gfx_plugins
+  packageType: null
+  source:
+    branch: master
+    change: 8ecee4d6706a11cfe6ba311f65c0d1c959933ab9
+    path: https://gitlab/carbon/graphene.git
+    scm: git
+  swipat: null
+  version: 2019.1.607-8ecee4d6-linux-x86_64
 carbonite:
   licenseFile: carbonite-LICENSE.txt
   packageName: carbonite
   packageType: packman
   source:
     branch: release_106
-    change: 6e569a788a718763c9aa349361d81d9f150323eb
+    change: cbea4d40f466be2c45dc9bffd70b3d46ec94d3af
     path: https://gitlab/omniverse/carbonite.git
     scm: git
   swipat: null
-  version: 106.19.3393-6e569a78-106-linux-x86_64
+  version: 106.20.3783-cbea4d40-106-linux-x86_64
+certifi:
+  licenseFile: null
+  packageName: certifi
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 2021.5.30
+charset-normalizer:
+  licenseFile: null
+  packageName: charset-normalizer
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 2.0.4
+concurrentqueue:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: concurrentqueue-LICENSE.md
+  packageName: concurrentqueue
+  packageType: null
+  source:
+    branch: nv-master
+    change: c65e8fc7f9d3e2f4ec2bfb322cbc54382aaca50c
+    path: https://gitlab/carbon/carbonite-externals/concurrentqueue
+    scm: git
+  swipat: http://nvbugs/2678359
+  version: 1.0.0-beta-4-c65e8fc7
+construct:
+  licenseFile: null
+  packageName: construct
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 2.10.61
+cpptoml:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: cpptoml-LICENSE.md
+  packageName: cpptoml
+  packageType: null
+  source:
+    branch: nv-master
+    change: dccb341911dd4855ec4b69095f21e5f2466b6dd5
+    path: https://gitlab/carbon/carbonite-externals/cpptoml
+    scm: git
+  swipat: http://nvbugs/2614606
+  version: 0.1.1-5-dccb3419
 cuda:
   licenseFile: cuda-LICENSE.txt
   packageName: cuda
@@ -53,7 +215,24 @@ cuda:
     scm: null
   swipat: n/a
   version: null
+cxxopts:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: cxxopts-LICENSE.md
+  packageName: cxxopts
+  packageType: null
+  source:
+    branch: nv-master
+    change: cf24126553c1987a71bedd5d0944dcce1edb5d07
+    path: https://gitlab/carbon/carbonite-externals/cxxopts
+    scm: git
+  swipat: http://nvbugs/2679422
+  version: 2.2.0-45-cf241265
 doctest:
+  inheritedFrom:
+  - self
+  - carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
   licenseFile: doctest-LICENSE.txt
   packageName: doctest
   packageType: packman
@@ -62,7 +241,8 @@ doctest:
     change: b29bc767ad8d9184c1e2595e3b69b454aab1670e
     path: https://gitlab/carbon/carbonite-externals/doctest.git
     scm: git
-  swipat: http://nvbugs/2802670
+  swipat:
+  - http://nvbugs/2802670
   version: 2.4.0-b29bc767
 fmt:
   licenseFile: fmt-LICENSE.md
@@ -75,6 +255,256 @@ fmt:
     scm: git
   swipat: http://nvbugs/2600226
   version: 5.2.1-7-9980f06d
+forgeaudio:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: forgeaudio-LICENSE.md
+  packageName: forgeaudio
+  packageType: null
+  source:
+    branch: merge-request
+    change: 22d7bd3bd5d97a0239c585149120eaee7f568807
+    path: https://gitlab/forge/winex.git
+    scm: git
+  swipat: null
+  version: 1.202107142586737.22d7bd3bd5-linux-x86_64
+glfw:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: glfw-LICENSE.md
+  packageName: glfw
+  packageType: null
+  source:
+    branch: nv-master
+    change: bd315677234d70adf6ce6fce0808eccbfa9f8a3e
+    path: https://gitlab/omniverse/externals/glfw.git
+    scm: git
+  swipat: http://nvbugs/2676413
+  version: 3.3.43-bd315677-linux-x86_64
+ipykernel:
+  licenseFile: null
+  packageName: ipykernel
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 6.2.0
+kaguya:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: kaguya-LICENSE.md
+  packageName: kaguya
+  packageType: null
+  source:
+    branch: master
+    change: 0b81e5086c15f0d36dd946b377e308c9b1a3c527
+    path: https://gitlab/carbon/carbonite-externals/kaguya
+    scm: git
+  swipat: http://nvbugs/2674695
+  version: master-4-0b81e508
+libcurl:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: libcurl-LICENSE.txt
+  packageName: libcurl
+  packageType: null
+  source:
+    branch: null
+    change: null
+    path: https://gitlab/carbon/carbonite-externals/libcurl.git
+    scm: git
+  swipat: http://nvbugs/2781914
+  version: null
+libffi:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/python/3.7.11+pipeline2657753.680a0c46-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: libffi-LICENSE.txt
+  packageName: libffi
+  packageType: null
+  source:
+    branch: main
+    change: 5155a4162f6ce0ce5d3845d69c61092b4ecfabe0
+    path: https://gitlab/omniverse/externals/libffi-build.git
+    scm: git
+  swipat: http://nvbugs/3217408
+  version: 3.3+20210720.5155a416+pipeline2616525+main-linux-x86_64
+libffi_1:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/python/3.8.11+pipeline2657754.5eaeb5ae-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: libffi-LICENSE.txt
+  packageName: libffi
+  packageType: null
+  source:
+    branch: main
+    change: 5155a4162f6ce0ce5d3845d69c61092b4ecfabe0
+    path: https://gitlab/omniverse/externals/libffi-build.git
+    scm: git
+  swipat: http://nvbugs/3217408
+  version: 3.3+20210720.5155a416+pipeline2616525+main-linux-x86_64
+libflac:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: libflac-LICENSE.txt
+  packageName: libflac
+  packageType: null
+  source:
+    branch: main
+    change: f63f14c331d4fb9fc706a96f0b0b66a57e05261e
+    path: https://gitlab/omniverse/externals/flac-build.git
+    scm: git
+  swipat: http://nvbugs/2682137
+  version: 1.3.3-313ab585-linux-f63f14c3
+libogg:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: libogg-LICENSE.txt
+  packageName: libogg
+  packageType: null
+  source:
+    branch: master
+    change: df9a6f552efeabf48a0725d6cb9be1608f7d5ea8
+    path: https://gitlab/carbon/carbonite-externals/xiph-codecs
+    scm: git
+  swipat: http://nvbugs/2672161
+  version: 1.3.4-linux-47-df9a6f55
+libopus:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: libopus-LICENSE.txt
+  packageName: libopus
+  packageType: null
+  source:
+    branch: master
+    change: 3ff31e54c0b7ba2bb92b30ce2479251413626b06
+    path: https://gitlab/carbon/carbonite-externals/xiph-codecs
+    scm: git
+  swipat: http://nvbugs/3059252
+  version: 1.3.1-linux-3ff31e54
+libunwind:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: libunwind-LICENSE.md
+  packageName: libunwind
+  packageType: null
+  source:
+    branch: nv-master
+    change: 47c3e225c3c87d5da193ccdd186938ba7e9f8368
+    path: https://gitlab/carbon/carbonite-externals/libunwind
+    scm: git
+  swipat: http://nvbugs/200543832
+  version: 1.4-15-linux-x86_64-47c3e225
+libvorbis:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: libvorbis-LICENSE.txt
+  packageName: libvorbis
+  packageType: null
+  source:
+    branch: master
+    change: 356bf1c117e2c333f5fa774007d361ac01a1690f
+    path: https://gitlab/carbon/carbonite-externals/xiph-codecs
+    scm: git
+  swipat: http://nvbugs/2672161
+  version: 1.3.7-linux-356bf1c1
+llvmlite:
+  licenseFile: null
+  packageName: llvmlite
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 0.37.0
+lua:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: lua-LICENSE.md
+  packageName: lua
+  packageType: null
+  source:
+    branch: master
+    change: 9882100380fd0229625ff1ca8e13d2de962bbbf8
+    path: https://gitlab/carbon/carbonite-externals/lua
+    scm: git
+  swipat: http://nvbugs/2676244
+  version: 5.3.4-9882100-linux-x86_64
+matplotlib:
+  licenseFile: null
+  packageName: matplotlib
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 3.4.3
+minimp3:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: minimp3-LICENSE.txt
+  packageName: minimp3
+  packageType: null
+  source:
+    branch: master
+    change: de6164cdce1282c411bb0f0d99a52aeb72f840e1
+    path: https://gitlab/carbon/carbonite-externals/minimp3.git
+    scm: git
+  swipat: http://nvbugs/3125227
+  version: 0-de6164cd
+nest-asyncio:
+  licenseFile: null
+  packageName: nest-asyncio
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 1.5.1
+numba:
+  licenseFile: null
+  packageName: numba
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 0.51.2
+numpy-quaternion:
+  licenseFile: null
+  packageName: numpy-quaternion
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 2020.9.5.14.42.2
 nv_usd:
   licenseFile: nv_usd-LICENSE.md
   packageName: nv_usd
@@ -86,6 +516,64 @@ nv_usd:
     scm: git
   swipat: http://nvbugs/2515781
   version: null
+omni-config-cpp:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: omni-config-cpp-LICENSE.txt
+  packageName: omni-config-cpp
+  packageType: null
+  source:
+    branch: main
+    change: b72aae2a3decbdafe68c260ef9fa29d8bfcb9515
+    path: https://gitlab/omniverse/omni-config-cpp.git
+    scm: git
+  swipat: n/a
+  version: 2.0.2+tc46
+openssl:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/python/3.7.11+pipeline2657753.680a0c46-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: openssl-LICENSE.txt
+  packageName: openssl
+  packageType: null
+  source:
+    branch: openssl-1.1.1k
+    change: 1c7177a60cbb8816b29cc92c3a37de1e5fb608bf
+    path: https://gitlab/carbon/carbonite-externals/openssl.git
+    scm: git
+  swipat: http://nvbugs/2820294
+  version: 1.1.1k-55.1c7177a6-linux-x86_64
+openssl_1:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/python/3.8.11+pipeline2657754.5eaeb5ae-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: openssl-LICENSE.txt
+  packageName: openssl
+  packageType: null
+  source:
+    branch: openssl-1.1.1k
+    change: 1c7177a60cbb8816b29cc92c3a37de1e5fb608bf
+    path: https://gitlab/carbon/carbonite-externals/openssl.git
+    scm: git
+  swipat: http://nvbugs/2820294
+  version: 1.1.1k-55.1c7177a6-linux-x86_64
+openssl_2:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: openssl-LICENSE.txt
+  packageName: openssl
+  packageType: null
+  source:
+    branch: openssl-1.1.1k
+    change: 1c7177a60cbb8816b29cc92c3a37de1e5fb608bf
+    path: https://gitlab/carbon/carbonite-externals/openssl.git
+    scm: git
+  swipat: http://nvbugs/2820294
+  version: 1.1.1k-55.1c7177a6-linux-x86_64
 physxsdk:
   licenseFile: physxsdk-LICENSE.md
   packageName: physxsdk
@@ -106,7 +594,8 @@ pybind11:
     change: 9a056c90938113a396e796d0a5af78941d0d6d97
     path: https://gitlab/carbon/carbonite-externals/pybind11
     scm: git
-  swipat: http://nvbugs/2520728
+  swipat:
+  - http://nvbugs/2520728
   version: 2.3.dev1-19-9a056c90
 python:
   licenseFile: python-LICENSE.txt
@@ -119,6 +608,137 @@ python:
     scm: git
   swipat: http://nvbugs/3156615
   version: null
+python_1:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: python-LICENSE.txt
+  packageName: python
+  packageType: null
+  source:
+    branch: nv-3-7
+    change: 680a0c461cf09357aee2f8def669605da0113f0c
+    path: https://gitlab/omniverse/externals/python-build.git
+    scm: git
+  swipat: http://nvbugs/3156615
+  version: 3.7.11+pipeline2657753.680a0c46-linux-x86_64
+python_1_1:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: python-LICENSE.txt
+  packageName: python
+  packageType: null
+  source:
+    branch: nv-3-8
+    change: 5eaeb5ae791a816ba6bcc20a0905288ee61cab28
+    path: https://gitlab/omniverse/externals/python-build.git
+    scm: git
+  swipat: http://nvbugs/3156615
+  version: 3.8.11+pipeline2657754.5eaeb5ae-linux-x86_64
+rapidjson:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: rapidjson-LICENSE.md
+  packageName: rapidjson
+  packageType: null
+  source:
+    branch: master
+    change: b4cf59b6a7c1c6e95d6dfbc1ce155c9d4c4767a5
+    path: https://gitlab/carbon/carbonite-externals/rapidjson
+    scm: git
+  swipat: http://nvbugs/2674747
+  version: 5.2.1-5-b4cf59b6
+requests:
+  licenseFile: null
+  packageName: requests
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 2.26.0
+scipy:
+  licenseFile: null
+  packageName: scipy
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 1.5.4
+selenium:
+  licenseFile: null
+  packageName: selenium
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 3.141.0
+sqlite:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/python/3.7.11+pipeline2657753.680a0c46-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: sqlite-LICENSE.txt
+  packageName: sqlite
+  packageType: null
+  source:
+    branch: main
+    change: 163822067d37876be35747c63feb43f5baebfe25
+    path: https://gitlab/omniverse/externals/sqlite-build.git
+    scm: git
+  swipat: http://nvbugs/3153700
+  version: 3.33.0+20210719.16382206+pipeline2611100+main-linux-x86_64
+sqlite_1:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/python/3.8.11+pipeline2657754.5eaeb5ae-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: sqlite-LICENSE.txt
+  packageName: sqlite
+  packageType: null
+  source:
+    branch: main
+    change: 163822067d37876be35747c63feb43f5baebfe25
+    path: https://gitlab/omniverse/externals/sqlite-build.git
+    scm: git
+  swipat: http://nvbugs/3153700
+  version: 3.33.0+20210719.16382206+pipeline2611100+main-linux-x86_64
+tinytoml:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/omni-config-cpp/2.0.2+tc46/PACKAGE-DEPS.yaml
+  licenseFile: tinytoml-LICENSE.md
+  packageName: tinytoml
+  packageType: null
+  source:
+    branch: nv-master
+    change: e55461ce42d6957efabe445e89c510879ede6379
+    path: https://gitlab/carbon/carbonite-externals/tinytoml
+    scm: git
+  swipat: http://nvbugs/2530633
+  version: nv-master-2-e55461ce
+urllib3:
+  licenseFile: null
+  packageName: urllib3
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 1.25.8
 usd-audio-schema:
   licenseFile: usd_audio_schema-LICENSE.md
   packageName: usd-audio-schema
@@ -152,3 +772,101 @@ usd_ext_isaac:
     scm: git
   swipat: null
   version: null
+valgrind-header:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/forgeaudio/1.202107142586737.22d7bd3bd5-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: valgrind-header-LICENSE.txt
+  packageName: valgrind-header
+  packageType: null
+  source:
+    branch: master
+    change: b80744e792f95d336c1ab847514042e885153360
+    path: https://gitlab/jfeather/valgrind-header.git
+    scm: git
+  swipat: http://nvbugs/3028903
+  version: 0-b80744e7
+valgrind-header_1:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: valgrind-header-LICENSE.txt
+  packageName: valgrind-header
+  packageType: null
+  source:
+    branch: master
+    change: b80744e792f95d336c1ab847514042e885153360
+    path: https://gitlab/jfeather/valgrind-header.git
+    scm: git
+  swipat: http://nvbugs/3028903
+  version: 0-b80744e7
+valijson:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: valijson-LICENSE.txt
+  packageName: valijson
+  packageType: null
+  source:
+    branch: main
+    change: 3a71e89ea317cc1ad2608c830f757bcf0ec92e44
+    path: https://gitlab/omniverse/externals/valijson-build.git
+    scm: git
+  swipat: https://nvbugs/3312305
+  version: 0.4-main.3a71e89e-linux-x86_64
+webbot:
+  licenseFile: null
+  packageName: webbot
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: '0.34'
+zlib:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/python/3.7.11+pipeline2657753.680a0c46-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: zlib-LICENSE.md
+  packageName: zlib
+  packageType: null
+  source:
+    branch: nv-master
+    change: b6e15c64303e6e00ff10be2fda41b820889623f7
+    path: https://gitlab/carbon/carbonite-externals/zlib
+    scm: git
+  swipat: http://nvbugs/2515781
+  version: 1.2.11-linux-x86_64-45-b6e15c64
+zlib_1:
+  depth: 2
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - /mnt/packman-repo/u18/chk/python/3.8.11+pipeline2657754.5eaeb5ae-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: zlib-LICENSE.md
+  packageName: zlib
+  packageType: null
+  source:
+    branch: nv-master
+    change: b6e15c64303e6e00ff10be2fda41b820889623f7
+    path: https://gitlab/carbon/carbonite-externals/zlib
+    scm: git
+  swipat: http://nvbugs/2515781
+  version: 1.2.11-linux-x86_64-45-b6e15c64
+zlib_2:
+  depth: 1
+  inheritedFrom:
+  - /mnt/ubuntu_data/packman-repo/chk/carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  licenseFile: zlib-LICENSE.md
+  packageName: zlib
+  packageType: null
+  source:
+    branch: nv-master
+    change: b6e15c64303e6e00ff10be2fda41b820889623f7
+    path: https://gitlab/carbon/carbonite-externals/zlib
+    scm: git
+  swipat: http://nvbugs/2515781
+  version: 1.2.11-linux-x86_64-45-b6e15c64
