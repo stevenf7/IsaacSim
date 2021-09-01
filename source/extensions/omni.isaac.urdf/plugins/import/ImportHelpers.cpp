@@ -13,6 +13,7 @@
 
 #include <carb/logging/Log.h>
 
+#include <boost/algorithm/string.hpp>
 
 namespace omni
 {
@@ -215,7 +216,36 @@ std::string resolveXrefPath(const std::string& assetRoot, const std::string& urd
     {
         return xrefPath;
     }
-
+    // Check if ROS_PACKAGE_PATH is defined and if so go through all searching for the package
+    char* exists = getenv("ROS_PACKAGE_PATH");
+    if (exists != NULL)
+    {
+        std::string rosPackagePath = std::string(exists);
+        if (rosPackagePath.size())
+        {
+            std::vector<std::string> results;
+            boost::split(results, rosPackagePath, [](char c) { return c == ':'; });
+            for (size_t i = 0; i < results.size(); i++)
+            {
+                std::string path = results[i];
+                if (path.size() > 0)
+                {
+                    auto packagePath = pathJoin(path, xrefPath);
+                    CARB_LOG_INFO("Testing ROS Package path '%s' (%d)\n", packagePath.c_str(),
+                                  int(testPath(packagePath.c_str())));
+                    if (testPath(packagePath.c_str()) == PathType::eFile)
+                    {
+                        return packagePath;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        CARB_LOG_WARN("ROS_PACKAGE_PATH not defined");
+    }
+    CARB_LOG_WARN("Path: %s not found", xrefpath.c_str());
     // if we got here, we failed to resolve the path
     return std::string();
 }

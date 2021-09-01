@@ -137,12 +137,20 @@ def multi_cb_builder(
     return cbs
 
 
-def str_builder(label="", type="stringfield", default_val=" ", tooltip="", on_clicked_fn=None, use_folder_picker=False):
+def str_builder(
+    label="",
+    type="stringfield",
+    default_val=" ",
+    tooltip="",
+    on_clicked_fn=None,
+    use_folder_picker=False,
+    read_only=False,
+):
     """Creates a Stylized Stringfield Widget"""
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         str_field = ui.StringField(
-            name="StringField", width=ui.Fraction(1), height=0, alignment=ui.Alignment.LEFT_CENTER
+            name="StringField", width=ui.Fraction(1), height=0, alignment=ui.Alignment.LEFT_CENTER, read_only=read_only
         ).model
         str_field.set_value(default_val)
 

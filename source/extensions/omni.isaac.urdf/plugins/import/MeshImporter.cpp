@@ -341,7 +341,7 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         Primvar.Set(uvs[j]);
     }
 
-    usdMesh.CreateSubdivisionSchemeAttr(pxr::VtValue(pxr::TfToken("none")));
+    usdMesh.CreateSubdivisionSchemeAttr(pxr::VtValue(pxr::TfToken("bilinear")));
     if (loadMaterials)
     {
         std::string prefix_path = usdStage->GetDefaultPrim().GetPrimPath().GetString();

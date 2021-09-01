@@ -32,6 +32,7 @@
 
 #include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxArticulationAPI.h>
+#include <physxSchema/physxCollisionAPI.h>
 #include <physxSchema/physxJointAPI.h>
 #include <physxSchema/physxSceneAPI.h>
 #include <usdPhysics/articulationRootAPI.h>
@@ -354,17 +355,25 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         if (prim)
         {
             pxr::UsdPhysicsCollisionAPI::Apply(prim);
-            pxr::UsdPhysicsMeshCollisionAPI physicsMeshAPI = pxr::UsdPhysicsMeshCollisionAPI::Apply(prim);
             if (link.collisions[i].geometry.type == UrdfGeometryType::SPHERE)
             {
-                physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->boundingSphere);
+                pxr::UsdPhysicsCollisionAPI::Apply(prim);
             }
             else if (link.collisions[i].geometry.type == UrdfGeometryType::BOX)
             {
-                physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->boundingCube);
+                pxr::UsdPhysicsCollisionAPI::Apply(prim);
+            }
+            else if (link.collisions[i].geometry.type == UrdfGeometryType::CYLINDER)
+            {
+                pxr::UsdPhysicsCollisionAPI::Apply(prim);
+                // Use custom geometry for cylinders to get smooth cylinders (reduces perf with GPU physics)
+                prim.CreateAttribute(
+                        pxr::PhysxSchemaTokens->physxCollisionCustomGeometry, pxr::SdfValueTypeNames->Bool, true)
+                    .Set(true);
             }
             else
             {
+                pxr::UsdPhysicsMeshCollisionAPI physicsMeshAPI = pxr::UsdPhysicsMeshCollisionAPI::Apply(prim);
                 physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexHull);
             }
             pxr::UsdGeomMesh(prim).CreatePurposeAttr().Set(pxr::UsdGeomTokens->guide);
