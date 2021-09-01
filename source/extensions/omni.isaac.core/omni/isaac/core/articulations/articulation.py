@@ -21,10 +21,10 @@ class Articulation(XFormPrim):
     def __init__(
         self,
         prim: Usd.Prim,
-        name: Optional(str) = None,
-        position: Optional(np.ndarray) = None,
-        orientation: Optional(np.ndarray) = None,
-        articulation_controller: Optional(ArticulationController) = None,
+        name: Optional[str] = None,
+        position: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
+        articulation_controller: Optional[ArticulationController] = None,
     ) -> None:
         """[summary]
 
@@ -117,7 +117,7 @@ class Articulation(XFormPrim):
         # # Information about the DOF properties of the articulated object.
         # print("--- DOF properties:\n", self._read_dof_properties())
 
-    def _read_kinematic_hierarchy(self, body_index: Optional(int) = None, indent_level: int = 0) -> None:
+    def _read_kinematic_hierarchy(self, body_index: Optional[int] = None, indent_level: int = 0) -> None:
         """[summary]
 
         Args:
@@ -312,7 +312,7 @@ class Articulation(XFormPrim):
         self._dc_interface.set_rigid_body_linear_velocity(self._root_handle, linear_velocity)
         return
 
-    def set_pose(self, position: Optional(np.ndarray) = None, orientation: Optional(np.ndarray) = None) -> None:
+    def set_pose(self, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None) -> None:
         """[summary]
 
         Args:
@@ -328,7 +328,7 @@ class Articulation(XFormPrim):
         self._dc_interface.set_rigid_body_pose(self._root_handle, pose)
         return
 
-    def get_pose(self) -> Tuple(np.ndarray, np.ndarray):
+    def get_pose(self) -> Tuple[np.ndarray, np.ndarray]:
         """[summary]
 
         Args:

@@ -50,7 +50,7 @@ class DOFPDController(DOFArticulationController):
         super().__init__(articulation_handle, dof_handle, dof_index)
         return
 
-    def set_gains(self, dof_props: np.ndarray, kp: Optional(float) = None, kd: Optional(float) = None) -> None:
+    def set_gains(self, dof_props: np.ndarray, kp: Optional[float] = None, kd: Optional[float] = None) -> None:
         """[summary]
 
         Args:
@@ -133,7 +133,7 @@ class PDArticulationController(ArticulationController):
             self._dof_controllers[i].apply_action(control_actions.get_dof_action(i))
         return
 
-    def set_gains(self, kps: Optional(np.ndarray) = None, kds: Optional(np.ndarray) = None) -> None:
+    def set_gains(self, kps: Optional[np.ndarray] = None, kds: Optional[np.ndarray] = None) -> None:
         """[summary]
 
         Args:

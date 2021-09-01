@@ -16,9 +16,9 @@ class XFormPrim(object):
     def __init__(
         self,
         prim: Usd.Prim,
-        name: Optional(str) = None,
-        position: Optional(np.ndarray) = None,
-        orientation: Optional(np.ndarray) = None,
+        name: str,
+        position: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
         visible: bool = True,
     ) -> None:
         """Provides common functionalities to prims already existing in the stage
@@ -50,7 +50,7 @@ class XFormPrim(object):
         return self._prim.GetPath().pathString
 
     @property
-    def name(self) -> Optional(str):
+    def name(self) -> Optional[str]:
         """
         Returns:
             str: name given to the prim when instantiating it. Otherwise None.
@@ -186,7 +186,7 @@ class XFormPrim(object):
             xform_op.Set(Gf.Matrix4d().SetRotateOnly(rotm))
         return
 
-    def set_usd_pose(self, position: Optional(np.ndarray) = None, quat: Optional(np.ndarray) = None) -> None:
+    def set_usd_pose(self, position: Optional[np.ndarray] = None, quat: Optional[np.ndarray] = None) -> None:
         """Sets the pose of the prim in stage. The method does this through the USD API.
 
         Args:
@@ -200,7 +200,7 @@ class XFormPrim(object):
             self._set_usd_orientation(quat=quat)
         return
 
-    def get_usd_pose(self, as_matrix: bool = False) -> Union(np.ndarray, Tuple(np.ndarray, np.ndarray)):
+    def get_usd_pose(self, as_matrix: bool = False) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         """Gets the pose of the prim in stage. The method does this through the USD API.
 
         Args:

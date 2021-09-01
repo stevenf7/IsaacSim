@@ -16,7 +16,7 @@ class GroundPlane(CollisionPrim):
         self,
         stage: Usd.Prim,
         prim_path: str,
-        name: str = None,
+        name: str,
         size: float = 50.0,
         z_position: float = 0.0,
         thickness: float = 0.01,

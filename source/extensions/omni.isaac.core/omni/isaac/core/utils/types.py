@@ -77,9 +77,9 @@ class JointsState(object):
 class ArticulationAction(object):
     def __init__(
         self,
-        joint_positions: Optional(np.ndarray) = None,
-        joint_velocities: Optional(np.ndarray) = None,
-        joint_torques: Optional(np.ndarray) = None,
+        joint_positions: Optional[np.ndarray] = None,
+        joint_velocities: Optional[np.ndarray] = None,
+        joint_torques: Optional[np.ndarray] = None,
     ):
         """[summary]
 
