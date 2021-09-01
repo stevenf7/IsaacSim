@@ -51,9 +51,6 @@ name = "omni.isaac.samples.scripts.ur10_preview"
 name = "omni.isaac.samples.scripts.navigation_preview"
 
 [[python.module]]
-name = "omni.isaac.samples.scripts.dofbot_rmp_sample"
-
-[[python.module]]
 name = "omni.isaac.samples.scripts.rmp_sample"
 
 [[python.module]]
