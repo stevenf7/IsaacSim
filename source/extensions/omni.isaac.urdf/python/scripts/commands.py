@@ -23,14 +23,13 @@ class URDFCreateImportConfig(omni.kit.commands.Command):
 
     """
 
-    def __init__(self,):
+    def __init__(self) -> None:
         pass
 
-    def do(self):
+    def do(self) -> _urdf.ImportConfig:
         return _urdf.ImportConfig()
-        pass
 
-    def undo(self):
+    def undo(self) -> None:
         pass
 
 
@@ -47,17 +46,16 @@ class URDFParseFile(omni.kit.commands.Command):
         :obj:`omni.isaac.urdf._urdf.UrdfRobot`: Parsed URDF stored in an internal structure.
     """
 
-    def __init__(self, urdf_path: str = "", import_config=_urdf.ImportConfig()):
+    def __init__(self, urdf_path: str = "", import_config: _urdf.ImportConfig = _urdf.ImportConfig()) -> None:
         self._root_path, self._filename = os.path.split(os.path.abspath(urdf_path))
         self._import_config = import_config
         self._urdf_interface = _urdf.acquire_urdf_interface()
         pass
 
-    def do(self):
+    def do(self) -> _urdf.UrdfRobot:
         return self._urdf_interface.parse_urdf(self._root_path, self._filename, self._import_config)
-        pass
 
-    def undo(self):
+    def undo(self) -> None:
         pass
 
 
@@ -65,31 +63,29 @@ class URDFParseAndImportFile(omni.kit.commands.Command):
     """
     This command parses and imports a given urdf and returns a UrdfRobot object
 
-    Args: 
+    Args:
         arg0 (:obj:`str`): The absolute path to where the urdf file is
 
         arg1 (:obj:`omni.isaac.urdf._urdf.ImportConfig`): Import Configuration
-    
+
     Returns:
-        :obj:`str`: Path to the robot on the USD stage. 
+        :obj:`str`: Path to the robot on the USD stage.
     """
 
-    def __init__(self, urdf_path: str = "", import_config=_urdf.ImportConfig()):
+    def __init__(self, urdf_path: str = "", import_config=_urdf.ImportConfig()) -> None:
         self._urdf_path = urdf_path
         self._root_path, self._filename = os.path.split(os.path.abspath(urdf_path))
         self._import_config = import_config
         self._urdf_interface = _urdf.acquire_urdf_interface()
         pass
 
-    def do(self):
+    def do(self) -> str:
         status, imported_robot = omni.kit.commands.execute(
             "URDFParseFile", urdf_path=self._urdf_path, import_config=self._import_config
         )
         return self._urdf_interface.import_robot(self._root_path, self._filename, imported_robot, self._import_config)
 
-        pass
-
-    def undo(self):
+    def undo(self) -> None:
         pass
 
 

@@ -2,12 +2,24 @@
 CHANGELOG
 **********
 
-[0.1.6] - 2021-07-31
+[0.1.6] - 2021-08-31
 ========================
 
-Added
+Changed
 -------
-- New UI
+- Updated to New UI
+- Spheres and Cubes are treated as shapes
+- Cylinders are by default imported with custom geometry enabled
+- Joint drives are default force instead of acceleration
+
+Fixed
+-------
+- Meshes were not imported correctly, fixed subdivision scheme setting
+
+Removed
+--------
+- Parsing URDF is not a separate step with its own UI
+
 
 [0.1.5] - 2021-07-30
 ========================

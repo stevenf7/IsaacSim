@@ -143,7 +143,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(drive_target * wheel_radius / wheel_base, ang_vel[2], delta=0.1)
 
         # spin at large velocity
-        drive_target = 2.5
+        drive_target = 1.0
 
         self._dc.wake_up_articulation(art)
         self._dc.set_dof_velocity_target(left_wheel_ptr, -drive_target)

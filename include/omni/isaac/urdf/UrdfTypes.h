@@ -101,7 +101,7 @@ struct UrdfJointDrive
 {
     float target = 0.0;
     UrdfJointTargetType targetType = UrdfJointTargetType::POSITION;
-    UrdfJointDriveType driveType = UrdfJointDriveType::ACCELERATION;
+    UrdfJointDriveType driveType = UrdfJointDriveType::FORCE;
 };
 
 struct UrdfLimit
