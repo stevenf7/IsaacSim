@@ -7,10 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
-"""Dofbot Cube Detection Demonstration
+"""Dofbot RMP Cube Detection Demonstration
 
 Use a PyTorch dataloader together with OmniKit to generate scenes and groundtruth to
-train a [MobileNetV3](https://arxiv.org/abs/1905.02244) model.
+train a [MobileNetV3](https://arxiv.org/abs/1905.02244) model. (Uses RMP Dataset)
 """
 
 
@@ -21,7 +21,7 @@ import torch
 from torch.utils.data import DataLoader
 import torchvision
 
-from dofbot_rmp_dataset import RandomObjects
+from dofbot_rmp_dataset import RMPRandomObjects
 import ssl
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -29,18 +29,15 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 def main(args):
     device = "cuda"
-
     # Setup data
-    train_set = RandomObjects()
+    train_set = RMPRandomObjects()
     train_loader = DataLoader(train_set, batch_size=1, collate_fn=lambda x: tuple(zip(*x)))
 
-    """
     def handle_exit(self, *args, **kwargs):
         print("exiting cube detection dataset generation...")
         train_set.exiting = True
 
     signal.signal(signal.SIGINT, handle_exit)
-    """
 
     from omni.isaac.synthetic_utils import visualization as vis
 
@@ -58,12 +55,12 @@ def main(args):
         fig, axes = plt.subplots(1, 2, figsize=(14, 7))
 
     for i, train_batch in enumerate(train_loader):
-        """
+
         if i > args.max_iters or train_set.exiting:
             print("Exiting ...")
             train_set.kit.shutdown()
             break
-        """
+
         if args.eval_model == "":
             model.train()
 
