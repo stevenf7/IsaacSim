@@ -19,11 +19,11 @@ class GeometryPrim(XFormPrim):
         self,
         prim: Usd.Prim,
         geom: UsdGeom.Gprim,
-        name: str = None,
-        position: Optional(np.ndarray) = None,
-        orientation: Optional(np.ndarray) = None,
-        visibility: bool = True,
-        color: Optional(np.ndarray) = None,
+        name: str,
+        position: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
+        visible: bool = True,
+        color: Optional[np.ndarray] = None,
     ) -> None:
         """Provides common functionalities to geometry prims such as cube, sphere..etc.
 
@@ -35,9 +35,9 @@ class GeometryPrim(XFormPrim):
             orientation (np.ndarray, optional): quaternion orientation in the world frame to set the prim. 
                                               quaternion is scalar-first (w, x, y, z). shape is (4, ). Defaults to None.
             color (np.ndarray, optional): color to be applied to the geometric prim (R, G, B) 0-255. shape (3,). Defaults to None.
-            visibility (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
         """
-        super().__init__(prim, name=name, position=position, orientation=orientation, visibility=visibility)
+        super().__init__(prim, name=name, position=position, orientation=orientation, visible=visible)
         self._geom = geom
         if color is not None:
             self.set_usd_color(color)

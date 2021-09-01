@@ -17,7 +17,7 @@ def add_physics_material(
     static_friction: float,
     dynamic_friction: float,
     restitution: float,
-    density: Optional(float) = None,
+    density: Optional[float] = None,
 ) -> UsdShade.Material:
     """adds a physics material to the prim passed in as an argument with the specified material properties.
 

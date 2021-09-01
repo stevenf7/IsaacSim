@@ -8,7 +8,7 @@
 #
 
 import carb
-from typing import Optional, Any
+from typing import Any
 from pxr import Usd, UsdGeom
 
 
@@ -35,7 +35,7 @@ def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value
 
 
 # TODO: make a generic util for setting all layer properties
-def set_up_axis(stage: Usd.Stage, axis: Optional(UsdGeom.Tokens) = UsdGeom.Tokens.z) -> None:
+def set_up_axis(stage: Usd.Stage, axis: UsdGeom.Tokens = UsdGeom.Tokens.z) -> None:
     """Change the up axis of the current stage
 
     Args:

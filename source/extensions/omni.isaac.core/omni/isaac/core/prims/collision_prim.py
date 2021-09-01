@@ -19,11 +19,11 @@ class CollisionPrim(XFormPrim):
     def __init__(
         self,
         stage: Usd.Stage,
-        prim: UsdGeom.Gprim,
-        name: Optional(str) = None,
-        position: Optional(np.ndarray) = None,
-        orientation: Optional(np.ndarray) = None,
-        visibility: bool = True,
+        prim: Usd.Prim,
+        name: str,
+        position: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
+        visible: bool = True,
         density: float = 10.0,
         static_friction: float = 0.5,
         dynamic_friction: float = 0.5,
@@ -42,9 +42,9 @@ class CollisionPrim(XFormPrim):
             static_friction (float, optional): static friction to be applied on the physics material. Defaults to 0.0.
             dynamic_friction (float, optional): dynamic friction to be applied on the physics material. Defaults to 0.0.
             restitution (float, optional): restitution to be applied on the physics material. Defaults to 0.8.
-            visibility (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
         """
-        super().__init__(prim, name=name, position=position, orientation=orientation, visibility=visibility)
+        super().__init__(prim, name=name, position=position, orientation=orientation, visible=visible)
         # TODO: make sure the default physics material values makes sense and revisit the args explanation
         UsdPhysics.CollisionAPI.Apply(prim)
         self._material_prim = add_physics_material(

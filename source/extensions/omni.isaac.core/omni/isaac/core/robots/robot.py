@@ -17,10 +17,10 @@ class Robot(Articulation):
     def __init__(
         self,
         prim: Usd.Prim,
-        name: Optional(str) = None,
-        position: Optional(np.ndarray) = None,
-        orientation: Optional(np.ndarray) = None,
-        articulation_controller: Optional(ArticulationController) = None,
+        name: Optional[str] = None,
+        position: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
+        articulation_controller: Optional[ArticulationController] = None,
     ) -> None:
         """[summary]
 

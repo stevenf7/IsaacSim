@@ -18,13 +18,13 @@ class RigidPrim(XFormPrim):
     def __init__(
         self,
         prim: Usd.Prim,
-        name: Optional(str) = None,
-        position: Optional(np.ndarray) = None,
-        orientation: Optional(np.ndarray) = None,
-        visibility: bool = True,
-        mass: Optional(float) = None,
-        linear_velocity: Optional(np.ndarray) = None,
-        angular_velocity: Optional(np.ndarray) = None,
+        name: str,
+        position: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
+        visible: bool = True,
+        mass: Optional[float] = None,
+        linear_velocity: Optional[np.ndarray] = None,
+        angular_velocity: Optional[np.ndarray] = None,
     ) -> None:
         """Provides common functionalities to rigid prims such as cube, sphere..etc.
 
@@ -39,9 +39,9 @@ class RigidPrim(XFormPrim):
             mass (float, optional): mass of the rigid prim in kg. Defaults to None.
             linear_velocity (np.ndarray, optional): initial linear velocity of the rigid prim. Shape (3, ). Defaults to None.
             angular_velocity (np.ndarray, optional): initial angular velocity of the rigid prim. Shape (3, ). Defaults to None.
-            visibility (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
         """
-        super().__init__(prim, name=name, position=position, orientation=orientation, visibility=visibility)
+        super().__init__(prim, name=name, position=position, orientation=orientation, visible=visible)
         if prim.HasAPI(UsdPhysics.RigidBodyAPI):
             self._rigid_api = UsdPhysics.RigidBodyAPI(self._prim)
         else:
@@ -146,7 +146,7 @@ class RigidPrim(XFormPrim):
         self._dc_interface.set_rigid_body_linear_velocity(self._handle, linear_velocity)
         return
 
-    def set_pose(self, position: Optional(np.ndarray) = None, orientation: Optional(np.ndarray) = None) -> None:
+    def set_pose(self, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None) -> None:
         """Sets the pose of the prim in stage. The method does this through the physx API.
             Note: It has to be called while simulating i.e after .play() or .reset() is called
 
@@ -164,7 +164,7 @@ class RigidPrim(XFormPrim):
         self._dc_interface.set_rigid_body_pose(self._handle, pose)
         return
 
-    def get_pose(self) -> Tuple(np.ndarray, np.ndarray):
+    def get_pose(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Gets the current pose of the prim. Note: It has to be called while simulating i.e after .play() or .reset() is called
         

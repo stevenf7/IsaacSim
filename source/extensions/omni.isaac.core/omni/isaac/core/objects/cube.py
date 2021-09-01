@@ -20,10 +20,10 @@ class VisualCube(GeometryPrim):
         self,
         stage: Usd.Stage,
         prim_path: str,
-        name: Optional(str) = None,
-        position: Optional(np.ndarray) = None,
-        orientation: Optional(np.ndarray) = None,
-        color: Optional(np.ndarray) = None,
+        name: str,
+        position: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
+        color: Optional[np.ndarray] = None,
         size: float = 0.5,
     ) -> None:
         """[summary]
@@ -112,13 +112,13 @@ class DynamicCube(RigidPrim):
         self,
         stage: Usd.Stage,
         prim_path: str,
-        name: Optional(str) = None,
-        position: Optional(np.ndarray) = None,
-        orientation: Optional(np.ndarray) = None,
-        mass: Optional(float) = None,
-        color: Optional(np.ndarray) = None,
-        linear_velocity: Optional(np.ndarray) = None,
-        angular_velocity: Optional(np.ndarray) = None,
+        name: str,
+        position: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
+        mass: Optional[float] = None,
+        color: Optional[np.ndarray] = None,
+        linear_velocity: Optional[np.ndarray] = None,
+        angular_velocity: Optional[np.ndarray] = None,
         collisions_enabled: bool = True,
         static_friction: float = 0.0,
         dynamic_friction: float = 0.0,
@@ -154,6 +154,22 @@ class DynamicCube(RigidPrim):
             linear_velocity=linear_velocity,
             angular_velocity=angular_velocity,
         )
+        self._geom_prim = GeometryPrim(
+            prim=cubePrim, geom=cubeGeom, name=name, position=position, orientation=orientation, color=color
+        )
+        self._collision_prim = None
+        if collisions_enabled:
+            self._collision_prim = CollisionPrim(
+                stage=stage,
+                prim=cubePrim,
+                name=name,
+                position=position,
+                orientation=orientation,
+                density=None,
+                static_friction=static_friction,
+                dynamic_friction=dynamic_friction,
+                restitution=restitution,
+            )
         self.set_usd_size(size)
         self._default_state = DynamicCubeState(
             self._default_state.position,
@@ -163,22 +179,6 @@ class DynamicCube(RigidPrim):
             self._default_state.mass,
             size,
         )
-        self._geom_prim = GeometryPrim(
-            prim=cubePrim, geom=cubeGeom, name=name, position=position, orientation=orientation, color=color
-        )
-        self._collision_prim = None
-        if collisions_enabled:
-            self._collision_prim = CollisionPrim(
-                stage=stage,
-                prim=cubeGeom,
-                name=name,
-                position=position,
-                orientation=orientation,
-                density=None,
-                static_friction=static_friction,
-                dynamic_friction=dynamic_friction,
-                restitution=restitution,
-            )
         return
 
     def set_usd_size(self, size: float) -> None:
