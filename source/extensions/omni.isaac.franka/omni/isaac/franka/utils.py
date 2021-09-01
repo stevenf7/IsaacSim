@@ -6,5 +6,13 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.controllers.articulation_controllers import ArticulationController
-from omni.isaac.core.controllers.controller import BaseController
+import os
+
+
+def get_franka_usd_path() -> str:
+    """[summary]
+
+    Returns:
+        str: [description]
+    """
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../data/franka.usd")

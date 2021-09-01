@@ -255,6 +255,7 @@ group "exts"
     include ("source/extensions/omni.isaac.kit")
     include ("source/extensions/omni.isaac.pip_archive")
     include ("source/extensions/omni.isaac.core")
+    include ("source/extensions/omni.isaac.franka")
 
     -- include ("source/extensions/omni.isaac.samples_internal")
     -- include ("source/extensions/omni.isaac.exploded_view")

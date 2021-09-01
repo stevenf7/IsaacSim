@@ -57,7 +57,7 @@ class BaseTask(object):
         """
         raise NotImplementedError
 
-    def step(self, control_index: int, simulation_time: float):
+    def step(self, control_index: int, simulation_time: float) -> None:
         """[summary]
 
         Args:

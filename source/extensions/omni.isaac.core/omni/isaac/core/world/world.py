@@ -28,6 +28,7 @@ class World(SimulationContext):
         self._scene = Scene(self.stage)
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         # TODO: double check the stage units are actually set properly
+        # TODO: account for stage units properly across all new extensions
         if add_ground_plane:
             self._scene.add_ground_plane()
         self.start_simulation()
@@ -108,6 +109,6 @@ class World(SimulationContext):
             render (bool, optional): [description]. Defaults to True.
         """
         if self._scene_finalized and self._current_task is not None:
-            self._current_task.step(self.time_step_index, self.wallclock_time)
+            self._current_task.step(self.time_step_index, self.time)
         super().step(number_of_steps=number_of_steps, render=render)
         return
