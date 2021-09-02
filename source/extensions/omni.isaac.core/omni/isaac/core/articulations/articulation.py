@@ -362,3 +362,12 @@ class Articulation(XFormPrim):
             np.ndarray: [description]
         """
         raise NotImplementedError
+
+    def apply_action(self, control_actions: ArticulationAction) -> None:
+        """[summary]
+
+        Args:
+            control_actions (ArticulationAction): [description]
+        """
+        self._articulation_controller.apply_action(control_actions=control_actions)
+        return
