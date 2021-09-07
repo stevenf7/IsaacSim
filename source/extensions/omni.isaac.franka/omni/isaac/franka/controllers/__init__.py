@@ -7,3 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.franka.controllers.rmpflow_ik import RMPFlowIKSolver
+from omni.isaac.franka.controllers.rmpflow_pick_place import RMPFlowPickPlace

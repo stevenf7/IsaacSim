@@ -21,7 +21,7 @@ class TargetFollower(BaseTask):
         self.my_franka = None
         self.target_cube = None
         self.obstacle_cubes = dict()
-        pass
+        return
 
     def set_up_scene(self, scene: Scene) -> None:
         """[summary]
