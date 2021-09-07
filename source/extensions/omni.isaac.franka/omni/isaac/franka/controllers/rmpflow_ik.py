@@ -6,12 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from numpy.core.fromnumeric import reshape
 from omni.isaac.core.controllers.controller import BaseController
 from omni.isaac.motion_generation import MotionGenerator
 from omni.isaac.core.utils.types import ArticulationAction
+from typing import Optional
+from omni.isaac.core.utils.rotations import rot_matrix_from_quat
 import os
 import json
 import numpy as np
+import lula
 
 
 class RMPFlowIKSolver(BaseController):
@@ -39,10 +43,23 @@ class RMPFlowIKSolver(BaseController):
 
         return config
 
-    def forward(self, current_joint_positions: np.ndarray, target_end_effector_position: np.ndarray):
-        self.mg._motion_policy._policy.set_end_effector_target(
-            position=np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1)
-        )
+    def forward(
+        self,
+        current_joint_positions: np.ndarray,
+        target_end_effector_position: np.ndarray,
+        target_end_effector_orientation: Optional[np.ndarray] = None,
+    ):
+        if target_end_effector_orientation is not None:
+            self.mg._motion_policy._policy.set_end_effector_target(
+                position=np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1),
+                orientation=lula.Rotation3(
+                    np.array(rot_matrix_from_quat(target_end_effector_orientation), dtype=np.float64).reshape(3, 3)
+                ),
+            )
+        else:
+            self.mg._motion_policy._policy.set_end_effector_target(
+                position=np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1)
+            )
         self.mg._motion_policy.update()
         integration_dt = self.mg.sim_timestep
         joint_positions, joint_velocities, joint_accel = self.mg.get_joint_states()

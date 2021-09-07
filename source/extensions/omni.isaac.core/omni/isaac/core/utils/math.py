@@ -6,5 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.franka.tasks.target_follower import TargetFollower
-from omni.isaac.franka.tasks.pick_place import PickPlace
+
+import numpy as np
+
+
+def radians_to_degrees(rad_angles: np.ndarray) -> np.ndarray:
+    return rad_angles * (180.0 / np.pi)
