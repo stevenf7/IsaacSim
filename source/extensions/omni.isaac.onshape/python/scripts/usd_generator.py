@@ -267,6 +267,7 @@ class UsdGenerator:
         self.assembly_stage = None
         self.stage_path = None
         self.assembly_building_pool = ThreadPoolExecutor(max_workers=10)
+        self.assembly_children_stack = {}
 
         # Dictionary of materials key: color string from the source, value: usd path in the material stage
         self._materials_dict = {}
@@ -699,14 +700,14 @@ class UsdGenerator:
         for a in assembly.get_children():
             self.get_assembly_paths(a, path, a_id)
 
-    def write_assembly_xform(
-        self, assembly, parent, parent_id, parent_global_pose, level=0, in_group=None, make_collision=False
-    ):
+    def write_assembly_xform(self, assembly, parent_id, in_group=None, make_collision=False):
         # print(level, assembly   )
         # print(assembly.transform)
         name = assembly.get_item("name").strip()[:-4]
         a_id = parent_id + assembly.get_item("id")
         path = self.assemblies_path[a_id]
+        if self.rig_physics:
+            self.make_groups_xform(assembly, path, a_id)
         # print(assembly.get_item("id"), path)
         parent_prim = self.assembly_stage.GetPrimAtPath(os.path.dirname(path))
         if parent_prim:
@@ -733,14 +734,19 @@ class UsdGenerator:
                 xform = UsdGeom.Xformable(self.assembly_stage.GetPrimAtPath(os.path.join(source, basename)))
                 xform.ClearXformOpOrder()
                 self.assembly_stage.Save()
+            t = np.array(assembly.transform[a_id]).reshape((4, 4))
+            t = np.transpose(t)
+            gf_m = Gf.Matrix4d(*t.reshape(16).tolist())
+            gf_m.SetTranslateOnly(gf_m.ExtractTranslation() * 100.0)
+            local_t = gf_m * parent_global_pose.GetInverse()
         else:
-            carb.log_warn("Parent Prim Not defined: " + os.path.dirname(path))
+            child = (assembly, parent_id, in_group)
+            if os.path.dirname(path) in self.assembly_children_stack:
+                self.assembly_children_stack[os.path.dirname(path)].append(child)
+            else:
+                self.assembly_children_stack[os.path.dirname(path)] = [child]
+            return
 
-        t = np.array(assembly.transform[a_id]).reshape((4, 4))
-        t = np.transpose(t)
-        gf_m = Gf.Matrix4d(*t.reshape(16).tolist())
-        gf_m.SetTranslateOnly(gf_m.ExtractTranslation() * 100.0)
-        local_t = gf_m * parent_global_pose.GetInverse()
         prim = self.assembly_stage.GetPrimAtPath(path)
         if assembly.get_item("suppressed") and prim:
             self.assembly_stage.RemovePrim(path)
@@ -815,9 +821,11 @@ class UsdGenerator:
         # print(assembly.get_item("name"), path)
         # for a in assembly.get_children():
         # print ("   ", a.get_item("name"))
-        if self.rig_physics:
-            self.make_groups_xform(assembly, path, a_id)
 
+        if path in self.assembly_children_stack:
+            for a, b, c in self.assembly_children_stack[path]:
+                self.write_assembly_xform(a, b, c)
+            self.assembly_children_stack.pop(path)
         for a in assembly.get_children():
             if not a.get_item("suppressed"):
                 c_id = a.get_item("id")
@@ -826,7 +834,7 @@ class UsdGenerator:
                 if a_id + c_id in self.group_map:
                     p_in_group = self.group_map[a_id + c_id]
                     p_path = self.groupMates[p_in_group]["prim"]
-                self.write_assembly_xform(a, p_path, a_id, gf_m, in_group=p_in_group)
+                self.write_assembly_xform(a, a_id, in_group=p_in_group)
 
     def make_groups_xform(self, assembly, path, a_id=""):
         if self.rig_physics and not assembly.get_item("suppressed") and assembly.uid in self.assembly.features_map:
@@ -970,9 +978,14 @@ class UsdGenerator:
                             b_id = "".join(base[: base_id + 1])
                             # print(f.name, base_id, a_id, b_id)
                             base_path = self.assemblies_path[a_id + b_id]
-                            if self.assembly._instances_flat[base[base_id]].get_item("type").lower() == "part":
-                                base_path = os.path.dirname(base_path)
-
+                            if (
+                                self.assembly._instances_flat[base[base_id]].get_item("type").lower() == "part"
+                            ):  # selected the part itself
+                                self.assemblies_path[a_id + b_id] = base_path + "/{}".format(
+                                    os.path.basename(base_path)
+                                )
+                                # base_path = os.path.dirname(base_path)
+                            # print("  ", len(base), base_id+1)
                         # print("  ", feature["featureData"]["name"], base_path)
                         rb_path = [i for i in self.rigid_bodies if Sdf.Path(base_path).HasPrefix(i)]
                         if rb_path:
@@ -983,12 +996,17 @@ class UsdGenerator:
                         else:
                             self.rigid_bodies.add(base_path)
                             rb_path = base_path
+                        base_path = rb_path
                         prim_path = self.assemblies_path[a_id + "".join(p)]
-
+                        # print("   ",rb_path, prim_path)
                         if rb_path not in prim_path:
+                            # print(self.instance_group_map[a_id + "".join(p)])
                             if self.instance_group_map[a_id + "".join(p)]:
 
                                 prim_path = self.groupMates[self.instance_group_map[a_id + "".join(p)]]["prim"]
+                                # print(self.instance_group_map[a_id + "".join(base)]
+                                # != self.instance_group_map[a_id + "".join(p)],  self.instance_group_map[a_id + "".join(base)],
+                                # self.instance_group_map[a_id + "".join(p)])
                                 if (
                                     self.instance_group_map[a_id + "".join(base)]
                                     != self.instance_group_map[a_id + "".join(p)]
@@ -997,6 +1015,7 @@ class UsdGenerator:
                                         self.assemblies_path.values(),
                                         base_path + "/{}".format(os.path.basename(prim_path)),
                                     )
+                                    # print("updated prim_path", prim_path)
                                     self.groupMates[self.instance_group_map[a_id + "".join(p)]]["prim"] = prim_path
                                 else:
                                     prim_path = base_path
@@ -1026,6 +1045,11 @@ class UsdGenerator:
                                     self.assemblies_path.values(),
                                     base_path + "/{}".format(os.path.basename(self.assemblies_path[a_id + _p_id])),
                                 )
+                                # print("  ", prim_path)
+                                if self.instance_group_map[a_id + "".join(base)]:
+                                    self.instance_group_map[a_id + "".join(p)] = self.instance_group_map[
+                                        a_id + "".join(base)
+                                    ]
                                 self.assemblies_path[a_id + _p_id] = prim_path
                                 for a in self.assembly._instances_flat[p[p_id]].get_children():
                                     self.get_assembly_paths(a, prim_path, a_id + _p_id)
@@ -1105,6 +1129,7 @@ class UsdGenerator:
                     carb.log_warn(
                         "Joint {} attempted connecting {} to itself".format(feature["featureData"]["name"], base_path)
                         + str(self.assembly._instances_flat[base[-1]].get_item("name"))
+                        + ", "
                         + str(self.assembly._instances_flat[p[-1]].get_item("name"))
                     )
                     continue
@@ -1238,6 +1263,7 @@ class UsdGenerator:
                 root_api.CreateEnabledSelfCollisionsAttr().Set(False)
             self.groupMates = {}
             self.group_map = {}
+            self.assembly_children_stack = {}
             self.assemblies_path = {}
             self.assemblies_path[""] = path
             self.rigid_bodies = set()
@@ -1250,15 +1276,25 @@ class UsdGenerator:
             for a in self.assembly._root.get_children():
                 if not a.get_item("suppressed"):
                     c_id = a.get_item("id")
-                    p_path = path
                     in_group = None
                     if c_id in self.group_map:
                         in_group = self.group_map[c_id]
-                        p_path = self.groupMates[in_group]["prim"]
-                    self.write_assembly_xform(a, p_path, "", Gf.Matrix4d().SetIdentity(), in_group=in_group)
+                    self.write_assembly_xform(a, "", in_group=in_group)
+            while self.assembly_children_stack:
+                keys = list(self.assembly_children_stack.keys())
+                for path in keys:
+                    xforms_to_define = [path]
+                    parent = os.path.dirname(path)
+                    while not self.assembly_stage.GetPrimAtPath(parent):
+                        xforms_to_define.append(parent)
+                        parent = os.path.dirname(parent)
+                    for i in range(len(xforms_to_define) - 1, -1, -1):
+                        UsdGeom.Xform.Define(self.assembly_stage, xforms_to_define[i])
+                    for a, b, c in self.assembly_children_stack[path]:
+                        self.write_assembly_xform(a, b, c)
+                    self.assembly_children_stack.pop(path)
             if self.rig_physics:
                 self.process_joints(self.assembly._root, "")
-                bodies = sorted(self.rigid_bodies)
 
             distantLight = UsdLux.DistantLight.Define(self.assembly_stage, Sdf.Path("/DistantLight"))
             distantLight.CreateIntensityAttr(300)
