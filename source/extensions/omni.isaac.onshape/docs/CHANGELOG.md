@@ -1,7 +1,7 @@
 **********
 CHANGELOG
 **********
-[0.3.10] - 2021-08-10
+[0.3.11] - 2021-08-10
 
 - Minor bugfixes
 - Add Icon and readme description
