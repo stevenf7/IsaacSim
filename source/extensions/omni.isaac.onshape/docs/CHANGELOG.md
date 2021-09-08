@@ -1,6 +1,11 @@
 **********
 CHANGELOG
 **********
+[0.3.11] - 2021-08-10
+
+- Minor bugfixes
+- Add Icon and readme description
+
 [0.3.10] - 2021-08-10
 
 - Fix bugfix for imported assemblies with physics.
