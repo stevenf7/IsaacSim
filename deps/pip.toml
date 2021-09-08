@@ -59,6 +59,8 @@ packages = [
     "construct==2.10.61",                   # SWIPAT filed under:
     "llvmlite==0.37.0",                     # SWIPAT filed under:
     "nest_asyncio==1.5.1",                  # SWIPAT filed under:
+    "jinja2==2.11.3",                       # SWIPAT filed under:
+    "markupsafe==2.0.1",                    # SWIPAT filed under:
 ]
 target = "../_build/target-deps/pip_prebundle"
 platforms = ["*-x86_64"]
