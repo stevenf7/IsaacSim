@@ -9,6 +9,28 @@ IsaacLula:
     scm: git
   swipat: null
   version: null
+Jinja2:
+  licenseFile: null
+  packageName: Jinja2
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 2.11.3
+MarkupSafe:
+  licenseFile: null
+  packageName: MarkupSafe
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 2.0.1
 NVTX:
   licenseFile: nvtx-LICENSE.txt
   packageName: NVTX
@@ -231,8 +253,8 @@ cxxopts:
   version: 2.2.0-45-cf241265
 doctest:
   inheritedFrom:
-  - self
   - carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - self
   licenseFile: doctest-LICENSE.txt
   packageName: doctest
   packageType: packman
