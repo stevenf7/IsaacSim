@@ -9,11 +9,10 @@
 
 import os
 from .launcher import SimulationApp
-from .globals import LAUNCHED_FROM_JUPYTER
 
-LAUNCHED_FROM_JUPYTER = os.getenv("ISAAC_JUPYTER_KERNEL") is not None  # We set this in the kernel.json file
+global_vars.LAUNCHED_FROM_JUPYTER = os.getenv("ISAAC_JUPYTER_KERNEL") is not None  # We set this in the kernel.json file
 
-if LAUNCHED_FROM_JUPYTER:
+if global_vars.LAUNCHED_FROM_JUPYTER:
     import nest_asyncio
 
     nest_asyncio.apply()

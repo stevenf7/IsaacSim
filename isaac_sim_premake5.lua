@@ -197,3 +197,28 @@ echo "##teamcity[testFinished name='%s']"
         os.chmod(sh_file_path, 755)
     end
 end
+
+function jupyter_sample_test(name, sample_path, args)
+    local extra_args = args or ""
+    for _, config in ipairs(ALL_CONFIGS) do
+        jupyter_sample_runner(name, sample_path, config, extra_args)
+    end
+end
+function jupyter_sample_runner(name, sample_path, config, extra_args)
+    if os.target() == "linux" then
+        local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
+        local sh_file_path = sh_file_dir.."/"..name..".sh"
+        local f = io.open(sh_file_path, 'w')
+        print(sh_file_path)
+        f:write(string.format([[
+#!/bin/bash
+echo "##teamcity[testStarted name='%s']" 
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+SAMPLE_DIR=$SCRIPT_DIR/../
+"$SCRIPT_DIR/../jupyter_notebook.sh" test $SAMPLE_DIR/%s %s $@
+echo "##teamcity[testFinished name='%s']" 
+        ]], sample_path, sample_path, extra_args, sample_path, sample_path))
+        f:close()
+        os.chmod(sh_file_path, 755)
+    end
+end

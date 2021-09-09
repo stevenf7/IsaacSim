@@ -18,9 +18,12 @@ export PATH=$SCRIPT_DIR/kit/python/bin:$PATH
 source ${SCRIPT_DIR}/setup_python_env.sh
 python_exe=${SCRIPT_DIR}/kit/python/bin/python3
 
+# install jupyter as a dependency so the env supports running notebooks
+${python_exe} -m pip install jupyter
+
 #runtime configure kernelspec based on current python exe path
 kernel_dir=$(mktemp -d)
-cp -r jupyter_kernel ${kernel_dir}
+cp -r ${SCRIPT_DIR}/jupyter_kernel ${kernel_dir}
 sed -i 's,AUTOMATICALLY_REPLACED,'"${python_exe}"',' ${kernel_dir}/jupyter_kernel/kernel.json
 
 # Add the kernelspec to jupyter notebook
@@ -29,4 +32,12 @@ jupyter kernelspec install ${kernel_dir}/jupyter_kernel --name isaac_sim_python3
 # Remove temp dir for kernel once installed
 rm -rf ${kernel_dir}
 
-jupyter notebook $@ || error_exit
+# if the user provides the argument test as the first argument,
+# we attempt to run the notebook in place via commandline and exit
+if [[ $1 == test ]]; then
+    shift
+    jupyter nbconvert --ExecutePreprocessor.timeout=600 --to notebook --execute --output=/tmp/isaac_test.ipynb  $@ || error_exit
+else
+    jupyter notebook $@ || error_exit
+fi
+

@@ -104,3 +104,4 @@ outputs.yml
 
 .nvidia-omniverse
 PACKAGE-DEPS.yaml
+.ipynb_checkpoints

@@ -52,7 +52,7 @@ packages = [
     "matplotlib==3.4.3",                    # SWIPAT filed under:
     "webbot==0.34",                         # SWIPAT filed under:
     "selenium==3.141.0",                    # SWIPAT filed under:
-    "urllib3==1.25.8",                      # SWIPAT filed under:
+    "urllib3==1.26.6",                      # SWIPAT filed under:
     "requests==2.26.0",                     # SWIPAT filed under:
     "certifi==2021.5.30",                   # SWIPAT filed under:
     "charset-normalizer==2.0.4",            # SWIPAT filed under:
@@ -76,7 +76,7 @@ gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
 # [[dependency]]
 # python = "../_build/target-deps/python"
 # packages = [
-#    "scipy==1.5.4",                         # SWIPAT filed under:
+#    "matplotlib==3.4.3",                         # SWIPAT filed under:
 # ]
 # target = "../_build/target-deps/pip_prebundle"
 # platforms = ["*-x86_64"]
