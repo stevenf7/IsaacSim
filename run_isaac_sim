@@ -1,0 +1,3 @@
+#!/bin/bash -e
+
+./_build/linux-x86_64/release/isaac-sim.sh

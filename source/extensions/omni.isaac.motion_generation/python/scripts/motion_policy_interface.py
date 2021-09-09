@@ -22,6 +22,7 @@ class MotionPolicy:
         self._stage = _stage
         self._meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
         self._target_prim = None
+        self._target_prim_is_position_only = None
         self.initialized = False
         self.policy_type = policy_type
 
@@ -97,7 +98,7 @@ class MotionPolicy:
         """
         pass
 
-    def set_end_effector_target(self, target_prim):
+    def set_end_effector_target(self, target_prim, position_only=False):
         """
         Args:
                 param prim : the usd prim of the target
@@ -105,10 +106,14 @@ class MotionPolicy:
                     to specify the desired behavior of the robot.
                     Some policies store a default c-space configuration in their config files
                     and drive the robot to that position when there is no target specified
+                position_only : When True, the policy will use only the position
+                    (not orientation) of the target_prim as the target. Defaults
+                    to False.
         Return:
                 None
         """
         self._target_prim = target_prim
+        self._target_prim_is_position_only = position_only
 
     def get_end_effector_pose(self, joint_positions):
         """

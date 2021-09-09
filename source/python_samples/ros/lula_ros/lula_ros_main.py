@@ -30,7 +30,8 @@ if __name__ == "__main__":
     import rospy
     from sensor_msgs.msg import JointState
     import franka
-    import ros_joint_commander
+    import rmpflow_commander
+    from interpolated_command_listener import InterpolatedCommandListener
     from omni.isaac.dynamic_control import _dynamic_control
     from pxr import Gf, UsdGeom, UsdLux, Sdf, UsdPhysics, PhysxSchema
     from omni.physx.scripts.physicsUtils import add_ground_plane
@@ -47,7 +48,7 @@ if __name__ == "__main__":
         exit()
 
     # make node at the start before we do anything else
-    rospy.init_node("roslulasample", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
+    rospy.init_node("lula_ros", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
 
     omni.usd.get_context().new_stage()
     stage = kit.get_stage()
@@ -83,7 +84,7 @@ if __name__ == "__main__":
         new_transform_matrix=Gf.Matrix4d().SetTranslateOnly(Gf.Vec3d(0, 100, 0)),
     )
 
-    commander = ros_joint_commander.ROSJointCommander(stage, dc)
+    commander = rmpflow_commander.ROSJointCommander(stage, dc)
     kit.play()
     kit.update()
 
@@ -93,17 +94,23 @@ if __name__ == "__main__":
     sim_robot.disable_gravity(True)
 
     #### Create a target prim for Motion Generation
-    target_prim = UsdGeom.Cube.Define(stage, "/target")
-    cube_prim = stage.GetPrimAtPath("/target")
-    target_prim.CreateSizeAttr(10)
-    target_prim.AddTranslateOp().Set(Gf.Vec3d(50.0, 0.0, 50.0))
-    target_prim.AddRotateXYZOp().Set(Gf.Vec3d(180.0, 0.0, 180.0))
-    commander.register(rmp_robot, target_prim)
-    # settle objects over 60 frames
-    for f in range(60):
+    target_prim = UsdGeom.Sphere.Define(stage, "/target")
+    target_prim.CreateRadiusAttr(5)
+
+    # Create obstacle.
+    obs_prim = UsdGeom.Cube.Define(stage, "/obs")
+    obs_prim.CreateSizeAttr(20)
+    obs_prim.AddTranslateOp().Set(Gf.Vec3d(75.0, 0.0, 50.0))
+    obs_prim.AddRotateXYZOp().Set(Gf.Vec3d(180.0, 0.0, 180.0))
+
+    # settle objects over 3 seconds (3x60 frames)
+    for f in range(60 * 3):
         kit.update()
 
+    commander.register(rmp_robot, target_prim, obs_prim)
+
     js_pub = rospy.Publisher("/robot/joint_state", JointState, queue_size=10)
+    interpolated_command_listener = InterpolatedCommandListener(sim_robot)
 
     # run indefinetly until closed
     while kit.app.is_running():
@@ -112,13 +119,17 @@ if __name__ == "__main__":
         # Set the joint state target to the interpolated values
         # this lets physx act as the controller and simulated to the desired pose rather than teleport
         states = (
-            commander.get_latest_interpolated_dof_states()
+            interpolated_command_listener.get_latest_interpolated_dof_states()
         )  # this will return none until we get the first interpolated message
         if states is not None:
             sim_robot.set_position_targets(states["pos"])
 
         # publish latest "physical" robot state
-        js_pub.publish(sim_robot.get_joint_state_message())
+        joint_state_msg = sim_robot.get_joint_state_message()
+        if joint_state_msg is None:
+            carb.log_warn("Joint states message is None. Breaking from kit loop.")
+            break
+        js_pub.publish(joint_state_msg)
         kit.update()  # simulate one frame
 
     # cleanup and shutdown

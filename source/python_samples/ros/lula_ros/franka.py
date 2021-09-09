@@ -111,6 +111,10 @@ class Panda:
         message.position = np.array([0.0] * self.num_joints)
         message.velocity = np.array([0.0] * self.num_joints)
         states = self.joint_states
+        if states is None:
+            carb.log_warn("Joint states is None...")
+            return None
+
         for j in range(self.num_joints):
             index = self.joint_indices[j]
             message.position[j] = states["pos"][index]
