@@ -8,3 +8,4 @@
 #
 from omni.isaac.franka.tasks.target_follower import TargetFollower
 from omni.isaac.franka.tasks.pick_place import PickPlace
+from omni.isaac.franka.tasks.tower import Tower

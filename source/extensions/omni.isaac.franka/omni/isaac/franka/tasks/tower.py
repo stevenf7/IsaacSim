@@ -13,12 +13,13 @@ from omni.isaac.core.objects import DynamicCube
 import numpy as np
 
 
-class PickPlace(BaseTask):
+class Tower(BaseTask):
     def __init__(self) -> None:
         """[summary]
         """
         self.my_franka = None
-        self.cube = None
+        self.cube_1 = None
+        self.cube_2 = None
         return
 
     def set_up_scene(self, scene: Scene) -> None:
@@ -29,14 +30,25 @@ class PickPlace(BaseTask):
         """
         super().set_up_scene(scene)
         self.my_franka = scene.add(Franka(stage=scene.stage, prim_path="/World/Franka", name="my_franka"))
-        self.cube = scene.add(
+        self.cube_1 = scene.add(
             DynamicCube(
                 stage=self.scene.stage,
                 name="cube_1",
                 position=np.array([0.3, 0.3, 0.3]),
-                prim_path="/World/Cube",
+                prim_path="/World/Cube1",
                 size=0.0515,
                 color=np.array([0, 0, 255]),
+            )
+        )
+
+        self.cube_2 = scene.add(
+            DynamicCube(
+                stage=self.scene.stage,
+                name="cube_2",
+                position=np.array([0.3, -0.3, 0.3]),
+                prim_path="/World/Cube2",
+                size=0.0515,
+                color=np.array([255, 0, 0]),
             )
         )
         return
@@ -48,14 +60,20 @@ class PickPlace(BaseTask):
             dict: [description]
         """
         joints_state = self.my_franka.get_joints_state()
-        cube_position, cube_orientation = self.cube.get_pose()
+        cube_1_position, cube_1_orientation = self.cube_1.get_pose()
+        cube_2_position, cube_2_orientation = self.cube_2.get_pose()
         end_effector_position, _ = self.my_franka.get_end_effector_pose()
         # self.get_pick_info()
         return {
             "cube_1": {
-                "position": cube_position,
-                "orientation": cube_orientation,
-                "target_position": np.array([-0.3, -0.3, 0.05]),
+                "position": cube_1_position,
+                "orientation": cube_1_orientation,
+                "target_position": np.array([-0.3, 0.3, 0.05]),
+            },
+            "cube_2": {
+                "position": cube_2_position,
+                "orientation": cube_2_orientation,
+                "target_position": np.array([-0.3, 0.3, 0.083]),
             },
             "my_franka": {"joint_positions": joints_state.positions, "end_effector_pose": end_effector_position},
         }

@@ -35,7 +35,7 @@ while True:
     observations = my_world.get_observations()
     actions = my_controller.forward(
         target_end_effector_position=observations["target_cube"]["position"],
-        current_joint_positions=observations["franka"]["joint_positions"],
+        current_joint_positions=observations["my_franka"]["joint_positions"],
     )
     articulation_controller.apply_action(actions)
     my_world.step(render=True)

@@ -8,3 +8,4 @@
 #
 from omni.isaac.franka.controllers.rmpflow_ik import RMPFlowIKSolver
 from omni.isaac.franka.controllers.rmpflow_pick_place import RMPFlowPickPlace
+from omni.isaac.franka.controllers.rmpflow_tower import RMPFlowTower

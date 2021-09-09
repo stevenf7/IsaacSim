@@ -78,3 +78,8 @@ class BaseTask(object):
             str: [description]
         """
         return ""
+
+    def task_cleanup(self) -> None:
+        """[summary]
+        """
+        return

@@ -26,7 +26,7 @@ class RMPFlowPickPlace(RMPFlowIKSolver):
         self._t = 0
         self._h1 = 0.8
         self._h0 = None
-        self._event_velocities = [0.0008, 0.001, 0.005, 0.0005, 0.0005, 0.0005, 0.005, 0.0005, 0.0005]
+        self._event_velocities = [0.008, 0.001, 0.005, 0.0008, 0.0008, 0.0008, 0.05, 0.0008, 0.0008]
         """
         - Phase 0: Move end_effector above the cube center.
         - Phase 1: Lower end_effector down to encircle the target cube
@@ -45,7 +45,7 @@ class RMPFlowPickPlace(RMPFlowIKSolver):
             target_joint_positions = [None] * current_joint_positions.shape[0]
             return ArticulationAction(joint_positions=target_joint_positions)
 
-        if self._event == 0:
+        if self._event < 2:
             self._current_target_x = cube_position[0]
             self._current_target_y = cube_position[1]
             self._euler_angles_orientation = np.array(quat_to_euler_angles(cube_orientation))
@@ -132,6 +132,7 @@ class RMPFlowPickPlace(RMPFlowIKSolver):
         return (1 - alpha) * a + alpha * b
 
     def reset(self):
+        super().reset()
         self._event = 0
         self._t = 0
         return
