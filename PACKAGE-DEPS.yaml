@@ -253,8 +253,8 @@ cxxopts:
   version: 2.2.0-45-cf241265
 doctest:
   inheritedFrom:
-  - carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
   - self
+  - carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
   licenseFile: doctest-LICENSE.txt
   packageName: doctest
   packageType: packman
@@ -760,7 +760,7 @@ urllib3:
     path: null
     scm: null
   swipat: null
-  version: 1.25.8
+  version: 1.26.6
 usd-audio-schema:
   licenseFile: usd_audio_schema-LICENSE.md
   packageName: usd-audio-schema

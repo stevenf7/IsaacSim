@@ -18,7 +18,7 @@ import omni.kit.app
 from pxr import UsdGeom, Gf, Usd, Sdf, UsdPhysics, PhysxSchema
 from omni.isaac.kit.utils import set_carb_setting
 from omni.isaac.kit.constants import AXES_INDICES
-import omni.isaac.kit.globals as globals
+import omni.isaac.kit.global_vars as global_vars
 import omni.kit.loop._loop as omni_loop
 
 
@@ -103,7 +103,7 @@ class SimulationContext:
         # Create a blank new stage
         new_stage_task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         # This sleep prevents a deadlock in certain cases.
-        if not globals.LAUNCHED_FROM_TERMINAL:
+        if not global_vars.LAUNCHED_FROM_TERMINAL:
             while not new_stage_task.done():
                 time.sleep(0.001)
                 self._app.update()
@@ -117,7 +117,7 @@ class SimulationContext:
         prim = self.stage.DefinePrim(prim_path, "Xform")
         # add reference to the USD in the current stage
         prim.GetReferences().AddReference(usd_path)
-        # if not globals.LAUNCHED_FROM_TERMINAL:
+        # if not global_vars.LAUNCHED_FROM_TERMINAL:
         #     self._app.update()
         return prim
 

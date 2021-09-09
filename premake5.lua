@@ -211,7 +211,7 @@ group "apps"
     define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window ")
     define_local_experience("isaac-sim.headless.websocket", "omni.isaac.sim.headless.websocket", "--no-window ")
 
-    -- startup tests
+group "startup_tests"
     define_startup_experience("tests-startup.main", "omni.isaac.sim.startup.main", "--/app/quitAfter=500")
     define_startup_experience("tests-startup.websocket", "omni.isaac.sim.startup.websocket", "--no-window --/app/quitAfter=500")
     define_startup_experience("tests-startup.kitremote", "omni.isaac.sim.startup.kitremote", "--no-window --/app/quitAfter=500")
@@ -314,3 +314,7 @@ group "python_samples"
     python_sample_test("tests-nativepython-isaac_sdk.load_stage", "python_samples/isaac_sdk/load_stage.py", "--usd_path /Samples/Isaac_SDK/Scenario/franka_basic.usd --test --headless")
     -- ROS samples
     python_sample_test("tests-nativepython-ros.clock", "python_samples/ros/clock.py")
+
+group "jupyter_samples"
+
+    jupyter_sample_test("tests-jupyter-startup", "examples/notebooks/basic_notebook.ipynb")

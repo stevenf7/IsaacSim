@@ -19,7 +19,7 @@ import argparse
 import carb
 import omni.kit
 import omni.kit.app
-import omni.isaac.kit.globals as globals
+import omni.isaac.kit.global_vars as global_vars
 
 
 class SimulationApp:
@@ -95,19 +95,23 @@ class SimulationApp:
         max_volume_bounces(int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
     """
 
-    def __init__(self, config: dict = None, experience: str = "") -> None:
+    def __init__(self, launch_config: dict = None, experience: str = "") -> None:
         # Initialize variables
-        globals.LAUNCHED_FROM_TERMINAL = False
+        global_vars.LAUNCHED_FROM_TERMINAL = False
+        self._exiting = False
 
         # Override settings from input config
         self.config = self.DEFAULT_LAUNCHER_CONFIG
         if experience == "":
             experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit'
+        if global_vars.LAUNCHED_FROM_JUPYTER:
+            if launch_config["headless"] is False:
+                carb.log_warn("Non-headless mode not supported with jupyter notebooks")
+                launch_config.update({"headless": True})
         self.config.update({"experience": experience})
-        if config is not None:
-            self.config.update(config)
+        if launch_config is not None:
+            self.config.update(launch_config)
 
-        self._exiting = False
         # Load omniverse application plugins
         self._framework = carb.get_framework()
         self._framework.load_plugins(
@@ -128,13 +132,9 @@ class SimulationApp:
         self._setup_renderer(mode="non-default")
 
         set_carb_setting(self._carb_settings, "/persistent/simulation/defaultMetersPerUnit", 1.0)
-        new_stage_task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
-
         print("Simulation App Starting")
-        while not new_stage_task.done():
-            # This sleep prevents a deadlock in certain cases.
-            time.sleep(0.001)
-            self._app.update()
+        self._app.update()
+        omni.usd.get_context().new_stage()
 
         # Update the app
         self._app.update()
