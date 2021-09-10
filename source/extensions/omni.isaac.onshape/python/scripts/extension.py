@@ -273,54 +273,60 @@ class OnshapeImporter(omni.ext.IExt):
         self.usd_gen.create_part_stage(item, done_importing)
 
     def build_ui(self):
-        if self._window is None:
-            self._options_menu = ui.Menu("Options")
-            with self._options_menu:
-                ui.MenuItem("Options", enabled=False)
-                ui.Separator()
-                ui.MenuItem(
-                    "Configure Physics",
-                    checkable=True,
-                    checked=True,
-                    checked_changed_fn=lambda a: self.on_rig_physics_changed(a),
+        if OnshapeClient.authenticate(self.build_ui):
+            if self._window is None:
+                self._options_menu = ui.Menu("Options")
+                with self._options_menu:
+                    ui.MenuItem("Options", enabled=False)
+                    ui.Separator()
+                    ui.MenuItem(
+                        "Configure Physics",
+                        checkable=True,
+                        checked=True,
+                        checked_changed_fn=lambda a: self.on_rig_physics_changed(a),
+                    )
+                # Do a first call on Onshape Client to prime authentication
+                self._window = ui.Window(
+                    EXTENSION_NAME,
+                    width=800,
+                    height=400,
+                    menu_path="Isaac/" + EXTENSION_NAME,
+                    open=True,
+                    dock=ui.DockPreference.LEFT_BOTTOM,
                 )
-            # Do a first call on Onshape Client to prime authentication
-            OnshapeClient.get().documents_api.get_documents()
-            self._window = ui.Window(
-                EXTENSION_NAME,
-                width=800,
-                height=400,
-                menu_path="Isaac/" + EXTENSION_NAME,
-                open=True,
-                dock=ui.DockPreference.LEFT_BOTTOM,
-            )
-            self._window.set_visibility_changed_fn(self.on_visibility_change)
-            self._docs_model = DocumentListModel()
+                self._window.set_visibility_changed_fn(self.on_visibility_change)
+                self._docs_model = DocumentListModel()
 
-            self._docs_delegate = DocumentListDelegate(self._style)
-            self._filters = []
-            with self._window.frame:
-                with ui.ScrollingFrame(vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED, width_min=455):
-                    with ui.HStack(style=self._style):
-                        self.content_browser = OnshapeContentWidget()
-                        with self.content_browser.searchbar:
-                            ui.Button(name="options", width=20, height=20, clicked_fn=lambda: self._options_menu.show())
+                self._docs_delegate = DocumentListDelegate(self._style)
+                self._filters = []
+                with self._window.frame:
+                    with ui.ScrollingFrame(
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED, width_min=455
+                    ):
+                        with ui.HStack(style=self._style):
+                            self.content_browser = OnshapeContentWidget()
+                            with self.content_browser.searchbar:
+                                ui.Button(
+                                    name="options", width=20, height=20, clicked_fn=lambda: self._options_menu.show()
+                                )
 
-                        def selected(model, item):
-                            model.on_element_selected(item)
+                            def selected(model, item):
+                                model.on_element_selected(item)
 
-                        self.content_browser.set_on_mouse_double_clicked(partial(selected, weakref.proxy(self)))
-            self.element_details = ui.Window(EXTENSION_NAME + " - Assembly Viewer", width=900, height=400, open=True)
+                            self.content_browser.set_on_mouse_double_clicked(partial(selected, weakref.proxy(self)))
+                self.element_details = ui.Window(
+                    EXTENSION_NAME + " - Assembly Viewer", width=900, height=400, open=True
+                )
 
-            main_dockspace = ui.Workspace.get_window(EXTENSION_NAME)
-            main_dockspace.deferred_dock_in("Overview", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
-            main_dockspace.dock_order = 5
-            ext2 = ui.Workspace.get_window(EXTENSION_NAME + " - Assembly Viewer")
-            ext2.deferred_dock_in(EXTENSION_NAME, ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
-            main_dockspace.dock_order = 6
-            self.element_details.visible = False
-            # self.element_details.dock_in(self._window, ui.DockPosition.SAME, 1.0)
-        self._window.visible = True
+                main_dockspace = ui.Workspace.get_window(EXTENSION_NAME)
+                main_dockspace.deferred_dock_in("Overview", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
+                main_dockspace.dock_order = 5
+                ext2 = ui.Workspace.get_window(EXTENSION_NAME + " - Assembly Viewer")
+                ext2.deferred_dock_in(EXTENSION_NAME, ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
+                main_dockspace.dock_order = 6
+                self.element_details.visible = False
+                # self.element_details.dock_in(self._window, ui.DockPosition.SAME, 1.0)
+            self._window.visible = True
 
     def on_visibility_change(self, a):
         self.show_window(self._menu, a)

@@ -1,6 +1,12 @@
 **********
 CHANGELOG
 **********
+
+[0.3.12] - 2021-09-09
+
+- Renaming to Onshape Importer.
+- Make log in non-blocking
+
 [0.3.11] - 2021-08-10
 
 - Minor bugfixes
