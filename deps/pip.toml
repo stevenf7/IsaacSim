@@ -29,12 +29,13 @@
 ########################################################################################################################
 
 # For newer version of pip we bundle only wheel files, to be installed at runtime upon first usage. 
-[[dependency]]
-python = "../_build/target-deps/python"
-packages = ["pip==21.2.4"]
-target = "../_build/target-deps/pip_archive"
-platforms = ["*-x86_64"]
-download_only = true
+# Disabled because we get this with the base omni.kit.pip_archive extension
+# [[dependency]]
+# python = "../_build/target-deps/python"
+# packages = ["pip==21.2.4"]
+# target = "../_build/target-deps/pip_archive"
+# platforms = ["*-x86_64"]
+# download_only = true
 
 # For many other pip packages used by default we install them in `pip_prebundle` folder to make available without need to install immediately.
 
@@ -48,8 +49,6 @@ packages = [
     "scipy==1.5.4",                         # SWIPAT filed under:
     "numpy-quaternion==2020.9.5.14.42.2",   # SWIPAT filed under:
     "numba==0.51.2",                        # SWIPAT filed under:
-    "ipykernel==6.2.0",                     # SWIPAT filed under:
-    "matplotlib==3.4.3",                    # SWIPAT filed under:
     "webbot==0.34",                         # SWIPAT filed under:
     "selenium==3.141.0",                    # SWIPAT filed under:
     "urllib3==1.26.6",                      # SWIPAT filed under:
@@ -61,6 +60,10 @@ packages = [
     "nest_asyncio==1.5.1",                  # SWIPAT filed under:
     "jinja2==2.11.3",                       # SWIPAT filed under:
     "markupsafe==2.0.1",                    # SWIPAT filed under:
+    "matplotlib==3.4.3",                    # SWIPAT filed under:
+    "pyparsing==2.4.7",                     # SWIPAT filed under:
+    "cycler==0.10.0",                       # SWIPAT filed under:
+    "kiwisolver==1.3.2",                    # SWIPAT filed under:
 ]
 target = "../_build/target-deps/pip_prebundle"
 platforms = ["*-x86_64"]

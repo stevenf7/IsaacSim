@@ -94,7 +94,7 @@ isaac_error_t IsaacApplication::create(std::string assetPath,
     }
     else
     {
-        CARB_LOG_ERROR("Application Already Created, Destroy before creating again");
+        CARB_LOG_WARN("Application Already Created, Destroy before creating again");
         return isaac_error_t::isaac_error_unknown;
     }
 
