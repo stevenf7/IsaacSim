@@ -7,5 +7,5 @@ repo_build.prebuild_link {
     { "data", ext.target_dir.."/data" },
     { "omni", ext.target_dir.."/omni" },
     { "$root/_build/target-deps/pip_prebundle", ext.target_dir.."/pip_prebundle" },
-    { "$root/_build/target-deps/pip_archive", ext.target_dir.."/pip_archive" },
+    -- { "$root/_build/target-deps/pip_archive", ext.target_dir.."/pip_archive" },
 }

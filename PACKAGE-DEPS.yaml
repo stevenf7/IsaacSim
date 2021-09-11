@@ -47,12 +47,12 @@ Omniverse Client Library:
   packageName: Omniverse Client Library
   packageType: packman
   source:
-    branch: main
-    change: 1809f5068f7cd6f64c2ecd8c410a0480c5bd5551
+    branch: hotfix_1.13.16
+    change: 1fd61365b0a35bed81d3def3ab8a40863c06953a
     path: https://gitlab/omniverse/client-library
     scm: git
   swipat: null
-  version: 1.13.15-main.2121+tc.1809f506
+  version: 1.13.16-hotfix.2183+tc.1fd61365
 SDLGameControllerDB:
   depth: 1
   inheritedFrom:
@@ -251,6 +251,17 @@ cxxopts:
     scm: git
   swipat: http://nvbugs/2679422
   version: 2.2.0-45-cf241265
+cycler:
+  licenseFile: null
+  packageName: cycler
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 0.10.0
 doctest:
   inheritedFrom:
   - self
@@ -305,17 +316,6 @@ glfw:
     scm: git
   swipat: http://nvbugs/2676413
   version: 3.3.43-bd315677-linux-x86_64
-ipykernel:
-  licenseFile: null
-  packageName: ipykernel
-  packageType: pip
-  source:
-    branch: null
-    change: null
-    path: null
-    scm: null
-  swipat: null
-  version: 6.2.0
 kaguya:
   depth: 1
   inheritedFrom:
@@ -330,6 +330,17 @@ kaguya:
     scm: git
   swipat: http://nvbugs/2674695
   version: master-4-0b81e508
+kiwisolver:
+  licenseFile: null
+  packageName: kiwisolver
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 1.3.2
 libcurl:
   depth: 1
   inheritedFrom:
@@ -619,6 +630,17 @@ pybind11:
   swipat:
   - http://nvbugs/2520728
   version: 2.3.dev1-19-9a056c90
+pyparsing:
+  licenseFile: null
+  packageName: pyparsing
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 2.4.7
 python:
   licenseFile: python-LICENSE.txt
   packageName: python

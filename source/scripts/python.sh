@@ -24,9 +24,13 @@ if ! [[ -z "${CONDA_PREFIX}" ]]; then
   echo "If conda is desired please source python_samples/setenv.sh in your python 3.7 conda env and run python normally"
 fi
 
+# Check if we are running as root (usually in a docker container)
 if ! [[ $EUID -ne 0 ]]; then
+# Check to make sure we have an argument before appending --allow-root
+  if [ $# -eq 1 ]; then
     echo "running as root"
     args="$args --allow-root"
+  fi
 fi
 
 $python_exe $@ $args || error_exit

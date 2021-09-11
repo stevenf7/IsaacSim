@@ -29,9 +29,10 @@ path = "pip_prebundle"
 [[python.module]]
 name = "omni.isaac.pip_archive"
 
-[python.pipapi]
-# That extension brings folder with pip wheels, to enable offline pip install (prebundling). It is specified here:
-archiveDirs = ["pip_archive"]
+# we get this from the base omni.kit.pip_archive extension
+# [python.pipapi]
+# # That extension brings folder with pip wheels, to enable offline pip install (prebundling). It is specified here:
+# archiveDirs = ["pip_archive"]
 
 # https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format
 requirements = []
