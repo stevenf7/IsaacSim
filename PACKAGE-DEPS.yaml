@@ -81,6 +81,17 @@ Tracy:
     scm: git
   swipat: http://nvbugs/3038037
   version: 0.7.8.70-bdf2b3ec-nvidia
+assimp:
+  licenseFile: assimp-LICENSE.md
+  packageName: assimp
+  packageType: packman
+  source:
+    branch: null
+    change: null
+    path: https://gitlab/carbon/carbonite-externals/assimp
+    scm: git
+  swipat: http://nvbugs/2674520
+  version: null
 breakpad:
   depth: 1
   inheritedFrom:
@@ -264,8 +275,8 @@ cycler:
   version: 0.10.0
 doctest:
   inheritedFrom:
-  - self
   - carb_sdk+plugins/106.20.3783-cbea4d40-106-linux-x86_64/PACKAGE-DEPS.yaml
+  - self
   licenseFile: doctest-LICENSE.txt
   packageName: doctest
   packageType: packman
