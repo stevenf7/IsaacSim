@@ -15,6 +15,7 @@ import carb
 import omni
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder, scrolling_frame_builder
 
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
@@ -101,48 +102,63 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                title=EXTENSION_NAME, width=500, height=450, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME, width=700, height=700, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
-            with self._window.frame:
-                with ui.VStack(width=ui.Percent(100)):
-                    ui.Label(
-                        textwrap.fill(
-                            "This sample demonstrates how to load a USD stage containing an articulated robot and then retreiving that articulation and using the dynamic_control python API to query it",
-                            80,
-                        ),
-                        height=20,
-                    )
-                    with ui.HStack(height=0):
-                        ui.Button(
-                            "Load Franka USD",
-                            tooltip="Press to load the Franka USD file and start simulation",
-                            clicked_fn=lambda: self._on_load_robot(),
-                        )
-                        ui.Button(
-                            "Get Articulation Info",
-                            tooltip="Pressing this button will print information below",
-                            clicked_fn=lambda: self._on_print_info(),
-                        )
+        with self._window.frame:
+            with ui.VStack(spacing=5, height=0):
 
-                    ui.Separator(height=3)
-                    with ui.ScrollingFrame():
-                        with ui.VStack():
-                            with ui.CollapsableFrame("Hierarchy", height=ui.Pixel(0), collapsed=False):
-                                with ui.ScrollingFrame(height=ui.Pixel(200)):
-                                    self.hierarchy_label = ui.Label("")
-                            with ui.CollapsableFrame("Body States", height=ui.Pixel(0), collapsed=True):
-                                with ui.ScrollingFrame(height=ui.Pixel(150)):
-                                    self.body_states_label = ui.Label("")
-                            with ui.CollapsableFrame(
-                                "Degree of freedom (DOF) States", height=ui.Pixel(0), collapsed=True
-                            ):
-                                with ui.ScrollingFrame(height=ui.Pixel(100)):
-                                    self.dof_states_label = ui.Label("")
-                            with ui.CollapsableFrame(
-                                "Degree of freedom (DOF) Properties", height=ui.Pixel(0), collapsed=True
-                            ):
-                                with ui.ScrollingFrame(height=ui.Pixel(130)):
-                                    self.dof_props_label = ui.Label("")
+                title = "Read Articulation Information"
+                doc_link = (
+                    "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_dynamic_control.html"
+                )
+                ext_path = (
+                    os.path.dirname(self._extension_path)
+                    if os.path.isfile(self._extension_path)
+                    else self._extension_path
+                )
+
+                overview = "This sample loads a Franka robot and enables simulation. Various information for the robot articulation degrees of freedom is retrieved and shown on screen."
+                overview += "\n\nPress the 'Open in IDE' button to view the source code."
+                author = "Isaac Sim Team"
+                date = "07/01/2021"
+
+                log_filename = EXTENSION_NAME.lower()
+                log_filename = log_filename.replace(" ", "_") + ".log"
+
+                setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+
+                frame = ui.CollapsableFrame(
+                    title="Command Panel",
+                    height=0,
+                    collapsed=False,
+                    style=get_style(),
+                    style_type_name_override="CollapsableFrame",
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                )
+                with frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
+                        dict = {
+                            "label": "Load Franka USD",
+                            "type": "button",
+                            "text": "Load",
+                            "tooltip": "Press to load the Franka USD file and start simulation",
+                            "on_clicked_fn": self._on_load_robot,
+                        }
+                        btn_builder(**dict)
+
+                        dict = {
+                            "label": "Get Articulation Info",
+                            "type": "button",
+                            "text": "Get Info",
+                            "tooltip": "Pressing this button will print information below",
+                            "on_clicked_fn": self._on_print_info,
+                        }
+                        btn_builder(**dict)
+                        self.hierarchy_label = scrolling_frame_builder("Hierarchy", "scrolling_frame")
+                        self.body_states_label = scrolling_frame_builder("Body States", "scrolling_frame")
+                        self.dof_states_label = scrolling_frame_builder("Joint States", "scrolling_frame")
+                        self.dof_props_label = scrolling_frame_builder("Joint Properties", "scrolling_frame")
 
         self._window.visible = True
 
@@ -150,25 +166,23 @@ class Extension(omni.ext.IExt):
         remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
 
-    async def _setup_camera(self, task):
+    async def _setup_scene(self):
         # wait for the stage load task to finish before setting camera and starting simulation
-        done, pending = await asyncio.wait({task})
-        if task in done:
-            self._viewport = omni.kit.viewport.get_default_viewport_window()
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 50, True)
-            self._timeline.play()
+        await load_test_file(self._asset_path + "/data/usd/robots/franka/franka.usd")
+        await omni.kit.app.get_app().next_update_async()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
+        self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 50, True)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
 
     def _on_load_robot(self):
-        task = asyncio.ensure_future(load_test_file(self._asset_path + "/data/usd/robots/franka/franka.usd"))
-        asyncio.ensure_future(self._setup_camera(task))
+        asyncio.ensure_future(self._setup_scene())
 
     def _on_print_info(self):
-        self._physxIFace.force_load_physics_from_usd()
-
         ar = self._dc.get_articulation("/panda")
         if ar == _dynamic_control.INVALID_HANDLE:
-            print("*** '%s' is not an articulation" % "/panda")
+            carb.log_warn("'%s' is not an articulation, please click load button first" % "/panda")
             return
 
         root = self._dc.get_articulation_root_body(ar)
