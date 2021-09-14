@@ -222,3 +222,20 @@ echo "##teamcity[testFinished name='%s']"
         os.chmod(sh_file_path, 755)
     end
 end
+
+-- Template Used to generate all the kit.bat, test.bat and other batch/shell files
+-- format are: kit_bin_relative, config_path, extra_args
+KIT_RUNNER_SHELL_TEMPLATE = {
+    ["windows"] = [[
+@echo off
+setlocal
+call "%%~dp0%s\kit.exe" %s %s %%*
+]],
+    ["linux"] = [[
+#!/bin/bash
+set -e
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+export RESOURCE_NAME="IsaacSim"
+exec "$SCRIPT_DIR/%s/kit" %s %s "$@"
+]]
+}

@@ -730,6 +730,10 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
     pxr::PhysxSchemaPhysxArticulationAPI physxSchema = pxr::PhysxSchemaPhysxArticulationAPI::Apply(robotPrim.GetPrim());
     physxSchema.CreateEnabledSelfCollisionsAttr().Set(config.selfCollision);
 
+    // These are reasonable defaults, might want to expose them via the import config in the future.
+    physxSchema.CreateSolverPositionIterationCountAttr().Set(32);
+    physxSchema.CreateSolverVelocityIterationCountAttr().Set(16);
+
     if (config.makeDefaultPrim)
     {
         stage->SetDefaultPrim(robotPrim.GetPrim());

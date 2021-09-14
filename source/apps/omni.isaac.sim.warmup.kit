@@ -1,0 +1,29 @@
+[package]
+title = "Isaac Sim Warmup"
+description = "Isaac Sim Warmup Application"
+version = "2021.2.0"
+execFile = "isaac-sim.startup.main"
+
+# That makes it browsable in UI with "experience" filter
+keywords = ["experience", "app", "usd"]
+
+[settings]
+app.name = "Isaac-Sim"
+app.version = "2021.2.0"
+app.settings.persistent = true
+app.settings.loadUserConfig=false
+structuredLog.enable = false
+app.hangDetector.enabled = false
+app.content.emptyStageOnStart = true
+rtx.materialDb.syncLoads = true
+omni.kit.plugin.syncUsdLoads = true 
+rtx.hydra.materialSyncLoads = true
+app.asyncRendering = false
+app.quitAfter=10
+
+[dependencies]
+"omni.isaac.sim.base" = {}
+
+[settings.exts."omni.kit.registry.nucleus"]
+registries = []
+postToSlack = false

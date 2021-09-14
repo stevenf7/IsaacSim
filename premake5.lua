@@ -293,6 +293,7 @@ repo_build.prebuild_copy {
     {"source/scripts/jupyter_kernel",  "_build/%{platform}/%{config}/jupyter_kernel"},
     {"source/scripts/jupyter_notebook.sh",  "_build/%{platform}/%{config}"},
     {"source/scripts/run_all_tests.sh",  "_build/%{platform}/%{config}"},
+    {"source/scripts/omni.isaac.warmup.sh",  "_build/%{platform}/%{config}"},
     {"source/apps/omni.isaac.sim.python.kit",  "_build/%{platform}/%{config}/apps"},
     {"source/scripts/vscode",  "_build/%{platform}/%{config}/.vscode"},
 
