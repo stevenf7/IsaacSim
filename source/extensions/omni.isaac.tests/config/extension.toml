@@ -4,7 +4,6 @@ display_name = "Isaac Tests"
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
 "omni.physx.commands" = {}
-"omni.kit.window.tests" = {}
 "omni.timeline" = {} # needed for simulation to happen
 "omni.kit.primitive.mesh" = {} # needed for mesh creation commands
 # "omni.graph.core" = {}
