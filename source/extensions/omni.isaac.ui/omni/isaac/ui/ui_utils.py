@@ -1003,19 +1003,19 @@ def build_info_frame(overview="", author="", date=""):
     with frame:
         with ui.VStack(style=get_style(), spacing=5):
             scrolling_frame_builder("Overview", "scrolling_frame", overview)
-            with ui.HStack():
-                ui.Label("Author", width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP)
-                ui.Label(
-                    author,
-                    style_type_name_override="Label::label",
-                    alignment=ui.Alignment.LEFT_TOP,
-                    width=ui.Percent(75),
-                )
-            with ui.HStack():
-                ui.Label("Last Updated", width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP)
-                ui.Label(
-                    date, style_type_name_override="Label::label", alignment=ui.Alignment.LEFT_TOP, width=ui.Percent(75)
-                )
+            # with ui.HStack():
+            #     ui.Label("Author", width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP)
+            #     ui.Label(
+            #         author,
+            #         style_type_name_override="Label::label",
+            #         alignment=ui.Alignment.LEFT_TOP,
+            #         width=ui.Percent(75),
+            #     )
+            # with ui.HStack():
+            #     ui.Label("Last Updated", width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP)
+            #     ui.Label(
+            #         date, style_type_name_override="Label::label", alignment=ui.Alignment.LEFT_TOP, width=ui.Percent(75)
+            #     )
 
 
 def build_settings_frame(log_filename="extension.log", log_to_file=False, save_settings=False):
@@ -1065,17 +1065,17 @@ def build_settings_frame(log_filename="extension.log", log_to_file=False, save_s
     with frame:
         with ui.VStack(style=get_style(), spacing=5):
 
-            # Log to File Settings
-            default_output_path = os.path.realpath(os.getcwd())
-            kwargs = {
-                "label": "Log to File",
-                "type": "checkbox_stringfield",
-                "default_val": [log_to_file, default_output_path + "/" + log_filename],
-                "on_clicked_fn": on_log_to_file_enabled,
-                "tooltip": "Log Out to File",
-                "use_folder_picker": True,
-            }
-            model = combo_cb_str_builder(**kwargs)[1]
+            # # Log to File Settings
+            # default_output_path = os.path.realpath(os.getcwd())
+            # kwargs = {
+            #     "label": "Log to File",
+            #     "type": "checkbox_stringfield",
+            #     "default_val": [log_to_file, default_output_path + "/" + log_filename],
+            #     "on_clicked_fn": on_log_to_file_enabled,
+            #     "tooltip": "Log Out to File",
+            #     "use_folder_picker": True,
+            # }
+            # model = combo_cb_str_builder(**kwargs)[1]
 
             # Save Settings on Exit
             # kwargs = {

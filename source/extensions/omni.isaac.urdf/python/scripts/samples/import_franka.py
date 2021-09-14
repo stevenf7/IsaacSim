@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-
+import os
 import carb
 import omni
 import asyncio
@@ -18,7 +18,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 from .common import set_drive_parameters
 from pxr import UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 
-from omni.isaac.ui.ui_utils import *
+from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
 
 
 EXTENSION_NAME = "Import Franka"
