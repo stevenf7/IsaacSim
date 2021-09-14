@@ -8,17 +8,18 @@
 #
 
 import omni
+import carb
+import weakref
 
 try:
     from onshape_client import Client
 except ImportError:
-    print("onshape not found. attempting to install...")
+    carb.log_warn("onshape not found. attempting to install...")
     omni.kit.pipapi.install("onshape_client", version="1.6.3")
     from onshape_client import Client
 
-from pathlib import Path
-import os
-import carb
+import omni.ui as ui
+from concurrent.futures import ThreadPoolExecutor
 
 import json
 
@@ -26,11 +27,20 @@ import webbrowser
 from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-
 from threading import Lock
+
+
+class TimeoutException(Exception):
+    pass
+
 
 DEFAULT_ONSHAPE_KEY = "/persistent/ext/omni.isaac.onshape_importer/API_KEY"
 DEFAULT_ONSHAPE_SECRET = "/persistent/ext/omni.isaac.onshape_importer/API_SECRET"
+
+
+# class ThreadWithException(threading.Thread):
+#     def __init__(self, bucket):
+#         threading.Thread.__init__(self)
 
 
 def set_api_keys(key, secret):
@@ -38,9 +48,74 @@ def set_api_keys(key, secret):
     carb.settings.get_settings().set(DEFAULT_ONSHAPE_SECRET, secret)
 
 
+def do_auth():
+    try:
+        d = OnshapeClient.get().documents_api.get_documents()
+        if d:
+            OnshapeClient.set_authenticated(True)
+
+    except Exception as e:
+        print(e)
+        OnshapeClient.__stop_request = True
+        return False
+
+
+def callback(q=None):
+    OnshapeClient.auth_callback()
+
+
+class AuthWindow(ui.Widget):
+    def __init__(self, parent):
+        self.parent = parent
+        self.executor = ThreadPoolExecutor(max_workers=1)
+
+        self.build_widget()
+
+    def start_auth(self, callback_fn):
+        # Process(target = auth_method, args=(self.queue,))
+
+        OnshapeClient.__stop_request = False
+        OnshapeClient.set_auth_callback(lambda a=self, c=callback_fn: a.done_auth(c))
+        self.task = self.executor.submit(do_auth)
+
+        self.task.add_done_callback(callback)
+        # do_auth(OnshapeClient.get())
+        # callback(0)
+
+    def build_widget(self):
+        with ui.VStack(alignment=(ui.Alignment.CENTER)):
+            ui.Label("Onshape Authentication in Progress", alignment=(ui.Alignment.CENTER))
+            self.cancel_btn = ui.Button("Cancel", clicked_fn=lambda: weakref.proxy(self).cancel_auth())
+            ui.Spacer(height=5)
+
+    def cancel_auth(self):
+        # self.process.terminate()
+        self.parent.visible = False
+        OnshapeClient.__stop_request = True
+        OnshapeClient.stop_httpServer()
+        # for pid, process in self.executor._processes.items():
+        #     process.terminate()
+        self.executor.shutdown(wait=False)
+        OnshapeClient.set_auth_callback(None)
+        # self.queue.put(False)
+
+    def done_auth(self, callback):
+        # r = self.queue.get()
+        # done = False
+        # if len(r) > 1:
+        #     done = r[1]
+        self.parent.visible = False
+        if OnshapeClient.is_authenticated():
+            callback(True)
+
+    def __del__(self):
+        self.cancel_auth()
+
+
 class OnshapeAuthServer(BaseHTTPRequestHandler):
     code = None
     state = None
+    params = None
 
     def do_GET(self):
         try:
@@ -62,6 +137,8 @@ class OnshapeAuthServer(BaseHTTPRequestHandler):
                     "utf-8",
                 )
             )
+            OnshapeClient.set_authenticated(True)
+            OnshapeClient.set_handled_request(True)
             self.wfile.write(bytes("</body></html>", "utf-8"))
         except Exception as e:
             carb.log_error("Error handling auth callback GET: " + str(e))
@@ -73,44 +150,103 @@ class OnshapeAuthServer(BaseHTTPRequestHandler):
 class OnshapeClient(object):
     __onshape_client = None
     __user_mats_lib = None
+    __authenticated = False
+    __auth_callback = False
     __lock = Lock()
+    __webServer = None
+    __stop_request = False
+    __handled_request = False
+
+    @staticmethod
+    def set_handled_request(value):
+        OnshapeClient.__handled_request = value
+
+    @staticmethod
+    def is_authenticated():
+        return OnshapeClient.__authenticated
+
+    @staticmethod
+    def createHttpServer(hostname, serverPort):
+        if OnshapeClient.__webServer:
+            OnshapeClient.stop_httpServer()
+
+        OnshapeClient.__webServer = HTTPServer((hostname, serverPort), OnshapeAuthServer)
+
+        return OnshapeClient.__webServer
+
+    @staticmethod
+    def get_httpServer():
+        return OnshapeClient.__webServer
+
+    @staticmethod
+    def stop_httpServer():
+        if OnshapeClient.__webServer:
+            # time.sleep(3)
+            OnshapeClient.__webServer.server_close()
+            OnshapeClient.__webServer = None
+
+    @staticmethod
+    def set_auth_callback(callback):
+        OnshapeClient.__auth_callback = callback
+
+    @staticmethod
+    def set_authenticated(auth):
+        OnshapeClient.__authenticated = auth
+
+    @staticmethod
+    def auth_callback():
+        ret = None
+        if OnshapeClient.__auth_callback:
+            ret = OnshapeClient.__auth_callback()
+            OnshapeClient.__auth_callback = None
+        return ret
 
     @staticmethod
     def get_oauth_client():
         hostName = "localhost"
         serverPort = 4518
+        # ID and secret are naming conventions, this is not treated as a secret
         client_id = "7XVZWE3MDZOCYSXEXUJLN4LNHADB42ASGPUPV6Y="
         client_secret = "QZIMKKPIZYQO473R72QEU333XY33NSOXSOMMRUOJQ7HEHRDSPMBA===="
 
         def auth_callback(url, fetch_token):
-            try:
+            print("Auth callback")
+            if not OnshapeClient.__stop_request:
                 qs = parse_qs(urlparse(url).query)
                 state = None
                 if "state" in qs:
                     state = qs["state"][0]
-                webServer = HTTPServer((hostName, serverPort), OnshapeAuthServer)
-
+                webServer = OnshapeClient.createHttpServer(hostName, serverPort)
                 # Credentials you get from registering a new application
 
                 webbrowser.get().open(url)
-
-                try:
+                webServer.timeout = 1
+                OnshapeClient.__handled_request = False
+                while not (OnshapeClient.__handled_request or OnshapeClient.__stop_request):
                     webServer.handle_request()
-                except KeyboardInterrupt:
-                    pass
-                # thread = threading.Thread(target=webServer.handle_request)
-                # thread.run()
-                if state == OnshapeAuthServer.state:
-                    code = OnshapeAuthServer.code
+
                 webServer.server_close()
-                response_uri = "https://{}:{}/oauth-redirect{}".format(
-                    hostName, serverPort, OnshapeAuthServer.params[1:]
-                )
-                # print(response_uri)
-                Client.get_client().set_grant_authorization_url_response(response_uri)
+                if OnshapeClient.__handled_request and OnshapeAuthServer.params and not OnshapeClient.__stop_request:
+                    # thread = threading.Thread(target=webServer.handle_request)
+                    # thread.run()
+                    if state == OnshapeAuthServer.state:
+                        code = OnshapeAuthServer.code
+                    response_uri = "https://{}:{}/oauth-redirect{}".format(
+                        hostName, serverPort, OnshapeAuthServer.params[1:]
+                    )
+                    # print(response_uri)
+                    Client.get_client().set_grant_authorization_url_response(response_uri)
+                # else:
+                #     response_uri = "https://{}:{}/oauth-redirect".format(hostName, serverPort)
+                #     try:
+                #         Client.get_client().set_grant_authorization_url_response(response_uri)
+                #     except Exception:
+                #         carb.log_warn("cancelled auth")
                 # fetch_token()
-            except Exception as e:
-                carb.log_error("error attempting to open Onshape Authentication: " + str(e))
+
+            # except Exception as e:
+            #     OnshapeClient.__stop_request = True
+            #     carb.log_error("error attempting to open Onshape Authentication: " + str(e))
 
         OnshapeClient.__onshape_client = Client(
             keys_file=None,
@@ -121,6 +257,31 @@ class OnshapeClient(object):
                 "oauth_authorization_method": "python_callback",
             },
         )
+
+    @staticmethod
+    def authenticate(authenticated_callback):
+        OnshapeClient.get()
+        if not OnshapeClient.__authenticated:
+            auth_popup = ui.Window(
+                "Onshape Authentication",
+                width=300,
+                height=50,
+                flags=ui.WINDOW_FLAGS_NO_RESIZE
+                | ui.WINDOW_FLAGS_NO_SCROLLBAR
+                | ui.WINDOW_FLAGS_NO_TITLE_BAR
+                | ui.WINDOW_FLAGS_MODAL,
+            )
+
+            def callback(authenticated):
+                if authenticated:
+                    OnshapeClient.__authenticated = True
+                    authenticated_callback()
+
+            with auth_popup.frame:
+                window = AuthWindow(auth_popup)
+            # window.queue.put(OnshapeClient.get())
+            window.start_auth(callback)
+        return OnshapeClient.__authenticated
 
     @staticmethod
     def get():
@@ -135,6 +296,7 @@ class OnshapeClient(object):
                         OnshapeClient.__onshape_client = Client(
                             keys_file=None, configuration={"access_key": api_key, "secret_key": api_secret}
                         )
+                        OnshapeClient.__authenticated = True
                     else:
                         OnshapeClient.get_oauth_client()
 
@@ -162,8 +324,8 @@ class OnshapeClient(object):
             user_settings = OnshapeClient.get().users_api.get_user_settings_current_logged_in_user()
             libraries = user_settings["material_library_settings"]
             OnshapeClient.__user_mats_lib = [
-                OnshapeClient.get_material_library(l["document_id"], l["element_id"])
-                for l in libraries["libraries"] + libraries["company_libraries"]
+                OnshapeClient.get_material_library(libs["document_id"], libs["element_id"])
+                for libs in libraries["libraries"] + libraries["company_libraries"]
             ]
         return OnshapeClient.__user_mats_lib
 
