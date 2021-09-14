@@ -196,11 +196,15 @@ class CreateSetupExtension(omni.ext.IExt):
 
     def _launch_app(self, app_id, console=True, custom_args=None):
         """launch an other Kit app with the same settings"""
+        import sys
         import subprocess
         import platform
 
+        app_path = carb.tokens.get_tokens_interface().resolve("${app}")
+        kit_file_path = os.path.join(app_path, app_id)
+
         launch_args = [sys.argv[0]]
-        launch_args.append(app_id)
+        launch_args += [kit_file_path]
         if custom_args:
             launch_args.extend(custom_args)
 
@@ -209,10 +213,6 @@ class CreateSetupExtension(omni.ext.IExt):
         if exts_folders:
             for folder in exts_folders:
                 launch_args.extend(["--ext-folder", folder])
-
-        # subprocess don't get the ${app} token somehow we push it into a settings
-        app_path = carb.tokens.get_tokens_interface().resolve("${app}")
-        launch_args.append(f"--/app/folder='{app_path}'")
 
         kwargs = {"close_fds": False}
         if platform.system().lower() == "windows":
