@@ -87,7 +87,7 @@ class Extension(omni.ext.IExt):
         """Builds the UI for EXTENSION_NAME"""
         if not self._window:
             self._window = ui.Window(
-                title=EXTENSION_NAME, width=600, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME, width=700, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
 
             with self._window.frame:

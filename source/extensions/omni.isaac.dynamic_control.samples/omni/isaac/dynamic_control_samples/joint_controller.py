@@ -16,7 +16,7 @@ import omni.ui as ui
 import omni.kit.test
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-from omni.isaac.ui.ui_utils import *
+from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder, scrolling_frame_builder
 
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
@@ -115,7 +115,7 @@ class Extension(omni.ext.IExt):
     def _build_ui(self):
         if not self._window:
             self._window = ui.Window(
-                title=EXTENSION_NAME, width=0, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME, width=500, height=500, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             with self._window.frame:
                 with ui.VStack(spacing=5, height=0):
@@ -176,20 +176,20 @@ class Extension(omni.ext.IExt):
         remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
 
-    async def _setup_camera(self, task):
-        done, pending = await asyncio.wait({task})
-        if task in done:
-            self._viewport = omni.kit.viewport.get_default_viewport_window()
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 150, -150, 150, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
+    async def _setup_scene(self):
+        await load_test_file(self._asset_path + "/data/usd/robots/franka/franka.usd")
+        await omni.kit.app.get_app().next_update_async()
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport.set_camera_position("/OmniverseKit_Persp", 150, -150, 150, True)
+        self._viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
 
     def _on_load_robot(self):
-        task = asyncio.ensure_future(load_test_file(self._asset_path + "/data/usd/robots/franka/franka.usd"))
-        asyncio.ensure_future(self._setup_camera(task))
+        asyncio.ensure_future(self._setup_scene())
 
     def _on_move_joints(self):
         self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
-        self._physxIFace.force_load_physics_from_usd()
         self._timeline.play()
         self._sub_stage_event = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
@@ -204,8 +204,8 @@ class Extension(omni.ext.IExt):
     def _on_first_step(self):
         self.ar = self._dc.get_articulation("/panda")
         if self.ar == _dynamic_control.INVALID_HANDLE:
-            print("*** '%s' is not an articulation" % "/panda")
-            return
+            carb.log_warn("'%s' is not an articulation, please click load button first" % "/panda")
+            return False
 
         num_dofs = self._dc.get_articulation_dof_count(self.ar)
         dof_props = self._dc.get_articulation_dof_properties(self.ar)
@@ -265,11 +265,13 @@ class Extension(omni.ext.IExt):
 
         self.anim_state = ANIM_SEEK_LOWER
         self.current_dof = 0
+        return True
 
     def _on_physics_step(self, step):
         if self._dc.is_simulating():
             if self.ar == _dynamic_control.INVALID_HANDLE:
-                self._on_first_step()
+                if not self._on_first_step():
+                    return
             dof = self.current_dof
             speed = self.speeds[dof]
             # animate the dofs
