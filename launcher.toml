@@ -41,7 +41,7 @@ pre-install = ""
 pre-install-args = []
 install = ""
 install-args = []
-post-install = "${productRoot}/omni.isaac.warmup.sh"
+post-install = "${productRoot}/omni.isaac.sim.post.install.sh"
 post-install-args = []
 
 [defaults.linux-x86_64.uninstall]

@@ -74,9 +74,7 @@ class CreateSetupExtension(omni.ext.IExt):
         self.__setup_property_window = asyncio.ensure_future(self.__property_window())
 
         self.__menu_update()
-        # only add icon if we are creating a window
-        if carb.settings.get_settings_interface().get_as_bool("/app/window/enabled"):
-            self.__add_app_icon(ext_id)
+        self.__add_app_icon(ext_id)
         self.__await_new_scene = asyncio.ensure_future(self.__new_stage())
 
     def _set_defaults(self):
