@@ -454,7 +454,7 @@ def color_picker_builder(label="", type="color_picker", default_val=[1.0, 1.0, 1
 def progress_bar_builder(label="", type="progress_bar", default_val=0, tooltip="Progress"):
     "Creates a Progress Bar Widget"
     with ui.HStack():
-        ui.Label("Progress Bar", width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER)
+        ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER)
         model = ui.ProgressBar().model
         model.set_value(default_val)
         add_line_rect_flourish(False)

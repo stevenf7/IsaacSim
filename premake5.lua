@@ -243,6 +243,7 @@ group "exts"
     include ("source/extensions/omni.isaac.surface_gripper")
     include ("source/extensions/omni.isaac.synthetic_recorder")
     include ("source/extensions/omni.isaac.synthetic_utils")
+    include ("source/extensions/omni.isaac.synthetic_workflow")
     include ("source/extensions/omni.isaac.tests")
     include ("source/extensions/omni.isaac.utils")
     include ("source/extensions/omni.isaac.urdf")
