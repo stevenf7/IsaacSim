@@ -497,16 +497,17 @@ class CreateSetupExtension(omni.ext.IExt):
         if sys.platform == "win32":
             pass
         else:
-            with open(os.path.expanduser("~/.local/share/applications/IsaacSim.desktop"), "w") as file:
-                file.write(
-                    f"""[Desktop Entry]
+            if os.path.exists("~/.local/share/applications"):
+                with open(os.path.expanduser("~/.local/share/applications/IsaacSim.desktop"), "w") as file:
+                    file.write(
+                        f"""[Desktop Entry]
 Version=1.0
 Name=Isaac Sim
 Icon={extension_path}/data/omni.isaac.sim.png
 Terminal=false
 Type=Application
 StartupWMClass=IsaacSim"""
-                )
+                    )
 
     def on_shutdown(self):
         self._ui_doc_menu_item = None
