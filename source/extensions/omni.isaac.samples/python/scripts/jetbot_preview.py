@@ -17,7 +17,7 @@ import numpy as np
 import asyncio
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-from omni.isaac.ui.ui_utils import *
+from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
 
 from omni.isaac.dynamic_control import _dynamic_control
 
@@ -33,8 +33,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
 
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self._extension_path = ext_manager.get_extension_path(ext_id)
+        self._ext_id = ext_id
 
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
@@ -82,11 +81,6 @@ class Extension(omni.ext.IExt):
 
                     title = "NVIDIA Jetbot Navigation Example"
                     doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_jetbot.html"
-                    ext_path = (
-                        os.path.dirname(self._extension_path)
-                        if os.path.isfile(self._extension_path)
-                        else self._extension_path
-                    )
 
                     overview = "This Example shows how to simulate an NVIDIA Jetbot robot in Isaac Sim."
                     overview += "\n\tKeybord Input:"
@@ -95,13 +89,8 @@ class Extension(omni.ext.IExt):
                     overview += "\n\t\ta: Spin Left"
                     overview += "\n\t\td: Spin Right"
                     overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                    author = "Isaac Sim Team"
-                    date = "07/01/2021"
 
-                    log_filename = EXTENSION_NAME.lower()
-                    log_filename = log_filename.replace(" ", "_") + ".log"
-
-                    setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                    setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                     frame = ui.CollapsableFrame(
                         title="Command Panel",
@@ -140,7 +129,7 @@ class Extension(omni.ext.IExt):
     def _sub_keyboard_event(self, event, *args, **kwargs):
         """Handle keyboard events
         w,s,a,d as arrow keys for jetbot movement
-        
+
         Args:
             event (int): keyboard event type
         """
@@ -217,7 +206,7 @@ class Extension(omni.ext.IExt):
         """This function is called when stage events occur.
         Enables UI elements when stage is opened.
         Prevents tasks from being started until all assets are loaded
-        
+
         Arguments:
             event (int): event type
         """
@@ -234,8 +223,7 @@ class Extension(omni.ext.IExt):
         gc.collect()
 
     def _on_editor_step(self, step):
-        """Update jetbot physics once per step
-        """
+        """Update jetbot physics once per step"""
         if not self._timeline.is_playing():
             # self._reset_btn.text = "Press Play to Enable Controller"
             self._reset_btn.enabled = False
@@ -262,8 +250,7 @@ class Extension(omni.ext.IExt):
             self._reset_btn.enabled = False
 
     def _control_setup(self):
-        """ set up velocity control on the joints
-        """
+        """set up velocity control on the joints"""
         if self._ar == _dynamic_control.INVALID_HANDLE:
             self._ar = self._dc.get_articulation(str(self.prim.GetPath()))
 
@@ -280,8 +267,7 @@ class Extension(omni.ext.IExt):
         self._wheel_check = True
 
     def on_shutdown(self):
-        """Cleanup objects on extension shutdown
-        """
+        """Cleanup objects on extension shutdown"""
 
         self._timeline.stop()
         self._editor_event_subscription = None

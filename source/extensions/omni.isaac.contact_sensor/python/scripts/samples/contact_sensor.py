@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import os
 import carb
 import omni
 import asyncio
@@ -17,7 +16,7 @@ import omni.ui as ui
 from omni.isaac.contact_sensor import _contact_sensor
 from pxr import UsdGeom
 
-from omni.isaac.ui.ui_utils import *
+from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, LABEL_WIDTH
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 
@@ -27,6 +26,7 @@ EXTENSION_NAME = "Contact Sensor Example"
 class Contact_sensor_demo(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._ext_id = ext_id
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
         self._menu_items = [
@@ -82,23 +82,12 @@ class Contact_sensor_demo(omni.ext.IExt):
                     doc_link = (
                         "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_contact_sensor.html"
                     )
-                    ext_path = (
-                        os.path.dirname(self._extension_path)
-                        if os.path.isfile(self._extension_path)
-                        else self._extension_path
-                    )
 
                     overview = "This Example shows how to Surface load sensors applied to a body. "
                     overview += "It works by summing all forces applied on a given trigger shperical region intersected with the given body surface."
                     overview += "\nPress PLAY to start the simulation."
                     overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                    author = "Isaac Sim Team"
-                    date = "07/01/2021"
-
-                    log_filename = EXTENSION_NAME.lower()
-                    log_filename = log_filename.replace(" ", "_") + ".log"
-
-                    setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                    setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                     frame = ui.CollapsableFrame(
                         title="Sensor Readings",

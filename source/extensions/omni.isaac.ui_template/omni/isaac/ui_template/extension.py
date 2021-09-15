@@ -15,7 +15,7 @@ import gc
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import carb
 from omni.isaac.ui.ui_utils import *
-from omni.isaac.ui.style import BUTTON_WIDTH, LABEL_WIDTH, VERTICAL_SPACING
+from omni.isaac.ui.style import VERTICAL_SPACING
 
 
 EXTENSION_NAME = "Example UI"
@@ -24,10 +24,9 @@ PRINT_DEBUG = True
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
-        manager = omni.kit.app.get_app().get_extension_manager()
-        self._extension_path = manager.get_extension_path(ext_id)
+        self._ext_id = ext_id
         self._settings = carb.settings.get_settings()
 
         # Keep a Reference to the Usd Context, Stage, & Viewport
@@ -95,24 +94,14 @@ class Extension(omni.ext.IExt):
 
                     title = "Isaac Sim Example UI"
                     doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
-                    ext_path = (
-                        os.path.dirname(self._extension_path)
-                        if os.path.isfile(self._extension_path)
-                        else self._extension_path
-                    )
 
                     overview = (
                         "The Example UI shows how to use Isaac Sim's robotics-centric UI tools for your own extensions."
                     )
                     overview += "\n\nUse this as a reference or template when creating a UI for a new project."
                     overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                    author = "Isaac Sim Team"
-                    date = "07/01/2021"
 
-                    log_filename = EXTENSION_NAME.lower()
-                    log_filename = log_filename.replace(" ", "_") + ".log"
-
-                    setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                    setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                     self.build_example_gui_grid()
                     self.build_plot_frame()
@@ -559,7 +548,7 @@ class Extension(omni.ext.IExt):
 
     def build_custom_ui(self):
         """
-        This is where the User creates their main GUI. 
+        This is where the User creates their main GUI.
         Use a Group Frame to help visually differente user-generated vs core Isaac UI elements
         """
         self._my_ui = ui.CollapsableFrame(

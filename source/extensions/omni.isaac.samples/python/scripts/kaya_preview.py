@@ -19,7 +19,7 @@ import omni.ui as ui
 import omni.physx as _physx
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-from omni.isaac.ui.ui_utils import *
+from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
 
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.manip import _manip, GamePadAxis
@@ -37,8 +37,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
 
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self._extension_path = ext_manager.get_extension_path(ext_id)
+        self._ext_id = ext_id
 
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
@@ -78,22 +77,12 @@ class Extension(omni.ext.IExt):
 
                     title = "NVIDIA Kaya Joystick Example"
                     doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_manip.html"
-                    ext_path = (
-                        os.path.dirname(self._extension_path)
-                        if os.path.isfile(self._extension_path)
-                        else self._extension_path
-                    )
 
                     overview = "This Example shows how to drive a NVIDIA Kaya robot using a Gamepad in Isaac Sim."
                     overview += "\n\nConnect a gamepad to the robot, and the press PLAY to begin simulating."
                     overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                    author = "Isaac Sim Team"
-                    date = "07/01/2021"
 
-                    log_filename = EXTENSION_NAME.lower()
-                    log_filename = log_filename.replace(" ", "_") + ".log"
-
-                    setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                    setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                     frame = ui.CollapsableFrame(
                         title="Command Panel",

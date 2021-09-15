@@ -9,7 +9,6 @@ authors = ["Isaac Sim Team"]
 toggleable = false
 
 [dependencies]
-"omni.kit.loop-isaac" = {}
 "omni.physx" = {} # loads usd libs we import
 
 [[python.module]]

@@ -15,8 +15,8 @@ import os
 
 
 class Extension(BaseSample):
-    def on_startup(self):
-        super().on_startup()
+    def on_startup(self, ext_id):
+        super().on_startup(ext_id)
         # TODO: change doc link when available
         # TODO: change physics properties of the cubes
         super()._on_startup(
@@ -24,11 +24,10 @@ class Extension(BaseSample):
             submenu_name="Manipulation",
             name="Simple Stack",
             buttons_mapping={"Start Stacking": self._on_stacking_event},
-            extension_path=os.path.abspath(__file__),
             title="Stack Two Cubes",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_urdf_import.html",
-            date="09/14/2021",
             overview="This Example shows how to stack two cubes using Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
+            file_path=os.path.abspath(__file__),
         )
         self._controller = None
         self._articulation_controller = None

@@ -6,14 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import carb
 import omni.usd
-import omni.ui as ui
-from omni.kit.property.usd.usd_property_widget import UsdPropertiesWidget, UsdPropertyUiEntry
-from pxr import Usd, Sdf, Gf, Tf
-from typing import List
-from omni.kit.property.usd.usd_property_widget_builder import UsdPropertiesWidgetBuilder
-from omni.kit.property.usd.usd_attribute_model import UsdAttributeModel
 
 from .array_widget import ArrayPropertiesWidget
 from .custom_data import CustomDataWidget

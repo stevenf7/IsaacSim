@@ -12,20 +12,18 @@ import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.range_sensor import _range_sensor
 from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
-from omni.physx.scripts.physicsUtils import *
 import asyncio
 import weakref
 
 EXTENSION_NAME = "Ultrasonic Info"
 
-from omni.isaac.ui.ui_utils import *
+from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder, combo_cb_scrolling_frame_builder
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self._extension_path = ext_manager.get_extension_path(ext_id)
+        self._ext_id = ext_id
 
         # The extension acquires the ULTRASONIC interface at startup.  It will be released during extension shutdown.  We
         # create a ULTRASONIC prim using our schema, and then we interact with / query that prim using the python API found
@@ -55,23 +53,13 @@ class Extension(omni.ext.IExt):
             with ui.VStack(spacing=5, height=0):
                 title = "Read an Ultrasonic Sensor Data Stream"
                 doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_range_sensor.html#ultrasonic"
-                ext_path = (
-                    os.path.dirname(self._extension_path)
-                    if os.path.isfile(self._extension_path)
-                    else self._extension_path
-                )
 
                 overview = "This sample demonstrates the ULTRASONIC python API for Isaac Sim. It shows how to create an Ultrasonic Sensor, set its properties, and read data streaming from it. "
                 overview += "First press the 'Load Sensor' button and then press PLAY to simulate."
                 overview += "\n\nPress the 'Open in IDE' button to view the source code."
                 overview += "\nNote: The buttons above only work with an Ultrasonic sensor made by the 'Load Sensor' button; not existing ones in the stage."
-                author = "Isaac Sim Team"
-                date = "07/01/2021"
 
-                log_filename = EXTENSION_NAME.lower()
-                log_filename = log_filename.replace(" ", "_") + ".log"
-
-                setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                 frame = ui.CollapsableFrame(
                     title="Command Panel",
@@ -309,9 +297,8 @@ class Extension(omni.ext.IExt):
 
         # In order for our cube to interact with the ULTRASONIC, it needs to be able to colide with our physX line traces.
         # to do this, we give our cube the collision API, and set it's material and collision group.
-        collisionAPI = UsdPhysics.CollisionAPI.Apply(cubePrim)
-        collisionAPI = UsdPhysics.CollisionAPI.Apply(cylinderPrim)
-        defaultPrimPath = str(stage.GetDefaultPrim().GetPath())
+        UsdPhysics.CollisionAPI.Apply(cubePrim)
+        UsdPhysics.CollisionAPI.Apply(cylinderPrim)
 
     def _draw_envelope_frame(self):
         envelope_arr = self._ul.get_envelope_array(self.ultrasonicPath)

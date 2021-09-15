@@ -887,19 +887,18 @@ def format_tt(tt):
 
 
 def setup_ui_headers(
-    ext_path,
+    ext_id,
     file_path,
     title="My Custom Extension",
     doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html",
     overview="",
-    author="",
-    date="",
-    log_filename="extension.log",
 ):
+    ext_manager = omni.kit.app.get_app().get_extension_manager()
+    extension_path = ext_manager.get_extension_path(ext_id)
+    ext_path = os.path.dirname(extension_path) if os.path.isfile(extension_path) else extension_path
     """Creates the Standard UI Elements at the top of each Isaac Extension."""
     build_header(ext_path, file_path, title, doc_link)
-    build_info_frame(overview, author, date)
-    build_settings_frame(log_filename)
+    build_info_frame(overview)
 
 
 def build_header(
@@ -988,7 +987,7 @@ def build_header(
             ui.Spacer(width=5)
 
 
-def build_info_frame(overview="", author="", date=""):
+def build_info_frame(overview=""):
     """Info Frame with Overview, Instructions, and Metadata for an Extension"""
     frame = ui.CollapsableFrame(
         title="Information",
@@ -1016,86 +1015,84 @@ def build_info_frame(overview="", author="", date=""):
             #     ui.Label(
             #         date, style_type_name_override="Label::label", alignment=ui.Alignment.LEFT_TOP, width=ui.Percent(75)
             #     )
-
-
-def build_settings_frame(log_filename="extension.log", log_to_file=False, save_settings=False):
-    """Settings Frame for Common Utilities Functions"""
-    frame = ui.CollapsableFrame(
-        title="Settings",
-        height=0,
-        collapsed=True,
-        horizontal_clipping=False,
-        style=get_style(),
-        style_type_name_override="CollapsableFrame",
-    )
-
-    def on_log_to_file_enabled(val):
-        # TO DO
-        carb.log_info(f"Logging to {model.get_value_as_string()}:", val)
-
-    def on_save_out_settings(val):
-        # TO DO
-        carb.log_info("Save Out Settings?", val)
-
-    def on_reload_environment():
-        # TO DO
-        carb.log_info("Reloading the Envirionment")
-
-        """Resets the Stage and Reloads the Project """
-        # Wait to create a new scenario until the Stage is done loading
-        task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
-        asyncio.ensure_future(setup_project(task))
-
-    async def setup_project(task):
-        """Sets up Project-Specific Variables and Parameters"""
-        done, pending = await asyncio.wait({task})
-        if task in done:
-            carb.log_info("Setting Up Project")
-            ext_manager = omni.kit.app.get_app().get_extension_manager()
-            viewport_ext_enabled = ext_manager.is_extension_enabled("omni.kit.window.viewport")
-            if viewport_ext_enabled:
-                viewport = omni.kit.viewport.get_default_viewport_window()
-
-                # Setup the Viewport at a CAMERA_PRESET (NEAR, MID, FAR)
-                viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
-                viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
-            else:
-                carb.log_warn("skipping viewport camera reset because omni.kit.window.viewport isn't enabled")
-
-    with frame:
-        with ui.VStack(style=get_style(), spacing=5):
-
-            # # Log to File Settings
-            # default_output_path = os.path.realpath(os.getcwd())
-            # kwargs = {
-            #     "label": "Log to File",
-            #     "type": "checkbox_stringfield",
-            #     "default_val": [log_to_file, default_output_path + "/" + log_filename],
-            #     "on_clicked_fn": on_log_to_file_enabled,
-            #     "tooltip": "Log Out to File",
-            #     "use_folder_picker": True,
-            # }
-            # model = combo_cb_str_builder(**kwargs)[1]
-
-            # Save Settings on Exit
-            # kwargs = {
-            #     "label": "Save Settings",
-            #     "type": "checkbox",
-            #     "default_val": save_settings,
-            #     "on_clicked_fn": on_save_out_settings,
-            #     "tooltip": "Save out GUI Settings on Exit.",
-            # }
-            # cb_builder(**kwargs)
-
             # Reload Environment
+
+            def on_clear_environment():
+                # TO DO
+                carb.log_info("Clearing the Envirionment")
+
+                """Resets the Stage and Reloads the Project """
+                # Wait to create a new scenario until the Stage is done loading
+                asyncio.ensure_future(setup_project())
+
+            async def setup_project():
+                """Sets up Project-Specific Variables and Parameters"""
+                await omni.usd.get_context().new_stage_async()
+                carb.log_info("Setting Up Project")
+                ext_manager = omni.kit.app.get_app().get_extension_manager()
+                viewport_ext_enabled = ext_manager.is_extension_enabled("omni.kit.window.viewport")
+                if viewport_ext_enabled:
+                    viewport = omni.kit.viewport.get_default_viewport_window()
+                    # Setup the Viewport at a CAMERA_PRESET (NEAR, MID, FAR)
+                    viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
+                    viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+                else:
+                    carb.log_warn("Skipping viewport camera reset because omni.kit.window.viewport isn't enabled")
+
             kwargs = {
                 "label": "Clear Scene",
                 "type": "button",
                 "text": "CLEAR",
-                "on_clicked_fn": on_reload_environment,
+                "on_clicked_fn": on_clear_environment,
                 "tooltip": "Clear the Scene",
             }
             btn_builder(**kwargs)
+
+
+# def build_settings_frame(log_filename="extension.log", log_to_file=False, save_settings=False):
+#     """Settings Frame for Common Utilities Functions"""
+#     frame = ui.CollapsableFrame(
+#         title="Settings",
+#         height=0,
+#         collapsed=True,
+#         horizontal_clipping=False,
+#         style=get_style(),
+#         style_type_name_override="CollapsableFrame",
+#     )
+
+#     def on_log_to_file_enabled(val):
+#         # TO DO
+#         carb.log_info(f"Logging to {model.get_value_as_string()}:", val)
+
+#     def on_save_out_settings(val):
+#         # TO DO
+#         carb.log_info("Save Out Settings?", val)
+
+
+#     with frame:
+#         with ui.VStack(style=get_style(), spacing=5):
+
+#             # # Log to File Settings
+#             # default_output_path = os.path.realpath(os.getcwd())
+#             # kwargs = {
+#             #     "label": "Log to File",
+#             #     "type": "checkbox_stringfield",
+#             #     "default_val": [log_to_file, default_output_path + "/" + log_filename],
+#             #     "on_clicked_fn": on_log_to_file_enabled,
+#             #     "tooltip": "Log Out to File",
+#             #     "use_folder_picker": True,
+#             # }
+#             # model = combo_cb_str_builder(**kwargs)[1]
+
+#             # Save Settings on Exit
+#             # kwargs = {
+#             #     "label": "Save Settings",
+#             #     "type": "checkbox",
+#             #     "default_val": save_settings,
+#             #     "on_clicked_fn": on_save_out_settings,
+#             #     "tooltip": "Save out GUI Settings on Exit.",
+#             # }
+#             # cb_builder(**kwargs)
 
 
 class ListItem(ui.AbstractItem):
@@ -1142,8 +1139,8 @@ class ListItemModel(ui.AbstractItemModel):
                 self._filtered.append(c)
         else:
             parts = text.split()
-            for i in range(len(parts) - 1, -1, -1):
-                w = parts[i]
+            # for i in range(len(parts) - 1, -1, -1):
+            #     w = parts[i]
 
             leftover = " ".join(parts)
             if len(leftover) > 0:

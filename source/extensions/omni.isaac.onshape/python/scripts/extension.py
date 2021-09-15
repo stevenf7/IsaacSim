@@ -102,7 +102,6 @@ class OnshapeImporter(omni.ext.IExt):
     def on_shutdown(self):
         remove_menu_items(self._menu, "File")
         self._menu = None
-        print("shutting down")
         if self._folder_picker:
             self._folder_picker.destroy()
             self._folder_picker = None

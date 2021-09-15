@@ -16,20 +16,18 @@ import gc
 from omni.isaac.core import World
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
 import asyncio
-import os
 
 
 class BaseSample(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         self._world = None
         self._menu_items = None
         self._buttons = None
         self._task = None
+        self._ext_id = ext_id
         return
 
-    def _on_startup(
-        self, menu_name, submenu_name, name, buttons_mapping, title, doc_link, date, overview, extension_path
-    ):
+    def _on_startup(self, menu_name, submenu_name, name, buttons_mapping, title, doc_link, overview, file_path):
         self._world = None
         menu_items = [MenuItemDescription(name=name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
         self._menu_items = [
@@ -42,26 +40,20 @@ class BaseSample(omni.ext.IExt):
             name=name,
             title=title,
             doc_link=doc_link,
-            date=date,
             overview=overview,
             buttons_mapping=buttons_mapping,
-            extension_path=extension_path,
+            file_path=file_path,
         )
         return
 
-    def _build_ui(self, name, title, doc_link, date, overview, buttons_mapping, extension_path):
+    def _build_ui(self, name, title, doc_link, overview, buttons_mapping, file_path):
         self._window = omni.ui.Window(
             name, width=0, height=0, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
-                ext_path = os.path.dirname(extension_path) if os.path.isfile(extension_path) else extension_path
-                author = "Isaac Sim Team"
 
-                log_filename = name.lower()
-                log_filename = log_filename.replace(" ", "_") + ".log"
-
-                setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                setup_ui_headers(self._ext_id, file_path, title, doc_link, overview)
 
                 frame = ui.CollapsableFrame(
                     title="Command Panel",
@@ -171,7 +163,6 @@ class BaseSample(omni.ext.IExt):
         if self._menu_items is not None:
             remove_menu_items(self._menu_items, "Isaac Examples")
         gc.collect()
-        print("Shutting down")
         self._window = None
         self._menu_items = None
         return

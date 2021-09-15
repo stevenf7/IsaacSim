@@ -85,7 +85,7 @@ class Extension(omni.ext.IExt):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         dc_ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._asset_path = ext_manager.get_extension_path(dc_ext_id)
-        self._extension_path = ext_manager.get_extension_path(ext_id)
+        self._ext_id = ext_id
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
@@ -111,21 +111,11 @@ class Extension(omni.ext.IExt):
                 doc_link = (
                     "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_dynamic_control.html"
                 )
-                ext_path = (
-                    os.path.dirname(self._extension_path)
-                    if os.path.isfile(self._extension_path)
-                    else self._extension_path
-                )
 
                 overview = "This sample loads a Franka robot and enables simulation. Various information for the robot articulation degrees of freedom is retrieved and shown on screen."
                 overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                author = "Isaac Sim Team"
-                date = "07/01/2021"
 
-                log_filename = EXTENSION_NAME.lower()
-                log_filename = log_filename.replace(" ", "_") + ".log"
-
-                setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                 frame = ui.CollapsableFrame(
                     title="Command Panel",
