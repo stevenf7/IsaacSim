@@ -88,7 +88,7 @@ class Articulation(XFormPrim):
         self._default_joints_state = JointsState(
             positions=self.get_joint_positions(),
             velocities=self.get_joint_velocities(),
-            torques=self.get_joint_torques(),
+            efforts=self.get_joint_efforts(),
         )
         if self._articulation_controller is None:
             self._articulation_controller = PDArticulationController(self._handle, self._dofs_infos)
@@ -167,7 +167,7 @@ class Articulation(XFormPrim):
         dof_states["pos"] = joint_positions
         self._dc_interface.set_articulation_dof_states(self._handle, dof_states, _dynamic_control.STATE_POS)
         self._articulation_controller.apply_action(
-            ArticulationAction(joint_positions=joint_positions, joint_velocities=None, joint_torques=None)
+            ArticulationAction(joint_positions=joint_positions, joint_velocities=None, joint_efforts=None)
         )
         return
 
@@ -181,21 +181,21 @@ class Articulation(XFormPrim):
         dof_states["vel"] = joint_velocities
         self._dc_interface.set_articulation_dof_states(self._handle, dof_states, _dynamic_control.STATE_VEL)
         self._articulation_controller.apply_action(
-            ArticulationAction(joint_positions=None, joint_velocities=joint_velocities, joint_torques=None)
+            ArticulationAction(joint_positions=None, joint_velocities=joint_velocities, joint_efforts=None)
         )
         return
 
-    def set_joint_torques(self, joint_torques: np.ndarray) -> None:
+    def set_joint_efforts(self, joint_efforts: np.ndarray) -> None:
         """[summary]
 
         Args:
-            joint_torques (np.ndarray): [description]
+            joint_efforts (np.ndarray): [description]
         """
         dof_states = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_EFFORT)
-        dof_states["effort"] = joint_torques
+        dof_states["effort"] = joint_efforts
         self._dc_interface.set_articulation_dof_states(self._handle, dof_states, _dynamic_control.STATE_EFFORT)
         self._articulation_controller.apply_action(
-            ArticulationAction(joint_positions=None, joint_velocities=None, joint_torques=joint_torques)
+            ArticulationAction(joint_positions=None, joint_velocities=None, joint_efforts=joint_efforts)
         )
         return
 
@@ -219,25 +219,25 @@ class Articulation(XFormPrim):
         joint_velocities = [joint_velocities[i][1] for i in range(len(joint_velocities))]
         return np.array(joint_velocities)
 
-    def get_joint_torques(self) -> np.ndarray:
+    def get_joint_efforts(self) -> np.ndarray:
         """[summary]
 
         Returns:
             np.ndarray: [description]
         """
-        joint_torques = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_EFFORT)
-        joint_torques = [joint_torques[i][2] for i in range(len(joint_torques))]
-        return joint_torques
+        joint_efforts = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_EFFORT)
+        joint_efforts = [joint_efforts[i][2] for i in range(len(joint_efforts))]
+        return joint_efforts
 
-    def set_joints_default_state(self, positions: np.ndarray, velocities: np.ndarray, torques: np.ndarray) -> None:
+    def set_joints_default_state(self, positions: np.ndarray, velocities: np.ndarray, efforts: np.ndarray) -> None:
         """[summary]
 
         Args:
             positions (np.ndarray): [description]
             velocities (np.ndarray): [description]
-            torques (np.ndarray): [description]
+            efforts (np.ndarray): [description]
         """
-        self._default_joints_state = JointsState(positions, velocities, torques)
+        self._default_joints_state = JointsState(positions, velocities, efforts)
         return
 
     def get_joints_state(self) -> JointsState:
@@ -249,7 +249,7 @@ class Articulation(XFormPrim):
         return JointsState(
             positions=self.get_joint_positions(),
             velocities=self.get_joint_velocities(),
-            torques=self.get_joint_torques(),
+            efforts=self.get_joint_efforts(),
         )
 
     def reset(self) -> None:

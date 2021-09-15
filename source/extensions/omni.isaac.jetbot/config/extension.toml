@@ -1,0 +1,8 @@
+display_name = "Isaac Jetbot Robot"
+
+[dependencies]
+"omni.isaac.core" = {}
+"omni.isaac.kit" = {}
+
+[[python.module]]
+name = "omni.isaac.jetbot"

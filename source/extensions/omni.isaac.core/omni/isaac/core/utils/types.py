@@ -68,10 +68,10 @@ class VisualCubeState(GeometryPrimState):
 
 
 class JointsState(object):
-    def __init__(self, positions, velocities, torques):
+    def __init__(self, positions, velocities, efforts):
         self.positions = positions
         self.velocities = velocities
-        self.torques = torques
+        self.efforts = efforts
 
 
 class ArticulationAction(object):
@@ -79,18 +79,18 @@ class ArticulationAction(object):
         self,
         joint_positions: Optional[np.ndarray] = None,
         joint_velocities: Optional[np.ndarray] = None,
-        joint_torques: Optional[np.ndarray] = None,
+        joint_efforts: Optional[np.ndarray] = None,
     ):
         """[summary]
 
         Args:
             joint_positions (Optional, optional): [description]. Defaults to None.
             joint_velocities (Optional, optional): [description]. Defaults to None.
-            joint_torques (Optional, optional): [description]. Defaults to None.
+            joint_efforts (Optional, optional): [description]. Defaults to None.
         """
         self.joint_positions = joint_positions
         self.joint_velocities = joint_velocities
-        self.joint_torques = joint_torques
+        self.joint_efforts = joint_efforts
 
     def get_dof_action(self, index: int):
         """[summary]
@@ -101,8 +101,8 @@ class ArticulationAction(object):
         Returns:
             [type]: [description]
         """
-        if self.joint_torques is not None and self.joint_torques[index] is not None:
-            return {"torque": self.joint_torques[index]}
+        if self.joint_efforts is not None and self.joint_efforts[index] is not None:
+            return {"effort": self.joint_efforts[index]}
         else:
             dof_action = dict()
             if self.joint_velocities is not None and self.joint_velocities[index] is not None:

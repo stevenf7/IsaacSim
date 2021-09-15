@@ -71,9 +71,8 @@ class DOFPDController(DOFArticulationController):
         Args:
             control_action (dict): [description]
         """
-        # TODO: discuss the naming of torque vs effort vs force ..etc and accelaration too?
-        if "torque" in control_action:
-            self._dc_interface.apply_dof_effort(self._dof_handle, control_action["torque"])
+        if "effort" in control_action:
+            self._dc_interface.apply_dof_effort(self._dof_handle, control_action["effort"])
         if "position" in control_action:
             self._dc_interface.set_dof_position_target(self._dof_handle, control_action["position"])
         if "velocity" in control_action:
@@ -120,6 +119,9 @@ class PDArticulationController(ArticulationController):
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
         self._default_kps = [dof_props["stiffness"][i] for i in range(len(dofs_info))]
         self._default_kds = [dof_props["damping"][i] for i in range(len(dofs_info))]
+        for dof_index in range(len(self._dof_controllers)):
+            dof_props["driveMode"][dof_index] = _dynamic_control.DRIVE_FORCE
+        self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
         return
 
     def apply_action(self, control_actions: ArticulationAction) -> None:
@@ -159,22 +161,8 @@ class PDArticulationController(ArticulationController):
             mode (str): [description]
         """
         # TODO: add logging and error handling
-        if mode == "velocity":
-            self.set_gains(kps=None, kds=[0] * len(self._dof_controllers))
-        elif mode == "position":
-            self.set_gains(kps=self._default_kps, kds=self._default_kds)
-        elif mode == "force":
-            dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
-            for i in range(len(self._dof_controllers)):
-                dof_props["driveMode"][i] = _dynamic_control.DRIVE_FORCE
-            self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
-            self.set_gains(kps=[0] * len(self._dof_controllers), kds=[0] * len(self._dof_controllers))
-        elif mode == "accelaration":
-            dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
-            for i in range(len(self._dof_controllers)):
-                dof_props["driveMode"][i] = _dynamic_control.DRIVE_ACCELERATION
-            self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
-            self.set_gains(kps=[0] * len(self._dof_controllers), kds=[0] * len(self._dof_controllers))
+        for i in range(len(self._dof_controllers)):
+            self.switch_dof_control_mode(dof_index=i, mode=mode)
         return
 
     def switch_dof_control_mode(self, dof_index: int, mode: str) -> None:
@@ -186,17 +174,12 @@ class PDArticulationController(ArticulationController):
         """
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
         if mode == "velocity":
-            self._dof_controllers[dof_index].set_gains(dof_props=dof_props, kp=None, kd=0)
+            self._dof_controllers[dof_index].set_gains(dof_props=dof_props, kp=0, kd=self._default_kds[dof_index])
         elif mode == "position":
             self._dof_controllers[dof_index].set_gains(
                 dof_props=dof_props, kp=self._default_kps[dof_index], kd=self._default_kds[dof_index]
             )
-        elif mode == "force":
-            dof_props["driveMode"][dof_index] = _dynamic_control.DRIVE_FORCE
-            self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
-            self._dof_controllers[dof_index].set_gains(dof_props=dof_props, kp=0, kd=0)
-        elif mode == "accelaration":
-            dof_props["driveMode"][dof_index] = _dynamic_control.DRIVE_ACCELERATION
+        elif mode == "effort":
             self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
             self._dof_controllers[dof_index].set_gains(dof_props=dof_props, kp=0, kd=0)
         return
