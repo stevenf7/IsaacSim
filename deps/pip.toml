@@ -64,6 +64,8 @@ packages = [
     "pyparsing==2.4.7",                     # SWIPAT filed under:
     "cycler==0.10.0",                       # SWIPAT filed under:
     "kiwisolver==1.3.2",                    # SWIPAT filed under:
+    "torch==1.7.1",                         # SWIPAT filed under:
+    "torchvision==0.8.2"                    # SWIPAT filed under:
 ]
 target = "../_build/target-deps/pip_prebundle"
 platforms = ["*-x86_64"]

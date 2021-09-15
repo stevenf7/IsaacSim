@@ -30,6 +30,8 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import pyparsing
         import cycler
         import kiwisolver
+        import torch
+        import torchvision
 
         self.assertIsNotNone(scipy)
         self.assertIsNotNone(quaternion)
@@ -49,3 +51,5 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(pyparsing)
         self.assertIsNotNone(cycler)
         self.assertIsNotNone(kiwisolver)
+        self.assertIsNotNone(torch)
+        self.assertIsNotNone(torchvision)
