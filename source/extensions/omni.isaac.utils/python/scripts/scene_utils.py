@@ -18,16 +18,16 @@ def set_up_z_axis(stage):
 
 
 # Set default physics parameters
-def setup_physics(stage):
+def setup_physics(stage, path="/physics/scene"):
     # Specify gravity
     metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
     gravityScale = 9.81 / metersPerUnit
-    scene = UsdPhysics.Scene.Define(stage, "/physics/scene")
+    scene = UsdPhysics.Scene.Define(stage, path)
     scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
     scene.CreateGravityMagnitudeAttr().Set(gravityScale)
 
-    PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physics/scene"))
-    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/physics/scene")
+    PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath(path))
+    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, path)
     physxSceneAPI.CreateEnableCCDAttr(True)
     physxSceneAPI.CreateEnableStabilizationAttr(True)
     physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
