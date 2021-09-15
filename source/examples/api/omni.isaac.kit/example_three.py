@@ -30,13 +30,13 @@ art = dc.get_articulation("/Franka")
 dof_ptr = dc.find_articulation_dof(art, "panda_joint2")
 
 
-def step_callback_1():
+def step_callback_1(step_size):
     dc.wake_up_articulation(art)
     dc.set_dof_position_target(dof_ptr, -1.5)
     return
 
 
-def step_callback_2():
+def step_callback_2(step_size):
     dof_state = dc.get_dof_state(dof_ptr, _dynamic_control.STATE_POS)
     print("Current joint 2 position @ step " + str(simulation_context.time_step_index) + " : " + str(dof_state.pos))
     return

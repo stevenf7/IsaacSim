@@ -61,7 +61,7 @@ class TargetFollower(BaseTask):
             )
         )
         self.obstacle_cubes[cube.name] = cube
-        return
+        return cube
 
     def remove_obstacle(self, name: Optional[str] = None) -> None:
         """[summary]
@@ -78,6 +78,16 @@ class TargetFollower(BaseTask):
             del self.obstacle_cubes[obstacle_to_delete]
         return
 
+    def get_obstacle_to_delete(self):
+        obstacle_to_delete = list(self.obstacle_cubes.keys())[0]
+        return self.scene.get_object(obstacle_to_delete)
+
+    def obstacles_exist(self) -> bool:
+        if len(self.obstacle_cubes) > 0:
+            return True
+        else:
+            return False
+
     def get_observations(self) -> dict:
         """[summary]
 
@@ -87,7 +97,7 @@ class TargetFollower(BaseTask):
         joints_state = self.my_franka.get_joints_state()
         target_cube_position, _ = self.target_cube.get_usd_pose()
         return {
-            "franka": {
+            "my_franka": {
                 "joint_positions": np.array(joints_state.positions),
                 "joint_velcoities": np.array(joints_state.velocities),
             },
@@ -118,4 +128,17 @@ class TargetFollower(BaseTask):
             self.target_cube.set_usd_color(color=np.array([0, 255, 0]))
         else:
             self.target_cube.set_usd_color(color=np.array([255, 0, 0]))
+
+        return
+
+    def reset(self) -> None:
+        """[summary]
+        """
+        return
+
+    def task_cleanup(self) -> None:
+        obstacles_to_delete = list(self.obstacle_cubes.keys())
+        for obstacle_to_delete in obstacles_to_delete:
+            self.scene.remove_object(obstacle_to_delete)
+            del self.obstacle_cubes[obstacle_to_delete]
         return

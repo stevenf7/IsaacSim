@@ -6,7 +6,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from numpy.core.fromnumeric import reshape
 from omni.isaac.core.controllers.controller import BaseController
 from omni.isaac.motion_generation import MotionGenerator
 from omni.isaac.core.utils.types import ArticulationAction
@@ -22,13 +21,16 @@ class RMPFlowIKSolver(BaseController):
     # TODO: this will need further discussion with buck and SRL before cleaning it up
     def __init__(self, name, mg_extension_path, dc_interface, stage, robot_prim):
         super().__init__(name)
+        self._dc_interface = dc_interface
+        self._stage = stage
         self.mg = MotionGenerator(dc_interface, stage)
         polciy_config_dir = os.path.join(mg_extension_path, "policy_configs")
         with open(os.path.join(polciy_config_dir, "policy_map.json")) as policy_map:
             policy_map = json.load(policy_map)
         config_path = os.path.join(polciy_config_dir, policy_map["Franka"]["RMPflow"])
-        self.config = self.process_policy_config(config_path)
-        self.mg.initialize(self.config, robot_prim, 60)
+        self._config = self.process_policy_config(config_path)
+        self._robot_prim = robot_prim
+        self.mg.initialize(self._config, robot_prim, 60)
         return
 
     def process_policy_config(self, mp_config_file):
@@ -77,3 +79,16 @@ class RMPFlowIKSolver(BaseController):
 
     def update_obstacles(self, obstacles):
         raise NotImplementedError
+
+    def add_cube_obstacle(self, cube_prim):
+        self.mg.create_cube(cube_prim)
+        return
+
+    def remove_cube_obstacle(self, cube_prim):
+        self.mg.remove_obstacle(cube_prim)
+        return
+
+    def reset(self):
+        self.mg = MotionGenerator(self._dc_interface, self._stage)
+        self.mg.initialize(self._config, self._robot_prim, 60)
+        return

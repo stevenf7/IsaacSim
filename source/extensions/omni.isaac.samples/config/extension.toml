@@ -28,6 +28,9 @@ writeTarget.kit = true
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.dr" = {}
 "omni.isaac.ui" = {}
+"omni.isaac.core" = {}
+"omni.isaac.franka" = {}
+"omni.isaac.motion_generation" = {}
 
 [[python.module]]
 name = "omni.isaac.samples.tests"
@@ -61,6 +64,12 @@ name = "omni.isaac.samples.scripts.ros_samples"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.ros_moveit_sample"
+
+[[python.module]]
+name = "omni.isaac.samples.scripts.simple_stack_sample"
+
+[[python.module]]
+name = "omni.isaac.samples.scripts.follow_target"
 
 [[test]]
 timeout = 960
