@@ -31,6 +31,9 @@ name = "omni.isaac.occupancy_map"
 [[python.module]]
 name = "omni.isaac.occupancy_map.tests"
 
+[[python.module]]
+name = "omni.isaac.occupancy_map.scripts.block_world"
+
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
