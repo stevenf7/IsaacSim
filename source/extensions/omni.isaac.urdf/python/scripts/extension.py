@@ -61,6 +61,7 @@ class Extension(omni.ext.IExt):
         self._models = {}
         result, self._config = omni.kit.commands.execute("URDFCreateImportConfig")
         self._filepicker = None
+        self._last_folder = None
         self._content_browser = None
         self._extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
         self._imported_robot = None
@@ -204,7 +205,10 @@ class Extension(omni.ext.IExt):
             item_filter_fn=on_filter_item,
             enable_versioning_pane=True,
         )
-
+        if self._last_folder:
+            self._filepicker.set_current_directory(self._last_folder)
+            self._filepicker.navigate_to(self._last_folder)
+            self._filepicker.refresh_current_directory()
         self._filepicker.toggle_bookmark_from_path("Built In URDF Files", (self._extension_path + "/data/urdf"), True)
         self._filepicker.show()
 
@@ -225,6 +229,7 @@ class Extension(omni.ext.IExt):
     def _select_picked_file_callback(self, dialog: FilePickerDialog, filename=None, path=None):
         if not path.startswith("omniverse://"):
             if path and filename:
+                self._last_folder = path
                 self._load_robot(path + "/" + filename)
             else:
                 carb.log_error("path and filename not specified")
