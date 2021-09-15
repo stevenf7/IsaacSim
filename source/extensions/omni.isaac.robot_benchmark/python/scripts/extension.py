@@ -5,13 +5,11 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 import gc
 import asyncio
 import weakref
-import os
 import omni.physx as _physx
 from .robot_benchmarking import RobotBenchmark
 from omni.isaac.benchmark_environments.scripts.environments import EnvironmentCreator
 from .benchmark_utils import BenchmarkConfigUtility
 
-import json
 
 EXTENSION_NAME = "Robot Benchmark"
 
@@ -118,7 +116,7 @@ class Extension(omni.ext.IExt):
 
     def get_robot_options(self):
         """
-        Given the environment selected in the drop-down menu, return a list of the robots that have at least one 
+        Given the environment selected in the drop-down menu, return a list of the robots that have at least one
         motion policy configured in the motion_generation extension, and are not explicitly excluded for this
         environment
         """

@@ -14,24 +14,23 @@ import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 import asyncio
-import atexit
-import colorsys
-import copy
-import queue
-import random
 import os
-import threading
 import numpy as np
 import weakref
 
 from . import scenario, dataset, train
 from carb.settings import get_settings
-from PIL import Image, ImageDraw
-from omni.isaac.synthetic_utils import visualization as vis
-from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter
-from omni.syntheticdata import sensors, visualize
-from omni.isaac.ui.ui_utils import *
-from omni.isaac.ui.style import BUTTON_WIDTH, LABEL_WIDTH, VERTICAL_SPACING
+from PIL import Image
+from omni.isaac.synthetic_utils import SyntheticDataHelper
+from omni.isaac.ui.ui_utils import (
+    setup_ui_headers,
+    btn_builder,
+    dropdown_builder,
+    get_style,
+    str_builder,
+    progress_bar_builder,
+    combo_floatfield_slider_builder,
+)
 
 EXTENSION_NAME = "Synthetic Data Workflow"
 
@@ -39,6 +38,7 @@ EXTENSION_NAME = "Synthetic Data Workflow"
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._ext_id = ext_id
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
         """Caled to load the extension"""
@@ -89,11 +89,6 @@ class Extension(omni.ext.IExt):
             with ui.VStack(spacing=5):
                 title = "Synthetic Data Workflow"
                 doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_syntheticdata.html"
-                ext_path = (
-                    os.path.dirname(self._extension_path)
-                    if os.path.isfile(self._extension_path)
-                    else self._extension_path
-                )
 
                 overview = "This extension presents the synthetic data workflow in Isaac Sim."
                 overview += (
@@ -103,13 +98,8 @@ class Extension(omni.ext.IExt):
                 overview += "\n\nRECORD offline synthetic data using Synthetic Data Recorder tool. Go to Synthetic Data -> Synthetic Data Recorder."
                 overview += "\n\nVISUALIZE recorded synthetic data. SELECT network and start training."
                 overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                author = "Isaac Sim Team"
-                date = "07/01/2021"
 
-                log_filename = EXTENSION_NAME.lower()
-                log_filename = log_filename.replace(" ", "_") + ".log"
-
-                setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                 with ui.CollapsableFrame(
                     "Scene and Randomization",
@@ -394,7 +384,7 @@ class Extension(omni.ext.IExt):
                     with ui.ZStack():
                         ui.Rectangle(width=plot_width, height=plot_height)
                         color = 0xFFDDDDDD
-                        plot = ui.Plot(
+                        ui.Plot(
                             ui.Type.HISTOGRAM,
                             0,
                             max_val,

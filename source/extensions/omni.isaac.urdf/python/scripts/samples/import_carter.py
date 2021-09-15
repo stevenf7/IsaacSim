@@ -7,8 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import os
-import carb
 import omni
 import math
 import omni.kit.commands
@@ -28,6 +26,7 @@ EXTENSION_NAME = "Import Carter"
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self._ext_id = ext_id
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
         self._menu_items = [
@@ -51,20 +50,10 @@ class Extension(omni.ext.IExt):
 
                 title = "Import a UR10 via URDF"
                 doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_urdf_import.html"
-                ext_path = (
-                    os.path.dirname(self._extension_path)
-                    if os.path.isfile(self._extension_path)
-                    else self._extension_path
-                )
 
                 overview = "This Example shows how to import a UR10 robot arm via URDF in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code."
-                author = "Isaac Sim Team"
-                date = "07/01/2021"
 
-                log_filename = EXTENSION_NAME.lower()
-                log_filename = log_filename.replace(" ", "_") + ".log"
-
-                setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                 frame = ui.CollapsableFrame(
                     title="Command Panel",
@@ -153,7 +142,6 @@ class Extension(omni.ext.IExt):
 
     def _on_config_robot(self):
         stage = omni.usd.get_context().get_stage()
-        carter_prim = stage.GetPrimAtPath("/carter")
 
         # Remove drive from rear wheel and pivot
         prim = stage.GetPrimAtPath("/carter/chassis_link/rear_pivot")

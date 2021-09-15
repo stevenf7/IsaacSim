@@ -12,25 +12,29 @@ import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.range_sensor import _range_sensor
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
-import carb
+from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import asyncio
 import weakref
 import numpy as np
 import time
 
-import collections
 
 EXTENSION_NAME = "Generic Info"
 
-from omni.isaac.ui.ui_utils import *
+from omni.isaac.ui.ui_utils import (
+    setup_ui_headers,
+    get_style,
+    btn_builder,
+    combo_cb_scrolling_frame_builder,
+    str_builder,
+    state_btn_builder,
+)
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self._extension_path = ext_manager.get_extension_path(ext_id)
+        self._ext_id = ext_id
 
         # The extension acquires the Generic Sensor interface at startup.  It will be released during extension shutdown.  We
         # create a Generic prim using our schema, and then we interact with / query that prim using the python API found
@@ -42,7 +46,7 @@ class Extension(omni.ext.IExt):
         # self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
 
-        ## for plotting
+        # for plotting
         # self._usd_context = omni.usd.get_context()
         # if self._usd_context is not None:
         #     self._events = self._usd_context.get_stage_event_stream()
@@ -81,23 +85,13 @@ class Extension(omni.ext.IExt):
                 doc_link = (
                     "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_range_sensor.html"
                 )
-                ext_path = (
-                    os.path.dirname(self._extension_path)
-                    if os.path.isfile(self._extension_path)
-                    else self._extension_path
-                )
 
                 overview = "This sample demonstrates the Generic range sensor python API for Isaac Sim. It shows how to create an Generic Range Sensor, set its properties, and read data streaming from it. "
                 overview += "First press the 'Load Sensor' button and then press PLAY to simulate."
                 overview += "\n\nPress the 'Open in IDE' button to view the source code."
                 overview += "\nNote: The buttons above only work with an Ultrasonic sensor made by the 'Load Sensor' button; not existing ones in the stage."
-                author = "Isaac Sim Team"
-                date = "07/01/2021"
 
-                log_filename = EXTENSION_NAME.lower()
-                log_filename = log_filename.replace(" ", "_") + ".log"
-
-                setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                 frame = ui.CollapsableFrame(
                     title="Command Panel",
@@ -260,7 +254,7 @@ class Extension(omni.ext.IExt):
 
         # In order for our cube to interact with the LIDAR, it needs to be able to colide with our physX line traces.
         # to do this, we give our cube the collision API, and set it's material and collision group.
-        collisionAPI = UsdPhysics.CollisionAPI.Apply(self.cubePrim)
+        UsdPhysics.CollisionAPI.Apply(self.cubePrim)
 
     def _set_sensor_pattern(self):
         self._test = True
@@ -312,9 +306,10 @@ class Extension(omni.ext.IExt):
         self._record_start = time.perf_counter()
 
     def plot_pattern(self, data):
-        import PIL.ImageDraw as ImageDraw, PIL.Image as Image, PIL.ImageShow as ImageShow
+        import PIL.ImageDraw as ImageDraw
+        import PIL.Image as Image
 
-        ## set up plot window
+        # set up plot window
         window_length = 600
         window_height = 400
         origin = [window_length / 2.0, window_height / 2.0]
@@ -335,7 +330,7 @@ class Extension(omni.ext.IExt):
         plot_data = np.stack([plot_x, plot_y], axis=1)
         xy = plot_data.ravel()
 
-        ## actual plotting
+        # actual plotting
         im = Image.new("RGB", (window_length, window_height))
         draw = ImageDraw.Draw(im)
         draw.point(xy.tolist(), fill=255)
@@ -343,13 +338,13 @@ class Extension(omni.ext.IExt):
         im.show()
 
     def data_processing(self, data):
-        ## only plotting when the wall is offsetted x as in the example no rotation or other axial offsets.
+        # only plotting when the wall is offsetted x as in the example no rotation or other axial offsets.
         # find where is the surface of the wall
         cube_pos = self.cubePrim.GetAttribute("xformOp:translate").Get()
         cube_size = self.cubePrim.GetAttribute("xformOp:scale").Get()
         wall_loc = cube_pos[0] - np.sign(cube_pos[0]) * cube_size[0] / 2
 
-        ## find in data the group that has the right offset
+        # find in data the group that has the right offset
         hit_idx = np.where(np.isclose(data[:, 0], wall_loc, rtol=1e2))
         if len(hit_idx) == 0:
             print("no ray hit the wall")
@@ -366,7 +361,7 @@ class Extension(omni.ext.IExt):
         zenith = self._sensor.get_zenith_data(self.genericPath)
         azimuth = self._sensor.get_azimuth_data(self.genericPath)
 
-        ## convert depth?
+        # convert depth?
         print("depth", depth)
         print("zenith", zenith)
         print("azimuth", azimuth)

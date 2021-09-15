@@ -34,7 +34,7 @@ KIT_MANUAL_URL = DOCS_URL + "/py/kit/index.html"
 class CreateSetupExtension(omni.ext.IExt):
     """Create Final Configuration"""
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """ setup the window layout, menu, final configuration of the extensions etc """
         self._settings = carb.settings.get_settings()
 
@@ -367,7 +367,7 @@ class CreateSetupExtension(omni.ext.IExt):
         self._set_ui_hidden(not self._is_ui_hidden())
 
     def _on_fullscreen(self):
-        display_mode_lock = self._settings.get(f"/app/window/displayModeLock")
+        display_mode_lock = self._settings.get("/app/window/displayModeLock")
         if display_mode_lock:
             # Always stay in fullscreen_mode, only hide or show UI.
             self._set_ui_hidden(not self._is_ui_hidden())
@@ -423,7 +423,7 @@ class CreateSetupExtension(omni.ext.IExt):
         self.HELP_FORUMS_URL = (
             f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Isaac Sim Online Forums'
         )
-        self.KIT_MANUAL = f"Help/Kit Scripting Manual"
+        self.KIT_MANUAL = "Help/Kit Scripting Manual"
         self.menus = []
 
         # seperator

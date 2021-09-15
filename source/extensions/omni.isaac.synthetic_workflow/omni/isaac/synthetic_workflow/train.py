@@ -15,13 +15,11 @@ train a [Mask-RCNN](https://arxiv.org/abs/1703.06870) model.
 
 
 import omni
-import os
 import torch
 from torch.utils.data import DataLoader
 import torchvision
 import matplotlib.pyplot as plt
 import numpy as np
-import signal
 from omni.isaac.synthetic_utils import visualization as vis
 
 from . import dataset

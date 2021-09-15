@@ -6,17 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-
 import omni
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.range_sensor import _range_sensor
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
+from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import asyncio
 import weakref
 
-from omni.isaac.ui.ui_utils import *
+from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder, combo_cb_scrolling_frame_builder
 
 EXTENSION_NAME = "LIDAR Info"
 
@@ -24,8 +23,7 @@ EXTENSION_NAME = "LIDAR Info"
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self._extension_path = ext_manager.get_extension_path(ext_id)
+        self._ext_id = ext_id
 
         # The extension acquires the LIDAR interface at startup.  It will be released during extension shutdown.  We
         # create a LIDAR prim using our schema, and then we interact with / query that prim using the python API found
@@ -60,11 +58,6 @@ class Extension(omni.ext.IExt):
                 doc_link = (
                     "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/adding_sensors.html#lidar-sensor"
                 )
-                ext_path = (
-                    os.path.dirname(self._extension_path)
-                    if os.path.isfile(self._extension_path)
-                    else self._extension_path
-                )
 
                 overview = (
                     "This example shows how to create a LIDAR, set its properties, and read data streaming from it. "
@@ -72,13 +65,8 @@ class Extension(omni.ext.IExt):
                 overview += "First press the 'Load LIDAR' button and then press PLAY to simulate."
                 overview += "\n\nPress the 'Open in IDE' button to view the source code."
                 overview += "\nNote: The buttons above only work with a LIDAR made by the 'Load LIDAR' button; not existing ones in the stage."
-                author = "Isaac Sim Team"
-                date = "07/01/2021"
 
-                log_filename = EXTENSION_NAME.lower()
-                log_filename = log_filename.replace(" ", "_") + ".log"
-
-                setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                 frame = ui.CollapsableFrame(
                     title="Command Panel",
@@ -213,7 +201,7 @@ class Extension(omni.ext.IExt):
 
         # In order for our cube to interact with the LIDAR, it needs to be able to colide with our physX line traces.
         # to do this, we give our cube the collision API, and set it's material and collision group.
-        collisionAPI = UsdPhysics.CollisionAPI.Apply(cubePrim)
+        UsdPhysics.CollisionAPI.Apply(cubePrim)
 
     def _get_info_function(self, val=False):
         maxDepth = self.lidar.GetMaxRangeAttr().Get()

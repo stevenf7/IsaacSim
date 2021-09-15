@@ -10,7 +10,6 @@
 import omni
 import os
 import torch
-import random
 import matplotlib.pyplot as plt
 import numpy as np
 import signal

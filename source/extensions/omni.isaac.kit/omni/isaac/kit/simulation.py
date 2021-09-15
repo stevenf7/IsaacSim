@@ -18,7 +18,7 @@ import omni.kit.app
 from pxr import UsdGeom, Gf, Usd, Sdf, UsdPhysics, PhysxSchema
 from omni.isaac.kit.utils import set_carb_setting
 from omni.isaac.kit.constants import AXES_INDICES
-import omni.kit.loop._loop as omni_loop
+import omni.isaac.kit.global_vars as global_vars
 
 
 class SimulationContext:
@@ -275,7 +275,13 @@ class PhysicsScene:
         self._current_physics_dt = self._previous_physics_dt
         self._physx_interface = omni.physx.acquire_physx_interface()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._loop_runner = omni_loop.acquire_loop_interface()
+        if global_vars.LAUNCHED_FROM_TERMINAL is False:
+            # TODO check if this import succeeds?
+            import omni.kit.loop._loop as omni_loop
+
+            self._loop_runner = omni_loop.acquire_loop_interface()
+        else:
+            self._loop_runner = None
         self.set_physics_scene()
         self.set_physics_dt(dt=physics_dt)
         return
@@ -314,10 +320,13 @@ class PhysicsScene:
         if physxSceneAPI is not None:
             physxSceneAPI.GetTimeStepsPerSecondAttr().Set(steps_per_second)
         # set the min frame rate, i.e. frequency of substeps.
-        set_carb_setting(carb.settings.get_settings(), "/app/runLoops/main/rateLimitEnabled", True)
-        set_carb_setting(carb.settings.get_settings(), "persistent/simulation/minFrameRate", min_steps)
-        set_carb_setting(carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency", min_steps)
-        self._loop_runner.set_runner_dt(dt)
+        # TODO Is there a better way to do this or atleast reset this to the original values on close
+        if global_vars.LAUNCHED_FROM_TERMINAL is False:
+            set_carb_setting(carb.settings.get_settings(), "/app/runLoops/main/rateLimitEnabled", True)
+            set_carb_setting(carb.settings.get_settings(), "persistent/simulation/minFrameRate", min_steps)
+            set_carb_setting(carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency", min_steps)
+            if self._loop_runner is not None:
+                self._loop_runner.set_runner_dt(dt)
 
     def set_physics_scene(
         self,

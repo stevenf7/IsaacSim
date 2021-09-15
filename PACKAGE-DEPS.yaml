@@ -783,6 +783,28 @@ tinytoml:
     scm: git
   swipat: http://nvbugs/2530633
   version: nv-master-2-e55461ce
+torch:
+  licenseFile: null
+  packageName: torch
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 1.9.0
+torchvision:
+  licenseFile: null
+  packageName: torchvision
+  packageType: pip
+  source:
+    branch: null
+    change: null
+    path: null
+    scm: null
+  swipat: null
+  version: 0.10.0
 urllib3:
   licenseFile: null
   packageName: urllib3

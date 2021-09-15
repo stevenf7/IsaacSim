@@ -9,7 +9,7 @@
 
 import carb.settings
 import omni.ui as ui
-from omni.kit.window.extensions.common import *
+from omni.kit.window.extensions.common import get_icons_path
 
 # Pilaged from omni.kit.widnow.property style.py
 

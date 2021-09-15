@@ -13,7 +13,14 @@ import omni.ext
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-from omni.isaac.ui.ui_utils import *
+from omni.isaac.ui.ui_utils import (
+    setup_ui_headers,
+    get_style,
+    btn_builder,
+    xyz_builder,
+    add_separator,
+    dropdown_builder,
+)
 
 import asyncio
 import gc
@@ -49,8 +56,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
 
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self._extension_path = ext_manager.get_extension_path(ext_id)
+        self._ext_id = ext_id
 
         self._timeline = omni.timeline.get_timeline_interface()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
@@ -96,22 +102,12 @@ class Extension(omni.ext.IExt):
                 with ui.VStack(spacing=5, height=0):
                     title = "Mobile Robot Navigation Example"
                     doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_navigation.html"
-                    ext_path = (
-                        os.path.dirname(self._extension_path)
-                        if os.path.isfile(self._extension_path)
-                        else self._extension_path
-                    )
 
                     overview = "This Example shows how to simulate non-obstacle based navigation in Isaac Sim."
                     overview += "\n\nPick a mobile robot to load into the Scene, and then press PLAY to simulate."
                     overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                    author = "Isaac Sim Team"
-                    date = "07/01/2021"
 
-                    log_filename = EXTENSION_NAME.lower()
-                    log_filename = log_filename.replace(" ", "_") + ".log"
-
-                    setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                    setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                     frame = ui.CollapsableFrame(
                         title="Command Panel",

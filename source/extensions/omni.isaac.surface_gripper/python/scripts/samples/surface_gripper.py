@@ -14,8 +14,6 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 import omni.ui as ui
 import omni.ext
 from omni.isaac.dynamic_control import _dynamic_control as dc
-import os
-import carb
 import asyncio
 import numpy as np
 from pxr import UsdLux, UsdGeom, Sdf, Gf, UsdPhysics
@@ -25,7 +23,14 @@ import weakref
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properties, Surface_Gripper
 
-from omni.isaac.ui.ui_utils import *
+from omni.isaac.ui.ui_utils import (
+    setup_ui_headers,
+    get_style,
+    btn_builder,
+    add_separator,
+    state_btn_builder,
+    combo_floatfield_slider_builder,
+)
 
 
 EXTENSION_NAME = "Surface Gripper"
@@ -35,8 +40,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
 
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self._extension_path = ext_manager.get_extension_path(ext_id)
+        self._ext_id = ext_id
 
         # Loads interfaces
         self._timeline = omni.timeline.get_timeline_interface()
@@ -75,22 +79,12 @@ class Extension(omni.ext.IExt):
                 with ui.VStack(spacing=5, height=0):
                     title = "Surface Gripper Example"
                     doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_utils_surface_gripper.html"
-                    ext_path = (
-                        os.path.dirname(self._extension_path)
-                        if os.path.isfile(self._extension_path)
-                        else self._extension_path
-                    )
 
                     overview = "This Example shows how to simulate a suction-cup gripper in Isaac Sim. "
                     overview += "It simulates suction by creating a Joint between two bodies when the parent and child bodies are close at the gripper's point of contact."
                     overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                    author = "Isaac Sim Team"
-                    date = "07/01/2021"
 
-                    log_filename = EXTENSION_NAME.lower()
-                    log_filename = log_filename.replace(" ", "_") + ".log"
-
-                    setup_ui_headers(ext_path, __file__, title, doc_link, overview, author, date, log_filename)
+                    setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
                     frame = ui.CollapsableFrame(
                         title="Command Panel",
