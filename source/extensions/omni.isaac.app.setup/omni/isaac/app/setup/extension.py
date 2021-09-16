@@ -497,8 +497,10 @@ class CreateSetupExtension(omni.ext.IExt):
         if sys.platform == "win32":
             pass
         else:
-            if os.path.exists("~/.local/share/applications"):
+            user_apps_fodler = os.path.expanduser("~/.local/share/applications")
+            if os.path.exists(user_apps_fodler):
                 with open(os.path.expanduser("~/.local/share/applications/IsaacSim.desktop"), "w") as file:
+                    omni.kit.app.get_app().print_and_log("Writing Isaac Sim icon file")
                     file.write(
                         f"""[Desktop Entry]
 Version=1.0
