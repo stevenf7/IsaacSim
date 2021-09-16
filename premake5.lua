@@ -216,6 +216,7 @@ group "startup_tests"
     define_startup_experience("tests-startup.websocket", "omni.isaac.sim.startup.websocket", "--no-window --/app/quitAfter=500")
     define_startup_experience("tests-startup.kitremote", "omni.isaac.sim.startup.kitremote", "--no-window --/app/quitAfter=500")
     define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.startup.webrtc", "--no-window --/app/quitAfter=500")
+    define_startup_experience("tests-startup.warmup", "omni.isaac.sim.warmup")
     define_startup_experience(
         "tests-startup.launcher.main", 
         "omni.isaac.sim.launcher", 
