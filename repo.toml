@@ -301,21 +301,26 @@ include = ["tests-startup*${shell_ext}"]
 
 args = [
   "--portable-root ${test_root}/portable_root",
-	# "--no-assert-dialog",
 	"--portable",
-	# "--exec",
-	# "open_stage.py ${test_root}/data/scenes/BuiltInMaterials.usda",
-	# "--/rtx/materialDb/syncLoads=true",
-	# "--/omni.kit.plugin/syncUsdLoads=true",
-	# "--/rtx/hydra/materialSyncLoads=true",
-	# "--/renderer/multiGpu/autoEnable=false",
-	# "--/renderer/activeGpu=0",
-	# "--/app/hydraEngine/skipStatusBarIdle=true",
-	# "--/rtx/flow/enabled=true",
-	# "--/app/quitAfter=500",  # Quit after 10 updates
-	# "--/app/asyncRendering=false",
-	# "--/renderer/debug/validation/enabled=false",
-	# "--/renderer/enabled='rtx,iray'",
+	"--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
+]
+timeout = 1200
+
+[repo_test.suites.launchertests]
+kind = "glob_and_exec"
+path = "${test_root}/tests"
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+stdout_fail_patterns.exclude = [
+	"*Leaking graphics objects*",  # Exclude grahics leaks until fixed
+	"*leaking memory. Missing call to destroyResourceBindingSignature*",
+	"*extension object is still alive*", # Ignore any leaks for startup tests to not block pipeline
+	"*Failed to obtain username for current process, using cache directory without username as suffix*",  # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
+]
+[[repo_test.suites.launchertests.group]]
+include = ["tests-launcher*${shell_ext}"]
+args = [
+  "--portable-root ${test_root}/portable_root",
+	"--portable",
 	"--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
 ]
 timeout = 1200
