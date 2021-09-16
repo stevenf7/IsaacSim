@@ -56,6 +56,7 @@ def launch_app(app_id: str, app_version: str, app_become_new_default=False, clos
         if _settings.get(SHOW_CONSOLE_SETTING):
             kwargs["shell"] = True
             launch_args = f"gnome-terminal -- {str(' '.join(launch_args))}"
+    omni.kit.app.get_app().print_and_log(f"Launching: {launch_args}")
     subprocess.Popen(launch_args, **kwargs)
 
     if close_on_launch:

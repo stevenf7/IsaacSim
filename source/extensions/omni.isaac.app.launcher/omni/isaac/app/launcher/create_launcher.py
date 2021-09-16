@@ -19,7 +19,13 @@ import omni.ext
 import omni.kit.app
 
 from .launcher_window import LauncherWindow
-from .settings import AUTO_LAUNCH_SETTING, DEFAULT_APP_SETTING, PERSISTENT_LAUNCHER_SETTING, SHOW_CONSOLE_SETTING
+from .settings import (
+    AUTO_LAUNCH_SETTING,
+    DEFAULT_APP_SETTING,
+    SHOW_CONSOLE_SETTING,
+    PERSISTENT_LAUNCHER_SETTING,
+    EXTRA_ARGS_SETTING,
+)
 
 from .launch_app import launch_app
 
@@ -30,6 +36,7 @@ class CreateLauncherExtension(omni.ext.IExt):
     def __init__(self):
         self._settings = carb.settings.get_settings()
         self._launcher_window = None
+        self._app_version = self._settings.get("/app/version")
 
     def on_startup(self, ext_id: str):
         # Initialize settings
@@ -37,6 +44,7 @@ class CreateLauncherExtension(omni.ext.IExt):
         user_auto_launch = self._settings.get(AUTO_LAUNCH_SETTING)
         close_on_launch = not self._settings.get(PERSISTENT_LAUNCHER_SETTING)
         user_show_console = self._settings.get(SHOW_CONSOLE_SETTING)
+        user_extra_args = self._settings.get(EXTRA_ARGS_SETTING)
 
         if default_app is None:
             default_app = self._settings.get("/ext/omni.isaac.launcher/default_app")
@@ -61,13 +69,25 @@ class CreateLauncherExtension(omni.ext.IExt):
         if user_show_console is None:
             self._settings.set(SHOW_CONSOLE_SETTING, True)
 
+        if user_extra_args is None:
+            user_extra_args = self._settings.get("/ext/omni.isaac.launcher/extra_args")
+            self._settings.set(EXTRA_ARGS_SETTING, user_extra_args)
+        if user_extra_args is None:
+            self._settings.set(EXTRA_ARGS_SETTING, "")
+
         # Auto-starting default app
         if user_auto_launch:
             default_app = self._settings.get(DEFAULT_APP_SETTING)
             if not default_app:
                 default_app = self._settings.get("/ext/omni.isaac.launcher/default_app")
 
-            launch_app(app_id=default_app, app_become_new_default=False, close_on_launch=close_on_launch)
+            launch_app(
+                app_id=default_app,
+                app_version=self._app_version,
+                app_become_new_default=False,
+                close_on_launch=close_on_launch,
+                extra_args=str.split(user_extra_args),
+            )
             if close_on_launch:
                 return
 
@@ -83,7 +103,7 @@ class CreateLauncherExtension(omni.ext.IExt):
 
         # setup title
         window_title = get_main_window_title()
-        app_version = self._settings.get("/app/version")
+        app_version = self._app_version
         app_folder = self._settings.get_as_string("/app/folder")
         if not app_folder:
             app_folder = carb.tokens.get_tokens_interface().resolve("${app}")

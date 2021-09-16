@@ -27,7 +27,7 @@ from .settings import (
     DEFAULT_APP_SETTING,
     SHOW_CONSOLE_SETTING,
     PERSISTENT_LAUNCHER_SETTING,
-    STARTUP_ARGS_SETTING,
+    EXTRA_ARGS_SETTING,
 )
 
 CURRENT_PATH = Path(__file__).parent
@@ -69,6 +69,8 @@ class LauncherWindow:
 
         self._auto_launch = self._settings.get(AUTO_LAUNCH_SETTING)
         self._default_app = self._settings.get(DEFAULT_APP_SETTING)
+        self._show_console = self._settings.get(SHOW_CONSOLE_SETTING)
+        self._extra_args = self._settings.get(EXTRA_ARGS_SETTING)
 
         self._app_list_frame = None  # the frame for the application list
         self._detail_label = None  # label of the active app
@@ -362,7 +364,7 @@ class LauncherWindow:
             with ui.HStack(height=0):
 
                 def on_value_changed(model):
-                    self._settings.set_string(STARTUP_ARGS_SETTING, model.get_value_as_string())
+                    self._settings.set_string(EXTRA_ARGS_SETTING, model.get_value_as_string())
 
                 ui.Spacer(width=10)
                 ui.Label("Extra Args:", width=0)
@@ -371,7 +373,7 @@ class LauncherWindow:
                     tooltip=textwrap.fill("Extra command line arguments to use when launching the selected app", 80)
                 ).model
 
-                self._extra_args.set_value(self._settings.get_as_string(STARTUP_ARGS_SETTING))
+                self._extra_args.set_value(self._settings.get_as_string(EXTRA_ARGS_SETTING))
                 self._extra_args.add_end_edit_fn(on_value_changed)
 
             ui.Spacer(height=5)
