@@ -47,7 +47,7 @@ UTILITIES = {
     "Physics": ["Inspect Physics", "Physics Utilities"],
     "Import": ["URDF Importer"],
     "Mapping": ["Occupancy Map"],
-    "Isaac SDK": ["Robot Engine Bridge"],
+    # "Isaac SDK": ["Robot Engine Bridge"],
     "Geometry": ["Mesh Merge Tool", "ShapeNet Loader"],
     # "Training": ["Synthetic Data Recorder"],
 }
