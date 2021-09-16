@@ -217,25 +217,26 @@ group "startup_tests"
     define_startup_experience("tests-startup.kitremote", "omni.isaac.sim.startup.kitremote", "--no-window --/app/quitAfter=500")
     define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.startup.webrtc", "--no-window --/app/quitAfter=500")
     define_startup_experience("tests-startup.warmup", "omni.isaac.sim.warmup")
+
     define_startup_experience(
-        "tests-startup.launcher.main", 
+        "tests-launcher.main", 
         "omni.isaac.sim.launcher", 
         "--/app/quitAfter=500 --/persistent/ext/omni.isaac.launcher/auto_launch=false --/persistent/ext/omni.isaac.launcher/show_console=true --/persistent/ext/omni.isaac.launcher/persistent_launcher=false" 
     )
     define_startup_experience(
-        "tests-startup.launcher.autolaunch", 
+        "tests-launcher.autolaunch", 
         "omni.isaac.sim.launcher", 
-        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.launcher/auto_launch=true --/persistent/ext/omni.isaac.launcher/show_console=true --/persistent/ext/omni.isaac.launcher/persistent_launcher=false --/persistent/ext/omni.isaac.launcher/extra_args='--/app/quitAfter=100'"
+        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.launcher/auto_launch=true --/persistent/ext/omni.isaac.launcher/show_console=true --/persistent/ext/omni.isaac.launcher/persistent_launcher=false --/persistent/ext/omni.isaac.launcher/extra_args='--/app/quitAfter=10'"
     )
     define_startup_experience(
-        "tests-startup.launcher.no_show_console", 
+        "tests-launcher.no_show_console", 
         "omni.isaac.sim.launcher", 
-        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.launcher/auto_launch=true --/persistent/ext/omni.isaac.launcher/show_console=false --/persistent/ext/omni.isaac.launcher/persistent_launcher=false --/persistent/ext/omni.isaac.launcher/extra_args='--/app/quitAfter=100'"
+        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.launcher/auto_launch=true --/persistent/ext/omni.isaac.launcher/show_console=false --/persistent/ext/omni.isaac.launcher/persistent_launcher=false --/persistent/ext/omni.isaac.launcher/extra_args='--/app/quitAfter=10'"
     )
     define_startup_experience(
-        "tests-startup.launcher.persist", 
+        "tests-launcher.persist", 
         "omni.isaac.sim.launcher", 
-        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.launcher/auto_launch=true --/persistent/ext/omni.isaac.launcher/show_console=true --/persistent/ext/omni.isaac.launcher/persistent_launcher=true --/persistent/ext/omni.isaac.launcher/extra_args='--/app/quitAfter=100'"
+        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.launcher/auto_launch=true --/persistent/ext/omni.isaac.launcher/show_console=true --/persistent/ext/omni.isaac.launcher/persistent_launcher=true --/persistent/ext/omni.isaac.launcher/extra_args='--/app/quitAfter=10'"
     )
 
 -- Isaac Extensions
