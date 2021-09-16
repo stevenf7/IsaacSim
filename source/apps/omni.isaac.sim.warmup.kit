@@ -19,7 +19,7 @@ rtx.materialDb.syncLoads = true
 omni.kit.plugin.syncUsdLoads = true 
 rtx.hydra.materialSyncLoads = true
 app.asyncRendering = false
-app.quitAfter=10
+app.quitAfter=100
 
 [dependencies]
 "omni.isaac.sim.base" = {}
@@ -27,3 +27,6 @@ app.quitAfter=10
 [settings.exts."omni.kit.registry.nucleus"]
 registries = []
 postToSlack = false
+
+[settings.exts."omni.isaac.app.setup"]
+serverCheck = false
