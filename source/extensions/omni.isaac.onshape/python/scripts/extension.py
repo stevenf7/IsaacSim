@@ -245,6 +245,7 @@ class OnshapeImporter(omni.ext.IExt):
                 omni.usd.get_context().open_stage(root_file)
 
             asyncio.ensure_future(open_stage())
+        self.close_window()
 
     def assembly_reloaded(self):
         if self._element_details.model.config_changed:
