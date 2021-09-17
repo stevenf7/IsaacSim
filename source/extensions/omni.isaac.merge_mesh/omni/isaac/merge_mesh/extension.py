@@ -18,6 +18,9 @@ from pxr import Usd, UsdGeom, Sdf, UsdShade
 import weakref
 import carb
 
+from omni.isaac.ui.style import get_style
+from omni.isaac.ui.ui_utils import combo_cb_str_builder, btn_builder, cb_builder, str_builder
+
 EXTENSION_NAME = "Mesh Merge Tool"
 
 
@@ -36,41 +39,70 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Utils")
         self.models = {}
+        self.parent_xform = None
+
+    def build_ui(self):
         with self._window.frame:
-            with ui.HStack():
-                with ui.VStack(height=0, spacing=2):
-                    with ui.HStack():
-                        omni.ui.Label("Clear Parent Transform", height=0)
-                        self.parent_xform = omni.ui.CheckBox()
-                        self.parent_xform.model.set_value(False)
-                    ui.Line(height=5)
-                    ui.Label("Input")
-                    ui.Line(height=5)
-                    with ui.HStack():
-                        # ui.Label("Mesh: ")
-                        self.models["input_mesh"] = ui.StringField()
-                        self.models["input_mesh"].model.set_value("No Mesh Selected")
-                    with ui.HStack():
-                        ui.Label("Submeshes:")
-                        self.models["submesh"] = ui.IntField()
-                    with ui.HStack():
-                        ui.Label("Geometry Subsets:")
-                        self.models["subset"] = ui.IntField()
-                    with ui.HStack():
-                        ui.Label("Materials")
-                        self.models["materials"] = ui.IntField()
-                    ui.Line(height=5)
-                    ui.Label("Output")
-                    ui.Line(height=5)
-                    with ui.HStack():
-                        ui.Label("Mesh: ")
-                        self.models["output_mesh"] = ui.StringField()
-                        self.models["output_mesh"].model.set_value("No Mesh Selected")
-                    with ui.HStack():
-                        ui.Label("Geometry Subsets:")
-                        self.models["output_subset"] = ui.IntField()
-                with ui.VStack():
-                    ui.Button("Merge Selected Prim", clicked_fn=self._merge_mesh)
+            with ui.HStack(spacing=5):
+                with ui.VStack(height=0, spacing=5):
+                    input_frame = ui.CollapsableFrame(
+                        title="Input",
+                        style=get_style(),
+                        style_type_name_override="CollapsableFrame",
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    )
+
+                    def input_changed(model):
+                        if input_frame.collapsed:
+                            input_frame.title = "Input ({})".format(model.get_value_as_string())
+
+                    def collapsed_changed_fn(frame, base_txt, model, collapsed):
+                        if collapsed:
+                            frame.title = base_txt + " ({})".format(model.get_value_as_string())
+                        else:
+                            frame.title = base_txt
+
+                    with input_frame:
+                        with ui.VStack(spacing=2, height=0):
+                            self.models["input_mesh"] = str_builder("Source Prim", read_only=True)
+                            self.models["input_mesh"].set_value("No Mesh Selected")
+                            self.models["input_mesh"].add_value_changed_fn(lambda a: input_changed(a))
+                            self.models["submesh"] = str_builder("Submeshes", read_only=True)
+                            self.models["subset"] = str_builder("Geometry Subsets", read_only=True)
+                            self.models["materials"] = str_builder("Materials", read_only=True)
+
+                    input_frame.set_collapsed_changed_fn(
+                        lambda c, f=input_frame, m=self.models["input_mesh"]: collapsed_changed_fn(f, "Input", m, c)
+                    )
+                    output_frame = ui.CollapsableFrame(
+                        title="Output",
+                        style=get_style(),
+                        style_type_name_override="CollapsableFrame",
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    )
+                    with output_frame:
+                        with ui.VStack(spacing=2, height=0):
+                            self.models["output_mesh"] = str_builder("Destination Prim", read_only=True)
+                            self.models["output_mesh"].set_value("No Mesh Selected")
+
+                            self.models["output_subset"] = str_builder("Geometry Subsets", read_only=True)
+                    output_frame.set_collapsed_changed_fn(
+                        lambda c, f=output_frame, m=self.models["output_mesh"]: collapsed_changed_fn(f, "Output", m, c)
+                    )
+                with ui.VStack(spacing=3, height=0):
+                    self.parent_xform = cb_builder(
+                        label="Clear Parent Transform",
+                        tooltip="If selected, Creates merged mesh with origin at global orign, otherwise keeps origin at parent's origin",
+                    )
+                    self.override_looks_directory = combo_cb_str_builder(
+                        "Overrride Looks Directory",
+                        tooltip="If selected, replaces the path to all selected materials with the prim path provided",
+                        on_clicked_fn=lambda a: self._on_stage_event(),
+                        default_val=[False, ""],
+                    )
+                    btn_builder(label="Merge Selected Prim", text="Merge", on_clicked_fn=self._merge_mesh)
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
@@ -84,50 +116,67 @@ class Extension(omni.ext.IExt):
                 self._stage_event_sub = self._events.create_subscription_to_pop(
                     self._on_stage_event, name="Mesh merge tool stage event"
                 )
+            self.build_ui()
+            self._on_stage_event()
         else:
             self._stage_event_sub = None
 
-    def _on_stage_event(self, event):
+    def _on_stage_event(self, event=None):  # Empty event is a forced update from UI
         if self._window.visible:
-            if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
+            if not event or event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
                 selection = self._selection.get_selected_prim_paths()
                 stage = self._usd_context.get_stage()
                 if len(selection) == 0:
                     curr_prim = None
-                    self.models["input_mesh"].model.set_value("No Mesh Selected")
+                    self.models["input_mesh"].set_value("No Mesh Selected")
                     pass
                 else:
                     curr_prim = stage.GetPrimAtPath(selection[0])
-                    self.models["input_mesh"].model.set_value(selection[0])
+                    self.models["input_mesh"].set_value(selection[0])
                     total_meshes = 0
                     total_subsets = 0
                     materials = {}
-                    for child_prim in Usd.PrimRange(curr_prim):
+                    for child_prim in Usd.PrimRange(curr_prim, Usd.TraverseInstanceProxies()):
                         imageable = UsdGeom.Imageable(child_prim)
                         visible = imageable.ComputeVisibility(Usd.TimeCode.Default())
                         if child_prim.IsA(UsdGeom.Mesh) and visible != UsdGeom.Tokens.invisible:
                             usdMesh = UsdGeom.Mesh(child_prim)
                             mat, rel = UsdShade.MaterialBindingAPI(usdMesh).ComputeBoundMaterial()
+                            mat_path = str(mat.GetPath())
+                            if self.override_looks_directory[0].get_value_as_bool():
+                                mat_path = "{}/{}".format(
+                                    self.override_looks_directory[1].get_value_as_string(), mat_path.rsplit("/", 1)[-1]
+                                )
+                            if not rel:
+                                mat_path = "/None"
                             if rel:
-                                materials[str(mat.GetPath())] = 1
+                                materials[mat_path] = 1
                             subsets = UsdGeom.Subset.GetAllGeomSubsets(UsdGeom.Imageable(child_prim))
                             if len(subsets):
                                 total_subsets = total_subsets + len(subsets)
                                 for s in subsets:
                                     mat, rel = UsdShade.MaterialBindingAPI(s).ComputeBoundMaterial()
-                                    materials[str(mat.GetPath())] = 1
+                                    mat_path = str(mat.GetPath())
+                                    if self.override_looks_directory[0].get_value_as_bool():
+                                        mat_path = "{}/{}".format(
+                                            self.override_looks_directory[1].get_value_as_string(),
+                                            mat_path.rsplit("/", 1)[-1],
+                                        )
+                                    if not rel:
+                                        mat_path = "/None"
+                                    materials[mat_path] = 1
                             else:
                                 total_meshes = total_meshes + 1
 
                     # print(*materials, sep = "\n")
 
-                    self.models["submesh"].model.set_value(total_meshes)
-                    self.models["subset"].model.set_value(total_subsets)
-                    self.models["materials"].model.set_value(len(materials))
+                    self.models["submesh"].set_value(total_meshes)
+                    self.models["subset"].set_value(total_subsets)
+                    self.models["materials"].set_value(len(materials))
                     merged_path = "/Merged/" + str(curr_prim.GetName())
                     merged_path = omni.usd.get_stage_next_free_path(stage, merged_path, False)
-                    self.models["output_mesh"].model.set_value(merged_path)
-                    self.models["output_subset"].model.set_value(len(materials))
+                    self.models["output_mesh"].set_value(merged_path)
+                    self.models["output_subset"].set_value(len(materials))
 
     def _merge_mesh(self):
         stage = omni.usd.get_context().get_stage()
@@ -142,7 +191,7 @@ class Extension(omni.ext.IExt):
         prim_transform = omni.usd.utils.get_world_transform_matrix(curr_prim, Usd.TimeCode.Default())
         count = 0
         meshes = []
-        for child_prim in Usd.PrimRange(curr_prim):
+        for child_prim in Usd.PrimRange(curr_prim, Usd.TraverseInstanceProxies()):
             imageable = UsdGeom.Imageable(child_prim)
             visible = imageable.ComputeVisibility(Usd.TimeCode.Default())
             if child_prim.IsA(UsdGeom.Mesh) and visible != UsdGeom.Tokens.invisible:
@@ -150,7 +199,7 @@ class Extension(omni.ext.IExt):
                 mesh = {}
                 mesh["points"] = usdMesh.GetPointsAttr().Get()
                 world_mtx = omni.usd.utils.get_world_transform_matrix(child_prim, Usd.TimeCode.Default())
-                if self.parent_xform.model.get_value_as_bool():
+                if self.parent_xform.get_value_as_bool():
                     world_mtx = prim_transform * world_mtx * prim_transform.GetInverse()
                 else:
                     world_mtx = world_mtx * prim_transform.GetInverse()
@@ -164,22 +213,39 @@ class Extension(omni.ext.IExt):
                 # mesh["st"] = usdMesh.GetPrimvar("st").Get()
                 mesh["name"] = child_prim.GetName()
                 mat, rel = UsdShade.MaterialBindingAPI(usdMesh).ComputeBoundMaterial()
-                if rel:
-                    mesh["mat"] = str(mat.GetPath())
-                else:
-                    mesh["mat"] = "/None"
+                mat_path = str(mat.GetPath())
+                if self.override_looks_directory[0].get_value_as_bool():
+                    mat_path = "{}/{}".format(
+                        self.override_looks_directory[1].get_value_as_string(), mat_path.rsplit("/", 1)[-1]
+                    )
+                    if not self._stage.GetPrimAtPath(mat_path):
+                        carb.log_error("Overriden material not found, reverting to original ({})".format(mat_path))
+                        mat_path = str(mat.GetPath())
+                if not rel:
+                    mat_path = "/None"
+                # if rel:
+                #     mesh["mat"] = str(mat.GetPath())
+                # else:
+                mesh["mat"] = mat_path
                 subsets = UsdGeom.Subset.GetAllGeomSubsets(UsdGeom.Imageable(child_prim))
                 mesh["subset"] = []
                 for s in subsets:
                     mat, rel = UsdShade.MaterialBindingAPI(s).ComputeBoundMaterial()
-                    mesh["subset"].append((str(mat.GetPath()), s.GetIndicesAttr().Get()))
+                    mat_path = str(mat.GetPath())
+                    if self.override_looks_directory[0].get_value_as_bool():
+                        mat_path = "{}/{}".format(
+                            self.override_looks_directory[1].get_value_as_string(), mat_path.rsplit("/", 1)[-1]
+                        )
+                    if not rel:
+                        mat_path = "/None"
+                    mesh["subset"].append((mat_path, s.GetIndicesAttr().Get()))
                 # print(mat.GetPath(), rel)
                 # print("INDICES", mesh["normals"])
                 meshes.append(mesh)
                 # print(count)
                 # print(len(mesh["points"]), len(mesh["normals"]), len(mesh["vertex_counts"]), len(mesh["vertex_indices"]))
                 count = count + 1
-        print("Merging: ", count)
+        carb.log_info("Merging: ", count)
         all_points = []
         all_normals = []
         all_vertex_counts = []
@@ -211,11 +277,11 @@ class Extension(omni.ext.IExt):
             range_offset = range_offset + len(mesh["vertex_counts"])
         merged_path = "/Merged/" + str(curr_prim.GetName())
         merged_path = omni.usd.get_stage_next_free_path(stage, merged_path, False)
-        print("merging to path: ", merged_path)
+        carb.log_info("merging to path: ", merged_path)
         merged_mesh = UsdGeom.Mesh.Define(stage, merged_path)
         xform = UsdGeom.Xformable(merged_mesh)
         xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-        if not self.parent_xform.model.get_value_as_bool():
+        if not self.parent_xform.get_value_as_bool():
             xform_op.Set(prim_transform)
         # merged_mesh.CreateSubdivisionSchemeAttr("none")
         # merged_mesh.CreateTriangleSubdivisionRuleAttr("smooth")
@@ -230,10 +296,9 @@ class Extension(omni.ext.IExt):
         # texCoord = merged_mesh.CreatePrimvar("st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.varying)
         # texCoord.Set(all_st)
         # print(all_mats)
-        for name, counts in all_mats.items():
+        for name, counts in sorted(all_mats.items(), key=lambda a: a[0].rsplit("/", 1)[-1]):
             subset_name = merged_path + "/{}".format(name.rsplit("/", 1)[-1])
-            # print(subset_name, name)
-            geomSubset = UsdGeom.Subset.Define(stage, Sdf.Path(subset_name))
+            geomSubset = UsdGeom.Subset.Define(stage, omni.usd.get_stage_next_free_path(stage, subset_name, False))
             geomSubset.CreateElementTypeAttr("face")
             geomSubset.CreateFamilyNameAttr("materialBind")
             # print(mesh["vertex_indices"])
