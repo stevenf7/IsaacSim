@@ -1,9 +1,0 @@
-display_name = "Exploded View"
-
-[dependencies]
-"omni.kit.editor" = {}
-"omni.ui" = { order = -100 }
-"omni.kit.pip_archive" = {} # pulls in numpy
-
-[[python.module]]
-name = "omni.isaac.exploded_view"
