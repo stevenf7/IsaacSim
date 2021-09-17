@@ -11,7 +11,7 @@
                     "dock_id": 5,
                     "dock_tab_bar_enabled": true,
                     "dock_tab_bar_visible": false,
-                    "height": 1434.0,
+                    "height": 1366.0,
                     "position_x": 0.0,
                     "position_y": 24.0,
                     "selected_in_dock": true,
@@ -29,13 +29,13 @@
                     "dock_id": 6,
                     "dock_tab_bar_enabled": true,
                     "dock_tab_bar_visible": true,
-                    "height": 1434.0,
+                    "height": 1366.0,
                     "position_x": 46.0,
                     "position_y": 24.0,
                     "selected_in_dock": true,
                     "title": "Viewport",
                     "visible": true,
-                    "width": 2638.0
+                    "width": 2637.0
                   }
                 ],
                 "dock_id": 6,
@@ -51,25 +51,25 @@
                 "children": [
                   {
                     "dock_id": 7,
-                    "height": 615.0,
+                    "height": 683.0,
                     "position_x": 0.0,
-                    "position_y": 1460.0,
+                    "position_y": 1051.0,
                     "selected_in_dock": false,
                     "title": "Content",
                     "visible": true,
-                    "width": 2599.0
+                    "width": 2598.0
                   },
                   {
                     "dock_id": 7,
                     "dock_tab_bar_enabled": true,
                     "dock_tab_bar_visible": true,
-                    "height": 615.0,
+                    "height": 683.0,
                     "position_x": 0.0,
-                    "position_y": 1460.0,
+                    "position_y": 1392.0,
                     "selected_in_dock": true,
                     "title": "Console",
                     "visible": true,
-                    "width": 2599.0
+                    "width": 2598.0
                   }
                 ],
                 "dock_id": 7,
@@ -81,9 +81,9 @@
                     "dock_id": 8,
                     "dock_tab_bar_enabled": true,
                     "dock_tab_bar_visible": false,
-                    "height": 615.0,
-                    "position_x": 2601.0,
-                    "position_y": 1460.0,
+                    "height": 683.0,
+                    "position_x": 2600.0,
+                    "position_y": 1392.0,
                     "selected_in_dock": true,
                     "title": "Isaac Utilities Toolbar",
                     "visible": true,
@@ -113,23 +113,23 @@
                         "dock_id": 13,
                         "dock_tab_bar_enabled": true,
                         "dock_tab_bar_visible": true,
-                        "height": 719.0,
-                        "position_x": 2686.0,
+                        "height": 609.0,
+                        "position_x": 2685.0,
                         "position_y": 24.0,
                         "selected_in_dock": true,
                         "title": "Stage",
                         "visible": true,
-                        "width": 1154.0
+                        "width": 1155.0
                       },
                       {
                         "dock_id": 13,
-                        "height": 719.0,
-                        "position_x": 2684.0,
+                        "height": 609.0,
+                        "position_x": 2954.0,
                         "position_y": 24.0,
                         "selected_in_dock": false,
                         "title": "Layer",
                         "visible": true,
-                        "width": 1154.0
+                        "width": 1155.0
                       }
                     ],
                     "dock_id": 13,
@@ -141,13 +141,13 @@
                         "dock_id": 14,
                         "dock_tab_bar_enabled": true,
                         "dock_tab_bar_visible": true,
-                        "height": 114.0,
-                        "position_x": 2686.0,
-                        "position_y": 745.0,
+                        "height": 72.0,
+                        "position_x": 2685.0,
+                        "position_y": 635.0,
                         "selected_in_dock": true,
                         "title": "DR Manual Mode",
                         "visible": true,
-                        "width": 1154.0
+                        "width": 1155.0
                       }
                     ],
                     "dock_id": 14,
@@ -161,25 +161,25 @@
                 "children": [
                   {
                     "dock_id": 12,
-                    "height": 531.0,
-                    "position_x": 2684.0,
-                    "position_y": 861.0,
+                    "height": 681.0,
+                    "position_x": 2685.0,
+                    "position_y": 709.0,
                     "selected_in_dock": false,
                     "title": "Semantics Schema Editor",
                     "visible": true,
-                    "width": 1154.0
+                    "width": 1155.0
                   },
                   {
                     "dock_id": 12,
                     "dock_tab_bar_enabled": true,
                     "dock_tab_bar_visible": true,
-                    "height": 531.0,
-                    "position_x": 2686.0,
-                    "position_y": 861.0,
+                    "height": 681.0,
+                    "position_x": 2685.0,
+                    "position_y": 709.0,
                     "selected_in_dock": true,
                     "title": "Synthetic Data Recorder",
                     "visible": true,
-                    "width": 1154.0
+                    "width": 1155.0
                   }
                 ],
                 "dock_id": 12,
@@ -195,13 +195,13 @@
                 "dock_id": 10,
                 "dock_tab_bar_enabled": true,
                 "dock_tab_bar_visible": true,
-                "height": 681.0,
-                "position_x": 2686.0,
-                "position_y": 1394.0,
+                "height": 683.0,
+                "position_x": 2685.0,
+                "position_y": 1392.0,
                 "selected_in_dock": true,
                 "title": "Property",
                 "visible": true,
-                "width": 1154.0
+                "width": 1155.0
               }
             ],
             "dock_id": 10,
@@ -216,43 +216,33 @@
   },
   {
     "dock_id": 0,
-    "height": 759.0,
-    "position_x": 2686.0,
-    "position_y": 24.0,
+    "height": 110.0,
+    "position_x": 60.0,
+    "position_y": 60.0,
     "selected_in_dock": false,
     "title": "Render Settings",
     "visible": false,
-    "width": 1154.0
+    "width": 350.0
   },
   {
     "dock_id": 0,
-    "height": 1143.0,
-    "position_x": 0.0,
-    "position_y": 24.0,
+    "height": 906.0,
+    "position_x": 46.0,
+    "position_y": 143.0,
     "selected_in_dock": false,
     "title": "Script Editor",
     "visible": false,
-    "width": 2682.0
+    "width": 781.0
   },
   {
     "dock_id": 0,
-    "height": 681.0,
-    "position_x": 2684.0,
-    "position_y": 710.0,
+    "height": 2051.0,
+    "position_x": 0.0,
+    "position_y": 24.0,
     "selected_in_dock": false,
-    "title": "Physics Utilities",
+    "title": "VS Code Link",
     "visible": false,
-    "width": 1156.0
-  },
-  {
-    "dock_id": 0,
-    "height": 681.0,
-    "position_x": 2684.0,
-    "position_y": 710.0,
-    "selected_in_dock": false,
-    "title": "Inspect Physics",
-    "visible": false,
-    "width": 1156.0
+    "width": 3840.0
   },
   {
     "dock_id": 0,
@@ -296,16 +286,6 @@
   },
   {
     "dock_id": 0,
-    "height": 800.0,
-    "position_x": 120.0,
-    "position_y": 50.0,
-    "selected_in_dock": false,
-    "title": "Extensions",
-    "visible": false,
-    "width": 1200.0
-  },
-  {
-    "dock_id": 0,
     "height": 225.0,
     "position_x": 545.0,
     "position_y": 337.0,
@@ -313,6 +293,16 @@
     "title": "Checking Isaac Sim Assets",
     "visible": false,
     "width": 350.0
+  },
+  {
+    "dock_id": 0,
+    "height": 800.0,
+    "position_x": 360.0,
+    "position_y": 652.0,
+    "selected_in_dock": false,
+    "title": "Extensions",
+    "visible": false,
+    "width": 1200.0
   },
   {
     "dock_id": 0,
@@ -536,6 +526,46 @@
   },
   {
     "dock_id": 0,
+    "height": 600.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Select output",
+    "visible": false,
+    "width": 1200.0
+  },
+  {
+    "dock_id": 0,
+    "height": 0.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Surface Gripper",
+    "visible": false,
+    "width": 0.0
+  },
+  {
+    "dock_id": 0,
+    "height": 400.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Simple Room Python Sample",
+    "visible": false,
+    "width": 600.0
+  },
+  {
+    "dock_id": 0,
+    "height": 400.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Inspect Physics",
+    "visible": false,
+    "width": 600.0
+  },
+  {
+    "dock_id": 0,
     "height": 400.0,
     "position_x": 3.4028234663852886e+38,
     "position_y": 3.4028234663852886e+38,
@@ -586,26 +616,6 @@
   },
   {
     "dock_id": 0,
-    "height": 0.0,
-    "position_x": 3.4028234663852886e+38,
-    "position_y": 3.4028234663852886e+38,
-    "selected_in_dock": false,
-    "title": "Surface Gripper",
-    "visible": false,
-    "width": 0.0
-  },
-  {
-    "dock_id": 0,
-    "height": 400.0,
-    "position_x": 3.4028234663852886e+38,
-    "position_y": 3.4028234663852886e+38,
-    "selected_in_dock": false,
-    "title": "Simple Room Python Sample",
-    "visible": false,
-    "width": 600.0
-  },
-  {
-    "dock_id": 0,
     "height": 250.0,
     "position_x": 3.4028234663852886e+38,
     "position_y": 3.4028234663852886e+38,
@@ -616,21 +626,11 @@
   },
   {
     "dock_id": 0,
-    "height": 600.0,
-    "position_x": 3.4028234663852886e+38,
-    "position_y": 3.4028234663852886e+38,
-    "selected_in_dock": false,
-    "title": "Select output",
-    "visible": false,
-    "width": 1200.0
-  },
-  {
-    "dock_id": 0,
     "height": 400.0,
     "position_x": 3.4028234663852886e+38,
     "position_y": 3.4028234663852886e+38,
     "selected_in_dock": false,
-    "title": "Mesh Merge Tool",
+    "title": "Physics Utilities",
     "visible": false,
     "width": 600.0
   },
@@ -643,16 +643,6 @@
     "title": "Robot Navigation",
     "visible": false,
     "width": 0.0
-  },
-  {
-    "dock_id": 0,
-    "height": 300.0,
-    "position_x": 3.4028234663852886e+38,
-    "position_y": 3.4028234663852886e+38,
-    "selected_in_dock": false,
-    "title": "Dofbot RMP Sample",
-    "visible": false,
-    "width": 400.0
   },
   {
     "dock_id": 0,
@@ -673,6 +663,16 @@
     "title": "Replay Sample",
     "visible": false,
     "width": 400.0
+  },
+  {
+    "dock_id": 0,
+    "height": 400.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Mesh Merge Tool",
+    "visible": false,
+    "width": 600.0
   },
   {
     "dock_id": 0,
@@ -713,5 +713,15 @@
     "title": "Viewport-sensor-menu",
     "visible": false,
     "width": 400.0
+  },
+  {
+    "dock_id": 0,
+    "height": 42.0,
+    "position_x": 1372.0,
+    "position_y": 781.0,
+    "selected_in_dock": false,
+    "title": "0",
+    "visible": false,
+    "width": 1066.0
   }
 ]

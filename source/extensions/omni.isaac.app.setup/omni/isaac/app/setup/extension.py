@@ -485,11 +485,11 @@ class CreateSetupExtension(omni.ext.IExt):
         self._ui_doc_menu_item = editor_menu.add_item(self._ui_doc_menu_path, lambda *_: self._show_ui_docs())
         editor_menu.set_priority(self._ui_doc_menu_path, -10)
 
-        reset_menu_path = "Window/Layout/Reset Layout"
-        self._reset_menu = editor_menu.add_item(
-            reset_menu_path, lambda *_: asyncio.ensure_future(self.__reset_layout())
-        )
-        editor_menu.set_priority(reset_menu_path, 10)
+        # reset_menu_path = "Window/Layout/Reset Layout"
+        # self._reset_menu = editor_menu.add_item(
+        #     reset_menu_path, lambda *_: asyncio.ensure_future(self.__reset_layout())
+        # )
+        # editor_menu.set_priority(reset_menu_path, 10)
 
     def __add_app_icon(self, ext_id):
         ext_manager = omni.kit.app.get_app().get_extension_manager()

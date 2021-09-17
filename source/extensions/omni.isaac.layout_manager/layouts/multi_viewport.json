@@ -11,7 +11,7 @@
                     "dock_id": 5,
                     "dock_tab_bar_enabled": true,
                     "dock_tab_bar_visible": false,
-                    "height": 2051.0,
+                    "height": 1413.0,
                     "position_x": 0.0,
                     "position_y": 24.0,
                     "selected_in_dock": true,
@@ -28,37 +28,61 @@
                   {
                     "children": [
                       {
-                        "dock_id": 9,
+                        "dock_id": 11,
                         "dock_tab_bar_enabled": true,
                         "dock_tab_bar_visible": true,
-                        "height": 2051.0,
+                        "height": 1413.0,
                         "position_x": 46.0,
                         "position_y": 24.0,
                         "selected_in_dock": true,
                         "title": "Viewport",
                         "visible": true,
-                        "width": 2849.0
+                        "width": 1301.0
                       }
                     ],
-                    "dock_id": 9,
+                    "dock_id": 11,
                     "position": "LEFT"
                   },
                   {
                     "children": [
                       {
-                        "dock_id": 10,
-                        "dock_tab_bar_enabled": true,
-                        "dock_tab_bar_visible": false,
-                        "height": 2051.0,
-                        "position_x": 2897.0,
-                        "position_y": 24.0,
-                        "selected_in_dock": true,
-                        "title": "Isaac Utilities Toolbar",
-                        "visible": true,
-                        "width": 83.0
+                        "children": [
+                          {
+                            "dock_id": 13,
+                            "dock_tab_bar_enabled": true,
+                            "dock_tab_bar_visible": true,
+                            "height": 707.0,
+                            "position_x": 1349.0,
+                            "position_y": 24.0,
+                            "selected_in_dock": true,
+                            "title": "Viewport 2",
+                            "visible": true,
+                            "width": 1298.0
+                          }
+                        ],
+                        "dock_id": 13,
+                        "position": "TOP"
+                      },
+                      {
+                        "children": [
+                          {
+                            "dock_id": 14,
+                            "dock_tab_bar_enabled": true,
+                            "dock_tab_bar_visible": true,
+                            "height": 704.0,
+                            "position_x": 1349.0,
+                            "position_y": 733.0,
+                            "selected_in_dock": true,
+                            "title": "Viewport 3",
+                            "visible": true,
+                            "width": 1298.0
+                          }
+                        ],
+                        "dock_id": 14,
+                        "position": "BOTTOM"
                       }
                     ],
-                    "dock_id": 10,
+                    "dock_id": 12,
                     "position": "RIGHT"
                   }
                 ],
@@ -70,7 +94,54 @@
             "position": "TOP"
           },
           {
-            "children": [],
+            "children": [
+              {
+                "children": [
+                  {
+                    "dock_id": 7,
+                    "height": 636.0,
+                    "position_x": 0.0,
+                    "position_y": 1051.0,
+                    "selected_in_dock": false,
+                    "title": "Content",
+                    "visible": true,
+                    "width": 2562.0
+                  },
+                  {
+                    "dock_id": 7,
+                    "dock_tab_bar_enabled": true,
+                    "dock_tab_bar_visible": true,
+                    "height": 636.0,
+                    "position_x": 0.0,
+                    "position_y": 1439.0,
+                    "selected_in_dock": true,
+                    "title": "Console",
+                    "visible": true,
+                    "width": 2562.0
+                  }
+                ],
+                "dock_id": 7,
+                "position": "LEFT"
+              },
+              {
+                "children": [
+                  {
+                    "dock_id": 8,
+                    "dock_tab_bar_enabled": true,
+                    "dock_tab_bar_visible": false,
+                    "height": 636.0,
+                    "position_x": 2564.0,
+                    "position_y": 1439.0,
+                    "selected_in_dock": true,
+                    "title": "Isaac Utilities Toolbar",
+                    "visible": true,
+                    "width": 83.0
+                  }
+                ],
+                "dock_id": 8,
+                "position": "RIGHT"
+              }
+            ],
             "dock_id": 4,
             "position": "BOTTOM"
           }
@@ -83,71 +154,47 @@
           {
             "children": [
               {
-                "children": [
-                  {
-                    "dock_id": 11,
-                    "dock_tab_bar_enabled": true,
-                    "dock_tab_bar_visible": true,
-                    "height": 512.0,
-                    "position_x": 2982.0,
-                    "position_y": 24.0,
-                    "selected_in_dock": true,
-                    "title": "Stage",
-                    "visible": true,
-                    "width": 858.0
-                  },
-                  {
-                    "dock_id": 11,
-                    "height": 512.0,
-                    "position_x": 2988.0,
-                    "position_y": 24.0,
-                    "selected_in_dock": false,
-                    "title": "Layer",
-                    "visible": true,
-                    "width": 858.0
-                  }
-                ],
-                "dock_id": 11,
-                "position": "TOP"
+                "dock_id": 9,
+                "dock_tab_bar_enabled": true,
+                "dock_tab_bar_visible": true,
+                "height": 1024.0,
+                "position_x": 2649.0,
+                "position_y": 24.0,
+                "selected_in_dock": true,
+                "title": "Stage",
+                "visible": true,
+                "width": 1191.0
               },
               {
-                "children": [
-                  {
-                    "dock_id": 12,
-                    "dock_tab_bar_enabled": true,
-                    "dock_tab_bar_visible": true,
-                    "height": 510.0,
-                    "position_x": 2982.0,
-                    "position_y": 538.0,
-                    "selected_in_dock": true,
-                    "title": "Occupancy Map",
-                    "visible": true,
-                    "width": 858.0
-                  }
-                ],
-                "dock_id": 12,
-                "position": "BOTTOM"
+                "dock_id": 9,
+                "height": 1024.0,
+                "position_x": 1476.0,
+                "position_y": 24.0,
+                "selected_in_dock": false,
+                "title": "Layer",
+                "visible": true,
+                "width": 1191.0
               }
             ],
-            "dock_id": 7,
+            "dock_id": 9,
             "position": "TOP"
           },
           {
             "children": [
               {
-                "dock_id": 8,
+                "dock_id": 10,
                 "dock_tab_bar_enabled": true,
                 "dock_tab_bar_visible": true,
                 "height": 1025.0,
-                "position_x": 2982.0,
+                "position_x": 2649.0,
                 "position_y": 1050.0,
                 "selected_in_dock": true,
                 "title": "Property",
                 "visible": true,
-                "width": 858.0
+                "width": 1191.0
               }
             ],
-            "dock_id": 8,
+            "dock_id": 10,
             "position": "BOTTOM"
           }
         ],
@@ -159,133 +206,73 @@
   },
   {
     "dock_id": 0,
-    "height": 636.0,
-    "position_x": 0.0,
-    "position_y": 1439.0,
-    "selected_in_dock": false,
-    "title": "Content",
-    "visible": false,
-    "width": 2648.0
-  },
-  {
-    "dock_id": 0,
-    "height": 2005.0,
-    "position_x": 0.0,
-    "position_y": 70.0,
-    "selected_in_dock": false,
-    "title": "Mesh Merge Tool",
-    "visible": false,
-    "width": 2599.0
-  },
-  {
-    "dock_id": 0,
-    "height": 2005.0,
-    "position_x": 0.0,
-    "position_y": 70.0,
-    "selected_in_dock": false,
-    "title": "URDF Importer",
-    "visible": false,
-    "width": 2599.0
-  },
-  {
-    "dock_id": 0,
-    "height": 2005.0,
-    "position_x": 0.0,
-    "position_y": 70.0,
-    "selected_in_dock": false,
-    "title": "Robot Engine Bridge",
-    "visible": false,
-    "width": 2599.0
-  },
-  {
-    "dock_id": 0,
-    "height": 2005.0,
-    "position_x": 0.0,
-    "position_y": 70.0,
-    "selected_in_dock": false,
-    "title": "Inspect Physics",
-    "visible": false,
-    "width": 2599.0
-  },
-  {
-    "dock_id": 0,
-    "height": 2005.0,
-    "position_x": 0.0,
-    "position_y": 70.0,
-    "selected_in_dock": false,
-    "title": "Physics Utilities",
-    "visible": false,
-    "width": 2599.0
-  },
-  {
-    "dock_id": 0,
-    "height": 2005.0,
-    "position_x": 0.0,
-    "position_y": 70.0,
-    "selected_in_dock": false,
-    "title": "ShapeNet Loader",
-    "visible": false,
-    "width": 2599.0
-  },
-  {
-    "dock_id": 0,
-    "height": 615.0,
-    "position_x": 0.0,
-    "position_y": 1460.0,
-    "selected_in_dock": false,
-    "title": "Console",
-    "visible": false,
-    "width": 2599.0
-  },
-  {
-    "dock_id": 0,
-    "height": 531.0,
-    "position_x": 2686.0,
-    "position_y": 861.0,
-    "selected_in_dock": false,
-    "title": "Synthetic Data Recorder",
-    "visible": false,
-    "width": 1154.0
-  },
-  {
-    "dock_id": 0,
-    "height": 531.0,
-    "position_x": 2686.0,
-    "position_y": 861.0,
+    "height": 280.0,
+    "position_x": 1007.0,
+    "position_y": 306.0,
     "selected_in_dock": false,
     "title": "Semantics Schema Editor",
     "visible": false,
-    "width": 1154.0
+    "width": 433.0
   },
   {
     "dock_id": 0,
-    "height": 114.0,
-    "position_x": 2686.0,
-    "position_y": 745.0,
-    "selected_in_dock": false,
-    "title": "DR Manual Mode",
-    "visible": false,
-    "width": 1154.0
-  },
-  {
-    "dock_id": 0,
-    "height": 759.0,
-    "position_x": 2686.0,
+    "height": 846.0,
+    "position_x": 1107.0,
     "position_y": 24.0,
     "selected_in_dock": false,
     "title": "Render Settings",
     "visible": false,
-    "width": 1154.0
+    "width": 333.0
   },
   {
     "dock_id": 0,
-    "height": 1143.0,
+    "height": 2051.0,
     "position_x": 0.0,
     "position_y": 24.0,
     "selected_in_dock": false,
-    "title": "Script Editor",
+    "title": "VS Code Link",
     "visible": false,
-    "width": 2682.0
+    "width": 1920.0
+  },
+  {
+    "dock_id": 0,
+    "height": 282.0,
+    "position_x": 0.0,
+    "position_y": 588.0,
+    "selected_in_dock": false,
+    "title": "Synthetic Data Recorder",
+    "visible": false,
+    "width": 920.0
+  },
+  {
+    "dock_id": 0,
+    "height": 32.0,
+    "position_x": 60.0,
+    "position_y": 60.0,
+    "selected_in_dock": false,
+    "title": "DR Manual Mode",
+    "visible": false,
+    "width": 32.0
+  },
+  {
+    "dock_id": 0,
+    "height": 150.0,
+    "position_x": 60.0,
+    "position_y": 60.0,
+    "selected_in_dock": false,
+    "title": "ShapeNet Loader",
+    "visible": false,
+    "width": 400.0
+  },
+  {
+    "dock_id": 0,
+    "height": 400.0,
+    "position_x": 60.0,
+    "position_y": 60.0,
+    "selected_in_dock": false,
+    "title": "Robot Engine Bridge",
+    "visible": false,
+    "width": 600.0
   },
   {
     "dock_id": 0,
@@ -306,26 +293,6 @@
     "title": "Check Nucleus Server",
     "visible": true,
     "width": 500.0
-  },
-  {
-    "dock_id": 0,
-    "height": 800.0,
-    "position_x": 120.0,
-    "position_y": 50.0,
-    "selected_in_dock": false,
-    "title": "Extensions",
-    "visible": false,
-    "width": 1200.0
-  },
-  {
-    "dock_id": 0,
-    "height": 225.0,
-    "position_x": 545.0,
-    "position_y": 337.0,
-    "selected_in_dock": false,
-    "title": "Checking Isaac Sim Assets",
-    "visible": false,
-    "width": 350.0
   },
   {
     "dock_id": 0,
@@ -389,6 +356,16 @@
   },
   {
     "dock_id": 0,
+    "height": 0.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Filter",
+    "visible": false,
+    "width": 150.0
+  },
+  {
+    "dock_id": 0,
     "height": 600.0,
     "position_x": 3.4028234663852886e+38,
     "position_y": 3.4028234663852886e+38,
@@ -416,16 +393,6 @@
     "title": "Select Asset...",
     "visible": false,
     "width": 1200.0
-  },
-  {
-    "dock_id": 0,
-    "height": 0.0,
-    "position_x": 3.4028234663852886e+38,
-    "position_y": 3.4028234663852886e+38,
-    "selected_in_dock": false,
-    "title": "Snap Increment Settings Menu",
-    "visible": false,
-    "width": 400.0
   },
   {
     "dock_id": 0,
@@ -466,6 +433,16 @@
     "title": "Select Filename (Local Files Only)",
     "visible": false,
     "width": 1200.0
+  },
+  {
+    "dock_id": 0,
+    "height": 0.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Snap Increment Settings Menu",
+    "visible": false,
+    "width": 400.0
   },
   {
     "dock_id": 0,
@@ -539,6 +516,86 @@
   },
   {
     "dock_id": 0,
+    "height": 400.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Occupancy Map",
+    "visible": false,
+    "width": 600.0
+  },
+  {
+    "dock_id": 0,
+    "height": 600.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Select output",
+    "visible": false,
+    "width": 1200.0
+  },
+  {
+    "dock_id": 0,
+    "height": 0.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Surface Gripper",
+    "visible": false,
+    "width": 0.0
+  },
+  {
+    "dock_id": 0,
+    "height": 400.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Simple Room Python Sample",
+    "visible": false,
+    "width": 600.0
+  },
+  {
+    "dock_id": 0,
+    "height": 400.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Inspect Physics",
+    "visible": false,
+    "width": 600.0
+  },
+  {
+    "dock_id": 0,
+    "height": 250.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "REB Vehicle Control",
+    "visible": false,
+    "width": 300.0
+  },
+  {
+    "dock_id": 0,
+    "height": 400.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Mesh Merge Tool",
+    "visible": false,
+    "width": 600.0
+  },
+  {
+    "dock_id": 0,
+    "height": 400.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "URDF Importer",
+    "visible": false,
+    "width": 600.0
+  },
+  {
+    "dock_id": 0,
     "height": 0.0,
     "position_x": 3.4028234663852886e+38,
     "position_y": 3.4028234663852886e+38,
@@ -579,43 +636,13 @@
   },
   {
     "dock_id": 0,
-    "height": 0.0,
-    "position_x": 3.4028234663852886e+38,
-    "position_y": 3.4028234663852886e+38,
-    "selected_in_dock": false,
-    "title": "Surface Gripper",
-    "visible": false,
-    "width": 0.0
-  },
-  {
-    "dock_id": 0,
     "height": 400.0,
     "position_x": 3.4028234663852886e+38,
     "position_y": 3.4028234663852886e+38,
     "selected_in_dock": false,
-    "title": "Simple Room Python Sample",
+    "title": "Physics Utilities",
     "visible": false,
     "width": 600.0
-  },
-  {
-    "dock_id": 0,
-    "height": 250.0,
-    "position_x": 3.4028234663852886e+38,
-    "position_y": 3.4028234663852886e+38,
-    "selected_in_dock": false,
-    "title": "REB Vehicle Control",
-    "visible": false,
-    "width": 300.0
-  },
-  {
-    "dock_id": 0,
-    "height": 600.0,
-    "position_x": 3.4028234663852886e+38,
-    "position_y": 3.4028234663852886e+38,
-    "selected_in_dock": false,
-    "title": "Select output",
-    "visible": false,
-    "width": 1200.0
   },
   {
     "dock_id": 0,
@@ -626,16 +653,6 @@
     "title": "Robot Navigation",
     "visible": false,
     "width": 0.0
-  },
-  {
-    "dock_id": 0,
-    "height": 300.0,
-    "position_x": 3.4028234663852886e+38,
-    "position_y": 3.4028234663852886e+38,
-    "selected_in_dock": false,
-    "title": "Dofbot RMP Sample",
-    "visible": false,
-    "width": 400.0
   },
   {
     "dock_id": 0,
@@ -686,5 +703,35 @@
     "title": "Viewport-sensor-menu",
     "visible": false,
     "width": 400.0
+  },
+  {
+    "dock_id": 0,
+    "height": 600.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Viewport 2-sensor-menu",
+    "visible": false,
+    "width": 400.0
+  },
+  {
+    "dock_id": 0,
+    "height": 600.0,
+    "position_x": 3.4028234663852886e+38,
+    "position_y": 3.4028234663852886e+38,
+    "selected_in_dock": false,
+    "title": "Viewport 3-sensor-menu",
+    "visible": false,
+    "width": 400.0
+  },
+  {
+    "dock_id": 0,
+    "height": 152.0,
+    "position_x": 1371.0,
+    "position_y": 781.0,
+    "selected_in_dock": false,
+    "title": "0",
+    "visible": false,
+    "width": 1066.0
   }
 ]

@@ -21,9 +21,11 @@ writeTarget.kit = true
 "omni.kit.context_menu" = {}
 "omni.kit.stage_templates" = {}
 "omni.kit.window.title" = {}
+"omni.kit.debug.vscode" = {}
 "omni.kit.quicklayout" = {}
 
 # Isaac Sim Utilities
+"omni.isaac.utils_manager" = {}
 "omni.isaac.robot_engine_bridge" = {}
 "omni.isaac.samples" = {}
 "omni.isaac.synthetic_utils" = {}
