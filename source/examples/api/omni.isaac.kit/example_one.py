@@ -16,7 +16,7 @@ from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 _, nucleus_server = find_nucleus_server()
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
-
+# TODO: change camera view if the assets will stay in cm
 simulation_context = SimulationContext()
 simulation_context.create_new_stage()
 simulation_context.add_usd_reference(asset_path, "/Franka")

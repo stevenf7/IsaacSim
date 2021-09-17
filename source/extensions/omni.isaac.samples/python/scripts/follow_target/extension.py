@@ -70,7 +70,7 @@ class Extension(BaseSample):
 
     def _on_follow_target_event(self):
         async def _on_follow_target_event_async():
-            self._world.add_physics_callback(self._on_follow_target_simulation_step)
+            self._world.add_physics_callback("sim_step", self._on_follow_target_simulation_step)
             self._buttons["Follow Target"].enabled = False
             await self._world.play_async()
 

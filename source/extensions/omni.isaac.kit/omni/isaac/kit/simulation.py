@@ -19,6 +19,7 @@ from pxr import UsdGeom, Gf, Usd, Sdf, UsdPhysics, PhysxSchema
 from omni.isaac.kit.utils import set_carb_setting
 from omni.isaac.kit.constants import AXES_INDICES
 import omni.isaac.kit.global_vars as global_vars
+import numpy as np
 
 
 class SimulationContext:
@@ -36,20 +37,29 @@ class SimulationContext:
         self.set_camera_view()
         # Turn auto-update on for timeline
         self._timeline.set_auto_update(True)
-        self._physics_callback_functions = []
-        self._stage_callback_functions = []
-        self._timeline_callback_functions = []
+        self._physics_callback_functions = dict()
+        self._physics_timer_callback = self._physics_scene._physx_interface.subscribe_physics_step_events(
+            self._physics_timer_callback_fn
+        )
+        self._event_timer_callback = self._timeline.get_timeline_event_stream().create_subscription_to_pop(
+            self._timeline_timer_callback_fn
+        )
+        self._stage_callback_functions = dict()
+        self._timeline_callback_functions = dict()
+        self._editor_callback_functions = dict()
         self._number_of_steps = 0
         self._current_async_task = None
         self._extension_manager = omni.kit.app.get_app().get_extension_manager()
         self._async_tasks = []
+        self._current_time = 0
         return
 
     def __del__(self):
         """Destructor for object."""
-        self._physics_callback_functions = []
-        self._stage_callback_functions = []
-        self._timeline_callback_functions = []
+        self._physics_callback_functions = dict()
+        self._stage_callback_functions = dict()
+        self._timeline_callback_functions = dict()
+        self._editor_callback_functions = dict()
         pass
 
     @property
@@ -63,7 +73,7 @@ class SimulationContext:
 
     @property
     def time(self):
-        return self._timeline.get_current_time()
+        return self._current_time
 
     @property
     def stage(self) -> Usd.Stage:
@@ -82,8 +92,18 @@ class SimulationContext:
 
     # TODO: check why you need a simulate before and after
 
+    def _physics_timer_callback_fn(self, step_size):
+        self._current_time += step_size
+        self._number_of_steps += 1
+        return
+
+    def _timeline_timer_callback_fn(self, event):
+        if event.type == int(omni.timeline.TimelineEventType.STOP):
+            self._current_time = 0
+            self._number_of_steps = 0
+        return
+
     def start_simulation(self):
-        self.play()
         self._physics_scene._physx_interface.start_simulation()
         self._physics_scene._physx_interface.force_load_physics_from_usd()
         return
@@ -96,17 +116,22 @@ class SimulationContext:
 
     def play(self) -> None:
         self._timeline.play()
-        self._app.update()
         return
 
-    def set_camera_view(self, eye=[2, 2, 2], target=[0, 0, 0], vel=0.05):
-        """Set the pose of the default camera "/OmniverseKit_Persp".
+    def set_camera_view(self, eye=None, target=None, vel=0.05):
+        """[summary]
 
-        Keyword Arguments:
-            eye {list} -- The position of the camera. (default: {[1, 1, 1]})
-            lookat {list} -- The target location for the camera. (default: {[0, 0, 0]})
-            vel {float} -- The velocity of the camera. (default: {0.05})
+        Args:
+            eye (list, optional): [description]. Defaults to [2, 2, 2].
+            target (list, optional): [description]. Defaults to [0, 0, 0].
+            vel (float, optional): [description]. Defaults to 0.05.
         """
+        meters_per_unit = UsdGeom.GetStageMetersPerUnit(self.stage)
+        if eye is None:
+            eye = np.array([1.5, 1.5, 1.5]) / meters_per_unit
+        if target is None:
+            target = np.array([0.01, 0.01, 0.01]) / meters_per_unit
+        vel = vel / meters_per_unit
         self._viewport.set_camera_position("/OmniverseKit_Persp", eye[0], eye[1], eye[2], True)
         self._viewport.set_camera_target("/OmniverseKit_Persp", target[0], target[1], target[2], True)
         self._viewport.set_camera_move_velocity(vel)
@@ -127,7 +152,6 @@ class SimulationContext:
     async def stop_async(self):
         """Pauses the editor physics simulation"""
         self._timeline.stop()
-        self._number_of_steps = 0
         await omni.kit.app.get_app().next_update_async()
         return
 
@@ -135,14 +159,20 @@ class SimulationContext:
         """Stops the editor physics simulation"""
         self._timeline.stop()
         self._app.update()
-        self._number_of_steps = 0
         return
 
-    async def create_new_stage_async(self) -> Usd.Stage:
+    async def create_new_stage_async(self, stage_units_in_meters: float = 1.0) -> Usd.Stage:
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        self.set_stage_units(1.0)
+        self.set_stage_units(stage_units_in_meters)
         self._physics_scene = PhysicsScene(self._physics_scene._current_physics_dt)
+        self._physics_callback_functions = dict()
+        self._physics_timer_callback = self._physics_scene._physx_interface.subscribe_physics_step_events(
+            self._physics_timer_callback_fn
+        )
+        self._event_timer_callback = self._timeline.get_timeline_event_stream().create_subscription_to_pop(
+            self._timeline_timer_callback_fn
+        )
         await omni.kit.app.get_app().next_update_async()
         self._timeline = omni.timeline.get_timeline_interface()
         # Turn auto-update on for timeline
@@ -150,7 +180,7 @@ class SimulationContext:
         self.set_camera_view()
         return
 
-    def create_new_stage(self) -> Usd.Stage:
+    def create_new_stage(self, stage_units_in_meters: float = 1.0) -> Usd.Stage:
         # Create a blank new stage
         # This sleep prevents a deadlock in certain cases.
         new_stage_task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
@@ -158,9 +188,17 @@ class SimulationContext:
             time.sleep(0.001)
             self._app.update()
         # Update the app
+        # TODO: add logging
         self._app.update()
-        self.set_stage_units(1.0)
+        self.set_stage_units(stage_units_in_meters)
         self._physics_scene = PhysicsScene(self._physics_scene._current_physics_dt)
+        self._physics_callback_functions = dict()
+        self._physics_timer_callback = self._physics_scene._physx_interface.subscribe_physics_step_events(
+            self._physics_timer_callback_fn
+        )
+        self._event_timer_callback = self._timeline.get_timeline_event_stream().create_subscription_to_pop(
+            self._timeline_timer_callback_fn
+        )
         self.set_camera_view()
         return self.stage
 
@@ -174,43 +212,78 @@ class SimulationContext:
         return
 
     def step(self, render=True):
-        curr_time = self._timeline.get_current_time()
-        self._timeline.set_current_time(curr_time + self._physics_scene._current_physics_dt)
-        self._number_of_steps += 1
         if render:
             self._app.update()
         else:
-            self._physics_scene.step()
+            self._physics_scene.step(current_time=self.time)
         return
 
-    def add_physics_callback(self, callback_fn):
-        self._physics_callback_functions.append(
-            self._physics_scene._physx_interface.subscribe_physics_step_events(callback_fn)
-        )
+    def add_physics_callback(self, callback_name, callback_fn):
+        self._physics_callback_functions[
+            callback_name
+        ] = self._physics_scene._physx_interface.subscribe_physics_step_events(callback_fn)
+        return
+
+    def remove_physics_callback(self, callback_name):
+        if callback_name in self._physics_callback_functions:
+            del self._physics_callback_functions[callback_name]
+        else:
+            carb.log_error(f"Physics callback `{callback_name}` doesn't exist")
         return
 
     def clear_physics_callbacks(self):
-        self._physics_callback_functions = []
+        self._physics_callback_functions = dict()
         return
 
-    def add_stage_callback(self, callback_fn):
-        self._stage_callback_functions.append(
+    def add_stage_callback(self, callback_name, callback_fn):
+        self._stage_callback_functions[callback_name] = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(callback_fn)
         )
         return
 
-    def clear_stage_callbacks(self):
-        self._stage_callback_functions = []
+    def remove_stage_callback(self, callback_name):
+        if callback_name in self._stage_callback_functions:
+            del self._stage_callback_functions[callback_name]
+        else:
+            carb.log_error(f"Stage callback `{callback_name}` doesn't exist")
         return
 
-    def add_timeline_callback(self, callback_fn):
-        self._timeline_callback_functions.append(
-            self._timeline.get_timeline_event_stream().create_subscription_to_pop(callback_fn)
-        )
+    def clear_stage_callbacks(self):
+        self._stage_callback_functions = dict()
+        return
+
+    def add_timeline_callback(self, callback_name, callback_fn):
+        self._timeline_callback_functions[
+            callback_name
+        ] = self._timeline.get_timeline_event_stream().create_subscription_to_pop(callback_fn)
+        return
+
+    def remove_timeline_callback(self, callback_name):
+        if callback_name in self._timeline_callback_functions:
+            del self._timeline_callback_functions[callback_name]
+        else:
+            carb.log_error(f"Timeline callback `{callback_name}` doesn't exist")
         return
 
     def clear_timeline_callbacks(self):
-        self._timeline_callback_functions = []
+        self._timeline_callback_functions = dict()
+        return
+
+    def add_editor_callback(self, callback_name, callback_fn):
+        self._editor_callback_functions[callback_name] = self.app.get_update_event_stream().create_subscription_to_pop(
+            callback_fn
+        )
+        return
+
+    def remove_editor_callback(self, callback_name):
+        if callback_name in self._editor_callback_functions:
+            del self._editor_callback_functions[callback_name]
+        else:
+            carb.log_error(f"Editor callback `{callback_name}` doesn't exist")
+        return
+
+    def clear_editor_callbacks(self):
+        self._editor_callback_functions = dict()
         return
 
     def set_stage_units(self, stage_units_in_meters):
@@ -264,11 +337,16 @@ class PhysicsScene:
         gravity_dir[AXES_INDICES[up_axis]] = -1.0
         # add the physics scene
         if prim.IsValid():
-            print(f"Prim at path `{self._path}` is already defined.")
+            carb.log_info(f"Physics Scene at path `{self._path}` is already defined - reusing it")
             scene = UsdPhysics.Scene(prim)
         else:
-            print("Defining a new physics scene")
+            carb.log_info(f"Defining a new Physics Scene at path `{self._path}`")
             scene = UsdPhysics.Scene.Define(self._stage, self._path)
+        prim = self._stage.GetPrimAtPath(path)
+        if prim.HasAPI(PhysxSchema.PhysxSceneAPI):
+            self._physx_scene_api = PhysxSchema.PhysxSceneAPI(prim)
+        else:
+            self._physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(prim)
         scene.CreateGravityDirectionAttr().Set(gravity_dir)
         scene.CreateGravityMagnitudeAttr().Set(9.81 / meters_per_unit)
         self._previous_physics_dt = None
@@ -303,7 +381,6 @@ class PhysicsScene:
         # if no stage or no change in physics timestep, exit.
         if self._stage is None or dt == self._previous_physics_dt:
             return
-
         # if physics substeps is not valid, make default = 1.
         if substeps is None or substeps <= 1:
             substeps = 1
@@ -313,12 +390,7 @@ class PhysicsScene:
         steps_per_second = int(1.0 / dt)
         min_steps = int(steps_per_second / substeps)
         # set the steps per second, i.e. physics simulation frequency.
-        physxSceneAPI = None
-        for prim in self._stage.Traverse():
-            if prim.IsA(UsdPhysics.Scene):
-                physxSceneAPI = PhysxSchema.PhysxSceneAPI.Apply(prim)
-        if physxSceneAPI is not None:
-            physxSceneAPI.GetTimeStepsPerSecondAttr().Set(steps_per_second)
+        self._physx_scene_api.GetTimeStepsPerSecondAttr().Set(steps_per_second)
         # set the min frame rate, i.e. frequency of substeps.
         # TODO Is there a better way to do this or atleast reset this to the original values on close
         if global_vars.LAUNCHED_FROM_TERMINAL is False:
@@ -336,17 +408,20 @@ class PhysicsScene:
         broadphase_type: str = "MBP",
         solver_type: str = "TGS",
     ):
-        # Set physics scene to use cpu physics
-        PhysxSchema.PhysxSceneAPI.Apply(self._stage.GetPrimAtPath(self._path))
-        physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(self._stage, self._path)
-        physxSceneAPI.CreateEnableCCDAttr(enable_ccd)
-        physxSceneAPI.CreateEnableStabilizationAttr(enable_stablization)
-        physxSceneAPI.CreateEnableGPUDynamicsAttr(enable_gpu_dynamics)
-        physxSceneAPI.CreateBroadphaseTypeAttr(broadphase_type)
-        physxSceneAPI.CreateSolverTypeAttr(solver_type)
+        # TODO: handle the case where a physics scene is already defined and we need to change values and not create
+        self._physx_scene_api.CreateEnableCCDAttr(enable_ccd)
+        self._physx_scene_api.CreateEnableStabilizationAttr(enable_stablization)
+        self._physx_scene_api.CreateEnableGPUDynamicsAttr(enable_gpu_dynamics)
+        self._physx_scene_api.CreateBroadphaseTypeAttr(broadphase_type)
+        self._physx_scene_api.CreateSolverTypeAttr(solver_type)
         return
 
-    def step(self):
-        self._physx_interface.update_simulation(self._current_physics_dt, self._timeline.get_current_time())
-        self._physx_interface.update_transformations(True, True, False, False)
+    def step(self, current_time):
+        self._physx_interface.update_simulation(elapsedStep=self._current_physics_dt, currentTime=current_time)
+        self._physx_interface.update_transformations(
+            updateToFastCache=True, updateToUsd=True, updateVelocitiesToUsd=False, outputVelocitiesLocalSpace=False
+        )
         return
+
+    def get_physics_dt(self):
+        return self._physx_scene_api.GetTimeStepsPerSecondAttr().Get()
