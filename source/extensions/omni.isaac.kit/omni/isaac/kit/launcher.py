@@ -11,15 +11,10 @@ from __future__ import annotations  # This allows us to hint types that do not y
 
 import os
 import sys
-import time
-import asyncio
 import argparse
 
-# omniverse
 import carb
-import omni.kit
 import omni.kit.app
-import omni.isaac.kit.global_vars as global_vars
 
 
 class SimulationApp:
@@ -76,7 +71,6 @@ class SimulationApp:
     The config variable is a dictionary containing the following entries
 
     Args:
-        experience (str): The config file used to launch the application. Must be specified
         headless (bool): Disable UI when running. Defaults to True
         active_gpu (int): Specify the GPU to use when running, set to None to use default value which is usually the first gpu, default is None
         sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
@@ -96,6 +90,8 @@ class SimulationApp:
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
+        import omni.isaac.kit.global_vars as global_vars
+
         # Initialize variables
         global_vars.LAUNCHED_FROM_TERMINAL = False
         self._exiting = False
@@ -286,6 +282,11 @@ class SimulationApp:
                 self._app.update()
             self._app.shutdown()
             self._framework.unload_all_plugins()
+            # Force all omni module to unload on close
+            # This prevents crash on exit
+            for m in list(sys.modules.keys()):
+                if "omni" in m and m != "omni.kit.app":
+                    del sys.modules[m]
             print("Simulation App Shutdown Completed...")
 
     @property
