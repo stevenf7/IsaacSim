@@ -33,12 +33,14 @@ def get_style():
     FONT_SIZE = 14.0
     TOOLTIP_STYLE = (
         {
-            "background_color": 0xFFFF0000,
-            "color": 0xFFFFFFFF,
-            "margin_width": 3,
-            "margin_height": 2,
-            "border_width": 3,
-            "border_color": 0xFF000000,
+            "background_color": 0xFFD1F7FF,
+            "color": 0xFF333333,
+            "margin_width": 0,
+            "margin_height": 0,
+            "padding": 0,
+            "border_width": 0,
+            "border_radius": 1.5,
+            "border_color": 0x0,
         },
     )
 

@@ -73,6 +73,14 @@ def state_btn_builder(
     return btn
 
 
+def make_button_tooltip(tooltip):
+    with ui.ZStack(style=get_style()["Tooltip"][0], spacing=0):
+        ui.Rectangle()
+        with ui.VStack():
+            with ui.HStack():
+                ui.Label(tooltip, style={"margin_width": 5, "margin_height": 2})
+
+
 def cb_builder(label="", type="checkbox", default_val=False, tooltip="", on_clicked_fn=None):
     """Creates a Stylized Checkbox"""
 
@@ -126,7 +134,11 @@ def multi_cb_builder(
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[0]))
         for i in range(count):
-            cb = SimpleCheckBox(default_val[i], on_clicked_fn[i])
+            cb = ui.SimpleBoolModel(default_value=default_val[i])
+            callable = on_clicked_fn[i]
+            if callable is None:
+                callable = lambda x: None
+            SimpleCheckBox(default_val[i], callable, model=cb)
             ui.Label(
                 text[i], width=BUTTON_WIDTH / 2, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[i + 1])
             )
@@ -182,13 +194,14 @@ def combo_cb_str_builder(
     type="checkbox_stringfield",
     default_val=[False, " "],
     tooltip="",
-    on_clicked_fn=None,
+    on_clicked_fn=lambda x: None,
     use_folder_picker=False,
 ):
     """Creates a Stylized Checkbox + Stringfield Widget"""
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
-        cb = SimpleCheckBox(default_val[0], on_clicked_fn)
+        cb = ui.SimpleBoolModel(default_value=default_val[0])
+        SimpleCheckBox(default_val[0], on_clicked_fn, model=cb)
         str_field = ui.StringField(
             name="StringField", width=ui.Fraction(1), height=0, alignment=ui.Alignment.LEFT_CENTER
         ).model
@@ -279,12 +292,13 @@ def combo_cb_dropdown_builder(
     default_val=[False, 0],
     items=["Option 1", "Option 2", "Option 3"],
     tooltip="",
-    on_clicked_fn=[None, None],
+    on_clicked_fn=[lambda x: None, None],
 ):
     """Creates a Stylized Dropdown Combobox with an Enable Checkbox"""
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
-        cb = SimpleCheckBox(default_val[0], on_clicked_fn[0])
+        cb = ui.SimpleBoolModel(default_value=default_val[0])
+        SimpleCheckBox(default_val[0], on_clicked_fn[0], model=cb)
         combo_box = ui.ComboBox(
             default_val[1], *items, name="ComboBox", width=ui.Fraction(1), alignment=ui.Alignment.LEFT_CENTER
         )
@@ -335,13 +349,14 @@ def scrolling_frame_builder(label="", type="scrolling_frame", default_val="No Da
                 clicked_fn=copy_to_clipboard,
                 style=get_style()["IconButton.Image::CopyToClipboard"],
                 alignment=ui.Alignment.RIGHT_TOP,
-                tooltip="Copy To Clipboard",
+                tooltip_fn=lambda txt="Copy to Clipboard": make_button_tooltip(txt),
+                # tooltip="Copy To Clipboard",
             )
     return text
 
 
 def combo_cb_scrolling_frame_builder(
-    label="", type="scrolling_frame", default_val=[False, "No Data"], tooltip="", on_clicked_fn=None
+    label="", type="scrolling_frame", default_val=[False, "No Data"], tooltip="", on_clicked_fn=lambda x: None
 ):
     """Creates a Labeled, Checkbox-enabled Scrolling Frame with CopyToClipboard button"""
 
@@ -357,7 +372,8 @@ def combo_cb_scrolling_frame_builder(
         with ui.HStack():
             ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
             with ui.VStack(width=0):
-                cb = SimpleCheckBox(default_val[0], on_clicked_fn)
+                cb = ui.SimpleBoolModel(default_value=default_val[0])
+                SimpleCheckBox(default_val[0], on_clicked_fn, model=cb)
                 ui.Spacer(height=18 * 4)
             with ui.ScrollingFrame(
                 height=18 * 5,
@@ -380,7 +396,8 @@ def combo_cb_scrolling_frame_builder(
                 clicked_fn=copy_to_clipboard,
                 style=get_style()["IconButton.Image::CopyToClipboard"],
                 alignment=ui.Alignment.RIGHT_TOP,
-                tooltip="Copy To Clipboard",
+                tooltip_fn=lambda txt="Copy to Clipboard": make_button_tooltip(txt),
+                # tooltip="Copy To Clipboard",
             )
     return cb, text
 
@@ -581,7 +598,7 @@ def xyz_plot_builder(label="", data=[], min=-1, max=1, tooltip=""):
 def combo_cb_plot_builder(
     label="",
     default_val=False,
-    on_clicked_fn=None,
+    on_clicked_fn=lambda x: None,
     data=None,
     min=-1,
     max=1,
@@ -660,7 +677,7 @@ def combo_cb_plot_builder(
 def combo_cb_xyz_plot_builder(
     label="",
     default_val=False,
-    on_clicked_fn=None,
+    on_clicked_fn=lambda x: None,
     data=[],
     min=-1,
     max=1,
@@ -840,12 +857,12 @@ def add_folder_picker_icon(on_click_fn):
     with ui.Frame(width=0):
         ui.Button(
             name="IconButton",
-            width=20,
-            height=20,
+            width=24,
+            height=24,
             clicked_fn=open_folder_picker,
             style=get_style()["IconButton.Image::FolderPicker"],
             alignment=ui.Alignment.RIGHT_TOP,
-            tooltip="Select Folder",
+            tooltip_fn=lambda txt="Select Folder": make_button_tooltip(txt),
         )
 
 
@@ -952,7 +969,8 @@ def build_header(
                         style=get_style()["IconButton.Image::OpenConfig"],
                         # style_type_name_override="IconButton.Image::OpenConfig",
                         alignment=ui.Alignment.LEFT_CENTER,
-                        tooltip="Open in IDE",
+                        tooltip_fn=lambda txt="Open": make_button_tooltip(txt),
+                        # tooltip="Open in IDE",
                     )
                     ui.Button(
                         name="IconButton",
@@ -961,7 +979,8 @@ def build_header(
                         clicked_fn=on_open_folder_clicked,
                         style=get_style()["IconButton.Image::OpenFolder"],
                         alignment=ui.Alignment.LEFT_CENTER,
-                        tooltip="Open Containing Folder",
+                        tooltip_fn=lambda txt="Open Containing Folder": make_button_tooltip(txt),
+                        # tooltip="Open Containing Folder",
                     )
                     with ui.Placer(offset_x=0, offset_y=3):
                         ui.Button(
@@ -974,7 +993,8 @@ def build_header(
                             # image_url="/resources/glyphs/link.svg",
                             # style={"image_url": "resources/glyphs/link.svg"},
                             alignment=ui.Alignment.LEFT_TOP,
-                            tooltip="Link to Docs",
+                            tooltip_fn=lambda txt="Link to Docs": make_button_tooltip(txt),
+                            # tooltip="Link to Docs",
                         )
 
     with ui.ZStack():
