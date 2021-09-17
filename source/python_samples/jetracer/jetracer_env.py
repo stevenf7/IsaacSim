@@ -85,7 +85,7 @@ class JetracerEnv:
         # the following two lines must be called prior to Jetracer initialization
         # any DR related setup calls should occur before this point
         self.omniverse_kit.update(1 / 60.0)
-        self.roads.dr.randomize_once()
+        self.roads.dr.commands.RandomizeOnceCommand().do()
 
         # spawn robot
         self.jetracer = Jetracer(self.omniverse_kit)

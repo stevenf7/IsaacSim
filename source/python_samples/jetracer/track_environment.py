@@ -70,7 +70,7 @@ class Environment:
         prims = []
         self.dr = dr
         self.dr.commands.ToggleManualModeCommand().do()
-        self.self.dr.commands.CreateMeshComponentCommand(prim_paths=prims, mesh_list=names, mesh_range=[1, 1]).do()
+        self.dr.commands.CreateMeshComponentCommand(prim_paths=prims, mesh_list=names, mesh_range=[1, 1]).do()
         self.omni_kit.update(1 / 60.0)
         print("waiting for materials to load...")
 
