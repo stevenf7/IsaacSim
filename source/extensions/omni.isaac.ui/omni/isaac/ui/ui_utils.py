@@ -12,6 +12,7 @@ from omni.kit.window.extensions import SimpleCheckBox
 from omni.kit.window.filepicker import FilePickerDialog
 
 from .style import get_style, BUTTON_WIDTH, COLOR_X, COLOR_Y, COLOR_Z, COLOR_W
+from .callbacks import on_copy_to_clipboard, on_docs_link_clicked, on_open_folder_clicked, on_open_IDE_clicked
 
 
 def btn_builder(label="", type="button", text="button", tooltip="", on_clicked_fn=None):
@@ -317,14 +318,6 @@ def combo_cb_dropdown_builder(
 def scrolling_frame_builder(label="", type="scrolling_frame", default_val="No Data", tooltip=""):
     """Creates a Labeled Scrolling Frame with CopyToClipboard button"""
 
-    def copy_to_clipboard():
-        try:
-            import pyperclip
-
-            pyperclip.copy(text.text)
-        except ImportError:
-            carb.log_warn("Could not import pyperclip.")
-
     with ui.VStack(style=get_style(), spacing=5):
         with ui.HStack():
             ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
@@ -346,7 +339,7 @@ def scrolling_frame_builder(label="", type="scrolling_frame", default_val="No Da
                 name="IconButton",
                 width=20,
                 height=20,
-                clicked_fn=copy_to_clipboard,
+                clicked_fn=lambda: on_copy_to_clipboard(to_copy=text.text),
                 style=get_style()["IconButton.Image::CopyToClipboard"],
                 alignment=ui.Alignment.RIGHT_TOP,
                 tooltip_fn=lambda txt="Copy to Clipboard": make_button_tooltip(txt),
@@ -359,14 +352,6 @@ def combo_cb_scrolling_frame_builder(
     label="", type="scrolling_frame", default_val=[False, "No Data"], tooltip="", on_clicked_fn=lambda x: None
 ):
     """Creates a Labeled, Checkbox-enabled Scrolling Frame with CopyToClipboard button"""
-
-    def copy_to_clipboard():
-        try:
-            import pyperclip
-
-            pyperclip.copy(text.text)
-        except ImportError:
-            carb.log_warn("Could not import pyperclip.")
 
     with ui.VStack(style=get_style(), spacing=5):
         with ui.HStack():
@@ -393,7 +378,7 @@ def combo_cb_scrolling_frame_builder(
                 name="IconButton",
                 width=20,
                 height=20,
-                clicked_fn=copy_to_clipboard,
+                clicked_fn=lambda: on_copy_to_clipboard(to_copy=text.text),
                 style=get_style()["IconButton.Image::CopyToClipboard"],
                 alignment=ui.Alignment.RIGHT_TOP,
                 tooltip_fn=lambda txt="Copy to Clipboard": make_button_tooltip(txt),
@@ -926,35 +911,6 @@ def build_header(
 ):
     """Title Header with Quick Access Utility Buttons."""
 
-    def on_open_IDE_clicked():
-        """Opens the current directory and file in VSCode"""
-        if sys.platform == "win32":
-            carb.log_warn("windows not supported")
-        else:
-            try:
-                os.system("code " + ext_path + " " + file_path)
-            except OSError:
-                carb.log_warn(
-                    "Could not open in VSCode. See Troubleshooting help here: https://code.visualstudio.com/docs/editor/command-line#_common-questions"
-                )
-
-    def on_open_folder_clicked():
-        """Opens the current directory in a File Browser"""
-        if sys.platform == "win32":
-            # subprocess.Popen(['start', os.path.abspath(app_folder)], shell= True)
-            carb.log_warn("windows not supported")
-        else:
-            try:
-                subprocess.Popen(["xdg-open", os.path.abspath(file_path.rpartition("/")[0])])
-            except OSError:
-                carb.log_warn("could not open file browser")
-
-    def on_docs_link_clicked():
-        """Opens an extension's documentation in a Web Browser"""
-        import webbrowser
-
-        webbrowser.open(doc_link, new=2)
-
     def build_icon_bar():
         """Adds the Utility Buttons to the Title Header"""
         with ui.Frame(style=get_style(), width=0):
@@ -965,7 +921,7 @@ def build_header(
                         name="IconButton",
                         width=icon_size,
                         height=icon_size,
-                        clicked_fn=on_open_IDE_clicked,
+                        clicked_fn=lambda: on_open_IDE_clicked(ext_path, file_path),
                         style=get_style()["IconButton.Image::OpenConfig"],
                         # style_type_name_override="IconButton.Image::OpenConfig",
                         alignment=ui.Alignment.LEFT_CENTER,
@@ -976,7 +932,7 @@ def build_header(
                         name="IconButton",
                         width=icon_size,
                         height=icon_size,
-                        clicked_fn=on_open_folder_clicked,
+                        clicked_fn=lambda: on_open_folder_clicked(file_path),
                         style=get_style()["IconButton.Image::OpenFolder"],
                         alignment=ui.Alignment.LEFT_CENTER,
                         tooltip_fn=lambda txt="Open Containing Folder": make_button_tooltip(txt),
@@ -987,7 +943,7 @@ def build_header(
                             name="IconButton",
                             width=icon_size - icon_size * 0.25,
                             height=icon_size - icon_size * 0.25,
-                            clicked_fn=on_docs_link_clicked,
+                            clicked_fn=lambda: on_docs_link_clicked(doc_link),
                             # style_type_name_override="IconButton.Image::OpenLink",
                             style=get_style()["IconButton.Image::OpenLink"],
                             # image_url="/resources/glyphs/link.svg",

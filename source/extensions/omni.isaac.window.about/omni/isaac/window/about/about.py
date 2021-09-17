@@ -96,11 +96,14 @@ class AboutExtension(omni.ext.IExt):
 
             try:
                 import pyperclip
-
-                pyperclip.copy(info)
-                carb.log_warn("Version info copied to clipboard")
             except ImportError:
                 carb.log_warn("Could not import pyperclip.")
+                return
+            try:
+                pyperclip.copy(info)
+            except pyperclip.PyperclipException:
+                carb.log_warn(pyperclip.EXCEPT_MSG)
+                return
 
         window = ui.Window(
             "About", width=800, height=510, flags=ui.WINDOW_FLAGS_NO_SCROLLBAR | ui.WINDOW_FLAGS_NO_DOCKING
