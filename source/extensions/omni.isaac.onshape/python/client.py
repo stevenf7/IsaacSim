@@ -210,7 +210,7 @@ class OnshapeClient(object):
         client_secret = "QZIMKKPIZYQO473R72QEU333XY33NSOXSOMMRUOJQ7HEHRDSPMBA===="
 
         def auth_callback(url, fetch_token):
-            print("Auth callback")
+            # print("Auth callback")
             if not OnshapeClient.__stop_request:
                 qs = parse_qs(urlparse(url).query)
                 state = None
