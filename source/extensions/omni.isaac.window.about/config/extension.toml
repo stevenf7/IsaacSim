@@ -30,6 +30,7 @@ changelog="docs/CHANGELOG.md"
 "omni.kit.uiapp" = {}
 "omni.kit.renderer.core" = {}
 "omni.kit.renderer.capture" = {}
+"omni.kit.pip_archive" = {} # pulls in pyperclip
 
 [[python.module]]
 name = "omni.isaac.window.about"

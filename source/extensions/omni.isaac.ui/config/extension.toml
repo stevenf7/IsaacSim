@@ -22,6 +22,7 @@ writeTarget.kit = true
 "omni.kit.window.extensions" = {}
 "omni.kit.window.property" = {}
 "omni.kit.window.filepicker" = {}
+"omni.kit.pip_archive" = {} # pulls in pyperclip
 
 [[python.module]]
 name = "omni.isaac.ui"

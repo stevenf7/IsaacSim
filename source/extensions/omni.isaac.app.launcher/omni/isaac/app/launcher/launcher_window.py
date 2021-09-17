@@ -524,7 +524,11 @@ class LauncherWindow:
     def _copy_to_clipboard(self, to_copy):
         try:
             import pyperclip
-
-            pyperclip.copy(to_copy)
         except ImportError:
             carb.log_warn("Could not import pyperclip.")
+            return
+        try:
+            pyperclip.copy(to_copy)
+        except pyperclip.PyperclipException:
+            carb.log_warn(pyperclip.EXCEPT_MSG)
+            return

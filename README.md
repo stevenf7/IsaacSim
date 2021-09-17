@@ -112,17 +112,11 @@ Use the links below to create a new bug/feature request in our [Isaac Sim JIRA B
 # Using Source Repository
 
 #### Linux/Windows
-- Install Ubuntu 18.04/20.04 (linux-x86_64) / Windows 10 version 1809 (windows-x86_64 and DXR)
-- Install NVIDIA driver 460.67 (Linux) / NVIDIA driver 461.92 (Windows)
+- Install Ubuntu 18.04/20.04 (linux-x86_64) / Windows 10 version 1903 (windows-x86_64 and DXR)
+- Install NVIDIA driver 470.57 (Linux) / NVIDIA driver 471.41 (Windows)
     * [Linux] (http://eris-dl-b006.nvidia.com)
     * [NVIDIA OMNIVERSE - Driver Requirements](https://developer.nvidia.com/omniverse/driver)
-- Install [VS Code](https://code.visualstudio.com/) (recommended) or VS2017 with [SDK 10.17763+](https://go.microsoft.com/fwlink/?LinkID=2023014)
-- (Optional) Install Vulkan SDK 1.2.162.1:
-    * Required for debug builds and validation layers only.
-    * Vulkan 1.1 core remains our min requirement for development, and we use SDK 1.2.162.1 for development. 
-    * Vulkan SDKs prior to this version has known bugs and are not compatible.
-    * [Windows](https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.162.1/windows/VulkanSDK-1.2.162.1-Installer.exe)
-    * [Linux](https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.162.1/linux/vulkansdk-linux-x86_64-1.2.162.1.tar.gz)
+- Install [VS Code](https://code.visualstudio.com/)
 - Install "git".
 - Install "git-lfs":
     * Required for fetching data folder used in unit tests only.
