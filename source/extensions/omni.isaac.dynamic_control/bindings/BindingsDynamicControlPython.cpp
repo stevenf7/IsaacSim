@@ -628,8 +628,7 @@ PYBIND11_MODULE(_dynamic_control, m)
                      DcRigidBodyState* states = dc->getArticulationBodyStates(artHandle, flags);
                      if (numBodies > 0 && states != nullptr)
                      {
-                         auto capsule = py::capsule(states, [](void*) {}); // avoid copy
-                         return py::array_t<DcRigidBodyState, py::array::c_style>(numBodies, states, capsule);
+                         return py::array_t<DcRigidBodyState, py::array::c_style>(numBodies, states);
                      }
                  }
                  return py::none();
@@ -728,8 +727,7 @@ PYBIND11_MODULE(_dynamic_control, m)
                          DcDofState* states = dc->getArticulationDofStates(artHandle, flags);
                          if (states != nullptr)
                          {
-                             auto capsule = py::capsule(states, [](void*) {}); // avoid copy
-                             return py::array_t<DcDofState, py::array::c_style>(numDofs, states, capsule);
+                             return py::array_t<DcDofState, py::array::c_style>(numDofs, states);
                          }
                      }
                  }
