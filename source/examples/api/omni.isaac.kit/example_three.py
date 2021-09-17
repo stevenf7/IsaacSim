@@ -18,12 +18,10 @@ from omni.isaac.dynamic_control import _dynamic_control
 _, nucleus_server = find_nucleus_server()
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 
-simulation_context = SimulationContext()
-simulation_context.create_new_stage()
+simulation_context = SimulationContext(physics_dt=1.0 / 60.0)
+simulation_context.create_new_stage(stage_units_in_meters=1.0)
 simulation_context.add_usd_reference(asset_path, "/Franka")
-
 # need to start simulation before getting any articulation..etc
-simulation_context.set_physics_dt(dt=1.0 / 100.0)
 simulation_context.start_simulation()
 dc = _dynamic_control.acquire_dynamic_control_interface()
 art = dc.get_articulation("/Franka")
@@ -39,16 +37,15 @@ def step_callback_1(step_size):
 def step_callback_2(step_size):
     dof_state = dc.get_dof_state(dof_ptr, _dynamic_control.STATE_POS)
     print("Current joint 2 position @ step " + str(simulation_context.time_step_index) + " : " + str(dof_state.pos))
+    print("TIME: ", simulation_context.time)
     return
 
 
-# Note: running using physics callbacks are not guaranteed to run with the specified dt, it might run
-# faster or slower depends on the gpu specs
-simulation_context.add_physics_callback(step_callback_1)
-simulation_context.add_physics_callback(step_callback_2)
+simulation_context.add_physics_callback("physics_callback_1", step_callback_1)
+simulation_context.add_physics_callback("physics_callback_2", step_callback_2)
+simulation_context.stop()
 simulation_context.play()
-for i in range(20):
+for i in range(60):
     simulation_context.step(render=False)
-
 simulation_context.stop()
 simulation_app.close()

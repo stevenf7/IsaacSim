@@ -83,6 +83,7 @@ class World(SimulationContext):
         """
         if not global_vars.LAUNCHED_FROM_TERMINAL:
             self.play()
+            # TODO: is this needed
             self.step(render=True)
         self._scene._finalize()
         return

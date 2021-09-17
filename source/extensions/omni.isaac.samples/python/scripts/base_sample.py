@@ -107,7 +107,7 @@ class BaseSample(omni.ext.IExt):
             self._task = self._load_task()
             self._world.load_task(self._task)
             await self._world.reset_async()
-            self._world.add_physics_callback(self.task_simulation_step)
+            self._world.add_physics_callback("sim_step", self.task_simulation_step)
             self._setup_controllers()
             self._buttons["Load World"].enabled = False
             self._enable_all_buttons(True)
@@ -138,7 +138,7 @@ class BaseSample(omni.ext.IExt):
         self._reset_call()
         self._world.clear_physics_callbacks()
         if self._world._scene_finalized and self._world._current_task is not None:
-            self._world.add_physics_callback(self.task_simulation_step)
+            self._world.add_physics_callback("sim_step", self.task_simulation_step)
         return
 
     def task_simulation_step(self, step_size):
