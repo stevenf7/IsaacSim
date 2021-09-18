@@ -10,7 +10,7 @@ import argparse
 import asyncio
 import omni
 import os
-from omni.isaac.python_app import OmniKitHelper
+from omni.isaac.kit.launcher import SimulationApp
 
 
 async def convert(in_file, out_file, load_materials=False):
@@ -76,8 +76,7 @@ def asset_convert(args):
 
 
 if __name__ == "__main__":
-    CONFIG = {"experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit'}
-    kit = OmniKitHelper(config=CONFIG)
+    kit = SimulationApp()
 
     parser = argparse.ArgumentParser("Convert OBJ/STL assets to USD")
     parser.add_argument(
@@ -98,4 +97,4 @@ if __name__ == "__main__":
     asset_convert(args)
 
     # cleanup
-    kit.shutdown()
+    kit.close()
