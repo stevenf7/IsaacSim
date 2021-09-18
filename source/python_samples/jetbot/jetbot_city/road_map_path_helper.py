@@ -8,7 +8,7 @@
 
 from .road_map import *
 from scipy.spatial import KDTree
-import cv2
+from .pil_util import Laplacian
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -27,7 +27,7 @@ class RoadMapPathHelper(object):
         mask_pts = mask_pts / block_resolution  # get points in grid coordinates
         self._path_kdtree = KDTree(mask_pts)
 
-        boundary_points = np.transpose(np.nonzero(cv2.Laplacian(self._map_boundary_mask, cv2.CV_32F)))
+        boundary_points = np.transpose(np.nonzero(Laplacian(self._map_boundary_mask)))
         boundary_points = boundary_points / block_resolution
         self._boundary_kdtree = KDTree(boundary_points)
 
