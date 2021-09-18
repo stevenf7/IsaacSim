@@ -321,12 +321,14 @@ repo_build.prebuild_copy {
 }
 
 group "python_samples"
-    -- Core samples
-    python_sample_test("tests-nativepython-core.app_framework", "python_samples/core/app_framework.py")
+    -- omni.kit.app
+    python_sample_test("tests-nativepython-omni.kit.app.app_framework", "examples/api/omni.kit.app/app_framework.py")
+    -- omni.isaac.kit
     python_sample_test("tests-nativepython-omni.isaac.kit.example_zero", "examples/api/omni.isaac.kit/example_zero.py")
+    -- omni.isaac.urdf
+    python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "examples/api/omni.isaac.urdf/urdf_import.py")
     -- Simple samples
     python_sample_test("tests-nativepython-simple.time_stepping", "python_samples/simple/time_stepping.py")
-    python_sample_test("tests-nativepython-simple.urdf_import", "python_samples/simple/urdf_import.py")
     python_sample_test("tests-nativepython-simple.franka_articulation", "python_samples/simple/franka_articulation.py")
     python_sample_test("tests-nativepython-simple.change_resolution", "python_samples/simple/change_resolution.py")
     python_sample_test("tests-nativepython-simple.load_stage", "python_samples/simple/load_stage.py", "--usd_path /Environments/Simple_Room/simple_room.usd --test --headless")
