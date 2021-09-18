@@ -12,11 +12,13 @@ from collections import deque
 import numpy as np
 import os
 import io
-import cv2
 import PIL.Image
+import math
 import pickle
 from typing import List, Set, Dict, Tuple, Optional
 from .priority_queue import *
+
+from .pil_util import circle, line
 
 
 DEFAULT_IMAGE_SIZE = (32, 32)
@@ -24,21 +26,23 @@ DEFAULT_IMAGE_SIZE = (32, 32)
 
 def mask_L(size=256, thickness=1):
     mask = np.zeros((size, size), dtype=np.uint8)
-    cv2.circle(mask, (size, 0), size // 2, (255, 255, 255), thickness)
+    circle(mask, (size, 0), size // 2, thickness)
+
     return PIL.Image.fromarray(mask)
 
 
 def mask_I(size=256, thickness=1):
     mask = np.zeros((size, size), dtype=np.uint8)
-    cv2.line(mask, (size // 2, 0), (size // 2, size), (255, 255, 255), thickness, cv2.LINE_4)
+    line(mask, (size // 2, 0), (size // 2, size), thickness)
+
     return PIL.Image.fromarray(mask)
 
 
 def mask_T(size=256, thickness=1):
     mask = np.zeros((size, size), dtype=np.uint8)
-    mask = np.maximum(mask, cv2.circle(mask, (0, size), size // 2, (255, 255, 255), thickness))
-    mask = np.maximum(mask, cv2.circle(mask, (size, size), size // 2, (255, 255, 255), thickness))
-    mask = np.maximum(mask, cv2.line(mask, (0, size // 2), (size, size // 2), (255, 255, 255), thickness, cv2.LINE_4))
+    mask = np.maximum(mask, circle(mask, (0, size), size // 2, thickness))
+    mask = np.maximum(mask, circle(mask, (size, size), size // 2, thickness))
+    mask = np.maximum(mask, line(mask, (0, size // 2), (size, size // 2), thickness))
     return PIL.Image.fromarray(mask)
 
 
@@ -46,7 +50,8 @@ def mask_X(size=256, thickness=1):
     mask = mask_L(size, thickness)
     mask = np.maximum(mask, mask_I(size, thickness))
     for i in range(4):
-        mask = np.maximum(mask, cv2.rotate(mask, cv2.ROTATE_90_CLOCKWISE))
+        mask = np.maximum(mask, np.rot90(mask))
+
     return PIL.Image.fromarray(mask)
 
 
