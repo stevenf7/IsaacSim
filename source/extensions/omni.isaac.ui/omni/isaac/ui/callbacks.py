@@ -43,7 +43,7 @@ def on_open_folder_clicked(file_path: str) -> None:
         carb.log_warn("windows not supported")
     else:
         try:
-            subprocess.Popen(["xdg-open", os.path.abspath(file_path.rpartition("/")[0])], check=True)
+            subprocess.run(["xdg-open", os.path.abspath(file_path.rpartition("/")[0])], check=True)
         except Exception:
             carb.log_warn("could not open file browser")
 
