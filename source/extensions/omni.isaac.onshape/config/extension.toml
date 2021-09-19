@@ -21,6 +21,7 @@ writeTarget.kit = true
 "omni.kit.menu.utils" = {}
 "omni.timeline" = {}
 "omni.physx" = {} 
+"omni.isaac.pip_archive" = {} # onshape_client pip dependencies
 
 [[python.module]]
 name = "omni.isaac.onshape"

@@ -32,6 +32,10 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import kiwisolver
         import torch
         import torchvision
+        import packaging
+        import pint
+        import requests_oauthlib
+        import oauthlib
 
         self.assertIsNotNone(scipy)
         self.assertIsNotNone(quaternion)
@@ -53,3 +57,7 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(kiwisolver)
         self.assertIsNotNone(torch)
         self.assertIsNotNone(torchvision)
+        self.assertIsNotNone(packaging)
+        self.assertIsNotNone(pint)
+        self.assertIsNotNone(requests_oauthlib)
+        self.assertIsNotNone(oauthlib)
