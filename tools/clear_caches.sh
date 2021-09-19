@@ -9,7 +9,10 @@ echo "run this at your own risk :)"
 # kit caches
 # rm -rf ~/.local/share/ov/data/Kit/
 
-# pip caches
+# installed pip packages
+# rm -rf ~/.local/lib/python3.7/site-packages
+
+# downloaded pip packages (deleting this will force all pip packages to be re-downloaded, can be slow)
 # rm -rf ~/.cache/pip/http
 
 # launcher packages
