@@ -28,7 +28,7 @@ def on_open_IDE_clicked(ext_path: str, file_path: str) -> None:
         try:
             import subprocess
 
-            subprocess.run(["code", ext_path, file_path], check=True)
+            subprocess.run(["code", ext_path, file_path], check=True, shell=True)
             # os.system("code " + ext_path + " " + file_path)
         except Exception:
             carb.log_warn(
