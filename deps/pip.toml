@@ -65,7 +65,11 @@ packages = [
     "cycler==0.10.0",                       # SWIPAT filed under:
     "kiwisolver==1.3.2",                    # SWIPAT filed under:
     "torch==1.9.0",                         # SWIPAT filed under:
-    "torchvision==0.10.0"                    # SWIPAT filed under:
+    "torchvision==0.10.0",                  # SWIPAT filed under:
+    "pint==0.17.0",                         # SWIPAT filed under:
+    "packaging==21.0",                      # SWIPAT filed under:
+    "oauthlib==3.1.1",                      # SWIPAT filed under:
+    "requests-oauthlib==1.3.0"              # SWIPAT filed under:
 ]
 target = "../_build/target-deps/pip_prebundle"
 platforms = ["*-x86_64"]
