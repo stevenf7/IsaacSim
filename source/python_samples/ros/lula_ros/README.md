@@ -32,6 +32,13 @@ simulated robot(s). From the base folder for the `omni_isaac_sim` package, execu
 ```
 ./python.sh python_samples/ros/lula_ros/lula_ros_main.py
 ```
+
+By default this script uses the simulated robot to publish joint state
+information. If connecting to a real robot use the `--is_real_robot` flag as in
+```
+./python.sh python_samples/ros/lula_ros/lula_ros_main.py --is_real_robot
+```
+
 You should see a control robot (left) and a simulated "real" robot (right).
 Click on the control ball at the left (control) robot's end-effector and drag it
 around with the gizmo. You should see the control robot move, but the simulated
@@ -53,9 +60,11 @@ around with the gizmo. Both robots should move this time.
 
 Physical robot:
 
-Now you can try running the real controller. From the
-real-time control machine (where the catkin workspace described above should be
-installed), run the franka controllers:
+Make sure you start Isaac Sim with the `--is_real_robot` flag.
+
+Now you can try running the real controller. From the real-time control machine
+(where the catkin workspace described above should be installed), run the franka
+controllers:
 ```
 Terminal 4: roslaunch lula_ros_franka franka_control_lula.launch
 Terminal 5: roslaunch lula_ros_franka joint_position_controller.launch

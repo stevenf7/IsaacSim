@@ -26,11 +26,15 @@ if __name__ == "__main__":
     # get asset base path
     dc_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
     dc_extension_path = ext_manager.get_extension_path(dc_id)
+
     # Note that this is not the system level rospy, but one compiled for omniverse
+    import argparse
+    import sys
     import rospy
     from sensor_msgs.msg import JointState
     import franka
     import rmpflow_commander
+    from joint_state_meta import JointStateMeta
     from interpolated_command_listener import InterpolatedCommandListener
     from omni.isaac.dynamic_control import _dynamic_control
     from pxr import Gf, UsdGeom, UsdLux, Sdf, UsdPhysics, PhysxSchema
@@ -48,7 +52,13 @@ if __name__ == "__main__":
         exit()
 
     # make node at the start before we do anything else
-    rospy.init_node("lula_ros", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
+    node_name = "lula_ros"
+    rospy.init_node(node_name, anonymous=True, disable_signals=True, log_level=rospy.ERROR)
+    parser = argparse.ArgumentParser(node_name)
+    parser.add_argument(
+        "--is_real_robot", action="store_true", help="Set this flag when using Isaac Sim to control a physical robot."
+    )
+    args = parser.parse_args()
 
     omni.usd.get_context().new_stage()
     stage = kit.get_stage()
@@ -109,11 +119,26 @@ if __name__ == "__main__":
 
     commander.register(rmp_robot, target_prim, obs_prim)
 
-    js_pub = rospy.Publisher("/robot/joint_state", JointState, queue_size=10)
+    joint_state_topic = "/robot/joint_state"
+    if not args.is_real_robot:
+        js_pub = rospy.Publisher(joint_state_topic, JointState, queue_size=10)
+    js_meta = JointStateMeta(joint_state_topic)
+
     interpolated_command_listener = InterpolatedCommandListener(sim_robot)
+
+    print("\n")
+    print("=" * 60)
+    if args.is_real_robot:
+        print("mode: connecting to real robot")
+    else:
+        print("mode: using simulated robot")
+    print("=" * 60)
+    print()
 
     # run indefinetly until closed
     while kit.app.is_running():
+        js_meta.validate_num_publishers()
+
         commander.update()  # run motion policy and publish/subscribe to ros lula stack
         # code to run our "physical robot":
         # Set the joint state target to the interpolated values
@@ -124,12 +149,13 @@ if __name__ == "__main__":
         if states is not None:
             sim_robot.set_position_targets(states["pos"])
 
-        # publish latest "physical" robot state
-        joint_state_msg = sim_robot.get_joint_state_message()
-        if joint_state_msg is None:
-            carb.log_warn("Joint states message is None. Breaking from kit loop.")
-            break
-        js_pub.publish(joint_state_msg)
+        if not args.is_real_robot:
+            # publish latest "physical" robot state
+            joint_state_msg = sim_robot.get_joint_state_message()
+            if joint_state_msg is None:
+                carb.log_warn("Joint states message is None. Breaking from kit loop.")
+                break
+            js_pub.publish(joint_state_msg)
         kit.update()  # simulate one frame
 
     # cleanup and shutdown
