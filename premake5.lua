@@ -280,6 +280,7 @@ group "exts"
     include ("source/extensions/omni.isaac.pip_archive")
     include ("source/extensions/omni.isaac.core")
     include ("source/extensions/omni.isaac.franka")
+    include ("source/extensions/omni.isaac.jetbot")
 
     -- Linux Only
     if os.target() == "linux" then

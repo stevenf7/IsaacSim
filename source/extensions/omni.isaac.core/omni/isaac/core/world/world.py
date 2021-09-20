@@ -12,11 +12,12 @@ from omni.isaac.core.tasks.task import BaseTask
 from omni.isaac.dynamic_control import _dynamic_control
 import omni.isaac.kit.global_vars as global_vars
 from pxr import Usd
-import asyncio
 
 
 class World(SimulationContext):
-    def __init__(self, add_ground_plane: bool = True, physics_dt: float = 1.0 / 60.0) -> None:
+    def __init__(
+        self, add_ground_plane: bool = True, physics_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 1.0
+    ) -> None:
         """[summary]
 
         Args:
@@ -27,6 +28,7 @@ class World(SimulationContext):
         self._scene_finalized = False
         self._current_task = None
         self._ground_plane_exists = add_ground_plane
+        self._stage_units_in_meters = stage_units_in_meters
         self._scene = None
         if not global_vars.LAUNCHED_FROM_TERMINAL:
             self.create_new_stage()
@@ -40,19 +42,23 @@ class World(SimulationContext):
         return
 
     async def create_new_stage_async(self):
-        await super().create_new_stage_async()
+        await super().create_new_stage_async(stage_units_in_meters=self._stage_units_in_meters)
         del self._scene
         self._scene = Scene(self.stage)
         if self.ground_plane_exists:
-            self._scene.add_ground_plane()
+            self._scene.add_ground_plane(
+                size=50.0 / self._stage_units_in_meters, thickness=0.5 / self._stage_units_in_meters
+            )
         return
 
     def create_new_stage(self) -> Usd.Stage:
-        stage = super().create_new_stage()
+        stage = super().create_new_stage(stage_units_in_meters=self._stage_units_in_meters)
         del self._scene
         self._scene = Scene(self.stage)
         if self.ground_plane_exists:
-            self._scene.add_ground_plane()
+            self._scene.add_ground_plane(
+                size=50.0 / self._stage_units_in_meters, thickness=0.5 / self._stage_units_in_meters
+            )
             self.start_simulation()
         return stage
 

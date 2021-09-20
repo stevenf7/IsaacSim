@@ -13,7 +13,7 @@ import asyncio
 
 # omniverse
 import carb
-import omni.kit
+from omni.isaac.kit import global_vars
 import omni.kit.app
 from pxr import UsdGeom, Gf, Usd, Sdf, UsdPhysics, PhysxSchema
 from omni.isaac.kit.utils import set_carb_setting
@@ -341,6 +341,7 @@ class PhysicsScene:
         # extract parameters from stage configuration
         meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
         up_axis = UsdGeom.GetStageUpAxis(self._stage)
+        # TODO: add logging
         # define gravity vector
         gravity_dir = Gf.Vec3f(0.0)
         gravity_dir[AXES_INDICES[up_axis]] = -1.0
