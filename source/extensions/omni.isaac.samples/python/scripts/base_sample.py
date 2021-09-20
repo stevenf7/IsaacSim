@@ -107,11 +107,11 @@ class BaseSample(omni.ext.IExt):
             self._task = self._load_task()
             self._world.load_task(self._task)
             await self._world.reset_async()
-            self._world.add_physics_callback("sim_step", self.task_simulation_step)
+            self._world.add_physics_callback("task_step", self.task_simulation_step)
             self._setup_controllers()
             self._buttons["Load World"].enabled = False
             self._enable_all_buttons(True)
-            self._world.add_stage_callback(self._on_stage_event)
+            self._world.add_stage_callback("stage_event_1", self._on_stage_event)
             self._reset_call()
             return
 
@@ -138,7 +138,7 @@ class BaseSample(omni.ext.IExt):
         self._reset_call()
         self._world.clear_physics_callbacks()
         if self._world._scene_finalized and self._world._current_task is not None:
-            self._world.add_physics_callback("sim_step", self.task_simulation_step)
+            self._world.add_physics_callback("task_step", self.task_simulation_step)
         return
 
     def task_simulation_step(self, step_size):
@@ -159,20 +159,27 @@ class BaseSample(omni.ext.IExt):
         return
 
     def on_shutdown(self):
-        self._cleanup()
+        if self._world is not None:
+            self._world_cleanup()
         if self._menu_items is not None:
-            remove_menu_items(self._menu_items, "Isaac Examples")
-        gc.collect()
-        self._window = None
-        self._menu_items = None
+            self._sample_window_cleanup()
         return
 
-    def _cleanup(self):
-        if self._world is not None:
-            self._world.stop()
-            del self._world
+    def _sample_window_cleanup(self):
+        remove_menu_items(self._menu_items, "Isaac Examples")
+        self._window = None
+        self._menu_items = None
+        self._buttons = None
+        gc.collect()
+        return
+
+    def _world_cleanup(self):
+        self._world.stop()
+        self._world.clear_physics_callbacks()
+        self._world.clear_stage_callbacks()
         gc.collect()
         self._world = None
+        self._task = None
         if self._buttons is not None:
             self._buttons["Load World"].enabled = True
             self._enable_all_buttons(False)
@@ -180,5 +187,6 @@ class BaseSample(omni.ext.IExt):
 
     def _on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.CLOSED):
-            self._cleanup()
+            if self._world is not None:
+                self._world_cleanup()
         return

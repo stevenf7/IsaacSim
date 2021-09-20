@@ -12,6 +12,7 @@ from omni.isaac.franka.tasks import TargetFollower
 from omni.isaac.franka.controllers import RMPFlowIKSolver
 import asyncio
 import os
+import gc
 
 
 class Extension(BaseSample):
@@ -90,4 +91,11 @@ class Extension(BaseSample):
         # TODO: on reset the motion generation policy needs to clear the world function? missing
         self._controller.reset()
         self._buttons["Remove Obstacle"].enabled = False
+        return
+
+    def on_shutdown(self):
+        super().on_shutdown()
+        self._controller = None
+        self._articulation_controller = None
+        gc.collect()
         return

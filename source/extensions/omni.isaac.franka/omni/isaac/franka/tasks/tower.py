@@ -68,12 +68,12 @@ class Tower(BaseTask):
             "cube_1": {
                 "position": cube_1_position,
                 "orientation": cube_1_orientation,
-                "target_position": np.array([-0.3, 0.3, 0.05]),
+                "target_position": np.array([-0.3, 0.3, 0.065]),
             },
             "cube_2": {
                 "position": cube_2_position,
                 "orientation": cube_2_orientation,
-                "target_position": np.array([-0.3, 0.3, 0.083]),
+                "target_position": np.array([-0.3, 0.3, 0.095]),
             },
             "my_franka": {"joint_positions": joints_state.positions, "end_effector_pose": end_effector_position},
         }

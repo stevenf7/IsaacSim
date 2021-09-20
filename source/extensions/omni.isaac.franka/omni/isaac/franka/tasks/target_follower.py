@@ -99,7 +99,7 @@ class TargetFollower(BaseTask):
         return {
             "my_franka": {
                 "joint_positions": np.array(joints_state.positions),
-                "joint_velcoities": np.array(joints_state.velocities),
+                "joint_velocities": np.array(joints_state.velocities),
             },
             "target_cube": {"position": np.array(target_cube_position)},
         }

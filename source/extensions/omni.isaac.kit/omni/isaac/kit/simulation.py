@@ -219,6 +219,8 @@ class SimulationContext:
         return
 
     def add_physics_callback(self, callback_name, callback_fn):
+        if callback_name in self._physics_callback_functions:
+            carb.log_error(f"Physics callback `{callback_name}` already exists")
         self._physics_callback_functions[
             callback_name
         ] = self._physics_scene._physx_interface.subscribe_physics_step_events(callback_fn)
@@ -236,6 +238,8 @@ class SimulationContext:
         return
 
     def add_stage_callback(self, callback_name, callback_fn):
+        if callback_name in self._stage_callback_functions:
+            carb.log_error(f"Stage callback `{callback_name}` already exists")
         self._stage_callback_functions[callback_name] = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(callback_fn)
         )
@@ -253,6 +257,8 @@ class SimulationContext:
         return
 
     def add_timeline_callback(self, callback_name, callback_fn):
+        if callback_name in self._timeline_callback_functions:
+            carb.log_error(f"Timeline callback `{callback_name}` already exists")
         self._timeline_callback_functions[
             callback_name
         ] = self._timeline.get_timeline_event_stream().create_subscription_to_pop(callback_fn)
@@ -270,6 +276,9 @@ class SimulationContext:
         return
 
     def add_editor_callback(self, callback_name, callback_fn):
+        if callback_name in self._editor_callback_functions:
+            carb.log_error(f"Editor callback `{callback_name}` already exists")
+            # TODO: should we raise exception?
         self._editor_callback_functions[callback_name] = self.app.get_update_event_stream().create_subscription_to_pop(
             callback_fn
         )

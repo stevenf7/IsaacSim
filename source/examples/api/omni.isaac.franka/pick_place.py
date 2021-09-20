@@ -30,6 +30,7 @@ my_controller = RMPFlowPickPlace(
 )
 articulation_controller = my_franka.get_articulation_controller()
 
+
 i = 0
 while True:
     observations = my_world.get_observations()
