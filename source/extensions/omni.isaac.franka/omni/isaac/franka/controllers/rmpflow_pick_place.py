@@ -24,9 +24,9 @@ class RMPFlowPickPlace(RMPFlowIKSolver):
         )
         self._event = 0
         self._t = 0
-        self._h1 = 0.8
+        self._h1 = 0.3
         self._h0 = None
-        self._event_velocities = [0.008, 0.001, 0.005, 0.0008, 0.0008, 0.0008, 0.05, 0.0008, 0.0008]
+        self._event_velocities = [0.08, 0.005, 0.3, 0.0025, 0.002, 0.0025, 1, 0.008, 0.08]
         """
         - Phase 0: Move end_effector above the cube center.
         - Phase 1: Lower end_effector down to encircle the target cube
@@ -35,8 +35,8 @@ class RMPFlowPickPlace(RMPFlowIKSolver):
         - Phase 4: Smoothly move the end_effector toward the goal xy, keeping the height constant.
         - Phase 5: Move end_effector vertically toward goal height.
         - Phase 6: loosen the grip.
-        - Phase 7: Move finger center vertically up again
-        - Phase 8: Move finger center towards the old xy position. 
+        - Phase 7: Move end_effector vertically up again
+        - Phase 8: Move end_effector towards the old xy position. 
         """
         return
 
@@ -75,12 +75,19 @@ class RMPFlowPickPlace(RMPFlowIKSolver):
             target_joint_positions[7] = current_joint_positions[7] + 0.005
             target_joint_positions[8] = current_joint_positions[8] + 0.005
             target_joint_positions = ArticulationAction(joint_positions=target_joint_positions)
-        else:
+        elif self._event == 1:
             target_joint_positions = super().forward(
                 current_joint_positions=current_joint_positions,
                 target_end_effector_position=position_target,
                 target_end_effector_orientation=euler_angles_to_quat(self._euler_angles_orientation),
             )
+        else:
+            target_joint_positions = super().forward(
+                current_joint_positions=current_joint_positions,
+                target_end_effector_position=position_target,
+                target_end_effector_orientation=euler_angles_to_quat([0, 0, np.pi]),
+            )
+
         return target_joint_positions
 
     def _get_interpolated_xy(self, target_x, target_y, current_x, current_y):

@@ -14,9 +14,9 @@ from omni.isaac.franka.tasks import TargetFollower
 from omni.isaac.franka.controllers import RMPFlowIKSolver
 from omni.isaac.core import World
 
-extension_id = simulation_app.get_extension_id("omni.isaac.motion_generation")
-mg_extension_path = simulation_app.get_extension_path(ext_id=extension_id)
 my_world = World()
+extension_id = my_world.get_extension_id("omni.isaac.motion_generation")
+mg_extension_path = my_world.get_extension_path(ext_id=extension_id)
 my_task = TargetFollower()
 my_world.load_task(my_task)
 my_world.reset()

@@ -100,6 +100,7 @@ class World(SimulationContext):
             self._current_task.task_cleanup()
         self.stop()
         self.play()
+        self.step(render=True)
         self.scene.reset()
         if self._current_task is not None:
             self._current_task.reset()
