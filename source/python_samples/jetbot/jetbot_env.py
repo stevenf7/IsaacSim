@@ -46,6 +46,7 @@ class JetbotEnv:
         # IMPORTANT NOTE!  SB3 wraps all image spaces in a transposer.
         # it assumes the image outputed is of standard form
         self.observation_space = spaces.Box(low=0, high=255, shape=(224, 224, 1), dtype=np.uint8)
+        self.reward_range = [0,np.inf]
         self.noise = 0.05
 
         # every time we update the stage, this is how much time will be simulated
@@ -57,8 +58,8 @@ class JetbotEnv:
         # make environment z up
         self.omniverse_kit.set_up_axis(UsdGeom.Tokens.z)
 
-        # we are going to train on a randomized loop that fits in a 2x2 tile area.
-        self.shape = [2, 2]
+        # we are going to train on a randomized loop that fits in a n x n tile area.
+        self.shape = [5, 5]
         self.roads.generate_road(self.shape)
         self.roads.generate_lights()
 
