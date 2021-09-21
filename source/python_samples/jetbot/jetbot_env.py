@@ -46,7 +46,7 @@ class JetbotEnv:
         # IMPORTANT NOTE!  SB3 wraps all image spaces in a transposer.
         # it assumes the image outputed is of standard form
         self.observation_space = spaces.Box(low=0, high=255, shape=(224, 224, 1), dtype=np.uint8)
-        self.reward_range = [0,np.inf]
+        self.reward_range = [0, np.inf]
         self.noise = 0.05
 
         # every time we update the stage, this is how much time will be simulated
