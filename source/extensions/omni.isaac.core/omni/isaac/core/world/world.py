@@ -90,7 +90,7 @@ class World(SimulationContext):
         if not global_vars.LAUNCHED_FROM_TERMINAL:
             self.play()
             # TODO: is this needed
-            self.step(render=True)
+            super().step(render=True)
         self._scene._finalize()
         return
 
@@ -106,7 +106,7 @@ class World(SimulationContext):
             self._current_task.task_cleanup()
         self.stop()
         self.play()
-        self.step(render=True)
+        super().step(render=True)
         self.scene.reset()
         if self._current_task is not None:
             self._current_task.reset()

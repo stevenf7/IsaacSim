@@ -36,16 +36,18 @@ class Jetbot(Robot):
             orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
         """
         self._stage = stage
-        prim = stage.DefinePrim(prim_path, "Xform")
-        if usd_path:
-            prim.GetReferences().AddReference(usd_path)
-        else:
-            result, nucleus_server = find_nucleus_server()
-            if result is False:
-                carb.log_error("Could not find nucleus server with /Isaac folder")
-                return
-            asset_path = nucleus_server + "/Isaac/Robots/Jetbot/jetbot.usd"
-            prim.GetReferences().AddReference(asset_path)
+        prim = stage.GetPrimAtPath(prim_path)
+        if not prim.IsValid():
+            prim = stage.DefinePrim(prim_path, "Xform")
+            if usd_path:
+                prim.GetReferences().AddReference(usd_path)
+            else:
+                result, nucleus_server = find_nucleus_server()
+                if result is False:
+                    carb.log_error("Could not find nucleus server with /Isaac folder")
+                    return
+                asset_path = nucleus_server + "/Isaac/Robots/Jetbot/jetbot.usd"
+                prim.GetReferences().AddReference(asset_path)
         super().__init__(prim=prim, name=name, position=position, orientation=orientation, articulation_controller=None)
         self._wheel_dof_names = ["left_wheel_joint", "right_wheel_joint"]
         self._wheel_dof_indices = None

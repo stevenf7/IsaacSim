@@ -38,11 +38,13 @@ class Franka(Robot):
             orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
         """
         self._stage = stage
-        prim = stage.DefinePrim(prim_path, "Xform")
-        if usd_path:
-            prim.GetReferences().AddReference(usd_path)
-        else:
-            prim.GetReferences().AddReference(FRANKA_USD_PATH)
+        prim = stage.GetPrimAtPath(prim_path)
+        if not prim.IsValid():
+            prim = stage.DefinePrim(prim_path, "Xform")
+            if usd_path:
+                prim.GetReferences().AddReference(usd_path)
+            else:
+                prim.GetReferences().AddReference(FRANKA_USD_PATH)
         super().__init__(prim=prim, name=name, position=position, orientation=orientation, articulation_controller=None)
         self._gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
         self._end_effector = None

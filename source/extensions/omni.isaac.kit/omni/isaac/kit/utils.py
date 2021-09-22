@@ -61,3 +61,9 @@ def reset_stage(stage: Usd.Stage) -> None:
 
     # call .do() on the command directly to not populate command history
     DeletePrimsCommand(stage.Traverse()).do()
+
+
+def delete_prim(prim_path):
+    from omni.usd.commands import DeletePrimsCommand
+
+    DeletePrimsCommand([prim_path]).do()

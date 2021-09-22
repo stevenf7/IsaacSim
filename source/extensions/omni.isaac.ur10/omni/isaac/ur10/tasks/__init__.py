@@ -6,7 +6,5 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.prims.collision_prim import CollisionPrim
-from omni.isaac.core.prims.geometry_prim import GeometryPrim
-from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.ur10.tasks.target_follower import TargetFollower
+from omni.isaac.ur10.tasks.pick_place import PickPlace
