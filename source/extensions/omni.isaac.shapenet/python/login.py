@@ -19,7 +19,7 @@ WIDGET_WIDTH = 130
 def try_login(username, password):
     import webbot
 
-    b = webbot.Browser()
+    b = webbot.Browser(showWindow=False)
     b.go_to("shapenet.org/account")
     b.type(username, into="username")
     b.type(password, into="password")
