@@ -169,5 +169,5 @@ class Extension(omni.ext.IExt):
 
         right_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/right_wheel"), "angular")
         # Drive forward
-        set_drive_parameters(left_wheel_drive, "velocity", math.degrees(2.5), 0, math.radians(1000000))
-        set_drive_parameters(right_wheel_drive, "velocity", math.degrees(2.5), 0, math.radians(1000000))
+        set_drive_parameters(left_wheel_drive, "velocity", math.degrees(2.5), 0, math.radians(1e8))
+        set_drive_parameters(right_wheel_drive, "velocity", math.degrees(2.5), 0, math.radians(1e8))

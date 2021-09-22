@@ -144,69 +144,49 @@ class Extension(omni.ext.IExt):
         PhysxSchema.PhysxArticulationAPI.Get(stage, "/panda").CreateSolverPositionIterationCountAttr(32)
         PhysxSchema.PhysxArticulationAPI.Get(stage, "/panda").CreateSolverVelocityIterationCountAttr(8)
 
-        joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular")
-        joint_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link1/panda_joint2"), "angular")
-        joint_3 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link2/panda_joint3"), "angular")
-        joint_4 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link3/panda_joint4"), "angular")
-        joint_5 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link4/panda_joint5"), "angular")
-        joint_6 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link5/panda_joint6"), "angular")
-        joint_7 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link6/panda_joint7"), "angular")
-        finger_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint1"), "linear")
-        finger_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint2"), "linear")
+        self.joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular")
+        self.joint_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link1/panda_joint2"), "angular")
+        self.joint_3 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link2/panda_joint3"), "angular")
+        self.joint_4 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link3/panda_joint4"), "angular")
+        self.joint_5 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link4/panda_joint5"), "angular")
+        self.joint_6 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link5/panda_joint6"), "angular")
+        self.joint_7 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link6/panda_joint7"), "angular")
+        self.finger_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint1"), "linear")
+        self.finger_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint2"), "linear")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
-        set_drive_parameters(joint_1, "position", math.degrees(0), math.radians(60000), math.radians(3000))
-        set_drive_parameters(joint_2, "position", math.degrees(0), math.radians(60000), math.radians(3000))
-        set_drive_parameters(joint_3, "position", math.degrees(0), math.radians(60000), math.radians(3000))
-        set_drive_parameters(joint_4, "position", math.degrees(0), math.radians(60000), math.radians(3000))
-        set_drive_parameters(joint_5, "position", math.degrees(0), math.radians(25000), math.radians(3000))
-        set_drive_parameters(joint_6, "position", math.degrees(0), math.radians(15000), math.radians(3000))
-        set_drive_parameters(joint_7, "position", math.degrees(0), math.radians(5000), math.radians(3000))
-        set_drive_parameters(finger_1, "position", 0, 6000, 1000)
-        set_drive_parameters(finger_2, "position", 0, 6000, 1000)
+        set_drive_parameters(self.joint_1, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
+        set_drive_parameters(self.joint_2, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
+        set_drive_parameters(self.joint_3, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
+        set_drive_parameters(self.joint_4, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
+        set_drive_parameters(self.joint_5, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
+        set_drive_parameters(self.joint_6, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
+        set_drive_parameters(self.joint_7, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
+        set_drive_parameters(self.finger_1, "position", 0, 600000, 100000)
+        set_drive_parameters(self.finger_2, "position", 0, 600000, 100000)
 
         # Set Max Joint velocity on all joints
 
-        PhysxSchema.PhysxJointAPI.Get(stage, joint_1.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, joint_2.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, joint_3.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, joint_4.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, joint_5.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, joint_6.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, joint_7.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, finger_1.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, finger_2.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
+        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_1.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
+        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_2.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
+        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_3.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
+        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_4.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
+        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_5.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
+        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_6.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
+        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_7.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
+        PhysxSchema.PhysxJointAPI.Get(stage, self.finger_1.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
+        PhysxSchema.PhysxJointAPI.Get(stage, self.finger_2.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
 
     def _on_config_drives(self):
         self._on_config_robot()  # make sure drives are configured first
-        stage = omni.usd.get_context().get_stage()
-        joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular")
-        joint_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link1/panda_joint2"), "angular")
-        joint_3 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link2/panda_joint3"), "angular")
-        joint_4 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link3/panda_joint4"), "angular")
-        joint_5 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link4/panda_joint5"), "angular")
-        joint_6 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link5/panda_joint6"), "angular")
-        joint_7 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link6/panda_joint7"), "angular")
-        finger_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint1"), "linear")
-        finger_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint2"), "linear")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
-        set_drive_parameters(
-            joint_1, "position", math.degrees(0.012), math.radians(60000), math.radians(3000), 8700 * 70
-        )
-        set_drive_parameters(
-            joint_2, "position", math.degrees(-0.57), math.radians(60000), math.radians(3000), 8700 * 70
-        )
-        set_drive_parameters(joint_3, "position", math.degrees(0), math.radians(60000), math.radians(3000), 8700 * 70)
-        set_drive_parameters(
-            joint_4, "position", math.degrees(-2.81), math.radians(60000), math.radians(3000), 8700 * 70
-        )
-        set_drive_parameters(joint_5, "position", math.degrees(0), math.radians(25000), math.radians(3000), 8700 * 70)
-        set_drive_parameters(
-            joint_6, "position", math.degrees(3.037), math.radians(15000), math.radians(3000), 1200 * 60
-        )
-        set_drive_parameters(
-            joint_7, "position", math.degrees(0.741), math.radians(5000), math.radians(3000), 1200 * 60
-        )
-        set_drive_parameters(finger_1, "position", 4, 6000, 1000, 1200 * 60)
-        set_drive_parameters(finger_2, "position", 4, 6000, 1000, 1200 * 60)
+        set_drive_parameters(self.joint_1, "position", math.degrees(0.012))
+        set_drive_parameters(self.joint_2, "position", math.degrees(-0.57))
+        set_drive_parameters(self.joint_3, "position", math.degrees(0))
+        set_drive_parameters(self.joint_4, "position", math.degrees(-2.81))
+        set_drive_parameters(self.joint_5, "position", math.degrees(0))
+        set_drive_parameters(self.joint_6, "position", math.degrees(3.037))
+        set_drive_parameters(self.joint_7, "position", math.degrees(0.741))
+        set_drive_parameters(self.finger_1, "position", 4)
+        set_drive_parameters(self.finger_2, "position", 4)

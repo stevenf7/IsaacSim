@@ -176,6 +176,6 @@ class Extension(omni.ext.IExt):
         axle_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_1_joint"), "angular")
         axle_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/kaya/base_link/axle_2_joint"), "angular")
 
-        set_drive_parameters(axle_0, "velocity", math.degrees(1), 0, math.radians(1e5))
-        set_drive_parameters(axle_1, "velocity", math.degrees(1), 0, math.radians(1e5))
-        set_drive_parameters(axle_2, "velocity", math.degrees(1), 0, math.radians(1e5))
+        set_drive_parameters(axle_0, "velocity", math.degrees(1), 0, math.radians(1e7))
+        set_drive_parameters(axle_1, "velocity", math.degrees(1), 0, math.radians(1e7))
+        set_drive_parameters(axle_2, "velocity", math.degrees(1), 0, math.radians(1e7))

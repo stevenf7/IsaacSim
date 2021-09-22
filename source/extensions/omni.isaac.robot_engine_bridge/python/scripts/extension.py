@@ -35,7 +35,7 @@ class Extension(omni.ext.IExt):
             json_path = json_path_input
 
         self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=True, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
+            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
         )
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._window.dock_order = 3
