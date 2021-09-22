@@ -208,14 +208,12 @@ group "apps"
     define_local_experience("isaac-sim", "omni.isaac.sim")
     define_local_experience("isaac-sim.launcher", "omni.isaac.sim.launcher")
     define_local_experience("isaac-sim.headless.kitremote", "omni.isaac.sim.headless.kitremote", "--no-window ")
-    define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window ")
     define_local_experience("isaac-sim.headless.websocket", "omni.isaac.sim.headless.websocket", "--no-window ")
 
 group "startup_tests"
     define_startup_experience("tests-startup.main", "omni.isaac.sim.startup.main", "--/app/quitAfter=500")
     define_startup_experience("tests-startup.websocket", "omni.isaac.sim.startup.websocket", "--no-window --/app/quitAfter=500")
     define_startup_experience("tests-startup.kitremote", "omni.isaac.sim.startup.kitremote", "--no-window --/app/quitAfter=500")
-    define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.startup.webrtc", "--no-window --/app/quitAfter=500")
     define_startup_experience("tests-startup.warmup", "omni.isaac.sim.warmup")
 
     define_startup_experience(
