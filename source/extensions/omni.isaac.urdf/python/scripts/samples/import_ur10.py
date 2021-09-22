@@ -111,7 +111,7 @@ class Extension(omni.ext.IExt):
             import_config.fix_base = True
             omni.kit.commands.execute(
                 "URDFParseAndImportFile",
-                urdf_path=self._extension_path + "/data/urdf/robots/ur10/urdf/ur10_base.urdf",
+                urdf_path=self._extension_path + "/data/urdf/robots/ur10/urdf/ur10.urdf",
                 import_config=import_config,
             )
 
@@ -130,40 +130,41 @@ class Extension(omni.ext.IExt):
     def _on_config_robot(self):
         stage = omni.usd.get_context().get_stage()
 
-        joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/base_link/shoulder_pan_joint"), "angular")
-        joint_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/shoulder_link/shoulder_lift_joint"), "angular")
-        joint_3 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/upper_arm_link/elbow_joint"), "angular")
-        joint_4 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/forearm_link/wrist_1_joint"), "angular")
-        joint_5 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_1_link/wrist_2_joint"), "angular")
-        joint_6 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_2_link/wrist_3_joint"), "angular")
+        self.joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/base_link/shoulder_pan_joint"), "angular")
+        self.joint_2 = UsdPhysics.DriveAPI.Get(
+            stage.GetPrimAtPath("/ur10/shoulder_link/shoulder_lift_joint"), "angular"
+        )
+        self.joint_3 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/upper_arm_link/elbow_joint"), "angular")
+        self.joint_4 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/forearm_link/wrist_1_joint"), "angular")
+        self.joint_5 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_1_link/wrist_2_joint"), "angular")
+        self.joint_6 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_2_link/wrist_3_joint"), "angular")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
-        set_drive_parameters(joint_1, "position", 0, math.radians(200000), math.radians(20000), 3300000.0 * 60)
-        set_drive_parameters(joint_2, "position", 0, math.radians(200000), math.radians(20000), 3300000.0 * 60)
-        set_drive_parameters(joint_3, "position", 0, math.radians(200000), math.radians(20000), 1500000.0 * 60)
-        set_drive_parameters(joint_4, "position", 0, math.radians(200000), math.radians(20000), 560000.0 * 60)
-        set_drive_parameters(joint_5, "position", 0, math.radians(200000), math.radians(20000), 560000.0 * 60)
-        set_drive_parameters(joint_6, "position", 0, math.radians(200000), math.radians(20000), 560000.0 * 60)
-
-        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/base_link/shoulder_pan_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))
-        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/shoulder_link/shoulder_lift_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))
-        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/upper_arm_link/elbow_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))
-        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/forearm_link/wrist_1_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))
-        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/wrist_1_link/wrist_2_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))
-        # PhysxSchema.PhysxJointAPI.Get(stage, "/ur10/wrist_2_link/wrist_3_joint").CreateMaxJointVelocityAttr(math.degrees(10.0))
+        set_drive_parameters(
+            self.joint_1, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 3300000.0 * 60
+        )
+        set_drive_parameters(
+            self.joint_2, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 3300000.0 * 60
+        )
+        set_drive_parameters(
+            self.joint_3, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 1500000.0 * 60
+        )
+        set_drive_parameters(
+            self.joint_4, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 560000.0 * 60
+        )
+        set_drive_parameters(
+            self.joint_5, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 560000.0 * 60
+        )
+        set_drive_parameters(
+            self.joint_6, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 560000.0 * 60
+        )
 
     def _on_config_drives(self):
         self._on_config_robot()  # make sure drives are configured first
-        stage = omni.usd.get_context().get_stage()
-        joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/base_link/shoulder_pan_joint"), "angular")
-        joint_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/shoulder_link/shoulder_lift_joint"), "angular")
-        joint_3 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/upper_arm_link/elbow_joint"), "angular")
-        joint_4 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/forearm_link/wrist_1_joint"), "angular")
-        joint_5 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_1_link/wrist_2_joint"), "angular")
-        joint_6 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_2_link/wrist_3_joint"), "angular")
-        set_drive_parameters(joint_1, "position", 45)
-        set_drive_parameters(joint_2, "position", 45)
-        set_drive_parameters(joint_3, "position", 45)
-        set_drive_parameters(joint_4, "position", 45)
-        set_drive_parameters(joint_5, "position", 45)
-        set_drive_parameters(joint_6, "position", 45)
+
+        set_drive_parameters(self.joint_1, "position", 45)
+        set_drive_parameters(self.joint_2, "position", 45)
+        set_drive_parameters(self.joint_3, "position", 45)
+        set_drive_parameters(self.joint_4, "position", 45)
+        set_drive_parameters(self.joint_5, "position", 45)
+        set_drive_parameters(self.joint_6, "position", 45)

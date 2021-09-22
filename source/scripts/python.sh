@@ -33,4 +33,7 @@ if ! [[ $EUID -ne 0 ]]; then
   fi
 fi
 
+# Show icon if not running headless
+export RESOURCE_NAME="IsaacSim"
+
 $python_exe $@ $args || error_exit

@@ -66,6 +66,19 @@ class Extension(omni.ext.IExt):
         self._extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
         self._imported_robot = None
 
+        # Set defaults
+        self._config.set_merge_fixed_joints(False)
+        self._config.set_convex_decomp(False)
+        self._config.set_fix_base(True)
+        self._config.set_import_inertia_tensor(False)
+        self._config.set_distance_scale(100.0)
+        self._config.set_density(0.0)
+        self._config.set_default_drive_type(1)
+        self._config.set_default_drive_strength(1e7)
+        self._config.set_self_collision(False)
+        self._config.set_up_vector(0, 0, 1)
+        self._config.set_make_default_prim(True)
+
     def build_ui(self):
         with self._window.frame:
             with ui.VStack(spacing=20, height=0):
@@ -87,18 +100,21 @@ class Extension(omni.ext.IExt):
                             tooltip="If True, inertia will be loaded from urdf, if the urdf does not specify inertia tensor, identity will be used and scaled by the scaling factor. If false physx will compute automatically",
                             on_clicked_fn=lambda m, config=self._config: config.set_import_inertia_tensor(m),
                         )
-                        self._models["scale"] = model = float_builder(
+                        self._models["scale"] = float_builder(
                             "Stage Units Per Meter",
-                            default_val=0.0,
+                            default_val=100.0,
                             tooltip="[kg/stage_units^3] If a link doesn't have mass, use this density as backup, A density of 0.0 results in the physics engine automatically computing a default density",
                         )
-                        model.add_value_changed_fn(
+                        self._models["scale"].add_value_changed_fn(
                             lambda m, config=self._config: config.set_distance_scale(m.get_value_as_float())
                         )
-                        float_builder(
+                        self._models["density"] = float_builder(
                             "Link Density",
                             default_val=0.0,
                             tooltip="[kg/stage_units^3] If a link doesn't have mass, use this density as backup, A density of 0.0 results in the physics engine automatically computing a default density",
+                        )
+                        self._models["density"].add_value_changed_fn(
+                            lambda m, config=self._config: config.set_density(m.get_value_as_float())
                         )
                         dropdown_builder(
                             "Joint Drive Type",
@@ -108,12 +124,12 @@ class Extension(omni.ext.IExt):
                                 0 if i == "None" else (1 if i == "Position" else 2)
                             ),
                         )
-                        model = float_builder(
+                        self._models["drive_strength"] = float_builder(
                             "Joint Drive Strength",
                             default_val=1e7,
                             tooltip="Corresponds to stiffness for position or damping for velocity",
                         )
-                        model.add_value_changed_fn(
+                        self._models["drive_strength"].add_value_changed_fn(
                             lambda m, config=self._config: config.set_default_drive_strength(m.get_value_as_float())
                         )
 
@@ -136,7 +152,7 @@ class Extension(omni.ext.IExt):
                             "Create Physics Scene",
                             tooltip="If true, creates a default physics scene",
                             default_val=True,
-                            on_clicked_fn=lambda m, config=self._config: config.set_self_collision(m),
+                            on_clicked_fn=lambda m, config=self._config: config.set_create_physics_scene(m),
                         )
                         cb_builder(
                             "Make Default Prim",
