@@ -27,7 +27,20 @@ class BaseSample(omni.ext.IExt):
         self._ext_id = ext_id
         return
 
-    def _on_startup(self, menu_name, submenu_name, name, buttons_mapping, title, doc_link, overview, file_path):
+    def _on_startup(
+        self,
+        menu_name: str,
+        submenu_name: str,
+        name: str,
+        buttons_mapping: dict,
+        title: str,
+        doc_link: str,
+        overview: str,
+        file_path: str,
+        add_ground_plane: bool = True,
+        physics_dt: float = 1.0 / 60.0,
+        stage_units_in_meters: float = 1.0,
+    ):
         self._world = None
         menu_items = [MenuItemDescription(name=name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
         self._menu_items = [
@@ -44,11 +57,17 @@ class BaseSample(omni.ext.IExt):
             buttons_mapping=buttons_mapping,
             file_path=file_path,
         )
+
+        self._world_settings = {
+            "add_ground_plane": add_ground_plane,
+            "physics_dt": physics_dt,
+            "stage_units_in_meters": stage_units_in_meters,
+        }
         return
 
     def _build_ui(self, name, title, doc_link, overview, buttons_mapping, file_path):
         self._window = omni.ui.Window(
-            name, width=0, height=0, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            name, width=500, height=0, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
@@ -102,7 +121,7 @@ class BaseSample(omni.ext.IExt):
 
     def _on_setup_world(self):
         async def _on_setup_world_async():
-            self._world = World()
+            self._world = World(**self._world_settings)
             await self._world.init_world_async()
             self._task = self._load_task()
             self._world.load_task(self._task)
@@ -133,12 +152,15 @@ class BaseSample(omni.ext.IExt):
         return
 
     def _on_reset(self):
-        asyncio.ensure_future(self._world.reset_async())
-        self._enable_all_buttons(True)
-        self._reset_call()
-        self._world.clear_physics_callbacks()
-        if self._world._scene_finalized and self._world._current_task is not None:
-            self._world.add_physics_callback("task_step", self.task_simulation_step)
+        async def _on_reset_async():
+            await self._world.reset_async()
+            self._enable_all_buttons(True)
+            self._reset_call()
+            self._world.remove_physics_callback("task_step")
+            if self._world._scene_finalized and self._world._current_task is not None:
+                self._world.add_physics_callback("task_step", self.task_simulation_step)
+
+        asyncio.ensure_future(_on_reset_async())
         return
 
     def task_simulation_step(self, step_size):

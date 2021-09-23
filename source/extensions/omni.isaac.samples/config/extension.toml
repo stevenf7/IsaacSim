@@ -30,6 +30,7 @@ writeTarget.kit = true
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
 "omni.isaac.franka" = {}
+"omni.isaac.jetbot" = {}
 "omni.isaac.motion_generation" = {}
 
 [[python.module]]
@@ -39,7 +40,7 @@ name = "omni.isaac.samples.tests"
 name = "omni.isaac.samples.scripts.kaya_preview"
 
 [[python.module]]
-name = "omni.isaac.samples.scripts.jetbot_preview"
+name = "omni.isaac.samples.scripts.jetbot_keyboard"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.dofbot_preview"

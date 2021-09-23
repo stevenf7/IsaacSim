@@ -1,0 +1,137 @@
+# Copyright (c) 2020-2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+import os
+import carb
+import omni.ext
+import omni.appwindow
+import gc
+import numpy as np
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.jetbot import Jetbot
+from omni.isaac.jetbot.controllers import DifferentialController
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.tasks.task import BaseTask
+from omni.isaac.core.scenes.scene import Scene
+from omni.isaac.samples.scripts.base_sample import BaseSample
+
+
+class DriveTask(BaseTask):
+    def __init__(self) -> None:
+        super().__init__("Drive Jetbot")
+        self.jetbot = None
+
+    def set_up_scene(self, scene: Scene) -> None:
+        super().set_up_scene(scene)
+
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+            return
+        asset_path = nucleus_server + "/Isaac"
+
+        self.jetbot = scene.add(
+            Jetbot(
+                stage=scene.stage,
+                prim_path="/jetbot",
+                name="my_jetbot",
+                position=np.array([0, 0.0, 2.0]),
+                orientation=np.array([0, 0, 0.0, 1]),
+            )
+        )
+        self.jetbot.set_default_state(np.array([0, 0.0, 2.0]), np.array([0, 0, 0.0, 1]))
+
+        prim = scene.stage.DefinePrim("/background", "Xform")
+        prim.GetReferences().AddReference(asset_path + "/Environments/Grid/gridroom_curved.usd")
+        XFormPrim(prim, "background", position=np.array([0, 0, -9]))
+
+    def reset(self) -> None:
+        super().reset()
+        viewport = omni.kit.viewport.get_default_viewport_window()
+        viewport.set_camera_position("/OmniverseKit_Persp", 75, 75, 45, True)
+        viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+        pass
+
+
+class Extension(BaseSample):
+    def on_startup(self, ext_id: str):
+        super().on_startup(ext_id)
+        overview = "This Example shows how to simulate an NVIDIA Jetbot robot in Isaac Sim."
+        overview += "\n\tKeybord Input:"
+        overview += "\n\t\tw: Forward"
+        overview += "\n\t\ts: Reverse"
+        overview += "\n\t\ta: Spin Left"
+        overview += "\n\t\td: Spin Right"
+        overview += "\n\nPress the 'Open in IDE' button to view the source code."
+
+        super()._on_startup(
+            menu_name="Controlling",
+            submenu_name="Input Devices",
+            name="Jetbot Keyboard",
+            buttons_mapping={},
+            title="NVIDIA Jetbot Navigation Example",
+            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_jetbot.html",
+            overview=overview,
+            file_path=os.path.abspath(__file__),
+            add_ground_plane=False,
+            stage_units_in_meters=0.01,
+        )
+        self._controller = None
+        self._command = [0.0, 0.0]
+
+    def _load_task(self):
+        return DriveTask()
+
+    def _setup_controllers(self):
+        self._controller = DifferentialController(name="simple_control")
+        self._appwindow = omni.appwindow.get_default_app_window()
+        self._input = carb.input.acquire_input_interface()
+        self._keyboard = self._appwindow.get_keyboard()
+        self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
+        self._world.add_physics_callback("jetbot_step", callback_fn=self._on_editor_step)
+        self._world.play()
+
+    def _on_editor_step(self, step):
+        self._task.jetbot.apply_wheel_actions(self._controller.forward(command=self._command))
+
+    def _sub_keyboard_event(self, event, *args, **kwargs):
+        """Handle keyboard events
+        w,s,a,d as arrow keys for jetbot movement
+
+        Args:
+            event (int): keyboard event type
+        """
+        if (
+            event.type == carb.input.KeyboardEventType.KEY_PRESS
+            or event.type == carb.input.KeyboardEventType.KEY_REPEAT
+        ):
+            if event.input == carb.input.KeyboardInput.W:
+                self._command = [0.5, 0.0]
+            if event.input == carb.input.KeyboardInput.S:
+                self._command = [-0.5, 0.0]
+            if event.input == carb.input.KeyboardInput.A:
+                self._command = [0.0, 1.0]
+            if event.input == carb.input.KeyboardInput.D:
+                self._command = [0.0, -1.0]
+        if event.type == carb.input.KeyboardEventType.KEY_RELEASE:
+            self._command = [0.0, 0.0]
+
+        return True
+
+    def on_shutdown(self):
+        """Cleanup objects on extension shutdown"""
+        super().on_shutdown()
+        self._controller = None
+        self._sub_keyboard = None
+        gc.collect()
+
+    def _reset_call(self):
+        self._controller.reset()
+        self._world.remove_physics_callback("jetbot_step")
+        self._world.add_physics_callback("jetbot_step", callback_fn=self._on_editor_step)
+        self._world.play()

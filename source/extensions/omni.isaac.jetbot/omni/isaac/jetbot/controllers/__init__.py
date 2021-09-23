@@ -7,3 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.jetbot.controllers.simple_controller import SimpleContollerCommand, SimpleController
+from omni.isaac.jetbot.controllers.differential_controller import DifferentialController
