@@ -7,48 +7,40 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
-"""Generate offline synthetic dataset using two cameras
+"""Generate offline synthetic dataset
 """
 
 
 import asyncio
 import copy
-import numpy as np
 import os
-import random
 import torch
 import signal
+import argparse
 
 import carb
 import omni
-from omni.isaac.python_app import OmniKitHelper
+from omni.isaac.kit.launcher import SimulationApp
 
 # Default rendering parameters
-RENDER_CONFIG = {
-    "renderer": "RayTracedLighting",
-    "samples_per_pixel_per_frame": 12,
-    "headless": True,
-    "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
-}
+CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1024, "height": 800}
 
-STEREO = True
+kit = SimulationApp(launch_config=CONFIG)
+from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter, KittiWriter
+import omni.isaac.dr as dr
+from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
 
 class RandomScenario(torch.utils.data.IterableDataset):
-    def __init__(self, scenario_path, max_queue_size):
-
-        self.kit = OmniKitHelper(config=RENDER_CONFIG)
-        from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter
-        import omni.isaac.dr as dr
+    def __init__(self, scenario_path, writer_mode, data_dir, max_queue_size, train_size, classes):
 
         self.sd_helper = SyntheticDataHelper()
         self.dr = dr
-        self.writer_helper = NumpyWriter
+        self.writer_mode = writer_mode
+        self.writer_helper = KittiWriter if writer_mode == "kitti" else NumpyWriter
         self.dr.commands.ToggleManualModeCommand().do()
-        self.stage = self.kit.get_stage()
+        self.stage = kit.context.get_stage()
         self.result = True
-
-        from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
 
         if scenario_path is None:
             self.result, nucleus_server = find_nucleus_server()
@@ -60,11 +52,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.scenario_path = scenario_path
         self.max_queue_size = max_queue_size
         self.data_writer = None
+        self.data_dir = data_dir
+        self.train_size = train_size
+        self.classes = classes
 
         self._setup_world(scenario_path)
         self.cur_idx = 0
         self.exiting = False
-        self._viewport = omni.kit.viewport.get_viewport_interface()
         self._sensor_settings = {}
 
         signal.signal(signal.SIGINT, self._handle_exit)
@@ -73,63 +67,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
         print("exiting dataset generation...")
         self.exiting = True
 
-    def add_stereo_setup(self):
-        from pxr import Gf, UsdGeom
-
-        stage = omni.usd.get_context().get_stage()
-        # Create two camera
-        center_point = Gf.Vec3d(0, 0, 200)
-        stereoPrimPath = "/World/Stereo"
-        leftCameraPrimPath = stereoPrimPath + "/LeftCamera"
-        rightCameraPrimPath = stereoPrimPath + "/RightCamera"
-
-        self.stereoPrim = stage.DefinePrim(stereoPrimPath, "Xform")
-        UsdGeom.XformCommonAPI(self.stereoPrim).SetTranslate(center_point)
-        leftCameraPrim = stage.DefinePrim(leftCameraPrimPath, "Camera")
-        UsdGeom.XformCommonAPI(leftCameraPrim).SetTranslate(Gf.Vec3d(0, -10, 0))
-        UsdGeom.XformCommonAPI(leftCameraPrim).SetRotate(Gf.Vec3f(90, 0, 90))
-
-        if STEREO:
-            rightCameraPrim = stage.DefinePrim(rightCameraPrimPath, "Camera")
-            UsdGeom.XformCommonAPI(rightCameraPrim).SetTranslate(Gf.Vec3d(0, 10, 0))
-            UsdGeom.XformCommonAPI(rightCameraPrim).SetRotate(Gf.Vec3f(90, 0, 90))
-
-        # Need to set this before setting viewport window size
-        carb.settings.acquire_settings_interface().set_int("/app/renderer/resolution/width", -1)
-        carb.settings.acquire_settings_interface().set_int("/app/renderer/resolution/height", -1)
-        # Get existing viewport, set active camera as left camera
-        viewport_handle_1 = omni.kit.viewport.get_viewport_interface().get_instance("Viewport")
-        viewport_window_1 = omni.kit.viewport.get_viewport_interface().get_viewport_window(viewport_handle_1)
-        viewport_window_1.set_texture_resolution(1280, 720)
-        viewport_window_1.set_active_camera(leftCameraPrimPath)
-
-        if STEREO:
-            # Create new viewport, set active camera as right camera
-            viewport_handle_2 = omni.kit.viewport.get_viewport_interface().create_instance()
-            viewport_window_2 = omni.kit.viewport.get_viewport_interface().get_viewport_window(viewport_handle_2)
-            viewport_window_2.set_active_camera("/World/Stereo/RightCamera")
-            viewport_window_2.set_texture_resolution(1280, 720)
-            viewport_window_2.set_window_pos(720, 0)
-            viewport_window_2.set_window_size(720, 890)
-
-        # Setup stereo camera movement randomization
-        radius = 100
-        target_points_list = []
-        for theta in range(200, 300):
-            th = theta * np.pi / 180
-            x = radius * np.cos(th) + center_point[0]
-            y = radius * np.sin(th) + center_point[1]
-            target_points_list.append(Gf.Vec3f(x, y, center_point[2]))
-        lookat_target_points_list = [a for a in target_points_list[1:]]
-        lookat_target_points_list.append(target_points_list[0])
-        result, prim = omni.kit.commands.execute(
-            "CreateTransformComponentCommand",
-            prim_paths=[stereoPrimPath],
-            target_points=target_points_list,
-            lookat_target_points=lookat_target_points_list,
-            enable_sequential_behavior=True,
-        )
-
     async def load_stage(self, path):
         await omni.usd.get_context().open_stage_async(path)
 
@@ -137,11 +74,8 @@ class RandomScenario(torch.utils.data.IterableDataset):
         # Load scenario
         setup_task = asyncio.ensure_future(self.load_stage(scenario_path))
         while not setup_task.done():
-            self.kit.update()
-        self.add_stereo_setup()
-        self.kit.update()
-        self.kit.setup_renderer()
-        self.kit.update()
+            kit.app.update()
+        kit.app.update()
 
     def __iter__(self):
         return self
@@ -149,139 +83,155 @@ class RandomScenario(torch.utils.data.IterableDataset):
     def __next__(self):
         # step once and then wait for materials to load
         self.dr.commands.RandomizeOnceCommand().do()
-        self.kit.update()
-        while self.kit.is_loading():
-            self.kit.update()
+        kit.app.update()
+        while kit.is_loading:
+            kit.app.update()
 
         # Enable/disable sensor output and their format
-        sensor_settings_viewport_1 = {
-            "rgb": {"enabled": True},
-            "depth": {"enabled": True, "colorize": True, "npy": True},
-            "instance": {"enabled": True, "colorize": True, "npy": True},
-            "semantic": {"enabled": True, "colorize": True, "npy": True},
-            "bbox_2d_tight": {"enabled": True, "colorize": True, "npy": True},
-            "bbox_2d_loose": {"enabled": True, "colorize": True, "npy": True},
-        }
-
-        if STEREO:
-            sensor_settings_viewport_2 = {
-                "rgb": {"enabled": True},
-                "depth": {"enabled": True, "colorize": True, "npy": True},
-                "instance": {"enabled": True, "colorize": True, "npy": True},
-                "semantic": {"enabled": True, "colorize": True, "npy": True},
-                "bbox_2d_tight": {"enabled": True, "colorize": True, "npy": True},
-                "bbox_2d_loose": {"enabled": True, "colorize": True, "npy": True},
-            }
-        viewports = self._viewport.get_instance_list()
-        self._viewport_names = [self._viewport.get_viewport_window_name(vp) for vp in viewports]
-
-        if STEREO:
-            # Make sure two viewports are initialized
-            if len(self._viewport_names) != 2:
-                return
-            self._sensor_settings[self._viewport_names[1]] = copy.deepcopy(sensor_settings_viewport_2)
-        self._sensor_settings[self._viewport_names[0]] = copy.deepcopy(sensor_settings_viewport_1)
+        self._enable_rgb = True
+        self._enable_depth = True
+        self._enable_instance = True
+        self._enable_semantic = True
+        self._enable_bbox_2d_tight = True
+        self._enable_bbox_2d_loose = True
+        self._enable_depth_colorize = True
+        self._enable_instance_colorize = True
+        self._enable_semantic_colorize = True
+        self._enable_bbox_2d_tight_colorize = True
+        self._enable_bbox_2d_loose_colorize = True
+        self._enable_depth_npy = True
+        self._enable_instance_npy = True
+        self._enable_semantic_npy = True
+        self._enable_bbox_2d_tight_npy = True
+        self._enable_bbox_2d_loose_npy = True
         self._num_worker_threads = 4
-        self._output_folder = os.getcwd() + "/output"
+        self._output_folder = self.data_dir
+
+        sensor_settings_viewport = {
+            "rgb": {"enabled": self._enable_rgb},
+            "depth": {
+                "enabled": self._enable_depth,
+                "colorize": self._enable_depth_colorize,
+                "npy": self._enable_depth_npy,
+            },
+            "instance": {
+                "enabled": self._enable_instance,
+                "colorize": self._enable_instance_colorize,
+                "npy": self._enable_instance_npy,
+            },
+            "semantic": {
+                "enabled": self._enable_semantic,
+                "colorize": self._enable_semantic_colorize,
+                "npy": self._enable_semantic_npy,
+            },
+            "bbox_2d_tight": {
+                "enabled": self._enable_bbox_2d_tight,
+                "colorize": self._enable_bbox_2d_tight_colorize,
+                "npy": self._enable_bbox_2d_tight_npy,
+            },
+            "bbox_2d_loose": {
+                "enabled": self._enable_bbox_2d_loose,
+                "colorize": self._enable_bbox_2d_loose_colorize,
+                "npy": self._enable_bbox_2d_loose_npy,
+            },
+        }
+        self._sensor_settings["Viewport"] = copy.deepcopy(sensor_settings_viewport)
 
         # Write to disk
         if self.data_writer is None:
-            self.data_writer = self.writer_helper(
-                self._output_folder, self._num_worker_threads, self.max_queue_size, self._sensor_settings
-            )
+            print(f"Writing data to {self._output_folder}")
+            if self.writer_mode == "kitti":
+                self.data_writer = self.writer_helper(
+                    self._output_folder, self._num_worker_threads, self.max_queue_size, self.train_size, self.classes
+                )
+            else:
+                self.data_writer = self.writer_helper(
+                    self._output_folder, self._num_worker_threads, self.max_queue_size, self._sensor_settings
+                )
             self.data_writer.start_threads()
 
-        image = None
-        for viewport_name in self._viewport_names:
-            groundtruth = {
-                "METADATA": {
-                    "image_id": str(self.cur_idx),
-                    "viewport_name": viewport_name,
-                    "DEPTH": {},
-                    "INSTANCE": {},
-                    "SEMANTIC": {},
-                    "BBOX2DTIGHT": {},
-                    "BBOX2DLOOSE": {},
-                },
-                "DATA": {},
-            }
+        viewport_iface = omni.kit.viewport.get_viewport_interface()
+        viewport_name = "Viewport"
+        viewport = viewport_iface.get_viewport_window(viewport_iface.get_instance(viewport_name))
+        groundtruth = {
+            "METADATA": {
+                "image_id": str(self.cur_idx),
+                "viewport_name": viewport_name,
+                "DEPTH": {},
+                "INSTANCE": {},
+                "SEMANTIC": {},
+                "BBOX2DTIGHT": {},
+                "BBOX2DLOOSE": {},
+            },
+            "DATA": {},
+        }
 
-            gt_list = []
-            if self._sensor_settings[viewport_name]["rgb"]["enabled"]:
-                gt_list.append("rgb")
-            if self._sensor_settings[viewport_name]["depth"]["enabled"]:
-                gt_list.append("depthLinear")
-            if self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"]:
-                gt_list.append("boundingBox2DTight")
-            if self._sensor_settings[viewport_name]["bbox_2d_loose"]["enabled"]:
-                gt_list.append("boundingBox2DLoose")
-            if self._sensor_settings[viewport_name]["instance"]["enabled"]:
-                gt_list.append("instanceSegmentation")
-            if self._sensor_settings[viewport_name]["semantic"]["enabled"]:
-                gt_list.append("semanticSegmentation")
+        gt_list = []
+        if self._enable_rgb:
+            gt_list.append("rgb")
+        if self._enable_depth:
+            gt_list.append("depthLinear")
+        if self._enable_bbox_2d_tight:
+            gt_list.append("boundingBox2DTight")
+        if self._enable_bbox_2d_loose:
+            gt_list.append("boundingBox2DLoose")
+        if self._enable_instance:
+            gt_list.append("instanceSegmentation")
+        if self._enable_semantic:
+            gt_list.append("semanticSegmentation")
 
-            # Render new frame
-            self.kit.update()
+        # Render new frame
+        kit.app.update()
 
-            # Collect Groundtruth
-            viewport = self._viewport.get_viewport_window(self._viewport.get_instance(viewport_name))
-            gt = self.sd_helper.get_groundtruth(gt_list, viewport)
+        # Collect Groundtruth
+        gt = self.sd_helper.get_groundtruth(gt_list, viewport)
 
-            # RGB
-            image = gt["rgb"]
-            if self._sensor_settings[viewport_name]["rgb"]["enabled"] and gt["state"]["rgb"]:
-                groundtruth["DATA"]["RGB"] = gt["rgb"]
+        # RGB
+        image = gt["rgb"]
+        if self._enable_rgb:
+            groundtruth["DATA"]["RGB"] = gt["rgb"]
 
-            # Depth
-            if self._sensor_settings[viewport_name]["depth"]["enabled"] and gt["state"]["depthLinear"]:
-                groundtruth["DATA"]["DEPTH"] = gt["depthLinear"].squeeze()
-                groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self._sensor_settings[viewport_name]["depth"]["colorize"]
-                groundtruth["METADATA"]["DEPTH"]["NPY"] = self._sensor_settings[viewport_name]["depth"]["npy"]
+        # Depth
+        if self._enable_depth:
+            groundtruth["DATA"]["DEPTH"] = gt["depthLinear"].squeeze()
+            groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self._enable_depth_colorize
+            groundtruth["METADATA"]["DEPTH"]["NPY"] = self._enable_depth_npy
 
-            # Instance Segmentation
-            if self._sensor_settings[viewport_name]["instance"]["enabled"] and gt["state"]["instanceSegmentation"]:
-                instance_data = gt["instanceSegmentation"][0]
-                groundtruth["DATA"]["INSTANCE"] = instance_data
-                groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
-                groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data.shape[0]
-                groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self._sensor_settings[viewport_name]["instance"][
-                    "colorize"
-                ]
-                groundtruth["METADATA"]["INSTANCE"]["NPY"] = self._sensor_settings[viewport_name]["instance"]["npy"]
+        # Instance Segmentation
+        if self._enable_instance:
+            instance_data = gt["instanceSegmentation"][0]
+            instance_data_shape = instance_data.shape
+            groundtruth["DATA"]["INSTANCE"] = instance_data
+            groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data_shape[1]
+            groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data_shape[0]
+            groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self._enable_instance_colorize
+            groundtruth["METADATA"]["INSTANCE"]["NPY"] = self._enable_instance_npy
 
-            # Semantic Segmentation
-            if self._sensor_settings[viewport_name]["semantic"]["enabled"] and gt["state"]["semanticSegmentation"]:
-                semantic_data = gt["semanticSegmentation"]
-                semantic_data[semantic_data == 65535] = 0  # deals with invalid semantic id
-                groundtruth["DATA"]["SEMANTIC"] = semantic_data
-                groundtruth["METADATA"]["SEMANTIC"]["WIDTH"] = semantic_data.shape[1]
-                groundtruth["METADATA"]["SEMANTIC"]["HEIGHT"] = semantic_data.shape[0]
-                groundtruth["METADATA"]["SEMANTIC"]["COLORIZE"] = self._sensor_settings[viewport_name]["semantic"][
-                    "colorize"
-                ]
-                groundtruth["METADATA"]["SEMANTIC"]["NPY"] = self._sensor_settings[viewport_name]["semantic"]["npy"]
+        # Semantic Segmentation
+        if self._enable_semantic:
+            semantic_data = gt["semanticSegmentation"]
+            semantic_data_shape = semantic_data.shape
+            groundtruth["DATA"]["SEMANTIC"] = semantic_data
+            groundtruth["METADATA"]["SEMANTIC"]["WIDTH"] = semantic_data_shape[1]
+            groundtruth["METADATA"]["SEMANTIC"]["HEIGHT"] = semantic_data_shape[0]
+            groundtruth["METADATA"]["SEMANTIC"]["COLORIZE"] = self._enable_semantic_colorize
+            groundtruth["METADATA"]["SEMANTIC"]["NPY"] = self._enable_semantic_npy
 
-            # 2D Tight BBox
-            if self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"] and gt["state"]["boundingBox2DTight"]:
-                groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
-                groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self._sensor_settings[viewport_name][
-                    "bbox_2d_tight"
-                ]["colorize"]
-                groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = self._sensor_settings[viewport_name]["bbox_2d_tight"][
-                    "npy"
-                ]
+        # 2D Tight BBox
+        if self._enable_bbox_2d_tight:
+            groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
+            groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self._enable_bbox_2d_tight_colorize
+            groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = self._enable_bbox_2d_tight_npy
 
-            # 2D Loose BBox
-            if self._sensor_settings[viewport_name]["bbox_2d_loose"]["enabled"] and gt["state"]["boundingBox2DLoose"]:
-                groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
-                groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self._sensor_settings[viewport_name][
-                    "bbox_2d_loose"
-                ]["colorize"]
-                groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = self._sensor_settings[viewport_name]["bbox_2d_loose"][
-                    "npy"
-                ]
+        # 2D Loose BBox
+        if self._enable_bbox_2d_loose:
+            groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
+            groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self._enable_bbox_2d_loose_colorize
+            groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = self._enable_bbox_2d_loose_npy
+            groundtruth["METADATA"]["BBOX2DLOOSE"]["WIDTH"] = CONFIG["width"]
+            groundtruth["METADATA"]["BBOX2DLOOSE"]["HEIGHT"] = CONFIG["height"]
 
-            self.data_writer.q.put(groundtruth)
+        self.data_writer.q.put(groundtruth)
 
         self.cur_idx += 1
         return image
@@ -289,15 +239,29 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
 if __name__ == "__main__":
     "Typical usage"
-    import argparse
-
-    parser = argparse.ArgumentParser("Stereo dataset generator")
+    parser = argparse.ArgumentParser("Dataset generator")
     parser.add_argument("--scenario", type=str, help="Scenario to load from omniverse server")
-    parser.add_argument("--num_frames", type=int, default=30, help="Number of frames to record")
+    parser.add_argument("--num_frames", type=int, default=10, help="Number of frames to record")
+    parser.add_argument("--writer_mode", type=str, default="npy", help="Specify output format - npy or kitti")
+    parser.add_argument(
+        "--data_dir", type=str, default=os.getcwd() + "/output", help="Location where data will be output"
+    )
     parser.add_argument("--max_queue_size", type=int, default=500, help="Max size of queue to store and process data")
+    parser.add_argument(
+        "--train_size", type=int, default=8, help="Number of frames for training set, works when writer_mode is kitti"
+    )
+    parser.add_argument(
+        "--classes",
+        type=str,
+        nargs="+",
+        default=[],
+        help="Which classes to write labels for, works when writer_mode is kitti.  Defaults to all classes",
+    )
     args, unknown_args = parser.parse_known_args()
 
-    dataset = RandomScenario(args.scenario, args.max_queue_size)
+    dataset = RandomScenario(
+        args.scenario, args.writer_mode, args.data_dir, args.max_queue_size, args.train_size, args.classes
+    )
 
     if dataset.result:
         # Iterate through dataset and visualize the output
@@ -308,5 +272,8 @@ if __name__ == "__main__":
                 break
             if dataset.exiting:
                 break
-        # cleanup
-        dataset.kit.shutdown()
+
+        # wait until done
+        dataset.data_writer.stop_threads()
+    # cleanup
+    kit.close()
