@@ -17,7 +17,7 @@ There are multiple ways to use isaac sim based on your workflow:
 ## Source (This repository)
 See **Using Source Repository** section below for how to compile source and set up `git lfs`
 #### Branches:
-* Master: Stable, should be used by most users
+* Release/*: Stable, should be used by most users
 * Develop: Latest Codebase, updated daily
 
 ## Binary Builds (Omniverse Launcher) **[Recommended]**
@@ -27,7 +27,7 @@ See **Using Source Repository** section below for how to compile source and set 
 
 Once launched you will see the builds under the ``Exchange`` tab 
 
-* Isaac-Sim: Latest build from Master branch
+* Isaac-Sim: Latest build from Release branch
 * Isaac-Sim Daily: Latest daily build from Develop branch 
 
 For information on launching once you have downloaded a build [see here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/setup.html#isaac-sim-on-omniverse-launcher). 
@@ -35,12 +35,12 @@ For information on launching once you have downloaded a build [see here](https:/
 > Note that our documentation shows the public Omniverse launcher where daily builds are not available, but the process of running Isaac-Sim is identical. 
 
 ## Binary Builds (Packman Manual Download)
-* [Builds from Master](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=rc)
+* [Stable Builds from Release](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=rc)
 * [Daily Builds from Develop](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=beta)
 
 ## Binary Builds (Teamcity Manual Download)
 
-* [Linux-x86_64 Binary From Master](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Master_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
+* [Linux-x86_64 Binary From Release](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Release_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
 * [Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
 
 ## Native Python Sample Repository
@@ -199,7 +199,7 @@ Linux Builds ``./tools/ci/build-and-packaging/linux-x86_64/step.sh``
 Linux Tests  ``./tools/ci/testing/linux-x86_64-python-tests/step.sh``
 
 ## TeamCity Pipelines
-Master: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Master_BuildAndValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Master_BuildAndValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Master_BuildAndValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Master=%3Cdefault%3E)
+Release: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Release_BuildAndValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Release_BuildAndValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Release_BuildAndValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Release=%3Cdefault%3E)
 
 Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Develop_BuildAndValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Develop_BuildAndValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Develop_BuildAndValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Develop=%3Cdefault%3E)
 
