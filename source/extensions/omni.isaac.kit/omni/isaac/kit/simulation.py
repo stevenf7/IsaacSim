@@ -10,6 +10,7 @@
 # python
 import time
 import asyncio
+import numpy as np
 
 # omniverse
 import carb
@@ -18,22 +19,19 @@ import omni.kit.app
 from pxr import UsdGeom, Gf, Usd, Sdf, UsdPhysics, PhysxSchema
 from omni.isaac.kit.utils import set_carb_setting
 from omni.isaac.kit.constants import AXES_INDICES
-import omni.isaac.kit.global_vars as global_vars
-import numpy as np
 
 
 class SimulationContext:
-    def __init__(self, physics_dt: float = 1.0 / 60.0):
+    def __init__(self, physics_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 1.0):
         # Only import custom loop runner if we create this object
         # TODO: customization for the physics
-        self.set_stage_units(1.0)
+        self.set_stage_units(stage_units_in_meters)
         self._physics_scene = PhysicsScene(physics_dt=physics_dt)
         # Acquire the running application interface
         self._app = omni.kit.app.get_app_interface()
         # Acquire interfaces to extensions from Omniverse Toolkit
         self._framework = carb.get_framework()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
         self.set_camera_view()
         # Turn auto-update on for timeline
         self._timeline.set_auto_update(True)
@@ -122,8 +120,8 @@ class SimulationContext:
         """[summary]
 
         Args:
-            eye (list, optional): [description]. Defaults to [2, 2, 2].
-            target (list, optional): [description]. Defaults to [0, 0, 0].
+            eye (list, optional): [description]. Defaults to [1.5, 1.5, 1.5].
+            target (list, optional): [description]. Defaults to [0.01, 0.01, 0.01].
             vel (float, optional): [description]. Defaults to 0.05.
         """
         meters_per_unit = UsdGeom.GetStageMetersPerUnit(self.stage)
@@ -132,6 +130,7 @@ class SimulationContext:
         if target is None:
             target = np.array([0.01, 0.01, 0.01]) / meters_per_unit
         vel = vel / meters_per_unit
+        self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._viewport.set_camera_position("/OmniverseKit_Persp", eye[0], eye[1], eye[2], True)
         self._viewport.set_camera_target("/OmniverseKit_Persp", target[0], target[1], target[2], True)
         self._viewport.set_camera_move_velocity(vel)

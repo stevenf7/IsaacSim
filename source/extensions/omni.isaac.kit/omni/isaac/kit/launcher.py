@@ -52,7 +52,7 @@ class SimulationApp:
     DEFAULT_LAUNCHER_CONFIG = {
         "headless": True,
         "active_gpu": None,
-        "sync_loads": False,
+        "sync_loads": True,
         "width": 1280,
         "height": 720,
         "window_width": 1440,
@@ -73,7 +73,7 @@ class SimulationApp:
     Args:
         headless (bool): Disable UI when running. Defaults to True
         active_gpu (int): Specify the GPU to use when running, set to None to use default value which is usually the first gpu, default is None
-        sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
+        sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to True
         width (int): Width of the viewport and generated images. Defaults to 1024
         height (int): Height of the viewport and generated images. Defaults to 800
         window_width (int): Width of the application window, independent of viewport, defaults to 1440,
@@ -117,6 +117,14 @@ class SimulationApp:
         # Get Omniverse application
         self._app = omni.kit.app.get_app()
         self._start_app()
+
+        # vp_interface = omni.kit.viewport.acquire_viewport_interface()
+        # vp_window = vp_interface.get_viewport_window()
+        # drawable = vp_window.get_drawable()
+
+        # if drawable is None:
+        #     self._app.update()
+
         # once app starts, we can set settings
         from omni.isaac.kit.utils import set_carb_setting
 
@@ -288,6 +296,11 @@ class SimulationApp:
                 if "omni" in m and m != "omni.kit.app":
                     del sys.modules[m]
             print("Simulation App Shutdown Completed...")
+
+    def set_setting(self, setting, value) -> None:
+        from omni.isaac.kit.utils import set_carb_setting
+
+        set_carb_setting(self._carb_settings, setting, value)
 
     @property
     def app(self) -> omni.kit.app.IApp:

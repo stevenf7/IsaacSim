@@ -16,7 +16,7 @@ segmentation (instance and semantic), and camera parameters.
 
     kit = OmniKitHelper()   # Start omniverse kit
     sd_helper = SyntheticDataHelper()
-    gt = sd_helper.get_groundtruth(('rgb', 'depth', 'boundingBox2DTight'))
+    gt = sd_helper.get_groundtruth(['rgb', 'depth', 'boundingBox2DTight'], viewport)
 
 """
 
@@ -24,8 +24,6 @@ import math
 import carb
 import omni
 import time
-from pxr import UsdGeom, Semantics, Gf
-
 import numpy as np
 
 
@@ -45,8 +43,6 @@ class SyntheticDataHelper:
         self.carb_settings = carb.settings.acquire_settings_interface()
         self.sensor_helper_lib = sensors
         self.generic_helper_lib = helpers
-
-        mode = "numpy"
 
         self.sensor_helpers = {
             "rgb": sensors.get_rgb,
@@ -118,7 +114,7 @@ class SyntheticDataHelper:
             pose.append((str(prim_path), m[2], str(m[3]), np.array(prim_tf)))
         return pose
 
-    def initialize(self, viewport, sensor_names, timeout=100):
+    def initialize(self, sensor_names, viewport, timeout=100):
         """Initialize sensors in the list provided.
 
 
@@ -144,30 +140,31 @@ class SyntheticDataHelper:
 
         self.app.update()  # Extra frame required to prevent access violation error
 
-    def get_groundtruth(self, gt_sensors, viewport, verify_sensor_init=True):
+    def get_groundtruth(self, sensor_names, viewport, verify_sensor_init=True, wait_for_sensor_data=0.1):
         """Get groundtruth from specified gt_sensors.
 
         Args:
-            gt_sensors (list): List of strings of sensor names. Valid sensors names: rgb, depth,
+            sensor_names (list): List of strings of sensor names. Valid sensors names: rgb, depth,
                 instanceSegmentation, semanticSegmentation, boundingBox2DTight,
                 boundingBox2DLoose, boundingBox3D, camera
             viewport (omni.kit.viewport._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
             verify_sensor_init (bool): Additional check to verify creation and initialization of sensors.
+            wait_for_sensor_data (float): Additional time to sleep before returning ground truth so  are correctly filled. Default is 0.1 seconds
 
         Returns:
             Dict of sensor outputs
         """
-        if isinstance(gt_sensors, str):
-            gt_sensors = (gt_sensors,)
+        if wait_for_sensor_data > 0:
+            time.sleep(wait_for_sensor_data)
 
         # Create and initialize sensors
         if verify_sensor_init:
-            self.initialize(viewport, gt_sensors)
+            self.initialize(sensor_names, viewport)
 
         gt = {}
         sensor_state = {}
         # Process non-RT-only sensors
-        for sensor in gt_sensors:
+        for sensor in sensor_names:
             if sensor not in ["camera", "pose"]:
                 if sensor == "instanceSegmentation":
                     gt[sensor] = self.sensor_helpers[sensor](viewport, parsed=True, return_mapping=True)
