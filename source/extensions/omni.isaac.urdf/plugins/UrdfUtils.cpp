@@ -77,7 +77,14 @@ omni::isaac::urdf::UrdfRobot parseUrdf(const std::string& assetRoot,
             joint.second.drive.targetType = importConfig.defaultDriveType;
             if (joint.second.drive.targetType == omni::isaac::urdf::UrdfJointTargetType::POSITION)
             {
-                joint.second.dynamics.stiffness = importConfig.defaultDriveStrength;
+                if (importConfig.defaultDriveStrength > 0)
+                {
+                    joint.second.dynamics.stiffness = importConfig.defaultDriveStrength;
+                }
+                if (importConfig.defaultPositionDriveDamping > 0)
+                {
+                    joint.second.dynamics.damping = importConfig.defaultPositionDriveDamping;
+                }
             }
             else
             {

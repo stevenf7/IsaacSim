@@ -103,6 +103,8 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("default_drive_type", &ImportConfig::defaultDriveType, "default drive type used for joints")
         .def_readwrite(
             "default_drive_strength", &ImportConfig::defaultDriveStrength, "default drive stiffness used for joints")
+        .def_readwrite("default_position_drive_damping", &ImportConfig::defaultPositionDriveDamping,
+                       "default drive damping used if drive type is set to position")
         .def_readwrite("distance_scale", &ImportConfig::distanceScale,
                        "Set the unit scaling factor, 1.0 means meters, 100.0 means cm")
         .def_readwrite("up_vector", &ImportConfig::upVector, "Up vector used for import")
@@ -122,6 +124,8 @@ PYBIND11_MODULE(_urdf, m)
              { config.defaultDriveType = static_cast<UrdfJointTargetType>(value); })
         .def("set_default_drive_strength",
              [](ImportConfig& config, const float value) { config.defaultDriveStrength = value; })
+        .def("set_default_position_drive_damping",
+             [](ImportConfig& config, const float value) { config.defaultPositionDriveDamping = value; })
         .def("set_distance_scale", [](ImportConfig& config, const float value) { config.distanceScale = value; })
         .def("set_up_vector",
              [](ImportConfig& config, const float x, const float y, const float z) {

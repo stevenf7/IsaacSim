@@ -97,6 +97,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         # enable merging fixed joints
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.merge_fixed_joints = True
+        import_config.default_position_drive_damping = -1  # ignore this setting by making it -1
         omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
         await omni.kit.app.get_app().next_update_async()
 
