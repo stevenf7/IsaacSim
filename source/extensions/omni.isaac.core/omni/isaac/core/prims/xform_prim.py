@@ -9,7 +9,10 @@
 from typing import Tuple, Optional, Union
 from pxr import Usd, UsdGeom, Gf
 from omni.isaac.core.utils.types import PrimState
+from omni.isaac.core.utils.rotations import quat_to_euler_angles
 import numpy as np
+from omni.isaac.core.utils.prims import set_usd_visibility
+import carb
 
 
 class XFormPrim(object):
@@ -71,11 +74,7 @@ class XFormPrim(object):
         Args:
             visible (bool): flag to set the visibility of the usd prim in stage.
         """
-        imageable = UsdGeom.Imageable(self._prim)
-        if visible:
-            imageable.MakeVisible()
-        else:
-            imageable.MakeInvisible()
+        set_usd_visibility(prim=self._prim, visible=visible)
         self._visible = visible
         return
 
@@ -157,22 +156,63 @@ class XFormPrim(object):
         rotation_properties = [
             "xformOp:orient",
             "xformOp:rotateX",
-            "xformOp:rotateXYZ",
-            "xformOp:rotateXZY",
+            "xformOp:rotateXYZ",  #
+            "xformOp:rotateXZY",  #
             "xformOp:rotateY",
-            "xformOp:rotateYXZ",
-            "xformOp:rotateYZX",
+            "xformOp:rotateYXZ",  #
+            "xformOp:rotateYZX",  #
             "xformOp:rotateZ",
-            "xformOp:rotateZYX",
-            "xformOp:rotateZXY",
+            "xformOp:rotateZYX",  #
+            "xformOp:rotateZXY",  #
         ]
         properties = self._prim.GetPropertyNames()
-
         for rotation_property in rotation_properties:
             if rotation_property in properties:
-                rotq = Gf.Quatf(*quat)
-                rotation_attr = self._prim.GetAttribute("xformOp:orient")
-                rotation_attr.Set(rotq)
+                if rotation_property == "xformOp:orient":
+                    rotq = Gf.Quatf(*quat)
+                    rotation_attr = self._prim.GetAttribute(rotation_property)
+                    rotation_attr.Set(rotq)
+                elif rotation_property == "xformOp:rotateXYZ":
+                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
+                    rotation_attr = self._prim.GetAttribute(rotation_property)
+                    rotation_attr.Set(Gf.Vec3f(roll, pitch, yaw))
+                elif rotation_property == "xformOp:rotateZYX":
+                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
+                    rotation_attr = self._prim.GetAttribute(rotation_property)
+                    rotation_attr.Set(Gf.Vec3f(yaw, pitch, roll))
+                elif rotation_property == "xformOp:rotateZXY":
+                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
+                    rotation_attr = self._prim.GetAttribute(rotation_property)
+                    rotation_attr.Set(Gf.Vec3f(yaw, roll, pitch))
+                elif rotation_property == "xformOp:rotateYZX":
+                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
+                    rotation_attr = self._prim.GetAttribute(rotation_property)
+                    rotation_attr.Set(Gf.Vec3f(pitch, yaw, roll))
+                elif rotation_property == "xformOp:rotateYXZ":
+                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
+                    rotation_attr = self._prim.GetAttribute(rotation_property)
+                    rotation_attr.Set(Gf.Vec3f(pitch, roll, yaw))
+                elif rotation_property == "xformOp:rotateXZY":
+                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
+                    rotation_attr = self._prim.GetAttribute(rotation_property)
+                    rotation_attr.Set(Gf.Vec3f(roll, yaw, pitch))
+                elif rotation_property == "xformOp:rotateY":
+                    # TODO: double check with Hammad
+                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
+                    rotation_attr = self._prim.GetAttribute(rotation_property)
+                    rotation_attr.Set(pitch)
+                elif rotation_property == "xformOp:rotateX":
+                    # TODO: double check with Hammad
+                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
+                    rotation_attr = self._prim.GetAttribute(rotation_property)
+                    rotation_attr.Set(roll)
+                elif rotation_property == "xformOp:rotateZ":
+                    # TODO: double check with Hammad
+                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
+                    rotation_attr = self._prim.GetAttribute(rotation_property)
+                    rotation_attr.Set(yaw)
+                else:
+                    carb.log_error(f"rotation property {rotation_property} is not defined in the list.")
                 return
         rotm = Gf.Matrix3d(Gf.Quatd(*quat))
         if "xformOp:transform" in properties:

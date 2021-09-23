@@ -141,6 +141,15 @@ class Articulation(XFormPrim):
             str_output += self._read_kinematic_hierarchy(child, indent_level + 4)
         return str_output
 
+    def get_articulation_body_count(self):
+        return self._dc_interface.get_articulation_body_count(self._handle)
+
+    def disable_gravity(self) -> None:
+        for body_index in range(self._dc_interface.get_articulation_body_count(self._handle)):
+            body = self._dc_interface.get_articulation_body(self._handle, body_index)
+            self._dc_interface.set_rigid_body_disable_gravity(body, False)
+        return
+
     def _read_dof_state(self) -> None:
         """[summary]
 

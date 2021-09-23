@@ -3,6 +3,7 @@
 		"RMPflow" : "./franka/rmpflow/config.json"
 	},
 	"UR10":{
-		"RMPflow" : "./ur10/rmpflow/config.json"
+		"RMPflow" : "./ur10/rmpflow/config.json",
+		"RMPflowSuction" : "./ur10/rmpflow/config2.json"
 	}
 }
