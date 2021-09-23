@@ -279,6 +279,7 @@ group "exts"
     include ("source/extensions/omni.isaac.core")
     include ("source/extensions/omni.isaac.franka")
     include ("source/extensions/omni.isaac.jetbot")
+    include ("source/extensions/omni.isaac.dofbot")
 
     -- Linux Only
     if os.target() == "linux" then

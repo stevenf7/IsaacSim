@@ -5,5 +5,8 @@
 	"UR10":{
 		"RMPflow" : "./ur10/rmpflow/config.json",
 		"RMPflowSuction" : "./ur10/rmpflow/config2.json"
+	},
+	"DofBot":{
+		"RMPflow" : "./dofbot/rmpflow/config.json"
 	}
 }
