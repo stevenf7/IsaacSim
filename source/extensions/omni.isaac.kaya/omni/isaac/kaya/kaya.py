@@ -15,7 +15,7 @@ from pxr import Usd
 import carb
 
 
-class Jetbot(Robot):
+class Kaya(Robot):
     def __init__(
         self,
         stage: Usd.Stage,
@@ -46,16 +46,16 @@ class Jetbot(Robot):
                 if result is False:
                     carb.log_error("Could not find nucleus server with /Isaac folder")
                     return
-                asset_path = nucleus_server + "/Isaac/Robots/Jetbot/jetbot.usd"
+                asset_path = nucleus_server + "/Isaac/Robots/Kaya/kaya.usd"
                 prim.GetReferences().AddReference(asset_path)
         super().__init__(prim=prim, name=name, position=position, orientation=orientation, articulation_controller=None)
-        self._wheel_dof_names = ["left_wheel_joint", "right_wheel_joint"]
+        self._wheel_dof_names = ["axle_0_joint", "axle_1_joint", "axle_2_joint"]
         self._wheel_dof_indices = None
         # TODO: check the default state and how to reset
         return
 
     @property
-    def wheel_dof_indices(self) -> Tuple[int, int]:
+    def wheel_dof_indices(self) -> Tuple[int, int, int]:
         """[summary]
 
         Returns:
@@ -63,45 +63,55 @@ class Jetbot(Robot):
         """
         return self._wheel_dof_indices
 
-    def get_wheel_positions(self) -> Tuple[float, float]:
+    def get_wheel_positions(self) -> Tuple[float, float, float]:
         """[summary]
 
         Returns:
             Tuple[float, float]: [description]
         """
         joint_positions = self.get_joint_positions()
-        return joint_positions[self._wheel_dof_indices[0]], joint_positions[self._wheel_dof_indices[1]]
+        return (
+            joint_positions[self._wheel_dof_indices[0]],
+            joint_positions[self._wheel_dof_indices[1]],
+            joint_positions[self._wheel_dof_indices[2]],
+        )
 
-    def set_wheel_positions(self, wheel_positions: Tuple[float, float]) -> None:
+    def set_wheel_positions(self, wheel_positions: Tuple[float, float, float]) -> None:
         """[summary]
 
         Args:
             wheel_positions (Tuple[float, float]): [description]
         """
-        joint_positions = [None, None]
+        joint_positions = [None, None, None]
         joint_positions[self._wheel_dof_indices[0]] = wheel_positions[0]
         joint_positions[self._wheel_dof_indices[1]] = wheel_positions[1]
+        joint_positions[self._wheel_dof_indices[2]] = wheel_positions[2]
         self.set_joint_positions(joint_positions=np.array(joint_positions))
         return
 
-    def get_wheel_velocities(self) -> Tuple[float, float]:
+    def get_wheel_velocities(self) -> Tuple[float, float, float]:
         """[summary]
 
         Returns:
             Tuple[np.ndarray, np.ndarray]: [description]
         """
         joint_velocities = self.get_joint_velocities()
-        return joint_velocities[self._wheel_dof_indices[0]], joint_velocities[self._wheel_dof_indices[1]]
+        return (
+            joint_velocities[self._wheel_dof_indices[0]],
+            joint_velocities[self._wheel_dof_indices[1]],
+            joint_velocities[self._wheel_dof_indices[2]],
+        )
 
-    def set_wheel_velocities(self, wheel_velocities: Tuple[float, float]) -> None:
+    def set_wheel_velocities(self, wheel_velocities: Tuple[float, float, float]) -> None:
         """[summary]
 
         Args:
             wheel_velocities (Tuple[float, float]): [description]
         """
-        joint_velocities = [None, None]
+        joint_velocities = [None, None, None]
         joint_velocities[self._wheel_dof_indices[0]] = wheel_velocities[0]
         joint_velocities[self._wheel_dof_indices[1]] = wheel_velocities[1]
+        joint_velocities[self._wheel_dof_indices[2]] = wheel_velocities[2]
         self.set_joint_velocities(joint_velocities=np.array(joint_velocities))
         return
 
@@ -111,14 +121,17 @@ class Jetbot(Robot):
             joint_actions.joint_positions = np.zeros(self.num_dof)
             joint_actions.joint_positions[self._wheel_dof_indices[0]] = wheel_actions.joint_positions[0]
             joint_actions.joint_positions[self._wheel_dof_indices[1]] = wheel_actions.joint_positions[1]
+            joint_actions.joint_positions[self._wheel_dof_indices[2]] = wheel_actions.joint_positions[2]
         if wheel_actions.joint_velocities is not None:
             joint_actions.joint_velocities = np.zeros(self.num_dof)
             joint_actions.joint_velocities[self._wheel_dof_indices[0]] = wheel_actions.joint_velocities[0]
             joint_actions.joint_velocities[self._wheel_dof_indices[1]] = wheel_actions.joint_velocities[1]
+            joint_actions.joint_velocities[self._wheel_dof_indices[2]] = wheel_actions.joint_velocities[2]
         if wheel_actions.joint_efforts is not None:
             joint_actions.joint_efforts = np.zeros(self.num_dof)
             joint_actions.joint_efforts[self._wheel_dof_indices[0]] = wheel_actions.joint_efforts[0]
             joint_actions.joint_efforts[self._wheel_dof_indices[1]] = wheel_actions.joint_efforts[1]
+            joint_actions.joint_efforts[self._wheel_dof_indices[2]] = wheel_actions.joint_efforts[2]
         self.apply_action(control_actions=joint_actions)
         return
 
@@ -129,6 +142,7 @@ class Jetbot(Robot):
         self._wheel_dof_indices = (
             self.get_dof_index(self._wheel_dof_names[0]),
             self.get_dof_index(self._wheel_dof_names[1]),
+            self.get_dof_index(self._wheel_dof_names[2]),
         )
         return
 
@@ -136,7 +150,8 @@ class Jetbot(Robot):
         """[summary]
         """
         super().reset()
-        # TODO: tune this to get the base velocity to the corresponding wheel velocity and when convertting the asset
-        self._articulation_controller.set_gains(kds=[1e2, 1e2])
-        self._articulation_controller.switch_control_mode(mode="velocity")
+        # TODO: tune the kds to get the base velocity to the corresponding wheel velocity and when convertting the asset
+        self._articulation_controller.switch_dof_control_mode(dof_index=self._wheel_dof_indices[0], mode="velocity")
+        self._articulation_controller.switch_dof_control_mode(dof_index=self._wheel_dof_indices[1], mode="velocity")
+        self._articulation_controller.switch_dof_control_mode(dof_index=self._wheel_dof_indices[2], mode="velocity")
         return

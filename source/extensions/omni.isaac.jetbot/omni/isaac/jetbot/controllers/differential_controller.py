@@ -5,6 +5,7 @@ import numpy as np
 
 
 class DifferentialController(BaseController):
+    # TODO: change with new USD
     def __init__(self, name: str, wheel_radius=0.030, wheel_base=0.1125) -> None:
         """[summary]
 
