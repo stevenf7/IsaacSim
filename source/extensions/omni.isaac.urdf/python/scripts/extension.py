@@ -75,6 +75,7 @@ class Extension(omni.ext.IExt):
         self._config.set_density(0.0)
         self._config.set_default_drive_type(1)
         self._config.set_default_drive_strength(1e7)
+        self._config.set_default_position_drive_damping(1e5)
         self._config.set_self_collision(False)
         self._config.set_up_vector(0, 0, 1)
         self._config.set_make_default_prim(True)
@@ -127,10 +128,20 @@ class Extension(omni.ext.IExt):
                         self._models["drive_strength"] = float_builder(
                             "Joint Drive Strength",
                             default_val=1e7,
-                            tooltip="Corresponds to stiffness for position or damping for velocity",
+                            tooltip="Corresponds to stiffness for position or damping for velocity, set to -1 to prevent this value from getting used",
                         )
                         self._models["drive_strength"].add_value_changed_fn(
                             lambda m, config=self._config: config.set_default_drive_strength(m.get_value_as_float())
+                        )
+                        self._models["position_drive_damping"] = float_builder(
+                            "Joint Position Drive Damping",
+                            default_val=1e5,
+                            tooltip="If the drive type is set to position, this will be used as a default damping for the drive, set to -1 to prevent this from getting used",
+                        )
+                        self._models["position_drive_damping"].add_value_changed_fn(
+                            lambda m, config=self._config: config.set_default_position_drive_damping(
+                                m.get_value_as_float()
+                            )
                         )
 
                     with ui.VStack(spacing=2, height=0):

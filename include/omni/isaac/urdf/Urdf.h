@@ -34,6 +34,7 @@ struct ImportConfig
     float density = 0.0f; // default density used for objects without mass/inertia, 0 to autocompute
     UrdfJointTargetType defaultDriveType = UrdfJointTargetType::POSITION;
     float defaultDriveStrength = 1e7f;
+    float defaultPositionDriveDamping = 1e5f;
     float distanceScale = 100.0f;
     UrdfAxis upVector = { 0.0f, 0.0f, 1.0f };
     bool createPhysicsScene = true;
