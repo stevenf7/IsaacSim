@@ -7,17 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional, Tuple
-import os
 import numpy as np
+import carb
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.core.utils.types import ArticulationAction
 from pxr import Usd
 
-FRANKA_USD_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../../data/franka.usd")
 
-
-class Franka(Robot):
+class DofBot(Robot):
     def __init__(
         self,
         stage: Usd.Stage,
@@ -44,15 +43,21 @@ class Franka(Robot):
             if usd_path:
                 prim.GetReferences().AddReference(usd_path)
             else:
-                prim.GetReferences().AddReference(FRANKA_USD_PATH)
+                result, nucleus_server = find_nucleus_server()
+                if result is False:
+                    carb.log_error("Could not find nucleus server with /Isaac folder")
+                    return
+                asset_path = nucleus_server + "/Isaac/Robots/Dofbot/dofbot.usd"
+                prim.GetReferences().AddReference(asset_path)
         super().__init__(prim=prim, name=name, position=position, orientation=orientation, articulation_controller=None)
-        self._gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
+        self._gripper_dof_names = ["Finger_Left_01_RevoluteJoint", "Finger_Right_01_RevoluteJoint"]
         self._end_effector = None
-        self._end_effector_prim_name = "panda_rightfinger"
+        self._end_effector_prim_name = "Finger_Right_01"
         self._grippers_dof_indices = None
-        self._gripper_open_position = (0.4, 0.4)
-        self._gripper_closed_position = (0.0, 0.0)
+        self._gripper_open_position = (-0.8739178, 0.67192185)
+        self._gripper_closed_position = (0.523599, -0.523599)
         # TODO: check the default state and how to reset
+        # TODO: account for gripper length, (difference between end effector tracking and actual gripper?)
         return
 
     @property
@@ -115,26 +120,6 @@ class Franka(Robot):
             np.ndarray: [description]
         """
         return self._end_effector.get_angular_velocity()
-
-    def close_gripper(self, deltas: Tuple[float, float] = (0.005, 0.005)) -> None:
-        """[summary]
-        """
-        current_gripper_position_1, current_gripper_position_2 = self.get_gripper_position()
-        joint_positions = [None] * self.num_dof
-        joint_positions[self._grippers_dof_indices[0]] = current_gripper_position_1 - deltas[0]
-        joint_positions[self._grippers_dof_indices[1]] = current_gripper_position_2 - deltas[1]
-        self.apply_action(ArticulationAction(joint_positions=joint_positions))
-        return
-
-    def open_gripper(self, deltas: Tuple[float, float] = (0.005, 0.005)) -> None:
-        """[summary]
-        """
-        current_gripper_position_1, current_gripper_position_2 = self.get_gripper_position()
-        joint_positions = [None] * self.num_dof
-        joint_positions[self._grippers_dof_indices[0]] = current_gripper_position_1 + deltas[0]
-        joint_positions[self._grippers_dof_indices[1]] = current_gripper_position_2 + deltas[1]
-        self.apply_action(ArticulationAction(joint_positions=joint_positions))
-        return
 
     def apply_gripper_actions(self, gripper_actions: ArticulationAction):
         joint_actions = ArticulationAction()
@@ -219,14 +204,3 @@ class Franka(Robot):
         self._articulation_controller.switch_dof_control_mode(dof_index=self._grippers_dof_indices[0], mode="position")
         self._articulation_controller.switch_dof_control_mode(dof_index=self._grippers_dof_indices[1], mode="position")
         return
-
-    def switch_gripper(self, gripper_usd: str):
-        """[summary]
-
-        Args:
-            gripper_usd (str): [description]
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError

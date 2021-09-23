@@ -85,9 +85,6 @@ class RMPFlowIKSolver(BaseController):
                 target_joint_positions[i] = None
         return ArticulationAction(joint_positions=target_joint_positions)
 
-    def update_obstacles(self, obstacles):
-        raise NotImplementedError
-
     def add_cube_obstacle(self, cube_prim):
         self.mg.create_cube(cube_prim)
         return

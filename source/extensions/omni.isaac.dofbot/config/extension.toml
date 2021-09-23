@@ -1,0 +1,9 @@
+display_name = "Isaac Dofbot Robot"
+
+[dependencies]
+"omni.isaac.core" = {}
+"omni.isaac.kit" = {}
+"omni.isaac.motion_generation" = {}
+
+[[python.module]]
+name = "omni.isaac.dofbot"
