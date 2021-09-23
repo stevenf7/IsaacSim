@@ -140,3 +140,13 @@ async def add_carter_ros():
     stage = omni.usd.get_context().get_stage()
 
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
+
+
+async def add_franka():
+    result, nucleus_server = find_nucleus_server()
+    if result is False:
+        carb.log_error("Could not find nucleus server with /Isaac folder")
+        return
+    nucleus_path = nucleus_server + "/Isaac"
+    (result, error) = await load_test_file(nucleus_path + "/Robots/Franka/franka.usd")
+    stage = omni.usd.get_context().get_stage()

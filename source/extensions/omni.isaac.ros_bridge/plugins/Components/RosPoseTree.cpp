@@ -150,18 +150,23 @@ void RosPoseTree::pubCallback(ros::Publisher* pub)
             msg.child_frame_id = mFrameIdPrefix + mDynamicControlPtr->getRigidBodyName(rootBody);
 
             physx::PxTransform trans(parent_pose.transformInv(body1_pose));
-            if (mParentPrim)
+            if (msg.header.frame_id != msg.child_frame_id)
             {
-                msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(trans, mStageUnits);
-            }
-            else
-            {
-                msg.transform =
-                    omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(body1_pose, mStageUnits);
+                if (mParentPrim)
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(trans, mStageUnits);
+                }
+                else
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(body1_pose, mStageUnits);
+                }
+                tf_msg.transforms.push_back(msg);
             }
 
-            tf_msg.transforms.push_back(msg);
             int num_dofs = mDynamicControlPtr->getArticulationBodyCount(artculationHandle);
+            std::string parent_link;
             for (int j = 0; j < num_dofs; j++)
             {
                 DcHandle parent_body = mDynamicControlPtr->getArticulationBody(artculationHandle, j);
@@ -174,9 +179,10 @@ void RosPoseTree::pubCallback(ros::Publisher* pub)
                     physx::PxTransform body0_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(parent_body));
                     physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(child_body));
                     physx::PxTransform pos0_1(body0_pose.transformInv(body1_pose));
-                    parent_frame = mDynamicControlPtr->getRigidBodyName(parent_body);
-                    msg.header.frame_id = (parent_frame == "world") ? parent_frame : mFrameIdPrefix + parent_frame;
+                    parent_link = mDynamicControlPtr->getRigidBodyName(parent_body);
+                    msg.header.frame_id = mFrameIdPrefix + parent_link;
                     msg.child_frame_id = mFrameIdPrefix + mDynamicControlPtr->getRigidBodyName(child_body);
+
                     msg.transform =
                         omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(pos0_1, mStageUnits);
 
@@ -191,17 +197,21 @@ void RosPoseTree::pubCallback(ros::Publisher* pub)
             physx::PxTransform trans(parent_pose.transformInv(body1_pose));
             msg.header.frame_id = (parent_frame == "world") ? parent_frame : mFrameIdPrefix + parent_frame;
             msg.child_frame_id = mFrameIdPrefix + prim.GetName().GetString();
-            if (mParentPrim)
+            if (msg.header.frame_id != msg.child_frame_id)
             {
-                msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(trans, mStageUnits);
-            }
-            else
-            {
-                msg.transform =
-                    omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(body1_pose, mStageUnits);
-            }
+                if (mParentPrim)
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(trans, mStageUnits);
+                }
+                else
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(body1_pose, mStageUnits);
+                }
 
-            tf_msg.transforms.push_back(msg);
+                tf_msg.transforms.push_back(msg);
+            }
         }
         else if (type == eDcObjectNone)
         {
@@ -218,17 +228,21 @@ void RosPoseTree::pubCallback(ros::Publisher* pub)
             physx::PxTransform trans(parent_pose.transformInv(body1_pose));
             msg.header.frame_id = (parent_frame == "world") ? parent_frame : mFrameIdPrefix + parent_frame;
             msg.child_frame_id = mFrameIdPrefix + prim.GetName().GetString();
-            if (mParentPrim)
+            if (msg.header.frame_id != msg.child_frame_id)
             {
-                msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(trans, mStageUnits);
-            }
-            else
-            {
-                msg.transform =
-                    omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(body1_pose, mStageUnits);
-            }
+                if (mParentPrim)
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(trans, mStageUnits);
+                }
+                else
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(body1_pose, mStageUnits);
+                }
 
-            tf_msg.transforms.push_back(msg);
+                tf_msg.transforms.push_back(msg);
+            }
         }
     }
 
