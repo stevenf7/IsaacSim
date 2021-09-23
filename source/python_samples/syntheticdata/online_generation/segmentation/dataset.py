@@ -314,7 +314,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Dataset test")
     parser.add_argument("--categories", type=str, nargs="+", required=True, help="List of object classes to use")
     parser.add_argument(
-        "--max-asset-size",
+        "--max_asset_size",
         type=float,
         default=10.0,
         help="Maximum asset size to use in MB. Larger assets will be skipped.",

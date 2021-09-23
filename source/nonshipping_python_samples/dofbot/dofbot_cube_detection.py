@@ -124,7 +124,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Dataset test")
 
     parser.add_argument("-lr", "--learning_rate", type=float, default=1e-4, help="Learning rate")
-    parser.add_argument("--max-iters", type=float, default=1000, help="Number of training iterations.")
+    parser.add_argument("--max_iters", type=float, default=1000, help="Number of training iterations.")
     parser.add_argument("--visualize", action="store_true", help="Visualize predicted bounding boxes during training.")
     parser.add_argument("--eval_model", help="model file to evaluate", default="", type=str)
     args, unknown_args = parser.parse_known_args()
