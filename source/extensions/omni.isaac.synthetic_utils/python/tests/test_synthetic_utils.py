@@ -19,7 +19,7 @@ import copy
 import os
 import asyncio
 import numpy as np
-from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
+from pxr import Gf
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.syntheticdata as syn
