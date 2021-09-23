@@ -126,13 +126,13 @@ if __name__ == "__main__":
         "--categories", type=str, nargs="+", required=True, help="List of ShapeNet categories to use (space seperated)."
     )
     parser.add_argument(
-        "--max-asset-size",
+        "--max_asset_size",
         type=float,
         default=10.0,
         help="Maximum asset size to use in MB. Larger assets will be skipped.",
     )
     parser.add_argument("-lr", "--learning_rate", type=float, default=1e-4, help="Learning rate")
-    parser.add_argument("--max-iters", type=float, default=1000, help="Number of training iterations.")
+    parser.add_argument("--max_iters", type=float, default=1000, help="Number of training iterations.")
     parser.add_argument("--visualize", action="store_true", help="Visualize predicted masks during training.")
     args, unknown_args = parser.parse_known_args()
 
