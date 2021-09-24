@@ -89,14 +89,13 @@ class World(SimulationContext):
         """
         if not global_vars.LAUNCHED_FROM_TERMINAL:
             self.play()
-            # TODO: is this needed
-            super().step(render=True)
         self._scene._finalize()
         return
 
     def reset(self) -> None:
         """[summary]
         """
+        # This will do one step internally regardless
         if not self._scene_finalized:
             if self._current_task is not None:
                 self._current_task.set_up_scene(self.scene)
@@ -106,7 +105,6 @@ class World(SimulationContext):
             self._current_task.task_cleanup()
         self.stop()
         self.play()
-        super().step(render=True)
         self.scene.reset()
         if self._current_task is not None:
             self._current_task.reset()

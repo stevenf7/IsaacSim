@@ -29,8 +29,6 @@ art = dc.get_articulation("/Franka")
 dof_ptr = dc.find_articulation_dof(art, "panda_joint2")
 
 simulation_context.play()
-# NOTE: after play, one step is needed for simulation to be running and to be able to wake up articulation..etc
-simulation_context.step(render=True)
 for i in range(1000):
     dc.wake_up_articulation(art)
     dc.set_dof_position_target(dof_ptr, -1.5)
