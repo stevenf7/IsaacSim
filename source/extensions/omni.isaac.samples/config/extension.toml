@@ -31,13 +31,14 @@ writeTarget.kit = true
 "omni.isaac.core" = {}
 "omni.isaac.franka" = {}
 "omni.isaac.jetbot" = {}
+"omni.isaac.kaya" = {}
 "omni.isaac.motion_generation" = {}
 
 [[python.module]]
 name = "omni.isaac.samples.tests"
 
 [[python.module]]
-name = "omni.isaac.samples.scripts.kaya_preview"
+name = "omni.isaac.samples.scripts.kaya_joystick"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.jetbot_keyboard"
