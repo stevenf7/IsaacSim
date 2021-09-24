@@ -1,4 +1,4 @@
-gym==0.17.3
-stable-baselines3
+gym==0.20.0
+stable-baselines3==1.2.0
 tensorboard==2.4.0 
 tensorboard-plugin-wit==1.7.0 
