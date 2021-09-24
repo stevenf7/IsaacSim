@@ -1,6 +1,6 @@
 #!/bin/bash
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-MY_DIR="$(realpath -s "$SCRIPT_DIR"/..)"
+MY_DIR="$(realpath -s "$SCRIPT_DIR")"
 # path=$SCRIPT_DIR
 # while [[ $path != / ]];
 # do

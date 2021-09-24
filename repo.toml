@@ -325,6 +325,14 @@ args = [
 ]
 timeout = 1200
 
+[repo_test.suites.postinstalltests]
+kind = "glob_and_exec"
+path = "${test_root}"
+
+[[repo_test.suites.postinstalltests.group]]
+include = ["omni.isaac.sim.post.install.sh"]
+timeout = 1200
+
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
