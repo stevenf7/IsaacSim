@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.2"
+version = "0.1.3"
 category = "Simulation"
 title = "Isaac Sim Manip"
 description = "Utilities for joystick control"
@@ -19,7 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "omni.kit.test" = {}
 "omni.usd.libs" = {}
-"omni.appwindow" = {}
+"omni.ui" = {}
 
 [[python.module]]
 name = "omni.isaac.manip"

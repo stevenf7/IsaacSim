@@ -14,6 +14,7 @@ import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.manip import _manip
+import carb
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestManip(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -28,7 +29,31 @@ class TestManip(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    # Actual test, notice it is "async" function, so "await" can be used if needed
+    def event_callback(self, axis, signal):
+        self.latest_axis = axis
+        self.latest_signal = signal
+
+    # Basic unit test to make sure callback works
     async def test_manip(self):
         await omni.kit.app.get_app().next_update_async()
+
+        m = _manip.acquire_manip_interface()
+        provider = carb.input.acquire_input_provider()
+        gamepad = provider.create_gamepad("test", "0")
+        provider.set_gamepad_connected(gamepad, True)
+
+        m.bind_gamepad(self.event_callback)
+        await omni.kit.app.get_app().next_update_async()
+        # check that we have a value
+        provider.buffer_gamepad_event(gamepad, carb.input.GamepadInput.LEFT_STICK_UP, 1.0)
+        await omni.kit.app.get_app().next_update_async()
+        self.assertEqual(self.latest_signal, 1.0)
+        # check that value changed
+        provider.buffer_gamepad_event(gamepad, carb.input.GamepadInput.RIGHT_STICK_RIGHT, -1.0)
+        await omni.kit.app.get_app().next_update_async()
+        self.assertEqual(self.latest_signal, -1.0)
+        m.unbind_gamepad()
+        provider.destroy_gamepad(gamepad)
+        await omni.kit.app.get_app().next_update_async()
+
         pass
