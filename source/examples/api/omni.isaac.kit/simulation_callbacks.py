@@ -41,11 +41,20 @@ def step_callback_2(step_size):
     return
 
 
+def editor_callback(step_size):
+    print("Render Frame")
+
+
 simulation_context.add_physics_callback("physics_callback_1", step_callback_1)
 simulation_context.add_physics_callback("physics_callback_2", step_callback_2)
+simulation_context.add_editor_callback("editor_callback", editor_callback)
 simulation_context.stop()
 simulation_context.play()
+# Simulate 60 timesteps
 for i in range(60):
     simulation_context.step(render=False)
+# Render one frame
+simulation_context.render()
+
 simulation_context.stop()
 simulation_app.close()

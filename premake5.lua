@@ -326,7 +326,9 @@ group "python_samples"
     -- omni.kit.app
     python_sample_test("tests-nativepython-omni.kit.app.app_framework", "examples/api/omni.kit.app/app_framework.py")
     -- omni.isaac.kit
-    python_sample_test("tests-nativepython-omni.isaac.kit.example_zero", "examples/api/omni.isaac.kit/example_zero.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.hello_world", "examples/api/omni.isaac.kit/hello_world.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.simulation_callbacks", "examples/api/omni.isaac.kit/simulation_callbacks.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.control_robot", "examples/api/omni.isaac.kit/control_robot.py")
     -- omni.isaac.urdf
     python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "examples/api/omni.isaac.urdf/urdf_import.py")
     -- Simple samples

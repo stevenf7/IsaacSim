@@ -114,6 +114,7 @@ class SimulationContext:
 
     def play(self) -> None:
         self._timeline.play()
+        self._app.update()
         return
 
     def set_camera_view(self, eye=None, target=None, vel=0.05):
@@ -217,9 +218,15 @@ class SimulationContext:
             self._physics_scene.step(current_time=self.time)
         return
 
+    def render(self):
+        set_carb_setting(carb.settings.get_settings(), "/app/player/playSimulations", False)
+        self._app.update()
+        set_carb_setting(carb.settings.get_settings(), "/app/player/playSimulations", True)
+
     def add_physics_callback(self, callback_name, callback_fn):
         if callback_name in self._physics_callback_functions:
             carb.log_error(f"Physics callback `{callback_name}` already exists")
+            return
         self._physics_callback_functions[
             callback_name
         ] = self._physics_scene._physx_interface.subscribe_physics_step_events(callback_fn)
@@ -239,6 +246,7 @@ class SimulationContext:
     def add_stage_callback(self, callback_name, callback_fn):
         if callback_name in self._stage_callback_functions:
             carb.log_error(f"Stage callback `{callback_name}` already exists")
+            return
         self._stage_callback_functions[callback_name] = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(callback_fn)
         )
@@ -258,6 +266,7 @@ class SimulationContext:
     def add_timeline_callback(self, callback_name, callback_fn):
         if callback_name in self._timeline_callback_functions:
             carb.log_error(f"Timeline callback `{callback_name}` already exists")
+            return
         self._timeline_callback_functions[
             callback_name
         ] = self._timeline.get_timeline_event_stream().create_subscription_to_pop(callback_fn)
@@ -277,6 +286,7 @@ class SimulationContext:
     def add_editor_callback(self, callback_name, callback_fn):
         if callback_name in self._editor_callback_functions:
             carb.log_error(f"Editor callback `{callback_name}` already exists")
+            return
             # TODO: should we raise exception?
         self._editor_callback_functions[callback_name] = self.app.get_update_event_stream().create_subscription_to_pop(
             callback_fn
