@@ -688,15 +688,18 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
 {
     if (urdfRobot.links.size() == 0)
     {
+        CARB_LOG_WARN("Cannot add robot to stage, number of links is zero");
         return "";
     }
-    if (urdfRobot.links.size() >= 64)
-    {
-        CARB_LOG_WARN(
-            "URDF cannot have more than 63 links to be imported as a physx articulation. Try enabling the merge fixed joints option to reduce the number of links.");
-        CARB_LOG_WARN("URDF has %d links", static_cast<int>(urdfRobot.links.size()));
-        return "";
-    }
+    // The limit for links is now a 32bit index so this shouldn't be needed anymore
+    // if (urdfRobot.links.size() >= 64)
+    // {
+    //     CARB_LOG_WARN(
+    //         "URDF cannot have more than 63 links to be imported as a physx articulation. Try enabling the merge fixed
+    //         joints option to reduce the number of links.");
+    //     CARB_LOG_WARN("URDF has %d links", static_cast<int>(urdfRobot.links.size()));
+    //     return "";
+    // }
 
     if (config.createPhysicsScene)
     {

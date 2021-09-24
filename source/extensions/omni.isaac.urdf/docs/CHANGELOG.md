@@ -2,6 +2,17 @@
 CHANGELOG
 **********
 
+[0.1.7] - 2021-09-23
+========================
+
+Added
+-------
+- Default position drive damping to UI
+
+Fixed
+-------
+- Default config parameters are now respected
+
 [0.1.6] - 2021-08-31
 ========================
 
