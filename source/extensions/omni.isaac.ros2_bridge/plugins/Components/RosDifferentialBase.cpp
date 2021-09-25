@@ -137,18 +137,42 @@ void RosDifferentialBase::onComponentChange()
     // Get the wheel prim from the joint
     if (!mWheelFLHandle)
     {
-        CARB_LOG_ERROR("leftWheelJointPrim %s not valid", wheelFLName.c_str());
+        if (wheelFLName.empty())
+        {
+            CARB_LOG_ERROR(
+                "leftWheelJointName not found, please enter the name of the left wheel in Property Tab -> Raw USD Properties -> leftWheelJointName");
+        }
+        else
+        {
+            CARB_LOG_ERROR("leftWheelJointPrim %s not valid", wheelFLName.c_str());
+        }
         return;
     }
     isaac::utils::safeGetAttribute(typedPrim.GetRightWheelJointNameAttr(), wheelFRName);
-
-
     mWheelFRHandle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, wheelFRName.c_str());
-
     if (!mWheelFRHandle)
     {
-        CARB_LOG_ERROR("rightWheelJointPrim %s not valid", wheelFRName.c_str());
+        if (wheelFRName.empty())
+        {
+            CARB_LOG_ERROR(
+                "rightWheelJointName not found, please enter the name of the right wheel in Property Tab -> Raw USD Properties -> rightWheelJointName");
+        }
+        else
+        {
+            CARB_LOG_ERROR("rightWheelJointPrim %s not valid", wheelFRName.c_str());
+        }
         return;
+    }
+    // warn if using default wheel radius and base distance
+    if (mWheelRadius == 0.0f)
+    {
+        CARB_LOG_ERROR(
+            "Wheel radius zero. Please enter the wheel radius in Property Tab -> Raw USD Properties -> wheelRadius");
+    }
+    if (mWheelBase == 0.0f)
+    {
+        CARB_LOG_ERROR(
+            "Wheel base distance used. Please enter the wheel radius in Property Tab -> Raw USD Properties -> wheel base ");
     }
 }
 
@@ -264,9 +288,16 @@ void RosDifferentialBase::getWheelDesireSpeed(const pxr::GfVec2d& mCommandedSpee
     // mWheelBase is in stageunits
     // mWheelRadius is in stageunits
     // mWheelDesiredSpeed is in rad/s
-
-    mWheelDesiredSpeed[0] = (mCommandedSpeed[0] - mCommandedSpeed[1] * mWheelBase) / mWheelRadius;
-    mWheelDesiredSpeed[1] = (mCommandedSpeed[0] + mCommandedSpeed[1] * mWheelBase) / mWheelRadius;
+    if ((std::abs(mWheelRadius) < 1e-5) || (std::abs(mWheelBase) < 1e-5))
+    {
+        CARB_LOG_ERROR("Wheel radius is zero, cannot calculate robot speed");
+        CARB_LOG_ERROR("Wheel base distance is zero, cannot calculate robot speed");
+    }
+    else
+    {
+        mWheelDesiredSpeed[0] = (mCommandedSpeed[0] - mCommandedSpeed[1] * mWheelBase) / mWheelRadius;
+        mWheelDesiredSpeed[1] = (mCommandedSpeed[0] + mCommandedSpeed[1] * mWheelBase) / mWheelRadius;
+    }
 }
 
 float RosDifferentialBase::timedSmoothingFactor(float dt, float lambda)

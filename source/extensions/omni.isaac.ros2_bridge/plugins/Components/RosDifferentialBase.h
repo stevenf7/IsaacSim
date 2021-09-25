@@ -113,10 +113,10 @@ private:
     float mAccelerationSmoothing = 1.0f;
 
     /// Wheel radius to scale linear velocity by
-    float mWheelRadius = 1.0f;
+    float mWheelRadius = 0.0f;
 
     /// half length between FL and FR wheel
-    float mWheelBase;
+    float mWheelBase = 0.0f;
 };
 }
 }

@@ -148,18 +148,22 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
             msg.child_frame_id = mDynamicControlPtr->getRigidBodyName(rootBody);
 
             physx::PxTransform trans(parent_pose.transformInv(body1_pose));
-            if (mParentPrim)
+            if (msg.header.frame_id != msg.child_frame_id)
             {
-                msg.transform =
-                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
-            }
-            else
-            {
-                msg.transform =
-                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(body1_pose, mStageUnits);
+                if (mParentPrim)
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
+                }
+                else
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(body1_pose, mStageUnits);
+                }
+
+                tf_msg.transforms.push_back(msg);
             }
 
-            tf_msg.transforms.push_back(msg);
             int num_dofs = mDynamicControlPtr->getArticulationBodyCount(artculationHandle);
             for (int j = 0; j < num_dofs; j++)
             {
@@ -189,18 +193,21 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
             physx::PxTransform trans(parent_pose.transformInv(body1_pose));
             msg.header.frame_id = parent_frame;
             msg.child_frame_id = prim.GetName().GetString();
-            if (mParentPrim)
+            if (msg.header.frame_id != msg.child_frame_id)
             {
-                msg.transform =
-                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
-            }
-            else
-            {
-                msg.transform =
-                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(body1_pose, mStageUnits);
-            }
+                if (mParentPrim)
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
+                }
+                else
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(body1_pose, mStageUnits);
+                }
 
-            tf_msg.transforms.push_back(msg);
+                tf_msg.transforms.push_back(msg);
+            }
         }
         else if (type == eDcObjectNone)
         {
@@ -217,18 +224,21 @@ void RosPoseTree::pubCallback(rclcpp::PublisherBase* pub)
             physx::PxTransform trans(parent_pose.transformInv(body1_pose));
             msg.header.frame_id = parent_frame;
             msg.child_frame_id = prim.GetName().GetString();
-            if (mParentPrim)
+            if (msg.header.frame_id != msg.child_frame_id)
             {
-                msg.transform =
-                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
-            }
-            else
-            {
-                msg.transform =
-                    omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(body1_pose, mStageUnits);
-            }
+                if (mParentPrim)
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
+                }
+                else
+                {
+                    msg.transform =
+                        omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(body1_pose, mStageUnits);
+                }
 
-            tf_msg.transforms.push_back(msg);
+                tf_msg.transforms.push_back(msg);
+            }
         }
     }
 
