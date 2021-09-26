@@ -277,14 +277,13 @@ group "exts"
     include ("source/extensions/omni.isaac.kit")
     include ("source/extensions/omni.isaac.pip_archive")
     include ("source/extensions/omni.isaac.core")
-    include ("source/extensions/omni.isaac.franka")
-    include ("source/extensions/omni.isaac.jetbot")
-    include ("source/extensions/omni.isaac.dofbot")
+    include ("source/extensions/omni.isaac.unit_converter")
+    
 
     -- Linux Only
     if os.target() == "linux" then
         include ("source/extensions/omni.isaac.motion_planning")
-	include ("source/extensions/omni.isaac.motion_generation")
+	    include ("source/extensions/omni.isaac.motion_generation")
         include ("source/extensions/omni.isaac.robot_benchmark")
         include ("source/extensions/omni.isaac.benchmark_environments")
         include ("source/extensions/omni.isaac.occupancy_map")
@@ -297,7 +296,9 @@ group "exts"
         include ("source/extensions/omni.isaac.utils_manager")
         include ("source/extensions/omni.isaac.ur10")
         include ("source/extensions/omni.isaac.kaya")
-
+        include ("source/extensions/omni.isaac.dofbot")
+        include ("source/extensions/omni.isaac.franka")
+        include ("source/extensions/omni.isaac.jetbot")
     end
 
 

@@ -1,0 +1,34 @@
+[core]
+reloadable = true
+
+[package]
+version = "0.1.0"
+authors = ["Isaac Sim Team"]
+keywords = ["isaac", "utils"]
+changelog = "docs/CHANGELOG.md"
+writeTarget.kit = true
+
+title = "Distance Unit Converter"
+description="Utility tool to change the USD stage units per meter parameter. Converts most linear attributes that are bound by the units per meter stage attribute."
+
+# Path (relative to the root) or content of readme markdown file for UI.
+readme  = "docs/README.md"
+
+# URL of the extension source repository.
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.unit_converter"
+
+# One of categories for UI.
+category = "Other"
+
+
+# Use omni.ui to build simple UI
+[dependencies]
+"omni.isaac.ui" = {}
+"omni.kit.menu.utils" = {}
+"omni.usdphysics" = {}
+"omni.usd.schema.isaac" = {}
+
+
+# Main python module this extension provides, it will be publicly available as "import omni.hello.world".
+[[python.module]]
+name = "omni.isaac.unit_converter"

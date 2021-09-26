@@ -197,6 +197,7 @@ def combo_cb_str_builder(
     tooltip="",
     on_clicked_fn=lambda x: None,
     use_folder_picker=False,
+    read_only=False,
 ):
     """Creates a Stylized Checkbox + Stringfield Widget"""
     with ui.HStack():
@@ -204,7 +205,7 @@ def combo_cb_str_builder(
         cb = ui.SimpleBoolModel(default_value=default_val[0])
         SimpleCheckBox(default_val[0], on_clicked_fn, model=cb)
         str_field = ui.StringField(
-            name="StringField", width=ui.Fraction(1), height=0, alignment=ui.Alignment.LEFT_CENTER
+            name="StringField", width=ui.Fraction(1), height=0, alignment=ui.Alignment.LEFT_CENTER, read_only=read_only
         ).model
         str_field.set_value(default_val[1])
 
