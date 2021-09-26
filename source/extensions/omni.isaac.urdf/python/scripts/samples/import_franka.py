@@ -50,7 +50,9 @@ class Extension(omni.ext.IExt):
                 title = "Import a Franka Panda via URDF"
                 doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_urdf_import.html"
 
-                overview = "This Example shows you import a UR10 robot arm via URDF.\n\nPress the 'Open in IDE' button to view the source code."
+                overview = (
+                    "This Example shows you import a URDF.\n\nPress the 'Open in IDE' button to view the source code."
+                )
 
                 setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
@@ -141,8 +143,9 @@ class Extension(omni.ext.IExt):
     def _on_config_robot(self):
         stage = omni.usd.get_context().get_stage()
 
-        PhysxSchema.PhysxArticulationAPI.Get(stage, "/panda").CreateSolverPositionIterationCountAttr(32)
-        PhysxSchema.PhysxArticulationAPI.Get(stage, "/panda").CreateSolverVelocityIterationCountAttr(8)
+        # Set the solver parameters on the articulation
+        PhysxSchema.PhysxArticulationAPI.Get(stage, "/panda").CreateSolverPositionIterationCountAttr(64)
+        PhysxSchema.PhysxArticulationAPI.Get(stage, "/panda").CreateSolverVelocityIterationCountAttr(64)
 
         self.joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link0/panda_joint1"), "angular")
         self.joint_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_link1/panda_joint2"), "angular")

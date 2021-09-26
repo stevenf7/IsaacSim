@@ -8,8 +8,6 @@
 #
 
 import asyncio
-import os
-import carb
 import carb.tokens
 import omni.kit
 import omni.ui as ui
@@ -78,23 +76,29 @@ class Extension(omni.ext.IExt):
         self._stage = None
 
     def _on_clear_stage(self):
-        omni.usd.get_context().close_stage_with_callback(lambda a, b: omni.usd.get_context().new_stage(None))
+        asyncio.ensure_future(omni.usd.get_context().new_stage_async())
 
-    def _on_load_stage(self):
+    async def load_stage(self, path):
         if self._asset_path is None:
             self._asset_path = get_server_path("/Isaac")
         if self._asset_path is None:
             return
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.usd.get_context().open_stage_async(self._asset_path + path)
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+    def _on_load_stage(self):
 
         current_scenario_index = self._selected_scenario.model.get_item_value_model().as_int
-        stage_path = self._asset_path + "/Samples/DR/Props/simple_cube_with_light.usd"
+        path = "/Samples/DR/Props/simple_cube_with_light.usd"
         if current_scenario_index == 7:
-            stage_path = self._asset_path + "/Samples/DR/Props/only_light.usd"
+            path = "/Samples/DR/Props/only_light.usd"
         elif current_scenario_index == 8:
-            stage_path = self._asset_path + "/Samples/DR/Props/multiple_cubes_with_light.usd"
-        omni.usd.get_context().close_stage_with_callback(
-            lambda a, b: omni.usd.get_context().open_stage(stage_path, None)
-        )
+            path = "/Samples/DR/Props/multiple_cubes_with_light.usd"
+
+        asyncio.ensure_future(self.load_stage(path))
 
     def _on_load_component(self):
         if self._asset_path is None:
@@ -349,23 +353,7 @@ class Extension(omni.ext.IExt):
         )
 
     def add_simple_room_scene(self):
-        if self._asset_path is None:
-            self._asset_path = get_server_path("/Isaac")
-        if self._asset_path is None:
-            return
-        omni.usd.get_context().close_stage_with_callback(
-            lambda a, b: omni.usd.get_context().open_stage(
-                self._asset_path + "/Samples/DR/Stage/simple_room_sample.usda", None
-            )
-        )
+        asyncio.ensure_future(self.load_stage("/Samples/DR/Stage/simple_room_sample.usda"))
 
     def add_warehouse_scene(self):
-        if self._asset_path is None:
-            self._asset_path = get_server_path("/Isaac")
-        if self._asset_path is None:
-            return
-        omni.usd.get_context().close_stage_with_callback(
-            lambda a, b: omni.usd.get_context().open_stage(
-                self._asset_path + "/Samples/DR/Stage/simple_warehouse_material_sample.usda", None
-            )
-        )
+        asyncio.ensure_future(self.load_stage("/Samples/DR/Stage/simple_warehouse_material_sample.usda"))

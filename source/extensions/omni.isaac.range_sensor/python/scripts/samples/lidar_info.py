@@ -50,7 +50,7 @@ class Extension(omni.ext.IExt):
         # does not create an instance of lidar_info; that is done by the extension when it is loaded by kit.  All this
         # menu does is show or hide our GUI we will use for interacting with lidar_info
         self._window = omni.ui.Window(
-            EXTENSION_NAME, width=0, height=0, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
+            EXTENSION_NAME, width=500, height=0, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
         )
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
@@ -204,6 +204,8 @@ class Extension(omni.ext.IExt):
         UsdPhysics.CollisionAPI.Apply(cubePrim)
 
     def _get_info_function(self, val=False):
+        if not self.lidar:
+            return
         maxDepth = self.lidar.GetMaxRangeAttr().Get()
 
         # The LIDAR itself exists as a C++ object.  In order to retrieve data from this object we need to call

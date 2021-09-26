@@ -107,8 +107,8 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
         await simulate(1)
 
         # checks
-        self.assertEqual(len(self._tf_data.transforms), 12)  # there are 12 items in the tree.
-        self.assertEqual(self._tf_data.transforms[11].header.frame_id, "world")  # check cube's parent is world
+        self.assertEqual(len(self._tf_data.transforms), 13)  # there are 12 items in the tree.
+        self.assertEqual(self._tf_data.transforms[12].header.frame_id, "world")  # check cube's parent is world
 
         self._timeline.stop()
 
