@@ -51,7 +51,7 @@ class Extension(omni.ext.IExt):
                 title = "Import a UR10 via URDF"
                 doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_urdf_import.html"
 
-                overview = "This Example shows how to import a UR10 robot arm via URDF in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code."
+                overview = "This Example shows how to import a URDF in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code."
 
                 setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 

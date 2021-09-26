@@ -32,6 +32,7 @@ class Extension(omni.ext.IExt):
 
         # We also need an interface to the viewport to do things like set and get camera positions
         self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._timeline = omni.timeline.get_timeline_interface()
 
         self._menu_items = [
             MenuItemDescription(
@@ -95,9 +96,8 @@ class Extension(omni.ext.IExt):
                             "type": "checkbox_scrolling_frame",
                             "default_val": [False, "No Data To Display"],
                             "tooltip": "Show incoming data from an active Sensor",
-                            "on_clicked_fn": self._get_info_function,
                         }
-                        self._info_label = combo_cb_scrolling_frame_builder(**dict)[1]
+                        self._info_cb, self._info_label = combo_cb_scrolling_frame_builder(**dict)
 
                 self._envelope_frame = ui.CollapsableFrame(
                     title="Envelopes Panel",
@@ -113,6 +113,7 @@ class Extension(omni.ext.IExt):
         # Perform cleanup once the sample closes
         remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
+        self._editor_event_subscription = None
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
@@ -254,13 +255,22 @@ class Extension(omni.ext.IExt):
             )
 
             # we want to make sure we can see the ultrasonic we made, so we set the camera position and look target
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 500, 500, 500, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 2000, 1000, 500, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", 500, 500, 0, True)
+
+            self._editor_event_subscription = (
+                omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
+            )
 
     def _on_spawn_ultrasonic_button(self):
         # wait for new stage before creating ultrasonic
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._spawn_ultrasonic_function(task))
+
+    def _on_editor_step(self, step):
+        if self._info_cb.get_value_as_bool():
+            if self._timeline.is_playing():
+                self._get_info_function()
 
     def _on_spawn_obstacles_button(self):
         stage = omni.usd.get_context().get_stage()
@@ -322,6 +332,8 @@ class Extension(omni.ext.IExt):
                     ui.Spacer(height=1)
 
     def _get_info_function(self, val=False):
+        if not self.ultrasonic:
+            return
         maxDepth = self.ultrasonic.GetMaxRangeAttr().Get()
 
         # The ULTRASONIC itself exists as a C++ object.  In order to retrieve data from this object we need to call
