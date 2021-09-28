@@ -45,6 +45,12 @@ class Trainer:
 
         # Setup Model
         model = None
+        if self.network == "mask_rcnn" or self.network == "faster_rcnn":
+            # Workaround to avoid SSL Handshake error while downloading models
+            # https://github.com/pytorch/pytorch/issues/2271
+            from torchvision.models.resnet import model_urls
+
+            model_urls["resnet50"] = model_urls["resnet50"].replace("https://", "http://")
         if self.network == "mask_rcnn":
             model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=False, num_classes=3)
         elif self.network == "faster_rcnn":
