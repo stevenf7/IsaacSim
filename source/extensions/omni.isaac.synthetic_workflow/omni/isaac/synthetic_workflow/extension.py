@@ -18,7 +18,6 @@ import os
 import numpy as np
 import weakref
 
-from . import scenario, dataset, train
 from carb.settings import get_settings
 from PIL import Image
 from omni.isaac.synthetic_utils import SyntheticDataHelper
@@ -260,6 +259,8 @@ class Extension(omni.ext.IExt):
                         # self.progress["bar1"] = ui.ProgressBar(width=400, style={"font_size": 15.0}).model
 
     def load_scene_fn(self):
+        from . import scenario
+
         self.new_scene = scenario.RandomScenario()
         idx = self._selected_scenario.get_item_value_model().as_int
         if idx == 0:
@@ -307,6 +308,9 @@ class Extension(omni.ext.IExt):
             self.is_dataloading = False
 
     def load_fn(self):
+        from . import dataset
+
+        self.dataset_helper = dataset
         self.data_folder_path = str(self._ui_dir_name.get_value_as_string())
         self.train_data = dataset.RandomObjects(self.data_folder_path)
         self.train_data.load_data()
@@ -316,7 +320,7 @@ class Extension(omni.ext.IExt):
         train_data_idx = int(len(self.train_data.gt_all) * float_idx)
         self._visualize_window.visible = True
         self.is_dataloading = True
-        task = asyncio.ensure_future(dataset.visualize_data(self.train_data, train_data_idx))
+        task = asyncio.ensure_future(self.dataset_helper.visualize_data(self.train_data, train_data_idx))
         asyncio.ensure_future(self.track_load_fn(task))
 
     async def track_train_fn(self, task):
@@ -327,6 +331,8 @@ class Extension(omni.ext.IExt):
             self.trainer = None
 
     def train_fn(self):
+        from . import train
+
         self.data_folder_path = str(self._ui_dir_name.get_value_as_string())
         network_index = self._selected_train_scenario.get_item_value_model().as_int
         network_name = "faster_rcnn" if network_index == 0 else "mask_rcnn"
