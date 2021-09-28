@@ -103,7 +103,7 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         file_name = os.path.join(self._log_file_path, "recorded_tests/Cubby_Franka_RMP_Test.json")
         benchmark_logger = BenchmarkLogger(file_name)
-        await self._run_benchmark("Cubby", "Franka", "RMPflow", 600, benchmark_logger, path_to_robot_usd=usd_path)
+        await self._run_benchmark("Cubby", "Franka", "RMPflow", 1000, benchmark_logger, path_to_robot_usd=usd_path)
 
         if self._write_new_golden_vals:
             benchmark_logger.write_to_json(skip_headerless_tests=False)
@@ -116,7 +116,7 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         file_name = os.path.join(self._log_file_path, "./recorded_tests/Cubby_UR10_RMP_Test.json")
         benchmark_logger = BenchmarkLogger(file_name)
-        await self._run_benchmark("Cubby", "UR10", "RMPflow", 600, benchmark_logger, path_to_robot_usd=usd_path)
+        await self._run_benchmark("Cubby", "UR10", "RMPflow", 1000, benchmark_logger, path_to_robot_usd=usd_path)
 
         if self._write_new_golden_vals:
             benchmark_logger.write_to_json(skip_headerless_tests=False)
@@ -129,7 +129,7 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         file_name = os.path.join(self._log_file_path, "./recorded_tests/Window_UR10_RMP_Test.json")
         benchmark_logger = BenchmarkLogger(file_name)
-        await self._run_benchmark("Window", "UR10", "RMPflow", 300, benchmark_logger, path_to_robot_usd=usd_path)
+        await self._run_benchmark("Window", "UR10", "RMPflow", 600, benchmark_logger, path_to_robot_usd=usd_path)
 
         if self._write_new_golden_vals:
             benchmark_logger.write_to_json(skip_headerless_tests=False)
@@ -196,6 +196,11 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._robot_benchmark.initialize_test(env, robot_assets, motion_policy_config, benchmark_logger)
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        art_handle = self._dc.get_articulation(self._robot_benchmark.robot_path)
+        dof_states = self._dc.get_articulation_dof_states(art_handle, _dynamic_control.STATE_POS)
+        dof_states["pos"] = self._dc.get_articulation_dof_position_targets(art_handle)
+        self._dc.set_articulation_dof_states(art_handle, dof_states, _dynamic_control.STATE_ALL)
 
         for frame in range(num_frames):
             await omni.kit.app.get_app().next_update_async()

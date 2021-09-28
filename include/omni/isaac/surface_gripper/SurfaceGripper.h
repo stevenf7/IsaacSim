@@ -170,7 +170,9 @@ public:
 
             if (hit.hit)
             {
-                CARB_LOG_INFO("Gripping prim %s at distance %f", mDc->getRigidBodyPath(hit.rigidBody), hit.distance);
+
+                CARB_LOG_INFO("Gripping prim %s at distance %f with parent %s", mDc->getRigidBodyPath(hit.rigidBody),
+                              hit.distance, mProps.parentPath.c_str());
                 DcTransform t_1 = inverse(mDc->getRigidBodyPose(hit.rigidBody)) * _t_0;
 
                 mJointProperties.body0 = rb_0;

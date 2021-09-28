@@ -16,7 +16,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
 
 from .common import set_drive_parameters
-from pxr import UsdLux, Sdf, Gf, UsdPhysics
+from pxr import UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 
 EXTENSION_NAME = "Import UR10"
 
@@ -130,6 +130,9 @@ class Extension(omni.ext.IExt):
     def _on_config_robot(self):
         stage = omni.usd.get_context().get_stage()
 
+        PhysxSchema.PhysxArticulationAPI.Get(stage, "/ur10").CreateSolverPositionIterationCountAttr(64)
+        PhysxSchema.PhysxArticulationAPI.Get(stage, "/ur10").CreateSolverVelocityIterationCountAttr(64)
+
         self.joint_1 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/base_link/shoulder_pan_joint"), "angular")
         self.joint_2 = UsdPhysics.DriveAPI.Get(
             stage.GetPrimAtPath("/ur10/shoulder_link/shoulder_lift_joint"), "angular"
@@ -140,24 +143,12 @@ class Extension(omni.ext.IExt):
         self.joint_6 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/ur10/wrist_2_link/wrist_3_joint"), "angular")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
-        set_drive_parameters(
-            self.joint_1, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 3300000.0 * 60
-        )
-        set_drive_parameters(
-            self.joint_2, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 3300000.0 * 60
-        )
-        set_drive_parameters(
-            self.joint_3, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 1500000.0 * 60
-        )
-        set_drive_parameters(
-            self.joint_4, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 560000.0 * 60
-        )
-        set_drive_parameters(
-            self.joint_5, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 560000.0 * 60
-        )
-        set_drive_parameters(
-            self.joint_6, "position", math.degrees(0), math.radians(2e7), math.radians(2e6), 560000.0 * 60
-        )
+        set_drive_parameters(self.joint_1, "position", math.degrees(0), math.radians(1e8), math.radians(5e7))
+        set_drive_parameters(self.joint_2, "position", math.degrees(0), math.radians(1e8), math.radians(5e7))
+        set_drive_parameters(self.joint_3, "position", math.degrees(0), math.radians(1e8), math.radians(5e7))
+        set_drive_parameters(self.joint_4, "position", math.degrees(0), math.radians(1e8), math.radians(5e7))
+        set_drive_parameters(self.joint_5, "position", math.degrees(0), math.radians(1e8), math.radians(5e7))
+        set_drive_parameters(self.joint_6, "position", math.degrees(0), math.radians(1e8), math.radians(5e7))
 
     def _on_config_drives(self):
         self._on_config_robot()  # make sure drives are configured first

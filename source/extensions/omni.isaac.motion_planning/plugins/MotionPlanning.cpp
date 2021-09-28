@@ -338,7 +338,7 @@ void onPhysicsStep(float timeElapsed, void* userData)
     {
         return;
     }
-    CARB_LOG_INFO("Physics Step");
+    // CARB_LOG_INFO("Physics Step");
 
     CARB_PROFILE_ZONE(0, "MpOnUpdate");
 #if 0

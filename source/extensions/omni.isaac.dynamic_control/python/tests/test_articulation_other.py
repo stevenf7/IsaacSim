@@ -174,7 +174,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
         for new_pos in new_pos_list:
             # set new dof pos target
             self.assertTrue(self._dc.set_dof_position_target(dof_ptr, new_pos))
-            await dc_utils.simulate(1.0, self._dc, art)
+            await dc_utils.simulate(4.0, self._dc, art)
             dof_pos_new = self._dc.get_dof_position(dof_ptr)
             self.assertAlmostEqual(dof_pos_new, new_pos, delta=0.02)
             dof_target_new = self._dc.get_dof_position_target(dof_ptr)

@@ -19,6 +19,7 @@ icon = "data/icon.png"
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_planning" = {}
 "omni.isaac.utils" = {}
+"omni.isaac.core" = {}
 
 [[python.module]]
 name = "omni.isaac.motion_generation"

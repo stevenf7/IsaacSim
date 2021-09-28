@@ -9,13 +9,13 @@
 import omni.kit.test
 import carb
 import asyncio
-from pxr import Usd, UsdGeom, Gf, UsdPhysics, Sdf
+from pxr import Usd, UsdGeom, Gf
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.motion_generation import MotionGenerator
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils.scripts import distance_metrics
-
+from omni.isaac.core.utils.xforms import set_xform_position
 import os
 import json
 import numpy as np
@@ -158,8 +158,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.verify_robot_convergence(
             target_pos, timeout, target_orient=Gf.Quatf(0.0, 0.0, 0.0, 1.0), obs_pos=obstacle_pos
         )
-
-        robot_geom.AddTranslateOp().Set(Gf.Vec3d(10.0, 70.0, 0.0))
+        set_xform_position(robot_prim, np.array([10.0, 70.0, 0.0]))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
@@ -216,7 +215,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             2: It is sufficient to confirm that the world state is updated correctly in 
                 test_rmpflow_on_franka_velocity_control().
         """
-        pos_targets = self._dc.get_articulation_dof_position_targets(self._art)
+        await self.teleport_robot_to_dc_pos_targets()
         timeout = 10
 
         target_pos = Gf.Vec3d(50.0, 0.0, 50.0)
@@ -226,7 +225,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             target_pos, timeout, target_orient=Gf.Quatf(0.0, 0.0, 0.0, 1.0), obs_pos=obstacle_pos
         )
 
-        robot_geom.AddTranslateOp().Set(Gf.Vec3d(10.0, 70.0, 0.0))
+        set_xform_position(robot_prim, np.array([10.0, 70.0, 0.0]))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
@@ -277,35 +276,12 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(self._mg.is_initialized())
 
         ground_truths = {
-            "no_target": np.array(
-                [
-                    -0.19556043048831476,
-                    -0.06313919296913081,
-                    -0.14353135682935758,
-                    -0.2795648103994666,
-                    0.09508286703693264,
-                    -0.0926018020110439,
-                ]
-            ),
+            "no_target": np.array([-0.07482819, -0.03575732, -0.13965198, -0.24087109, 0.2437708, 3.5758836e-18]),
             "target_no_obstacle": np.array(
-                [
-                    -0.4433465143351539,
-                    -0.6064906997758617,
-                    0.26105512039136,
-                    0.2421371180401331,
-                    0.005921446715897875,
-                    -0.005721427980404127,
-                ]
+                [-0.4218098, 0.17964546, 0.3320944, 0.47430024, -0.36874405, -6.0895833e-18]
             ),
             "target_with_obstacle": np.array(
-                [
-                    -0.42278625529099445,
-                    -0.6163405623967693,
-                    0.2668917690556075,
-                    0.24774372478471263,
-                    0.006360610369395176,
-                    -0.00588774024761614,
-                ]
+                [-0.40133855, 0.0791791, 0.37916863, 0.48281658, -0.37568298, 2.1197544e-19]
             ),
             "target_pos": Gf.Vec3d(50.0, 0.0, 0.0),
             "obs_pos": Gf.Vec3d(50.0, 0.0, -20.0),
@@ -317,7 +293,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         timeout = 5
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
-        robot_geom.AddTranslateOp().Set(Gf.Vec3d(10.0, 70.0, 0.0))
+        set_xform_position(robot_prim, np.array([10.0, 70.0, 0.0]))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -np.pi / 4).GetQuat())
@@ -374,7 +350,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         timeout = 5
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
-        robot_geom.AddTranslateOp().Set(Gf.Vec3d(10.0, 70.0, 0.0))
+        set_xform_position(robot_prim, np.array([10.0, 70.0, 0.0]))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
