@@ -13,10 +13,25 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.kaya import Kaya
 from omni.isaac.core import World
 from omni.isaac.kaya.controllers import HolonomicController
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.prims import XFormPrim
+from omni.isaac.kit.utils import add_usd_reference
+import numpy as np
+import carb
 
 # TODO: changed this when asset gets converted
 my_world = World(stage_units_in_meters=0.01)
 my_kaya = my_world.scene.add(Kaya(stage=my_world.stage, prim_path="/World/Kaya", name="my_kaya"))
+result, nucleus_server = find_nucleus_server()
+if result is False:
+    carb.log_error("Could not find nucleus server with /Isaac folder")
+prim = add_usd_reference(
+    stage=my_world.scene.stage,
+    usd_path=nucleus_server + "/Isaac/Environments/Grid/gridroom_curved.usd",
+    prim_path="/World/background",
+)
+# TODO: change with new USD
+XFormPrim(prim, "background", position=np.array([0, 0, -9]))
 my_controller = HolonomicController(name="holonomic_controller")
 my_world.reset()
 

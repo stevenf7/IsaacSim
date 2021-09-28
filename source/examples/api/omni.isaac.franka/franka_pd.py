@@ -53,10 +53,10 @@ class PDController(BaseController):
     def forward(self, observations):
         position_error = observations["franka"]["target_joint_positions"] - observations["franka"]["joint_positions"]
         velocity_error = -observations["franka"]["joint_velcoities"]
-        torque_action = self._kp * position_error + self._kd * velocity_error
-        # return torque_action
+        joint_efforts = self._kp * position_error + self._kd * velocity_error
+        # return efforts
         # TODO: there is a bug here somewhere!
-        return ArticulationAction(joint_torques=torque_action / 100.0)
+        return ArticulationAction(joint_efforts=joint_efforts / 100.0)
 
 
 my_task = FrankaTask()

@@ -18,7 +18,7 @@ from pxr import Usd
 
 
 class Scene(object):
-    def __init__(self, stage: Usd.Stage) -> None:
+    def __init__(self, stage: Usd.Stage, stage_units_in_meters) -> None:
         """[summary]
 
         Args:
@@ -26,6 +26,7 @@ class Scene(object):
         """
         self._scene_registry = SceneRegistry()
         self._stage = stage
+        self._stage_units_in_meters = stage_units_in_meters
 
     @property
     def stage(self) -> Usd.Stage:
@@ -35,6 +36,10 @@ class Scene(object):
             Usd.Stage: [description]
         """
         return self._stage
+
+    @property
+    def stage_units_in_meters(self):
+        return self._stage_units_in_meters
 
     def add(self, obj: XFormPrim) -> XFormPrim:
         """[summary]
@@ -57,6 +62,8 @@ class Scene(object):
             self._scene_registry.add_articulated_system(name=obj.name, articulated_system=obj)
         elif isinstance(obj, Robot):
             self._scene_registry.add_robot(name=obj.name, robot=obj)
+        elif isinstance(obj, XFormPrim):
+            self._scene_registry.add_xform(name=obj.name, xform=obj)
         else:
             raise Exception("object type is not supported yet")
         return obj
@@ -96,6 +103,8 @@ class Scene(object):
             articulated_system.reset()
         for robot_name, robot in self._scene_registry._robots.items():
             robot.reset()
+        for xform_name, xform in self._scene_registry.xforms.items():
+            xform.reset()
         return
 
     def _finalize(self) -> None:
@@ -145,6 +154,8 @@ class Scene(object):
             self.remove_object(articulated_system_name)
         for robot_name, robot in self._scene_registry._robots.items():
             self.remove_object(robot_name)
+        for xform_name, xform in self._scene_registry.xforms.items():
+            self.remove_object(xform_name)
         return
 
     def check_collisions(self) -> bool:

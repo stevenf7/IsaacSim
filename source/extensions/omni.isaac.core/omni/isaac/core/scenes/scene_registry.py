@@ -22,6 +22,7 @@ class SceneRegistry(object):
         self._visual_objects = dict()
         self._articulated_systems = dict()
         self._robots = dict()
+        self._xforms = dict()
         return
 
     @property
@@ -50,6 +51,15 @@ class SceneRegistry(object):
             dict: [description]
         """
         return self._robots
+
+    @property
+    def xforms(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._xforms
 
     # TODO: add if name exists check uniqueness
     def add_rigid_object(self, name, rigid_object: RigidPrim) -> None:
@@ -92,6 +102,16 @@ class SceneRegistry(object):
         self._robots[name] = robot
         return
 
+    def add_xform(self, name, xform: XFormPrim) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            robot (Robot): [description]
+        """
+        self._xforms[name] = xform
+        return
+
     def name_exists(self, name: str) -> bool:
         """[summary]
 
@@ -106,6 +126,7 @@ class SceneRegistry(object):
             or name in self._articulated_systems
             or name in self._rigid_objects
             or name in self._visual_objects
+            or name in self._xforms
         ):
             return True
         else:
@@ -125,6 +146,8 @@ class SceneRegistry(object):
             del self._rigid_objects[name]
         elif name in self._visual_objects:
             del self._visual_objects[name]
+        elif name in self._xforms:
+            del self._xforms[name]
         return
 
     def get_object(self, name: str) -> XFormPrim:
@@ -144,3 +167,5 @@ class SceneRegistry(object):
             return self._rigid_objects[name]
         elif name in self._visual_objects:
             return self._visual_objects[name]
+        elif name in self._xforms:
+            return self._xforms[name]

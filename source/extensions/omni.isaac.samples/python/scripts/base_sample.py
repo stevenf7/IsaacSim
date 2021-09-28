@@ -37,7 +37,6 @@ class BaseSample(omni.ext.IExt):
         doc_link: str,
         overview: str,
         file_path: str,
-        add_ground_plane: bool = True,
         physics_dt: float = 1.0 / 60.0,
         stage_units_in_meters: float = 1.0,
     ):
@@ -58,11 +57,7 @@ class BaseSample(omni.ext.IExt):
             file_path=file_path,
         )
 
-        self._world_settings = {
-            "add_ground_plane": add_ground_plane,
-            "physics_dt": physics_dt,
-            "stage_units_in_meters": stage_units_in_meters,
-        }
+        self._world_settings = {"physics_dt": physics_dt, "stage_units_in_meters": stage_units_in_meters}
         return
 
     def _build_ui(self, name, title, doc_link, overview, buttons_mapping, file_path):

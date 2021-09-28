@@ -8,3 +8,4 @@
 #
 from omni.isaac.ur10.tasks.target_follower import TargetFollower
 from omni.isaac.ur10.tasks.pick_place import PickPlace
+from omni.isaac.ur10.tasks.bin_packing import BinPacking

@@ -18,8 +18,8 @@ class GeometryPrim(XFormPrim):
     def __init__(
         self,
         prim: Usd.Prim,
-        geom: UsdGeom.Gprim,
         name: str,
+        geom: Optional[UsdGeom.Gprim] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         visible: bool = True,
@@ -38,7 +38,10 @@ class GeometryPrim(XFormPrim):
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
         """
         super().__init__(prim, name=name, position=position, orientation=orientation, visible=visible)
-        self._geom = geom
+        if geom is None:
+            self._geom = UsdGeom.Gprim(prim)
+        else:
+            self._geom = geom
         if color is not None:
             self.set_usd_color(color)
         default_color = self.get_usd_color()

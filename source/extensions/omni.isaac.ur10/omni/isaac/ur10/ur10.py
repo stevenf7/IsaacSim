@@ -8,8 +8,6 @@
 #
 from typing import Optional, Tuple
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
-from omni.isaac.core.utils.prims import set_usd_visibility
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
 import carb
 import numpy as np
 from omni.isaac.core.robots.robot import Robot
@@ -58,7 +56,7 @@ class UR10(Robot):
                     return
                 asset_path = nucleus_server + "/Isaac/Robots/UR10/ur10.usd"
                 prim.GetReferences().AddReference(asset_path)
-                self._end_effector_prim_name = "wrist_3_link"
+                self._end_effector_prim_name = "ee_link"
         super().__init__(prim=prim, name=name, position=position, orientation=orientation, articulation_controller=None)
         self._end_effector = None
         self._virtual_gripper_props = None
@@ -121,6 +119,10 @@ class UR10(Robot):
         """
         # TODO: need to account for the gripper here
         return self._end_effector.get_angular_velocity()
+
+    def set_gripper_length(self, length: float):
+        self._gripper_length = length
+        return
 
     def _initialize_handles(self) -> None:
         """[summary]
@@ -210,24 +212,19 @@ class UR10(Robot):
     # TODO: add support to long gripper as well
     def add_gripper(self, usd_path=None):
         # TODO: account for relative pose here..etc to account for the gripper pose
-        self._gripper_prim_name = self.prim_path + "/" + self._end_effector_prim_name + "/gripper"
+        self._gripper_prim_name = self.prim_path + "/" + self._end_effector_prim_name
         if usd_path is None:
-            gripper_prim = self._stage.DefinePrim(self._gripper_prim_name, "Xform")
+            gripper_prim = self._stage.GetPrimAtPath(self._gripper_prim_name)
             result, nucleus_server = find_nucleus_server()
             if result is False:
                 carb.log_error("Could not find nucleus server with /Isaac folder")
                 return
             asset_path = nucleus_server + "/Isaac/Robots/UR10/Props/short_gripper.usd"
             gripper_prim.GetReferences().AddReference(asset_path)
-            set_usd_visibility(prim=self._stage.GetPrimAtPath(self._gripper_prim_name + "/Lights/Light"), visible=False)
-            self._gripper = XFormPrim(
-                prim=self._stage.GetPrimAtPath(self._gripper_prim_name),
-                name="gripper",
-                orientation=euler_angles_to_quat(np.array([-np.pi / 2, 0, 0])),
-            )
+            self._gripper = XFormPrim(prim=self._stage.GetPrimAtPath(self._gripper_prim_name), name="gripper")
             # TODO: change values with USD
-            self.add_surface_gripper(translate=17, direction="y")
-            self._gripper_length = 10
+            self._gripper_length = 16.11
+            self.add_surface_gripper(translate=self._gripper_length, direction="x")
         else:
             gripper_prim = self._stage.DefinePrim(self._gripper_prim_name, "Xform")
             gripper_prim.GetReferences().AddReference(usd_path)

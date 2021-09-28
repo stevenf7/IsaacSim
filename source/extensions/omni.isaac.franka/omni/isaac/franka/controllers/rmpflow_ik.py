@@ -10,7 +10,7 @@ from omni.isaac.core.controllers.controller import BaseController
 from omni.isaac.motion_generation import MotionGenerator
 from omni.isaac.core.utils.types import ArticulationAction
 from typing import Optional
-from omni.isaac.core.utils.rotations import rot_matrix_from_quat
+from omni.isaac.core.utils.rotations import quat_to_rot_matrix
 import os
 import json
 import numpy as np
@@ -55,7 +55,7 @@ class RMPFlowIKSolver(BaseController):
             self.mg._motion_policy._policy.set_end_effector_target(
                 position=np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1),
                 orientation=lula.Rotation3(
-                    np.array(rot_matrix_from_quat(target_end_effector_orientation), dtype=np.float64).reshape(3, 3)
+                    np.array(quat_to_rot_matrix(target_end_effector_orientation), dtype=np.float64).reshape(3, 3)
                 ),
             )
         else:
