@@ -39,7 +39,9 @@ class VisualCube(GeometryPrim):
         """
         cubeGeom = UsdGeom.Cube.Define(stage, prim_path)
         cubePrim = stage.GetPrimAtPath(prim_path)
-        super().__init__(cubePrim, cubeGeom, name, position, orientation, color=color)
+        super().__init__(
+            prim=cubePrim, geom=cubeGeom, name=name, position=position, orientation=orientation, color=color
+        )
         self.set_usd_size(size)
         # TODO: opacity is not working for some reason
         # self.geom.CreateDisplayOpacityAttr([0.5])

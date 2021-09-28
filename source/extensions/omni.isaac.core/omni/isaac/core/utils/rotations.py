@@ -10,9 +10,10 @@
 import numpy as np
 from pxr import Gf
 import math
+from scipy.spatial.transform import Rotation as R
 
 
-def rot_matrix_from_quat(quat: np.ndarray) -> np.ndarray:
+def quat_to_rot_matrix(quat: np.ndarray) -> np.ndarray:
     # might need to be normalized
     rotm = Gf.Matrix3f(Gf.Quatf(*quat.tolist())).GetTranspose()
     return np.array(rotm)
@@ -43,16 +44,14 @@ def quat_to_euler_angles(quat: np.ndarray) -> np.ndarray:
 
 def euler_angles_to_quat(euler_angles: np.ndarray) -> np.ndarray:
     roll, pitch, yaw = euler_angles
-    c1 = np.cos(yaw / 2.0)
-    s1 = np.sin(yaw / 2.0)
-    c2 = np.cos(pitch / 2.0)
-    s2 = np.sin(pitch / 2.0)
-    c3 = np.cos(roll / 2.0)
-    s3 = np.sin(roll / 2.0)
-    c1c2 = c1 * c2
-    s1s2 = s1 * s2
-    w = c1c2 * c3 - s1s2 * s3
-    x = c1c2 * s3 + s1s2 * c3
-    y = s1 * c2 * c3 + c1 * s2 * s3
-    z = c1 * s2 * c3 - s1 * c2 * s3
+    cr = np.cos(roll / 2.0)
+    sr = np.sin(roll / 2.0)
+    cy = np.cos(yaw / 2.0)
+    sy = np.sin(yaw / 2.0)
+    cp = np.cos(pitch / 2.0)
+    sp = np.sin(pitch / 2.0)
+    w = (cr * cp * cy) + (sr * sp * sy)
+    x = (sr * cp * cy) - (cr * sp * sy)
+    y = (cr * sp * cy) + (sr * cp * sy)
+    z = (cr * cp * sy) - (sr * sp * cy)
     return np.array([w, x, y, z])

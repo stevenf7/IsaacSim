@@ -43,6 +43,7 @@ class RigidPrim(XFormPrim):
         """
         super().__init__(prim, name=name, position=position, orientation=orientation, visible=visible)
         if prim.HasAPI(UsdPhysics.RigidBodyAPI):
+            print("has rigid body api")
             self._rigid_api = UsdPhysics.RigidBodyAPI(self._prim)
         else:
             self._rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prim)

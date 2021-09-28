@@ -7,13 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Tuple, Optional, Union
-from pxr import Usd, UsdGeom, Gf
+from pxr import Usd, UsdGeom
 from omni.isaac.core.utils.types import PrimState
-from omni.isaac.core.utils.rotations import quat_to_euler_angles
 import numpy as np
 from omni.isaac.core.utils.prims import set_usd_visibility
 from omni.isaac.core.utils.xforms import set_xform_orientation, set_xform_position
-import carb
 
 
 class XFormPrim(object):

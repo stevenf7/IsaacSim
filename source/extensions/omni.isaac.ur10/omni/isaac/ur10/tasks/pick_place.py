@@ -19,6 +19,7 @@ class PickPlace(BaseTask):
         """
         self.my_ur10 = None
         self.cube = None
+        self._cube_size = 0.3
         return
 
     def set_up_scene(self, scene: Scene) -> None:
@@ -30,15 +31,19 @@ class PickPlace(BaseTask):
         # TODO: change values with USD
         super().set_up_scene(scene)
         self.my_ur10 = scene.add(UR10(stage=scene.stage, prim_path="/World/UR10", name="my_ur10"))
+        self.my_ur10.add_gripper()
         self.cube = scene.add(
             DynamicCube(
                 stage=self.scene.stage,
                 name="cube_1",
-                position=np.array([0.3, 0.3, 0.3]) * 100,
+                position=np.array([0.3, 0.3, self._cube_size / 2.0]) * 100,
                 prim_path="/World/Cube",
-                size=0.0515 * 100,
+                size=self._cube_size * 100,
                 color=np.array([0, 0, 255]),
             )
+        )
+        scene.add_ground_plane(
+            size=50.0 / self.scene.stage_units_in_meters, thickness=0.5 / self.scene.stage_units_in_meters
         )
         return
 
@@ -56,7 +61,8 @@ class PickPlace(BaseTask):
             "cube_1": {
                 "position": cube_position,
                 "orientation": cube_orientation,
-                "target_position": np.array([0.7, 0.7, 0.0515 + (self.my_ur10.gripper_length / 100.0)]) * 100,
+                "target_position": np.array([0.7, 0.7, self._cube_size / 2.0]) * 100,
+                "size": np.array([self._cube_size, self._cube_size, self._cube_size]) * 100,
             },
             "my_ur10": {"joint_positions": joints_state.positions, "end_effector_pose": end_effector_position},
         }
@@ -72,5 +78,4 @@ class PickPlace(BaseTask):
         return
 
     def reset(self):
-        self.my_ur10.add_gripper()
         return

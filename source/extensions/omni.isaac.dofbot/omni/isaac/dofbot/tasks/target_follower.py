@@ -43,6 +43,9 @@ class TargetFollower(BaseTask):
                 size=0.02 * 100,
             )
         )
+        scene.add_ground_plane(
+            size=50.0 / self.scene.stage_units_in_meters, thickness=0.5 / self.scene.stage_units_in_meters
+        )
         return
 
     def add_obstacle(self, position: np.ndarray = np.array([0.1, 0.1, 1.0])):
@@ -138,7 +141,7 @@ class TargetFollower(BaseTask):
         """
         return
 
-    def task_cleanup(self) -> None:
+    def cleanup(self) -> None:
         obstacles_to_delete = list(self.obstacle_cubes.keys())
         for obstacle_to_delete in obstacles_to_delete:
             self.scene.remove_object(obstacle_to_delete)

@@ -67,3 +67,11 @@ def delete_prim(prim_path):
     from omni.usd.commands import DeletePrimsCommand
 
     DeletePrimsCommand([prim_path]).do()
+
+
+def add_usd_reference(stage, usd_path, prim_path) -> Usd.Prim:
+    prim = stage.GetPrimAtPath(prim_path)
+    if not prim.IsValid():
+        prim = stage.DefinePrim(prim_path, "Xform")
+    prim.GetReferences().AddReference(usd_path)
+    return prim

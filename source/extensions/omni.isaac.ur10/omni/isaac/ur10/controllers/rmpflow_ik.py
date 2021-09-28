@@ -10,7 +10,7 @@ from omni.isaac.core.controllers.controller import BaseController
 from omni.isaac.motion_generation import MotionGenerator
 from omni.isaac.core.utils.types import ArticulationAction
 from typing import Optional
-from omni.isaac.core.utils.rotations import rot_matrix_from_quat
+from omni.isaac.core.utils.rotations import quat_to_rot_matrix
 import os
 import json
 import numpy as np
@@ -19,7 +19,9 @@ import lula
 
 class RMPFlowIKSolver(BaseController):
     # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, mg_extension_path, dc_interface, stage, robot_prim, dt: float = 1.0 / 60.0):
+    def __init__(
+        self, name, mg_extension_path, dc_interface, stage, robot_prim, dt: float = 1.0 / 60.0, with_short_gripper=False
+    ):
         super().__init__(name)
         self._dc_interface = dc_interface
         self._stage = stage
@@ -27,7 +29,10 @@ class RMPFlowIKSolver(BaseController):
         polciy_config_dir = os.path.join(mg_extension_path, "policy_configs")
         with open(os.path.join(polciy_config_dir, "policy_map.json")) as policy_map:
             policy_map = json.load(policy_map)
-        config_path = os.path.join(polciy_config_dir, policy_map["UR10"]["RMPflow"])
+        if with_short_gripper:
+            config_path = os.path.join(polciy_config_dir, policy_map["UR10"]["RMPflowSuction"])
+        else:
+            config_path = os.path.join(polciy_config_dir, policy_map["UR10"]["RMPflow"])
         self._config = self.process_policy_config(config_path)
         self._robot_prim = robot_prim
         self.mg.initialize(self._config, robot_prim, int(1.0 / dt))
@@ -57,7 +62,7 @@ class RMPFlowIKSolver(BaseController):
             self.mg._motion_policy._policy.set_end_effector_target(
                 position=np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1) / 100.0,
                 orientation=lula.Rotation3(
-                    np.array(rot_matrix_from_quat(target_end_effector_orientation), dtype=np.float64).reshape(3, 3)
+                    np.array(quat_to_rot_matrix(target_end_effector_orientation), dtype=np.float64).reshape(3, 3)
                 ),
             )
         else:

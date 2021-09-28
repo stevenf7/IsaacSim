@@ -17,7 +17,7 @@ import carb
 from omni.isaac.kit import global_vars
 import omni.kit.app
 from pxr import UsdGeom, Gf, Usd, Sdf, UsdPhysics, PhysxSchema
-from omni.isaac.kit.utils import set_carb_setting
+from omni.isaac.kit.utils import set_carb_setting, add_usd_reference
 from omni.isaac.kit.constants import AXES_INDICES
 
 
@@ -203,9 +203,7 @@ class SimulationContext:
         return self.stage
 
     def add_usd_reference(self, usd_path, prim_path) -> Usd.Prim:
-        prim = self.stage.DefinePrim(prim_path, "Xform")
-        prim.GetReferences().AddReference(usd_path)
-        return prim
+        return add_usd_reference(self.stage, usd_path, prim_path)
 
     def set_physics_dt(self, dt: float = 1.0 / 60.0, substeps: int = 1):
         self._physics_scene.set_physics_dt(dt, substeps)

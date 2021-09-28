@@ -16,6 +16,7 @@ from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.kaya import Kaya
 from omni.isaac.kaya.controllers import HolonomicController
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.kit.utils import add_usd_reference
 from omni.isaac.core.tasks.task import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.samples.scripts.base_sample import BaseSample
@@ -34,8 +35,6 @@ class DriveTask(BaseTask):
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
-        asset_path = nucleus_server + "/Isaac"
-
         self.kaya = scene.add(
             Kaya(
                 stage=scene.stage,
@@ -46,8 +45,12 @@ class DriveTask(BaseTask):
             )
         )
 
-        prim = scene.stage.DefinePrim("/background", "Xform")
-        prim.GetReferences().AddReference(asset_path + "/Environments/Grid/gridroom_curved.usd")
+        prim = add_usd_reference(
+            stage=scene.stage,
+            usd_path=nucleus_server + "/Isaac/Environments/Grid/gridroom_curved.usd",
+            prim_path="/World/background",
+        )
+        # TODO: change with new USD
         XFormPrim(prim, "background", position=np.array([0, 0, -9]))
 
     def reset(self) -> None:
@@ -74,7 +77,6 @@ class Extension(BaseSample):
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_manip.html",
             overview=overview,
             file_path=os.path.abspath(__file__),
-            add_ground_plane=False,
             stage_units_in_meters=0.01,
         )
         self._controller = None

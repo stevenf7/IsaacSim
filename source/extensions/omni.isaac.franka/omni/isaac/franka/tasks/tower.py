@@ -51,6 +51,9 @@ class Tower(BaseTask):
                 color=np.array([255, 0, 0]),
             )
         )
+        scene.add_ground_plane(
+            size=50.0 / self.scene.stage_units_in_meters, thickness=0.5 / self.scene.stage_units_in_meters
+        )
         return
 
     def get_observations(self) -> dict:
