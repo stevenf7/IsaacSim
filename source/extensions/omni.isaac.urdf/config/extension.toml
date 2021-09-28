@@ -18,11 +18,11 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.kit.uiapp" = {}
-"omni.isaac.utils" = {}
 "omni.isaac.ui" = {}
 "omni.kit.window.filepicker" = {}
 "omni.kit.window.content_browser" = {}
 "omni.kit.pip_archive" = {} # pulls in pillow
+"omni.physx" = {} 
 
 [[python.module]]
 name = "omni.isaac.urdf"
