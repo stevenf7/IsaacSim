@@ -902,7 +902,7 @@ class BinStack(Scenario):
         sgp.damping = 1.0e4
         sgp.disableGravity = True
         tr = _dynamic_control.Transform()
-        tr.p.x = 15.509
+        tr.p.x = 16.2
         sgp.offset = tr
 
         self.ur10_solid = UR10(

@@ -29,11 +29,12 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
         dc_utils.set_physics_frequency(60)
-
+        await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/franka/franka.usd")
-        self.assertTrue(result)  # Make sure the stage loaded
         self._stage = omni.usd.get_context().get_stage()
+        prim = self._stage.DefinePrim("/panda", "Xform")
+        prim.GetReferences().AddReference(self._extension_path + "/data/usd/robots/franka/franka.usd")
+
         pass
 
     # After running each test
@@ -109,7 +110,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [38.42511, 0.4870245, 44.926952], atol=1e-5
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [38.920418, 0.47107944, 45.99749], atol=1e-5
             )
         )
 
@@ -121,7 +122,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
-            np.allclose([expected_pos[0], expected_pos[1], expected_pos[2]], [9.517662, 48.54007, 54.968845], atol=1e-5)
+            np.allclose([expected_pos[0], expected_pos[1], expected_pos[2]], [9.52956, 48.91753, 55.944954], atol=1e-5)
         )
 
         pass
@@ -236,7 +237,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
         # check that we are at the limits
         dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_POS)
         for i in range(num_dofs):
-            self.assertAlmostEqual(dof_states["pos"][i], props["lower"][i], delta=1e-4)
+            self.assertAlmostEqual(dof_states["pos"][i], props["lower"][i], delta=1e-3)
         pass
 
     async def test_position_franka(self, gpu=False):

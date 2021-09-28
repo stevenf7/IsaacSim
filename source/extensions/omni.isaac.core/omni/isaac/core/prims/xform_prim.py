@@ -12,6 +12,7 @@ from omni.isaac.core.utils.types import PrimState
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 import numpy as np
 from omni.isaac.core.utils.prims import set_usd_visibility
+from omni.isaac.core.utils.xforms import set_xform_orientation, set_xform_position
 import carb
 
 
@@ -126,23 +127,8 @@ class XFormPrim(object):
         Args:
             position (np.ndarray): position of the prim to set in stage. shape (3,).
         """
-        position = Gf.Vec3d(*position.tolist())
-        properties = self._prim.GetPropertyNames()
-        if "xformOp:translate" in properties:
-            translate_attr = self._prim.GetAttribute("xformOp:translate")
-            translate_attr.Set(position)
-        elif "xformOp:translation" in properties:
-            translation_attr = self._prim.GetAttribute("xformOp:translate")
-            translation_attr.Set(position)
-        elif "xformOp:transform" in properties:
-            transform_attr = self._prim.GetAttribute("xformOp:transform")
-            matrix = self._prim.GetAttribute("xformOp:transform").Get()
-            matrix.SetTranslateOnly(position)
-            transform_attr.Set(matrix)
-        else:
-            xform = UsdGeom.Xformable(self._prim)
-            xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-            xform_op.Set(Gf.Matrix4d().SetTranslate(position))
+        set_xform_position(self._prim, position)
+
         return
 
     def _set_usd_orientation(self, quat: np.ndarray) -> None:
@@ -152,78 +138,8 @@ class XFormPrim(object):
             quat (np.ndarray): orientation represented as a quaternion. quaternion is scalar-first (w, x, y, z). 
                                shape (4,). 
         """
-        quat = quat.tolist()
-        rotation_properties = [
-            "xformOp:orient",
-            "xformOp:rotateX",
-            "xformOp:rotateXYZ",  #
-            "xformOp:rotateXZY",  #
-            "xformOp:rotateY",
-            "xformOp:rotateYXZ",  #
-            "xformOp:rotateYZX",  #
-            "xformOp:rotateZ",
-            "xformOp:rotateZYX",  #
-            "xformOp:rotateZXY",  #
-        ]
-        properties = self._prim.GetPropertyNames()
-        for rotation_property in rotation_properties:
-            if rotation_property in properties:
-                if rotation_property == "xformOp:orient":
-                    rotq = Gf.Quatf(*quat)
-                    rotation_attr = self._prim.GetAttribute(rotation_property)
-                    rotation_attr.Set(rotq)
-                elif rotation_property == "xformOp:rotateXYZ":
-                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
-                    rotation_attr = self._prim.GetAttribute(rotation_property)
-                    rotation_attr.Set(Gf.Vec3f(roll, pitch, yaw))
-                elif rotation_property == "xformOp:rotateZYX":
-                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
-                    rotation_attr = self._prim.GetAttribute(rotation_property)
-                    rotation_attr.Set(Gf.Vec3f(yaw, pitch, roll))
-                elif rotation_property == "xformOp:rotateZXY":
-                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
-                    rotation_attr = self._prim.GetAttribute(rotation_property)
-                    rotation_attr.Set(Gf.Vec3f(yaw, roll, pitch))
-                elif rotation_property == "xformOp:rotateYZX":
-                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
-                    rotation_attr = self._prim.GetAttribute(rotation_property)
-                    rotation_attr.Set(Gf.Vec3f(pitch, yaw, roll))
-                elif rotation_property == "xformOp:rotateYXZ":
-                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
-                    rotation_attr = self._prim.GetAttribute(rotation_property)
-                    rotation_attr.Set(Gf.Vec3f(pitch, roll, yaw))
-                elif rotation_property == "xformOp:rotateXZY":
-                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
-                    rotation_attr = self._prim.GetAttribute(rotation_property)
-                    rotation_attr.Set(Gf.Vec3f(roll, yaw, pitch))
-                elif rotation_property == "xformOp:rotateY":
-                    # TODO: double check with Hammad
-                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
-                    rotation_attr = self._prim.GetAttribute(rotation_property)
-                    rotation_attr.Set(pitch)
-                elif rotation_property == "xformOp:rotateX":
-                    # TODO: double check with Hammad
-                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
-                    rotation_attr = self._prim.GetAttribute(rotation_property)
-                    rotation_attr.Set(roll)
-                elif rotation_property == "xformOp:rotateZ":
-                    # TODO: double check with Hammad
-                    roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
-                    rotation_attr = self._prim.GetAttribute(rotation_property)
-                    rotation_attr.Set(yaw)
-                else:
-                    carb.log_error(f"rotation property {rotation_property} is not defined in the list.")
-                return
-        rotm = Gf.Matrix3d(Gf.Quatd(*quat))
-        if "xformOp:transform" in properties:
-            transform_attr = self._prim.GetAttribute("xformOp:transform")
-            matrix = self._prim.GetAttribute("xformOp:transform").Get()
-            matrix.SetRotateOnly(rotm)
-            transform_attr.Set(matrix)
-        else:
-            xform = UsdGeom.Xformable(self._prim)
-            xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-            xform_op.Set(Gf.Matrix4d().SetRotateOnly(rotm))
+        set_xform_orientation(self._prim, quat)
+
         return
 
     def set_usd_pose(self, position: Optional[np.ndarray] = None, quat: Optional[np.ndarray] = None) -> None:

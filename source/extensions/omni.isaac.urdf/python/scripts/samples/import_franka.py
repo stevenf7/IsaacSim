@@ -158,27 +158,15 @@ class Extension(omni.ext.IExt):
         self.finger_2 = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/panda/panda_hand/panda_finger_joint2"), "linear")
 
         # Set the drive mode, target, stiffness, damping and max force for each joint
-        set_drive_parameters(self.joint_1, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
-        set_drive_parameters(self.joint_2, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
-        set_drive_parameters(self.joint_3, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
-        set_drive_parameters(self.joint_4, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
-        set_drive_parameters(self.joint_5, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
-        set_drive_parameters(self.joint_6, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
-        set_drive_parameters(self.joint_7, "position", math.degrees(0), math.radians(2e7), math.radians(2e6))
-        set_drive_parameters(self.finger_1, "position", 0, 600000, 100000)
-        set_drive_parameters(self.finger_2, "position", 0, 600000, 100000)
-
-        # Set Max Joint velocity on all joints
-
-        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_1.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_2.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_3.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_4.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_5.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_6.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, self.joint_7.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, self.finger_1.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
-        PhysxSchema.PhysxJointAPI.Get(stage, self.finger_2.GetPath()).CreateMaxJointVelocityAttr(math.degrees(10.0))
+        set_drive_parameters(self.joint_1, "position", math.degrees(0), math.radians(1e8), math.radians(1e7))
+        set_drive_parameters(self.joint_2, "position", math.degrees(0), math.radians(1e8), math.radians(1e7))
+        set_drive_parameters(self.joint_3, "position", math.degrees(0), math.radians(1e8), math.radians(1e7))
+        set_drive_parameters(self.joint_4, "position", math.degrees(0), math.radians(1e8), math.radians(1e7))
+        set_drive_parameters(self.joint_5, "position", math.degrees(0), math.radians(1e8), math.radians(1e7))
+        set_drive_parameters(self.joint_6, "position", math.degrees(0), math.radians(1e8), math.radians(1e7))
+        set_drive_parameters(self.joint_7, "position", math.degrees(0), math.radians(1e8), math.radians(1e7))
+        set_drive_parameters(self.finger_1, "position", 0, 1e7, 1e6)
+        set_drive_parameters(self.finger_2, "position", 0, 1e7, 1e6)
 
     def _on_config_drives(self):
         self._on_config_robot()  # make sure drives are configured first

@@ -435,7 +435,8 @@ void AddSingleJoint(const UrdfJoint& joint,
             pxr::UsdPhysicsDriveAPI driveAPI =
                 pxr::UsdPhysicsDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
             // convert kg*m/s^2 to kg * cm /s^2
-            driveAPI.CreateMaxForceAttr().Set(joint.limit.effort * distanceScale);
+            // extra factor of 60 is due to internal physx force drive setting change.
+            driveAPI.CreateMaxForceAttr().Set(joint.limit.effort * distanceScale * 60.0);
             if (joint.drive.driveType == UrdfJointDriveType::FORCE)
                 driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
             else
@@ -469,7 +470,8 @@ void AddSingleJoint(const UrdfJoint& joint,
             pxr::UsdPhysicsDriveAPI driveAPI =
                 pxr::UsdPhysicsDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("angular"));
             // convert kg*m/s^2 * m to kg * cm /s^2 * cm
-            driveAPI.CreateMaxForceAttr().Set(joint.limit.effort * distanceScale * distanceScale);
+            // extra factor of 60 is due to internal physx force drive setting change.
+            driveAPI.CreateMaxForceAttr().Set(joint.limit.effort * distanceScale * distanceScale * 60);
             if (joint.drive.driveType == UrdfJointDriveType::FORCE)
                 driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
             else
@@ -728,6 +730,13 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
     // }
 
     pxr::UsdGeomXform robotPrim = pxr::UsdGeomXform::Define(stage, primPath);
+
+    pxr::UsdGeomXformable gprim = pxr::UsdGeomXformable(robotPrim);
+    gprim.ClearXformOpOrder();
+    gprim.AddTranslateOp(pxr::UsdGeomXformOp::PrecisionFloat).Set(pxr::GfVec3f(0, 0, 0));
+    gprim.AddRotateXYZOp(pxr::UsdGeomXformOp::PrecisionFloat).Set(pxr::GfVec3f(0, 0, 0));
+    gprim.AddScaleOp(pxr::UsdGeomXformOp::PrecisionFloat).Set(pxr::GfVec3f(1, 1, 1));
+
     pxr::UsdPhysicsArticulationRootAPI physicsSchema = pxr::UsdPhysicsArticulationRootAPI::Apply(robotPrim.GetPrim());
 
     pxr::PhysxSchemaPhysxArticulationAPI physxSchema = pxr::PhysxSchemaPhysxArticulationAPI::Apply(robotPrim.GetPrim());

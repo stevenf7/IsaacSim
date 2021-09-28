@@ -10,10 +10,14 @@
 
 def set_scene_physics_type(gpu=False, scene_path="/physicsScene"):
     import omni
-    from pxr import PhysxSchema
+    from pxr import PhysxSchema, UsdPhysics, UsdGeom, Gf
 
     stage = omni.usd.get_context().get_stage()
-
+    scene = stage.GetPrimAtPath(scene_path)
+    if not scene:
+        scene = UsdPhysics.Scene.Define(stage, scene_path)
+        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        scene.CreateGravityMagnitudeAttr().Set(9.81 / UsdGeom.GetStageMetersPerUnit(stage))
     physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, scene_path)
 
     if physxSceneAPI.GetEnableCCDAttr().HasValue():
