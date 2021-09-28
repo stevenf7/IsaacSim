@@ -342,7 +342,8 @@ group "python_samples"
     python_sample_test("tests-nativepython-isaac_sdk.load_stage", "python_samples/isaac_sdk/load_stage.py", "--usd_path /Samples/Isaac_SDK/Scenario/franka_basic.usd --test --headless")
     -- ROS samples
     python_sample_test("tests-nativepython-ros.clock", "python_samples/ros/clock.py")
-
+    -- Synthetic data samples:
+    python_sample_test("tests-nativepython-syntheticdata.offline_generation", "examples/syntheticdata/offline_generation/offline_generation.py")
 group "jupyter_samples"
 
     jupyter_sample_test("tests-jupyter-startup", "examples/notebooks/basic_notebook.ipynb")
