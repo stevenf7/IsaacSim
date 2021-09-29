@@ -7,11 +7,18 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from omni.isaac.kit import SimulationApp
+import random
 
-# The most basic usage for creating a simulation app
-kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
-
+# Simple example showing how to change resolution
+kit = SimulationApp({"headless": True})
+kit.update()
 for i in range(100):
+    width = random.randint(128, 1980)
+    height = random.randint(128, 1980)
+    kit.set_setting("/app/renderer/resolution/width", width)
+    kit.set_setting("/app/renderer/resolution/height", height)
     kit.update()
+    print(f"resolution set to: {width}, {height}")
 
-kit.close()  # Cleanup application
+# cleanup
+kit.close()

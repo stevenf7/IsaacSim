@@ -81,10 +81,10 @@ class RandomScenario(torch.utils.data.IterableDataset):
         # Load scenario
         setup_task = asyncio.ensure_future(self.load_stage(scenario_path))
         while not setup_task.done():
-            kit.app.update()
+            kit.update()
         if CREATE_NEW_CAMERA:
             self._create_camera_rig(stereo=STEREO_CAMERA)
-        kit.app.update()
+        kit.update()
 
     def _setup_viewport_with_camera(
         self,
@@ -200,10 +200,10 @@ class RandomScenario(torch.utils.data.IterableDataset):
         # on the first frame make sure sensors are initialized
         if self.cur_idx == 0:
             self.sd_helper.initialize(sensor_names=gt_list, viewport=viewport)
-            kit.app.update()
-            kit.app.update()
+            kit.update()
+            kit.update()
         # Render new frame
-        kit.app.update()
+        kit.update()
 
         # Collect Groundtruth
         gt = self.sd_helper.get_groundtruth(gt_list, viewport)
@@ -273,9 +273,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # step once and then wait for materials to load
         self.dr.commands.RandomizeOnceCommand().do()
-        kit.app.update()
-        while kit.is_loading:
-            kit.app.update()
+        kit.update()
+        while kit.is_loading():
+            kit.update()
 
         num_worker_threads = 4
 
