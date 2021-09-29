@@ -14,7 +14,7 @@
 // clang-format on
 
 #include "../Core/IsaacComponent.h"
-#include "plugins/core/ViewportManager.h"
+#include "omni/isaac/bridge/ViewportManager.h"
 
 #include <carb/Types.h>
 #include <carb/profiler/Profile.h>

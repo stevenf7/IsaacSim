@@ -30,7 +30,7 @@
 #include "../Sensor/UltrasonicComponent.h"
 #include "../Visualizer/PolylineVisualizer.h"
 #include "core/logger.hpp"
-#include "plugins/core/ScopedTimer.h"
+#include "omni/isaac/utils/ScopedTimer.h"
 
 namespace omni
 {

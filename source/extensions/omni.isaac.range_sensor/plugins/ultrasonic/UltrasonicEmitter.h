@@ -10,13 +10,13 @@
 #include "../RangeSensorUtils.h"
 #include "../core/RangeSensorComponent.h"
 #include "UltrasonicArrayEmissionTimer.h"
-#include "plugins/core/UsdUtilities.h"
+#include "omni/isaac/utils/UsdUtilities.h"
 
 #include <omni/usd/UtilsIncludes.h>
 //
 #include <omni/usd/UsdUtils.h>
 //
-#include "plugins/core/ScopedTimer.h"
+#include "omni/isaac/utils/ScopedTimer.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>

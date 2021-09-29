@@ -12,8 +12,8 @@
 #include "GxfPoseTreeMap.h"
 #include "GxfStructs.h"
 #include "gxf/core/gxf.h"
-#include "plugins/core/Component.h"
-#include "plugins/core/UsdUtilities.h"
+#include "omni/isaac/bridge/Component.h"
+#include "omni/isaac/utils/UsdUtilities.h"
 
 #include <carb/profiler/Profile.h>
 

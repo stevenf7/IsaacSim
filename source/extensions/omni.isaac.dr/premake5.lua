@@ -8,7 +8,6 @@ project_ext_plugin(ext, "omni.isaac.dr.plugin")
     add_files("iface", "%{root}/include/omni/isaac/dr/**")
     includedirs {
         "%{root}/source/pch",
-        "%{root}/source/extensions/omni.isaac.utils", 
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/carb_gfx_plugins/include",

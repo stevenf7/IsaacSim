@@ -21,7 +21,6 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
 
     includedirs {
         "%{root}/source/pch",
-        "%{root}/source/extensions/omni.isaac.utils", 
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/pxshared/include",
         "%{root}/_build/target-deps/carbonite/include",

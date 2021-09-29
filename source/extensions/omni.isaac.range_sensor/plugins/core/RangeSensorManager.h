@@ -14,8 +14,8 @@
 #include "../radar/RadarSensor.h"
 #include "../ultrasonic/UltrasonicSensor.h"
 #include "RangeSensorComponent.h"
-#include "plugins/bridge/BridgeApplication.h"
-#include "plugins/core/ScopedTimer.h"
+#include "omni/isaac/bridge/BridgeApplication.h"
+#include "omni/isaac/utils/ScopedTimer.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>

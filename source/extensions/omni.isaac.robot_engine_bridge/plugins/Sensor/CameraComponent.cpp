@@ -10,7 +10,7 @@
 #include "CameraComponent.h"
 
 #include "../Utils/IsaacConversions.h"
-#include "plugins/core/UsdUtilities.h"
+#include "omni/isaac/utils/UsdUtilities.h"
 
 #include <carb/cuda/CudaRuntime.h>
 
