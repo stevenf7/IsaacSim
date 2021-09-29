@@ -10,7 +10,7 @@
 #include "../RangeSensorUtils.h"
 #include "../core/RangeSensorComponent.h"
 #include "UltrasonicArrayEmissionTimer.h"
-#include "plugins/core/UsdUtilities.h"
+#include "omni/isaac/utils/UsdUtilities.h"
 
 #include <omni/usd/UtilsIncludes.h>
 //

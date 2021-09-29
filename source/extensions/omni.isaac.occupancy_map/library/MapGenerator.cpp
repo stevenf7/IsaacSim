@@ -11,7 +11,7 @@
 #include "UsdPCH.h"
 // clang-format on
 
-#include "plugins/core/ScopedTimer.h"
+#include "omni/isaac/utils/ScopedTimer.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <octomap/octomap.h>

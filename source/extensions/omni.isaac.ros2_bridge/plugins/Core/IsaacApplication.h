@@ -11,8 +11,8 @@
 
 #include "IsaacComponent.h"
 #include "RosNode.h"
-#include "plugins/bridge/BridgeApplication.h"
-#include "plugins/core/ViewportManager.h"
+#include "omni/isaac/bridge/BridgeApplication.h"
+#include "omni/isaac/bridge/ViewportManager.h"
 
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>

@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "../core/Component.h"
-#include "../core/ComponentManager.h"
+#include "Component.h"
+#include "ComponentManager.h"
 
 #include <omni/usd/UtilsIncludes.h>
 //

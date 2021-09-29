@@ -21,7 +21,7 @@
 #include "../Components/RosPoseTree.h"
 #include "../Components/RosSurfaceGripper.h"
 #include "../Components/RosTeleport.h"
-#include "plugins/core/ScopedTimer.h"
+#include "omni/isaac/utils/ScopedTimer.h"
 #include "rclcpp/rclcpp.hpp"
 
 namespace omni

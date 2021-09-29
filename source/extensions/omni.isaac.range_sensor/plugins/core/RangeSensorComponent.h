@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "plugins/core/Component.h"
-#include "plugins/core/UsdUtilities.h"
+#include "omni/isaac/bridge/Component.h"
+#include "omni/isaac/utils/UsdUtilities.h"
 
 #include <carb/fastcache/FastCache.h>
 #include <carb/renderer/Renderer.h>

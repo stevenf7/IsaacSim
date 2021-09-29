@@ -12,7 +12,7 @@
 // #include "RosCallback.h"
 #include "../Core/IsaacComponent.h"
 #include "../Core/RosNode.h"
-#include "plugins/core/ViewportManager.h"
+#include "omni/isaac/bridge/ViewportManager.h"
 
 #include <carb/sensors/Sensors.h>
 

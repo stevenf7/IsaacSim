@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "plugins/core/Component.h"
+#include "omni/isaac/bridge/Component.h"
 
 #include <carb/InterfaceUtils.h>
 #include <carb/dictionary/IDictionary.h>

@@ -13,7 +13,6 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
     add_files("iface", "%{root}/include/omni/isaac/debug_draw/**")
     includedirs {
         "%{root}/source/pch",
-        "%{root}/source/extensions/omni.isaac.utils", 
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",

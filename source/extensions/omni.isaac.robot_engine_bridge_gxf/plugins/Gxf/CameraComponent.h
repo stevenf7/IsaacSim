@@ -15,7 +15,7 @@
 
 #include "../Core/GxfComponent.h"
 #include "../Core/IsaacMessage.h" // TODO: remove once we get CUDA tensor in GXF
-#include "plugins/core/ViewportManager.h"
+#include "omni/isaac/bridge/ViewportManager.h"
 
 #include <carb/Types.h>
 #include <carb/profiler/Profile.h>

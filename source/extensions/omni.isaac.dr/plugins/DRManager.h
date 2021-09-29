@@ -21,7 +21,7 @@
 #include "DRComponentTexture.h"
 #include "DRComponentTransform.h"
 #include "DRComponentVisibility.h"
-#include "plugins/bridge/BridgeApplication.h"
+#include "omni/isaac/bridge/BridgeApplication.h"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>

@@ -13,7 +13,7 @@
 
 #include "DRManager.h"
 
-#include "plugins/bridge/BridgeApplication.h"
+#include "omni/isaac/bridge/BridgeApplication.h"
 
 #include <carb/settings/ISettings.h>
 #include <carb/tokens/ITokens.h>

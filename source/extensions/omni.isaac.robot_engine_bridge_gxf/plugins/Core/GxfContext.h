@@ -13,8 +13,8 @@
 #include "GxfComponent.h"
 #include "GxfPoseTreeMap.h"
 #include "gxf/core/gxf.h"
-#include "plugins/bridge/BridgeApplication.h"
-#include "plugins/core/ViewportManager.h"
+#include "omni/isaac/bridge/BridgeApplication.h"
+#include "omni/isaac/bridge/ViewportManager.h"
 
 #include <gxf/std/clock.hpp>
 #include <omni/isaac/dynamic_control/DynamicControl.h>

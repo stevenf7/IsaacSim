@@ -12,7 +12,6 @@ project_with_location("omni.isaac.occupancy_map.generator")
     add_files("iface", "%{root}/include/omni/isaac/occupancy_map/**")
     includedirs {
         "%{root}/source/pch",
-        "%{root}/source/extensions/omni.isaac.utils", 
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
