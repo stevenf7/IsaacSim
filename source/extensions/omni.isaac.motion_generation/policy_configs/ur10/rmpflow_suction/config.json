@@ -1,0 +1,12 @@
+{
+    "policy_type" : "RMPflow",
+    "end_effector_frame_name": "ee_suction_link",
+    "policy_fps" : 600,
+    "evaluations_per_frame" : 10,
+    "ignore_robot_state_updates" : 1,
+    "relative_asset_paths": {
+        "robot_description_path" : "ur10_robot_description.yaml",
+        "urdf_path": "../ur10_robot_suction.urdf",
+        "rmpflow_config_path" : "ur10_rmpflow_config.yaml"
+    }
+}
