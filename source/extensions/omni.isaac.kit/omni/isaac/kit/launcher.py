@@ -277,6 +277,37 @@ class SimulationApp:
     Public methods
     """
 
+    def update(self) -> None:
+        """
+        Convenience function to step the application forward one frame
+        """
+        self._app.update()
+        return
+
+    def set_setting(self, setting: str, value) -> None:
+        """
+        Set a carbonite setting
+
+        Args:
+            setting (str): carb setting path
+            value: value to set the setting to, type is used to properly set the setting. 
+        """
+        from omni.isaac.kit.utils import set_carb_setting
+
+        set_carb_setting(self._carb_settings, setting, value)
+
+    def set_extension_enabled(self, name: str, enabled: bool) -> None:
+        """
+        Set the state for an extension
+
+        Args:
+            name (str): name of extension to enabled
+            enabled (bool): true if extension should be enabled, false to turn extension off
+
+        """
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_manager.set_extension_enabled_immediate(name, enabled)
+
     def close(self) -> None:
         """Close the running Omniverse Toolkit."""
         # check if exited already
@@ -284,9 +315,9 @@ class SimulationApp:
             self._exiting = True
             print("Shutting Down Simulation App...")
             # We are exisitng but something is still loading, wait for it to load to avoid a deadlock
-            if self.is_loading:
+            if self.is_loading():
                 print("   Waiting for USD resource operations to complete (this may take a few seconds)")
-            while self.is_loading:
+            while self.is_loading():
                 self._app.update()
             self._app.shutdown()
             self._framework.unload_all_plugins()
@@ -297,10 +328,28 @@ class SimulationApp:
                     del sys.modules[m]
             print("Simulation App Shutdown Completed...")
 
-    def set_setting(self, setting, value) -> None:
-        from omni.isaac.kit.utils import set_carb_setting
+    def is_running(self) -> bool:
+        """
+            bool: convenience function to see if app is running. True if running, False otherwise
+        """
+        return self._app.is_running()
 
-        set_carb_setting(self._carb_settings, setting, value)
+    def is_loading(self) -> bool:
+        """
+            bool: Convenience function to see if any files are being loaded. True if loading, False otherwise
+        """
+        context = omni.usd.get_context()
+        if context is None:
+            return False
+        else:
+            _, _, loading = context.get_stage_loading_status()
+            return loading > 0
+
+    def is_exiting(self) -> bool:
+        """
+            bool: True if close() was called previously, False otherwise
+        """
+        return self._exiting
 
     @property
     def app(self) -> omni.kit.app.IApp:
@@ -315,22 +364,3 @@ class SimulationApp:
             omni.usd.UsdContext: the current USD context
         """
         return omni.usd.get_context()
-
-    @property
-    def is_loading(self) -> bool:
-        """
-            bool: Convenience function to see if any files are being loaded. True if loading, False otherwise
-        """
-        context = omni.usd.get_context()
-        if context is None:
-            return False
-        else:
-            _, _, loading = context.get_stage_loading_status()
-            return loading > 0
-
-    @property
-    def is_exiting(self) -> bool:
-        """
-            bool: True if close() was called previously, False otherwise
-        """
-        return self._exiting

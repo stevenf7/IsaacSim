@@ -329,12 +329,12 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.kit.hello_world", "examples/api/omni.isaac.kit/hello_world.py")
     python_sample_test("tests-nativepython-omni.isaac.kit.simulation_callbacks", "examples/api/omni.isaac.kit/simulation_callbacks.py")
     python_sample_test("tests-nativepython-omni.isaac.kit.control_robot", "examples/api/omni.isaac.kit/control_robot.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.change_resolution", "examples/api/omni.isaac.kit/change_resolution.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.time_stepping", "examples/api/omni.isaac.kit/time_stepping.py")
     -- omni.isaac.urdf
     python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "examples/api/omni.isaac.urdf/urdf_import.py")
     -- Simple samples
-    python_sample_test("tests-nativepython-simple.time_stepping", "python_samples/simple/time_stepping.py")
     python_sample_test("tests-nativepython-simple.franka_articulation", "python_samples/simple/franka_articulation.py")
-    python_sample_test("tests-nativepython-simple.change_resolution", "python_samples/simple/change_resolution.py")
     python_sample_test("tests-nativepython-simple.load_stage", "python_samples/simple/load_stage.py", "--usd_path /Environments/Simple_Room/simple_room.usd --test --headless")
     python_sample_test("tests-nativepython-simple.franka_rmp", "python_samples/simple/franka_rmp.py", "--headless")
     -- SDK samples 

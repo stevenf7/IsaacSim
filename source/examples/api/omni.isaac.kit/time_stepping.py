@@ -13,7 +13,6 @@ simulation_app = SimulationApp({"headless": True})
 
 from omni.isaac.kit.simulation import SimulationContext
 from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
-from omni.isaac.dynamic_control import _dynamic_control
 
 _, nucleus_server = find_nucleus_server()
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
@@ -23,38 +22,39 @@ simulation_context.create_new_stage(stage_units_in_meters=1.0)
 simulation_context.add_usd_reference(asset_path, "/Franka")
 # need to start simulation before getting any articulation..etc
 simulation_context.start_simulation()
-dc = _dynamic_control.acquire_dynamic_control_interface()
-art = dc.get_articulation("/Franka")
-dof_ptr = dc.find_articulation_dof(art, "panda_joint2")
 
 
-def step_callback_1(step_size):
-    dc.wake_up_articulation(art)
-    dc.set_dof_position_target(dof_ptr, -1.5)
-    return
-
-
-def step_callback_2(step_size):
-    dof_state = dc.get_dof_state(dof_ptr, _dynamic_control.STATE_POS)
-    print("Current joint 2 position @ step " + str(simulation_context.time_step_index) + " : " + str(dof_state.pos))
-    print("TIME: ", simulation_context.time)
+def step_callback(step_size):
+    print("simulate with step: ", step_size)
     return
 
 
 def editor_callback(event):
-    print("Render Frame")
+    print("update app with step: ", event.payload["dt"])
 
 
-simulation_context.add_physics_callback("physics_callback_1", step_callback_1)
-simulation_context.add_physics_callback("physics_callback_2", step_callback_2)
+simulation_context.add_physics_callback("physics_callback", step_callback)
 simulation_context.add_editor_callback("editor_callback", editor_callback)
 simulation_context.stop()
 simulation_context.play()
-# Simulate 60 timesteps
-for i in range(60):
-    simulation_context.step(render=False)
-# Render one frame
-simulation_context.render()
+print("start")
+print("step physics once with a step size of 1/60 second")
+simulation_context.step(render=False)
 
+print("step physics once with a step size of 1/30 second")
+simulation_context.set_physics_dt(1.0 / 30.0)
+simulation_context.step(render=False)
+
+print("step physics once with a step size of 1 second")
+simulation_context.set_physics_dt(1.0)
+simulation_context.step(render=False)
+
+print("step physics & rendering once with a step size of 1/60 second")
+simulation_context.set_physics_dt(1.0)
+simulation_context.step(render=True)
+
+print("step rendering a frame without stepping physics")
+simulation_context.render()
+print("cleanup and exit")
 simulation_context.stop()
 simulation_app.close()
