@@ -128,6 +128,20 @@ async def add_cube(path, size, offset):
     return cubeGeom
 
 
+async def add_carter():
+    from pxr import Gf, PhysicsSchemaTools
+
+    result, nucleus_server = find_nucleus_server()
+    if result is False:
+        carb.log_error("Could not find nucleus server with /Isaac folder")
+        return
+    nucleus_path = nucleus_server + "/Isaac"
+    (result, error) = await load_test_file(nucleus_path + "/Robots/Carter/carter_v1.usd")
+    stage = omni.usd.get_context().get_stage()
+
+    PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
+
+
 async def add_carter_ros():
     from pxr import Gf, PhysicsSchemaTools
 

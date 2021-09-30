@@ -14,8 +14,8 @@ import carb
 
 
 def get_path(stage, path: str, parent=None) -> str:
-    if parent:
-        path = omni.usd.get_stage_next_free_path(stage, parent + path, False)
+    if parent != None:
+        path = omni.usd.get_stage_next_free_path(stage, parent.strip("/") + "/" + path.strip("/"), False)
     else:
         path = omni.usd.get_stage_next_free_path(stage, path, True)
     return path

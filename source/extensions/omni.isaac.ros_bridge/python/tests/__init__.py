@@ -5,7 +5,7 @@
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
-#
+# #
 
 from .test_core import *
 from .test_rospy import *
@@ -14,3 +14,4 @@ from .test_surface_gripper import *
 from .test_lidar import *
 from .test_point_cloud import *
 from .test_pose_tree import *
+from .test_differential_base import *
