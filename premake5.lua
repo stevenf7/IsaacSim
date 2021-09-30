@@ -283,6 +283,7 @@ group "exts"
     -- Linux Only
     if os.target() == "linux" then
         include ("source/extensions/omni.isaac.motion_planning")
+        include ("source/extensions/omni.isaac.lula")
 	    include ("source/extensions/omni.isaac.motion_generation")
         include ("source/extensions/omni.isaac.robot_benchmark")
         include ("source/extensions/omni.isaac.benchmark_environments")

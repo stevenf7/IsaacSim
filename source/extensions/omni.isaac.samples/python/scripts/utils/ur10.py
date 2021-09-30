@@ -200,13 +200,16 @@ class UR10:
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_planning")
         self._mp_extension_path = ext_manager.get_extension_path(ext_id)
+        self._mg_extension_path = ext_manager.get_extension_path(
+            ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
+        )
 
-        self._rmp_data = self._mp_extension_path + "/resources/lula/lula_ur10"
+        self._rmp_data = self._mg_extension_path + "/policy_configs"
 
         self.rmp_handle = self.mp.registerRmp(
             self._rmp_data + urdf,
-            self._rmp_data + "/config/robot_descriptor.yaml",
-            self._rmp_data + "/config/ur10_rmpflow_common.yaml",
+            self._rmp_data + "/ur10/rmpflow_suction/ur10_robot_description.yaml",
+            self._rmp_data + "/ur10/rmpflow_suction/ur10_rmpflow_config.yaml",
             prim.GetPath().pathString,
             "ee_suction_link",
             True,
