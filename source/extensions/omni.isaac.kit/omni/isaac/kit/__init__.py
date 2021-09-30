@@ -8,7 +8,7 @@
 #
 
 import os
-from .launcher import SimulationApp
+from .simulation_app import SimulationApp
 from .global_vars import *
 
 global_vars.LAUNCHED_FROM_JUPYTER = os.getenv("ISAAC_JUPYTER_KERNEL") is not None  # We set this in the kernel.json file

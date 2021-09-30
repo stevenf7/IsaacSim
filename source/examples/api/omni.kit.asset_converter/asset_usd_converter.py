@@ -10,7 +10,7 @@ import argparse
 import asyncio
 import omni
 import os
-from omni.isaac.kit.launcher import SimulationApp
+from omni.isaac.kit import SimulationApp
 
 
 async def convert(in_file, out_file, load_materials=False):

@@ -20,7 +20,7 @@ import argparse
 
 import carb
 import omni
-from omni.isaac.kit.launcher import SimulationApp
+from omni.isaac.kit import SimulationApp
 
 # Default rendering parameters
 CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1024, "height": 800}

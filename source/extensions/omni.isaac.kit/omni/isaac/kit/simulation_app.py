@@ -136,8 +136,6 @@ class SimulationApp:
 
         set_carb_setting(self._carb_settings, "/persistent/simulation/defaultMetersPerUnit", 1.0)
         print("Simulation App Starting")
-        self._app.update()
-        omni.usd.get_context().new_stage()
 
         # Update the app
         self._app.update()
@@ -276,6 +274,18 @@ class SimulationApp:
     """
     Public methods
     """
+
+    def new_livesync_stage(self, usd_path: str) -> None:
+        """
+        Creates a new stage and enables livesync. 
+        If a stage exists at the specified path, it will be destroyed upon creation
+
+        Args:
+            usd_path (str): path to save new usd stage at and enable livesync
+        """
+        omni.usd.get_context().new_stage()
+        omni.usd.get_context().save_as_stage(usd_path)
+        omni.usd.get_context().set_layer_live(usd_path, True)
 
     def update(self) -> None:
         """
