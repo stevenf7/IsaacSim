@@ -16,7 +16,7 @@ import os
 import omni
 import random
 import numpy as np
-from omni.isaac.kit.launcher import SimulationApp
+from omni.isaac.kit import SimulationApp
 import matplotlib.pyplot as plt
 
 TRANSLATION_RANGE = 3.0  # meters
@@ -28,7 +28,7 @@ GLASS_MATERIAL = True
 
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 
-from omni.isaac.kit.simulation import SimulationContext
+from omni.isaac.kit.simulation_context import SimulationContext
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.syntheticdata import visualize, helpers
 from omni.physx.scripts import utils

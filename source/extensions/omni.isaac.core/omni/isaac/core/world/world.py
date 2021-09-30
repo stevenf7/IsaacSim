@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.kit.simulation import SimulationContext
+from omni.isaac.kit.simulation_context import SimulationContext
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.tasks.task import BaseTask
 from omni.isaac.dynamic_control import _dynamic_control

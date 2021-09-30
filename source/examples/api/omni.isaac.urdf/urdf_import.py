@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from omni.isaac.kit.launcher import SimulationApp
+from omni.isaac.kit import SimulationApp
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": True}
 
