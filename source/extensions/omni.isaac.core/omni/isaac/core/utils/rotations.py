@@ -7,9 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import math
+
 import numpy as np
 from pxr import Gf
-import math
 from scipy.spatial.transform import Rotation as R
 
 
@@ -19,7 +20,7 @@ def quat_to_rot_matrix(quat: np.ndarray) -> np.ndarray:
     return np.array(rotm)
 
 
-def quat_to_euler_angles(quat: np.ndarray) -> np.ndarray:
+def quat_to_euler_angles(quat: np.ndarray, degrees: bool = False) -> np.ndarray:
     quat_img = quat[1:]
     quat_real = quat[0]
     # roll (x-axis rotation)
@@ -39,11 +40,20 @@ def quat_to_euler_angles(quat: np.ndarray) -> np.ndarray:
     cosy_cosp = 1 - 2 * (quat_img[1] * quat_img[1] + quat_img[2] * quat_img[2])
     yaw = math.atan2(siny_cosp, cosy_cosp)
 
+    if degrees:
+        roll = math.degrees(roll)
+        pitch = math.degrees(pitch)
+        yaw = math.degrees(yaw)
+
     return roll, pitch, yaw
 
 
-def euler_angles_to_quat(euler_angles: np.ndarray) -> np.ndarray:
+def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False) -> np.ndarray:
     roll, pitch, yaw = euler_angles
+    if degrees:
+        roll = math.radians(roll)
+        pitch = math.radians(pitch)
+        yaw = math.radians(yaw)
     cr = np.cos(roll / 2.0)
     sr = np.sin(roll / 2.0)
     cy = np.cos(yaw / 2.0)
