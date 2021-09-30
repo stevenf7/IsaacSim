@@ -9,7 +9,7 @@
 import carb
 from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics, PhysxSchema
 import omni.usd
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 
 import numpy as np
 import gc

@@ -38,7 +38,7 @@ if __name__ == "__main__":
     # and creation of ROS components
     kit = OmniKitHelper(config=CONFIG)
     import omni
-    from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+    from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
     from omni.isaac.utils.scripts.scene_utils import create_background
     from pxr import Gf
 

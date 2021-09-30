@@ -2,8 +2,8 @@ display_name = "Internal Tools"
 
 [dependencies]
 "omni.kit.uiapp" = {}
-"omni.isaac.utils" = {}
 "omni.physx.vehicle" = {}
+"omni.isaac.core" = {}
 
 [[python.module]]
 name = "omni.isaac.internal_tools"

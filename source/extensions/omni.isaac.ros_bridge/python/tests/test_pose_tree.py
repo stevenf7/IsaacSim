@@ -22,7 +22,7 @@ import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
 from .common import add_cube, simulate, wait_for_rosmaster, add_franka
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from pxr import Sdf
 
 

@@ -19,6 +19,7 @@ icon = "data/icon.png"
 "omni.kit.uiapp" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.range_sensor" = {}
+"omni.isaac.core" = {}
 "omni.syntheticdata" = {}
 "omni.isaac.utils" = {}
 "omni.usd.schema.isaac" = {}

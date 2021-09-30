@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # Example ROS bridge sample showing manual control over messages
     kit = OmniKitHelper(config=CONFIG)
     import omni
-    from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+    from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
     from pxr import Sdf
 
     # enable ROS bridge extension

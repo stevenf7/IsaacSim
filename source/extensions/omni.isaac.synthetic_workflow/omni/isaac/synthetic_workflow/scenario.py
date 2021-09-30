@@ -10,7 +10,7 @@
 import omni
 import numpy as np
 import random
-from omni.isaac.utils.scripts.nucleus_utils import get_server_path
+from omni.isaac.core.utils.nucleus_utils import get_server_path
 from pxr import UsdGeom
 
 import omni.isaac.dr as dr

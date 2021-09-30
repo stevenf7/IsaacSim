@@ -19,7 +19,7 @@ from omni.isaac.pyalice import Codelet, Composite
 import logging
 import numpy as np
 import time
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 
 EXTENSION_NAME = "REB Vehicle Control"
 

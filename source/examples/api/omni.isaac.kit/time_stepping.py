@@ -12,7 +12,7 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": True})
 
 from omni.isaac.kit.simulation import SimulationContext
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 
 _, nucleus_server = find_nucleus_server()
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"

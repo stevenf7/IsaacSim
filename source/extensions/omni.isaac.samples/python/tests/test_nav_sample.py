@@ -26,7 +26,7 @@ from omni.physx.scripts.physicsUtils import add_ground_plane
 from omni.isaac.samples.scripts.utils.simple_robot_controller import RobotController
 from omni.isaac.utils.scripts import math_utils
 from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 
 
 class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):

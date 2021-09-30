@@ -15,7 +15,7 @@ import numpy as np
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.kaya import Kaya
 from omni.isaac.kaya.controllers import HolonomicController
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.kit.utils import add_usd_reference
 from omni.isaac.core.tasks.task import BaseTask
 from omni.isaac.core.scenes.scene import Scene

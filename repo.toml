@@ -162,7 +162,7 @@ sphinx_conf_py_extra = """
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
     html_css_files = [ "isaac-style.css" ]
-    autodoc_mock_imports = ["scipy", "pxr.PhysxSchema"]
+    autodoc_mock_imports = ["scipy", "pxr.PhysxSchema", "lula"]
 """
 
 sphinx_exclude_patterns = [
@@ -402,7 +402,6 @@ exts.include = [
     "omni.isaac.debug_draw",
     "omni.isaac.dr",
     "omni.isaac.dynamic_control",
-    "omni.isaac.dynamic_control.samples",
     "omni.isaac.manip",
     "omni.isaac.merge_mesh",
     "omni.isaac.motion_planning",

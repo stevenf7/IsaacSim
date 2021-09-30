@@ -20,7 +20,7 @@ import gxf.core
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.utils.scripts.test_utils import load_test_file
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from .common import simulate
 import omni.kit.usd
 import carb

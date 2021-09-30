@@ -38,6 +38,12 @@ writeTarget.kit = true
 name = "omni.isaac.samples.tests"
 
 [[python.module]]
+name = "omni.isaac.samples.scripts.dynamic_control.joint_controller"
+
+[[python.module]]
+name = "omni.isaac.samples.scripts.dynamic_control.read_articulations"
+
+[[python.module]]
 name = "omni.isaac.samples.scripts.kaya_joystick"
 
 [[python.module]]
