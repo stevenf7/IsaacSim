@@ -17,7 +17,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.isaac.dynamic_control" = {}
-"omni.isaac.motion_planning" = {}
+"omni.isaac.lula" = {}
 "omni.isaac.utils" = {}
 "omni.isaac.core" = {}
 

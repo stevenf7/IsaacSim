@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.6"
+version = "0.1.7"
 category = "Simulation"
 title = "Isaac Sim Motion Planning"
 description = "Extension that provides support for RMPs"
@@ -25,9 +25,6 @@ name = "omni.isaac.motion_planning"
 
 [[python.module]]
 name = "omni.isaac.motion_planning.tests"
-
-[[python.module]]
-name = "lula"
 
 [[native.library]]
 path = "bin/libconsole_bridge.so"

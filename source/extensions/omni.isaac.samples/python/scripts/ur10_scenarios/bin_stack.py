@@ -913,7 +913,7 @@ class BinStack(Scenario):
             self.world,
             default_config,
             sgp=sgp,
-            urdf="/urdf/ur10_robot_robotiq.urdf",
+            urdf="/ur10/ur10_robot_suction.urdf",
         )
 
         i = 0
