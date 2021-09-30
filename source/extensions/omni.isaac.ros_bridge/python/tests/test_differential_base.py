@@ -23,7 +23,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 
 from .common import simulate, wait_for_rosmaster, add_carter_ros, add_carter
 from omni.isaac.ros_bridge_ui.scripts.commands import get_path
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from pxr import Sdf, Gf
 
 

@@ -10,7 +10,7 @@ import carb
 from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics, PhysxSchema
 import omni.usd
 import gc
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 
 
 # Utility function to specify the stage with the z axis as "up"

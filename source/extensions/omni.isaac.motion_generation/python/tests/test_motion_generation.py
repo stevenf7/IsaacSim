@@ -14,7 +14,7 @@ from pxr import Usd, UsdGeom, Gf
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.motion_generation import MotionGenerator
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.utils.scripts import distance_metrics
+from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.utils.xforms import set_xform_position
 import os
 import json

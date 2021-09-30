@@ -18,7 +18,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 import omni.physx as _physx
 
 from omni.physx.scripts.physicsUtils import add_ground_plane
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.utils.scripts.scene_utils import set_translate, set_up_z_axis, setup_physics
 
 import os

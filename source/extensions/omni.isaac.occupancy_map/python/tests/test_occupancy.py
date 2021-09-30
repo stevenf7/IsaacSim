@@ -21,7 +21,7 @@ from pxr import UsdPhysics, Sdf, UsdGeom, PhysxSchema
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.occupancy_map import _occupancy_map
 from omni.isaac.occupancy_map.scripts.utils import update_location, compute_coordinates, generate_image
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.utils.scripts.test_utils import load_test_file
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

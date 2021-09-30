@@ -32,7 +32,7 @@ STEREO_CAMERA = False  # CREATE_NEW_CAMERA must be true for this to apply
 kit = SimulationApp(launch_config=CONFIG)
 from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter, KittiWriter
 import omni.isaac.dr as dr
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from pxr import Gf, UsdGeom
 import numpy as np
 

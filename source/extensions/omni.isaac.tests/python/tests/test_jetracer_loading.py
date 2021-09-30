@@ -17,7 +17,7 @@ import carb
 import numpy as np
 from pxr import Usd
 
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.dynamic_control import _dynamic_control
 
 

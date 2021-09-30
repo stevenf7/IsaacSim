@@ -246,7 +246,6 @@ group "exts"
     include ("source/extensions/omni.isaac.debug_draw")
     include ("source/extensions/omni.isaac.dr")
     include ("source/extensions/omni.isaac.dynamic_control")
-    include ("source/extensions/omni.isaac.dynamic_control.samples")
     include ("source/extensions/omni.isaac.internal_tools")
     include ("source/extensions/omni.isaac.imu_sensor")
     include ("source/extensions/omni.isaac.manip")
@@ -332,11 +331,11 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.kit.control_robot", "examples/api/omni.isaac.kit/control_robot.py")
     python_sample_test("tests-nativepython-omni.isaac.kit.change_resolution", "examples/api/omni.isaac.kit/change_resolution.py")
     python_sample_test("tests-nativepython-omni.isaac.kit.time_stepping", "examples/api/omni.isaac.kit/time_stepping.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.load_stage", "examples/api/omni.isaac.kit/load_stage.py", "--usd_path /Environments/Simple_Room/simple_room.usd --test --headless")
+    python_sample_test("tests-nativepython-omni.isaac.dynamic_control.franka_articulation", "examples/api/omni.isaac.dynamic_control/franka_articulation.py")
     -- omni.isaac.urdf
     python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "examples/api/omni.isaac.urdf/urdf_import.py")
     -- Simple samples
-    python_sample_test("tests-nativepython-simple.franka_articulation", "python_samples/simple/franka_articulation.py")
-    python_sample_test("tests-nativepython-simple.load_stage", "python_samples/simple/load_stage.py", "--usd_path /Environments/Simple_Room/simple_room.usd --test --headless")
     python_sample_test("tests-nativepython-simple.franka_rmp", "python_samples/simple/franka_rmp.py", "--headless")
     -- SDK samples 
     python_sample_test("tests-nativepython-isaac_sdk.pose_estimation", "python_samples/isaac_sdk/pose_estimation.py", "--test")

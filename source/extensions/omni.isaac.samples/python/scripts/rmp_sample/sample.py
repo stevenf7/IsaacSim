@@ -21,7 +21,7 @@ from omni.isaac.samples.scripts.utils.franka import Franka, default_config
 
 from omni.isaac.samples.scripts.utils.world import World
 from omni.isaac.samples.scripts.utils.reactive_behavior import FrameTerminationCriteria
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.utils.scripts.scene_utils import set_translate, set_up_z_axis, setup_physics
 
 import numpy as np

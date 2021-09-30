@@ -129,7 +129,7 @@ class CreateSetupExtension(omni.ext.IExt):
         # Check nucleus server for assets
         server_check = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/serverCheck")
         if server_check is True:
-            from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server_async
+            from omni.isaac.core.utils.nucleus_utils import find_nucleus_server_async
 
             omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets on nucleus server")
             self._check_window = ui.Window(

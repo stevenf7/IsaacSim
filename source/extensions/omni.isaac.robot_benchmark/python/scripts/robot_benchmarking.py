@@ -19,11 +19,9 @@ import omni.physx as _physx
 
 from omni.physx.scripts.physicsUtils import add_ground_plane
 
-from omni.isaac.utils.scripts.nucleus_utils import find_nucleus_server
-from omni.isaac.utils.scripts.scene_utils import set_translate, set_up_z_axis, setup_physics
-from omni.isaac.utils.scripts import distance_metrics
-
-import numpy as np
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
+from omni.isaac.core.utils import distance_metrics
 
 
 def create_prim_from_usd(stage, prim_env_path, prim_usd_path, position):
