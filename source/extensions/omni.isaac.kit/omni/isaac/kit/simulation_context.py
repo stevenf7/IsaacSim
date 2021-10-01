@@ -25,10 +25,10 @@ class SimulationContext:
     def __init__(self, physics_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 1.0):
         # Only import custom loop runner if we create this object
         # TODO: customization for the physics
+        self._app = omni.kit.app.get_app_interface()
         self.set_stage_units(stage_units_in_meters)
         self._physics_scene = PhysicsScene(physics_dt=physics_dt)
         # Acquire the running application interface
-        self._app = omni.kit.app.get_app_interface()
         # Acquire interfaces to extensions from Omniverse Toolkit
         self._framework = carb.get_framework()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -47,7 +47,6 @@ class SimulationContext:
         self._editor_callback_functions = dict()
         self._number_of_steps = 0
         self._current_async_task = None
-        self._extension_manager = omni.kit.app.get_app().get_extension_manager()
         self._async_tasks = []
         self._current_time = 0
         return
@@ -78,12 +77,10 @@ class SimulationContext:
         """Returns: The current USD stage."""
         return omni.usd.get_context().get_stage()
 
-    @property
     def is_playing(self) -> bool:
         """Returns: True if the simulator is playing."""
         return self._timeline.is_playing()
 
-    @property
     def is_stopped(self) -> bool:
         """Returns: True if the simulator is stopped."""
         return self._timeline.is_stopped()
@@ -213,7 +210,8 @@ class SimulationContext:
         if render:
             self._app.update()
         else:
-            self._physics_scene.step(current_time=self.time)
+            if self.is_playing():
+                self._physics_scene.step(current_time=self.time)
         return
 
     def render(self):
@@ -305,36 +303,6 @@ class SimulationContext:
     def set_stage_units(self, stage_units_in_meters):
         UsdGeom.SetStageMetersPerUnit(self.stage, stage_units_in_meters)
         return
-
-    def get_extension_id(self, extension_name: str) -> str:
-        """Get extension id for a loaded extension
-            Args:
-                extension_name (str): name of the extension
-
-            Returns:
-                str: Full extension id
-        """
-        return self._extension_manager.get_enabled_extension_id(extension_name)
-
-    def get_extension_path(self, ext_id: str) -> str:
-        """Get extension path for a loaded extension
-            Args:
-                extension_name (str): name of the extension
-
-            Returns:
-                str: Path to loaded extension root directory
-        """
-        return self._extension_manager.get_extension_path(ext_id)
-
-    def enable_extension(self, extension_name: str) -> bool:
-        """Load an extension
-            Args:
-                extension_name (str): name of the extension
-
-            Returns:
-                bool: True if extension could be loaded, False otherwise
-        """
-        return self._extension_manager.set_extension_enabled_immediate(extension_name, True)
 
 
 class PhysicsScene:

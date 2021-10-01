@@ -139,7 +139,8 @@ class SimulationApp:
 
         # Update the app
         self._app.update()
-
+        omni.usd.get_context().new_stage()
+        self._app.update()
         # Dock floating UIs
         self._prepare_ui()
         # Notify toolkit is running
@@ -305,18 +306,6 @@ class SimulationApp:
         from omni.isaac.kit.utils import set_carb_setting
 
         set_carb_setting(self._carb_settings, setting, value)
-
-    def set_extension_enabled(self, name: str, enabled: bool) -> None:
-        """
-        Set the state for an extension
-
-        Args:
-            name (str): name of extension to enabled
-            enabled (bool): true if extension should be enabled, false to turn extension off
-
-        """
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_manager.set_extension_enabled_immediate(name, enabled)
 
     def close(self) -> None:
         """Close the running Omniverse Toolkit."""
