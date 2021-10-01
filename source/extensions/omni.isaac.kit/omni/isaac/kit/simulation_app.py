@@ -12,7 +12,7 @@ from __future__ import annotations  # This allows us to hint types that do not y
 import os
 import sys
 import argparse
-
+import re
 import carb
 import omni.kit.app
 
@@ -90,6 +90,39 @@ class SimulationApp:
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
+        # Sanity check to see if any extra omniverse modules are loaded
+        # Warn users if so because this will usually cause issues.
+        # Base list of modules that can be loaded before kit app starts, might need to be updated in the future
+        ok_list = [
+            "omni",
+            "omni.isaac",
+            "omni.isaac.kit",
+            "omni.isaac.kit.simulation_app",
+            "omni.kit",
+            "omni.kit.app",
+            "omni.ext",
+            "omni.ext.impl",
+            "omni.ext._extensions",
+            "omni.ext.impl._internal",
+            "omni.ext.impl.leak_detection",
+            "omni.kit.app._app",
+            "omni.isaac.kit.global_vars",
+        ]
+        r = re.compile("omni.*|pxr.*")
+        found_modules = list(filter(r.match, list(sys.modules.keys())))
+        result = []
+        for item in found_modules:
+            if item not in ok_list:
+                result.append(item)
+        # Made this a warning instead of an error as the above list might be incomplete
+        if len(result):
+            carb.log_warn(
+                f"Modules: {result} were loaded before SimulationApp was started and might not be loaded correctly."
+            )
+            carb.log_warn(
+                "Please check to make sure no extra omniverse or pxr modules are imported before the call to SimulationApp(...)"
+            )
+
         import omni.isaac.kit.global_vars as global_vars
 
         # Initialize variables
