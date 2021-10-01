@@ -13,10 +13,11 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.ur10.tasks import PickPlace
 from omni.isaac.ur10.controllers import RMPFlowPickPlace
 from omni.isaac.core import World
+from omni.isaac.kit.utils import get_extension_id, get_extension_path
 
 my_world = World(stage_units_in_meters=0.01)
-extension_id = my_world.get_extension_id("omni.isaac.motion_generation")
-mg_extension_path = my_world.get_extension_path(ext_id=extension_id)
+extension_id = get_extension_id("omni.isaac.motion_generation")
+mg_extension_path = get_extension_path(ext_id=extension_id)
 my_task = PickPlace()
 my_world.load_task(my_task)
 my_world.reset()

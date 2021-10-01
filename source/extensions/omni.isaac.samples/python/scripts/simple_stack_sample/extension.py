@@ -12,6 +12,7 @@ from omni.isaac.franka.tasks import Tower
 from omni.isaac.franka.controllers import RMPFlowTower
 import asyncio
 import os
+from omni.isaac.kit.utils import get_extension_id, get_extension_path
 
 
 class Extension(BaseSample):
@@ -38,8 +39,8 @@ class Extension(BaseSample):
 
     def _setup_controllers(self):
         my_franka = self._world.scene.get_object("my_franka")
-        extension_id = self._world.get_extension_id("omni.isaac.motion_generation")
-        mg_extension_path = self._world.get_extension_path(ext_id=extension_id)
+        extension_id = get_extension_id("omni.isaac.motion_generation")
+        mg_extension_path = get_extension_path(ext_id=extension_id)
         self._controller = RMPFlowTower(
             name="stacking_controller",
             dc_interface=self._world.dc_interface,
