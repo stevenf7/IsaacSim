@@ -105,8 +105,8 @@ for i in range(10):
         simulation_app.app.update()
         simulation_app.app.update()
 
-# wait until all materials are loaded
-while simulation_app.is_loading:
+print("Waiting until all materials are loaded")
+while simulation_app.is_loading():
     simulation_app.app.update()
 
 viewport = omni.kit.viewport.get_default_viewport_window()
@@ -142,7 +142,7 @@ if GLASS_MATERIAL:
     # use pathtraced rendering if using glass
     simulation_app.set_setting("/rtx/rendermode", "PathTracing")
 
-# Get groundtruth
+print("Get ground truth data")
 simulation_app.app.update()
 
 gt = sd_helper.get_groundtruth(sensor_names=sensor_names, viewport=viewport, verify_sensor_init=False)

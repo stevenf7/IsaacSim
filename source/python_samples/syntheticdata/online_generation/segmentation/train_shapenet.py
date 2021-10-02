@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import signal
 
-from dataset import RandomObjects
+from generate_shapenet import RandomObjects
 
 
 def main(args):

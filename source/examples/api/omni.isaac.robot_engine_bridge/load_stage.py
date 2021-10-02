@@ -7,44 +7,39 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import os
-from omni.isaac.python_app import OmniKitHelper
+from omni.isaac.kit import SimulationApp
 import carb
 import omni
 
 # This sample loads a usd stage and creates a robot engine bridge application and starts simulation
 # Disposes average fps of the simulation for given time
 # Useful for testing an Isaac SDK sample scene using python
-CONFIG = {
-    "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
-    "width": 1280,
-    "height": 720,
-    "sync_loads": True,
-    "headless": False,
-    "renderer": "RayTracedLighting",
-}
+CONFIG = {"width": 1280, "height": 720, "sync_loads": True, "headless": False, "renderer": "RayTracedLighting"}
 
 
 class UsdLoadSample:
     def __init__(self, args):
         CONFIG["headless"] = args.headless
-        self.kit = OmniKitHelper(config=CONFIG)
+        self.kit = SimulationApp(launch_config=CONFIG)
+        from omni.isaac.kit.simulation_context import SimulationContext
 
+        self.simulation_context = SimulationContext(1.0 / 60.0, stage_units_in_meters=0.01)
         import omni
+        from omni.isaac.kit.utils import enable_extension
 
         # enable SDK bridge extension
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_manager.set_extension_enabled_immediate("omni.isaac.robot_engine_bridge", True)
+        enable_extension("omni.isaac.robot_engine_bridge")
 
         self.usd_path = ""
-        self._viewport = omni.kit.viewport.get_viewport_interface()
+        self.viewport = omni.kit.viewport.get_viewport_interface()
 
     def start(self):
-        self.kit.play()
+        self.simulation_context.play()
 
     def stop(self):
-        self.kit.stop()
+        self.simulation_context.stop()
         omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")
-        self.kit.shutdown()
+        self.kit.close()
 
     def load_stage(self, args):
         from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
@@ -57,8 +52,8 @@ class UsdLoadSample:
         self.usd_path = self._asset_path + args.usd_path
         omni.usd.get_context().open_stage(self.usd_path, None)
         # Wait two frames so that stage starts loading
-        self.kit.app.update()
-        self.kit.app.update()
+        self.kit.update()
+        self.kit.update()
         return True
 
     def configure_bridge(self, json_file: str = "isaacsim.app.json"):
@@ -80,7 +75,7 @@ class UsdLoadSample:
         """
         import omni.isaac.RobotEngineBridgeSchema as REBSchema
 
-        stage = self.kit.get_stage()
+        stage = self.kit.context.get_stage()
         for prim in stage.Traverse():
             if prim.IsA(REBSchema.RobotEngineCamera):
                 reb_camera_prim = REBSchema.RobotEngineCamera(prim)
@@ -141,7 +136,7 @@ if __name__ == "__main__":
     if sample.load_stage(args):
         print("Loading stage...")
         while sample.kit.is_loading():
-            sample.kit.update(1.0 / 60.0)
+            sample.kit.update()
         print("Loading Complete")
         # Add parameterized rebcamera along with viewport
         if args.add_rebcamera is not None and len(args.add_rebcamera) > 0:
@@ -156,27 +151,27 @@ if __name__ == "__main__":
         sample.start()
         if args.test is True:
             for i in range(10):
-                sample.kit.update()
+                sample.simulation_context.step()
             sample.stop()
         elif args.benchmark is True:
             # Warm up simulation
-            while sample._viewport.get_viewport_window().get_fps() < 1:
-                sample.kit.update(1.0 / 60.0)
+            while sample.viewport.get_viewport_window().get_fps() < 1:
+                sample.simulation_context.step()
 
             fps_count = 0
             start_time = time.perf_counter()
             end_time = start_time + args.benchmark_timeout
             count = 0
             # Calculate average fps
-            while sample.kit.app.is_running() and end_time > time.perf_counter():
-                sample.kit.update(1.0 / 60.0)
-                fps = sample._viewport.get_viewport_window().get_fps()
+            while sample.kit.is_running() and end_time > time.perf_counter():
+                sample.simulation_context.step()
+                fps = sample.viewport.get_viewport_window().get_fps()
                 fps_count = fps_count + fps
                 count = count + 1
             sample.stop()
             print(f"\n----------- Avg. FPS over {args.benchmark_timeout} sec : {fps_count/count}-----------")
         else:
-            while sample.kit.app.is_running():
+            while sample.kit.is_running():
                 # Run in realtime mode, we don't specify the step size
                 sample.kit.update()
             sample.stop()

@@ -9,6 +9,7 @@
 import numpy as np
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from pxr import Gf, Usd, UsdGeom
+import carb
 
 
 def reset_xform_ops(prim: Usd.Prim):
@@ -30,7 +31,11 @@ def set_xform_position(prim: Usd.Prim, position: np.ndarray) -> None:
         Args:
             position (np.ndarray): position of the prim to set in stage. shape (3,).
         """
-    position = Gf.Vec3d(*position.tolist())
+    if not isinstance(position, list):
+        position = position.tolist()
+
+    position = Gf.Vec3d(*position)
+
     properties = prim.GetPropertyNames()
     if "xformOp:translate" in properties:
         translate_attr = prim.GetAttribute("xformOp:translate")
@@ -57,7 +62,8 @@ def set_xform_orientation(prim: Usd.Prim, quat: np.ndarray) -> None:
             quat (np.ndarray): orientation represented as a quaternion. quaternion is scalar-first (w, x, y, z).
                                shape (4,).
         """
-    quat = quat.tolist()
+    if not isinstance(quat, list):
+        quat = quat.tolist()
     rotation_properties = [
         "xformOp:orient",
         "xformOp:rotateX",
@@ -129,4 +135,30 @@ def set_xform_orientation(prim: Usd.Prim, quat: np.ndarray) -> None:
         xform = UsdGeom.Xformable(prim)
         xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
         xform_op.Set(Gf.Matrix4d().SetRotateOnly(rotm))
+    return
+
+
+def set_xform_scale(prim: Usd.Prim, scale: np.ndarray) -> None:
+    """
+     Sets the scale of the prim in stage. The method does this through the USD API.
+
+    Args:
+        scale (np.ndarray): scale of the prim to set in stage. shape (3,).
+    """
+    if not isinstance(scale, list):
+        scale = scale.tolist()
+    scale = Gf.Vec3d(*scale)
+    properties = prim.GetPropertyNames()
+    if "xformOp:scale" in properties:
+        translate_attr = prim.GetAttribute("xformOp:scale")
+        translate_attr.Set(scale)
+    elif "xformOp:transform" in properties:
+        transform_attr = prim.GetAttribute("xformOp:transform")
+        matrix = prim.GetAttribute("xformOp:transform").Get().RemoveScaleShear()
+        # because we cannto set the scale directly we multiply it to the existing matrix with its scale removed
+        transform_attr.Set(Gf.Matrix4d().SetScale(scale) * matrix)
+    else:
+        xform = UsdGeom.Xformable(prim)
+        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+        xform_op.Set(Gf.Matrix4d().SetScale(scale))
     return
