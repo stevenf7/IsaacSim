@@ -335,15 +335,17 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.dynamic_control.franka_articulation", "examples/api/omni.isaac.dynamic_control/franka_articulation.py")
     -- omni.isaac.urdf
     python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "examples/api/omni.isaac.urdf/urdf_import.py")
-    -- Simple samples
-    python_sample_test("tests-nativepython-simple.franka_rmp", "python_samples/simple/franka_rmp.py", "--headless")
-    -- SDK samples 
-    python_sample_test("tests-nativepython-isaac_sdk.pose_estimation", "python_samples/isaac_sdk/pose_estimation.py", "--test")
-    python_sample_test("tests-nativepython-isaac_sdk.load_stage", "python_samples/isaac_sdk/load_stage.py", "--usd_path /Samples/Isaac_SDK/Scenario/franka_basic.usd --test --headless")
-    -- ROS samples
-    python_sample_test("tests-nativepython-ros.clock", "python_samples/ros/clock.py")
+    -- omni.isaac.robot_engine_bridge
+    python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.custom_message", "examples/api/omni.isaac.robot_engine_bridge/custom_message.py")
+    python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.pose_estimation", "examples/api/omni.isaac.robot_engine_bridge/pose_estimation.py", "--test")
+    python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.load_stage", "examples/api/omni.isaac.robot_engine_bridge/load_stage.py", "--usd_path /Samples/Isaac_SDK/Scenario/carter_warehouse_with_forklifts.usd --test --headless --add_rebcamera /World/Carter_REB/chassis_link/camera_mount/carter_camera_first_person,1280,720 /World/Carter_REB/chassis_link/camera_mount/carter_camera_third_person,1280,720")
+    -- omni.isaac.ros_bridge
+    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.clock", "examples/api/omni.isaac.ros_bridge/clock.py")
+    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "examples/api/omni.isaac.ros_bridge/contact.py")
+    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
     -- Synthetic data samples:
-    python_sample_test("tests-nativepython-syntheticdata.offline_generation", "examples/syntheticdata/offline_generation/offline_generation.py")
+    python_sample_test("tests-nativepython-syntheticdata.offline_generation", "examples/syntheticdata/offline_generation.py")
+    python_sample_test("tests-nativepython-syntheticdata.visualize_groundtruth", "examples/syntheticdata/visualize_groundtruth.py")
 group "jupyter_samples"
 
     jupyter_sample_test("tests-jupyter-startup", "examples/notebooks/basic_notebook.ipynb")

@@ -8,10 +8,8 @@
 
 from omni.isaac.kit import SimulationApp
 
-CONFIG = {"renderer": "RayTracedLighting", "headless": True}
-
 # URDF import, configuration and simualtion sample
-kit = SimulationApp(config=CONFIG)
+kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Sdf, Gf, UsdPhysics, UsdLux, PhysxSchema
@@ -88,7 +86,7 @@ dc = _dynamic_control.acquire_dynamic_control_interface()
 # Start simulation
 omni.timeline.get_timeline_interface().play()
 # perform one simulation step so physics is loaded and dynamic control works.
-kit.app.update(1.0 / 60.0)
+kit.update()
 art = dc.get_articulation(stage_path)
 
 if art == _dynamic_control.INVALID_HANDLE:
@@ -98,7 +96,7 @@ else:
 
 # perform simulation
 for frame in range(100):
-    kit.app.update(1.0 / 60.0)
+    kit.update()
 
 # Shutdown and exit
 omni.timeline.get_timeline_interface().stop()

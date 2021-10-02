@@ -19,9 +19,10 @@ class DOFInfo(object):
 
 
 class PrimState(object):
-    def __init__(self, position, orientation):
+    def __init__(self, position, orientation, scale):
         self.position = position
         self.orientation = orientation
+        self.scale = scale
 
 
 class GeometryPrimState(PrimState):

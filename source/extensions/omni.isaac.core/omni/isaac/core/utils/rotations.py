@@ -65,3 +65,21 @@ def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False) -> np.
     y = (cr * sp * cy) + (sr * cp * sy)
     z = (cr * cp * sy) - (sr * sp * cy)
     return np.array([w, x, y, z])
+
+
+def gf_quatd_to_np_array(orientation: Gf.Quatd) -> np.ndarray:
+    quat = np.zeros(4)
+    quat[1:] = orientation.GetImaginary()
+    quat[0] = orientation.GetReal()
+    return quat
+
+
+def gf_quatf_to_np_array(orientation: Gf.Quatf) -> np.ndarray:
+    quat = np.zeros(4)
+    quat[1:] = orientation.GetImaginary()
+    quat[0] = orientation.GetReal()
+    return quat
+
+
+def gf_rotation_to_np_array(orientation: Gf.Quatf) -> np.ndarray:
+    return gf_quatd_to_np_array(orientation.GetQuat())

@@ -7,11 +7,12 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Tuple, Optional, Union
-from pxr import Usd, UsdGeom
+from pxr import Usd, UsdGeom, Gf
 from omni.isaac.core.utils.types import PrimState
 import numpy as np
 from omni.isaac.core.utils.prims import set_usd_visibility
-from omni.isaac.core.utils.xforms import set_xform_orientation, set_xform_position
+from omni.isaac.core.utils.xforms import set_xform_orientation, set_xform_position, set_xform_scale
+from omni.isaac.core.utils.rotations import gf_quatd_to_np_array
 
 
 class XFormPrim(object):
@@ -21,6 +22,7 @@ class XFormPrim(object):
         name: str,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
         visible: bool = True,
     ) -> None:
         """Provides common functionalities to prims already existing in the stage
@@ -35,12 +37,12 @@ class XFormPrim(object):
         """
         self._prim = prim
         self._name = name
-        if position is not None or orientation is not None:
-            self.set_usd_pose(position, orientation)
+        if position is not None or orientation is not None or scale is not None:
+            self.set_usd_pose(position, orientation, scale)
         self.set_usd_visibility(visible=visible)
         self._visible = visible
-        default_position, default_orientation = self.get_usd_pose()
-        self._default_state = PrimState(position=default_position, orientation=default_orientation)
+        default_position, default_orientation, default_scale = self.get_usd_pose()
+        self._default_state = PrimState(position=default_position, orientation=default_orientation, scale=default_scale)
         return
 
     @property
@@ -140,7 +142,22 @@ class XFormPrim(object):
 
         return
 
-    def set_usd_pose(self, position: Optional[np.ndarray] = None, quat: Optional[np.ndarray] = None) -> None:
+    def _set_usd_scale(self, scale: np.ndarray) -> None:
+        """Sets the scale of the prim in stage. The method does this through the USD API.
+
+        Args:
+            scale (np.ndarray): scale of the prim to set in stage. shape (3,).
+        """
+        set_xform_scale(self._prim, scale)
+
+        return
+
+    def set_usd_pose(
+        self,
+        position: Optional[np.ndarray] = None,
+        quat: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
+    ) -> None:
         """Sets the pose of the prim in stage. The method does this through the USD API.
 
         Args:
@@ -152,9 +169,11 @@ class XFormPrim(object):
             self._set_usd_position(position=position)
         if quat is not None:
             self._set_usd_orientation(quat=quat)
+        if scale is not None:
+            self._set_usd_scale(quat=quat)
         return
 
-    def get_usd_pose(self, as_matrix: bool = False) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    def get_usd_pose(self, as_matrix: bool = False) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """Gets the pose of the prim in stage. The method does this through the USD API.
 
         Args:
@@ -162,21 +181,23 @@ class XFormPrim(object):
                                         local frame. Defaults to False.
 
         Returns:
-            Union(np.ndarray, Tuple(np.ndarray, np.ndarray)): Either the pose as matrix if specified in the 
+            Union(np.ndarray, Tuple(np.ndarray, np.ndarray, np.ndarray)): Either the pose as matrix if specified in the 
                                                               argument or a tuple where the first position (3,) 
-                                                              is the usd position and the second is the orientation 
+                                                              is the usd position, second is the orientation 
                                                               as a quaternion. quaternion is scalar-first (w, x, y, z). 
-                                                              shape (4,).
+                                                              shape (4,), and third is the scale (3,)
         """
         prim_tf = UsdGeom.Xformable(self._prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
         if as_matrix:
             return np.transpose(prim_tf)
-        position = prim_tf.ExtractTranslation()
-        orientation = prim_tf.ExtractRotation().GetQuat()
-        quat = np.zeros(4)
-        quat[1:] = orientation.GetImaginary()
-        quat[0] = orientation.GetReal()
-        return np.array(position), quat
+
+        transform = Gf.Transform()
+        transform.SetMatrix(prim_tf)
+
+        position = transform.GetTranslation()
+        orientation = transform.GetRotation().GetQuat()
+        scale = transform.GetScale()
+        return np.array(position), gf_quatd_to_np_array(orientation), np.array(scale)
 
     def reset(self) -> None:
         """Resets the prim to its default state (position and orientation).
