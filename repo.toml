@@ -225,6 +225,13 @@ replace_authors_in_kit_extensions = true
 strip_package_infos = true
 windows_max_path_length = 220 #TODO: changed from default of 180 to make builds pass
 
+[repo_package.packages.isaac-sim-internal]
+root = "_build/$${platform}/$${config}"
+omniverse_flow_version_scheme = true
+ziponly = false
+package_per_config = true
+"platform:linux-x86_64".archive_format = "7z" # Use 7z on linux
+
 # to generate test runner package for isaac sim
 [repo_package.packages.test_runner]
 omniverse_flow_version_scheme = true
@@ -338,6 +345,16 @@ kind = "glob_and_exec"
 path = "${test_root}/tests"
   [[repo_test.suites.pythontests.group]]
   include = ["tests-python*${shell_ext}"]
+  exclude =[]
+  args = ["--portable-root ${test_root}/portable_root"]
+  tc_report_enabled = false
+  timeout = 480
+
+[repo_test.suites.internalpythontests]
+kind = "glob_and_exec"
+path = "${test_root}/tests"
+  [[repo_test.suites.internalpythontests.group]]
+  include = ["tests-python-omni.isaac.internal_tools*${shell_ext}"]
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root"]
   tc_report_enabled = false
