@@ -11,6 +11,7 @@ import carb
 from typing import Any
 from pxr import Usd, UsdGeom
 import omni.kit.app
+import omni
 
 
 def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value: Any) -> None:
@@ -125,3 +126,54 @@ def set_extension_enabled(name: str, enabled: bool) -> None:
     """
     extension_manager = omni.kit.app.get_app().get_extension_manager()
     return extension_manager.set_extension_enabled_immediate(name, enabled)
+
+
+def new_stage() -> bool:
+    """
+    Create a new stage
+    """
+    return omni.usd.get_context().new_stage()
+
+
+def open_usd(usd_path: str) -> bool:
+    """
+    Open the given usd file and replace currently opened stage
+    Args:
+        usd_path (str): Path to open
+    """
+    if not Usd.Stage.IsSupportedFile(usd_path):
+        raise ValueError("Only USD files can be loaded with this method")
+
+    usd_context = omni.usd.get_context()
+    usd_context.disable_save_to_recent_files()
+    result = omni.usd.get_context().open_stage(usd_path)
+    usd_context.enable_save_to_recent_files()
+    return result
+
+
+def save_usd(usd_path: str) -> bool:
+    """
+    Save usd file to path, it will be overwritten with the current stage
+    Args:
+        usd_path (str): Path to save the current stage to
+    """
+    if not Usd.Stage.IsSupportedFile(usd_path):
+        raise ValueError("Only USD files can be saved with this method")
+    result = omni.usd.get_context().save_as_stage(usd_path)
+    return result
+
+
+def set_livesync_usd(usd_path: str, enable: bool) -> bool:
+    """
+    Set livesync state for a usd file
+
+    Args:
+        usd_path (str): path to enable live sync for, t will be overwritten with the current stage
+        enable (bool): True to enable livesync, false to disable livesync
+    """
+    # TODO: Check that the provided usd_path exists
+    if save_usd(usd_path):
+        omni.usd.get_context().set_layer_live(usd_path, enable)
+        return True
+    else:
+        return False

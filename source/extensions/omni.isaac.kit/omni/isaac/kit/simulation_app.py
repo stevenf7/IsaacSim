@@ -66,6 +66,8 @@ class SimulationApp:
         "max_bounces": 4,
         "max_specular_transmission_bounces": 6,
         "max_volume_bounces": 4,
+        "open_usd": None,
+        "livesync_usd": None,
     }
     """
     The config variable is a dictionary containing the following entries
@@ -87,6 +89,8 @@ class SimulationApp:
         max_bounces (int): Maximum number of bounces, used for `PathTracing` only. Defaults to 4
         max_specular_transmission_bounces(int): Maximum number of bounces for specular or transmission, used for `PathTracing` only. Defaults to 6
         max_volume_bounces(int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
+        open_usd(str): This is the name of the usd to open when the app starts. It will not be saved over. Default is None and an empty stage is created on startup.
+        livesync_usd(str): This is the location of the usd that you want to do your interactive work in.  The exisitng file is overwritten. Default is None
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
@@ -159,7 +163,7 @@ class SimulationApp:
         #     self._app.update()
 
         # once app starts, we can set settings
-        from omni.isaac.kit.utils import set_carb_setting
+        from omni.isaac.kit.utils import set_carb_setting, open_usd, new_stage, save_usd, set_livesync_usd
 
         self._carb_settings = carb.settings.get_settings()
         # Set rtx-default renderder settings
@@ -169,6 +173,25 @@ class SimulationApp:
 
         set_carb_setting(self._carb_settings, "/persistent/simulation/defaultMetersPerUnit", 1.0)
         print("Simulation App Starting")
+
+        self.open_usd = self.config.get("open_usd")
+        if self.open_usd != None:
+            print("Opening usd file at ", self.open_usd, " ...", end="")
+            if open_usd(self.open_usd) == False:
+                print("Could not open", self.open_usd, "creating a new empty stage")
+                new_stage()
+            else:
+                print("Done.")
+        else:
+            new_stage()
+
+        self.livesync_usd = self.config.get("livesync_usd")
+        if self.livesync_usd != None:
+            print("Saving a temp livesync stage at ", self.livesync_usd, " ...", end="")
+            if set_livesync_usd(self.livesync_usd, True):
+                print("Done.")
+            else:
+                print("Could not save usd file to ", self.livesync_usd)
 
         # Update the app
         self._app.update()
@@ -308,18 +331,6 @@ class SimulationApp:
     """
     Public methods
     """
-
-    def new_livesync_stage(self, usd_path: str) -> None:
-        """
-        Creates a new stage and enables livesync. 
-        If a stage exists at the specified path, it will be destroyed upon creation
-
-        Args:
-            usd_path (str): path to save new usd stage at and enable livesync
-        """
-        omni.usd.get_context().new_stage()
-        omni.usd.get_context().save_as_stage(usd_path)
-        omni.usd.get_context().set_layer_live(usd_path, True)
 
     def update(self) -> None:
         """
