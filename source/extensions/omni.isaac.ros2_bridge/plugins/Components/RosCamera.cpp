@@ -412,6 +412,7 @@ void getCameraIntrinsics(pxr::UsdGeomCamera cameraPrim,
 
 void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
 {
+    CARB_PROFILE_ZONE(0, "Camera Info Pub");
     if (mViewportWindow == nullptr)
         return;
     const char* cameraPath = mViewportWindow->getActiveCamera();
@@ -506,6 +507,7 @@ void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
 
 void RosCamera::rgbPubCallback(rclcpp::PublisherBase* pub)
 {
+    CARB_PROFILE_ZONE(0, "Camera RGB Pub");
     if (!mEnableRgb || mViewportWindow == nullptr)
     {
         return;
@@ -532,20 +534,18 @@ void RosCamera::rgbPubCallback(rclcpp::PublisherBase* pub)
     color_msg.encoding = sensor_msgs::image_encodings::RGB8;
     color_msg.data.resize(rgbInfo.tex.height * color_step);
     uint8_t* rgb = &color_msg.data[0];
-    uint8_t* rgbDevice;
     const size_t bufferSize = rgbInfo.tex.width * rgbInfo.tex.height * 3;
-    CUDA_CHECK(cudaMalloc(&rgbDevice, bufferSize));
+    mRgbDeviceBuffer.resize(bufferSize);
     mRgbSensorData = mSyntheticDataInterface->getSensorDeviceData(mRgbSensor);
+    rgbaToRgb(
+        mRgbDeviceBuffer.data(), (uint8_t*)mRgbSensorData, rgbInfo.tex.width, rgbInfo.tex.height, rgbInfo.tex.rowSize);
+    CUDA_CHECK(cudaMemcpy(rgb, mRgbDeviceBuffer.data(), bufferSize, cudaMemcpyDeviceToHost));
 
-    rgbaToRgb(rgbDevice, (uint8_t*)mRgbSensorData, rgbInfo.tex.width, rgbInfo.tex.height, rgbInfo.tex.rowSize);
-    CUDA_CHECK(cudaMemcpy(rgb, rgbDevice, bufferSize, cudaMemcpyDeviceToHost));
-
-    CUDA_CHECK(cudaFree(rgbDevice));
     static_cast<rclcpp::Publisher<sensor_msgs::msg::Image, std::allocator<void>>*>(pub)->publish(color_msg);
 }
 void RosCamera::depthPubCallback(rclcpp::PublisherBase* pub)
 {
-
+    CARB_PROFILE_ZONE(0, "Camera Depth Pub");
     if (!mEnableDepth || mViewportWindow == nullptr)
     {
         return;
@@ -582,7 +582,7 @@ void RosCamera::depthPubCallback(rclcpp::PublisherBase* pub)
 
 void RosCamera::depthToPointCloudCallback(rclcpp::PublisherBase* pub)
 {
-
+    CARB_PROFILE_ZONE(0, "Camera Point Cloud Pub");
     if (!mEnablePointCloud || mViewportWindow == nullptr)
     {
         return;
@@ -650,6 +650,7 @@ void RosCamera::depthToPointCloudCallback(rclcpp::PublisherBase* pub)
 
 void RosCamera::instancePubCallback(rclcpp::PublisherBase* pub)
 {
+    CARB_PROFILE_ZONE(0, "Camera Instance Pub");
     if (!mEnableSegmentation || mViewportWindow == nullptr)
     {
         return;
@@ -688,6 +689,7 @@ void RosCamera::instancePubCallback(rclcpp::PublisherBase* pub)
 
 void RosCamera::semanticPubCallback(rclcpp::PublisherBase* pub)
 {
+    CARB_PROFILE_ZONE(0, "Camera Semantic Pub");
     if (!mEnableSegmentation || mViewportWindow == nullptr)
     {
         return;
@@ -724,6 +726,7 @@ void RosCamera::semanticPubCallback(rclcpp::PublisherBase* pub)
 
 void RosCamera::labelPubCallback(rclcpp::PublisherBase* pub)
 {
+    CARB_PROFILE_ZONE(0, "Camera Label Pub");
     if (!mEnableSegmentation || mViewportWindow == nullptr)
     {
         return;
@@ -758,7 +761,7 @@ void RosCamera::labelPubCallback(rclcpp::PublisherBase* pub)
 
 void RosCamera::boundingbox2dPubCallback(rclcpp::PublisherBase* pub)
 {
-
+    CARB_PROFILE_ZONE(0, "Camera Bbox2d Pub");
     if (!mEnableBoundingBox2D || mViewportWindow == nullptr)
     {
         return;
@@ -840,6 +843,7 @@ void RosCamera::boundingbox2dPubCallback(rclcpp::PublisherBase* pub)
 
 void RosCamera::boundingbox3dPubCallback(rclcpp::PublisherBase* pub)
 {
+    CARB_PROFILE_ZONE(0, "Camera Bbox3d Pub");
     if (!mEnableBoundingBox3D || mViewportWindow == nullptr)
     {
         return;

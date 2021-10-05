@@ -13,6 +13,7 @@
 #include "../Core/IsaacComponent.h"
 #include "../Core/RosNode.h"
 #include "omni/isaac/bridge/ViewportManager.h"
+#include "omni/isaac/utils/Buffer.h"
 
 #include <carb/sensors/Sensors.h>
 
@@ -115,6 +116,7 @@ private:
     std::string mBoundingBox2DPubTopic = "/bbox_2d";
     std::string mBoundingBox3DPubTopic = "/bbox_3d";
     int mQueueSize = 10;
+    omni::isaac::buffer::DeviceBuffer mRgbDeviceBuffer;
 };
 }
 }
