@@ -21,10 +21,8 @@ from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.dynamic_control import _dynamic_control
 import omni.physx as _physx
 
-from .franka_scenarios.scenario import Scenario
-from .franka_scenarios.ghost_scenario import GhostScenario
-from .franka_scenarios.simple_stack import SimpleStack
-from .franka_scenarios.multiple_obstacle import MultipleObstacle
+from .utils.scenario import Scenario
+from .utils.ghost_scenario import GhostScenario
 
 EXTENSION_NAME = "Leonardo Preview"
 
@@ -38,7 +36,6 @@ class Extension(omni.ext.IExt):
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = None
-        self._selected_scenario = None
         self._create_franka_btn = None
         self._perform_task_btn = None
         self._stop_task_btn = None
@@ -59,19 +56,19 @@ class Extension(omni.ext.IExt):
             self._on_stage_event
         )
         self._scenario = Scenario(self._dc, self._mp)
-        self._scenarios = [GhostScenario, SimpleStack, MultipleObstacle]
         self._editor_event_subscription = None
 
         self._menu_items = [
             MenuItemDescription(
-                name="Scenes",
+                name="Demos",
                 sub_menu=[
                     MenuItemDescription(
-                        name="Franka Block Stacking", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                        name="Leonardo Demo", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
                     )
                 ],
             )
         ]
+
         add_menu_items(self._menu_items, "Isaac Examples")
 
         self._first_step = True
@@ -86,8 +83,6 @@ class Extension(omni.ext.IExt):
             )
             with self._window.frame:
                 with ui.VStack():
-                    self._selected_scenario = ui.ComboBox(0, "Ghost Robots", "Simple Stack", "Multiple Obstacles")
-
                     self._create_franka_btn = ui.Button("Create Scenario", clicked_fn=self._on_environment_setup)
 
                     self._perform_task_btn = ui.Button("Perform Task", clicked_fn=self._on_perform_task)
@@ -117,13 +112,10 @@ class Extension(omni.ext.IExt):
             return
 
         self._stage = self._usd_context.get_stage()
-        self._scenario = self._scenarios[self._selected_scenario.model.get_item_value_model().as_int](
-            self._dc, self._mp
-        )
+        self._scenario = GhostScenario(self._dc, self._mp)
 
         self._first_step = True
         self._create_franka_btn.enabled = False
-        self._selected_scenario.enabled = False
 
         self._timeline.stop()
         self._physxIFace.release_physics_objects()
@@ -198,7 +190,6 @@ class Extension(omni.ext.IExt):
             self.stage = self._usd_context.get_stage()
             if event.type == int(omni.usd.StageEventType.OPENED):
                 self._create_franka_btn.enabled = True
-                self._selected_scenario.enabled = True
                 self._perform_task_btn.enabled = False
                 self._stop_task_btn.enabled = False
                 self._toggle_obstacle_btn.enabled = False
@@ -262,3 +253,4 @@ class Extension(omni.ext.IExt):
         self._physx_subs = None
         remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
+        self._menus = None

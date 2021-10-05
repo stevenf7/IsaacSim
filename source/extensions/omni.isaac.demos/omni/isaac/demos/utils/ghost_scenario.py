@@ -12,11 +12,11 @@ import os
 import sys
 from pxr import Sdf, Gf, UsdPhysics
 import concurrent.futures
-from omni.isaac.samples.scripts.utils.franka import Franka, default_config, alternate_config
-from omni.isaac.samples.scripts.utils.world import World
-from omni.isaac.samples.scripts.utils.state_machine import *
-from omni.isaac.samples.scripts.utils.behavior_states import *
-from omni.isaac.samples.scripts.utils.behavior_helpers import *
+from omni.isaac.demos.utils.franka import Franka, default_config, alternate_config
+from omni.isaac.demos.utils.world import World
+from omni.isaac.demos.utils.state_machine import *
+from omni.isaac.demos.utils.behavior_states import *
+from omni.isaac.demos.utils.behavior_helpers import *
 from .scenario import (
     Scenario,
     create_rubiks_cube,
