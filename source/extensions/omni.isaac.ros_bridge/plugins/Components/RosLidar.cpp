@@ -125,6 +125,7 @@ void RosLidar::onComponentChange()
 
 void RosLidar::pubCallback(ros::Publisher* pub)
 {
+    CARB_PROFILE_ZONE(0, "Lidar 2D Pub");
     // Lidar prim hasn't been assigned yet
     if (mLidarPath == pxr::SdfPath("/"))
     {
@@ -280,6 +281,7 @@ void RosLidar::pubCallback(ros::Publisher* pub)
 
 void RosLidar::pointCloudPubCallback(ros::Publisher* pub)
 {
+    CARB_PROFILE_ZONE(0, "Lidar Point Cloud Pub");
     if (!mEnablePointCloud)
     {
         return;

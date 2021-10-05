@@ -13,6 +13,8 @@
 #include "omni/isaac/bridge/Component.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
+#include <carb/profiler/Profile.h>
+
 #include <rosBridgeSchema/rosBridgeComponent.h>
 
 #include <chrono>

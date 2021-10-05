@@ -57,6 +57,7 @@ void IsaacApplication::initialize(pxr::UsdStageWeakPtr stage)
 
 void IsaacApplication::tick(double dt)
 {
+    CARB_PROFILE_ZONE(0, "Isaac ROS Bridge Tick");
     // System time is calculated the start of the frame
     mSystemTimeNanoSeconds =
         std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
