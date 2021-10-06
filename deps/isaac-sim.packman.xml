@@ -40,5 +40,10 @@
     <dependency name="doctest" linkPath="../_build/target-deps/doctest">
         <package name="doctest" version="2.4.0-b29bc767" />
     </dependency>
-
+    <!-- Workaround for missing lzma lib -->
+    <dependency name="python" linkPath="../_build/target-deps/python_old" tags="slim-package">
+        <package name="python" version="3.7.9-windows-x86_64" platforms="windows-x86_64" />
+        <!-- https://teamcity.nvidia.com/project.html?projectId=Omniverse_Externals_Python -->
+        <package name="python" version="3.7.10-187.9b4bf28b-${platform}" platforms="linux-x86_64 linux-aarch64" />
+    </dependency>
 </project>

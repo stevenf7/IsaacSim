@@ -320,8 +320,14 @@ repo_build.prebuild_copy {
     {"source/scripts/omni.isaac.sim.warmup.sh",  "_build/%{platform}/%{config}"},
     {"source/apps/omni.isaac.sim.python.kit",  "_build/%{platform}/%{config}/apps"},
     {"source/scripts/vscode",  "_build/%{platform}/%{config}/.vscode"},
-
 }
+
+-- workaround for missing lzma in latest python
+if os.target() == "linux" then
+    repo_build.prebuild_copy {
+        {"_build/target-deps/python_old/lib/python3.7/lib-dynload/_lzma.cpython*",  "_build/%{platform}/%{config}/kit/python/lib/python3.7/lib-dynload/"},
+    }
+end
 
 group "python_samples"
     -- omni.kit.app

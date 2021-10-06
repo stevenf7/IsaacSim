@@ -28,7 +28,4 @@ name = "omni.isaac.core"
 name = "omni.isaac.core.tests"
 
 
-[python.pipapi]
-requirements = ["scipy==1.5.4"]
-
 
