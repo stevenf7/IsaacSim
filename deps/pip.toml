@@ -46,7 +46,7 @@
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "scipy==1.5.4",                         # SWIPAT filed under:
+    "scipy==1.7.1",                         # SWIPAT filed under:
     "numpy-quaternion==2020.9.5.14.42.2",   # SWIPAT filed under:
     "numba==0.51.2",                        # SWIPAT filed under:
     "webbot==0.34",                         # SWIPAT filed under:

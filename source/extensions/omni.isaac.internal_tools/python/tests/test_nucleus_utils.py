@@ -24,10 +24,12 @@ import time
 # This test is part of internal utils because it needs internal servers
 class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def setUp(self):
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     async def test_find_nucleus_server(self):
