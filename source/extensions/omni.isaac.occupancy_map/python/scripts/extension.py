@@ -119,17 +119,18 @@ class Extension(omni.ext.IExt):
         selected_prims = omni.usd.get_context().get_selection().get_selected_prim_paths()
         stage = omni.usd.get_context().get_stage()
         bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
-
+        bbox_cache.Clear()
         total_bounds = Gf.BBox3d()
 
         if len(selected_prims) > 0:
             for prim_path in selected_prims:
                 prim = stage.GetPrimAtPath(prim_path)
                 bounds = bbox_cache.ComputeWorldBound(prim)
-                total_bounds = Gf.BBox3d.Combine(total_bounds, bounds)
+                if prim.IsA(UsdGeom.Mesh):
+                    pose = omni.usd.get_world_transform_matrix(prim)
+                total_bounds = Gf.BBox3d.Combine(total_bounds, Gf.BBox3d(bounds.ComputeAlignedRange()))
             range = total_bounds.GetBox()
             mid_point = range.GetMidpoint()
-
             if origin_calc:
                 self.prev_origin = origin_coord
                 origin_value = mid_point
@@ -148,6 +149,10 @@ class Extension(omni.ext.IExt):
             upper_bound[1] = max_point[1] - origin_coord[1]
 
             return lower_bound, upper_bound
+        else:
+            if origin_calc:
+                return [0] * 2
+        return [0] * 2, [0] * 2
 
     def set_bound_value_ui(self):
         self.wait_bound_update = True
