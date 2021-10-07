@@ -45,9 +45,15 @@ namespace isaac
 namespace ros2_bridge
 {
 
-extern "C" void rgbaToRgb(uint8_t* dest, const uint8_t* src, int width, int height, int srcStride);
-extern "C" void depthToPCL(
-    pcl::PointXYZ* dest, const float* src, int width, int height, float fx, float fy, float cx, float cy);
+extern "C" void rgbaToRgb(uint8_t* dest, const uint8_t* src, const int width, const int height, const int srcStride);
+extern "C" void depthToPCL(void* dest,
+                           const float* src,
+                           const int width,
+                           const int height,
+                           const float fx,
+                           const float fy,
+                           const float cx,
+                           const float cy);
 
 RosCamera::RosCamera(utils::ViewportManager* viewportManager)
 {
@@ -613,36 +619,29 @@ void RosCamera::depthToPointCloudCallback(rclcpp::PublisherBase* pub)
 
     mDepthForPCLSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthForPCLSensor);
 
-    int w = depthInfo.tex.width;
-    int h = depthInfo.tex.height;
-
     const size_t bufferSize = depthInfo.tex.width * depthInfo.tex.height * sizeof(pcl::PointXYZ);
 
-    pcl::PointXYZ* pclDevice = nullptr;
-
-    typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
-    PointCloud cloud;
-
-    cloud.points.resize(w * h);
-
-    CUDA_CHECK(cudaMalloc(&pclDevice, bufferSize));
-
-    depthToPCL(pclDevice, (float*)mDepthForPCLSensorData, depthInfo.tex.width, depthInfo.tex.height, fx, fy, cx, cy);
-
-    CUDA_CHECK(cudaMemcpy(&cloud.points[0], pclDevice, bufferSize, cudaMemcpyDeviceToHost));
-
-    CUDA_CHECK(cudaFree(pclDevice));
-
-    cloud.width = w;
-    cloud.height = h;
-    cloud.is_dense = false;
+    mPclDeviceBuffer.resize(bufferSize);
 
     sensor_msgs::msg::PointCloud2 point_cloud_msg;
+    point_cloud_msg.data.resize(bufferSize);
 
-    pcl::toROSMsg(cloud, point_cloud_msg);
+    depthToPCL(mPclDeviceBuffer.data(), (float*)mDepthForPCLSensorData, depthInfo.tex.width, depthInfo.tex.height, fx,
+               fy, cx, cy);
+
+    CUDA_CHECK(cudaMemcpy(&point_cloud_msg.data[0], mPclDeviceBuffer.data(), bufferSize, cudaMemcpyDeviceToHost));
 
     point_cloud_msg.header.frame_id = mFrameId;
-
+    point_cloud_msg.width = depthInfo.tex.width;
+    point_cloud_msg.height = depthInfo.tex.height;
+    point_cloud_msg.is_dense = false;
+    point_cloud_msg.point_step = sizeof(pcl::PointXYZ);
+    point_cloud_msg.row_step = static_cast<uint32_t>(sizeof(pcl::PointXYZ) * point_cloud_msg.width);
+    pcl::PCLPointCloud2 pcl_pc2;
+    pcl_pc2.fields.clear();
+    pcl::for_each_type<typename pcl::traits::fieldList<pcl::PointXYZ>::type>(
+        pcl::detail::FieldAdder<pcl::PointXYZ>(pcl_pc2.fields));
+    pcl_conversions::fromPCL(pcl_pc2.fields, point_cloud_msg.fields);
     setRosTimeStamp(point_cloud_msg.header.stamp);
 
     static_cast<rclcpp::Publisher<sensor_msgs::msg::PointCloud2, std::allocator<void>>*>(pub)->publish(point_cloud_msg);

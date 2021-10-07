@@ -117,6 +117,7 @@ private:
     std::string mBoundingBox3DPubTopic = "/bbox_3d";
     int mQueueSize = 10;
     omni::isaac::buffer::DeviceBuffer mRgbDeviceBuffer;
+    omni::isaac::buffer::DeviceBuffer mPclDeviceBuffer;
 };
 }
 }

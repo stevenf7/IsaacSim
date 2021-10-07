@@ -118,6 +118,7 @@ private:
     int mQueueSize = 10;
 
     omni::isaac::buffer::DeviceBuffer mRgbDeviceBuffer;
+    omni::isaac::buffer::DeviceBuffer mPclDeviceBuffer;
 };
 }
 }
