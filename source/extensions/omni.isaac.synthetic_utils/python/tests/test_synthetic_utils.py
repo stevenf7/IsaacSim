@@ -19,7 +19,7 @@ import copy
 import os
 import asyncio
 import numpy as np
-from pxr import Gf
+from pxr import Gf, UsdGeom, UsdPhysics
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.syntheticdata as syn
@@ -56,7 +56,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.stop()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
-            await asyncio.sleep(1.0)
+            await asyncio.sleep(self._time_step)
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -216,4 +216,163 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         output_file_path = os.path.join(output_folder, viewport_name, "rgb", str(image_id) + ".png")
         await asyncio.sleep(0.1)
         self.assertEqual(os.path.isfile(output_file_path), True)
+        pass
+
+    # create a cube.
+    async def add_cube(self, path, size, offset):
+        cubeGeom = UsdGeom.Cube.Define(self._stage, path)
+        cubePrim = self._stage.GetPrimAtPath(path)
+
+        # use add_semantics to set its class to Cube
+        add_semantics(cubePrim, "cube")
+
+        cubeGeom.CreateSizeAttr(size)
+
+        cubeGeom.ClearXformOpOrder()
+        cubeGeom.AddTranslateOp().Set(offset)
+
+        await omni.kit.app.get_app().next_update_async()
+        UsdPhysics.CollisionAPI.Apply(cubePrim)
+        return cubePrim, cubeGeom
+
+    # create a scene with a cube.
+    async def load_cube_scene(self):
+        from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
+        from omni.physx.scripts.physicsUtils import add_ground_plane
+
+        # ensure we are done with all of scene setup.
+        await omni.kit.app.get_app().next_update_async()
+
+        self._stage = self._usd_context.get_stage()
+
+        # check units
+        meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
+
+        set_up_z_axis(self._stage)
+        add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
+        setup_physics(self._stage)
+
+        # Add a cube at a "close" location
+        self.cube_location = Gf.Vec3f(-300.0, 0.0, 50.0)
+        self.cube, self.cube_geom = await self.add_cube("/World/Cube", 100.0, self.cube_location)
+
+        # setup scene camera
+        camera_path = "/Camera"
+        camera = self._stage.DefinePrim(camera_path, "Camera")
+        self.viewport_window = omni.kit.viewport.get_default_viewport_window()
+        self.viewport_window.set_active_camera(camera_path)
+        self.viewport_window.set_camera_position(camera_path, 200, 200, 200, True)
+        self.viewport_window.set_camera_target(
+            camera_path, self.cube_location[0], self.cube_location[1], self.cube_location[2], True
+        )
+
+        # Initialize syntheticdata sensors
+        await omni.kit.app.get_app().next_update_async()
+        sensor_type = syn._syntheticdata.SensorType
+        await syn.sensors.initialize_async(
+            self._viewport,
+            [
+                sensor_type.Rgb,
+                sensor_type.DepthLinear,
+                sensor_type.InstanceSegmentation,
+                sensor_type.SemanticSegmentation,
+                sensor_type.BoundingBox2DLoose,
+                sensor_type.BoundingBox2DTight,
+                sensor_type.BoundingBox3D,
+            ],
+            timeout=200,
+        )
+        await omni.kit.app.get_app().next_update_async()
+
+    # Acquire a copy of the ground truth.
+    def get_groundtruth(self):
+        gt = self._sd_helper.get_groundtruth(
+            [
+                "rgb",
+                "depthLinear",
+                "boundingBox2DTight",
+                "boundingBox2DLoose",
+                "instanceSegmentation",
+                "semanticSegmentation",
+                "boundingBox3D",
+                "camera",
+                "pose",
+            ],
+            self.viewport_window,
+            verify_sensor_init=False,
+            wait_for_sensor_data=0.0,
+        )
+        return copy.deepcopy(gt)
+
+    # Unit test for sensor groundtruth
+    async def frame_lag_test(self, move):
+        # start the scene
+        self._timeline.play()
+
+        # wait for update
+        await omni.kit.app.get_app().next_update_async()
+
+        # grab ground truth
+        gt1 = self.get_groundtruth()
+
+        # wait for update
+        await omni.kit.app.get_app().next_update_async()
+
+        # move the cube
+        move(Gf.Vec3f(50, 0, 0))
+
+        # wait for update
+        await omni.kit.app.get_app().next_update_async()
+
+        # grab ground truth
+        gt2 = self.get_groundtruth()
+
+        # ensure segmentation is identical
+        gt_seg1 = gt1["semanticSegmentation"]
+        gt_seg2 = gt2["semanticSegmentation"]
+        self.assertEqual(len(np.unique(gt_seg1)), len(np.unique(gt_seg2)))
+
+        # the cube 3d bboxes should be different after update
+        gt_box3d1 = gt1["boundingBox3D"]
+        gt_box3d2 = gt2["boundingBox3D"]
+
+        # check the list size
+        self.assertEqual(len(gt_box3d1), len(gt_box3d2))
+
+        # check the corners, they should/must move to pass the test.
+        self.assertNotEqual(gt_box3d1["corners"].tolist(), gt_box3d2["corners"].tolist())
+
+        # stop the scene
+        self._timeline.stop()
+
+        pass
+
+    # Test lag by executing a command
+    async def test_oneframelag_kitcommand(self):
+        await self.load_cube_scene()
+
+        await self.frame_lag_test(
+            lambda location=Gf.Vec3f(50, 0, 0), rot_mat=Gf.Matrix3d(Gf.Rotation((0, 0, 1), 90)): (
+                omni.kit.commands.execute(
+                    "TransformPrimCommand",
+                    path=self.cube.GetPath(),
+                    old_transform_matrix=None,
+                    new_transform_matrix=Gf.Matrix4d()
+                    .SetRotate(rot_mat)
+                    .SetTranslateOnly(Gf.Vec3d(self.cube_location)),
+                )
+            )
+        )
+        pass
+
+    # Test lag using a USD prim.
+    async def test_oneframelag_usdprim(self):
+        await self.load_cube_scene()
+
+        await self.frame_lag_test(
+            lambda location=Gf.Vec3f(50, 0, 0): (
+                self.cube_geom.ClearXformOpOrder(),
+                self.cube_geom.AddTranslateOp().Set(self.cube_location + location),
+            )
+        )
         pass
