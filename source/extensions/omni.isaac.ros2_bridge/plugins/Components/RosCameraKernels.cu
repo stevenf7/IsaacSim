@@ -10,7 +10,7 @@
 #include <cuda.h>
 
 
-__global__ void rgbaToRgbKernel(uint8_t *dest, const uint8_t *src, int width, int height, int srcStride)
+__global__ void rgbaToRgbKernel(uint8_t *dest, const uint8_t *src, const int width, const int height, const int srcStride)
 {
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -26,7 +26,7 @@ __global__ void rgbaToRgbKernel(uint8_t *dest, const uint8_t *src, int width, in
 
 }
 
-extern "C" void rgbaToRgb(uint8_t *dest, const uint8_t *src, int width, int height, int srcStride)
+extern "C" void rgbaToRgb(uint8_t *dest, const uint8_t *src, const int width, const int height, const int srcStride)
 {
 
 	const int num = width*height;
@@ -39,7 +39,7 @@ extern "C" void rgbaToRgb(uint8_t *dest, const uint8_t *src, int width, int heig
 
 
 
-__global__ void uint32ToUint16Kernel(uint16_t *dest, const uint32_t *src, int width, int height, int srcStride)
+__global__ void uint32ToUint16Kernel(uint16_t *dest, const uint32_t *src, const int width, const int height, const int srcStride)
 {
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -55,7 +55,7 @@ __global__ void uint32ToUint16Kernel(uint16_t *dest, const uint32_t *src, int wi
 
 }
 
-extern "C" void uint32ToUint16(uint16_t *dest, const uint32_t *src, int width, int height, int srcStride)
+extern "C" void uint32ToUint16(uint16_t *dest, const uint32_t *src, const int width, const int height, const int srcStride)
 {
 
 	const int num = width*height;
@@ -72,7 +72,7 @@ typedef struct __align__(16) {
     float z;
 } PointXYZ;
 
-__global__ void depthToPCLKernel(PointXYZ *dest, const float *src, int width, int height, float fx, float fy, float cx, float cy)
+__global__ void depthToPCLKernel(void *dest, const float *src, const int width, const int height, const float fx, const float fy, const float cx, const float cy)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -96,11 +96,12 @@ __global__ void depthToPCLKernel(PointXYZ *dest, const float *src, int width, in
         point.y = nanf("2");
         point.z = nanf("3");
     }
-    dest[idx] = point;
+    PointXYZ* result = ( PointXYZ *)dest;
+    result[idx] = point;
 
 }
 
-extern "C" void depthToPCL(PointXYZ *dest, const float *src, int width, int height, float fx, float fy, float cx, float cy)
+extern "C" void depthToPCL(void *dest, const float *src, const int width, const int height, const float fx, const float fy, const float cx, const float cy)
 {
 
 	const int num = width*height;
