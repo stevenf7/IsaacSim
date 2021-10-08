@@ -7,11 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.prims.collision_prim import CollisionPrim
+from omni.isaac.core.prims import GeometryPrim
 from pxr import Gf, PhysicsSchemaTools, Usd
+from omni.isaac.core.materials import PhysicsMaterial
+from omni.isaac.core.materials import PreviewSurface
+import numpy as np
 
 
-class GroundPlane(CollisionPrim):
+class GroundPlane(GeometryPrim):
     def __init__(
         self,
         stage: Usd.Prim,
@@ -34,15 +37,13 @@ class GroundPlane(CollisionPrim):
         """
         PhysicsSchemaTools.addGroundPlane(stage, prim_path, "Z", size, Gf.Vec3f(0, 0, z_position), Gf.Vec3f(thickness))
         ground_prim = stage.GetPrimAtPath(prim_path)
-        super().__init__(
-            stage,
-            prim=ground_prim,
-            name=name,
-            position=None,
-            orientation=None,
-            density=1000.0,
-            static_friction=0.5,
-            dynamic_friction=0.5,
-            restitution=0.8,
+        super().__init__(prim=ground_prim, name=name, position=None, orientation=None, collision=True)
+
+        physics_material = PhysicsMaterial(
+            prim_path=prim_path + "/physics_material", static_friction=0.5, dynamic_friction=0.5, restitution=0.8
         )
+
+        self.apply_physics_material(physics_material)
+        preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=np.array([0.5, 0.5, 0.5]))
+        self.apply_visual_material(preview_surface)
         return

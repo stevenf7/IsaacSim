@@ -41,19 +41,17 @@ class RigidPrim(XFormPrim):
             angular_velocity (np.ndarray, optional): initial angular velocity of the rigid prim. Shape (3, ). Defaults to None.
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
         """
-        super().__init__(prim, name=name, position=position, orientation=orientation, visible=visible)
         if prim.HasAPI(UsdPhysics.RigidBodyAPI):
-            print("has rigid body api")
-            self._rigid_api = UsdPhysics.RigidBodyAPI(self._prim)
+            self._rigid_api = UsdPhysics.RigidBodyAPI(prim)
         else:
-            self._rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prim)
+            self._rigid_api = UsdPhysics.RigidBodyAPI.Apply(prim)
         if prim.HasAPI(UsdPhysics.MassAPI):
-            self._mass_api = UsdPhysics.MassAPI(self._prim)
+            self._mass_api = UsdPhysics.MassAPI(prim)
         else:
-            self._mass_api = UsdPhysics.MassAPI.Apply(self._prim)
+            self._mass_api = UsdPhysics.MassAPI.Apply(prim)
+        super().__init__(prim, name=name, position=position, orientation=orientation, visible=visible)
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
-        # TODO: look at utils.setRigidBody(prim, "convexDecomposition", False)
-        self.enable_usd_physics(True)
+        self._rigid_api.CreateRigidBodyEnabledAttr(True)
         if linear_velocity is not None:
             self.set_usd_linear_velocity(linear_velocity)
         if angular_velocity is not None:
@@ -79,7 +77,7 @@ class RigidPrim(XFormPrim):
         linear_velocity = linear_velocity.tolist()
         linear_velocity = Gf.Vec3f(linear_velocity)
         # TODO: check if this attribute needs to be checked before or so
-        self._rigid_api.CreateVelocityAttr().Set(linear_velocity)
+        self._rigid_api.GetVelocityAttr().Set(linear_velocity)
         return
 
     # TODO: check which space is it in
@@ -91,7 +89,7 @@ class RigidPrim(XFormPrim):
         """
         angular_velocity = angular_velocity.tolist()
         angular_velocity = Gf.Vec3f(angular_velocity)
-        self._rigid_api.CreateAngularVelocityAttr().Set(angular_velocity)
+        self._rigid_api.GetAngularVelocityAttr().Set(angular_velocity)
         return
 
     def get_usd_linear_velocity(self) -> np.ndarray:
@@ -182,7 +180,7 @@ class RigidPrim(XFormPrim):
         Args:
             mass (float): [description]
         """
-        self._mass_api.CreateMassAttr(mass)
+        self._mass_api.GetMassAttr().Set(mass)
         return
 
     def get_usd_mass(self) -> float:
@@ -191,26 +189,7 @@ class RigidPrim(XFormPrim):
         Returns:
             float: [description]
         """
-        self._mass_api.GetMassAttr()
-        return
-
-    def enable_usd_physics(self, flag: bool) -> None:
-        """[summary]
-
-        Args:
-            flag (bool): [description]
-        """
-        self._rigid_api.CreateRigidBodyEnabledAttr(flag)
-        return
-
-    def enable_usd_kinematic(self, flag: bool) -> None:
-        """[summary]
-
-        Args:
-            flag (bool): [description]
-        """
-        self._rigid_api.CreateKinematicEnabledAttr(flag)
-        return
+        return self._mass_api.GetMassAttr().Get()
 
     def _initialize_handles(self) -> None:
         """[summary]

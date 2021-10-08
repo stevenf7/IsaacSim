@@ -12,6 +12,9 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": True})
 
 from omni.isaac.kit.simulation_context import SimulationContext
+
+simulation_context = SimulationContext()
+
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.dynamic_control import _dynamic_control
 

@@ -6,9 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from pxr import Gf, Usd, UsdGeom
 import numpy as np
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
-from pxr import Gf, Usd, UsdGeom
 import carb
 
 
@@ -59,24 +59,24 @@ def set_xform_orientation(prim: Usd.Prim, quat: np.ndarray) -> None:
     """Sets the orientation of the prim in stage. The method does this through the USD API.
 
         Args:
-            quat (np.ndarray): orientation represented as a quaternion. quaternion is scalar-first (w, x, y, z).
-                               shape (4,).
+            quat (np.ndarray): orientation represented as a quaternion. quaternion is scalar-first (w, x, y, z). 
+                               shape (4,). 
         """
-    if not isinstance(quat, list):
-        quat = quat.tolist()
+    properties = prim.GetPropertyNames()
+    quat = quat.tolist()
     rotation_properties = [
         "xformOp:orient",
         "xformOp:rotateX",
-        "xformOp:rotateXYZ",  #
-        "xformOp:rotateXZY",  #
+        "xformOp:rotateXYZ",
+        "xformOp:rotateXZY",
         "xformOp:rotateY",
-        "xformOp:rotateYXZ",  #
-        "xformOp:rotateYZX",  #
+        "xformOp:rotateYXZ",
+        "xformOp:rotateYZX",
         "xformOp:rotateZ",
-        "xformOp:rotateZYX",  #
-        "xformOp:rotateZXY",  #
+        "xformOp:rotateZYX",
+        "xformOp:rotateZXY",
     ]
-    properties = prim.GetPropertyNames()
+    # delete all rotation props if they are found
     for rotation_property in rotation_properties:
         if rotation_property in properties:
             if rotation_property == "xformOp:orient":
@@ -84,42 +84,42 @@ def set_xform_orientation(prim: Usd.Prim, quat: np.ndarray) -> None:
                 rotation_attr = prim.GetAttribute(rotation_property)
                 rotation_attr.Set(rotq)
             elif rotation_property == "xformOp:rotateXYZ":
-                roll, pitch, yaw = quat_to_euler_angles(np.array(quat), degrees=True)
+                roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
                 rotation_attr = prim.GetAttribute(rotation_property)
                 rotation_attr.Set(Gf.Vec3f(roll, pitch, yaw))
             elif rotation_property == "xformOp:rotateZYX":
-                roll, pitch, yaw = quat_to_euler_angles(np.array(quat), degrees=True)
+                roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
                 rotation_attr = prim.GetAttribute(rotation_property)
                 rotation_attr.Set(Gf.Vec3f(yaw, pitch, roll))
             elif rotation_property == "xformOp:rotateZXY":
-                roll, pitch, yaw = quat_to_euler_angles(np.array(quat), degrees=True)
+                roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
                 rotation_attr = prim.GetAttribute(rotation_property)
                 rotation_attr.Set(Gf.Vec3f(yaw, roll, pitch))
             elif rotation_property == "xformOp:rotateYZX":
-                roll, pitch, yaw = quat_to_euler_angles(np.array(quat), degrees=True)
+                roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
                 rotation_attr = prim.GetAttribute(rotation_property)
                 rotation_attr.Set(Gf.Vec3f(pitch, yaw, roll))
             elif rotation_property == "xformOp:rotateYXZ":
-                roll, pitch, yaw = quat_to_euler_angles(np.array(quat), degrees=True)
+                roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
                 rotation_attr = prim.GetAttribute(rotation_property)
                 rotation_attr.Set(Gf.Vec3f(pitch, roll, yaw))
             elif rotation_property == "xformOp:rotateXZY":
-                roll, pitch, yaw = quat_to_euler_angles(np.array(quat), degrees=True)
+                roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
                 rotation_attr = prim.GetAttribute(rotation_property)
                 rotation_attr.Set(Gf.Vec3f(roll, yaw, pitch))
             elif rotation_property == "xformOp:rotateY":
                 # TODO: double check with Hammad
-                roll, pitch, yaw = quat_to_euler_angles(np.array(quat), degrees=True)
+                roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
                 rotation_attr = prim.GetAttribute(rotation_property)
                 rotation_attr.Set(pitch)
             elif rotation_property == "xformOp:rotateX":
                 # TODO: double check with Hammad
-                roll, pitch, yaw = quat_to_euler_angles(np.array(quat), degrees=True)
+                roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
                 rotation_attr = prim.GetAttribute(rotation_property)
                 rotation_attr.Set(roll)
             elif rotation_property == "xformOp:rotateZ":
                 # TODO: double check with Hammad
-                roll, pitch, yaw = quat_to_euler_angles(np.array(quat), degrees=True)
+                roll, pitch, yaw = quat_to_euler_angles(np.array(quat))
                 rotation_attr = prim.GetAttribute(rotation_property)
                 rotation_attr.Set(yaw)
             else:

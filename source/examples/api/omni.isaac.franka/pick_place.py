@@ -13,10 +13,11 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.franka.tasks import PickPlace
 from omni.isaac.franka.controllers import RMPFlowPickPlace
 from omni.isaac.core import World
+from omni.isaac.kit.utils import get_extension_id, get_extension_path
 
 my_world = World()
-extension_id = my_world.get_extension_id("omni.isaac.motion_generation")
-mg_extension_path = my_world.get_extension_path(ext_id=extension_id)
+extension_id = get_extension_id("omni.isaac.motion_generation")
+mg_extension_path = get_extension_path(ext_id=extension_id)
 my_task = PickPlace()
 my_world.load_task(my_task)
 my_world.reset()
@@ -29,7 +30,6 @@ my_controller = RMPFlowPickPlace(
     mg_extension_path=mg_extension_path,
 )
 articulation_controller = my_franka.get_articulation_controller()
-
 
 i = 0
 while True:
@@ -44,5 +44,6 @@ while True:
         print("done picking and placing the cube")
     articulation_controller.apply_action(actions)
     my_world.step(render=True)
+    print(my_world.scene.compute_object_AABB("cube_1"))
 
 simulation_app.close()

@@ -8,7 +8,7 @@
 #
 from omni.isaac.franka.controllers.rmpflow_ik import RMPFlowIKSolver
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.utils.rotations import quat_to_euler_angles, euler_angles_to_quat
+from omni.isaac.core.utils.rotations import euler_angles_to_quat
 import numpy as np
 
 
@@ -26,7 +26,7 @@ class RMPFlowPickPlace(RMPFlowIKSolver):
         self._t = 0
         self._h1 = 0.3
         self._h0 = None
-        self._event_velocities = [0.08, 0.005, 0.3, 0.0025, 0.002, 0.0025, 1, 0.008, 0.08]
+        self._event_velocities = [0.08, 0.005, 0.3, 0.0025, 0.001, 0.0025, 1, 0.008, 0.08]
         """
         - Phase 0: Move end_effector above the cube center.
         - Phase 1: Lower end_effector down to encircle the target cube
@@ -48,46 +48,35 @@ class RMPFlowPickPlace(RMPFlowIKSolver):
         if self._event < 2:
             self._current_target_x = cube_position[0]
             self._current_target_y = cube_position[1]
-            self._euler_angles_orientation = np.array(quat_to_euler_angles(cube_orientation))
-            # TODO: change the following logic
-            if self._euler_angles_orientation[-1] < 0:
-                self._euler_angles_orientation[-1] = self._euler_angles_orientation[-1] * -1
             self._h0 = cube_position[2] - 0.005
+        # TODO: take into account cube orientation
 
         interpolated_xy = self._get_interpolated_xy(
             cube_target_position[0], cube_target_position[1], self._current_target_x, self._current_target_y
         )
-
         target_height = self._get_target_hs(cube_target_position[2])
         position_target = np.array([interpolated_xy[0], interpolated_xy[1], target_height])
-        self._t += self._event_velocities[self._event]
-        if self._t >= 1.0:
-            self._event += 1
-            self._t -= 1.0
-
         if self._event == 2:
-            target_joint_positions = [None] * 9
+            target_joint_positions = [None] * current_joint_positions.shape[0]
             target_joint_positions[7] = current_joint_positions[7] - 0.005
             target_joint_positions[8] = current_joint_positions[8] - 0.005
             target_joint_positions = ArticulationAction(joint_positions=target_joint_positions)
         elif self._event == 6:
-            target_joint_positions = [None] * 9
+            target_joint_positions = [None] * current_joint_positions.shape[0]
             target_joint_positions[7] = current_joint_positions[7] + 0.005
             target_joint_positions[8] = current_joint_positions[8] + 0.005
             target_joint_positions = ArticulationAction(joint_positions=target_joint_positions)
-        elif self._event == 1:
-            target_joint_positions = super().forward(
-                current_joint_positions=current_joint_positions,
-                target_end_effector_position=position_target,
-                target_end_effector_orientation=euler_angles_to_quat(self._euler_angles_orientation),
-            )
         else:
             target_joint_positions = super().forward(
                 current_joint_positions=current_joint_positions,
                 target_end_effector_position=position_target,
-                target_end_effector_orientation=euler_angles_to_quat([0, 0, np.pi]),
+                target_end_effector_orientation=euler_angles_to_quat(np.array([0, np.pi, 0])),
             )
 
+        self._t += self._event_velocities[self._event]
+        if self._t >= 1.0:
+            self._event += 1
+            self._t -= 1.0
         return target_joint_positions
 
     def _get_interpolated_xy(self, target_x, target_y, current_x, current_y):
@@ -103,7 +92,7 @@ class RMPFlowPickPlace(RMPFlowIKSolver):
         elif self._event in [5, 6, 7]:
             return 1.0
         elif self._event == 8:
-            return 1 - self._mix_sin(self._t)
+            return 1
         else:
             raise ValueError()
 
