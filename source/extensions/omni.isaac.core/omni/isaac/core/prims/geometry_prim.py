@@ -10,8 +10,9 @@
 from typing import Optional
 import numpy as np
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.types import GeometryPrimState
-from pxr import Gf, UsdGeom, Usd
+from pxr import UsdGeom, Usd, UsdPhysics, PhysxSchema, UsdShade
+import carb
+from omni.isaac.core.materials import PhysicsMaterial
 
 
 class GeometryPrim(XFormPrim):
@@ -19,11 +20,10 @@ class GeometryPrim(XFormPrim):
         self,
         prim: Usd.Prim,
         name: str,
-        geom: Optional[UsdGeom.Gprim] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         visible: bool = True,
-        color: Optional[np.ndarray] = None,
+        collision: bool = False,
     ) -> None:
         """Provides common functionalities to geometry prims such as cube, sphere..etc.
 
@@ -37,17 +37,38 @@ class GeometryPrim(XFormPrim):
             color (np.ndarray, optional): color to be applied to the geometric prim (R, G, B) 0-255. shape (3,). Defaults to None.
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
         """
-        super().__init__(prim, name=name, position=position, orientation=orientation, visible=visible)
-        if geom is None:
-            self._geom = UsdGeom.Gprim(prim)
+        super().__init__(prim=prim, name=name, position=position, orientation=orientation, visible=visible)
+        if prim.IsA(UsdGeom.Cube):
+            self._geom = UsdGeom.Cube(prim)
+        elif prim.IsA(UsdGeom.Capsule):
+            self._geom = UsdGeom.Capsule(prim)
+        elif prim.IsA(UsdGeom.Cone):
+            self._geom = UsdGeom.Cone(prim)
+        elif prim.IsA(UsdGeom.Sphere):
+            self._geom = UsdGeom.Sphere(prim)
+        elif prim.IsA(UsdGeom.Mesh):
+            self._geom = UsdGeom.Mesh(prim)
         else:
-            self._geom = geom
-        if color is not None:
-            self.set_usd_color(color)
-        default_color = self.get_usd_color()
-        self._default_state = GeometryPrimState(
-            position=self._default_state.position, orientation=self._default_state.orientation, color=default_color
-        )
+            self._geom = UsdGeom.Gprim(prim)
+            carb.log_warn(
+                "prim type at path {} passed to the GeometryPrim is not supported at the moment".format(self.prim_path)
+            )
+
+        if collision and prim.HasAPI(UsdPhysics.CollisionAPI):
+            self._collision_api = UsdPhysics.CollisionAPI(prim)
+        elif collision:
+            self._collision_api = UsdPhysics.CollisionAPI.Apply(prim)
+
+        if collision and prim.HasAPI(UsdPhysics.MeshCollisionAPI):
+            self._mesh_collision_api = UsdPhysics.MeshCollisionAPI(prim)
+        elif collision:
+            self._mesh_collision_api = UsdPhysics.MeshCollisionAPI.Apply(prim)
+
+        if collision and prim.HasAPI(PhysxSchema.PhysxCollisionAPI):
+            self._physx_collision_api = PhysxSchema.PhysxCollisionAPI(prim)
+        elif collision:
+            self._physx_collision_api = PhysxSchema.PhysxCollisionAPI.Apply(prim)
+        self._applied_physics_material = None
         return
 
     @property
@@ -58,39 +79,76 @@ class GeometryPrim(XFormPrim):
         """
         return self._geom
 
-    def set_usd_color(self, color: np.ndarray) -> None:
-        """Sets the color of the USD geom.
-        Args:
-            color (np.ndarray): color to be applied to the geometric prim (R, G, B) 0-255. shape (3,).
-        """
-        color = color.tolist()
-        color = Gf.Vec3f(color)
-        self._geom.CreateDisplayColorAttr().Set([color])
+    def set_contact_offset(self, offset):
+        self._physx_collision_api.GetContactOffsetAttr().Set(offset)
         return
 
-    def get_usd_color(self) -> np.ndarray:
-        """
-        Returns:
-            np.ndarray: color of the geometric prim (R, G, B) 0-255.
-        """
-        return np.array(self._geom.GetDisplayColorAttr().Get())
+    def get_contact_offset(self):
+        return self._physx_collision_api.GetContactOffsetAttr().Get()
 
-    def set_default_state(self, position: np.ndarray, orientation: np.ndarray, color: np.ndarray) -> None:
-        """Sets the default state of the prim that will be used with each reset. 
-
-        Args:
-            position (np.ndarray): position of the prim to set in stage. shape (3,).
-            orientation (np.ndarray): orientation represented as a quaternion. 
-                                      quaternion is scalar-first (w, x, y, z). shape (4,).
-            color (np.ndarray): olor to be applied to the geometric prim (R, G, B) 0-255. shape (3,).
-        """
-        self._default_state = GeometryPrimState(position=position, orientation=orientation, color=color)
+    def set_rest_offset(self, offset):
+        self._physx_collision_api.GetRestOffsetAttr().Set(offset)
         return
 
-    def reset(self) -> None:
-        """Resets the prim to its default state (position and orientation).
-        """
-        super().reset()
-        # TODO: reset the color to its default state
-        # self.set_color(self._default_state.color)
+    def get_rest_offset(self):
+        return self._physx_collision_api.GetRestOffsetAttr().Get()
+
+    def set_torsional_patch_radius(self, radius):
+        self._physx_collision_api.GetTorsionalPatchRadiusAttr().Set(radius)
         return
+
+    def get_torsional_patch_radius(self):
+        return self._physx_collision_api.GetTorsionalPatchRadiusAttr().Get()
+
+    def set_min_torsional_patch_radius(self, radius):
+        self._physx_collision_api.GetMinTorsionalPatchRadiusAttr().Set(radius)
+        return
+
+    def get_min_torsional_patch_radius(self):
+        return self._physx_collision_api.GetMinTorsionalPatchRadiusAttr().Get()
+
+    def set_collision_approximation(self, approximation_type):
+        # approximation_type = ["none", "convexHull", "convexDecomposition"]
+        self._mesh_collision_api.GetApproximationAttr().Get().Set(approximation_type)
+        return
+
+    def get_collision_approximation(self):
+        return self._mesh_collision_api.GetApproximationAttr().Get()
+
+    def apply_physics_material(self, physics_material, weaker_than_descendants=False):
+        if self._binding_api is None:
+            if self._prim.HasAPI(UsdShade.MaterialBindingAPI):
+                self._binding_api = UsdShade.MaterialBindingAPI(self.prim)
+            else:
+                self._binding_api = UsdShade.MaterialBindingAPI.Apply(self.prim)
+        if weaker_than_descendants:
+            self._binding_api.Bind(
+                physics_material.material,
+                bindingStrength=UsdShade.Tokens.weakerThanDescendants,
+                materialPurpose="physics",
+            )
+        else:
+            self._binding_api.Bind(
+                physics_material.material,
+                bindingStrength=UsdShade.Tokens.strongerThanDescendants,
+                materialPurpose="physics",
+            )
+        self._applied_physics_material = physics_material
+        return
+
+    def get_applied_physics_material(self):
+        if self._binding_api is None:
+            if self._prim.HasAPI(UsdShade.MaterialBindingAPI):
+                self._binding_api = UsdShade.MaterialBindingAPI(self.prim)
+            else:
+                self._binding_api = UsdShade.MaterialBindingAPI.Apply(self.prim)
+        if self._applied_physics_material is not None:
+            return self._applied_physics_material
+        else:
+            physics_binding = self._binding_api.GetDirectBinding(materialPurpose="physics")
+            path = physics_binding.GetMaterialPath()
+            if path == "":
+                return None
+            else:
+                self._applied_physics_material = PhysicsMaterial(prim_path=path)
+                return self._applied_physics_material

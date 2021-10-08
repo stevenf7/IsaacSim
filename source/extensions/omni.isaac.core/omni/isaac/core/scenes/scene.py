@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import carb
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.xform_prim import XFormPrim
@@ -14,7 +15,8 @@ from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.robots.robot import Robot
 import omni.usd.commands
-from pxr import Usd
+from pxr import Usd, UsdGeom
+import numpy as np
 
 
 class Scene(object):
@@ -27,6 +29,9 @@ class Scene(object):
         self._scene_registry = SceneRegistry()
         self._stage = stage
         self._stage_units_in_meters = stage_units_in_meters
+        self._enable_bounding_box_computations = False
+        self._bbox_cache = None
+        return
 
     @property
     def stage(self) -> Usd.Stage:
@@ -105,6 +110,8 @@ class Scene(object):
             robot.reset()
         for xform_name, xform in self._scene_registry.xforms.items():
             xform.reset()
+        if self._enable_bounding_box_computations:
+            self._bbox_cache.Clear()
         return
 
     def _finalize(self) -> None:
@@ -191,3 +198,22 @@ class Scene(object):
             bool: [description]
         """
         raise NotImplementedError
+
+    def compute_object_AABB(self, name: str):
+        if not self._enable_bounding_box_computations:
+            raise Exception("bounding box computations should be enabled before quering AABB of an object")
+        bounds = self._bbox_cache.ComputeWorldBound(self.get_object(name).prim)
+        prim_range = bounds.ComputeAlignedRange()
+        return np.array([np.array(prim_range.GetMin()), np.array(prim_range.GetMax())])
+
+    def enable_bounding_boxes_computations(self):
+        self._bbox_cache = UsdGeom.BBoxCache(
+            time=Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_], useExtentsHint=False
+        )
+        self._enable_bounding_box_computations = True
+        return
+
+    def disable_bounding_boxes_computations(self):
+        self._bbox_cache = None
+        self._enable_bounding_box_computations = False
+        return

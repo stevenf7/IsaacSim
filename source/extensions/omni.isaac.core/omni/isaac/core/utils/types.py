@@ -19,25 +19,9 @@ class DOFInfo(object):
 
 
 class PrimState(object):
-    def __init__(self, position, orientation, scale):
+    def __init__(self, position, orientation):
         self.position = position
         self.orientation = orientation
-        self.scale = scale
-
-
-class GeometryPrimState(PrimState):
-    def __init__(self, position, orientation, color):
-        super().__init__(position, orientation)
-        self.color = color
-
-
-class CollisionPrimState(PrimState):
-    def __init__(self, position, orientation, density, static_friction, dynamic_friction, restitution):
-        super().__init__(position, orientation)
-        self.density = density
-        self.static_friction = static_friction
-        self.dynamic_friction = dynamic_friction
-        self.restitution = restitution
 
 
 class DynamicState(object):
@@ -54,18 +38,6 @@ class RigidPrimState(PrimState):
         self.linear_velocity = linear_velocity
         self.angular_velocity = angular_velocity
         self.mass = mass
-
-
-class DynamicCubeState(RigidPrimState):
-    def __init__(self, position, orientation, linear_velocity, angular_velocity, mass, size):
-        super().__init__(position, orientation, linear_velocity, angular_velocity, mass)
-        self.size = size
-
-
-class VisualCubeState(GeometryPrimState):
-    def __init__(self, position, orientation, color, size):
-        super().__init__(position, orientation, color)
-        self.size = size
 
 
 class JointsState(object):

@@ -11,7 +11,9 @@ import math
 
 import numpy as np
 from pxr import Gf
-from scipy.spatial.transform import Rotation as R
+
+_FLOAT_EPS = np.finfo(np.float64).eps
+_EPS4 = _FLOAT_EPS * 4.0
 
 
 def quat_to_rot_matrix(quat: np.ndarray) -> np.ndarray:
@@ -20,32 +22,22 @@ def quat_to_rot_matrix(quat: np.ndarray) -> np.ndarray:
     return np.array(rotm)
 
 
-def quat_to_euler_angles(quat: np.ndarray, degrees: bool = False) -> np.ndarray:
-    quat_img = quat[1:]
-    quat_real = quat[0]
-    # roll (x-axis rotation)
-    sinr_cosp = 2 * (quat_real * quat_img[0] + quat_img[1] * quat_img[2])
-    cosr_cosp = 1 - 2 * (quat_img[0] * quat_img[0] + quat_img[1] * quat_img[1])
-    roll = math.atan2(sinr_cosp, cosr_cosp)
-
-    # pitch (y-axis rotation)
-    sinp = 2 * (quat_real * quat_img[1] - quat_img[2] * quat_img[0])
-    if abs(sinp) >= 1:
-        pitch = math.copysign(math.pi / 2, sinp)  # use 90 degrees if out of range
+def matrix_to_euler_angles(mat: np.ndarray):
+    cy = np.sqrt(mat[0, 0] * mat[0, 0] + mat[1, 0] * mat[1, 0])
+    singular = cy < _EPS4
+    if not singular:
+        roll = math.atan2(mat[2, 1], mat[2, 2])
+        pitch = math.atan2(-mat[2, 0], cy)
+        yaw = math.atan2(mat[1, 0], mat[0, 0])
     else:
-        pitch = math.asin(sinp)
-
-    # yaw (z-axis rotation)
-    siny_cosp = 2 * (quat_real * quat_img[2] + quat_img[0] * quat_img[1])
-    cosy_cosp = 1 - 2 * (quat_img[1] * quat_img[1] + quat_img[2] * quat_img[2])
-    yaw = math.atan2(siny_cosp, cosy_cosp)
-
-    if degrees:
-        roll = math.degrees(roll)
-        pitch = math.degrees(pitch)
-        yaw = math.degrees(yaw)
-
+        roll = math.atan2(-mat[1, 2], mat[1, 1])
+        pitch = math.atan2(-mat[2, 0], cy)
+        yaw = 0
     return roll, pitch, yaw
+
+
+def quat_to_euler_angles(quat: np.ndarray, degrees: bool = False) -> np.ndarray:
+    return matrix_to_euler_angles(quat_to_rot_matrix(quat))
 
 
 def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False) -> np.ndarray:

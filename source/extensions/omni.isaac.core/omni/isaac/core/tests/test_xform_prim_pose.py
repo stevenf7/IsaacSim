@@ -15,6 +15,7 @@ import omni.kit.test
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
+import numpy as np
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -33,11 +34,12 @@ class TestXformPrimPose(omni.kit.test.AsyncTestCaseFailOnLogError):
         prim = stage.DefinePrim("/test", "Xform")
         # Test constructor setting of pose
         position = [1.0, 2.0, 3.0]
-        orientation = euler_angles_to_quat([45, -60, 180], degrees=True)
-        scale = [0.1, 0.1, 0.1]
-        xform_prim = XFormPrim(prim, "test", position=position, orientation=orientation, scale=scale)
+        orientation = np.array(euler_angles_to_quat([45, -60, 180], degrees=True))
+        scale = np.array([0.1, 0.1, 0.1])
+        xform_prim = XFormPrim(prim, "test", position=np.array(position), orientation=orientation, scale=scale)
 
-        real_position, real_orientation, real_scale = xform_prim.get_usd_pose()
+        real_position, real_orientation = xform_prim.get_usd_pose()
+        real_scale = xform_prim.get_world_scale()
         for i in range(3):
             self.assertAlmostEqual(real_position[i], position[i])
             self.assertAlmostEqual(real_orientation[i], orientation[i])
@@ -45,7 +47,8 @@ class TestXformPrimPose(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         prim = stage.DefinePrim("/test_2", "Xform")
         xform_prim = XFormPrim(prim, "test", scale=scale)
-        real_position, real_orientation, real_scale = xform_prim.get_usd_pose()
+        real_position, real_orientation = xform_prim.get_usd_pose()
+        real_scale = xform_prim.get_world_scale()
         for i in range(3):
             self.assertAlmostEqual(scale[i], real_scale[i])
 
@@ -53,6 +56,7 @@ class TestXformPrimPose(omni.kit.test.AsyncTestCaseFailOnLogError):
         xform_prim = XFormPrim(prim, "test")
 
         xform_prim.set_usd_scale(scale)
-        real_position, real_orientation, real_scale = xform_prim.get_usd_pose()
+        real_position, real_orientation = xform_prim.get_usd_pose()
+        real_scale = xform_prim.get_world_scale()
         for i in range(3):
             self.assertAlmostEqual(scale[i], real_scale[i])

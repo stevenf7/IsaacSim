@@ -146,5 +146,7 @@ class World(SimulationContext):
         """
         if self._scene_finalized and self._current_task is not None:
             self._current_task.step(self.time_step_index, self.time)
+        if self.scene._enable_bounding_box_computations:
+            self.scene._bbox_cache.SetTime(Usd.TimeCode(self._current_time))
         super().step(render=render)
         return
