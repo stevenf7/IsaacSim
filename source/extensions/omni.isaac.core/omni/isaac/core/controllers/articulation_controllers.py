@@ -47,7 +47,7 @@ class DOFPDController(DOFArticulationController):
             dof_handle (int): [description]
             dof_index (int): [description]
         """
-        super().__init__(articulation_handle, dof_handle, dof_index)
+        DOFArticulationController.__init__(self, articulation_handle, dof_handle, dof_index)
         return
 
     def set_gains(self, dof_props: np.ndarray, kp: Optional[float] = None, kd: Optional[float] = None) -> None:
@@ -110,7 +110,7 @@ class PDArticulationController(ArticulationController):
             articulation_handle (int): [description]
             dofs_info (dict): [description]
         """
-        super().__init__(articulation_handle=articulation_handle, dofs_info=dofs_info)
+        ArticulationController.__init__(self, articulation_handle=articulation_handle, dofs_info=dofs_info)
         self._dof_controllers = list()
         self._articulation_handle = articulation_handle
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()

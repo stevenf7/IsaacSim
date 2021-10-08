@@ -59,6 +59,8 @@ class Scene(object):
         Returns:
             XFormPrim: [description]
         """
+        if self._scene_registry.name_exists(obj.name):
+            raise Exception("Cannot add the object {} to the scene since its name is not unique".format(obj.name))
         if isinstance(obj, RigidPrim):
             self._scene_registry.add_rigid_object(name=obj.name, rigid_object=obj)
         elif isinstance(obj, GeometryPrim):
@@ -74,7 +76,7 @@ class Scene(object):
         return obj
 
     def add_ground_plane(
-        self, size: float = 50, z_position: float = 0, prim_path: str = "/World/groundPlane", thickness: float = 0.5
+        self, size: float = 50, z_position: float = 0, prim_path: str = "/World/groundPlane", color: np.ndarray = None
     ) -> None:
         """[summary]
 
@@ -84,14 +86,7 @@ class Scene(object):
             prim_path (str, optional): [description]. Defaults to "/World/groundPlane".
             thickness (float, optional): [description]. Defaults to 0.5.
         """
-        GroundPlane(
-            stage=self.stage,
-            prim_path=prim_path,
-            name="ground_plane",
-            z_position=z_position,
-            size=size,
-            thickness=thickness,
-        )
+        GroundPlane(prim_path=prim_path, name="ground_plane", z_position=z_position, size=size, color=color)
         # TODO: add it to the registery?
         return
 
@@ -131,6 +126,8 @@ class Scene(object):
         Args:
             name (str): [description]
         """
+        if not self._scene_registry.name_exists(name):
+            raise Exception("Cannot remove object {} from the scene since it doesn't exist".format(name))
         prim_object = self.get_object(name=name)
         omni.usd.commands.DeletePrimsCommand([prim_object.prim_path]).do()
         self._scene_registry.remove_object(name=name)
@@ -146,6 +143,8 @@ class Scene(object):
         Returns:
             XFormPrim: [description]
         """
+        if not self._scene_registry.name_exists(name):
+            raise Exception("Cannot get object {} from the scene since it doesn't exist".format(name))
         return self._scene_registry.get_object(name=name)
 
     def clear_scene(self) -> None:

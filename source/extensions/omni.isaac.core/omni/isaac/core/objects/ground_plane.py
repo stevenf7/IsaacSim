@@ -8,21 +8,26 @@
 #
 
 from omni.isaac.core.prims import GeometryPrim
-from pxr import Gf, PhysicsSchemaTools, Usd
+from pxr import Gf, PhysicsSchemaTools
 from omni.isaac.core.materials import PhysicsMaterial
 from omni.isaac.core.materials import PreviewSurface
+from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.stage import get_current_stage
+from typing import Optional
 import numpy as np
+import carb
 
 
 class GroundPlane(GeometryPrim):
     def __init__(
         self,
-        stage: Usd.Prim,
         prim_path: str,
-        name: str,
+        name: Optional[str] = "ground_plane",
         size: float = 50.0,
-        z_position: float = 0.0,
-        thickness: float = 0.01,
+        z_position: float = 0,
+        color: Optional[np.ndarray] = None,
+        physics_material_path=None,
+        visual_material_path=None,
     ) -> None:
         """adds a ground plane at the specified height and with the specified size length and thickness.
            collisions are enabled on this plane by default. 
@@ -35,15 +40,26 @@ class GroundPlane(GeometryPrim):
             thickness (float): thickness of the plane itself.
             name (str, optional): name given to the prim, this can be different than the prim path. Defaults to None.
         """
-        PhysicsSchemaTools.addGroundPlane(stage, prim_path, "Z", size, Gf.Vec3f(0, 0, z_position), Gf.Vec3f(thickness))
-        ground_prim = stage.GetPrimAtPath(prim_path)
-        super().__init__(prim=ground_prim, name=name, position=None, orientation=None, collision=True)
-
-        physics_material = PhysicsMaterial(
-            prim_path=prim_path + "/physics_material", static_friction=0.5, dynamic_friction=0.5, restitution=0.8
-        )
-
+        if not is_prim_path_valid(prim_path):
+            carb.log_info("Creating a new Ground Plane prim at path {}".format(prim_path))
+            stage = get_current_stage()
+            if color is None:
+                color = np.array([0.5, 0.5, 0.5])
+            PhysicsSchemaTools.addGroundPlane(
+                stage, prim_path, "Z", size, Gf.Vec3f(0, 0, z_position), Gf.Vec3f(color.tolist())
+            )
+        GeometryPrim.__init__(self, prim_path=prim_path, name=name, position=None, orientation=None, collision=True)
+        if physics_material_path is None:
+            physics_material = PhysicsMaterial(
+                prim_path=prim_path + "/physics_material", static_friction=0.5, dynamic_friction=0.5, restitution=0.8
+            )
+        else:
+            physics_material = PhysicsMaterial(prim_path=physics_material_path)
         self.apply_physics_material(physics_material)
-        preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=np.array([0.5, 0.5, 0.5]))
+        # TODO: what if the visual surface has a different id?
+        if visual_material_path is None:
+            preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=np.array([0.5, 0.5, 0.5]))
+        else:
+            preview_surface = PreviewSurface(prim_path=visual_material_path)
         self.apply_visual_material(preview_surface)
         return

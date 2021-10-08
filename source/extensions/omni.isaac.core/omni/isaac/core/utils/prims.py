@@ -1,5 +1,52 @@
 from pxr import UsdGeom, Usd
 import numpy as np
+from omni.isaac.core.utils.stage import get_current_stage
+
+
+def get_prim_at_path(prim_path):
+    return get_current_stage().GetPrimAtPath(prim_path)
+
+
+def is_prim_path_valid(prim_path):
+    return get_current_stage().GetPrimAtPath(prim_path).IsValid()
+
+
+def define_prim(prim_path, prim_type="Xform"):
+    if is_prim_path_valid(prim_path):
+        raise Exception("A prim already exists at prim path: {}".format(prim_path))
+    return get_current_stage().DefinePrim(prim_path, prim_type)
+
+
+def get_prim_type_name(prim_path):
+    if not is_prim_path_valid(prim_path):
+        raise Exception("A prim does not exist at prim path: {}".format(prim_path))
+    prim = get_prim_at_path(prim_path)
+    return prim.GetPrimTypeInfo().GetTypeName()
+
+
+def traverse_prim_path(prim_path, filterfn=None):
+    prim = get_current_stage().GetPrimAtPath(prim_path)
+    childrenStack = [prim]
+    out = prim.GetChildren()
+    while len(childrenStack) > 0:
+        prim = childrenStack.pop(0)
+        if not filterfn or (filterfn and filterfn(prim)):
+            children = prim.GetChildren()
+            childrenStack = childrenStack + children
+            out = out + children
+    return out
+
+
+def get_prim_children(prim):
+    return prim.GetChildren()
+
+
+def get_prim_parent(prim):
+    return prim.GetParent()
+
+
+def get_prim_path(prim):
+    return prim.GetPath().pathString
 
 
 def set_usd_visibility(prim, visible: bool):

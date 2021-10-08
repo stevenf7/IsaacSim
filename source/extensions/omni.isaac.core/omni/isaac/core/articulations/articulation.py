@@ -9,19 +9,19 @@
 from typing import Optional, Tuple
 import numpy as np
 from collections import OrderedDict
-from pxr import Usd
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import DOFInfo
 from omni.isaac.core.utils.types import JointsState, ArticulationAction
 from omni.isaac.core.controllers.articulation_controllers import PDArticulationController, ArticulationController
+from omni.isaac.core.utils.prims import is_prim_path_valid
 
 
 class Articulation(XFormPrim):
     def __init__(
         self,
-        prim: Usd.Prim,
-        name: Optional[str] = None,
+        prim_path: str,
+        name: Optional[str] = "articulation",
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         articulation_controller: Optional[ArticulationController] = None,
@@ -35,7 +35,9 @@ class Articulation(XFormPrim):
             orientation (Optional, optional): [description]. Defaults to None.
             articulation_controller (Optional, optional): [description]. Defaults to None.
         """
-        super().__init__(prim=prim, name=name, position=position, orientation=orientation)
+        if not is_prim_path_valid(prim_path):
+            raise Exception("An articulation doesn't exist at path {}".format(prim_path))
+        XFormPrim.__init__(self, prim_path=prim_path, name=name, position=position, orientation=orientation)
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._handle = None
         self._root_handle = None
@@ -264,7 +266,7 @@ class Articulation(XFormPrim):
     def reset(self) -> None:
         """[summary]
         """
-        super().reset()
+        XFormPrim.reset(self)
         # TODO: reset joints too
         return
 
@@ -275,17 +277,6 @@ class Articulation(XFormPrim):
             ArticulationController: [description]
         """
         return self._articulation_controller
-
-    def switch_articulation_controller(self, articulation_controller: ArticulationController) -> None:
-        """[summary]
-
-        Args:
-            articulation_controller (ArticulationController): [description]
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError
 
     def set_angular_velocity(self, angular_velocity: np.ndarray) -> None:
         """[summary]
@@ -349,28 +340,6 @@ class Articulation(XFormPrim):
         """
         pose = self._dc_interface.get_rigid_body_pose(self._root_handle)
         return np.asarray(pose.p), np.asarray(pose.r)
-
-    def set_usd_joint_positions(self, joint_positions: np.ndarray) -> None:
-        """[summary]
-
-        Args:
-            joint_positions (np.ndarray): [description]
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError
-
-    def get_usd_joint_positions(self) -> np.ndarray:
-        """[summary]
-
-        Raises:
-            NotImplementedError: [description]
-
-        Returns:
-            np.ndarray: [description]
-        """
-        raise NotImplementedError
 
     def apply_action(self, control_actions: ArticulationAction) -> None:
         """[summary]

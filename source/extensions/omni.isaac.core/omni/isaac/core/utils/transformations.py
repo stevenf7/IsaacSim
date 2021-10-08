@@ -10,7 +10,7 @@ from pxr import Gf
 import numpy as np
 
 
-def tf_matrix_from_pos_rot(pos: np.ndarray, rot: np.ndarray):
+def tf_matrix_from_pose(position: np.ndarray, orientation: np.ndarray):
     """[summary]
 
     Args:
@@ -21,6 +21,6 @@ def tf_matrix_from_pos_rot(pos: np.ndarray, rot: np.ndarray):
         [type]: [description]
     """
     mat = Gf.Transform()
-    mat.SetRotation(Gf.Rotation(Gf.Quatd(rot.tolist())))
-    mat.SetTranslation(Gf.Vec3d(pos.tolist()))
-    return mat.GetMatrix()
+    mat.SetRotation(Gf.Rotation(Gf.Quatd(*orientation.tolist())))
+    mat.SetTranslation(Gf.Vec3d(*position.tolist()))
+    return np.transpose(mat.GetMatrix())

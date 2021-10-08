@@ -8,8 +8,9 @@
 #
 from typing import Optional, Tuple
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.types import RigidPrimState, DynamicState
-from pxr import Gf, UsdPhysics, Usd
+from omni.isaac.core.utils.types import DynamicState
+from omni.isaac.core.utils.prims import get_prim_at_path
+from pxr import Gf, UsdPhysics
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
 
@@ -17,8 +18,8 @@ from omni.isaac.dynamic_control import _dynamic_control
 class RigidPrim(XFormPrim):
     def __init__(
         self,
-        prim: Usd.Prim,
-        name: str,
+        prim_path: str,
+        name: Optional[str] = "rigid_prim",
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         visible: bool = True,
@@ -41,6 +42,9 @@ class RigidPrim(XFormPrim):
             angular_velocity (np.ndarray, optional): initial angular velocity of the rigid prim. Shape (3, ). Defaults to None.
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
         """
+        prim = get_prim_at_path(prim_path)
+        self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
+        self._handle = None
         if prim.HasAPI(UsdPhysics.RigidBodyAPI):
             self._rigid_api = UsdPhysics.RigidBodyAPI(prim)
         else:
@@ -49,91 +53,22 @@ class RigidPrim(XFormPrim):
             self._mass_api = UsdPhysics.MassAPI(prim)
         else:
             self._mass_api = UsdPhysics.MassAPI.Apply(prim)
-        super().__init__(prim, name=name, position=position, orientation=orientation, visible=visible)
-        self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
+        XFormPrim.__init__(
+            self, prim_path=prim_path, name=name, position=position, orientation=orientation, visible=visible
+        )
         self._rigid_api.CreateRigidBodyEnabledAttr(True)
         if linear_velocity is not None:
-            self.set_usd_linear_velocity(linear_velocity)
+            RigidPrim.set_linear_velocity(self, linear_velocity)
         if angular_velocity is not None:
-            self.set_usd_angular_velocity(angular_velocity)
+            RigidPrim.set_angular_velocity(self, angular_velocity)
         if mass is not None:
-            self.set_usd_mass(mass)
-        mass = self.get_usd_mass()
-        linear_velocity = self.get_usd_linear_velocity()
-        angular_velocity = self.get_usd_angular_velocity()
-        self._default_state = RigidPrimState(
-            self._default_state.position, self._default_state.orientation, linear_velocity, angular_velocity, mass
+            RigidPrim.set_mass(self, mass)
+        linear_velocity = RigidPrim.get_linear_velocity(self)
+        angular_velocity = RigidPrim.get_angular_velocity(self)
+        self._default_state = DynamicState(
+            self._default_state.position, self._default_state.orientation, linear_velocity, angular_velocity
         )
-        self._handle = None
         return
-
-    # TODO: check which space is it in
-    def set_usd_linear_velocity(self, linear_velocity: np.ndarray) -> None:
-        """Sets the linear velocity of the prim in stage. The method does this through the USD API.
-
-        Args:
-            linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
-        """
-        linear_velocity = linear_velocity.tolist()
-        linear_velocity = Gf.Vec3f(linear_velocity)
-        # TODO: check if this attribute needs to be checked before or so
-        self._rigid_api.GetVelocityAttr().Set(linear_velocity)
-        return
-
-    # TODO: check which space is it in
-    def set_usd_angular_velocity(self, angular_velocity: np.ndarray) -> None:
-        """Sets the angular velocity of the prim in stage. The method does this through the USD API.
-
-        Args:
-            angular_velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
-        """
-        angular_velocity = angular_velocity.tolist()
-        angular_velocity = Gf.Vec3f(angular_velocity)
-        self._rigid_api.GetAngularVelocityAttr().Set(angular_velocity)
-        return
-
-    def get_usd_linear_velocity(self) -> np.ndarray:
-        """
-        Returns:
-            np.ndarray: linear velocity of the rigid prim. Shape (3,).
-        """
-        return np.array(self._rigid_api.GetVelocityAttr().Get())
-
-    def get_usd_angular_velocity(self) -> np.ndarray:
-        """
-        Returns:
-            np.ndarray: angular velocity of the rigid prim. Shape (3,).
-        """
-        return np.array(self._rigid_api.GetAngularVelocityAttr().Get())
-
-    # TODO: check which space is it in
-    def set_angular_velocity(self, angular_velocity: np.ndarray) -> None:
-        """Sets the angular velocity of the prim in stage. The method does this through the physx API.
-            Note: It has to be called while simulating i.e after .play() or .reset() is called
-
-        Args:
-            angular_velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
-        """
-        self._dc_interface.set_rigid_body_angular_velocity(self._handle, angular_velocity)
-        return
-
-    def get_linear_velocity(self) -> np.ndarray:
-        """
-        Note: It has to be called while simulating i.e after .play() or .reset() is called
-
-        Returns:
-            np.ndarray: linear velocity of the rigid prim. Shape (3,).
-        """
-        return self._dc_interface.get_rigid_body_linear_velocity(self._handle)
-
-    def get_angular_velocity(self) -> np.ndarray:
-        """
-        Note: It has to be called while simulating i.e after .play() or .reset() is called
-
-        Returns:
-            np.ndarray: angular velocity of the rigid prim. Shape (3,).
-        """
-        return self._dc_interface.get_rigid_body_angular_velocity(self._handle)
 
     def set_linear_velocity(self, linear_velocity: np.ndarray):
         """Sets the linear velocity of the prim in stage. The method does this through the physx API.
@@ -142,10 +77,32 @@ class RigidPrim(XFormPrim):
         Args:
             linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
         """
-        self._dc_interface.set_rigid_body_linear_velocity(self._handle, linear_velocity)
+        if self._handle is not None and self._dc_interface.is_simulating():
+            self._dc_interface.set_rigid_body_linear_velocity(self._handle, linear_velocity)
+        else:
+            self._rigid_api.GetVelocityAttr().Set(Gf.Vec3f(linear_velocity.tolist()))
         return
 
-    def set_pose(self, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None) -> None:
+    def get_linear_velocity(self) -> np.ndarray:
+        if self._handle is not None and self._dc_interface.is_simulating():
+            return self._dc_interface.get_rigid_body_linear_velocity(self._handle)
+        else:
+            return np.array(self._rigid_api.GetVelocityAttr().Get())
+
+    def set_angular_velocity(self, angular_velocity: np.ndarray) -> None:
+        if self._handle is not None and self._dc_interface.is_simulating():
+            self._dc_interface.set_rigid_body_angular_velocity(self._handle, angular_velocity)
+        else:
+            self._rigid_api.GetAngularVelocityAttr().Set(Gf.Vec3f(angular_velocity.tolist()))
+        return
+
+    def get_angular_velocity(self):
+        if self._handle is not None and self._dc_interface.is_simulating():
+            return self._dc_interface.get_rigid_body_angular_velocity(self._handle)
+        else:
+            return np.array(self._rigid_api.GetAngularVelocityAttr().Get())
+
+    def set_world_pose(self, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None) -> None:
         """Sets the pose of the prim in stage. The method does this through the physx API.
             Note: It has to be called while simulating i.e after .play() or .reset() is called
 
@@ -154,16 +111,19 @@ class RigidPrim(XFormPrim):
              orientation (np.ndarray, optional): quaternion orientation in the world frame to set the prim. 
                                               quaternion is scalar-first (w, x, y, z). shape is (4, ). Defaults to None.
         """
-        current_position, current_orientation = self.get_pose()
-        if position is None:
-            position = current_position
-        if orientation is None:
-            orientation = current_orientation
-        pose = _dynamic_control.Transform(position, orientation)
-        self._dc_interface.set_rigid_body_pose(self._handle, pose)
+        if self._handle is not None and self._dc_interface.is_simulating():
+            current_position, current_orientation = self.get_pose()
+            if position is None:
+                position = current_position
+            if orientation is None:
+                orientation = current_orientation
+            pose = _dynamic_control.Transform(position, orientation)
+            self._dc_interface.set_rigid_body_pose(self._handle, pose)
+        else:
+            XFormPrim.set_world_pose(self, position=position, orientation=orientation)
         return
 
-    def get_pose(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Gets the current pose of the prim. Note: It has to be called while simulating i.e after .play() or .reset() is called
         
@@ -171,10 +131,25 @@ class RigidPrim(XFormPrim):
             Tuple(np.ndarray, np.ndarray): the first position (3,) is the usd position and the second is the orientation 
                                             as a quaternion. quaternion is scalar-first (w, x, y, z). shape (4,).
         """
-        pose = self._dc_interface.get_rigid_body_pose(self._handle)
-        return np.asarray(pose.p), np.asarray(pose.r)
+        if self._handle is not None and self._dc_interface.is_simulating():
+            pose = self._dc_interface.get_rigid_body_pose(self._handle)
+            return np.asarray(pose.p), np.asarray(pose.r)
+        else:
+            return XFormPrim.get_world_pose(self)
 
-    def set_usd_mass(self, mass: float) -> None:
+    def set_local_pose(self, translation=None, orientation=None):
+        if self._handle is not None and self._dc_interface.is_simulating():
+            raise NotImplementedError
+        else:
+            return XFormPrim.set_local_pose(translation=translation, orientation=orientation)
+
+    def get_local_pose(self):
+        if self._handle is not None and self._dc_interface.is_simulating():
+            raise NotImplementedError
+        else:
+            return XFormPrim.get_local_pose()
+
+    def set_mass(self, mass: float) -> None:
         """[summary]
 
         Args:
@@ -183,7 +158,7 @@ class RigidPrim(XFormPrim):
         self._mass_api.GetMassAttr().Set(mass)
         return
 
-    def get_usd_mass(self) -> float:
+    def get_mass(self) -> float:
         """[summary]
 
         Returns:
@@ -199,11 +174,10 @@ class RigidPrim(XFormPrim):
 
     def set_default_state(
         self,
-        position: np.ndarray,
-        orientation: np.ndarray,
-        linear_velocity: np.ndarray,
-        angular_velocity: np.ndarray,
-        mass: float,
+        position: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
+        linear_velocity: Optional[np.ndarray] = None,
+        angular_velocity: Optional[np.ndarray] = None,
     ) -> None:
         """Sets the default state of the prim, that will be used with each reset. 
 
@@ -214,25 +188,31 @@ class RigidPrim(XFormPrim):
             angular_velocity (np.ndarray): [description]
             mass (float): [description]
         """
-        self._default_state = RigidPrimState(position, orientation, linear_velocity, angular_velocity, mass)
+        if position is not None:
+            self._default_state.position = position
+        if orientation is not None:
+            self._default_state.orientation = orientation
+        if linear_velocity is not None:
+            self._default_state.linear_velocity = linear_velocity
+        if angular_velocity is not None:
+            self._default_state.angular_velocity = angular_velocity
         return
 
     def reset(self) -> None:
         """Resets the prim to its default state.
         """
-        super().reset()
-        self.set_angular_velocity(self._default_state.angular_velocity)
-        self.set_linear_velocity(self._default_state.linear_velocity)
-        self.set_usd_mass(self._default_state.mass)
+        XFormPrim.reset(self)
+        RigidPrim.set_angular_velocity(self, self._default_state.angular_velocity)
+        RigidPrim.set_linear_velocity(self, self._default_state.linear_velocity)
         return
 
-    def get_dynamic_state(self) -> None:
+    def get_current_dynamic_state(self) -> None:
         """[summary]
 
         Returns:
             [type]: [description]
         """
-        position, orientation = self.get_pose()
+        position, orientation = self.get_world_pose()
         return DynamicState(
             position=position,
             orientation=orientation,

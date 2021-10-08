@@ -7,3 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.objects.cube import DynamicCube, VisualCube
+from omni.isaac.core.objects.sphere import VisualSphere, DynamicSphere
+from omni.isaac.core.objects.cylinder import VisualCylinder, DynamicCylinder
+from omni.isaac.core.objects.cone import VisualCone, DynamicCone
+from omni.isaac.core.objects.capsule import VisualCapsule, DynamicCapsule
