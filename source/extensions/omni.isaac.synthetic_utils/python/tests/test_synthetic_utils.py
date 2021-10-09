@@ -20,6 +20,7 @@ import os
 import asyncio
 import numpy as np
 from pxr import Gf, UsdGeom, UsdPhysics
+import random
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.syntheticdata as syn
@@ -307,25 +308,26 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Unit test for sensor groundtruth
     async def frame_lag_test(self, move):
         # start the scene
-        self._timeline.play()
 
         # wait for update
+        move(Gf.Vec3f(random.random() * 100, random.random() * 100, random.random() * 100))
+        await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
         # grab ground truth
         gt1 = self.get_groundtruth()
 
+        # move the cube
+        move(Gf.Vec3f(random.random() * 100, random.random() * 100, random.random() * 100))
+
         # wait for update
         await omni.kit.app.get_app().next_update_async()
-
-        # move the cube
-        move(Gf.Vec3f(50, 0, 0))
-
-        # wait for update
         await omni.kit.app.get_app().next_update_async()
 
         # grab ground truth
         gt2 = self.get_groundtruth()
+        await omni.kit.app.get_app().next_update_async()
+        gt3 = self.get_groundtruth()
 
         # ensure segmentation is identical
         gt_seg1 = gt1["semanticSegmentation"]
@@ -335,15 +337,17 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         # the cube 3d bboxes should be different after update
         gt_box3d1 = gt1["boundingBox3D"]
         gt_box3d2 = gt2["boundingBox3D"]
+        gt_box3d3 = gt3["boundingBox3D"]
 
         # check the list size
         self.assertEqual(len(gt_box3d1), len(gt_box3d2))
 
         # check the corners, they should/must move to pass the test.
         self.assertNotEqual(gt_box3d1["corners"].tolist(), gt_box3d2["corners"].tolist())
-
+        # Should be no change between these two frames
+        self.assertEqual(gt_box3d2["corners"].tolist(), gt_box3d3["corners"].tolist())
+        await omni.kit.app.get_app().next_update_async()
         # stop the scene
-        self._timeline.stop()
 
         pass
 
@@ -351,28 +355,30 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_oneframelag_kitcommand(self):
         await self.load_cube_scene()
 
-        await self.frame_lag_test(
-            lambda location=Gf.Vec3f(50, 0, 0), rot_mat=Gf.Matrix3d(Gf.Rotation((0, 0, 1), 90)): (
-                omni.kit.commands.execute(
-                    "TransformPrimCommand",
-                    path=self.cube.GetPath(),
-                    old_transform_matrix=None,
-                    new_transform_matrix=Gf.Matrix4d()
-                    .SetRotate(rot_mat)
-                    .SetTranslateOnly(Gf.Vec3d(self.cube_location)),
-                )
+        def set_prim_pose(location):
+            omni.kit.commands.execute(
+                "TransformPrimCommand",
+                path=self.cube.GetPath(),
+                old_transform_matrix=None,
+                new_transform_matrix=Gf.Matrix4d()
+                .SetRotate(Gf.Matrix3d(Gf.Rotation((0, 0, 1), 90)))
+                .SetTranslateOnly(Gf.Vec3d(location)),
             )
-        )
+
+        for frame in range(50):
+            await self.frame_lag_test(set_prim_pose)
         pass
 
     # Test lag using a USD prim.
     async def test_oneframelag_usdprim(self):
         await self.load_cube_scene()
 
-        await self.frame_lag_test(
-            lambda location=Gf.Vec3f(50, 0, 0): (
-                self.cube_geom.ClearXformOpOrder(),
-                self.cube_geom.AddTranslateOp().Set(self.cube_location + location),
-            )
-        )
+        def set_prim_pose(location):
+            properties = self.cube.GetPropertyNames()
+            if "xformOp:translate" in properties:
+                translate_attr = self.cube.GetAttribute("xformOp:translate")
+                translate_attr.Set(location)
+
+        for frame in range(50):
+            await self.frame_lag_test(set_prim_pose)
         pass

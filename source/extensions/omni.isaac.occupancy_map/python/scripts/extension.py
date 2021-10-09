@@ -126,8 +126,6 @@ class Extension(omni.ext.IExt):
             for prim_path in selected_prims:
                 prim = stage.GetPrimAtPath(prim_path)
                 bounds = bbox_cache.ComputeWorldBound(prim)
-                if prim.IsA(UsdGeom.Mesh):
-                    pose = omni.usd.get_world_transform_matrix(prim)
                 total_bounds = Gf.BBox3d.Combine(total_bounds, Gf.BBox3d(bounds.ComputeAlignedRange()))
             range = total_bounds.GetBox()
             mid_point = range.GetMidpoint()
@@ -185,7 +183,7 @@ class Extension(omni.ext.IExt):
             >= self._models["upper_bound"][1].get_value_as_float()
             or self._models["lower_bound"][2].get_value_as_float() > self._models["upper_bound"][2].get_value_as_float()
         ):
-            carb.log_warn("lower bound is >= upper bound")
+            # carb.log_warn("lower bound is >= upper bound")
             return
         if self.wait_bound_update:
             if self.bound_update_case == 0:
