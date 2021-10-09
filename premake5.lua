@@ -322,13 +322,6 @@ repo_build.prebuild_copy {
     {"source/scripts/vscode",  "_build/%{platform}/%{config}/.vscode"},
 }
 
--- workaround for missing lzma in latest python
-if os.target() == "linux" then
-    repo_build.prebuild_copy {
-        {"_build/target-deps/python_old/lib/python3.7/lib-dynload/_lzma.cpython*",  "_build/%{platform}/%{config}/kit/python/lib/python3.7/lib-dynload/"},
-    }
-end
-
 group "python_samples"
     -- omni.kit.app
     python_sample_test("tests-nativepython-omni.kit.app.app_framework", "examples/api/omni.kit.app/app_framework.py")
