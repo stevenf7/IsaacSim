@@ -4,5 +4,5 @@ project_ext (ext)
 repo_build.prebuild_link {
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
-    { "python", ext.target_dir.."/omni/kit/property/isaac" },
+    { "omni", ext.target_dir.."/omni" },
 }

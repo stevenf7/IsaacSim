@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Simulation"
 title = "Simulated Environments for use in Isaac Sim"
 description = "Extension for programming simple environments for robots"
@@ -21,3 +21,5 @@ icon = "data/icon.png"
 [[python.module]]
 name = "omni.isaac.benchmark_environments"
 
+[[python.module]]
+name = "omni.isaac.benchmark_environments.tests"

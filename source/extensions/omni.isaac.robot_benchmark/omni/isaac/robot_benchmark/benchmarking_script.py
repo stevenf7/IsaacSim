@@ -77,10 +77,10 @@ def main(args):
     _kit = kit
     _omni = omni
 
-    from omni.isaac.robot_benchmark.scripts.robot_benchmarking import RobotBenchmark
-    from omni.isaac.robot_benchmark.scripts.benchmark_logger import BenchmarkLogger
-    from omni.isaac.robot_benchmark.scripts.benchmark_utils import BenchmarkConfigUtility
-    from omni.isaac.benchmark_environments.scripts.environments import EnvironmentCreator
+    from omni.isaac.robot_benchmark.robot_benchmarking import RobotBenchmark
+    from omni.isaac.robot_benchmark.benchmark_logger import BenchmarkLogger
+    from omni.isaac.robot_benchmark.benchmark_utils import BenchmarkConfigUtility
+    from omni.isaac.benchmark_environments.environments import EnvironmentCreator
 
     viewport = omni.kit.viewport.get_default_viewport_window()
 

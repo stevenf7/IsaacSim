@@ -7,7 +7,7 @@ import asyncio
 import weakref
 import omni.physx as _physx
 from .robot_benchmarking import RobotBenchmark
-from omni.isaac.benchmark_environments.scripts.environments import EnvironmentCreator
+from omni.isaac.benchmark_environments.environments import EnvironmentCreator
 from .benchmark_utils import BenchmarkConfigUtility
 
 

@@ -15,6 +15,3 @@ display_name = "Isaac Tests"
 
 [[python.module]]
 name = "omni.isaac.tests"
-
-[[python.module]]
-name = "omni.isaac.tests.tests"

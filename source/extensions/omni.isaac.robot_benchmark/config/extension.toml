@@ -30,4 +30,4 @@ icon = "data/icon.png"
 name = "omni.isaac.robot_benchmark"
 
 [[python.module]]
-name = "omni.isaac.robot_benchmark.scripts"
+name = "omni.isaac.robot_benchmark.tests"

@@ -24,8 +24,8 @@ import random
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.syntheticdata as syn
-from ..scripts import SyntheticDataHelper
-from ..scripts.writers import NumpyWriter
+from omni.isaac.synthetic_utils import SyntheticDataHelper
+from omni.isaac.synthetic_utils.writers import NumpyWriter
 from omni.syntheticdata.tests.utils import add_semantics
 
 
