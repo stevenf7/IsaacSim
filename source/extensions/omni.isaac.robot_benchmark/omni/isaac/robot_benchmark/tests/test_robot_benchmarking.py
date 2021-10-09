@@ -14,10 +14,10 @@ from pxr import Usd, UsdGeom, Gf, UsdPhysics, Sdf
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.robot_benchmark.scripts.robot_benchmarking import RobotBenchmark
-from omni.isaac.robot_benchmark.scripts.benchmark_logger import BenchmarkLogger
-from omni.isaac.robot_benchmark.scripts.benchmark_utils import BenchmarkConfigUtility
-from omni.isaac.benchmark_environments.scripts.environments import EnvironmentCreator
+from omni.isaac.robot_benchmark.robot_benchmarking import RobotBenchmark
+from omni.isaac.robot_benchmark.benchmark_logger import BenchmarkLogger
+from omni.isaac.robot_benchmark.benchmark_utils import BenchmarkConfigUtility
+from omni.isaac.benchmark_environments.environments import EnvironmentCreator
 
 import numpy as np
 import os

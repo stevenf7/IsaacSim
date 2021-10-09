@@ -5,7 +5,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Simulation"
 title = "Isaac Sim Utilities Manager"
 description = "Useful Tools for Isaac Sim"
@@ -32,6 +32,9 @@ icon = "data/icon.png"
 
 [[python.module]]
 name = "omni.isaac.utils_manager"
+
+[[python.module]]
+name = "omni.isaac.utils_manager.tests"
 
 [[test]]
 stdoutFailPatterns.exclude = [

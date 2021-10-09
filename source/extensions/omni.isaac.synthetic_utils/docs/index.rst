@@ -18,7 +18,7 @@ Tools for Generating Synthetic Data [omni.isaac.synthetic_utils]
     :exclude-members: save_label, save_image
     :no-show-inheritance:
 
-.. automodule:: omni.isaac.synthetic_utils.scripts.visualization
+.. automodule:: omni.isaac.synthetic_utils.visualization
     :members:
     :undoc-members:
     :exclude-members: plot_boxes
