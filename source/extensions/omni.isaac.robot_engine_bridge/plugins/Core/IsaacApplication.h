@@ -164,6 +164,32 @@ public:
     bool publishJsonMessage(
         std::string node, std::string component, std::string channel, uint64_t typeID, std::string jsonString);
 
+    /**
+     * @brief Get the current simulation time in nanoseconds
+     *
+     * @return int64_t
+     */
+    int64_t getSimTimeNano()
+    {
+        return mTimeNanoSeconds;
+    }
+    /**
+     * @brief Get the current SDK app offset in nanoseconds
+     *
+     * @return int64_t
+     */
+    int64_t getAppOffsetNano()
+    {
+
+        mError =
+            (mIsaacCApiPtr->isaac_get_external_time_difference)(mAppHandle, mTimeSeconds, &mTimeDifferenceNanoSeconds);
+        if (mError != isaac_error_t::isaac_error_success)
+        {
+            return 0;
+        }
+
+        return mTimeDifferenceNanoSeconds;
+    }
     IsaacCApi* mIsaacCApiPtr = nullptr;
 
 private:

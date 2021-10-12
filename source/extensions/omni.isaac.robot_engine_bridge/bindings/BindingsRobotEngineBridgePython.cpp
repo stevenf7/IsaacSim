@@ -43,6 +43,8 @@ PYBIND11_MODULE(_robot_engine_bridge, m)
         .def("get_last_error", wrapInterfaceFunction(&RobotEngineBridge::getLastError))
         .def("initialize_stage_loader", wrapInterfaceFunction(&RobotEngineBridge::initializeStageLoader))
         .def("execute_command", wrapInterfaceFunction(&RobotEngineBridge::executeCommand))
-        .def("publish_json_message", wrapInterfaceFunction(&RobotEngineBridge::publishJsonMessage));
+        .def("publish_json_message", wrapInterfaceFunction(&RobotEngineBridge::publishJsonMessage))
+        .def("get_sim_time_nano", wrapInterfaceFunction(&RobotEngineBridge::getSimTimeNano))
+        .def("get_app_offset_nano", wrapInterfaceFunction(&RobotEngineBridge::getAppOffsetNano));
 }
 }

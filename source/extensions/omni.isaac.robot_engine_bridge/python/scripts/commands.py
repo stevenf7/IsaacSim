@@ -125,4 +125,43 @@ class RobotEngineBridgePublishProto(omni.kit.commands.Command):
         pass
 
 
+class RobotEngineBridgeGetLastError(omni.kit.commands.Command):
+    def __init__(self):
+
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        pass
+
+    def do(self) -> bool:
+        return self._re_bridge.get_last_error()
+
+    def undo(self):
+        pass
+
+
+class RobotEngineBridgeGetSimTimeNano(omni.kit.commands.Command):
+    def __init__(self):
+
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        pass
+
+    def do(self) -> bool:
+        return self._re_bridge.get_sim_time_nano()
+
+    def undo(self):
+        pass
+
+
+class RobotEngineBridgeGetAppOffsetNano(omni.kit.commands.Command):
+    def __init__(self):
+
+        self._re_bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
+        pass
+
+    def do(self) -> bool:
+        return self._re_bridge.get_app_offset_nano()
+
+    def undo(self):
+        pass
+
+
 omni.kit.commands.register_all_commands_in_module(__name__)

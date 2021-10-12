@@ -127,7 +127,38 @@ bool CARB_ABI tickComponent(const std::string& primPath)
 }
 std::string const CARB_ABI getLastError()
 {
-    return g_application_handle->getLastError();
+    if (g_application_handle)
+    {
+        return g_application_handle->getLastError();
+    }
+    else
+    {
+        return "";
+    }
+}
+
+int64_t const CARB_ABI getSimTimeNano()
+{
+    if (g_application_handle)
+    {
+        return g_application_handle->getSimTimeNano();
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int64_t const CARB_ABI getAppOffsetNano()
+{
+    if (g_application_handle)
+    {
+        return g_application_handle->getAppOffsetNano();
+    }
+    else
+    {
+        return 0;
+    }
 }
 void CARB_ABI initializeStageLoader(const std::string& inputComponent,
                                     const std::string& requestChannelName,
@@ -321,4 +352,6 @@ void fillInterface(omni::isaac::robot_engine_bridge::RobotEngineBridge& iface)
     iface.initializeStageLoader = initializeStageLoader;
     iface.executeCommand = executeCommand;
     iface.publishJsonMessage = publishJsonMessage;
+    iface.getSimTimeNano = getSimTimeNano;
+    iface.getAppOffsetNano = getAppOffsetNano;
 }

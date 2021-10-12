@@ -40,6 +40,8 @@ struct RobotEngineBridge
     bool(CARB_ABI* executeCommand)(const std::string& command);
     bool(CARB_ABI* publishJsonMessage)(
         std::string node, std::string component, std::string channel, uint64_t typeID, std::string jsonString);
+    int64_t const(CARB_ABI* getSimTimeNano)();
+    int64_t const(CARB_ABI* getAppOffsetNano)();
 };
 
 }
