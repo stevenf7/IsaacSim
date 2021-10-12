@@ -174,6 +174,8 @@ class SimulationApp:
         set_carb_setting(self._carb_settings, "/persistent/simulation/defaultMetersPerUnit", 1.0)
         print("Simulation App Starting")
 
+        self._app.update()
+
         self.open_usd = self.config.get("open_usd")
         if self.open_usd != None:
             print("Opening usd file at ", self.open_usd, " ...", end="")
@@ -194,8 +196,6 @@ class SimulationApp:
                 print("Could not save usd file to ", self.livesync_usd)
 
         # Update the app
-        self._app.update()
-        omni.usd.get_context().new_stage()
         self._app.update()
         # Dock floating UIs
         self._prepare_ui()
