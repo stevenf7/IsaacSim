@@ -102,8 +102,17 @@ class TestREBPyaliceScissorLift(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app.start()
         # Run test so tcp is connected
         await simulate(1)
+        lift_msg = test_app.app.receive("simulation.interface", "output", "lift_state")
+        self.assertIsNotNone(lift_msg)
+        self.assertEqual(lift_msg.tensor[0], -1)
+        self.assertEqual(lift_msg.tensor[1], 0)
+
         self.generator.config.linear_speed = 1.0
         await simulate(3)
+        lift_msg = test_app.app.receive("simulation.interface", "output", "lift_state")
+        self.assertIsNotNone(lift_msg)
+        self.assertEqual(lift_msg.tensor[0], 1)
+        self.assertAlmostEqual(lift_msg.tensor[1], 4.0, delta=0.1)
         # check that the lift is at the correct height
         art = self._dc.get_articulation("/Transporter")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)

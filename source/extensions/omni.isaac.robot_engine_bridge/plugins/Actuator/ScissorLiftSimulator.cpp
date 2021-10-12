@@ -159,11 +159,11 @@ void ScissorLiftSimulator::tick()
         else if (mState == LiftState::Lowered)
             stateVal = -1.0;
 
-        // message format as state/DifferentialBaseControl
-        // (linear_speed, angular speed)
+        // message format as state
+        // (Lift state, lift position)
         IsaacMessage<isaac_message::State> statusComposite;
         auto statusProto = statusComposite.initProto();
-        std::vector<double> elements{ stateVal, 0.0 };
+        std::vector<double> elements{ stateVal, static_cast<double>(mCurrentHeight) };
         // set tensor proto to specify dimension of buffer
         auto tensor = statusProto.initPack();
         tensor.setElementType(ElementType::FLOAT64);

@@ -39,14 +39,26 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
             return
         self._nucleus_path = nucleus_server + "/Isaac"
 
+        self.assertTrue(create_application()[1])
+
         pass
 
     # After running each test
     async def tearDown(self):
+        self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         self._stage = None
         self._timeline = None
         gc.collect()
         pass
+
+    async def test_helper_commands(self):
+        self.assertEqual(0, omni.kit.commands.execute("RobotEngineBridgeGetSimTimeNano")[1])
+        self.assertNotEqual(0, omni.kit.commands.execute("RobotEngineBridgeGetAppOffsetNano")[1])
+        self._timeline.play()
+        for f in range(100):
+            await omni.kit.app.get_app().next_update_async()
+        self.assertGreater(omni.kit.commands.execute("RobotEngineBridgeGetSimTimeNano")[1], 0)
+        self.assertNotEqual(0, omni.kit.commands.execute("RobotEngineBridgeGetAppOffsetNano")[1])
 
     # Disable this test because it just prints error messages anyways and causes the test to fail
     # def run_command_basic(self):
