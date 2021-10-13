@@ -11,7 +11,7 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 
-from omni.isaac.kit.simulation_context import SimulationContext
+from omni.isaac.core import SimulationContext
 
 simulation_context = SimulationContext()
 

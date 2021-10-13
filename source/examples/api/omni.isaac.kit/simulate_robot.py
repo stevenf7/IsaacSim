@@ -11,7 +11,7 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.kit.simulation_context import SimulationContext
+from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 
 _, nucleus_server = find_nucleus_server()

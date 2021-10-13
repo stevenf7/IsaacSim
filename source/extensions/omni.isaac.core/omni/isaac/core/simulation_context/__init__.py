@@ -6,8 +6,4 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-
-LAUNCHED_FROM_TERMINAL = True
-"""True if we launched a simulation app vs running in an existing app"""
-LAUNCHED_FROM_JUPYTER = False
-"""True if we are running in a Jupyter notebook"""
+from omni.isaac.core.simulation_context.simulation_context import SimulationContext

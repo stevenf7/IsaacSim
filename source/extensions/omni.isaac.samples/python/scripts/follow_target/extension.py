@@ -11,7 +11,7 @@ from omni.isaac.samples.scripts.base_sample import BaseSample
 from omni.isaac.franka.tasks import TargetFollower
 from omni.isaac.franka.controllers import RMPFlowIKSolver
 import asyncio
-from omni.isaac.kit.utils import get_extension_id, get_extension_path
+from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
 import os
 import gc
 

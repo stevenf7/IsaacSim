@@ -10,6 +10,7 @@ toggleable = false
 
 [dependencies]
 "omni.physx" = {} # loads usd libs we import
+"omni.isaac.core" = {} 
 
 [[python.module]]
 name = "omni.isaac.kit"

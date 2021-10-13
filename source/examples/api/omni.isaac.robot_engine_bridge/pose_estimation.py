@@ -22,11 +22,12 @@ FOCUS_DIST = 400
 RANDOMIZE_SCENE_EVERY_N_STEPS = 10
 
 kit = SimulationApp(launch_config=CONFIG)
-from omni.isaac.kit.utils import enable_extension, set_up_axis, add_usd_reference
+from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.core.utils.stage import set_up_axis, add_usd_reference
 import omni
 from pxr import UsdGeom, Gf
 import omni.isaac.dr as dr
-from omni.isaac.kit.simulation_context import SimulationContext
+from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.core.utils import rotations, prims
 
@@ -36,7 +37,7 @@ enable_extension("omni.isaac.robot_engine_bridge")
 context = SimulationContext(stage_units_in_meters=0.01)
 stage = context.stage
 viewport = omni.kit.viewport.get_viewport_interface()
-set_up_axis(stage, UsdGeom.Tokens.z)
+set_up_axis(UsdGeom.Tokens.z)
 
 result, nucleus_server = find_nucleus_server()
 if result is False:
@@ -47,7 +48,7 @@ asset_path = nucleus_server + "/Isaac"
 stage_path = asset_path + "/Environments/Simple_Room/simple_room.usd"
 
 environment = stage.DefinePrim("/environment", "Xform")
-room = add_usd_reference(stage, stage_path, "/environment/room")
+room = add_usd_reference(stage_path, "/environment/room")
 
 # create target prim
 

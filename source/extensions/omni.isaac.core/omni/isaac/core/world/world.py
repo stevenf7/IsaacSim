@@ -6,11 +6,11 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.kit.simulation_context import SimulationContext
+from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.tasks.task import BaseTask
 from omni.isaac.dynamic_control import _dynamic_control
-import omni.isaac.kit.global_vars as global_vars
+import builtins
 from pxr import Usd
 
 
@@ -31,7 +31,7 @@ class World(SimulationContext):
         self._current_task = None
         self._stage_units_in_meters = stage_units_in_meters
         self._scene = None
-        if not global_vars.LAUNCHED_FROM_TERMINAL:
+        if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
             self.create_new_stage()
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         # TODO: double check the stage units are actually set properly
@@ -76,7 +76,7 @@ class World(SimulationContext):
     def finalize_scene(self) -> None:
         """[summary]
         """
-        if not global_vars.LAUNCHED_FROM_TERMINAL:
+        if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
             self.play()
         self._scene._finalize()
         return

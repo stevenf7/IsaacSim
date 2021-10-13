@@ -14,7 +14,7 @@ from omni.isaac.kit import SimulationApp
 # Example ROS bridge sample showing rospy and rosclock interaction
 kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 import omni
-from omni.isaac.kit.utils import enable_extension
+from omni.isaac.core.utils.extensions import enable_extension
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")

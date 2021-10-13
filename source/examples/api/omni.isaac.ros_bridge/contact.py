@@ -15,7 +15,7 @@ kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 import omni
 from omni.isaac.contact_sensor import _contact_sensor
 from pxr import UsdGeom, UsdPhysics, Gf, PhysicsSchemaTools
-from omni.isaac.kit.utils import enable_extension
+from omni.isaac.core.utils.extensions import enable_extension
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")

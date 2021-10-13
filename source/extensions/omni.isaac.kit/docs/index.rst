@@ -7,8 +7,3 @@ This extension provides convenience functions when running in pure python mode
     :members:
     :undoc-members:
     :exclude-members:
-
-.. autoclass:: omni.isaac.kit.simulation_context.SimulationContext
-    :members:
-    :undoc-members:
-    :exclude-members:
