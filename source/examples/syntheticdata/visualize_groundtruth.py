@@ -28,7 +28,7 @@ GLASS_MATERIAL = True
 
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 
-from omni.isaac.kit.simulation_context import SimulationContext
+from omni.isaac.core import SimulationContext
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.syntheticdata import visualize, helpers
 from omni.physx.scripts import utils

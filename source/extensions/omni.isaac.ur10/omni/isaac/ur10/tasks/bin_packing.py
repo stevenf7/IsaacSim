@@ -10,7 +10,7 @@ from omni.isaac.core.tasks.task import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.ur10 import UR10
 import numpy as np
-from omni.isaac.kit.utils import add_usd_reference
+from omni.isaac.core.utils.stage import add_usd_reference
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 import carb
@@ -53,7 +53,7 @@ class BinPacking(BaseTask):
         """
         # TODO: change values with USD
         super().set_up_scene(scene)
-        add_usd_reference(stage=scene.stage, usd_path=self._ur10_asset_path, prim_path="/World/Scene")
+        add_usd_reference(usd_path=self._ur10_asset_path, prim_path="/World/Scene")
         self.my_ur10 = scene.add(
             UR10(stage=scene.stage, prim_path="/World/Scene/ur10", name="my_ur10", end_effector_prim_name="ee_link")
         )
@@ -118,7 +118,7 @@ class BinPacking(BaseTask):
     def _add_screw(self):
         asset_path = self._screw_asset_paths[random.randint(0, len(self._screw_asset_paths) - 1)]
         prim_path = "/World/objects/object_{}".format(len(self._screws))
-        prim = add_usd_reference(stage=self.scene.stage, usd_path=asset_path, prim_path=prim_path)
+        prim = add_usd_reference(usd_path=asset_path, prim_path=prim_path)
         # TODO: change values with USD
         # TODO: deal with nested rigid body apis?
         self._screws.append(

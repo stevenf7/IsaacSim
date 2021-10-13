@@ -43,7 +43,7 @@ class Generator:
 
         self.sim_app = SimulationApp(config)
 
-        from omni.isaac.kit.simulation_context import SimulationContext
+        from omni.isaac.core import SimulationContext
 
         self.sim_context = SimulationContext()
 

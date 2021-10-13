@@ -6,4 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 from omni.isaac.core.world.world import World
+import builtins
+
+# In case we are running from a regular kit instance and not a simulation_app, this variable is not defined.
+if not hasattr(builtins, "ISAAC_LAUNCHED_FROM_TERMINAL"):
+    builtins.ISAAC_LAUNCHED_FROM_TERMINAL = True

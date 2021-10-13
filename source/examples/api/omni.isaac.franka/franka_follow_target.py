@@ -13,7 +13,7 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.franka.tasks import TargetFollower
 from omni.isaac.franka.controllers import RMPFlowIKSolver
 from omni.isaac.core import World
-from omni.isaac.kit.utils import get_extension_id, get_extension_path
+from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
 
 my_world = World()
 extension_id = get_extension_id("omni.isaac.motion_generation")

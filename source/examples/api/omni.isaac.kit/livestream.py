@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from omni.isaac.kit import SimulationApp
-from omni.isaac.kit.utils import set_extension_enabled
+from omni.isaac.core.utils.extensions import set_extension_enabled
 
 # This sample enables a livestream server to connect to when running headless
 CONFIG = {

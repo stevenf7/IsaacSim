@@ -21,11 +21,11 @@ class UsdLoadSample:
     def __init__(self, args):
         CONFIG["headless"] = args.headless
         self.kit = SimulationApp(launch_config=CONFIG)
-        from omni.isaac.kit.simulation_context import SimulationContext
+        from omni.isaac.core import SimulationContext
 
         self.simulation_context = SimulationContext(1.0 / 60.0, stage_units_in_meters=0.01)
         import omni
-        from omni.isaac.kit.utils import enable_extension
+        from omni.isaac.core.utils.extensions import enable_extension
 
         # enable SDK bridge extension
         enable_extension("omni.isaac.robot_engine_bridge")

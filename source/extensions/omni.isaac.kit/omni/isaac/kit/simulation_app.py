@@ -15,6 +15,7 @@ import argparse
 import re
 import carb
 import omni.kit.app
+import builtins
 
 
 class SimulationApp:
@@ -110,7 +111,6 @@ class SimulationApp:
             "omni.ext.impl._internal",
             "omni.ext.impl.leak_detection",
             "omni.kit.app._app",
-            "omni.isaac.kit.global_vars",
         ]
         r = re.compile("omni.*|pxr.*")
         found_modules = list(filter(r.match, list(sys.modules.keys())))
@@ -127,17 +127,15 @@ class SimulationApp:
                 "Please check to make sure no extra omniverse or pxr modules are imported before the call to SimulationApp(...)"
             )
 
-        import omni.isaac.kit.global_vars as global_vars
-
         # Initialize variables
-        global_vars.LAUNCHED_FROM_TERMINAL = False
+        builtins.ISAAC_LAUNCHED_FROM_TERMINAL = False
         self._exiting = False
 
         # Override settings from input config
         self.config = self.DEFAULT_LAUNCHER_CONFIG
         if experience == "":
             experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit'
-        if global_vars.LAUNCHED_FROM_JUPYTER:
+        if builtins.ISAAC_LAUNCHED_FROM_JUPYTER:
             if launch_config["headless"] is False:
                 carb.log_warn("Non-headless mode not supported with jupyter notebooks")
                 launch_config.update({"headless": True})
@@ -163,7 +161,8 @@ class SimulationApp:
         #     self._app.update()
 
         # once app starts, we can set settings
-        from omni.isaac.kit.utils import set_carb_setting, open_usd, new_stage, save_usd, set_livesync_usd
+        from omni.isaac.core.utils.carb import set_carb_setting
+        from omni.isaac.core.utils.stage import open_usd, new_stage, save_usd, set_livesync_usd
 
         self._carb_settings = carb.settings.get_settings()
         # Set rtx-default renderder settings
@@ -264,7 +263,7 @@ class SimulationApp:
         Keyword Arguments:
             mode {str} -- Whether to setup RTX default or non-default settings. (default: {"non-default"})
         """
-        from omni.isaac.kit.utils import set_carb_setting
+        from omni.isaac.core.utils.carb import set_carb_setting
 
         # Define mode to configure settings into.
         if mode == "default":
@@ -347,7 +346,7 @@ class SimulationApp:
             setting (str): carb setting path
             value: value to set the setting to, type is used to properly set the setting. 
         """
-        from omni.isaac.kit.utils import set_carb_setting
+        from omni.isaac.core.utils.carb import set_carb_setting
 
         set_carb_setting(self._carb_settings, setting, value)
 

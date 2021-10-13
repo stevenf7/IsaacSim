@@ -18,10 +18,10 @@ args, unknown = parser.parse_known_args()
 kit = SimulationApp({"renderer": "RayTracedLighting", "headless": False})
 import omni
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
-from omni.isaac.kit.simulation_context import SimulationContext
+from omni.isaac.core import SimulationContext
 from pxr import Sdf
 
-from omni.isaac.kit.utils import enable_extension
+from omni.isaac.core.utils.extensions import enable_extension
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")

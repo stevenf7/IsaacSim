@@ -13,7 +13,7 @@ import numpy as np
 # Simple example showing how to publish a custom message from isaac sdk
 kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 # Perform any omniverse imports here after the app loads
-from omni.isaac.kit.utils import enable_extension, get_extension_path, get_extension_id
+from omni.isaac.core.utils.extensions import enable_extension, get_extension_path, get_extension_id
 import omni
 
 # enable SDK bridge extension

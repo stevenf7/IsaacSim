@@ -13,7 +13,7 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.jetbot import Jetbot
 from omni.isaac.core import World
 from omni.isaac.jetbot.controllers import SimpleController, SimpleContollerCommand
-from omni.isaac.kit.utils import add_usd_reference
+from omni.isaac.core.utils.stage import add_usd_reference
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.core.prims import XFormPrim
 import numpy as np
@@ -26,9 +26,7 @@ result, nucleus_server = find_nucleus_server()
 if result is False:
     carb.log_error("Could not find nucleus server with /Isaac folder")
 prim = add_usd_reference(
-    stage=my_world.scene.stage,
-    usd_path=nucleus_server + "/Isaac/Environments/Grid/gridroom_curved.usd",
-    prim_path="/World/background",
+    usd_path=nucleus_server + "/Isaac/Environments/Grid/gridroom_curved.usd", prim_path="/World/background"
 )
 # TODO: change with new USD
 XFormPrim(prim, "background", position=np.array([0, 0, -9]))

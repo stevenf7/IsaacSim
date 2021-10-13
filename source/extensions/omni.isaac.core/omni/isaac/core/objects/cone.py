@@ -21,7 +21,7 @@ class VisualCone(GeometryPrim):
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "visual_sphere",
+        name: Optional[str] = "visual_cone",
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         color: Optional[np.ndarray] = None,
@@ -102,7 +102,7 @@ class DynamicCone(RigidPrim, GeometryPrim):
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "dynamic_sphere",
+        name: Optional[str] = "dynamic_cone",
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         mass: Optional[float] = None,

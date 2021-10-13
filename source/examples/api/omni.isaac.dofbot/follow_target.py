@@ -13,7 +13,7 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.dofbot.tasks import TargetFollower
 from omni.isaac.dofbot.controllers import RMPFlowIKSolver
 from omni.isaac.core import World
-from omni.isaac.kit.utils import get_extension_id, get_extension_path
+from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
 
 my_world = World(stage_units_in_meters=0.01)
 extension_id = get_extension_id("omni.isaac.motion_generation")

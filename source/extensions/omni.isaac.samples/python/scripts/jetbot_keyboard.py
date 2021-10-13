@@ -16,7 +16,7 @@ from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.jetbot import Jetbot
 from omni.isaac.jetbot.controllers import DifferentialController
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
-from omni.isaac.kit.utils import add_usd_reference
+from omni.isaac.core.utils.stage import add_usd_reference
 from omni.isaac.core.tasks.task import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.samples.scripts.base_sample import BaseSample
@@ -45,9 +45,7 @@ class DriveTask(BaseTask):
             )
         )
         prim = add_usd_reference(
-            stage=scene.stage,
-            usd_path=nucleus_server + "/Isaac/Environments/Grid/gridroom_curved.usd",
-            prim_path="/World/background",
+            usd_path=nucleus_server + "/Isaac/Environments/Grid/gridroom_curved.usd", prim_path="/World/background"
         )
         # TODO: change with new USD
         XFormPrim(prim, "background", position=np.array([0, 0, -9]))

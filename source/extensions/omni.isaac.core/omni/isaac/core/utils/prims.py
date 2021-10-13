@@ -94,3 +94,9 @@ def create_prim(
     if scale is not None:
         xforms.set_xform_scale(prim, scale)
     return prim
+
+
+def delete_prim(prim_path):
+    from omni.usd.commands import DeletePrimsCommand
+
+    DeletePrimsCommand([prim_path]).do()

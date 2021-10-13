@@ -14,11 +14,12 @@ import numpy as np
 
 # omniverse
 import carb
-from omni.isaac.kit import global_vars
+import builtins
 import omni.kit.app
 from pxr import UsdGeom, Gf, Usd, Sdf, UsdPhysics, PhysxSchema
-from omni.isaac.kit.utils import set_carb_setting, add_usd_reference
-from omni.isaac.kit.constants import AXES_INDICES
+from omni.isaac.core.utils.carb import set_carb_setting
+from omni.isaac.core.utils.stage import add_usd_reference
+from omni.isaac.core.utils.constants import AXES_INDICES
 
 
 class SimulationContext:
@@ -221,7 +222,7 @@ class SimulationContext:
         return self.stage
 
     def add_usd_reference(self, usd_path, prim_path) -> Usd.Prim:
-        return add_usd_reference(self.stage, usd_path, prim_path)
+        return add_usd_reference(usd_path, prim_path)
 
     def set_physics_dt(self, dt: float = 1.0 / 60.0, substeps: int = 1):
         self._physics_scene.set_physics_dt(dt, substeps)
@@ -362,7 +363,7 @@ class PhysicsScene:
         self._current_physics_dt = self._previous_physics_dt
         self._physx_interface = omni.physx.acquire_physx_interface()
         self._timeline = omni.timeline.get_timeline_interface()
-        if global_vars.LAUNCHED_FROM_TERMINAL is False:
+        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             # TODO check if this import succeeds?
             import omni.kit.loop._loop as omni_loop
 
@@ -402,7 +403,7 @@ class PhysicsScene:
         self._physx_scene_api.GetTimeStepsPerSecondAttr().Set(steps_per_second)
         # set the min frame rate, i.e. frequency of substeps.
         # TODO Is there a better way to do this or atleast reset this to the original values on close
-        if global_vars.LAUNCHED_FROM_TERMINAL is False:
+        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             set_carb_setting(carb.settings.get_settings(), "/app/runLoops/main/rateLimitEnabled", True)
             set_carb_setting(carb.settings.get_settings(), "persistent/simulation/minFrameRate", min_steps)
             set_carb_setting(carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency", min_steps)

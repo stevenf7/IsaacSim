@@ -12,7 +12,7 @@ from omni.isaac.franka.tasks import Tower
 from omni.isaac.franka.controllers import RMPFlowTower
 import asyncio
 import os
-from omni.isaac.kit.utils import get_extension_id, get_extension_path
+from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
 
 
 class Extension(BaseSample):
