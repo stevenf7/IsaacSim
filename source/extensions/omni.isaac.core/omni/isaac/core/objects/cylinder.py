@@ -17,15 +17,16 @@ from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.core.utils.stage import get_current_stage
 
 
-class VisualCube(GeometryPrim):
+class VisualCylinder(GeometryPrim):
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "visual_cube",
+        name: Optional[str] = "visual_cylinder",
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         color: Optional[np.ndarray] = None,
-        size: float = 0.5,
+        radius: float = 0.5,
+        height: float = 0.5,
         visual_material_path=None,
     ) -> None:
         """[summary]
@@ -41,48 +42,67 @@ class VisualCube(GeometryPrim):
         """
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
-            if not prim.IsA(UsdGeom.Cube):
-                raise Exception("The prim at path {} cannot be parsed as a Cube object".format(prim_path))
-            cubeGeom = UsdGeom.Cube(prim)
+            if not prim.IsA(UsdGeom.Cylinder):
+                raise Exception("The prim at path {} cannot be parsed as a Cylinder object".format(prim_path))
+            cylinderGeom = UsdGeom.Cylinder(prim)
         else:
-            cubeGeom = UsdGeom.Cube.Define(get_current_stage(), prim_path)
-            cubeGeom.GetExtentAttr().Set(
-                [Gf.Vec3f([-size / 2.0, -size / 2.0, -size / 2.0]), Gf.Vec3f([size / 2.0, size / 2.0, size / 2.0])]
+            cylinderGeom = UsdGeom.Cylinder.Define(get_current_stage(), prim_path)
+            # TODO: double check the cylinder extent
+            cylinderGeom.GetExtentAttr().Set(
+                [Gf.Vec3f([-radius, -radius, -height / 2.0]), Gf.Vec3f([radius, radius, height / 2.0])]
             )
         GeometryPrim.__init__(self, prim_path=prim_path, name=name, position=position, orientation=orientation)
-        VisualCube.set_size(self, size)
+        VisualCylinder.set_radius(self, radius)
+        VisualCylinder.set_height(self, height)
         if visual_material_path is None:
             if color is None:
                 color = np.arrray([0.5, 0.5, 0.5])
             preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
         else:
             preview_surface = PreviewSurface(prim_path=visual_material_path)
-        VisualCube.apply_visual_material(self, preview_surface)
+        VisualCylinder.apply_visual_material(self, preview_surface)
         return
 
-    def set_size(self, size: float) -> None:
+    def set_radius(self, radius: float) -> None:
         """[summary]
 
         Args:
             size (float): [description]
         """
-        self.geom.CreateSizeAttr(size)
+        self.geom.GetRadiusAttr().Set(radius)
         return
 
-    def get_size(self) -> float:
+    def get_radius(self) -> float:
         """[summary]
 
         Returns:
             float: [description]
         """
-        return self.geom.GetSizeAttr().Get()
+        return self.geom.GetRadiusAttr().Get()
+
+    def set_height(self, height: float) -> None:
+        """[summary]
+
+        Args:
+            size (float): [description]
+        """
+        self.geom.GetHeightAttr().Set(height)
+        return
+
+    def get_height(self) -> float:
+        """[summary]
+
+        Returns:
+            float: [description]
+        """
+        return self.geom.GetHeightAttr().Get()
 
 
-class DynamicCube(RigidPrim, GeometryPrim):
+class DynamicCylinder(RigidPrim, GeometryPrim):
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "dynamic_cube",
+        name: Optional[str] = "dynamic_cylinder",
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         mass: Optional[float] = None,
@@ -92,7 +112,8 @@ class DynamicCube(RigidPrim, GeometryPrim):
         static_friction: float = 0.0,
         dynamic_friction: float = 0.0,
         restitution: float = 0.8,
-        size: float = 0.5,
+        radius: float = 0.5,
+        height: float = 0.5,
         physics_material_path=None,
         visual_material_path=None,
     ) -> None:
@@ -116,13 +137,14 @@ class DynamicCube(RigidPrim, GeometryPrim):
         """
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
-            if not prim.IsA(UsdGeom.Cube):
-                raise Exception("The prim at path {} cannot be parsed as a Cube object".format(prim_path))
-            cubeGeom = UsdGeom.Cube(prim)
+            if not prim.IsA(UsdGeom.Cylinder):
+                raise Exception("The prim at path {} cannot be parsed as a Cylinder object".format(prim_path))
+            cylinderGeom = UsdGeom.Cylinder(prim)
         else:
-            cubeGeom = UsdGeom.Cube.Define(get_current_stage(), prim_path)
-            cubeGeom.GetExtentAttr().Set(
-                [Gf.Vec3f([-size / 2.0, -size / 2.0, -size / 2.0]), Gf.Vec3f([size / 2.0, size / 2.0, size / 2.0])]
+            cylinderGeom = UsdGeom.Cylinder.Define(get_current_stage(), prim_path)
+            # TODO: double check the cylinder extent
+            cylinderGeom.GetExtentAttr().Set(
+                [Gf.Vec3f([-radius, -radius, -height / 2.0]), Gf.Vec3f([radius, radius, height / 2.0])]
             )
         GeometryPrim.__init__(
             self, prim_path=prim_path, name=name, position=position, orientation=orientation, collision=True
@@ -137,7 +159,8 @@ class DynamicCube(RigidPrim, GeometryPrim):
             linear_velocity=linear_velocity,
             angular_velocity=angular_velocity,
         )
-        DynamicCube.set_size(self, size)
+        VisualCylinder.set_radius(self, radius)
+        VisualCylinder.set_height(self, height)
         # create visual material
         if visual_material_path is None:
             if color is None:
@@ -145,7 +168,7 @@ class DynamicCube(RigidPrim, GeometryPrim):
             preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
         else:
             preview_surface = PreviewSurface(prim_path=visual_material_path)
-        DynamicCube.apply_visual_material(self, preview_surface)
+        DynamicCylinder.apply_visual_material(self, preview_surface)
 
         if physics_material_path is None:
             my_physics_material = PhysicsMaterial(
@@ -157,22 +180,39 @@ class DynamicCube(RigidPrim, GeometryPrim):
 
         else:
             my_physics_material = PhysicsMaterial(prim_path=physics_material_path)
-        DynamicCube.apply_physics_material(self, my_physics_material)
+        DynamicCylinder.apply_physics_material(self, my_physics_material)
         return
 
-    def set_size(self, size: float) -> None:
+    def set_radius(self, radius: float) -> None:
         """[summary]
 
         Args:
             size (float): [description]
         """
-        self.geom.CreateSizeAttr(size)
+        self.geom.GetRadiusAttr().Set(radius)
         return
 
-    def get_size(self) -> float:
+    def get_radius(self) -> float:
         """[summary]
 
         Returns:
             float: [description]
         """
-        return self.geom.GetSizeAttr().Get()
+        return self.geom.GetRadiusAttr().Get()
+
+    def set_height(self, height: float) -> None:
+        """[summary]
+
+        Args:
+            size (float): [description]
+        """
+        self.geom.GetHeightAttr().Set(height)
+        return
+
+    def get_height(self) -> float:
+        """[summary]
+
+        Returns:
+            float: [description]
+        """
+        return self.geom.GetHeightAttr().Get()

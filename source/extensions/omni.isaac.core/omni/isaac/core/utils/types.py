@@ -18,7 +18,7 @@ class DOFInfo(object):
         self.index = index
 
 
-class PrimState(object):
+class XFormPrimState(object):
     def __init__(self, position, orientation):
         self.position = position
         self.orientation = orientation
@@ -30,14 +30,6 @@ class DynamicState(object):
         self.orientation = orientation
         self.linear_velocity = linear_velocity
         self.angular_velocity = angular_velocity
-
-
-class RigidPrimState(PrimState):
-    def __init__(self, position, orientation, linear_velocity, angular_velocity, mass):
-        super().__init__(position, orientation)
-        self.linear_velocity = linear_velocity
-        self.angular_velocity = angular_velocity
-        self.mass = mass
 
 
 class JointsState(object):

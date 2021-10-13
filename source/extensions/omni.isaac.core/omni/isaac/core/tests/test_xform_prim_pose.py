@@ -30,33 +30,29 @@ class TestXformPrimPose(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_position_orientation_scale(self):
-        stage = omni.usd.get_context().get_stage()
-        prim = stage.DefinePrim("/test", "Xform")
         # Test constructor setting of pose
         position = [1.0, 2.0, 3.0]
         orientation = np.array(euler_angles_to_quat([45, -60, 180], degrees=True))
         scale = np.array([0.1, 0.1, 0.1])
-        xform_prim = XFormPrim(prim, "test", position=np.array(position), orientation=orientation, scale=scale)
+        xform_prim = XFormPrim("/test", "test", position=np.array(position), orientation=orientation, scale=scale)
 
-        real_position, real_orientation = xform_prim.get_usd_pose()
+        real_position, real_orientation = xform_prim.get_local_pose()
         real_scale = xform_prim.get_world_scale()
         for i in range(3):
             self.assertAlmostEqual(real_position[i], position[i])
             self.assertAlmostEqual(real_orientation[i], orientation[i])
             self.assertAlmostEqual(scale[i], real_scale[i])
 
-        prim = stage.DefinePrim("/test_2", "Xform")
-        xform_prim = XFormPrim(prim, "test", scale=scale)
-        real_position, real_orientation = xform_prim.get_usd_pose()
+        xform_prim = XFormPrim("/test_2", "test", scale=scale)
+        real_position, real_orientation = xform_prim.get_local_pose()
         real_scale = xform_prim.get_world_scale()
         for i in range(3):
             self.assertAlmostEqual(scale[i], real_scale[i])
 
-        prim = stage.DefinePrim("/test_3", "Xform")
-        xform_prim = XFormPrim(prim, "test")
+        xform_prim = XFormPrim("/test_3", "test")
 
-        xform_prim.set_usd_scale(scale)
-        real_position, real_orientation = xform_prim.get_usd_pose()
+        xform_prim.set_local_scale(scale)
+        real_position, real_orientation = xform_prim.get_local_pose()
         real_scale = xform_prim.get_world_scale()
         for i in range(3):
             self.assertAlmostEqual(scale[i], real_scale[i])

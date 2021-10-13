@@ -43,9 +43,7 @@ class TargetFollower(BaseTask):
                 size=0.05 * 100,
             )
         )
-        scene.add_ground_plane(
-            size=50.0 / self.scene.stage_units_in_meters, thickness=0.5 / self.scene.stage_units_in_meters
-        )
+        scene.add_ground_plane(size=50.0 / self.scene.stage_units_in_meters)
         return
 
     def add_obstacle(self, position: np.ndarray = np.array([0.1, 0.1, 1.0]) * 100):

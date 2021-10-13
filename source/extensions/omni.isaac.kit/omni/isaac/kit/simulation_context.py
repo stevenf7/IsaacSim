@@ -22,9 +22,15 @@ from omni.isaac.kit.constants import AXES_INDICES
 
 
 class SimulationContext:
+    _instance = None
+    _sim_context_initialized = False
+
     def __init__(self, physics_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 1.0):
         # Only import custom loop runner if we create this object
         # TODO: customization for the physics
+        if SimulationContext._sim_context_initialized:
+            return
+        SimulationContext._sim_context_initialized = True
         self._app = omni.kit.app.get_app_interface()
         self.set_stage_units(stage_units_in_meters)
         self._physics_scene = PhysicsScene(physics_dt=physics_dt)
@@ -50,6 +56,21 @@ class SimulationContext:
         self._async_tasks = []
         self._current_time = 0
         return
+
+    def __new__(cls, physics_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 1.0):
+        if SimulationContext._instance is None:
+            SimulationContext._instance = object.__new__(cls)
+        else:
+            if (
+                physics_dt != SimulationContext._instance._physics_scene.get_physics_dt()
+                or stage_units_in_meters != SimulationContext._instance.get_stage_units()
+            ):
+                carb.log_warn("Simulation Context is defined already, returning the previously defined one")
+        return SimulationContext._instance
+
+    @classmethod
+    def instance(cls):
+        return SimulationContext._instance
 
     def __del__(self):
         """Destructor for object."""
@@ -304,6 +325,9 @@ class SimulationContext:
         UsdGeom.SetStageMetersPerUnit(self.stage, stage_units_in_meters)
         return
 
+    def get_stage_units(self):
+        return UsdGeom.GetStageMetersPerUnit(self.stage)
+
 
 class PhysicsScene:
     def __init__(self, physics_dt, path: str = "/World/physicsScene"):
@@ -409,4 +433,4 @@ class PhysicsScene:
         return
 
     def get_physics_dt(self):
-        return self._physx_scene_api.GetTimeStepsPerSecondAttr().Get()
+        return 1.0 / self._physx_scene_api.GetTimeStepsPerSecondAttr().Get()

@@ -10,7 +10,9 @@
 from typing import Optional
 import numpy as np
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from pxr import UsdGeom, Usd, UsdPhysics, PhysxSchema, UsdShade
+from pxr import UsdGeom, UsdPhysics, PhysxSchema, UsdShade
+from omni.isaac.core.utils.prims import get_prim_at_path
+
 import carb
 from omni.isaac.core.materials import PhysicsMaterial
 
@@ -18,8 +20,8 @@ from omni.isaac.core.materials import PhysicsMaterial
 class GeometryPrim(XFormPrim):
     def __init__(
         self,
-        prim: Usd.Prim,
-        name: str,
+        prim_path: str,
+        name: Optional[str] = "geometry_prim",
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         visible: bool = True,
@@ -37,13 +39,18 @@ class GeometryPrim(XFormPrim):
             color (np.ndarray, optional): color to be applied to the geometric prim (R, G, B) 0-255. shape (3,). Defaults to None.
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
         """
-        super().__init__(prim=prim, name=name, position=position, orientation=orientation, visible=visible)
+        prim = get_prim_at_path(prim_path)
+        XFormPrim.__init__(
+            self, prim_path=prim_path, name=name, position=position, orientation=orientation, visible=visible
+        )
         if prim.IsA(UsdGeom.Cube):
             self._geom = UsdGeom.Cube(prim)
         elif prim.IsA(UsdGeom.Capsule):
             self._geom = UsdGeom.Capsule(prim)
         elif prim.IsA(UsdGeom.Cone):
             self._geom = UsdGeom.Cone(prim)
+        elif prim.IsA(UsdGeom.Cylinder):
+            self._geom = UsdGeom.Cylinder(prim)
         elif prim.IsA(UsdGeom.Sphere):
             self._geom = UsdGeom.Sphere(prim)
         elif prim.IsA(UsdGeom.Mesh):

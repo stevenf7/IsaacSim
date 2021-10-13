@@ -8,7 +8,6 @@
 #
 from typing import Optional
 import numpy as np
-from pxr import Usd
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.controllers.articulation_controllers import ArticulationController
 
@@ -16,8 +15,8 @@ from omni.isaac.core.controllers.articulation_controllers import ArticulationCon
 class Robot(Articulation):
     def __init__(
         self,
-        prim: Usd.Prim,
-        name: Optional[str] = None,
+        prim_path: str,
+        name: Optional[str] = "robot",
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         articulation_controller: Optional[ArticulationController] = None,
@@ -31,8 +30,9 @@ class Robot(Articulation):
             orientation (Optional, optional): [description]. Defaults to None.
             articulation_controller (Optional, optional): [description]. Defaults to None.
         """
-        super().__init__(
-            prim=prim,
+        Articulation.__init__(
+            self,
+            prim_path=prim_path,
             name=name,
             position=position,
             orientation=orientation,
@@ -53,6 +53,6 @@ class Robot(Articulation):
     def reset(self) -> None:
         """[summary]
         """
-        super().reset()
+        Articulation.reset(self)
         # TODO: reset sensors too
         return

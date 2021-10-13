@@ -35,7 +35,8 @@ class PreviewSurface(VisualMaterial):
             shader = UsdShade.Shader(stage.GetPrimAtPath(f"{prim_path}/shader"))
         else:
             shader = UsdShade.Shader.Define(stage, f"{prim_path}/shader")
-        super().__init__(
+        VisualMaterial.__init__(
+            self,
             prim_path=prim_path,
             prim=stage.GetPrimAtPath(prim_path),
             shaders_list=[shader],

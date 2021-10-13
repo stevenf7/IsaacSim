@@ -6,21 +6,23 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Tuple, Optional, Union
+from typing import Optional
 from pxr import Gf, Usd, UsdGeom, UsdShade
-from omni.isaac.core.utils.types import PrimState
+from omni.isaac.core.utils.types import XFormPrimState
 from omni.isaac.core.materials import PreviewSurface
 from omni.isaac.core.utils.rotations import gf_quatd_to_np_array
+from omni.isaac.core.utils.transformations import tf_matrix_from_pose
+from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid, define_prim, get_prim_parent
 import numpy as np
 import carb
-import omni.kit.app
+from omni.isaac.core.utils.stage import get_current_stage
 
 
 class XFormPrim(object):
     def __init__(
         self,
-        prim: Usd.Prim,
-        name: str,
+        prim_path: str,
+        name: Optional[str] = "xform_prim",
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         scale: Optional[np.ndarray] = None,
@@ -36,17 +38,22 @@ class XFormPrim(object):
                                                 quaternion is scalar-first (w, x, y, z). shape is (4, ). Defaults to None.
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
         """
-        self._prim = prim
+        if is_prim_path_valid(prim_path):
+            self._prim = get_prim_at_path(prim_path)
+        else:
+            carb.log_info("Creating a new XForm prim at path {}".format(prim_path))
+            self._prim = define_prim(prim_path=prim_path, prim_type="Xform")
         self._name = name
-        self._set_xform_properties()
+        self._prim_path = prim_path
+        XFormPrim._set_xform_properties(self)
         if position is not None or orientation is not None:
-            self.set_usd_pose(position, orientation)
-        self.set_usd_visibility(visible=visible)
+            XFormPrim.set_local_pose(self, position, orientation)
+        XFormPrim.set_visibility(self, visible=visible)
         if scale is None:
             scale = np.array([1.0, 1.0, 1.0])
-        self.set_usd_scale(scale)
-        default_position, default_orientation = self.get_usd_pose()
-        self._default_state = PrimState(position=default_position, orientation=default_orientation)
+        XFormPrim.set_local_scale(self, scale)
+        default_position, default_orientation = XFormPrim.get_local_pose(self)
+        self._default_state = XFormPrimState(position=default_position, orientation=default_orientation)
         self._applied_visual_material = None
         self._binding_api = None
         return
@@ -57,7 +64,7 @@ class XFormPrim(object):
         Returns:
             str: prim path in the stage.
         """
-        return self._prim.GetPath().pathString
+        return self._prim_path
 
     @property
     def name(self) -> Optional[str]:
@@ -76,7 +83,7 @@ class XFormPrim(object):
         return self._prim
 
     def _set_xform_properties(self) -> None:
-        current_position, current_orientation = self.get_usd_pose()
+        current_position, current_orientation = XFormPrim.get_world_pose(self)
         properties_to_remove = [
             "xformOp:rotateX",
             "xformOp:rotateXZY",
@@ -104,19 +111,18 @@ class XFormPrim(object):
 
         if "xformOp:translate" not in prop_names:
             xform_op_tranlsate = xformable.AddXformOp(UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionFloat, "")
-            xform_op_tranlsate.Set(Gf.Vec3d(*current_position.tolist()))
         else:
             xform_op_tranlsate = UsdGeom.XformOp(self.prim.GetAttribute("xformOp:translate"))
 
         if "xformOp:orient" not in prop_names:
             xform_op_rot = xformable.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionFloat, "")
-            xform_op_rot.Set(Gf.Quatf(*current_orientation.tolist()))
         else:
             xform_op_rot = UsdGeom.XformOp(self.prim.GetAttribute("xformOp:orient"))
         xformable.SetXformOpOrder([xform_op_tranlsate, xform_op_rot, xform_op_scale])
+        XFormPrim.set_world_pose(self, position=current_position, orientation=current_orientation)
         return
 
-    def set_usd_visibility(self, visible: bool) -> None:
+    def set_visibility(self, visible: bool) -> None:
         """Sets the visibility of the prim in stage. The method does this through the USD API.
 
         Args:
@@ -129,115 +135,20 @@ class XFormPrim(object):
             imageable.MakeInvisible()
         return
 
-    def get_usd_visibility(self) -> bool:
+    def get_visibility(self) -> bool:
         """
         Returns:
             bool: true if the prim is visible in stage. false otherwise.
         """
         return UsdGeom.Imageable(self.prim).ComputeVisibility(Usd.TimeCode.Default()) != UsdGeom.Tokens.invisible
 
-    def set_usd_scale(self, scale: np.ndarray) -> None:
-        """Sets the scale of the prim in stage. The method does this through the USD API.
-
-        Args:
-            scale (np.ndarray): scale to be applied to the usd prim. shape (3,).
-        """
-        scale = Gf.Vec3d(*scale.tolist())
-        properties = self.prim.GetPropertyNames()
-        if "xformOp:scale" not in properties:
-            carb.log_error("Scale property needs to be set for {} before setting its scale".format(self.name))
-        xform_op = self.prim.GetAttribute("xformOp:scale")
-        xform_op.Set(scale)
-        return
-
-    def apply_usd_transformation(self, transformation_matrix: np.ndarray) -> None:
-        """
-        Applies a transformation matrix to the prim in stage. The method does this through the USD API.
-
-        Args:
-            transformation_matrix (np.ndarray): transformation matrix to be applied. shape (4, 4).
-
-        Raises:
-            NotImplementedError: will be provided in a later iteration.
-        """
-        raise NotImplementedError
-
-    def _set_usd_position(self, position: np.ndarray) -> None:
-        """Sets the position of the prim in stage. The method does this through the USD API.
-
-        Args:
-            position (np.ndarray): position of the prim to set in stage. shape (3,).
-        """
-        position = Gf.Vec3d(*position.tolist())
-        properties = self.prim.GetPropertyNames()
-        if "xformOp:translate" not in properties:
-            carb.log_error("Translate property needs to be set for {} before setting its position".format(self.name))
-        xform_op = self.prim.GetAttribute("xformOp:translate")
-        xform_op.Set(position)
-        return
-
-    def _set_usd_orientation(self, quat: np.ndarray) -> None:
-        """Sets the orientation of the prim in stage. The method does this through the USD API.
-
-        Args:
-            quat (np.ndarray): orientation represented as a quaternion. quaternion is scalar-first (w, x, y, z).
-                               shape (4,).
-        """
-
-        properties = self.prim.GetPropertyNames()
-        rotq = Gf.Quatf(*quat.tolist())
-        if "xformOp:orient" not in properties:
-            carb.log_error("Orient property needs to be set for {} before setting its orientation".format(self.name))
-        xform_op = self.prim.GetAttribute("xformOp:orient")
-        xform_op.Set(rotq)
-        return
-
-    def set_usd_pose(self, position: Optional[np.ndarray] = None, quat: Optional[np.ndarray] = None) -> None:
-        """Sets the pose of the prim in stage. The method does this through the USD API.
-
-        Args:
-            position (np.ndarray, optional): position of the prim to set in stage. shape (3,). Defaults to None.
-            quat (np.ndarray, optional): orientation represented as a quaternion. quaternion is
-                                         scalar-first (w, x, y, z). shape (4,). Defaults to None.
-        """
-        if position is not None:
-            self._set_usd_position(position=position)
-        if quat is not None:
-            self._set_usd_orientation(quat=quat)
-        return
-
-    def get_usd_pose(self, as_matrix: bool = False) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
-        """Gets the pose of the prim in stage. The method does this through the USD API.
-
-        Args:
-            as_matrix (bool, optional): set to True to return the pose as a transformation matrix from World frame to
-                                        local frame. Defaults to False.
-
-        Returns:
-            Union(np.ndarray, Tuple(np.ndarray, np.ndarray, np.ndarray)): Either the pose as matrix if specified in the
-                                                              argument or a tuple where the first position (3,)
-                                                              is the usd position, second is the orientation
-                                                              as a quaternion. quaternion is scalar-first (w, x, y, z).
-                                                              shape (4,), and third is the scale (3,)
-        """
-        prim_tf = UsdGeom.Xformable(self._prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-        if as_matrix:
-            return np.transpose(prim_tf)
-
-        transform = Gf.Transform()
-        transform.SetMatrix(prim_tf)
-
-        position = transform.GetTranslation()
-        orientation = transform.GetRotation().GetQuat()
-        return np.array(position), gf_quatd_to_np_array(orientation)
-
     def reset(self) -> None:
         """Resets the prim to its default state (position and orientation).
         """
-        self.set_usd_pose(self._default_state.position, self._default_state.orientation)
+        XFormPrim.set_local_pose(self, self._default_state.position, self._default_state.orientation)
         return
 
-    def get_default_state(self) -> PrimState:
+    def get_default_state(self) -> XFormPrimState:
         """
         Returns:
             PrimState: returns the default state of the prim (position and orientation) that is used with each reset.
@@ -287,9 +198,9 @@ class XFormPrim(object):
             if path == "":
                 return None
             else:
-                stage = omni.usd.get_context().get_stage()
+                stage = get_current_stage()
                 shader = UsdShade.Shader(stage.GetPrimAtPath(str(path) + "/shader"))  # TODO: improve this
-                print(shader.GetIdAttr().Get())
+                # print(shader.GetIdAttr().Get())
                 if shader.GetIdAttr().Get() == "UsdPreviewSurface":
                     self._applied_visual_material = PreviewSurface(prim_path=path)
                     return self._applied_visual_material
@@ -297,32 +208,56 @@ class XFormPrim(object):
                     carb.log_warn("The visual material you are trying to get is not supported yet")
         return
 
-    def set_world_position(self, position):
-        raise NotImplementedError
-
-    def set_local_translation(self, translation):
-        translation = Gf.Vec3d(*translation.tolist())
-        properties = self.prim.GetPropertyNames()
-        if "xformOp:translate" not in properties:
-            carb.log_error("Translate property needs to be set for {} before setting its position".format(self.name))
-        xform_op = self.prim.GetAttribute("xformOp:translate")
-        xform_op.Set(translation)
+    def set_world_pose(self, position=None, orientation=None):
+        current_position, current_orientation = XFormPrim.get_world_pose(self)
+        if position is None:
+            position = current_position
+        if orientation is None:
+            orientation = current_orientation
+        my_world_transform = tf_matrix_from_pose(position=position, orientation=orientation)
+        parent_world_tf = UsdGeom.Xformable(get_prim_parent(self._prim)).ComputeLocalToWorldTransform(
+            Usd.TimeCode.Default()
+        )
+        local_transform = np.matmul(np.linalg.inv(np.transpose(parent_world_tf)), my_world_transform)
+        transform = Gf.Transform()
+        transform.SetMatrix(Gf.Matrix4d(np.transpose(local_transform)))
+        position = transform.GetTranslation()
+        orientation = transform.GetRotation().GetQuat()
+        XFormPrim.set_local_pose(self, translation=np.array(position), orientation=gf_quatd_to_np_array(orientation))
         return
 
-    def set_world_orientation(self, orientation):
-        raise NotImplementedError
+    def get_world_pose(self):
+        prim_tf = UsdGeom.Xformable(self._prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+        transform = Gf.Transform()
+        transform.SetMatrix(prim_tf)
+        position = transform.GetTranslation()
+        orientation = transform.GetRotation().GetQuat()
+        return np.array(position), gf_quatd_to_np_array(orientation)
 
-    def set_local_orientation(self, orientation):
+    def get_local_pose(self):
+        xform_translate_op = self.prim.GetAttribute("xformOp:translate")
+        xform_orient_op = self.prim.GetAttribute("xformOp:orient")
+        return np.array(xform_translate_op.Get()), gf_quatd_to_np_array(xform_orient_op.Get())
+
+    def set_local_pose(self, translation=None, orientation=None):
         properties = self.prim.GetPropertyNames()
-        rotq = Gf.Quatf(*orientation.tolist())
-        if "xformOp:orient" not in properties:
-            carb.log_error("Orient property needs to be set for {} before setting its orientation".format(self.name))
-        xform_op = self.prim.GetAttribute("xformOp:orient")
-        xform_op.Set(rotq)
+        if translation is not None:
+            translation = Gf.Vec3d(*translation.tolist())
+            if "xformOp:translate" not in properties:
+                carb.log_error(
+                    "Translate property needs to be set for {} before setting its position".format(self.name)
+                )
+            xform_op = self.prim.GetAttribute("xformOp:translate")
+            xform_op.Set(translation)
+        if orientation is not None:
+            rotq = Gf.Quatf(*orientation.tolist())
+            if "xformOp:orient" not in properties:
+                carb.log_error(
+                    "Orient property needs to be set for {} before setting its orientation".format(self.name)
+                )
+            xform_op = self.prim.GetAttribute("xformOp:orient")
+            xform_op.Set(rotq)
         return
-
-    def set_world_scale(self, scale):
-        raise NotImplementedError
 
     def get_world_scale(self):
         prim_tf = UsdGeom.Xformable(self._prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
@@ -331,4 +266,14 @@ class XFormPrim(object):
         return np.array(transform.GetScale())
 
     def set_local_scale(self, scale):
-        raise NotImplementedError
+        scale = Gf.Vec3d(*scale.tolist())
+        properties = self.prim.GetPropertyNames()
+        if "xformOp:scale" not in properties:
+            carb.log_error("Scale property needs to be set for {} before setting its scale".format(self.name))
+        xform_op = self.prim.GetAttribute("xformOp:scale")
+        xform_op.Set(scale)
+        return
+
+    def get_local_scale(self):
+        xform_op = self.prim.GetAttribute("xformOp:scale")
+        return np.array(xform_op.Get())

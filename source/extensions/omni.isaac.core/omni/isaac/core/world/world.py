@@ -15,13 +15,18 @@ from pxr import Usd
 
 
 class World(SimulationContext):
+    _world_initialized = False
+
     def __init__(self, physics_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 1.0) -> None:
         """[summary]
 
         Args:
             physics_dt (float, optional): [description]. Defaults to 1.0/60.0.
         """
-        super().__init__(physics_dt=physics_dt)
+        SimulationContext.__init__(self, physics_dt=physics_dt)
+        if World._world_initialized:
+            return
+        World._world_initialized = True
         self._scene_finalized = False
         self._current_task = None
         self._stage_units_in_meters = stage_units_in_meters
@@ -38,13 +43,13 @@ class World(SimulationContext):
         return
 
     async def create_new_stage_async(self):
-        await super().create_new_stage_async(stage_units_in_meters=self._stage_units_in_meters)
+        await SimulationContext.create_new_stage_async(self, stage_units_in_meters=self._stage_units_in_meters)
         del self._scene
         self._scene = Scene(self.stage, stage_units_in_meters=self._stage_units_in_meters)
         return
 
     def create_new_stage(self) -> Usd.Stage:
-        stage = super().create_new_stage(stage_units_in_meters=self._stage_units_in_meters)
+        stage = SimulationContext.create_new_stage(self, stage_units_in_meters=self._stage_units_in_meters)
         del self._scene
         self._scene = Scene(self.stage, stage_units_in_meters=self._stage_units_in_meters)
         self.start_simulation()
@@ -148,5 +153,5 @@ class World(SimulationContext):
             self._current_task.step(self.time_step_index, self.time)
         if self.scene._enable_bounding_box_computations:
             self.scene._bbox_cache.SetTime(Usd.TimeCode(self._current_time))
-        super().step(render=render)
+        SimulationContext.step(self, render=render)
         return
