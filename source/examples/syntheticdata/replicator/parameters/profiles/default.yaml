@@ -1,0 +1,168 @@
+# Default parameters. Do not rename or delete.
+
+# Default Object Parameters
+obj_model: None
+
+obj_color: None
+obj_texture: None
+obj_material: None
+
+obj_metallicness: None
+obj_reflectance: None
+
+obj_size_enabled: True
+obj_size: 1
+obj_scale: 1
+
+obj_texture_tile_scale: 1
+obj_texture_rot: 0
+
+obj_rot_x: 0
+obj_rot_y: 0
+obj_rot_z: 0
+
+obj_coord_x: 0
+obj_coord_y: 0
+obj_coord_z: 0
+
+obj_physics: False
+
+obj_coord_sensor_relative: True
+obj_rot_sensor_relative: True
+
+obj_count: 0
+obj_distance: Uniform(3, 8)
+obj_horiz_fov_loc: Uniform(-1, 1)
+obj_vert_fov_loc: Uniform(-1, 1)
+
+
+
+# Default Light Parameters
+light_color: (1, 1, 1)
+light_intensity: 100000
+light_radius: .25
+
+light_sensor_relative: True
+
+light_distant: False
+
+light_rot_x: 0
+light_rot_y: 0
+light_rot_z: 0
+
+light_coord_x: 0
+light_coord_y: 0
+light_coord_z: 0
+
+light_count: 0
+light_distance: Uniform(3, 8)
+light_horiz_fov_loc: Uniform(-1, 1)
+light_vert_fov_loc: Uniform(-1, 1)
+
+light_coord_sensor_relative: True
+light_rot_sensor_relative: True
+
+
+# Default Scenario Parameters
+generate_room: False
+
+scenario_model: None
+
+meters_per_scene_unit: 100
+
+floor: True
+wall: True
+ceiling: True
+
+wall_height: 10
+floor_size: 40
+
+floor_color: (100, 150, 175)
+wall_color: (100, 150, 175)
+ceiling_color: (100, 150, 175)
+
+floor_texture: None
+wall_texture: None
+ceiling_texture: None
+
+floor_texture_tile_scale: 1
+wall_texture_tile_scale: 1
+ceiling_texture_tile_scale: 1
+
+floor_texture_rot: 0
+wall_texture_rot: 0
+ceiling_texture_rot: 0
+
+floor_material: None
+wall_material: None
+ceiling_material: None
+
+floor_reflectance: 0.1
+wall_reflectance: 0.1
+ceiling_reflectance: 0.1
+
+floor_metallicness: 0.1
+wall_metallicness: 0.1
+ceiling_metallicness: 0.1
+
+
+# Default Camera Parameters
+focal_length: 50
+
+stereo_baseline: 20
+
+camera_coord_x: 0
+camera_coord_y: 0
+camera_coord_z: 50
+
+camera_rot_x: 0
+camera_rot_y: 0
+camera_rot_z: 0
+
+
+# Default Output Parameters
+output_dir: 'dataset'
+num_samples: 10
+img_width: 800
+img_height: 800
+
+overwrite: False
+write_data: True
+num_data_writer_threads: 4
+
+stereo: False
+rgb: True
+depth: False
+depth_boundary: False
+disparity: False
+instance_seg: False
+semantic_seg: False
+bbox_2d_tight: False
+bbox_2d_loose: False
+bbox_3d: False
+wireframe: False
+
+groundtruth_stereo: False
+groundtruth_visual: False
+
+content_log: True
+
+
+
+# Default Versioning Parameters
+replicator_tag: todo
+nucleus_version: todo
+nucleus_server: omniverse://ov-isaac-dev.nvidia.com
+seed: 0
+
+
+# Default Debug Parameters
+nap: False
+pause: 0
+headless: True
+verbose: True
+
+
+# Misc Parameters
+physics_simulate_time: 1
+fix_walks: False
