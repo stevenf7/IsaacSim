@@ -346,6 +346,7 @@ group "python_samples"
     -- Synthetic data samples:
     python_sample_test("tests-nativepython-syntheticdata.offline_generation", "examples/syntheticdata/offline_generation.py")
     python_sample_test("tests-nativepython-syntheticdata.visualize_groundtruth", "examples/syntheticdata/visualize_groundtruth.py")
+    python_sample_test("tests-nativepython-syntheticdata.replicator", "examples/syntheticdata/replicator/src/generator.py", "--input parameters/warehouse.yaml --num-samples 5")
 group "jupyter_samples"
 
     jupyter_sample_test("tests-jupyter-startup", "examples/notebooks/basic_notebook.ipynb")

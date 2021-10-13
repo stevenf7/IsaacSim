@@ -1,0 +1,91 @@
+# Dropped Warehouse Objects
+objects:
+  obj_model: Choice(['assets/models/warehouse.txt'])
+
+  obj_size: Uniform(50, 125)
+
+  obj_count: Range(5, 15)
+
+  obj_vert_fov_loc: Uniform(0, 1)
+  
+  obj_distance: Uniform(300, 1000)
+
+  obj_rot_x: Normal(0, 45)
+  obj_rot_y: Normal(0, 45)
+  obj_rot_z: Uniform(0, 360)
+
+  obj_physics: True
+
+# Flying AprilTags
+april_tags:
+  obj_model: /Users/mtrepte/plane.usd
+  obj_texture: Choice('assets/textures/apriltags.txt')
+
+  obj_size: Uniform(5, 20)
+
+  # modify as needed
+  obj_count: Range(0, 3)
+
+  obj_vert_fov_loc: Uniform(-0.5, 1)
+  
+  obj_distance: Uniform(300, 800)
+
+  obj_rot_x: Normal(0, 10)
+  obj_rot_y: Normal(90, 10)
+  
+  obj_rot_z: Uniform(0, 10)
+
+  obj_physics: False
+
+
+
+# Colorful ceiling Lights
+lights:
+  light_count: Range(0, 2)
+
+  light_coord_sensor_relative: False
+  light_coord_x: Uniform(-200, 200)
+  light_coord_y: Uniform(-200, 200)
+  light_coord_z: 500
+
+  light_color: Uniform((0, 0, 0), (200, 200, 200))
+  light_intensity: Uniform(0, 1000000)
+  light_radius: 100
+
+
+# Warehouse Scenario
+generate_room: False
+scenario_model: /Isaac/Environments/Simple_Warehouse/warehouse.usd
+
+
+# Camera
+focal_length: 30
+
+camera_coord_x: 0
+camera_coord_y: 0
+camera_coord_z: Uniform(20, 50)
+
+camera_rot_x: Normal(-2, 1)
+camera_rot_y: 0
+camera_rot_z: Uniform(0, 360)
+
+
+
+# Output
+output_dir: 'dataset'
+num_samples: 10
+img_width: 1280
+img_height: 720
+
+stereo: False
+rgb: True
+semantic: True
+groundtruth_visual: True
+
+
+
+# Debug
+nap: False
+pause: 0
+headless: False
+verbose: True
