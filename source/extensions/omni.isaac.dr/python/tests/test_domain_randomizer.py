@@ -23,7 +23,7 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
-from .common import load_test_file, set_scene_physics_type
+from .common import load_test_file, set_scene_physics_type, is_loading, simulate
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 
 
@@ -64,207 +64,6 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        pass
-
-    def is_loading(self):
-        message, loaded, loading = omni.usd.get_context().get_stage_loading_status()
-        return loading > 0
-
-    async def simulate(self, seconds, steps_per_sec=60):
-        for frame in range(int(steps_per_sec * seconds)):
-            await omni.kit.app.get_app().next_update_async()
-
-    # Unit test for color component
-    async def test_color_component(self):
-        root_layer = self._stage.GetRootLayer()
-        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
-        # Create cube
-        cubeGeom = UsdGeom.Cube.Define(self._stage, default_prim_path + "/Cube")
-        # make sure the prim exists
-        cube_path = default_prim_path + "/Cube"
-        cube = self._stage.GetPrimAtPath(cube_path)
-        self.assertTrue(cube)
-        # Start Simulation
-        self._timeline.play()
-        # Make cube Xformable
-        xformable = UsdGeom.Xformable(cube)
-        # Create DR component and check if it exists
-        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/color_component", False)
-        result, prim = omni.kit.commands.execute(
-            "CreateColorComponentCommand",
-            path=path,
-            prim_paths=[cube_path],
-            first_color_range=(0.0, 0.0, 0.0),
-            second_color_range=(1.0, 1.0, 1.0),
-            roughness_range=(0.0, 1.0),
-            metallic_range=(0.0, 1.0),
-            duration=0.0,
-            include_children=False,
-        )
-        color_comp_path = default_prim_path + "/color_component"
-        color_comp = self._stage.GetPrimAtPath(color_comp_path)
-        self.assertTrue(color_comp)
-        # Let the material load
-        await omni.kit.app.get_app().next_update_async()
-        while self.is_loading():
-            await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        # Validate color material prim
-        color_mat_path = default_prim_path + "/DR/color_component/OmniPBR_2/Shader"
-        color_mat = self._stage.GetPrimAtPath(color_mat_path)
-        self.assertTrue(color_mat)
-        # Validate attribute for randomizing color
-        color_attr = color_mat.GetAttribute("inputs:diffuse_color_constant")
-        self.assertIsNotNone(color_attr)
-        color_value_1 = color_attr.Get()
-        await omni.kit.app.get_app().next_update_async()
-        color_value_2 = color_attr.Get()
-        # Check if color values are different after one frame
-        self.assertFalse(Gf.IsClose(color_value_1, color_value_2, 0.00001))
-        pass
-
-    # Unit test for movement component
-    async def test_movement_component(self):
-        root_layer = self._stage.GetRootLayer()
-        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
-        # Create cube
-        cubeGeom = UsdGeom.Cube.Define(self._stage, default_prim_path + "/Cube")
-        # make sure the prim exists
-        cube_path = default_prim_path + "/Cube"
-        cube = self._stage.GetPrimAtPath(cube_path)
-        self.assertTrue(cube)
-        # Get initial transform matrix
-        xformable = UsdGeom.Xformable(cube)
-        transform_matrix_1 = xformable.GetLocalTransformation()
-        # Create DR component and check if it exists
-        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/movement_component", False)
-        result, prim = omni.kit.commands.execute(
-            "CreateMovementComponentCommand",
-            path=path,
-            prim_paths=[cube_path],
-            min_range=(0.0, 0.0, 0.0),
-            max_range=(10.0, 10.0, 10.0),
-            target_position=None,
-            target_paths=None,
-            duration=0.0,
-            include_children=False,
-        )
-        mov_comp_path = default_prim_path + "/movement_component"
-        mov_comp = self._stage.GetPrimAtPath(mov_comp_path)
-        self.assertTrue(mov_comp)
-        # Enable manual mode and execute DR once
-        await omni.kit.app.get_app().next_update_async()
-        self._dr.toggle_manual_mode()
-        self._dr.randomize_once()
-        self._dr.toggle_manual_mode()
-        await omni.kit.app.get_app().next_update_async()
-        # Get new transform matrix
-        transform_matrix_2 = xformable.GetLocalTransformation()
-        # Check if rotation components are same and translation components are different
-        self.assertTrue(
-            Gf.IsClose(transform_matrix_1.ExtractRotationMatrix(), transform_matrix_2.ExtractRotationMatrix(), 0.00001)
-        )
-        self.assertFalse(
-            Gf.IsClose(transform_matrix_1.ExtractTranslation(), transform_matrix_2.ExtractTranslation(), 0.00001)
-        )
-        pass
-
-    # Unit test for movement component for articulated robots
-    async def test_movement_component_franka(self):
-        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
-        # Make sure the stage loaded
-        self.assertTrue(result)
-        set_scene_physics_type(gpu=False)
-        # Start Simulation and wait
-        self._timeline.play()
-        await self.simulate(1.0)
-        await omni.kit.app.get_app().next_update_async()
-        art = self._dc.get_articulation("/panda")
-        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
-        # Get initial transform matrix
-        self._dc.wake_up_articulation(art)
-        root_body = self._dc.get_articulation_root_body(art)
-
-        initial_pos = self._dc.get_rigid_body_pose(root_body).p
-        initial_rot = self._dc.get_rigid_body_pose(root_body).r
-        # Create DR component and check if it exists
-        result, prim = omni.kit.commands.execute(
-            "CreateMovementComponentCommand",
-            path="/movement_component",
-            prim_paths=["/panda"],
-            min_range=(50.0, 50.0, 10.0),
-            max_range=(100.0, 100.0, 10.0),
-            target_position=None,
-            target_paths=None,
-            duration=0.0,
-            include_children=False,
-        )
-        # Enable manual mode and execute DR once
-        await omni.kit.app.get_app().next_update_async()
-        self._dr.toggle_manual_mode()
-        self._dr.randomize_once()
-        self._dr.toggle_manual_mode()
-        await omni.kit.app.get_app().next_update_async()
-        # Check if rotation components are same and translation components are different
-        new_pose_p = (88.2894, 79.2465, 10)
-        pos = self._dc.get_rigid_body_pose(root_body).p
-        rot = self._dc.get_rigid_body_pose(root_body).r
-        self.assertTupleEqual(
-            tuple(np.round(np.array([pos.x, pos.y, pos.z]), 3)), tuple(np.round(np.array(new_pose_p), 3))
-        )
-        self.assertTupleEqual(
-            tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)),
-            tuple(np.round(np.array([initial_rot.x, initial_rot.y, initial_rot.z, initial_rot.w]), 3)),
-        )
-        pass
-
-    # Unit test for movement component for articulated robots
-    async def test_movement_component_carter(self):
-        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/carter/carter.usd")
-        # Make sure the stage loaded
-        self.assertTrue(result)
-        set_scene_physics_type(gpu=False)
-        # Start Simulation and wait
-        self._timeline.play()
-        await self.simulate(1.0)
-        await omni.kit.app.get_app().next_update_async()
-        art = self._dc.get_articulation("/carter")
-        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
-        # Get initial transform matrix
-        self._dc.wake_up_articulation(art)
-        root_body = self._dc.get_articulation_root_body(art)
-
-        initial_pos = self._dc.get_rigid_body_pose(root_body).p
-        initial_rot = self._dc.get_rigid_body_pose(root_body).r
-        # Create DR component and check if it exists
-        result, prim = omni.kit.commands.execute(
-            "CreateMovementComponentCommand",
-            path="/movement_component",
-            prim_paths=["/carter"],
-            min_range=(50.0, 50.0, 10.0),
-            max_range=(100.0, 100.0, 10.0),
-            target_position=None,
-            target_paths=None,
-            duration=0.0,
-            include_children=False,
-        )
-        # Enable manual mode and execute DR once
-        await omni.kit.app.get_app().next_update_async()
-        self._dr.toggle_manual_mode()
-        self._dr.randomize_once()
-        self._dr.toggle_manual_mode()
-        await omni.kit.app.get_app().next_update_async()
-        # Check if rotation components are same and translation components are different
-        new_pose_p = (88.2894, 79.2465, 10)
-        pos = self._dc.get_rigid_body_pose(root_body).p
-        rot = self._dc.get_rigid_body_pose(root_body).r
-        self.assertTupleEqual(
-            tuple(np.round(np.array([pos.x, pos.y, pos.z]), 3)), tuple(np.round(np.array(new_pose_p), 3))
-        )
-        self.assertTupleEqual(
-            tuple(np.round(np.array([rot.x, rot.y, rot.z, rot.w]), 3)),
-            tuple(np.round(np.array([initial_rot.x, initial_rot.y, initial_rot.z, initial_rot.w]), 3)),
-        )
         pass
 
     # Unit test for rotation component
@@ -398,51 +197,6 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertFalse(Gf.IsClose(light_color_intensity_value_1, light_color_intensity_value_2, 0.00001))
         pass
 
-    # Unit test for color component performance
-    async def test_color_component_fps(self):
-        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
-        # Create cube
-        cubeGeom = UsdGeom.Cube.Define(self._stage, default_prim_path + "/Cube")
-        # make sure the prim exists
-        cube_path = default_prim_path + "/Cube"
-        cube = self._stage.GetPrimAtPath(cube_path)
-        self.assertTrue(cube)
-        # Start Simulation
-        self._timeline.play()
-        # Create DR component and check if it exists
-        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/color_component", False)
-        result, prim = omni.kit.commands.execute(
-            "CreateColorComponentCommand",
-            path=path,
-            prim_paths=[cube_path],
-            first_color_range=(0.0, 0.0, 0.0),
-            second_color_range=(1.0, 1.0, 1.0),
-            roughness_range=(0.0, 1.0),
-            metallic_range=(0.0, 1.0),
-            duration=0.0,
-            include_children=False,
-        )
-        await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(1.0)
-        color_comp_path = default_prim_path + "/color_component"
-        color_comp = self._stage.GetPrimAtPath(color_comp_path)
-        self.assertTrue(color_comp)
-        # Let the material load
-        await omni.kit.app.get_app().next_update_async()
-        while self.is_loading():
-            await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(1.0)
-        await omni.kit.app.get_app().next_update_async()
-        # Calculate average fps
-        tot_fps = 0
-        num_frames = 1000
-        for frame in range(num_frames):
-            await omni.kit.app.get_app().next_update_async()
-            tot_fps += self._viewport.get_viewport_window().get_fps()
-        self._timeline.pause()
-        print("Avg FPS: ", tot_fps / num_frames)
-        pass
-
     # Unit test for texture component performance
     async def test_texture_component_fps(self):
         default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
@@ -482,7 +236,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(texture_comp)
         # Let the material load
         await omni.kit.app.get_app().next_update_async()
-        while self.is_loading():
+        while is_loading():
             await omni.kit.app.get_app().next_update_async()
         await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()

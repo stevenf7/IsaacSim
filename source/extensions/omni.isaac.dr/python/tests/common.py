@@ -62,3 +62,13 @@ def set_scene_physics_type(gpu=False, scene_path="/physicsScene"):
     else:
         physxSceneAPI.GetEnableGPUDynamicsAttr().Set(False)
         physxSceneAPI.GetBroadphaseTypeAttr().Set("MBP")
+
+
+def is_loading():
+    message, loaded, loading = omni.usd.get_context().get_stage_loading_status()
+    return loading > 0
+
+
+async def simulate(seconds, steps_per_sec=60):
+    for frame in range(int(steps_per_sec * seconds)):
+        await omni.kit.app.get_app().next_update_async()
