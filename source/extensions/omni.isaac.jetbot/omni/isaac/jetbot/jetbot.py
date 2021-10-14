@@ -11,6 +11,7 @@ import numpy as np
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 from pxr import Usd
 import carb
 
@@ -18,7 +19,6 @@ import carb
 class Jetbot(Robot):
     def __init__(
         self,
-        stage: Usd.Stage,
         prim_path: str,
         name: str,
         usd_path: Optional[str] = None,
@@ -35,10 +35,9 @@ class Jetbot(Robot):
             position (Optional[np.ndarray], optional): [description]. Defaults to None.
             orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
         """
-        self._stage = stage
-        prim = stage.GetPrimAtPath(prim_path)
+        prim = get_prim_at_path(prim_path)
         if not prim.IsValid():
-            prim = stage.DefinePrim(prim_path, "Xform")
+            prim = define_prim(prim_path, "Xform")
             if usd_path:
                 prim.GetReferences().AddReference(usd_path)
             else:
@@ -48,7 +47,9 @@ class Jetbot(Robot):
                     return
                 asset_path = nucleus_server + "/Isaac/Robots/Jetbot/jetbot.usd"
                 prim.GetReferences().AddReference(asset_path)
-        super().__init__(prim=prim, name=name, position=position, orientation=orientation, articulation_controller=None)
+        super().__init__(
+            prim_path=prim_path, name=name, position=position, orientation=orientation, articulation_controller=None
+        )
         self._wheel_dof_names = ["left_wheel_joint", "right_wheel_joint"]
         self._wheel_dof_indices = None
         # TODO: check the default state and how to reset

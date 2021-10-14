@@ -42,7 +42,7 @@ kit.update()
 kit.update()
 
 print("Loading stage...")
-while kit.is_loading():
+while kit.is_stage_loading():
     kit.update()
 print("Loading Complete")
 

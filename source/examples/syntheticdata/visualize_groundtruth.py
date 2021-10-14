@@ -33,9 +33,10 @@ from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.syntheticdata import visualize, helpers
 from omni.physx.scripts import utils
 from pxr import UsdPhysics, PhysicsSchemaTools, Sdf, Gf, UsdShade, UsdGeom, Semantics, UsdLux
+from omni.isaac.core.utils.view_ports import set_camera_view
 
 simulation_context = SimulationContext()
-simulation_context.set_camera_view(eye=np.array([5, 5, 1]), target=np.array([0, 0, -1.0]))
+set_camera_view(eye=np.array([5, 5, 1]), target=np.array([0, 0, -1.0]))
 
 simulation_app.app.update()
 simulation_app.app.update()
@@ -106,7 +107,7 @@ for i in range(10):
         simulation_app.app.update()
 
 print("Waiting until all materials are loaded")
-while simulation_app.is_loading():
+while simulation_app.is_stage_loading():
     simulation_app.app.update()
 
 viewport = omni.kit.viewport.get_default_viewport_window()

@@ -214,7 +214,7 @@ class XFormPrim(object):
             position = current_position
         if orientation is None:
             orientation = current_orientation
-        my_world_transform = tf_matrix_from_pose(position=position, orientation=orientation)
+        my_world_transform = tf_matrix_from_pose(translation=position, orientation=orientation)
         parent_world_tf = UsdGeom.Xformable(get_prim_parent(self._prim)).ComputeLocalToWorldTransform(
             Usd.TimeCode.Default()
         )

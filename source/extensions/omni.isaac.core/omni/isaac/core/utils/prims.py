@@ -74,7 +74,8 @@ def create_prim(
     semantic_label: str = None,
     attributes: dict = {},
 ) -> Usd.Prim:
-    from omni.isaac.core.utils import semantics, xforms
+    from omni.isaac.core.utils import semantics
+    from omni.isaac.core.prims import XFormPrim
 
     prim = stage.DefinePrim(stage_path, prim_type)
     if not prim:
@@ -87,12 +88,7 @@ def create_prim(
         prim.GetReferences().AddReference(usd_path)
     if semantic_label is not None:
         semantics.add_update_semantics(prim, semantic_label)
-    if position is not None:
-        xforms.set_xform_position(prim, position)
-    if orientation is not None:
-        xforms.set_xform_orientation(prim, orientation)
-    if scale is not None:
-        xforms.set_xform_scale(prim, scale)
+    XFormPrim(prim_path=stage_path, position=position, orientation=orientation, scale=scale)
     return prim
 
 

@@ -16,10 +16,11 @@ from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.jetbot import Jetbot
 from omni.isaac.jetbot.controllers import DifferentialController
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
-from omni.isaac.core.utils.stage import add_usd_reference
+from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.tasks.task import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.samples.scripts.base_sample import BaseSample
+import asyncio
 
 
 class DriveTask(BaseTask):
@@ -37,18 +38,17 @@ class DriveTask(BaseTask):
 
         self.jetbot = scene.add(
             Jetbot(
-                stage=scene.stage,
                 prim_path="/jetbot",
                 name="my_jetbot",
                 position=np.array([0, 0.0, 2.0]),
                 orientation=np.array([1.0, 0.0, 0.0, 0.0]),
             )
         )
-        prim = add_usd_reference(
+        add_reference_to_stage(
             usd_path=nucleus_server + "/Isaac/Environments/Grid/gridroom_curved.usd", prim_path="/World/background"
         )
         # TODO: change with new USD
-        XFormPrim(prim, "background", position=np.array([0, 0, -9]))
+        XFormPrim(prim_path="/World/background", name="background", position=np.array([0, 0, -9]))
 
     def reset(self) -> None:
         super().reset()
@@ -86,14 +86,18 @@ class Extension(BaseSample):
     def _load_task(self):
         return DriveTask()
 
-    def _setup_controllers(self):
-        self._controller = DifferentialController(name="simple_control")
-        self._appwindow = omni.appwindow.get_default_app_window()
-        self._input = carb.input.acquire_input_interface()
-        self._keyboard = self._appwindow.get_keyboard()
-        self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-        self._world.add_physics_callback("jetbot_step", callback_fn=self._on_editor_step)
-        self._world.play()
+    def setup_load(self):
+        async def _on_setup_load_async():
+            self._controller = DifferentialController(name="simple_control")
+            self._appwindow = omni.appwindow.get_default_app_window()
+            self._input = carb.input.acquire_input_interface()
+            self._keyboard = self._appwindow.get_keyboard()
+            self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
+            self._world.add_physics_callback("jetbot_step", callback_fn=self._on_editor_step)
+            await self._world.play_async()
+
+        asyncio.ensure_future(_on_setup_load_async())
+        return
 
     def _on_editor_step(self, step):
         self._task.jetbot.apply_wheel_actions(self._controller.forward(command=self._command))
@@ -134,3 +138,4 @@ class Extension(BaseSample):
         self._world.remove_physics_callback("jetbot_step")
         self._world.add_physics_callback("jetbot_step", callback_fn=self._on_editor_step)
         self._world.play()
+        return

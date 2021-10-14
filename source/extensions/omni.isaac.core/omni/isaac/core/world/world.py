@@ -12,48 +12,42 @@ from omni.isaac.core.tasks.task import BaseTask
 from omni.isaac.dynamic_control import _dynamic_control
 import builtins
 from pxr import Usd
+from omni.isaac.core.utils.view_ports import set_camera_view
 
 
 class World(SimulationContext):
     _world_initialized = False
 
-    def __init__(self, physics_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 1.0) -> None:
+    def __init__(self, physics_dt: float = None, stage_units_in_meters: float = 1.0) -> None:
         """[summary]
 
         Args:
             physics_dt (float, optional): [description]. Defaults to 1.0/60.0.
         """
-        SimulationContext.__init__(self, physics_dt=physics_dt)
+        # TODO: below values will be removed once default stage units in meters are set to 1
+        SimulationContext.__init__(self, physics_dt=physics_dt, stage_units_in_meters=stage_units_in_meters)
         if World._world_initialized:
             return
         World._world_initialized = True
         self._scene_finalized = False
         self._current_task = None
-        self._stage_units_in_meters = stage_units_in_meters
-        self._scene = None
-        if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
-            self.create_new_stage()
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
-        # TODO: double check the stage units are actually set properly
-        # TODO: account for stage units properly across all new extensions
+        self._scene = Scene()
+        if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
+            self.start_simulation()
+        set_camera_view()
         return
 
-    async def init_world_async(self):
-        await self.create_new_stage_async()
+    @classmethod
+    def clear_instance(cls):
+        SimulationContext.clear_instance()
+        World._world_initialized = None
         return
 
-    async def create_new_stage_async(self):
-        await SimulationContext.create_new_stage_async(self, stage_units_in_meters=self._stage_units_in_meters)
-        del self._scene
-        self._scene = Scene(self.stage, stage_units_in_meters=self._stage_units_in_meters)
+    def __del__(self):
+        SimulationContext.__del__(self)
+        World._world_initialized = None
         return
-
-    def create_new_stage(self) -> Usd.Stage:
-        stage = SimulationContext.create_new_stage(self, stage_units_in_meters=self._stage_units_in_meters)
-        del self._scene
-        self._scene = Scene(self.stage, stage_units_in_meters=self._stage_units_in_meters)
-        self.start_simulation()
-        return stage
 
     @property
     def dc_interface(self) -> _dynamic_control.DynamicControl:
@@ -73,11 +67,15 @@ class World(SimulationContext):
         """
         return self._scene
 
+    def get_current_task(self):
+        return self._current_task
+
     def finalize_scene(self) -> None:
         """[summary]
         """
         if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
             self.play()
+            SimulationContext.step(self, render=True)
         self._scene._finalize()
         return
 
@@ -94,6 +92,7 @@ class World(SimulationContext):
             self._current_task.cleanup()
         self.stop()
         self.play()
+        SimulationContext.step(self, render=True)
         self.scene.reset()
         if self._current_task is not None:
             self._current_task.reset()
@@ -133,15 +132,6 @@ class World(SimulationContext):
         """
         return self._current_task.get_observations()
 
-    def save(self):
-        raise NotImplementedError
-
-    def load(self):
-        raise NotImplementedError
-
-    def close(self):
-        raise NotImplementedError
-
     def step(self, render: bool = True) -> None:
         """[summary]
 
@@ -150,7 +140,7 @@ class World(SimulationContext):
             render (bool, optional): [description]. Defaults to True.
         """
         if self._scene_finalized and self._current_task is not None:
-            self._current_task.step(self.time_step_index, self.time)
+            self._current_task.step(self.current_time_step_index, self.current_time)
         if self.scene._enable_bounding_box_computations:
             self.scene._bbox_cache.SetTime(Usd.TimeCode(self._current_time))
         SimulationContext.step(self, render=render)

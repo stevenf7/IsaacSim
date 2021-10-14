@@ -274,7 +274,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         # step once and then wait for materials to load
         self.dr.commands.RandomizeOnceCommand().do()
         kit.update()
-        while kit.is_loading():
+        while kit.is_stage_loading():
             kit.update()
 
         num_worker_threads = 4

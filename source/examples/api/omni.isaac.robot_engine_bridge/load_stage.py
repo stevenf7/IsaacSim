@@ -135,7 +135,7 @@ if __name__ == "__main__":
     sample = UsdLoadSample(args)
     if sample.load_stage(args):
         print("Loading stage...")
-        while sample.kit.is_loading():
+        while sample.kit.is_stage_loading():
             sample.kit.update()
         print("Loading Complete")
         # Add parameterized rebcamera along with viewport

@@ -23,13 +23,14 @@ RANDOMIZE_SCENE_EVERY_N_STEPS = 10
 
 kit = SimulationApp(launch_config=CONFIG)
 from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.stage import set_up_axis, add_usd_reference
+from omni.isaac.core.utils.stage import set_stage_up_axis, add_reference_to_stage
 import omni
 from pxr import UsdGeom, Gf
 import omni.isaac.dr as dr
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.core.utils import rotations, prims
+import numpy as np
 
 # enable SDK bridge extension
 enable_extension("omni.isaac.robot_engine_bridge")
@@ -37,7 +38,7 @@ enable_extension("omni.isaac.robot_engine_bridge")
 context = SimulationContext(stage_units_in_meters=0.01)
 stage = context.stage
 viewport = omni.kit.viewport.get_viewport_interface()
-set_up_axis(UsdGeom.Tokens.z)
+set_stage_up_axis("z")
 
 result, nucleus_server = find_nucleus_server()
 if result is False:
@@ -48,12 +49,17 @@ asset_path = nucleus_server + "/Isaac"
 stage_path = asset_path + "/Environments/Simple_Room/simple_room.usd"
 
 environment = stage.DefinePrim("/environment", "Xform")
-room = add_usd_reference(stage_path, "/environment/room")
+room = add_reference_to_stage(stage_path, "/environment/room")
 
 # create target prim
 
 target_prim = prims.create_prim(
-    stage, "/objects/cube", "Cube", position=[0, 0, 100], scale=[10, 10, 50], semantic_label="target"
+    stage,
+    "/objects/cube",
+    "Cube",
+    position=np.array([0, 0, 100]),
+    scale=np.array([10, 10, 50]),
+    semantic_label="target",
 )
 
 camera_prim = prims.create_prim(
@@ -102,7 +108,7 @@ dr.commands.ToggleManualModeCommand().do()
 kit.update()
 kit.update()
 
-while kit.is_loading():
+while kit.is_stage_loading():
     kit.update()
 
 result, occluded_provider = omni.kit.commands.execute(

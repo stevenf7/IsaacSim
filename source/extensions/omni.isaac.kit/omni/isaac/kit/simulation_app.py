@@ -162,7 +162,7 @@ class SimulationApp:
 
         # once app starts, we can set settings
         from omni.isaac.core.utils.carb import set_carb_setting
-        from omni.isaac.core.utils.stage import open_usd, new_stage, save_usd, set_livesync_usd
+        from omni.isaac.core.utils.stage import open_stage, create_new_stage, set_livesync_stage
 
         self._carb_settings = carb.settings.get_settings()
         # Set rtx-default renderder settings
@@ -176,20 +176,20 @@ class SimulationApp:
         self._app.update()
 
         self.open_usd = self.config.get("open_usd")
-        if self.open_usd != None:
+        if self.open_usd is not None:
             print("Opening usd file at ", self.open_usd, " ...", end="")
-            if open_usd(self.open_usd) == False:
+            if open_stage(self.open_usd) is False:
                 print("Could not open", self.open_usd, "creating a new empty stage")
-                new_stage()
+                create_new_stage()
             else:
                 print("Done.")
         else:
-            new_stage()
+            create_new_stage()
 
         self.livesync_usd = self.config.get("livesync_usd")
         if self.livesync_usd != None:
             print("Saving a temp livesync stage at ", self.livesync_usd, " ...", end="")
-            if set_livesync_usd(self.livesync_usd, True):
+            if set_livesync_stage(self.livesync_usd, True):
                 print("Done.")
             else:
                 print("Could not save usd file to ", self.livesync_usd)
@@ -357,9 +357,9 @@ class SimulationApp:
             self._exiting = True
             print("Shutting Down Simulation App...")
             # We are exisitng but something is still loading, wait for it to load to avoid a deadlock
-            if self.is_loading():
+            if self.is_stage_loading():
                 print("   Waiting for USD resource operations to complete (this may take a few seconds)")
-            while self.is_loading():
+            while self.is_stage_loading():
                 self._app.update()
             self._app.shutdown()
             self._framework.unload_all_plugins()
@@ -370,22 +370,16 @@ class SimulationApp:
                     del sys.modules[m]
             print("Simulation App Shutdown Completed...")
 
+    def is_stage_loading(self):
+        from omni.isaac.core.utils.stage import is_stage_loading
+
+        return is_stage_loading()
+
     def is_running(self) -> bool:
         """
             bool: convenience function to see if app is running. True if running, False otherwise
         """
         return self._app.is_running()
-
-    def is_loading(self) -> bool:
-        """
-            bool: Convenience function to see if any files are being loaded. True if loading, False otherwise
-        """
-        context = omni.usd.get_context()
-        if context is None:
-            return False
-        else:
-            _, _, loading = context.get_stage_loading_status()
-            return loading > 0
 
     def is_exiting(self) -> bool:
         """
