@@ -228,7 +228,7 @@ if __name__ == "__main__":
         sample.configure_randomization()
 
         print("Loading stage...")
-        while sample.kit.is_loading():
+        while sample.kit.is_stage_loading():
             sample.kit.update(0)
         print("Loading Complete")
 

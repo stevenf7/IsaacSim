@@ -17,13 +17,13 @@ simulation_context = SimulationContext()
 
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.core.utils.stage import create_new_stage, add_reference_to_stage
 
 _, nucleus_server = find_nucleus_server()
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 
-simulation_context = SimulationContext(physics_dt=1.0 / 60.0)
-simulation_context.create_new_stage(stage_units_in_meters=1.0)
-simulation_context.add_usd_reference(asset_path, "/Franka")
+simulation_context = SimulationContext(physics_dt=1.0 / 60.0, stage_units_in_meters=1.0)
+add_reference_to_stage(asset_path, "/Franka")
 # need to start simulation before getting any articulation..etc
 simulation_context.start_simulation()
 dc = _dynamic_control.acquire_dynamic_control_interface()
@@ -39,8 +39,13 @@ def step_callback_1(step_size):
 
 def step_callback_2(step_size):
     dof_state = dc.get_dof_state(dof_ptr, _dynamic_control.STATE_POS)
-    print("Current joint 2 position @ step " + str(simulation_context.time_step_index) + " : " + str(dof_state.pos))
-    print("TIME: ", simulation_context.time)
+    print(
+        "Current joint 2 position @ step "
+        + str(simulation_context.current_time_step_index)
+        + " : "
+        + str(dof_state.pos)
+    )
+    print("TIME: ", simulation_context.current_time)
     return
 
 

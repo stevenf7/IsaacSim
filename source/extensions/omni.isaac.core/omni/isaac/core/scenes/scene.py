@@ -17,18 +17,17 @@ from omni.isaac.core.robots.robot import Robot
 import omni.usd.commands
 from pxr import Usd, UsdGeom
 import numpy as np
+from omni.isaac.core.utils.stage import get_current_stage
 
 
 class Scene(object):
-    def __init__(self, stage: Usd.Stage, stage_units_in_meters) -> None:
+    def __init__(self) -> None:
         """[summary]
 
         Args:
             stage (Usd.Stage): [description]
         """
         self._scene_registry = SceneRegistry()
-        self._stage = stage
-        self._stage_units_in_meters = stage_units_in_meters
         self._enable_bounding_box_computations = False
         self._bbox_cache = None
         return
@@ -40,11 +39,7 @@ class Scene(object):
         Returns:
             Usd.Stage: [description]
         """
-        return self._stage
-
-    @property
-    def stage_units_in_meters(self):
-        return self._stage_units_in_meters
+        return get_current_stage()
 
     def add(self, obj: XFormPrim) -> XFormPrim:
         """[summary]
@@ -163,40 +158,6 @@ class Scene(object):
         for xform_name, xform in self._scene_registry.xforms.items():
             self.remove_object(xform_name)
         return
-
-    def check_collisions(self) -> bool:
-        """[summary]
-
-        Raises:
-            NotImplementedError: [description]
-
-        Returns:
-            bool: [description]
-        """
-        raise NotImplementedError
-
-    def get_contacts(self, object_one, object_two):
-        """[summary]
-
-        Args:
-            object_one ([type]): [description]
-            object_two ([type]): [description]
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError
-
-    def check_scene_realistic(self) -> bool:
-        """[summary]
-
-        Raises:
-            NotImplementedError: [description]
-
-        Returns:
-            bool: [description]
-        """
-        raise NotImplementedError
 
     def compute_object_AABB(self, name: str):
         if not self._enable_bounding_box_computations:

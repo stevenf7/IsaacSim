@@ -13,7 +13,7 @@ import carb
 import numpy as np
 import omni.physx
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
-from omni.isaac.core.utils.stage import add_usd_reference
+from omni.isaac.core.utils.stage import add_reference_to_stage
 
 
 class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -245,7 +245,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         stage = omni.usd.get_context().get_stage()
         timeline = omni.timeline.get_timeline_interface()
 
-        add_usd_reference(asset_path, "/franka")
+        add_reference_to_stage(asset_path, "/franka")
 
         timeline.play()
         for frame in range(60):

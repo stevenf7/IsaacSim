@@ -14,6 +14,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 import weakref
 import gc
 from omni.isaac.core import World
+from omni.isaac.core.utils.stage import create_new_stage_async
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
 import asyncio
 
@@ -98,6 +99,15 @@ class BaseSample(omni.ext.IExt):
                         }
                         self._buttons["Reset"] = btn_builder(**dict)
                         self._buttons["Reset"].enabled = False
+                        dict = {
+                            "label": "Clear World",
+                            "type": "button",
+                            "text": "Clear",
+                            "tooltip": "Clears the scene by creating a new stage",
+                            "on_clicked_fn": self._on_clear,
+                        }
+                        self._buttons["Clear World"] = btn_builder(**dict)
+                        self._buttons["Clear World"].enabled = True
                         for button_name, button_fn in buttons_mapping.items():
                             dict = {
                                 "label": button_name,
@@ -116,29 +126,48 @@ class BaseSample(omni.ext.IExt):
 
     def _on_setup_world(self):
         async def _on_setup_world_async():
-            self._world = World(**self._world_settings)
-            await self._world.init_world_async()
-            self._task = self._load_task()
-            self._world.load_task(self._task)
+            # await create_new_stage_async()
+            if World.instance() is None:
+                self._world = World(**self._world_settings)
+                await self._world.init_simulation_context_async()
+                self._task = self._load_task()
+                if self._task is not None:
+                    self._world.load_task(self._task)
+            else:
+                self._world = World.instance()
+                self._task = self._world.get_current_task()
             await self._world.reset_async()
-            self._world.add_physics_callback("task_step", self.task_simulation_step)
-            self._setup_controllers()
+            if self._task is not None:
+                self._world.add_physics_callback("task_step", self.task_simulation_step)
+            self.setup_load()
             self._buttons["Load World"].enabled = False
             self._enable_all_buttons(True)
             self._world.add_stage_callback("stage_event_1", self._on_stage_event)
-            self._reset_call()
+            self.setup_reset()
             return
 
         asyncio.ensure_future(_on_setup_world_async())
         return
 
-    @abstractmethod
-    def _load_task(self):
-        raise NotImplementedError
+    def _on_clear(self):
+        async def _on_clear_async():
+            await create_new_stage_async()
+            if self._world is not None:
+                self._world.clear_instance()
+                gc.collect()
+                self._world = None
+            return
+
+        asyncio.ensure_future(_on_clear_async())
+        return
 
     @abstractmethod
-    def _setup_controllers(self):
-        raise NotImplementedError
+    def _load_task(self):
+        return None
+
+    @abstractmethod
+    def setup_load(self):
+        return
 
     def _enable_all_buttons(self, flag):
         for btn_name, btn in self._buttons.items():
@@ -150,29 +179,27 @@ class BaseSample(omni.ext.IExt):
         async def _on_reset_async():
             await self._world.reset_async()
             self._enable_all_buttons(True)
-            self._reset_call()
+            self.setup_reset()
             self._world.remove_physics_callback("task_step")
-            if self._world._scene_finalized and self._world._current_task is not None:
+            if self._world._scene_finalized and self._task is not None:
                 self._world.add_physics_callback("task_step", self.task_simulation_step)
 
         asyncio.ensure_future(_on_reset_async())
         return
 
     def task_simulation_step(self, step_size):
-        self._world._current_task.step(self._world.time_step_index, self._world.time)
+        self._task.step(self._world.current_time_step_index, self._world.current_time)
         return
 
-    def _reset_call(self):
-        raise NotImplementedError
+    @abstractmethod
+    def setup_reset(self):
+        return
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
         return
 
     def _on_window(self, status):
-        if status:
-            # TODO: logging
-            print("openning window..")
         return
 
     def on_shutdown(self):
@@ -194,8 +221,6 @@ class BaseSample(omni.ext.IExt):
         self._world.stop()
         self._world.clear_physics_callbacks()
         self._world.clear_stage_callbacks()
-        gc.collect()
-        self._world = None
         self._task = None
         if self._buttons is not None:
             self._buttons["Load World"].enabled = True
@@ -204,6 +229,6 @@ class BaseSample(omni.ext.IExt):
 
     def _on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.CLOSED):
-            if self._world is not None:
+            if self._world is not None and self._world.instance() is not None:
                 self._world_cleanup()
         return

@@ -13,13 +13,13 @@ simulation_app = SimulationApp({"headless": True})
 
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.stage import add_reference_to_stage
 
 _, nucleus_server = find_nucleus_server()
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 
-simulation_context = SimulationContext(physics_dt=1.0 / 60.0)
-simulation_context.create_new_stage(stage_units_in_meters=1.0)
-simulation_context.add_usd_reference(asset_path, "/Franka")
+simulation_context = SimulationContext(physics_dt=1.0 / 60.0, stage_units_in_meters=1.0)
+add_reference_to_stage(asset_path, "/Franka")
 # need to start simulation before getting any articulation..etc
 simulation_context.start_simulation()
 
