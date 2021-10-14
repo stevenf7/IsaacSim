@@ -130,14 +130,18 @@ void DRComponentTransform::onComponentChange()
         pxr::VtArray<pxr::GfQuath> pointInstancerOrientations;
         pointInstancerPrim.GetAttribute(pxr::TfToken("positions")).Get(&pointInstancerPositions);
         pointInstancerPrim.GetAttribute(pxr::TfToken("orientations")).Get(&pointInstancerOrientations);
+        pxr::GfMatrix4d instancerTransform = omni::usd::UsdUtils::getWorldTransformMatrix(pointInstancerPrim);
+        pxr::GfQuath instancerRotation = pxr::GfQuath(instancerTransform.ExtractRotationQuat());
+
         for (pxr::GfVec3f position : pointInstancerPositions)
         {
-            mPointInstancersTranslate.push_back(position);
+            mPointInstancersTranslate.push_back(instancerTransform.Transform(position));
         }
         for (pxr::GfQuath orientation : pointInstancerOrientations)
         {
             pxr::GfVec3f angles;
-            getEulerAngles(orientation, angles);
+
+            getEulerAngles(instancerRotation * orientation, angles);
             mPointInstancersOrient.push_back(angles);
         }
     }
