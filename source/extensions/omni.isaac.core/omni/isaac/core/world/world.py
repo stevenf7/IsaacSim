@@ -75,7 +75,6 @@ class World(SimulationContext):
         """
         if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
             self.play()
-            SimulationContext.step(self, render=True)
         self._scene._finalize()
         return
 
@@ -92,7 +91,6 @@ class World(SimulationContext):
             self._current_task.cleanup()
         self.stop()
         self.play()
-        SimulationContext.step(self, render=True)
         self.scene.reset()
         if self._current_task is not None:
             self._current_task.reset()

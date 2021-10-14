@@ -979,51 +979,7 @@ def build_info_frame(overview=""):
     with frame:
         with ui.VStack(style=get_style(), spacing=5):
             scrolling_frame_builder("Overview", "scrolling_frame", overview)
-            # with ui.HStack():
-            #     ui.Label("Author", width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP)
-            #     ui.Label(
-            #         author,
-            #         style_type_name_override="Label::label",
-            #         alignment=ui.Alignment.LEFT_TOP,
-            #         width=ui.Percent(75),
-            #     )
-            # with ui.HStack():
-            #     ui.Label("Last Updated", width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP)
-            #     ui.Label(
-            #         date, style_type_name_override="Label::label", alignment=ui.Alignment.LEFT_TOP, width=ui.Percent(75)
-            #     )
-            # Reload Environment
-
-            def on_clear_environment():
-                # TO DO
-                carb.log_info("Clearing the Envirionment")
-
-                """Resets the Stage and Reloads the Project """
-                # Wait to create a new scenario until the Stage is done loading
-                asyncio.ensure_future(setup_project())
-
-            async def setup_project():
-                """Sets up Project-Specific Variables and Parameters"""
-                await omni.usd.get_context().new_stage_async()
-                carb.log_info("Setting Up Project")
-                ext_manager = omni.kit.app.get_app().get_extension_manager()
-                viewport_ext_enabled = ext_manager.is_extension_enabled("omni.kit.window.viewport")
-                if viewport_ext_enabled:
-                    viewport = omni.kit.viewport.get_default_viewport_window()
-                    # Setup the Viewport at a CAMERA_PRESET (NEAR, MID, FAR)
-                    viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
-                    viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
-                else:
-                    carb.log_warn("Skipping viewport camera reset because omni.kit.window.viewport isn't enabled")
-
-            kwargs = {
-                "label": "Clear Scene",
-                "type": "button",
-                "text": "CLEAR",
-                "on_clicked_fn": on_clear_environment,
-                "tooltip": "Clear the Scene",
-            }
-            btn_builder(**kwargs)
+    return
 
 
 # def build_settings_frame(log_filename="extension.log", log_to_file=False, save_settings=False):

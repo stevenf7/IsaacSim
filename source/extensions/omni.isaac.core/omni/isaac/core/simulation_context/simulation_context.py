@@ -168,7 +168,10 @@ class SimulationContext:
     def play(self) -> None:
         self._timeline.play()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            self.render()
+            current_physics_dt = self._physics_scene.get_physics_dt()
+            self._physics_scene.set_physics_dt(0)
+            self.step(render=True)
+            self._physics_scene.set_physics_dt(current_physics_dt)
         return
 
     async def pause_async(self):
@@ -417,9 +420,13 @@ class PhysicsScene:
         # if physics substeps is not valid, make default = 1.
         if substeps is None or substeps <= 1:
             substeps = 1
-        steps_per_second = int(1.0 / dt)
-        min_steps = int(steps_per_second / substeps)
-        self._physx_scene_api.GetTimeStepsPerSecondAttr().Set(steps_per_second)
+        if dt == 0:
+            self._physx_scene_api.GetTimeStepsPerSecondAttr().Set(0)
+            min_steps = 0
+        else:
+            steps_per_second = int(1.0 / dt)
+            min_steps = int(steps_per_second / substeps)
+            self._physx_scene_api.GetTimeStepsPerSecondAttr().Set(steps_per_second)
         # TODO Is there a better way to do this or atleast reset this to the original values on close
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             set_carb_setting(carb.settings.get_settings(), "/app/runLoops/main/rateLimitEnabled", True)
