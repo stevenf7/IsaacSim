@@ -218,8 +218,8 @@ class Extension(omni.ext.IExt):
                     mat_path = "{}/{}".format(
                         self.override_looks_directory[1].get_value_as_string(), mat_path.rsplit("/", 1)[-1]
                     )
-                    if not self._stage.GetPrimAtPath(mat_path):
-                        carb.log_error("Overriden material not found, reverting to original ({})".format(mat_path))
+                    if not stage.GetPrimAtPath(mat_path):
+                        carb.log_error(f"Overriden material not found, reverting to original ({mat_path})")
                         mat_path = str(mat.GetPath())
                 if not rel:
                     mat_path = "/None"
