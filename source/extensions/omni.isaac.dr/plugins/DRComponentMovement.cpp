@@ -22,8 +22,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <drSchema/movementComponent.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {

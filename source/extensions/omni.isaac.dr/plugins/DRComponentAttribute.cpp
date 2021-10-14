@@ -19,8 +19,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <drSchema/attributeComponent.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {

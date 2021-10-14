@@ -51,7 +51,6 @@ private:
     std::unordered_map<std::string, int> mClassMaterialMap;
     std::unordered_map<std::string, pxr::UsdShadeMaterialBindingAPI> mPrimMaterialBindingsMap;
     bool mIsIgnore, mIsGrouping;
-    pxr::SdfLayerHandle mMaterialLayer;
     carb::datasource::IDataSource* mDatasource;
     carb::datasource::Connection* mConnection;
 };

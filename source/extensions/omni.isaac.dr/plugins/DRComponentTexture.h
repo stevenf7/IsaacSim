@@ -53,7 +53,6 @@ private:
     std::unordered_map<std::string, int> mClassTextureMap;
     std::unordered_map<std::string, pxr::UsdShadeMaterialBindingAPI> mPrimMaterialBindingsMap;
     bool mIsIgnore, mIsGrouping, mDoOnce, mEnableProjectUVW;
-    pxr::SdfLayerHandle mTextureLayer;
     pxr::UsdShadeMaterial mTextureMaterialShade;
     pxr::UsdPrim mTextureMaterialPrim;
     carb::tokens::ITokens* mTokens;

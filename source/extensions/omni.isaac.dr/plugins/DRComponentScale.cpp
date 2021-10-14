@@ -20,8 +20,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <drSchema/scaleComponent.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {

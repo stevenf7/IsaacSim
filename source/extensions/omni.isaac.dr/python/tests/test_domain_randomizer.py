@@ -253,19 +253,6 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Unit test for DR layer name API
     async def test_dr_layer_name(self):
         default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
-        # Check if DR layer name is empty
-        self.assertEqual(self._dr.get_dr_layer_name(), "")
-        # Create DR component
-        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/movement_component", False)
-        result, prim = omni.kit.commands.execute(
-            "CreateMovementComponentCommand",
-            path=path,
-            prim_paths=[],
-            min_range=(0.0, 0.0, 0.0),
-            max_range=(10.0, 10.0, 10.0),
-        )
-        await omni.kit.app.get_app().next_update_async()
-        # Check if DR layer name is not empty and contains substring "anon"
         is_anon_in_layer = "anon" in self._dr.get_dr_layer_name()
         self.assertTrue(is_anon_in_layer)
         pass

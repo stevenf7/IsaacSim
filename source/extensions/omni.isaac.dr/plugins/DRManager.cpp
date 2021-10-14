@@ -51,6 +51,17 @@ DRManager::DRManager(omni::isaac::dynamic_control::DynamicControl* dynamicContro
 
 DRManager::~DRManager()
 {
+    if (mNewSublayer)
+    {
+        pxr::UsdEditContext context(mStage, mNewSublayer);
+        // Remove top-level Dr Scope
+        if (mDrScope && mDrScope.GetChildren().empty())
+        {
+            omni::usd::UsdUtils::removePrim(mDrScope);
+            mDrScope = pxr::UsdPrim();
+        }
+        omni::usd::LayerUtils::deleteSublayer(mStage->GetSessionLayer(), mFinalPosition);
+    }
 }
 
 void DRManager::initialize(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* tokens, omni::renderer::IDebugDraw* debugDraw)
@@ -58,9 +69,43 @@ void DRManager::initialize(pxr::UsdStageWeakPtr stage, carb::tokens::ITokens* to
     utils::BridgeApplicationBase<DRComponentBase<pxr::DrSchemaBaseComponent>>::initialize(stage);
     mTokens = tokens;
     mDebugDrawPtr = debugDraw;
-    mRootLayerIdentifier = mStage->GetRootLayer()->GetIdentifier();
-    mDRLayerName = "";
     mNewSublayer = nullptr;
+    mDrScope = pxr::UsdPrim();
+
+    if (mNewSublayer == nullptr)
+    {
+        mLayer = omni::usd::UsdContext::getContext()->getLayers();
+        const std::string layerPath = "";
+// Use session layer or make a new sublayer in the session layer
+#if 0
+        // This creates deltas in the authoring layer
+        mNewSublayer = mStage->GetSessionLayer();
+#else
+        // This does not create deltas in the authoring layer
+        mNewSublayer = omni::usd::LayerUtils::createSublayer(
+            mStage, mStage->GetSessionLayer(), 0, layerPath.c_str(), false, mFinalPosition);
+#endif
+        // const std::string layerName = "DRLayer";
+        // omni::usd::LayerUtils::setCustomLayerName(mNewSublayer, mDRLayerName, pxr::TfToken(layerName.c_str()));
+        if (mNewSublayer)
+        {
+            pxr::UsdEditContext context(mStage, mNewSublayer);
+            if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/DR"))
+            {
+                mDrScope = omni::usd::UsdUtils::createPrim(mStage, "/DR",
+                                                           [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
+                                                           { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); },
+                                                           false);
+                mDrScope.SetMetadata(pxr::TfToken("hide_in_stage_window"), true);
+                mDrScope.SetMetadata(pxr::TfToken("no_delete"), true);
+            }
+        }
+        else
+        {
+            mNewSublayer = nullptr;
+            CARB_LOG_ERROR("Could not create DR layer");
+        }
+    }
 }
 
 void removePrimSpecFromLayer(const std::string& layerIdentifier, const std::string& primPath)
@@ -126,17 +171,6 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
 
     std::string primPath = prim.GetPath().GetString();
     std::unique_ptr<DRComponentBase<pxr::DrSchemaBaseComponent>> component;
-    if (mDRLayerName == "")
-    {
-        mLayer = omni::usd::UsdContext::getContext()->getLayers();
-        const std::string layerPath = "";
-        const std::string layerName = "DRLayer";
-        size_t finalPosition;
-        mNewSublayer = omni::usd::LayerUtils::createSublayer(
-            mStage, mStage->GetSessionLayer(), 0, layerPath.c_str(), false, finalPosition);
-        mDRLayerName = mNewSublayer->GetIdentifier();
-        // omni::usd::LayerUtils::setCustomLayerName(mNewSublayer, mDRLayerName, pxr::TfToken(layerName.c_str()));
-    }
     if (mComponents.find(primPath) != mComponents.end())
         return;
 
@@ -197,7 +231,7 @@ void DRManager::onComponentAdd(const pxr::UsdPrim& prim)
     }
     if (component)
     {
-        component->mDRLayerName = mDRLayerName;
+        component->mDrScope = mDrScope;
         mComponents[primPath] = std::move(component);
         CARB_LOG_INFO("Create: Prim %s", prim.GetPath().GetString().c_str());
     }
@@ -226,14 +260,18 @@ void DRManager::tickManual()
 
 void DRManager::onStop()
 {
+    // This is only needed if a prim created by DR is modified by something else
+    // Omni.physx is one such example if the mesh component is used with a rigid body,
+    // the authoring layer will get physics related deltas
+
+
     std::string authoringLayerId = omni::usd::LayerUtils::getAuthoringLayerIdentifier(mStage);
     auto authlayer = omni::usd::LayerUtils::findOrOpen(authoringLayerId);
 
     // Delete delta in the authoring layer
-    auto primSpec = authlayer->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR"));
-    if (primSpec)
+    if (mDrScope)
     {
-        removePrimSpecFromLayer(authoringLayerId, mStage->GetDefaultPrim().GetPath().GetString() + "/DR");
+        removePrimSpecFromLayer(authoringLayerId, mDrScope.GetPath().GetString());
     }
 }
 
