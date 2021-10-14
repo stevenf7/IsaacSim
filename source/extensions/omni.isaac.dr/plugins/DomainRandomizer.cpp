@@ -191,7 +191,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onStop = onStop;
     desc.onPrimOrPropertyChange = onPrimOrPropertyChange;
     desc.onPrimRemove = onPrimRemove;
-    desc.order = 120;
+    desc.order = 30; // happens after physx, dc, but before range sensor
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
 }
 
