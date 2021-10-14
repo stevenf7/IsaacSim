@@ -12,6 +12,8 @@ from pxr import UsdGeom, Sdf, UsdPhysics, Gf
 import carb
 import numpy as np
 import omni.physx
+from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.stage import add_usd_reference
 
 
 class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -236,3 +238,29 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
             await omni.kit.app.get_app().next_update_async()
         position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
         self.assertAlmostEqual(position[2], -4.9867, delta=0.01)
+
+    async def test_articulation_reference(self):
+        _, nucleus_server = find_nucleus_server()
+        asset_path = nucleus_server + "/Isaac/Robots/Franka/franka.usd"
+        stage = omni.usd.get_context().get_stage()
+        timeline = omni.timeline.get_timeline_interface()
+
+        add_usd_reference(asset_path, "/franka")
+
+        timeline.play()
+        for frame in range(60):
+            await omni.kit.app.get_app().next_update_async()
+
+        hand_prim = stage.GetPrimAtPath("/franka/panda_hand")
+
+        await omni.kit.app.get_app().next_update_async()
+        trans_a = np.array(omni.usd.utils.get_world_transform_matrix(hand_prim).ExtractTranslation())
+
+        timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        timeline.play()
+        for frame in range(60):
+            await omni.kit.app.get_app().next_update_async()
+
+        trans_b = np.array(omni.usd.utils.get_world_transform_matrix(hand_prim).ExtractTranslation())
+        self.assertEqual(trans_a.tolist(), trans_b.tolist())
