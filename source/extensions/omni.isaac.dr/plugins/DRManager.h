@@ -60,7 +60,14 @@ public:
 
     std::string getDRLayerName()
     {
-        return mDRLayerName;
+        if (mNewSublayer)
+        {
+            return mNewSublayer->GetIdentifier();
+        }
+        else
+        {
+            return "";
+        }
     }
 
 private:
@@ -68,10 +75,10 @@ private:
     omni::renderer::IDebugDraw* mDebugDrawPtr;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
     omni::usd::Layers* mLayer = nullptr;
-    std::string mDRLayerName = "";
     double mTimeElapsed = 0.0;
-    std::string mRootLayerIdentifier = "";
-    pxr::SdfLayerRefPtr mNewSublayer;
+    pxr::SdfLayerRefPtr mNewSublayer = nullptr;
+    size_t mFinalPosition = 0;
+    pxr::UsdPrim mDrScope = pxr::UsdPrim();
 };
 }
 }

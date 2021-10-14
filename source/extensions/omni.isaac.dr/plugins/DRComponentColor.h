@@ -50,7 +50,6 @@ private:
     std::vector<float> mRRange, mGRange, mBRange;
     pxr::GfVec2f mRoughnessRange, mMetallicRange;
     std::vector<pxr::UsdPrim> mAllPrims, mAllMaterialPrims;
-    pxr::SdfLayerHandle mColorLayer;
     pxr::UsdShadeMaterial mColorMaterialShade;
     pxr::UsdPrim mColorMaterialPrim;
     carb::tokens::ITokens* mTokens;

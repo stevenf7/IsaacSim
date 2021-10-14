@@ -19,8 +19,6 @@
 #include <boost/algorithm/string.hpp>
 #include <omni/kit/KitUtils.h>
 #include <omni/usd/AssetUtils.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {
@@ -56,51 +54,29 @@ void DRComponentColor::onStart()
 {
     CARB_LOG_INFO("DR Color Component Started");
     onComponentChange();
-    // Get DR layer and switch USD context
-    auto layers = mStage->GetLayerStack();
-    for (auto&& layer : layers)
-    {
-        if (layer->GetIdentifier().find(mDRLayerName) != std::string::npos)
-            mColorLayer = layer;
-    }
-    if (mColorLayer)
-    {
-        pxr::UsdEditContext context(mStage, mColorLayer);
-        mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
-        carb::extras::Path urlPath(mOmniPBRMatPath.c_str());
-        // Check for /DR prim and if base OmniPBR material is loaded
-        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/DR"))
-        {
-            omni::usd::UsdUtils::createPrim(mStage, "/DR",
-                                            [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
-                                            { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); });
-        }
-        std::string colorCompMaterialPath = "/DR/" + mCompName;
-        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, colorCompMaterialPath))
-        {
-            omni::usd::UsdUtils::createPrim(mStage, colorCompMaterialPath.c_str(),
-                                            [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
-                                            { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); });
-        }
-        std::string colorMaterialPrimName =
-            mStage->GetDefaultPrim().GetPath().GetString() + colorCompMaterialPath + "/OmniPBR";
-        mColorMaterialPrim = mStage->DefinePrim(pxr::SdfPath(colorMaterialPrimName.c_str()), pxr::TfToken("Material"));
-        auto shadeMaterialPrim = pxr::UsdShadeMaterial(mColorMaterialPrim);
-        auto shaderMtlPath = mStage->DefinePrim(pxr::SdfPath(colorMaterialPrimName + "/Shader"), pxr::TfToken("Shader"));
-        auto shadeShaderPrim = pxr::UsdShadeShader(shaderMtlPath);
-        auto shaderOut = shadeShaderPrim.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
-        shadeShaderPrim.CreateInput(pxr::TfToken("diffuse_color_constant"), pxr::SdfValueTypeNames->Color3f);
-        shadeShaderPrim.CreateInput(pxr::TfToken("reflection_roughness_constant"), pxr::SdfValueTypeNames->Float);
-        shadeShaderPrim.CreateInput(pxr::TfToken("metallic_constant"), pxr::SdfValueTypeNames->Float);
 
-        shadeMaterialPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
-        shadeMaterialPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
-        shadeMaterialPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
-        shadeShaderPrim.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
-        shadeShaderPrim.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
-        shadeShaderPrim.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
-        mColorMaterialShade = shadeMaterialPrim;
-    }
+    mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
+    carb::extras::Path urlPath(mOmniPBRMatPath.c_str());
+    // Check if base OmniPBR material is loaded
+    std::string colorCompMaterialPath = createPrimScope();
+    std::string colorMaterialPrimName = colorCompMaterialPath + "/OmniPBR";
+    mColorMaterialPrim = mStage->DefinePrim(pxr::SdfPath(colorMaterialPrimName.c_str()), pxr::TfToken("Material"));
+    auto shadeMaterialPrim = pxr::UsdShadeMaterial(mColorMaterialPrim);
+    auto shaderMtlPath = mStage->DefinePrim(pxr::SdfPath(colorMaterialPrimName + "/Shader"), pxr::TfToken("Shader"));
+    auto shadeShaderPrim = pxr::UsdShadeShader(shaderMtlPath);
+    auto shaderOut = shadeShaderPrim.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+    shadeShaderPrim.CreateInput(pxr::TfToken("diffuse_color_constant"), pxr::SdfValueTypeNames->Color3f);
+    shadeShaderPrim.CreateInput(pxr::TfToken("reflection_roughness_constant"), pxr::SdfValueTypeNames->Float);
+    shadeShaderPrim.CreateInput(pxr::TfToken("metallic_constant"), pxr::SdfValueTypeNames->Float);
+
+    shadeMaterialPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+    shadeMaterialPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+    shadeMaterialPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+    shadeShaderPrim.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
+    shadeShaderPrim.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
+    shadeShaderPrim.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
+    mColorMaterialShade = shadeMaterialPrim;
+
     onComponentChange();
 }
 void DRComponentColor::update()
@@ -136,11 +112,10 @@ void DRComponentColor::update()
     for (auto& prim : mAllPrims)
     {
         primIndex++;
-        std::string mColorCompPathName = mStage->GetDefaultPrim().GetPath().GetString() + "/DR/" + mCompName;
+        std::string mColorCompPathName = appendPathToDrScope(mCompName);
         std::string mCopyColorMaterialPrimName = mColorCompPathName + "/OmniPBR_" + std::to_string(primIndex);
         if (mColorMaterialPrim && !omni::usd::UsdUtils::hasPrimAtPath(mStage, mCopyColorMaterialPrimName, false))
         {
-            pxr::UsdEditContext context(mStage, mColorLayer);
             omni::usd::UsdUtils::copyPrim(mColorMaterialPrim, nullptr, false, false);
         }
         auto mCopyColorMaterialPrim = mStage->GetPrimAtPath(pxr::SdfPath(mCopyColorMaterialPrimName.c_str()));
@@ -193,9 +168,8 @@ void DRComponentColor::onComponentChange()
 void DRComponentColor::stop()
 {
     CARB_LOG_INFO("DR Color Component Stopped");
-    if (mStage && mColorLayer)
+    if (mStage)
     {
-        pxr::UsdEditContext context(mStage, mColorLayer);
         // Remove color material instances
         for (auto materialPrim : mAllMaterialPrims)
         {
@@ -206,15 +180,9 @@ void DRComponentColor::stop()
         if (mColorMaterialPrim)
             omni::usd::UsdUtils::removePrim(mColorMaterialPrim);
         // Remove component level Color prim
-        pxr::UsdPrim colorCompPrim =
-            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR/" + mCompName));
+        pxr::UsdPrim colorCompPrim = mStage->GetPrimAtPath(pxr::SdfPath(appendPathToDrScope(mCompName)));
         if (colorCompPrim)
             omni::usd::UsdUtils::removePrim(colorCompPrim);
-        // Remove top-level Color prim
-        pxr::UsdPrim colorPrim =
-            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR"));
-        if (colorPrim && colorPrim.GetChildren().empty())
-            omni::usd::UsdUtils::removePrim(colorPrim);
     }
 }
 void DRComponentColor::tick()

@@ -19,8 +19,6 @@
 #include <boost/algorithm/string.hpp>
 #include <omni/kit/KitUtils.h>
 #include <omni/usd/AssetUtils.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {
@@ -54,52 +52,27 @@ void DRComponentTexture::onStart()
 {
     CARB_LOG_INFO("DR Texture Component Started");
     onComponentChange();
-    // Get DR layer and switch USD context
-    auto layers = mStage->GetLayerStack();
-    for (auto&& layer : layers)
-    {
-        if (layer->GetIdentifier().find(mDRLayerName) != std::string::npos)
-            mTextureLayer = layer;
-    }
-    if (mTextureLayer)
-    {
-        pxr::UsdEditContext context(mStage, mTextureLayer);
-        mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
-        carb::extras::Path urlPath(mOmniPBRMatPath.c_str());
-        // Check for /DR prim and if base OmniPBR material is loaded
-        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/DR"))
-        {
-            omni::usd::UsdUtils::createPrim(mStage, "/DR",
-                                            [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
-                                            { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); });
-        }
-        std::string textureCompMaterialPath = "/DR/" + mCompName;
-        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, textureCompMaterialPath))
-        {
-            omni::usd::UsdUtils::createPrim(mStage, textureCompMaterialPath.c_str(),
-                                            [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
-                                            { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); });
-        }
-        std::string textureMaterialPrimName =
-            mStage->GetDefaultPrim().GetPath().GetString() + textureCompMaterialPath + "/OmniPBR";
-        mTextureMaterialPrim =
-            mStage->DefinePrim(pxr::SdfPath(textureMaterialPrimName.c_str()), pxr::TfToken("Material"));
-        auto shadeMaterialPrim = pxr::UsdShadeMaterial(mTextureMaterialPrim);
-        auto shaderMtlPath =
-            mStage->DefinePrim(pxr::SdfPath(textureMaterialPrimName + "/Shader"), pxr::TfToken("Shader"));
-        auto shadeShaderPrim = pxr::UsdShadeShader(shaderMtlPath);
-        auto shaderOut = shadeShaderPrim.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
-        shadeShaderPrim.CreateInput(pxr::TfToken("diffuse_texture"), pxr::SdfValueTypeNames->Asset);
-        shadeShaderPrim.CreateInput(pxr::TfToken("project_uvw"), pxr::SdfValueTypeNames->Bool);
+    mOmniPBRMatPath = carb::tokens::resolveString(mTokens, "${kit}/../../library/mdl/Base/OmniPBR.mdl");
+    carb::extras::Path urlPath(mOmniPBRMatPath.c_str());
+    // Create texture material prim
+    std::string textureCompMaterialPath = createPrimScope();
+    std::string textureMaterialPrimName = textureCompMaterialPath + "/OmniPBR";
+    mTextureMaterialPrim = mStage->DefinePrim(pxr::SdfPath(textureMaterialPrimName.c_str()), pxr::TfToken("Material"));
+    auto shadeMaterialPrim = pxr::UsdShadeMaterial(mTextureMaterialPrim);
+    auto shaderMtlPath = mStage->DefinePrim(pxr::SdfPath(textureMaterialPrimName + "/Shader"), pxr::TfToken("Shader"));
+    auto shadeShaderPrim = pxr::UsdShadeShader(shaderMtlPath);
+    auto shaderOut = shadeShaderPrim.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+    shadeShaderPrim.CreateInput(pxr::TfToken("diffuse_texture"), pxr::SdfValueTypeNames->Asset);
+    shadeShaderPrim.CreateInput(pxr::TfToken("project_uvw"), pxr::SdfValueTypeNames->Bool);
 
-        shadeMaterialPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
-        shadeMaterialPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
-        shadeMaterialPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
-        shadeShaderPrim.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
-        shadeShaderPrim.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
-        shadeShaderPrim.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
-        mTextureMaterialShade = shadeMaterialPrim;
-    }
+    shadeMaterialPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+    shadeMaterialPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+    shadeMaterialPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shaderOut);
+    shadeShaderPrim.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
+    shadeShaderPrim.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
+    shadeShaderPrim.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
+    mTextureMaterialShade = shadeMaterialPrim;
+
     onComponentChange();
 }
 void DRComponentTexture::update()
@@ -163,28 +136,23 @@ void DRComponentTexture::update()
             }
         }
     }
-    if (mTextureLayer)
+
+    mMaterialPrims.clear();
+    mMaterialShades.clear();
+    for (size_t textureIndex = 0; textureIndex < mTextureList.size(); textureIndex++)
     {
-        mMaterialPrims.clear();
-        mMaterialShades.clear();
-        pxr::UsdEditContext context(mStage, mTextureLayer);
-        for (size_t textureIndex = 0; textureIndex < mTextureList.size(); textureIndex++)
+        std::string mTextureCompPathName = appendPathToDrScope(mCompName);
+        std::string mCopyTextureMaterialPrimName = mTextureCompPathName + "/OmniPBR_" + std::to_string(textureIndex + 2);
+        if (mTextureMaterialPrim && !omni::usd::UsdUtils::hasPrimAtPath(mStage, mCopyTextureMaterialPrimName, false))
         {
-            std::string mTextureCompPathName = mStage->GetDefaultPrim().GetPath().GetString() + "/DR/" + mCompName;
-            std::string mCopyTextureMaterialPrimName =
-                mTextureCompPathName + "/OmniPBR_" + std::to_string(textureIndex + 2);
-            if (mTextureMaterialPrim && !omni::usd::UsdUtils::hasPrimAtPath(mStage, mCopyTextureMaterialPrimName, false))
-            {
-                pxr::UsdEditContext context(mStage, mTextureLayer);
-                omni::usd::UsdUtils::copyPrim(mTextureMaterialPrim, nullptr, false, false);
-            }
-            auto mCopyTextureMaterialPrim = mStage->GetPrimAtPath(pxr::SdfPath(mCopyTextureMaterialPrimName.c_str()));
-            mMaterialPrims.push_back(mCopyTextureMaterialPrim);
-            pxr::UsdShadeMaterial materialShade(mCopyTextureMaterialPrim);
-            mMaterialShades.push_back(materialShade);
+            omni::usd::UsdUtils::copyPrim(mTextureMaterialPrim, nullptr, false, false);
         }
-        mDoOnce = true;
+        auto mCopyTextureMaterialPrim = mStage->GetPrimAtPath(pxr::SdfPath(mCopyTextureMaterialPrimName.c_str()));
+        mMaterialPrims.push_back(mCopyTextureMaterialPrim);
+        pxr::UsdShadeMaterial materialShade(mCopyTextureMaterialPrim);
+        mMaterialShades.push_back(materialShade);
     }
+    mDoOnce = true;
 }
 void DRComponentTexture::onComponentChange()
 {
@@ -223,9 +191,8 @@ void DRComponentTexture::onComponentChange()
 void DRComponentTexture::stop()
 {
     CARB_LOG_INFO("DR Texture Component Stopped");
-    if (mStage && mTextureLayer)
+    if (mStage)
     {
-        pxr::UsdEditContext context(mStage, mTextureLayer);
         // Remove texture material instances
         for (pxr::UsdPrim& materialPrim : mMaterialPrims)
         {
@@ -236,15 +203,9 @@ void DRComponentTexture::stop()
         if (mTextureMaterialPrim)
             omni::usd::UsdUtils::removePrim(mTextureMaterialPrim);
         // Remove component level Texture prim
-        pxr::UsdPrim textureCompPrim =
-            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR/" + mCompName));
+        pxr::UsdPrim textureCompPrim = mStage->GetPrimAtPath(pxr::SdfPath(appendPathToDrScope(mCompName)));
         if (textureCompPrim)
             omni::usd::UsdUtils::removePrim(textureCompPrim);
-        // Remove top-level Texture prim
-        pxr::UsdPrim texturePrim =
-            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR"));
-        if (texturePrim && texturePrim.GetChildren().empty())
-            omni::usd::UsdUtils::removePrim(texturePrim);
 
         mPrimClassMap.clear();
         mPrimMaterialBindingsMap.clear();

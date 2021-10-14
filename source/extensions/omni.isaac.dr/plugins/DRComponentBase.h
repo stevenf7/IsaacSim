@@ -18,6 +18,8 @@
 #include <carb/settings/ISettings.h>
 
 #include <omni/renderer/IDebugDraw.h>
+#include <omni/usd/UsdUtils.h>
+#include <omni/usd/UtilsIncludes.h>
 
 #include <functional>
 #include <random>
@@ -38,7 +40,6 @@ public:
     {
         mRandomizationDurationInterval = -1;
         mIncludeChild = false;
-        mDRLayerName = "";
         mCompName = "";
         mSeed = 12345;
         mCurrentSeed = 0;
@@ -61,7 +62,8 @@ public:
     double mLastTickTime = 0.0;
     bool mIncludeChild;
     std::vector<std::string> mIgnoreClassList;
-    std::string mDRLayerName, mCompName;
+    std::string mCompName;
+    pxr::UsdPrim mDrScope;
     int mSeed, mCurrentSeed;
     std::default_random_engine mRandomGenerator;
     omni::renderer::SimplexBuffer mShapeDebugLineBuffer = omni::renderer::IDebugDraw::eInvalidBuffer;
@@ -216,6 +218,29 @@ protected:
                 distributionParams[paramName] = std::stof(attributeParamMap[paramName]);
             }
         }
+    }
+
+    std::string appendPathToDrScope(std::string suffix)
+    {
+        if (suffix[0] != '/')
+        {
+            suffix = "/" + suffix;
+        }
+        return mDrScope.GetPath().GetString() + suffix;
+    }
+
+    std::string createPrimScope()
+    {
+        std::string scopePath = appendPathToDrScope(mCompName);
+        if (!omni::usd::UsdUtils::hasPrimAtPath(this->mStage, scopePath))
+        {
+            omni::usd::UsdUtils::createPrim(this->mStage, scopePath.c_str(),
+                                            [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
+                                            { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); },
+                                            false);
+        }
+
+        return scopePath;
     }
 };
 }

@@ -16,8 +16,6 @@
 #include <boost/algorithm/string.hpp>
 #include <omni/kit/KitUtils.h>
 #include <omni/usd/AssetUtils.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 
 namespace omni
 {
@@ -45,14 +43,6 @@ void DRComponentMaterial::initialize(const pxr::DrSchemaMaterialComponent& prim,
 void DRComponentMaterial::onStart()
 {
     CARB_LOG_INFO("DR Material Component Started");
-    onComponentChange();
-    // Get DR layer and switch USD context
-    auto layers = mStage->GetLayerStack();
-    for (auto&& layer : layers)
-    {
-        if (layer->GetIdentifier().find(mDRLayerName) != std::string::npos)
-            mMaterialLayer = layer;
-    }
     onComponentChange();
 }
 void DRComponentMaterial::update()
@@ -125,31 +115,22 @@ void DRComponentMaterial::update()
             mMaterialShades.push_back(material);
         }
     }
-    if (mMaterialLayer)
+
+    for (std::string& url : mMaterialList)
     {
-        pxr::UsdEditContext context(mStage, mMaterialLayer);
-        for (std::string& url : mMaterialList)
+        std::string mdlDataSourcePath = url;
+        carb::extras::Path urlPath(url.c_str());
+
+        std::string materialPrimPath = appendPathToDrScope(urlPath.getStem());
+        if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, materialPrimPath))
         {
-            std::string mdlDataSourcePath = url;
-            carb::extras::Path urlPath(url.c_str());
-            if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, "/DR"))
-            {
-                omni::usd::UsdUtils::createPrim(mStage, "/DR",
-                                                [](pxr::UsdStageWeakPtr mStage, const pxr::SdfPath& path)
-                                                { return pxr::UsdGeomScope::Define(mStage, path).GetPrim(); });
-            }
-            std::string materialPrimPath = "/DR/" + urlPath.getStem();
-            if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, materialPrimPath))
-            {
-                omni::usd::AssetUtils::createPrimFromAssetPath(
-                    mStage, url.c_str(), materialPrimPath.c_str(), mdlDataSourcePath.c_str(), mDatasource, mConnection);
-            }
-            auto materialPrim = mStage->GetPrimAtPath(
-                pxr::SdfPath((mStage->GetDefaultPrim().GetPath().GetString() + materialPrimPath).c_str()));
-            mMaterialPrims.push_back(materialPrim);
-            pxr::UsdShadeMaterial material(materialPrim);
-            mMaterialShades.push_back(material);
+            omni::usd::AssetUtils::createPrimFromAssetPath(
+                mStage, url.c_str(), materialPrimPath.c_str(), mdlDataSourcePath.c_str(), mDatasource, mConnection);
         }
+        auto materialPrim = mStage->GetPrimAtPath(pxr::SdfPath(materialPrimPath));
+        mMaterialPrims.push_back(materialPrim);
+        pxr::UsdShadeMaterial material(materialPrim);
+        mMaterialShades.push_back(material);
     }
 }
 void DRComponentMaterial::onComponentChange()
@@ -194,19 +175,13 @@ void DRComponentMaterial::onComponentChange()
 void DRComponentMaterial::stop()
 {
     CARB_LOG_INFO("DR Material Component Stopped");
-    if (mStage && mMaterialLayer)
+    if (mStage)
     {
-        pxr::UsdEditContext context(mStage, mMaterialLayer);
         for (pxr::UsdPrim& materialPrim : mMaterialPrims)
         {
             if (materialPrim)
                 omni::usd::UsdUtils::removePrim(materialPrim);
         }
-        pxr::UsdPrim materialPrim =
-            mStage->GetPrimAtPath(pxr::SdfPath(mStage->GetDefaultPrim().GetPath().GetString() + "/DR"));
-        if (materialPrim)
-            if (materialPrim.GetChildren().empty())
-                omni::usd::UsdUtils::removePrim(materialPrim);
 
         mPrimClassMap.clear();
         mPrimMaterialBindingsMap.clear();
