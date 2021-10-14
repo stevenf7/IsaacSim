@@ -12,6 +12,7 @@ display_name = "Isaac Tests"
 "omni.kit.window.viewport" = {} # snippet tests need this
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.syntheticdata" = {}
+"omni.isaac.range_sensor" = {}
 
 [[python.module]]
 name = "omni.isaac.tests"
