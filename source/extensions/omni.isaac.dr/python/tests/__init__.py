@@ -11,3 +11,4 @@ from .test_domain_randomizer import *
 from .test_color_component import *
 from .test_movement_component import *
 from .test_mesh_component import *
+from .test_transform_component import *
