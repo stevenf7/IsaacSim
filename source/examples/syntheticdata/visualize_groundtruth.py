@@ -107,7 +107,9 @@ for i in range(10):
         simulation_app.app.update()
 
 print("Waiting until all materials are loaded")
-while simulation_app.is_stage_loading():
+from omni.isaac.core.utils.stage import is_stage_loading
+
+while is_stage_loading():
     simulation_app.app.update()
 
 viewport = omni.kit.viewport.get_default_viewport_window()

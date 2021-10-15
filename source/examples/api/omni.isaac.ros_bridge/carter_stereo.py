@@ -42,7 +42,9 @@ kit.update()
 kit.update()
 
 print("Loading stage...")
-while kit.is_stage_loading():
+from omni.isaac.core.utils.stage import is_stage_loading
+
+while is_stage_loading():
     kit.update()
 print("Loading Complete")
 

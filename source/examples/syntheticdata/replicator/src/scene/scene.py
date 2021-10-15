@@ -47,7 +47,7 @@ class SceneManager:
         from omni.isaac.utils.scripts import scene_utils
 
         # Define world prim
-        prims.create_prim(self.stage, "/World", "Xform")
+        prims.create_prim("/World", "Xform")
 
         # Set scene units
         omni.kit.commands.execute(
@@ -125,7 +125,9 @@ class SceneManager:
         self.update_class_labels()
 
         # Wait for scene to finish loading
-        while self.sim_app.is_stage_loading():
+        from omni.isaac.core.utils.stage import is_stage_loading
+
+        while is_stage_loading():
             self.sim_context.render()
 
         # Determine if scene is played
@@ -139,7 +141,9 @@ class SceneManager:
             frame = 0
             frame_time = 1 / 60
             frame_count = self.sample("physics_simulate_time") / frame_time
-            while frame < frame_count or self.sim_app.is_stage_loading():
+            from omni.isaac.core.utils.stage import is_stage_loading
+
+            while frame < frame_count or is_stage_loading():
                 self.sim_context.step(frame_time)
                 frame = frame + 1
         else:

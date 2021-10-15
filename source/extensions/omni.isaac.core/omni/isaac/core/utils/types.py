@@ -10,6 +10,27 @@ from typing import Optional
 import numpy as np
 
 
+class DataFrame(object):
+    def __init__(self, current_time_step, current_time, data) -> None:
+        self.current_time_step = current_time_step
+        self.current_time = current_time
+        self.data = data
+
+    def get_dict(self):
+        return {"current_time": self.current_time, "current_time_step": self.current_time_step, "data": self.data}
+
+    def __str__(self) -> str:
+        return str(self.get_dict())
+
+    @classmethod
+    def init_from_dict(cls, dict_representation):
+        frame = object.__new__(cls)
+        frame.current_time_step = dict_representation["current_time_step"]
+        frame.current_time = dict_representation["current_time"]
+        frame.data = dict_representation["data"]
+        return frame
+
+
 class DOFInfo(object):
     def __init__(self, prim_path, handle, prim, index):
         self.prim_path = prim_path
@@ -75,3 +96,22 @@ class ArticulationAction(object):
             if self.joint_positions is not None and self.joint_positions[index] is not None:
                 dof_action["position"] = self.joint_positions[index]
             return dof_action
+
+    def get_dict(self):
+        result = dict()
+        if self.joint_positions is not None:
+            result["joint_positions"] = self.joint_positions.tolist()
+        else:
+            result["joint_positions"] = None
+        if self.joint_velocities is not None:
+            result["joint_velocities"] = self.joint_velocities.tolist()
+        else:
+            result["joint_velocities"] = None
+        if self.joint_efforts is not None:
+            result["joint_efforts"] = self.joint_efforts.tolist()
+        else:
+            result["joint_efforts"] = None
+        return result
+
+    def __str__(self) -> str:
+        return str(self.get_dict())

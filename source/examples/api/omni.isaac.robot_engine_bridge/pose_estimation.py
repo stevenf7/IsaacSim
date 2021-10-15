@@ -54,16 +54,10 @@ room = add_reference_to_stage(stage_path, "/environment/room")
 # create target prim
 
 target_prim = prims.create_prim(
-    stage,
-    "/objects/cube",
-    "Cube",
-    position=np.array([0, 0, 100]),
-    scale=np.array([10, 10, 50]),
-    semantic_label="target",
+    "/objects/cube", "Cube", position=np.array([0, 0, 100]), scale=np.array([10, 10, 50]), semantic_label="target"
 )
 
 camera_prim = prims.create_prim(
-    stage,
     "/World/Camera",
     "Camera",
     attributes={
@@ -75,10 +69,7 @@ camera_prim = prims.create_prim(
 )
 viewport.get_viewport_window().set_active_camera(str(camera_prim.GetPath()))
 camera_proxy = prims.create_prim(
-    stage,
-    "/World/Camera/proxy",
-    "Xform",
-    orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(1, 0, 0), 180)),
+    "/World/Camera/proxy", "Xform", orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(1, 0, 0), 180))
 )
 
 texture_list = [
@@ -108,7 +99,9 @@ dr.commands.ToggleManualModeCommand().do()
 kit.update()
 kit.update()
 
-while kit.is_stage_loading():
+from omni.isaac.core.utils.stage import is_stage_loading
+
+while is_stage_loading():
     kit.update()
 
 result, occluded_provider = omni.kit.commands.execute(

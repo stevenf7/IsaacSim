@@ -349,3 +349,6 @@ class Articulation(XFormPrim):
         """
         self._articulation_controller.apply_action(control_actions=control_actions)
         return
+
+    def get_applied_action(self):
+        return self._articulation_controller.get_applied_action()

@@ -12,7 +12,7 @@ import numpy as np
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils.types import ArticulationAction
-from pxr import Usd
+from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 
 FRANKA_USD_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../../data/franka.usd")
 
@@ -20,9 +20,8 @@ FRANKA_USD_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../.
 class Franka(Robot):
     def __init__(
         self,
-        stage: Usd.Stage,
         prim_path: str,
-        name: str,
+        name: str = "franka_robot",
         usd_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
@@ -37,15 +36,16 @@ class Franka(Robot):
             position (Optional[np.ndarray], optional): [description]. Defaults to None.
             orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
         """
-        self._stage = stage
-        prim = stage.GetPrimAtPath(prim_path)
+        prim = get_prim_at_path(prim_path)
         if not prim.IsValid():
-            prim = stage.DefinePrim(prim_path, "Xform")
+            prim = define_prim(prim_path, "Xform")
             if usd_path:
                 prim.GetReferences().AddReference(usd_path)
             else:
                 prim.GetReferences().AddReference(FRANKA_USD_PATH)
-        super().__init__(prim=prim, name=name, position=position, orientation=orientation, articulation_controller=None)
+        super().__init__(
+            prim_path=prim_path, name=name, position=position, orientation=orientation, articulation_controller=None
+        )
         self._gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
         self._end_effector = None
         self._end_effector_prim_name = "panda_rightfinger"
@@ -203,8 +203,7 @@ class Franka(Robot):
             self._handle, self._end_effector_prim_name
         )
         end_effector_prim_path = self._dc_interface.get_rigid_body_path(self._end_effector_handle)
-        end_effector_prim = self._stage.GetPrimAtPath(end_effector_prim_path)
-        self._end_effector = RigidPrim(prim=end_effector_prim, name=self._name + "_end_effector")
+        self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self._name + "_end_effector")
         self._end_effector._initialize_handles()
         self._grippers_dof_indices = (
             self.get_dof_index(self._gripper_dof_names[0]),

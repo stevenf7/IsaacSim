@@ -357,9 +357,11 @@ class SimulationApp:
             self._exiting = True
             print("Shutting Down Simulation App...")
             # We are exisitng but something is still loading, wait for it to load to avoid a deadlock
-            if self.is_stage_loading():
+            from omni.isaac.core.utils.stage import is_stage_loading
+
+            if is_stage_loading():
                 print("   Waiting for USD resource operations to complete (this may take a few seconds)")
-            while self.is_stage_loading():
+            while is_stage_loading():
                 self._app.update()
             self._app.shutdown()
             self._framework.unload_all_plugins()
@@ -369,11 +371,6 @@ class SimulationApp:
                 if "omni" in m and m != "omni.kit.app":
                     del sys.modules[m]
             print("Simulation App Shutdown Completed...")
-
-    def is_stage_loading(self):
-        from omni.isaac.core.utils.stage import is_stage_loading
-
-        return is_stage_loading()
 
     def is_running(self) -> bool:
         """

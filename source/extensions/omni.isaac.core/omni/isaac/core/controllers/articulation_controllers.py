@@ -79,6 +79,13 @@ class DOFPDController(DOFArticulationController):
             self._dc_interface.set_dof_velocity_target(self._dof_handle, control_action["velocity"])
         return
 
+    def get_applied_action(self):
+        return {
+            "effort": None,
+            "position": self._dc_interface.get_dof_position_target(self._dof_handle),
+            "velocity": self._dc_interface.get_dof_velocity_target(self._dof_handle),
+        }
+
 
 class ArticulationController(object):
     def __init__(self, articulation_handle: int, dofs_info: dict) -> None:
@@ -183,3 +190,17 @@ class PDArticulationController(ArticulationController):
             self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
             self._dof_controllers[dof_index].set_gains(dof_props=dof_props, kp=0, kd=0)
         return
+
+    def get_applied_action(self):
+        joint_positions = np.zeros(len(self._dof_controllers))
+        joint_velocities = np.zeros(len(self._dof_controllers))
+        # TODO: waiting on a jira
+        joint_efforts = None
+        for dof_index in range(len(self._dof_controllers)):
+            dof_applied_action = self._dof_controllers[dof_index].get_applied_action()
+            joint_positions[dof_index] = dof_applied_action["position"]
+            joint_velocities[dof_index] = dof_applied_action["velocity"]
+
+        return ArticulationAction(
+            joint_positions=joint_positions, joint_velocities=joint_velocities, joint_efforts=joint_efforts
+        )

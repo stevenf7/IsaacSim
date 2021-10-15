@@ -69,7 +69,7 @@ class Object(Asset):
         from omni.isaac.core.utils import prims
 
         # Create object
-        self.asset = prims.create_prim(self.stage, self.path, "Xform", usd_path=self.ref, semantic_label=self.label)
+        self.asset = prims.create_prim(self.path, "Xform", usd_path=self.ref, semantic_label=self.label)
         self.asset_path = str(self.asset.GetPrimPath())
 
         self.add_material()

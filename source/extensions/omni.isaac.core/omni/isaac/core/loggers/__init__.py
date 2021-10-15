@@ -6,4 +6,4 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.tasks.task import BaseTask
+from omni.isaac.core.loggers.data_logger import DataLogger

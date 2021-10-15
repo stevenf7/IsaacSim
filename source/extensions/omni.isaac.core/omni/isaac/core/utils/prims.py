@@ -64,8 +64,7 @@ def set_usd_visibility(prim, visible: bool):
 
 
 def create_prim(
-    stage: Usd.Stage,
-    stage_path: str,
+    prim_path: str,
     prim_type: str,
     position: np.ndarray = None,
     orientation: np.ndarray = None,
@@ -77,7 +76,7 @@ def create_prim(
     from omni.isaac.core.utils import semantics
     from omni.isaac.core.prims import XFormPrim
 
-    prim = stage.DefinePrim(stage_path, prim_type)
+    prim = define_prim(prim_path=prim_path, prim_type=prim_type)
     if not prim:
         return None
 
@@ -88,7 +87,7 @@ def create_prim(
         prim.GetReferences().AddReference(usd_path)
     if semantic_label is not None:
         semantics.add_update_semantics(prim, semantic_label)
-    XFormPrim(prim_path=stage_path, position=position, orientation=orientation, scale=scale)
+    XFormPrim(prim_path=prim_path, position=position, orientation=orientation, scale=scale)
     return prim
 
 
