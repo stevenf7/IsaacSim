@@ -23,7 +23,6 @@ writeTarget.kit = true
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_planning" = {}
 "omni.isaac.utils" = {}
-"omni.isaac.surface_gripper" = {}
 "omni.isaac.manip" = {}
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.dr" = {}
@@ -52,9 +51,6 @@ name = "omni.isaac.samples.scripts.jetbot_keyboard"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.dofbot_preview"
-
-[[python.module]]
-name = "omni.isaac.samples.scripts.ur10_preview"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.navigation_preview"
