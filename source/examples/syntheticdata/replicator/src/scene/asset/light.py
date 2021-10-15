@@ -42,4 +42,4 @@ class Light(Asset):
             light_shape = "SphereLight"
             attributes["radius"] = self.sample("light_radius")
 
-        self.asset = prims.create_prim(self.stage, self.path, light_shape, attributes=attributes)
+        self.asset = prims.create_prim(self.path, light_shape, attributes=attributes)

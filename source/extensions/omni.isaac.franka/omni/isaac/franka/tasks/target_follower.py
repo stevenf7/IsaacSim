@@ -30,10 +30,9 @@ class TargetFollower(BaseTask):
             scene (Scene): [description]
         """
         super().set_up_scene(scene)
-        self.my_franka = scene.add(Franka(stage=scene.stage, prim_path="/World/Franka", name="my_franka"))
+        self.my_franka = scene.add(Franka(prim_path="/World/Franka", name="my_franka"))
         self.target_cube = scene.add(
             VisualCube(
-                stage=scene.stage,
                 name="target_cube",
                 prim_path="/World/TargetCube",
                 position=np.array([0, 0.1, 0.7]),
@@ -42,7 +41,7 @@ class TargetFollower(BaseTask):
                 size=0.05,
             )
         )
-        scene.add_ground_plane(size=50.0 / self.scene.stage_units_in_meters)
+        scene.add_ground_plane()
         return
 
     def add_obstacle(self, position: np.ndarray = np.array([0.1, 0.1, 1.0])):
@@ -53,7 +52,6 @@ class TargetFollower(BaseTask):
         """
         cube = self.scene.add(
             DynamicCube(
-                stage=self.scene.stage,
                 name="cube_" + str(len(self.obstacle_cubes)),
                 position=position,
                 prim_path="/World/ObstacleCube_" + str(len(self.obstacle_cubes)),
@@ -96,7 +94,7 @@ class TargetFollower(BaseTask):
             dict: [description]
         """
         joints_state = self.my_franka.get_joints_state()
-        target_cube_position, _ = self.target_cube.get_usd_pose()
+        target_cube_position, _ = self.target_cube.get_world_pose()
         return {
             "my_franka": {
                 "joint_positions": np.array(joints_state.positions),
@@ -111,8 +109,8 @@ class TargetFollower(BaseTask):
         Returns:
             bool: [description]
         """
-        end_effector_position, _ = self.my_franka.end_effector.get_pose()
-        target_cube_position, _ = self.target_cube.get_usd_pose()
+        end_effector_position, _ = self.my_franka.end_effector.get_world_pose()
+        target_cube_position, _ = self.target_cube.get_world_pose()
         if np.mean(np.abs(np.array(end_effector_position) - np.array(target_cube_position))) < 0.025:
             return True
         else:
@@ -126,9 +124,9 @@ class TargetFollower(BaseTask):
             simulation_time (float): [description]
         """
         if self.target_reached():
-            self.target_cube.set_usd_color(color=np.array([0, 255, 0]))
+            self.target_cube.get_applied_visual_material().set_color(color=np.array([0, 255, 0]))
         else:
-            self.target_cube.set_usd_color(color=np.array([255, 0, 0]))
+            self.target_cube.get_applied_visual_material().set_color(color=np.array([255, 0, 0]))
 
         return
 

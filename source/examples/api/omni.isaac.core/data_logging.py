@@ -1,0 +1,48 @@
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
+from omni.isaac.kit import SimulationApp
+
+simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core import World
+from omni.isaac.core.robots import Robot
+from omni.isaac.franka import get_franka_usd_path
+from omni.isaac.core.utils.stage import add_reference_to_stage
+
+my_world = World()
+
+my_world.scene.add_ground_plane()
+asset_path = get_franka_usd_path()
+add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
+articulated_system_1 = my_world.scene.add(Robot(prim_path="/World/Franka_1", name="my_franka_1"))
+
+
+my_world.reset()
+data_logger = my_world.get_data_logger()
+
+
+def frame_logging_func(task, scene):
+    return {
+        "joint_positions": scene.get_object("my_franka_1").get_joint_positions().tolist(),
+        "applied_joint_positions": scene.get_object("my_franka_1").get_applied_action().joint_positions.tolist(),
+    }
+
+
+data_logger.add_data_frame_logging_func(frame_logging_func)
+data_logger.start()
+for j in range(100):
+    my_world.step(render=True)
+
+data_logger.save(log_path="./isaac_sim_data.json")
+data_logger.reset()
+
+data_logger.load(log_path="./isaac_sim_data.json")
+print(data_logger.get_data_frame(data_frame_index=2))
+simulation_app.close()

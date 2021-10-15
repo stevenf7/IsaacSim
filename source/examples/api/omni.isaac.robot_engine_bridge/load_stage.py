@@ -135,7 +135,9 @@ if __name__ == "__main__":
     sample = UsdLoadSample(args)
     if sample.load_stage(args):
         print("Loading stage...")
-        while sample.kit.is_stage_loading():
+        from omni.isaac.core.utils.stage import is_stage_loading
+
+        while is_stage_loading():
             sample.kit.update()
         print("Loading Complete")
         # Add parameterized rebcamera along with viewport

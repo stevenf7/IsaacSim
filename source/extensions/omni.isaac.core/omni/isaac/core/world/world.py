@@ -13,6 +13,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 import builtins
 from pxr import Usd
 from omni.isaac.core.utils.view_ports import set_camera_view
+from omni.isaac.core.loggers import DataLogger
 
 
 class World(SimulationContext):
@@ -36,6 +37,7 @@ class World(SimulationContext):
         if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
             self.start_simulation()
         set_camera_view()
+        self._data_logger = DataLogger()
         return
 
     @classmethod
@@ -142,4 +144,14 @@ class World(SimulationContext):
         if self.scene._enable_bounding_box_computations:
             self.scene._bbox_cache.SetTime(Usd.TimeCode(self._current_time))
         SimulationContext.step(self, render=render)
+        if self._data_logger.is_started():
+            if self._data_logger._data_frame_logging_func is None:
+                raise Exception("You need to add data logging function before starting the data logger")
+            data = self._data_logger._data_frame_logging_func(task=self.get_current_task(), scene=self.scene)
+            self._data_logger.add_data(
+                data=data, current_time_step=self.current_time_step_index, current_time=self.current_time
+            )
         return
+
+    def get_data_logger(self):
+        return self._data_logger

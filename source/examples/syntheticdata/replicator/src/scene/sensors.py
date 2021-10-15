@@ -38,7 +38,7 @@ class SensorManager:
 
         # Create mono or stereo cameras
         camera_path = "/World/CameraRig"
-        self.camera_rig = UsdGeom.Xformable(prims.create_prim(self.stage, camera_path, "Xform"))
+        self.camera_rig = UsdGeom.Xformable(prims.create_prim(camera_path, "Xform"))
 
         camera_prim_paths = []
         if self.sample("stereo"):
