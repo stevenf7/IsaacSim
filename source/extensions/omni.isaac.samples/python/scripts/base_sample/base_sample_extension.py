@@ -7,28 +7,25 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from abc import abstractmethod
 import omni.ext
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import weakref
 import gc
-from omni.isaac.core import World
-from omni.isaac.core.utils.stage import create_new_stage_async
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
 import asyncio
+from omni.isaac.samples.scripts.base_sample import BaseSample
 
 
-class BaseSample(omni.ext.IExt):
+class BaseSampleExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        self._world = None
         self._menu_items = None
         self._buttons = None
-        self._task = None
         self._ext_id = ext_id
+        self._sample = None
         return
 
-    def _on_startup(
+    def start_extension(
         self,
         menu_name: str,
         submenu_name: str,
@@ -40,13 +37,12 @@ class BaseSample(omni.ext.IExt):
         file_path: str,
         physics_dt: float = 1.0 / 60.0,
         stage_units_in_meters: float = 1.0,
+        sample=None,
     ):
-        self._world = None
         menu_items = [MenuItemDescription(name=name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
         self._menu_items = [
             MenuItemDescription(name=menu_name, sub_menu=[MenuItemDescription(name=submenu_name, sub_menu=menu_items)])
         ]
-
         add_menu_items(self._menu_items, "Isaac Examples")
         self._buttons = dict()
         self._build_ui(
@@ -57,8 +53,11 @@ class BaseSample(omni.ext.IExt):
             buttons_mapping=buttons_mapping,
             file_path=file_path,
         )
-
-        self._world_settings = {"physics_dt": physics_dt, "stage_units_in_meters": stage_units_in_meters}
+        if sample is None:
+            self._sample = BaseSample()
+        else:
+            self._sample = sample
+        self._sample.set_world_settings({"physics_dt": physics_dt, "stage_units_in_meters": stage_units_in_meters})
         return
 
     def _build_ui(self, name, title, doc_link, overview, buttons_mapping, file_path):
@@ -86,7 +85,7 @@ class BaseSample(omni.ext.IExt):
                             "type": "button",
                             "text": "Load",
                             "tooltip": "Load World and Task",
-                            "on_clicked_fn": self._on_setup_world,
+                            "on_clicked_fn": self._on_load_world,
                         }
                         self._buttons["Load World"] = btn_builder(**dict)
                         self._buttons["Load World"].enabled = True
@@ -124,75 +123,31 @@ class BaseSample(omni.ext.IExt):
         self._buttons[button_name].set_tooltip(tool_tip)
         return
 
-    def _on_setup_world(self):
-        async def _on_setup_world_async():
-            # await create_new_stage_async()
-            if World.instance() is None:
-                self._world = World(**self._world_settings)
-                await self._world.init_simulation_context_async()
-                self._task = self._load_task()
-                if self._task is not None:
-                    self._world.load_task(self._task)
-            else:
-                self._world = World.instance()
-                self._task = self._world.get_current_task()
-            await self._world.reset_async()
-            if self._task is not None:
-                self._world.add_physics_callback("task_step", self.task_simulation_step)
-            self.setup_load()
-            self._buttons["Load World"].enabled = False
+    def _on_load_world(self):
+        async def _on_load_world_async():
+            await self._sample.load_world_async()
+            await omni.kit.app.get_app().next_update_async()
+            self._sample._world.add_stage_callback("stage_event_1", self.on_stage_event)
             self._enable_all_buttons(True)
-            self._world.add_stage_callback("stage_event_1", self._on_stage_event)
-            self.setup_reset()
-            return
+            self._buttons["Load World"].enabled = False
 
-        asyncio.ensure_future(_on_setup_world_async())
+        asyncio.ensure_future(_on_load_world_async())
+        return
+
+    def _on_reset(self):
+        asyncio.ensure_future(self._sample.reset_async())
         return
 
     def _on_clear(self):
-        async def _on_clear_async():
-            await create_new_stage_async()
-            if self._world is not None:
-                self._world.clear_instance()
-                gc.collect()
-                self._world = None
-            return
-
-        asyncio.ensure_future(_on_clear_async())
-        return
-
-    @abstractmethod
-    def _load_task(self):
-        return None
-
-    @abstractmethod
-    def setup_load(self):
+        asyncio.ensure_future(self._sample.clear_async())
+        self._enable_all_buttons(False)
+        self._buttons["Load World"].enabled = True
+        self._buttons["Clear World"].enabled = True
         return
 
     def _enable_all_buttons(self, flag):
         for btn_name, btn in self._buttons.items():
-            if btn_name != "Load World":
-                btn.enabled = flag
-        return
-
-    def _on_reset(self):
-        async def _on_reset_async():
-            await self._world.reset_async()
-            self._enable_all_buttons(True)
-            self.setup_reset()
-            self._world.remove_physics_callback("task_step")
-            if self._world._scene_finalized and self._task is not None:
-                self._world.add_physics_callback("task_step", self.task_simulation_step)
-
-        asyncio.ensure_future(_on_reset_async())
-        return
-
-    def task_simulation_step(self, step_size):
-        self._task.step(self._world.current_time_step_index, self._world.current_time)
-        return
-
-    @abstractmethod
-    def setup_reset(self):
+            btn.enabled = flag
         return
 
     def _menu_callback(self):
@@ -200,13 +155,18 @@ class BaseSample(omni.ext.IExt):
         return
 
     def _on_window(self, status):
+        # if status:
         return
 
     def on_shutdown(self):
-        if self._world is not None:
-            self._world_cleanup()
+        if self._sample._world is not None:
+            self._sample.world_cleanup()
         if self._menu_items is not None:
             self._sample_window_cleanup()
+        if self._buttons is not None:
+            self._buttons["Load World"].enabled = True
+            self._buttons["Clear World"].enabled = True
+            self._enable_all_buttons(False)
         return
 
     def _sample_window_cleanup(self):
@@ -217,18 +177,12 @@ class BaseSample(omni.ext.IExt):
         gc.collect()
         return
 
-    def _world_cleanup(self):
-        self._world.stop()
-        self._world.clear_physics_callbacks()
-        self._world.clear_stage_callbacks()
-        self._task = None
-        if self._buttons is not None:
-            self._buttons["Load World"].enabled = True
-            self._enable_all_buttons(False)
-        return
-
-    def _on_stage_event(self, event):
+    def on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.CLOSED):
-            if self._world is not None and self._world.instance() is not None:
-                self._world_cleanup()
+            if self._sample._world is not None and self._sample._world.instance() is not None:
+                self._sample.world_cleanup()
+                self._sample._world.clear_instance()
+                self._enable_all_buttons(False)
+                self._buttons["Load World"].enabled = True
+                self._buttons["Clear World"].enabled = True
         return

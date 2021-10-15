@@ -20,7 +20,7 @@ class Jetbot(Robot):
     def __init__(
         self,
         prim_path: str,
-        name: str,
+        name: str = "jetbot",
         usd_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,

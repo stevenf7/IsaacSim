@@ -6,7 +6,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import os
 import carb
 import omni.ext
 import omni.appwindow
@@ -20,7 +19,6 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.tasks.task import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.samples.scripts.base_sample import BaseSample
-import asyncio
 
 
 class DriveTask(BaseTask):
@@ -30,7 +28,6 @@ class DriveTask(BaseTask):
 
     def set_up_scene(self, scene: Scene) -> None:
         super().set_up_scene(scene)
-
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
@@ -58,49 +55,28 @@ class DriveTask(BaseTask):
         pass
 
 
-class Extension(BaseSample):
-    def on_startup(self, ext_id: str):
-        super().on_startup(ext_id)
-        overview = "This Example shows how to simulate an NVIDIA Jetbot robot in Isaac Sim."
-        overview += "\n\tKeybord Input:"
-        overview += "\n\t\tw: Forward"
-        overview += "\n\t\ts: Reverse"
-        overview += "\n\t\ta: Spin Left"
-        overview += "\n\t\td: Spin Right"
-        overview += "\n\nPress the 'Open in IDE' button to view the source code."
-
-        super()._on_startup(
-            menu_name="Controlling",
-            submenu_name="Input Devices",
-            name="Jetbot Keyboard",
-            buttons_mapping={},
-            title="NVIDIA Jetbot Navigation Example",
-            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_jetbot.html",
-            overview=overview,
-            file_path=os.path.abspath(__file__),
-            stage_units_in_meters=0.01,
-        )
+class JetbotKeyboard(BaseSample):
+    def __init__(self) -> None:
+        super().__init__()
         self._controller = None
         self._command = [0.0, 0.0]
 
     def _load_task(self):
         return DriveTask()
 
-    def setup_load(self):
-        async def _on_setup_load_async():
-            self._controller = DifferentialController(name="simple_control")
-            self._appwindow = omni.appwindow.get_default_app_window()
-            self._input = carb.input.acquire_input_interface()
-            self._keyboard = self._appwindow.get_keyboard()
-            self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-            self._world.add_physics_callback("jetbot_step", callback_fn=self._on_editor_step)
-            await self._world.play_async()
-
-        asyncio.ensure_future(_on_setup_load_async())
+    async def setup_load(self):
+        self._controller = DifferentialController(name="simple_control")
+        self._appwindow = omni.appwindow.get_default_app_window()
+        self._input = carb.input.acquire_input_interface()
+        self._keyboard = self._appwindow.get_keyboard()
+        self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
+        self._world.add_physics_callback("jetbot_step", callback_fn=self._on_editor_step)
+        await self._world.play_async()
         return
 
     def _on_editor_step(self, step):
         self._task.jetbot.apply_wheel_actions(self._controller.forward(command=self._command))
+        return
 
     def _sub_keyboard_event(self, event, *args, **kwargs):
         """Handle keyboard events
@@ -126,16 +102,16 @@ class Extension(BaseSample):
 
         return True
 
-    def on_shutdown(self):
-        """Cleanup objects on extension shutdown"""
-        super().on_shutdown()
+    async def setup_reset(self):
+        self._controller.reset()
+        self._world.remove_physics_callback("jetbot_step")
+        await omni.kit.app.get_app().next_update_async()
+        self._world.add_physics_callback("jetbot_step", callback_fn=self._on_editor_step)
+        return
+
+    def world_cleanup(self):
+        super().world_cleanup()
         self._controller = None
         self._sub_keyboard = None
         gc.collect()
-
-    def _reset_call(self):
-        self._controller.reset()
-        self._world.remove_physics_callback("jetbot_step")
-        self._world.add_physics_callback("jetbot_step", callback_fn=self._on_editor_step)
-        self._world.play()
         return
