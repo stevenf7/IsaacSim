@@ -47,7 +47,10 @@ class SceneManager:
         from omni.isaac.utils.scripts import scene_utils
 
         # Define world prim
-        prims.create_prim("/World", "Xform")
+        try:
+            prims.create_prim("/World", "Xform")
+        except:
+            Logger.print("/World already exists\n")
 
         # Set scene units
         omni.kit.commands.execute(
@@ -141,8 +144,6 @@ class SceneManager:
             frame = 0
             frame_time = 1 / 60
             frame_count = self.sample("physics_simulate_time") / frame_time
-            from omni.isaac.core.utils.stage import is_stage_loading
-
             while frame < frame_count or is_stage_loading():
                 self.sim_context.step(frame_time)
                 frame = frame + 1
