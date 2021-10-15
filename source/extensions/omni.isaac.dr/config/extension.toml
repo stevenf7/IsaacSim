@@ -22,6 +22,7 @@ writeTarget.kit = true
 "omni.timeline" = {} # needed to play timeline to start simualtion
 "omni.debugdraw" = {}
 "omni.usd.schema.isaac" = {}
+"omni.kit.menu.utils" = {}
 
 [[python.module]]
 name = "omni.isaac.dr"
