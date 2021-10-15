@@ -28,10 +28,14 @@ writeTarget.kit = true
 "omni.isaac.motion_planning" = {}
 "omni.physx" = {}
 "omni.isaac.motion_generation" = {}
+"omni.isaac.surface_gripper" = {}
 "omni.kit.window.viewport" = {}
 
 [[python.module]]
 name = "omni.isaac.demos.franka_leonardo"
+
+[[python.module]]
+name = "omni.isaac.demos.ur10_preview"
 
 [[python.module]]
 name = "omni.isaac.demos.tests"

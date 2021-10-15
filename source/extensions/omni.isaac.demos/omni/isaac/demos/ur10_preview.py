@@ -20,9 +20,9 @@ import omni.physx as _physx
 from omni.physx.bindings._physx import SimulationEvent
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
-from .ur10_scenarios.scenario import Scenario
-from .ur10_scenarios import bin_stack
-from .ur10_scenarios.fill_bin import FillBin
+from omni.isaac.demos.ur10_scenarios.scenario import Scenario
+from omni.isaac.demos.ur10_scenarios import bin_stack
+from omni.isaac.demos.ur10_scenarios.fill_bin import FillBin
 
 import asyncio
 
