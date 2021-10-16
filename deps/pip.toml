@@ -64,8 +64,6 @@ packages = [
     "pyparsing==2.4.7",                     # SWIPAT filed under:
     "cycler==0.10.0",                       # SWIPAT filed under:
     "kiwisolver==1.3.2",                    # SWIPAT filed under:
-    "torch==1.9.0",                         # SWIPAT filed under:
-    "torchvision==0.10.0",                  # SWIPAT filed under:
     "pint==0.17.0",                         # SWIPAT filed under:
     "packaging==21.0",                      # SWIPAT filed under:
     "oauthlib==3.1.1",                      # SWIPAT filed under:
@@ -80,6 +78,20 @@ download_only = false
 install_dependencies = false
 append_to_install_folder = true
 gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
+
+[[dependency]]
+python = "../_build/target-deps/python"
+packages = [
+    "torch==1.9.1+cu111",                         # SWIPAT filed under:
+    "torchvision==0.10.1+cu111",                  # SWIPAT filed under:
+]
+target = "../_build/target-deps/pip_prebundle"
+platforms = ["*-x86_64"]
+download_only = false
+install_dependencies = false
+append_to_install_folder = true
+gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
+extra_args = ["-f", "https://download.pytorch.org/whl/torch_stable.html"]
 
 
 # NOTE - For any new packages added to this list, please make sure that the license is compatible with Omniverse (i.e. avoid GPL/LGPL) and

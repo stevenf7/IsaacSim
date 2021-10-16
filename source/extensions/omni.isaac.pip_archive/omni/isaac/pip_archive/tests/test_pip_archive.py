@@ -5,7 +5,7 @@ import omni.kit.pipapi
 class TestPipArchive(omni.kit.test.AsyncTestCase):
     async def test_pip_archive(self):
         # Take one of packages from deps/pip.toml, it should be prebundled and available without need for going into online index
-        omni.kit.pipapi.install("scipy", version="1.5.4", use_online_index=False)
+        omni.kit.pipapi.install("scipy", version="1.7.1", use_online_index=False)
         import scipy
 
         self.assertIsNotNone(scipy)
@@ -36,6 +36,7 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import pint
         import requests_oauthlib
         import oauthlib
+        import yaml
 
         self.assertIsNotNone(scipy)
         self.assertIsNotNone(quaternion)
@@ -61,3 +62,4 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(pint)
         self.assertIsNotNone(requests_oauthlib)
         self.assertIsNotNone(oauthlib)
+        self.assertIsNotNone(yaml)
