@@ -50,9 +50,6 @@ name = "omni.isaac.samples.scripts.kaya_joystick"
 name = "omni.isaac.samples.scripts.jetbot_keyboard"
 
 [[python.module]]
-name = "omni.isaac.samples.scripts.dofbot_preview"
-
-[[python.module]]
 name = "omni.isaac.samples.scripts.navigation_preview"
 
 [[python.module]]
