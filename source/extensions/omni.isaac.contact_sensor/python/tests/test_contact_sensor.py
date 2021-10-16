@@ -227,6 +227,29 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
                 self.assertEqual(sensor_reading["value"], 0)
         pass
 
+    async def test_delayed_get_sensor_readings(self):
+        await self.test_add_sensors()
+        self._timeline.play()
+        for i in range(120):
+            await omni.kit.app.get_app().next_update_async()
+        contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
+        sensor_reading = self._cs.get_sensor_readings(self._sensor_handles[0])
+        self.assertEqual(len(sensor_reading), 1)
+        sensor_reading = sensor_reading[0]
+        if len((contacts_raw)):
+            # there is a contact, compute force from impulse, compare to sensor reading
+            force = (
+                np.linalg.norm(
+                    [contacts_raw[0]["impulse"]["x"], contacts_raw[0]["impulse"]["y"], contacts_raw[0]["impulse"]["z"]]
+                )
+                * 60.0
+            )  # dt is 1/60
+            self.assertAlmostEqual(force, sensor_reading["value"], 2)
+        else:
+            # No contact, reading should be zero
+            self.assertEqual(sensor_reading["value"], 0)
+        pass
+
     async def test_compare_sensor_force_to_mass(self):
 
         cube_prim = add_cube(self._stage, "/cube", 1, (10, 10, 2), physics=True)
