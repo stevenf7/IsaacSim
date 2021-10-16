@@ -9,3 +9,4 @@
 
 from .test_rmp_sample import *
 from .test_nav_sample import *
+from .test_kaya_joystick import *
