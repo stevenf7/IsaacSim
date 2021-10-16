@@ -202,18 +202,19 @@ CsReading* ContactSensor::getSensorReadings(size_t& num_readings)
             mSensorReadings.clear();
             while (mCurrentTime < end)
             {
-                float time_pos = (mCurrentTime - start) / (end - start);
-                CsReading reading;
-                reading.time = mCurrentTime;
-                reading.inContact =
-                    (bool)round(lerp(mReadingPair[!mCurrent].inContact, mReadingPair[mCurrent].inContact, time_pos));
-                reading.value = lerp(mReadingPair[!mCurrent].value, mReadingPair[mCurrent].value, time_pos);
-                if (reading.value < mProps.minThreshold)
+                if (mCurrentTime >= start)
                 {
-                    reading.value = 0.0f;
-                    reading.inContact = false;
+                    float time_pos = (mCurrentTime - start) / (end - start);
+                    CsReading reading;
+                    reading.time = mCurrentTime;
+                    reading.value = lerp(mReadingPair[!mCurrent].value, mReadingPair[mCurrent].value, time_pos);
+                    if (reading.value < mProps.minThreshold)
+                    {
+                        reading.value = 0.0f;
+                    }
+                    reading.inContact = reading.value > 0.0f;
+                    mSensorReadings.push_back(reading);
                 }
-                mSensorReadings.push_back(reading);
                 mCurrentTime += mProps.sensorPeriod;
             }
             mProcessedReadings = true;
@@ -329,6 +330,12 @@ void ContactManager::onPhysicsStep(float timeElapsed)
     for (auto& it : mSensorHandleMap)
     {
         it.second.update(mCurrentTime);
+        if (!it.second.processedRaw())
+        {
+            size_t size;
+            auto contacts = getCsRawData(it.second.getBody(), size);
+            it.second.processRawContacts(contacts, size);
+        }
     }
     mSensorsProcessed = false;
 }
