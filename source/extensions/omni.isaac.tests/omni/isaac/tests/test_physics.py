@@ -263,4 +263,5 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
             await omni.kit.app.get_app().next_update_async()
 
         trans_b = np.array(omni.usd.utils.get_world_transform_matrix(hand_prim).ExtractTranslation())
-        self.assertEqual(trans_a.tolist(), trans_b.tolist())
+
+        self.assertAlmostEqual(np.linalg.norm(trans_a - trans_b), 0, delta=0.03)
