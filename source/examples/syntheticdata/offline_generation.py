@@ -243,12 +243,16 @@ class RandomScenario(torch.utils.data.IterableDataset):
             groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
             groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = sensor_settings["bbox_2d_tight"]["colorize"]
             groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = sensor_settings["bbox_2d_tight"]["npy"]
+            groundtruth["METADATA"]["BBOX2DTIGHT"]["WIDTH"] = image.shape[1]
+            groundtruth["METADATA"]["BBOX2DTIGHT"]["HEIGHT"] = image.shape[0]
 
         # 2D Loose BBox
         if sensor_settings["bbox_2d_loose"]["enabled"] and gt["state"]["boundingBox2DLoose"]:
             groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
             groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = sensor_settings["bbox_2d_loose"]["colorize"]
             groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = sensor_settings["bbox_2d_loose"]["npy"]
+            groundtruth["METADATA"]["BBOX2DLOOSE"]["WIDTH"] = image.shape[1]
+            groundtruth["METADATA"]["BBOX2DLOOSE"]["HEIGHT"] = image.shape[0]
 
         self.data_writer.q.put(groundtruth)
         return image
