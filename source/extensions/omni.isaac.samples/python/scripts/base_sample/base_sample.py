@@ -67,7 +67,7 @@ class BaseSample(object):
 
     def world_cleanup(self):
         self._world.stop()
-        self._world.clear_all_callbacks()
+        self._world.clear_physics_callbacks()
         self._task = None
         return
 

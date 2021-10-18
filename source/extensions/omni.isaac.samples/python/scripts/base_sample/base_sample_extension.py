@@ -11,10 +11,10 @@ import omni.ext
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import weakref
-import gc
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
 import asyncio
 from omni.isaac.samples.scripts.base_sample import BaseSample
+from omni.isaac.core import World
 
 
 class BaseSampleExtension(omni.ext.IExt):
@@ -127,7 +127,8 @@ class BaseSampleExtension(omni.ext.IExt):
         async def _on_load_world_async():
             await self._sample.load_world_async()
             await omni.kit.app.get_app().next_update_async()
-            self._sample._world.add_stage_callback("stage_event_1", self.on_stage_event)
+            if not self._sample._world.stage_callback_exists("stage_event_1"):
+                self._sample._world.add_stage_callback("stage_event_1", self.on_stage_event)
             self._enable_all_buttons(True)
             self._buttons["Load World"].enabled = False
 
@@ -174,15 +175,18 @@ class BaseSampleExtension(omni.ext.IExt):
         self._window = None
         self._menu_items = None
         self._buttons = None
-        gc.collect()
         return
 
     def on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.CLOSED):
-            if self._sample._world is not None and self._sample._world.instance() is not None:
-                self._sample.world_cleanup()
-                self._sample._world.clear_instance()
-                self._enable_all_buttons(False)
-                self._buttons["Load World"].enabled = True
-                self._buttons["Clear World"].enabled = True
+            if World.instance() is not None:
+                world = World.instance()
+                world.stop()
+                world.clear_all_callbacks()
+                world.clear_instance()
+                if hasattr(self, "_buttons"):
+                    if self._buttons is not None:
+                        self._enable_all_buttons(False)
+                        self._buttons["Load World"].enabled = True
+                        self._buttons["Clear World"].enabled = True
         return
