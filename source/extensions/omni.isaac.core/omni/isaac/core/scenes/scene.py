@@ -142,6 +142,20 @@ class Scene(object):
             raise Exception("Cannot get object {} from the scene since it doesn't exist".format(name))
         return self._scene_registry.get_object(name=name)
 
+    def object_exists(self, name: str) -> bool:
+        """[summary]
+
+        Args:
+            name (str): [description]
+
+        Returns:
+            XFormPrim: [description]
+        """
+        if self._scene_registry.name_exists(name):
+            return True
+        else:
+            return False
+
     def clear_scene(self) -> None:
         """[summary]
         """

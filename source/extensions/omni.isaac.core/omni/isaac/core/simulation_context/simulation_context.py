@@ -168,10 +168,7 @@ class SimulationContext:
     def play(self) -> None:
         self._timeline.play()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            current_physics_dt = self._physics_scene.get_physics_dt()
-            self._physics_scene.set_physics_dt(0)
             self.step(render=True)
-            self._physics_scene.set_physics_dt(current_physics_dt)
         return
 
     async def pause_async(self):
@@ -267,6 +264,12 @@ class SimulationContext:
             carb.log_error(f"Physics callback `{callback_name}` doesn't exist")
         return
 
+    def physics_callback_exists(self, callback_name):
+        if callback_name in self._physics_callback_functions:
+            return True
+        else:
+            return False
+
     def clear_physics_callbacks(self):
         self._physics_callback_functions = dict()
         return
@@ -286,6 +289,12 @@ class SimulationContext:
         else:
             carb.log_error(f"Stage callback `{callback_name}` doesn't exist")
         return
+
+    def stage_callback_exists(self, callback_name):
+        if callback_name in self._stage_callback_functions:
+            return True
+        else:
+            return False
 
     def clear_stage_callbacks(self):
         self._stage_callback_functions = dict()
@@ -307,6 +316,12 @@ class SimulationContext:
             carb.log_error(f"Timeline callback `{callback_name}` doesn't exist")
         return
 
+    def timeline_callback_exists(self, callback_name):
+        if callback_name in self._timeline_callback_functions:
+            return True
+        else:
+            return False
+
     def clear_timeline_callbacks(self):
         self._timeline_callback_functions = dict()
         return
@@ -327,6 +342,12 @@ class SimulationContext:
         else:
             carb.log_error(f"Editor callback `{callback_name}` doesn't exist")
         return
+
+    def editor_callback_exists(self, callback_name):
+        if callback_name in self._editor_callback_functions:
+            return True
+        else:
+            return False
 
     def clear_editor_callbacks(self):
         self._editor_callback_functions = dict()

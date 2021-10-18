@@ -9,7 +9,6 @@
 import carb
 import omni.ext
 import omni.appwindow
-import gc
 import numpy as np
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.kaya import Kaya
@@ -109,5 +108,4 @@ class KayaJoystick(BaseSample):
         if self._controller:
             self._controller = None
             self._manip.unbind_gamepad()
-        gc.collect()
         return
