@@ -6,12 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple
+from typing import Optional
 import os
 import numpy as np
 from omni.isaac.core.robots.robot import Robot
+from omni.isaac.core.articulations import ArticulationGripper
 from omni.isaac.core.prims.rigid_prim import RigidPrim
-from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 
 FRANKA_USD_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../../data/franka.usd")
@@ -25,6 +25,10 @@ class Franka(Robot):
         usd_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        end_effector_prim_name: Optional[str] = None,
+        gripper_dof_names=None,
+        gripper_open_position=[0.4, 0.4],
+        gripper_closed_position=[0.0, 0.0],
     ) -> None:
         """[summary]
 
@@ -37,22 +41,42 @@ class Franka(Robot):
             orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
         """
         prim = get_prim_at_path(prim_path)
+        self._end_effector = None
+        self._gripper = None
+        self._end_effector_prim_name = end_effector_prim_name
         if not prim.IsValid():
             prim = define_prim(prim_path, "Xform")
             if usd_path:
                 prim.GetReferences().AddReference(usd_path)
             else:
                 prim.GetReferences().AddReference(FRANKA_USD_PATH)
+                if self._end_effector_prim_name is None:
+                    self._end_effector_prim_name = "panda_rightfinger"
+                if gripper_dof_names is None:
+                    gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
+                if gripper_open_position is None:
+                    gripper_open_position = [0.4, 0.4]
+                if gripper_closed_position is None:
+                    gripper_closed_position = [0.0, 0.0]
+        else:
+            # TODO: change this
+            if self._end_effector_prim_name is None:
+                self._end_effector_prim_name = "panda_rightfinger"
+            if gripper_dof_names is None:
+                gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
+            if gripper_open_position is None:
+                gripper_open_position = [0.4, 0.4]
+            if gripper_closed_position is None:
+                gripper_closed_position = [0.0, 0.0]
         super().__init__(
             prim_path=prim_path, name=name, position=position, orientation=orientation, articulation_controller=None
         )
-        self._gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
-        self._end_effector = None
-        self._end_effector_prim_name = "panda_rightfinger"
-        self._grippers_dof_indices = None
-        self._gripper_open_position = (0.4, 0.4)
-        self._gripper_closed_position = (0.0, 0.0)
-        # TODO: check the default state and how to reset
+        if gripper_dof_names is not None:
+            self._gripper = ArticulationGripper(
+                gripper_dof_names=gripper_dof_names,
+                gripper_open_position=gripper_open_position,
+                gripper_closed_position=gripper_closed_position,
+            )
         return
 
     @property
@@ -65,149 +89,26 @@ class Franka(Robot):
         return self._end_effector
 
     @property
-    def grippers_dof_indices(self) -> Tuple[int, int]:
+    def gripper(self) -> RigidPrim:
         """[summary]
 
         Returns:
-            int: [description]
+            RigidPrim: [description]
         """
-        return self._grippers_dof_indices
+        return self._gripper
 
-    @property
-    def gripper_open_position(self):
-        """[summary]
-
-        Returns:
-            [type]: [description]
-        """
-        return self._gripper_open_position
-
-    @property
-    def gripper_closed_position(self):
-        """[summary]
-
-        Returns:
-            [type]: [description]
-        """
-        return self._gripper_closed_position
-
-    # TODO: units in dc are different than the ones in USD for some reason?
-    def get_end_effector_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        """[summary]
-
-        Returns:
-            Tuple[np.ndarray, np.ndarray]: [description]
-        """
-        return self._end_effector.get_pose()
-
-    def get_end_effector_linear_velocity(self) -> np.ndarray:
-        """[summary]
-
-        Returns:
-            np.ndarray: [description]
-        """
-        return self._end_effector.get_linear_velocity()
-
-    def get_end_effector_angular_velocity(self) -> np.ndarray:
-        """[summary]
-
-        Returns:
-            np.ndarray: [description]
-        """
-        return self._end_effector.get_angular_velocity()
-
-    def close_gripper(self, deltas: Tuple[float, float] = (0.005, 0.005)) -> None:
+    def initialize_handles(self) -> None:
         """[summary]
         """
-        current_gripper_position_1, current_gripper_position_2 = self.get_gripper_position()
-        joint_positions = [None] * self.num_dof
-        joint_positions[self._grippers_dof_indices[0]] = current_gripper_position_1 - deltas[0]
-        joint_positions[self._grippers_dof_indices[1]] = current_gripper_position_2 - deltas[1]
-        self.apply_action(ArticulationAction(joint_positions=joint_positions))
-        return
-
-    def open_gripper(self, deltas: Tuple[float, float] = (0.005, 0.005)) -> None:
-        """[summary]
-        """
-        current_gripper_position_1, current_gripper_position_2 = self.get_gripper_position()
-        joint_positions = [None] * self.num_dof
-        joint_positions[self._grippers_dof_indices[0]] = current_gripper_position_1 + deltas[0]
-        joint_positions[self._grippers_dof_indices[1]] = current_gripper_position_2 + deltas[1]
-        self.apply_action(ArticulationAction(joint_positions=joint_positions))
-        return
-
-    def apply_gripper_actions(self, gripper_actions: ArticulationAction):
-        joint_actions = ArticulationAction()
-        if gripper_actions.joint_positions is not None:
-            joint_actions.joint_positions = np.zeros(2)
-            joint_actions.joint_positions[self._grippers_dof_indices[0]] = gripper_actions.joint_positions[0]
-            joint_actions.joint_positions[self._grippers_dof_indices[1]] = gripper_actions.joint_positions[1]
-        if gripper_actions.joint_velocities is not None:
-            joint_actions.joint_velocities = np.zeros(2)
-            joint_actions.joint_velocities[self._grippers_dof_indices[0]] = gripper_actions.joint_velocities[0]
-            joint_actions.joint_velocities[self._grippers_dof_indices[1]] = gripper_actions.joint_velocities[1]
-        if gripper_actions.joint_efforts is not None:
-            joint_actions.joint_efforts = np.zeros(2)
-            joint_actions.joint_efforts[self._grippers_dof_indices[0]] = gripper_actions.joint_efforts[0]
-            joint_actions.joint_efforts[self._grippers_dof_indices[1]] = gripper_actions.joint_efforts[1]
-        self.apply_action(control_actions=joint_actions)
-        return
-
-    def get_gripper_position(self) -> Tuple[float, float]:
-        """[summary]
-
-        Returns:
-            Tuple[float, float]: [description]
-        """
-        joint_positions = self.get_joint_positions()
-        return joint_positions[self._grippers_dof_indices[0]], joint_positions[self._grippers_dof_indices[1]]
-
-    def set_gripper_position(self, gripper_positions: Tuple[float, float]) -> None:
-        """[summary]
-
-        Args:
-            gripper_positions (Tuple[float, float]): [description]
-        """
-        joint_positions = self.get_joint_positions()
-        joint_positions[self._grippers_dof_indices[0]] = gripper_positions[0]
-        joint_positions[self._grippers_dof_indices[1]] = gripper_positions[1]
-        self.set_joint_positions(joint_positions=joint_positions)
-        return
-
-    def get_gripper_velocity(self) -> Tuple[float, float]:
-        """[summary]
-
-        Returns:
-            Tuple[np.ndarray, np.ndarray]: [description]
-        """
-        joint_velocities = self.get_joint_velocities()
-        return joint_velocities[self._grippers_dof_indices[0]], joint_velocities[self._grippers_dof_indices[1]]
-
-    def set_grippper_velocity(self, gripper_velocities: Tuple[float, float]) -> None:
-        """[summary]
-
-        Args:
-            gripper_velocities (Tuple[float, float]): [description]
-        """
-        joint_velocities = self.get_joint_velocities()
-        joint_velocities[self._grippers_dof_indices[0]] = gripper_velocities[0]
-        joint_velocities[self._grippers_dof_indices[1]] = gripper_velocities[1]
-        self.set_joint_velocities(joint_velocities=joint_velocities)
-        return
-
-    def _initialize_handles(self) -> None:
-        """[summary]
-        """
-        super()._initialize_handles()
+        super().initialize_handles()
         self._end_effector_handle = self._dc_interface.find_articulation_body(
             self._handle, self._end_effector_prim_name
         )
         end_effector_prim_path = self._dc_interface.get_rigid_body_path(self._end_effector_handle)
         self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self._name + "_end_effector")
-        self._end_effector._initialize_handles()
-        self._grippers_dof_indices = (
-            self.get_dof_index(self._gripper_dof_names[0]),
-            self.get_dof_index(self._gripper_dof_names[1]),
+        self._end_effector.initialize_handles()
+        self.gripper.initialize_handles(
+            root_prim_path=self.prim_path, articulation_controller=self._articulation_controller
         )
         return
 
@@ -215,17 +116,6 @@ class Franka(Robot):
         """[summary]
         """
         super().reset()
-        self._articulation_controller.switch_dof_control_mode(dof_index=self._grippers_dof_indices[0], mode="position")
-        self._articulation_controller.switch_dof_control_mode(dof_index=self._grippers_dof_indices[1], mode="position")
+        self._articulation_controller.switch_dof_control_mode(dof_index=self.gripper.dof_indices[0], mode="position")
+        self._articulation_controller.switch_dof_control_mode(dof_index=self.gripper.dof_indices[1], mode="position")
         return
-
-    def switch_gripper(self, gripper_usd: str):
-        """[summary]
-
-        Args:
-            gripper_usd (str): [description]
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError

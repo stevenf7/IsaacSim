@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.tasks.task import BaseTask
+from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.ur10 import UR10
 import numpy as np

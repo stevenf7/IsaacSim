@@ -6,13 +6,19 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import omni.isaac.core.tasks as tasks
+from omni.isaac.core.tasks import Stacking as BaseStacking
 from omni.isaac.franka import Franka
+import numpy as np
 
 
-class PickPlace(tasks.PickPlace):
+class Stacking(BaseStacking):
     def __init__(self) -> None:
-        """[summary]
-        """
-        tasks.PickPlace.__init__(self, robot=Franka(prim_path="/World/Franka", name="my_franka"))
+        BaseStacking.__init__(
+            self,
+            robot=Franka(prim_path="/World/Franka", name="my_franka"),
+            cube_initial_positions=np.array([[0.3, 0.3, 0.3], [0.3, -0.3, 0.3]]),
+            cube_initial_orientations=None,
+            stack_target_position=None,
+            cube_size=0.0515,
+        )
         return

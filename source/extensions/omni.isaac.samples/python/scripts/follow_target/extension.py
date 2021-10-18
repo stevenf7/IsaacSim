@@ -8,10 +8,9 @@
 #
 
 from omni.isaac.samples.scripts.base_sample import BaseSample
-from omni.isaac.franka.tasks import TargetFollower
-from omni.isaac.franka.controllers import RMPFlowIKSolver
+from omni.isaac.franka.tasks import FollowTarget
+from omni.isaac.franka.controllers import RMPFlowController
 import asyncio
-from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
 import os
 import gc
 
@@ -39,19 +38,11 @@ class Extension(BaseSample):
         return
 
     def _load_task(self):
-        return TargetFollower()
+        return FollowTarget()
 
     def _setup_controllers(self):
         my_franka = self._world.scene.get_object("my_franka")
-        extension_id = get_extension_id("omni.isaac.motion_generation")
-        mg_extension_path = get_extension_path(ext_id=extension_id)
-        self._controller = RMPFlowIKSolver(
-            name="ik_controller",
-            dc_interface=self._world.dc_interface,
-            stage=self._world.stage,
-            robot_prim=my_franka.prim,
-            mg_extension_path=mg_extension_path,
-        )
+        self._controller = RMPFlowController(name="target_follower_controller", robot_prim_path=my_franka.prim_path)
         self._articulation_controller = my_franka.get_articulation_controller()
         return
 

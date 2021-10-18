@@ -95,3 +95,14 @@ def delete_prim(prim_path):
     from omni.usd.commands import DeletePrimsCommand
 
     DeletePrimsCommand([prim_path]).do()
+
+
+def get_prim_property(prim_path, property_name):
+    prim = get_prim_at_path(prim_path=prim_path)
+    return prim.GetAttribute(property_name).Get()
+
+
+def set_prim_property(prim_path, property_name, property_value):
+    prim = get_prim_at_path(prim_path=prim_path)
+    prim.GetAttribute(property_name).Set(property_value)
+    return

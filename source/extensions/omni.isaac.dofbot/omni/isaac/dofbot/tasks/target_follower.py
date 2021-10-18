@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional
-from omni.isaac.core.tasks.task import BaseTask
+from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.dofbot import DofBot
 from omni.isaac.core.objects import VisualCube, DynamicCube

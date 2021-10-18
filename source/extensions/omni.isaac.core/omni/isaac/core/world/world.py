@@ -8,7 +8,7 @@
 #
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.core.tasks.task import BaseTask
+from omni.isaac.core.tasks import BaseTask
 from omni.isaac.dynamic_control import _dynamic_control
 import builtins
 from pxr import Usd

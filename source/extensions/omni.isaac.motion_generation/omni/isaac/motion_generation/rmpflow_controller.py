@@ -6,34 +6,41 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.controllers.controller import BaseController
+from omni.isaac.core.controllers import BaseController
 from omni.isaac.motion_generation import MotionGenerator
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.dynamic_control import _dynamic_control
 from typing import Optional
 from omni.isaac.core.utils.rotations import quat_to_rot_matrix
+from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
 import os
 import json
 import numpy as np
 import lula
 
 
-class RMPFlowIKSolver(BaseController):
+class RMPFlowController(BaseController):
     # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, mg_extension_path, dc_interface, stage, robot_prim):
-        super().__init__(name)
-        self._dc_interface = dc_interface
-        self._stage = stage
-        self.mg = MotionGenerator(dc_interface, stage)
+    def __init__(self, name, robot_prim_path, policy_map_path, physics_dt=1.0 / 60.0):
+        BaseController.__init__(self, name)
+        self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
+        self._stage = get_current_stage()
+        self.mg = MotionGenerator(self._dc_interface, self._stage)
+        extension_id = get_extension_id("omni.isaac.motion_generation")
+        mg_extension_path = get_extension_path(ext_id=extension_id)
         polciy_config_dir = os.path.join(mg_extension_path, "policy_configs")
         with open(os.path.join(polciy_config_dir, "policy_map.json")) as policy_map:
             policy_map = json.load(policy_map)
-        config_path = os.path.join(polciy_config_dir, policy_map["Franka"]["RMPflow"])
-        self._config = self.process_policy_config(config_path)
-        self._robot_prim = robot_prim
-        self.mg.initialize(self._config, robot_prim, 60)
+        config_path = os.path.join(polciy_config_dir, policy_map[policy_map_path[0]][policy_map_path[1]])
+        self._config = self._process_policy_config(config_path)
+        self._robot_prim = get_prim_at_path(robot_prim_path)
+        self.mg.initialize(self._config, self._robot_prim, int(1.0 / physics_dt))
+        self._physics_dt = physics_dt
         return
 
-    def process_policy_config(self, mp_config_file):
+    def _process_policy_config(self, mp_config_file):
         mp_config_dir = os.path.dirname(mp_config_file)  # path to directory containing mp_config_file
 
         with open(mp_config_file) as config_file:
@@ -46,11 +53,9 @@ class RMPFlowIKSolver(BaseController):
         return config
 
     def forward(
-        self,
-        current_joint_positions: np.ndarray,
-        target_end_effector_position: np.ndarray,
-        target_end_effector_orientation: Optional[np.ndarray] = None,
+        self, target_end_effector_position: np.ndarray, target_end_effector_orientation: Optional[np.ndarray] = None
     ):
+        self.mg._motion_policy.update()
         if target_end_effector_orientation is not None:
             self.mg._motion_policy._policy.set_end_effector_target(
                 position=np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1),
@@ -62,24 +67,7 @@ class RMPFlowIKSolver(BaseController):
             self.mg._motion_policy._policy.set_end_effector_target(
                 position=np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1)
             )
-        integration_dt = self.mg.sim_timestep
-        aji = self.mg._active_joint_inds
-
-        current_joint_velocities = np.zeros_like(current_joint_positions).astype(np.float64)
-        current_joint_positions = current_joint_positions.astype(np.float64)
-        target_joint_positions = np.array([None] * current_joint_positions.shape[0])
-        if self.mg._motion_policy._robot_joint_positions is not None:
-            self.mg._motion_policy._robot_joint_positions = current_joint_positions[aji]
-        if self.mg._motion_policy._robot_joint_velocities is not None:
-            self.mg._motion_policy._robot_joint_velocities = current_joint_velocities[aji]
-        for i in range(10):
-            target_joint_positions[aji] = self.mg._motion_policy.get_joint_position_targets(
-                current_joint_positions[aji], current_joint_velocities[aji], integration_dt
-            )
-        target_joint_positions = list(target_joint_positions)
-        for i in range(current_joint_positions.shape[0]):
-            if i not in aji:
-                target_joint_positions[i] = None
+        target_joint_positions = self.mg.get_joint_position_targets()
         return ArticulationAction(joint_positions=target_joint_positions)
 
     def add_cube_obstacle(self, cube_prim):
@@ -92,5 +80,5 @@ class RMPFlowIKSolver(BaseController):
 
     def reset(self):
         self.mg = MotionGenerator(self._dc_interface, self._stage)
-        self.mg.initialize(self._config, self._robot_prim, 60)
+        self.mg.initialize(self._config, self._robot_prim, int(1.0 / self._physics_dt))
         return

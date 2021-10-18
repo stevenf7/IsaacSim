@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.controllers.controller import BaseController
+from omni.isaac.core.controllers import BaseController
 from omni.isaac.core.utils.types import ArticulationAction
 import numpy as np
 from typing import Tuple

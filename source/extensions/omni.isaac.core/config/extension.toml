@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.0"
+version = "0.1.2"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -19,6 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.pip_archive" = {} # scipy
+"omni.isaac.lula" = {}
 
 [[python.module]]
 name = "omni.isaac.core"

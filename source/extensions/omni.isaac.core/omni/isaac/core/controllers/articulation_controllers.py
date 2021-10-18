@@ -25,29 +25,6 @@ class DOFArticulationController(object):
         self._articulation_handle = articulation_handle
         self._dof_index = dof_index
         self._dof_handle = dof_handle
-
-    def apply_action(self, control_action: dict) -> None:
-        """[summary]
-
-        Args:
-            control_action (dict): [description]
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError
-
-
-class DOFPDController(DOFArticulationController):
-    def __init__(self, articulation_handle: int, dof_handle: int, dof_index: int) -> None:
-        """[summary]
-
-        Args:
-            articulation_handle (int): [description]
-            dof_handle (int): [description]
-            dof_index (int): [description]
-        """
-        DOFArticulationController.__init__(self, articulation_handle, dof_handle, dof_index)
         return
 
     def set_gains(self, dof_props: np.ndarray, kp: Optional[float] = None, kd: Optional[float] = None) -> None:
@@ -80,6 +57,7 @@ class DOFPDController(DOFArticulationController):
         return
 
     def get_applied_action(self):
+        # TODO: check pds before returning them
         return {
             "effort": None,
             "position": self._dc_interface.get_dof_position_target(self._dof_handle),
@@ -95,34 +73,13 @@ class ArticulationController(object):
             articulation_handle (int): [description]
             dofs_info (dict): [description]
         """
-        pass
-
-    def apply_action(self, control_actions: ArticulationAction) -> None:
-        """[summary]
-
-        Args:
-            control_actions (ArticulationAction): [description]
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError
-
-
-class PDArticulationController(ArticulationController):
-    def __init__(self, articulation_handle: int, dofs_info: dict) -> None:
-        """[summary]
-
-        Args:
-            articulation_handle (int): [description]
-            dofs_info (dict): [description]
-        """
-        ArticulationController.__init__(self, articulation_handle=articulation_handle, dofs_info=dofs_info)
         self._dof_controllers = list()
         self._articulation_handle = articulation_handle
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         for dof_name, dof_info in dofs_info.items():
-            self._dof_controllers.append(DOFPDController(articulation_handle, dof_info.handle, dof_info.index))
+            self._dof_controllers.append(
+                DOFArticulationController(articulation_handle, dof_info.handle, dof_info.index)
+            )
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
         self._default_kps = [dof_props["stiffness"][i] for i in range(len(dofs_info))]
         self._default_kds = [dof_props["damping"][i] for i in range(len(dofs_info))]
@@ -131,15 +88,17 @@ class PDArticulationController(ArticulationController):
         self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
         return
 
-    def apply_action(self, control_actions: ArticulationAction) -> None:
+    def apply_action(self, control_actions: ArticulationAction, indices=None) -> None:
         """[summary]
 
         Args:
             control_actions (ArticulationAction): [description]
         """
         self._dc_interface.wake_up_articulation(self._articulation_handle)
-        for i in range(len(self._dof_controllers)):
-            self._dof_controllers[i].apply_action(control_actions.get_dof_action(i))
+        if indices is None:
+            indices = list(range(len(self._dof_controllers)))
+        for i in range(len(indices)):
+            self._dof_controllers[indices[i]].apply_action(control_actions.get_dof_action(i))
         return
 
     def set_gains(self, kps: Optional[np.ndarray] = None, kds: Optional[np.ndarray] = None) -> None:

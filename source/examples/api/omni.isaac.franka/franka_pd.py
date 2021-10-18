@@ -11,7 +11,7 @@ import numpy as np
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.core.tasks.task import BaseTask
+from omni.isaac.core.tasks import BaseTask
 from omni.isaac.franka import Franka
 from omni.isaac.core import World
 from omni.isaac.core.controllers import BaseController
@@ -26,7 +26,7 @@ class FrankaTask(BaseTask):
 
     def set_up_scene(self, scene):
         super().set_up_scene(scene)
-        scene.add(Franka(stage=my_world.stage, prim_path="/World/Franka", name="my_franka"))
+        scene.add(Franka(prim_path="/World/Franka", name="my_franka"))
         return
 
     def get_observations(self):

@@ -7,4 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.controllers.articulation_controllers import ArticulationController
-from omni.isaac.core.controllers.controller import BaseController
+from omni.isaac.core.controllers.base_controller import BaseController
+from omni.isaac.core.controllers.base_gripper_controller import BaseGripperController

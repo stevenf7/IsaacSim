@@ -6,6 +6,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.franka.tasks.target_follower import TargetFollower
+from omni.isaac.franka.tasks.follow_target import FollowTarget
 from omni.isaac.franka.tasks.pick_place import PickPlace
-from omni.isaac.franka.tasks.tower import Tower
+from omni.isaac.franka.tasks.stacking import Stacking
