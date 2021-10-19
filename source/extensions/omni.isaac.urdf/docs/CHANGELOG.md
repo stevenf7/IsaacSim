@@ -2,6 +2,17 @@
 CHANGELOG
 **********
 
+[0.1.8] - 2021-10-18
+========================
+
+Added
+-----
+- Floating joints are ignored but place any child links at the correct location. 
+
+Fixed
+-------
+- Crash when urdf contained a floating joint
+
 [0.1.7] - 2021-09-23
 ========================
 

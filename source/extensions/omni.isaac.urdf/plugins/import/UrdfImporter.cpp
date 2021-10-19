@@ -537,6 +537,11 @@ void UrdfImporter::addJoint(pxr::UsdStageWeakPtr stage,
         AddSingleJoint<pxr::UsdPhysicsRevoluteJoint>(
             joint, stage, pxr::SdfPath(jointPath), jointPrim, config.distanceScale);
     }
+    else if (joint.type == UrdfJointType::FLOATING)
+    {
+        // There is no joint, skip
+        return;
+    }
 
 
     pxr::SdfPathVector val0{ pxr::SdfPath(parentLinkPath) };
