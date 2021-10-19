@@ -15,6 +15,7 @@ import omni.kit.commands
 import os
 from pxr import Sdf, Gf, UsdShade, PhysicsSchemaTools
 import asyncio
+import numpy as np
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -271,3 +272,39 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         stage = omni.usd.get_context().get_stage()
         prim = stage.GetPrimAtPath("/test_large")
         self.assertTrue(prim)
+
+    # basic urdf test: joints and links are imported correctly
+    async def test_urdf_floating(self):
+
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_floating.urdf")
+        stage = omni.usd.get_context().get_stage()
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+
+        import_config.import_inertia_tensor = True
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
+        await omni.kit.app.get_app().next_update_async()
+
+        prim = stage.GetPrimAtPath("/test_floating")
+        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
+
+        # make sure the joints exist
+        rootJoint = stage.GetPrimAtPath("/test_floating/rootJoint")
+        self.assertNotEqual(rootJoint.GetPath(), Sdf.Path.emptyPath)
+
+        link_1 = stage.GetPrimAtPath("/test_floating/link_1")
+        self.assertNotEqual(link_1.GetPath(), Sdf.Path.emptyPath)
+        link_1_trans = np.array(omni.usd.utils.get_world_transform_matrix(link_1).ExtractTranslation())
+
+        self.assertAlmostEqual(np.linalg.norm(link_1_trans - np.array([0, 0, 45.0])), 0, delta=0.03)
+        floating_link = stage.GetPrimAtPath("/test_floating/floating_link")
+        self.assertNotEqual(floating_link.GetPath(), Sdf.Path.emptyPath)
+        floating_link_trans = np.array(omni.usd.utils.get_world_transform_matrix(floating_link).ExtractTranslation())
+
+        self.assertAlmostEqual(np.linalg.norm(floating_link_trans - np.array([0, 0, 145.0])), 0, delta=0.03)
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        # nothing crashes
+        self._timeline.stop()
+        pass
