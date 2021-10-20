@@ -15,9 +15,6 @@ train a [Mask-RCNN](https://arxiv.org/abs/1703.06870) model.
 
 
 import os
-import torch
-from torch.utils.data import DataLoader
-import torchvision
 import matplotlib.pyplot as plt
 import numpy as np
 import signal
@@ -28,11 +25,9 @@ from generate_shapenet import RandomObjects
 def main(args):
     device = "cuda"
 
-    # Setup data
     train_set = RandomObjects(
         args.root, args.categories, num_assets_min=3, num_assets_max=5, max_asset_size=args.max_asset_size
     )
-    train_loader = DataLoader(train_set, batch_size=2, collate_fn=lambda x: tuple(zip(*x)))
 
     def handle_exit(self, *args, **kwargs):
         print("exiting dataset generation...")
@@ -42,6 +37,12 @@ def main(args):
 
     from omni.isaac.synthetic_utils import visualization as vis
     from omni.isaac.shapenet import utils
+    import torch
+    from torch.utils.data import DataLoader
+    import torchvision
+
+    # Setup data
+    train_loader = DataLoader(train_set, batch_size=2, collate_fn=lambda x: tuple(zip(*x)))
 
     # Setup Model
     model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=False, num_classes=1 + len(args.categories))
