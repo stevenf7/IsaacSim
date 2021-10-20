@@ -26,6 +26,7 @@ import random
 import omni.syntheticdata as syn
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.isaac.synthetic_utils.writers import NumpyWriter
+from omni.isaac.synthetic_utils.writers import KittiWriter
 from omni.syntheticdata.tests.utils import add_semantics
 
 
@@ -48,7 +49,6 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._sd_helper = SyntheticDataHelper()
-        self._writer_helper = NumpyWriter
         pass
 
     # After running each test
@@ -162,10 +162,10 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Validate 3D BBox groundtruth
         gt_bbox3d = gt["boundingBox3D"]
         self.assertEqual(len(gt_bbox3d), 1)
-        self.assertAlmostEqual(gt_bbox3d[0][6], -43.021126, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][6], -43.063255, delta=0.01)
         self.assertAlmostEqual(gt_bbox3d[0][7], -31.312422, delta=0.01)
         self.assertAlmostEqual(gt_bbox3d[0][8], -25.154814, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][9], 24.200943, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][9], 24.158546, delta=0.01)
         self.assertAlmostEqual(gt_bbox3d[0][10], 31.31649, delta=0.01)
         self.assertAlmostEqual(gt_bbox3d[0][11], 41.19104, delta=0.01)
         # Validate camera groundtruth - position, fov, focal length, aperature
@@ -204,7 +204,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         sensor_settings[viewport_name] = copy.deepcopy(sensor_settings_viewport)
         # Initialize data writer
         output_folder = os.getcwd() + "/output"
-        data_writer = self._writer_helper(output_folder, 4, 100, sensor_settings)
+        data_writer = NumpyWriter(output_folder, 4, 100, sensor_settings)
         data_writer.start_threads()
         # Get rgb groundtruth
         gt = self._sd_helper.get_groundtruth(["rgb"], self.viewport_window, verify_sensor_init=False)
@@ -215,8 +215,74 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         data_writer.q.put(groundtruth)
         # Validate output file
         output_file_path = os.path.join(output_folder, viewport_name, "rgb", str(image_id) + ".png")
+        data_writer.stop_threads()
         await asyncio.sleep(0.1)
         self.assertEqual(os.path.isfile(output_file_path), True)
+        pass
+
+        # Unit test for data writer
+
+    async def test_kitti_writer(self):
+        await self.load_robot_scene()
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await self.simulate(1.0)
+        await omni.kit.app.get_app().next_update_async()
+        # Setting up config for writer
+        sensor_settings = {}
+        sensor_settings_viewport = {"rgb": {"enabled": True}}
+        viewport_name = "Viewport"
+        sensor_settings[viewport_name] = copy.deepcopy(sensor_settings_viewport)
+        # Initialize data writer
+        output_folder_tight = os.getcwd() + "/kitti_tight"
+        output_folder_loose = os.getcwd() + "/kitti_loose"
+        data_writer_tight = KittiWriter(
+            output_folder_tight, 4, 100, train_size=1, classes="robot", bbox_type="BBOX2DTIGHT"
+        )
+        data_writer_tight.start_threads()
+        data_writer_loose = KittiWriter(
+            output_folder_loose, 4, 100, train_size=1, classes="robot", bbox_type="BBOX2DLOOSE"
+        )
+        data_writer_loose.start_threads()
+        # Get rgb groundtruth
+        gt = self._sd_helper.get_groundtruth(
+            ["rgb", "boundingBox2DTight", "boundingBox2DLoose"], self.viewport_window, verify_sensor_init=False
+        )
+        # Write rgb groundtruth
+        image_id = 0
+        groundtruth = {
+            "METADATA": {
+                "image_id": str(image_id),
+                "viewport_name": viewport_name,
+                "BBOX2DTIGHT": {},
+                "BBOX2DLOOSE": {},
+            },
+            "DATA": {},
+        }
+        image = gt["rgb"]
+        groundtruth["DATA"]["RGB"] = image
+        groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
+        groundtruth["METADATA"]["BBOX2DTIGHT"]["WIDTH"] = image.shape[1]
+        groundtruth["METADATA"]["BBOX2DTIGHT"]["HEIGHT"] = image.shape[0]
+
+        groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
+        groundtruth["METADATA"]["BBOX2DLOOSE"]["WIDTH"] = image.shape[1]
+        groundtruth["METADATA"]["BBOX2DLOOSE"]["HEIGHT"] = image.shape[0]
+        for f in range(2):
+            groundtruth["METADATA"]["image_id"] = image_id
+            data_writer_tight.q.put(copy.deepcopy(groundtruth))
+            data_writer_loose.q.put(copy.deepcopy(groundtruth))
+            image_id = image_id + 1
+
+        # Validate output file
+        data_writer_tight.stop_threads()
+        data_writer_loose.stop_threads()
+        await asyncio.sleep(0.1)
+
+        for output_folder in [output_folder_tight, output_folder_loose]:
+            self.assertEqual(os.path.isfile(os.path.join(output_folder + "/training/image_2", str(0) + ".png")), True)
+            self.assertEqual(os.path.isfile(os.path.join(output_folder + "/training/label_2", str(0) + ".txt")), True)
+            self.assertEqual(os.path.isfile(os.path.join(output_folder + "/testing/image_2", str(1) + ".png")), True)
         pass
 
     # create a cube.

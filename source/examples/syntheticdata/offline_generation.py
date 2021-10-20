@@ -290,7 +290,12 @@ class RandomScenario(torch.utils.data.IterableDataset):
             print(f"Writing data to {self.data_dir}")
             if self.writer_mode == "kitti":
                 self.data_writer = self.writer_helper(
-                    self.data_dir, num_worker_threads, self.max_queue_size, self.train_size, self.classes
+                    self.data_dir,
+                    num_worker_threads,
+                    self.max_queue_size,
+                    self.train_size,
+                    self.classes,
+                    bbox_type="BBOX2DLOOSE",
                 )
             else:
                 self.data_writer = self.writer_helper(
