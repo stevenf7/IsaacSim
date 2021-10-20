@@ -166,7 +166,7 @@ class RigidPrim(XFormPrim):
         """
         return self._mass_api.GetMassAttr().Get()
 
-    def _initialize_handles(self) -> None:
+    def initialize_handles(self) -> None:
         """[summary]
         """
         self._handle = self._dc_interface.get_rigid_body(self.prim_path)

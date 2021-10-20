@@ -180,17 +180,17 @@ class DofBot(Robot):
         self.set_joint_velocities(joint_velocities=joint_velocities)
         return
 
-    def _initialize_handles(self) -> None:
+    def initialize_handles(self) -> None:
         """[summary]
         """
-        super()._initialize_handles()
+        super().initialize_handles()
         self._end_effector_handle = self._dc_interface.find_articulation_body(
             self._handle, self._end_effector_prim_name
         )
         end_effector_prim_path = self._dc_interface.get_rigid_body_path(self._end_effector_handle)
         end_effector_prim = self._stage.GetPrimAtPath(end_effector_prim_path)
         self._end_effector = RigidPrim(prim=end_effector_prim, name=self._name + "_end_effector")
-        self._end_effector._initialize_handles()
+        self._end_effector.initialize_handles()
         self._grippers_dof_indices = (
             self.get_dof_index(self._gripper_dof_names[0]),
             self.get_dof_index(self._gripper_dof_names[1]),

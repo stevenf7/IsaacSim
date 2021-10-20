@@ -36,7 +36,7 @@ class GeometryPrim(XFormPrim):
             position (np.ndarray, optional): position in the world frame to set the prim. shape is (3, ) Defaults to None.
             orientation (np.ndarray, optional): quaternion orientation in the world frame to set the prim. 
                                               quaternion is scalar-first (w, x, y, z). shape is (4, ). Defaults to None.
-            color (np.ndarray, optional): color to be applied to the geometric prim (R, G, B) 0-255. shape (3,). Defaults to None.
+            color (np.ndarray, optional): color to be applied to the geometric prim (R, G, B) 0-1. shape (3,). Defaults to None.
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
         """
         prim = get_prim_at_path(prim_path)

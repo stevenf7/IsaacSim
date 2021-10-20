@@ -123,10 +123,10 @@ class Jetbot(Robot):
         self.apply_action(control_actions=joint_actions)
         return
 
-    def _initialize_handles(self) -> None:
+    def initialize_handles(self) -> None:
         """[summary]
         """
-        super()._initialize_handles()
+        super().initialize_handles()
         self._wheel_dof_indices = (
             self.get_dof_index(self._wheel_dof_names[0]),
             self.get_dof_index(self._wheel_dof_names[1]),

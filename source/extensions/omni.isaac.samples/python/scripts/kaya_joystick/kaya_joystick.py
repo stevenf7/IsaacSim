@@ -15,7 +15,7 @@ from omni.isaac.kaya import Kaya
 from omni.isaac.kaya.controllers import HolonomicController
 from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.core.tasks.task import BaseTask
+from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.samples.scripts.base_sample import BaseSample
 from omni.isaac.manip import _manip, GamePadAxis

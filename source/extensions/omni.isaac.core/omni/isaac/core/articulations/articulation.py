@@ -13,8 +13,8 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import DOFInfo
 from omni.isaac.core.utils.types import JointsState, ArticulationAction
-from omni.isaac.core.controllers.articulation_controllers import PDArticulationController, ArticulationController
-from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.controllers.articulation_controllers import ArticulationController
+from omni.isaac.core.utils.prims import is_prim_path_valid, get_prim_property, set_prim_property
 
 
 class Articulation(XFormPrim):
@@ -75,7 +75,7 @@ class Articulation(XFormPrim):
         """
         return self._dc_interface.get_articulation_dof_properties(self._handle)
 
-    def _initialize_handles(self):
+    def initialize_handles(self):
         """[summary]
         """
         self._handle = self._dc_interface.get_articulation(self.prim_path)
@@ -93,7 +93,7 @@ class Articulation(XFormPrim):
             efforts=self.get_joint_efforts(),
         )
         if self._articulation_controller is None:
-            self._articulation_controller = PDArticulationController(self._handle, self._dofs_infos)
+            self._articulation_controller = ArticulationController(self._handle, self._dofs_infos)
         return
 
     def get_dof_index(self, dof_name: str) -> int:
@@ -168,45 +168,63 @@ class Articulation(XFormPrim):
         """
         raise NotImplementedError
 
-    def set_joint_positions(self, joint_positions: np.ndarray) -> None:
+    def set_joint_positions(self, joint_positions: np.ndarray, indices=None) -> None:
         """[summary]
 
         Args:
             joint_positions (np.ndarray): [description]
         """
         dof_states = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_POS)
-        dof_states["pos"] = joint_positions
+        if indices is None:
+            new_joint_positions = joint_positions
+        else:
+            new_joint_positions = self.get_joint_positions()
+            for i in range(len(indices)):
+                new_joint_positions[indices[i]] = joint_positions[i]
+        dof_states["pos"] = new_joint_positions
         self._dc_interface.set_articulation_dof_states(self._handle, dof_states, _dynamic_control.STATE_POS)
         self._articulation_controller.apply_action(
-            ArticulationAction(joint_positions=joint_positions, joint_velocities=None, joint_efforts=None)
+            ArticulationAction(joint_positions=new_joint_positions, joint_velocities=None, joint_efforts=None)
         )
         return
 
-    def set_joint_velocities(self, joint_velocities: np.ndarray) -> None:
+    def set_joint_velocities(self, joint_velocities: np.ndarray, indices=None) -> None:
         """[summary]
 
         Args:
             joint_velocities (np.ndarray): [description]
         """
         dof_states = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_VEL)
-        dof_states["vel"] = joint_velocities
+        if indices is None:
+            new_joint_velocities = joint_velocities
+        else:
+            new_joint_velocities = self.get_joint_velocities()
+            for i in range(len(indices)):
+                new_joint_velocities[indices[i]] = joint_velocities[i]
+        dof_states["vel"] = new_joint_velocities
         self._dc_interface.set_articulation_dof_states(self._handle, dof_states, _dynamic_control.STATE_VEL)
         self._articulation_controller.apply_action(
-            ArticulationAction(joint_positions=None, joint_velocities=joint_velocities, joint_efforts=None)
+            ArticulationAction(joint_positions=None, joint_velocities=new_joint_velocities, joint_efforts=None)
         )
         return
 
-    def set_joint_efforts(self, joint_efforts: np.ndarray) -> None:
+    def set_joint_efforts(self, joint_efforts: np.ndarray, indices=None) -> None:
         """[summary]
 
         Args:
             joint_efforts (np.ndarray): [description]
         """
         dof_states = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_EFFORT)
-        dof_states["effort"] = joint_efforts
+        if indices is None:
+            new_joint_efforts = joint_efforts
+        else:
+            new_joint_efforts = [0] * self.num_dof
+            for i in range(len(indices)):
+                new_joint_efforts[indices[i]] = joint_efforts[i]
+        dof_states["effort"] = new_joint_efforts
         self._dc_interface.set_articulation_dof_states(self._handle, dof_states, _dynamic_control.STATE_EFFORT)
         self._articulation_controller.apply_action(
-            ArticulationAction(joint_positions=None, joint_velocities=None, joint_efforts=joint_efforts)
+            ArticulationAction(joint_positions=None, joint_velocities=None, joint_efforts=new_joint_efforts)
         )
         return
 
@@ -287,14 +305,6 @@ class Articulation(XFormPrim):
         self._dc_interface.set_rigid_body_angular_velocity(self._root_handle, angular_velocity)
         return
 
-    def get_linear_velocity(self) -> np.ndarray:
-        """[summary]
-
-        Returns:
-            [type]: [description]
-        """
-        return self._dc_interface.get_rigid_body_linear_velocity(self._root_handle)
-
     def get_angular_velocity(self) -> np.ndarray:
         """[summary]
 
@@ -302,6 +312,14 @@ class Articulation(XFormPrim):
             np.ndarray: [description]
         """
         return self._dc_interface.get_rigid_body_angular_velocity(self._root_handle)
+
+    def get_linear_velocity(self) -> np.ndarray:
+        """[summary]
+
+        Returns:
+            [type]: [description]
+        """
+        return self._dc_interface.get_rigid_body_linear_velocity(self._root_handle)
 
     def set_linear_velocity(self, linear_velocity: np.ndarray) -> None:
         """[summary]
@@ -341,14 +359,49 @@ class Articulation(XFormPrim):
         pose = self._dc_interface.get_rigid_body_pose(self._root_handle)
         return np.asarray(pose.p), np.asarray(pose.r)
 
-    def apply_action(self, control_actions: ArticulationAction) -> None:
+    def apply_action(self, control_actions: ArticulationAction, indices=None) -> None:
         """[summary]
 
         Args:
             control_actions (ArticulationAction): [description]
         """
-        self._articulation_controller.apply_action(control_actions=control_actions)
+        self._articulation_controller.apply_action(control_actions=control_actions, indices=indices)
         return
 
     def get_applied_action(self):
         return self._articulation_controller.get_applied_action()
+
+    def set_solver_position_iteration_count(self, count):
+        set_prim_property(self.prim_path, "physxArticulation:solverPositionIterationCount", count)
+        return
+
+    def get_solver_position_iteration_count(self):
+        return get_prim_property(self.prim_path, "physxArticulation:solverPositionIterationCount")
+
+    def set_solver_velocity_iteration_count(self, count):
+        set_prim_property(self.prim_path, "physxArticulation:solverVelocityIterationCount", count)
+        return
+
+    def get_solver_velocity_iteration_count(self):
+        return get_prim_property(self.prim_path, "physxArticulation:solverVelocityIterationCount")
+
+    def set_stabilization_threshold(self, threshold):
+        set_prim_property(self.prim_path, "physxArticulation:stabilizationThreshold", threshold)
+        return
+
+    def get_stabilization_threshold(self):
+        return get_prim_property(self.prim_path, "physxArticulation:stabilizationThreshold")
+
+    def set_enabled_self_collisions(self, flag):
+        set_prim_property(self.prim_path, "physxArticulation:enabledSelfCollisions", flag)
+        return
+
+    def get_enabled_self_collisions(self):
+        return get_prim_property(self.prim_path, "physxArticulation:enabledSelfCollisions")
+
+    def set_sleep_threshold(self, threshold):
+        set_prim_property(self.prim_path, "physxArticulation:sleepThreshold", threshold)
+        return
+
+    def get_sleep_threshold(self):
+        return get_prim_property(self.prim_path, "physxArticulation:sleepThreshold")

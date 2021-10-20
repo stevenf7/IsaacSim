@@ -6,4 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.tasks.task import BaseTask
+from omni.isaac.core.tasks.base_task import BaseTask
+from omni.isaac.core.tasks.follow_target import FollowTarget
+from omni.isaac.core.tasks.pick_place import PickPlace
+from omni.isaac.core.tasks.stacking import Stacking

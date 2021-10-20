@@ -8,11 +8,10 @@
 #
 
 from omni.isaac.samples.scripts.base_sample import BaseSample
-from omni.isaac.franka.tasks import Tower
-from omni.isaac.franka.controllers import RMPFlowTower
+from omni.isaac.franka.tasks import Stacking
+from omni.isaac.franka.controllers import StackingController
 import asyncio
 import os
-from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
 
 
 class Extension(BaseSample):
@@ -35,21 +34,19 @@ class Extension(BaseSample):
         return
 
     def _load_task(self):
-        return Tower()
+        return Stacking()
 
     def _setup_controllers(self):
         my_franka = self._world.scene.get_object("my_franka")
-        extension_id = get_extension_id("omni.isaac.motion_generation")
-        mg_extension_path = get_extension_path(ext_id=extension_id)
-        self._controller = RMPFlowTower(
-            name="stacking_controller",
-            dc_interface=self._world.dc_interface,
-            stage=self._world.stage,
-            robot_prim=my_franka.prim,
-            mg_extension_path=mg_extension_path,
+        my_franka = self._world.get_current_task()
+        self._controller = StackingController(
+            name="pick_place_controller",
+            gripper_dof_indices=my_franka.gripper.dof_indices,
+            robot_prim_path=my_franka.prim_path,
+            picking_order_cube_names=my_franka.get_cube_names(),
+            robot_observation_name="my_franka",
         )
         self._articulation_controller = my_franka.get_articulation_controller()
-        self._controller.configure(cubes_order=["cube_1", "cube_2"], robot_observation_name="my_franka")
         return
 
     def _on_stacking_event(self):

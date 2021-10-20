@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional
+from typing import Optional, Union
 import numpy as np
 
 
@@ -63,9 +63,9 @@ class JointsState(object):
 class ArticulationAction(object):
     def __init__(
         self,
-        joint_positions: Optional[np.ndarray] = None,
-        joint_velocities: Optional[np.ndarray] = None,
-        joint_efforts: Optional[np.ndarray] = None,
+        joint_positions: Optional[Union[list, np.ndarray]] = None,
+        joint_velocities: Optional[Union[list, np.ndarray]] = None,
+        joint_efforts: Optional[Union[list, np.ndarray]] = None,
     ):
         """[summary]
 

@@ -6,8 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.franka.controllers.gripper_controller import GripperController
-from omni.isaac.franka.controllers.inverse_kinematics_solver import InverseKinematicsSolver
-from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
-from omni.isaac.franka.controllers.pick_place_controller import PickPlaceController
-from omni.isaac.franka.controllers.stacking_controller import StackingController
+import omni.isaac.motion_generation as mg
+
+
+class RMPFlowController(mg.RMPFlowController):
+    def __init__(self, name, robot_prim_path):
+        mg.RMPFlowController.__init__(
+            self, name=name, robot_prim_path=robot_prim_path, policy_map_path=["Franka", "RMPflow"]
+        )
+        return
