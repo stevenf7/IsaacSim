@@ -25,8 +25,9 @@ import signal
 
 import carb
 import omni
+from pxr import Usd
 
-from omni.isaac.python_app import OmniKitHelper
+from omni.isaac.kit import SimulationApp
 
 # Setup default generation variables
 # Value are (min, max) ranges
@@ -38,12 +39,7 @@ CAMERA_DISTANCE = 300
 BBOX_AREA_THRESH = 16
 
 # Default rendering parameters
-RENDER_CONFIG = {
-    "renderer": "PathTracing",
-    "samples_per_pixel_per_frame": 12,
-    "headless": False,
-    "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
-}
+RENDER_CONFIG = {"renderer": "PathTracing", "samples_per_pixel_per_frame": 12, "headless": False}
 
 
 class RandomObjects(torch.utils.data.IterableDataset):
@@ -72,7 +68,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         assert len(categories) > 1
         assert (split > 0) and (split <= 1.0)
 
-        self.kit = OmniKitHelper(config=RENDER_CONFIG)
+        self.kit = SimulationApp(RENDER_CONFIG)
         from omni.isaac.synthetic_utils import SyntheticDataHelper
         from omni.isaac.shapenet import utils
         import omni.isaac.dr as dr
@@ -80,7 +76,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.sd_helper = SyntheticDataHelper()
         self.dr = dr
         self.dr.commands.ToggleManualModeCommand().do()
-        self.stage = self.kit.get_stage()
+        self.stage = self.kit.context.get_stage()
 
         from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
 
@@ -96,7 +92,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.categories = category_ids
         self.range_num_assets = (num_assets_min, max(num_assets_min, num_assets_max))
         self.references = self._find_usd_assets(root, category_ids, max_asset_size, split, train)
-
         self._setup_world()
         self.cur_idx = 0
         self.exiting = False
@@ -110,36 +105,36 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
     def _setup_world(self):
         from pxr import UsdGeom
+        from omni.isaac.core.utils.prims import create_prim
+        from omni.isaac.core.utils.rotations import euler_angles_to_quat
 
         """Setup lights, walls, floor, ceiling and camera"""
         # In a practical setting, the room parameters should attempt to match those of the
         # target domain. Here, we insteady choose for simplicity.
-        self.kit.create_prim(
-            "/World/Room", "Sphere", attributes={"radius": 1e3, "primvars:displayColor": [(1.0, 1.0, 1.0)]}
-        )
-        self.kit.create_prim(
+        create_prim("/World/Room", "Sphere", attributes={"radius": 1e3, "primvars:displayColor": [(1.0, 1.0, 1.0)]})
+        create_prim(
             "/World/Ground",
             "Cylinder",
-            translation=(0.0, -0.5, 0.0),
-            rotation=(90.0, 0.0, 0.0),
+            position=np.array([0.0, -0.5, 0.0]),
+            orientation=euler_angles_to_quat(np.array([90.0, 0.0, 0.0]), degrees=True),
             attributes={"height": 1, "radius": 1e4, "primvars:displayColor": [(1.0, 1.0, 1.0)]},
         )
-        self.kit.create_prim(
+        create_prim(
             "/World/Light1",
             "SphereLight",
-            translation=(-450, 350, 350),
+            position=np.array([-450, 350, 350]),
             attributes={"radius": 100, "intensity": 30000.0, "color": (0.0, 0.365, 0.848)},
         )
-        self.kit.create_prim(
+        create_prim(
             "/World/Light2",
             "SphereLight",
-            translation=(450, 350, 350),
+            position=np.array([450, 350, 350]),
             attributes={"radius": 100, "intensity": 30000.0, "color": (1.0, 0.278, 0.0)},
         )
-        self.kit.create_prim("/World/Asset", "Xform")
+        create_prim("/World/Asset", "Xform")
 
-        self.camera_rig = UsdGeom.Xformable(self.kit.create_prim("/World/CameraRig", "Xform"))
-        self.camera = self.kit.create_prim("/World/CameraRig/Camera", "Camera", translation=(0.0, 0.0, CAMERA_DISTANCE))
+        self.camera_rig = UsdGeom.Xformable(create_prim("/World/CameraRig", "Xform"))
+        self.camera = create_prim("/World/CameraRig/Camera", "Camera", position=np.array([0.0, 0.0, CAMERA_DISTANCE]))
         vpi = omni.kit.viewport.get_viewport_interface()
         vpi.get_viewport_window().set_active_camera(str(self.camera.GetPath()))
         self.viewport = omni.kit.viewport.get_default_viewport_window()
@@ -158,8 +153,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         """
         references = {}
         for category in categories:
-            all_assets = glob.glob(os.path.join(root, category, "**/*.usd"), recursive=True)
-
+            all_assets = glob.glob(os.path.join(root, category, "*/*.usd"), recursive=True)
+            print(os.path.join(root, category, "*/*.usd"))
             # Filter out large files (which can prevent OOM errors during training)
             if max_asset_size is None:
                 assets_filtered = all_assets
@@ -183,6 +178,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
     def load_single_asset(self, ref, semantic_label, suffix=""):
         from pxr import UsdGeom
+        from omni.isaac.core.utils.prims import create_prim
+        from omni.isaac.core.utils.rotations import euler_angles_to_quat
+        from omni.isaac.core.utils.prims import get_prim_path
 
         """Load a USD asset with random pose.
         args
@@ -193,14 +191,27 @@ class RandomObjects(torch.utils.data.IterableDataset):
         x = random.uniform(*RANDOM_TRANSLATION_X)
         z = random.uniform(*RANDOM_TRANSLATION_Z)
         rot_y = random.uniform(*RANDOM_ROTATION_Y)
-        asset = self.kit.create_prim(
-            f"/World/Asset/mesh{suffix}",
-            "Xform",
-            scale=(SCALE, SCALE, SCALE),
-            rotation=(0.0, rot_y, 0.0),
-            ref=ref,
-            semantic_label=semantic_label,
-        )
+
+        asset = None
+        try:
+            _asset = create_prim(
+                f"/World/Asset/mesh{suffix}",
+                "Xform",
+                scale=np.array([SCALE, SCALE, SCALE]),
+                orientation=euler_angles_to_quat(np.array([0.0, rot_y, 0.0])),
+                usd_path=ref,
+                semantic_label=semantic_label,
+            )
+            asset = _asset
+        except:
+            carb.log_warn("load_single_asset failure")
+            print(ref, semantic_label, suffix)
+            print("CURRENT PATHS**********************************")
+            curr_prim = self.stage.GetPrimAtPath("/")
+            for prim in Usd.PrimRange(curr_prim):
+                print(get_prim_path(prim))
+            print("END ERROR PRINTS********************************")
+
         bound = UsdGeom.Mesh(asset).ComputeWorldBound(0.0, "default")
         box_min_y = bound.GetBox().GetMin()[1]
         UsdGeom.XformCommonAPI(asset).SetTranslate((x, -box_min_y, z))
@@ -208,7 +219,10 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
     def populate_scene(self):
         """Clear the scene and populate it with assets."""
-        self.stage.RemovePrim("/World/Asset")
+        from omni.isaac.core.utils.prims import delete_prim
+
+        delete_prim("/World/Asset")
+
         self.assets = []
         num_assets = random.randint(*self.range_num_assets)
         for i in range(num_assets):
@@ -272,6 +286,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
         return self
 
     def __next__(self):
+        from omni.isaac.core.utils.stage import is_stage_loading
+
         # Generate a new scene
         self.populate_scene()
         self.randomize_camera()
@@ -295,7 +311,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         # step once and then wait for materials to load
         self.kit.update()
         print("waiting for materials to load...")
-        while self.kit.is_loading():
+        if is_stage_loading():
             self.kit.update()
         print("done")
         self.kit.update()
@@ -362,6 +378,9 @@ if __name__ == "__main__":
         help="Maximum asset size to use in MB. Larger assets will be skipped.",
     )
     parser.add_argument(
+        "--num_test_images", type=int, default=10, help="number of test images to generate when executing main"
+    )
+    parser.add_argument(
         "--root",
         type=str,
         default=None,
@@ -383,6 +402,8 @@ if __name__ == "__main__":
     plt.ion()
     _, axes = plt.subplots(1, 2, figsize=(10, 5))
     plt.tight_layout()
+
+    image_num = 0
     for image, target in dataset:
         for ax in axes:
             ax.clear()
@@ -404,8 +425,10 @@ if __name__ == "__main__":
 
         plt.draw()
         plt.pause(0.01)
-        plt.savefig("domain_randomization.png")
-        if dataset.exiting:
+        fig_name = "domain_randomization_test_image_" + str(image_num) + ".png"
+        plt.savefig(fig_name)
+        image_num += 1
+        if dataset.exiting or (image_num >= args.num_test_images):
             break
     # cleanup
-    dataset.kit.shutdown()
+    dataset.kit.close()
