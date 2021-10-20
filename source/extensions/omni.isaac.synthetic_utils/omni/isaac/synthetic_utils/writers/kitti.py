@@ -15,14 +15,29 @@ import csv
 import os
 from PIL import Image
 from .base import BaseWriter
+import carb
 
 
 class KittiWriter(BaseWriter):
-    def __init__(self, data_dir="kitti_data", num_worker_threads=4, max_queue_size=500, train_size=10, classes=[]):
+    def __init__(
+        self,
+        data_dir="kitti_data",
+        num_worker_threads=4,
+        max_queue_size=500,
+        train_size=10,
+        classes=[],
+        bbox_type="BBOX2DLOOSE",
+    ):
         BaseWriter.__init__(self, data_dir, num_worker_threads, max_queue_size)
         self.create_output_folders()
         self.train_size = train_size
         self.classes = classes
+        self.bbox_type = bbox_type
+        if self.bbox_type is not "BBOX2DLOOSE" and self.bbox_type is not "BBOX2DTIGHT":
+            carb.log_error(
+                f"bbox_type must be BBOX2DLOOSE or BBOX2DTIGHT, it is currently set to {self.bbox_type} which is not supported, defaulting to BBOX2DLOOSE"
+            )
+            self.bbox_type = "BBOX2DLOOSE"
 
     def worker(self):
         """Processes task from queue. Each tasks contains groundtruth data and metadata which is used to transform the output and write it to disk."""
@@ -39,10 +54,10 @@ class KittiWriter(BaseWriter):
     def save_label(self, data):
         """Saves the labels for the 2d bounding boxes in Kitti format."""
         label_set = []
-        viewport_width = data["METADATA"]["BBOX2DLOOSE"]["WIDTH"]
-        viewport_height = data["METADATA"]["BBOX2DLOOSE"]["HEIGHT"]
+        viewport_width = data["METADATA"][self.bbox_type]["WIDTH"]
+        viewport_height = data["METADATA"][self.bbox_type]["HEIGHT"]
 
-        for box in data["DATA"]["BBOX2DLOOSE"]:
+        for box in data["DATA"][self.bbox_type]:
             label = []
 
             # 2D bounding box points

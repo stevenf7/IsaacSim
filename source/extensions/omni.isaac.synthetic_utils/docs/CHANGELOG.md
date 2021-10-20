@@ -2,10 +2,17 @@
 CHANGELOG
 **********
 
+[0.1.4] - 2021-10-18
+========================
+
+Added
+-------
+- kitti writer supports both loose and tight 2d bounding boxes for labels
+
 [0.1.3] - 2021-10-09
 ========================
 
-CHanged
+Changed
 -------
 - Restructure files in extension
 
