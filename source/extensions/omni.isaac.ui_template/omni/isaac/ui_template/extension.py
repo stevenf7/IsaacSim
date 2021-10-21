@@ -193,6 +193,26 @@ class Extension(omni.ext.IExt):
                     self._on_dummy_callable_1,
                 ],
             },
+            "Test_15": {
+                "label": "INT_DRAG",
+                "type": "intfield",
+                "default_val": 0,
+                "tooltip": "This is the Label Tooltip",
+            },
+            "Test_16": {
+                "label": "FLT_FIELD",
+                "type": "floatfield",
+                "default_val": 0,
+                "tooltip": "This is the Label Tooltip",
+            },
+            "Test_17": {
+                "label": "INT_FIELD_COMBO_0",
+                "type": "combo_intfield_slider",
+                "default_val": 0,
+                "min": -100,
+                "max": 100,
+                "tooltip": ["This is the Label Tooltip", "INT FIELD Tooltip"],
+            },
             "Test_9": {
                 "label": "FF_COMBO_0",
                 "type": "combo_floatfield_slider",
@@ -286,6 +306,15 @@ class Extension(omni.ext.IExt):
                         elems = multi_cb_builder(**value)
                         for i in range(len(elems)):
                             self._models["cb_" + value["label"]] = elems[i]
+                    # Int Field
+                    elif value["type"] == "intfield":
+                        int_field = int_builder(**value)
+                    # Float Field
+                    elif value["type"] == "floatfield":
+                        flt_field = float_builder(**value)
+                    # Int Field + Slider
+                    elif value["type"] == "combo_intfield_slider":
+                        int_field, slider = combo_intfield_slider_builder(**value)
                     # Float Field + Slider
                     elif value["type"] == "combo_floatfield_slider":
                         flt_field, slider = combo_floatfield_slider_builder(**value)
