@@ -178,6 +178,18 @@ def str_builder(
         return str_field
 
 
+def int_builder(label="", type="intfield", default_val=0, tooltip=""):
+    """Creates a Stylized Floatfield Widget"""
+    with ui.HStack():
+        ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
+        int_field = ui.IntDrag(
+            name="Field", height=LABEL_HEIGHT, min=sys.maxsize * -1, max=sys.maxsize, alignment=ui.Alignment.LEFT_CENTER
+        ).model
+        int_field.set_value(default_val)
+        add_line_rect_flourish(False)
+    return int_field
+
+
 def float_builder(label="", type="floatfield", default_val=0, tooltip=""):
     """Creates a Stylized Floatfield Widget"""
     with ui.HStack():
@@ -238,6 +250,25 @@ def dropdown_builder(
             combo_box.add_item_changed_fn(on_clicked_wrapper)
 
     return combo_box
+
+
+def combo_intfield_slider_builder(
+    label="", type="intfield_stringfield", default_val=0.5, min=0, max=1, step=0.01, tooltip=["", ""]
+):
+    """Creates a Stylized FloatField + Stringfield Widget"""
+    with ui.HStack():
+        ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[0]))
+        ff = ui.IntDrag(
+            name="Field", width=BUTTON_WIDTH / 2, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[1])
+        ).model
+        ff.set_value(default_val)
+        ui.Spacer(width=5)
+        fs = ui.IntSlider(
+            width=ui.Fraction(1), alignment=ui.Alignment.LEFT_CENTER, min=min, max=max, step=step, model=ff
+        )
+
+        add_line_rect_flourish(False)
+        return ff, fs
 
 
 def combo_floatfield_slider_builder(
