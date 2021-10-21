@@ -16,12 +16,12 @@ from omni.isaac.core import World
 
 my_world = World()
 my_task = Stacking()
-my_world.load_task(my_task)
+my_world.add_task(my_task)
 my_world.reset()
 robot_name = my_task.get_robot_name()
 my_franka = my_world.scene.get_object(robot_name)
 my_controller = StackingController(
-    name="pick_place_controller",
+    name="stacking_controller",
     gripper_dof_indices=my_franka.gripper.dof_indices,
     robot_prim_path=my_franka.prim_path,
     picking_order_cube_names=my_task.get_cube_names(),

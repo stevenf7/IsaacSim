@@ -19,6 +19,7 @@ class PreviewSurface(VisualMaterial):
         self,
         prim_path,
         name="preview_surface",
+        shader=None,
         color: Optional[np.ndarray] = None,
         roughness: float = None,
         metallic: float = None,
@@ -30,11 +31,16 @@ class PreviewSurface(VisualMaterial):
             material = UsdShade.Material(stage.GetPrimAtPath(prim_path))
         else:
             material = UsdShade.Material.Define(stage, prim_path)
-        if stage.GetPrimAtPath(f"{prim_path}/shader").IsValid():
-            carb.log_warn("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
-            shader = UsdShade.Shader(stage.GetPrimAtPath(f"{prim_path}/shader"))
-        else:
-            shader = UsdShade.Shader.Define(stage, f"{prim_path}/shader")
+
+        if shader is None:
+            if stage.GetPrimAtPath(f"{prim_path}/shader").IsValid():
+                carb.log_warn("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
+                shader = UsdShade.Shader(stage.GetPrimAtPath(f"{prim_path}/shader"))
+            elif stage.GetPrimAtPath(f"{prim_path}/Shader").IsValid():
+                carb.log_warn("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
+                shader = UsdShade.Shader(stage.GetPrimAtPath(f"{prim_path}/Shader"))
+            else:
+                shader = UsdShade.Shader.Define(stage, f"{prim_path}/shader")
         VisualMaterial.__init__(
             self,
             prim_path=prim_path,

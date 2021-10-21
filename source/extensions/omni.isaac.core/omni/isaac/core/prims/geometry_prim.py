@@ -23,6 +23,7 @@ class GeometryPrim(XFormPrim):
         prim_path: str,
         name: Optional[str] = "geometry_prim",
         position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         visible: bool = True,
         collision: bool = False,
@@ -41,7 +42,13 @@ class GeometryPrim(XFormPrim):
         """
         prim = get_prim_at_path(prim_path)
         XFormPrim.__init__(
-            self, prim_path=prim_path, name=name, position=position, orientation=orientation, visible=visible
+            self,
+            prim_path=prim_path,
+            name=name,
+            position=position,
+            translation=translation,
+            orientation=orientation,
+            visible=visible,
         )
         if prim.IsA(UsdGeom.Cube):
             self._geom = UsdGeom.Cube(prim)

@@ -33,12 +33,12 @@ class Extension(BaseSample):
         self._articulation_controller = None
         return
 
-    def _load_task(self):
+    def _add_task(self):
         return Stacking()
 
     def _setup_controllers(self):
         my_franka = self._world.scene.get_object("my_franka")
-        my_franka = self._world.get_current_task()
+        my_franka = self._world.get_current_tasks()
         self._controller = StackingController(
             name="pick_place_controller",
             gripper_dof_indices=my_franka.gripper.dof_indices,

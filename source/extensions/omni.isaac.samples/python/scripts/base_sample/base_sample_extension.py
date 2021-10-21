@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from abc import abstractmethod
 import omni.ext
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
@@ -39,6 +40,10 @@ class BaseSampleExtension(omni.ext.IExt):
         stage_units_in_meters: float = 1.0,
         sample=None,
     ):
+        if sample is None:
+            self._sample = BaseSample()
+        else:
+            self._sample = sample
         menu_items = [MenuItemDescription(name=name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
         self._menu_items = [
             MenuItemDescription(name=menu_name, sub_menu=[MenuItemDescription(name=submenu_name, sub_menu=menu_items)])
@@ -53,12 +58,18 @@ class BaseSampleExtension(omni.ext.IExt):
             buttons_mapping=buttons_mapping,
             file_path=file_path,
         )
-        if sample is None:
-            self._sample = BaseSample()
-        else:
-            self._sample = sample
         self._sample.set_world_settings({"physics_dt": physics_dt, "stage_units_in_meters": stage_units_in_meters})
         return
+
+    @property
+    def sample(self):
+        return self._sample
+
+    def get_world(self):
+        return World.instance()
+
+    def get_buttons(self):
+        return self._buttons
 
     def _build_ui(self, name, title, doc_link, overview, buttons_mapping, file_path):
         self._window = omni.ui.Window(
@@ -137,6 +148,11 @@ class BaseSampleExtension(omni.ext.IExt):
 
     def _on_reset(self):
         asyncio.ensure_future(self._sample.reset_async())
+        self.on_reset()
+        return
+
+    @abstractmethod
+    def on_reset(self):
         return
 
     def _on_clear(self):

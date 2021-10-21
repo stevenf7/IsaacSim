@@ -18,6 +18,7 @@ import omni.usd.commands
 from pxr import Usd, UsdGeom
 import numpy as np
 from omni.isaac.core.utils.stage import get_current_stage
+import gc
 
 
 class Scene(object):
@@ -60,10 +61,10 @@ class Scene(object):
             self._scene_registry.add_rigid_object(name=obj.name, rigid_object=obj)
         elif isinstance(obj, GeometryPrim):
             self._scene_registry.add_visual_object(name=obj.name, visual_object=obj)
-        elif isinstance(obj, Articulation):
-            self._scene_registry.add_articulated_system(name=obj.name, articulated_system=obj)
         elif isinstance(obj, Robot):
             self._scene_registry.add_robot(name=obj.name, robot=obj)
+        elif isinstance(obj, Articulation):
+            self._scene_registry.add_articulated_system(name=obj.name, articulated_system=obj)
         elif isinstance(obj, XFormPrim):
             self._scene_registry.add_xform(name=obj.name, xform=obj)
         else:
@@ -88,20 +89,26 @@ class Scene(object):
     def reset(self) -> None:
         """[summary]
         """
-        for prim_name, prim in self._scene_registry._prim_objects.items():
-            prim.reset()
-        for visual_object_name, visual_object in self._scene_registry._visual_objects.items():
-            visual_object.reset()
-        for rigid_object_name, rigid_object in self._scene_registry._rigid_objects.items():
-            rigid_object.reset()
-        for articulated_system_name, articulated_system in self._scene_registry._articulated_systems.items():
-            articulated_system.reset()
-        for robot_name, robot in self._scene_registry._robots.items():
-            robot.reset()
-        for xform_name, xform in self._scene_registry.xforms.items():
-            xform.reset()
+        prim_registries_available = [
+            self._scene_registry._prim_objects,
+            self._scene_registry._visual_objects,
+            self._scene_registry._rigid_objects,
+            self._scene_registry._articulated_systems,
+            self._scene_registry._robots,
+            self._scene_registry.xforms,
+        ]
+
+        for prim_registery in prim_registries_available:
+            for prim_name in list(prim_registery):
+                if not prim_registery[prim_name].is_valid():
+                    prim_object = prim_registery[prim_name]
+                    self._scene_registry.remove_object(name=prim_name)
+                    del prim_object
+                else:
+                    prim_registery[prim_name].reset()
         if self._enable_bounding_box_computations:
             self._bbox_cache.Clear()
+        gc.collect()
         return
 
     def _finalize(self) -> None:

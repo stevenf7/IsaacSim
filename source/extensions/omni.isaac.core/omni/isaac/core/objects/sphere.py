@@ -23,6 +23,7 @@ class VisualSphere(GeometryPrim):
         prim_path: str,
         name: Optional[str] = "visual_sphere",
         position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         color: Optional[np.ndarray] = None,
         radius: float = 0.5,
@@ -48,7 +49,9 @@ class VisualSphere(GeometryPrim):
             sphereGeom = UsdGeom.Sphere.Define(get_current_stage(), prim_path)
             # TODO: double check the sphere extent
             sphereGeom.GetExtentAttr().Set([Gf.Vec3f([-radius, -radius, -radius]), Gf.Vec3f([radius, radius, radius])])
-        GeometryPrim.__init__(self, prim_path=prim_path, name=name, position=position, orientation=orientation)
+        GeometryPrim.__init__(
+            self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
+        )
         VisualSphere.set_radius(self, radius)
         if visual_material_path is None:
             if color is None:
@@ -83,6 +86,7 @@ class DynamicSphere(RigidPrim, GeometryPrim):
         prim_path: str,
         name: Optional[str] = "dynamic_sphere",
         position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         mass: Optional[float] = None,
         color: Optional[np.ndarray] = None,
@@ -122,13 +126,20 @@ class DynamicSphere(RigidPrim, GeometryPrim):
             sphereGeom = UsdGeom.Sphere.Define(get_current_stage(), prim_path)
             sphereGeom.GetExtentAttr().Set([Gf.Vec3f([-radius, -radius, -radius]), Gf.Vec3f([radius, radius, radius])])
         GeometryPrim.__init__(
-            self, prim_path=prim_path, name=name, position=position, orientation=orientation, collision=True
+            self,
+            prim_path=prim_path,
+            name=name,
+            position=position,
+            translation=translation,
+            orientation=orientation,
+            collision=True,
         )
         RigidPrim.__init__(
             self,
             prim_path=prim_path,
             name=name,
             position=position,
+            translation=translation,
             orientation=orientation,
             mass=mass,
             linear_velocity=linear_velocity,

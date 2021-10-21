@@ -61,8 +61,8 @@ class JetbotKeyboard(BaseSample):
         self._controller = None
         self._command = [0.0, 0.0]
 
-    def _load_task(self):
-        return DriveTask()
+    def _add_tasks(self):
+        return [DriveTask()]
 
     async def setup_load(self):
         self._controller = DifferentialController(name="simple_control")
@@ -75,7 +75,9 @@ class JetbotKeyboard(BaseSample):
         return
 
     def _on_editor_step(self, step):
-        self._task.jetbot.apply_wheel_actions(self._controller.forward(command=self._command))
+        list(self._current_tasks.values())[0].jetbot.apply_wheel_actions(
+            self._controller.forward(command=self._command)
+        )
         return
 
     def _sub_keyboard_event(self, event, *args, **kwargs):

@@ -13,6 +13,7 @@ from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.articulations import ArticulationGripper
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
+from omni.isaac.core.utils.stage import add_reference_to_stage
 
 FRANKA_USD_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../../data/franka.usd")
 
@@ -45,11 +46,10 @@ class Franka(Robot):
         self._gripper = None
         self._end_effector_prim_name = end_effector_prim_name
         if not prim.IsValid():
-            prim = define_prim(prim_path, "Xform")
             if usd_path:
-                prim.GetReferences().AddReference(usd_path)
+                add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
             else:
-                prim.GetReferences().AddReference(FRANKA_USD_PATH)
+                add_reference_to_stage(usd_path=FRANKA_USD_PATH, prim_path=prim_path)
                 if self._end_effector_prim_name is None:
                     self._end_effector_prim_name = "panda_rightfinger"
                 if gripper_dof_names is None:

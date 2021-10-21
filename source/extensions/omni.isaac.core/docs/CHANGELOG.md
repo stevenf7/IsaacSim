@@ -27,10 +27,6 @@ Added
 - Added base tasks for stacking, pick_place and follow_target
 - Added an IK solver under utils
 
-Changed
--------
-- The behavior of .play() method under SimulationContext to always do 1 step with rendering for dc to function properly.
-
 
 [0.1.1] - 2021-10-18
 ========================

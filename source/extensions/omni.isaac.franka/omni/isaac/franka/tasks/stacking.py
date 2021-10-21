@@ -8,17 +8,31 @@
 #
 from omni.isaac.core.tasks import Stacking as BaseStacking
 from omni.isaac.franka import Franka
+from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.string import find_unique_string_name
 import numpy as np
 
 
 class Stacking(BaseStacking):
-    def __init__(self) -> None:
+    def __init__(
+        self, name="franka_stacking", target_position=None, cube_size=0.0515, task_frame_translation=None
+    ) -> None:
         BaseStacking.__init__(
             self,
-            robot=Franka(prim_path="/World/Franka", name="my_franka"),
+            name=name,
             cube_initial_positions=np.array([[0.3, 0.3, 0.3], [0.3, -0.3, 0.3]]),
             cube_initial_orientations=None,
-            stack_target_position=None,
-            cube_size=0.0515,
+            stack_target_position=target_position,
+            cube_size=cube_size,
+            task_frame_translation=task_frame_translation,
         )
         return
+
+    def set_robot(self):
+        franka_prim_path = find_unique_string_name(
+            intitial_name="/World/Franka", is_unique_fn=lambda x: not is_prim_path_valid(x)
+        )
+        franka_robot_name = find_unique_string_name(
+            intitial_name="my_franka", is_unique_fn=lambda x: not self.scene.object_exists(x)
+        )
+        return Franka(prim_path=franka_prim_path, name=franka_robot_name)

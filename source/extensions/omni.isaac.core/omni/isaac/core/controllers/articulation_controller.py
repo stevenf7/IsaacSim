@@ -42,6 +42,16 @@ class DOFArticulationController(object):
         self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
         return
 
+    def get_gains(self, dof_props) -> None:
+        """[summary]
+
+        Args:
+            dof_props (np.ndarray): [description]
+            kp (Optional, optional): [description]. Defaults to None.
+            kd (Optional, optional): [description]. Defaults to None.
+        """
+        return dof_props["stiffness"][self._dof_index], dof_props["damping"][self._dof_index]
+
     def apply_action(self, control_action: dict) -> None:
         """[summary]
 
@@ -66,7 +76,7 @@ class DOFArticulationController(object):
 
 
 class ArticulationController(object):
-    def __init__(self, articulation_handle: int, dofs_info: dict) -> None:
+    def __init__(self) -> None:
         """[summary]
 
         Args:
@@ -74,18 +84,19 @@ class ArticulationController(object):
             dofs_info (dict): [description]
         """
         self._dof_controllers = list()
-        self._articulation_handle = articulation_handle
+        self._articulation_handle = None
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
-        for dof_name, dof_info in dofs_info.items():
-            self._dof_controllers.append(
-                DOFArticulationController(articulation_handle, dof_info.handle, dof_info.index)
-            )
+        self._default_kps = None
+        self._default_kds = None
+        return
+
+    def initialize_handles(self, handle, dof_infos):
+        self._articulation_handle = handle
+        for dof_name, dof_info in dof_infos.items():
+            self._dof_controllers.append(DOFArticulationController(handle, dof_info.handle, dof_info.index))
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
-        self._default_kps = [dof_props["stiffness"][i] for i in range(len(dofs_info))]
-        self._default_kds = [dof_props["damping"][i] for i in range(len(dofs_info))]
-        for dof_index in range(len(self._dof_controllers)):
-            dof_props["driveMode"][dof_index] = _dynamic_control.DRIVE_FORCE
-        self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
+        self._default_kps = [dof_props["stiffness"][i] for i in range(len(dof_infos))]
+        self._default_kds = [dof_props["damping"][i] for i in range(len(dof_infos))]
         return
 
     def apply_action(self, control_actions: ArticulationAction, indices=None) -> None:
@@ -120,6 +131,16 @@ class ArticulationController(object):
         self._default_kds = [dof_props["damping"][i] for i in range(len(self._dof_controllers))]
         return
 
+    def get_gains(self):
+        kps = np.zeros(len(self._dof_controllers))
+        kds = np.zeros(len(self._dof_controllers))
+        dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
+        for i in range(len(self._dof_controllers)):
+            dof_kp, dof_kd = self._dof_controllers[i].get_gains(dof_props)
+            kps[i] = dof_kp
+            kds[i] = dof_kd
+        return kps, kds
+
     def switch_control_mode(self, mode: str) -> None:
         """[summary]
 
@@ -149,6 +170,60 @@ class ArticulationController(object):
             self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
             self._dof_controllers[dof_index].set_gains(dof_props=dof_props, kp=0, kd=0)
         return
+
+    def set_max_efforts(self, value=None, indices=None):
+        dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
+        if indices is None:
+            indices = list(range(len(self._dof_controllers)))
+        for i in range(len(indices)):
+            dof_props["maxEffort"][indices[i]] = value
+        self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
+        return
+
+    def get_max_efforts(self):
+        dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
+        max_forces = np.zeros(len(self._dof_controllers))
+        for i in range(len(self._dof_controllers)):
+            max_forces[i] = dof_props["maxEffort"][i]
+        return max_forces
+
+    def set_effort_modes(self, mode, indices=None):
+        dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
+        if indices is None:
+            indices = list(range(len(self._dof_controllers)))
+        for i in range(len(indices)):
+            if mode == "force":
+                dof_props["driveMode"][indices[i]] = _dynamic_control.DRIVE_FORCE
+            elif mode == "accelaration":
+                dof_props["driveMode"][indices[i]] = _dynamic_control.DRIVE_ACCELERATION
+            else:
+                raise Exception("not recognized effort mode: {}".format(mode))
+        self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
+        return
+
+    def get_effort_modes(self):
+        dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
+        effort_modes = [None] * len(self._dof_controllers)
+        for i in range(len(self._dof_controllers)):
+            if dof_props["driveMode"][i] == _dynamic_control.DRIVE_FORCE:
+                effort_modes[i] = "force"
+            elif dof_props["driveMode"][i] == _dynamic_control.DRIVE_ACCELERATION:
+                effort_modes[i] = "accelaration"
+            else:
+                raise NotImplementedError
+        return effort_modes
+
+    def get_joint_limits(self):
+        dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
+        upper_limits = [None] * len(self._dof_controllers)
+        lower_limits = [None] * len(self._dof_controllers)
+        for i in range(len(self._dof_controllers)):
+            if dof_props["has_limits"][i]:
+                upper_limits[i] = dof_props["upper"][i]
+                lower_limits[i] = dof_props["lower"][i]
+            else:
+                continue
+        return lower_limits, upper_limits
 
     def get_applied_action(self):
         joint_positions = np.zeros(len(self._dof_controllers))

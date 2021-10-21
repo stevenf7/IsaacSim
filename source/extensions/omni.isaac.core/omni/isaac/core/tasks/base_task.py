@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from abc import abstractmethod
 from omni.isaac.core.scenes.scene import Scene
 
 
@@ -18,6 +19,7 @@ class BaseTask(object):
         """
         self._scene = None
         self._name = name
+        self._task_objects = dict()
 
     @property
     def scene(self) -> Scene:
@@ -46,6 +48,10 @@ class BaseTask(object):
         self._scene = scene
         return
 
+    def get_task_objects(self):
+        return self._task_objects
+
+    @abstractmethod
     def get_observations(self) -> dict:
         """[summary]
 
@@ -83,3 +89,11 @@ class BaseTask(object):
         """[summary]
         """
         return
+
+    @abstractmethod
+    def set_params(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_params(self):
+        raise NotImplementedError

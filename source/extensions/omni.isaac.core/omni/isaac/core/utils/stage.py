@@ -2,6 +2,7 @@ import omni.kit.app
 from pxr import Usd, UsdGeom
 from omni.isaac.core.utils.constants import AXES_TOKEN
 import builtins
+import carb
 
 
 def get_current_stage():
@@ -40,7 +41,7 @@ def clear_stage(keep_physics=True) -> None:
         paths = []
         for prim in traverse_stage():
             prim_path = get_prim_path(prim)
-            if get_prim_type_name(prim_path=prim_path) == "PhysicsScene":
+            if get_prim_type_name(prim_path=prim_path) == "PhysicsScene" or prim_path == "/World":
                 continue
             paths.append(prim.GetPrimPath())
         DeletePrimsCommand(paths).do()
@@ -53,12 +54,24 @@ def clear_stage(keep_physics=True) -> None:
     return
 
 
+def print_stage_prim_paths():
+    from omni.isaac.core.utils.prims import get_prim_path
+
+    for prim in traverse_stage():
+        prim_path = get_prim_path(prim)
+        print(prim_path)
+    return
+
+
 def add_reference_to_stage(usd_path, prim_path, type="Xform") -> Usd.Prim:
     stage = get_current_stage()
     prim = stage.GetPrimAtPath(prim_path)
     if not prim.IsValid():
         prim = stage.DefinePrim(prim_path, type)
-    prim.GetReferences().AddReference(usd_path)
+    carb.log_warn("Loading Asset from path {} ".format(usd_path))
+    success_bool = prim.GetReferences().AddReference(usd_path)
+    if not success_bool:
+        raise Exception("The usd file at path {} provided wasn't found".format(usd_path))
     return prim
 
 

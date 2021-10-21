@@ -19,7 +19,7 @@ my_world = World(stage_units_in_meters=0.01)
 extension_id = get_extension_id("omni.isaac.motion_generation")
 mg_extension_path = get_extension_path(ext_id=extension_id)
 my_task = BinPacking()
-my_world.load_task(my_task)
+my_world.add_task(my_task)
 my_world.reset()
 my_ur10 = my_world.scene.get_object("my_ur10")
 my_controller = RMPFlowPickPlace(

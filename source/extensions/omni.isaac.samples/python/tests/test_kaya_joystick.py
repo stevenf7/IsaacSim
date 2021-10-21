@@ -62,11 +62,11 @@ class TestKayaJoystickSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         while is_stage_loading():
             await omni.kit.app.get_app().next_update_async()
         self._provider.set_gamepad_connected(self._gamepad, True)
-        self.assertLess(self._sample._world.get_current_task().kaya.get_pose()[0][1], 1)
+        self.assertLess(list(self._sample._world.get_current_tasks().values())[0].kaya.get_pose()[0][1], 1)
         for i in range(100):
             self._provider.buffer_gamepad_event(self._gamepad, carb.input.GamepadInput.LEFT_STICK_UP, 1.0)
             await omni.kit.app.get_app().next_update_async()
         self._provider.set_gamepad_connected(self._gamepad, False)
         await omni.kit.app.get_app().next_update_async()
-        self.assertGreater(self._sample._world.get_current_task().kaya.get_pose()[0][1], 64.0)
+        self.assertGreater(list(self._sample._world.get_current_tasks().values())[0].kaya.get_pose()[0][1], 64.0)
         pass

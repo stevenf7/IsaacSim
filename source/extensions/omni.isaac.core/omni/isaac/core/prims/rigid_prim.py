@@ -9,8 +9,10 @@
 from typing import Optional, Tuple
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import DynamicState
-from omni.isaac.core.utils.prims import get_prim_at_path
-from pxr import Gf, UsdPhysics
+from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_parent
+from omni.isaac.core.utils.transformations import tf_matrix_from_pose
+from omni.isaac.core.utils.rotations import gf_quatd_to_np_array
+from pxr import Gf, UsdPhysics, Usd, UsdGeom
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
 
@@ -21,6 +23,7 @@ class RigidPrim(XFormPrim):
         prim_path: str,
         name: Optional[str] = "rigid_prim",
         position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         visible: bool = True,
         mass: Optional[float] = None,
@@ -45,6 +48,7 @@ class RigidPrim(XFormPrim):
         prim = get_prim_at_path(prim_path)
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._handle = None
+        # TODO: check also the children and the parent if they have rigid body api
         if prim.HasAPI(UsdPhysics.RigidBodyAPI):
             self._rigid_api = UsdPhysics.RigidBodyAPI(prim)
         else:
@@ -54,7 +58,13 @@ class RigidPrim(XFormPrim):
         else:
             self._mass_api = UsdPhysics.MassAPI.Apply(prim)
         XFormPrim.__init__(
-            self, prim_path=prim_path, name=name, position=position, orientation=orientation, visible=visible
+            self,
+            prim_path=prim_path,
+            name=name,
+            position=position,
+            translation=translation,
+            orientation=orientation,
+            visible=visible,
         )
         self._rigid_api.CreateRigidBodyEnabledAttr(True)
         if linear_velocity is not None:
@@ -139,13 +149,36 @@ class RigidPrim(XFormPrim):
 
     def set_local_pose(self, translation=None, orientation=None):
         if self._handle is not None and self._dc_interface.is_simulating():
-            raise NotImplementedError
+            local_transform = tf_matrix_from_pose(translation=translation, orientation=orientation)
+            parent_world_tf = UsdGeom.Xformable(get_prim_parent(self._prim)).ComputeLocalToWorldTransform(
+                Usd.TimeCode.Default()
+            )
+            my_world_transform = np.matmul(parent_world_tf, local_transform)
+            transform = Gf.Transform()
+            transform.SetMatrix(Gf.Matrix4d(np.transpose(my_world_transform)))
+            calculated_position = transform.GetTranslation()
+            calculated_orientation = transform.GetRotation().GetQuat()
+            RigidPrim.set_world_pose(
+                self, position=np.array(calculated_position), orientation=gf_quatd_to_np_array(calculated_orientation)
+            )
+            return
         else:
-            return XFormPrim.set_local_pose(translation=translation, orientation=orientation)
+            XFormPrim.set_local_pose(translation=translation, orientation=orientation)
+            return
 
     def get_local_pose(self):
         if self._handle is not None and self._dc_interface.is_simulating():
-            raise NotImplementedError
+            parent_world_tf = UsdGeom.Xformable(get_prim_parent(self._prim)).ComputeLocalToWorldTransform(
+                Usd.TimeCode.Default()
+            )
+            world_position, world_orientation = RigidPrim.get_world_pose()
+            my_world_transform = tf_matrix_from_pose(translation=world_position, orientation=world_orientation)
+            local_transform = np.matmul(np.linalg.inv(np.transpose(parent_world_tf)), my_world_transform)
+            transform = Gf.Transform()
+            transform.SetMatrix(Gf.Matrix4d(np.transpose(local_transform)))
+            calculated_translation = transform.GetTranslation()
+            calculated_orientation = transform.GetRotation().GetQuat()
+            return np.array(calculated_translation), gf_quatd_to_np_array(calculated_orientation)
         else:
             return XFormPrim.get_local_pose()
 

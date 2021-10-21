@@ -10,19 +10,21 @@ from omni.isaac.core.controllers import BaseController
 from omni.isaac.motion_generation import MotionGenerator
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.core.prims import XFormPrim
+from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.dynamic_control import _dynamic_control
 from typing import Optional
-from omni.isaac.core.utils.rotations import quat_to_rot_matrix
+from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_rot_matrix
 from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
+from omni.isaac.core.utils.string import find_unique_string_name
+import lula
 import os
 import json
 import numpy as np
-import lula
 
 
 class RMPFlowController(BaseController):
-    # TODO: this will need further discussion with buck and SRL before cleaning it up
+    # TODO: this will need further discussion with buck and bryan before cleaning it up
     def __init__(self, name, robot_prim_path, policy_map_path, physics_dt=1.0 / 60.0):
         BaseController.__init__(self, name)
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
@@ -38,35 +40,35 @@ class RMPFlowController(BaseController):
         self._robot_prim = get_prim_at_path(robot_prim_path)
         self.mg.initialize(self._config, self._robot_prim, int(1.0 / physics_dt))
         self._physics_dt = physics_dt
+        virtual_target_name = find_unique_string_name(
+            intitial_name="/World/RMPFlowTarget", is_unique_fn=lambda x: not is_prim_path_valid(x)
+        )
+        self._target_prim = XFormPrim(prim_path=virtual_target_name)
+        self.mg.set_end_effector_target(self._target_prim.prim)
         return
 
-    def _process_policy_config(self, mp_config_file):
-        mp_config_dir = os.path.dirname(mp_config_file)  # path to directory containing mp_config_file
-
-        with open(mp_config_file) as config_file:
+    def _process_policy_config(self, mg_config_file):
+        mp_config_dir = os.path.dirname(mg_config_file)
+        with open(mg_config_file) as config_file:
             config = json.load(config_file)
-
         rel_assets = config.get("relative_asset_paths", {})
         for k, v in rel_assets.items():
             config[k] = os.path.join(mp_config_dir, v)
-
         return config
 
     def forward(
         self, target_end_effector_position: np.ndarray, target_end_effector_orientation: Optional[np.ndarray] = None
     ):
-        self.mg._motion_policy.update()
-        if target_end_effector_orientation is not None:
-            self.mg._motion_policy._policy.set_end_effector_target(
-                position=np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1),
-                orientation=lula.Rotation3(
-                    np.array(quat_to_rot_matrix(target_end_effector_orientation), dtype=np.float64).reshape(3, 3)
-                ),
+
+        if target_end_effector_orientation is None:
+            self._target_prim.set_world_pose(
+                position=target_end_effector_position, orientation=euler_angles_to_quat(np.array([0, np.pi, 0]))
             )
         else:
-            self.mg._motion_policy._policy.set_end_effector_target(
-                position=np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1)
+            self._target_prim.set_world_pose(
+                position=target_end_effector_position, orientation=target_end_effector_orientation
             )
+        self.mg._motion_policy.update()
         target_joint_positions = self.mg.get_joint_position_targets()
         return ArticulationAction(joint_positions=target_joint_positions)
 
@@ -81,4 +83,5 @@ class RMPFlowController(BaseController):
     def reset(self):
         self.mg = MotionGenerator(self._stage)
         self.mg.initialize(self._config, self._robot_prim, int(1.0 / self._physics_dt))
+        self.mg.set_end_effector_target(self._target_prim.prim)
         return

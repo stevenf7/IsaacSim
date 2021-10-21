@@ -64,8 +64,8 @@ class KayaJoystick(BaseSample):
         self._gains = (40.0, 40.0, 2.0)
         self._joystick_deadzone = 0.2
 
-    def _load_task(self):
-        return DriveTask()
+    def _add_tasks(self):
+        return [DriveTask()]
 
     async def setup_load(self):
         self._controller = HolonomicController(name="simple_control")
@@ -77,7 +77,7 @@ class KayaJoystick(BaseSample):
         return
 
     def _on_editor_step(self, step):
-        self._task.kaya.apply_wheel_actions(
+        list(self._current_tasks.values())[0].kaya.apply_wheel_actions(
             self._controller.forward(self._command[0], self._command[1], self._command[2])
         )
         return
