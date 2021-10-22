@@ -25,7 +25,8 @@ import math
 from omni.physx.scripts.physicsUtils import add_ground_plane
 from omni.isaac.samples.scripts.utils.simple_robot_controller import RobotController
 from omni.isaac.utils.scripts import math_utils
-from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
+from omni.isaac.core.utils.stage import set_stage_up_axis
+from omni.isaac.utils.scripts.scene_utils import setup_physics
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 
@@ -80,7 +81,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._robot_wheels = ["left_wheel", "right_wheel"]
         self._robot_wheels_speed = [2, 2]
 
-        set_up_z_axis(self._stage)
+        set_stage_up_axis("z")
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
         setup_physics(self._stage)
 

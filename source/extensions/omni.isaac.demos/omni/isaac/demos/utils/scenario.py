@@ -11,15 +11,7 @@ from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics, PhysxSchema
 import omni.usd
 import gc
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-
-
-# Utility function to specify the stage with the z axis as "up"
-def set_up_z_axis(stage):
-    rootLayer = stage.GetRootLayer()
-    rootLayer.SetPermissionToEdit(True)
-    with Usd.EditContext(stage, rootLayer):
-        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
-
+from omni.isaac.core.utils.stage import set_stage_up_axis
 
 # Specify position of a given prim, reuse any existing transform ops when possible
 def set_translate(prim, new_loc):
@@ -165,7 +157,7 @@ class Scenario:
 
         self._created = True
         self._stage = omni.usd.get_context().get_stage()
-        set_up_z_axis(self._stage)
+        set_stage_up_axis("z")
         self.stop_tasks()
         pass
 

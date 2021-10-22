@@ -20,6 +20,8 @@ writeTarget.kit = true
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.pip_archive" = {} # scipy
 "omni.isaac.lula" = {}
+"omni.kit.window.viewport" = {}
+"omni.kit.uiapp" = {}
 
 [[python.module]]
 name = "omni.isaac.core"

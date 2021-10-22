@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.8"
+version = "0.1.9"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "Isaac Sim Utility Extensions"
@@ -37,6 +37,3 @@ public = false
 
 [settings]
 isaac.nucleus.default = "omniverse://localhost"
-
-[[test]]
-args = ["--/exts/omni.kit.renderer.core/compatibilityMode=true"]

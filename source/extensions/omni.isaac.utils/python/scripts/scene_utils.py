@@ -10,13 +10,6 @@
 from pxr import Usd, UsdGeom, Gf, PhysxSchema, UsdPhysics
 
 
-def set_up_z_axis(stage):
-    rootLayer = stage.GetRootLayer()
-    rootLayer.SetPermissionToEdit(True)
-    with Usd.EditContext(stage, rootLayer):
-        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
-
-
 # Set default physics parameters
 def setup_physics(stage, path="/physics/scene"):
     # Specify gravity

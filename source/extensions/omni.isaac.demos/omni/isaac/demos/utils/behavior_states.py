@@ -8,7 +8,7 @@
 
 import copy
 import numpy as np
-from omni.isaac.utils.scripts import math_utils
+from omni.isaac.demos.utils import math_utils
 from .franka import LookAtCommander
 from .state_machine import State, HierarchicalState, Behavior, NextStateTransition, ThinkAndRun, MultiHierarchicalState
 from .behavior_helpers import (

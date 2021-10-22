@@ -20,8 +20,8 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 from omni.isaac.dynamic_control import _dynamic_control
 
 from pxr import Gf, UsdGeom, UsdPhysics
-
-from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics, create_background
+from omni.isaac.core.utils.stage import set_stage_up_axis
+from omni.isaac.utils.scripts.scene_utils import setup_physics, create_background
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 import socket
@@ -328,7 +328,7 @@ class Extension(omni.ext.IExt):
             self.prim = self._stage.DefinePrim(prim_path, "Xform")
             self.prim.GetReferences().AddReference(dofbot_usd)
 
-            set_up_z_axis(self._stage)
+            set_stage_up_axis("z")
             setup_physics(self._stage)
 
             create_background(

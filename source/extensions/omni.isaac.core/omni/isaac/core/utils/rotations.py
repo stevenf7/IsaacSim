@@ -59,6 +59,30 @@ def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False) -> np.
     return np.array([w, x, y, z])
 
 
+def lookat_to_quatf(camera: Gf.Vec3f, target: Gf.Vec3f, up: Gf.Vec3f) -> Gf.Quatf:
+
+    F = (target - camera).GetNormalized()
+    R = Gf.Cross(up, F).GetNormalized()
+    U = Gf.Cross(F, R)
+
+    q = Gf.Quatf()
+    trace = R[0] + U[1] + F[2]
+    if trace > 0.0:
+        s = 0.5 / math.sqrt(trace + 1.0)
+        q = Gf.Quatf(0.25 / s, Gf.Vec3f((U[2] - F[1]) * s, (F[0] - R[2]) * s, (R[1] - U[0]) * s))
+    else:
+        if R[0] > U[1] and R[0] > F[2]:
+            s = 2.0 * math.sqrt(1.0 + R[0] - U[1] - F[2])
+            q = Gf.Quatf((U[2] - F[1]) / s, Gf.Vec3f(0.25 * s, (U[0] + R[1]) / s, (F[0] + R[2]) / s))
+        elif U[1] > F[2]:
+            s = 2.0 * math.sqrt(1.0 + U[1] - R[0] - F[2])
+            q = Gf.Quatf((F[0] - R[2]) / s, Gf.Vec3f((U[0] + R[1]) / s, 0.25 * s, (F[1] + U[2]) / s))
+        else:
+            s = 2.0 * math.sqrt(1.0 + F[2] - R[0] - U[1])
+            q = Gf.Quatf((R[1] - U[0]) / s, Gf.Vec3f((F[0] + R[2]) / s, (F[1] + U[2]) / s, 0.25 * s))
+    return q
+
+
 def gf_quatd_to_np_array(orientation: Gf.Quatd) -> np.ndarray:
     quat = np.zeros(4)
     quat[1:] = orientation.GetImaginary()

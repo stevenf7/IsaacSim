@@ -28,7 +28,8 @@ import weakref
 
 from omni.isaac.dynamic_control import _dynamic_control
 from .utils.simple_robot_controller import RobotController
-from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics, create_background
+from omni.isaac.core.utils.stage import set_stage_up_axis
+from omni.isaac.utils.scripts.scene_utils import setup_physics, create_background
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 EXTENSION_NAME = "Robot Navigation"
@@ -218,7 +219,7 @@ class Extension(omni.ext.IExt):
                 self._robot_wheels = ["left_wheel", "right_wheel"]
                 self._robot_wheels_speed = [2, 2]
 
-            set_up_z_axis(self._stage)
+            set_stage_up_axis("z")
             setup_physics(self._stage)
 
             create_background(

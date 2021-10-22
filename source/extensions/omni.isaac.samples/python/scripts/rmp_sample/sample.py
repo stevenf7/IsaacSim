@@ -18,10 +18,11 @@ import omni.physx as _physx
 
 from omni.physx.scripts.physicsUtils import add_ground_plane
 from omni.isaac.demos.utils.franka import Franka, default_config
-from omni.isaac.samples.scripts.utils.world import World
+from omni.isaac.demos.utils.world import World
 from omni.isaac.demos.utils.reactive_behavior import FrameTerminationCriteria
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from omni.isaac.utils.scripts.scene_utils import set_translate, set_up_z_axis, setup_physics
+from omni.isaac.core.utils.stage import set_stage_up_axis
+from omni.isaac.utils.scripts.scene_utils import set_translate, setup_physics
 
 import numpy as np
 import os
@@ -70,7 +71,7 @@ class RMPSample:
         self._meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
         self._units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(self._stage)
 
-        set_up_z_axis(self._stage)
+        set_stage_up_axis("z")
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0), Gf.Vec3f(1.0))
         setup_physics(self._stage)
 
