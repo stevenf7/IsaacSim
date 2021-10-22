@@ -37,6 +37,18 @@ def enable_extension(extension_name: str) -> bool:
     return extension_manager.set_extension_enabled_immediate(extension_name, True)
 
 
+def disable_extension(extension_name: str) -> bool:
+    """Load an extension
+        Args:
+            extension_name (str): name of the extension
+
+        Returns:
+            bool: True if extension could be loaded, False otherwise
+    """
+    extension_manager = omni.kit.app.get_app().get_extension_manager()
+    return extension_manager.set_extension_enabled_immediate(extension_name, False)
+
+
 def set_extension_enabled(name: str, enabled: bool) -> None:
     """
     Set the state for an extension

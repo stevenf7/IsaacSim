@@ -2,6 +2,17 @@
 CHANGELOG
 **********
 
+[0.1.3] - 2021-10-21
+========================
+
+Changed
+--------
+Renamed view_ports.py to viewports.py
+
+Added
+------
+disable_extension
+
 [0.1.2] - 2021-10-20
 ========================
 

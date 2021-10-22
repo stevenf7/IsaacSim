@@ -142,6 +142,11 @@ void RosJointState::onPhysicsStep(float dt)
 }
 void RosJointState::pubCallback(ros::Publisher* pub)
 {
+    // we aren't simulating, so skip publisher as it won't do anything.
+    if (!mDynamicControlPtr->isSimulating())
+    {
+        return;
+    }
     if (!mArticulationHandle)
     {
         if (mDynamicControlPtr->peekObjectType(mArticulationPath.GetString().c_str()) ==
@@ -196,6 +201,11 @@ void RosJointState::pubCallback(ros::Publisher* pub)
 }
 void RosJointState::subCallback(const sensor_msgs::JointState::ConstPtr& msg)
 {
+    // we aren't simulating, so skip subscriber as it won't do anything.
+    if (!mDynamicControlPtr->isSimulating())
+    {
+        return;
+    }
     if (!mArticulationHandle)
     {
         if (mDynamicControlPtr->peekObjectType(mArticulationPath.GetString().c_str()) ==
