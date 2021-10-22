@@ -33,7 +33,7 @@ async def load_test_file(path_to_file: str):
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestJetRacerLoading(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestJetBot(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         self._timeline = omni.timeline.get_timeline_interface()
@@ -42,6 +42,11 @@ class TestJetRacerLoading(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._dc_extension_path = ext_manager.get_extension_path(ext_id)
         self.dc = _dynamic_control.acquire_dynamic_control_interface()
+
+        self._physics_rate = 60
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
 
         pass
 
@@ -54,41 +59,46 @@ class TestJetRacerLoading(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
+    async def simulate(self, seconds, art=None, steps_per_sec=60):
+        for frame in range(steps_per_sec * seconds):
+            if art is not None:
+                self.dc.wake_up_articulation(art)
+            await omni.kit.app.get_app().next_update_async()
+
     # Actual test, notice it is "async" function, so "await" can be used if needed
-    async def test_jetracer_loading(self):
+    async def test_jetbot_loading(self):
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
 
-        self.usd_path = nucleus_server + "/Isaac/Robots/Jetracer/jetracer.usd"
+        self.usd_path = nucleus_server + "/Isaac/Robots/Jetbot/jetbot.usd"
         (result, error) = await load_test_file(self.usd_path)
         # Make sure the stage loaded
         self.assertTrue(result)
 
-        # Start Simulation and tick a few
+        # Start Simulation and wait
         self._timeline.play()
-        for frame in range(10):
-            await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
 
-        # get the jetracer
-        vehicle_path = "/World/Jetracer/Vehicle"
-        self.chassis = self.dc.get_rigid_body(vehicle_path)
+        # get the dofbot
+        self.ar = self.dc.get_articulation("/jetbot")
+        self.chassis = self.dc.get_articulation_root_body(self.ar)
         self.starting_pos = np.array(self.dc.get_rigid_body_pose(self.chassis).p)
 
-        # apply some accel
-        stage = omni.usd.get_context().get_stage()
-        self.accelerator = stage.GetPrimAtPath(vehicle_path).GetAttribute("physxVehicleController:accelerator")
-        self.left_steer = stage.GetPrimAtPath(vehicle_path).GetAttribute("physxVehicleController:steerLeft")
-        self.accelerator.Set(1)
-        self.left_steer.Set(1)
+        self.wheel_left = self.dc.find_articulation_dof(self.ar, "left_wheel_joint")
+        self.wheel_right = self.dc.find_articulation_dof(self.ar, "right_wheel_joint")
 
-        for frame in range(100):
-            await omni.kit.app.get_app().next_update_async()
+        # move the jetbot
+        self.dc.set_dof_velocity_target(self.wheel_left, 1)
+        self.dc.set_dof_velocity_target(self.wheel_right, 1)
+
+        await self.simulate(1, self.ar)
 
         self.current_pos = np.array(self.dc.get_rigid_body_pose(self.chassis).p)
+
         delta = np.linalg.norm(self.current_pos - self.starting_pos)
         print("Diff is ", delta)
-        self.assertTrue(delta > 20)
+        self.assertTrue(delta > 2)
 
         pass
