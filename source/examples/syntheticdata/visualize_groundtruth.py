@@ -33,7 +33,7 @@ from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.syntheticdata import visualize, helpers
 from omni.physx.scripts import utils
 from pxr import UsdPhysics, PhysicsSchemaTools, Sdf, Gf, UsdShade, UsdGeom, Semantics, UsdLux
-from omni.isaac.core.utils.view_ports import set_camera_view
+from omni.isaac.core.utils.viewports import set_camera_view
 
 simulation_context = SimulationContext()
 set_camera_view(eye=np.array([5, 5, 1]), target=np.array([0, 0, -1.0]))

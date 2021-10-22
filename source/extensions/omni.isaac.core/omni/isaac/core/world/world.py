@@ -12,7 +12,7 @@ from omni.isaac.core.tasks import BaseTask
 from omni.isaac.dynamic_control import _dynamic_control
 import builtins
 from pxr import Usd
-from omni.isaac.core.utils.view_ports import set_camera_view
+from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.loggers import DataLogger
 
 
