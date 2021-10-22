@@ -70,7 +70,8 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             await omni.kit.app.get_app().next_update_async()
 
     async def load_robot_scene(self):
-        from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
+        from omni.isaac.core.utils.stage import set_stage_up_axis
+        from omni.isaac.utils.scripts.scene_utils import setup_physics
         from omni.isaac.core.utils.nucleus import find_nucleus_server
         from omni.physx.scripts.physicsUtils import add_ground_plane
 
@@ -81,7 +82,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             return
         robot_usd = nucleus_server + "/Isaac/Robots/Carter/carter_sphere_wheels_lidar.usd"
 
-        set_up_z_axis(self._stage)
+        set_stage_up_axis("z")
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
         setup_physics(self._stage)
 
@@ -304,7 +305,8 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # create a scene with a cube.
     async def load_cube_scene(self):
-        from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
+        from omni.isaac.core.utils.stage import set_stage_up_axis
+        from omni.isaac.utils.scripts.scene_utils import setup_physics
         from omni.physx.scripts.physicsUtils import add_ground_plane
 
         # ensure we are done with all of scene setup.
@@ -315,7 +317,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         # check units
         meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
 
-        set_up_z_axis(self._stage)
+        set_stage_up_axis("z")
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
         setup_physics(self._stage)
 

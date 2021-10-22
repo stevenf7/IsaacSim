@@ -2,6 +2,16 @@
 CHANGELOG
 **********
 
+[0.1.9] - 2021-10-21
+========================
+
+Removed
+-------
+- lookat_to_quat to omni.isaac.core.utils.rotations
+- get_intrinsics_matrix, backproject_depth, project_depth_to_worldspace to omni.isaac.core.utils.viewports
+- set_up_z_axis to omni.isaac.core.utils.stage.set_stage_up_axis
+- omni.isaac.demo specific math utils
+
 [0.1.8] - 2021-08-13
 ========================
 

@@ -14,7 +14,7 @@ import omni.kit.settings
 from omni.isaac.motion_planning import _motion_planning
 import carb
 
-from omni.isaac.utils.scripts import math_utils
+from omni.isaac.core.utils.rotations import lookat_to_quatf
 
 # default joint configuration
 default_config = (0.0, 0.0, 0.0, 0.0, 0.0)
@@ -199,7 +199,7 @@ class EndEffector:
 
     def look_at(self, gripper_pos, target):
         # Y up works for look at but sometimes flips, go_local might be a safer bet with a  locked y_axis
-        orientation = math_utils.lookat_to_quat(gripper_pos, target, (0, 0, 1))
+        orientation = lookat_to_quatf(gripper_pos, target, (0, 0, 1))
         mat = Gf.Matrix3d(orientation).GetTranspose()
         self.go_local(
             orig=[gripper_pos[0], gripper_pos[1], gripper_pos[2]],

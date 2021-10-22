@@ -43,7 +43,7 @@ class SceneManager:
         """ Load in base scenario(s) """
 
         import omni
-        from omni.isaac.core.utils import prims
+        from omni.isaac.core.utils import prims, stage
         from omni.isaac.utils.scripts import scene_utils
 
         # Define world prim
@@ -72,7 +72,7 @@ class SceneManager:
         self.stage = omni.usd.get_context().get_stage()
 
         # Set up axis to z axis
-        scene_utils.set_up_z_axis(self.stage)
+        stage.set_stage_up_axis("z")
 
     def load_scenario_model(self):
         """ Load in a USD scenario. """

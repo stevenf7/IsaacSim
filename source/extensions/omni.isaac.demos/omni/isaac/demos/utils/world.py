@@ -8,7 +8,7 @@
 
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.utils.scripts import math_utils
+from omni.isaac.demos.utils import math_utils
 
 
 class Object:

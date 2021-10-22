@@ -20,7 +20,8 @@ import omni.physx as _physx
 from omni.physx.scripts.physicsUtils import add_ground_plane
 
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
+from omni.isaac.core.utils.stage import set_stage_up_axis
+from omni.isaac.utils.scripts.scene_utils import setup_physics
 from omni.isaac.core.utils import distance_metrics
 
 
@@ -62,7 +63,7 @@ class RobotBenchmark:
 
         self._stage = omni.usd.get_context().get_stage()
 
-        set_up_z_axis(self._stage)
+        set_stage_up_axis("z")
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0), Gf.Vec3f(1.0))
         setup_physics(self._stage)
 

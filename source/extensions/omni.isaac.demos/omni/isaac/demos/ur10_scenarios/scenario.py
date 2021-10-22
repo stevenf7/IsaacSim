@@ -10,7 +10,7 @@ import carb
 from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics, PhysxSchema
 import omni.usd
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-
+from omni.isaac.core.utils.stage import set_stage_up_axis
 import numpy as np
 import gc
 
@@ -49,13 +49,6 @@ def set_rotate(prim, rot_mat):
         xform = UsdGeom.Xformable(prim)
         xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
         xform_op.Set(Gf.Matrix4d().SetRotate(rot_mat))
-
-
-def set_up_z_axis(stage):
-    rootLayer = stage.GetRootLayer()
-    rootLayer.SetPermissionToEdit(True)
-    with Usd.EditContext(stage, rootLayer):
-        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
 
 
 def create_ur10(stage, env_path, UR10_stage, location):
@@ -175,7 +168,7 @@ class Scenario:
 
         self._created = True
         self._stage = omni.usd.get_context().get_stage()
-        set_up_z_axis(self._stage)
+        set_stage_up_axis("z")
         self.stop_tasks()
         pass
 

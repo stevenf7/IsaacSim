@@ -147,7 +147,8 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
     def create_robot(self):
         """ Acquire handles, load dofbot USD
         """
-        from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
+        from omni.isaac.core.utils.stage import set_stage_up_axis
+        from omni.isaac.utils.scripts.scene_utils import setup_physics
         from omni.isaac.core.utils.nucleus import find_nucleus_server
         from pxr import UsdGeom, Gf
 
@@ -156,7 +157,7 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
 
         self._stage = self.kit.get_stage()
         self._ar = _dynamic_control.INVALID_HANDLE
-        set_up_z_axis(self._stage)
+        set_stage_up_axis("z")
         setup_physics(self._stage)
 
         ## Unit conversions: RMP is in meters, kit is by default in cm

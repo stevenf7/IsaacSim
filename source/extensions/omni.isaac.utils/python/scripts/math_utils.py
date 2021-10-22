@@ -7,36 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from pxr import Gf
 import math
-import numpy as np
-from numpy.linalg import norm
-import copy
-import traceback
-
-
-def lookat_to_quat(camera, target, up):
-
-    F = (target - camera).GetNormalized()
-    R = Gf.Cross(up, F).GetNormalized()
-    U = Gf.Cross(F, R)
-
-    q = Gf.Quatf()
-    trace = R[0] + U[1] + F[2]
-    if trace > 0.0:
-        s = 0.5 / math.sqrt(trace + 1.0)
-        q = Gf.Quatf(0.25 / s, Gf.Vec3f((U[2] - F[1]) * s, (F[0] - R[2]) * s, (R[1] - U[0]) * s))
-    else:
-        if R[0] > U[1] and R[0] > F[2]:
-            s = 2.0 * math.sqrt(1.0 + R[0] - U[1] - F[2])
-            q = Gf.Quatf((U[2] - F[1]) / s, Gf.Vec3f(0.25 * s, (U[0] + R[1]) / s, (F[0] + R[2]) / s))
-        elif U[1] > F[2]:
-            s = 2.0 * math.sqrt(1.0 + U[1] - R[0] - F[2])
-            q = Gf.Quatf((F[0] - R[2]) / s, Gf.Vec3f((U[0] + R[1]) / s, 0.25 * s, (F[1] + U[2]) / s))
-        else:
-            s = 2.0 * math.sqrt(1.0 + F[2] - R[0] - U[1])
-            q = Gf.Quatf((R[1] - U[0]) / s, Gf.Vec3f((F[0] + R[2]) / s, (F[1] + U[2]) / s, 0.25 * s))
-    return q
 
 
 def quat_to_euler_angles(q):
@@ -60,72 +31,3 @@ def quat_to_euler_angles(q):
     yaw = math.atan2(siny_cosp, cosy_cosp)
 
     return roll, pitch, yaw
-
-
-def normalize(v):
-    if norm(v) == 0:
-        traceback.print_stack()
-    v /= norm(v)
-    return v
-
-
-def normalized(v):
-    if v is None:
-        return None
-    return normalize(copy.deepcopy(v))
-
-
-def proj_orth(v1, v2, normalize_res=False, eps=1e-5):
-    v2_norm = norm(v2)
-    if v2_norm < eps:
-        return v1
-
-    v2n = v2 / v2_norm
-    v1 = v1 - np.dot(v1, v2n) * v2n
-    if normalize_res:
-        return normalized(v1)
-    else:
-        return v1
-
-
-def axes_to_mat(axis_x, axis_z, dominant_axis="z"):
-    if dominant_axis == "z":
-        axis_x = proj_orth(axis_x, axis_z)
-    elif dominant_axis == "x":
-        axis_z = proj_orth(axis_z, axis_x)
-    elif dominant_axis is None:
-        pass
-    else:
-        raise RuntimeError("Unrecognized dominant_axis: %s" % dominant_axis)
-
-    axis_x = axis_x / norm(axis_x)
-    axis_z = axis_z / norm(axis_z)
-    axis_y = np.cross(axis_z, axis_x)
-
-    R = np.zeros((3, 3))
-    R[0:3, 0] = axis_x
-    R[0:3, 1] = axis_y
-    R[0:3, 2] = axis_z
-
-    return R
-
-
-# Projects T to align with the provided direction vector v.
-def proj_to_align(R, v):
-    max_entry = max(enumerate([np.abs(np.dot(R[0:3, i], v)) for i in range(3)]), key=lambda entry: entry[1])
-    return axes_to_mat(R[0:3, (max_entry[0] + 1) % 3], v)
-
-
-def as_np_matrix_t(input):
-    """Get 4x4 homogeneous transform matrix for an object
-
-    Args:
-        name (string): name of object
-
-    Returns:
-        np.matrix: 4x4 homogeneous transform matrix
-    """
-    result = np.identity(4)
-    result[:3, 3] = Gf.Vec3f(input.p.x, input.p.y, input.p.z)
-    result[:3, :3] = Gf.Matrix3f(Gf.Quatf(input.r.w, Gf.Vec3f(input.r.x, input.r.y, input.r.z))).GetTranspose()
-    return result

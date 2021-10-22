@@ -12,7 +12,10 @@ renamed nucleus_utils.py to nucleus.py
 
 Added
 ------
-disable_extension
+- disable_extension omni.isaac.core.utils.extensions
+- lookat_to_quat to omni.isaac.core.utils.rotations
+- get_intrinsics_matrix, backproject_depth, project_depth_to_worldspace to omni.isaac.core.utils.viewports
+- set_up_z_axis to omni.isaac.core.utils.stage.set_stage_up_axis
 
 [0.1.2] - 2021-10-20
 ========================

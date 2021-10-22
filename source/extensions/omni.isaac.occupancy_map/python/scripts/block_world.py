@@ -6,7 +6,8 @@ import weakref
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from PIL import Image
 import asyncio
-from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
+from omni.isaac.core.utils.stage import set_stage_up_axis
+from omni.isaac.utils.scripts.scene_utils import setup_physics
 from omni.physx.scripts.physicsUtils import add_ground_plane
 from pxr import UsdGeom, Gf, UsdLux, Sdf, UsdPhysics
 import omni.ui as ui
@@ -111,7 +112,7 @@ class Extension(omni.ext.IExt):
         # Set up ground plane and physics scene
         self._stage = omni.usd.get_context().get_stage()
         UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
-        set_up_z_axis(self._stage)
+        set_stage_up_axis("z")
         add_ground_plane(self._stage, "/World/groundPlane", "Z", kGroundPlaneSize, kGroundPlanePosition, Gf.Vec3f(1.0))
         setup_physics(self._stage, path="/World/physics")
 
