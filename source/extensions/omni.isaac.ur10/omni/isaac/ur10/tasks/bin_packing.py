@@ -11,7 +11,7 @@ from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.ur10 import UR10
 import numpy as np
 from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 import carb
 from omni.isaac.core.prims import XFormPrim, RigidPrim

@@ -13,7 +13,7 @@ simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.dynamic_control import _dynamic_control
 
 _, nucleus_server = find_nucleus_server()

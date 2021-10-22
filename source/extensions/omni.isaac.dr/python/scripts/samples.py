@@ -14,7 +14,7 @@ import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import omni.usd
 import weakref
-from omni.isaac.core.utils.nucleus_utils import get_server_path
+from omni.isaac.core.utils.nucleus import get_server_path
 
 from pxr import UsdGeom
 

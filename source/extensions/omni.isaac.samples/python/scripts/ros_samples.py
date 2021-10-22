@@ -10,7 +10,7 @@
 import omni.usd
 import omni.ext
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 import weakref
 import carb
 import asyncio

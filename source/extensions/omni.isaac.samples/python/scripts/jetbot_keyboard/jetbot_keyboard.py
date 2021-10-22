@@ -14,7 +14,7 @@ import numpy as np
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.jetbot import Jetbot
 from omni.isaac.jetbot.controllers import DifferentialController
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene

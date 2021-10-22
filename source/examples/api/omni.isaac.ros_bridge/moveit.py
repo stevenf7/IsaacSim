@@ -22,7 +22,7 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 simulation_app = SimulationApp(CONFIG)
 import omni
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import viewports, stage, extensions, prims, rotations, nucleus_utils
+from omni.isaac.core.utils import viewports, stage, extensions, prims, rotations, nucleus
 from pxr import Gf
 
 # enable ROS bridge extension
@@ -31,7 +31,7 @@ extensions.enable_extension("omni.isaac.ros_bridge")
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, stage_units_in_meters=0.01)
 
 # Locate /Isaac folder on nucleus server to load environment and robot stages
-result, _nucleus_path = nucleus_utils.find_nucleus_server()
+result, _nucleus_path = nucleus.find_nucleus_server()
 if result is False:
     carb.log_error("Could not find nucleus server with /Isaac folder, exiting")
     exit()

@@ -26,7 +26,7 @@ CAMERA_PIVOT = 40.0
 class Jetbot:
     def __init__(self, omni_kit):
         from omni.isaac.dynamic_control import _dynamic_control
-        from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import find_nucleus_server
 
         self.omni_kit = omni_kit
         result, nucleus_server = find_nucleus_server()

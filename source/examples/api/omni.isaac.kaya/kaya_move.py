@@ -13,7 +13,7 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.kaya import Kaya
 from omni.isaac.core import World
 from omni.isaac.kaya.controllers import HolonomicController
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils.stage import add_reference_to_stage
 import numpy as np

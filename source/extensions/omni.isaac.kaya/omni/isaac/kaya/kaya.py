@@ -9,7 +9,7 @@
 from typing import Optional, Tuple
 import numpy as np
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 from pxr import Usd

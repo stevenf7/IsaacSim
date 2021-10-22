@@ -12,7 +12,7 @@ from pxr import UsdGeom, Sdf, UsdPhysics, Gf
 import carb
 import numpy as np
 import omni.physx
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.stage import add_reference_to_stage
 
 

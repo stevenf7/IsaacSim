@@ -14,7 +14,7 @@ from omni.isaac.jetbot import Jetbot
 from omni.isaac.core import World
 from omni.isaac.jetbot.controllers import SimpleController, SimpleContollerCommand
 from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.prims import XFormPrim
 import numpy as np
 import carb

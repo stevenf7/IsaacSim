@@ -20,7 +20,7 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from .common import PyaliceApp, create_application, simulate, add_cube, create_physics_scene
 from pxr import Gf, UsdGeom, UsdPhysics, Sdf
 

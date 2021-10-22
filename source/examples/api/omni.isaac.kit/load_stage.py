@@ -27,7 +27,7 @@ CONFIG["headless"] = args.headless
 kit = SimulationApp(launch_config=CONFIG)
 
 # Locate /Isaac folder on nucleus server to load sample
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 result, nucleus_server = find_nucleus_server()
 if result is False:

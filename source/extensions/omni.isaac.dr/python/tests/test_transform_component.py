@@ -25,7 +25,7 @@ import math
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
 from .common import load_test_file, set_scene_physics_type, is_loading, simulate
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

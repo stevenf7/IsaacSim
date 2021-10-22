@@ -21,7 +21,7 @@ import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
 from .common import add_cube, simulate, wait_for_rosmaster, add_carter_ros
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from pxr import Sdf
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

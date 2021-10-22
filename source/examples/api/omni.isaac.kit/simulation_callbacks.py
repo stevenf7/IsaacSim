@@ -15,7 +15,7 @@ from omni.isaac.core import SimulationContext
 
 simulation_context = SimulationContext()
 
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.stage import create_new_stage, add_reference_to_stage
 
