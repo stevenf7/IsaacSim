@@ -19,7 +19,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 from pxr import Gf
 
 from omni.isaac.utils.scripts.scene_utils import setup_physics, create_background
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 MENU_NAME = "MoveIt"
 FRANKA_STAGE_PATH = "/Franka"

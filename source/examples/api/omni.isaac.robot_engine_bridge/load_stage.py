@@ -42,7 +42,7 @@ class UsdLoadSample:
         self.kit.close()
 
     def load_stage(self, args):
-        from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import find_nucleus_server
 
         result, nucleus_server = find_nucleus_server()
         if result is False:

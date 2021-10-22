@@ -21,7 +21,7 @@ import math
 
 class Environment:
     def __init__(self, omni_kit, z_height=0):
-        from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import find_nucleus_server
 
         self.omni_kit = omni_kit
         result, nucleus_server = find_nucleus_server()

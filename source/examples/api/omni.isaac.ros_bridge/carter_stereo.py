@@ -17,7 +17,7 @@ args, unknown = parser.parse_known_args()
 # Example ROS bridge sample showing manual control over messages
 kit = SimulationApp({"renderer": "RayTracedLighting", "headless": False})
 import omni
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core import SimulationContext
 from pxr import Sdf
 

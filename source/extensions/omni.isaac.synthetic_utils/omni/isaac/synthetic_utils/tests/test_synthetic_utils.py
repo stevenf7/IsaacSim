@@ -71,7 +71,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def load_robot_scene(self):
         from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
-        from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import find_nucleus_server
         from omni.physx.scripts.physicsUtils import add_ground_plane
 
         self._stage = self._usd_context.get_stage()

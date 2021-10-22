@@ -18,7 +18,7 @@ import carb
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 from .common import create_application, get_selected_path, create_physics_scene
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 from pxr import Gf, UsdPhysics, PhysxSchema
 

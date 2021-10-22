@@ -11,7 +11,7 @@ import omni.kit.test
 
 import omni.kit.usd
 import omni.kit.commands
-from omni.isaac.core.utils.nucleus_utils import (
+from omni.isaac.core.utils.nucleus import (
     find_nucleus_server,
     find_nucleus_server_async,
     get_server_path,

@@ -19,7 +19,7 @@ import omni.physx as _physx
 
 from omni.physx.scripts.physicsUtils import add_ground_plane
 
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
 from omni.isaac.core.utils import distance_metrics
 

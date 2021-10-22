@@ -21,7 +21,7 @@ import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
 from .common import create_joint_state, set_rotate, set_translate, simulate, wait_for_rosmaster
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.utils.scripts.test_utils import load_test_file
 from pxr import Gf, PhysicsSchemaTools
 

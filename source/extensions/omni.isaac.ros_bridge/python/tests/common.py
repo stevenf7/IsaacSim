@@ -11,7 +11,7 @@ import omni
 import asyncio
 import carb
 from omni.isaac.utils.scripts.test_utils import load_test_file
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 
 def create_joint_state(name, position, velocity=[], effort=[]):

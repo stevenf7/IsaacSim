@@ -14,7 +14,7 @@ simulation_app = SimulationApp({"headless": True})
 # This sample loads an articulation and prints its information
 import omni
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 stage = simulation_app.context.get_stage()
 

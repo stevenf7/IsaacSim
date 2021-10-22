@@ -148,7 +148,7 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
         """ Acquire handles, load dofbot USD
         """
         from omni.isaac.utils.scripts.scene_utils import set_up_z_axis, setup_physics
-        from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import find_nucleus_server
         from pxr import UsdGeom, Gf
 
         # Get handles, set up scene

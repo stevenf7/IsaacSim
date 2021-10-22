@@ -22,7 +22,7 @@ import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.utils.scripts.test_utils import load_test_file
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from .common import PyaliceApp, ConstantDiffBaseControl, BodyMonitor, get_selected_path, create_application, simulate
 
 

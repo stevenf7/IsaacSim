@@ -11,7 +11,7 @@ import numpy as np
 import carb
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.prims.rigid_prim import RigidPrim
-from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.types import ArticulationAction
 from pxr import Usd
 

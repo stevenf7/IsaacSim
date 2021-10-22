@@ -8,6 +8,7 @@ CHANGELOG
 Changed
 --------
 Renamed view_ports.py to viewports.py
+renamed nucleus_utils.py to nucleus.py
 
 Added
 ------

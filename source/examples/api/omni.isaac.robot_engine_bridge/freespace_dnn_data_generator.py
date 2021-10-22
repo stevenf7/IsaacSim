@@ -77,7 +77,7 @@ class FreespaceSegmentation:
 
         self._world = stage.DefinePrim("/World", "Xform")
 
-        from omni.isaac.core.utils.nucleus_utils import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import find_nucleus_server
 
         self.result, nucleus_server = find_nucleus_server()
         if self.result is False:
