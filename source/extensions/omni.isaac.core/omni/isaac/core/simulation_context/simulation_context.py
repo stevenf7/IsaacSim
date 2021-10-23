@@ -81,6 +81,7 @@ class SimulationContext:
         SimulationContext._instance = None
         SimulationContext._sim_context_initialized = False
         self.clear_all_callbacks()
+        self._stage_open_callback = None
         return
 
     @property
@@ -127,12 +128,16 @@ class SimulationContext:
 
     def _stage_open_callback_fn(self, event):
         if event.type == int(omni.usd.StageEventType.OPENED):
-            pass
-            if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-                self.init_stage(physics_dt=None, stage_units_in_meters=None)
-            else:
-                asyncio.ensure_future(self.init_stage_async(physics_dt=None, stage_units_in_meters=None))
-            self._setup_default_callback_fns()
+            self._physics_callback_functions = dict()
+            self._stage_callback_functions = dict()
+            self._timeline_callback_functions = dict()
+            self._editor_callback_functions = dict()
+            SimulationContext.clear_instance()
+            carb.log_warn(
+                "A new stage was opened, World or Simulation Object are invalidated and you would need to initialize them again before using them."
+            )
+            self._stage_open_callback = None
+
         return
 
     def _setup_default_callback_fns(self):

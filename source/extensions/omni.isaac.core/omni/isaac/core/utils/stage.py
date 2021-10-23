@@ -16,6 +16,8 @@ def set_stage_up_axis(axis: str = "z") -> None:
         axis (UsdGeom.Tokens, optional): valid values are "x" and "y"
     """
     stage = get_current_stage()
+    if stage is None:
+        raise Exception("There is no stage currently opened")
     rootLayer = stage.GetRootLayer()
     rootLayer.SetPermissionToEdit(True)
     with Usd.EditContext(stage, rootLayer):

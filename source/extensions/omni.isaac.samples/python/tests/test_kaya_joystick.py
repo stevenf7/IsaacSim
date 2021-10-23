@@ -18,7 +18,7 @@ import gc
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.samples.scripts.kaya_joystick import KayaJoystick
-from omni.isaac.core.utils.stage import is_stage_loading
+from omni.isaac.core.utils.stage import is_stage_loading, set_stage_up_axis
 from omni.isaac.core.world.world import World
 
 
@@ -37,6 +37,7 @@ class TestKayaJoystickSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         self._sample = KayaJoystick()
         World.clear_instance()
+        set_stage_up_axis("z")
         self._sample.set_world_settings({"physics_dt": 1.0 / self._physics_rate, "stage_units_in_meters": 0.01})
         await self._sample.load_world_async()
 
@@ -52,6 +53,7 @@ class TestKayaJoystickSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         self._provider.destroy_gamepad(self._gamepad)
         await omni.kit.app.get_app().next_update_async()
+        World.clear_instance()
         pass
 
     # Run all functions with simulation enabled
