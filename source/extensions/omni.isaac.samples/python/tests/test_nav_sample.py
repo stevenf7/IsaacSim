@@ -17,9 +17,10 @@ from omni.isaac.dynamic_control import _dynamic_control as dc
 import gc
 import asyncio
 import carb
-from pxr import Gf
+from pxr import Gf, UsdGeom
 from .common import simulate
 import math
+import omni.physx as _physx
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.physx.scripts.physicsUtils import add_ground_plane
@@ -70,7 +71,6 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def load_nav_scene(self):
-        self._stage = self._usd_context.get_stage()
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
@@ -80,10 +80,13 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._robot_chassis = self._robot_prim_path + "/chassis_link"
         self._robot_wheels = ["left_wheel", "right_wheel"]
         self._robot_wheels_speed = [2, 2]
-
+        self._wheelbase_Length = 0.57926
+        self._wheel_radius = 0.24
+        self._stage = self._usd_context.get_stage()
         set_stage_up_axis("z")
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
         setup_physics(self._stage)
+        self._stage_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
 
         # setup high-level robot prim
         self.prim = self._stage.DefinePrim(self._robot_prim_path, "Xform")
@@ -94,20 +97,19 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         # setup robot controller
         self._rc = RobotController(
             self._stage,
-            self._timeline,
             self._dc,
             self._robot_prim_path,
             self._robot_chassis,
             self._robot_wheels,
             self._robot_wheels_speed,
-            [6, 0.05],
+            [0.06, 0.05],
+            self._wheelbase_Length,
+            self._wheel_radius,
         )
         self._rc.control_setup()
         self.imu = self._dc.get_rigid_body(self._robot_chassis)
         # start stepping
-        self._editor_event_subscription = (
-            omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._rc.update)
-        )
+        self._editor_event_subscription = _physx.get_physx_interface().subscribe_physics_step_events(self._rc.update)
 
     # Send forward command and check if it moved forward
     async def test_move(self):
@@ -147,20 +149,21 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         await self.setup_controller()
         await omni.kit.app.get_app().next_update_async()
-        self._rc.set_goal(100, 100, 90)
+        self._rc.set_goal(1.0, 1.0, math.radians(90))
         self._rc.enable_navigation(True)
 
-        for frame in range(int(15 * 60)):
-            await omni.kit.app.get_app().next_update_async()
+        for frame in range(int(30)):
+            await simulate(2)
             if self._rc.reached_goal():
                 break
         imu_pose = self._dc.get_rigid_body_pose(self.imu)
         roll, pitch, yaw = math_utils.quat_to_euler_angles(
             Gf.Quaternion(imu_pose.r.w, Gf.Vec3d(imu_pose.r.x, imu_pose.r.y, imu_pose.r.z))
         )
-        self.assertAlmostEqual(imu_pose.p.x, self._rc.get_goal()[0], delta=6.0)
-        self.assertAlmostEqual(imu_pose.p.y, self._rc.get_goal()[1], delta=6.0)
-        self.assertAlmostEqual(yaw, math.radians(self._rc.get_goal()[2]), delta=0.1)
+        self.assertTrue(self._rc.reached_goal())
+        self.assertAlmostEqual(imu_pose.p.x * self._stage_unit, self._rc.get_goal()[0], delta=0.06)
+        self.assertAlmostEqual(imu_pose.p.y * self._stage_unit, self._rc.get_goal()[1], delta=0.06)
+        self.assertAlmostEqual(yaw, self._rc.get_goal()[2], delta=0.1)
         pass
 
     # Send forward command, check if it moved forward, stop and play and then repeat
