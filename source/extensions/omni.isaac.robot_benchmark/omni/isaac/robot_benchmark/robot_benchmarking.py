@@ -110,7 +110,7 @@ class RobotBenchmark:
         self._following = False
         self.created = True
         self._testing = False
-        self._mg = MotionGenerator(self._dc, self._stage)
+        self._mg = MotionGenerator(self._stage)
         self._environment = environment
         self._benchmark_logger = benchmark_logger
 

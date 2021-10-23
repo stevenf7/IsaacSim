@@ -25,7 +25,7 @@ class RMPFlowIKSolver(BaseController):
         super().__init__(name)
         self._dc_interface = dc_interface
         self._stage = stage
-        self.mg = MotionGenerator(dc_interface, stage)
+        self.mg = MotionGenerator(stage)
         polciy_config_dir = os.path.join(mg_extension_path, "policy_configs")
         with open(os.path.join(polciy_config_dir, "policy_map.json")) as policy_map:
             policy_map = json.load(policy_map)
@@ -99,6 +99,6 @@ class RMPFlowIKSolver(BaseController):
         return
 
     def reset(self):
-        self.mg = MotionGenerator(self._dc_interface, self._stage)
+        self.mg = MotionGenerator(self._stage)
         self.mg.initialize(self._config, self._robot_prim, int(1.0 / self._dt))
         return

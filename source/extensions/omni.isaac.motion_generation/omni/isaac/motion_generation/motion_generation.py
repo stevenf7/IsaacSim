@@ -8,11 +8,10 @@
 
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
-from enum import Enum
 import carb
 from .lula_motion_policies import *
 from .motion_policy_interface import *
-import time
+from pxr import Usd
 
 
 class MotionGenerator:
@@ -22,9 +21,9 @@ class MotionGenerator:
     Look at the MotionPolicy class to see detailed descriptions of of each function
     """
 
-    def __init__(self, _dynamic_control, _stage):
-        self._dc = _dynamic_control
-        self._stage = _stage
+    def __init__(self, stage: Usd.Stage):
+        self._dc = _dynamic_control.acquire_dynamic_control_interface()
+        self._stage = stage
         self.initialized = False
 
     def initialize(self, policy_config, robot_prim, sim_fps, velocity_control_damping=1e8):

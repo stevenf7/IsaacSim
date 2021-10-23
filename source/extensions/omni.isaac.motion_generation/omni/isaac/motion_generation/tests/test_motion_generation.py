@@ -82,7 +82,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
 
-        self._mg = MotionGenerator(self._dc, self._stage)
+        self._mg = MotionGenerator(self._stage)
 
         self.assertTrue("Franka" in self._policy_map)
         self.assertTrue("RMPflow" in self._policy_map["Franka"])
@@ -186,7 +186,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
 
-        self._mg = MotionGenerator(self._dc, self._stage)
+        self._mg = MotionGenerator(self._stage)
 
         self.assertTrue("Franka" in self._policy_map)
         self.assertTrue("RMPflow" in self._policy_map["Franka"])
@@ -253,7 +253,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
 
-        self._mg = MotionGenerator(self._dc, self._stage)
+        self._mg = MotionGenerator(self._stage)
 
         self.assertTrue("UR10" in self._policy_map)
         self.assertTrue("RMPflow" in self._policy_map["UR10"])
@@ -323,7 +323,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
 
-        self._mg = MotionGenerator(self._dc, self._stage)
+        self._mg = MotionGenerator(self._stage)
 
         self.assertTrue("UR10" in self._policy_map)
         self.assertTrue("RMPflow" in self._policy_map["UR10"])
