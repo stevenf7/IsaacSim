@@ -27,7 +27,7 @@ class RMPFlowController(BaseController):
         BaseController.__init__(self, name)
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._stage = get_current_stage()
-        self.mg = MotionGenerator(self._dc_interface, self._stage)
+        self.mg = MotionGenerator(self._stage)
         extension_id = get_extension_id("omni.isaac.motion_generation")
         mg_extension_path = get_extension_path(ext_id=extension_id)
         polciy_config_dir = os.path.join(mg_extension_path, "policy_configs")
@@ -79,6 +79,6 @@ class RMPFlowController(BaseController):
         return
 
     def reset(self):
-        self.mg = MotionGenerator(self._dc_interface, self._stage)
+        self.mg = MotionGenerator(self._stage)
         self.mg.initialize(self._config, self._robot_prim, int(1.0 / self._physics_dt))
         return

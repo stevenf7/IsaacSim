@@ -65,7 +65,7 @@ class SynchronizedTime:
 
 class ROSJointCommander:
     def __init__(self, stage, dc):
-        self.mg = MotionGenerator(dc, stage)
+        self.mg = MotionGenerator(stage)
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
         mg_extension_path = ext_manager.get_extension_path(ext_id)
