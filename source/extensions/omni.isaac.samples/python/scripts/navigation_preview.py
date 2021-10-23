@@ -11,8 +11,10 @@ import carb
 import omni.usd
 import omni.ext
 import omni.ui as ui
+import omni.physx as _physx
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-
+from pxr import UsdGeom
+import math
 from omni.isaac.ui.ui_utils import (
     setup_ui_headers,
     get_style,
@@ -20,6 +22,7 @@ from omni.isaac.ui.ui_utils import (
     xyz_builder,
     add_separator,
     dropdown_builder,
+    combo_floatfield_slider_builder,
 )
 
 import asyncio
@@ -63,6 +66,7 @@ class Extension(omni.ext.IExt):
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
+
         self._window = None
         # self._window = ui.Window(EXTENSION_NAME, width=500, height=175, visible=False)
         # self._window.set_visibility_changed_fn(self._on_window)
@@ -168,7 +172,12 @@ class Extension(omni.ext.IExt):
                                 "tooltip": "Pose is specified as (X, Y, theta)",
                             }
                             self.goal_coord = xyz_builder(**args)
-
+                            args = {"label": "Speed Coefficient", "default_val": 0.5, "min": 0, "max": 1, "step": 0.05}
+                            self._start_vel, _ = combo_floatfield_slider_builder(**args)
+                            args = {"label": "Accel Coefficient", "default_val": 0.02, "min": 0, "max": 1, "step": 0.01}
+                            self._start_acc, _ = combo_floatfield_slider_builder(**args)
+                            args = {"label": "max speed", "default_val": 150.0, "min": 0, "max": 300.0, "step": 1}
+                            self._max_speed, _ = combo_floatfield_slider_builder(**args)
                             args = {
                                 "label": "Move to Target",
                                 "type": "button",
@@ -212,12 +221,17 @@ class Extension(omni.ext.IExt):
                 self._robot_chassis = self._robot_prim_path + "/chassis"
                 self._robot_wheels = ["left_wheel_joint", "right_wheel_joint"]
                 self._robot_wheels_speed = [3, 3]
+                self._wheelbase_Length = 0.56
+                self._wheel_radius = 0.085
+
             elif current_robot_index == 1:
                 asset_path = self._asset_path + "/Robots/Carter"
                 robot_usd = asset_path + "/carter_sphere_wheels_lidar.usd"
                 self._robot_chassis = self._robot_prim_path + "/chassis_link"
                 self._robot_wheels = ["left_wheel", "right_wheel"]
-                self._robot_wheels_speed = [2, 2]
+                self._robot_wheels_speed = [5, 5]
+                self._wheelbase_Length = 0.57926
+                self._wheel_radius = 0.24
 
             set_stage_up_axis("z")
             setup_physics(self._stage)
@@ -234,12 +248,13 @@ class Extension(omni.ext.IExt):
             self.prim.GetReferences().AddReference(robot_usd)
 
     def _on_stage_event(self, event):
-        self.stage = self._usd_context.get_stage()
+        self._stage = self._usd_context.get_stage()
         if event.type == int(omni.usd.StageEventType.OPENED):
             self._move_btn.enabled = self._setup_done
             self._rotate_btn.enabled = self._setup_done
             self._navigate_btn.enabled = self._setup_done
             self._stop_btn.enabled = self._setup_done
+            self._stage_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
             if self._rc:
                 self._rc.enable_navigation(False)
             self._setup_done = False
@@ -257,18 +272,23 @@ class Extension(omni.ext.IExt):
             # setup robot controller
             self._rc = RobotController(
                 self._stage,
-                self._timeline,
+                # self._timeline,
                 self._dc,
                 self._robot_prim_path,
                 self._robot_chassis,
                 self._robot_wheels,
                 self._robot_wheels_speed,
-                [1, 0.05],
+                [0.02, 0.05],
+                self._wheelbase_Length,
+                self._wheel_radius,
             )
             self._rc.control_setup()
             # start stepping
-            self._editor_event_subscription = (
-                omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._rc.update)
+            self._editor_event_subscription = _physx.get_physx_interface().subscribe_physics_step_events(
+                self._rc.update
+            )
+            self._debug_draw_subs = (
+                omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._rc.draw_path)
             )
 
     def _on_environment_setup(self):
@@ -295,11 +315,17 @@ class Extension(omni.ext.IExt):
         self._rc.control_command(3, -3)
 
     def _on_navigate_fn(self):
-        goal_x = self.goal_coord[0].get_value_as_float()
-        goal_y = self.goal_coord[1].get_value_as_float()
+        goal_x = self.goal_coord[0].get_value_as_float() * self._stage_unit
+        goal_y = self.goal_coord[1].get_value_as_float() * self._stage_unit
         goal_z = self.goal_coord[2].get_value_as_float()
+        max_speed = self._max_speed.get_value_as_float() * self._stage_unit
         print("Navigating to goal ({}, {}, {})".format(goal_x, goal_y, goal_z))
-        self._rc.set_goal(goal_x, goal_y, goal_z)
+        sv = self._start_vel.get_value_as_float()
+        sa = self._start_acc.get_value_as_float()
+
+        gv = sv  # self._goal_speed.get_value_as_float()
+        ga = sa  # self._goal_acc.get_value_as_float()
+        self._rc.set_goal(goal_x, goal_y, math.radians(goal_z), sv, sa, gv, ga, max_speed)
         self._rc.enable_navigation(True)
 
     def _on_navigate_stop_fn(self):

@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2020, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -7,36 +7,326 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import math
+import carb
 
-from pxr import Gf
-from omni.isaac.utils.scripts import math_utils
+from pxr import UsdGeom, Gf
+import omni.isaac.utils.scripts.math_utils as math_utils
 from omni.isaac.dynamic_control import _dynamic_control
+import numpy as np
+from omni.debugdraw import _debugDraw
+
+k = 0.5  # control gain
+MAX_T = 100.0  # maximum time to the goal [s]
+MIN_T = 5.0  # minimum time to the goal[s]
+max_steer = np.radians(5.0)  # [rad] max steering angle
+Kp = 0.1  # speed proportional gain
+
+
+class QuinticPolynomial:
+    def __init__(self, xs, vxs, axs, xe, vxe, axe, time):
+        # calc coefficient of quintic polynomial
+        # See jupyter notebook document for derivation of this equation.
+        self.a0 = xs
+        self.a1 = vxs
+        self.a2 = axs / 2.0
+
+        A = np.array(
+            [
+                [time ** 3, time ** 4, time ** 5],
+                [3 * time ** 2, 4 * time ** 3, 5 * time ** 4],
+                [6 * time, 12 * time ** 2, 20 * time ** 3],
+            ]
+        )
+        b = np.array(
+            [xe - self.a0 - self.a1 * time - self.a2 * time ** 2, vxe - self.a1 - 2 * self.a2 * time, axe - 2 * self.a2]
+        )
+        x = np.linalg.solve(A, b)
+
+        self.a3 = x[0]
+        self.a4 = x[1]
+        self.a5 = x[2]
+
+    def calc_point(self, t):
+        xt = self.a0 + self.a1 * t + self.a2 * t ** 2 + self.a3 * t ** 3 + self.a4 * t ** 4 + self.a5 * t ** 5
+
+        return xt
+
+    def calc_first_derivative(self, t):
+        xt = self.a1 + 2 * self.a2 * t + 3 * self.a3 * t ** 2 + 4 * self.a4 * t ** 3 + 5 * self.a5 * t ** 4
+
+        return xt
+
+    def calc_second_derivative(self, t):
+        xt = 2 * self.a2 + 6 * self.a3 * t + 12 * self.a4 * t ** 2 + 20 * self.a5 * t ** 3
+
+        return xt
+
+    def calc_third_derivative(self, t):
+        xt = 6 * self.a3 + 24 * self.a4 * t + 60 * self.a5 * t ** 2
+
+        return xt
+
+
+def quintic_polynomials_planner(sx, sy, syaw, sv, sa, gx, gy, gyaw, gv, ga, max_accel, max_jerk, dt):
+    """
+    quintic polynomial planner
+
+    input
+        s_x: start x position [m]
+        s_y: start y position [m]
+        s_yaw: start yaw angle [rad]
+        sa: start accel [m/ss]
+        gx: goal x position [m]
+        gy: goal y position [m]
+        gyaw: goal yaw angle [rad]
+        ga: goal accel [m/ss]
+        max_accel: maximum accel [m/ss]
+        max_jerk: maximum jerk [m/sss]
+        dt: time tick [s]
+
+    return
+        time: time result
+        rx: x position result list
+        ry: y position result list
+        ryaw: yaw angle result list
+        rv: velocity result list
+        ra: accel result list
+
+    """
+
+    vxs = sv * math.cos(syaw)
+    vys = sv * math.sin(syaw)
+    vxg = gv * math.cos(gyaw)
+    vyg = gv * math.sin(gyaw)
+
+    axs = sa * math.cos(syaw)
+    ays = sa * math.sin(syaw)
+    axg = ga * math.cos(gyaw)
+    ayg = ga * math.sin(gyaw)
+
+    time, rx, ry, ryaw, rv, ra, rj = [], [], [], [], [], [], []
+
+    for T in np.arange(MIN_T, MAX_T, MIN_T):
+        xqp = QuinticPolynomial(sx, vxs, axs, gx, vxg, axg, T)
+        yqp = QuinticPolynomial(sy, vys, ays, gy, vyg, ayg, T)
+
+        time, rx, ry, ryaw, rv, ra, rj = [], [], [], [], [], [], []
+
+        for t in np.arange(0.0, T + dt, dt):
+            time.append(t)
+            rx.append(xqp.calc_point(t))
+            ry.append(yqp.calc_point(t))
+
+            vx = xqp.calc_first_derivative(t)
+            vy = yqp.calc_first_derivative(t)
+            v = np.hypot(vx, vy)
+            yaw = math.atan2(vy, vx)
+            rv.append(v)
+            ryaw.append(yaw)
+
+            ax = xqp.calc_second_derivative(t)
+            ay = yqp.calc_second_derivative(t)
+            a = np.hypot(ax, ay)
+            if len(rv) >= 2 and rv[-1] - rv[-2] < 0.0:
+                a *= -1
+            ra.append(a)
+
+            jx = xqp.calc_third_derivative(t)
+            jy = yqp.calc_third_derivative(t)
+            j = np.hypot(jx, jy)
+            if len(ra) >= 2 and ra[-1] - ra[-2] < 0.0:
+                j *= -1
+            rj.append(j)
+
+        if max([abs(i) for i in ra]) <= max_accel and max([abs(i) for i in rj]) <= max_jerk:
+            # print("find path!!")
+            break
+
+    return time, rx, ry, ryaw, rv, ra, rj
+
+
+class State(object):
+    """
+    Class representing the state of a vehicle.
+
+    :param x: (float) x-coordinate
+    :param y: (float) y-coordinate
+    :param yaw: (float) yaw angle
+    :param v: (float) speed
+    """
+
+    def __init__(self, wheel_base, x=0.0, y=0.0, yaw=0.0, v=0.0):
+        """Instantiate the object."""
+        super(State, self).__init__()
+        self.wheel_base = wheel_base
+        self.x = x
+        self.y = y
+        self.yaw = yaw
+        self.v = v
+        self.w = 0
+
+    def update(self, acceleration, delta, dt):
+        """
+        Update the state of the vehicle.
+
+        Stanley Control uses bicycle model.
+
+        :param acceleration: (float) Acceleration
+        :param delta: (float) Steering
+        """
+        delta = np.clip(delta, -max_steer, max_steer)
+
+        self.x += self.v * np.cos(self.yaw) * dt
+        self.y += self.v * np.sin(self.yaw) * dt
+        self.w = self.v / self.wheel_base * np.tan(delta)
+        self.yaw += self.w * dt
+        self.yaw = normalize_angle(self.yaw)
+        self.v += acceleration * dt
+
+
+def calc_speed_profile(cyaw, max_speed, target_speed, min_speed=1):
+    speed_profile = np.array(cyaw) / max([abs(c) for c in cyaw]) * max_speed
+
+    # direction = 1.0
+
+    # # Set stop point
+    # for i in range(len(cyaw) - 1):
+    #     dyaw = abs(cyaw[i + 1] - cyaw[i])
+    #     switch = math.pi / 4.0 <= dyaw < math.pi / 2.0
+
+    #     if switch:
+    #         direction *= -1
+
+    #     if direction != 1.0:
+    #         speed_profile[i] = -target_speed
+    #     else:
+    #         speed_profile[i] = target_speed
+
+    #     if switch:
+    #         speed_profile[i] = 0.0
+
+    # speed down
+    res = min(int(len(cyaw) / 3), int(max_speed * 60))
+
+    # # print("slow", slow, len(cyaw))
+    for i in range(1, res):
+        speed_profile[-i] = min(speed_profile[-i], speed_profile[-i] / (float(res - i)) ** 0.5)  # / (res))
+        if speed_profile[-i] <= min_speed:
+            speed_profile[-i] = min_speed
+
+    return speed_profile
+
+
+def normalize_angle(angle):
+    """
+    Normalize an angle to [-pi, pi].
+
+    :param angle: (float)
+    :return: (float) Angle in radian in [-pi, pi]
+    """
+    while angle > np.pi:
+        angle -= 2.0 * np.pi
+
+    while angle < -np.pi:
+        angle += 2.0 * np.pi
+
+    return angle
+
+
+def calc_target_index(state, cx, cy):
+    """
+    Compute index in the trajectory list of the target.
+
+    :param state: (State object)
+    :param cx: [float]
+    :param cy: [float]
+    :return: (int, float)
+    """
+    # Calc front axle position
+    fx = state.x + state.wheel_base * np.cos(state.yaw)
+    fy = state.y + state.wheel_base * np.sin(state.yaw)
+
+    # Search nearest point index
+    dx = [fx - icx for icx in cx]
+    dy = [fy - icy for icy in cy]
+    d = np.hypot(dx, dy)
+    target_idx = np.argmin(d)
+
+    # Project RMS error onto front axle vector
+    front_axle_vec = [-np.cos(state.yaw + np.pi / 2), -np.sin(state.yaw + np.pi / 2)]
+    error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
+
+    return target_idx, error_front_axle
+
+
+def pid_control(target, current):
+    """
+    Proportional control for the speed.
+
+    :param target: (float)
+    :param current: (float)
+    :return: (float)
+    """
+    return Kp * (target - current)
+
+
+def stanley_control(state, cx, cy, cyaw, last_target_idx):
+    """
+    Stanley steering control.
+
+    :param state: (State object)
+    :param cx: ([float])
+    :param cy: ([float])
+    :param cyaw: ([float])
+    :param last_target_idx: (int)
+    :return: (float, int)
+    """
+    current_target_idx, error_front_axle = calc_target_index(state, cx, cy)
+
+    if last_target_idx >= current_target_idx:
+        current_target_idx = last_target_idx
+
+    # theta_e corrects the heading error
+    theta_e = normalize_angle(cyaw[current_target_idx] - state.yaw)
+    # theta_d corrects the cross track error
+    theta_d = np.arctan2(k * error_front_axle, state.v)
+    # Steering control
+    delta = theta_e + theta_d
+
+    return delta, current_target_idx
 
 
 class RobotController:
     def __init__(
         self,
         stage,
-        timeline,
         dc,
         articulation_path,
         odom_prim_path,
         wheel_joint_names,
         wheel_speed,
         goal_offset_threshold,
+        wheel_base,
+        wheel_radius,
     ):
         self._stage = stage
-        self._timeline = timeline
+        self._stage_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
         self._dc = dc
         self._articulation_path = articulation_path
         self._odom_prim_path = odom_prim_path
         self._wheel_joint_names = wheel_joint_names
         self._wheel_speed = wheel_speed
         self._goal_offset_threshold = goal_offset_threshold
-        self._reached_goal = [False, False]
+        self._reached_goal = [True, True]
         self._enable_navigation = False
         self._goal = [400, 400, 0]
         self._go_forward = False
+        self._wheel_base = wheel_base
+        self._wheel_radius = wheel_radius
+        self.state = State(wheel_base, x=0, y=0, yaw=0, v=0)
+        self.target_idx = 0
+        self._debugDraw = _debugDraw.acquire_debug_draw_interface()
+        self.cx = []
 
     def _get_odom_data(self):
         self.imu = self._dc.get_rigid_body(self._odom_prim_path)
@@ -44,78 +334,90 @@ class RobotController:
         roll, pitch, yaw = math_utils.quat_to_euler_angles(
             Gf.Quaternion(imu_pose.r.w, Gf.Vec3d(imu_pose.r.x, imu_pose.r.y, imu_pose.r.z))
         )
+        # print(roll, pitch, yaw)
         self.current_robot_translation = [imu_pose.p.x, imu_pose.p.y, imu_pose.p.z]
-        self.current_robot_orientation = [roll, pitch, yaw]
+        self.current_robot_translation = [i * self._stage_unit for i in self.current_robot_translation]
+        self.current_robot_orientation = [normalize_angle(roll), normalize_angle(pitch), normalize_angle(yaw)]
+        self.current_speed = self._dc.get_rigid_body_local_linear_velocity(self.imu).x * self._stage_unit
+
+    def reached_goal(self):
+        return self._reached_goal[0] and self._reached_goal[1]
+
+    def get_goal(self):
+        return self._goal
+
+    def draw_path(self, step=None):
+        if self._enable_navigation and not self._reached_goal[0]:
+            for i in range(len(self.cx) - 1):
+                # self._debugDraw.draw_line(
+                #     carb.Float3(self.cx[i], self.cy[i], 14),
+                #     self.y_color,
+                #     carb.Float3(self.cx[i] + 20 * math.cos(self.cyaw[i]), self.cy[i] + 20 * math.sin(self.cyaw[i]), 14),
+                #     self.y_color,
+                # )
+                self._debugDraw.draw_line(
+                    carb.Float3(self.cx[i] / self._stage_unit, self.cy[i] / self._stage_unit, 0.14 / self._stage_unit),
+                    self.argb[i],
+                    carb.Float3(
+                        self.cx[i + 1] / self._stage_unit, self.cy[i + 1] / self._stage_unit, 0.14 / self._stage_unit
+                    ),
+                    self.argb[i - 1],
+                )
 
     def update(self, step):
-        if self._enable_navigation and self._timeline.is_playing():
+        v = 0
+        w = 0
+        if self._enable_navigation:
             self._get_odom_data()
-            inc_x = float(self._goal[0]) - self.current_robot_translation[0]
-            inc_y = float(self._goal[1]) - self.current_robot_translation[1]
-            angle_to_goal = math.atan2(inc_y, inc_x)
-
-            # Check if translation goal is reached
-            if abs(inc_x) <= self._goal_offset_threshold[0] and abs(inc_y) <= self._goal_offset_threshold[0]:
-                self._reached_goal[0] = True
-
-            # If translation goal is not reached, point towards it and then move forward
-            if self._reached_goal[0] == False:
-                # Check if robot point towards goal before moving forward
-                delta_orientation = angle_to_goal - self.current_robot_orientation[2]
-                speed_multiplier = abs(delta_orientation) / math.pi
-                if delta_orientation > self._goal_offset_threshold[1] and self._go_forward == False:
-                    # Rotate in-place anti-clockwise
-                    self.control_command(
-                        -speed_multiplier * self._wheel_speed[0], speed_multiplier * self._wheel_speed[1]
-                    )
-                elif delta_orientation < -self._goal_offset_threshold[1] and self._go_forward == False:
-                    # Rotate in-place clockwise
-                    self.control_command(
-                        speed_multiplier * self._wheel_speed[0], -speed_multiplier * self._wheel_speed[1]
-                    )
-                else:
-                    # Move forward and turn if it deviates
-                    self._go_forward = True
-                    if delta_orientation > self._goal_offset_threshold[1] and delta_orientation < math.pi:
-                        self.control_command(-self._wheel_speed[0], self._wheel_speed[1])
-                    elif delta_orientation < -self._goal_offset_threshold[1] and delta_orientation > -math.pi:
-                        self.control_command(self._wheel_speed[0], -self._wheel_speed[1])
-                    elif (
-                        delta_orientation > (-2 * math.pi + self._goal_offset_threshold[1])
-                        and delta_orientation < -math.pi
-                    ):
-                        self.control_command(-self._wheel_speed[0], self._wheel_speed[1])
-                    elif (
-                        delta_orientation < (2 * math.pi - self._goal_offset_threshold[1])
-                        and delta_orientation > math.pi
-                    ):
-                        self.control_command(self._wheel_speed[0], -self._wheel_speed[1])
-                    else:
-                        self.control_command(self._wheel_speed[0], self._wheel_speed[1])
-
-            # Translation goal reached but not rotational goal
-            if self._reached_goal[0] == True and self._reached_goal[1] == False:
-                angle_to_goal_orientation = math.radians(self._goal[2]) - self.current_robot_orientation[2]
-                speed_multiplier = abs(angle_to_goal_orientation) / math.pi
-                if angle_to_goal_orientation > self._goal_offset_threshold[1]:
-                    # Rotate in-place anti-clockwise
-                    self.control_command(
-                        -speed_multiplier * self._wheel_speed[0], speed_multiplier * self._wheel_speed[1]
-                    )
-                elif angle_to_goal_orientation < -self._goal_offset_threshold[1]:
-                    # Rotate in-place clockwise
-                    self.control_command(
-                        speed_multiplier * self._wheel_speed[0], -speed_multiplier * self._wheel_speed[1]
-                    )
-                else:
-                    self._reached_goal[1] = True
-
-            # Both goals reached
-            if self._reached_goal[0] == True and self._reached_goal[1] == True:
+            # self.draw_path()
+            theta = self.current_robot_orientation[2]
+            theta_goal = self._goal[2]
+            theta_diff = math.atan2(math.sin(theta_goal - theta), math.cos(theta_goal - theta))
+            x_diff = float(self._goal[0]) - self.current_robot_translation[0]
+            y_diff = float(self._goal[1]) - self.current_robot_translation[1]
+            rho = np.hypot(x_diff, y_diff)
+            self.state = State(
+                self._wheel_base * Kp,
+                x=self.current_robot_translation[0],
+                y=self.current_robot_translation[1],
+                yaw=self.current_robot_orientation[2] % (2 * np.pi),
+                v=self.current_speed,
+            )
+            self._reached_goal = [
+                rho < self._goal_offset_threshold[0] or self.rotate_only and rho < self._goal_offset_threshold[0] * 5,
+                abs(theta_diff) <= self._goal_offset_threshold[1],
+            ]
+            if self._reached_goal[0] and self._reached_goal[1]:
                 self.control_command(0, 0)
-                self._reached_goal = [False, False]
                 self._enable_navigation = False
-                self._go_forward = False
+                return
+            if not self.rotate_only:
+                ai = pid_control(self.sp[self.target_idx], self.state.v) / step
+                di, self.target_idx = stanley_control(self.state, self.cx, self.cy, self.cyaw, self.target_idx)
+
+                self.state.update(ai, di, step)
+                v = self.state.v
+                w = self.state.w
+
+            if self._reached_goal[0] or self.rotate_only:
+                if self._reached_goal[0]:
+                    self.rotate_only = True
+                v = 0
+                if theta_diff > 0:
+                    w = min(((theta_diff) * Kp / step), 1)
+                else:
+                    w = max(((theta_diff) * Kp / step), -1)
+            # print(rho, abs(theta_diff), v, w, self.sp[self.target_idx], self.current_speed, self.target_idx)
+
+            kw = 0.5
+            # Allow additional steering to use differential drive (backwards spin on one wheel to tighten the cornering radius)
+            if not self._reached_goal[0] and v > 0:
+                kw = 0.5 + abs((self._wheel_base * w) / v) * (0.5 * Kp / step)
+                # print(kw)
+            command_left = (v - kw * self._wheel_base * w) / self._wheel_radius
+            command_right = (v + kw * self._wheel_base * w) / self._wheel_radius
+            # print(command_left, command_right)
+            self.control_command(command_left, command_right)
 
     def control_setup(self):
         self.ar = self._dc.get_articulation(self._articulation_path)
@@ -123,7 +425,7 @@ class RobotController:
         self.wheel_right = self._dc.find_articulation_dof(self.ar, self._wheel_joint_names[1])
 
         self.vel_props = _dynamic_control.DofProperties()
-        self.vel_props.drive_mode = _dynamic_control.DRIVE_ACCELERATION
+        # self.vel_props.drive_mode = _dynamic_control.DRIVE_VEL
         self.vel_props.damping = 1e7
         self.vel_props.stiffness = 0
         self._dc.set_dof_properties(self.wheel_left, self.vel_props)
@@ -132,20 +434,57 @@ class RobotController:
     def control_command(self, left_wheel_speed, right_wheel_speed):
         # Wake up articulation every move command to ensure commands are applied
         self._dc.wake_up_articulation(self.ar)
+        # Normalizes both wheels speed if any speed will be clipped
+        if abs(left_wheel_speed) > self._wheel_speed[0]:
+            factor = abs(self._wheel_speed[0] / left_wheel_speed)
+            right_wheel_speed = right_wheel_speed * factor
+            left_wheel_speed = left_wheel_speed * factor
+        if abs(right_wheel_speed) > self._wheel_speed[1]:
+            factor = abs(self._wheel_speed[1] / right_wheel_speed)
+            left_wheel_speed = left_wheel_speed * factor
+            right_wheel_speed = right_wheel_speed * factor
+
         self._dc.set_dof_velocity_target(self.wheel_left, left_wheel_speed)
         self._dc.set_dof_velocity_target(self.wheel_right, right_wheel_speed)
 
-    def set_goal(self, x, y, theta):
+    def set_goal(self, x, y, theta, sv=0.5, sa=0.05, gv=0.5, ga=0.05, max_speed=2.0):
+        theta = normalize_angle(theta)
         self._goal = [x, y, theta]
 
-    def get_goal(self):
-        return self._goal
+        max_accel = 1.5  # max accel [m/ss]
+        max_jerk = 0.3  # max jerk [m/sss]
+        self._get_odom_data()
+        self.target_idx = 0
+        x_diff = self.current_robot_translation[0] - x
+        y_diff = self.current_robot_translation[1] - y
+        rho = np.hypot(x_diff, y_diff)
+        if rho / 5.0 > self._goal_offset_threshold[0]:
+            self.tt, self.cx, self.cy, self.cyaw, self.ck, s, j = quintic_polynomials_planner(
+                self.current_robot_translation[0],
+                self.current_robot_translation[1],
+                self.current_robot_orientation[2],
+                sv,
+                sa,
+                x,
+                y,
+                theta,
+                gv,
+                ga,
+                max_accel,
+                max_jerk,
+                1 / 60.0,
+            )
+            self.cx = np.array(self.cx)
+            self.cy = np.array(self.cy)
+            self.sp = calc_speed_profile(np.array(self.ck), max_speed, 0.5, 0.05)
+            color = [(0, t / np.max(self.sp), 0) for t in self.sp]
+            self.y_color = int.from_bytes(b"\xff\xff\x00\x00", byteorder="big")
+            rgb_bytes = [(np.clip(c, 0, 1.0) * 255).astype("uint8").tobytes() for c in color]
+            argb_bytes = [b"\xff" + b for b in rgb_bytes]
+            self.argb = [int.from_bytes(b, byteorder="big") for b in argb_bytes]
+            self.rotate_only = False
+        else:
+            self.rotate_only = True
 
     def enable_navigation(self, flag):
         self._enable_navigation = flag
-
-    def reached_goal(self):
-        if self._reached_goal[0] is True and self._reached_goal[1] is True:
-            return True
-        else:
-            return False
