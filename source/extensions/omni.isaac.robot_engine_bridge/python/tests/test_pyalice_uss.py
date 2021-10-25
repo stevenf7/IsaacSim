@@ -21,9 +21,9 @@ import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from .common import PyaliceApp, create_application, simulate, add_cube, create_physics_scene
-from pxr import Gf, UsdGeom, UsdPhysics, Sdf
-
+from .common import PyaliceApp, create_application, add_cube, create_physics_scene
+from pxr import Gf
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREBPyaliceUSS(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -131,7 +131,7 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         self.create_scene()
         self._timeline.play()
-        await simulate(1.0)
+        await simulate_async(1.0)
 
     async def test_uss(self):
 
@@ -154,7 +154,7 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app.start()
 
         self._timeline.play()
-        await simulate(2.0)
+        await simulate_async(2.0)
         msg = test_app.app.receive("simulation.interface", "output", "uss_envelopes")
         buffer = msg.tensor
         self.assertTupleEqual(buffer.shape, (12, 224))

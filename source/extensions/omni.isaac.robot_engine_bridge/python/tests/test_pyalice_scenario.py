@@ -22,9 +22,8 @@ from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.pyalice import Message
-from pxr import UsdPhysics, Sdf, UsdGeom
-from .common import PyaliceApp, create_application, simulate, add_cube, create_physics_scene
-
+from .common import PyaliceApp, create_application, add_cube, create_physics_scene
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -89,7 +88,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         test_app.start()
         # Run test so tcp is connected
-        await simulate(1)
+        await simulate_async(1)
 
         # Spawn actors
         msg = Message.create_message_builder("ActorGroupProto")
@@ -108,7 +107,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app.app.publish("simulation.interface", "input", "scenario_actors", msg)
 
         # Verify actors are created
-        await simulate(1.0)
+        await simulate_async(1.0)
         cracker_box = self._stage.GetPrimAtPath("/World/cracker_box")
         self.assertIsNotNone(cracker_box)
         self.assertTrue(cracker_box.GetAttribute("xformOp:translate").Get() == (50, 0, 0))
@@ -131,7 +130,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         names[0] = "World/cracker_box"
         test_app.app.publish("simulation.interface", "input", "teleport", msg)
 
-        await simulate(0.2)
+        await simulate_async(0.2)
         # check that the prim moved as a result of teleport
         self.assertTrue(cracker_box.GetAttribute("xformOp:translate").Get() == (-100, 0, 0))
 
@@ -151,7 +150,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         request[0] = "/World/cracker_box"
         request[1] = "World/power_drill"  # Paths are converted to absolute, so both / and no / should work
         test_app.app.publish("simulation.interface", "input", "scenario_actors", msg)
-        await simulate(0.2)
+        await simulate_async(0.2)
         # cracker_box should return a null prim
         cracker_box = self._stage.GetPrimAtPath("/World/cracker_box")
         self.assertFalse(cracker_box)
@@ -188,7 +187,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         test_app.start()
         # Run test so tcp is connected
-        await simulate(1)
+        await simulate_async(1)
 
         # Rigidbody Sink is disabled to start
         msg = test_app.app.receive("simulation.interface", "output", "bodies")
@@ -198,7 +197,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         # move cube and simulate time so that message is received
         # This also makes sure that the component isn't publishing the pose while simulating
         cube_prim.GetAttribute("xformOp:translate").Set((100, 100, 100))
-        await simulate(0.5)
+        await simulate_async(0.5)
         # Check that we got a message
         msg = test_app.app.receive("simulation.interface", "output", "bodies")
         self.assertTrue(msg)
@@ -206,7 +205,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         # publish again, now we will get latest pose
         self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeTickComponent", path="/REB_RigidBodySink")[1])
 
-        await simulate(0.5)
+        await simulate_async(0.5)
         msg = test_app.app.receive("simulation.interface", "output", "bodies")
         self.assertTrue(msg)
         self.assertAlmostEqual(msg.proto.bodies[0].refTBody.translation.z, 1.0, delta=0.001)
@@ -246,7 +245,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         test_app.start()
         # Run test so tcp is connected
-        await simulate(1)
+        await simulate_async(1)
         # Check that we got a message
         msg = test_app.app.receive("simulation.interface", "output", "bodies")
 
@@ -284,7 +283,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     #     test_app.start()
     #     # Run test so tcp is connected
-    #     await simulate(1)
+    #     await simulate_async(1)
 
     #     # Spawn actors
     #     msg = Message.create_message_builder("ActorGroupProto")
@@ -315,7 +314,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     test_app.app.publish("simulation.interface", "input", "scenario_actors", msg)
 
     #     # Verify actors are created
-    #     await simulate(1.0)
+    #     await simulate_async(1.0)
     #     # cracker_box = self._stage.GetPrimAtPath("/World/cracker_box")
     #     # self.assertIsNotNone(cracker_box)
     #     # self.assertTrue(cracker_box.GetAttribute("xformOp:translate").Get() == (50, 0, 0))
@@ -338,7 +337,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     # names[0] = "World/cracker_box"
     #     # test_app.app.publish("simulation.interface", "input", "teleport", msg)
 
-    #     # await simulate(0.2)
+    #     # await simulate_async(0.2)
     #     # # check that the prim moved as a result of teleport
     #     # self.assertTrue(cracker_box.GetAttribute("xformOp:translate").Get() == (-100, 0, 0))
 
@@ -353,7 +352,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     # request = proto.init("destroyRequests", 1)
     #     # request[0] = "World/cracker_box"
     #     # test_app.app.publish("simulation.interface", "input", "scenario_actors", msg)
-    #     # await simulate(0.2)
+    #     # await simulate_async(0.2)
     #     # # cracker_box should return a null prim
     #     # cracker_box = self._stage.GetPrimAtPath("/World/cracker_box")
     #     # self.assertFalse(cracker_box)
@@ -390,6 +389,6 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app.start()
 
         self._timeline.play()
-        await simulate(1.0)
+        await simulate_async(1.0)
         self.assertEqual(vpi.get_viewport_window().get_active_camera(), "/World/Camera_2")
         self._timeline.stop()

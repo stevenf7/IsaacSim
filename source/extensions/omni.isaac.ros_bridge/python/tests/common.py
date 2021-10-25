@@ -10,7 +10,7 @@
 import omni
 import asyncio
 import carb
-from omni.isaac.utils.scripts.test_utils import load_test_file
+from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 
@@ -67,11 +67,6 @@ def set_rotate(prim, rot_mat):
         xform = UsdGeom.Xformable(prim)
         xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
         xform_op.Set(Gf.Matrix4d().SetRotate(rot_mat))
-
-
-async def simulate(seconds, steps_per_sec=60):
-    for frame in range(int(steps_per_sec * seconds)):
-        await omni.kit.app.get_app().next_update_async()
 
 
 async def wait_for_rosmaster():
@@ -136,7 +131,7 @@ async def add_carter():
         carb.log_error("Could not find nucleus server with /Isaac folder")
         return
     nucleus_path = nucleus_server + "/Isaac"
-    (result, error) = await load_test_file(nucleus_path + "/Robots/Carter/carter_v1.usd")
+    (result, error) = await open_stage_async(nucleus_path + "/Robots/Carter/carter_v1.usd")
     stage = omni.usd.get_context().get_stage()
 
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
@@ -150,7 +145,7 @@ async def add_carter_ros():
         carb.log_error("Could not find nucleus server with /Isaac folder")
         return
     nucleus_path = nucleus_server + "/Isaac"
-    (result, error) = await load_test_file(nucleus_path + "/Samples/ROS/Robots/Carter_ROS.usd")
+    (result, error) = await open_stage_async(nucleus_path + "/Samples/ROS/Robots/Carter_ROS.usd")
     stage = omni.usd.get_context().get_stage()
 
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
@@ -162,5 +157,5 @@ async def add_franka():
         carb.log_error("Could not find nucleus server with /Isaac folder")
         return
     nucleus_path = nucleus_server + "/Isaac"
-    (result, error) = await load_test_file(nucleus_path + "/Robots/Franka/franka.usd")
+    (result, error) = await open_stage_async(nucleus_path + "/Robots/Franka/franka.usd")
     stage = omni.usd.get_context().get_stage()

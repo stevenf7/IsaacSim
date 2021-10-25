@@ -20,8 +20,8 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
-
-from .common import add_cube, simulate, wait_for_rosmaster, add_franka
+from omni.isaac.core.utils.physics import simulate_async
+from .common import add_cube, wait_for_rosmaster, add_franka
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from pxr import Sdf
 
@@ -104,7 +104,7 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # checks
         self.assertEqual(len(self._tf_data.transforms), 13)  # there are 12 items in the tree.
@@ -122,7 +122,7 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # checks
         self.assertEqual(

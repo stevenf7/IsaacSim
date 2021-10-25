@@ -21,11 +21,11 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.utils.scripts.test_utils import load_test_file
+from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.pyalice import Composite
-from .common import PyaliceApp, create_application, simulate
-
+from .common import PyaliceApp, create_application
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -76,7 +76,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         return quantities, Composite.create_composite_message(quantities, values)
 
     async def test_ur10_basic(self):
-        (result, error) = await load_test_file(self._nucleus_path + "/Samples/Isaac_SDK/Scenario/ur10_basic.usd")
+        (result, error) = await open_stage_async(self._nucleus_path + "/Samples/Isaac_SDK/Scenario/ur10_basic.usd")
         self.assertTrue(result)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -90,7 +90,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         test_app.start()
         # Run test so tcp is connected
-        await simulate(1)
+        await simulate_async(1)
         # Send commands
         joints = [
             "shoulder_pan_joint",
@@ -105,7 +105,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         cmd_msg = Composite.create_composite_message(quantities, values)
         test_app.app.publish("simulation.interface", "input", "joint_position", cmd_msg)
         # Run test for a while for the arm to move
-        await simulate(4)
+        await simulate_async(4)
 
         state_msg = test_app.app.receive("simulation.interface", "output", "joint_state")
         self.assertIsNotNone(state_msg)
@@ -121,7 +121,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_franka_basic(self):
-        (result, error) = await load_test_file(self._nucleus_path + "/Samples/Isaac_SDK/Scenario/franka_basic.usd")
+        (result, error) = await open_stage_async(self._nucleus_path + "/Samples/Isaac_SDK/Scenario/franka_basic.usd")
         self.assertTrue(result)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -135,7 +135,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         test_app.start()
         # Run test so tcp is connected
-        await simulate(1)
+        await simulate_async(1)
         # Send commands to move arm and open gripper
         joints = [
             "panda_joint1",
@@ -157,7 +157,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app.app.publish("simulation.interface", "input", "io_command", open_gripper)
 
         # Run test for a while for the arm to move
-        await simulate(3)
+        await simulate_async(3)
 
         # validate joint angles
         state_msg = test_app.app.receive("simulation.interface", "output", "joint_state")
@@ -178,7 +178,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
             [["gripper", "none", 1]], np.array([1.0], dtype=np.dtype("float64"))
         )
         test_app.app.publish("simulation.interface", "input", "io_command", close_gripper)
-        await simulate(1)
+        await simulate_async(1)
 
         # validate gripper is closed
         gripper_msg = test_app.app.receive("simulation.interface", "output", "io_state")
@@ -194,7 +194,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_revolute(self):
-        (result, error) = await load_test_file(
+        (result, error) = await open_stage_async(
             self._nucleus_path + "/Samples/Isaac_SDK/Robots/Simple_Articulation_REB.usd"
         )
         self.assertTrue(result)
@@ -210,7 +210,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         test_app.start()
         # Run test so tcp is connected
-        await simulate(1)
+        await simulate_async(1)
 
         async def check_joint(joints, values, actual_value, time=1.0):
 
@@ -219,7 +219,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
             test_app.app.publish("simulation.interface", "input", "joint_position", cmd_msg)
 
             # Run test for a while for the arm to move
-            await simulate(time)
+            await simulate_async(time)
 
             # validate joint angles
             state_msg = test_app.app.receive("simulation.interface", "output", "joint_state")
@@ -238,7 +238,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_prismatic(self):
-        (result, error) = await load_test_file(
+        (result, error) = await open_stage_async(
             self._nucleus_path + "/Samples/Isaac_SDK/Robots/Simple_Articulation_REB.usd"
         )
         self.assertTrue(result)
@@ -255,7 +255,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         test_app.start()
         # Run test so tcp is connected
-        await simulate(1)
+        await simulate_async(1)
 
         async def check_joint(joints, values, actual_value, time=1.0):
 
@@ -264,7 +264,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
             test_app.app.publish("simulation.interface", "input", "joint_position", cmd_msg)
 
             # Run test for a while for the arm to move
-            await simulate(time)
+            await simulate_async(time)
 
             # validate joint angles
             state_msg = test_app.app.receive("simulation.interface", "output", "joint_state")

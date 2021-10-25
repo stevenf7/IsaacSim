@@ -90,6 +90,21 @@ def open_stage(usd_path: str) -> bool:
     return result
 
 
+async def open_stage_async(usd_path: str) -> bool:
+    """
+    Open the given usd file and replace currently opened stage
+    Args:
+        usd_path (str): Path to open
+    """
+    if not Usd.Stage.IsSupportedFile(usd_path):
+        raise ValueError("Only USD files can be loaded with this method")
+    usd_context = omni.usd.get_context()
+    usd_context.disable_save_to_recent_files()
+    (result, error) = await omni.usd.get_context().open_stage_async(usd_path)
+    usd_context.enable_save_to_recent_files()
+    return (result, error)
+
+
 def save_stage(usd_path: str) -> bool:
     """
     Save usd file to path, it will be overwritten with the current stage
@@ -142,12 +157,22 @@ def is_stage_loading() -> bool:
         return loading > 0
 
 
-def set_stage_units(stage_units_in_meters):
+def set_stage_units(stage_units_in_meters: float) -> None:
+    """
+    Set the stage meters per unit
+    Args:
+        stage_units_in_meters (float): units for stage, 1.0 means meters, 0.01 mean centimeters
+    """
     if get_current_stage() is None:
         raise Exception("There is no stage currently opened, init_stage needed before calling this func")
     UsdGeom.SetStageMetersPerUnit(get_current_stage(), stage_units_in_meters)
     return
 
 
-def get_stage_units():
+def get_stage_units() -> float:
+    """
+    Get the stage meters per unit currently set
+     Returns:
+        float: current stage meters per unit
+    """
     return UsdGeom.GetStageMetersPerUnit(get_current_stage())

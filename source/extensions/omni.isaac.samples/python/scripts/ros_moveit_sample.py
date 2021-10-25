@@ -18,8 +18,9 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 
 from pxr import Gf
 
-from omni.isaac.utils.scripts.scene_utils import setup_physics, create_background
+from omni.isaac.utils.scripts.scene_utils import setup_physics
 from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.prims import create_prim
 
 MENU_NAME = "MoveIt"
 FRANKA_STAGE_PATH = "/Franka"
@@ -72,13 +73,6 @@ class Extension(omni.ext.IExt):
 
         pass
 
-    def create_environment(self, usd_path, background_path):
-
-        create_background(
-            self._stage, self._nucleus_path + usd_path, background_path=background_path, offset=Gf.Vec3d(0, 0, 0)
-        )
-        pass
-
     async def _create_moveit_sample(self):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
@@ -88,7 +82,11 @@ class Extension(omni.ext.IExt):
 
         self.create_franka(FRANKA_STAGE_PATH)
         await omni.kit.app.get_app().next_update_async()
-        self.create_environment("/Isaac/Environments/Simple_Room/simple_room.usd", "/background")
+        create_prim(
+            prim_path="/background",
+            prim_type="Xform",
+            usd_path=self._nucleus_path + "/Isaac/Environments/Simple_Room/simple_room.usd",
+        )
         await omni.kit.app.get_app().next_update_async()
         setup_physics(self._stage)
         await omni.kit.app.get_app().next_update_async()

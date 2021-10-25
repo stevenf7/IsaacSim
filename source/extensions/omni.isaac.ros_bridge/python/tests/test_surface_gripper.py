@@ -19,10 +19,10 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
-
-from .common import create_joint_state, set_rotate, set_translate, simulate, wait_for_rosmaster
+from omni.isaac.core.utils.physics import simulate_async
+from .common import create_joint_state, set_rotate, set_translate, wait_for_rosmaster
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from omni.isaac.utils.scripts.test_utils import load_test_file
+from omni.isaac.core.utils.stage import open_stage_async
 from pxr import Gf, PhysicsSchemaTools
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -80,7 +80,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
 
         from sensor_msgs.msg import JointState
 
-        (result, error) = await load_test_file(self._nucleus_path + "/Samples/ROS/Robots/UR10_Long_Suction_ROS.usd")
+        (result, error) = await open_stage_async(self._nucleus_path + "/Samples/ROS/Robots/UR10_Long_Suction_ROS.usd")
         self.assertTrue(result)
 
         stage = omni.usd.get_context().get_stage()
@@ -136,7 +136,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         handle_1 = self._dc.get_rigid_body("/World/bin_1")
         handle_2 = self._dc.get_rigid_body("/World/bin_2")
@@ -159,56 +159,56 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         print("Lifting first bin")
         send_joint_message(states["bin_1"]["lift"])
         send_open_message()
-        await simulate(2)
+        await simulate_async(2)
         send_joint_message(states["bin_1"]["grab"])
-        await simulate(1)
+        await simulate_async(1)
         send_close_message()
-        await simulate(1)
+        await simulate_async(1)
         send_joint_message(states["bin_1"]["lift"])
-        await simulate(2)
+        await simulate_async(2)
         self.assertGreater(self._dc.get_rigid_body_pose(handle_1).p.z, 10)
         print("Lifting second bin")
         send_open_message()
-        await simulate(1)
+        await simulate_async(1)
         send_joint_message(states["bin_2"]["lift"])
-        await simulate(2)
+        await simulate_async(2)
         send_joint_message(states["bin_2"]["grab"])
-        await simulate(1)
+        await simulate_async(1)
         send_close_message()
-        await simulate(1)
+        await simulate_async(1)
         send_joint_message(states["bin_2"]["lift"])
-        await simulate(2)
+        await simulate_async(2)
         self.assertGreater(self._dc.get_rigid_body_pose(handle_2).p.z, 10)
         print("Lifting third bin")
         send_open_message()
-        await simulate(1)
+        await simulate_async(1)
         send_joint_message(states["bin_3"]["lift"])
-        await simulate(2)
+        await simulate_async(2)
         send_joint_message(states["bin_3"]["grab"])
-        await simulate(1)
+        await simulate_async(1)
         send_close_message()
-        await simulate(1)
+        await simulate_async(1)
         send_joint_message(states["bin_3"]["lift"])
-        await simulate(2)
+        await simulate_async(2)
         self.assertGreater(self._dc.get_rigid_body_pose(handle_3).p.z, 10)
 
         # Check to make sure that stopping simulation clears gripper state
         print("checking that stopping simulation resets gripper state")
         send_open_message()
-        await simulate(1)
+        await simulate_async(1)
         send_joint_message(states["bin_3"]["lift"])
-        await simulate(2)
+        await simulate_async(2)
         send_joint_message(states["bin_3"]["grab"])
-        await simulate(1)
+        await simulate_async(1)
         send_close_message()
-        await simulate(1)
+        await simulate_async(1)
         self.assertEqual(self._gripper_state, 1.0)
         print("stopping sim")
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         print("start sim to check if gripper is reset")
         self._timeline.play()
-        await simulate(4)
+        await simulate_async(4)
         self.assertEqual(self._gripper_state, 0.0)
         self._timeline.stop()
         pub.unregister()

@@ -24,7 +24,6 @@ import math
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
-from .common import load_test_file, set_scene_physics_type, is_loading, simulate
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 

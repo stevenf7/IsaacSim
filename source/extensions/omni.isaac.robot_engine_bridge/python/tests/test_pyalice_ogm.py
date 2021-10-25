@@ -21,8 +21,9 @@ import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from .common import PyaliceApp, create_application, simulate, add_cube, create_physics_scene
-from pxr import Gf, UsdGeom, UsdPhysics, Sdf
+from .common import PyaliceApp, create_application, add_cube, create_physics_scene
+from omni.isaac.core.utils.physics import simulate_async
+from pxr import Gf
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -89,7 +90,7 @@ class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         self.create_scene()
         self._timeline.play()
-        await simulate(0.1)
+        await simulate_async(0.1)
 
     async def test_occupancy_grid_map(self):
 
@@ -122,7 +123,7 @@ class TestREBPyaliceOccupancyGridMap(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app.start()
 
         self._timeline.play()
-        await simulate(0.1)
+        await simulate_async(0.1)
         msg = test_app.app.receive("simulation.interface", "output", "occupancy_map")
         buffer = msg.tensor
         # print("TENSOR", omap)

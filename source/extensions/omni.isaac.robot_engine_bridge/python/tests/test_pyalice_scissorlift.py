@@ -21,11 +21,11 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.utils.scripts.test_utils import load_test_file
+from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.pyalice import Composite
-from .common import PyaliceApp, create_application, simulate
-
+from .common import PyaliceApp, create_application
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREBPyaliceScissorLift(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -76,7 +76,7 @@ class TestREBPyaliceScissorLift(omni.kit.test.AsyncTestCaseFailOnLogError):
         return quantities, Composite.create_composite_message(quantities, values)
 
     async def test_scissorlift(self):
-        (result, error) = await load_test_file(self._nucleus_path + "/Samples/Isaac_SDK/Robots/Transporter_REB.usd")
+        (result, error) = await open_stage_async(self._nucleus_path + "/Samples/Isaac_SDK/Robots/Transporter_REB.usd")
         self.assertTrue(result)
 
         self._timeline.play()
@@ -101,14 +101,14 @@ class TestREBPyaliceScissorLift(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         test_app.start()
         # Run test so tcp is connected
-        await simulate(1)
+        await simulate_async(1)
         lift_msg = test_app.app.receive("simulation.interface", "output", "lift_state")
         self.assertIsNotNone(lift_msg)
         self.assertEqual(lift_msg.tensor[0], -1)
         self.assertEqual(lift_msg.tensor[1], 0)
 
         self.generator.config.linear_speed = 1.0
-        await simulate(3)
+        await simulate_async(3)
         lift_msg = test_app.app.receive("simulation.interface", "output", "lift_state")
         self.assertIsNotNone(lift_msg)
         self.assertEqual(lift_msg.tensor[0], 1)

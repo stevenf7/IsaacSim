@@ -12,42 +12,8 @@ import omni.kit.commands
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.range_sensor import _range_sensor
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
-from omni.physx.scripts import utils
-import omni.isaac.RangeSensorSchema as RangeSensorSchema
-import asyncio
+from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import numpy as np
-import os
-import carb.tokens
-
-
-async def simulate(seconds, steps_per_sec=60):
-    for frame in range(int(steps_per_sec * seconds)):
-        await omni.kit.app.get_app().next_update_async()
-
-
-def get_data_file(file_name: str):
-    if os.path.isabs(file_name):
-        path_to_file = file_name
-    else:
-        path_to_file = os.path.abspath(
-            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
-        )
-    return path_to_file
-
-
-async def load_test_file(test_file_name: str):
-    if not Usd.Stage.IsSupportedFile(test_file_name):
-        raise ValueError("Only USD files can be loaded with this method")
-
-    path_to_file = get_data_file(test_file_name)
-
-    usd_context = omni.usd.get_context()
-    usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
-    usd_context.enable_save_to_recent_files()
-    return (result, error)
-
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestGeneric(omni.kit.test.AsyncTestCaseFailOnLogError):

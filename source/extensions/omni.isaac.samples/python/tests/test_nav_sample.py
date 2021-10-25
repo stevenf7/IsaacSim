@@ -18,7 +18,7 @@ import gc
 import asyncio
 import carb
 from pxr import Gf, UsdGeom
-from .common import simulate
+from omni.isaac.core.utils.physics import simulate_async
 import math
 import omni.physx as _physx
 
@@ -120,7 +120,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         self._rc.control_command(1, 1)
 
-        await simulate(2)
+        await simulate_async(2)
         imu_pose = self._dc.get_rigid_body_pose(self.imu)
         self.assertGreater(imu_pose.p.x, 0.0)
         pass
@@ -134,7 +134,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         self._rc.control_command(1, -1)
 
-        await simulate(2)
+        await simulate_async(2)
         imu_pose = self._dc.get_rigid_body_pose(self.imu)
         roll, pitch, yaw = math_utils.quat_to_euler_angles(
             Gf.Quaternion(imu_pose.r.w, Gf.Vec3d(imu_pose.r.x, imu_pose.r.y, imu_pose.r.z))
@@ -153,7 +153,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._rc.enable_navigation(True)
 
         for frame in range(int(30)):
-            await simulate(2)
+            await simulate_async(2)
             if self._rc.reached_goal():
                 break
         imu_pose = self._dc.get_rigid_body_pose(self.imu)
@@ -175,30 +175,30 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         # Move forward
         self._rc.control_command(1, 1)
-        await simulate(1)
+        await simulate_async(1)
         imu_pose = self._dc.get_rigid_body_pose(self.imu)
         self.assertGreater(imu_pose.p.x, 0.0)
         # Stop and play
         self._rc.control_command(0, 0)
-        await simulate(1)
+        await simulate_async(1)
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         # Move forward again
         self._rc.control_command(1, 1)
-        await simulate(1)
+        await simulate_async(1)
         imu_pose_new = self._dc.get_rigid_body_pose(self.imu)
         # Stop and play once more
         self._rc.control_command(0, 0)
-        await simulate(1)
+        await simulate_async(1)
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         # Move forward again
         self._rc.control_command(1, 1)
-        await simulate(1)
+        await simulate_async(1)
         imu_pose_new_again = self._dc.get_rigid_body_pose(self.imu)
         self.assertAlmostEqual(imu_pose_new_again.p.x, imu_pose_new.p.x, delta=1.0)
         pass

@@ -17,18 +17,7 @@ from pxr import Usd
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.motion_planning import _motion_planning
-
-
-async def load_test_file(path_to_file: str):
-    if not Usd.Stage.IsSupportedFile(path_to_file):
-        raise ValueError("Only USD files can be loaded with this method")
-
-    usd_context = omni.usd.get_context()
-    usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
-    usd_context.enable_save_to_recent_files()
-    return (result, error)
-
+from omni.isaac.core.utils.stage import open_stage_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestMotionPlanning(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -52,7 +41,7 @@ class TestMotionPlanning(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_motion_planning(self):
-        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
 

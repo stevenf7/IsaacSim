@@ -19,6 +19,7 @@ capturing groundtruth consisting of an RGB rendered image, and Tight 2D Bounding
 import omni
 import carb
 from omni.isaac.python_app import OmniKitHelper
+from omni.isaac.core.utils.prims import create_prim
 
 import os
 import numpy as np
@@ -78,28 +79,6 @@ def create_dofbot_camera(stage, prim_env_path):
     vp_window_dofbot.set_active_camera(prim_env_path + "/link4/Camera")
 
     return vp_window_dofbot
-
-
-def create_prim_from_usd(stage, prim_env_path, prim_usd_path, location):
-    """
-    Loads dofbot USD asset into a prim
-    """
-    from pxr import UsdGeom
-
-    envPrim = stage.DefinePrim(prim_env_path, "Xform")  # create an empty Xform at the given path
-    envPrim.GetReferences().AddReference(prim_usd_path)  # attach the USD to the given path
-    UsdGeom.XformCommonAPI(envPrim).SetTranslate(location)
-
-
-def create_prim(stage, prim_env_path, prim_type, translation, attributes={}):
-    from pxr import UsdGeom
-
-    prim = stage.DefinePrim(prim_env_path, prim_type)
-    # Set the translation if provided
-    if translation:
-        UsdGeom.XformCommonAPI(prim).SetTranslate(translation)
-    for k, v in attributes.items():
-        prim.GetAttribute(k).Set(v)
 
 
 class RMPRandomObjects(torch.utils.data.IterableDataset):
@@ -173,7 +152,7 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
         asset_path = nucleus_server + "/Isaac/Robots/Dofbot"
         robot_usd = asset_path + "/dofbot_rmp.usd"
         robot_path = "/scene/robot"
-        create_prim_from_usd(self._stage, robot_path, robot_usd, Gf.Vec3d(0, -20, 0.5))
+        create_prim(prim_path=robot_path, usd_path=robot_usd, position=np.array([0, -20, 0.5]))
 
         # The dofbot_gripper_smaller_maxforce.usd contains GroundPlane - make invisible
         UsdGeom.Mesh(self._stage.GetPrimAtPath(robot_path + "/GroundPlane/CollisionMesh")).MakeInvisible()
@@ -206,10 +185,20 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
 
         # Set up lights and room
         light1_attr = {"radius": 100, "intensity": 30000.0, "color": (1.0, 1.0, 1.0)}
-        create_prim(self._stage, "/World/Light1", "SphereLight", (-115, 150, 500), light1_attr)
+        create_prim(
+            prim_path="/World/Light1",
+            prim_type="SphereLight",
+            position=np.array([-115, 150, 500]),
+            attributes=light1_attr,
+        )
 
         light2_attr = {"radius": 100, "intensity": 20000.0, "color": (1.0, 1.0, 1.0)}
-        create_prim(self._stage, "/World/Light2", "SphereLight", (300, 40, 220), light2_attr)
+        create_prim(
+            prim_path="/World/Light2",
+            prim_type="SphereLight",
+            position=np.array([300, 40, 220]),
+            attributes=light2_attr,
+        )
 
         # Makes ground plane (mesh)
         self.load_ground()
@@ -296,10 +285,8 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
         ]
         prim_path = "/World/Env/BackgroundLight"
         create_prim(
-            stage=self._stage,
-            prim_env_path=prim_path,
+            prim_path=prim_path,
             prim_type="DomeLight",
-            translation=[],
             attributes={
                 UsdLux.Tokens.intensity: 1000,
                 UsdLux.Tokens.specular: 1,

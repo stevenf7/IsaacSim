@@ -15,7 +15,7 @@ import omni.physx as _physx
 
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
-from .common import load_test_file
+from .common import open_stage_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -41,7 +41,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_wheeled(self, gpu=False):
 
-        (result, error) = await load_test_file(
+        (result, error) = await open_stage_async(
             self._extension_path + "/data/usd/robots/differential_base/differential_base.usd"
         )
         # Make sure the stage loaded
@@ -67,7 +67,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_carter(self, gpu=False):
 
-        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/carter/carter.usd")
+        (result, error) = await open_stage_async(self._extension_path + "/data/usd/robots/carter/carter.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
@@ -158,7 +158,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_position_ur10(self, gpu=False):
 
-        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/ur10/ur10.usd")
+        (result, error) = await open_stage_async(self._extension_path + "/data/usd/robots/ur10/ur10.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
@@ -184,7 +184,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_position_str(self, gpu=False):
 
-        (result, error) = await load_test_file(
+        (result, error) = await open_stage_async(
             self._extension_path + "/data/usd/robots/transporter/transporter_physics.usd"
         )
         # Make sure the stage loaded
@@ -205,7 +205,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
             self.assertAlmostEqual(self._dc.get_dof_position_target(dof_ptr), new_pos, delta=0.01)
 
     async def test_revolute_masses(self, gpu=False):
-        (result, error) = await load_test_file(
+        (result, error) = await open_stage_async(
             self._extension_path + "/data/usd/robots/simple/revolute_articulation.usd"
         )
         # Make sure the stage loaded

@@ -16,11 +16,11 @@ import omni.kit.commands
 import carb.tokens
 import asyncio
 import numpy as np
-from pxr import UsdGeom, Gf, PhysicsSchemaTools, UsdPhysics
-
+from pxr import UsdGeom, Gf, UsdPhysics
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.contact_sensor import _contact_sensor
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 
@@ -102,14 +102,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def simulate(self, seconds, steps_per_sec=60):
-        for frame in range(int(steps_per_sec * seconds)):
-            await omni.kit.app.get_app().next_update_async()
-
-    def is_loading(self):
-        message, loaded, loading = omni.usd.get_context().get_stage_loading_status()
-        return loading > 0
-
     async def test_add_sensors(self):
 
         # Add Contact Sensor
@@ -128,10 +120,10 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_lost_contacts(self):
         await self.test_add_sensors()
         self._timeline.play()
-        await self.simulate(1, steps_per_sec=1)  # simulate 1 step, ant should be in the air
+        await simulate_async(1, steps_per_sec=1)  # simulate 1 step, ant should be in the air
         contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
         self.assertEqual(len(contacts_raw), 0)
-        await self.simulate(0.5)  # simulate 30 steps, ant should touch ground
+        await simulate_async(0.5)  # simulate 30 steps, ant should touch ground
         contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
         self.assertEqual(len(contacts_raw), 1)
         c = contacts_raw[0]
@@ -147,7 +139,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         # xform.ClearXformOpOrder()
         xform_op = xform.GetOrderedXformOps()[0]
         xform_op.Set(Gf.Vec3d(0, 0, 15))
-        await self.simulate(0.5)
+        await simulate_async(0.5)
         contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
         self.assertEqual(len(contacts_raw), 0)
 
@@ -172,10 +164,10 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_get_raw_data(self):
         await self.test_add_sensors()
         self._timeline.play()
-        await self.simulate(1, steps_per_sec=1)  # simulate 1 step, ant should be in the air
+        await simulate_async(1, steps_per_sec=1)  # simulate 1 step, ant should be in the air
         contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
         self.assertEqual(len(contacts_raw), 0)
-        await self.simulate(0.5)  # simulate 30 steps, ant should touch ground
+        await simulate_async(0.5)  # simulate 30 steps, ant should touch ground
         contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
         self.assertEqual(len(contacts_raw), 1)
         c = contacts_raw[0]
@@ -189,7 +181,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_persistent_raw_data(self):
         await self.test_add_sensors()
         self._timeline.play()
-        await self.simulate(2.0)  # simulate long enough that physx stops sending persistent contact raw data
+        await simulate_async(2.0)  # simulate long enough that physx stops sending persistent contact raw data
         contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
         self.assertEqual(len(contacts_raw), 1)
         c = contacts_raw[0]
@@ -265,7 +257,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         sensor = self._cs.add_sensor_on_body("/cube", props)
 
         self._timeline.play()
-        await self.simulate(1.5)
+        await simulate_async(1.5)
         await omni.kit.app.get_app().next_update_async()
         sensor_reading = self._cs.get_sensor_readings(sensor)
         self.assertEqual(len(sensor_reading), 1)

@@ -10,18 +10,14 @@
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
-from typing_extensions import Protocol
 import omni.kit.test
-
 import omni.kit.usd
-import carb.tokens
 import gc
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.dynamic_control import _dynamic_control
 
-from .common import PyaliceApp, create_application, simulate
-from pxr import Gf
+from .common import PyaliceApp, create_application
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREBPyalice(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -55,7 +51,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCaseFailOnLogError):
             proto=msg.proto,
         )
         self._timeline.play()
-        await simulate(1.0)
+        await simulate_async(1.0)
         result, state = omni.kit.commands.execute(
             "RobotEngineBridgePublishProto",
             node="interface",
@@ -79,7 +75,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
 
         test_app.start()
-        await simulate(3)
+        await simulate_async(3)
 
         self._timeline.play()
 
@@ -90,7 +86,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCaseFailOnLogError):
             channel="test_channel",
             proto=msg.proto,
         )
-        await simulate(1.0)
+        await simulate_async(1.0)
 
         collision_msg = test_app.app.receive("simulation.interface", "output", "test_channel")
         self.assertTrue(collision_msg.proto.flag)

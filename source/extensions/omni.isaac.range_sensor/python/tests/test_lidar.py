@@ -13,39 +13,10 @@ import omni.kit.commands
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.range_sensor import _range_sensor
 from omni.syntheticdata.tests.utils import add_semantics
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools, Semantics
+from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools, Semantics
 import numpy as np
-import os
-import carb.tokens
-
-
-async def simulate(seconds, steps_per_sec=60):
-    for frame in range(int(steps_per_sec * seconds)):
-        await omni.kit.app.get_app().next_update_async()
-
-
-def get_data_file(file_name: str):
-    if os.path.isabs(file_name):
-        path_to_file = file_name
-    else:
-        path_to_file = os.path.abspath(
-            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
-        )
-    return path_to_file
-
-
-async def load_test_file(test_file_name: str):
-    if not Usd.Stage.IsSupportedFile(test_file_name):
-        raise ValueError("Only USD files can be loaded with this method")
-
-    path_to_file = get_data_file(test_file_name)
-
-    usd_context = omni.usd.get_context()
-    usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
-    usd_context.enable_save_to_recent_files()
-    return (result, error)
-
+from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -136,7 +107,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Run for a second
         self._timeline.play()
-        await simulate(1.0)
+        await simulate_async(1.0)
         self._timeline.pause()
 
         # Get depth, and check that we hit the cube in front, and hit nothing in back
@@ -187,7 +158,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertEqual(depth[0, 0], 65535)
 
         # wait for it to drop
-        await simulate(2.0)
+        await simulate_async(2.0)
         self._timeline.pause()
         # Get depth, and check that we hit the cube in front, and hit nothing in back
         depth = self._lidar.get_depth_data(lidarPath)
@@ -236,7 +207,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         lidar.GetHighLodAttr().Set(False)
 
     async def test_carter_lidar(self):
-        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/carter/carter.usd")
+        (result, error) = await open_stage_async(self._extension_path + "/data/usd/robots/carter/carter.usd")
         self._stage = omni.usd.get_context().get_stage()
 
         # Add a cube
@@ -267,7 +238,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Run for two seconds
 
         self._timeline.play()
-        await simulate(2.0)
+        await simulate_async(2.0)
         self._timeline.pause()
         # Get depth, and check that we hit the cube in front, and hit nothing in back
         depth = self._lidar.get_depth_data(lidarPath)
@@ -348,7 +319,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Run for a second
         self._timeline.play()
-        await simulate(1.0)
+        await simulate_async(1.0)
         self._timeline.pause()
 
         # Get semantic data of hit points, and check that we get two non-zero semantic IDs
@@ -386,7 +357,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     #     # Run for a second
     #     self._timeline.play()
-    #     await simulate(2.0)
+    #     await simulate_async(2.0)
     #     self._timeline.pause()
 
     #     kitZenith = self._lidar.get_zenith_data(lidarPath)

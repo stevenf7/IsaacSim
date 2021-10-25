@@ -23,7 +23,7 @@ from pxr import Gf, UsdGeom
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from .common import is_loading
+from omni.isaac.core.utils.stage import is_stage_loading
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestDomainRandomizerColorComponent(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -90,7 +90,7 @@ class TestDomainRandomizerColorComponent(omni.kit.test.AsyncTestCaseFailOnLogErr
         self.assertTrue(color_comp)
         # Let the material load
         await omni.kit.app.get_app().next_update_async()
-        while is_loading():
+        while is_stage_loading():
             await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         # Validate color material prim
@@ -138,7 +138,7 @@ class TestDomainRandomizerColorComponent(omni.kit.test.AsyncTestCaseFailOnLogErr
         self.assertTrue(color_comp)
         # Let the material load
         await omni.kit.app.get_app().next_update_async()
-        while is_loading():
+        while is_stage_loading():
             await omni.kit.app.get_app().next_update_async()
         await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()

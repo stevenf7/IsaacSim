@@ -17,9 +17,8 @@ import carb
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
-from .common import get_selected_path, simulate
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-
+from omni.isaac.core.utils.physics import simulate_async
 from pxr import Gf, UsdPhysics, PhysxSchema
 
 
@@ -72,13 +71,13 @@ class TestGXFCommands(omni.kit.test.AsyncTestCase):
             ],
         )
         self._timeline.play()
-        await simulate(1)
+        await simulate_async(1)
         result, prim = omni.kit.commands.execute("RobotEngineBridgeCreateLidar", path="/REB_Lidar", enabled=False)
-        await simulate(1)
+        await simulate_async(1)
         # first frame is skipped sowe tick twice
         self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeGxfTickComponent", path="/REB_Lidar")[1])
         self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeGxfTickComponent", path="/REB_Lidar")[1])
         self.assertFalse(omni.kit.commands.execute("RobotEngineBridgeGxfTickComponent", path="/REB_DOESNT_EXIST")[1])
-        await simulate(0.25)
+        await simulate_async(0.25)
         self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeGxfDestroyApplication")[1])
         self._timeline.stop()

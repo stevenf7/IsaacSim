@@ -22,7 +22,7 @@ from pxr import UsdPhysics, Sdf, UsdGeom, PhysxSchema
 from omni.isaac.occupancy_map import _occupancy_map
 from omni.isaac.occupancy_map.scripts.utils import update_location, compute_coordinates, generate_image
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from omni.isaac.utils.scripts.test_utils import load_test_file
+from omni.isaac.core.utils.stage import open_stage_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -82,7 +82,7 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_simple_room(self):
-        (result, error) = await load_test_file(self._nucleus_path + "/Environments/Simple_Room/simple_room.usd")
+        (result, error) = await open_stage_async(self._nucleus_path + "/Environments/Simple_Room/simple_room.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         stage = omni.usd.get_context().get_stage()

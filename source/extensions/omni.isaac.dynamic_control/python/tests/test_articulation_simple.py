@@ -17,7 +17,7 @@ import omni.physx as _physx
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.dynamic_control import conversions as dc_conversions
-from .common import load_test_file
+from .common import open_stage_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -34,7 +34,9 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         dc_utils.set_physics_frequency(60)
 
         await omni.kit.app.get_app().next_update_async()
-        (result, error) = await load_test_file(self._extension_path + "/data/usd/robots/simple/simple_articulation.usd")
+        (result, error) = await open_stage_async(
+            self._extension_path + "/data/usd/robots/simple/simple_articulation.usd"
+        )
         self.assertTrue(result)  # Make sure the stage loaded
         self._stage = omni.usd.get_context().get_stage()
         pass
@@ -591,7 +593,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-49.112, 141.977, 0], atol=1e-2))
 
     # async def test_get_effort(self, gpu=False):
-    #     (result, error) = await load_test_file(
+    #     (result, error) = await open_stage_async(
     #         self._extension_path + "/data/usd/robots/simple/revolute_articulation.usd"
     #     )
     #     self.assertTrue(result)  # Make sure the stage loaded

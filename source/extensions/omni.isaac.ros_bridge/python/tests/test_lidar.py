@@ -20,9 +20,10 @@ import asyncio
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
-from .common import add_cube, simulate, wait_for_rosmaster, add_carter_ros
+from .common import add_cube, wait_for_rosmaster, add_carter_ros
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from pxr import Sdf
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosLidar(omni.kit.test.AsyncTestCase):
@@ -104,7 +105,7 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         # 0.0 Hz Lidar rotation
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         standard_checks()
         self.assertEqual(self._lidar_data.time_increment, 0)
@@ -124,7 +125,7 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         # 121.0 Hz Lidar rotation
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         standard_checks()
 
@@ -148,7 +149,7 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         # 201.0 Hz Lidar rotation
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         standard_checks()
 
@@ -193,7 +194,7 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         # 0.0 Hz Lidar rotation
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
         # Should be no data yet
         self.assertIsNone(self._lidar_data)
         # Enable lidar by ticking it once
@@ -229,7 +230,7 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         # 123.0 Hz Lidar rotation
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
         # Should be no data yet
         self.assertIsNone(self._lidar_data)
         # Enable lidar by ticking it once

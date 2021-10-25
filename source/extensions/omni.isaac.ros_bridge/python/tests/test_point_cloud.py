@@ -19,8 +19,9 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.core.utils.physics import simulate_async
 
-from .common import add_cube, simulate, wait_for_rosmaster, add_carter_ros
+from .common import add_cube, wait_for_rosmaster, add_carter_ros
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from pxr import Sdf
 
@@ -106,7 +107,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # If 3D point cloud (highLOD enabled)
         self.assertIsNotNone(self._point_cloud_data)
@@ -149,7 +150,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # If flat point cloud (highLOD disabled)
         self.assertEqual(self._point_cloud_data.height, 1)
@@ -200,7 +201,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         self.assertIsNotNone(self._point_cloud_data)
         self.assertGreater(self._point_cloud_data.height, 1)
@@ -259,7 +260,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
         # Should be no data yet
         self.assertIsNone(self._point_cloud_data)
         # Enable lidar by ticking it once
@@ -319,7 +320,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
         # Should be no data yet
         self.assertIsNone(self._point_cloud_data)
         # Enable lidar by ticking it once
@@ -387,7 +388,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
         # Should be no data yet
         self.assertIsNone(self._point_cloud_data)
 

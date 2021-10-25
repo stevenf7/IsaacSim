@@ -1,9 +1,10 @@
+from omni.client import delete
 from pxr import UsdGeom, Gf, UsdPhysics
 import numpy as np
 import asyncio
-from scipy.spatial.transform import Rotation as R
 import uuid
 import omni.kit.app
+from omni.isaac.core.utils.prims import delete_prim
 
 
 def get_Gf_transform(translation, rotation):
@@ -215,28 +216,28 @@ class Object:
             Enabling only collisions will make this Object become impassable for the robot
         """
 
-        async def set_physics_properties_async():
-            await omni.kit.app.get_app().next_update_async()
-            for component in self.components:
-                if enable_rigid_body:
-                    UsdPhysics.RigidBodyAPI.Apply(component.GetPrim())
-                    await omni.kit.app.get_app().next_update_async()
-                if enable_collisions:
-                    UsdPhysics.CollisionAPI.Apply(component.GetPrim())
-                    await omni.kit.app.get_app().next_update_async()
-                massAPI = UsdPhysics.MassAPI.Apply(component.GetPrim())
-                massAPI.CreateMassAttr(mass)
-                await omni.kit.app.get_app().next_update_async()
+        # async def set_physics_properties_async():
+        # await omni.kit.app.get_app().next_update_async()
+        for component in self.components:
+            if enable_rigid_body:
+                UsdPhysics.RigidBodyAPI.Apply(component.GetPrim())
+                # await omni.kit.app.get_app().next_update_async()
+            if enable_collisions:
+                UsdPhysics.CollisionAPI.Apply(component.GetPrim())
+                # await omni.kit.app.get_app().next_update_async()
+            massAPI = UsdPhysics.MassAPI.Apply(component.GetPrim())
+            massAPI.CreateMassAttr(mass)
+            # await omni.kit.app.get_app().next_update_async()
 
-        asyncio.ensure_future(set_physics_properties_async())
+        # asyncio.ensure_future(set_physics_properties_async())
 
     def delete(self):
         for component in self.components:
-            omni.kit.commands.execute("IsaacSimDestroyPrim", prim_path=component.GetPath())
+            delete_prim(component.GetPath())
         self.components = []
 
         for target in self.targets:
-            omni.kit.commands.execute("IsaacSimDestroyPrim", prim_path=target.GetPath())
+            delete_prim(target.GetPath())
 
         self.targets = []
 

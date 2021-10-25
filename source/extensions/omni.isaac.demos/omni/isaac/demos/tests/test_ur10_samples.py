@@ -23,7 +23,7 @@ import numpy as np
 from omni.isaac.utils._isaac_utils import math as mu
 from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics
 import omni.physx as physx
-from .common import simulate
+from omni.isaac.core.utils.physics import simulate_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.demos.ur10_scenarios.scenario import Scenario
@@ -130,7 +130,7 @@ class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
             self.current_state = self.default_sequence[next_state]
             if next_state == 0:
                 self.total_pass += 1
-        await simulate(1)
+        await simulate_async(1)
         pass
 
     async def check_box_pose(self):

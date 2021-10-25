@@ -23,9 +23,8 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
-from .common import load_test_file, set_scene_physics_type, is_loading, simulate
+from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -236,7 +235,7 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(texture_comp)
         # Let the material load
         await omni.kit.app.get_app().next_update_async()
-        while is_loading():
+        while is_stage_loading():
             await omni.kit.app.get_app().next_update_async()
         await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()

@@ -21,10 +21,10 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.utils.scripts.test_utils import load_test_file
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.pyalice import Composite
-from .common import PyaliceApp, create_application, create_physics_scene, simulate, add_cube
+from omni.isaac.core.utils.physics import simulate_async
+from .common import PyaliceApp, create_application, create_physics_scene, add_cube
 
 from pxr import Gf, UsdPhysics, PhysxSchema, PhysicsSchemaTools
 
@@ -113,7 +113,7 @@ class TestREBPyaliceContact(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         test_app.start()
         # Run test so tcp is connected
-        await simulate(3)
+        await simulate_async(3)
         collision_msg = test_app.app.receive("simulation.interface", "output", "collision")
         self.assertIsNotNone(collision_msg)
         self.assertEqual(collision_msg.proto.thisName, "/cube")
