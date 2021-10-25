@@ -13,7 +13,7 @@
 import omni.kit.test
 import omni.kit.commands
 import os
-from pxr import Sdf, Gf, UsdShade, PhysicsSchemaTools
+from pxr import Sdf, Gf, UsdShade, PhysicsSchemaTools, UsdGeom, UsdPhysics
 import asyncio
 import numpy as np
 
@@ -65,8 +65,8 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
         # make sure the joints exist
-        rootJoint = stage.GetPrimAtPath("/test_basic/rootJoint")
-        self.assertNotEqual(rootJoint.GetPath(), Sdf.Path.emptyPath)
+        root_joint = stage.GetPrimAtPath("/test_basic/root_joint")
+        self.assertNotEqual(root_joint.GetPath(), Sdf.Path.emptyPath)
 
         wristJoint = stage.GetPrimAtPath("/test_basic/link_2/wrist_joint")
         self.assertNotEqual(wristJoint.GetPath(), Sdf.Path.emptyPath)
@@ -87,6 +87,8 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         await asyncio.sleep(1.0)
         # nothing crashes
         self._timeline.stop()
+
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 0.01)
         pass
 
     # advanced urdf test: test for all the categories of inputs that an urdf can hold
@@ -288,8 +290,8 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
         # make sure the joints exist
-        rootJoint = stage.GetPrimAtPath("/test_floating/rootJoint")
-        self.assertNotEqual(rootJoint.GetPath(), Sdf.Path.emptyPath)
+        root_joint = stage.GetPrimAtPath("/test_floating/root_joint")
+        self.assertNotEqual(root_joint.GetPath(), Sdf.Path.emptyPath)
 
         link_1 = stage.GetPrimAtPath("/test_floating/link_1")
         self.assertNotEqual(link_1.GetPath(), Sdf.Path.emptyPath)
@@ -307,4 +309,47 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         await asyncio.sleep(1.0)
         # nothing crashes
         self._timeline.stop()
+        pass
+
+    async def test_urdf_scale(self):
+
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.urdf")
+        stage = omni.usd.get_context().get_stage()
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+
+        import_config.distance_scale = 1.0
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
+        await omni.kit.app.get_app().next_update_async()
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        # nothing crashes
+        self._timeline.stop()
+
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.0)
+        pass
+
+    async def test_urdf_drive_none(self):
+
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.urdf")
+        stage = omni.usd.get_context().get_stage()
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+        from omni.isaac.urdf._urdf import UrdfJointTargetType
+
+        import_config.default_drive_type = UrdfJointTargetType.JOINT_DRIVE_NONE
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
+        await omni.kit.app.get_app().next_update_async()
+
+        self.assertFalse(stage.GetPrimAtPath("/test_basic/root_joint").HasAPI(UsdPhysics.DriveAPI))
+        self.assertTrue(stage.GetPrimAtPath("/test_basic/link_1/elbow_joint").HasAPI(UsdPhysics.DriveAPI))
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        # nothing crashes
+        self._timeline.stop()
+
         pass

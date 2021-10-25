@@ -2,6 +2,20 @@
 CHANGELOG
 **********
 
+[0.1.9] - 2021-10-25
+========================
+
+Changed
+-----
+- distance_scale sets the stage to the same units for consistency
+- None drive mode still applies DriveAPI, but keeps the stiffness/damping at zero
+- rootJoint prim is renamed to root_joint for consistency with other joint names. 
+
+Fixed
+-------
+- warnings when setting attributes as double when they should have been float
+
+
 [0.1.8] - 2021-10-18
 ========================
 

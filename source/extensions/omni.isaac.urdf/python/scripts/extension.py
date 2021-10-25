@@ -104,7 +104,7 @@ class Extension(omni.ext.IExt):
                         self._models["scale"] = float_builder(
                             "Stage Units Per Meter",
                             default_val=100.0,
-                            tooltip="[kg/stage_units^3] If a link doesn't have mass, use this density as backup, A density of 0.0 results in the physics engine automatically computing a default density",
+                            tooltip="[1.0 / stage_units] Set the distance units the robot is imported as, default is 100.0 corresponding to cm",
                         )
                         self._models["scale"].add_value_changed_fn(
                             lambda m, config=self._config: config.set_distance_scale(m.get_value_as_float())
@@ -124,6 +124,7 @@ class Extension(omni.ext.IExt):
                             on_clicked_fn=lambda i, config=self._config: config.set_default_drive_type(
                                 0 if i == "None" else (1 if i == "Position" else 2)
                             ),
+                            tooltip="Set the default drive configuration, None: stiffness and damping are zero, Position/Velocity: use default specified below.",
                         )
                         self._models["drive_strength"] = float_builder(
                             "Joint Drive Strength",
