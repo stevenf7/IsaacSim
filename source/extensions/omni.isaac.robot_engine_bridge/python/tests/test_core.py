@@ -16,9 +16,9 @@ import omni.kit.usd
 import gc
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from .common import create_application, simulate
+from .common import create_application
 from omni.isaac.robot_engine_bridge import _robot_engine_bridge
-
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREBCore(omni.kit.test.AsyncTestCase):
@@ -68,14 +68,14 @@ class TestREBCore(omni.kit.test.AsyncTestCase):
         # Create after play
         self._timeline.play()
         self.assertTrue(create_application()[1])
-        await simulate(1.0)
+        await simulate_async(1.0)
         self._timeline.stop()
         self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
 
         # Create before play
         self.assertTrue(create_application()[1])
         self._timeline.play()
-        await simulate(1.0)
+        await simulate_async(1.0)
         self.assertTrue(omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")[1])
         self._timeline.stop()
 

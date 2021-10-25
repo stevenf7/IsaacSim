@@ -21,7 +21,8 @@ import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from .common import PyaliceApp, create_application, simulate
+from omni.isaac.core.utils.physics import simulate_async
+from .common import PyaliceApp, create_application
 from pxr import Gf
 
 
@@ -105,7 +106,7 @@ class TestREBPyaliceCamera(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app.start()
 
         self._timeline.play()
-        await simulate(2.0)
+        await simulate_async(2.0)
         msg = test_app.app.receive("simulation.interface", "output", "color")
         buffer = msg.tensor
         self.assertTupleEqual(buffer.shape, (600, 800, 3))

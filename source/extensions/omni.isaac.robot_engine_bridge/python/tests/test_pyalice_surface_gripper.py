@@ -20,10 +20,11 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.utils.scripts.test_utils import load_test_file
+from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from .common import PyaliceApp, create_application, simulate
+from .common import PyaliceApp, create_application
 from omni.isaac.pyalice import Composite
+from omni.isaac.core.utils.physics import simulate_async
 
 from pxr import Gf, UsdGeom, PhysicsSchemaTools
 import numpy as np
@@ -121,7 +122,7 @@ class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
             "grab": [-3.4586642, -2.3406546, -0.99169415, -1.3797174, 1.5731614, -0.31733325],
             "lift": [-3.4579735, -2.3299344, -0.75304776, -1.6444204, 1.5707126, -0.3164174],
         }
-        (result, error) = await load_test_file(
+        (result, error) = await open_stage_async(
             self._nucleus_path + "/Samples/Isaac_SDK/Robots/UR10_Long_Suction_REB.usd"
         )
         self.assertTrue(result)
@@ -160,7 +161,7 @@ class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         test_app.start()
         # Run test so tcp is connected
-        await simulate(1)
+        await simulate_async(1)
 
         handle_1 = self._dc.get_rigid_body("/World/bin_1")
         handle_2 = self._dc.get_rigid_body("/World/bin_2")
@@ -200,41 +201,41 @@ class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         # For each bin we go to its lifting pose, come down, grab, lift and release
         send_joint_message(states["bin_1"]["lift"])
         send_open_message()
-        await simulate(4)
+        await simulate_async(4)
         send_joint_message(states["bin_1"]["grab"])
-        await simulate(2)
+        await simulate_async(2)
         send_close_message()
-        await simulate(2)
+        await simulate_async(2)
         send_joint_message(states["bin_1"]["lift"])
-        await simulate(2)
+        await simulate_async(2)
         self.assertGreater(self._dc.get_rigid_body_pose(handle_1).p.z, 10)
 
         send_open_message()
-        await simulate(2)
+        await simulate_async(2)
         send_joint_message(states["bin_2"]["lift"])
-        await simulate(2)
+        await simulate_async(2)
         send_joint_message(states["bin_2"]["grab"])
-        await simulate(2)
+        await simulate_async(2)
         send_close_message()
-        await simulate(2)
+        await simulate_async(2)
         send_joint_message(states["bin_2"]["lift"])
-        await simulate(2)
+        await simulate_async(2)
         self.assertGreater(self._dc.get_rigid_body_pose(handle_2).p.z, 10)
 
         send_open_message()
-        await simulate(2)
+        await simulate_async(2)
         send_joint_message(states["bin_3"]["lift"])
-        await simulate(2)
+        await simulate_async(2)
         send_joint_message(states["bin_3"]["grab"])
-        await simulate(2)
+        await simulate_async(2)
         send_close_message()
-        await simulate(2)
+        await simulate_async(2)
         send_joint_message(states["bin_3"]["lift"])
-        await simulate(2)
+        await simulate_async(2)
         self.assertGreater(self._dc.get_rigid_body_pose(handle_3).p.z, 10)
 
         send_open_message()
-        await simulate(2)
+        await simulate_async(2)
         self._timeline.stop()
         test_app.stop()
         test_app = None

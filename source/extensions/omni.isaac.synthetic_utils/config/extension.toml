@@ -21,6 +21,8 @@ writeTarget.kit = true
 "omni.syntheticdata" = {}
 "omni.kit.asset_converter" = {}
 "omni.kit.pip_archive" = {} # pulls in pillow
+"omni.isaac.core" = {}
+
 [[python.module]]
 name = "omni.isaac.synthetic_utils"
 

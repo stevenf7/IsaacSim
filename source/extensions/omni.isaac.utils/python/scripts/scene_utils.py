@@ -9,7 +9,6 @@
 
 from pxr import Usd, UsdGeom, Gf, PhysxSchema, UsdPhysics
 
-
 # Set default physics parameters
 def setup_physics(stage, path="/physics/scene"):
     # Specify gravity
@@ -46,12 +45,3 @@ def set_translate(prim, new_loc):
         xform = UsdGeom.Xformable(prim)
         xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
         xform_op.Set(Gf.Matrix4d().SetTranslate(new_loc))
-
-
-# Create background stage
-def create_background(stage, background_stage, background_path="/background", offset=Gf.Vec3d(0, 0, -104)):
-    if not stage.GetPrimAtPath(background_path):
-        backPrim = stage.DefinePrim(background_path, "Xform")
-        backPrim.GetReferences().AddReference(background_stage)
-        # Move the stage down -104cm so that the floor is below the table wheels
-        set_translate(backPrim, offset)

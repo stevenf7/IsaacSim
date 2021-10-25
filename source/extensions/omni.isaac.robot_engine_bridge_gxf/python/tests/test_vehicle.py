@@ -19,9 +19,9 @@ import gxf.core
 
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.utils.scripts.test_utils import load_test_file
+from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from .common import simulate
+from omni.isaac.core.utils.physics import simulate_async
 import omni.kit.usd
 import carb
 import gc
@@ -71,7 +71,9 @@ class TestGXFVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
             ],
         )
 
-        (result, error) = await load_test_file(self._nucleus_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_M_REB.usd")
+        (result, error) = await open_stage_async(
+            self._nucleus_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_M_REB.usd"
+        )
         # Make sure the stage loaded
         self.assertTrue(result)
         self._timeline.play()
@@ -82,7 +84,7 @@ class TestGXFVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
         vel = self._dc.get_rigid_body_linear_velocity(handle)
         self.assertAlmostEqual(pos.x, 0.0, delta=0.1)
         self.assertAlmostEqual(vel.x, 0.0, delta=0.1)
-        await simulate(10)
+        await simulate_async(10)
         pos = self._dc.get_rigid_body_pose(handle).p
         vel = self._dc.get_rigid_body_linear_velocity(handle)
         self.assertGreater(pos.x, 4.0)

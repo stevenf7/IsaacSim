@@ -19,18 +19,8 @@ from pxr import Usd
 
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.dynamic_control import _dynamic_control
-
-
-async def load_test_file(path_to_file: str):
-    if not Usd.Stage.IsSupportedFile(path_to_file):
-        raise ValueError("Only USD files can be loaded with this method")
-
-    usd_context = omni.usd.get_context()
-    usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
-    usd_context.enable_save_to_recent_files()
-    return (result, error)
-
+from omni.isaac.dynamic_control import utils as dc_utils
+from omni.isaac.core.utils.stage import open_stage_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestJetBot(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -59,12 +49,6 @@ class TestJetBot(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
-    async def simulate(self, seconds, art=None, steps_per_sec=60):
-        for frame in range(steps_per_sec * seconds):
-            if art is not None:
-                self.dc.wake_up_articulation(art)
-            await omni.kit.app.get_app().next_update_async()
-
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_jetbot_loading(self):
         result, nucleus_server = find_nucleus_server()
@@ -73,7 +57,7 @@ class TestJetBot(omni.kit.test.AsyncTestCaseFailOnLogError):
             return
 
         self.usd_path = nucleus_server + "/Isaac/Robots/Jetbot/jetbot.usd"
-        (result, error) = await load_test_file(self.usd_path)
+        (result, error) = await open_stage_async(self.usd_path)
         # Make sure the stage loaded
         self.assertTrue(result)
 
@@ -93,7 +77,7 @@ class TestJetBot(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.dc.set_dof_velocity_target(self.wheel_left, 1)
         self.dc.set_dof_velocity_target(self.wheel_right, 1)
 
-        await self.simulate(1, self.ar)
+        await dc_utils.simulate(1, self.dc, self.ar)
 
         self.current_pos = np.array(self.dc.get_rigid_body_pose(self.chassis).p)
 

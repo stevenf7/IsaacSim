@@ -16,21 +16,11 @@ from omni.isaac.motion_generation import MotionGenerator
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.prims import XFormPrim
+from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.rotations import gf_quatf_to_np_array
 import os
 import json
 import numpy as np
-
-
-async def load_test_file(path_to_file: str):
-    if not Usd.Stage.IsSupportedFile(path_to_file):
-        raise ValueError("Only USD files can be loaded with this method")
-
-    usd_context = omni.usd.get_context()
-    usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
-    usd_context.enable_save_to_recent_files()
-    return (result, error)
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will
@@ -74,7 +64,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_rmpflow_on_franka_velocity_control(self):
-        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
 
@@ -178,7 +168,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_rmpflow_on_franka_position_control(self):
-        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
 
@@ -245,7 +235,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_rmpflow_on_ur10_velocity_control(self):
-        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd")
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
 
@@ -315,7 +305,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_rmpflow_on_ur10_position_control(self):
-        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd")
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
 

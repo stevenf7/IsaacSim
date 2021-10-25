@@ -23,16 +23,7 @@ from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.stage import set_stage_up_axis
 from omni.isaac.utils.scripts.scene_utils import setup_physics
 from omni.isaac.core.utils import distance_metrics
-
-
-def create_prim_from_usd(stage, prim_env_path, prim_usd_path, position):
-    # create an empty Xform at the given path
-    envPrim = stage.DefinePrim(prim_env_path, "Xform")
-    # attach the USD to the given path
-    envPrim.GetReferences().AddReference(prim_usd_path)
-
-    xform = UsdGeom.Xformable(envPrim)
-    xform.AddTransformOp().Set(position)
+from omni.isaac.core.utils.prims import create_prim
 
 
 class RobotBenchmark:
@@ -90,8 +81,7 @@ class RobotBenchmark:
             return
 
         self.robot_path = "/scene/robot"
-        robot_position = Gf.Matrix4d()  # identity matrix
-        create_prim_from_usd(self._stage, self.robot_path, robot_usd, robot_position)
+        create_prim(prim_path=self.robot_path, prim_type="Xform", usd_path=robot_usd)
 
         light_prim = UsdLux.DistantLight.Define(self._stage, Sdf.Path("/World/defaultLight"))
         light_prim.CreateIntensityAttr(500)

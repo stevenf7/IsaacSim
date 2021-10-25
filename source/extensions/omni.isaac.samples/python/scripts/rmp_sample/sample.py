@@ -22,17 +22,12 @@ from omni.isaac.demos.utils.world import World
 from omni.isaac.demos.utils.reactive_behavior import FrameTerminationCriteria
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.stage import set_stage_up_axis
-from omni.isaac.utils.scripts.scene_utils import set_translate, setup_physics
+from omni.isaac.utils.scripts.scene_utils import setup_physics
+from omni.isaac.core.utils.prims import create_prim
 
 import numpy as np
 import os
 import asyncio
-
-
-def create_prim_from_usd(stage, prim_env_path, prim_usd_path, location):
-    envPrim = stage.DefinePrim(prim_env_path, "Xform")  # create an empty Xform at the given path
-    envPrim.GetReferences().AddReference(prim_usd_path)  # attach the USD to the given path
-    set_translate(envPrim, location)  # set pose
 
 
 class RMPSample:
@@ -82,7 +77,7 @@ class RMPSample:
         asset_path = nucleus_server + "/Isaac"
         robot_usd = asset_path + "/Robots/Franka/franka.usd"
         robot_path = "/scene/robot"
-        create_prim_from_usd(self._stage, robot_path, robot_usd, Gf.Vec3d(0, 0, 0))
+        create_prim(prim_path=robot_path, prim_type="Xform", usd_path=robot_usd)
 
         # self._physxIFace.release_physics_objects()
         # self._physxIFace.force_load_physics_from_usd()

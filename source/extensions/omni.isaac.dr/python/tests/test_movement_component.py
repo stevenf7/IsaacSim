@@ -23,9 +23,10 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
-from .common import load_test_file, set_scene_physics_type, is_loading, simulate
+from omni.isaac.dynamic_control.scripts.utils import set_scene_physics_type
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-
+from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestDomainRandomizerMovement(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -114,13 +115,13 @@ class TestDomainRandomizerMovement(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for movement component for articulated robots
     async def test_movement_component_franka(self):
-        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu=False)
         # Start Simulation and wait
         self._timeline.play()
-        await simulate(1.0)
+        await simulate_async(1.0)
         await omni.kit.app.get_app().next_update_async()
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
@@ -163,13 +164,13 @@ class TestDomainRandomizerMovement(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for movement component for articulated robots
     async def test_movement_component_carter(self):
-        (result, error) = await load_test_file(self._dc_extension_path + "/data/usd/robots/carter/carter.usd")
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/carter/carter.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         set_scene_physics_type(gpu=False)
         # Start Simulation and wait
         self._timeline.play()
-        await simulate(1.0)
+        await simulate_async(1.0)
         await omni.kit.app.get_app().next_update_async()
         art = self._dc.get_articulation("/carter")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)

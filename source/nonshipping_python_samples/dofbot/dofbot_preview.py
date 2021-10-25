@@ -21,8 +21,9 @@ from omni.isaac.dynamic_control import _dynamic_control
 
 from pxr import Gf, UsdGeom, UsdPhysics
 from omni.isaac.core.utils.stage import set_stage_up_axis
-from omni.isaac.utils.scripts.scene_utils import setup_physics, create_background
+from omni.isaac.utils.scripts.scene_utils import setup_physics
 from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.prims import create_prim
 
 import socket
 import struct
@@ -330,12 +331,11 @@ class Extension(omni.ext.IExt):
 
             set_stage_up_axis("z")
             setup_physics(self._stage)
-
-            create_background(
-                self._stage,
-                self._asset_path + "/Environments/Grid/gridroom_black.usd",
-                background_path="/background",
-                offset=Gf.Vec3d(0, 0, 14),
+            create_prim(
+                prim_path="/background",
+                prim_type="Xform",
+                usd_path=self._asset_path + "/Environments/Grid/gridroom_black.usd",
+                position=np.array([0, 0, 14]),
             )
 
             # add a cube

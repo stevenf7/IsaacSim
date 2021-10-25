@@ -15,7 +15,6 @@ from pxr import Gf
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.dynamic_control import conversions as dc_conversions
-from .common import load_test_file
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):

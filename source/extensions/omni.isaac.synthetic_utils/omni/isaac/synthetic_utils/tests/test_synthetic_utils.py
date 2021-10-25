@@ -28,7 +28,7 @@ from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.isaac.synthetic_utils.writers import NumpyWriter
 from omni.isaac.synthetic_utils.writers import KittiWriter
 from omni.syntheticdata.tests.utils import add_semantics
-
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -60,14 +60,6 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             await asyncio.sleep(self._time_step)
         await omni.kit.app.get_app().next_update_async()
         pass
-
-    def is_loading(self):
-        message, loaded, loading = omni.usd.get_context().get_stage_loading_status()
-        return loading > 0
-
-    async def simulate(self, seconds, steps_per_sec=60):
-        for frame in range(int(steps_per_sec * seconds)):
-            await omni.kit.app.get_app().next_update_async()
 
     async def load_robot_scene(self):
         from omni.isaac.core.utils.stage import set_stage_up_axis
@@ -129,7 +121,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.load_robot_scene()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await self.simulate(1.0)
+        await simulate_async(1.0)
         await omni.kit.app.get_app().next_update_async()
         gt = self._sd_helper.get_groundtruth(
             [
@@ -196,7 +188,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.load_robot_scene()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await self.simulate(1.0)
+        await simulate_async(1.0)
         await omni.kit.app.get_app().next_update_async()
         # Setting up config for writer
         sensor_settings = {}
@@ -227,7 +219,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.load_robot_scene()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await self.simulate(1.0)
+        await simulate_async(1.0)
         await omni.kit.app.get_app().next_update_async()
         # Setting up config for writer
         sensor_settings = {}

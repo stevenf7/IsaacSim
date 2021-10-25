@@ -21,7 +21,8 @@ import gc
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from .common import PyaliceApp, create_application, simulate
+from .common import PyaliceApp, create_application
+from omni.isaac.core.utils.physics import simulate_async
 from pxr import Gf
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -64,7 +65,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         test_app.start()
 
-        await simulate(2)
+        await simulate_async(2)
         self._timeline.stop()
 
         test_app.stop()
@@ -80,7 +81,7 @@ class TestREBPyalice(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     test_app.start()
 
     #     self._timeline.play()
-    #     await simulate(2.0)
+    #     await simulate_async(2.0)
     #     self._timeline.stop()
 
     #     test_app.stop()
@@ -139,19 +140,19 @@ class TestREBPyalice(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app.start()
 
         self._timeline.play()
-        await simulate(1.0)
+        await simulate_async(1.0)
         viewer.config.size = 0.5
         viewer.config.color = [255, 0, 0, 255]
-        await simulate(1.0)
+        await simulate_async(1.0)
         viewer.config.size = 0.0
         viewer.config.color = [0, 255, 0, 255]
-        await simulate(1.0)
+        await simulate_async(1.0)
         viewer.config.size = 1.0
         viewer.config.color = [0, 0, 255, 255]
-        await simulate(1.0)
+        await simulate_async(1.0)
         viewer.config.size = 1.0
         viewer.config.color = [0, 0, 255, 0]
-        await simulate(1.0)
+        await simulate_async(1.0)
         self._timeline.stop()
         test_app.stop()
         test_app = None
@@ -202,19 +203,19 @@ class TestREBPyalice(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_app.start()
 
         self._timeline.play()
-        await simulate(1.0)
+        await simulate_async(1.0)
         viewer.config.size = 0.5
         viewer.config.polyline_color = [255, 0, 0, 255]
-        await simulate(1.0)
+        await simulate_async(1.0)
         viewer.config.size = 0.0
         viewer.config.polyline_color = [0, 255, 0, 255]
-        await simulate(1.0)
+        await simulate_async(1.0)
         viewer.config.size = 1.0
         viewer.config.polyline_color = [0, 0, 255, 255]
-        await simulate(1.0)
+        await simulate_async(1.0)
         viewer.config.size = 1.0
         viewer.config.polyline_color = [0, 0, 255, 0]
-        await simulate(1.0)
+        await simulate_async(1.0)
         self._timeline.stop()
         test_app.stop()
         test_app = None

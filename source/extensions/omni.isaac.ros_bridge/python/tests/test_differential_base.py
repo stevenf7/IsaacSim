@@ -21,7 +21,8 @@ import asyncio
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
-from .common import simulate, wait_for_rosmaster, add_carter_ros, add_carter
+from omni.isaac.core.utils.physics import simulate_async
+from .common import wait_for_rosmaster, add_carter_ros, add_carter
 from omni.isaac.ros_bridge_ui.scripts.commands import get_path
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from pxr import Sdf, Gf
@@ -106,7 +107,7 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # check 0: is carter initially stationary
         pose_data = deepcopy(self._pose_data)
@@ -124,14 +125,14 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(2)
+        await simulate_async(2)
 
         # stop
         move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # check 1: location using default param
         pose_data = deepcopy(self._pose_data)
@@ -145,21 +146,21 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # straight back
         move_cmd = move_cmd_msg(-0.2, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(2)
+        await simulate_async(2)
 
         # stop
         move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # check 3: location after change radius
         pose_data = deepcopy(self._pose_data)
@@ -220,7 +221,7 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # check 0: is carter initially stationary
         pose_data = deepcopy(self._pose_data)
@@ -238,14 +239,14 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # stop
         move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # check 1: location using default param
         pose_data = deepcopy(self._pose_data)
@@ -259,21 +260,21 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # rotate back
         move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, -0.2)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # stop
         move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate(1)
+        await simulate_async(1)
 
         # check 3: location after change radius
         pose_data = deepcopy(self._pose_data)

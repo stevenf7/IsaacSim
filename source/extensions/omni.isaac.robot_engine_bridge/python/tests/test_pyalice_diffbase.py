@@ -21,10 +21,10 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.utils.scripts.test_utils import load_test_file
+from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from .common import PyaliceApp, ConstantDiffBaseControl, BodyMonitor, get_selected_path, create_application, simulate
-
+from .common import PyaliceApp, ConstantDiffBaseControl, BodyMonitor, get_selected_path, create_application
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -67,13 +67,13 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Test diffbase component that was loaded from usd
     async def test_diffbase_carter(self):
-        (result, error) = await load_test_file(self._nucleus_path + "/Samples/Isaac_SDK/Robots/Carter_REB.usd")
+        (result, error) = await open_stage_async(self._nucleus_path + "/Samples/Isaac_SDK/Robots/Carter_REB.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
 
         self._timeline.play()
         # settle the robot
-        await simulate(1)
+        await simulate_async(1)
         art = self._dc.get_articulation("/Carter")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
 
@@ -96,7 +96,7 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._pyalice_app.app.connect(sim_out, "base_state", monitor, "state")
         self._pyalice_app.start()
         # Run test for 2 seconds, check the linear velocity
-        await simulate(2)
+        await simulate_async(2)
 
         root_body_ptr = self._dc.get_articulation_root_body(art)
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
@@ -106,7 +106,7 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertEqual(monitor.config.check, True)
 
         control.config.linear = 0.0
-        await simulate(2)
+        await simulate_async(2)
 
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         self.assertAlmostEqual(
@@ -117,7 +117,7 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
         monitor.config.linear_target = control.config.linear
         monitor.config.angular_target = control.config.rotation
         monitor.config.check = False
-        await simulate(4)
+        await simulate_async(4)
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
         self.assertAlmostEqual(control.config.rotation, ang_vel[2], delta=0.2)
         self.assertEqual(monitor.config.check, True)
@@ -128,7 +128,7 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Creating a REB diffbase component from scratch
     async def test_diffbase_str(self):
-        (result, error) = await load_test_file(self._nucleus_path + "/Robots/Transporter/transporter_sensors.usd")
+        (result, error) = await open_stage_async(self._nucleus_path + "/Robots/Transporter/transporter_sensors.usd")
 
         # Make sure the stage loaded
         self.assertTrue(result)
@@ -169,7 +169,7 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._pyalice_app.app.connect(control, "cmd", sim_in, "base_command")
         self._pyalice_app.start()
         # Run test for a while
-        await simulate(3)
+        await simulate_async(3)
         # check that we reached the target velocity
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         self.assertAlmostEqual(
@@ -177,7 +177,7 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         # stop robot
         control.config.linear = 0.0
-        await simulate(1)
+        await simulate_async(1)
         # check that we reached the target velocity
         lin_vel = self._dc.get_rigid_body_linear_velocity(root_body_ptr)
         self.assertAlmostEqual(
@@ -185,7 +185,7 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         # rotate in place
         control.config.rotation = 1.0
-        await simulate(4)
+        await simulate_async(4)
         # check that we reached the target velocity
         ang_vel = self._dc.get_rigid_body_angular_velocity(root_body_ptr)
         self.assertAlmostEqual(control.config.rotation, ang_vel[2], delta=0.2)

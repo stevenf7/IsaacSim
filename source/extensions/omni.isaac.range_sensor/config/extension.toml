@@ -29,6 +29,7 @@ writeTarget.kit = true
 "omni.syntheticdata" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.isaac.ui" = {}
+"omni.isaac.core" = {}
 
 [[python.module]]
 name = "omni.isaac.range_sensor"

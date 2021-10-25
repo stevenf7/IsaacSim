@@ -20,10 +20,10 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.utils.scripts.test_utils import load_test_file
+from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from .common import PyaliceApp, VehicleControl, create_application, simulate
-
+from .common import PyaliceApp, VehicleControl, create_application
+from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -64,13 +64,15 @@ class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Test diffbase component that was loaded from usd
     async def test_basic_vehicle(self):
-        (result, error) = await load_test_file(self._nucleus_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_M_REB.usd")
+        (result, error) = await open_stage_async(
+            self._nucleus_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_M_REB.usd"
+        )
         # Make sure the stage loaded
         self.assertTrue(result)
 
         self._timeline.play()
         # settle the robot
-        await simulate(1)
+        await simulate_async(1)
 
         self._pyalice_app.app.load(
             filename=self._reb_extension_path + "/data/config/navsim_tcp.subgraph.json", prefix="simulation"
@@ -85,14 +87,14 @@ class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._pyalice_app.app.connect(control, "cmd", sim_in, "vehicle_command")
         self._pyalice_app.start()
         # TODO: Check chassis linear velocity
-        await simulate(10)
+        await simulate_async(10)
         # TODO: Compute analytical values to compare against
         control.config.accelerator = 0.0
         control.config.steering = 1.0
-        await simulate(3)
+        await simulate_async(3)
         control.config.accelerator = 0.0
         control.config.steering = -1.0
-        await simulate(3)
+        await simulate_async(3)
 
         # print(lin_vel, ang_vel)
         self._timeline.stop()

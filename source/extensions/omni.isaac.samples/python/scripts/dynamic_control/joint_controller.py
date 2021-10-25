@@ -17,7 +17,7 @@ import omni.kit.test
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder, scrolling_frame_builder
-
+from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Usd
 import omni.physx as _physx
@@ -30,38 +30,6 @@ ANIM_SEEK_DEFAULT = 3
 ANIM_FINISHED = 4
 
 EXTENSION_NAME = "Joint Controller"
-
-
-def get_data_file(file_name: str):
-    if os.path.isabs(file_name):
-        path_to_file = file_name
-    else:
-        path_to_file = os.path.abspath(
-            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
-        )
-    return path_to_file
-
-
-async def load_test_file(test_file_name: str):
-    """
-    Load the contents of the USD test file onto the stage, synchronously, when called as "await load_test_file(X)".
-    In a testing environment we need to run one test at a time since there is no guarantee
-    that tests can run concurrently, especially when loading files. This method encapsulates
-    the logic necessary to load a test file using the open_stage_async method and then wait
-    for it to complete before returning.
-    :param test_file_name: Name of the test file to load - if not an absolute path then looks in the data/usd/tests/ComputeGraph directory
-    :raises: ValueError if the test file is not a valid USD file
-    """
-    if not Usd.Stage.IsSupportedFile(test_file_name):
-        raise ValueError("Only USD files can be loaded with this method")
-
-    path_to_file = get_data_file(test_file_name)
-
-    usd_context = omni.usd.get_context()
-    usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
-    usd_context.enable_save_to_recent_files()
-    return (result, error)
 
 
 def clamp(x, min_value, max_value):
@@ -167,7 +135,7 @@ class Extension(omni.ext.IExt):
         self._window = None
 
     async def _setup_scene(self):
-        await load_test_file(self._asset_path + "/data/usd/robots/franka/franka.usd")
+        await open_stage_async(self._asset_path + "/data/usd/robots/franka/franka.usd")
         await omni.kit.app.get_app().next_update_async()
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._viewport.set_camera_position("/OmniverseKit_Persp", 150, -150, 150, True)

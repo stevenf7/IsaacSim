@@ -11,6 +11,8 @@ Removed
 - get_intrinsics_matrix, backproject_depth, project_depth_to_worldspace to omni.isaac.core.utils.viewports
 - set_up_z_axis to omni.isaac.core.utils.stage.set_stage_up_axis
 - omni.isaac.demo specific math utils
+- test_utils.py
+- create_background
 
 [0.1.8] - 2021-08-13
 ========================

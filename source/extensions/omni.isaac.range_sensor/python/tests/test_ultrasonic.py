@@ -14,38 +14,9 @@ import omni.kit.commands
 from omni.isaac.range_sensor import _range_sensor
 from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools, UsdShade
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
-import asyncio
+from omni.isaac.core.utils.physics import simulate_async
 import numpy as np
-import os
 import carb.tokens
-
-
-def get_data_file(file_name: str):
-    if os.path.isabs(file_name):
-        path_to_file = file_name
-    else:
-        path_to_file = os.path.abspath(
-            os.path.join(carb.tokens.get_tokens_interface().resolve("${app}"), "..", "data", "usd", file_name)
-        )
-    return path_to_file
-
-
-async def load_test_file(test_file_name: str):
-    if not Usd.Stage.IsSupportedFile(test_file_name):
-        raise ValueError("Only USD files can be loaded with this method")
-
-    path_to_file = get_data_file(test_file_name)
-
-    usd_context = omni.usd.get_context()
-    usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
-    usd_context.enable_save_to_recent_files()
-    return (result, error)
-
-
-async def simulate(seconds, steps_per_sec=60):
-    for frame in range(int(steps_per_sec * seconds)):
-        await omni.kit.app.get_app().next_update_async()
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -178,7 +149,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         self.assertTrue(result)
         self._timeline.play()
-        await simulate(1.5)
+        await simulate_async(1.5)
         self.assertEqual(self._ultrasonic.get_num_rows("/World/UltrasonicArray"), int(vertical_fov / vertical_res))
         self.assertEqual(self._ultrasonic.get_num_cols("/World/UltrasonicArray"), int(horizontal_fov / horizontal_res))
         self.assertEqual(self._ultrasonic.get_num_emitters("/World/UltrasonicArray"), 1)
@@ -188,9 +159,9 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEquals(np.min(depth), max_range, delta=0.001)
         self.assertAlmostEquals(np.max(depth), max_range, delta=0.001)
         self._timeline.stop()
-        await simulate(0.1)
+        await simulate_async(0.1)
         self._timeline.play()
-        await simulate(0.5)
+        await simulate_async(0.5)
 
     # TODO: test scenario where you have specified emitter modes and receiver modes but no adjacency list --
     # it will return a single 2d list, the inner of length numBins where all elements are zeros. This should
@@ -247,7 +218,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
 
         self._timeline.play()
-        await simulate(2.0)
+        await simulate_async(2.0)
         # TODO test to make sure that the sensor is firing at correct times
         # TODO test to make sure that distances are correct
         active_env = self._ultrasonic.get_active_envelope_array("/World/UltrasonicArray")
@@ -336,7 +307,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.add_cube("/World/Cube3", 25.0, Gf.Vec3f(-70.0, 0.0, 0.0), physics=False)
 
         self._timeline.play()
-        await simulate(2.0)
+        await simulate_async(2.0)
         # TODO test to make sure that the sensor is firing at correct times
         # TODO test to make sure that distances are correct
         depth = self._ultrasonic.get_linear_depth_data("/World/UltrasonicArray", 0)
@@ -396,10 +367,10 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         seconds = 3
         self._timeline.play()
 
-        await simulate(seconds, steps_per_sec=steps_per_sec)
+        await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr = self._ultrasonic.get_envelope_array(ultrasonicPath)
         cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(20.0, 220.0, 12.5))
-        await simulate(seconds, steps_per_sec=steps_per_sec)
+        await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr2 = self._ultrasonic.get_envelope_array(ultrasonicPath)
         envelope_diff = envelope_arr - envelope_arr2
         self.assertFalse(envelope_diff[0].any())
@@ -456,20 +427,20 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         steps_per_sec = 50
         seconds = 3
         self._timeline.play()
-        await simulate(seconds, steps_per_sec=steps_per_sec)
+        await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr = self._ultrasonic.get_envelope_array(ultrasonicPath)
         self.assertTrue(np.allclose(envelope_arr[9][87:93], np.array([104.0, 137.0, 129.0, 59.0, 20.0, 1.0])))
 
         # move box then confirm that the envelopes have changed
         cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(0.0, -120.0, 12.5))
-        await simulate(seconds, steps_per_sec=steps_per_sec)
+        await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr2 = self._ultrasonic.get_envelope_array(ultrasonicPath)
         self.assertTrue(np.allclose(envelope_arr2[9][87:93], np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])))
         self.assertTrue(np.allclose(envelope_arr2[9][120:127], np.array([14.0, 84.0, 99.0, 92.0, 67.0, 19.0, 2.0])))
 
         # move box further and again confirm that the envelopes have changed
         cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(0.0, -190.0, 12.5))
-        await simulate(seconds, steps_per_sec=steps_per_sec)
+        await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr3 = self._ultrasonic.get_envelope_array(ultrasonicPath)
         self.assertTrue(np.allclose(envelope_arr3[9][120:127], np.array([0.0, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0])))
         self.assertTrue(np.allclose(envelope_arr3[9][199:203], np.array([23.0, 49.0, 24.0, 4.0])))
@@ -538,7 +509,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         steps_per_sec = 50
         seconds = 3
         self._timeline.play()
-        await simulate(seconds, steps_per_sec=steps_per_sec)
+        await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr = self._ultrasonic.get_envelope_array(self.ultrasonicPath)
         self.assertTrue(
             np.allclose(envelope_arr[0][51:61], np.array([10.0, 20.0, 20.0, 20.0, 20.0, 17.0, 13.0, 20.0, 10.0, 10.0]))
@@ -579,7 +550,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         steps_per_sec = 50
         seconds = 3
         self._timeline.play()
-        await simulate(seconds, steps_per_sec=steps_per_sec)
+        await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr = self._ultrasonic.get_envelope_array(self.ultrasonicPath)
         self.assertTrue(
             np.allclose(envelope_arr[0][51:61], np.array([20.0, 40.0, 40.0, 40.0, 40.0, 34.0, 26.0, 40.0, 20.0, 20.0]))
@@ -617,7 +588,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         steps_per_sec = 50
         seconds = 3
         self._timeline.play()
-        await simulate(seconds, steps_per_sec=steps_per_sec)
+        await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr = self._ultrasonic.get_envelope_array(self.ultrasonicPath)
         # self.assertTrue(np.allclose(envelope_arr[0][35:37], np.array([249.0, 51.0])))
         self.assertTrue(np.allclose(envelope_arr[1][35:37], np.array([170.0, 130.0])))
@@ -727,7 +698,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.add_cube("/World/Cube3", 25.0, Gf.Vec3f(-70.0, 0.0, 0.0), physics=False)
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
-        # await simulate(2.0)
+        # await simulate_async(2.0)
         envelope_arr = self._ultrasonic.get_active_envelope_array(ultrasonicPath)
         # print(envelope_arr)
         print("Group A")
@@ -798,7 +769,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
 
         self._timeline.play()
-        await simulate(2.0)
+        await simulate_async(2.0)
         # TODO test to make sure that the sensor is firing at correct times
         # TODO test to make sure that distances are correct
         active_env = self._ultrasonic.get_active_envelope_array("/World/UltrasonicArray")
@@ -961,7 +932,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         add_physics_material_to_prim(stage, cube1, uss_material_path)
 
         self._timeline.play()
-        await simulate(2.0)
+        await simulate_async(2.0)
         # TODO test to make sure that the sensor is firing at correct times
         # TODO test to make sure that distances are correct
         active_env = self._ultrasonic.get_active_envelope_array("/World/UltrasonicArray")

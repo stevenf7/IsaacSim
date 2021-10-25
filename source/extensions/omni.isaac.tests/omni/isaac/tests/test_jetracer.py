@@ -19,18 +19,7 @@ from pxr import Usd
 
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.dynamic_control import _dynamic_control
-
-
-async def load_test_file(path_to_file: str):
-    if not Usd.Stage.IsSupportedFile(path_to_file):
-        raise ValueError("Only USD files can be loaded with this method")
-
-    usd_context = omni.usd.get_context()
-    usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.usd.get_context().open_stage_async(path_to_file)
-    usd_context.enable_save_to_recent_files()
-    return (result, error)
-
+from omni.isaac.core.utils.stage import open_stage_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestJetRacer(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -67,7 +56,7 @@ class TestJetRacer(omni.kit.test.AsyncTestCaseFailOnLogError):
             return
 
         self.usd_path = nucleus_server + "/Isaac/Robots/Jetracer/jetracer.usd"
-        (result, error) = await load_test_file(self.usd_path)
+        (result, error) = await open_stage_async(self.usd_path)
         # Make sure the stage loaded
         self.assertTrue(result)
 

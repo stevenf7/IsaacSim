@@ -10,7 +10,6 @@ import omni.usd
 import omni.kit.test
 import carb
 import asyncio
-from pxr import Usd, UsdGeom, Gf, UsdPhysics, Sdf
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
