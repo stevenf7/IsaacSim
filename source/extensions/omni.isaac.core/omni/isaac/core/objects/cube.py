@@ -23,6 +23,7 @@ class VisualCube(GeometryPrim):
         prim_path: str,
         name: Optional[str] = "visual_cube",
         position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         color: Optional[np.ndarray] = None,
         size: float = 0.5,
@@ -49,7 +50,9 @@ class VisualCube(GeometryPrim):
             cubeGeom.GetExtentAttr().Set(
                 [Gf.Vec3f([-size / 2.0, -size / 2.0, -size / 2.0]), Gf.Vec3f([size / 2.0, size / 2.0, size / 2.0])]
             )
-        GeometryPrim.__init__(self, prim_path=prim_path, name=name, position=position, orientation=orientation)
+        GeometryPrim.__init__(
+            self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
+        )
         VisualCube.set_size(self, size)
         if visual_material_path is None:
             if color is None:
@@ -84,6 +87,7 @@ class DynamicCube(RigidPrim, GeometryPrim):
         prim_path: str,
         name: Optional[str] = "dynamic_cube",
         position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         mass: Optional[float] = None,
         color: Optional[np.ndarray] = None,
@@ -125,13 +129,20 @@ class DynamicCube(RigidPrim, GeometryPrim):
                 [Gf.Vec3f([-size / 2.0, -size / 2.0, -size / 2.0]), Gf.Vec3f([size / 2.0, size / 2.0, size / 2.0])]
             )
         GeometryPrim.__init__(
-            self, prim_path=prim_path, name=name, position=position, orientation=orientation, collision=True
+            self,
+            prim_path=prim_path,
+            name=name,
+            position=position,
+            translation=translation,
+            orientation=orientation,
+            collision=True,
         )
         RigidPrim.__init__(
             self,
             prim_path=prim_path,
             name=name,
             position=position,
+            translation=translation,
             orientation=orientation,
             mass=mass,
             linear_velocity=linear_velocity,

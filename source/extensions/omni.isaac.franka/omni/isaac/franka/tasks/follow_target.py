@@ -8,20 +8,44 @@
 #
 import omni.isaac.core.tasks as tasks
 from omni.isaac.franka import Franka
+from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.string import find_unique_string_name
 
 
 class FollowTarget(tasks.FollowTarget):
     def __init__(
-        self, target_prim_path="/World/TargetCube", target_name="target", target_position=None, target_orientation=None
+        self,
+        name="franka_follow_target",
+        target_prim_path=None,
+        target_name=None,
+        target_position=None,
+        target_orientation=None,
+        task_frame_translation=None,
+        franka_prim_path=None,
+        franka_robot_name=None,
     ) -> None:
         """[summary]
         """
         tasks.FollowTarget.__init__(
             self,
-            robot=Franka(prim_path="/World/Franka", name="my_franka"),
+            name=name,
             target_prim_path=target_prim_path,
             target_name=target_name,
             target_position=target_position,
             target_orientation=target_orientation,
+            task_frame_translation=task_frame_translation,
         )
+        self._franka_prim_path = franka_prim_path
+        self._franka_robot_name = franka_robot_name
         return
+
+    def set_robot(self):
+        if self._franka_prim_path is None:
+            self._franka_prim_path = find_unique_string_name(
+                intitial_name="/World/Franka", is_unique_fn=lambda x: not is_prim_path_valid(x)
+            )
+        if self._franka_robot_name is None:
+            self._franka_robot_name = find_unique_string_name(
+                intitial_name="my_franka", is_unique_fn=lambda x: not self.scene.object_exists(x)
+            )
+        return Franka(prim_path=self._franka_prim_path, name=self._franka_robot_name)

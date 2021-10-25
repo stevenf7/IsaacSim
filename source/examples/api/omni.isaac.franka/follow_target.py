@@ -15,23 +15,27 @@ from omni.isaac.franka.controllers import RMPFlowController
 from omni.isaac.core import World
 from omni.isaac.franka.controllers import InverseKinematicsSolver
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-import numpy as np
 
 my_world = World()
-my_task = FollowTarget()
-my_world.load_task(my_task)
+my_task = FollowTarget(name="follow_target_task")
+my_world.add_task(my_task)
 my_world.reset()
-my_franka = my_world.scene.get_object("my_franka")
+task_params = my_world.get_task("follow_target_task").get_params()
+franka_name = task_params["robot_name"]["value"]
+target_name = task_params["target_name"]["value"]
+my_franka = my_world.scene.get_object(franka_name)
 # my_controller = InverseKinematicsSolver(
 #     name="target_follower_controller",
 #     robot_prim_path=my_franka.prim_path)
 my_controller = RMPFlowController(name="target_follower_controller", robot_prim_path=my_franka.prim_path)
 articulation_controller = my_franka.get_articulation_controller()
-
 i = 0
 while True:
     observations = my_world.get_observations()
-    actions = my_controller.forward(target_end_effector_position=observations["target"]["position"])
+    actions = my_controller.forward(
+        target_end_effector_position=observations[target_name]["position"],
+        target_end_effector_orientation=observations[target_name]["orientation"],
+    )
     articulation_controller.apply_action(actions)
     my_world.step(render=True)
     if i % 2000 == 0:

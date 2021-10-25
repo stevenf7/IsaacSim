@@ -9,7 +9,7 @@
 from typing import Optional
 import numpy as np
 from omni.isaac.core.articulations.articulation import Articulation
-from omni.isaac.core.controllers.articulation_controllers import ArticulationController
+from omni.isaac.core.controllers.articulation_controller import ArticulationController
 
 
 class Robot(Articulation):

@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core import World
-from omni.isaac.core.utils.stage import create_new_stage_async
+from omni.isaac.core.utils.stage import create_new_stage_async, get_stage_units
 import omni.usd
 import gc
 from abc import abstractmethod
@@ -16,8 +16,11 @@ from abc import abstractmethod
 class BaseSample(object):
     def __init__(self) -> None:
         self._world = None
-        self._task = None
+        self._current_tasks = None
         self._world_settings = None
+
+    def get_world(self):
+        return self._world
 
     def set_world_settings(self, settings):
         self._world_settings = settings
@@ -28,15 +31,15 @@ class BaseSample(object):
         if World.instance() is None:
             self._world = World(**self._world_settings)
             await self._world.init_simulation_context_async()
-            self._task = self._load_task()
-            if self._task is not None:
-                self._world.load_task(self._task)
+            current_tasks = self._add_tasks()
+            for i in range(len(current_tasks)):
+                self._world.add_task(current_tasks[i])
         else:
             self._world = World.instance()
-            self._task = self._world.get_current_task()
+        self._current_tasks = self._world.get_current_tasks()
         await self._world.reset_async()
-        if self._task is not None:
-            self._world.add_physics_callback("task_step", self.task_simulation_step)
+        if len(self._current_tasks) > 0:
+            self._world.add_physics_callback("tasks_step", self.tasks_simulation_step)
         await self.setup_load()
         await self.setup_reset()
         return
@@ -45,13 +48,13 @@ class BaseSample(object):
         await self._world.reset_async()
         await omni.kit.app.get_app().next_update_async()
         await self.setup_reset()
-        self._world.remove_physics_callback("task_step")
-        if self._world._scene_finalized and self._task is not None:
-            self._world.add_physics_callback("task_step", self.task_simulation_step)
+        self._world.remove_physics_callback("tasks_step")
+        if self._world._scene_finalized and len(self._current_tasks) > 0:
+            self._world.add_physics_callback("tasks_step", self.tasks_simulation_step)
 
     @abstractmethod
-    def _load_task(self):
-        return None
+    def _add_tasks(self):
+        return []
 
     @abstractmethod
     async def setup_load(self):
@@ -61,21 +64,28 @@ class BaseSample(object):
     async def setup_reset(self):
         return
 
-    def task_simulation_step(self, step_size):
-        self._task.step(self._world.current_time_step_index, self._world.current_time)
+    @abstractmethod
+    async def setup_clear(self):
+        return
+
+    def tasks_simulation_step(self, step_size):
+        for task in self._current_tasks.values():
+            task.step(self._world.current_time_step_index, self._world.current_time)
         return
 
     def world_cleanup(self):
         self._world.stop()
         self._world.clear_physics_callbacks()
-        self._task = None
+        self._current_tasks = None
         return
 
     async def clear_async(self):
         await create_new_stage_async()
         if self._world is not None:
+            self.world_cleanup()
             self._world.clear_all_callbacks()
             self._world.clear_instance()
-            gc.collect()
             self._world = None
+            gc.collect()
+        await self.setup_clear()
         return

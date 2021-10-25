@@ -17,9 +17,10 @@ import numpy as np
 
 my_world = World()
 my_task = PickPlace()
-my_world.load_task(my_task)
+my_world.add_task(my_task)
 my_world.reset()
-my_franka = my_world.scene.get_object("my_franka")
+task_params = my_task.get_params()
+my_franka = my_world.scene.get_object(task_params["robot_name"]["value"])
 my_controller = PickPlaceController(
     name="pick_place_controller", gripper_dof_indices=my_franka.gripper.dof_indices, robot_prim_path=my_franka.prim_path
 )
@@ -30,10 +31,10 @@ while True:
     if my_world.is_playing():
         observations = my_world.get_observations()
         actions = my_controller.forward(
-            cube_position=observations["cube_1"]["position"],
-            cube_orientation=observations["cube_1"]["orientation"],
-            cube_target_position=observations["cube_1"]["target_position"],
-            current_joint_positions=observations["my_franka"]["joint_positions"],
+            cube_position=observations[task_params["cube_name"]["value"]]["position"],
+            cube_orientation=observations[task_params["cube_name"]["value"]]["orientation"],
+            cube_target_position=observations[task_params["cube_name"]["value"]]["target_position"],
+            current_joint_positions=observations[task_params["robot_name"]["value"]]["joint_positions"],
             end_effector_translation_offset=np.array([0, 0, -0.015]),
         )
         if my_controller.is_done():

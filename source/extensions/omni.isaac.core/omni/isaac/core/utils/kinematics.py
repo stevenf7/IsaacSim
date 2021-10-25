@@ -9,7 +9,7 @@
 from omni.isaac.core.controllers import BaseController
 from omni.isaac.core.utils.types import ArticulationAction
 from typing import Optional
-from omni.isaac.core.utils.rotations import quat_to_rot_matrix
+from omni.isaac.core.utils.rotations import quat_to_rot_matrix, euler_angles_to_quat
 from omni.isaac.dynamic_control import _dynamic_control
 import numpy as np
 import lula
@@ -37,7 +37,7 @@ class InverseKinematicsSolver(BaseController):
         self, target_end_effector_position: np.ndarray, target_end_effector_orientation: Optional[np.ndarray] = None
     ):
         if target_end_effector_orientation is None:
-            target_end_effector_orientation = np.array([1, 0, 0, 0])
+            target_end_effector_orientation = euler_angles_to_quat(np.array([0, np.pi, 0]))
         rot = np.array(quat_to_rot_matrix(target_end_effector_orientation), dtype=np.float64).reshape(3, 3)
         translation = np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1)
         target_pose = lula.Pose3(lula.Rotation3(rot), translation)

@@ -1,1 +1,2 @@
-from .extension import *
+from omni.isaac.samples.scripts.follow_target.follow_target import FollowTarget
+from omni.isaac.samples.scripts.follow_target.follow_target_extension import FollowTargetExtension

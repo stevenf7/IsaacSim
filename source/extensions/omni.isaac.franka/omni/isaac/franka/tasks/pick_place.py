@@ -8,11 +8,38 @@
 #
 import omni.isaac.core.tasks as tasks
 from omni.isaac.franka import Franka
+from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.string import find_unique_string_name
 
 
 class PickPlace(tasks.PickPlace):
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        name="franka_pick_place",
+        cube_initial_position=None,
+        cube_initial_orientation=None,
+        target_position=None,
+        cube_size=0.0515,
+        task_frame_translation=None,
+    ) -> None:
         """[summary]
         """
-        tasks.PickPlace.__init__(self, robot=Franka(prim_path="/World/Franka", name="my_franka"))
+        tasks.PickPlace.__init__(
+            self,
+            name=name,
+            cube_initial_position=cube_initial_position,
+            cube_initial_orientation=cube_initial_orientation,
+            target_position=target_position,
+            cube_size=cube_size,
+            task_frame_translation=task_frame_translation,
+        )
         return
+
+    def set_robot(self):
+        franka_prim_path = find_unique_string_name(
+            intitial_name="/World/Franka", is_unique_fn=lambda x: not is_prim_path_valid(x)
+        )
+        franka_robot_name = find_unique_string_name(
+            intitial_name="my_franka", is_unique_fn=lambda x: not self.scene.object_exists(x)
+        )
+        return Franka(prim_path=franka_prim_path, name=franka_robot_name)

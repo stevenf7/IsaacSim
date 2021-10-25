@@ -23,6 +23,7 @@ class VisualCylinder(GeometryPrim):
         prim_path: str,
         name: Optional[str] = "visual_cylinder",
         position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         color: Optional[np.ndarray] = None,
         radius: float = 0.5,
@@ -51,7 +52,9 @@ class VisualCylinder(GeometryPrim):
             cylinderGeom.GetExtentAttr().Set(
                 [Gf.Vec3f([-radius, -radius, -height / 2.0]), Gf.Vec3f([radius, radius, height / 2.0])]
             )
-        GeometryPrim.__init__(self, prim_path=prim_path, name=name, position=position, orientation=orientation)
+        GeometryPrim.__init__(
+            self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
+        )
         VisualCylinder.set_radius(self, radius)
         VisualCylinder.set_height(self, height)
         if visual_material_path is None:
@@ -104,6 +107,7 @@ class DynamicCylinder(RigidPrim, GeometryPrim):
         prim_path: str,
         name: Optional[str] = "dynamic_cylinder",
         position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         mass: Optional[float] = None,
         color: Optional[np.ndarray] = None,
@@ -147,13 +151,20 @@ class DynamicCylinder(RigidPrim, GeometryPrim):
                 [Gf.Vec3f([-radius, -radius, -height / 2.0]), Gf.Vec3f([radius, radius, height / 2.0])]
             )
         GeometryPrim.__init__(
-            self, prim_path=prim_path, name=name, position=position, orientation=orientation, collision=True
+            self,
+            prim_path=prim_path,
+            name=name,
+            position=position,
+            translation=translation,
+            orientation=orientation,
+            collision=True,
         )
         RigidPrim.__init__(
             self,
             prim_path=prim_path,
             name=name,
             position=position,
+            translation=translation,
             orientation=orientation,
             mass=mass,
             linear_velocity=linear_velocity,

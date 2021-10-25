@@ -31,7 +31,7 @@ class World(SimulationContext):
             return
         World._world_initialized = True
         self._scene_finalized = False
-        self._current_task = None
+        self._current_tasks = dict()
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._scene = Scene()
         if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
@@ -69,8 +69,13 @@ class World(SimulationContext):
         """
         return self._scene
 
-    def get_current_task(self):
-        return self._current_task
+    def get_current_tasks(self):
+        return self._current_tasks
+
+    def get_task(self, name):
+        if name not in self._current_tasks:
+            raise Exception("task name {} doesn't exist in the current world tasks.")
+        return self._current_tasks[name]
 
     def finalize_scene(self) -> None:
         """[summary]
@@ -85,43 +90,45 @@ class World(SimulationContext):
         """
         # This will do one step internally regardless
         if not self._scene_finalized:
-            if self._current_task is not None:
-                self._current_task.set_up_scene(self.scene)
+            for task in self._current_tasks.values():
+                task.set_up_scene(self.scene)
             self.finalize_scene()
             self._scene_finalized = True
-        if self._current_task is not None:
-            self._current_task.cleanup()
+        for task in self._current_tasks.values():
+            task.cleanup()
         self.stop()
         self.play()
         self.scene.reset()
-        if self._current_task is not None:
-            self._current_task.reset()
+        for task in self._current_tasks.values():
+            task.reset()
         return
 
     async def reset_async(self):
         if not self._scene_finalized:
-            if self._current_task is not None:
-                self._current_task.set_up_scene(self.scene)
-                await self.play_async()
-                self.finalize_scene()
-                self._scene_finalized = True
-        if self._current_task is not None:
-            self._current_task.cleanup()
+            for task in self._current_tasks.values():
+                task.set_up_scene(self.scene)
+            await self.play_async()
+            self.finalize_scene()
+            self._scene_finalized = True
+        for task in self._current_tasks.values():
+            task.cleanup()
         await self.stop_async()
         await self.play_async()
         self._scene.reset()
-        if self._current_task is not None:
-            self._current_task.reset()
+        for task in self._current_tasks.values():
+            task.reset()
         await self.pause_async()
         return
 
-    def load_task(self, task: BaseTask) -> None:
+    def add_task(self, task: BaseTask) -> None:
         """[summary]
 
         Args:
             task (BaseTask): [description]
         """
-        self._current_task = task
+        if task.name in self._current_tasks:
+            raise Exception("Task name should be unique in the world")
+        self._current_tasks[task.name] = task
         return
 
     def get_observations(self) -> dict:
@@ -130,7 +137,10 @@ class World(SimulationContext):
         Returns:
             dict: [description]
         """
-        return self._current_task.get_observations()
+        observations = dict()
+        for task in self._current_tasks.values():
+            observations.update(task.get_observations())
+        return observations
 
     def step(self, render: bool = True) -> None:
         """[summary]
@@ -139,15 +149,16 @@ class World(SimulationContext):
             number_of_steps (int, optional): [description]. Defaults to 1.
             render (bool, optional): [description]. Defaults to True.
         """
-        if self._scene_finalized and self._current_task is not None:
-            self._current_task.step(self.current_time_step_index, self.current_time)
+        if self._scene_finalized:
+            for task in self._current_tasks.values():
+                task.step(self.current_time_step_index, self.current_time)
         if self.scene._enable_bounding_box_computations:
             self.scene._bbox_cache.SetTime(Usd.TimeCode(self._current_time))
         SimulationContext.step(self, render=render)
         if self._data_logger.is_started():
             if self._data_logger._data_frame_logging_func is None:
                 raise Exception("You need to add data logging function before starting the data logger")
-            data = self._data_logger._data_frame_logging_func(task=self.get_current_task(), scene=self.scene)
+            data = self._data_logger._data_frame_logging_func(tasks=self.get_current_tasks(), scene=self.scene)
             self._data_logger.add_data(
                 data=data, current_time_step=self.current_time_step_index, current_time=self.current_time
             )

@@ -8,12 +8,13 @@
 #
 
 # omniverse
-import asyncio
 import carb
 import builtins
+from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_path
 import omni.kit.app
 from pxr import UsdGeom, Gf, Usd, Sdf, UsdPhysics, PhysxSchema
 from omni.isaac.core.utils.carb import set_carb_setting
+from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.utils.stage import (
     create_new_stage,
     create_new_stage_async,
@@ -22,6 +23,7 @@ from omni.isaac.core.utils.stage import (
     set_stage_units,
 )
 from omni.isaac.core.utils.constants import AXES_INDICES
+import gc
 
 
 class SimulationContext:
@@ -35,22 +37,22 @@ class SimulationContext:
         self._app = omni.kit.app.get_app_interface()
         # Acquire the running application interface
         self._framework = carb.get_framework()
+        self._initial_physics_dt = physics_dt
+        self._stage_units_in_meters = stage_units_in_meters
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
         self._physics_callback_functions = dict()
         self._stage_callback_functions = dict()
         self._timeline_callback_functions = dict()
         self._editor_callback_functions = dict()
+        if self._stage_units_in_meters is None:
+            self._stage_units_in_meters = 1.0
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             self.init_stage(physics_dt=physics_dt, stage_units_in_meters=stage_units_in_meters)
             self._setup_default_callback_fns()
-        else:
-            asyncio.ensure_future(
-                self.init_stage_async(physics_dt=physics_dt, stage_units_in_meters=stage_units_in_meters)
+            self._stage_open_callback = (
+                omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._stage_open_callback_fn)
             )
-        self._stage_open_callback = (
-            omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._stage_open_callback_fn)
-        )
         return
 
     def __new__(cls, physics_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 1.0):
@@ -62,8 +64,17 @@ class SimulationContext:
 
     async def init_simulation_context_async(self):
         await omni.kit.app.get_app().next_update_async()
+        await self.init_stage_async(
+            physics_dt=self._initial_physics_dt, stage_units_in_meters=self._stage_units_in_meters
+        )
+        await omni.kit.app.get_app().next_update_async()
+        self._stage_open_callback = (
+            omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._stage_open_callback_fn)
+        )
+        await omni.kit.app.get_app().next_update_async()
         self._setup_default_callback_fns()
         await omni.kit.app.get_app().next_update_async()
+        set_camera_view()
         return
 
     @classmethod
@@ -137,7 +148,6 @@ class SimulationContext:
                 "A new stage was opened, World or Simulation Object are invalidated and you would need to initialize them again before using them."
             )
             self._stage_open_callback = None
-
         return
 
     def _setup_default_callback_fns(self):
@@ -202,28 +212,28 @@ class SimulationContext:
             self.render()
         return
 
-    def init_stage(self, physics_dt=None, stage_units_in_meters=None) -> Usd.Stage:
+    def init_stage(self, physics_dt, stage_units_in_meters) -> Usd.Stage:
         if get_current_stage() is None:
             create_new_stage()
             self.render()
             if stage_units_in_meters is None:
-                set_stage_units(stage_units_in_meters=1.0)
+                set_stage_units(stage_units_in_meters=stage_units_in_meters)
                 self.render()
         if stage_units_in_meters is not None:
-            set_stage_units(stage_units_in_meters)
+            set_stage_units(stage_units_in_meters=stage_units_in_meters)
             self.render()
         self._physics_scene = PhysicsScene(physics_dt=physics_dt)
         self.render()
         return self.stage
 
-    async def init_stage_async(self, physics_dt=None, stage_units_in_meters=None) -> Usd.Stage:
+    async def init_stage_async(self, physics_dt, stage_units_in_meters) -> Usd.Stage:
         if get_current_stage() is None:
             await create_new_stage_async()
             if stage_units_in_meters is None:
-                set_stage_units(stage_units_in_meters=1.0)
+                set_stage_units(stage_units_in_meters=stage_units_in_meters)
                 await omni.kit.app.get_app().next_update_async()
         if stage_units_in_meters is not None:
-            set_stage_units(stage_units_in_meters)
+            set_stage_units(stage_units_in_meters=stage_units_in_meters)
             await omni.kit.app.get_app().next_update_async()
         self._physics_scene = PhysicsScene(physics_dt=physics_dt)
         await omni.kit.app.get_app().next_update_async()
@@ -252,8 +262,6 @@ class SimulationContext:
         return
 
     def add_physics_callback(self, callback_name, callback_fn):
-        if self.stage is None:
-            raise Exception("There is no stage currently opened, init_stage needed before calling this func")
         if callback_name in self._physics_callback_functions:
             carb.log_error(f"Physics callback `{callback_name}` already exists")
             return
@@ -277,6 +285,7 @@ class SimulationContext:
 
     def clear_physics_callbacks(self):
         self._physics_callback_functions = dict()
+        # gc.collect()
         return
 
     def add_stage_callback(self, callback_name, callback_fn):
@@ -363,14 +372,15 @@ class SimulationContext:
         self._stage_callback_functions = dict()
         self._timeline_callback_functions = dict()
         self._editor_callback_functions = dict()
+        gc.collect()
         return
 
 
 class PhysicsScene:
     def __init__(self, physics_dt=None, prim_path: str = "/World/physicsScene"):
         stage = get_current_stage()
-        self._path = prim_path
-        if not Sdf.Path(self._path).IsAbsolutePath():
+        self._prim_path = prim_path
+        if not Sdf.Path(self._prim_path).IsAbsolutePath():
             raise Exception(f"Input prim path is not absolute: {self._path}")
         current_physics_prim = self.get_current_physics_scene_prim()
         self._physx_scene_api = None
@@ -385,19 +395,21 @@ class PhysicsScene:
             # creating a new physics scene
             prim = stage.GetPrimAtPath(prim_path)
             if prim.IsValid():
-                raise Exception(f"A non physics scene prim already exists at: {self._path}")
-            self.create_new_physics_scene(prim_path=prim_path)
+                raise Exception(f"A non physics scene prim already exists at: {self._prim_path}")
+            self._physics_scene = self.create_new_physics_scene(prim_path=prim_path)
             if physics_dt is None:
                 self.set_physics_dt(dt=1.0 / 60.0)
         else:
-            carb.log_info(
+            self._prim_path = get_prim_path(current_physics_prim)
+            carb.log_warn(
                 f"Physics Scene at path `{current_physics_prim.GetPath().pathString}` is already defined - reusing it"
             )
+            self._physics_scene = UsdPhysics.Scene(current_physics_prim)
             self._physx_scene_api = PhysxSchema.PhysxSceneAPI(current_physics_prim)
 
         self._physx_interface = omni.physx.acquire_physx_interface()
-        # TODO: should we always set these settings? even if a physics scene is defined?
-        self.set_physics_scene_settings()
+        meters_per_unit = UsdGeom.GetStageMetersPerUnit(stage)
+        self.set_physics_scene_settings(gravity_magnitude=9.81 / meters_per_unit)
         if physics_dt is not None:
             self.set_physics_dt(dt=physics_dt)
         return
@@ -407,28 +419,18 @@ class PhysicsScene:
         return
 
     def get_current_physics_scene_prim(self):
-        if get_current_stage() is None:
-            raise Exception("There is no stage currently opened, init_stage needed before calling this func")
         for prim in traverse_stage():
             if prim.HasAPI(PhysxSchema.PhysxSceneAPI):
                 return prim
         return None
 
     def create_new_physics_scene(self, prim_path):
-        if get_current_stage() is None:
-            raise Exception("There is no stage currently opened, init_stage needed before calling this func")
+        carb.log_warn(f"Defining a new Physics Scene at path `{prim_path}`")
         stage = get_current_stage()
-        meters_per_unit = UsdGeom.GetStageMetersPerUnit(stage)
-        up_axis = UsdGeom.GetStageUpAxis(stage)
-        gravity_dir = Gf.Vec3f(0.0)
-        gravity_dir[AXES_INDICES[up_axis]] = -1.0
-        carb.log_info(f"Defining a new Physics Scene at path `{prim_path}`")
         scene = UsdPhysics.Scene.Define(stage, prim_path)
         prim = stage.GetPrimAtPath(prim_path)
         self._physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(prim)
-        scene.CreateGravityDirectionAttr().Set(gravity_dir)
-        scene.CreateGravityMagnitudeAttr().Set(9.81 / meters_per_unit)
-        return
+        return scene
 
     def set_physics_dt(self, dt: float = 1.0 / 60.0, substeps: int = 1):
         """Specify the physics step size to use when simulating,
@@ -469,10 +471,28 @@ class PhysicsScene:
         enable_gpu_dynamics: bool = False,
         broadphase_type: str = "MBP",
         solver_type: str = "TGS",
+        gravity_z_dir: float = -1.0,
+        gravity_magnitude: float = 9.81,
     ):
         # TODO: handle the case where a physics scene is already defined and we need to change values and not create
-        if get_current_stage() is None:
-            raise Exception("There is no stage currently opened, init_stage needed before calling this func")
+        stage = get_current_stage()
+        carb.log_warn(
+            "Setting Physics Scene Setting with z gravity value of: {}".format(gravity_z_dir * gravity_magnitude)
+        )
+        up_axis = UsdGeom.GetStageUpAxis(stage)
+        gravity_dir = Gf.Vec3f(0.0)
+        gravity_dir[AXES_INDICES[up_axis]] = gravity_z_dir
+        print(self._physics_scene)
+        if self._physics_scene.GetGravityDirectionAttr().Get() is None:
+            self._physics_scene.CreateGravityDirectionAttr(gravity_dir)
+        else:
+            self._physics_scene.GetGravityDirectionAttr().Set(gravity_dir)
+
+        if self._physics_scene.GetGravityMagnitudeAttr().Get() is None:
+            self._physics_scene.CreateGravityMagnitudeAttr(gravity_magnitude)
+        else:
+            self._physics_scene.GetGravityMagnitudeAttr().Set(gravity_magnitude)
+
         if self._physx_scene_api.GetEnableCCDAttr().Get() is None:
             self._physx_scene_api.CreateEnableCCDAttr(enable_ccd)
         else:
@@ -500,8 +520,6 @@ class PhysicsScene:
         return
 
     def step(self, current_time):
-        if get_current_stage() is None:
-            raise Exception("There is no stage currently opened, init_stage needed before calling this func")
         self._physx_interface.update_simulation(elapsedStep=self.get_physics_dt(), currentTime=current_time)
         self._physx_interface.update_transformations(
             updateToFastCache=True, updateToUsd=True, updateVelocitiesToUsd=True, outputVelocitiesLocalSpace=False
@@ -509,6 +527,4 @@ class PhysicsScene:
         return
 
     def get_physics_dt(self):
-        if get_current_stage() is None:
-            raise Exception("There is no stage currently opened, init_stage needed before calling this func")
         return 1.0 / self._physx_scene_api.GetTimeStepsPerSecondAttr().Get()

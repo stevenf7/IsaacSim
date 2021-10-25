@@ -6,12 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from abc import abstractmethod
 from typing import Optional
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.objects import DynamicCube, VisualCube
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.rotations import euler_angles_to_quat
+from omni.isaac.core.utils.string import find_unique_string_name
+from omni.isaac.core.utils.stage import get_stage_units
 import numpy as np
 from collections import OrderedDict
 
@@ -19,30 +23,30 @@ from collections import OrderedDict
 class FollowTarget(BaseTask):
     def __init__(
         self,
-        robot,
-        target_prim_path="/World/TargetCube",
-        target_name="target",
+        name,
+        target_prim_path=None,
+        target_name=None,
         target_position=None,
         target_orientation=None,
+        task_frame_translation=None,
     ) -> None:
         """[summary]
         """
-        BaseTask.__init__(self, name="follow_target")
-        self._robot = robot
+        BaseTask.__init__(self, name=name)
+        self._robot = None
         self._target_name = target_name
         self._target = None
         self._target_prim_path = target_prim_path
+        self._task_frame_translation = task_frame_translation
         self._target_position = target_position
         self._target_orientation = target_orientation
         self._target_visual_material = None
         self._obstacle_cubes = OrderedDict()
+        if self._target_position is None:
+            self._target_position = np.array([0, 0.1, 0.7]) / get_stage_units()
+        if self._task_frame_translation is None:
+            self._task_frame_translation = np.array([0.0, 0.0, 0.0])
         return
-
-    def get_robot(self):
-        return self._robot
-
-    def get_target(self):
-        return self._target
 
     def set_up_scene(self, scene: Scene) -> None:
         """[summary]
@@ -51,58 +55,77 @@ class FollowTarget(BaseTask):
             scene (Scene): [description]
         """
         super().set_up_scene(scene)
-        scene.add_ground_plane()
-        scene.add(self._robot)
-        if self._target_position is None:
-            self._target_position = np.array([0, 0.1, 0.7])
-
+        scene.add_ground_plane(size=50.0 / get_stage_units())
         if self._target_orientation is None:
-            self._target_orientation = np.array([0, 0, 0, 1])
-        self.set_target(
-            prim_path=self._target_prim_path,
-            position=self._target_position,
-            orientation=self._target_orientation,
+            self._target_orientation = euler_angles_to_quat(np.array([-np.pi, 0, np.pi]))
+        if self._target_prim_path is None:
+            self._target_prim_path = find_unique_string_name(
+                intitial_name="/World/TargetCube", is_unique_fn=lambda x: not is_prim_path_valid(x)
+            )
+        if self._target_name is None:
+            self._target_name = find_unique_string_name(
+                intitial_name="target", is_unique_fn=lambda x: not self.scene.object_exists(x)
+            )
+        self.set_params(
+            target_prim_path=self._target_prim_path,
+            target_position=self._target_position + self._task_frame_translation,
+            target_orientation=self._target_orientation,
             target_name=self._target_name,
         )
+        self._robot = self.set_robot()
+        scene.add(self._robot)
+        position, orientation = self._robot.get_world_pose()
+        self._robot.set_world_pose(position=position + self._task_frame_translation, orientation=orientation)
+        self._robot.set_default_state(position=position + self._task_frame_translation, orientation=orientation)
+        self._task_objects[self._robot.name] = self._robot
         return
 
-    def set_target(self, prim_path, position=None, orientation=None, target_name="target"):
-        # if target exists delete it from scene
-        if self._target is not None:
-            print("delete it from scene")
-        else:
-            if is_prim_path_valid(prim_path):
+    @abstractmethod
+    def set_robot(self):
+        raise NotImplementedError
+
+    def set_params(self, target_prim_path=None, target_name=None, target_position=None, target_orientation=None):
+        if target_prim_path is not None:
+            if self._target is not None:
+                del self._task_objects[self._target.name]
+            if is_prim_path_valid(target_prim_path):
                 self._target = self.scene.add(
-                    XFormPrim(prim_path=prim_path, position=position, orientation=orientation, name=target_name)
+                    XFormPrim(
+                        prim_path=target_prim_path,
+                        position=target_position,
+                        orientation=target_orientation,
+                        name=target_name,
+                    )
                 )
             else:
                 self._target = self.scene.add(
                     VisualCube(
                         name=target_name,
-                        prim_path=prim_path,
-                        position=position,
-                        orientation=orientation,
+                        prim_path=target_prim_path,
+                        position=target_position,
+                        orientation=target_orientation,
                         color=np.array([1, 0, 0]),
                         size=0.03,
                     )
                 )
+            self._task_objects[self._target.name] = self._target
             self._target_visual_material = self._target.get_applied_visual_material()
             if self._target_visual_material is not None:
                 if hasattr(self._target_visual_material, "set_color"):
                     self._target_visual_material.set_color(np.array([1, 0, 0]))
+        else:
+            self._target.set_world_pose(position=target_position, orientation=target_orientation)
         return
 
-    def set_target_world_pose(self, position, orientation):
-        if self._target is None:
-            raise Exception("You need to define a target before setting its world pose")
-        self._target.set_world_pose(position=position, orientation=orientation)
-        return
-
-    def set_target_local_pose(self, position, orientation):
-        if self._target is None:
-            raise Exception("You need to define a target before setting its world pose")
-        self._target.set_local_pose(position=position, orientation=orientation)
-        return
+    def get_params(self):
+        params_representation = dict()
+        params_representation["target_prim_path"] = {"value": self._target.prim_path, "modifiable": True}
+        params_representation["target_name"] = {"value": self._target.name, "modifiable": True}
+        position, orientation = self._target.get_world_pose()
+        params_representation["target_position"] = {"value": position, "modifiable": True}
+        params_representation["target_orientation"] = {"value": orientation, "modifiable": True}
+        params_representation["robot_name"] = {"value": self._robot.name, "modifiable": False}
+        return params_representation
 
     def get_observations(self) -> dict:
         """[summary]
@@ -111,13 +134,13 @@ class FollowTarget(BaseTask):
             dict: [description]
         """
         joints_state = self._robot.get_joints_state()
-        target_position, _ = self._target.get_world_pose()
+        target_position, target_orientation = self._target.get_world_pose()
         return {
             self._robot.name: {
                 "joint_positions": np.array(joints_state.positions),
                 "joint_velocities": np.array(joints_state.velocities),
             },
-            self._target.name: {"position": np.array(target_position)},
+            self._target.name: {"position": np.array(target_position), "orientation": np.array(target_orientation)},
         }
 
     def target_reached(self) -> bool:
@@ -128,7 +151,7 @@ class FollowTarget(BaseTask):
         """
         end_effector_position, _ = self._robot.end_effector.get_world_pose()
         target_position, _ = self._target.get_world_pose()
-        if np.mean(np.abs(np.array(end_effector_position) - np.array(target_position))) < 0.025:
+        if np.mean(np.abs(np.array(end_effector_position) - np.array(target_position))) < (0.025 / get_stage_units()):
             return True
         else:
             return False
@@ -154,17 +177,25 @@ class FollowTarget(BaseTask):
         """
         return
 
-    def add_obstacle(self, position: np.ndarray = np.array([0.1, 0.1, 1.0])):
+    def add_obstacle(self, position: np.ndarray = None):
         """[summary]
 
         Args:
             position (np.ndarray, optional): [description]. Defaults to np.array([0.1, 0.1, 1.0]).
         """
+        cube_prim_path = find_unique_string_name(
+            intitial_name="/World/ObstacleCube", is_unique_fn=lambda x: not is_prim_path_valid(x)
+        )
+        cube_name = find_unique_string_name(
+            intitial_name="cube", is_unique_fn=lambda x: not self.scene.object_exists(x)
+        )
+        if position is None:
+            position = np.array([0.1, 0.1, 1.0]) / get_stage_units()
         cube = self.scene.add(
             DynamicCube(
-                name="cube_" + str(len(self._obstacle_cubes)),
-                position=position,
-                prim_path="/World/ObstacleCube_" + str(len(self._obstacle_cubes)),
+                name=cube_name,
+                position=position + self._task_frame_translation,
+                prim_path=cube_prim_path,
                 size=0.1,
                 color=np.array([0, 0, 1.0]),
             )

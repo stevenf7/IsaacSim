@@ -22,10 +22,11 @@ my_world = World()
 
 class FrankaTask(BaseTask):
     def __init__(self):
-        pass
+        BaseTask.__init__(self, name="dummy_task")
 
     def set_up_scene(self, scene):
-        super().set_up_scene(scene)
+        BaseTask.set_up_scene(self, scene)
+        scene.add_ground_plane()
         scene.add(Franka(prim_path="/World/Franka", name="my_franka"))
         return
 
@@ -39,7 +40,6 @@ class FrankaTask(BaseTask):
         }
 
     def reset(self):
-        self.scene.get_object("my_franka").get_articulation_controller().switch_control_mode("accelaration")
         return
 
 
@@ -56,11 +56,11 @@ class PDController(BaseController):
         joint_efforts = self._kp * position_error + self._kd * velocity_error
         # return efforts
         # TODO: there is a bug here somewhere!
-        return ArticulationAction(joint_efforts=joint_efforts / 100.0)
+        return ArticulationAction(joint_efforts=joint_efforts / 10.0)
 
 
 my_task = FrankaTask()
-my_world.load_task(my_task)
+my_world.add_task(my_task)
 my_world.reset()
 my_franka = my_world.scene.get_object("my_franka")
 my_controller = PDController(name="generic_pd_controller")

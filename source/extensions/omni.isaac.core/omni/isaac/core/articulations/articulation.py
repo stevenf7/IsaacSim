@@ -13,7 +13,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import DOFInfo
 from omni.isaac.core.utils.types import JointsState, ArticulationAction
-from omni.isaac.core.controllers.articulation_controllers import ArticulationController
+from omni.isaac.core.controllers.articulation_controller import ArticulationController
 from omni.isaac.core.utils.prims import is_prim_path_valid, get_prim_property, set_prim_property
 
 
@@ -23,6 +23,7 @@ class Articulation(XFormPrim):
         prim_path: str,
         name: Optional[str] = "articulation",
         position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         articulation_controller: Optional[ArticulationController] = None,
     ) -> None:
@@ -37,7 +38,9 @@ class Articulation(XFormPrim):
         """
         if not is_prim_path_valid(prim_path):
             raise Exception("An articulation doesn't exist at path {}".format(prim_path))
-        XFormPrim.__init__(self, prim_path=prim_path, name=name, position=position, orientation=orientation)
+        XFormPrim.__init__(
+            self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
+        )
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._handle = None
         self._root_handle = None
@@ -46,6 +49,8 @@ class Articulation(XFormPrim):
         self._num_dof = None
         self._default_joints_state = None
         self._articulation_controller = articulation_controller
+        if self._articulation_controller is None:
+            self._articulation_controller = ArticulationController()
         return
 
     @property
@@ -87,13 +92,14 @@ class Articulation(XFormPrim):
             # add dof to list
             prim_path = self._dc_interface.get_dof_path(dof_handle)
             self._dofs_infos[dof_name] = DOFInfo(prim_path=prim_path, handle=dof_handle, prim=self.prim, index=index)
+        self._articulation_controller.initialize_handles(self._handle, self._dofs_infos)
+        # get default targets set in usd
+        default_actions = self._articulation_controller.get_applied_action()
         self._default_joints_state = JointsState(
-            positions=self.get_joint_positions(),
-            velocities=self.get_joint_velocities(),
-            efforts=self.get_joint_efforts(),
+            positions=np.array(default_actions.joint_positions),
+            velocities=np.array(default_actions.joint_velocities),
+            efforts=np.zeros_like(default_actions.joint_positions),
         )
-        if self._articulation_controller is None:
-            self._articulation_controller = ArticulationController(self._handle, self._dofs_infos)
         return
 
     def get_dof_index(self, dof_name: str) -> int:
@@ -258,7 +264,12 @@ class Articulation(XFormPrim):
         joint_efforts = [joint_efforts[i][2] for i in range(len(joint_efforts))]
         return joint_efforts
 
-    def set_joints_default_state(self, positions: np.ndarray, velocities: np.ndarray, efforts: np.ndarray) -> None:
+    def set_joints_default_state(
+        self,
+        positions: Optional[np.ndarray] = None,
+        velocities: Optional[np.ndarray] = None,
+        efforts: Optional[np.ndarray] = None,
+    ) -> None:
         """[summary]
 
         Args:
@@ -266,7 +277,12 @@ class Articulation(XFormPrim):
             velocities (np.ndarray): [description]
             efforts (np.ndarray): [description]
         """
-        self._default_joints_state = JointsState(positions, velocities, efforts)
+        if positions is not None:
+            self._default_joints_state.positions = positions
+        if velocities is not None:
+            self._default_joints_state.velocities = velocities
+        if efforts is not None:
+            self._default_joints_state.efforts = efforts
         return
 
     def get_joints_state(self) -> JointsState:
@@ -285,7 +301,9 @@ class Articulation(XFormPrim):
         """[summary]
         """
         XFormPrim.reset(self)
-        # TODO: reset joints too
+        Articulation.set_joint_positions(self, self._default_joints_state.positions)
+        Articulation.set_joint_velocities(self, self._default_joints_state.velocities)
+        Articulation.set_joint_efforts(self, self._default_joints_state.efforts)
         return
 
     def get_articulation_controller(self) -> ArticulationController:

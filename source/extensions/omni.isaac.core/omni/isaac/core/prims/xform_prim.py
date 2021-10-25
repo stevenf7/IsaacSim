@@ -6,13 +6,21 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from sys import implementation
 from typing import Optional
 from pxr import Gf, Usd, UsdGeom, UsdShade
 from omni.isaac.core.utils.types import XFormPrimState
 from omni.isaac.core.materials import PreviewSurface
 from omni.isaac.core.utils.rotations import gf_quatd_to_np_array
 from omni.isaac.core.utils.transformations import tf_matrix_from_pose
-from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid, define_prim, get_prim_parent
+from omni.isaac.core.utils.prims import (
+    get_prim_at_path,
+    query_parent_path,
+    is_prim_path_valid,
+    define_prim,
+    get_prim_parent,
+    get_prim_object_type,
+)
 import numpy as np
 import carb
 from omni.isaac.core.utils.stage import get_current_stage
@@ -24,6 +32,7 @@ class XFormPrim(object):
         prim_path: str,
         name: Optional[str] = "xform_prim",
         position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         scale: Optional[np.ndarray] = None,
         visible: bool = True,
@@ -43,16 +52,27 @@ class XFormPrim(object):
         else:
             carb.log_info("Creating a new XForm prim at path {}".format(prim_path))
             self._prim = define_prim(prim_path=prim_path, prim_type="Xform")
+        non_root_link_flag = query_parent_path(
+            prim_path=prim_path, query_fn=lambda a: get_prim_object_type(a) == "articulation"
+        )
         self._name = name
         self._prim_path = prim_path
-        XFormPrim._set_xform_properties(self)
-        if position is not None or orientation is not None:
-            XFormPrim.set_local_pose(self, position, orientation)
+        if translation is not None and position is not None:
+            raise Exception("You can not define translation and position at the same time")
+        if not non_root_link_flag:
+            XFormPrim._set_xform_properties(self)
+            if position is not None or orientation is not None or translation is not None:
+                if translation is not None:
+                    XFormPrim.set_local_pose(self, position, orientation)
+                else:
+                    XFormPrim.set_world_pose(self, position, orientation)
+
         XFormPrim.set_visibility(self, visible=visible)
-        if scale is None:
-            scale = np.array([1.0, 1.0, 1.0])
-        XFormPrim.set_local_scale(self, scale)
-        default_position, default_orientation = XFormPrim.get_local_pose(self)
+        if not non_root_link_flag:
+            if scale is None:
+                scale = np.array([1.0, 1.0, 1.0])
+            XFormPrim.set_local_scale(self, scale)
+        default_position, default_orientation = XFormPrim.get_world_pose(self)
         self._default_state = XFormPrimState(position=default_position, orientation=default_orientation)
         self._applied_visual_material = None
         self._binding_api = None
@@ -194,18 +214,34 @@ class XFormPrim(object):
             return self._applied_visual_material
         else:
             visual_binding = self._binding_api.GetDirectBinding()
-            path = visual_binding.GetMaterialPath()
-            if path == "":
+            material_path = str(visual_binding.GetMaterialPath())
+            if material_path == "":
                 return None
             else:
                 stage = get_current_stage()
-                shader = UsdShade.Shader(stage.GetPrimAtPath(str(path) + "/shader"))  # TODO: improve this
-                # print(shader.GetIdAttr().Get())
-                if shader.GetIdAttr().Get() == "UsdPreviewSurface":
-                    self._applied_visual_material = PreviewSurface(prim_path=path)
+                material = UsdShade.Material(stage.GetPrimAtPath(material_path))
+                # getting the shader
+                shader_info = material.ComputeSurfaceSource()
+                if shader_info[0].GetPath() != "":
+                    shader = shader_info[0]
+                elif is_prim_path_valid(material_path + "/shader"):
+                    shader_path = material_path + "/shader"
+                    shader = UsdShade.Shader(get_prim_at_path(shader_path))
+                elif is_prim_path_valid(material_path + "/Shader"):
+                    shader_path = material_path + "/Shader"
+                    shader = UsdShade.Shader(get_prim_at_path(shader_path))
+                else:
+                    carb.log_warn("the shader on xform prim {} is not supported".format(self.prim_path))
+                    return None
+                implementation_source = shader.GetImplementationSource()
+                asset_sub_identifier = shader.GetSourceAssetSubIdentifier()
+                shader_id = shader.GetShaderId()
+                if implementation_source == "id" and shader_id == "UsdPreviewSurface":
+                    self._applied_visual_material = PreviewSurface(prim_path=material_path, shader=shader)
                     return self._applied_visual_material
                 else:
-                    carb.log_warn("The visual material you are trying to get is not supported yet")
+                    carb.log_warn("the shader on xform prim {} is not supported".format(self.prim_path))
+                    return None
         return
 
     def set_world_pose(self, position=None, orientation=None):
@@ -221,9 +257,11 @@ class XFormPrim(object):
         local_transform = np.matmul(np.linalg.inv(np.transpose(parent_world_tf)), my_world_transform)
         transform = Gf.Transform()
         transform.SetMatrix(Gf.Matrix4d(np.transpose(local_transform)))
-        position = transform.GetTranslation()
-        orientation = transform.GetRotation().GetQuat()
-        XFormPrim.set_local_pose(self, translation=np.array(position), orientation=gf_quatd_to_np_array(orientation))
+        calculated_translation = transform.GetTranslation()
+        calculated_orientation = transform.GetRotation().GetQuat()
+        XFormPrim.set_local_pose(
+            self, translation=np.array(calculated_translation), orientation=gf_quatd_to_np_array(calculated_orientation)
+        )
         return
 
     def get_world_pose(self):
@@ -277,3 +315,6 @@ class XFormPrim(object):
     def get_local_scale(self):
         xform_op = self.prim.GetAttribute("xformOp:scale")
         return np.array(xform_op.Get())
+
+    def is_valid(self):
+        return is_prim_path_valid(self.prim_path)
