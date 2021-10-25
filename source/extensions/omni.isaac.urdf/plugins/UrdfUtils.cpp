@@ -104,6 +104,7 @@ std::string importRobot(const std::string& assetRoot,
     pxr::UsdStageWeakPtr stage = omni::usd::UsdContext::getContext()->getStage();
     if (stage)
     {
+        pxr::UsdGeomSetStageMetersPerUnit(stage, 1.0 / importConfig.distanceScale);
         return urdfImporter.addToStage(stage, robot);
     }
     else
