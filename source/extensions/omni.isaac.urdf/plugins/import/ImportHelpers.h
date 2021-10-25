@@ -32,8 +32,10 @@ void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRobot& rob
 bool collapseFixedJoints(UrdfRobot& robot);
 Vec3 urdfAxisToVec(const UrdfAxis& axis);
 std::string resolveXrefPath(const std::string& assetRoot, const std::string& urdfPath, const std::string& xrefpath);
+bool IsUsdFile(const std::string& filename);
 // Make a path name that is not already used.
 std::string GetNewSdfPathString(pxr::UsdStageWeakPtr stage, std::string path, int nameClashNum = -1);
+
 }
 }
 }

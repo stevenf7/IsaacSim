@@ -165,6 +165,12 @@ std::string resolveXrefPath(const std::string& assetRoot, const std::string& urd
     std::string xrefPath = xrefpath;
     std::string prefix = "package://";
     std::size_t p = xrefPath.find(prefix);
+
+    if (xrefPath.find("omniverse://") != std::string::npos)
+    {
+        CARB_LOG_INFO("Path is on nucleus server, will assume that it is fully resolved already");
+        return xrefPath;
+    }
     if (p != std::string::npos)
     {
         xrefPath.replace(p, prefix.size(), "");
@@ -243,11 +249,27 @@ std::string resolveXrefPath(const std::string& assetRoot, const std::string& urd
     }
     else
     {
-        CARB_LOG_WARN("ROS_PACKAGE_PATH not defined");
+        CARB_LOG_WARN("ROS_PACKAGE_PATH not defined, will skip checking ROS packages");
     }
     CARB_LOG_WARN("Path: %s not found", xrefpath.c_str());
     // if we got here, we failed to resolve the path
     return std::string();
+}
+
+bool IsUsdFile(const std::string& filename)
+{
+    std::vector<std::string> types = { ".usd", ".usda" };
+
+    for (auto& t : types)
+    {
+        if (t.size() > filename.size())
+            continue;
+        if (std::equal(t.rbegin(), t.rend(), filename.rbegin()))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 // Make a path name that is not already used.
