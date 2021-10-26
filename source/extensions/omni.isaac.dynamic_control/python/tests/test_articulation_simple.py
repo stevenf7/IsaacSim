@@ -162,6 +162,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.set_articulation_dof_velocity_targets(art, [])
         self._dc.get_articulation_dof_velocity_targets(art)
         self._dc.apply_articulation_dof_efforts(art, [])
+        self._dc.get_articulation_dof_efforts(art)
         self._dc.get_articulation_dof_masses(art)
 
         self._dc.get_joint_name(joint)
@@ -192,6 +193,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.get_dof_position_target(dof)
         self._dc.get_dof_velocity_target(dof)
         self._dc.apply_dof_effort(dof, 0)
+        self._dc.get_dof_effort(dof)
 
     async def test_start_stop(self, gpu=False):
         dc_utils.set_scene_physics_type(gpu)
@@ -574,6 +576,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         # use apply_dof_effort api
         self._dc.apply_dof_effort(dof_ptr, 1e5)
+        self.assertEqual(self._dc.get_dof_effort(dof_ptr), 1e5)
         await dc_utils.simulate(1.0, self._dc, art)
         state = self._dc.get_dof_state(dof_ptr, _dynamic_control.STATE_ALL)
         new_pose = self._dc.get_rigid_body_pose(slider_body)
@@ -585,6 +588,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         # use apply_articulation_dof_efforts api
         self._dc.apply_articulation_dof_efforts(art, [1e5, 0])
+        self.assertTrue(np.allclose(self._dc.get_articulation_dof_efforts(art), [1e5, 0]))
         await dc_utils.simulate(1.0, self._dc, art)
         state = self._dc.get_dof_state(dof_ptr, _dynamic_control.STATE_ALL)
         new_pose = self._dc.get_rigid_body_pose(slider_body)

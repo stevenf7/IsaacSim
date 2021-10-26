@@ -234,6 +234,13 @@ struct DynamicControl
      */
     bool(CARB_ABI* applyArticulationDofEfforts)(DcHandle artHandle, const float* efforts);
 
+    //! Get efforts applied to an actor's degrees-of-freedom.
+    /*!
+     *  \param actor the actor.
+     *  \param states the current efforts.
+     */
+    bool(CARB_ABI* getArticulationDofEfforts)(DcHandle artHandle, float* efforts);
+
 
     //! Get effective masses for articulation dofs
     /*!
@@ -334,6 +341,7 @@ struct DynamicControl
     float(CARB_ABI* getDofPositionTarget)(DcHandle dofHandle);
     float(CARB_ABI* getDofVelocityTarget)(DcHandle dofHandle);
     bool(CARB_ABI* applyDofEffort)(DcHandle dofHandle, float effort);
+    float(CARB_ABI* getDofEffort)(DcHandle dofHandle);
 
     // attractors
 
