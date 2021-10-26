@@ -6,71 +6,48 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.scenes.scene import Scene
+import omni.isaac.core.tasks as tasks
+from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.dofbot import DofBot
-from omni.isaac.core.objects import DynamicCube
+from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.string import find_unique_string_name
 import numpy as np
 
 
-class PickPlace(BaseTask):
-    def __init__(self) -> None:
+class PickPlace(tasks.PickPlace):
+    def __init__(
+        self,
+        name="dofbot_pick_place",
+        cube_initial_position=None,
+        cube_initial_orientation=None,
+        target_position=None,
+        cube_size=None,
+        task_frame_translation=None,
+    ) -> None:
         """[summary]
         """
-        self.my_dofbot = None
-        self.cube = None
-        return
-
-    def set_up_scene(self, scene: Scene) -> None:
-        """[summary]
-
-        Args:
-            scene (Scene): [description]
-        """
-        # TODO: change values with USD
-        super().set_up_scene(scene)
-        self.my_dofbot = scene.add(DofBot(stage=scene.stage, prim_path="/World/DofBot", name="my_dofbot"))
-        self.cube = scene.add(
-            DynamicCube(
-                stage=self.scene.stage,
-                name="cube_1",
-                position=np.array([0.31, 0, 0.025 / 2.0]) * 100,
-                prim_path="/World/Cube",
-                size=0.025 * 100,
-                color=np.array([0, 0, 255]),
-            )
+        if cube_initial_position is None:
+            cube_initial_position = np.array([0.31, 0, 0.025 / 2.0]) / get_stage_units()
+        if cube_size is None:
+            cube_size = 0.025 / get_stage_units()
+        if target_position is None:
+            target_position = np.array([-0.31, 0.31, 0.025]) / get_stage_units()
+        tasks.PickPlace.__init__(
+            self,
+            name=name,
+            cube_initial_position=cube_initial_position,
+            cube_initial_orientation=cube_initial_orientation,
+            target_position=target_position,
+            cube_size=cube_size,
+            task_frame_translation=task_frame_translation,
         )
-        scene.add_ground_plane(size=50.0 / self.scene.stage_units_in_meters)
         return
 
-    def get_observations(self) -> dict:
-        """[summary]
-
-        Returns:
-            dict: [description]
-        """
-        joints_state = self.my_dofbot.get_joints_state()
-        cube_position, cube_orientation = self.cube.get_pose()
-        end_effector_position, _ = self.my_dofbot.get_end_effector_pose()
-        # TODO: change values with USD
-        return {
-            "cube_1": {
-                "position": cube_position,
-                "orientation": cube_orientation,
-                "target_position": np.array([-0.31, 0, 0.05]) * 100,
-            },
-            "my_dofbot": {"joint_positions": joints_state.positions, "end_effector_pose": end_effector_position},
-        }
-
-    def step(self, control_index: int, simulation_time: float) -> None:
-        """[summary]
-
-        Args:
-            control_index (int): [description]
-            simulation_time (float): [description]
-        """
-        return
-
-    def reset(self):
-        self.my_dofbot.set_gripper_position(self.my_dofbot.gripper_open_position)
-        return
+    def set_robot(self):
+        dofbot_prim_path = find_unique_string_name(
+            intitial_name="/World/DofBot", is_unique_fn=lambda x: not is_prim_path_valid(x)
+        )
+        dofbot_robot_name = find_unique_string_name(
+            intitial_name="my_dofbot", is_unique_fn=lambda x: not self.scene.object_exists(x)
+        )
+        return DofBot(prim_path=dofbot_prim_path, name=dofbot_robot_name)

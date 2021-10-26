@@ -161,9 +161,8 @@ class PickPlaceController(BaseController):
         self._ik_solver.reset()
         self._event = 0
         self._t = 0
-        self._h1 = start_picking_height
-        if self._h1 is None:
-            self._h1 = 0.3 / get_stage_units()
+        if start_picking_height is not None:
+            self._h1 = start_picking_height
         self._pause = False
         if event_velocities is not None:
             self._event_velocities = event_velocities
