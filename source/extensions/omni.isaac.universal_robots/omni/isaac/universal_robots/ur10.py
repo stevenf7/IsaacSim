@@ -7,31 +7,27 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional
-import os
 import numpy as np
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.articulations import ArticulationGripper
+from omni.isaac.surface_gripper import SurfaceGripper
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
 import carb
 
-FRANKA_USD_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../../data/franka.usd")
 
-
-class Franka(Robot):
+class UR10(Robot):
     def __init__(
         self,
         prim_path: str,
-        name: str = "franka_robot",
+        name: str = "ur10_robot",
         usd_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         end_effector_prim_name: Optional[str] = None,
-        gripper_dof_names=None,
-        gripper_open_position=None,
-        gripper_closed_position=None,
+        attach_gripper=False,
+        gripper_usd=None,
     ) -> None:
         """[summary]
 
@@ -54,36 +50,36 @@ class Franka(Robot):
                 result, nucleus_server = find_nucleus_server()
                 if result is False:
                     carb.log_error("Could not find nucleus server with /Isaac folder")
-                usd_path = nucleus_server + "/Isaac/Robots/Franka/franka.usd"
+                    return
+                usd_path = nucleus_server + "/Isaac/Robots/UR10/ur10.usd"
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
                 if self._end_effector_prim_name is None:
-                    self._end_effector_prim_name = "panda_rightfinger"
-                if gripper_dof_names is None:
-                    gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
-                if gripper_open_position is None:
-                    gripper_open_position = np.array([0.4, 0.4]) / get_stage_units()
-                if gripper_closed_position is None:
-                    gripper_closed_position = np.array([0.0, 0.0])
+                    self._end_effector_prim_name = "ee_link"
         else:
             # TODO: change this
             if self._end_effector_prim_name is None:
-                self._end_effector_prim_name = "panda_rightfinger"
-            if gripper_dof_names is None:
-                gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
-            if gripper_open_position is None:
-                gripper_open_position = np.array([0.4, 0.4]) / get_stage_units()
-            if gripper_closed_position is None:
-                gripper_closed_position = np.array([0.0, 0.0])
+                self._end_effector_prim_name = "ee_link"
         super().__init__(
             prim_path=prim_path, name=name, position=position, orientation=orientation, articulation_controller=None
         )
-        if gripper_dof_names is not None:
-            self._gripper = ArticulationGripper(
-                gripper_dof_names=gripper_dof_names,
-                gripper_open_position=gripper_open_position,
-                gripper_closed_position=gripper_closed_position,
-            )
+        if attach_gripper:
+            if gripper_usd is None:
+                result, nucleus_server = find_nucleus_server()
+                if result is False:
+                    carb.log_error("Could not find nucleus server with /Isaac folder")
+                    return
+                gripper_usd = nucleus_server + "/Isaac/Robots/UR10/Props/short_gripper.usd"
+                translate = 16.11
+                direction = "x"
+                self._gripper = SurfaceGripper(usd_path=gripper_usd, translate=translate, direction=direction)
+            else:
+                raise NotImplementedError
+        self._attach_gripper = attach_gripper
         return
+
+    @property
+    def attach_gripper(self):
+        return self._attach_gripper
 
     @property
     def end_effector(self) -> RigidPrim:
@@ -106,22 +102,18 @@ class Franka(Robot):
     def initialize_handles(self) -> None:
         """[summary]
         """
-        super().initialize_handles()
-        self._end_effector_handle = self._dc_interface.find_articulation_body(
-            self._handle, self._end_effector_prim_name
-        )
-        end_effector_prim_path = self._dc_interface.get_rigid_body_path(self._end_effector_handle)
+        end_effector_prim_path = self.prim_path + "/" + self._end_effector_prim_name
+        if self._attach_gripper:
+            self._gripper.initialize_handles(root_prim_path=end_effector_prim_path)
         self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self._name + "_end_effector")
+        super().initialize_handles()
+        self.disable_gravity()
         self._end_effector.initialize_handles()
-        self.gripper.initialize_handles(
-            root_prim_path=self.prim_path, articulation_controller=self._articulation_controller
-        )
         return
 
     def reset(self) -> None:
         """[summary]
         """
         super().reset()
-        self._articulation_controller.switch_dof_control_mode(dof_index=self.gripper.dof_indices[0], mode="position")
-        self._articulation_controller.switch_dof_control_mode(dof_index=self.gripper.dof_indices[1], mode="position")
+        self.set_joint_positions(np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0]))
         return

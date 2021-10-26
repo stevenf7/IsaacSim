@@ -10,8 +10,8 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.franka.tasks import PickPlace
-from omni.isaac.franka.controllers import PickPlaceController
+from omni.isaac.universal_robots.tasks import PickPlace
+from omni.isaac.universal_robots.controllers import PickPlaceController
 from omni.isaac.core import World
 import numpy as np
 
@@ -20,11 +20,11 @@ my_task = PickPlace()
 my_world.add_task(my_task)
 my_world.reset()
 task_params = my_task.get_params()
-my_franka = my_world.scene.get_object(task_params["robot_name"]["value"])
+my_ur10 = my_world.scene.get_object(task_params["robot_name"]["value"])
 my_controller = PickPlaceController(
-    name="pick_place_controller", gripper_dof_indices=my_franka.gripper.dof_indices, robot_prim_path=my_franka.prim_path
+    name="pick_place_controller", surface_gripper=my_ur10.gripper, robot_prim_path=my_ur10.prim_path
 )
-articulation_controller = my_franka.get_articulation_controller()
+articulation_controller = my_ur10.get_articulation_controller()
 
 i = 0
 while True:
@@ -35,7 +35,7 @@ while True:
             cube_orientation=observations[task_params["cube_name"]["value"]]["orientation"],
             cube_target_position=observations[task_params["cube_name"]["value"]]["target_position"],
             current_joint_positions=observations[task_params["robot_name"]["value"]]["joint_positions"],
-            end_effector_translation_offset=np.array([0, 0.5, -1.5]),
+            end_effector_translation_offset=np.array([0, 0, 2]),
         )
         if my_controller.is_done():
             print("done picking and placing")

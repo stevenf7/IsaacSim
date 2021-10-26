@@ -3,19 +3,14 @@ from omni.isaac.core.controllers import BaseController
 
 
 class BaseGripperController(BaseController):
-    def __init__(self, name: str, gripper_dof_indices) -> None:
+    def __init__(self, name: str) -> None:
         """[summary]
 
         Args:
             name (str): [description]
         """
         self._name = name
-        self._grippers_dof_indices = gripper_dof_indices
         return
-
-    @property
-    def grippers_dof_indices(self):
-        return self._grippers_dof_indices
 
     # TODO: pass other args down
     def forward(self, action, current_joint_positions):

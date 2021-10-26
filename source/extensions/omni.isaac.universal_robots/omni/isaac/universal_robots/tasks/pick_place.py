@@ -7,15 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import omni.isaac.core.tasks as tasks
-from omni.isaac.franka import Franka
+from omni.isaac.universal_robots import UR10
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.string import find_unique_string_name
+from omni.isaac.core.utils.stage import get_stage_units
+import numpy as np
 
 
 class PickPlace(tasks.PickPlace):
     def __init__(
         self,
-        name="franka_pick_place",
+        name="ur10_pick_place",
         cube_initial_position=None,
         cube_initial_orientation=None,
         target_position=None,
@@ -24,6 +26,12 @@ class PickPlace(tasks.PickPlace):
     ) -> None:
         """[summary]
         """
+        if cube_size is None:
+            cube_size = 0.0515 / get_stage_units()
+        if target_position is None:
+            target_position = np.array([0.7, 0.7, cube_size / 2.0])
+            target_position[0] = target_position[0] / get_stage_units()
+            target_position[1] = target_position[1] / get_stage_units()
         tasks.PickPlace.__init__(
             self,
             name=name,
@@ -36,10 +44,11 @@ class PickPlace(tasks.PickPlace):
         return
 
     def set_robot(self):
-        franka_prim_path = find_unique_string_name(
-            intitial_name="/World/Franka", is_unique_fn=lambda x: not is_prim_path_valid(x)
+        ur10_prim_path = find_unique_string_name(
+            intitial_name="/World/UR10", is_unique_fn=lambda x: not is_prim_path_valid(x)
         )
-        franka_robot_name = find_unique_string_name(
-            intitial_name="my_franka", is_unique_fn=lambda x: not self.scene.object_exists(x)
+        ur10_robot_name = find_unique_string_name(
+            intitial_name="my_ur10", is_unique_fn=lambda x: not self.scene.object_exists(x)
         )
-        return Franka(prim_path=franka_prim_path, name=franka_robot_name)
+        self._ur10_robot = UR10(prim_path=ur10_prim_path, name=ur10_robot_name, attach_gripper=True)
+        return self._ur10_robot

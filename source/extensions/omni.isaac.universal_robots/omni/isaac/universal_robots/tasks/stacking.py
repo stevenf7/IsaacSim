@@ -7,19 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.tasks import Stacking as BaseStacking
-from omni.isaac.franka import Franka
+from omni.isaac.core.utils.stage import get_stage_units
+from omni.isaac.universal_robots import UR10
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.string import find_unique_string_name
-from omni.isaac.core.utils.stage import get_stage_units
 import numpy as np
 
 
 class Stacking(BaseStacking):
-    def __init__(
-        self, name="franka_stacking", target_position=None, cube_size=None, task_frame_translation=None
-    ) -> None:
+    def __init__(self, name="ur10_stacking", target_position=None, cube_size=None, task_frame_translation=None) -> None:
         if target_position is None:
-            target_position = np.array([0.5, 0.5, 0]) / get_stage_units()
+            target_position = np.array([0.7, 0.7, 0]) / get_stage_units()
         BaseStacking.__init__(
             self,
             name=name,
@@ -32,10 +30,11 @@ class Stacking(BaseStacking):
         return
 
     def set_robot(self):
-        franka_prim_path = find_unique_string_name(
-            intitial_name="/World/Franka", is_unique_fn=lambda x: not is_prim_path_valid(x)
+        ur10_prim_path = find_unique_string_name(
+            intitial_name="/World/ur10", is_unique_fn=lambda x: not is_prim_path_valid(x)
         )
-        franka_robot_name = find_unique_string_name(
-            intitial_name="my_franka", is_unique_fn=lambda x: not self.scene.object_exists(x)
+        ur10_robot_name = find_unique_string_name(
+            intitial_name="my_ur10", is_unique_fn=lambda x: not self.scene.object_exists(x)
         )
-        return Franka(prim_path=franka_prim_path, name=franka_robot_name)
+        self._ur10_robot = UR10(prim_path=ur10_prim_path, name=ur10_robot_name, attach_gripper=True)
+        return self._ur10_robot

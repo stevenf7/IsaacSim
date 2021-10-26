@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.controllers import BaseController
+from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 import numpy as np
@@ -14,15 +15,17 @@ import numpy as np
 
 class PickPlaceController(BaseController):
     # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, ik_solver, gripper_controller, start_picking_height=0.3, event_velocities=None):
+    def __init__(self, name, ik_solver, gripper_controller, start_picking_height=None, event_velocities=None):
         BaseController.__init__(self, name=name)
         self._event = 0
         self._t = 0
         self._h1 = start_picking_height
+        if self._h1 is None:
+            self._h1 = 0.3 / get_stage_units()
         self._h0 = None
         self._event_velocities = event_velocities
         if self._event_velocities is None:
-            self._event_velocities = [0.008, 0.005, 0.3, 0.0025, 0.001, 0.0025, 1, 0.008, 0.08]
+            self._event_velocities = [0.008, 0.005, 0.1, 0.0025, 0.001, 0.0025, 1, 0.008, 0.08]
         else:
             if not isinstance(self._event_velocities, np.ndarray) or not isinstance(self._event_velocities, list):
                 raise Exception("event velocities need to be list or numpy array")
@@ -59,6 +62,7 @@ class PickPlaceController(BaseController):
         cube_target_position,
         current_joint_positions,
         end_effector_translation_offset=None,
+        approach_angle=None,
     ):
         if end_effector_translation_offset is None:
             end_effector_translation_offset = np.array([0, 0, 0])
@@ -92,9 +96,10 @@ class PickPlaceController(BaseController):
                 action="open", current_joint_positions=current_joint_positions
             )
         else:
+            if approach_angle is None:
+                approach_angle = euler_angles_to_quat(np.array([0, np.pi, 0]))
             target_joint_positions = self._ik_solver.forward(
-                target_end_effector_position=position_target,
-                target_end_effector_orientation=euler_angles_to_quat(np.array([0, np.pi, 0])),
+                target_end_effector_position=position_target, target_end_effector_orientation=approach_angle
             )
 
         self._t += self._event_velocities[self._event]
@@ -151,13 +156,15 @@ class PickPlaceController(BaseController):
     def _combine_convex(self, a, b, alpha):
         return (1 - alpha) * a + alpha * b
 
-    def reset(self, start_picking_height=0.3, event_velocities=None):
+    def reset(self, start_picking_height=None, event_velocities=None):
         BaseController.reset(self)
         self._gripper_controller.reset()
         self._ik_solver.reset()
         self._event = 0
         self._t = 0
         self._h1 = start_picking_height
+        if self._h1 is None:
+            self._h1 = 0.3 / get_stage_units()
         self._pause = False
         if event_velocities is not None:
             self._event_velocities = event_velocities

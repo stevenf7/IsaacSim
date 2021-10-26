@@ -2,10 +2,9 @@ display_name = "Isaac UR10 Robot"
 
 [dependencies]
 "omni.isaac.core" = {}
-"omni.isaac.kit" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.surface_gripper" = {}
 
 [[python.module]]
-name = "omni.isaac.ur10"
+name = "omni.isaac.universal_robots"
 

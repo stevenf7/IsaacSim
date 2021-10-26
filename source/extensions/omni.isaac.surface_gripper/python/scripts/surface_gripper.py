@@ -1,0 +1,86 @@
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper
+from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properties
+import numpy as np
+import carb
+
+
+class SurfaceGripper(object):
+    def __init__(
+        self,
+        usd_path=None,
+        translate=0,
+        direction="x",
+        grip_threshold=1,
+        force_limit=5.0e5,
+        torque_limit=5.0e5,
+        bend_angle=np.pi / 24,
+        kp=1.0e5,
+        kd=1.0e4,
+        disable_gravity=True,
+    ):
+        self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
+        self._translate = translate
+        self._direction = direction
+        self._grip_threshold = grip_threshold
+        self._force_limit = force_limit
+        self._torque_limit = torque_limit
+        self._bend_angle = bend_angle
+        self._kp = kp
+        self._kd = kd
+        self._disable_gravity = disable_gravity
+        self._virtual_gripper = None
+        self._usd_path = usd_path
+        return
+
+    def initialize_handles(self, root_prim_path):
+        if self._usd_path is not None:
+            add_reference_to_stage(usd_path=self._usd_path, prim_path=root_prim_path)
+        virtual_gripper_props = Surface_Gripper_Properties()
+        virtual_gripper_props.parentPath = root_prim_path
+        virtual_gripper_props.d6JointPath = virtual_gripper_props.parentPath + "/d6FixedJoint"
+        virtual_gripper_props.gripThreshold = self._grip_threshold
+        virtual_gripper_props.forceLimit = self._force_limit
+        virtual_gripper_props.torqueLimit = self._torque_limit
+        virtual_gripper_props.bendAngle = self._bend_angle
+        virtual_gripper_props.stiffness = self._kp
+        virtual_gripper_props.damping = self._kd
+        virtual_gripper_props.disableGravity = self._disable_gravity
+        tr = _dynamic_control.Transform()
+        if self._direction == "x":
+            tr.p.x = self._translate
+        elif self._direction == "y":
+            tr.p.y = self._translate
+        elif self._direction == "z":
+            tr.p.z = self._translate
+        else:
+            carb.log_error("Direction specified for the surface gripper doesn't exist")
+        virtual_gripper_props.offset = tr
+        virtual_gripper = Surface_Gripper(self._dc_interface)
+        virtual_gripper.initialize(virtual_gripper_props)
+        self._virtual_gripper = virtual_gripper
+        return
+
+    def close(self):
+        self._virtual_gripper.close()
+        return
+
+    def open(self):
+        self._virtual_gripper.open()
+        return
+
+    def update(self):
+        self._virtual_gripper.update()
+        return
+
+    def is_closed(self):
+        return self.virtual_gripper.is_closed()

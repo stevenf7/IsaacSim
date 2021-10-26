@@ -19,7 +19,7 @@ class StackingController(BaseController):
         self._robot_observation_name = robot_observation_name
         self.reset()
 
-    def forward(self, observations):
+    def forward(self, observations, approach_angle=None, end_effector_translation_offset=None):
         if self._current_cube >= len(self._picking_order_cube_names):
             target_joint_positions = [None] * observations[self._robot_observation_name]["joint_positions"].shape[0]
             return ArticulationAction(joint_positions=target_joint_positions)
@@ -28,6 +28,8 @@ class StackingController(BaseController):
             cube_orientation=observations[self._picking_order_cube_names[self._current_cube]]["orientation"],
             cube_target_position=observations[self._picking_order_cube_names[self._current_cube]]["target_position"],
             current_joint_positions=observations[self._robot_observation_name]["joint_positions"],
+            approach_angle=approach_angle,
+            end_effector_translation_offset=end_effector_translation_offset,
         )
         if self._pick_place_controller.is_done():
             self._current_cube += 1

@@ -8,7 +8,7 @@
 #
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.ur10 import UR10
+from omni.isaac.universal_robots import UR10
 import numpy as np
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.utils.nucleus import find_nucleus_server

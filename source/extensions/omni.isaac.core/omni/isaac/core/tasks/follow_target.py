@@ -105,7 +105,7 @@ class FollowTarget(BaseTask):
                         position=target_position,
                         orientation=target_orientation,
                         color=np.array([1, 0, 0]),
-                        size=0.03,
+                        size=0.03 / get_stage_units(),
                     )
                 )
             self._task_objects[self._target.name] = self._target

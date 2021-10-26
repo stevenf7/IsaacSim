@@ -70,5 +70,8 @@ name = "omni.isaac.samples.scripts.simple_stack_sample"
 [[python.module]]
 name = "omni.isaac.samples.scripts.follow_target"
 
+[[python.module]]
+name = "omni.isaac.samples.scripts.surface_gripper"
+
 [[test]]
 timeout = 960

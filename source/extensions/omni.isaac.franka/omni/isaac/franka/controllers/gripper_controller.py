@@ -7,16 +7,25 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.controllers import BaseGripperController
+from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.types import ArticulationAction
 from typing import Tuple
+import numpy as np
 
 
 class GripperController(BaseGripperController):
     # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, gripper_dof_indices, deltas=[0.005, 0.005]):
-        super().__init__(name, gripper_dof_indices)
+    def __init__(self, name, gripper_dof_indices, deltas=None):
+        self._grippers_dof_indices = gripper_dof_indices
+        super().__init__(name)
+        if deltas is None:
+            deltas = np.array([0.05, 0.05]) / get_stage_units()
         self._deltas = deltas
         return
+
+    @property
+    def grippers_dof_indices(self):
+        return self._grippers_dof_indices
 
     def open(self, current_joint_positions):
         current_gripper_position_1 = current_joint_positions[self.grippers_dof_indices[0]]
