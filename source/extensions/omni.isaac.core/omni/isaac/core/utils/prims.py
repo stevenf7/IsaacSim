@@ -90,8 +90,24 @@ def create_prim(
     scale: np.ndarray = None,
     usd_path: str = None,
     semantic_label: str = None,
+    semantic_type: str = "class",
     attributes: dict = {},
 ) -> Usd.Prim:
+    """Create a prim, apply specified transforms, apply semantic label and
+    set specified attributes.
+
+    args:
+        prim_path (str): The path of the new prim.
+        prim_type (str): Prim type name
+        position (np.ndarray (3), optional): prim translation (applied last)
+        orientation (np.ndarray (4), optional): prim rotation as quaternion
+		scale (np.ndarray (3), optional): scaling factor in x, y, z.
+        usd_path (str, optional): Path to the USD that this prim will reference.
+        semantic_label (str, optional): Semantic label.
+		semantic_type (str, optional): set to "class" unless otherwise specified.
+        attributes (dict, optional): Key-value pairs of prim attributes to set.
+    """
+
     from omni.isaac.core.utils import semantics
     from omni.isaac.core.prims import XFormPrim
 
@@ -105,7 +121,7 @@ def create_prim(
     if usd_path is not None:
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
     if semantic_label is not None:
-        semantics.add_update_semantics(prim, semantic_label)
+        semantics.add_update_semantics(prim, semantic_label, semantic_type)
     XFormPrim(prim_path=prim_path, position=position, translation=translation, orientation=orientation, scale=scale)
     return prim
 

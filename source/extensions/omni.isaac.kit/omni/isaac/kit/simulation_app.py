@@ -135,13 +135,13 @@ class SimulationApp:
         self.config = self.DEFAULT_LAUNCHER_CONFIG
         if experience == "":
             experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit'
-        if builtins.ISAAC_LAUNCHED_FROM_JUPYTER:
-            if launch_config["headless"] is False:
-                carb.log_warn("Non-headless mode not supported with jupyter notebooks")
-                launch_config.update({"headless": True})
         self.config.update({"experience": experience})
         if launch_config is not None:
             self.config.update(launch_config)
+        if builtins.ISAAC_LAUNCHED_FROM_JUPYTER:
+            if self.config["headless"] is False:
+                carb.log_warn("Non-headless mode not supported with jupyter notebooks")
+                self.config.update({"headless": True})
 
         # Load omniverse application plugins
         self._framework = carb.get_framework()
