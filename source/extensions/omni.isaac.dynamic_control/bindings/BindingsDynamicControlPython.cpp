@@ -849,7 +849,24 @@ PYBIND11_MODULE(_dynamic_control, m)
                  return false;
              },
              "Applies efforts to an actor's degrees-of-freedom.")
-
+        .def("get_articulation_dof_efforts",
+             [](const DynamicControl* dc, DcHandle artHandle) -> py::object
+             {
+                 if (dc && dc->isSimulating())
+                 {
+                     size_t numDofs = dc->getArticulationDofCount(artHandle);
+                     if (numDofs > 0)
+                     {
+                         auto arr = py::array_t<float, py::array::c_style>(numDofs);
+                         if (dc->getArticulationDofEfforts(artHandle, arr.mutable_data()))
+                         {
+                             return arr;
+                         }
+                     }
+                 }
+                 return py::none();
+             },
+             "Get array of efforts for articulation")
         .def("get_articulation_dof_masses",
              [](const DynamicControl* dc, DcHandle artHandle) -> py::object
              {
@@ -1004,6 +1021,9 @@ PYBIND11_MODULE(_dynamic_control, m)
              "Get velocity target for degree of freedom")
         .def("apply_dof_effort", wrapInterfaceFunction(&DynamicControl::applyDofEffort),
              "Apply effort to degree of freedom")
+        .def("get_dof_effort", wrapInterfaceFunction(&DynamicControl::getDofEffort),
+             "Get effort applied to degree of freedom")
+
 
         // attractors
 

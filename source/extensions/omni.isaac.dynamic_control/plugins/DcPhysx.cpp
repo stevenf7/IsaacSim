@@ -1536,6 +1536,37 @@ bool CARB_ABI DcApplyArticulationDofEfforts(DcHandle artHandle, const float* eff
     return true;
 }
 
+bool CARB_ABI DcGetArticulationDofEfforts(DcHandle artHandle, float* efforts)
+{
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
+    DcArticulation* art = DC_LOOKUP_ARTICULATION(artHandle);
+    if (!art || !efforts)
+    {
+        return false;
+    }
+
+    if (!art->refreshCache())
+    {
+        return false;
+    }
+
+    // clear forces
+    // ZeroArray(art->pxArticulationCache->jointForce, art->pxArticulation->getDofs());
+
+    size_t numDofs = art->numDofs();
+    for (size_t i = 0; i < numDofs; i++)
+    {
+        auto dof = art->dofs[i];
+
+        efforts[i] = art->pxArticulationCache->jointForce[dof->cacheIdx];
+    }
+
+    return true;
+}
 
 bool CARB_ABI DcGetArticulationDofMasses(DcHandle artHandle, float* masses)
 {
@@ -2574,14 +2605,11 @@ float CARB_ABI DcGetDofPositionTarget(DcHandle dofHandle)
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (!dof || !dof->pxArticulationJoint)
     {
-        return false;
+        return 0.0f;
     }
 
 
     return dof->pxArticulationJoint->getDriveTarget(dof->pxAxis);
-
-
-    return 0;
 }
 
 float CARB_ABI DcGetDofVelocityTarget(DcHandle dofHandle)
@@ -2594,12 +2622,10 @@ float CARB_ABI DcGetDofVelocityTarget(DcHandle dofHandle)
     DcDof* dof = DC_LOOKUP_DOF(dofHandle);
     if (!dof || !dof->pxArticulationJoint)
     {
-        return false;
+        return 0.0f;
     }
 
     return dof->pxArticulationJoint->getDriveVelocity(dof->pxAxis);
-
-    return 0;
 }
 
 bool CARB_ABI DcApplyDofEffort(DcHandle dofHandle, float effort)
@@ -2634,6 +2660,35 @@ bool CARB_ABI DcApplyDofEffort(DcHandle dofHandle, float effort)
     art->pxArticulation->applyCache(*art->pxArticulationCache, PxArticulationCacheFlag::eFORCE);
 
     return true;
+}
+
+float CARB_ABI DcGetDofEffort(DcHandle dofHandle)
+{
+    if (!DC_CHECK_SIMULATING())
+    {
+        return 0.0f;
+    }
+
+    DcDof* dof = DC_LOOKUP_DOF(dofHandle);
+    if (!dof || !dof->art)
+    {
+        return 0.0f;
+    }
+
+    DcArticulation* art = dof->art;
+    if (!art->refreshCache())
+    {
+        return 0.0f;
+    }
+
+    // Calling this method for individual dofs is not very efficient,
+    // since it uses the full parent articulation cache each time.
+    // Prefer DcApplyArticulationDofEfforts for multiple DOF efforts.
+
+    // clear forces
+    // ZeroArray(art->pxArticulationCache->jointForce, art->pxArticulation->getDofs());
+
+    return art->pxArticulationCache->jointForce[dof->cacheIdx];
 }
 
 //
@@ -3702,6 +3757,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.setArticulationDofVelocityTargets = DcSetArticulationDofVelocityTargets;
     iface.getArticulationDofVelocityTargets = DcGetArticulationDofVelocityTargets;
     iface.applyArticulationDofEfforts = DcApplyArticulationDofEfforts;
+    iface.getArticulationDofEfforts = DcGetArticulationDofEfforts;
     iface.getArticulationDofMasses = DcGetArticulationDofMasses;
 
     iface.getRigidBodyName = DcGetRigidBodyName;
@@ -3750,6 +3806,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.getDofPositionTarget = DcGetDofPositionTarget;
     iface.getDofVelocityTarget = DcGetDofVelocityTarget;
     iface.applyDofEffort = DcApplyDofEffort;
+    iface.getDofEffort = DcGetDofEffort;
 
     iface.createRigidBodyAttractor = DcCreateRigidBodyAttractor;
     iface.destroyRigidBodyAttractor = DcDestroyRigidBodyAttractor;
