@@ -10,7 +10,7 @@ from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.universal_robots import UR10
 import numpy as np
-from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 import carb
@@ -18,12 +18,13 @@ from omni.isaac.core.prims import XFormPrim, RigidPrim
 import random
 
 
-class BinPacking(BaseTask):
-    def __init__(self) -> None:
+class BinFilling(BaseTask):
+    def __init__(self, name="bin_filling") -> None:
         """[summary]
         """
-        self.my_ur10 = None
-        self.packing_bin = None
+        BaseTask.__init__(self, name=name)
+        self._ur10_robot = None
+        self._packing_bin = None
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
@@ -37,9 +38,12 @@ class BinPacking(BaseTask):
             nucleus_server + "/Isaac/Props/Flip_Stack/t_connector_physics.usd",
         ]
         self._screws = []
-        self._max_screws = 20
+        self._max_screws = 100
         self._screws_to_add = 0
         self._pipe_position = np.array([0, 0.85, 1.2])
+        self._target_position = np.array([0, 0.90, -0.44]) / get_stage_units()
+        self._bin_initial_position = np.array([0.35, 0.15, -0.44]) / get_stage_units()
+        self._bin_size = np.array([0.25, 0.35, 0.20]) / get_stage_units()
         return
 
     def get_current_num_of_screws_to_add(self):
@@ -53,24 +57,22 @@ class BinPacking(BaseTask):
         """
         # TODO: change values with USD
         super().set_up_scene(scene)
+
         add_reference_to_stage(usd_path=self._ur10_asset_path, prim_path="/World/Scene")
-        self.my_ur10 = scene.add(
-            UR10(stage=scene.stage, prim_path="/World/Scene/ur10", name="my_ur10", end_effector_prim_name="ee_link")
+        self._ur10_robot = scene.add(
+            UR10(prim_path="/World/Scene/ur10", name="my_ur10", gripper_usd=None, attach_gripper=True)
         )
-        # TODO: change values with USD
-        self.packing_bin = scene.add(
+        self._ur10_robot.gripper.set_translate(value=16.2)
+        self._ur10_robot.gripper.set_direction(value="x")
+        self._ur10_robot.gripper.set_force_limit(value=1.0e6)
+        self._ur10_robot.gripper.set_torque_limit(value=1.0e6)
+        self._packing_bin = scene.add(
             RigidPrim(
-                prim=scene.stage.GetPrimAtPath("/World/Scene/bin"),
+                prim_path="/World/Scene/bin",
                 name="packing_bin",
-                position=np.array([0.35, 0.15, -0.44]) * 100,
-                orientation=euler_angles_to_quat(np.array([0, 0, 0])),
+                position=self._bin_initial_position,
+                orientation=euler_angles_to_quat(np.array([0, 0, np.pi / 2])),
             )
-        )
-        # TODO: change values with USD
-        self.my_ur10.set_gripper_length(length=19)
-        # TODO: change values with USD
-        self.my_ur10.add_surface_gripper(
-            translate=self.my_ur10.gripper_length, direction="x", force_limit=5.0e20, torque_limit=5.0e20
         )
         return
 
@@ -80,18 +82,22 @@ class BinPacking(BaseTask):
         Returns:
             dict: [description]
         """
-        joints_state = self.my_ur10.get_joints_state()
-        bin_position, bin_orientation = self.packing_bin.get_pose()
-        end_effector_position, _ = self.my_ur10.get_end_effector_pose()
+        joints_state = self._ur10_robot.get_joints_state()
+        bin_position, bin_orientation = self._packing_bin.get_world_pose()
+        end_effector_position, end_effector_orientation = self._ur10_robot.end_effector.get_world_pose()
         # TODO: change values with USD
         return {
             "packing_bin": {
                 "position": bin_position,
                 "orientation": bin_orientation,
-                "target_position": np.array([0, 0.70, -0.44]) * 100,
-                "size": np.array([0.25, 0.35, 0.20]) * 100,
+                "target_position": self._target_position,
+                "size": self._bin_size,
             },
-            "my_ur10": {"joint_positions": joints_state.positions, "end_effector_pose": end_effector_position},
+            "my_ur10": {
+                "joint_positions": joints_state.positions,
+                "end_effector_position": end_effector_position,
+                "end_effector_orientation": end_effector_orientation,
+            },
         }
 
     def step(self, control_index: int, simulation_time: float) -> None:
@@ -101,8 +107,9 @@ class BinPacking(BaseTask):
             control_index (int): [description]
             simulation_time (float): [description]
         """
-        self.my_ur10.update_gripper()
-        if self._screws_to_add > 0 and len(self._screws) < self._max_screws and control_index % 100 == 0:
+        BaseTask.step(self, control_index=control_index, simulation_time=simulation_time)
+        self._ur10_robot.gripper.update()
+        if self._screws_to_add > 0 and len(self._screws) < self._max_screws and control_index % 50 == 0:
             self._add_screw()
         return
 
@@ -118,11 +125,11 @@ class BinPacking(BaseTask):
     def _add_screw(self):
         asset_path = self._screw_asset_paths[random.randint(0, len(self._screw_asset_paths) - 1)]
         prim_path = "/World/objects/object_{}".format(len(self._screws))
-        prim = add_reference_to_stage(usd_path=asset_path, prim_path=prim_path)
-        # TODO: change values with USD
-        # TODO: deal with nested rigid body apis?
+        add_reference_to_stage(usd_path=asset_path, prim_path=prim_path)
         self._screws.append(
-            XFormPrim(prim=prim, name="screw_{}".format(len(self._screws)), position=100 * self._pipe_position)
+            XFormPrim(
+                prim_path=prim_path, name="screw_{}".format(len(self._screws)), position=100 * self._pipe_position
+            )
         )
         self._screws_to_add -= 1
         return
@@ -132,3 +139,12 @@ class BinPacking(BaseTask):
             self.scene.remove_object(self._screws[i].name)
             self._screws = []
         return
+
+    def set_params(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def get_params(self):
+        params_representation = dict()
+        params_representation["bin_name"] = {"value": self._packing_bin.name, "modifiable": False}
+        params_representation["robot_name"] = {"value": self._ur10_robot.name, "modifiable": False}
+        return params_representation

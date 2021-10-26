@@ -21,14 +21,14 @@ class PickPlaceController(mg.PickPlaceController):
             name=name,
             ik_solver=RMPFlowController(name=name + "_ik_solver", robot_prim_path=robot_prim_path, attach_gripper=True),
             gripper_controller=GripperController(name=name + "_gripper_controller", surface_gripper=surface_gripper),
+            event_velocities=[0.008, 0.005, 1.0 / 60.0, 0.0025, 0.001, 0.0025, 1, 0.008, 0.08],
         )
         return
 
     def forward(
         self,
-        cube_position,
-        cube_orientation,
-        cube_target_position,
+        picking_position,
+        placing_position,
         current_joint_positions,
         end_effector_translation_offset=None,
         approach_angle=None,
@@ -36,9 +36,8 @@ class PickPlaceController(mg.PickPlaceController):
         if approach_angle is None:
             approach_angle = euler_angles_to_quat(np.array([0, np.pi / 2.0, 0]))
         return super().forward(
-            cube_position,
-            cube_orientation,
-            cube_target_position,
+            picking_position,
+            placing_position,
             current_joint_positions,
             end_effector_translation_offset=end_effector_translation_offset,
             approach_angle=approach_angle,

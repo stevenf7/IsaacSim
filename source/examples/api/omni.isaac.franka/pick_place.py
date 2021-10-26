@@ -31,9 +31,8 @@ while True:
     if my_world.is_playing():
         observations = my_world.get_observations()
         actions = my_controller.forward(
-            cube_position=observations[task_params["cube_name"]["value"]]["position"],
-            cube_orientation=observations[task_params["cube_name"]["value"]]["orientation"],
-            cube_target_position=observations[task_params["cube_name"]["value"]]["target_position"],
+            picking_position=observations[task_params["cube_name"]["value"]]["position"],
+            placing_position=observations[task_params["cube_name"]["value"]]["target_position"],
             current_joint_positions=observations[task_params["robot_name"]["value"]]["joint_positions"],
             end_effector_translation_offset=np.array([0, 0.5, -1.5]),
         )

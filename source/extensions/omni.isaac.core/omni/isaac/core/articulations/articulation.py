@@ -360,7 +360,7 @@ class Articulation(XFormPrim):
             position = current_position
         if orientation is None:
             orientation = current_orientation
-        pose = _dynamic_control.Transform(position, orientation)
+        pose = _dynamic_control.Transform(position, [orientation[1], orientation[2], orientation[3], orientation[0]])
         self._dc_interface.set_rigid_body_pose(self._root_handle, pose)
         return
 
@@ -375,7 +375,7 @@ class Articulation(XFormPrim):
             [type]: [description]
         """
         pose = self._dc_interface.get_rigid_body_pose(self._root_handle)
-        return np.asarray(pose.p), np.asarray(pose.r)
+        return np.asarray(pose.p), np.asarray([pose.r[3], pose.r[0], pose.r[1], pose.r[2]])
 
     def apply_action(self, control_actions: ArticulationAction, indices=None) -> None:
         """[summary]
