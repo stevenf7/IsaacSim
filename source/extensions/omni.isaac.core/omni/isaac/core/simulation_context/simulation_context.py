@@ -451,6 +451,8 @@ class PhysicsScene:
         if dt == 0:
             self._physx_scene_api.GetTimeStepsPerSecondAttr().Set(0)
             min_steps = 0
+        elif dt > 1.0:
+            raise ValueError("physics dt must be <= 1.0")
         else:
             steps_per_second = int(1.0 / dt)
             min_steps = int(steps_per_second / substeps)

@@ -148,7 +148,11 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
     """
     # TODO: Check that the provided usd_path exists
     if save_stage(usd_path):
-        omni.usd.get_context().set_layer_live(usd_path, enable)
+        if enable:
+            omni.usd.get_context().set_stage_live(omni.usd.StageLiveModeType.ALWAYS_ON)
+            omni.usd.get_context().set_layer_live(usd_path, enable)
+        else:
+            omni.usd.get_context().set_stage_live(omni.usd.StageLiveModeType.TOGGLE_OFF)
         return True
     else:
         return False

@@ -9,7 +9,7 @@
 from omni.isaac.kit import SimulationApp
 
 # The most basic usage for creating a simulation app
-kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
+kit = SimulationApp()
 
 for i in range(100):
     kit.update()
