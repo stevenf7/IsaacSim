@@ -15,11 +15,11 @@ from omni.isaac.franka.controllers import PickPlaceController
 from omni.isaac.core import World
 import numpy as np
 
-my_world = World()
+my_world = World(stage_units_in_meters=0.01)
 tasks = []
 num_of_tasks = 2
 for i in range(num_of_tasks):
-    tasks.append(PickPlace(name="task" + str(i), task_frame_translation=np.array([0, (i * 2) - 3, 0])))
+    tasks.append(PickPlace(name="task" + str(i), task_frame_translation=100 * np.array([0, (i * 2) - 3, 0])))
     my_world.add_task(tasks[-1])
 my_world.reset()
 frankas = []
@@ -55,7 +55,7 @@ while True:
                 cube_orientation=observations[cube_names[i]]["orientation"],
                 cube_target_position=observations[cube_names[i]]["target_position"],
                 current_joint_positions=observations[frankas[i].name]["joint_positions"],
-                end_effector_translation_offset=np.array([0, 0, -0.015]),
+                end_effector_translation_offset=np.array([0, 0, -0.015 * 100]),
             )
             articulation_controllers[i].apply_action(actions)
     my_world.step(render=True)

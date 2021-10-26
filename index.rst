@@ -32,7 +32,7 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.occupancy_map/docs/index
    source/extensions/omni.isaac.unit_converter/docs/index
    source/extensions/omni.isaac.utils/docs/index
-   source/extensions/omni.isaac.ur10/docs/index
+   source/extensions/omni.isaac.universal_robots/docs/index
    source/extensions/omni.isaac.urdf/docs/index
    source/extensions/omni.isaac.ui/docs/index
    source/extensions/omni.kit.loop-isaac/docs/index

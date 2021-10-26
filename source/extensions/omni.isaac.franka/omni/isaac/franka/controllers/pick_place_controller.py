@@ -21,7 +21,7 @@ class PickPlaceController(mg.PickPlaceController):
                 name=name + "_ik_solver", robot_prim_path=robot_prim_path, policy_map_path=["Franka", "RMPflow"]
             ),
             gripper_controller=GripperController(
-                name=name + "_gripper_controller", gripper_dof_indices=gripper_dof_indices, deltas=[0.005, 0.005]
+                name=name + "_gripper_controller", gripper_dof_indices=gripper_dof_indices, deltas=None
             ),
         )
         return

@@ -89,13 +89,13 @@ class DynamicCube(RigidPrim, GeometryPrim):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
-        mass: Optional[float] = None,
+        mass: Optional[float] = 0.02,
         color: Optional[np.ndarray] = None,
         linear_velocity: Optional[np.ndarray] = None,
         angular_velocity: Optional[np.ndarray] = None,
-        static_friction: float = 0.0,
-        dynamic_friction: float = 0.0,
-        restitution: float = 0.8,
+        static_friction: float = 0.2,
+        dynamic_friction: float = 1.0,
+        restitution: float = 0.0,
         size: float = 0.5,
         physics_material_path=None,
         visual_material_path=None,
@@ -169,6 +169,10 @@ class DynamicCube(RigidPrim, GeometryPrim):
         else:
             my_physics_material = PhysicsMaterial(prim_path=physics_material_path)
         DynamicCube.apply_physics_material(self, my_physics_material)
+        DynamicCube.set_rest_offset(self, 0.0)
+        DynamicCube.set_contact_offset(self, 0.1)
+        DynamicCube.set_torsional_patch_radius(self, 1.0)
+        DynamicCube.set_min_torsional_patch_radius(self, 0.8)
         return
 
     def set_size(self, size: float) -> None:

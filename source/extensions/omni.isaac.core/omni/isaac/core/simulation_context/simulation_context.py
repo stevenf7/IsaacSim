@@ -183,7 +183,7 @@ class SimulationContext:
     def play(self) -> None:
         self._timeline.play()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            self.step(render=True)
+            SimulationContext.step(self, render=True)
         return
 
     async def pause_async(self):
@@ -482,7 +482,6 @@ class PhysicsScene:
         up_axis = UsdGeom.GetStageUpAxis(stage)
         gravity_dir = Gf.Vec3f(0.0)
         gravity_dir[AXES_INDICES[up_axis]] = gravity_z_dir
-        print(self._physics_scene)
         if self._physics_scene.GetGravityDirectionAttr().Get() is None:
             self._physics_scene.CreateGravityDirectionAttr(gravity_dir)
         else:

@@ -27,6 +27,3 @@ name = "omni.isaac.surface_gripper"
 
 [[python.module]]
 name = "omni.isaac.surface_gripper.tests"
-
-[[python.module]]
-name = "omni.isaac.surface_gripper.scripts.samples.surface_gripper"

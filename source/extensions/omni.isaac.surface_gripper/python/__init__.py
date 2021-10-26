@@ -9,3 +9,4 @@
 
 # there is no extension, so we just import bindings
 from . import _surface_gripper
+from .scripts import *

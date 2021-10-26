@@ -14,10 +14,12 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.franka import Franka
 from omni.isaac.core import World
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.core.utils.stage import get_stage_units
 
-my_world = World()
+
+my_world = World(stage_units_in_meters=0.01)
 my_franka = my_world.scene.add(Franka(prim_path="/World/Franka", name="my_franka"))
-my_world.scene.add_ground_plane()
+my_world.scene.add_ground_plane(50.0 / get_stage_units())
 my_world.reset()
 
 i = 0
@@ -26,11 +28,15 @@ while True:
     gripper_positions = my_franka.gripper.get_positions()
     if i < 500:
         my_franka.gripper.apply_action(
-            ArticulationAction(joint_positions=[gripper_positions[0] - 0.005, gripper_positions[1] - 0.005])
+            ArticulationAction(
+                joint_positions=[gripper_positions[0] - (0.005 * 100), gripper_positions[1] - (0.005 * 100)]
+            )
         )
     if i > 500:
         my_franka.gripper.apply_action(
-            ArticulationAction(joint_positions=[gripper_positions[0] + 0.005, gripper_positions[1] + 0.005])
+            ArticulationAction(
+                joint_positions=[gripper_positions[0] + (0.005 * 100), gripper_positions[1] + (0.005 * 100)]
+            )
         )
     if i == 1000:
         i = 0
