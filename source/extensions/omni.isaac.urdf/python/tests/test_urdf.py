@@ -353,3 +353,25 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.stop()
 
         pass
+
+    async def test_urdf_usd(self):
+
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_usd.urdf")
+        stage = omni.usd.get_context().get_stage()
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+        from omni.isaac.urdf._urdf import UrdfJointTargetType
+
+        import_config.default_drive_type = UrdfJointTargetType.JOINT_DRIVE_NONE
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
+        await omni.kit.app.get_app().next_update_async()
+
+        self.assertNotEqual(stage.GetPrimAtPath("/test_usd/cube/visuals/mesh_0/Cylinder"), Sdf.Path.emptyPath)
+        self.assertNotEqual(stage.GetPrimAtPath("/test_usd/cube/visuals/mesh_1/Torus"), Sdf.Path.emptyPath)
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        # nothing crashes
+        self._timeline.stop()
+
+        pass

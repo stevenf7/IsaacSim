@@ -5,6 +5,10 @@ CHANGELOG
 [0.1.9] - 2021-10-25
 ========================
 
+Added
+-----
+- Support to specify usd paths for urdf meshes. 
+
 Changed
 -----
 - distance_scale sets the stage to the same units for consistency

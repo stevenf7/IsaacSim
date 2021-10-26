@@ -96,6 +96,14 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
             CARB_LOG_WARN("Failed to resolve mesh '%s'", meshUri.c_str());
             return pxr::UsdPrim(); // move to next shape
         }
+        // mesh is a usd file, add as a reference directly to a new xform
+        else if (IsUsdFile(meshPath))
+        {
+            CARB_LOG_INFO("Adding Usd reference '%s'", meshPath.c_str());
+            path = pxr::SdfPath(omni::isaac::urdf::GetNewSdfPathString(stage, name));
+            pxr::UsdGeomXform usdXform = pxr::UsdGeomXform::Define(stage, path);
+            usdXform.GetPrim().GetReferences().AddReference(meshPath);
+        }
         else
         {
             CARB_LOG_INFO("Found Mesh At: %s", meshPath.c_str());
