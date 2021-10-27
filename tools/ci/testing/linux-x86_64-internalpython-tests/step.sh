@@ -33,8 +33,8 @@ then
 fi
 
 # Nucleus server credentials
-export OMNI_USER=svc-test
-export OMNI_PASS=svc-test
+export OMNI_USER=svc_internal_tests
+# export OMNI_PASS=svc-test
 
 cd "$SCRIPT_DIR/../../../../tools"
 ./test.sh --suite internalpythontests --config $CONFIG $USE_PACKAGE $PARAMS
