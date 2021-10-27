@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.controllers import BaseController
+from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.types import ArticulationAction
 from typing import Optional
 from omni.isaac.core.utils.rotations import quat_to_rot_matrix, euler_angles_to_quat
@@ -39,7 +40,7 @@ class InverseKinematicsSolver(BaseController):
         if target_end_effector_orientation is None:
             target_end_effector_orientation = euler_angles_to_quat(np.array([0, np.pi, 0]))
         rot = np.array(quat_to_rot_matrix(target_end_effector_orientation), dtype=np.float64).reshape(3, 3)
-        translation = np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1)
+        translation = np.array(target_end_effector_position, dtype=np.float64).reshape(3, 1) * get_stage_units()
         target_pose = lula.Pose3(lula.Rotation3(rot), translation)
         results = lula.compute_ik_ccd(self._kinematics, target_pose, self._end_effector_frame_name, self._config)
         self._config.cspace_seeds = [results.cspace_position]

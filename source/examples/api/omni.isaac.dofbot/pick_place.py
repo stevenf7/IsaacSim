@@ -11,37 +11,34 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.dofbot.tasks import PickPlace
-from omni.isaac.dofbot.controllers import RMPFlowPickPlace
+from omni.isaac.dofbot.controllers import PickPlaceController
 from omni.isaac.core import World
-from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
+import numpy as np
 
 my_world = World(stage_units_in_meters=0.01)
-extension_id = get_extension_id("omni.isaac.motion_generation")
-mg_extension_path = get_extension_path(ext_id=extension_id)
 my_task = PickPlace()
 my_world.add_task(my_task)
 my_world.reset()
-my_dofbot = my_world.scene.get_object("my_dofbot")
-my_controller = RMPFlowPickPlace(
-    name="pick_place_controller",
-    dc_interface=my_world.dc_interface,
-    stage=my_world.stage,
-    robot_prim=my_dofbot.prim,
-    mg_extension_path=mg_extension_path,
-    gripper_dof_indices=my_dofbot.grippers_dof_indices,
+task_params = my_task.get_params()
+dofbot_name = task_params["robot_name"]["value"]
+my_dofbot = my_world.scene.get_object(dofbot_name)
+my_controller = PickPlaceController(
+    name="pick_place_controller", gripper_dof_indices=my_dofbot.gripper.dof_indices, robot_prim_path=my_dofbot.prim_path
 )
 articulation_controller = my_dofbot.get_articulation_controller()
 
+i = 0
 while True:
-    observations = my_world.get_observations()
-    actions = my_controller.forward(
-        picking_position=observations["cube_1"]["position"],
-        placing_position=observations["cube_1"]["target_position"],
-        current_joint_positions=observations["my_dofbot"]["joint_positions"],
-    )
-    if my_controller.is_done():
-        print("done picking and placing the cube")
-    articulation_controller.apply_action(actions)
+    if my_world.is_playing():
+        observations = my_world.get_observations()
+        actions = my_controller.forward(
+            picking_position=observations[task_params["cube_name"]["value"]]["position"],
+            placing_position=observations[task_params["cube_name"]["value"]]["target_position"],
+            current_joint_positions=observations[dofbot_name]["joint_positions"],
+            end_effector_translation_offset=np.array([0, -6, 0]),
+        )
+        if my_controller.is_done():
+            print("done picking and placing")
+        articulation_controller.apply_action(actions)
     my_world.step(render=True)
-
 simulation_app.close()

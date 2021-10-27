@@ -6,7 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.dofbot.controllers.gripper_controller import GripperController
-from omni.isaac.dofbot.controllers.inverse_kinematics_solver import InverseKinematicsSolver
-from omni.isaac.dofbot.controllers.rmpflow_controller import RMPFlowController
-from omni.isaac.dofbot.controllers.pick_place_controller import PickPlaceController
+import omni.isaac.motion_generation as mg
+
+
+class RMPFlowController(mg.RMPFlowController):
+    def __init__(self, name, robot_prim_path):
+        mg.RMPFlowController.__init__(
+            self, name=name, robot_prim_path=robot_prim_path, policy_map_path=["DofBot", "RMPflow"]
+        )
+        return

@@ -10,34 +10,35 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.dofbot.tasks import TargetFollower
-from omni.isaac.dofbot.controllers import RMPFlowIKSolver
+from omni.isaac.dofbot.tasks import FollowTarget
+
+from omni.isaac.dofbot.controllers import RMPFlowController
 from omni.isaac.core import World
-from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
+from omni.isaac.core.utils.rotations import euler_angles_to_quat
 
 my_world = World(stage_units_in_meters=0.01)
-extension_id = get_extension_id("omni.isaac.motion_generation")
-mg_extension_path = get_extension_path(ext_id=extension_id)
-my_task = TargetFollower()
+my_task = FollowTarget(name="follow_target_task")
 my_world.add_task(my_task)
 my_world.reset()
-my_dofbot = my_world.scene.get_object("my_dofbot")
-my_controller = RMPFlowIKSolver(
-    name="target_follower_controller",
-    dc_interface=my_world.dc_interface,
-    stage=my_world.stage,
-    robot_prim=my_dofbot.prim,
-    mg_extension_path=mg_extension_path,
-)
+task_params = my_world.get_task("follow_target_task").get_params()
+dofbot_name = task_params["robot_name"]["value"]
+target_name = task_params["target_name"]["value"]
+my_dofbot = my_world.scene.get_object(dofbot_name)
+my_controller = RMPFlowController(name="target_follower_controller", robot_prim_path=my_dofbot.prim_path)
 articulation_controller = my_dofbot.get_articulation_controller()
-
+i = 0
 while True:
     observations = my_world.get_observations()
     actions = my_controller.forward(
-        target_end_effector_position=observations["target_cube"]["position"],
-        current_joint_positions=observations["my_dofbot"]["joint_positions"],
+        target_end_effector_position=observations[target_name]["position"],
+        target_end_effector_orientation=observations[target_name]["orientation"],
     )
     articulation_controller.apply_action(actions)
     my_world.step(render=True)
+    if i % 2000 == 0:
+        my_task.add_obstacle()
+    if i % 3000 == 0:
+        my_task.remove_obstacle()
+    i += 1
 
 simulation_app.close()

@@ -151,7 +151,7 @@ class FollowTarget(BaseTask):
         """
         end_effector_position, _ = self._robot.end_effector.get_world_pose()
         target_position, _ = self._target.get_world_pose()
-        if np.mean(np.abs(np.array(end_effector_position) - np.array(target_position))) < (0.025 / get_stage_units()):
+        if np.mean(np.abs(np.array(end_effector_position) - np.array(target_position))) < (0.035 / get_stage_units()):
             return True
         else:
             return False
