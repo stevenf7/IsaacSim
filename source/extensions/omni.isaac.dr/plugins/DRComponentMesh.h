@@ -47,6 +47,9 @@ private:
     std::unordered_map<std::string, std::vector<pxr::UsdPrim>> mCopiedMeshPrims;
     pxr::GfVec2i mNumMeshRange;
     std::vector<pxr::UsdPrim> mAllPrims;
+
+    pxr::SdfPath mParentPrimPath;
+    pxr::UsdPrim mParentPrim;
 };
 
 }

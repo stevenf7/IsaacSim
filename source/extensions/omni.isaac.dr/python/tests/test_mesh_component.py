@@ -24,6 +24,7 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.stage import is_stage_loading
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -67,4 +68,43 @@ class TestDomainRandomizerMesh(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Unit test for movement component for articulated robots
     async def test_mesh_component(self):
+        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
+        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/mesh_component", False)
+        result, prim = omni.kit.commands.execute(
+            "CreateMeshComponentCommand",
+            parent_prim=["/World"],
+            mesh_list=[
+                self._nucleus_path + "/Props/Blocks/nvidia_cube.usd",
+                self._nucleus_path + "/Props/Rubiks_Cube/rubiks_cube.usd",
+            ],
+            mesh_range=[3, 5],
+            seed=12345,
+        )
+        self._timeline.play()
+        while is_stage_loading():
+            await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        parent_prim = self._stage.GetPrimAtPath("/World")
+        self.assertGreater(len(parent_prim.GetChildren()), 1)
+        pass
+
+    async def test_mesh_component_parent(self):
+        default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
+        path = omni.usd.get_stage_next_free_path(self._stage, default_prim_path + "/mesh_component", False)
+        result, prim = omni.kit.commands.execute(
+            "CreateMeshComponentCommand",
+            path=path,
+            mesh_list=[
+                self._nucleus_path + "/Props/Blocks/nvidia_cube.usd",
+                self._nucleus_path + "/Props/Rubiks_Cube/rubiks_cube.usd",
+            ],
+            mesh_range=[3, 5],
+            seed=12345,
+        )
+        self._timeline.play()
+        while is_stage_loading():
+            await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        parent_prim = self._stage.GetPrimAtPath(path)
+        self.assertGreater(len(parent_prim.GetChildren()), 1)
         pass

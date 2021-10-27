@@ -134,6 +134,14 @@ void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
             if (prim)
             {
                 Manager->onComponentAdd(prim);
+
+                // Check if it has any descendants that need to be added
+                pxr::UsdPrimSubtreeRange range = prim.GetDescendants();
+                for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
+                {
+                    pxr::UsdPrim prim = *iter;
+                    Manager->onComponentAdd(prim);
+                }
             }
         }
     }

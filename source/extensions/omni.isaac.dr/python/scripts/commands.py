@@ -45,15 +45,10 @@ class CreateColorComponentCommand(omni.kit.commands.Command):
         include_children=False,
         seed=12345,
     ):
-        self._path = path
-        self._prim_paths = prim_paths
-        self._first_color_range = first_color_range
-        self._second_color_range = second_color_range
-        self._roughness_range = roughness_range
-        self._metallic_range = metallic_range
-        self._duration = duration
-        self._include_children = include_children
-        self._seed = seed
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
 
     def do(self):
         """Create a color randomization component"""
@@ -116,20 +111,10 @@ class CreateMovementComponentCommand(omni.kit.commands.Command):
         include_children=False,
         seed=12345,
     ):
-        self._path = path
-        self._prim_paths = prim_paths
-        self._min_range = min_range
-        self._max_range = max_range
-        self._target_position = target_position
-        self._target_paths = target_paths
-        self._polygon_points = polygon_points
-        self._draw_polygon = draw_polygon
-        self._target_points = target_points
-        self._lookat_target_points = lookat_target_points
-        self._enable_sequential_behavior = enable_sequential_behavior
-        self._duration = duration
-        self._include_children = include_children
-        self._seed = seed
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
 
     def do(self):
         """Create a movement randomization component, if target position or paths are specified the object will point towards that target"""
@@ -197,13 +182,10 @@ class CreateRotationComponentCommand(omni.kit.commands.Command):
         include_children=False,
         seed=12345,
     ):
-        self._path = path
-        self._prim_paths = prim_paths
-        self._min_range = min_range
-        self._max_range = max_range
-        self._duration = duration
-        self._include_children = include_children
-        self._seed = seed
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
 
     def do(self):
         """Create a rotation randomization component"""
@@ -255,14 +237,10 @@ class CreateScaleComponentCommand(omni.kit.commands.Command):
         include_children=False,
         seed=12345,
     ):
-        self._path = path
-        self._prim_paths = prim_paths
-        self._min_range = min_range
-        self._max_range = max_range
-        self._uniform_scaling = uniform_scaling
-        self._duration = duration
-        self._include_children = include_children
-        self._seed = seed
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
 
     def do(self):
         """Create a scale randomization component"""
@@ -329,28 +307,10 @@ class CreateTransformComponentCommand(omni.kit.commands.Command):
         include_children=False,
         seed=12345,
     ):
-        self._path = path
-        self._prim_paths = prim_paths
-        self._translate_min_range = translate_min_range
-        self._translate_max_range = translate_max_range
-        self._rotate_min_range = rotate_min_range
-        self._rotate_max_range = rotate_max_range
-        self._scale_min_range = scale_min_range
-        self._scale_max_range = scale_max_range
-        self._target_position = target_position
-        self._target_paths = target_paths
-        self._polygon_points = polygon_points
-        self._draw_polygon = draw_polygon
-        self._target_points = target_points
-        self._lookat_target_points = lookat_target_points
-        self._target_point_instancer_paths = target_point_instancer_paths
-        self._enable_sequential_behavior = enable_sequential_behavior
-        self._combine_random_range = combine_random_range
-        self._excluded_target_paths = excluded_target_paths
-        self._excluded_target_offset = excluded_target_offset
-        self._duration = duration
-        self._include_children = include_children
-        self._seed = seed
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
 
     def do(self):
         """Create a transform randomization component, if target position or paths are specified the object will point towards that target"""
@@ -459,16 +419,10 @@ class CreateLightComponentCommand(omni.kit.commands.Command):
         include_children=False,
         seed=12345,
     ):
-        self._path = path
-        self._light_paths = light_paths
-        self._first_color_range = first_color_range
-        self._second_color_range = second_color_range
-        self._intensity_range = intensity_range
-        self._temperature_range = temperature_range
-        self._enable_temperature = enable_temperature
-        self._duration = duration
-        self._include_children = include_children
-        self._seed = seed
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
 
     def do(self):
         """Create a light randomization component"""
@@ -532,15 +486,10 @@ class CreateTextureComponentCommand(omni.kit.commands.Command):
         include_children=False,
         seed=12345,
     ):
-        self._path = path
-        self._prim_paths = prim_paths
-        self._enable_project_uvw = enable_project_uvw
-        self._texture_list = texture_list
-        self._ignored_class_list = ignored_class_list
-        self._grouped_class_list = grouped_class_list
-        self._duration = duration
-        self._include_children = include_children
-        self._seed = seed
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
 
     def do(self):
         """Create a texture randomization component"""
@@ -599,15 +548,10 @@ class CreateMaterialComponentCommand(omni.kit.commands.Command):
         include_children=False,
         seed=12345,
     ):
-        self._path = path
-        self._prim_paths = prim_paths
-        self._material_list = material_list
-        self._ignored_class_list = ignored_class_list
-        self._grouped_class_list = grouped_class_list
-        self._loaded_material_paths = loaded_material_paths
-        self._duration = duration
-        self._include_children = include_children
-        self._seed = seed
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
 
     def do(self):
         """Create a material randomization component"""
@@ -654,23 +598,11 @@ class CreateMeshComponentCommand(omni.kit.commands.Command):
             )
     """
 
-    def __init__(
-        self,
-        path=None,
-        prim_paths=[],
-        mesh_list=[],
-        mesh_range=(1, 1),
-        duration=0.0,
-        include_children=False,
-        seed=12345,
-    ):
-        self._path = path
-        self._prim_paths = prim_paths
-        self._mesh_list = mesh_list
-        self._mesh_range = mesh_range
-        self._duration = duration
-        self._include_children = include_children
-        self._seed = seed
+    def __init__(self, path=None, parent_prim=[], mesh_list=[], mesh_range=(1, 1), duration=0.0, seed=12345):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
 
     def do(self):
         """Create a mesh randomization component"""
@@ -681,14 +613,13 @@ class CreateMeshComponentCommand(omni.kit.commands.Command):
         prim = DrSchema.MeshComponent.Define(stage, Sdf.Path(self._path))
         path_split = self._path.split("/")
         prim.CreateCompNameAttr().Set(str(path_split[len(path_split) - 1]))
-
-        rel_paths = prim.CreatePrimPathsRel()
-        for path in self._prim_paths:
-            rel_paths.AddTarget(path)
         prim.CreateMeshListAttr().Set(str(",").join(self._mesh_list))
         prim.CreateNumMeshRangeAttr().Set(Gf.Vec2i(self._mesh_range[0], self._mesh_range[1]))
         prim.CreateDurationAttr().Set(self._duration)
-        prim.CreateIncludeChildrenAttr().Set(bool(self._include_children))
+        rel_paths = prim.CreateParentPrimRel()
+        for path in self._parent_prim:
+            rel_paths.AddTarget(path)
+
         prim.CreateSeedAttr().Set(int(self._seed))
         return prim
 
@@ -711,12 +642,10 @@ class CreateVisibilityComponentCommand(omni.kit.commands.Command):
     def __init__(
         self, path=None, prim_paths=[], num_visible_range=(1, 1), duration=0.0, include_children=False, seed=12345
     ):
-        self._path = path
-        self._prim_paths = prim_paths
-        self._num_visible_range = num_visible_range
-        self._duration = duration
-        self._include_children = include_children
-        self._seed = seed
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
 
     def do(self):
         """Create a visibility randomization component"""
@@ -769,12 +698,10 @@ class CreateAttributeComponentCommand(omni.kit.commands.Command):
     """
 
     def __init__(self, path=None, prim_paths=[], custom_data=dict(), duration=0.0, include_children=False, seed=12345):
-        self._path = path
-        self._prim_paths = prim_paths
-        self._custom_data = custom_data
-        self._duration = duration
-        self._include_children = include_children
-        self._seed = seed
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
 
     def do(self):
         """Create a attribute randomization component"""
