@@ -22,7 +22,7 @@ class PickPlace(tasks.PickPlace):
         cube_initial_orientation=None,
         target_position=None,
         cube_size=None,
-        task_frame_translation=None,
+        offset=None,
     ) -> None:
         """[summary]
         """
@@ -39,7 +39,7 @@ class PickPlace(tasks.PickPlace):
             cube_initial_orientation=cube_initial_orientation,
             target_position=target_position,
             cube_size=cube_size,
-            task_frame_translation=task_frame_translation,
+            offset=offset,
         )
         return
 

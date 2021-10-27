@@ -20,7 +20,7 @@ class FollowTarget(tasks.FollowTarget):
         target_name=None,
         target_position=None,
         target_orientation=None,
-        task_frame_translation=None,
+        offset=None,
         franka_prim_path=None,
         franka_robot_name=None,
     ) -> None:
@@ -33,7 +33,7 @@ class FollowTarget(tasks.FollowTarget):
             target_name=target_name,
             target_position=target_position,
             target_orientation=target_orientation,
-            task_frame_translation=task_frame_translation,
+            offset=offset,
         )
         self._franka_prim_path = franka_prim_path
         self._franka_robot_name = franka_robot_name

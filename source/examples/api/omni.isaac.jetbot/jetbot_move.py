@@ -13,23 +13,12 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.jetbot import Jetbot
 from omni.isaac.core import World
 from omni.isaac.jetbot.controllers import SimpleController, SimpleContollerCommand
-from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.core.utils.nucleus import find_nucleus_server
-from omni.isaac.core.prims import XFormPrim
 import numpy as np
-import carb
 
 # TODO: changed this when asset gets converted
 my_world = World(stage_units_in_meters=0.01)
-my_jetbot = my_world.scene.add(Jetbot(prim_path="/World/Jetbot", name="my_jetbot"))
-result, nucleus_server = find_nucleus_server()
-if result is False:
-    carb.log_error("Could not find nucleus server with /Isaac folder")
-prim = add_reference_to_stage(
-    usd_path=nucleus_server + "/Isaac/Environments/Grid/gridroom_curved.usd", prim_path="/World/background"
-)
-# TODO: change with new USD
-XFormPrim(prim_path="/World/background", name="background", position=np.array([0, 0, -9]))
+my_jetbot = my_world.scene.add(Jetbot(prim_path="/World/Jetbot", name="my_jetbot", position=np.array([0, 0.0, 2.0])))
+my_world.scene.add_ground_plane()
 my_controller = SimpleController(name="simple_control")
 my_world.reset()
 

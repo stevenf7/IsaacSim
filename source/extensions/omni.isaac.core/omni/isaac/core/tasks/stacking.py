@@ -25,7 +25,7 @@ class Stacking(BaseTask):
         cube_initial_orientations=None,
         stack_target_position=None,
         cube_size=None,
-        task_frame_translation=None,
+        offset=None,
     ) -> None:
         """[summary]
         """
@@ -34,18 +34,18 @@ class Stacking(BaseTask):
         self._num_of_cubes = cube_initial_positions.shape[0]
         self._cube_initial_positions = cube_initial_positions
         self._cube_initial_orientations = cube_initial_orientations
-        self._task_frame_translation = task_frame_translation
+        self._offset = offset
         if self._cube_initial_orientations is None:
             self._cube_initial_orientations = [None] * self._num_of_cubes
         self._stack_target_position = stack_target_position
         self._cube_size = cube_size
         if self._cube_size is None:
             self._cube_size = 0.0515 / get_stage_units()
-        if self._task_frame_translation is None:
-            self._task_frame_translation = np.array([0.0, 0.0, 0.0])
+        if self._offset is None:
+            self._offset = np.array([0.0, 0.0, 0.0])
         if stack_target_position is None:
             self._stack_target_position = np.array([-0.3, -0.3, 0]) / get_stage_units()
-        self._stack_target_position = self._stack_target_position + self._task_frame_translation
+        self._stack_target_position = self._stack_target_position + self._offset
         self._cubes = []
         return
 
@@ -56,7 +56,7 @@ class Stacking(BaseTask):
             scene (Scene): [description]
         """
         super().set_up_scene(scene)
-        scene.add_ground_plane(50.0 / get_stage_units())
+        scene.add_ground_plane()
         for i in range(self._num_of_cubes):
             color = np.random.uniform(size=(3,))
             cube_prim_path = find_unique_string_name(
@@ -69,7 +69,7 @@ class Stacking(BaseTask):
                 scene.add(
                     DynamicCube(
                         name=cube_name,
-                        position=self._cube_initial_positions[i] + self._task_frame_translation,
+                        position=self._cube_initial_positions[i] + self._offset,
                         orientation=self._cube_initial_orientations[i],
                         prim_path=cube_prim_path,
                         size=self._cube_size,
@@ -81,8 +81,8 @@ class Stacking(BaseTask):
         self._robot = self.set_robot()
         scene.add(self._robot)
         position, orientation = self._robot.get_world_pose()
-        self._robot.set_world_pose(position=position + self._task_frame_translation, orientation=orientation)
-        self._robot.set_default_state(position=position + self._task_frame_translation, orientation=orientation)
+        self._robot.set_world_pose(position=position + self._offset, orientation=orientation)
+        self._robot.set_default_state(position=position + self._offset, orientation=orientation)
         self._task_objects[self._robot.name] = self._robot
         return
 

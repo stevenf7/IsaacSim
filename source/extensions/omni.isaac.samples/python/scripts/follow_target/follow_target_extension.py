@@ -15,13 +15,6 @@ import asyncio
 class FollowTargetExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
-        overview = "This Example shows how to simulate an NVIDIA Jetbot robot in Isaac Sim."
-        overview += "\n\tKeybord Input:"
-        overview += "\n\t\tw: Forward"
-        overview += "\n\t\ts: Reverse"
-        overview += "\n\t\ta: Spin Left"
-        overview += "\n\t\td: Spin Right"
-        overview += "\n\nPress the 'Open in IDE' button to view the source code."
         super().start_extension(
             menu_name="Controlling",
             submenu_name="Manipulation",
@@ -34,7 +27,7 @@ class FollowTargetExtension(BaseSampleExtension):
             title="Follow Target Controller",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_urdf_import.html",
             overview="This Example shows how to follow a target using Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
-            stage_units_in_meters=1.0,
+            stage_units_in_meters=0.01,
             sample=FollowTarget(),
             file_path=os.path.abspath(__file__),
         )

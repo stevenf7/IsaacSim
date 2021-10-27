@@ -29,7 +29,7 @@ class InverseKinematicsSolver(BaseInverseKinematicsSolver):
                 mg_extension_path, "policy_configs/dofbot/rmpflow/robot_descriptor.yaml"
             )
         if end_effector_frame_name is None:
-            end_effector_frame_name = "Finger_Right_01"
+            end_effector_frame_name = "link5"
         BaseInverseKinematicsSolver.__init__(
             self,
             name=name,

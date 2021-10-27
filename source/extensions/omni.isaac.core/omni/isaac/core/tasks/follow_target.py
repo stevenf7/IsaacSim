@@ -22,13 +22,7 @@ from collections import OrderedDict
 
 class FollowTarget(BaseTask):
     def __init__(
-        self,
-        name,
-        target_prim_path=None,
-        target_name=None,
-        target_position=None,
-        target_orientation=None,
-        task_frame_translation=None,
+        self, name, target_prim_path=None, target_name=None, target_position=None, target_orientation=None, offset=None
     ) -> None:
         """[summary]
         """
@@ -37,15 +31,15 @@ class FollowTarget(BaseTask):
         self._target_name = target_name
         self._target = None
         self._target_prim_path = target_prim_path
-        self._task_frame_translation = task_frame_translation
+        self._offset = offset
         self._target_position = target_position
         self._target_orientation = target_orientation
         self._target_visual_material = None
         self._obstacle_cubes = OrderedDict()
         if self._target_position is None:
             self._target_position = np.array([0, 0.1, 0.7]) / get_stage_units()
-        if self._task_frame_translation is None:
-            self._task_frame_translation = np.array([0.0, 0.0, 0.0])
+        if self._offset is None:
+            self._offset = np.array([0.0, 0.0, 0.0])
         return
 
     def set_up_scene(self, scene: Scene) -> None:
@@ -55,7 +49,7 @@ class FollowTarget(BaseTask):
             scene (Scene): [description]
         """
         super().set_up_scene(scene)
-        scene.add_ground_plane(size=50.0 / get_stage_units())
+        scene.add_ground_plane()
         if self._target_orientation is None:
             self._target_orientation = euler_angles_to_quat(np.array([-np.pi, 0, np.pi]))
         if self._target_prim_path is None:
@@ -68,15 +62,15 @@ class FollowTarget(BaseTask):
             )
         self.set_params(
             target_prim_path=self._target_prim_path,
-            target_position=self._target_position + self._task_frame_translation,
+            target_position=self._target_position + self._offset,
             target_orientation=self._target_orientation,
             target_name=self._target_name,
         )
         self._robot = self.set_robot()
         scene.add(self._robot)
         position, orientation = self._robot.get_world_pose()
-        self._robot.set_world_pose(position=position + self._task_frame_translation, orientation=orientation)
-        self._robot.set_default_state(position=position + self._task_frame_translation, orientation=orientation)
+        self._robot.set_world_pose(position=position + self._offset, orientation=orientation)
+        self._robot.set_default_state(position=position + self._offset, orientation=orientation)
         self._task_objects[self._robot.name] = self._robot
         return
 
@@ -194,9 +188,9 @@ class FollowTarget(BaseTask):
         cube = self.scene.add(
             DynamicCube(
                 name=cube_name,
-                position=position + self._task_frame_translation,
+                position=position + self._offset,
                 prim_path=cube_prim_path,
-                size=0.1,
+                size=0.1 / get_stage_units(),
                 color=np.array([0, 0, 1.0]),
             )
         )

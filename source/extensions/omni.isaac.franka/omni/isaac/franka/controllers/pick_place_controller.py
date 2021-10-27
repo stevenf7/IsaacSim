@@ -13,7 +13,9 @@ from omni.isaac.motion_generation import RMPFlowController
 
 class PickPlaceController(mg.PickPlaceController):
     # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, gripper_dof_indices, robot_prim_path):
+    def __init__(self, name, gripper_dof_indices, robot_prim_path, event_velocities=None):
+        if event_velocities is None:
+            event_velocities = [0.008, 0.005, 0.1, 0.05, 0.05, 0.0025, 1, 0.008, 0.08]
         mg.PickPlaceController.__init__(
             self,
             name=name,
@@ -23,5 +25,6 @@ class PickPlaceController(mg.PickPlaceController):
             gripper_controller=GripperController(
                 name=name + "_gripper_controller", gripper_dof_indices=gripper_dof_indices, deltas=None
             ),
+            event_velocities=event_velocities,
         )
         return

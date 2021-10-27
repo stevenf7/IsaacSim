@@ -60,11 +60,11 @@ class PickPlaceController(BaseController):
         picking_position,
         placing_position,
         current_joint_positions,
-        end_effector_translation_offset=None,
-        approach_angle=None,
+        end_effector_offset=None,
+        end_effector_orientation=None,
     ):
-        if end_effector_translation_offset is None:
-            end_effector_translation_offset = np.array([0, 0, 0])
+        if end_effector_offset is None:
+            end_effector_offset = np.array([0, 0, 0])
         if self._pause or self._event >= len(self._event_velocities):
             target_joint_positions = [None] * current_joint_positions.shape[0]
             return ArticulationAction(joint_positions=target_joint_positions)
@@ -81,9 +81,9 @@ class PickPlaceController(BaseController):
         target_height = self._get_target_hs(placing_position[2])
         position_target = np.array(
             [
-                interpolated_xy[0] + end_effector_translation_offset[0],
-                interpolated_xy[1] + end_effector_translation_offset[1],
-                target_height + end_effector_translation_offset[2],
+                interpolated_xy[0] + end_effector_offset[0],
+                interpolated_xy[1] + end_effector_offset[1],
+                target_height + end_effector_offset[2],
             ]
         )
         if self._event == 2:
@@ -95,10 +95,10 @@ class PickPlaceController(BaseController):
                 action="open", current_joint_positions=current_joint_positions
             )
         else:
-            if approach_angle is None:
-                approach_angle = euler_angles_to_quat(np.array([0, np.pi, 0]))
+            if end_effector_orientation is None:
+                end_effector_orientation = euler_angles_to_quat(np.array([0, np.pi, 0]))
             target_joint_positions = self._ik_solver.forward(
-                target_end_effector_position=position_target, target_end_effector_orientation=approach_angle
+                target_end_effector_position=position_target, target_end_effector_orientation=end_effector_orientation
             )
 
         self._t += self._event_velocities[self._event]

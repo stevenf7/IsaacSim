@@ -24,7 +24,7 @@ class StackingController(mg.StackingController):
         )
         return
 
-    def forward(self, observations, approach_angle=None, end_effector_translation_offset=None):
+    def forward(self, observations, end_effector_orientation=None, end_effector_offset=None):
         return super().forward(
-            observations, approach_angle=approach_angle, end_effector_translation_offset=end_effector_translation_offset
+            observations, end_effector_orientation=end_effector_orientation, end_effector_offset=end_effector_offset
         )

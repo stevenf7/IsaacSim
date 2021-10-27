@@ -11,8 +11,8 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.dofbot.tasks import FollowTarget
-
 from omni.isaac.dofbot.controllers import RMPFlowController
+from omni.isaac.dofbot import InverseKinematicsSolver
 from omni.isaac.core import World
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 
@@ -25,6 +25,9 @@ dofbot_name = task_params["robot_name"]["value"]
 target_name = task_params["target_name"]["value"]
 my_dofbot = my_world.scene.get_object(dofbot_name)
 my_controller = RMPFlowController(name="target_follower_controller", robot_prim_path=my_dofbot.prim_path)
+# my_controller = InverseKinematicsSolver(
+#     name="target_follower_controller",
+#     robot_prim_path=my_dofbot.prim_path)
 articulation_controller = my_dofbot.get_articulation_controller()
 i = 0
 while True:

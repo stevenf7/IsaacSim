@@ -18,6 +18,8 @@ import omni.usd.commands
 from pxr import Usd, UsdGeom
 import numpy as np
 from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.stage import add_reference_to_stage
 import gc
 
 
@@ -72,7 +74,16 @@ class Scene(object):
         return obj
 
     def add_ground_plane(
-        self, size: float = 50, z_position: float = 0, prim_path: str = "/World/groundPlane", color: np.ndarray = None
+        self,
+        size: float = None,
+        z_position: float = 0,
+        name="ground_plane",
+        prim_path: str = "/World/groundPlane",
+        color: np.ndarray = None,
+        static_friction=0.5,
+        dynamic_friction=0.5,
+        restitution=0.8,
+        default=True,
     ) -> None:
         """[summary]
 
@@ -82,9 +93,36 @@ class Scene(object):
             prim_path (str, optional): [description]. Defaults to "/World/groundPlane".
             thickness (float, optional): [description]. Defaults to 0.5.
         """
-        GroundPlane(prim_path=prim_path, name="ground_plane", z_position=z_position, size=size, color=color)
-        # TODO: add it to the registery?
-        return
+        if Scene.object_exists(self, name=name):
+            carb.log_warn("ground floor already created with name {}.".format(name))
+            return Scene.get_object(self, name=name)
+        if default:
+            result, nucleus_server = find_nucleus_server()
+            if result is False:
+                carb.log_error("Could not find nucleus server with /Isaac folder")
+            usd_path = nucleus_server + "/Isaac/Environments/Grid/gridfloor_black.usd"
+            add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+            plane = GroundPlane(
+                prim_path=prim_path,
+                name=name,
+                z_position=z_position,
+                static_friction=static_friction,
+                dynamic_friction=dynamic_friction,
+                restitution=restitution,
+            )
+        else:
+            plane = GroundPlane(
+                prim_path=prim_path,
+                name=name,
+                z_position=z_position,
+                size=size,
+                color=color,
+                static_friction=static_friction,
+                dynamic_friction=dynamic_friction,
+                restitution=restitution,
+            )
+        Scene.add(self, plane)
+        return plane
 
     def reset(self) -> None:
         """[summary]
@@ -122,21 +160,19 @@ class Scene(object):
             rigid_object.initialize_handles()
         return
 
-    def remove_object(self, name: str) -> None:
+    def remove_object(self, name: str = None, prim_path: str = None) -> None:
         """[summary]
 
         Args:
             name (str): [description]
         """
-        if not self._scene_registry.name_exists(name):
-            raise Exception("Cannot remove object {} from the scene since it doesn't exist".format(name))
-        prim_object = self.get_object(name=name)
+        prim_object = self.get_object(name=name, prim_path=prim_path)
         omni.usd.commands.DeletePrimsCommand([prim_object.prim_path]).do()
-        self._scene_registry.remove_object(name=name)
+        self._scene_registry.remove_object(name=name, prim_path=prim_path)
         del prim_object
         return
 
-    def get_object(self, name: str) -> XFormPrim:
+    def get_object(self, name: str = None, prim_path: str = None) -> XFormPrim:
         """[summary]
 
         Args:
@@ -145,9 +181,7 @@ class Scene(object):
         Returns:
             XFormPrim: [description]
         """
-        if not self._scene_registry.name_exists(name):
-            raise Exception("Cannot get object {} from the scene since it doesn't exist".format(name))
-        return self._scene_registry.get_object(name=name)
+        return self._scene_registry.get_object(name=name, prim_path=prim_path)
 
     def object_exists(self, name: str) -> bool:
         """[summary]

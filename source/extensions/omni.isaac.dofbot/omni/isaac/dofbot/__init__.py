@@ -7,3 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.dofbot.dofbot import DofBot
+from omni.isaac.dofbot.inverse_kinematics_solver import InverseKinematicsSolver

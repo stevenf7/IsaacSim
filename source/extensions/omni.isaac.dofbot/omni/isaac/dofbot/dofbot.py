@@ -13,7 +13,7 @@ from omni.isaac.core.articulations import ArticulationGripper
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.nucleus import find_nucleus_server
-from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
+from omni.isaac.core.utils.stage import add_reference_to_stage
 import carb
 
 

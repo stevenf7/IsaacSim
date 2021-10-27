@@ -48,8 +48,8 @@ class BaseSample(object):
         await self._world.reset_async()
         await omni.kit.app.get_app().next_update_async()
         await self.setup_reset()
-        self._world.remove_physics_callback("tasks_step")
         if self._world._scene_finalized and len(self._current_tasks) > 0:
+            self._world.remove_physics_callback("tasks_step")
             self._world.add_physics_callback("tasks_step", self.tasks_simulation_step)
 
     @abstractmethod

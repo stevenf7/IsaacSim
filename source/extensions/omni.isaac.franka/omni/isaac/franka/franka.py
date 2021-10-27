@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional
-import os
 import numpy as np
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.articulations import ArticulationGripper
@@ -16,8 +15,6 @@ from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
 import carb
-
-FRANKA_USD_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../../data/franka.usd")
 
 
 class Franka(Robot):

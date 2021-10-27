@@ -22,7 +22,7 @@ class FollowTarget(tasks.FollowTarget):
         target_name=None,
         target_position=None,
         target_orientation=None,
-        task_frame_translation=None,
+        offset=None,
         ur10_prim_path=None,
         ur10_robot_name=None,
         attach_gripper=False,
@@ -38,7 +38,7 @@ class FollowTarget(tasks.FollowTarget):
             target_name=target_name,
             target_position=target_position,
             target_orientation=target_orientation,
-            task_frame_translation=task_frame_translation,
+            offset=offset,
         )
         self._ur10_prim_path = ur10_prim_path
         self._ur10_robot_name = ur10_robot_name

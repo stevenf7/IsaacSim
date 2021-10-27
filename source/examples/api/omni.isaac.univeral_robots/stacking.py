@@ -33,9 +33,7 @@ articulation_controller = my_ur10.get_articulation_controller()
 i = 0
 while True:
     observations = my_world.get_observations()
-    actions = my_controller.forward(
-        observations=observations, end_effector_translation_offset=np.array([0.0, 0.0, 2.0])
-    )
+    actions = my_controller.forward(observations=observations, end_effector_offset=np.array([0.0, 0.0, 2.0]))
     articulation_controller.apply_action(actions)
     my_world.step(render=True)
 

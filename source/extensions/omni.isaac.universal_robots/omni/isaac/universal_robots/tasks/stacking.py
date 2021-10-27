@@ -15,7 +15,7 @@ import numpy as np
 
 
 class Stacking(BaseStacking):
-    def __init__(self, name="ur10_stacking", target_position=None, cube_size=None, task_frame_translation=None) -> None:
+    def __init__(self, name="ur10_stacking", target_position=None, cube_size=None, offset=None) -> None:
         if target_position is None:
             target_position = np.array([0.7, 0.7, 0]) / get_stage_units()
         BaseStacking.__init__(
@@ -25,7 +25,7 @@ class Stacking(BaseStacking):
             cube_initial_orientations=None,
             stack_target_position=target_position,
             cube_size=cube_size,
-            task_frame_translation=task_frame_translation,
+            offset=offset,
         )
         return
 

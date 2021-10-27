@@ -36,9 +36,9 @@ while True:
             picking_position=observations[task_params["bin_name"]["value"]]["position"],
             placing_position=observations[task_params["bin_name"]["value"]]["target_position"],
             current_joint_positions=observations[task_params["robot_name"]["value"]]["joint_positions"],
-            # end_effector_translation_offset=np.array([0, 0, -7.5])
-            end_effector_translation_offset=np.array([0, -9.5, -3]),
-            approach_angle=euler_angles_to_quat(np.array([np.pi, 0, np.pi / 2.0])),
+            # end_effector_offset=np.array([0, 0, -7.5])
+            end_effector_offset=np.array([0, -9.5, -3]),
+            end_effector_orientation=euler_angles_to_quat(np.array([np.pi, 0, np.pi / 2.0])),
         )
         if my_controller.get_current_event() > 2 and my_controller.get_current_event() < 6:
             print(
