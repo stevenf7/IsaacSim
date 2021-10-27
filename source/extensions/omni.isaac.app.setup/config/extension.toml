@@ -1,7 +1,12 @@
 [package]
-title = "Isaac Sim Setup Extension"
-description = "This Extension does the final setup of the Isaac Sim Apps"
+version = "0.1.0"
+category = "Setup"
+title = "Isaac Sim Setup"
+description = "This Extension does the setup of the Isaac Sim App"
 authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.app.setup"
+keywords = ["isaac"]
+changelog = "docs/CHANGELOG.md"
 toggleable = false
 
 [dependencies]

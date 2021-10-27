@@ -16,10 +16,16 @@ from omni.isaac.core.utils.nucleus import (
     find_nucleus_server_async,
     get_server_path,
     build_server_list,
+    create_folder,
+    cleanup_folder,
+    check_server,
+    download_assets_async,
 )
 import carb
 import json
 import time
+from omni.client._omniclient import Result, CopyBehavior
+
 
 # This test is part of internal utils because it needs internal servers
 class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -31,6 +37,42 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         await omni.kit.app.get_app().next_update_async()
         pass
+
+    async def test_download_isaac_assets(self):
+        # carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://localhost")
+
+        def progress_callback(progress, total_steps):
+            pass
+
+        default_server = carb.settings.get_settings().get("/isaac/nucleus/default")
+
+        if default_server:
+            print('Creating "/Test" on {}'.format(default_server))
+            if check_server(default_server, "/Test"):
+                print('Deleting existing "/Test" on {}'.format(default_server))
+                result = cleanup_folder(default_server, "/Test")
+                self.assertTrue(result)
+            result = create_folder(default_server, "/Test")
+            self.assertTrue(result)
+            result = check_server(default_server, "/Test")
+            self.assertTrue(result)
+
+            print('Copying S3 to "/Test/Isaac/Materials" on {}'.format(default_server))
+            result = await download_assets_async(
+                "https://ov-isaac.s3.us-west-1.amazonaws.com/Materials/",
+                default_server + "/Test/Isaac/Materials",
+                progress_callback,
+                concurrency=3,
+                copy_behaviour=CopyBehavior.OVERWRITE,
+                timeout=600,
+            )
+            self.assertTrue(result == Result.OK)
+
+            print('Deleting "/Test" on {}'.format(default_server))
+            result = cleanup_folder(default_server, "/Test")
+            self.assertTrue(result)
+            result = check_server(default_server, "/Test")
+            self.assertFalse(result)
 
     async def test_find_nucleus_server(self):
         result = carb.settings.get_settings().get_settings_dictionary("/persistent/app/omniverse/mountedDrives")
@@ -110,12 +152,12 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertEqual(nucleus_server, "")
         # result should be false because no servers contain /Isaac
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "")
-        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://does_not_exit")
+        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://does_not_exist")
         result, nucleus_server = find_nucleus_server()
         self.assertFalse(result)
         self.assertEqual(nucleus_server, "")
         # result should be false because no servers contain /Isaac
-        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "does_not_exit")
+        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "does_not_exist")
         carb.settings.get_settings().set("/isaac/nucleus/default", "")
         result, nucleus_server = find_nucleus_server()
         self.assertFalse(result)
@@ -144,7 +186,7 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             self.assertTrue(len(build_server_list()) > 0)
             carb.settings.get_settings().set("/isaac/nucleus/default", "")
             result, nucleus_server = await find_nucleus_server_async()
-            self.assertTrue(result)
+            self.assertTrue(result == Result.OK)
             self.assertEqual(nucleus_server, "omniverse://ov-isaac-dev.nvidia.com")
             carb.settings.get_settings().set("/persistent/app/omniverse/mountedDrives", "{}")
 
@@ -152,19 +194,21 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "")
         carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-isaac-dev.nvidia.com")
         result, nucleus_server = await find_nucleus_server_async()
-        self.assertTrue(result)
+        self.assertTrue(result == Result.OK)
         self.assertEqual(nucleus_server, "omniverse://ov-isaac-dev.nvidia.com")
         # result should be false because no servers are specified in default or saved
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "")
         carb.settings.get_settings().set("/isaac/nucleus/default", "")
         result, nucleus_server = await find_nucleus_server_async()
-        self.assertFalse(result)
+        self.assertTrue(result == Result.ERROR_NOT_FOUND)
         self.assertEqual(nucleus_server, "")
         # specify default saved server that doesn't have /Isaac folder
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "ov-content.nvidia.com")
         carb.settings.get_settings().set("/isaac/nucleus/default", "")
         result, nucleus_server = await find_nucleus_server_async()
-        self.assertFalse(result)
+        print(result)
+        self.assertTrue(result == Result.ERROR_NOT_FOUND)
+        # TOFIX self.assertTrue(result == Result.OK_NOT_YET_FOUND)
         self.assertEqual(nucleus_server, "")
         # specify default saved server does have /Isaac folder, and one that doesn't
         carb.settings.get_settings().set(
@@ -172,7 +216,7 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         carb.settings.get_settings().set("/isaac/nucleus/default", "")
         result, nucleus_server = await find_nucleus_server_async()
-        self.assertTrue(result)
+        self.assertTrue(result == Result.OK)
         self.assertEqual(nucleus_server, "omniverse://ov-isaac-dev.nvidia.com")
         # test if adding localhost messes anything up
         carb.settings.get_settings().set(
@@ -180,13 +224,14 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         carb.settings.get_settings().set("/isaac/nucleus/default", "")
         result, nucleus_server = await find_nucleus_server_async()
-        self.assertTrue(result)
+        print(result)
+        self.assertTrue(result == Result.OK)
         self.assertEqual(nucleus_server, "omniverse://ov-isaac-dev.nvidia.com")
         # test if default server + saved servers that don't have /Isaac works
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "localhost;ov-content.nvidia.com")
         carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-isaac-dev.nvidia.com")
         result, nucleus_server = await find_nucleus_server_async()
-        self.assertTrue(result)
+        self.assertTrue(result == Result.OK)
         self.assertEqual(nucleus_server, "omniverse://ov-isaac-dev.nvidia.com")
         # test if default server + saved servers that have /Isaac works
         carb.settings.get_settings().set(
@@ -194,25 +239,27 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-isaac-dev.nvidia.com")
         result, nucleus_server = await find_nucleus_server_async()
-        self.assertTrue(result)
+        self.assertTrue(result == Result.OK)
         self.assertEqual(nucleus_server, "omniverse://ov-isaac-dev.nvidia.com")
         # result should be false because no servers contain /Isaac
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "")
         carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-content.nvidia.com")
         result, nucleus_server = await find_nucleus_server_async()
-        self.assertFalse(result)
+        print(result)
+        self.assertTrue(result == Result.ERROR_NOT_FOUND)
+        # TOFIX self.assertTrue(result == Result.OK_NOT_YET_FOUND)
         self.assertEqual(nucleus_server, "")
         # result should be false because no servers contain /Isaac
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "")
-        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://does_not_exit")
+        carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://does_not_exist")
         result, nucleus_server = await find_nucleus_server_async()
-        self.assertFalse(result)
+        self.assertTrue(result == Result.ERROR_NOT_FOUND)
         self.assertEqual(nucleus_server, "")
         # result should be false because no servers contain /Isaac
-        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "does_not_exit")
+        carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "does_not_exist")
         carb.settings.get_settings().set("/isaac/nucleus/default", "")
         result, nucleus_server = await find_nucleus_server_async()
-        self.assertFalse(result)
+        self.assertTrue(result == Result.ERROR_NOT_FOUND)
         self.assertEqual(nucleus_server, "")
         carb.settings.get_settings().set("/persistent/app/omniverse/savedServers", "")
         # at this point there should be no servers found
@@ -225,7 +272,7 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         end = time.time()
         # Check that the expected amount of time passed
         self.assertAlmostEqual(end - start, timeout, delta=0.1)
-        self.assertFalse(result)
+        self.assertTrue(result == Result.ERROR_NOT_FOUND)
         self.assertEqual(nucleus_server, "")
 
         # cleanup servers after test
