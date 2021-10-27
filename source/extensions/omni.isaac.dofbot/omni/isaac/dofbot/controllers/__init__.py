@@ -7,6 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.dofbot.controllers.gripper_controller import GripperController
-from omni.isaac.dofbot.controllers.inverse_kinematics_solver import InverseKinematicsSolver
 from omni.isaac.dofbot.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.dofbot.controllers.pick_place_controller import PickPlaceController

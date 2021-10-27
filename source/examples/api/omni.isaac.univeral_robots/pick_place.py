@@ -34,7 +34,7 @@ while True:
             picking_position=observations[task_params["cube_name"]["value"]]["position"],
             placing_position=observations[task_params["cube_name"]["value"]]["target_position"],
             current_joint_positions=observations[task_params["robot_name"]["value"]]["joint_positions"],
-            end_effector_translation_offset=np.array([0, 0, 2]),
+            end_effector_offset=np.array([0, 0, 2]),
         )
         if my_controller.is_done():
             print("done picking and placing")

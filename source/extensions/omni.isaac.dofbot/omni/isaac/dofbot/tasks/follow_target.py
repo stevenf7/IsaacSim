@@ -7,9 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import omni.isaac.core.tasks as tasks
+from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.dofbot import DofBot
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.string import find_unique_string_name
+import numpy as np
 
 
 class FollowTarget(tasks.FollowTarget):
@@ -20,12 +22,14 @@ class FollowTarget(tasks.FollowTarget):
         target_name=None,
         target_position=None,
         target_orientation=None,
-        task_frame_translation=None,
+        offset=None,
         dofbot_prim_path=None,
         dofbot_robot_name=None,
     ) -> None:
         """[summary]
         """
+        if target_position is None:
+            target_position = np.array([0, 0.1, 0.1]) / get_stage_units()
         tasks.FollowTarget.__init__(
             self,
             name=name,
@@ -33,7 +37,7 @@ class FollowTarget(tasks.FollowTarget):
             target_name=target_name,
             target_position=target_position,
             target_orientation=target_orientation,
-            task_frame_translation=task_frame_translation,
+            offset=offset,
         )
         self._dofbot_prim_path = dofbot_prim_path
         self._dofbot_robot_name = dofbot_robot_name

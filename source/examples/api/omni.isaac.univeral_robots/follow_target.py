@@ -12,6 +12,7 @@ simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.universal_robots.tasks import FollowTarget
 from omni.isaac.universal_robots.controllers import RMPFlowController
+from omni.isaac.universal_robots import InverseKinematicsSolver
 from omni.isaac.core import World
 
 # from omni.isaac.universal_robots.controllers import InverseKinematicsSolver
@@ -27,7 +28,8 @@ target_name = task_params["target_name"]["value"]
 my_ur10 = my_world.scene.get_object(ur10_name)
 # my_controller = InverseKinematicsSolver(
 #     name="target_follower_controller",
-#     robot_prim_path=my_franka.prim_path)
+#     robot_prim_path=my_ur10.prim_path,
+#     attach_gripper=True)
 my_controller = RMPFlowController(
     name="target_follower_controller", robot_prim_path=my_ur10.prim_path, attach_gripper=True
 )

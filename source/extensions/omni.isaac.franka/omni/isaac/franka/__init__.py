@@ -7,4 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.franka.franka import Franka
-from omni.isaac.franka.utils import get_franka_usd_path
+from omni.isaac.franka.inverse_kinematics_solver import InverseKinematicsSolver

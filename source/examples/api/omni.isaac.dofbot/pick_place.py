@@ -35,7 +35,7 @@ while True:
             picking_position=observations[task_params["cube_name"]["value"]]["position"],
             placing_position=observations[task_params["cube_name"]["value"]]["target_position"],
             current_joint_positions=observations[dofbot_name]["joint_positions"],
-            end_effector_translation_offset=np.array([0, -6, 0]),
+            end_effector_offset=np.array([0, -6, 0]),
         )
         if my_controller.is_done():
             print("done picking and placing")

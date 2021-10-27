@@ -26,17 +26,18 @@ def get_prim_type_name(prim_path):
     return prim.GetPrimTypeInfo().GetTypeName()
 
 
-def traverse_prim_path(prim_path, filterfn=None):
+def get_prim_at_descendent_path(prim_path, filterfn=None):
     prim = get_current_stage().GetPrimAtPath(prim_path)
     childrenStack = [prim]
     out = prim.GetChildren()
     while len(childrenStack) > 0:
         prim = childrenStack.pop(0)
-        if not filterfn or (filterfn and filterfn(prim)):
-            children = prim.GetChildren()
-            childrenStack = childrenStack + children
-            out = out + children
-    return out
+        if filterfn(get_prim_path(prim)):
+            return get_prim_path(prim)
+        children = prim.GetChildren()
+        childrenStack = childrenStack + children
+        out = out + children
+    return None
 
 
 def get_prim_children(prim):

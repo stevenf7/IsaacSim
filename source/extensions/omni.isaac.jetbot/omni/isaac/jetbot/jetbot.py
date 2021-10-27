@@ -120,6 +120,7 @@ class Jetbot(Robot):
             joint_actions.joint_efforts = np.zeros(self.num_dof)
             joint_actions.joint_efforts[self._wheel_dof_indices[0]] = wheel_actions.joint_efforts[0]
             joint_actions.joint_efforts[self._wheel_dof_indices[1]] = wheel_actions.joint_efforts[1]
+
         self.apply_action(control_actions=joint_actions)
         return
 

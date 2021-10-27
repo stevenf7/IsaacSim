@@ -25,7 +25,7 @@ class PickPlace(BaseTask):
         cube_initial_orientation=None,
         target_position=None,
         cube_size=None,
-        task_frame_translation=None,
+        offset=None,
     ) -> None:
         """[summary]
         """
@@ -39,7 +39,7 @@ class PickPlace(BaseTask):
         self._cube_size = cube_size
         if self._cube_size is None:
             self._cube_size = 0.0515 / get_stage_units()
-        self._task_frame_translation = task_frame_translation
+        self._offset = offset
         if self._cube_initial_position is None:
             self._cube_initial_position = np.array([0.3, 0.3, 0.3]) / get_stage_units()
         if self._cube_initial_orientation is None:
@@ -47,9 +47,9 @@ class PickPlace(BaseTask):
         if self._target_position is None:
             self._target_position = np.array([-0.3, -0.3, 0]) / get_stage_units()
             self._target_position[2] = self._cube_size / 2.0
-        if self._task_frame_translation is None:
-            self._task_frame_translation = np.array([0.0, 0.0, 0.0])
-        self._target_position = self._target_position + self._task_frame_translation
+        if self._offset is None:
+            self._offset = np.array([0.0, 0.0, 0.0])
+        self._target_position = self._target_position + self._offset
         return
 
     def set_up_scene(self, scene: Scene) -> None:
@@ -59,7 +59,7 @@ class PickPlace(BaseTask):
             scene (Scene): [description]
         """
         super().set_up_scene(scene)
-        scene.add_ground_plane(size=50.0 / get_stage_units())
+        scene.add_ground_plane()
         cube_prim_path = find_unique_string_name(
             intitial_name="/World/Cube", is_unique_fn=lambda x: not is_prim_path_valid(x)
         )
@@ -69,7 +69,7 @@ class PickPlace(BaseTask):
         self._cube = scene.add(
             DynamicCube(
                 name=cube_name,
-                position=self._cube_initial_position + self._task_frame_translation,
+                position=self._cube_initial_position + self._offset,
                 orientation=self._cube_initial_orientation,
                 prim_path=cube_prim_path,
                 size=self._cube_size,
@@ -80,8 +80,8 @@ class PickPlace(BaseTask):
         self._robot = self.set_robot()
         scene.add(self._robot)
         position, orientation = self._robot.get_world_pose()
-        self._robot.set_world_pose(position=position + self._task_frame_translation, orientation=orientation)
-        self._robot.set_default_state(position=position + self._task_frame_translation, orientation=orientation)
+        self._robot.set_world_pose(position=position + self._offset, orientation=orientation)
+        self._robot.set_default_state(position=position + self._offset, orientation=orientation)
         self._task_objects[self._robot.name] = self._robot
         return
 

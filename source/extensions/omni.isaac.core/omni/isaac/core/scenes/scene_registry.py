@@ -23,6 +23,7 @@ class SceneRegistry(object):
         self._articulated_systems = dict()
         self._robots = dict()
         self._xforms = dict()
+        self._prim_path_to_object = dict()
         return
 
     @property
@@ -70,6 +71,7 @@ class SceneRegistry(object):
             rigid_object (RigidPrim): [description]
         """
         self._rigid_objects[name] = rigid_object
+        self._prim_path_to_object[rigid_object.prim_path] = rigid_object
         return
 
     def add_articulated_system(self, name, articulated_system: Articulation) -> None:
@@ -80,6 +82,7 @@ class SceneRegistry(object):
             articulated_system (Articulation): [description]
         """
         self._articulated_systems[name] = articulated_system
+        self._prim_path_to_object[articulated_system.prim_path] = articulated_system
         return
 
     def add_visual_object(self, name, visual_object: GeometryPrim) -> None:
@@ -90,6 +93,7 @@ class SceneRegistry(object):
             visual_object (GeometryPrim): [description]
         """
         self._visual_objects[name] = visual_object
+        self._prim_path_to_object[visual_object.prim_path] = visual_object
         return
 
     def add_robot(self, name, robot: Robot) -> None:
@@ -100,6 +104,7 @@ class SceneRegistry(object):
             robot (Robot): [description]
         """
         self._robots[name] = robot
+        self._prim_path_to_object[robot.prim_path] = robot
         return
 
     def add_xform(self, name, xform: XFormPrim) -> None:
@@ -110,6 +115,7 @@ class SceneRegistry(object):
             robot (Robot): [description]
         """
         self._xforms[name] = xform
+        self._prim_path_to_object[xform.prim_path] = xform
         return
 
     def name_exists(self, name: str) -> bool:
@@ -132,25 +138,78 @@ class SceneRegistry(object):
         else:
             return False
 
-    def remove_object(self, name: str) -> None:
+    def prim_path_exists(self, prim_path: str) -> bool:
+        """[summary]
+
+        Args:
+            name (str): [description]
+
+        Returns:
+            bool: [description]
+        """
+        if prim_path in self._prim_path_to_object:
+            return True
+        else:
+            return False
+
+    def remove_object(self, name: str = None, prim_path: str = None) -> None:
         """[summary]
 
         Args:
             name (str): [description]
         """
-        if name in self._robots:
-            del self._robots[name]
-        elif name in self._articulated_systems:
-            del self._articulated_systems[name]
-        elif name in self._rigid_objects:
-            del self._rigid_objects[name]
-        elif name in self._visual_objects:
-            del self._visual_objects[name]
-        elif name in self._xforms:
-            del self._xforms[name]
-        return
+        if name is None and prim_path is None:
+            raise Exception("name or prim_path should be specified to remove the object accordingly")
+        if name is not None:
+            if name in self._robots:
+                del self._prim_path_to_object[self._robots[name].prim_path]
+                del self._robots[name]
+                return
+            elif name in self._articulated_systems:
+                del self._prim_path_to_object[self._articulated_systems[name].prim_path]
+                del self._articulated_systems[name]
+                return
+            elif name in self._rigid_objects:
+                del self._prim_path_to_object[self._rigid_objects[name].prim_path]
+                del self._rigid_objects[name]
+                return
+            elif name in self._visual_objects:
+                del self._prim_path_to_object[self._visual_objects[name].prim_path]
+                del self._visual_objects[name]
+                return
+            elif name in self._xforms:
+                del self._prim_path_to_object[self._xforms[name].prim_path]
+                del self._xforms[name]
+                return
+            else:
+                raise Exception("Cannot remove object {} from the scene since it doesn't exist".format(name))
+        if prim_path is not None:
+            if prim_path in self._prim_path_to_object:
+                name = self._prim_path_to_object[prim_path].name
+                del self._prim_path_to_object[prim_path]
+                if name in self._robots:
+                    del self._robots[name]
+                    return
+                elif name in self._articulated_systems:
+                    del self._articulated_systems[name]
+                    return
+                elif name in self._rigid_objects:
+                    del self._rigid_objects[name]
+                    return
+                elif name in self._visual_objects:
+                    del self._visual_objects[name]
+                    return
+                elif name in self._xforms:
+                    del self._xforms[name]
+                    return
+                else:
+                    raise NotImplementedError
+            else:
+                raise Exception(
+                    "Cannot remove object with prim_path {} from the scene since it doesn't exist".format(prim_path)
+                )
 
-    def get_object(self, name: str) -> XFormPrim:
+    def get_object(self, name: str = None, prim_path: str = None) -> XFormPrim:
         """[summary]
 
         Args:
@@ -159,13 +218,18 @@ class SceneRegistry(object):
         Returns:
             XFormPrim: [description]
         """
-        if name in self._robots:
-            return self._robots[name]
-        elif name in self._articulated_systems:
-            return self._articulated_systems[name]
-        elif name in self._rigid_objects:
-            return self._rigid_objects[name]
-        elif name in self._visual_objects:
-            return self._visual_objects[name]
-        elif name in self._xforms:
-            return self._xforms[name]
+        if name is None and prim_path is None:
+            raise Exception("name or prim_path should be specified to get the object accordingly")
+        if name is not None:
+            if name in self._robots:
+                return self._robots[name]
+            elif name in self._articulated_systems:
+                return self._articulated_systems[name]
+            elif name in self._rigid_objects:
+                return self._rigid_objects[name]
+            elif name in self._visual_objects:
+                return self._visual_objects[name]
+            elif name in self._xforms:
+                return self._xforms[name]
+        if prim_path is not None:
+            return self._prim_path_to_object[prim_path]

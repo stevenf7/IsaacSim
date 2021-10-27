@@ -51,6 +51,7 @@ class Articulation(XFormPrim):
         self._articulation_controller = articulation_controller
         if self._articulation_controller is None:
             self._articulation_controller = ArticulationController()
+        # TODO: add exceptions if user missed calling initialize handles
         return
 
     @property

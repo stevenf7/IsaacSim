@@ -7,3 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.universal_robots.ur10 import UR10
+from omni.isaac.universal_robots.inverse_kinematics_solver import InverseKinematicsSolver

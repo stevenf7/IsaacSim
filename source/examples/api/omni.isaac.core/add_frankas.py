@@ -14,14 +14,18 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.core import World
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.franka import get_franka_usd_path
-from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
+from omni.isaac.core.utils.nucleus import find_nucleus_server
 import numpy as np
+import carb
 
-my_world = World()
+my_world = World(stage_units_in_meters=0.01)
 
 my_world.scene.add_ground_plane()
-asset_path = get_franka_usd_path()
+result, nucleus_server = find_nucleus_server()
+if result is False:
+    carb.log_error("Could not find nucleus server with /Isaac folder")
+asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
 articulated_system_1 = my_world.scene.add(Robot(prim_path="/World/Franka_1", name="my_franka_1"))
@@ -31,8 +35,8 @@ articulated_system_2 = my_world.scene.add(Robot(prim_path="/World/Franka_2", nam
 for i in range(5):
     print("resetting...")
     my_world.reset()
-    articulated_system_1.set_world_pose(position=np.array([0.0, 2.0, 0.0]))
-    articulated_system_2.set_world_pose(position=np.array([0.0, -2.0, 0.0]))
+    articulated_system_1.set_world_pose(position=np.array([0.0, 2.0, 0.0]) / get_stage_units())
+    articulated_system_2.set_world_pose(position=np.array([0.0, -2.0, 0.0]) / get_stage_units())
     articulated_system_1.set_joint_positions(np.array([1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]))
     for j in range(500):
         my_world.step(render=True)

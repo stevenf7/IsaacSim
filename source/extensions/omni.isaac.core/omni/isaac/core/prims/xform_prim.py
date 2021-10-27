@@ -244,6 +244,19 @@ class XFormPrim(object):
                     return None
         return
 
+    def is_visual_material_applied(self):
+        if self._binding_api is None:
+            if self._prim.HasAPI(UsdShade.MaterialBindingAPI):
+                self._binding_api = UsdShade.MaterialBindingAPI(self.prim)
+            else:
+                self._binding_api = UsdShade.MaterialBindingAPI.Apply(self.prim)
+        visual_binding = self._binding_api.GetDirectBinding()
+        material_path = str(visual_binding.GetMaterialPath())
+        if material_path == "":
+            return False
+        else:
+            return True
+
     def set_world_pose(self, position=None, orientation=None):
         current_position, current_orientation = XFormPrim.get_world_pose(self)
         if position is None:
