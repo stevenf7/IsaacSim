@@ -53,7 +53,7 @@ class RandomScenario:
             return
         omni.usd.get_context().close_stage_with_callback(
             lambda a, b: omni.usd.get_context().open_stage(
-                asset_path + "/Samples/DR/Stage/simple_room_sample.usda", None
+                asset_path + "/Samples/DR/Stage/simple_room_sample.usd", None
             )
         )
 

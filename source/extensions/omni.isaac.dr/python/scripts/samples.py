@@ -15,6 +15,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 import omni.usd
 import weakref
 from omni.isaac.core.utils.nucleus import get_server_path
+from omni.isaac.core.utils.stage import add_reference_to_stage, is_stage_loading
 
 from pxr import UsdGeom
 
@@ -76,7 +77,13 @@ class Extension(omni.ext.IExt):
         self._stage = None
 
     def _on_clear_stage(self):
-        asyncio.ensure_future(omni.usd.get_context().new_stage_async())
+        async def clear_stage():
+            while is_stage_loading():
+                await omni.kit.app.get_app().next_update_async()
+            await omni.usd.get_context().new_stage_async()
+            await omni.kit.app.get_app().next_update_async()
+
+        asyncio.ensure_future(clear_stage())
 
     async def load_stage(self, path):
         if self._asset_path is None:
@@ -84,9 +91,7 @@ class Extension(omni.ext.IExt):
         if self._asset_path is None:
             return
         await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.usd.get_context().open_stage_async(self._asset_path + path)
-        await omni.kit.app.get_app().next_update_async()
+        add_reference_to_stage(usd_path=self._asset_path + path, prim_path="/World")
         await omni.kit.app.get_app().next_update_async()
 
     def _on_load_stage(self):
@@ -108,29 +113,29 @@ class Extension(omni.ext.IExt):
 
         current_scenario_index = self._selected_scenario.model.get_item_value_model().as_int
         if current_scenario_index == 0:
-            self.add_color_menu()
+            asyncio.ensure_future(self.add_color_menu())
         elif current_scenario_index == 1:
-            self.add_movement_menu()
+            asyncio.ensure_future(self.add_movement_menu())
         elif current_scenario_index == 2:
-            self.add_rotation_menu()
+            asyncio.ensure_future(self.add_rotation_menu())
         elif current_scenario_index == 3:
-            self.add_scale_menu()
+            asyncio.ensure_future(self.add_scale_menu())
         elif current_scenario_index == 4:
-            self.add_light_menu()
+            asyncio.ensure_future(self.add_light_menu())
         elif current_scenario_index == 5:
-            self.add_texture_menu()
+            asyncio.ensure_future(self.add_texture_menu())
         elif current_scenario_index == 6:
-            self.add_material_menu()
+            asyncio.ensure_future(self.add_material_menu())
         elif current_scenario_index == 7:
-            self.add_mesh_menu()
+            asyncio.ensure_future(self.add_mesh_menu())
         elif current_scenario_index == 8:
-            self.add_visibility_menu()
+            asyncio.ensure_future(self.add_visibility_menu())
         elif current_scenario_index == 9:
-            self.add_transform_menu()
+            asyncio.ensure_future(self.add_transform_menu())
         elif current_scenario_index == 10:
-            self.add_attribute_menu()
+            asyncio.ensure_future(self.add_attribute_menu())
 
-    def add_color_menu(self):
+    async def add_color_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -148,8 +153,9 @@ class Extension(omni.ext.IExt):
             include_children=False,
             seed=12345,
         )
+        await omni.kit.app.get_app().next_update_async()
 
-    def add_movement_menu(self):
+    async def add_movement_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -167,8 +173,9 @@ class Extension(omni.ext.IExt):
             include_children=False,
             seed=12345,
         )
+        await omni.kit.app.get_app().next_update_async()
 
-    def add_rotation_menu(self):
+    async def add_rotation_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -184,8 +191,9 @@ class Extension(omni.ext.IExt):
             include_children=False,
             seed=12345,
         )
+        await omni.kit.app.get_app().next_update_async()
 
-    def add_scale_menu(self):
+    async def add_scale_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -202,8 +210,9 @@ class Extension(omni.ext.IExt):
             include_children=False,
             seed=12345,
         )
+        await omni.kit.app.get_app().next_update_async()
 
-    def add_light_menu(self):
+    async def add_light_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -228,8 +237,9 @@ class Extension(omni.ext.IExt):
             include_children=False,
             seed=12345,
         )
+        await omni.kit.app.get_app().next_update_async()
 
-    def add_texture_menu(self):
+    async def add_texture_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -254,8 +264,9 @@ class Extension(omni.ext.IExt):
             include_children=False,
             seed=12345,
         )
+        await omni.kit.app.get_app().next_update_async()
 
-    def add_material_menu(self):
+    async def add_material_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -280,14 +291,16 @@ class Extension(omni.ext.IExt):
             include_children=False,
             seed=12345,
         )
+        await omni.kit.app.get_app().next_update_async()
 
-    def add_mesh_menu(self):
+    async def add_mesh_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         # Create DR mesh component
         path = omni.usd.get_stage_next_free_path(stage, default_prim_path + "/mesh_component", False)
         result, prim = omni.kit.commands.execute(
             "CreateMeshComponentCommand",
+            parent_prim=["/World"],
             mesh_list=[
                 self._asset_path + "/Props/Blocks/nvidia_cube.usd",
                 self._asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd",
@@ -295,8 +308,9 @@ class Extension(omni.ext.IExt):
             mesh_range=[3, 5],
             seed=12345,
         )
+        await omni.kit.app.get_app().next_update_async()
 
-    def add_visibility_menu(self):
+    async def add_visibility_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         # Create DR visibility component
@@ -308,8 +322,9 @@ class Extension(omni.ext.IExt):
             duration=0.3,
             seed=12345,
         )
+        await omni.kit.app.get_app().next_update_async()
 
-    def add_transform_menu(self):
+    async def add_transform_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -331,8 +346,9 @@ class Extension(omni.ext.IExt):
             include_children=False,
             seed=12345,
         )
+        await omni.kit.app.get_app().next_update_async()
 
-    def add_attribute_menu(self):
+    async def add_attribute_menu(self):
         stage = omni.usd.get_context().get_stage()
         default_prim_path = str(stage.GetDefaultPrim().GetPath())
         cube_path = default_prim_path + "/Cube"
@@ -351,9 +367,10 @@ class Extension(omni.ext.IExt):
             include_children=False,
             seed=12345,
         )
+        await omni.kit.app.get_app().next_update_async()
 
     def add_simple_room_scene(self):
-        asyncio.ensure_future(self.load_stage("/Samples/DR/Stage/simple_room_sample.usda"))
+        asyncio.ensure_future(self.load_stage("/Samples/DR/Stage/simple_room_sample.usd"))
 
     def add_warehouse_scene(self):
-        asyncio.ensure_future(self.load_stage("/Samples/DR/Stage/simple_warehouse_material_sample.usda"))
+        asyncio.ensure_future(self.load_stage("/Samples/DR/Stage/simple_warehouse_material_sample.usd"))

@@ -1,11 +1,11 @@
 <project toolsVersion="5.0">
     <dependency name="usd_ext_isaac_release" linkPath="../_build/target-deps/usd_ext_isaac/release">
-        <package name="usd_ext_isaac" version="20.08.235.022be048-win64_py37_release-master" platforms="windows-x86_64"/>
-        <package name="usd_ext_isaac" version="20.08.235.022be048-linux-x86_64_py37_release-master" platforms="linux-x86_64"/>
+        <package name="usd_ext_isaac" version="20.08.240.224fe425-win64_py37_release-master" platforms="windows-x86_64"/>
+        <package name="usd_ext_isaac" version="20.08.240.224fe425-linux-x86_64_py37_release-master" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="usd_ext_isaac_debug" linkPath="../_build/target-deps/usd_ext_isaac/debug">
-        <package name="usd_ext_isaac" version="20.08.235.022be048-win64_py37_debug-master" platforms="windows-x86_64"/>
-        <package name="usd_ext_isaac" version="20.08.235.022be048-linux-x86_64_py37_debug-master" platforms="linux-x86_64"/>
+        <package name="usd_ext_isaac" version="20.08.240.224fe425-win64_py37_debug-master" platforms="windows-x86_64"/>
+        <package name="usd_ext_isaac" version="20.08.240.224fe425-linux-x86_64_py37_debug-master" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
         <package name="nv_ros" version="noetic_20210723_0b33cab-linux64_release" platforms="linux-x86_64"/>

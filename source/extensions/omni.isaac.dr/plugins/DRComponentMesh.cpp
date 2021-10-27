@@ -43,10 +43,7 @@ void DRComponentMesh::onStart()
 {
     CARB_LOG_INFO("DR Mesh Component Started");
     onComponentChange();
-
-    std::string meshCompPath = createPrimScope();
-
-    onComponentChange();
+    update();
 }
 void DRComponentMesh::update()
 {
@@ -60,7 +57,7 @@ void DRComponentMesh::update()
     {
         // Load main mesh
         carb::extras::Path urlPath(mMeshList[i].c_str());
-        std::string meshPrimPath = appendPathToDrScope(mCompName + "/mesh_" + urlPath.getStem().getString());
+        std::string meshPrimPath = mParentPrimPath.GetString() + "/mesh_" + urlPath.getStem().getString();
         // CARB_LOG_WARN("Loading main mesh: %s", meshPrimPath.c_str());
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, meshPrimPath))
         {
@@ -119,8 +116,20 @@ void DRComponentMesh::onComponentChange()
     meshPrim.GetMeshListAttr().Get(&meshList);
     meshPrim.GetNumMeshRangeAttr().Get(&mNumMeshRange);
     meshPrim.GetDurationAttr().Get(&mRandomizationDurationInterval);
-    meshPrim.GetIncludeChildrenAttr().Get(&mIncludeChild);
     meshPrim.GetSeedAttr().Get(&mSeed);
+
+    pxr::SdfPathVector targets;
+    meshPrim.GetParentPrimRel().GetTargets(&targets);
+    if (targets.size() > 0)
+    {
+        mParentPrimPath = targets[0];
+    }
+    else
+    {
+        mParentPrimPath = mPrim.GetPath();
+        CARB_LOG_WARN("ParentPrimRel should be specified. using %s by default", mParentPrimPath.GetString().c_str());
+    }
+    mParentPrim = mStage->GetPrimAtPath(mParentPrimPath);
     if (mCurrentSeed != mSeed)
     {
         mRandomGenerator.seed(mSeed);
@@ -130,7 +139,7 @@ void DRComponentMesh::onComponentChange()
     if (meshList != "")
         boost::split(mMeshList, meshList, [](char c) { return c == ','; });
 
-    update();
+
     CARB_LOG_INFO("Mesh Update: %s", mCompName.c_str());
 }
 void DRComponentMesh::stop()

@@ -2,6 +2,25 @@
 CHANGELOG
 **********
 
+[0.1.8] - 2021-10-27
+========================
+
+Changed
+-------
+- DR scope is hidden by default
+- Mesh component requires a parent prim to be specified
+- DR samples adds stage as a reference to make it more stable
+- DR layer is created on extension startup
+- Traverse child prims to make sure no extra DR components exist in referenced prims. 
+
+Removed
+-------
+- Removed extra properties fro mesh component
+
+Added
+-----
+- Basic mesh component unit tests
+
 [0.1.7] - 2021-08-13
 ========================
 
