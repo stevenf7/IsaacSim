@@ -27,7 +27,7 @@ class UR10(Robot):
         orientation: Optional[np.ndarray] = None,
         end_effector_prim_name: Optional[str] = None,
         attach_gripper=False,
-        gripper_usd=None,
+        gripper_usd="default",
     ) -> None:
         """[summary]
 
@@ -63,7 +63,7 @@ class UR10(Robot):
             prim_path=prim_path, name=name, position=position, orientation=orientation, articulation_controller=None
         )
         if attach_gripper:
-            if gripper_usd is None:
+            if gripper_usd == "default":
                 result, nucleus_server = find_nucleus_server()
                 if result is False:
                     carb.log_error("Could not find nucleus server with /Isaac folder")
@@ -72,6 +72,9 @@ class UR10(Robot):
                 translate = 16.11
                 direction = "x"
                 self._gripper = SurfaceGripper(usd_path=gripper_usd, translate=translate, direction=direction)
+            elif gripper_usd is None:
+                carb.log_warn("Not adding a gripper usd, the gripper already exists in the ur10 asset")
+                self._gripper = SurfaceGripper(usd_path=None)
             else:
                 raise NotImplementedError
         self._attach_gripper = attach_gripper

@@ -127,7 +127,9 @@ class RigidPrim(XFormPrim):
                 position = current_position
             if orientation is None:
                 orientation = current_orientation
-            pose = _dynamic_control.Transform(position, orientation)
+            pose = _dynamic_control.Transform(
+                position, [orientation[1], orientation[2], orientation[3], orientation[0]]
+            )
             self._dc_interface.set_rigid_body_pose(self._handle, pose)
         else:
             XFormPrim.set_world_pose(self, position=position, orientation=orientation)
@@ -143,7 +145,7 @@ class RigidPrim(XFormPrim):
         """
         if self._handle is not None and self._dc_interface.is_simulating():
             pose = self._dc_interface.get_rigid_body_pose(self._handle)
-            return np.asarray(pose.p), np.asarray(pose.r)
+            return np.asarray(pose.p), np.asarray([pose.r[3], pose.r[0], pose.r[1], pose.r[2]])
         else:
             return XFormPrim.get_world_pose(self)
 
@@ -171,7 +173,7 @@ class RigidPrim(XFormPrim):
             parent_world_tf = UsdGeom.Xformable(get_prim_parent(self._prim)).ComputeLocalToWorldTransform(
                 Usd.TimeCode.Default()
             )
-            world_position, world_orientation = RigidPrim.get_world_pose()
+            world_position, world_orientation = RigidPrim.get_world_pose(self)
             my_world_transform = tf_matrix_from_pose(translation=world_position, orientation=world_orientation)
             local_transform = np.matmul(np.linalg.inv(np.transpose(parent_world_tf)), my_world_transform)
             transform = Gf.Transform()

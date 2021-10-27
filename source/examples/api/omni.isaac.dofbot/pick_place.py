@@ -35,9 +35,8 @@ articulation_controller = my_dofbot.get_articulation_controller()
 while True:
     observations = my_world.get_observations()
     actions = my_controller.forward(
-        cube_position=observations["cube_1"]["position"],
-        cube_orientation=observations["cube_1"]["orientation"],
-        cube_target_position=observations["cube_1"]["target_position"],
+        picking_position=observations["cube_1"]["position"],
+        placing_position=observations["cube_1"]["target_position"],
         current_joint_positions=observations["my_dofbot"]["joint_positions"],
     )
     if my_controller.is_done():

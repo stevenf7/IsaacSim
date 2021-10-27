@@ -21,8 +21,8 @@ class SurfaceGripper(object):
         translate=0,
         direction="x",
         grip_threshold=1,
-        force_limit=5.0e5,
-        torque_limit=5.0e5,
+        force_limit=1.0e6,
+        torque_limit=1.0e6,
         bend_angle=np.pi / 24,
         kp=1.0e5,
         kd=1.0e4,
@@ -71,11 +71,15 @@ class SurfaceGripper(object):
         return
 
     def close(self):
-        self._virtual_gripper.close()
+        result = self._virtual_gripper.close()
+        if not result:
+            carb.log_warn("gripper didn't close successfullty")
         return
 
     def open(self):
-        self._virtual_gripper.open()
+        result = self._virtual_gripper.open()
+        if not result:
+            carb.log_warn("gripper didn't close successfullty")
         return
 
     def update(self):
@@ -83,4 +87,16 @@ class SurfaceGripper(object):
         return
 
     def is_closed(self):
-        return self.virtual_gripper.is_closed()
+        return self._virtual_gripper.is_closed()
+
+    def set_translate(self, value):
+        self._translate = value
+
+    def set_direction(self, value):
+        self._direction = value
+
+    def set_force_limit(self, value):
+        self._force_limit = value
+
+    def set_torque_limit(self, value):
+        self._torque_limit = value

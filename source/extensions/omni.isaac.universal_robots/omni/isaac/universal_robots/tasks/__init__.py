@@ -9,5 +9,4 @@
 from omni.isaac.universal_robots.tasks.follow_target import FollowTarget
 from omni.isaac.universal_robots.tasks.pick_place import PickPlace
 from omni.isaac.universal_robots.tasks.stacking import Stacking
-
-# from omni.isaac.universal_robots.tasks.bin_packing import BinPacking
+from omni.isaac.universal_robots.tasks.bin_filling import BinFilling

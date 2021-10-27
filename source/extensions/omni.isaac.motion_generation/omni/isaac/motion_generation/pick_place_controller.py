@@ -27,11 +27,11 @@ class PickPlaceController(BaseController):
         if self._event_velocities is None:
             self._event_velocities = [0.008, 0.005, 0.1, 0.0025, 0.001, 0.0025, 1, 0.008, 0.08]
         else:
-            if not isinstance(self._event_velocities, np.ndarray) or not isinstance(self._event_velocities, list):
+            if not isinstance(self._event_velocities, np.ndarray) and not isinstance(self._event_velocities, list):
                 raise Exception("event velocities need to be list or numpy array")
             elif isinstance(self._event_velocities, np.ndarray):
                 self._event_velocities = self._event_velocities.tolist()
-            if len(self._event_velocities) == 9:
+            if len(self._event_velocities) != 9:
                 raise Exception("event velocities need have length of 9")
         self._ik_solver = ik_solver
         self._gripper_controller = gripper_controller
@@ -57,9 +57,8 @@ class PickPlaceController(BaseController):
 
     def forward(
         self,
-        cube_position,
-        cube_orientation,
-        cube_target_position,
+        picking_position,
+        placing_position,
         current_joint_positions,
         end_effector_translation_offset=None,
         approach_angle=None,
@@ -71,15 +70,15 @@ class PickPlaceController(BaseController):
             return ArticulationAction(joint_positions=target_joint_positions)
 
         if self._event < 2:
-            self._current_target_x = cube_position[0]
-            self._current_target_y = cube_position[1]
-            self._h0 = cube_position[2]
+            self._current_target_x = picking_position[0]
+            self._current_target_y = picking_position[1]
+            self._h0 = picking_position[2]
         # TODO: take into account cube orientation
 
         interpolated_xy = self._get_interpolated_xy(
-            cube_target_position[0], cube_target_position[1], self._current_target_x, self._current_target_y
+            placing_position[0], placing_position[1], self._current_target_x, self._current_target_y
         )
-        target_height = self._get_target_hs(cube_target_position[2])
+        target_height = self._get_target_hs(placing_position[2])
         position_target = np.array(
             [
                 interpolated_xy[0] + end_effector_translation_offset[0],

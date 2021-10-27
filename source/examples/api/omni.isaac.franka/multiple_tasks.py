@@ -51,9 +51,8 @@ while True:
         for i in range(num_of_tasks):
             articulation_controllers.append(frankas[i].get_articulation_controller())
             actions = controllers[i].forward(
-                cube_position=observations[cube_names[i]]["position"],
-                cube_orientation=observations[cube_names[i]]["orientation"],
-                cube_target_position=observations[cube_names[i]]["target_position"],
+                picking_position=observations[cube_names[i]]["position"],
+                placing_position=observations[cube_names[i]]["target_position"],
                 current_joint_positions=observations[frankas[i].name]["joint_positions"],
                 end_effector_translation_offset=np.array([0, 0, -0.015 * 100]),
             )

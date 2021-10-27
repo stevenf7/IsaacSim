@@ -58,9 +58,3 @@ class FollowTarget(tasks.FollowTarget):
             prim_path=self._ur10_prim_path, name=self._ur10_robot_name, attach_gripper=self._attach_gripper
         )
         return self._ur10_robot
-
-    def step(self, control_index: int, simulation_time: float) -> None:
-        super().step(control_index, simulation_time)
-        if self._attach_gripper:
-            self._ur10_robot.gripper.update()
-        return
