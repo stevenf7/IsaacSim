@@ -1,6 +1,8 @@
 display_name = "Isaac Python App"
 
 [dependencies]
+"omni.isaac.kit" = {}
+"omni.isaac.core" = {}
 "omni.kit.loop-isaac" = {}
 
 [[python.module]]

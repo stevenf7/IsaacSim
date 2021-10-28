@@ -350,6 +350,10 @@ group "python_samples"
     python_sample_test("tests-nativepython-syntheticdata.visualize_groundtruth", "examples/syntheticdata/visualize_groundtruth.py")
     python_sample_test("tests-nativepython-syntheticdata.replicator", "examples/syntheticdata/replicator/src/main.py", "--input warehouse.yaml --num-samples 5 --headless True --overwrite True")
     python_sample_test("tests-nativepython-syntheticdata.replicator", "examples/syntheticdata/replicator/src/main.py", "--input flying_things.yaml --num-samples 5 --headless True --overwrite True")
+
+    -- tests that are not shipped
+    python_sample_test("tests-internalnativepython-omni.isaac.python_app.test_startup", "examples/testing/omni.isaac.python_app/test_startup.py")
+
 group "jupyter_samples"
 
     jupyter_sample_test("tests-jupyter-startup", "examples/notebooks/basic_notebook.ipynb")
