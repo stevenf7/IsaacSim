@@ -6,77 +6,58 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import os
-import shutil
-
 import carb
 
+from output import DataWriter, DisparityConverter
 from sampling import Sampler
-from output import GenerateDisparity, DataWriter
 
 
 class OutputManager:
     """ For managing Replicator outputs, including sending data to the data writer. """
 
-    def __init__(self, sim_app, sim_context, sensor_manager, output_dir):
-        """ Construct OutputManager. Start data writer threads and set-up output directories. """
+    def __init__(self, sim_app, sim_context, scene_manager, output_data_dir):
+        """ Construct OutputManager. Start data writer threads. """
+
+        from omni.isaac.synthetic_utils import SyntheticDataHelper
 
         self.sim_app = sim_app
         self.sim_context = sim_context
-        self.sensor_manager = sensor_manager
-        self.output_dir = output_dir
+        self.scene_manager = scene_manager
+        self.output_data_dir = output_data_dir
 
-        self.viewports = self.sensor_manager.viewports
+        self.camera = self.scene_manager.camera
+        self.viewports = self.camera.viewports
         self.stage = self.sim_context.stage
         self.sample = Sampler().sample
 
-        self.setup_data_output()
-
         max_queue_size = 500
-        self.data_writer = DataWriter(self.output_data_dir, self.sample("num_data_writer_threads"), max_queue_size)
-        self.data_writer.start_threads()
 
-        from omni.isaac.synthetic_utils import SyntheticDataHelper
+        self.write_data = self.sample("write_data")
+
+        if self.write_data:
+            self.data_writer = DataWriter(self.output_data_dir, self.sample("num_data_writer_threads"), max_queue_size)
+            self.data_writer.start_threads()
 
         self.sd_helper = SyntheticDataHelper()
 
         self.carb_settings = carb.settings.acquire_settings_interface()
 
-    def setup_data_output(self):
-        """ Create output directories and copy input files to output. """
-
-        # Create output directories, as needed
-        self.output_data_dir = os.path.join(self.output_dir, "data")
-        self.parameter_dir = os.path.join(self.output_dir, "parameters")
-        self.parameter_profiles_dir = os.path.join(self.parameter_dir, "profiles")
-        self.content_log_dir = os.path.join(self.output_dir, "log")
-
-        os.makedirs(self.output_data_dir, exist_ok=True)
-        os.makedirs(self.parameter_profiles_dir, exist_ok=True)
-        os.makedirs(self.content_log_dir, exist_ok=True)
-
-        # Copy input parameters file to output
-        input_file_name = os.path.basename(self.sample("input_file"))
-        input_file_copy = os.path.join(self.parameter_dir, input_file_name)
-        shutil.copy(self.sample("input_file"), input_file_copy)
-
-        # Copy profile parameters file(s) to output
-        if self.sample("profile_files"):
-            for profile_file in self.sample("profile_files"):
-                profile_file_name = os.path.basename(profile_file)
-                profile_file_copy = os.path.join(self.parameter_profiles_dir, profile_file_name)
-                shutil.copy(profile_file, profile_file_copy)
-
-    def capture_groundtruth(self, index):
+    def capture_groundtruth(self, index, step_index=0, sequence_length=0):
         """ Capture groundtruth data from Isaac Sim. Send data to data writer. """
 
         depths = []
         for i in range(len(self.viewports)):
             viewport_name, viewport_window = self.viewports[i]
 
-            num_digits = len(str(self.sample("num_samples") - 1))
+            num_digits = len(str(self.sample("num_scenes") - 1))
             id = str(index)
             id = id.zfill(num_digits)
+
+            if self.sample("sequential"):
+                num_digits = len(str(sequence_length - 1))
+                suffix_id = str(step_index)
+                suffix_id = suffix_id.zfill(num_digits)
+                id = id + "_" + suffix_id
 
             groundtruth = {
                 "METADATA": {
@@ -184,15 +165,15 @@ class OutputManager:
                     self.carb_settings.set("/rtx/wireframe/mode", 0)
                     self.sim_context.render()
 
-            if self.sample("write_data"):
+            if self.write_data:
                 self.data_writer.q.put(groundtruth)
 
         # Disparity
         if self.sample("disparity") and self.sample("stereo"):
             depth1, depth2 = depths
 
-            cam_intrinsics = self.sensor_manager.cam_intrinsics[0]
-            gen_disp = GenerateDisparity(
+            cam_intrinsics = self.camera.intrinsics[0]
+            disp_convert = DisparityConverter(
                 depth1,
                 depth2,
                 cam_intrinsics["fx"],
@@ -201,7 +182,7 @@ class OutputManager:
                 cam_intrinsics["cy"],
                 self.sample("stereo_baseline"),
             )
-            disp_l, disp_r = gen_disp.get_disp()
+            disp_l, disp_r = disp_convert.compute_disparity()
             disparities = [disp_l, disp_r]
 
             for i in range(len(self.viewports)):
@@ -215,7 +196,7 @@ class OutputManager:
                 groundtruth["METADATA"]["DISPARITY"]["COLORIZE"] = self.sample("groundtruth_visual")
                 groundtruth["METADATA"]["DISPARITY"]["NPY"] = True
 
-                if self.sample("write_data"):
+                if self.write_data:
                     self.data_writer.q.put(groundtruth)
 
         return groundtruth

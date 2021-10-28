@@ -1,0 +1,157 @@
+forklifts:
+  obj_model: Walk("/Users/mtrepte/forklift_scenes/forklifts")
+
+  obj_material: Choice("materials/materials.txt")
+  obj_texture: Choice("textures/patterns.txt")
+  obj_texture_tile_scale: Choice([0.01, 0.1, 1])
+
+  obj_metallicness: Uniform(0.1, 0.7)
+  obj_reflectance: Uniform(0.1, 0.9)
+  
+  obj_count: 1
+  obj_size: 250
+
+  # obj_distance: 1000
+  obj_distance: Uniform(700, 1100)
+  # obj_horiz_fov_loc: 0
+  # obj_vert_fov_loc: 0
+
+  obj_horiz_fov_loc: Uniform(-0.5, 0.5)
+  obj_vert_fov_loc: Uniform(0.1, 0.8)
+
+  # obj_rot: (0, 0, -40)
+  obj_rot: Uniform((0, 0, 0), (360, 360, 360))
+
+  obj_rot_camera_relative: False
+
+  obj_vel: Normal((0, 0, 0), (30, 30, 30))
+  obj_rot_vel: Normal((0, 0, 0), (30, 30, 30))
+
+# flying objects
+objs_material_dr:
+  obj_material: Choice('materials/materials.txt')
+  obj_texture: Choice("textures/patterns.txt")
+  obj_texture_tile_scale: Choice([0.01, 0.1, 1])
+
+  obj_count: 10
+  obj_distance: Uniform(500, 1500)
+
+  inherit: flying_objs
+
+# flying objects (rpt)
+objs_material_dr:
+  obj_model: Choice('models/gtc.txt')
+  obj_material: Choice('materials/materials.txt')
+  obj_texture: Choice("textures/patterns.txt")
+  obj_texture_tile_scale: Choice([0.01, 0.1, 1])
+
+  obj_size: Uniform(1, 2)
+
+  obj_count: 15
+  obj_distance: Uniform(500, 1500)
+
+  inherit: flying_objs
+
+# flying midground shapes
+midground_shapes:
+  obj_material: Choice('materials/materials.txt')
+  obj_texture: Choice("textures/patterns.txt")
+  obj_texture_tile_scale: Choice([0.01, 0.1, 1])
+
+  obj_count: 10
+  obj_distance: Uniform(1000, 2000)
+
+  inherit: flying_shapes
+
+# distant light
+distant_light:
+  light_distant: True
+
+  light_count: 1
+  light_color: Choice(['colors/macbeth_chart.txt', (255, 50, 50), (50, 255, 50), (50, 50, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255)])
+  light_intensity: Uniform(1000, 3000)
+  light_rot: Normal((0, 0, 0), (10, 10, 10))
+
+# ceiling lights (colorful)
+ceiling_lights_color:
+  light_count: Range(1, 3)
+  light_color: Choice(['colors/macbeth_chart.txt', (255, 50, 50), (50, 255, 50), (50, 50, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255)])
+  light_intensity: Uniform(100000, 500000)
+  light_radius: 100
+
+  light_coord_camera_relative: False
+  light_coord: Choice([(700, 0, 700), (700, 500, 700), (700, -500, 700)])
+
+# ceiling lights
+ceiling_lights:
+  light_count: 1
+  light_intensity: 50000
+  light_radius: 100
+
+  light_coord_camera_relative: False
+  light_coord: (700, 500, 700)
+
+
+
+# randomized floor
+scenario_room: True
+
+floor: True
+wall: True
+ceiling: False
+
+floor_size: 3500
+wall_height: 3500
+
+floor_material: Choice(['materials/materials.txt'])
+wall_material: Choice(['materials/materials.txt'])
+
+# floor_color: (100, 100, 100)
+# wall_color: (150, 170, 180)
+
+# floor_material: /Library/commercial_assets/nvidia/materials/Base/Masonry/Concrete_Polished.mdl
+# wall_material: /Library/commercial_assets/nvidia/materials/Base/Stone/Retaining_Block.mdl
+
+floor_reflectance: 0.2
+wall_reflectance: 0.2
+
+floor_texture_tile_scale: 0.1
+wall_texture_tile_scale: 0.1
+
+# floor_texture: Choice(['textures/patterns.txt', 'textures/backgrounds.txt'])
+# floor_texture_tile_scale: Choice([0.01, 0.1, 1])
+# floor_reflectance: Uniform(0, 0.5)
+
+
+# camera
+focal_length: 30
+
+camera_coord: (0, 0, 200)
+camera_rot: (-4, 0, 0)
+
+
+# output
+output_dir: dataset
+num_scenes: 8
+# img_width: 1280
+# img_height: 720
+img_width: 3840
+img_height: 2160
+
+
+sequential: True
+sequence_step_count: 30
+sequence_step_time: 0.1
+
+rgb: True
+
+samples_per_pixel: 128
+
+# debug
+nap: False
+pause: 30
+headless: True
+verbose: True
+
+profiles:
+  - profiles/obj_classes.yaml

@@ -6,11 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from output import Logger
+import numpy as np
+
 from distributions import Distribution
-
-
-LOGGER = Logger()
+from output import Logger
 
 
 class Sampler:
@@ -19,13 +18,24 @@ class Sampler:
     # Static variable of parameter set
     params = None
 
-    def __init__(self, *args):
+    def __init__(self, group=None):
         """ Construct a Sampler. Potentially set an associated group. """
 
-        if len(args) == 1:
-            self.group = args[0]
-        else:
-            self.group = None
+        self.group = group
+
+    def evaluate(self, val):
+        """ Evaluate a parameter into a primitive. """
+
+        if isinstance(val, Distribution):
+            val = val.sample()
+        elif isinstance(val, (list, tuple)):
+            elems = val
+            val = [self.evaluate(sub_elem) for sub_elem in elems]
+            is_numeric = all([type(elem) == int or type(elem) == float for elem in val])
+            if is_numeric:
+                val = np.array(val, dtype=np.float32)
+
+        return val
 
     def sample(self, key, group=None):
         """ Sample a parameter. """
@@ -34,9 +44,9 @@ class Sampler:
             group = self.group
 
         if key.startswith("obj") or key.startswith("light") and group:
-            param_set = self.params["groups"][group]
+            param_set = Sampler.params["groups"][group]
         else:
-            param_set = self.params
+            param_set = Sampler.params
 
         if key in param_set:
             val = param_set[key]
@@ -44,8 +54,8 @@ class Sampler:
             print('Warning key "{}" in group "{}" not found in parameter set.'.format(key, group))
             return None
 
-        if isinstance(val, Distribution):
-            val = val.sample()
+        val = self.evaluate(val)
 
-        LOGGER.write_parameter(key, val, group=group)
+        Logger.write_parameter(key, val, group=group)
+
         return val

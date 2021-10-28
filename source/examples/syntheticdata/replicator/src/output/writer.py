@@ -7,16 +7,12 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import atexit
-
-# import cv2
+import numpy as np
+import os
+from PIL import Image, ImageFilter
 import queue
 import sys
-import os
 import threading
-import numpy as np
-from PIL import Image
-
-import omni
 
 
 class DataWriter:
@@ -194,12 +190,10 @@ class DataWriter:
             img = Image.fromarray(image_data, mode="L")
         elif img_type == "DEPTH_BOUNDARY":
             image_data = normalize_greyscale_image(image_data)
-
-            # image_data = cv2.GaussianBlur(image_data, (3, 3), 0)
-            # image_data = cv2.Canny(image_data, threshold1=10, threshold2=30)
-
             data_folder = os.path.join(self.data_dir, viewport_name, "depth_boundary")
             img = Image.fromarray(image_data, mode="L")
+            # TODO: add tuning
+            img = img.filter(ImageFilter.FIND_EDGES)
         elif img_type == "DISPARITY":
             image_data = normalize_greyscale_image(image_data)
 

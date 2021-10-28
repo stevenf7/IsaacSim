@@ -7,12 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import asyncio
-import numpy as np
 import time
 
 from output import Logger
 from sampling import Sampler
-from scene import Room, Object, Light
+from scene import Camera, Light, Object, Room
 
 
 class SceneManager:
@@ -31,47 +30,29 @@ class SceneManager:
         self.sample = Sampler().sample
         self.setup_scenario()
 
-        # TODO: parameterize these variables
-        self.model_substr_to_label = {"floor": "floor"}
-        self.catch_all_label = "obstacle"
-
         self.play_frame = False
         self.objs = []
         self.lights = []
+
+        self.camera = Camera(self.sim_app, self.sim_context, "/World/CameraRig", None, group=None)
 
     def setup_scenario(self):
         """ Load in base scenario(s) """
 
         import omni
-        from omni.isaac.core.utils import prims, stage
-        from omni.isaac.utils.scripts import scene_utils
-
-        # Define world prim
-        try:
-            prims.create_prim("/World", "Xform")
-        except:
-            Logger.print("/World already exists\n")
-
-        # Set scene units
-        omni.kit.commands.execute(
-            "ChangeSetting",
-            path="/persistent/simulation/defaultMetersPerUnit",
-            value=self.sample("meters_per_scene_unit"),
-            prev=0,
-        )
+        from omni.isaac.core.utils import stage
 
         # Load in a USD scenario, if needed
         self.load_scenario_model()
 
         # Generate a parameterizable room, if needed
         self.room = None
-        if self.sample("generate_room"):
+        if self.sample("scenario_room"):
             self.room = Room(self.sim_app, self.sim_context)
-            self.room.generate()
 
         self.stage = omni.usd.get_context().get_stage()
 
-        # Set up axis to z axis
+        # Set the up axis to the z axis
         stage.set_stage_up_axis("z")
 
     def load_scenario_model(self):
@@ -92,8 +73,11 @@ class SceneManager:
             while not setup_task.done():
                 self.sim_context.render()
 
-    def populate_scene(self, cam_data):
-        """ Populate a sample's scene, given a camera pose, with objects and lights. """
+    def populate_scene(self, index):
+        """ Populate a sample's scene a camera, objects, and lights. """
+
+        # Update camera
+        self.camera.place_in_scene()
 
         # Iterate through each group
         self.objs = []
@@ -102,9 +86,9 @@ class SceneManager:
             # Spawn objects
             num_objs = self.sample("obj_count", group=group)
             for i in range(num_objs):
-                path = "/World/Sample/Objects/object_{}".format(len(self.objs))
+                path = "/World/Sample/Objects/object_{}_{}".format(len(self.objs), index)
                 ref = self.sample("nucleus_server") + self.sample("obj_model", group=group)
-                obj = Object(self.sim_app, self.sim_context, ref, path, cam_data, group)
+                obj = Object(self.sim_app, self.sim_context, ref, path, self.camera, group)
                 obj.place_in_scene()
                 obj.add_physics()
                 self.objs.append(obj)
@@ -113,7 +97,7 @@ class SceneManager:
             num_lights = self.sample("light_count", group=group)
             for i in range(num_lights):
                 path = "/World/Sample/Lights/lights_{}".format(len(self.lights))
-                light = Light(self.sim_app, self.sim_context, path, cam_data, group)
+                light = Light(self.sim_app, self.sim_context, path, self.camera, group)
                 light.place_in_scene()
                 self.lights.append(light)
 
@@ -121,15 +105,25 @@ class SceneManager:
         if self.room:
             self.room.update()
 
-    def update_scene(self):
+        # Add skybox, if needed
+        self.add_skybox()
+
+    def update_scene(self, step_time=None, step_index=0):
         """ Update Omniverse after scene is generated. """
 
-        # Update class labels
-        self.update_class_labels()
-
-        # Wait for scene to finish loading
         from omni.isaac.core.utils.stage import is_stage_loading
 
+        # Step positions of objs and lights
+        if step_time:
+            self.camera.step(step_time)
+
+            for obj in self.objs:
+                obj.step(step_time)
+
+            for light in self.lights:
+                light.step(step_time)
+
+        # Wait for scene to finish loading
         while is_stage_loading():
             self.sim_context.render()
 
@@ -139,14 +133,14 @@ class SceneManager:
 
         # Play scene, if needed
         if self.play_frame:
-            print("physically simulating...")
+            Logger.print("physically simulating...")
             self.sim_context.play()
-            frame = 0
-            frame_time = 1 / 60
-            frame_count = self.sample("physics_simulate_time") / frame_time
-            while frame < frame_count or is_stage_loading():
-                self.sim_context.step(frame_time)
-                frame = frame + 1
+            render = not self.sample("headless")
+
+            sim_time = self.sample("physics_simulate_time")
+            frames_to_simulate = int(sim_time * 60) + 1
+            for i in range(frames_to_simulate):
+                self.sim_context.step(render=render)
         else:
             self.sim_context.stop()
 
@@ -158,37 +152,42 @@ class SceneManager:
 
         # Pausing
         start_time = time.time()
-        pause_time = self.sample("pause") + 0.01
+        pause_time = 0.05
+        if step_index == 0:
+            pause_time += self.sample("pause")
         while time.time() - start_time < pause_time:
             self.sim_context.render()
 
-    def update_class_labels(self):
-        """ Update class labels of every object."""
+    def add_skybox(self):
+        """ Add a DomeLight that creates a textured skybox, if needed. """
 
-        from pxr import Semantics
+        import omni
+        from pxr import UsdGeom, UsdLux
 
-        for prim in self.stage.Traverse():
-            if not prim.HasAPI(Semantics.SemanticsAPI):
-                sem = Semantics.SemanticsAPI.Apply(prim, "Semantics")
-                sem.CreateSemanticTypeAttr()
-                sem.CreateSemanticDataAttr()
-            else:
-                sem = Semantics.SemanticsAPI.Get(prim, "Semantics")
-                continue
+        sky_texture = self.sample("sky_texture")
+        sky_light_intensity = self.sample("sky_light_intensity")
 
-            dataAttr = sem.GetSemanticDataAttr()
-            for model_substr, label in self.model_substr_to_label.items():
-                if model_substr in prim.GetPath().pathString.lower():
-                    dataAttr.Set(label)
-                    continue
-            dataAttr.Set(self.catch_all_label)
+        if sky_texture:
+            omni.kit.commands.execute(
+                "CreatePrimCommand",
+                prim_path="/World/Sample/Lights/skybox",
+                prim_type="DomeLight",
+                select_new_prim=False,
+                attributes={
+                    UsdLux.Tokens.intensity: sky_light_intensity,
+                    UsdLux.Tokens.specular: 1,
+                    UsdLux.Tokens.textureFile: self.sample("nucleus_server") + sky_texture,
+                    UsdLux.Tokens.textureFormat: UsdLux.Tokens.latlong,
+                    UsdGeom.Tokens.visibility: "inherited",
+                },
+            )
 
     def prepare_scene(self, index):
         """ Scene preparation step. """
 
         self.valid_sample = True
-        Logger.start_log_item(index)
-        Logger.print("Sample: " + str(index) + "\n")
+        Logger.start_log_entry(index)
+        Logger.print("Scene: " + str(index) + "\n")
 
     def finish_scene(self):
         """ Scene finish step. Clean-up variables, Isaac Sim stage. """
@@ -200,13 +199,6 @@ class SceneManager:
         self.stage.RemovePrim(Sdf.Path("/World/Sample"))
         self.stage.RemovePrim(Sdf.Path("/Looks"))
         self.sim_context.stop()
+        self.sim_context.render()
         self.play_frame = False
-        Logger.finish_log_item()
-
-    def is_given(param):
-        """ If a parameter is given. """
-
-        if type(param) is np.ndarray:
-            return True
-        else:
-            return param != None
+        Logger.finish_log_entry()
