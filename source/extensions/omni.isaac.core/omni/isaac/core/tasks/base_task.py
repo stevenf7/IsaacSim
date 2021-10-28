@@ -11,7 +11,7 @@ from omni.isaac.core.scenes.scene import Scene
 
 
 class BaseTask(object):
-    def __init__(self, name: str):
+    def __init__(self, name: str, offset):
         """[summary]
 
         Args:
@@ -19,6 +19,7 @@ class BaseTask(object):
         """
         self._scene = None
         self._name = name
+        self._offset = offset
         self._task_objects = dict()
 
     @property
@@ -63,7 +64,20 @@ class BaseTask(object):
         """
         raise NotImplementedError
 
-    def step(self, control_index: int, simulation_time: float) -> None:
+    @abstractmethod
+    def calculate_metrics(self) -> None:
+        """[summary]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def is_done(self) -> None:
+        """[summary]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def pre_step(self, control_index: int, simulation_time: float) -> None:
         """[summary]
 
         Args:
@@ -72,11 +86,12 @@ class BaseTask(object):
         """
         return
 
-    def reset(self) -> None:
+    def post_reset(self) -> None:
         """[summary]
         """
         return
 
+    @abstractmethod
     def get_description(self) -> str:
         """[summary]
 
@@ -85,6 +100,7 @@ class BaseTask(object):
         """
         return ""
 
+    @abstractmethod
     def cleanup(self) -> None:
         """[summary]
         """

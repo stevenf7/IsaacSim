@@ -26,7 +26,6 @@ class TestKayaJoystickSample(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Before running each test
     async def setUp(self):
-        self._timeline = omni.timeline.get_timeline_interface()
         self._physics_rate = 60
         self._provider = carb.input.acquire_input_provider()
         self._gamepad = self._provider.create_gamepad("test", "0")
@@ -48,7 +47,7 @@ class TestKayaJoystickSample(omni.kit.test.AsyncTestCaseFailOnLogError):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        self._sample.world_cleanup()
+        self._sample._world_cleanup()
         self._sample = None
         await omni.kit.app.get_app().next_update_async()
         self._provider.destroy_gamepad(self._gamepad)
@@ -62,11 +61,13 @@ class TestKayaJoystickSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         while is_stage_loading():
             await omni.kit.app.get_app().next_update_async()
         self._provider.set_gamepad_connected(self._gamepad, True)
-        self.assertLess(self._sample._kaya.get_pose()[0][1], 1)
+        self.assertLess(self._sample._kaya.get_world_pose()[0][1], 1)
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         for i in range(100):
             self._provider.buffer_gamepad_event(self._gamepad, carb.input.GamepadInput.LEFT_STICK_UP, 1.0)
             await omni.kit.app.get_app().next_update_async()
         self._provider.set_gamepad_connected(self._gamepad, False)
         await omni.kit.app.get_app().next_update_async()
-        self.assertGreater(self._sample._kaya.get_pose()[0][1], 64.0)
+        self.assertGreater(self._sample._kaya.get_world_pose()[0][1], 64.0)
         pass

@@ -9,8 +9,10 @@ class SimpleStack(BaseSample):
         self._controller = None
         self._articulation_controller = None
 
-    def add_tasks(self):
-        return [Stacking(name="stacking_task")]
+    def setup_scene(self):
+        world = self.get_world()
+        world.add_task(Stacking(name="stacking_task"))
+        return
 
     async def setup_load(self):
         self._franka_task = self._world.get_task(name="stacking_task")
@@ -34,14 +36,10 @@ class SimpleStack(BaseSample):
             self._world.pause()
         return
 
-    async def setup_reset(self):
+    async def setup_post_reset(self):
         self._controller.reset()
         return
 
     def world_cleanup(self):
-        super().world_cleanup()
         self._controller = None
-        return
-
-    async def setup_clear(self):
         return

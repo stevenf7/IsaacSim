@@ -147,10 +147,10 @@ class Kaya(Robot):
         )
         return
 
-    def reset(self) -> None:
+    def post_reset(self) -> None:
         """[summary]
         """
-        super().reset()
+        super().post_reset()
         # TODO: tune the kds to get the base velocity to the corresponding wheel velocity and when convertting the asset
         self._articulation_controller.switch_dof_control_mode(dof_index=self._wheel_dof_indices[0], mode="velocity")
         self._articulation_controller.switch_dof_control_mode(dof_index=self._wheel_dof_indices[1], mode="velocity")

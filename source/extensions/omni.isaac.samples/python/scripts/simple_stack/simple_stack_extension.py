@@ -40,6 +40,7 @@ class SimpleStackExtension(BaseSampleExtension):
 
     def on_reset(self):
         world = self.get_world()
-        world.remove_physics_callback("sim_step")
+        if world.physics_callback_exists("sim_step"):
+            world.remove_physics_callback("sim_step")
         self.get_buttons()["Start Stacking"].enabled = True
         return

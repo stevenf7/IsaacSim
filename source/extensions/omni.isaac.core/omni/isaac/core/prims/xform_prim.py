@@ -162,7 +162,7 @@ class XFormPrim(object):
         """
         return UsdGeom.Imageable(self.prim).ComputeVisibility(Usd.TimeCode.Default()) != UsdGeom.Tokens.invisible
 
-    def reset(self) -> None:
+    def post_reset(self) -> None:
         """Resets the prim to its default state (position and orientation).
         """
         XFormPrim.set_local_pose(self, self._default_state.position, self._default_state.orientation)

@@ -37,12 +37,13 @@ class JetbotKeyboard(BaseSample):
         await self._world.play_async()
         return
 
-    def setup_scene(self, scene):
+    def setup_scene(self):
+        world = self.get_world()
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
-        self._jetbot = scene.add(
+        self._jetbot = world.scene.add(
             Jetbot(
                 prim_path="/jetbot",
                 name="my_jetbot",
@@ -50,7 +51,7 @@ class JetbotKeyboard(BaseSample):
                 orientation=np.array([1.0, 0.0, 0.0, 0.0]),
             )
         )
-        scene.add_ground_plane()
+        world.scene.add_ground_plane()
         set_camera_view(eye=np.array([75, 75, 45]), target=np.array([0, 0, 0]))
         return
 
@@ -82,7 +83,7 @@ class JetbotKeyboard(BaseSample):
 
         return True
 
-    async def setup_reset(self):
+    async def setup_post_reset(self):
         self._controller.reset()
         self._world.remove_physics_callback("jetbot_step")
         await omni.kit.app.get_app().next_update_async()
@@ -90,7 +91,6 @@ class JetbotKeyboard(BaseSample):
         return
 
     def world_cleanup(self):
-        super().world_cleanup()
         self._controller = None
         self._sub_keyboard = None
         gc.collect()

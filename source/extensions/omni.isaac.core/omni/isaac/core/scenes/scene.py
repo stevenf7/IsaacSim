@@ -124,7 +124,7 @@ class Scene(object):
         Scene.add(self, plane)
         return plane
 
-    def reset(self) -> None:
+    def post_reset(self) -> None:
         """[summary]
         """
         prim_registries_available = [
@@ -143,7 +143,7 @@ class Scene(object):
                     self._scene_registry.remove_object(name=prim_name)
                     del prim_object
                 else:
-                    prim_registery[prim_name].reset()
+                    prim_registery[prim_name].post_reset()
         if self._enable_bounding_box_computations:
             self._bbox_cache.Clear()
         gc.collect()

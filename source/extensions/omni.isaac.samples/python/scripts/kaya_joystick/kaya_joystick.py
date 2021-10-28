@@ -26,12 +26,13 @@ class KayaJoystick(BaseSample):
         self._gains = (40.0, 40.0, 2.0)
         self._joystick_deadzone = 0.2
 
-    def setup_scene(self, scene):
+    def setup_scene(self):
+        world = self.get_world()
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
-        self._kaya = scene.add(
+        self._kaya = world.scene.add(
             Kaya(
                 prim_path="/kaya",
                 name="my_kaya",
@@ -39,7 +40,7 @@ class KayaJoystick(BaseSample):
                 orientation=np.array([1.0, 0.0, 0.0, 0.0]),
             )
         )
-        scene.add_ground_plane()
+        world.scene.add_ground_plane()
         set_camera_view(eye=np.array([75, 75, 45]), target=np.array([0, 0, 0]))
         return
 
@@ -72,17 +73,15 @@ class KayaJoystick(BaseSample):
         else:
             pass
 
-    async def setup_reset(self):
+    async def setup_post_reset(self):
         self._controller.reset()
         self._world.remove_physics_callback("kaya_step")
         await omni.kit.app.get_app().next_update_async()
         self._world.add_physics_callback("kaya_step", callback_fn=self._on_sim_step)
         await self._world.play_async()
-        self._controller.reset()
         return
 
     def world_cleanup(self):
-        super().world_cleanup()
         if self._controller:
             self._controller = None
             self._manip.unbind_gamepad()

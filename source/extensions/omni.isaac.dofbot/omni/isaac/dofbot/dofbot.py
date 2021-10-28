@@ -115,10 +115,10 @@ class DofBot(Robot):
         )
         return
 
-    def reset(self) -> None:
+    def post_reset(self) -> None:
         """[summary]
         """
-        super().reset()
+        super().post_reset()
         self._articulation_controller.switch_dof_control_mode(dof_index=self.gripper.dof_indices[0], mode="position")
         self._articulation_controller.switch_dof_control_mode(dof_index=self.gripper.dof_indices[1], mode="position")
         return

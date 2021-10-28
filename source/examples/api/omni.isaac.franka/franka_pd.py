@@ -17,12 +17,12 @@ from omni.isaac.core import World
 from omni.isaac.core.controllers import BaseController
 from omni.isaac.core.utils.types import ArticulationAction
 
-my_world = World()
+my_world = World(stage_units_in_meters=0.01)
 
 
 class FrankaTask(BaseTask):
     def __init__(self):
-        BaseTask.__init__(self, name="dummy_task")
+        BaseTask.__init__(self, name="dummy_task", offset=None)
 
     def set_up_scene(self, scene):
         BaseTask.set_up_scene(self, scene)
@@ -38,9 +38,6 @@ class FrankaTask(BaseTask):
                 "joint_velcoities": np.array(joints_state.velocities),
             }
         }
-
-    def reset(self):
-        return
 
 
 class PDController(BaseController):

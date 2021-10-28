@@ -114,9 +114,9 @@ class UR10(Robot):
         self._end_effector.initialize_handles()
         return
 
-    def reset(self) -> None:
+    def post_reset(self) -> None:
         """[summary]
         """
-        super().reset()
+        super().post_reset()
         self.set_joint_positions(np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0]))
         return
