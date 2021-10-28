@@ -94,7 +94,7 @@ class Scene(object):
             thickness (float, optional): [description]. Defaults to 0.5.
         """
         if Scene.object_exists(self, name=name):
-            carb.log_warn("ground floor already created with name {}.".format(name))
+            carb.log_info("ground floor already created with name {}.".format(name))
             return Scene.get_object(self, name=name)
         if default:
             result, nucleus_server = find_nucleus_server()

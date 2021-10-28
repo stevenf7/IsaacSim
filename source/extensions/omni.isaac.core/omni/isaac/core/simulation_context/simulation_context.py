@@ -59,7 +59,7 @@ class SimulationContext:
         if SimulationContext._instance is None:
             SimulationContext._instance = object.__new__(cls)
         else:
-            carb.log_warn("Simulation Context is defined already, returning the previously defined one")
+            carb.log_info("Simulation Context is defined already, returning the previously defined one")
         return SimulationContext._instance
 
     async def init_simulation_context_async(self):
@@ -401,7 +401,7 @@ class PhysicsScene:
                 self.set_physics_dt(dt=1.0 / 60.0)
         else:
             self._prim_path = get_prim_path(current_physics_prim)
-            carb.log_warn(
+            carb.log_info(
                 f"Physics Scene at path `{current_physics_prim.GetPath().pathString}` is already defined - reusing it"
             )
             self._physics_scene = UsdPhysics.Scene(current_physics_prim)
@@ -425,7 +425,7 @@ class PhysicsScene:
         return None
 
     def create_new_physics_scene(self, prim_path):
-        carb.log_warn(f"Defining a new Physics Scene at path `{prim_path}`")
+        carb.log_info(f"Defining a new Physics Scene at path `{prim_path}`")
         stage = get_current_stage()
         scene = UsdPhysics.Scene.Define(stage, prim_path)
         prim = stage.GetPrimAtPath(prim_path)
@@ -478,7 +478,7 @@ class PhysicsScene:
     ):
         # TODO: handle the case where a physics scene is already defined and we need to change values and not create
         stage = get_current_stage()
-        carb.log_warn(
+        carb.log_info(
             "Setting Physics Scene Setting with z gravity value of: {}".format(gravity_z_dir * gravity_magnitude)
         )
         up_axis = UsdGeom.GetStageUpAxis(stage)

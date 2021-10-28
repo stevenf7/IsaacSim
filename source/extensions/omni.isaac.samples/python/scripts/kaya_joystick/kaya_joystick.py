@@ -26,12 +26,12 @@ class KayaJoystick(BaseSample):
         self._gains = (40.0, 40.0, 2.0)
         self._joystick_deadzone = 0.2
 
-    def _add_tasks(self):
+    def setup_scene(self, scene):
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
-        self._kaya = self.get_world().scene.add(
+        self._kaya = scene.add(
             Kaya(
                 prim_path="/kaya",
                 name="my_kaya",
@@ -39,12 +39,12 @@ class KayaJoystick(BaseSample):
                 orientation=np.array([1.0, 0.0, 0.0, 0.0]),
             )
         )
-        self.get_world().scene.add_ground_plane()
+        scene.add_ground_plane()
         set_camera_view(eye=np.array([75, 75, 45]), target=np.array([0, 0, 0]))
-        return []
+        return
 
     async def setup_load(self):
-        # Note: for hot reload you need to get handles of things defined in _add_tasks here
+        # Note: for hot reload you need to get handles of things defined in add_tasks here
         world = self.get_world()
         self._kaya = world.scene.get_object("my_kaya")
         self._controller = HolonomicController(name="simple_control")

@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core import World
-from omni.isaac.core.utils.stage import create_new_stage_async, get_stage_units
+from omni.isaac.core.utils.stage import create_new_stage_async
 import omni.usd
 import gc
 from abc import abstractmethod
@@ -31,9 +31,10 @@ class BaseSample(object):
         if World.instance() is None:
             self._world = World(**self._world_settings)
             await self._world.init_simulation_context_async()
-            current_tasks = self._add_tasks()
+            current_tasks = self.add_tasks()
             for i in range(len(current_tasks)):
                 self._world.add_task(current_tasks[i])
+            self.setup_scene(self._world.scene)
         else:
             self._world = World.instance()
         self._current_tasks = self._world.get_current_tasks()
@@ -53,8 +54,12 @@ class BaseSample(object):
             self._world.add_physics_callback("tasks_step", self.tasks_simulation_step)
 
     @abstractmethod
-    def _add_tasks(self):
+    def add_tasks(self):
         return []
+
+    @abstractmethod
+    def setup_scene(self, scene):
+        return
 
     @abstractmethod
     async def setup_load(self):

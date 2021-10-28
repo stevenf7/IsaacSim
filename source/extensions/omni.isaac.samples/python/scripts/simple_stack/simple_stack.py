@@ -9,7 +9,7 @@ class SimpleStack(BaseSample):
         self._controller = None
         self._articulation_controller = None
 
-    def _add_tasks(self):
+    def add_tasks(self):
         return [Stacking(name="stacking_task")]
 
     async def setup_load(self):

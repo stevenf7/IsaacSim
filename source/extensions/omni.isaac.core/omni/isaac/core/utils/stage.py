@@ -68,7 +68,7 @@ def add_reference_to_stage(usd_path, prim_path, type="Xform") -> Usd.Prim:
     prim = stage.GetPrimAtPath(prim_path)
     if not prim.IsValid():
         prim = stage.DefinePrim(prim_path, type)
-    carb.log_warn("Loading Asset from path {} ".format(usd_path))
+    carb.log_info("Loading Asset from path {} ".format(usd_path))
     success_bool = prim.GetReferences().AddReference(usd_path)
     if not success_bool:
         raise Exception("The usd file at path {} provided wasn't found".format(usd_path))

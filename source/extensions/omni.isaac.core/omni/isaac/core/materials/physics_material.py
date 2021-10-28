@@ -26,7 +26,7 @@ class PhysicsMaterial(object):
 
         stage = omni.usd.get_context().get_stage()
         if stage.GetPrimAtPath(prim_path).IsValid():
-            carb.log_warn("Physics Material Prim already defined at path: {}".format(prim_path))
+            carb.log_info("Physics Material Prim already defined at path: {}".format(prim_path))
             self._material = UsdShade.Material(stage.GetPrimAtPath(prim_path))
         else:
             self._material = UsdShade.Material.Define(stage, prim_path)

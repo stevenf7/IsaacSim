@@ -27,17 +27,17 @@ class PreviewSurface(VisualMaterial):
         # Check if material exists
         stage = omni.usd.get_context().get_stage()
         if stage.GetPrimAtPath(prim_path).IsValid():
-            carb.log_warn("Material Prim already defined at path: {}".format(prim_path))
+            carb.log_info("Material Prim already defined at path: {}".format(prim_path))
             material = UsdShade.Material(stage.GetPrimAtPath(prim_path))
         else:
             material = UsdShade.Material.Define(stage, prim_path)
 
         if shader is None:
             if stage.GetPrimAtPath(f"{prim_path}/shader").IsValid():
-                carb.log_warn("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
+                carb.log_info("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
                 shader = UsdShade.Shader(stage.GetPrimAtPath(f"{prim_path}/shader"))
             elif stage.GetPrimAtPath(f"{prim_path}/Shader").IsValid():
-                carb.log_warn("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
+                carb.log_info("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
                 shader = UsdShade.Shader(stage.GetPrimAtPath(f"{prim_path}/Shader"))
             else:
                 shader = UsdShade.Shader.Define(stage, f"{prim_path}/shader")
