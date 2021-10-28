@@ -1,0 +1,6 @@
+/NVIDIA/Assets/Skies/Clear
+/NVIDIA/Assets/Skies/Cloudy
+/NVIDIA/Assets/Skies/Dynamic
+/NVIDIA/Assets/Skies/Evening
+/NVIDIA/Assets/Skies/Indoor
+/NVIDIA/Assets/Skies/Storm

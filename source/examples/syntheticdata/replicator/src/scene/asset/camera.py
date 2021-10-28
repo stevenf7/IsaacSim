@@ -10,49 +10,55 @@ import math
 import numpy as np
 
 import carb
-import omni
 
+from scene.asset import Asset
 from output import Logger
-from sampling import Sampler
 
 
-class SensorManager:
-    """ For setting-up sensors and placing them in scenes. """
+class Camera(Asset):
+    """ For managing a camera in Isaac Sim. """
 
-    def __init__(self, sim_app, sim_context):
-        """ Construct SensorManager. Set-up camera and viewports in simulator. """
+    def __init__(self, sim_app, sim_context, path, cam_pose, group):
+        """ Construct Camera. """
 
-        self.sim_app = sim_app
-        self.sim_context = sim_context
+        super().__init__(sim_app, sim_context, path, cam_pose, "", group, "camera")
 
-        self.stage = self.sim_context.stage
+        self.load_camera()
 
-        self.sample = Sampler().sample
-        self.setup_camera()
+    def is_coord_camera_relative(self):
+        return False
 
-    def setup_camera(self):
-        """ Set-up mono or stereo cameras and viewports in Isaac-Sim. """
+    def is_rot_camera_relative(self):
+        return False
 
-        from pxr import UsdGeom
+    def load_camera(self):
+        """ Create a camera in Isaac Sim. """
+
+        import omni
+        from pxr import Sdf, UsdGeom
         from omni.isaac.core.utils import prims
 
-        # Create mono or stereo cameras
-        camera_path = "/World/CameraRig"
-        self.camera_rig = UsdGeom.Xformable(prims.create_prim(camera_path, "Xform"))
+        self.asset = prims.create_prim(self.path, "Xform")
+        self.camera_rig = UsdGeom.Xformable(self.asset)
 
         camera_prim_paths = []
         if self.sample("stereo"):
-            camera_prim_paths.append(camera_path + "/LeftCamera")
-            camera_prim_paths.append(camera_path + "/RightCamera")
+            camera_prim_paths.append(self.path + "/LeftCamera")
+            camera_prim_paths.append(self.path + "/RightCamera")
         else:
-            camera_prim_paths.append(camera_path + "/MonoCamera")
+            camera_prim_paths.append(self.path + "/MonoCamera")
 
-        self.cameras = [self.stage.DefinePrim(camera_prim_path, "Camera") for camera_prim_path in camera_prim_paths]
+        self.cameras = [
+            self.stage.DefinePrim(Sdf.Path(camera_prim_path), "Camera") for camera_prim_path in camera_prim_paths
+        ]
 
-        # TODO: add FOV support
         for camera in self.cameras:
             camera = UsdGeom.Camera(camera)
             camera.GetFocalLengthAttr().Set(self.sample("focal_length"))
+            camera.GetFocusDistanceAttr().Set(self.sample("focus_distance"))
+            camera.GetHorizontalApertureAttr().Set(self.sample("horiz_aperture"))
+            camera.GetVerticalApertureAttr().Set(self.sample("vert_aperture"))
+            camera.GetFStopAttr().Set(self.sample("f_stop"))
 
         # Set viewports
         carb.settings.acquire_settings_interface().set_int("/app/renderer/resolution/width", -1)
@@ -86,11 +92,52 @@ class SensorManager:
 
         self.sim_context.render()
 
-        Logger.print("")
-        self.cam_intrinsics = [self.get_cam_intrinsics(camera) for camera in self.cameras]
+        self.intrinsics = [self.get_intrinsics(camera) for camera in self.cameras]
 
-    def get_cam_intrinsics(self, camera):
-        """ Compute and print camera intrinsics. """
+    def place_in_scene(self):
+        """ Place camera in scene. """
+
+        from pxr import UsdGeom
+
+        self.coord = self.get_initial_coord()
+        self.rotation = self.get_initial_rotation()
+        if self.sample("stereo"):
+            self.camera_coords = self.get_stereo_coords(self.coord, self.rotation)
+        else:
+            self.camera_coords = [self.coord]
+
+        for i in range(len(self.camera_coords)):
+            viewport_name, viewport_window = self.viewports[i]
+            camera = self.cameras[i]
+            coord = self.camera_coords[i]
+            viewport_window.set_camera_position(str(camera.GetPath()), coord[0], coord[1], coord[2], True)
+            offset_cam_rot = self.rotation + np.array((90, 0, 270))
+            UsdGeom.XformCommonAPI(camera).SetRotate(offset_cam_rot.tolist())
+
+    def get_stereo_coords(self, coord, rotation):
+        """ Convert camera center coord and rotation and return stereo camera coords. """
+
+        coords = []
+        for i in range(len(self.cameras)):
+            sign = 1 if i == 0 else -1
+            theta = np.radians(rotation[0] + sign * 90)
+            phi = np.radians(rotation[1])
+
+            radius = self.sample("stereo_baseline") / 2
+
+            # Add offset such that center of stereo cameras is at cam_coord
+            x = coord[0] + radius * np.cos(theta) * np.cos(phi)
+            y = coord[1] + radius * np.sin(theta) * np.cos(phi)
+            z = coord[2] + radius * sign * np.sin(phi)
+
+            coords.append(np.array(x, y, z))
+
+        return coords
+
+    def get_intrinsics(self, camera):
+        """ Compute, print, and return camera intrinsics. """
+
+        # TODO: Use Isaac SIM API to get camera intrinsics
 
         width = self.sample("img_width")
         height = self.sample("img_height")
@@ -113,6 +160,7 @@ class SensorManager:
         with np.printoptions(precision=2, suppress=True):
             proj_mat_str = str(proj_mat)
 
+        Logger.print("")
         Logger.print("Camera intrinsics")
         Logger.print("- width, height: {}, {}".format(round(width), round(height)))
         Logger.print("- focal_length: {}".format(focal_length))
@@ -138,61 +186,3 @@ class SensorManager:
         }
 
         return cam_intrinsics
-
-    def place_camera(self):
-        """ Spawn in a camera at a coord and rotation. """
-
-        from pxr import Gf, UsdGeom
-
-        self.cam_x = self.sample("camera_coord_x")
-        self.cam_y = self.sample("camera_coord_y")
-        self.cam_z = self.sample("camera_coord_z")
-
-        self.cam_rot_x = self.sample("camera_rot_x")
-        self.cam_rot_y = self.sample("camera_rot_y")  # clockwise viewport rotation
-        self.cam_rot_z = self.sample("camera_rot_z")
-
-        Logger.print(
-            "adding CAM at cartesian({}, {}, {}) with rotation({}, {}, {})".format(
-                round(self.cam_x),
-                round(self.cam_y),
-                round(self.cam_z),
-                round(self.cam_rot_x),
-                round(self.cam_rot_y),
-                round(self.cam_rot_z),
-            )
-        )
-
-        for i, camera in enumerate(self.cameras):
-            viewport_name, viewport_window = self.viewports[i]
-            if self.sample("stereo"):
-                sign = 1 if i == 0 else -1
-                theta = np.radians(self.cam_rot_x + sign * 90)
-                phi = np.radians(self.cam_rot_y)
-
-                radius = self.sample("stereo_baseline") / 2
-
-                # Add offset such that center of stereo cameras is at cam_x, cam_y, cam_z
-                x = self.cam_x + radius * np.cos(theta) * np.cos(phi)
-                y = self.cam_y + radius * np.sin(theta) * np.cos(phi)
-                z = self.cam_z + radius * sign * np.sin(phi)
-            else:
-                x = self.cam_x
-                y = self.cam_y
-                z = self.cam_z
-
-            # Place camera(s) at a position and orientation
-            viewport_window.set_camera_position(str(camera.GetPath()), x, y, z, True)
-            UsdGeom.XformCommonAPI(camera).SetRotate(
-                Gf.Vec3f(90 + self.cam_rot_x, self.cam_rot_y, 270 + self.cam_rot_z)
-            )
-
-        horiz_fov = self.cam_intrinsics[0]["horiz_fov"]
-        vert_fov = self.cam_intrinsics[0]["vert_fov"]
-        cam_data = (
-            (self.cam_x, self.cam_y, self.cam_z),
-            (self.cam_rot_x, self.cam_rot_y, self.cam_rot_z),
-            (horiz_fov, vert_fov),
-        )
-
-        return cam_data

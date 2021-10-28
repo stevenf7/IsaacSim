@@ -8,35 +8,25 @@
 
 import numpy as np
 import os
-from PIL import Image, ImageFont, ImageDraw
-import sys
+from PIL import Image, ImageDraw, ImageFont
 
-from generator import Generator
-from distributions.choice import Choice
-from distributions.walk import Walk
+from distributions import Choice, Distribution, Walk
+from main import Replicator
 from sampling import Sampler
 
 
 class Visualizer:
     """ For generating visuals of each input object model in the input parameterization. """
 
-    def __init__(self, parser, params, output_dir):
-        """ Construct Visualizer. Parameterize Replicator to output necessary data to process into visuals. """
+    def __init__(self, parser, input_params, output_dir):
+        """ Construct Visualizer. Parameterize Replicator to generate the data needed to post-process into model visuals. """
 
         self.parser = parser
-        self.params = params
+        self.input_params = input_params
         self.output_dir = os.path.join(output_dir, "visuals")
         os.makedirs(self.output_dir, exist_ok=True)
 
-        self.tile_width = 500
-        self.tile_height = 500
-        self.obj_size = 100
-        self.room_size = 5 * self.obj_size
-        self.cam_distance = 1.8 * self.obj_size
-        self.background_color = (100, 150, 175)
-        self.group_name = parser.default_group_name
-
-        # Get object models from input parameter files
+        # Get all object models from input parameter file
         self.obj_models = self.get_all_obj_models()
 
         # Copy model list to output file
@@ -47,25 +37,36 @@ class Visualizer:
                 f.write("\n")
 
         # Filter obj models
-        if not self.params["overwrite"]:
+        if not self.input_params["overwrite"]:
             self.filter_obj_models(self.obj_models)
+            if not self.obj_models:
+                print("all obj models visuals have been already created.")
+                return
 
-        # Set parameters to default
-        parser.args.input = "parameters/profiles/default.yaml"
-        self.params = parser.parse_input()
+        self.tile_width = 500
+        self.tile_height = 500
+        self.obj_size = 100
+        self.room_size = 5 * self.obj_size
+        self.cam_distance = 1.8 * self.obj_size
+        self.background_color = (100, 150, 175)
+        self.group_name = "photoshoot"
 
-        # Override parameters
-        self.set_obj_parameters()
-        self.set_light_parameters()
-        self.set_room_parameters()
-        self.set_cam_parameters()
-        self.set_other_parameters()
+        # Set hard-coded parameters
+        self.params = {self.group_name: {}}
+        self.set_obj_params()
+        self.set_light_params()
+        self.set_room_params()
+        self.set_cam_params()
+        self.set_other_params()
+
+        # Parse parameters
+        self.params = parser.parse_input(self.params, parse_from_file=False)
 
         # Set parameters
         Sampler.params = self.params
 
         # Initiate Replicator
-        self.generator = Generator(self.params, 0, self.output_dir)
+        self.replicator = Replicator(self.params, 0, self.output_dir)
 
     def visualize_models(self):
         """ Generate samples and post-process captured data into visuals. """
@@ -77,7 +78,7 @@ class Visualizer:
             self.set_obj_model(obj_model)
 
             # Capture 4 angles per model
-            outputs = [self.generator.generate_sample() for j in range(4)]
+            outputs = [self.replicator.generate_scene() for j in range(4)]
             image_matrix = self.process_outputs(outputs)
             self.save_visual(obj_model, image_matrix)
 
@@ -85,12 +86,12 @@ class Visualizer:
         """ Get all object models from input parameterization. """
 
         obj_models = []
-        groups = self.params["groups"]
+        groups = self.input_params["groups"]
         for group_name, group in groups.items():
             group_models = group["obj_model"]
             if group_models:
                 if type(group_models) is Choice or type(group_models) is Walk:
-                    group_models = group_models.get_elems()
+                    group_models = group_models.elems
                 else:
                     group_models = [group_models]
 
@@ -108,17 +109,14 @@ class Visualizer:
             if filename not in existing_filenames:
                 obj_models.remove(obj_model)
 
-        if not obj_models:
-            print("all obj models visuals have been already created.")
-            sys.exit()
-
     def model_to_filename(self, obj_model):
-        """ Map obj_model Nucleus path to a filename. """
+        """ Map object model's Nucleus path to a filename. """
 
         filename = obj_model.replace("/", "__")
         r_index = filename.rfind(".")
         filename = filename[:r_index]
         filename += ".jpg"
+
         return filename
 
     def process_outputs(self, outputs):
@@ -156,81 +154,72 @@ class Visualizer:
         filename = os.path.join(self.output_dir, model_name)
         image.save(filename, "JPEG", quality=85)
 
-    def set_cam_parameters(self):
+    def set_cam_params(self):
         """ Set camera parameters. """
 
-        self.params["camera_coord_x"] = -self.cam_distance
-        self.params["camera_coord_y"] = 0
-        self.params["camera_coord_z"] = self.room_size / 2
-        self.params["camera_rot_x"] = 0
-        self.params["camera_rot_y"] = 0
-        self.params["camera_rot_z"] = 0
-        self.params["focal_length"] = 30
+        self.params["camera_coord"] = str((-self.cam_distance, 0, self.room_size / 2))
+        self.params["camera_rot"] = str((0, 0, 0))
+        self.params["focal_length"] = str(30)
 
-    def set_room_parameters(self):
+    def set_room_params(self):
         """ Set room parameters. """
 
-        self.params["generate_room"] = True
-        self.params["scenario_model"] = None
+        self.params["scenario_room"] = str(True)
+        self.params["scenario_model"] = ""
 
-        self.params["floor_size"] = self.room_size
-        self.params["wall_height"] = self.room_size
+        self.params["floor_size"] = str(self.room_size)
+        self.params["wall_height"] = str(self.room_size)
 
-        self.params["floor_color"] = np.array(self.background_color)
-        self.params["floor_material"] = None
-        self.params["wall_color"] = np.array(self.background_color)
-        self.params["wall_reflectance"] = 0
-        self.params["ceiling_color"] = np.array(self.background_color)
-        self.params["ceiling_reflectance"] = 0
+        self.params["floor_color"] = str(self.background_color)
+        self.params["wall_color"] = str(self.background_color)
+        self.params["ceiling_color"] = str(self.background_color)
+        self.params["floor_reflectance"] = str(0)
+        self.params["wall_reflectance"] = str(0)
+        self.params["ceiling_reflectance"] = str(0)
 
-    def set_obj_parameters(self):
+    def set_obj_params(self):
         """ Set object parameters. """
 
-        group = self.params["groups"][self.group_name]
-        group["obj_coord_sensor_relative"] = False
-        group["obj_rot_sensor_relative"] = False
-        group["obj_coord_x"] = 0
-        group["obj_coord_y"] = 0
-        group["obj_coord_z"] = self.room_size / 2
-        group["obj_rot_x"] = Walk([0, 90, 180, 270])
-        group["obj_rot_y"] = 0
-        group["obj_rot_z"] = 0
-        group["obj_size_enabled"] = True
-        group["obj_size"] = self.obj_size
-        group["obj_count"] = 1
+        group = self.params[self.group_name]
+        group["obj_coord_camera_relative"] = str(False)
+        group["obj_rot_camera_relative"] = str(False)
+        group["obj_coord"] = str((0, 0, self.room_size / 2))
+        group["obj_rot"] = "(Walk([0, 90, 180, 270]), 0, 0)"
+        group["obj_size_enabled"] = str(True)
+        group["obj_size"] = str(self.obj_size)
+        group["obj_count"] = str(1)
 
-    def set_light_parameters(self):
+    def set_light_params(self):
         """ Set light parameters. """
 
-        group = self.params["groups"][self.group_name]
-        group["light_count"] = 1
-        group["light_coord_sensor_relative"] = True
-        group["light_rot_sensor_relative"] = False
-        group["light_horiz_fov_loc"] = 0
-        group["light_vert_fov_loc"] = 0
-        group["light_distance"] = -100
-        group["light_intensity"] = 300000
-        group["light_radius"] = 20
-        group["light_color"] = np.array([200, 200, 200])
+        group = self.params[self.group_name]
+        group["light_count"] = str(1)
+        group["light_coord_camera_relative"] = str(True)
+        group["light_rot_camera_relative"] = str(False)
+        group["light_horiz_fov_loc"] = str(0)
+        group["light_vert_fov_loc"] = str(0)
+        group["light_distance"] = str(-100)
+        group["light_intensity"] = str(100000)
+        group["light_radius"] = str(50)
+        group["light_color"] = str([200, 200, 200])
 
-    def set_other_parameters(self):
+    def set_other_params(self):
         """ Set other parameters. """
 
-        self.params["img_width"] = self.tile_width
-        self.params["img_height"] = self.tile_height
-        self.params["write_data"] = False
-        self.params["verbose"] = False
-        self.params["stereo"] = False
-        self.params["rgb"] = True
-        self.params["depth"] = True
-        self.params["wireframe"] = True
+        self.params["img_width"] = str(self.tile_width)
+        self.params["img_height"] = str(self.tile_height)
+        self.params["write_data"] = str(False)
+        self.params["verbose"] = str(False)
+        self.params["rgb"] = str(True)
+        self.params["depth"] = str(True)
+        self.params["wireframe"] = str(True)
 
-        self.params["nap"] = False
-        self.params["pause"] = 2
-        self.params["headless"] = False
+        self.params["nap"] = str(False)
+        self.params["pause"] = str(0)
+        self.params["headless"] = str(False)
 
     def set_obj_model(self, obj_model):
         """ Set obj_model parameter. """
 
         group = self.params["groups"][self.group_name]
-        group["obj_model"] = obj_model
+        group["obj_model"] = str(obj_model)

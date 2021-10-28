@@ -1,14 +1,14 @@
-# Default parameters. Do not rename or delete.
+# Default parameters. Do not edit, move, or delete.
 
-# Default Object Parameters
-obj_model: None
+# default object parameters
+obj_model: /Isaac/Props/Forklift/forklift.usd
 
-obj_color: None
-obj_texture: None
-obj_material: None
+obj_color: ()
+obj_texture: ""
+obj_material: ""
 
-obj_metallicness: None
-obj_reflectance: None
+obj_metallicness: float("NaN")
+obj_reflectance: float("NaN")
 
 obj_size_enabled: True
 obj_size: 1
@@ -17,73 +17,87 @@ obj_scale: 1
 obj_texture_tile_scale: 1
 obj_texture_rot: 0
 
-obj_rot_x: 0
-obj_rot_y: 0
-obj_rot_z: 0
-
-obj_coord_x: 0
-obj_coord_y: 0
-obj_coord_z: 0
+obj_rot: (0, 0, 0)
+obj_coord: (0, 0, 0)
 
 obj_physics: False
 
-obj_coord_sensor_relative: True
-obj_rot_sensor_relative: True
+obj_rot_camera_relative: True
+obj_coord_camera_relative: True
 
 obj_count: 0
-obj_distance: Uniform(3, 8)
+obj_distance: Uniform(300, 800)
 obj_horiz_fov_loc: Uniform(-1, 1)
 obj_vert_fov_loc: Uniform(-1, 1)
 
+obj_vel: (0, 0, 0)
+obj_rot_vel: (0, 0, 0)
+
+obj_accel: (0, 0, 0)
+obj_rot_accel: (0, 0, 0)
+
+obj_movement_obj_relative: False
 
 
-# Default Light Parameters
-light_color: (1, 1, 1)
+# default light parameters
 light_intensity: 100000
-light_radius: .25
+light_radius: 25
 
-light_sensor_relative: True
+light_temp_enabled: False
+light_color: (255, 255, 255)
+light_temp: 6500
+
+light_directed: False
+light_directed_focus: 20
+light_directed_focus_softness: 0
 
 light_distant: False
 
-light_rot_x: 0
-light_rot_y: 0
-light_rot_z: 0
+light_camera_relative: True
 
-light_coord_x: 0
-light_coord_y: 0
-light_coord_z: 0
+light_rot: (0, 0, 0)
+light_coord: (0, 0, 0)
 
 light_count: 0
 light_distance: Uniform(3, 8)
 light_horiz_fov_loc: Uniform(-1, 1)
 light_vert_fov_loc: Uniform(-1, 1)
 
-light_coord_sensor_relative: True
-light_rot_sensor_relative: True
+light_coord_camera_relative: True
+light_rot_camera_relative: True
+
+light_vel: (0, 0, 0)
+light_rot_vel: (0, 0, 0)
+
+light_accel: (0, 0, 0)
+light_rot_accel: (0, 0, 0)
+
+light_movement_light_relative: False
 
 
-# Default Scenario Parameters
-generate_room: False
 
-scenario_model: None
+# default scenario parameters
+scenario_room: False
 
-meters_per_scene_unit: 100
+scenario_model: ""
+
+sky_texture: ""
+sky_light_intensity: 1000
 
 floor: True
 wall: True
 ceiling: True
 
-wall_height: 10
-floor_size: 40
+wall_height: 1000
+floor_size: 1000
 
-floor_color: (100, 150, 175)
-wall_color: (100, 150, 175)
-ceiling_color: (100, 150, 175)
+floor_color: ()
+wall_color: ()
+ceiling_color: ()
 
-floor_texture: None
-wall_texture: None
-ceiling_texture: None
+floor_texture: ""
+wall_texture: ""
+ceiling_texture: ""
 
 floor_texture_tile_scale: 1
 wall_texture_tile_scale: 1
@@ -93,44 +107,57 @@ floor_texture_rot: 0
 wall_texture_rot: 0
 ceiling_texture_rot: 0
 
-floor_material: None
-wall_material: None
-ceiling_material: None
+floor_material: ""
+wall_material: ""
+ceiling_material: ""
 
-floor_reflectance: 0.1
-wall_reflectance: 0.1
-ceiling_reflectance: 0.1
+floor_reflectance: float("NaN")
+wall_reflectance: float("NaN")
+ceiling_reflectance: float("NaN")
 
-floor_metallicness: 0.1
-wall_metallicness: 0.1
-ceiling_metallicness: 0.1
+floor_metallicness: float("NaN")
+wall_metallicness: float("NaN")
+ceiling_metallicness: float("NaN")
 
 
-# Default Camera Parameters
+# default camera parameters
 focal_length: 50
+focus_distance: 0
 
+horiz_aperture: 20.955
+vert_aperture: 15.2908
+
+f_stop: 0
+
+stereo: False
 stereo_baseline: 20
 
-camera_coord_x: 0
-camera_coord_y: 0
-camera_coord_z: 50
+camera_coord: (0, 0, 50)
+camera_rot: (0, 0, 0)
 
-camera_rot_x: 0
-camera_rot_y: 0
-camera_rot_z: 0
+camera_vel: (0, 0, 0)
+camera_rot_vel: (0, 0, 0)
+
+camera_accel: (0, 0, 0)
+camera_rot_accel: (0, 0, 0)
+
+camera_movement_camera_relative: False
 
 
-# Default Output Parameters
-output_dir: 'dataset'
-num_samples: 10
-img_width: 800
-img_height: 800
+# default output parameters
+output_dir: dataset
+num_scenes: 10
+img_width: 1280
+img_height: 720
 
 overwrite: False
 write_data: True
 num_data_writer_threads: 4
 
-stereo: False
+sequential: False
+sequence_step_count: 3
+sequence_step_time: 1
+
 rgb: True
 depth: False
 depth_boundary: False
@@ -145,24 +172,20 @@ wireframe: False
 groundtruth_stereo: False
 groundtruth_visual: False
 
-content_log: True
 
-
-
-# Default Versioning Parameters
-replicator_tag: todo
-nucleus_version: todo
+# default versioning parameters
 nucleus_server: omniverse://ov-isaac-dev.nvidia.com
-seed: 0
 
 
-# Default Debug Parameters
+# default debug parameters
 nap: False
 pause: 0
 headless: True
 verbose: True
 
 
-# Misc Parameters
-physics_simulate_time: 1
-fix_walks: False
+# simulate parameters
+physics_simulate_time: 1.0
+samples_per_pixel: 12
+stage_units_in_meters: 0.01
+

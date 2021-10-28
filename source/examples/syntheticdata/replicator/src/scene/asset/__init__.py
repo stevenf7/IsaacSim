@@ -9,3 +9,4 @@
 from .asset import Asset
 from .object import Object
 from .light import Light
+from .camera import Camera

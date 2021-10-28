@@ -8,6 +8,7 @@
 
 import datetime
 import os
+import time
 import yaml
 
 
@@ -16,39 +17,44 @@ class Logger:
 
     # Static variables set outside class
     verbose = None
-    content_log_dir = None
+    content_log_path = None
 
-    def start_log_item(index):
+    def start_log_entry(index):
         """ Initialize a sample's log message. """
 
-        Logger.log_item = {}
-        Logger.log_item["index"] = index
-        Logger.log_item["metadata"] = {}
-        Logger.log_item["metadata"]["timestamp"] = str(datetime.datetime.now())
-        Logger.print("\n")
+        Logger.start_time = time.time()
+        Logger.log_entry = [{}]
+        Logger.log_entry[0]["index"] = index
+        Logger.log_entry[0]["metadata"] = {"params": [], "lines": []}
+        Logger.log_entry[0]["metadata"]["timestamp"] = str(datetime.datetime.now())
 
-    def finish_log_item():
+        if Logger.verbose:
+            print()
+
+    def finish_log_entry():
         """ Output a sample's log message to the end of the content log. """
 
-        content_log_file = os.path.join(Logger.content_log_dir, "content_log.yaml")
-        with open(content_log_file, "a") as f:
-            yaml.dump(Logger.log_item, f)
+        duration = time.time() - Logger.start_time
+        Logger.log_entry[0]["time_elapsed"] = duration
 
-    def write_parameter(key, val, sampled=False, group=None):
+        if Logger.content_log_path:
+            with open(Logger.content_log_path, "a") as f:
+                yaml.safe_dump(Logger.log_entry, f)
+
+    def write_parameter(key, val, group=None):
         """ Record a sample parameter value. """
 
         param_dict = {}
         param_dict["parameter"] = key
         param_dict["val"] = str(val)
-        param_dict["sampled"] = sampled
         param_dict["group"] = group
 
-        Logger.log_item["metadata"]["params"] = Logger.log_item["metadata"].get("params", []) + [param_dict]
+        Logger.log_entry[0]["metadata"]["params"].append(param_dict)
 
     def print(line, force_print=False):
-        """ Record a string and potentially print string to console. """
+        """ Record a string and potentially output it to console. """
 
-        Logger.log_item["metadata"].get("lines", []).append(line)
+        Logger.log_entry[0]["metadata"]["lines"].append(line)
 
         if Logger.verbose or force_print:
             line = str(line)

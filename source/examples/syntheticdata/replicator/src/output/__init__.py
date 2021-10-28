@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from .writer import DataWriter
-from .disparity import GenerateDisparity
+from .disparity import DisparityConverter
+from .metrics import Metrics
 from .log import Logger
 from .output import OutputManager

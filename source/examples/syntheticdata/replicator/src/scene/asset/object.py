@@ -14,13 +14,13 @@ from scene.asset import Asset
 class Object(Asset):
     """ For managing an Xform asset in Isaac Sim. """
 
-    def __init__(self, sim_app, sim_context, ref, path, cam_pose, group, prefix="obj"):
+    def __init__(self, sim_app, sim_context, ref, path, camera, group, prefix="obj", can_move=True):
         """ Construct Object. """
 
         self.ref = ref
         label = self.ref[self.ref.rfind("/") + 1 : self.ref.rfind(".")].replace("-", "_")
 
-        super().__init__(sim_app, sim_context, path, cam_pose, label, group, prefix)
+        super().__init__(sim_app, sim_context, path, camera, label, group, prefix, can_move)
 
         self.load_asset()
 
@@ -45,23 +45,24 @@ class Object(Asset):
         scale = np.array([scale, scale, scale])
         self.scale(scale)
 
-        # Get asset coords and rotation
-        coords = self.get_coords()
-        rotation = self.get_rotation()
+        # Get asset coord and rotation
+        self.coord = self.get_initial_coord()
+        self.rotation = self.get_initial_rotation()
 
         # Rotate asset
-        self.rotate(rotation)
+        self.rotate(self.rotation)
 
         # Place and center asset
         offset *= scale
-        radians = np.radians(rotation)
+        radians = np.radians(self.rotation)
         rotation_offset = np.zeros((3))
         rotation_offset[0] = offset[0] * np.cos(radians[1]) * np.cos(radians[2])
         rotation_offset[1] = offset[1] * np.cos(radians[2]) * np.cos(radians[0])
         rotation_offset[2] = offset[2] * np.cos(radians[0]) * np.cos(radians[1])
 
-        coords = coords - rotation_offset
-        self.translate(coords)
+        # self.coord = self.coord - offset
+        self.coord = self.coord - rotation_offset
+        self.translate(self.coord)
 
     def load_asset(self):
         """ Create asset from object parameters. """
@@ -77,44 +78,47 @@ class Object(Asset):
     def get_bounds(self):
         """ Compute min and max bounds of an asset. """
 
-        from pxr import Usd, UsdGeom
-
-        # def recompute_extents(mesh_prim: UsdGeom.Mesh):
-        #     mesh_prim.GetExtentAttr().Set(mesh_prim.ComputeExtent(mesh_prim.GetPointsAttr().Get()))
-
-        # min_bound = max_bound = None
-        # for sub_prim in Usd.PrimRange(self.asset):
-        #     if sub_prim.IsA(UsdGeom.Mesh):
-        #         mesh_prim = UsdGeom.Mesh(sub_prim)
-
-        #         recompute_extents(mesh_prim)
-
-        #         bound = mesh_prim.ComputeWorldBound(Usd.TimeCode.Default(), "default").GetBox()
-        #         sub_prim_min_bound = np.array(bound.GetMin())
-        #         sub_prim_max_bound = np.array(bound.GetMax())
-
-        #         # translation = sub_prim.GetAttribute('xformOp:translate').Get()
-        #         # translation = np.array(translation)
-
-        #         # sub_prim_min_bound = sub_prim_min_bound + translation
-        #         # sub_prim_max_bound = sub_prim_max_bound + translation
-
-        #         if min_bound is None:
-        #             min_bound = sub_prim_min_bound
-        #             max_bound = sub_prim_max_bound
-        #         else:
-        #             min_bound = np.min((min_bound, sub_prim_min_bound), axis=0)
-        #             max_bound = np.max((max_bound, sub_prim_max_bound), axis=0)
-
         from pxr import Gf, Usd, UsdGeom
 
-        bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
-        bbox_cache.Clear()  # might not be needed
-        bbox_bounds = Gf.BBox3d()
-        bounds = bbox_cache.ComputeWorldBound(self.asset)
-        bounds = Gf.BBox3d.Combine(bbox_bounds, Gf.BBox3d(bounds.ComputeAlignedRange())).GetBox()
+        def recompute_extents(mesh_prim: UsdGeom.Mesh):
+            mesh_prim.GetExtentAttr().Set(mesh_prim.ComputeExtent(mesh_prim.GetPointsAttr().Get()))
 
-        min_bound, max_bound = np.array(bounds.GetMin()), np.array(bounds.GetMax())
+        sub_model_min_bounds = []
+        sub_model_max_bounds = []
+        for sub_prim in Usd.PrimRange(self.asset):
+            if sub_prim.IsA(UsdGeom.Mesh):
+                mesh_prim = UsdGeom.Mesh(sub_prim)
+
+                recompute_extents(mesh_prim)
+
+                bound = mesh_prim.ComputeWorldBound(Usd.TimeCode.Default(), "default").GetBox()
+                sub_model_min_bound = np.array(bound.GetMin())
+                sub_model_max_bound = np.array(bound.GetMax())
+
+                translation = sub_prim.GetAttribute("xformOp:translate").Get()
+
+                if translation:
+                    translation = np.array(translation)
+
+                    sub_model_min_bound += translation
+                    sub_model_max_bound += translation
+
+                sub_model_min_bounds.append(sub_model_min_bound)
+                sub_model_max_bounds.append(sub_model_max_bound)
+
+        if len(sub_model_min_bounds) > 0:
+            min_bound = np.min(sub_model_min_bounds, axis=0)
+            max_bound = np.max(sub_model_max_bounds, axis=0)
+        else:
+            bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
+            bbox_cache.Clear()  # might not be needed
+
+            total_bound = Gf.BBox3d()
+            bound = bbox_cache.ComputeWorldBound(self.asset)
+            bound = Gf.BBox3d.Combine(total_bound, Gf.BBox3d(bound.ComputeAlignedRange())).GetBox()
+
+            min_bound = np.array(bound.GetMin())
+            max_bound = np.array(bound.GetMax())
 
         return min_bound, max_bound
 
@@ -131,17 +135,19 @@ class Object(Asset):
         reflectance = self.sample(self.concat("reflectance"))
         metallic = self.sample(self.concat("metallicness"))
 
+        mtl_prim_path = None
         if self.is_given(material):
-            # Load a material and updates it properties, if needed
-            mtl_prim = self.load_material_from_nucleus(material)
-            mtl_prim = self.update_material(
-                mtl_prim, color, texture, texture_tile_scale, texture_rot, reflectance, metallic
-            )
-            UsdShade.MaterialBindingAPI(self.asset).Bind(mtl_prim, UsdShade.Tokens.strongerThanDescendants)
-
+            # Load a material
+            mtl_prim_path = self.load_material_from_nucleus(material)
         elif self.is_given(color) or self.is_given(texture):
-            # Create a material with certain properties
-            mtl_prim = self.create_material(color, texture, texture_tile_scale, texture_rot, reflectance, metallic)
+            # Load a new material
+            mtl_prim_path = self.create_material()
+
+        if mtl_prim_path:
+            # Update material properties and assign to asset
+            mtl_prim = self.update_material(
+                mtl_prim_path, color, texture, texture_tile_scale, texture_rot, reflectance, metallic
+            )
             UsdShade.MaterialBindingAPI(self.asset).Bind(mtl_prim, UsdShade.Tokens.strongerThanDescendants)
 
     def load_material_from_nucleus(self, material):
@@ -153,67 +159,18 @@ class Object(Asset):
         mtl_url = self.sample("nucleus_server") + material
         left_index = material.rfind("/") + 1 if "/" in material else 0
         right_index = material.rfind(".") if "." in material else -1
-        mtl_name = material[left_index:right_index]
-        mtl_path = "/Looks/" + mtl_name
+        mtl_name = material[left_index:right_index].replace("-", "_")
+        mtl_prim_path = Sdf.Path("/Looks/" + mtl_name)
 
-        omni.kit.commands.execute("CreateMdlMaterialPrim", mtl_url=mtl_url, mtl_name=mtl_name, mtl_path=mtl_path)
+        omni.kit.commands.execute("CreateMdlMaterialPrim", mtl_url=mtl_url, mtl_name=mtl_name, mtl_path=mtl_prim_path)
 
-        mtl_prim = self.stage.GetPrimAtPath(mtl_path)
-        omni.usd.create_material_input(mtl_prim, "project_uvw", True, Sdf.ValueTypeNames.Bool)
+        return mtl_prim_path
 
-        return mtl_prim
-
-    def update_material_property(path, property_name, value, prev=0):
-        """ Update one material property. """
-
-        import omni
-        from pxr import Sdf
-
-        prop_path = str(path) + "/Shader.inputs:" + property_name
-        omni.kit.commands.execute("ChangeProperty", prop_path=Sdf.Path(prop_path), value=value, prev=prev)
-
-    def update_material(self, mtl_prim, color, texture, texture_tile_scale, texture_rot, reflectance, metallic):
-        """ Update properties of an existing material. """
-
-        from pxr import UsdShade
-
-        mtl_prim_path = mtl_prim.GetPrimPath()
-        if self.is_given(color):
-            color = tuple(color / 255)
-            self.update_material_property(mtl_prim_path, "albedo_desaturation", 0.7)
-            self.update_material_property(mtl_prim_path, "albedo_add", 0.1)
-            self.update_material_property(mtl_prim_path, "diffuse_tint", color)
-
-        if self.is_given(texture):
-            texture = self.sample("nucleus_server") + texture
-            self.update_material_property(mtl_prim_path, "diffuse_texture", texture, prev="")
-            # self.update_material_property(mtl_prim_path, "project_uvw", True, prev="")
-            if self.is_given(texture_tile_scale):
-                texture_tile_scale = 1 / texture_tile_scale
-                self.update_material_property(
-                    mtl_prim_path, "texture_scale", (texture_tile_scale, texture_tile_scale), prev=""
-                )
-            if self.is_given(texture_rot):
-                self.update_material_property(mtl_prim_path, "texture_rotate", texture_rot, prev="")
-
-        if self.is_given(metallic):
-            self.update_material_property(mtl_prim_path, "metallic_constant", metallic)
-            self.update_material_property(mtl_prim_path, "metallic_texture_influence", 0)
-
-        if self.is_given(metallic):
-            roughness = 1 - reflectance
-            self.update_material_property(mtl_prim_path, "reflection_roughness_constant", roughness)
-            self.update_material_property(mtl_prim_path, "reflection_roughness_texture_influence", 0)
-
-        mtl_prim = UsdShade.Material(mtl_prim)
-
-        return mtl_prim
-
-    def create_material(self, color, texture, texture_tile_scale, texture_rot, reflectance, metallic):
+    def create_material(self):
         """ Create a OmniPBR material with provided properties and assign to asset. """
 
         import omni
-        from pxr import UsdShade, Sdf
+        from pxr import Sdf
 
         mtl_created_list = []
         omni.kit.commands.execute(
@@ -222,22 +179,36 @@ class Object(Asset):
             mtl_name="OmniPBR",
             mtl_created_list=mtl_created_list,
         )
-        mtl_prim = self.stage.GetPrimAtPath(mtl_created_list[0])
+        mtl_prim_path = Sdf.Path(mtl_created_list[0])
+
+        return mtl_prim_path
+
+    def update_material(self, mtl_prim_path, color, texture, texture_tile_scale, texture_rot, reflectance, metallic):
+        """ Update properties of an existing material. """
+
+        import omni
+        from pxr import Sdf, UsdShade
+
+        mtl_prim = UsdShade.Material(self.stage.GetPrimAtPath(mtl_prim_path))
 
         if self.is_given(color):
             color = tuple(color / 255)
             omni.usd.create_material_input(mtl_prim, "diffuse_color_constant", color, Sdf.ValueTypeNames.Color3f)
+            omni.usd.create_material_input(mtl_prim, "diffuse_tint", color, Sdf.ValueTypeNames.Color3f)
+
         if self.is_given(texture):
             texture = self.sample("nucleus_server") + texture
             omni.usd.create_material_input(mtl_prim, "diffuse_texture", texture, Sdf.ValueTypeNames.Asset)
-            # omni.usd.create_material_input(mtl_prim, "project_uvw", True, Sdf.ValueTypeNames.Bool)
-            if self.is_given(texture_tile_scale):
-                texture_tile_scale = 1 / texture_tile_scale
-                omni.usd.create_material_input(
-                    mtl_prim, "texture_scale", (texture_tile_scale, texture_tile_scale), Sdf.ValueTypeNames.Float2
-                )
-            if self.is_given(texture_rot):
-                omni.usd.create_material_input(mtl_prim, "texture_rotate", texture_rot, Sdf.ValueTypeNames.Float)
+
+        if self.is_given(texture_tile_scale):
+            texture_tile_scale = 1 / texture_tile_scale
+            omni.usd.create_material_input(
+                mtl_prim, "texture_scale", (texture_tile_scale, texture_tile_scale), Sdf.ValueTypeNames.Float2
+            )
+
+        if self.is_given(texture_rot):
+            omni.usd.create_material_input(mtl_prim, "texture_rotate", texture_rot, Sdf.ValueTypeNames.Float)
+
         if self.is_given(reflectance):
             roughness = 1 - reflectance
             omni.usd.create_material_input(
@@ -245,8 +216,6 @@ class Object(Asset):
             )
         if self.is_given(metallic):
             omni.usd.create_material_input(mtl_prim, "metallic_constant", metallic, Sdf.ValueTypeNames.Float)
-
-        mtl_prim = UsdShade.Material(mtl_prim)
 
         return mtl_prim
 

@@ -6,11 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+from ast import parse
 import numpy as np
 import os
 import yaml
-
-import omni.client
 
 from distributions import Distribution, Choice, Normal, Range, Uniform, Walk
 
@@ -22,206 +21,279 @@ class Parser:
         """ Construct Parser. Parse input file. """
 
         self.args = args
-        self.default_group_name = "<default>"
-        self.param_to_file_type = {
+        self.global_group = "[global]"
+        self.param_suffix_to_file_type = {
             "model": [".usd", ".usdz", ".usda", ".usdc"],
-            "texture": [".png", ".jpg", ".jpeg"],
+            "texture": [".png", ".jpg", ".jpeg", ".hdr", ".exr"],
             "material": [".mdl"],
         }
-
+        self.no_eval_check_params = {"output_dir", "nucleus_server", "inherit", "profiles"}
         Distribution.input_mount = args.input_mount
-        self.params = self.parse_input()
+        Distribution.param_suffix_to_file_type = self.param_suffix_to_file_type
 
-    def initialize_params(self, params):
-        """ Evaluate parameter values in Python. """
+        self.default_params = self.parse_param_set("profiles/default.yaml", default=True)
+        additional_params_to_default_set = {"inherit": "", "profiles": []}
+        self.default_params = {**additional_params_to_default_set, **self.default_params}
+        Distribution.nucleus_server = self.default_params["nucleus_server"]
+
+        self.params = self.parse_input(self.args.input)
+
+    def evaluate_param(self, key, val):
+        """ Evaluate a parameter value in Python """
+
+        # Skip evaluation on certain parameter with string values
+        if not self.param_is_evaluated(key, val):
+            return val
+
+        if type(val) is str and len(val) > 0:
+            val = eval(val)
+
+        if isinstance(val, Distribution):
+            val.setup(key)
+
+        if isinstance(val, (list, tuple)):
+            elems = val
+            val = [self.evaluate_param(key, sub_elem) for sub_elem in elems]
+
+        return val
+
+    def param_is_evaluated(self, key, val):
+        return not (key in self.no_eval_check_params or not val or (type(val) is str and val.startswith("/")))
+
+    def initialize_params(self, params, default=False):
+        """ Evaluate parameter values in Python. Verify parameter name and value type. """
 
         for key, val in params.items():
             if type(val) is dict:
                 self.initialize_params(val)
-            elif type(val) is str:
+            else:
+                # Evaluate parameter
                 try:
-                    val = eval(val)
-                    if type(val) is tuple:
-                        val = np.array(val)
+                    val = self.evaluate_param(key, val)
                     params[key] = val
-                except ValueError as e:
-                    raise e
-                except Exception as e:
-                    # TODO: handle exceptions clearer
-                    pass
+                except Exception:
+                    raise ValueError("Unable to evaluate parameter '{}' with value '{}'".format(key, val))
+
+                # Verify parameter
+                if not default:
+                    if key.startswith("obj") or key.startswith("light"):
+                        default_param_set = self.default_params["groups"][self.global_group]
+                    else:
+                        default_param_set = self.default_params
+
+                    # Verify parameter name
+                    if key not in default_param_set and key:
+                        raise ValueError("Parameter '{}' is not a parameter.".format(key))
+
+                    # Verify parameter value type
+                    default_val = default_param_set[key]
+                    if isinstance(val, Distribution):
+                        val_type = val.get_type()
+                    else:
+                        val_type = type(val)
+
+                    if isinstance(default_val, Distribution):
+                        default_val_type = default_val.get_type()
+                    else:
+                        default_val_type = type(default_val)
+
+                    if default_val_type in (int, float):
+                        # Integer and Float equivalence
+                        default_val_type = [int, float]
+                    elif default_val_type in (tuple, list, np.ndarray):
+                        # Tuple, List, and Array equivalence
+                        default_val_type = [tuple, list, np.ndarray]
+                    else:
+                        default_val_type = [default_val_type]
+
+                    if val_type not in default_val_type:
+                        raise ValueError(
+                            "Parameter '{}' has incorrect value type {}. Value type must be in {}.".format(
+                                key, val_type, default_val_type
+                            )
+                        )
+
+    def verify_nucleus_paths(self, params):
+        """ Verify parameter values that point to Nucleus server file paths. """
+
+        import omni.client
+
+        for key, val in params.items():
+            if type(val) is dict:
+                self.verify_nucleus_paths(val)
+
+            # Check Nucleus server file path of certain parameters
+            elif key.endswith(("model", "texture", "material")) and not isinstance(val, Distribution) and val:
+                # Check path starts with "/"
+                if not val.startswith("/"):
+                    raise ValueError(
+                        "Parameter '{}' has path '{}' which must start with a forward slash.".format(key, val)
+                    )
+
+                # Check file type
+                param_file_type = val[val.rfind(".") :].lower()
+                correct_file_types = self.param_suffix_to_file_type.get(key[key.rfind("_") + 1 :], [])
+                if param_file_type not in correct_file_types:
+                    raise ValueError(
+                        "Parameter '{}' has path '{}' with incorrect file type. File type must be one of {}.".format(
+                            key, val, correct_file_types
+                        )
+                    )
+
+                # Check file can be found
+                file_path = self.nucleus_server + val
+                (dir_result, _) = omni.client.list(file_path)
+                (exists_result, _, _) = omni.client.read_file(file_path)
+                is_file = not dir_result.name.startswith("OK") and exists_result.name.startswith("OK")
+
+                if not is_file:
+                    raise ValueError(
+                        "Parameter '{}' has path '{}' which cannot be linked to a file on the Nucleus server '{}'.".format(
+                            key, val, self.nucleus_server
+                        )
+                    )
 
     def override_params(self, params):
         """ Override params with CLI args. """
 
         if self.args.output:
             params["output_dir"] = self.args.output
-        if self.args.num_samples:
-            params["num_samples"] = self.args.num_samples
-        if self.args.no_overwrite:
-            params["overwrite"] = False
+        if self.args.num_scenes:
+            params["num_scenes"] = self.args.num_scenes
+        if self.args.overwrite:
+            params["overwrite"] = self.args.overwrite
         if self.args.input_mount:
             params["input_mount"] = self.args.input_mount
         if self.args.headless:
-            params["headless"] = True
+            params["headless"] = self.args.headless
         if self.args.visualize_models:
             params["visualize_models"] = True
 
-    def get_directory_elems(self, elem):
-        """ Grab files in a potential Nucleus server directory. """
-
-        elem_can_be_nucleus_dir = type(elem) is str and "." not in os.path.basename(elem) and elem.startswith("/")
-        if elem_can_be_nucleus_dir:
-            (_, directory_elems) = omni.client.list(self.nucleus_server + elem)
-            return directory_elems
-        else:
-            return ()
-
-    def process_directory(self, directory_elems, directory, key):
-        """ Unpack a directory on Nucleus into a list of file paths. """
-
-        processed_elems = []
-        for directory_elem in directory_elems:
-            directory_elem = os.path.join(directory, str(directory_elem.relative_path))
-
-            file_type = directory_elem[directory_elem.rfind(".") :].lower()
-            valid_file_types = self.param_to_file_type.get(key[key.rfind("_") + 1 :], [])
-            if file_type in valid_file_types:
-                processed_elem = os.path.join(directory, directory_elem)
-                processed_elems.append(processed_elem)
-            else:
-                sub_directory_elems = self.get_directory_elems(directory_elem)
-                if sub_directory_elems:
-                    # Recurse on subdirectories
-                    unpacked_elems = self.process_directory(sub_directory_elems, directory_elem, key)
-                    processed_elems.extend(unpacked_elems)
-
-        return processed_elems
-
-    def unpack_directories_from_params(self, params):
-        """ Unpack all potential Nucleus server directories refenced in the parameter values. """
-
-        for key, val in params.items():
-            if type(val) is dict:
-                self.unpack_directories_from_params(val)
-            elif key.startswith("obj") or key.startswith("light"):
-                if type(val) is Choice or type(val) is Walk:
-                    unpacked_elems = []
-                    for elem in val.get_elems():
-                        directory_elems = self.get_directory_elems(elem)
-                        if directory_elems:
-                            directory = elem
-                            unpacked_elems.extend(self.process_directory(directory_elems, directory, key))
-                        else:
-                            unpacked_elems.append(elem)
-                    params[key].set_elems(unpacked_elems)
-                else:
-                    directory_elems = self.get_directory_elems(val)
-                    if directory_elems:
-                        directory = directory = val
-                        unpacked_elems = self.process_directory(directory_elems, directory, key)
-                        val = Choice(unpacked_elems)
-                        params[key] = val
-
-    def parse_parameter_file(self, input_file, is_profile=False):
+    def parse_param_set(self, input, parse_from_file=True, default=False):
         """ Parse input parameter file. """
 
-        # Determine parameter file path
-        if input_file.startswith("/"):
-            input_file = input_file
-        elif input_file.startswith("~"):
-            input_file = os.path.join(Distribution.input_mount, input_file)
-        else:
-            input_file = os.path.join(os.path.dirname(__file__), "../..", input_file)
+        if parse_from_file:
+            # Determine parameter file path
+            if input.startswith("/"):
+                input_file = input
+            elif input.startswith("~"):
+                input_file = os.path.join(Distribution.input_mount, input[1:])
+            else:
+                input_file = os.path.join(os.path.dirname(__file__), "../../parameters/", input)
 
-        # Read parameter file
-        with open(input_file, "r") as f:
-            # TODO: add schema check
-            params = yaml.load(f, Loader=yaml.FullLoader)
+            # Read parameter file
+            with open(input_file, "r") as f:
+                params = yaml.safe_load(f)
+
+            # Add a parameter for the input file path
+            params["file_path"] = input_file
+        else:
+            params = input
 
         # Initialize params
-        self.initialize_params(params)
+        self.initialize_params(params, default=default)
 
         # Process parameter groups
-        params["groups"] = {}
-        for key, value in list(params.items()):
+        groups = {}
+        groups[self.global_group] = {}
+        for key, val in list(params.items()):
             # Add group
-            if type(value) is dict and key != "groups":
-                if is_profile:
-                    raise ValueError('Profile file "{}" cannot have a parameter group'.format(input_file))
-                if key in params["groups"]:
+            if type(val) is dict:
+                if key in groups:
                     raise ValueError("Parameter group name is not unique: {}".format(key))
-                params["groups"][key] = value
+                groups[key] = val
                 params.pop(key)
 
-            # Add to default group
+            # Add param to global group
             if key.startswith("obj_") or key.startswith("light_"):
-                if self.default_group_name not in params["groups"]:
-                    params["groups"][self.default_group_name] = {}
-                params["groups"][self.default_group_name][key] = value
+                groups[self.global_group][key] = val
                 params.pop(key)
 
-        # Add a parameter for the input file path
-        params["input_file"] = input_file
+        params["groups"] = groups
 
         return params
 
-    def parse_input(self):
+    def parse_params(self, params):
+        """ Parse params into a final parameter set. """
+
+        import omni.client
+
+        # Add a global group, if needed
+        if self.global_group not in params:
+            params["groups"][self.global_group] = {}
+
+        # Parse all profile parameter sets
+        profile_param_sets = [self.parse_param_set(profile) for profile in params.get("profiles", [])[::-1]]
+
+        # Set default as lowest param set and input file param set as highest
+        param_sets = [self.default_params] + profile_param_sets + [params]
+
+        # Union parameters sets
+        final_params = param_sets[0]
+        for params in param_sets[1:]:
+            global_group_params = params["groups"][self.global_group]
+            sub_global_group_params = final_params["groups"][self.global_group]
+            for group in params["groups"]:
+                if group == self.global_group:
+                    continue
+                group_params = params["groups"][group]
+                if "inherit" in group_params:
+                    inherited_group = group_params["inherit"]
+                    if inherited_group not in final_params["groups"]:
+                        raise ValueError(
+                            "In group '{}' cannot find the inherited group '{}'".format(group, inherited_group)
+                        )
+                    inherited_params = final_params["groups"][inherited_group]
+                else:
+                    inherited_params = {}
+                final_params["groups"][group] = {
+                    **sub_global_group_params,
+                    **inherited_params,
+                    **global_group_params,
+                    **group_params,
+                }
+
+            final_params["groups"][self.global_group] = {
+                **final_params["groups"][self.global_group],
+                **params["groups"][self.global_group],
+            }
+
+            final_groups = final_params["groups"].copy()
+            final_params = {**final_params, **params}
+            final_params["groups"] = final_groups
+
+        # Remove non-final groups
+        for group in list(final_params["groups"].keys()):
+            if group not in param_sets[-1]["groups"]:
+                final_params["groups"].pop(group)
+        final_params["groups"].pop(self.global_group)
+
+        params = final_params
+
+        # Set profile file paths
+        params["profile_files"] = [profile_params["file_path"] for profile_params in profile_param_sets]
+
+        # Override parameters with CLI args
+        self.override_params(params)
+
+        # Check Nucleus server connection
+        self.nucleus_server = params["nucleus_server"]
+        (result, _, _) = omni.client.read_file(self.nucleus_server)
+        if not result.name.startswith("OK"):
+            raise ConnectionError("Could not connect to the Nucleus server: {}".format(self.nucleus_server))
+
+        # Verify Nucleus server paths
+        self.verify_nucleus_paths(params)
+
+        return params
+
+    def parse_input(self, input, parse_from_file=True):
         """ Parse all input parameter files. """
 
         # Parse input parameter file
-        params = self.parse_parameter_file(self.args.input)
-        input_file = params["input_file"]
+        params = self.parse_param_set(input, parse_from_file=parse_from_file)
 
-        profile_files = []
-        if "profiles" in params:
-            # Pull params from parameter profile files
-            parameters_path = params["input_file"][: params["input_file"].rfind("/")]
-            for profile in params["profiles"]:
-
-                if profile.startswith("/"):
-                    profile_file = profile
-                elif profile.startswith("~"):
-                    profile_file = os.path.join(Distribution.input_mount, profile_file)
-                else:
-                    profile_file = os.path.join(parameters_path, profile)
-                profile_files.append(profile_file)
-
-        # Always add default profile as the lowest profile
-        profile_files.append("parameters/profiles/default.yaml")
-
-        all_profile_params = [self.parse_parameter_file(profile, is_profile=True) for profile in profile_files]
-
-        # Union parameters from input file and profile file(s)
-        all_profile_params = all_profile_params[::-1]
-        final_profile_params = all_profile_params[0]
-        for profile_params in all_profile_params:
-            profile_params["groups"][self.default_group_name] = {
-                **final_profile_params["groups"][self.default_group_name],
-                **profile_params["groups"][self.default_group_name],
-            }
-            final_profile_params = {**final_profile_params, **profile_params}
-
-        for group in params["groups"]:
-            params["groups"][group] = {
-                **final_profile_params["groups"][self.default_group_name],
-                **params["groups"][group],
-            }
-        params = {**final_profile_params, **params}
-
-        # Overwrite file params, as needed
-        params["input_file"] = input_file
-        params["profile_files"] = [profile_params["input_file"] for profile_params in all_profile_params]
-
-        # Set nucleus server
-        self.nucleus_server = params["nucleus_server"]
-
-        # Unpack directory elems
-        self.unpack_directories_from_params(params)
-
-        # Override final parameter set with CLI arg parameters
-        self.override_params(params)
+        # Process params
+        params = self.parse_params(params)
 
         return params
-
-    def get_params(self):
-        return self.params
