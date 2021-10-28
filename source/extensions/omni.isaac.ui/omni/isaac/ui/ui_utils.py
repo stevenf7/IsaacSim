@@ -957,7 +957,7 @@ def build_header(
                         style=get_style()["IconButton.Image::OpenConfig"],
                         # style_type_name_override="IconButton.Image::OpenConfig",
                         alignment=ui.Alignment.LEFT_CENTER,
-                        tooltip_fn=lambda txt="Open": make_button_tooltip(txt),
+                        tooltip_fn=lambda txt="Open Source Code": make_button_tooltip(txt),
                         # tooltip="Open in IDE",
                     )
                     ui.Button(
