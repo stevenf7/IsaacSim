@@ -25,7 +25,7 @@ class JetbotKeyboard(BaseSample):
         self._command = [0.0, 0.0]
 
     async def setup_load(self):
-        # Note: for hot reload you need to get handles of things defined in _add_tasks here
+        # Note: for hot reload you need to get handles of things defined in add_tasks here
         world = self.get_world()
         self._jetbot = world.scene.get_object("my_jetbot")
         self._controller = DifferentialController(name="simple_control")
@@ -37,12 +37,12 @@ class JetbotKeyboard(BaseSample):
         await self._world.play_async()
         return
 
-    def _add_tasks(self):
+    def setup_scene(self, scene):
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
-        self._jetbot = self.get_world().scene.add(
+        self._jetbot = scene.add(
             Jetbot(
                 prim_path="/jetbot",
                 name="my_jetbot",
@@ -50,9 +50,9 @@ class JetbotKeyboard(BaseSample):
                 orientation=np.array([1.0, 0.0, 0.0, 0.0]),
             )
         )
-        self.get_world().scene.add_ground_plane()
+        scene.add_ground_plane()
         set_camera_view(eye=np.array([75, 75, 45]), target=np.array([0, 0, 0]))
-        return []
+        return
 
     def _on_sim_step(self, step):
         self._jetbot.apply_wheel_actions(self._controller.forward(command=self._command))

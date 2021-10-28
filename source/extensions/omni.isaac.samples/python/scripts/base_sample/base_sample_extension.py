@@ -138,8 +138,7 @@ class BaseSampleExtension(omni.ext.IExt):
         async def _on_load_world_async():
             await self._sample.load_world_async()
             await omni.kit.app.get_app().next_update_async()
-            if not self._sample._world.stage_callback_exists("stage_event_1"):
-                self._sample._world.add_stage_callback("stage_event_1", self.on_stage_event)
+            self._sample._world.add_stage_callback("stage_event_1", self.on_stage_event)
             self._enable_all_buttons(True)
             self._buttons["Load World"].enabled = False
 
@@ -177,6 +176,8 @@ class BaseSampleExtension(omni.ext.IExt):
 
     def on_shutdown(self):
         if self._sample._world is not None:
+            if self._sample._world.stage_callback_exists("stage_event_1"):
+                self._sample._world.remove_stage_callback("stage_event_1")
             self._sample.world_cleanup()
         if self._menu_items is not None:
             self._sample_window_cleanup()
