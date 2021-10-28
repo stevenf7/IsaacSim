@@ -10,34 +10,18 @@
 import carb
 import omni.kit.app
 import omni.kit
-
-import os
-import sys
 import time
-import asyncio
-import argparse
+from omni.isaac.kit import SimulationApp
+
+DEPRECATION_WARN = (
+    "OmnikitHelper is deprecated please use omni.isaac.kit.SimulationApp and omni.isaac.core.SimulationContext"
+)
 
 
 class OmniKitHelper:
-    """Helper class for launching OmniKit from a Python environment.
-
-    Launches and configures OmniKit and exposes useful functions.
-
-        Typical usage example:
-
-        .. code-block:: python
-
-            from omni.isaac.python_app import OmniKitHelper
-            # Configuration to start application with
-            startup_config = {'width': 800, 'height': 600, 'renderer': 'PathTracing'}
-            kit = OmniKitHelper(config = startup_config)   # Start omniverse kit
-            ### Perform any omniverse imports here after the helper loads ###
-            # <Code to generate or load a scene>
-
-            kit.play()      # Start simulation
-            kit.update(1.0 / 60.0)    # Render a single frame with a specified timestep
-            kit.stop()      # Stop Simulation
-            kit.shutdown()  # Cleanup application
+    """
+    Deprecated: Please use omni.isaac.kit.SimulationApp
+    Helper class for launching OmniKit from a Python environment.
     """
 
     DEFAULT_CONFIG = {
@@ -58,192 +42,35 @@ class OmniKitHelper:
         "max_bounces": 4,
         "max_specular_transmission_bounces": 6,
         "max_volume_bounces": 4,
-        "temp_jupyter_stage": None,
     }
-    """
-    The config variable is a dictionary containing the following entries
-
-    Args:
-        experience (str): The config file used to launch the application. Must be specified
-        headless (bool): Disable UI when running. Defaults to True
-        active_gpu (int): Specify the GPU to use when running, set to None to use default value which is usually the first gpu, default is None
-        sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to False
-        width (int): Width of the viewport and generated images. Defaults to 1024
-        height (int): Height of the viewport and generated images. Defaults to 800
-        window_width (int): Width of the application window, independent of viewport, defaults to 1440,
-        window_height (int): Height of the application window, independent of viewport, defaults to 900,
-        display_options (int): used to specify whats visible in the stage by default. Defaults to 0 so extra objects do not appear in synthetic data. 3807 is another good default, used for the regular isaac-sim editor experience
-        subdiv_refinement_level (int): Number of subdivisons to perform on supported geometry. Defaults to 0
-        renderer (str): Rendering mode, can be  `RayTracedLighting` or `PathTracing`. Defaults to `PathTracing`
-        samples_per_pixel_per_frame (int): The number of samples to render per frame, increase for improved quality, used for `PathTracing` only. Defaults to 64
-        denoiser (bool):  Enable this to use AI denoising to improve image quality, used for `PathTracing` only. Defaults to True
-        max_bounces (int): Maximum number of bounces, used for `PathTracing` only. Defaults to 4
-        max_specular_transmission_bounces(int): Maximum number of bounces for specular or transmission, used for `PathTracing` only. Defaults to 6
-        max_volume_bounces(int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
-        temp_jupyter_stage(str): This is the name of the stage that you want to do your interactive work in.  It will be destroyed upon creation. Default is None,
-    """
 
     def __init__(self, config=DEFAULT_CONFIG):
-        # only import custom loop runner if we create this object
-        from omni.kit.loop import _loop
-
-        # initialize vars
-        self._exiting = False
-        self._is_dirty_instance_mappings = True
-        self._previous_physics_dt = 1.0 / 60.0
-        self.config = OmniKitHelper.DEFAULT_CONFIG
+        carb.log_warn(DEPRECATION_WARN)
+        self.config = SimulationApp.DEFAULT_LAUNCHER_CONFIG
         if config is not None:
             self.config.update(config)
+        self.simulation_app = SimulationApp(launch_config=config, experience=self.config["experience"])
+        from omni.kit.loop import _loop
 
-        # Load app plugin
-        self._framework = carb.get_framework()
-        self._framework.load_plugins(
-            loaded_file_wildcards=["omni.kit.app.plugin"],
-            search_paths=[os.path.abspath(f'{os.environ["CARB_APP_PATH"]}/plugins')],
-        )
-
-        # launch kit
-        self.last_update_t = time.time()
-        self.app = omni.kit.app.get_app()
-        self.kit_settings = None
-        self._start_app()
-        # setup_future = self._launch_kit()
         self.loop_runner = _loop.acquire_loop_interface()
-        self.carb_settings = carb.settings.acquire_settings_interface()
-        self.setup_renderer(mode="default")  # set rtx-defaults settings
-        self.setup_renderer(mode="non-default")  # set rtx settings
-
         self.timeline = omni.timeline.get_timeline_interface()
-        self.temp_jupyter_stage = self.config.get("temp_jupyter_stage")
-        if self.temp_jupyter_stage == None:
-            # Wait for new stage to open
-            new_stage_task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
-            print("OmniKitHelper Starting up ...")
-            while not new_stage_task.done():
-                time.sleep(0.001)  # This sleep prevents a deadlock in certain cases
-                self.update()
-
-        else:
-            print("OmniKitHelper is creating a temp stage synchronously at ", self.temp_jupyter_stage, " ...")
-            omni.usd.get_context().new_stage()
-            omni.usd.get_context().save_as_stage(self.temp_jupyter_stage)
-            omni.usd.get_context().set_layer_live(self.temp_jupyter_stage, True)
-            print("Done.")
-        self.update()
-        # Dock windows  if they exist
-        main_dockspace = omni.ui.Workspace.get_window("DockSpace")
-
-        def dock_window(space, name, location, ratio=0.5):
-            window = omni.ui.Workspace.get_window(name)
-            if window and space:
-                window.dock_in(space, location, ratio=ratio)
-            return window
-
-        view = dock_window(main_dockspace, "Viewport", omni.ui.DockPosition.TOP, 0.7)
-        self.update()
-        console = dock_window(view, "Console", omni.ui.DockPosition.BOTTOM, 0.3)
-        prop = dock_window(view, "Property", omni.ui.DockPosition.RIGHT, 0.3)
-        dock_window(view, "Main ToolBar", omni.ui.DockPosition.LEFT)
-        self.update()
-        # dock_window(console, "Synthetic Data Sensors", omni.ui.DockPosition.SAME)
-        # dock_window(console, "Robot Engine Bridge", omni.ui.DockPosition.SAME)
-        # dock_window(console, "Domain Randomizer", omni.ui.DockPosition.SAME)
-        dock_window(prop, "Render Settings", omni.ui.DockPosition.SAME, 0.3)
-        self.update()
-        print("OmniKitHelper Startup Complete")
-
-    def _start_app(self):
-        args = [
-            os.path.abspath(__file__),
-            f'{self.config["experience"]}',
-            f'--/persistent/app/viewport/displayOptions={self.config["display_options"]}',  # hide extra stuff in viewport
-            # Forces kit to not render until all USD files are loaded
-            f'--/rtx/materialDb/syncLoads={self.config["sync_loads"]}',
-            f'--/rtx/hydra/materialSyncLoads={self.config["sync_loads"]}'
-            f'--/omni.kit.plugin/syncUsdLoads={self.config["sync_loads"]}',
-            f'--/app/renderer/resolution/width={self.config["width"]}',
-            f'--/app/renderer/resolution/height={self.config["height"]}',
-            f'--/app/window/width={self.config["window_width"]}',
-            f'--/app/window/height={self.config["window_height"]}',
-            "--ext-folder",
-            f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',  # adding to json doesn't work
-        ]
-        if self.config.get("active_gpu") is not None:
-            args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
-        # parse any extra command line args here
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--portable-root")
-        parser.add_argument("--allow-root", default=False, action="store_true")
-        parser.add_argument("--no-window", default=False, action="store_true")
-        parsed_args, unknown_args = parser.parse_known_args()
-        if parsed_args.portable_root is not None:
-            args.append(f"--portable-root")
-            args.append(f"{parsed_args.portable_root}")
-        else:
-            args.append(f"--portable")
-
-        if parsed_args.allow_root:
-            args.append(f"--allow-root")
-        if parsed_args.no_window or self.config.get("headless"):
-            args.append(f"--no-window")
-        self.app.startup("kit", os.environ["CARB_APP_PATH"], args)
-
-    def __del__(self):
-        if self._exiting is False and sys.meta_path is None:
-            print(
-                "\033[91m"
-                + "ERROR: Python exiting while OmniKitHelper was still running, Please call shutdown() on the OmniKitHelper object to exit cleanly"
-                + "\033[0m"
-            )
-        # if self._exiting is False:
-        #     self.shutdown()
+        self._exiting = False
+        self._previous_physics_dt = 1.0 / 60.0
+        self.last_update_t = time.time()
 
     def shutdown(self):
-        """
-        Unloads plugins and stops the omniverse application and the backend framework.
-        """
-        self._exiting = True
-        print("Shutting Down OmniKitHelper...")
-        # We are exisitng but something is still loading, wait for it to load to avoid a deadlock
-        if self.is_loading():
-            print("   Waiting for USD resource operations to complete (this may take a few seconds)")
-        while self.is_loading():
-            self.app.update()
-        self.app.shutdown()
-        self._framework.unload_all_plugins()
-        print("Shutting Down Complete")
-
-    # def _cleanup(self):
-    #     print("Exiting OmniKitHelper")
-    #     if self.app:
-    #         # self.set_setting("/app/file/ignoreUnsavedOnExit", True)
-    #         # self.update()
-    #         # self.app.post_quit()
-    #         # self.app.shutdown()
-    #         self.app.shutdown()
-    #         self._framework.unload_all_plugins()
-
-    # def exit(self):
-    #     """Sets is_exiting Flag to True and tells omniverse app to exit"""
-    #     self._exiting = True
-    #     self._cleanup()
+        carb.log_warn(DEPRECATION_WARN)
+        self.simulation_app.close()
 
     def get_stage(self):
         """Returns the current USD stage."""
-        return omni.usd.get_context().get_stage()
-
-    def reset_stage(self):
-        self.update()
-        paths = []
-        for prim in self.get_stage().Traverse():
-            paths.append(prim.GetPrimPath())
-        omni.kit.commands.execute("DeletePrims", paths=paths)
-        print(paths)
-        self.update()
+        carb.log_warn(DEPRECATION_WARN)
+        return self.simulation_app.context.get_stage()
 
     def get_context(self):
         """Returns the current USD context."""
-        return omni.usd.get_context()
+        carb.log_warn(DEPRECATION_WARN)
+        return self.simulation_app.context
 
     def set_setting(self, setting, value):
         """Convenience function to set settings.
@@ -252,16 +79,10 @@ class OmniKitHelper:
             setting (str): string representing the setting being changed
             value: new value for the setting being changed, the type of this value must match its repsective setting
         """
-        if isinstance(value, str):
-            self.carb_settings.set_string(setting, value)
-        elif isinstance(value, bool):
-            self.carb_settings.set_bool(setting, value)
-        elif isinstance(value, int):
-            self.carb_settings.set_int(setting, value)
-        elif isinstance(value, float):
-            self.carb_settings.set_float(setting, value)
-        else:
-            raise ValueError(f"Value of type {type(value)} is not supported.")
+        carb.log_warn(DEPRECATION_WARN)
+        from omni.isaac.core.utils.carb import set_carb_setting
+
+        set_carb_setting(carb.settings.get_settings(), setting, value)
 
     def set_physics_dt(self, physics_dt: float = 1.0 / 60.0, physics_substeps: int = 1):
         """Specify the physics step size to use when simulating, default is 1/60.
@@ -271,6 +92,7 @@ class OmniKitHelper:
             physics_dt (float): Use this value for physics step
             physics_substeps (int): The number of physics substeps to perform each editor timestep
         """
+        carb.log_warn(DEPRECATION_WARN)
         if self.get_stage() is None:
             return
         if physics_dt == self._previous_physics_dt:
@@ -306,6 +128,7 @@ class OmniKitHelper:
             physics_dt (float, optional): If specified use this value for physics step
             physics_substeps (int, optional): Maximum number of physics substeps to perform
         """
+        carb.log_warn(DEPRECATION_WARN)
         # dont update if exit was called
         if self._exiting:
             return
@@ -318,7 +141,7 @@ class OmniKitHelper:
             if physics_dt is None:
                 self.set_physics_dt(dt)
             self.loop_runner.set_runner_dt(dt)
-            self.app.update()
+            self.simulation_app.update()
         else:
             # dt not specified, run in realtime
             time_now = time.time()
@@ -327,28 +150,32 @@ class OmniKitHelper:
                 self.set_physics_dt(1.0 / 60.0, 4)
             self.last_update_t = time_now
             self.loop_runner.set_runner_dt(dt)
-            self.app.update()
+            self.simulation_app.update()
 
     def play(self):
         """Starts the editor physics simulation"""
+        carb.log_warn(DEPRECATION_WARN)
         self.update()
         self.timeline.play()
         self.update()
 
     def pause(self):
         """Pauses the editor physics simulation"""
+        carb.log_warn(DEPRECATION_WARN)
         self.update()
         self.timeline.pause()
         self.update()
 
     def stop(self):
         """Stops the editor physics simulation"""
+        carb.log_warn(DEPRECATION_WARN)
         self.update()
         self.timeline.stop()
         self.update()
 
     def get_status(self):
         """Get the status of the renderer to see if anything is loading"""
+        carb.log_warn(DEPRECATION_WARN)
         return omni.usd.get_context().get_stage_loading_status()
 
     def is_loading(self):
@@ -357,6 +184,7 @@ class OmniKitHelper:
         Returns:
             bool: True if loading, False otherwise
         """
+        carb.log_warn(DEPRECATION_WARN)
         message, loaded, loading = self.get_status()
         return loading > 0
 
@@ -365,16 +193,19 @@ class OmniKitHelper:
         Returns:
             bool: True if exit() was called previously, False otherwise
         """
+        carb.log_warn(DEPRECATION_WARN)
         return self._exiting
 
     def execute(self, *args, **kwargs):
         """Allow use of omni.kit.commands interface"""
+        carb.log_warn(DEPRECATION_WARN)
         omni.kit.commands.execute(*args, **kwargs)
 
     def setup_renderer(self, mode="non-default"):
         """
         Sets the defaults for the renderer based on the config provided at initialization
         """
+        carb.log_warn(DEPRECATION_WARN)
         rtx_mode = "/rtx-defaults" if mode == "default" else "/rtx"
         """Reset render settings to those in config. This should be used in case a new stage is opened and the desired config needs to be re-applied"""
         self.set_setting(rtx_mode + "/rendermode", self.config["renderer"])
@@ -415,6 +246,7 @@ class OmniKitHelper:
             semantic_label (str, optional): Semantic label.
             attributes (dict, optional): Key-value pairs of prim attributes to set.
         """
+        carb.log_warn(DEPRECATION_WARN)
         from pxr import UsdGeom, Semantics
 
         prim = self.get_stage().DefinePrim(path, prim_type)
@@ -444,10 +276,13 @@ class OmniKitHelper:
         Args:
             axis: valid values are `UsdGeom.Tokens.y`, or `UsdGeom.Tokens.z`
         """
-        from pxr import UsdGeom, Usd
+        carb.log_warn(DEPRECATION_WARN)
+        from pxr import UsdGeom
+        from omni.isaac.core.utils.stage import set_stage_up_axis
 
-        stage = self.get_stage()
-        rootLayer = stage.GetRootLayer()
-        rootLayer.SetPermissionToEdit(True)
-        with Usd.EditContext(stage, rootLayer):
-            UsdGeom.SetStageUpAxis(stage, axis)
+        if axis == UsdGeom.Tokens.x:
+            set_stage_up_axis("x")
+        elif axis == UsdGeom.Tokens.y:
+            set_stage_up_axis("y")
+        else:
+            set_stage_up_axis("z")

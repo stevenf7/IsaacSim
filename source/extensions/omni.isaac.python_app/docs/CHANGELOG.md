@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+
+[0.1.4] - 2021-10-27
+========================
+
+Changed
+-------
+- print deprecation warnings for all functions. 
+- User should use omni.isaac.kit.SImulationApp and omni.isaac.core.SimulationContext
+
 [0.1.3] - 2021-02-17
 ========================
 

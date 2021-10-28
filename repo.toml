@@ -354,7 +354,7 @@ path = "${test_root}/tests"
 kind = "glob_and_exec"
 path = "${test_root}/tests"
   [[repo_test.suites.internalpythontests.group]]
-  include = ["tests-python-omni.isaac.internal_tools*${shell_ext}"]
+  include = ["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-internalnativepython*${shell_ext}",]
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root"]
   tc_report_enabled = false
