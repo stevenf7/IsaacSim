@@ -131,16 +131,39 @@ class World(SimulationContext):
         self._current_tasks[task.name] = task
         return
 
-    def get_observations(self) -> dict:
+    def get_observations(self, task_name=None) -> dict:
         """[summary]
 
         Returns:
             dict: [description]
         """
-        observations = dict()
-        for task in self._current_tasks.values():
-            observations.update(task.get_observations())
-        return observations
+        if task_name is not None:
+            return self._current_tasks[task_name].get_observations()
+        else:
+            observations = dict()
+            for task in self._current_tasks.values():
+                observations.update(task.get_observations())
+            return observations
+
+    def calculate_metrics(self, task_name=None) -> None:
+        """[summary]
+        """
+        if task_name is not None:
+            return self._current_tasks[task_name].calculate_metrics()
+        else:
+            metrics = dict()
+            for task in self._current_tasks.values():
+                metrics.update(task.calculate_metrics())
+            return metrics
+
+    def is_done(self, task_name=None) -> None:
+        """[summary]
+        """
+        if task_name is not None:
+            return self._current_tasks[task_name].is_done()
+        else:
+            result = [task.is_done() for task in self._current_tasks.values()]
+            return all(result)
 
     def step(self, render: bool = True) -> None:
         """[summary]
@@ -155,6 +178,21 @@ class World(SimulationContext):
         if self.scene._enable_bounding_box_computations:
             self.scene._bbox_cache.SetTime(Usd.TimeCode(self._current_time))
         SimulationContext.step(self, render=render)
+        if self._data_logger.is_started():
+            if self._data_logger._data_frame_logging_func is None:
+                raise Exception("You need to add data logging function before starting the data logger")
+            data = self._data_logger._data_frame_logging_func(tasks=self.get_current_tasks(), scene=self.scene)
+            self._data_logger.add_data(
+                data=data, current_time_step=self.current_time_step_index, current_time=self.current_time
+            )
+        return
+
+    def step_async(self, step_size):
+        if self._scene_finalized:
+            for task in self._current_tasks.values():
+                task.pre_step(self.current_time_step_index, self.current_time)
+        if self.scene._enable_bounding_box_computations:
+            self.scene._bbox_cache.SetTime(Usd.TimeCode(self._current_time))
         if self._data_logger.is_started():
             if self._data_logger._data_frame_logging_func is None:
                 raise Exception("You need to add data logging function before starting the data logger")

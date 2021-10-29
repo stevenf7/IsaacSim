@@ -191,3 +191,101 @@ class DynamicCube(RigidPrim, GeometryPrim):
             float: [description]
         """
         return self.geom.GetSizeAttr().Get()
+
+
+class FixedCube(GeometryPrim):
+    def __init__(
+        self,
+        prim_path: str,
+        name: Optional[str] = "dynamic_cube",
+        position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
+        color: Optional[np.ndarray] = None,
+        static_friction: float = 0.2,
+        dynamic_friction: float = 1.0,
+        restitution: float = 0.0,
+        size: float = 0.5,
+        physics_material_path=None,
+        visual_material_path=None,
+    ) -> None:
+        """[summary]
+
+        Args:
+            stage (Usd.Stage): [description]
+            prim_path (str): [description]
+            name (Optional, optional): [description]. Defaults to None.
+            position (Optional, optional): [description]. Defaults to None.
+            orientation (Optional, optional): [description]. Defaults to None.
+            mass (Optional, optional): [description]. Defaults to None.
+            color (Optional, optional): [description]. Defaults to None.
+            linear_velocity (Optional, optional): [description]. Defaults to None.
+            angular_velocity (Optional, optional): [description]. Defaults to None.
+            collisions_enabled (bool, optional): [description]. Defaults to True.
+            static_friction (float, optional): [description]. Defaults to 0.0.
+            dynamic_friction (float, optional): [description]. Defaults to 0.0.
+            restitution (float, optional): [description]. Defaults to 0.8.
+            size (float, optional): [description]. Defaults to 0.5.
+        """
+        if is_prim_path_valid(prim_path):
+            prim = get_prim_at_path(prim_path)
+            if not prim.IsA(UsdGeom.Cube):
+                raise Exception("The prim at path {} cannot be parsed as a Cube object".format(prim_path))
+            cubeGeom = UsdGeom.Cube(prim)
+        else:
+            cubeGeom = UsdGeom.Cube.Define(get_current_stage(), prim_path)
+            cubeGeom.GetExtentAttr().Set(
+                [Gf.Vec3f([-size / 2.0, -size / 2.0, -size / 2.0]), Gf.Vec3f([size / 2.0, size / 2.0, size / 2.0])]
+            )
+        GeometryPrim.__init__(
+            self,
+            prim_path=prim_path,
+            name=name,
+            position=position,
+            translation=translation,
+            orientation=orientation,
+            collision=True,
+        )
+        FixedCube.set_size(self, size)
+        # create visual material
+        if visual_material_path is None:
+            if color is None:
+                color = np.arrray([0.5, 0.5, 0.5])
+            preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
+        else:
+            preview_surface = PreviewSurface(prim_path=visual_material_path)
+        FixedCube.apply_visual_material(self, preview_surface)
+
+        if physics_material_path is None:
+            my_physics_material = PhysicsMaterial(
+                prim_path=prim_path + "/physics_material",
+                dynamic_friction=dynamic_friction,
+                static_friction=static_friction,
+                restitution=restitution,
+            )
+
+        else:
+            my_physics_material = PhysicsMaterial(prim_path=physics_material_path)
+        FixedCube.apply_physics_material(self, my_physics_material)
+        FixedCube.set_rest_offset(self, 0.0)
+        FixedCube.set_contact_offset(self, 0.1)
+        FixedCube.set_torsional_patch_radius(self, 1.0)
+        FixedCube.set_min_torsional_patch_radius(self, 0.8)
+        return
+
+    def set_size(self, size: float) -> None:
+        """[summary]
+
+        Args:
+            size (float): [description]
+        """
+        self.geom.CreateSizeAttr(size)
+        return
+
+    def get_size(self) -> float:
+        """[summary]
+
+        Returns:
+            float: [description]
+        """
+        return self.geom.GetSizeAttr().Get()

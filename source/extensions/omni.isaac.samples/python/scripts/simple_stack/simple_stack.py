@@ -14,7 +14,7 @@ class SimpleStack(BaseSample):
         world.add_task(Stacking(name="stacking_task"))
         return
 
-    async def setup_load(self):
+    async def setup_post_load(self):
         self._franka_task = self._world.get_task(name="stacking_task")
         self._task_params = self._franka_task.get_params()
         my_franka = self._world.scene.get_object(self._task_params["robot_name"]["value"])
@@ -28,7 +28,7 @@ class SimpleStack(BaseSample):
         self._articulation_controller = my_franka.get_articulation_controller()
         return
 
-    def _on_stacking_simulation_step(self, step_size):
+    def _on_stacking_physics_step(self, step_size):
         observations = self._world.get_observations()
         actions = self._controller.forward(observations=observations)
         self._articulation_controller.apply_action(actions)
@@ -36,7 +36,16 @@ class SimpleStack(BaseSample):
             self._world.pause()
         return
 
+    async def _on_stacking_event_async(self):
+        world = self.get_world()
+        world.add_physics_callback("sim_step", self._on_stacking_physics_step)
+        await world.play_async()
+        return
+
     async def setup_post_reset(self):
+        world = self.get_world()
+        if world.physics_callback_exists("sim_step"):
+            world.remove_physics_callback("sim_step")
         self._controller.reset()
         return
 

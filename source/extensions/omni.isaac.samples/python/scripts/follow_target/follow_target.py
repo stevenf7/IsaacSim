@@ -25,7 +25,7 @@ class FollowTarget(BaseSample):
         self._controller = None
         return
 
-    async def setup_load(self):
+    async def setup_post_load(self):
         self._franka_task = list(self._world.get_current_tasks().values())[0]
         self._task_params = self._franka_task.get_params()
         my_franka = self._world.scene.get_object(self._task_params["robot_name"]["value"])
@@ -61,4 +61,26 @@ class FollowTarget(BaseSample):
         obstacle_to_delete = current_task.get_obstacle_to_delete()
         self._controller.remove_cube_obstacle(obstacle_to_delete.prim)
         current_task.remove_obstacle()
+        return
+
+    def _on_start_logging_event(self):
+        world = self.get_world()
+        data_logger = world.get_data_logger()
+        robot_name = self._task_params["robot_name"]["value"]
+
+        def frame_logging_func(tasks, scene):
+            return {
+                "joint_positions": scene.get_object(robot_name).get_joint_positions().tolist(),
+                "applied_joint_positions": scene.get_object(robot_name).get_applied_action().joint_positions.tolist(),
+            }
+
+        data_logger.add_data_frame_logging_func(frame_logging_func)
+        data_logger.start()
+        return
+
+    def _on_save_data_event(self, log_path):
+        world = self.get_world()
+        data_logger = world.get_data_logger()
+        data_logger.save(log_path=log_path)
+        data_logger.reset()
         return

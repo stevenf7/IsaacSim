@@ -6,7 +6,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from abc import abstractmethod
 from omni.isaac.core.scenes.scene import Scene
 
 
@@ -52,7 +51,6 @@ class BaseTask(object):
     def get_task_objects(self):
         return self._task_objects
 
-    @abstractmethod
     def get_observations(self) -> dict:
         """[summary]
 
@@ -64,19 +62,16 @@ class BaseTask(object):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def calculate_metrics(self) -> None:
         """[summary]
         """
         raise NotImplementedError
 
-    @abstractmethod
     def is_done(self) -> None:
         """[summary]
         """
         raise NotImplementedError
 
-    @abstractmethod
     def pre_step(self, control_index: int, simulation_time: float) -> None:
         """[summary]
 
@@ -91,7 +86,6 @@ class BaseTask(object):
         """
         return
 
-    @abstractmethod
     def get_description(self) -> str:
         """[summary]
 
@@ -100,16 +94,13 @@ class BaseTask(object):
         """
         return ""
 
-    @abstractmethod
     def cleanup(self) -> None:
         """[summary]
         """
         return
 
-    @abstractmethod
     def set_params(self, *args, **kwargs):
         raise NotImplementedError
 
-    @abstractmethod
     def get_params(self):
         raise NotImplementedError

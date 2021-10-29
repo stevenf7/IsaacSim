@@ -30,7 +30,9 @@ writeTarget.kit = true
 "omni.isaac.core" = {}
 "omni.isaac.franka" = {}
 "omni.isaac.jetbot" = {}
+"omni.isaac.dofbot" = {}
 "omni.isaac.kaya" = {}
+"omni.isaac.universal_robots" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.demos" = {}
 
@@ -65,10 +67,19 @@ name = "omni.isaac.samples.scripts.ros_samples"
 name = "omni.isaac.samples.scripts.ros_moveit_sample"
 
 [[python.module]]
+name = "omni.isaac.samples.scripts.follow_target"
+
+[[python.module]]
 name = "omni.isaac.samples.scripts.simple_stack"
 
 [[python.module]]
-name = "omni.isaac.samples.scripts.follow_target"
+name = "omni.isaac.samples.scripts.bin_filling"
+
+[[python.module]]
+name = "omni.isaac.samples.scripts.multiple_tasks"
+
+[[python.module]]
+name = "omni.isaac.samples.scripts.hello_world"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.surface_gripper"

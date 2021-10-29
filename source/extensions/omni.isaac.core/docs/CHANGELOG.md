@@ -2,13 +2,25 @@
 CHANGELOG
 **********
 
+[0.1.4] - 2021-10-29
+========================
+
+Added
+------
+- Added FixedCube
+- Add calculate_metrics, is_done and async step functions to World
+
+Changed
+--------
+- Made BaseTask methods non abstract
+
 [0.1.3] - 2021-10-21
 ========================
 
 Changed
 --------
-Renamed view_ports.py to viewports.py
-renamed nucleus_utils.py to nucleus.py
+- Renamed view_ports.py to viewports.py
+- renamed nucleus_utils.py to nucleus.py
 
 Added
 ------

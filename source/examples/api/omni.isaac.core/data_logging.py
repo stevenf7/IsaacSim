@@ -32,7 +32,7 @@ my_world.reset()
 data_logger = my_world.get_data_logger()
 
 
-def frame_logging_func(task, scene):
+def frame_logging_func(tasks, scene):
     return {
         "joint_positions": scene.get_object("my_franka_1").get_joint_positions().tolist(),
         "applied_joint_positions": scene.get_object("my_franka_1").get_applied_action().joint_positions.tolist(),

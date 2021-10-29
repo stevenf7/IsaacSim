@@ -41,7 +41,7 @@ while True:
         )
         if not added_screws and my_controller.get_current_event() == 5 and not my_controller.is_paused():
             my_controller.pause()
-            my_task.add_screws(screws_number=50)
+            my_task.add_screws(screws_number=10)
             added_screws = True
         if my_controller.is_paused() and my_task.get_current_num_of_screws_to_add() == 0:
             my_controller.resume()

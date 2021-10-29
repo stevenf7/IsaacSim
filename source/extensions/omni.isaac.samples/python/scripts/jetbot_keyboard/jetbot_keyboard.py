@@ -24,19 +24,6 @@ class JetbotKeyboard(BaseSample):
         self._controller = None
         self._command = [0.0, 0.0]
 
-    async def setup_load(self):
-        # Note: for hot reload you need to get handles of things defined in add_tasks here
-        world = self.get_world()
-        self._jetbot = world.scene.get_object("my_jetbot")
-        self._controller = DifferentialController(name="simple_control")
-        self._appwindow = omni.appwindow.get_default_app_window()
-        self._input = carb.input.acquire_input_interface()
-        self._keyboard = self._appwindow.get_keyboard()
-        self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-        self._world.add_physics_callback("jetbot_step", callback_fn=self._on_sim_step)
-        await self._world.play_async()
-        return
-
     def setup_scene(self):
         world = self.get_world()
         result, nucleus_server = find_nucleus_server()
@@ -53,6 +40,19 @@ class JetbotKeyboard(BaseSample):
         )
         world.scene.add_ground_plane()
         set_camera_view(eye=np.array([75, 75, 45]), target=np.array([0, 0, 0]))
+        return
+
+    async def setup_post_load(self):
+        # Note: for hot reload you need to get handles of things defined in add_tasks here
+        world = self.get_world()
+        self._jetbot = world.scene.get_object("my_jetbot")
+        self._controller = DifferentialController(name="simple_control")
+        self._appwindow = omni.appwindow.get_default_app_window()
+        self._input = carb.input.acquire_input_interface()
+        self._keyboard = self._appwindow.get_keyboard()
+        self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
+        self._world.add_physics_callback("jetbot_step", callback_fn=self._on_sim_step)
+        await self._world.play_async()
         return
 
     def _on_sim_step(self, step):

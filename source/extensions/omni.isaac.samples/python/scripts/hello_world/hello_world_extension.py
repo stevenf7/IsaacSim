@@ -8,25 +8,21 @@
 
 import os
 from omni.isaac.samples.scripts.base_sample import BaseSampleExtension
-from omni.isaac.samples.scripts.kaya_joystick import KayaJoystick
+from omni.isaac.samples.scripts.hello_world import HelloWorld
 
 
-class KayaJoystickExtension(BaseSampleExtension):
+class HelloWorldExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
-        overview = "This Example shows how to drive a NVIDIA Kaya robot using a Gamepad in Isaac Sim."
-        overview += "\n\nConnect a gamepad to the robot, and the press PLAY to begin simulating."
-        overview += "\n\nPress the 'Open in IDE' button to view the source code."
-
         super().start_extension(
-            menu_name="Controlling",
-            submenu_name="Input Devices",
-            name="Kaya Joystick",
-            title="NVIDIA Kaya Joystick Example",
+            menu_name="",
+            submenu_name="",
+            name="Hello World",
+            title="Hello World Example",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_manip.html",
-            overview=overview,
+            overview="This Example introduces the user on how to do cool stuff with Isaac Sim through scripting in asynchronous mode.",
             file_path=os.path.abspath(__file__),
             stage_units_in_meters=0.01,
-            sample=KayaJoystick(),
+            sample=HelloWorld(),
         )
         return
